@@ -470,6 +470,22 @@ WebDataService::Handle WebDataService::GetCreditCards(
   return request->GetHandle();
 }
 
+void WebDataService::RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+    const Time& delete_begin,
+    const Time& delete_end) {
+  GenericRequest2<Time, Time>* request =
+  new GenericRequest2<Time, Time>(this,
+                                  GetNextRequestHandle(),
+                                  NULL,
+                                  delete_begin,
+                                  delete_end);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(
+      this,
+      &WebDataService::RemoveAutoFillProfilesAndCreditCardsModifiedBetweenImpl,
+      request));
+}
+
 WebDataService::~WebDataService() {
   if (is_running_ && db_) {
     DLOG_ASSERT("WebDataService dtor called without Shutdown");
@@ -1124,6 +1140,21 @@ void WebDataService::GetCreditCardsImpl(WebDataRequest* request) {
     request->SetResult(
         new WDResult<std::vector<CreditCard*> >(AUTOFILL_CREDITCARDS_RESULT,
                                                 creditcards));
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveAutoFillProfilesAndCreditCardsModifiedBetweenImpl(
+    GenericRequest2<Time, Time>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    if (db_->RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+            request->GetArgument1(),
+            request->GetArgument2())) {
+      // Note: It is the caller's responsibility to post notifications for any
+      // changes, e.g. by calling the Refresh() method of PersonalDataManager.
+      ScheduleCommit();
+    }
   }
   request->RequestComplete();
 }

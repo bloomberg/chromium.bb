@@ -4842,7 +4842,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Clear saved passwords
       </message>
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
-        Clear saved form data
+        Clear saved Autofill form data
       </message>
       <message name="IDS_CLEAR_CHROME_DATA_TAB_LABEL" desc="Tab label for controls for clearing browser data">
         Chrome data

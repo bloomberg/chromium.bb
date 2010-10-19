@@ -465,6 +465,11 @@ class WebDataService
   // consumer owns the credit cards.
   Handle GetCreditCards(WebDataServiceConsumer* consumer);
 
+  // Removes AutoFill records from the database.
+  void RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+      const base::Time& delete_begin,
+      const base::Time& delete_end);
+
   // Testing
 #ifdef UNIT_TEST
   void set_failed_init(bool value) { failed_init_ = value; }
@@ -598,6 +603,8 @@ class WebDataService
   void UpdateCreditCardImpl(GenericRequest<CreditCard>* request);
   void RemoveCreditCardImpl(GenericRequest<int>* request);
   void GetCreditCardsImpl(WebDataRequest* request);
+  void RemoveAutoFillProfilesAndCreditCardsModifiedBetweenImpl(
+      GenericRequest2<base::Time, base::Time>* request);
 
   // True once initialization has started.
   bool is_running_;

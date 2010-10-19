@@ -262,6 +262,12 @@ class WebDatabase {
   // credit cards.
   virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
 
+  // Removes rows from autofill_profiles and credit_cards if they were created
+  // on or after |delete_begin| and strictly before |delete_end|.
+  bool RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+      base::Time delete_begin,
+      base::Time delete_end);
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Apps
@@ -308,6 +314,10 @@ class WebDatabase {
                            Autofill_GetAllAutofillEntries_TwoSame);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_UpdateDontReplace);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddFormFieldValues);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, AutoFillProfile);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, CreditCard);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
+                           RemoveAutoFillProfilesAndCreditCardsModifiedBetween);
 
   // Methods for adding autofill entries at a specified time.  For
   // testing only.

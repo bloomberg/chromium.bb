@@ -403,6 +403,9 @@ void PersonalDataManager::SetCreditCards(
     credit_cards_.push_back(new CreditCard(*iter));
   }
 
+  // Read our writes to ensure consistency with the database.
+  Refresh();
+
   {
     // We're now done with the unique IDs, and observers might call into a
     // method that needs the lock, so release it.  For example, observers on Mac

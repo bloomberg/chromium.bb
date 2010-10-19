@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -225,6 +226,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     if (web_data_service) {
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
           delete_end_);
+      web_data_service->RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+          delete_begin_, delete_end_);
+      profile_->GetPersonalDataManager()->Refresh();
     }
   }
 

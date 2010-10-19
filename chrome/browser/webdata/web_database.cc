@@ -124,6 +124,7 @@ using webkit_glue::PasswordForm;
 //   country
 //   phone
 //   fax
+//   date_modified      The date on which this profile was last modified.
 //
 // credit_cards         This table contains credit card data added by the user
 //                      with the AutoFill dialog.  Most of the columns are
@@ -149,6 +150,7 @@ using webkit_glue::PasswordForm;
 //     chrome/browser/sync/protocol/autofill_specifics.proto
 //   card_number_encrypted Stores encrypted credit card number.
 //   verification_code_encrypted  The CVC/CVV/CVV2 card security code.
+//   date_modified      The date on which this entry was last modified.
 //
 // web_app_icons
 //   url         URL of the web app.
@@ -171,8 +173,8 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 29;
-const int kCompatibleVersionNumber = 29;
+const int kCurrentVersionNumber = 30;
+const int kCompatibleVersionNumber = 30;
 
 // ID of the url column in keywords.
 const int kUrlIdPosition = 16;
@@ -290,6 +292,7 @@ void BindAutoFillProfileToStatement(const AutoFillProfile& profile,
   s->BindString16(13, LimitDataSize(text));
   text = profile.GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER));
   s->BindString16(14, LimitDataSize(text));
+  s->BindInt64(15, Time::Now().ToTimeT());
 }
 
 AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
@@ -321,6 +324,7 @@ AutoFillProfile* AutoFillProfileFromStatement(const sql::Statement& s) {
                    s.ColumnString16(13));
   profile->SetInfo(AutoFillType(PHONE_FAX_WHOLE_NUMBER),
                    s.ColumnString16(14));
+  // Intentionally skip column 15, which stores the profile's modification date.
 
   return profile;
 }
@@ -354,6 +358,7 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   // We don't store the CVV anymore.
   text.clear();
   s->BindBlob(11, text.data(), static_cast<int>(text.length()));
+  s->BindInt64(12, Time::Now().ToTimeT());
 }
 
 CreditCard* CreditCardFromStatement(const sql::Statement& s) {
@@ -386,7 +391,8 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   credit_card->set_billing_address_id(s.ColumnInt(8));
   // We don't store the shipping address anymore.
   // Column 10 is processed above.
-  // Column 11 is processed above.
+  // We don't store the encrypted CVV anymore.
+  // Intentionally skip column 12, which stores the modification date.
 
   return credit_card;
 }
@@ -752,7 +758,8 @@ bool WebDatabase::InitAutoFillProfilesTable() {
                      "zipcode VARCHAR, "
                      "country VARCHAR, "
                      "phone VARCHAR, "
-                     "fax VARCHAR)")) {
+                     "fax VARCHAR, "
+                     "date_modified INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -779,7 +786,8 @@ bool WebDatabase::InitCreditCardsTable() {
                      "billing_address VARCHAR, "
                      "shipping_address VARCHAR, "
                      "card_number_encrypted BLOB, "
-                     "verification_code_encrypted BLOB)")) {
+                     "verification_code_encrypted BLOB, "
+                     "date_modified INTEGER NOT NULL DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -1628,8 +1636,8 @@ bool WebDatabase::AddAutoFillProfile(const AutoFillProfile& profile) {
       "INSERT INTO autofill_profiles"
       "(label, unique_id, first_name, middle_name, last_name, email,"
       " company_name, address_line_1, address_line_2, city, state, zipcode,"
-      " country, phone, fax)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+      " country, phone, fax, date_modified)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -1688,7 +1696,8 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
       "UPDATE autofill_profiles "
       "SET label=?, unique_id=?, first_name=?, middle_name=?, last_name=?, "
       "    email=?, company_name=?, address_line_1=?, address_line_2=?, "
-      "    city=?, state=?, zipcode=?, country=?, phone=?, fax=? "
+      "    city=?, state=?, zipcode=?, country=?, phone=?, fax=?, "
+      "    date_modified=? "
       "WHERE unique_id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -1696,7 +1705,7 @@ bool WebDatabase::UpdateAutoFillProfile(const AutoFillProfile& profile) {
   }
 
   BindAutoFillProfileToStatement(profile, &s);
-  s.BindInt(15, profile.unique_id());
+  s.BindInt(16, profile.unique_id());
   bool result = s.Run();
   DCHECK_GT(db_.GetLastChangeCount(), 0);
   return result;
@@ -1735,10 +1744,10 @@ bool WebDatabase::GetAutoFillProfileForID(int profile_id,
 bool WebDatabase::AddCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_.GetUniqueStatement(
       "INSERT INTO credit_cards"
-      "(label, unique_id, name_on_card, type, card_number,"
-      " expiration_month, expiration_year, verification_code, billing_address,"
-      " shipping_address, card_number_encrypted, verification_code_encrypted)"
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
+      "(label, unique_id, name_on_card, type, card_number, expiration_month,"
+      " expiration_year, verification_code, billing_address, shipping_address,"
+      " card_number_encrypted, verification_code_encrypted, date_modified)"
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -1818,7 +1827,7 @@ bool WebDatabase::UpdateCreditCard(const CreditCard& credit_card) {
       "SET label=?, unique_id=?, name_on_card=?, type=?, card_number=?, "
       "    expiration_month=?, expiration_year=?, verification_code=?, "
       "    billing_address=?, shipping_address=?, card_number_encrypted=?, "
-      "    verification_code_encrypted=? "
+      "    verification_code_encrypted=?, date_modified=? "
       "WHERE unique_id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -1826,7 +1835,7 @@ bool WebDatabase::UpdateCreditCard(const CreditCard& credit_card) {
   }
 
   BindCreditCardToStatement(credit_card, &s);
-  s.BindInt(12, credit_card.unique_id());
+  s.BindInt(13, credit_card.unique_id());
   bool result = s.Run();
   DCHECK_GT(db_.GetLastChangeCount(), 0);
   return result;
@@ -1843,6 +1852,56 @@ bool WebDatabase::RemoveCreditCard(int credit_card_id) {
 
   s.BindInt(0, credit_card_id);
   return s.Run();
+}
+
+bool WebDatabase::RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
+    base::Time delete_begin,
+    base::Time delete_end) {
+  DCHECK(!delete_begin.is_null());
+  DCHECK(delete_end.is_null() || delete_begin < delete_end);
+
+  time_t delete_begin_t = delete_begin.ToTimeT();
+  time_t delete_end_t = delete_end.is_null() ?
+      std::numeric_limits<time_t>::max() :
+      delete_end.ToTimeT();
+
+  // Remove AutoFill profiles in the time range.
+  sql::Statement s_profiles(db_.GetUniqueStatement(
+      "DELETE FROM autofill_profiles "
+      "WHERE date_modified >= ? AND date_modified < ?"));
+  if (!s_profiles) {
+    NOTREACHED() << "AutoFill profiles statement prepare failed";
+    return false;
+  }
+
+  s_profiles.BindInt64(0, delete_begin_t);
+  s_profiles.BindInt64(1, delete_end_t);
+  s_profiles.Run();
+
+  if (!s_profiles.Succeeded()) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Remove AutoFill profiles in the time range.
+  sql::Statement s_credit_cards(db_.GetUniqueStatement(
+      "DELETE FROM credit_cards "
+      "WHERE date_modified >= ? AND date_modified < ?"));
+  if (!s_credit_cards) {
+    NOTREACHED() << "AutoFill credit cards statement prepare failed";
+    return false;
+  }
+
+  s_credit_cards.BindInt64(0, delete_begin_t);
+  s_credit_cards.BindInt64(1, delete_end_t);
+  s_credit_cards.Run();
+
+  if (!s_credit_cards.Succeeded()) {
+    NOTREACHED();
+    return false;
+  }
+
+  return true;
 }
 
 bool WebDatabase::AddToCountOfFormElement(int64 pair_id,
@@ -2141,11 +2200,6 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
         return sql::INIT_FAILURE;
       }
 
-      meta_table_.SetVersionNumber(26);
-      meta_table_.SetCompatibleVersionNumber(
-          std::min(26, kCompatibleVersionNumber));
-      // FALL THROUGH
-
       for (std::map<int, int>::const_iterator iter = cc_billing_map.begin();
            iter != cc_billing_map.end(); ++iter) {
         sql::Statement s(db_.GetCachedStatement(
@@ -2247,6 +2301,69 @@ sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
       meta_table_.SetVersionNumber(29);
       meta_table_.SetCompatibleVersionNumber(
           std::min(29, kCompatibleVersionNumber));
+
+      // FALL THROUGH
+
+    case 29:
+      // Add date_modified to autofill_profiles.
+      if (!db_.DoesColumnExist("autofill_profiles", "date_modified")) {
+        if (!db_.Execute("ALTER TABLE autofill_profiles ADD COLUMN "
+                         "date_modified INTEGER NON NULL DEFAULT 0")) {
+          LOG(WARNING) << "Unable to update web database to version 30";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+        sql::Statement s(db_.GetUniqueStatement(
+            "UPDATE autofill_profiles SET date_modified=?"));
+        if (!s) {
+          LOG(WARNING) << "Unable to update web database to version 30.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+        s.BindInt64(0, Time::Now().ToTimeT());
+
+        if (!s.Run()) {
+          LOG(WARNING) << "Unable to update web database to version 30.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+      }
+
+      // Add date_modified to credit_cards.
+      if (!db_.DoesColumnExist("credit_cards", "date_modified")) {
+        if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                         "date_modified INTEGER NON NULL DEFAULT 0")) {
+          LOG(WARNING) << "Unable to update web database to version 30";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+        sql::Statement s(db_.GetUniqueStatement(
+            "UPDATE credit_cards SET date_modified=?"));
+        if (!s) {
+          LOG(WARNING) << "Unable to update web database to version 30.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+        s.BindInt64(0, Time::Now().ToTimeT());
+
+        if (!s.Run()) {
+          LOG(WARNING) << "Unable to update web database to version 30.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
+
+      }
+
+      meta_table_.SetVersionNumber(30);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(30, kCompatibleVersionNumber));
+
+      // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and
     // compatible version number as appropriate, then fall through to the next

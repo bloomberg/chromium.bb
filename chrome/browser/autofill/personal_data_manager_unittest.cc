@@ -630,6 +630,19 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
   update.push_back(credit_card5);
   personal_data_->SetCreditCards(&update);
 
+  // Reset the PersonalDataManager.  This tests that the personal data was saved
+  // to the web database, and that we can load the credit cards from the web
+  // database.
+  ResetPersonalDataManager();
+
+  // This will verify that the web database has been loaded and the notification
+  // sent out.
+  EXPECT_CALL(personal_data_observer_,
+              OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  // The message loop will exit when the mock observer is notified.
+  MessageLoop::current()->Run();
+
   const std::vector<CreditCard*>& results = personal_data_->credit_cards();
   ASSERT_EQ(6U, results.size());
   EXPECT_EQ(ASCIIToUTF16("Home"), results[0]->Label());
