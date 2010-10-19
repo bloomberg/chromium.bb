@@ -22,7 +22,7 @@ function getAppsCallback(data) {
   });
 
   clearClosedMenu(apps.menu);
-  if (data.apps.length == 0) {
+  if (data.apps.length == 0 && !data.showLauncher) {
     appsSection.classList.add('disabled');
     layoutSections();
   } else {

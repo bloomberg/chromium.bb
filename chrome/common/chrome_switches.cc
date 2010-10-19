@@ -359,6 +359,9 @@ const char kEnableAccessibility[]           = "enable-accessibility";
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 
+// Enables the application section of the new tab page.
+const char kEnableAppLauncher[]             = "enable-app-launcher";
+
 // Enable the inclusion of non-standard ports when generating the Kerberos SPN
 // in response to a Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
 // for more background.

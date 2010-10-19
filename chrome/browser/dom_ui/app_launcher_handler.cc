@@ -153,6 +153,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   } else {
     dictionary->SetBoolean("showPromo", false);
   }
+
+  bool showLauncher =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppLauncher);
+  dictionary->SetBoolean("showLauncher", showLauncher);
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
