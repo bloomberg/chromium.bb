@@ -293,6 +293,7 @@ void NetworkSelectionView::Init() {
       NULL, std::wstring(), delegate_->language_switch_menu(), true, delegate_);
   languages_menubutton_->SetFocusable(true);
   languages_menubutton_->SetNormalHasBorder(true);
+  languages_menubutton_->set_animate_on_state_change(false);
   // Menu is positioned by bottom right corner of the MenuButton.
   languages_menubutton_->set_menu_offset(kMenuHorizontalOffset,
                                          kMenuVerticalOffset);
@@ -305,6 +306,7 @@ void NetworkSelectionView::Init() {
       true /* show_menu_marker */);
   keyboards_menubutton_->SetFocusable(true);
   keyboards_menubutton_->SetNormalHasBorder(true);
+  keyboards_menubutton_->set_animate_on_state_change(false);
   delegate_->keyboard_switch_menu()->SetMenuOffset(kMenuHorizontalOffset,
                                                    kMenuVerticalOffset);
 
@@ -317,9 +319,9 @@ void NetworkSelectionView::Init() {
 
   network_dropdown_->set_menu_offset(kMenuHorizontalOffset,
                                      kMenuVerticalOffset);
-
   network_dropdown_->SetNormalHasBorder(true);
   network_dropdown_->SetFocusable(true);
+  network_dropdown_->set_animate_on_state_change(false);
 
   connecting_network_label_ = new views::Label();
   connecting_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));

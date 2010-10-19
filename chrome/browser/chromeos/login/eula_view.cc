@@ -348,7 +348,7 @@ void EulaView::UpdateLocalizedStrings() {
   continue_button_->SetLabel(
       l10n_util::GetString(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
   back_button_->SetLabel(
-      l10n_util::GetString(IDS_ACCNAME_BACK));
+      l10n_util::GetString(IDS_EULA_BACK_BUTTON));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

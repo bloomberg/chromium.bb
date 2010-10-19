@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/feedback_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
@@ -361,7 +362,8 @@ void BackgroundView::InitProgressBar() {
 #endif
   steps.push_back(IDS_OOBE_SIGNIN);
 #if defined(OFFICIAL_BUILD)
-  steps.push_back(IDS_OOBE_REGISTRATION);
+  if (WizardController::IsRegisterScreenDefined())
+    steps.push_back(IDS_OOBE_REGISTRATION);
 #endif
   steps.push_back(IDS_OOBE_PICTURE);
   progress_bar_ = new OobeProgressBar(steps);

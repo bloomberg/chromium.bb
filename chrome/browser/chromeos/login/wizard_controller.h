@@ -67,6 +67,9 @@ class WizardController : public chromeos::ScreenObserver,
   // Returns device registration completion status, i.e. second part of OOBE.
   static bool IsDeviceRegistered();
 
+  // Returns true if valid registration URL is defined.
+  static bool IsRegisterScreenDefined();
+
   // Marks device registered. i.e. second part of OOBE is completed.
   static void MarkDeviceRegistered();
 

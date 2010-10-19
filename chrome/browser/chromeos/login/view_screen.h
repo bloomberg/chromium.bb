@@ -53,7 +53,9 @@ template <class V>
 class DefaultViewScreen : public ViewScreen<V> {
  public:
   explicit DefaultViewScreen(WizardScreenDelegate* delegate)
-      : ViewScreen<V>(delegate) {}
+        : ViewScreen<V>(delegate) {}
+  DefaultViewScreen(WizardScreenDelegate* delegate, int width, int height)
+      : ViewScreen<V>(delegate, width, height) {}
   V* AllocateView() {
     return new V(ViewScreen<V>::delegate()->GetObserver(this));
   }

@@ -33,17 +33,17 @@ namespace {
 // Y offset for the 'installing updates' label.
 const int kInstallingUpdatesLabelYBottomFromProgressBar = 18;
 // Y offset for the progress bar.
-const int kProgressBarY = 199;
+const int kProgressBarY = 130;
 // Y offset for the 'computer will restart' label.
-const int kRebootLabelYFromProgressBar = 77;
+const int kRebootLabelYFromProgressBar = 55;
 // Y offset for the 'ESCAPE to skip' label.
 const int kEscapeToSkipLabelY = 48;
 // Progress bar width.
-const int kProgressBarWidth = 550;
+const int kProgressBarWidth = 420;
 // Progress bar height.
 const int kProgressBarHeight = 18;
 // Horizontal spacing (ex. min left and right margins for label on the screen).
-const int kHorizontalSpacing = 75;
+const int kHorizontalSpacing = 65;
 // Horizontal spacing between spinner and label on the curtain screen.
 const int kBetweenSpacing = 25;
 
@@ -222,7 +222,7 @@ void UpdateView::InitLabel(views::Label** label) {
   (*label)->SetMultiLine(true);
 
   ResourceBundle& res_bundle = ResourceBundle::GetSharedInstance();
-  gfx::Font label_font = res_bundle.GetFont(ResourceBundle::MediumBoldFont);
+  gfx::Font label_font = res_bundle.GetFont(ResourceBundle::MediumFont);
   (*label)->SetFont(label_font);
 
   AddChildView(*label);

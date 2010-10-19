@@ -200,6 +200,13 @@ const chromeos::StartupCustomizationDocument* LoadStartupManifest() {
   return NULL;
 }
 
+// Returns true if startup manifest defines valid registration URL.
+bool IsRegistrationScreenValid(
+    const chromeos::StartupCustomizationDocument* startup_manifest) {
+  return startup_manifest != NULL &&
+         GURL(startup_manifest->registration_url()).is_valid();
+}
+
 }  // namespace
 
 const char WizardController::kNetworkScreenName[] = "network";
@@ -442,8 +449,7 @@ void WizardController::ShowEulaScreen() {
 }
 
 void WizardController::ShowRegistrationScreen() {
-  if (!GetCustomization() ||
-      !GURL(GetCustomization()->registration_url()).is_valid()) {
+  if (!IsRegistrationScreenValid(GetCustomization())) {
     LOG(INFO) <<
         "Skipping registration screen: manifest not defined or invalid URL.";
     OnRegistrationSkipped();
@@ -759,6 +765,18 @@ void WizardController::MarkOobeCompleted() {
 bool WizardController::IsDeviceRegistered() {
   FilePath oobe_complete_flag_file_path(kOobeCompleteFlagFilePath);
   return file_util::PathExists(oobe_complete_flag_file_path);
+}
+
+// static
+bool WizardController::IsRegisterScreenDefined() {
+  const chromeos::StartupCustomizationDocument* manifest = NULL;
+  // This method will be called from ExistingUserController too
+  // when Wizard instance doesn't exist.
+  if (default_controller())
+    manifest = default_controller()->GetCustomization();
+  else
+    manifest = LoadStartupManifest();
+  return IsRegistrationScreenValid(manifest);
 }
 
 // static
