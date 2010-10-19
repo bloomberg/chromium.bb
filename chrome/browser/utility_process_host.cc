@@ -159,10 +159,10 @@ void UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
       NewRunnableMethod(client_.get(), &Client::OnMessageReceived, message));
 }
 
-void UtilityProcessHost::OnProcessCrashed(int exit_code) {
+void UtilityProcessHost::OnProcessCrashed() {
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      NewRunnableMethod(client_.get(), &Client::OnProcessCrashed, exit_code));
+      NewRunnableMethod(client_.get(), &Client::OnProcessCrashed));
 }
 
 void UtilityProcessHost::Client::OnMessageReceived(

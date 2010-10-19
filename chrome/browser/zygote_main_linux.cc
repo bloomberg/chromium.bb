@@ -167,10 +167,10 @@ class Zygote {
             break;
           HandleReapRequest(fd, pickle, iter);
           return false;
-        case ZygoteHost::kCmdGetTerminationStatus:
+        case ZygoteHost::kCmdDidProcessCrash:
           if (!fds.empty())
             break;
-          HandleGetTerminationStatus(fd, pickle, iter);
+          HandleDidProcessCrash(fd, pickle, iter);
           return false;
         case ZygoteHost::kCmdGetSandboxStatus:
           HandleGetSandboxStatus(fd, pickle, iter);
@@ -209,31 +209,26 @@ class Zygote {
     ProcessWatcher::EnsureProcessTerminated(actual_child);
   }
 
-  void HandleGetTerminationStatus(int fd, const Pickle& pickle, void* iter) {
+  void HandleDidProcessCrash(int fd, const Pickle& pickle, void* iter) {
     base::ProcessHandle child;
 
     if (!pickle.ReadInt(&iter, &child)) {
-      LOG(WARNING) << "Error parsing GetTerminationStatus request "
-                   << "from browser";
+      LOG(WARNING) << "Error parsing DidProcessCrash request from browser";
       return;
     }
 
-    base::TerminationStatus status;
-    int exit_code;
+    bool child_exited;
+    bool did_crash;
     if (g_suid_sandbox_active)
       child = real_pids_to_sandbox_pids[child];
-    if (child) {
-      status = base::GetTerminationStatus(child, &exit_code);
-    } else {
-      // Assume that if we can't find the child in the sandbox, then
-      // it terminated normally.
-      status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-      exit_code = 0;
-    }
+    if (child)
+      did_crash = base::DidProcessCrash(&child_exited, child);
+    else
+      did_crash = child_exited = false;
 
     Pickle write_pickle;
-    write_pickle.WriteInt(static_cast<int>(status));
-    write_pickle.WriteInt(exit_code);
+    write_pickle.WriteBool(did_crash);
+    write_pickle.WriteBool(child_exited);
     if (HANDLE_EINTR(write(fd, write_pickle.data(), write_pickle.size())) !=
         write_pickle.size()) {
       PLOG(ERROR) << "write";

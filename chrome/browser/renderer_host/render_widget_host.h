@@ -12,7 +12,6 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/gtest_prod_util.h"
-#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
@@ -415,7 +414,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
   // consistent if a new renderer is created.
-  void RendererExited(base::TerminationStatus status, int exit_code);
+  void RendererExited();
 
   // Retrieves an id the renderer can use to refer to its view.
   // This is used for various IPC messages, including plugins.
@@ -475,7 +474,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // IPC message handlers
   void OnMsgRenderViewReady();
-  void OnMsgRenderViewGone(int status, int error_code);
+  void OnMsgRenderViewGone();
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);

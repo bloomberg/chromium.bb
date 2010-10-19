@@ -671,8 +671,7 @@ void RenderWidgetHostViewGtk::DidUpdateBackingStore(
   }
 }
 
-void RenderWidgetHostViewGtk::RenderViewGone(base::TerminationStatus status,
-                                             int error_code) {
+void RenderWidgetHostViewGtk::RenderViewGone() {
   Destroy();
   plugin_container_manager_.set_host_widget(NULL);
 }

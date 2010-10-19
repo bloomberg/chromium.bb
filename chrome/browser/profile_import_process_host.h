@@ -40,7 +40,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
     // These methods are used by the ProfileImportProcessHost to pass messages
     // received from the external process back to the ImportProcessClient in
     // ImporterHost.
-    virtual void OnProcessCrashed(int exit_status) {}
+    virtual void OnProcessCrashed() {}
     virtual void OnImportStart() {}
     virtual void OnImportFinished(bool succeeded, std::string error_msg) {}
     virtual void OnImportItemStart(int item) {}
@@ -126,7 +126,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
   void OnMessageReceived(const IPC::Message& message);
 
   // Overridden from BrowserChildProcessHost:
-  virtual void OnProcessCrashed(int exit_code);
+  virtual void OnProcessCrashed();
   virtual bool CanShutdown();
   virtual URLRequestContext* GetRequestContext(
       uint32 request_id,

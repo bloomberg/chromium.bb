@@ -981,13 +981,11 @@ void RenderViewHost::OnMsgRenderViewReady() {
   delegate_->RenderViewReady(this);
 }
 
-void RenderViewHost::OnMsgRenderViewGone(int status, int exit_code) {
+void RenderViewHost::OnMsgRenderViewGone() {
   // Our base class RenderWidgetHost needs to reset some stuff.
-  RendererExited(static_cast<base::TerminationStatus>(status), exit_code);
+  RendererExited();
 
-  delegate_->RenderViewGone(this,
-                            static_cast<base::TerminationStatus>(status),
-                            exit_code);
+  delegate_->RenderViewGone(this);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this

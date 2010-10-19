@@ -124,7 +124,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   // SandboxedExtensionUnpacker
   void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
   void OnUnpackExtensionFailed(const std::string& error_message);
-  void OnProcessCrashed(int exit_code);
+  void OnProcessCrashed();
 
   void ReportFailure(const std::string& message);
   void ReportSuccess();

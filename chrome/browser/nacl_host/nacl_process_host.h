@@ -37,7 +37,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
 
  protected:
-  virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
+  virtual bool DidChildCrash();
   virtual void OnChildDied();
 
  private:

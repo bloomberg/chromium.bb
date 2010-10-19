@@ -1163,9 +1163,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Indicates the renderer process is gone.  This actually is sent by the
   // browser process to itself, but keeps the interface cleaner.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_RenderViewGone,
-                      int, /* this really is base::TerminationStatus */
-                      int /* exit_code */)
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_RenderViewGone)
 
   // Sent by the renderer process to request that the browser close the view.
   // This corresponds to the window.close() API, and the browser may ignore

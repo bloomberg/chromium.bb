@@ -39,7 +39,7 @@ class UtilityProcessHost : public BrowserChildProcessHost {
     Client() {}
 
     // Called when the process has crashed.
-    virtual void OnProcessCrashed(int exit_code) {}
+    virtual void OnProcessCrashed() {}
 
     // Called when the extension has unpacked successfully.  |manifest| is the
     // parsed manifest.json file.  |catalogs| contains list of all parsed
@@ -153,7 +153,7 @@ class UtilityProcessHost : public BrowserChildProcessHost {
   void OnMessageReceived(const IPC::Message& message);
 
   // BrowserChildProcessHost:
-  virtual void OnProcessCrashed(int exit_code);
+  virtual void OnProcessCrashed();
   virtual bool CanShutdown() { return true; }
   virtual URLRequestContext* GetRequestContext(
       uint32 request_id,

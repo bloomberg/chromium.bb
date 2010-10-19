@@ -327,7 +327,7 @@ class ExternalProcessImporterClient
   void NotifyItemFinishedOnIOThread(importer::ImportItem import_item);
 
   // Cancel import on process crash.
-  virtual void OnProcessCrashed(int exit_code);
+  virtual void OnProcessCrashed();
 
   // Notifies the importerhost that import has finished, and calls Release().
   void Cleanup();

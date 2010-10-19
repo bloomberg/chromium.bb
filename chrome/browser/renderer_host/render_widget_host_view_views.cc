@@ -215,8 +215,7 @@ void RenderWidgetHostViewViews::DidUpdateBackingStore(
   }
 }
 
-void RenderWidgetHostViewViews::RenderViewGone(base::TerminationStatus status,
-                                               int error_code) {
+void RenderWidgetHostViewViews::RenderViewGone() {
   Destroy();
 }
 
@@ -314,7 +313,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   DCHECK(!about_to_validate_and_paint_);
 
   // TODO(anicolao): get the damage somehow
-  // invalid_rect_ = damage_rect;
+  //invalid_rect_ = damage_rect;
   invalid_rect_ = bounds();
   about_to_validate_and_paint_ = true;
   BackingStoreX* backing_store = static_cast<BackingStoreX*>(

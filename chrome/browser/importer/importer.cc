@@ -437,7 +437,7 @@ void ExternalProcessImporterClient::NotifyItemFinishedOnIOThread(
   profile_import_process_host_->ReportImportItemFinished(import_item);
 }
 
-void ExternalProcessImporterClient::OnProcessCrashed(int exit_code) {
+void ExternalProcessImporterClient::OnProcessCrashed() {
   if (cancelled_)
     return;
 

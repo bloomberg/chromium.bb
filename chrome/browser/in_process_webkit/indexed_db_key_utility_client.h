@@ -45,7 +45,7 @@ class IndexedDBKeyUtilityClient
     explicit Client(IndexedDBKeyUtilityClient* parent);
 
     // UtilityProcessHost::Client
-    virtual void OnProcessCrashed(int exit_code);
+    virtual void OnProcessCrashed();
     virtual void OnIDBKeysFromValuesAndKeyPathSucceeded(
         int id, const std::vector<IndexedDBKey>& keys);
     virtual void OnIDBKeysFromValuesAndKeyPathFailed(int id);

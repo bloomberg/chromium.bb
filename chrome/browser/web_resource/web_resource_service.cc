@@ -141,7 +141,7 @@ class WebResourceService::UnpackerClient
   ~UnpackerClient() {}
 
   // UtilityProcessHost::Client
-  virtual void OnProcessCrashed(int exit_code) {
+  virtual void OnProcessCrashed() {
     if (got_response_)
       return;
 

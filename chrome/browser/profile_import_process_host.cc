@@ -127,13 +127,12 @@ void ProfileImportProcessHost::OnMessageReceived(const IPC::Message& message) {
                         message));
 }
 
-void ProfileImportProcessHost::OnProcessCrashed(int exit_code) {
+void ProfileImportProcessHost::OnProcessCrashed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       thread_id_, FROM_HERE,
       NewRunnableMethod(import_process_client_.get(),
-                        &ImportProcessClient::OnProcessCrashed,
-                        exit_code));
+                        &ImportProcessClient::OnProcessCrashed));
 }
 
 bool ProfileImportProcessHost::CanShutdown() {

@@ -525,7 +525,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgShowFullscreenWidget(int route_id);
   void OnMsgRunModal(IPC::Message* reply_msg);
   void OnMsgRenderViewReady();
-  void OnMsgRenderViewGone(int status, int error_code);
+  void OnMsgRenderViewGone();
   void OnMsgNavigate(const IPC::Message& msg);
   void OnMsgUpdateState(int32 page_id,
                         const std::string& state);

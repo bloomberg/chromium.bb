@@ -537,19 +537,11 @@ class NotificationType {
     // The details are in a Details<ChildProcessInfo>.
     CHILD_PROCESS_HOST_DISCONNECTED,
 
-    // This message is sent when a child process disappears
-    // unexpectedly as a result of a crash.  There is no usable
-    // source, since it is sent from an ephemeral task; register for
-    // AllSources() to receive this notification.  The details are in
-    // a Details<ChildProcessInfo>.
+    // This message is sent when a child process disappears unexpectedly.
+    // There is no usable source, since it is sent from an ephemeral task;
+    // register for AllSources() to receive this notification.  The details are
+    // in a Details<ChildProcessInfo>.
     CHILD_PROCESS_CRASHED,
-
-    // This message is sent when a child process disappears
-    // unexpectedly as a result of a termination signal.  There is no
-    // usable source, since it is sent from an ephemeral task;
-    // register for AllSources() to receive this notification.  The
-    // details are in a Details<ChildProcessInfo>.
-    CHILD_PROCESS_WAS_KILLED,
 
     // This message indicates that an instance of a particular child was
     // created in a page.  (If one page contains several regions rendered by

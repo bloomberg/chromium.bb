@@ -131,34 +131,18 @@ void BrowserChildProcessHost::Notify(NotificationType type) {
       BrowserThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
 
-base::TerminationStatus BrowserChildProcessHost::GetChildTerminationStatus(
-    int* exit_code) {
-  return child_process_->GetChildTerminationStatus(exit_code);
+bool BrowserChildProcessHost::DidChildCrash() {
+  return child_process_->DidProcessCrash();
 }
 
 void BrowserChildProcessHost::OnChildDied() {
   if (handle() != base::kNullProcessHandle) {
-    int exit_code;
-    base::TerminationStatus status = GetChildTerminationStatus(&exit_code);
-    switch (status) {
-      case base::TERMINATION_STATUS_PROCESS_CRASHED: {
-        OnProcessCrashed(exit_code);
-
-        // Report that this child process crashed.
-        Notify(NotificationType::CHILD_PROCESS_CRASHED);
-        UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
-        break;
-      }
-      case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
-        OnProcessWasKilled(exit_code);
-
-        // Report that this child process was killed.
-        Notify(NotificationType::CHILD_PROCESS_WAS_KILLED);
-        UMA_HISTOGRAM_COUNTS("ChildProcess.Kills", this->type());
-        break;
-      }
-      default:
-        break;
+    bool did_crash = DidChildCrash();
+    if (did_crash) {
+      OnProcessCrashed();
+      // Report that this child process crashed.
+      Notify(NotificationType::CHILD_PROCESS_CRASHED);
+      UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
     }
     // Notify in the main loop of the disconnection.
     Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);

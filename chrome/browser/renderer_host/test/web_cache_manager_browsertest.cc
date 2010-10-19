@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(WebCacheManagerBrowserTest, FLAKY_CrashOnceOnly) {
   TabContents* tab = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(tab != NULL);
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
-                    base::TERMINATION_STATUS_PROCESS_WAS_KILLED, true);
+                    base::PROCESS_END_KILLED_BY_USER, true);
 
   browser()->SelectTabContentsAt(0, true);
   browser()->NewTab();

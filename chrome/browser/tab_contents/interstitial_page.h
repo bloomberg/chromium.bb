@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/notification_observer.h"
@@ -125,9 +124,7 @@ class InterstitialPage : public NotificationObserver,
   // RenderViewHostDelegate implementation:
   virtual View* GetViewDelegate();
   virtual const GURL& GetURL() const;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code);
+  virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void UpdateTitle(RenderViewHost* render_view_host,

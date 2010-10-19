@@ -172,7 +172,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
   ReportFailure(error);
 }
 
-void SandboxedExtensionUnpacker::OnProcessCrashed(int exit_code) {
+void SandboxedExtensionUnpacker::OnProcessCrashed() {
   // Don't report crashes if they happen after we got a response.
   if (got_response_)
     return;
