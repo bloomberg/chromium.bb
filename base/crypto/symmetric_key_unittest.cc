@@ -200,7 +200,7 @@ TEST(SymmetricKeyTest, DeriveKeyFromPassword) {
     // The OS X crypto libraries have minimum salt and iteration requirements
     // so some of the above tests will cause them to barf. Skip these.
     if (strlen(test_vectors[i].salt) < 8 || test_vectors[i].rounds < 1000) {
-      LOG(INFO) << "Skipped test vector #" << i;
+      VLOG(1) << "Skipped test vector #" << i;
       continue;
     }
 #endif  // OS_MACOSX

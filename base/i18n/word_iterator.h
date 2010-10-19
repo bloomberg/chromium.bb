@@ -25,7 +25,7 @@
 //   while (iter.Advance()) {
 //     if (iter.IsWord()) {
 //       // region [iter.prev(),iter.pos()) contains a word.
-//       LOG(INFO) << "word: " << iter.GetWord();
+//       VLOG(1) << "word: " << iter.GetWord();
 //     }
 //   }
 

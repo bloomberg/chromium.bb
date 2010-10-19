@@ -120,7 +120,7 @@ TEST(EtwTraceControllerTest, StartRealTimeSession) {
 
   HRESULT hr = controller.StartRealtimeSession(kTestSessionName, 100 * 1024);
   if (hr == E_ACCESSDENIED) {
-    LOG(INFO) << "You must be an administrator to run this test on Vista";
+    VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
   }
 
@@ -141,7 +141,7 @@ TEST(EtwTraceControllerTest, StartFileSession) {
   HRESULT hr = controller.StartFileSession(kTestSessionName,
                                            temp.value().c_str());
   if (hr == E_ACCESSDENIED) {
-    LOG(INFO) << "You must be an administrator to run this test on Vista";
+    VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
   }
 
@@ -162,7 +162,7 @@ TEST(EtwTraceControllerTest, EnableDisable) {
   EtwTraceController controller;
   HRESULT hr = controller.StartRealtimeSession(kTestSessionName, 100 * 1024);
   if (hr == E_ACCESSDENIED) {
-    LOG(INFO) << "You must be an administrator to run this test on Vista";
+    VLOG(1) << "You must be an administrator to run this test on Vista";
     return;
   }
 

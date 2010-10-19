@@ -230,10 +230,10 @@ class NSSInitSingleton {
 
     SECStatus status = NSS_Shutdown();
     if (status != SECSuccess) {
-      // We LOG(INFO) because this failure is relatively harmless
-      // (leaking, but we're shutting down anyway).
-      LOG(INFO) << "NSS_Shutdown failed; see "
-                   "http://code.google.com/p/chromium/issues/detail?id=4609";
+      // We VLOG(1) because this failure is relatively harmless (leaking, but
+      // we're shutting down anyway).
+      VLOG(1) << "NSS_Shutdown failed; see "
+                 "http://code.google.com/p/chromium/issues/detail?id=4609";
     }
   }
 
