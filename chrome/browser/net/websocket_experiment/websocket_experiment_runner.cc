@@ -40,6 +40,8 @@ void WebSocketExperimentRunner::Start() {
       switches::kWebSocketLiveExperimentHost);
   if (!experiment_host.empty())
     run_experiment = true;
+#else
+  run_experiment = false;
 #endif
   if (!run_experiment)
     return;
