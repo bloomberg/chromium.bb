@@ -803,8 +803,10 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   if (!prefs || !prefs->HasPrefPath(prefs::kDefaultSearchProviderSearchURL))
     return false;
 
+  // By default, kDefaultSearchProviderEnabled is true.  Users of previous
+  // versions will transition correctly.
   const PrefService::Preference* pref =
-      prefs->FindPreference(prefs::kDefaultSearchProviderSearchURL);
+      prefs->FindPreference(prefs::kDefaultSearchProviderEnabled);
   *is_managed = pref && pref->IsManaged();
 
   bool enabled =

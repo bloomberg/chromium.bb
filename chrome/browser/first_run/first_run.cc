@@ -22,7 +22,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
-#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -565,7 +564,7 @@ void FirstRun::AutoImport(
   UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
   // Launch the search engine dialog only if build is organic, and user has not
-  // already set preferences.
+  // already set search preferences.
   if (IsOrganic() && !local_state_file_exists) {
     // The home page string may be set in the preferences, but the user should
     // initially use Chrome with the NTP as home page in organic builds.
@@ -576,14 +575,9 @@ void FirstRun::AutoImport(
   if (make_chrome_default)
     ShellIntegration::SetAsDefaultBrowser();
 
-  // Don't display the minimal bubble if there is no default search provider.
-  TemplateURLModel* search_engines_model = profile->GetTemplateURLModel();
-  if (search_engines_model &&
-      search_engines_model->GetDefaultSearchProvider()) {
-    FirstRun::SetShowFirstRunBubblePref(true);
-    // Set the first run bubble to minimal.
-    FirstRun::SetMinimalFirstRunBubblePref();
-  }
+  FirstRun::SetShowFirstRunBubblePref(true);
+  // Set the first run bubble to minimal.
+  FirstRun::SetMinimalFirstRunBubblePref();
   FirstRun::SetShowWelcomePagePref();
   FirstRun::SetPersonalDataManagerFirstRunPref();
 

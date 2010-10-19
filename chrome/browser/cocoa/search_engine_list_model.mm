@@ -87,7 +87,7 @@ class SearchEngineObserver : public TemplateURLModelObserver {
 
 // The index into |-searchEngines| of the current default search engine.
 - (NSUInteger)defaultIndex {
-  if (!model_) return -1;
+  if (!model_) return 0;
 
   NSUInteger index = 0;
   const TemplateURL* defaultSearchProvider = model_->GetDefaultSearchProvider();
@@ -103,7 +103,7 @@ class SearchEngineObserver : public TemplateURLModelObserver {
         ++index;
     }
   }
-  return -1;
+  return 0;
 }
 
 - (void)setDefaultIndex:(NSUInteger)index {
