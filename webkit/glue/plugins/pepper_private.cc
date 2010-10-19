@@ -7,6 +7,7 @@
 #include "webkit/glue/plugins/pepper_private.h"
 
 #include "app/resource_bundle.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
@@ -253,6 +254,10 @@ void SetContentRestriction(PP_Instance instance_id, int restrictions) {
   instance->delegate()->SetContentRestriction(restrictions);
 }
 
+void HistogramPDFPageCount(int count) {
+  UMA_HISTOGRAM_COUNTS_10000("PDF.PageCount", count);
+}
+
 const PPB_Private ppb_private = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -261,7 +266,8 @@ const PPB_Private ppb_private = {
   &SearchString,
   &DidStartLoading,
   &DidStopLoading,
-  &SetContentRestriction
+  &SetContentRestriction,
+  &HistogramPDFPageCount
 };
 
 }  // namespace

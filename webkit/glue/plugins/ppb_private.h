@@ -123,6 +123,9 @@ struct PPB_Private {
   // Sets content restriction for a full-page plugin (i.e. can't copy/print).
   // The value is a bitfield of ContentRestriction enums.
   void (*SetContentRestriction)(PP_Instance instance, int restrictions);
+
+  // Use UMA so we know average pdf page count.
+  void (*HistogramPDFPageCount)(int count);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
