@@ -24,4 +24,5 @@ basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_basic_object.nexe', 'run',
-            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
+            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+             'basic_object.html'])

@@ -263,10 +263,12 @@ TEST_SUITES = {'all_tests': None}
 # <BUILD_TYPE>-<SUBARCH>
 bad_build_lists = dict()
 bad_build_lists['opt-win-64'] = ['run_srpc_basic_test',
-                                 'run_srpc_bad_service_test']
+                                 'run_srpc_bad_service_test',
+                                 'run_fake_browser_ppapi_test']
 
 bad_build_lists['dbg-win-64'] = ['run_srpc_basic_test',
-                                 'run_srpc_bad_service_test']
+                                 'run_srpc_bad_service_test',
+                                 'run_fake_browser_ppapi_test']
 
 # This is a list of tests that do not yet pass when using nacl-glibc.
 # TODO(mseaborn): Enable more of these tests!
