@@ -25,8 +25,9 @@ class FirstRunDialog : public TemplateURLModelObserver {
 
  private:
   FirstRunDialog(Profile* profile,
-                 bool randomize_search_engine_order,
-                 int& response);
+                 bool show_reporting_dialog,
+                 bool show_search_engines_dialog,
+                 int* response);
   virtual ~FirstRunDialog();
 
   CHROMEGTK_CALLBACK_1(FirstRunDialog, void, OnResponseDialog, int);
@@ -35,7 +36,7 @@ class FirstRunDialog : public TemplateURLModelObserver {
   CHROMEG_CALLBACK_0(FirstRunDialog, void, OnLearnMoreLinkClicked, GtkButton*);
 
   void ShowSearchEngineWindow();
-  void ShowDialog();
+  void ShowReportingDialog();
 
   // This method closes the first run window and quits the message loop so that
   // the Chrome startup can continue. This should be called when all the
@@ -68,8 +69,12 @@ class FirstRunDialog : public TemplateURLModelObserver {
   // search engine.
   TemplateURL* chosen_search_engine_;
 
+  // Whether we should show the dialog asking the user whether to report
+  // crashes and usage stats.
+  bool show_reporting_dialog_;
+
   // User response (accept or cancel) is returned through this.
-  int& response_;
+  int* response_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunDialog);
 };
