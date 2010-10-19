@@ -22,6 +22,40 @@ namespace {
 EGLDisplay g_display;
 EGLConfig g_config;
 
+// Returns the last EGL error as a string.
+const char* GetLastEGLErrorString() {
+  EGLint error = eglGetError();
+  switch (error) {
+    case EGL_SUCCESS:
+      return "EGL_SUCCESS";
+    case EGL_BAD_ACCESS:
+      return "EGL_BAD_ACCESS";
+    case EGL_BAD_ALLOC:
+      return "EGL_BAD_ALLOC";
+    case EGL_BAD_ATTRIBUTE:
+      return "EGL_BAD_ATTRIBUTE";
+    case EGL_BAD_CONTEXT:
+      return "EGL_BAD_CONTEXT";
+    case EGL_BAD_CONFIG:
+      return "EGL_BAD_CONFIG";
+    case EGL_BAD_CURRENT_SURFACE:
+      return "EGL_BAD_CURRENT_SURFACE";
+    case EGL_BAD_DISPLAY:
+      return "EGL_BAD_DISPLAY";
+    case EGL_BAD_SURFACE:
+      return "EGL_BAD_SURFACE";
+    case EGL_BAD_MATCH:
+      return "EGL_BAD_MATCH";
+    case EGL_BAD_PARAMETER:
+      return "EGL_BAD_PARAMETER";
+    case EGL_BAD_NATIVE_PIXMAP:
+      return "EGL_BAD_NATIVE_PIXMAP";
+    case EGL_BAD_NATIVE_WINDOW:
+      return "EGL_BAD_NATIVE_WINDOW";
+    default:
+      return "UNKNOWN";
+  }
+}
 }  // namespace anonymous
 
 bool BaseEGLContext::InitializeOneOff() {
@@ -36,12 +70,12 @@ bool BaseEGLContext::InitializeOneOff() {
 #endif
   g_display = eglGetDisplay(native_display);
   if (!g_display) {
-    LOG(ERROR) << "eglGetDisplay failed.";
+    LOG(ERROR) << "eglGetDisplay failed with error " << GetLastEGLErrorString();
     return false;
   }
 
   if (!eglInitialize(g_display, NULL, NULL)) {
-    LOG(ERROR) << "eglInitialize failed.";
+    LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
     return false;
   }
 
@@ -68,7 +102,8 @@ bool BaseEGLContext::InitializeOneOff() {
                        NULL,
                        0,
                        &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed.";
+    LOG(ERROR) << "eglChooseConfig failed failed with error "
+               << GetLastEGLErrorString();
     return false;
   }
 
@@ -83,7 +118,8 @@ bool BaseEGLContext::InitializeOneOff() {
                        configs.get(),
                        num_configs,
                        &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed.";
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << GetLastEGLErrorString();
     return false;
   }
 
@@ -124,7 +160,8 @@ bool NativeViewEGLContext::Initialize() {
   surface_ = eglCreateWindowSurface(g_display, g_config, native_window, NULL);
 
   if (!surface_) {
-    LOG(ERROR) << "eglCreateWindowSurface failed.";
+    LOG(ERROR) << "eglCreateWindowSurface failed with error "
+               << GetLastEGLErrorString();
     Destroy();
     return false;
   }
@@ -132,7 +169,8 @@ bool NativeViewEGLContext::Initialize() {
   // Create a context.
   context_ = eglCreateContext(g_display, g_config, NULL, NULL);
   if (!context_) {
-    LOG(ERROR) << "eglCreateContext failed.";
+    LOG(ERROR) << "eglCreateContext failed with error "
+               << GetLastEGLErrorString();
     Destroy();
     return false;
   }
@@ -154,21 +192,35 @@ bool NativeViewEGLContext::Initialize() {
 
 void NativeViewEGLContext::Destroy() {
   if (context_) {
-    eglDestroyContext(g_display, context_);
+    if (!eglDestroyContext(g_display, context_)) {
+      LOG(ERROR) << "eglDestroyContext failed with error "
+                 << GetLastEGLErrorString();
+    }
+
     context_ = NULL;
   }
 
-   if (surface_) {
-     eglDestroySurface(g_display, surface_);
-     surface_ = NULL;
-   }
+  if (surface_) {
+    if (!eglDestroySurface(g_display, surface_)) {
+      LOG(ERROR) << "eglDestroySurface failed with error "
+                 << GetLastEGLErrorString();
+    }
+
+    surface_ = NULL;
+  }
 }
 
 bool NativeViewEGLContext::MakeCurrent() {
   DCHECK(context_);
-  return eglMakeCurrent(g_display,
-                        surface_, surface_,
-                        context_) == GL_TRUE;
+  if (!eglMakeCurrent(g_display,
+                      surface_, surface_,
+                      context_)) {
+    VLOG(1) << "eglMakeCurrent failed with error "
+            << GetLastEGLErrorString();
+    return false;
+  }
+
+  return true;
 }
 
 bool NativeViewEGLContext::IsCurrent() {
@@ -181,7 +233,13 @@ bool NativeViewEGLContext::IsOffscreen() {
 }
 
 bool NativeViewEGLContext::SwapBuffers() {
-  return eglSwapBuffers(g_display, surface_) == EGL_TRUE;
+  if (!eglSwapBuffers(g_display, surface_)) {
+    VLOG(1) << "eglSwapBuffers failed with error "
+            << GetLastEGLErrorString();
+    return false;
+  }
+
+  return true;
 }
 
 gfx::Size NativeViewEGLContext::GetSize() {
@@ -198,8 +256,13 @@ gfx::Size NativeViewEGLContext::GetSize() {
   // get updated on resize. When it does, we can share the code.
   EGLint width;
   EGLint height;
-  CHECK(eglQuerySurface(g_display, surface_, EGL_WIDTH, &width));
-  CHECK(eglQuerySurface(g_display, surface_, EGL_HEIGHT, &height));
+  if (!eglQuerySurface(g_display, surface_, EGL_WIDTH, &width) ||
+      !eglQuerySurface(g_display, surface_, EGL_HEIGHT, &height)) {
+    NOTREACHED() << "eglQuerySurface failed with error "
+                 << GetLastEGLErrorString();
+    return gfx::Size();
+  }
+
   return gfx::Size(width, height);
 #endif
 }
@@ -210,7 +273,10 @@ void* NativeViewEGLContext::GetHandle() {
 
 void NativeViewEGLContext::SetSwapInterval(int interval) {
   DCHECK(IsCurrent());
-  eglSwapInterval(g_display, interval);
+  if (!eglSwapInterval(g_display, interval)) {
+    LOG(ERROR) << "eglSwapInterval failed with error "
+               << GetLastEGLErrorString();
+  }
 }
 
 EGLSurface NativeViewEGLContext::GetSurface() {
@@ -254,8 +320,8 @@ bool SecondaryEGLContext::Initialize(GLContext* shared_context) {
 
     surface_ = eglCreatePbufferSurface(g_display, g_config, kPbufferAttribs);
     if (!surface_) {
-      EGLint error = eglGetError();
-      LOG(ERROR) << "Error creating Pbuffer: " << error;
+      LOG(ERROR) << "eglCreatePbufferSurface failed with error "
+                 << GetLastEGLErrorString();
       return false;
     }
     own_surface_ = true;
@@ -268,8 +334,8 @@ bool SecondaryEGLContext::Initialize(GLContext* shared_context) {
   }
 
   if (!context_) {
-    EGLint error = eglGetError();
-    LOG(ERROR) << "Error creating context: " << error;
+    LOG(ERROR) << "eglCreateContext failed with error "
+               << GetLastEGLErrorString();
     Destroy();
     return false;
   }
@@ -279,22 +345,36 @@ bool SecondaryEGLContext::Initialize(GLContext* shared_context) {
 
 void SecondaryEGLContext::Destroy() {
   if (own_surface_) {
-    eglDestroySurface(g_display, surface_);
+    if (!eglDestroySurface(g_display, surface_)) {
+      LOG(ERROR) << "eglDestroySurface failed with error "
+                 << GetLastEGLErrorString();
+    }
+
     own_surface_ = false;
   }
   surface_ = NULL;
 
   if (context_) {
-    eglDestroyContext(g_display, context_);
+    if (!eglDestroyContext(g_display, context_)) {
+      LOG(ERROR) << "eglDestroyContext failed with error "
+                 << GetLastEGLErrorString();
+    }
+
     context_ = NULL;
   }
 }
 
 bool SecondaryEGLContext::MakeCurrent() {
   DCHECK(context_);
-  return eglMakeCurrent(g_display,
-                        surface_, surface_,
-                        context_) == GL_TRUE;
+  if (!eglMakeCurrent(g_display,
+                      surface_, surface_,
+                      context_)) {
+    VLOG(1) << "eglMakeCurrent failed with error "
+            << GetLastEGLErrorString();
+    return false;
+  }
+
+  return true;
 }
 
 bool SecondaryEGLContext::IsCurrent() {
