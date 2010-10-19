@@ -29,6 +29,7 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
+using ::testing::NiceMock;
 using ::testing::WithArgs;
 
 namespace {
@@ -597,6 +598,17 @@ class BufferedDataSourceTest : public testing::Test {
     }
   }
 
+  void ExpectCreateAndStartResourceLoader(int start_error) {
+    EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
+        .WillOnce(Return(loader_.get()));
+
+    EXPECT_CALL(*loader_, Start(NotNull(), NotNull()))
+        .WillOnce(
+            DoAll(Assign(&error_, start_error),
+                  Invoke(this,
+                         &BufferedDataSourceTest::InvokeStartCallback)));
+  }
+
   void InitializeDataSource(const char* url, int error,
                             bool partial_response, int64 instance_size,
                             NetworkState networkState) {
@@ -613,21 +625,34 @@ class BufferedDataSourceTest : public testing::Test {
     // There is no need to provide a message loop to data source.
     data_source_->set_host(&host_);
 
-    // Creates the mock loader to be injected.
-    loader_ = new StrictMock<MockBufferedResourceLoader>();
+    scoped_refptr<NiceMock<MockBufferedResourceLoader> > first_loader =
+        new NiceMock<MockBufferedResourceLoader>();
 
+    // Creates the mock loader to be injected.
+    loader_ = first_loader;
+
+    bool initialized_ok = (error == net::OK);
     bool loaded = networkState == LOADED;
     {
       InSequence s;
-      EXPECT_CALL(*data_source_, CreateResourceLoader(_, _))
-          .WillOnce(Return(loader_.get()));
+      ExpectCreateAndStartResourceLoader(error);
 
-      // The initial response loader will be started.
-      EXPECT_CALL(*loader_, Start(NotNull(), NotNull()))
-          .WillOnce(
-              DoAll(Assign(&error_, error),
-                    Invoke(this,
-                           &BufferedDataSourceTest::InvokeStartCallback)));
+      // In the case of an invalid partial response we expect a second loader
+      // to be created.
+      if (partial_response && (error == net::ERR_INVALID_RESPONSE)) {
+        // Verify that the initial loader is stopped.
+        EXPECT_CALL(*loader_, Stop());
+
+        // Replace loader_ with a new instance.
+        loader_ = new NiceMock<MockBufferedResourceLoader>();
+
+        // Create and start Make sure Start() is called the new loader.
+        ExpectCreateAndStartResourceLoader(net::OK);
+
+        // Update initialization variable since we know the second loader will
+        // return OK.
+        initialized_ok = true;
+      }
     }
 
     StrictMock<media::MockFilterCallback> callback;
@@ -635,7 +660,7 @@ class BufferedDataSourceTest : public testing::Test {
         .WillRepeatedly(Return(instance_size));
     EXPECT_CALL(*loader_, partial_response())
         .WillRepeatedly(Return(partial_response));
-    if (error == net::OK) {
+    if (initialized_ok) {
       // Expected loaded or not.
       EXPECT_CALL(host_, SetLoaded(loaded));
 
@@ -663,7 +688,7 @@ class BufferedDataSourceTest : public testing::Test {
     data_source_->Initialize(url, callback.NewCallback());
     message_loop_->RunAllPending();
 
-    if (error == net::OK) {
+    if (initialized_ok) {
       // Verify the size of the data source.
       int64 size;
       if (instance_size != -1 && (loaded || partial_response)) {
@@ -746,8 +771,8 @@ class BufferedDataSourceTest : public testing::Test {
     }
 
     // 2. Then the current loader will be stop and destroyed.
-    StrictMock<MockBufferedResourceLoader> *new_loader =
-        new StrictMock<MockBufferedResourceLoader>();
+    NiceMock<MockBufferedResourceLoader> *new_loader =
+        new NiceMock<MockBufferedResourceLoader>();
     EXPECT_CALL(*data_source_, CreateResourceLoader(position, -1))
         .WillOnce(Return(new_loader));
 
@@ -810,8 +835,8 @@ class BufferedDataSourceTest : public testing::Test {
     }
 
     // 2. Then the current loader will be stop and destroyed.
-    StrictMock<MockBufferedResourceLoader> *new_loader =
-        new StrictMock<MockBufferedResourceLoader>();
+    NiceMock<MockBufferedResourceLoader> *new_loader =
+        new NiceMock<MockBufferedResourceLoader>();
     EXPECT_CALL(*data_source_, CreateResourceLoader(position, -1))
         .WillOnce(Return(new_loader));
 
@@ -853,7 +878,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   scoped_ptr<StrictMock<MockMediaResourceLoaderBridgeFactory> >
       bridge_factory_;
-  scoped_refptr<StrictMock<MockBufferedResourceLoader> > loader_;
+  scoped_refptr<NiceMock<MockBufferedResourceLoader> > loader_;
   scoped_refptr<MockBufferedDataSource> data_source_;
   scoped_refptr<media::FilterFactory> factory_;
 
@@ -886,6 +911,13 @@ TEST_F(BufferedDataSourceTest, MissingContentLength) {
 
 TEST_F(BufferedDataSourceTest, RangeRequestNotSupported) {
   InitializeDataSource(kHttpUrl, net::OK, false, 1024, LOADING);
+  StopDataSource();
+}
+
+// Test the case where we get a 206 response, but no Content-Range header.
+TEST_F(BufferedDataSourceTest, MissingContentRange) {
+  InitializeDataSource(kHttpUrl, net::ERR_INVALID_RESPONSE, true, 1024,
+                       LOADING);
   StopDataSource();
 }
 

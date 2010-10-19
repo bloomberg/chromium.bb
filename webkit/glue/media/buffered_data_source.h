@@ -406,6 +406,10 @@ class BufferedDataSource : public media::DataSource {
   // the message loop doesn't hold a reference for the watch dog task.
   base::RepeatingTimer<BufferedDataSource> watch_dog_timer_;
 
+  // Keeps track of whether we used a Range header in the initialization
+  // request.
+  bool using_range_request_;
+
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };
 

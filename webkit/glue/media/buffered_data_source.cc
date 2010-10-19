@@ -560,7 +560,8 @@ BufferedDataSource::BufferedDataSource(
       render_loop_(render_loop),
       stop_signal_received_(false),
       stopped_on_render_loop_(false),
-      media_is_paused_(true) {
+      media_is_paused_(true),
+      using_range_request_(true) {
 }
 
 BufferedDataSource::~BufferedDataSource() {
@@ -877,6 +878,17 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
   } else {
     // TODO(hclam): In case of failure, we can retry several times.
     loader_->Stop();
+  }
+
+  if (error == net::ERR_INVALID_RESPONSE && using_range_request_) {
+    // Assuming that the Range header was causing the problem. Retry without
+    // the Range header.
+    using_range_request_ = false;
+    loader_ = CreateResourceLoader(-1, -1);
+    loader_->Start(
+        NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
+        NewCallback(this, &BufferedDataSource::NetworkEventCallback));
+    return;
   }
 
   // We need to prevent calling to filter host and running the callback if
