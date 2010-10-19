@@ -131,6 +131,13 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+  // Switch log file as soon as possible.
+  logging::RedirectChromeLogging(
+      user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
+      *(CommandLine::ForCurrentProcess()),
+      logging::DELETE_OLD_LOG_FILE);
+
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
@@ -142,11 +149,6 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       profile->GetExtensionsService()->extensions_enabled()) {
     profile->GetExtensionsService()->InitEventRouters();
   }
-
-  logging::RedirectChromeLogging(
-      user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
-      *(CommandLine::ForCurrentProcess()),
-      logging::DELETE_OLD_LOG_FILE);
 
   // Supply credentials for sync and others to use. Load tokens from disk.
   TokenService* token_service = profile->GetTokenService();
