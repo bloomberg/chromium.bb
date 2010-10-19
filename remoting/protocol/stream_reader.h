@@ -67,7 +67,7 @@ class EventsStreamReader : public StreamReaderBase {
   DISALLOW_COPY_AND_ASSIGN(EventsStreamReader);
 };
 
-class  VideoStreamReader : public StreamReaderBase {
+class VideoStreamReader : public StreamReaderBase {
  public:
   VideoStreamReader();
   ~VideoStreamReader();

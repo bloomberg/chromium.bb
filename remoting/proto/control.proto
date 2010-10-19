@@ -10,4 +10,24 @@ option optimize_for = LITE_RUNTIME;
 
 package remoting;
 
-// TODO(hclam): Define control messages.
+message SuggestScreenResolutionRequest {
+  required int32 width = 1;
+  required int32 height = 2;
+};
+
+// Represents a control message that sent from the client to the host.
+// This message is transmitted on the control channel.
+message ClientControlMessage {
+  optional SuggestScreenResolutionRequest suggestScreenResolutionRequest = 1;
+}
+
+message SetScreenResolutionRequest {
+  required int32 width = 1;
+  required int32 height = 2;
+};
+
+// Represents a control message that sent from host to the client.
+// This message is transmitted on the control channel.
+message HostControlMessage {
+  optional SetScreenResolutionRequest setScreenResolutionRequest = 1;
+}

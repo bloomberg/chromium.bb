@@ -200,3 +200,39 @@ message MouseDownEvent {
 message MouseUpEvent {
   required MouseButton button = 1;
 }
+
+// Defines a mouse event message on the event channel. 
+message MouseEvent {
+  // Mouse position information.
+  optional int32 mouse_x = 1;
+  optional int32 mouse_y = 2;
+
+  // Mouse wheel information.
+  optional int32 wheel_offset_x = 3;
+  optional int32 wheel_offset_y = 4;
+
+  // Mouse button information.
+  optional MouseButton button = 5;
+  optional bool button_down = 6;
+}
+
+// Defines an event message on the event channel.
+message Event {
+  required int32 timestamp = 1;  // Client timestamp for event
+  optional bool dummy = 2;       // Is this a dummy event?
+
+  optional KeyEvent key = 3;
+  optional MouseEvent mouse = 4;
+}
+
+// Defines the message that is sent from client to host.
+// Only one of the optional messages should be present.
+message ClientEventMessage {
+  repeated Event events = 1;
+}
+
+// Defines the message that is sent from host to client.
+// Only one of the optional messages should be present.
+message HostEventMessage {
+  // TODO(hclam): Define the message.
+}

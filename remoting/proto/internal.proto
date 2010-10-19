@@ -21,7 +21,6 @@ message ChromotingHostMessage {
   optional BeginUpdateStreamMessage begin_update_stream = 2;
   optional EndUpdateStreamMessage end_update_stream = 3;
   optional UpdateStreamPacketMessage update_stream_packet = 4;
-
   optional RectangleUpdatePacket rectangle_update = 5;
 }
 
