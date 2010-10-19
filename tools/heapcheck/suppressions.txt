@@ -480,9 +480,6 @@
    fun:testing::TestCase::Run
    fun:testing::internal::UnitTestImpl::RunAllTests
    fun:testing::HandleExceptionsInMethodIfSupported
-   fun:testing::UnitTest::Run
-   fun:main
-   fun:__libc_start_main
 }
 # "*~TestShell" means "~TestShell" and "TestShell::~TestShell".
 {
@@ -526,8 +523,6 @@
    fun:testing::internal::UnitTestImpl::RunAllTests
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::UnitTest::Run
-   fun:main
-   fun:__libc_start_main
 }
 {
    bug_32366
