@@ -4,16 +4,17 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_ptr.h";
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/accessibility/browser_accessibility_mac.h"
-#include "chrome/browser/cocoa/browser_accessibility.h"
+#include "chrome/browser/accessibility/browser_accessibility_cocoa.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
 @interface MockAccessibilityDelegate :
-    NSObject<BrowserAccessibilityDelegateCocoa>
+    NSView<BrowserAccessibilityDelegateCocoa>
 
 - (NSPoint)accessibilityPointInScreen:(BrowserAccessibilityCocoa*)accessibility;
 - (void)doDefaultAction:(int32)accessibilityObjectId;
@@ -65,45 +66,21 @@ class BrowserAccessibilityTest : public CocoaTest {
     child2.location.width = 250;
     child2.location.height = 100;
 
-    // TODO(dtseng): use BrowserAccessibilityManagerMac once it manages
-    // these objects.
-    BrowserAccessibility* rootBrowserAccessibility =
-        BrowserAccessibility::Create();
-    BrowserAccessibility* child1BrowserAccessibility =
-        BrowserAccessibility::Create();
-    BrowserAccessibility* child2BrowserAccessibility =
-        BrowserAccessibility::Create();
-
-    rootBrowserAccessibility->Initialize(NULL,
-                                         NULL,
-                                         0,
-                                         0,
-                                         root);
-    child1BrowserAccessibility->Initialize(NULL,
-                                           NULL,
-                                           0,
-                                           0,
-                                           child1);
-    child2BrowserAccessibility->Initialize(NULL,
-                                           NULL,
-                                           0,
-                                           0,
-                                           child2);
-
-    rootBrowserAccessibility->AddChild(child1BrowserAccessibility);
-    rootBrowserAccessibility->AddChild(child2BrowserAccessibility);
+    root.children.push_back(child1);
+    root.children.push_back(child2);
 
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
-    accessibility_.reset(
-        [[BrowserAccessibilityCocoa alloc]
-            initWithObject:rootBrowserAccessibility
-            delegate:delegate_
-            parent:delegate_]);
+    manager_.reset(
+        BrowserAccessibilityManager::Create(delegate_, root, NULL));
+    // The manager still owns this object.
+    accessibility_ = manager_->GetRoot()->toBrowserAccessibilityCocoa();
   }
 
  protected:
   scoped_nsobject<MockAccessibilityDelegate> delegate_;
-  scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
+  // We do not own this object.
+  BrowserAccessibilityCocoa* accessibility_;
+  scoped_ptr<BrowserAccessibilityManager> manager_;
 };
 
 // Standard hit test.

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/scoped_nsobject.h"
 #include "chrome/browser/accessibility/browser_accessibility.h"
 
 @class BrowserAccessibilityCocoa;
@@ -20,27 +21,9 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
   virtual void Initialize();
   virtual void ReleaseReference();
 
-  // Accessers that allow the cocoa wrapper to read these values.
-  const string16& name() const { return name_; }
-  const string16& value() const { return value_; }
-  const std::map<int32, string16>& attributes() const { return attributes_; }
-
-  const std::vector<std::pair<string16, string16> >& html_attributes() const {
-    return html_attributes_;
-  }
-
-  int32 role() const { return role_; }
-  int32 state() const { return state_; }
-  const string16& role_name() const { return role_name_; }
-
-  // Accesser and setter for
-  // the BrowserAccessibilityCocoa associated with us.
+  // The BrowserAccessibilityCocoa associated with us.
   BrowserAccessibilityCocoa* native_view() const {
     return browser_accessibility_cocoa_;
-  }
-
-  void native_view(BrowserAccessibilityCocoa* v) {
-    browser_accessibility_cocoa_ = v;
   }
 
  private:
@@ -50,8 +33,8 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
   BrowserAccessibilityMac();
 
   // Allows access to the BrowserAccessibilityCocoa which wraps this.
-  // BrowserAccessibility. We only initialize this member if the accessibility
-  // API requests this object.
+  // BrowserAccessibility.
+  // We own this object.
   BrowserAccessibilityCocoa* browser_accessibility_cocoa_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityMac);
 };

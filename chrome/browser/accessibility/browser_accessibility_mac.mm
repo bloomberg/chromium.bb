@@ -2,26 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Cocoa/Cocoa.h>
+
 #import "chrome/browser/accessibility/browser_accessibility_mac.h"
+
+#import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
+#import "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
+#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+
 
 // Static.
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibilityMac();
 }
 
-BrowserAccessibilityMac::BrowserAccessibilityMac() {
+BrowserAccessibilityMac::BrowserAccessibilityMac()
+    : browser_accessibility_cocoa_(NULL) {
 }
 
-// TODO(dtseng): ensure we create BrowserAccessibilityCocoa here
-// (RenderWidgetHostViewCocoa to BrowserAccessibilityManagerMac refactoring).
 void BrowserAccessibilityMac::Initialize() {
+  if (browser_accessibility_cocoa_)
+    return;
+
+  // We take ownership of the cocoa obj here.
+  browser_accessibility_cocoa_ = [[BrowserAccessibilityCocoa alloc]
+      initWithObject:this
+      delegate:(RenderWidgetHostViewCocoa*)manager_->GetParentView()];
 }
 
-// TODO(dtseng): ensure we cleanup BrowserAccessibilityCocoa and this class.
-// (RenderWidgetHostViewCocoa to BrowserAccessibilityManagerMac refactoring).
 void BrowserAccessibilityMac::ReleaseReference() {
+  if (browser_accessibility_cocoa_) {
+    // Relinquish ownership of the cocoa obj.
+    [browser_accessibility_cocoa_ release];
+    browser_accessibility_cocoa_ = nil;
+    // At this point, other processes may have a reference to
+    // browser_accessibility_cocoa_. When the retain count hits zero, it will
+    // destroy us in dealloc.
+  }
 }
 
-BrowserAccessibilityMac* BrowserAccessibility::toBrowserAccessibilityMac() {
-  return static_cast<BrowserAccessibilityMac*>(this);
+BrowserAccessibilityCocoa* BrowserAccessibility::toBrowserAccessibilityCocoa() {
+  return static_cast<BrowserAccessibilityMac*>(this)->
+      native_view();
 }

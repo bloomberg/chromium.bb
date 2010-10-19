@@ -18,6 +18,8 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/cocoa/rwhvm_editcommand_helper.h"
@@ -447,8 +449,10 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   render_widget_host_->set_view(this);
 
   // Turn on accessibility only if VoiceOver is running.
-  if (IsVoiceOverRunning())
+  if (IsVoiceOverRunning()) {
+    Singleton<BrowserAccessibilityState>()->OnScreenReaderDetected();
     render_widget_host_->EnableRendererAccessibility();
+  }
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -1186,9 +1190,6 @@ void RenderWidgetHostViewMac::OnAccessibilityNotifications(
     empty_document.state = 0;
     browser_accessibility_manager_.reset(
         BrowserAccessibilityManager::Create(cocoa_view_, empty_document, NULL));
-    // TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
-    [cocoa_view_
-        setAccessibilityTreeRoot:browser_accessibility_manager_->GetRoot()];
   }
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
@@ -1802,19 +1803,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   return ([event type] == NSKeyDown) ? YES : NO;
 }
 
-// Create the BrowserAccessibility tree from the WebAccessibility tree passed
-// from the renderer.
-// TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
-- (void)setAccessibilityTreeRoot:(BrowserAccessibility*) treeRoot {
-  BrowserAccessibilityCocoa* root =
-      [[BrowserAccessibilityCocoa alloc] initWithObject:treeRoot
-                                                        delegate:self
-                                                        parent:self];
-  [root autorelease];
-  accessibilityChildren_.reset([[NSArray alloc] initWithObjects:root, nil]);
-  [root updateDescendants];
-}
-
 - (NSArray *)accessibilityArrayAttributeValues:(NSString *)attribute
                                          index:(NSUInteger)index
                                       maxCount:(NSUInteger)maxCount {
@@ -1832,23 +1820,28 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
-    if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
-      // TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
-      return accessibilityChildren_.get();
-    } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
-      return NSAccessibilityScrollAreaRole;
-    }
+  BrowserAccessibilityManager* manager =
+      renderWidgetHostView_->browser_accessibility_manager_.get();
+  if ([attribute isEqualToString:NSAccessibilityChildrenAttribute] &&
+      manager) {
+    return [NSArray arrayWithObjects:manager->
+        GetRoot()->toBrowserAccessibilityCocoa(), nil];
+  } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
+    return NSAccessibilityScrollAreaRole;
+  }
   id ret = [super accessibilityAttributeValue:attribute];
   return ret;
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
+  if (!renderWidgetHostView_->browser_accessibility_manager_.get())
+    return self;
   NSPoint pointInWindow = [[self window] convertScreenToBase:point];
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
-  if ([accessibilityChildren_ count] == 0)
-    return self;
-  BrowserAccessibilityCocoa* root = [accessibilityChildren_ objectAtIndex:0];
+  BrowserAccessibilityCocoa* root = renderWidgetHostView_->
+      browser_accessibility_manager_->
+          GetRoot()->toBrowserAccessibilityCocoa();
   id obj = [root accessibilityHitTest:localPoint];
   return obj;
 }
@@ -1858,7 +1851,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (NSUInteger)accessibilityIndexOfChild:(id)child {
-  return [accessibilityChildren_ indexOfObject:child];
+  BrowserAccessibilityManager* manager =
+      renderWidgetHostView_->browser_accessibility_manager_.get();
+  // Only child is root.
+  if (manager &&
+      manager->GetRoot()->toBrowserAccessibilityCocoa() == child) {
+    return 0;
+  } else {
+    return NSNotFound;
+  }
 }
 
 - (id)accessibilityFocusedUIElement {
@@ -1869,7 +1870,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     DCHECK(focused_item);
     if (focused_item) {
       BrowserAccessibilityCocoa* focused_item_cocoa =
-          focused_item->toBrowserAccessibilityMac()->native_view();
+          focused_item->toBrowserAccessibilityCocoa();
       DCHECK(focused_item_cocoa);
       if (focused_item_cocoa)
         return focused_item_cocoa;

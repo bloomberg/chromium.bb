@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H_
-#define CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
+#define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
-#include "chrome/browser/accessibility/browser_accessibility_mac.h"
-#import "chrome/browser/cocoa/browser_accessibility_delegate.h"
+#import "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
 
 // BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
@@ -20,10 +20,6 @@
  @private
   BrowserAccessibility* browserAccessibility_;
   id<BrowserAccessibilityDelegateCocoa> delegate_;
-  scoped_nsobject<NSMutableArray> children_;
-  // The parent of the accessibility object.  This can be another
-  // BrowserAccessibilityCocoa or a RenderWidgetHostViewCocoa.
-  id parent_;  // weak
 }
 
 // This creates a cocoa browser accessibility object around
@@ -31,16 +27,10 @@
 // used to communicate with the host renderer.  None of these
 // parameters can be null.
 - (id)initWithObject:(BrowserAccessibility*)accessibility
-            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate
-              parent:(id)parent;
+            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate;
 
-// Updates children from backing BrowserAccessibility.
-- (NSArray*)updateChildren;
-// Updates all descendants from the backing BrowserAccessibility.
-- (void)updateDescendants;
-
-@property(nonatomic, readonly) BrowserAccessibility* browserAccessibility;
-
+// Backing source of accessibility info.
+@property(nonatomic, assign) BrowserAccessibility* browserAccessibility;
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.
 @property(nonatomic, readonly) NSArray* children;
@@ -59,4 +49,4 @@
 
 @end
 
-#endif // CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H_
+#endif // CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_COCOA_H_

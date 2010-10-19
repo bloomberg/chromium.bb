@@ -15,8 +15,8 @@
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManager;
-#if defined(OS_MACOSX)
-class BrowserAccessibilityMac;
+#if defined(OS_MACOSX) && __OBJC__
+@class BrowserAccessibilityCocoa;
 #elif defined(OS_WIN)
 class BrowserAccessibilityWin;
 #endif
@@ -91,16 +91,26 @@ class BrowserAccessibility {
       BrowserAccessibility* new_acc);
 
   // Accessors
+  const std::map<int32, string16>& attributes() const { return attributes_; }
   int32 child_id() const { return child_id_; }
   const std::vector<BrowserAccessibility*>& children() const {
     return children_;
   }
-  int32 renderer_id() const { return renderer_id_; }
+  const std::vector<std::pair<string16, string16> >& html_attributes() const {
+    return html_attributes_;
+  }
   int32 index_in_parent() const { return index_in_parent_; }
   WebKit::WebRect location() const { return location_; }
+  BrowserAccessibilityManager* manager() const { return manager_; }
+  const string16& name() const { return name_; }
+  int32 renderer_id() const { return renderer_id_; }
+  int32 role() const { return role_; }
+  const string16& role_name() const { return role_name_; }
+  int32 state() const { return state_; }
+  const string16& value() const { return value_; }
 
-#if defined(OS_MACOSX)
-  BrowserAccessibilityMac* toBrowserAccessibilityMac();
+#if defined(OS_MACOSX) && __OBJC__
+  BrowserAccessibilityCocoa* toBrowserAccessibilityCocoa();
 #elif defined(OS_WIN)
   BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif

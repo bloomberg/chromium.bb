@@ -975,6 +975,7 @@
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
+        'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete_history_manager_unittest.cc',
@@ -1113,7 +1114,6 @@
         'browser/cocoa/bookmarks/bookmark_model_observer_for_cocoa_unittest.mm',
         'browser/cocoa/bookmarks/bookmark_name_folder_controller_unittest.mm',
         'browser/cocoa/bookmarks/bookmark_tree_browser_cell_unittest.mm',
-        'browser/cocoa/browser_accessibility_unittest.mm',
         'browser/cocoa/browser_frame_view_unittest.mm',
         'browser/cocoa/browser_window_cocoa_unittest.mm',
         'browser/cocoa/browser_window_controller_unittest.mm',

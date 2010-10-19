@@ -4,7 +4,7 @@
 
 #include <execinfo.h>
 
-#import "chrome/browser/cocoa/browser_accessibility.h"
+#import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 
 #include "app/l10n_util_mac.h"
 #include "base/string16.h"
@@ -58,72 +58,52 @@ static const RoleEntry roles[] = {
 // GetState checks the bitmask used in webaccessibility.h to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, int state) {
-  // TODO(dtseng): add accesser.
-  return ((accessibility->toBrowserAccessibilityMac()->state() >>
-           state) & 1);
+  return ((accessibility->state() >> state) & 1);
 }
 
 } // namespace
 
 @implementation BrowserAccessibilityCocoa
 
+@synthesize browserAccessibility = browserAccessibility_;
+
 - (id)initWithObject:(BrowserAccessibility*)accessibility
-            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate
-              parent:(id)parent {
+            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate {
   if ((self = [super init])) {
     browserAccessibility_ = accessibility;
-    parent_ = parent;
     delegate_ = delegate;
-    // Set the proper native view for the new object?
-    browserAccessibility_->toBrowserAccessibilityMac()->native_view(self);
   }
   return self;
 }
 
-- (BrowserAccessibility*)browserAccessibility {
-  return browserAccessibility_;
+// Deletes our associated BrowserAccessibilityMac.
+- (void)dealloc {
+  if (browserAccessibility_) {
+    delete browserAccessibility_;
+    browserAccessibility_ = NULL;
+  }
+
+  [super dealloc];
 }
 
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
 // accessibility children of this object.
 - (NSArray*)children {
-  if (!children_.get()) {
-    return [self updateChildren];
-  } else {
-    return children_.get();
-  }
-}
-
-- (NSArray*)updateChildren {
-  children_.reset(
-      [[NSMutableArray alloc]
-          initWithCapacity:browserAccessibility_->GetChildCount()]);
+  NSMutableArray* ret = [[[NSMutableArray alloc]
+      initWithCapacity:browserAccessibility_->GetChildCount()] autorelease];
   for (uint32 index = 0;
        index < browserAccessibility_->GetChildCount();
        ++index) {
-    scoped_nsobject<BrowserAccessibilityCocoa> child(
-        [[BrowserAccessibilityCocoa alloc]
-            initWithObject:browserAccessibility_->GetChild(index)
-                           delegate:delegate_
-                           parent:self]);
-    [children_ addObject:child];
+    [ret addObject:
+        browserAccessibility_->GetChild(index)->toBrowserAccessibilityCocoa()];
     }
-  return children_;
-}
-
-- (void)updateDescendants {
-  NSArray* newChildren = [self updateChildren];
-  for (uint32 i = 0; i < [newChildren count]; ++i) {
-    [(BrowserAccessibilityCocoa*)[newChildren objectAtIndex:i]
-        updateDescendants];
-  }
+  return ret;
 }
 
 // Returns whether or not this node should be ignored in the
 // accessibility tree.
 - (BOOL)isIgnored {
-  return browserAccessibility_->toBrowserAccessibilityMac()->role() ==
-      WebAccessibility::ROLE_IGNORED;
+  return browserAccessibility_->role() == WebAccessibility::ROLE_IGNORED;
 }
 
 // The origin of this accessibility object in the page's document.
@@ -138,8 +118,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 - (NSString*)role {
   NSString* role = NSAccessibilityUnknownRole;
   WebAccessibility::Role value =
-      static_cast<WebAccessibility::Role>( browserAccessibility_->
-          toBrowserAccessibilityMac()->role());
+      static_cast<WebAccessibility::Role>( browserAccessibility_->role());
   const size_t numRoles = sizeof(roles) / sizeof(roles[0]);
   for (size_t i = 0; i < numRoles; ++i) {
     if (roles[i].value == value) {
@@ -174,14 +153,12 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 // Returns the accessibility value for the given attribute.  If the value isn't
 // supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute {
-  BrowserAccessibilityMac* browserAccessibilityMac = browserAccessibility_->
-      toBrowserAccessibilityMac();
   if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
     return [self role];
   }
   if ([attribute isEqualToString:NSAccessibilityDescriptionAttribute]) {
     return NSStringForWebAccessibilityAttribute(
-        browserAccessibilityMac->attributes(),
+        browserAccessibility_->attributes(),
         WebAccessibility::ATTR_DESCRIPTION);
   }
   if ([attribute isEqualToString:NSAccessibilityPositionAttribute]) {
@@ -198,20 +175,25 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     return [self children];
   }
   if ([attribute isEqualToString:NSAccessibilityParentAttribute]) {
-    if (parent_) {
-      return NSAccessibilityUnignoredAncestor(parent_);
+    // A nil parent means we're the root.
+    if (browserAccessibility_->GetParent()) {
+      return NSAccessibilityUnignoredAncestor(
+          browserAccessibility_->GetParent()->toBrowserAccessibilityCocoa());
+    } else {
+      // Hook back up to RenderWidgetHostViewCocoa.
+      return browserAccessibility_->manager()->GetParentView();
     }
   }
   if ([attribute isEqualToString:NSAccessibilityTitleAttribute]) {
-    return base::SysUTF16ToNSString(browserAccessibilityMac->name());
+    return base::SysUTF16ToNSString(browserAccessibility_->name());
   }
   if ([attribute isEqualToString:NSAccessibilityHelpAttribute]) {
     return NSStringForWebAccessibilityAttribute(
-        browserAccessibilityMac->attributes(),
+        browserAccessibility_->attributes(),
         WebAccessibility::ATTR_HELP);
   }
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
-    return base::SysUTF16ToNSString(browserAccessibilityMac->value());
+    return base::SysUTF16ToNSString(browserAccessibility_->value());
   }
   if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
     return [self roleDescription];

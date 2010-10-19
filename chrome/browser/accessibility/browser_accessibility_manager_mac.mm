@@ -4,10 +4,7 @@
 
 #include "chrome/browser/accessibility/browser_accessibility_manager_mac.h"
 
-#include "chrome/browser/accessibility/browser_accessibility_mac.h"
-#import "chrome/browser/cocoa/browser_accessibility.h"
-// TODO(dtseng): move to delegate?
-#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#import "chrome/browser/accessibility/browser_accessibility_cocoa.h"
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -27,54 +24,42 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     gfx::NativeView parent_window,
     const webkit_glue::WebAccessibility& src,
     BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory) 
+    BrowserAccessibilityFactory* factory)
         : BrowserAccessibilityManager(parent_window, src, delegate, factory) {
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     ViewHostMsg_AccessibilityNotification_Params::NotificationType n,
     BrowserAccessibility* node) {
-  // TODO(dtseng): support all notifications.
+  // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
   switch (n) {
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
+      // Does not exist on Mac.
       return;
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_CHILDREN_CHANGED:
-      event_id = NSAccessibilityValueChangedNotification;
-      if (GetRoot() == node)
-        [((RenderWidgetHostViewCocoa*)GetParentView())
-            setAccessibilityTreeRoot:GetRoot()];
-      else
-        [node->GetParent()->toBrowserAccessibilityMac()->native_view()
-            updateDescendants];
-      break;
+      // TODO(dtseng): no clear equivalent on Mac.
+      return;
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_FOCUS_CHANGED:
       event_id = NSAccessibilityFocusedUIElementChangedNotification;
-      if (GetRoot() == node)
-        [((RenderWidgetHostViewCocoa*)GetParentView())
-            setAccessibilityTreeRoot:GetRoot()];
-      else
-        [node->GetParent()->toBrowserAccessibilityMac()->native_view()
-            updateDescendants];
       break;
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_LOAD_COMPLETE:
-      [((RenderWidgetHostViewCocoa*)GetParentView())
-          setAccessibilityTreeRoot:GetRoot()];
-      return;
+      event_id = @"AXLoadComplete";
+      break;
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_VALUE_CHANGED:
       event_id = NSAccessibilityValueChangedNotification;
       break;
     case ViewHostMsg_AccessibilityNotification_Params::
         NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
-      return;
+      event_id = NSAccessibilitySelectedTextChangedNotification;
+      break;
   }
-  BrowserAccessibilityCocoa* native_node = node->toBrowserAccessibilityMac()->
-      native_view();
+  BrowserAccessibilityCocoa* native_node = node->toBrowserAccessibilityCocoa();
   DCHECK(native_node);
-  NSAccessibilityPostNotification(native_node, event_id); 
+  NSAccessibilityPostNotification(native_node, event_id);
 }

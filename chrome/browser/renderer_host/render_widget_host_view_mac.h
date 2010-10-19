@@ -13,10 +13,9 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/cocoa/base_view.h"
-#include "chrome/browser/cocoa/browser_accessibility.h"
-#include "chrome/browser/cocoa/browser_accessibility_delegate.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/edit_command.h"
@@ -49,9 +48,6 @@ class RWHVMEditCommandHelper;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
   scoped_ptr<RWHVMEditCommandHelper> editCommand_helper_;
-
-  // TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
-  scoped_nsobject<NSArray> accessibilityChildren_;
 
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
   id trackingRectOwner_;              // (not retained)
@@ -144,8 +140,6 @@ class RWHVMEditCommandHelper;
 - (void)renderWidgetHostWasResized;
 // Cancel ongoing composition (abandon the marked text).
 - (void)cancelComposition;
-// Set the new accessibility tree.
-- (void)setAccessibilityTreeRoot:(BrowserAccessibility*) treeRoot;
 // Confirm ongoing composition.
 - (void)confirmComposition;
 // Enables or disables plugin IME for the given plugin.
