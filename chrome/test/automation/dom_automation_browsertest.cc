@@ -23,9 +23,9 @@ class DOMAutomationTest : public InProcessBrowserTest {
   }
 
   GURL GetTestURL(const char* path) {
-    std::string url("http://localhost:1337/files/dom_automation/");
-    url.append(path);
-    return GURL(url);
+    std::string url_path = "files/dom_automation/";
+    url_path.append(path);
+    return test_server()->GetURL(url_path);
   }
 };
 

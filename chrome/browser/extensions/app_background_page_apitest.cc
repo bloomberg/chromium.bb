@@ -18,7 +18,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, Basic) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
 
   LoadExtension(test_data_dir_.AppendASCII(
       "app_background_page/app_has_permission"));
@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, Basic) {
 
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, LacksPermission) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
 
   LoadExtension(test_data_dir_.AppendASCII(
       "app_background_page/app_lacks_permission"));

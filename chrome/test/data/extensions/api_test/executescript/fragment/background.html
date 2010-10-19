@@ -1,13 +1,13 @@
 <script>
 var got_request = false;
 
-var test_url = "http://localhost:1337/files/extensions/test_file.html";
+var test_url = "http://localhost:PORT/files/extensions/test_file.html";
 
-// For running in normal chrome (ie outside of the browser_tests environment), 
-// set debug to 1 here. 
+// For running in normal chrome (ie outside of the browser_tests environment),
+// set debug to 1 here.
 var debug = 0;
 if (debug) {
-  test_url = "http://www.google.com";
+  test_url = "http://www.google.com/";
   chrome.test.log = function(msg) { console.log(msg) };
   chrome.test.runTests = function(tests) {
     for (var i in tests) {
@@ -35,25 +35,35 @@ function do_execute(tab) {
   }, 10000);
 }
 
+function runTests() {
+  chrome.test.runTests([
+    // When the tab is created, a content script will send a request letting
+    // know the onload has fired. Then we navigate to a fragment, and try
+    // running chrome.tabs.executeScript.
+    function test1() {
+      chrome.extension.onRequest.addListener(function(req, sender) {
+        chrome.test.log("got request: " + JSON.stringify(req));
+        if (req == "content_script") {
+          navigate_to_fragment(sender.tab, do_execute);
+        } else if (req == "execute_script") {
+          suceeded = true;
+          chrome.test.succeed();
+        }
+      });
+      chrome.test.log("creating tab");
+      chrome.tabs.create({"url": test_url});
+    }
+  ]);
+}
 
-chrome.test.runTests([
-  // When the tab is created, a content script will send a request letting
-  // know the onload has fired. Then we navigate to a fragment, and try
-  // running chrome.tabs.executeScript.
-  function test1() {
-    chrome.extension.onRequest.addListener(function(req, sender) {
-      chrome.test.log("got request: " + JSON.stringify(req));
-      if (req == "content_script") {
-        navigate_to_fragment(sender.tab, do_execute);
-      } else if (req == "execute_script") {
-        suceeded = true;
-        chrome.test.succeed();
-      }
-    });
-    chrome.test.log("creating tab");
-    chrome.tabs.create({"url": test_url});
-  }
-]);
-
+if (debug) {
+  // No port to fix.  Run tests directly.
+  runTests();
+} else {
+  chrome.test.getConfig(function(config) {
+    test_url = test_url.replace(/PORT/, config.testServer.port);
+    runTests();
+  });
+}
 
 </script>

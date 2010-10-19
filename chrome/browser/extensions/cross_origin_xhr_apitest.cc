@@ -7,6 +7,6 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHR) {
   host_resolver()->AddRule("*.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr")) << message_;
 }

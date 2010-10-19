@@ -49,92 +49,97 @@ chrome.extension.onRequest.addListener(
   }
 });
 
-chrome.test.runTests([
-  function setupWindows() {
-    // The test harness should have set us up with 2 windows: 1 incognito
-    // and 1 regular. Since we are in split mode, we should only see the
-    // window for our profile.
-    chrome.windows.getAll({populate: true}, pass(function(windows) {
-      assertEq(1, windows.length);
+chrome.test.getConfig(function(config) {
+  chrome.test.runTests([
+    function setupWindows() {
+      // The test harness should have set us up with 2 windows: 1 incognito
+      // and 1 regular. Since we are in split mode, we should only see the
+      // window for our profile.
+      chrome.windows.getAll({populate: true}, pass(function(windows) {
+        assertEq(1, windows.length);
 
-      win = windows[0];
-      tab = win.tabs[0];
-      assertEq(inIncognitoContext, win.incognito);
-    }));
-  },
-
-  // Tests that we can update an incognito tab and get the event for it.
-  function tabUpdate() {
-    var newUrl = "about:blank";
-
-    // Prepare the event listeners first.
-    var done = chrome.test.listenForever(chrome.tabs.onUpdated,
-      function(id, info, tab) {
-        assertEq(tab.id, id);
-        assertEq(inIncognitoContext, tab.incognito);
-        assertEq(newUrl, tab.url);
-        if (info.status == "complete")
-          done();
-      });
-
-    // Update our tab.
-    chrome.tabs.update(tab.id, {"url": newUrl}, pass());
-  },
-
-  // Tests content script injection to verify that the script can tell its
-  // in incongnito.
-  function contentScriptTestIncognito() {
-    var testUrl = "http://localhost:1337/files/extensions/test_file.html";
-
-    // Test that chrome.extension.inIncognitoContext is true for incognito
-    // tabs.
-    chrome.tabs.create({windowId: win.id, url: testUrl},
-      pass(function(tab) {
-        chrome.tabs.executeScript(tab.id,
-          {code: 'chrome.extension.sendRequest({' +
-                 '  inIncognitoContext: chrome.extension.inIncognitoContext' +
-                 '});'},
-          pass(function() {
-            assertEq(undefined, chrome.extension.lastError);
-          }));
+        win = windows[0];
+        tab = win.tabs[0];
+        assertEq(inIncognitoContext, win.incognito);
       }));
+    },
 
-    var done = chrome.test.listenForever(chrome.extension.onRequest,
-      function(request, sender, sendResponse) {
-        assertEq(inIncognitoContext, request.inIncognitoContext);
-        sendResponse();
-        done();
-      });
-  },
+    // Tests that we can update an incognito tab and get the event for it.
+    function tabUpdate() {
+      var newUrl = "about:blank";
 
-  // Tests that we can receive bookmarks events in both extension processes.
-  function bookmarkCreate() {
-    // Each process will create 1 bookmark, but expects to see updates from the
-    // other process.
-    var nodeNormal = {parentId:"1", title:"normal", url:"http://google.com/"};
-    var nodeIncog = {parentId:"1", title:"incog", url:"http://google.com/"};
-    var node = inIncognitoContext ? nodeIncog : nodeNormal;
-    var count = 0;
-    var done = chrome.test.listenForever(chrome.bookmarks.onCreated,
-      function(id, created) {
-        node = (created.title == nodeNormal.title) ? nodeNormal : nodeIncog;
-        node.id = created.id;
-        node.index = created.index;
-        chrome.test.assertEq(id, node.id);
-        chrome.test.assertTrue(compareNode(node, created));
-        if (++count == 2) {
-          chrome.test.log("Bookmarks created. Incognito=" + inIncognitoContext);
+      // Prepare the event listeners first.
+      var done = chrome.test.listenForever(chrome.tabs.onUpdated,
+        function(id, info, tab) {
+          assertEq(tab.id, id);
+          assertEq(inIncognitoContext, tab.incognito);
+          assertEq(newUrl, tab.url);
+          if (info.status == "complete")
+            done();
+        });
+
+      // Update our tab.
+      chrome.tabs.update(tab.id, {"url": newUrl}, pass());
+    },
+
+    // Tests content script injection to verify that the script can tell its
+    // in incongnito.
+    function contentScriptTestIncognito() {
+      var testUrl = "http://localhost:PORT/files/extensions/test_file.html"
+                        .replace(/PORT/, config.testServer.port);
+
+      // Test that chrome.extension.inIncognitoContext is true for incognito
+      // tabs.
+      chrome.tabs.create({windowId: win.id, url: testUrl},
+        pass(function(tab) {
+          chrome.tabs.executeScript(tab.id,
+            {code: 'chrome.extension.sendRequest({' +
+                   '  inIncognitoContext: chrome.extension.inIncognitoContext' +
+                   '});'},
+            pass(function() {
+              assertEq(undefined, chrome.extension.lastError);
+            }));
+        }));
+
+      var done = chrome.test.listenForever(chrome.extension.onRequest,
+        function(request, sender, sendResponse) {
+          assertEq(inIncognitoContext, request.inIncognitoContext);
+          sendResponse();
           done();
-        }
-      });
-    chrome.test.sendMessage("waiting", pass(function() {
-      chrome.bookmarks.create(node, pass(function(results) {
-        node.id = results.id;  // since we couldn't know this going in
-        node.index = results.index;
-        chrome.test.assertTrue(compareNode(node, results),
-                               "created node != source");
+        });
+    },
+
+    // Tests that we can receive bookmarks events in both extension processes.
+    function bookmarkCreate() {
+      // Each process will create 1 bookmark, but expects to see updates from
+      // the other process.
+      var nodeNormal = {parentId:"1", title:"normal", url:"http://google.com/"};
+      var nodeIncog = {parentId:"1", title:"incog", url:"http://google.com/"};
+      var node = inIncognitoContext ? nodeIncog : nodeNormal;
+      var count = 0;
+      var done = chrome.test.listenForever(chrome.bookmarks.onCreated,
+        function(id, created) {
+          node = (created.title == nodeNormal.title) ? nodeNormal : nodeIncog;
+          node.id = created.id;
+          node.index = created.index;
+          chrome.test.assertEq(id, node.id);
+          chrome.test.assertTrue(compareNode(node, created));
+          if (++count == 2) {
+            chrome.test.log("Bookmarks created. Incognito=" +
+                            inIncognitoContext);
+            done();
+          }
+        });
+      chrome.test.sendMessage("waiting", pass(function() {
+        chrome.bookmarks.create(node, pass(function(results) {
+          node.id = results.id;  // since we couldn't know this going in
+          node.index = results.index;
+          chrome.test.assertTrue(compareNode(node, results),
+                                 "created node != source");
+        }));
       }));
-    }));
-  }
-]);
+    }
+  ]);
+});
+
 </script>

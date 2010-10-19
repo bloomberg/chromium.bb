@@ -51,7 +51,7 @@ void WaitForTabsAndPopups(Browser* browser, int num_tabs, int num_popups) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PopupBlockingExtension) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("window_open").AppendASCII("popup_blocking")

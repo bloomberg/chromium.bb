@@ -1,29 +1,34 @@
 <script>
-var javaScriptURL = "javascript:void(document.body.bgColor='red')";
 
-chrome.tabs.create({ url: "http://a.com:1337/files/extensions/test_file.html" },
-                   function(tab) {
-  var firstTabId = tab.id;
+chrome.test.getConfig(function(config) {
+  var javaScriptURL = "javascript:void(document.body.bgColor='red')";
 
-  chrome.tabs.create(
-      { url: "http://b.com:1337/files/extensions/test_file.html" },
-      function(tab) {
-    var secondTabId = tab.id;
+  var fixPort = function(url) {
+    return url.replace(/PORT/, config.testServer.port);
+  };
+  var urlA = fixPort("http://a.com:PORT/files/extensions/test_file.html");
+  var urlB = fixPort("http://b.com:PORT/files/extensions/test_file.html");
 
-    chrome.test.runTests([
-      function javaScriptURLShouldFail() {
-        chrome.tabs.update(firstTabId, {url: javaScriptURL},
-            chrome.test.callbackFail('Cannot access contents of url ' +
-                '"http://a.com:1337/files/extensions/test_file.html". ' +
-                'Extension manifest must request permission to access this ' +
-                'host.'));
-      },
+  chrome.tabs.create({ url: urlA }, function(tab) {
+    var firstTabId = tab.id;
 
-      function javaScriptURLShouldSucceed() {
-        chrome.tabs.update(secondTabId, {url: javaScriptURL},
-            chrome.test.callbackPass());
-      }
-    ]);
+    chrome.tabs.create({ url: urlB }, function(tab) {
+      var secondTabId = tab.id;
+
+      chrome.test.runTests([
+        function javaScriptURLShouldFail() {
+          chrome.tabs.update(firstTabId, {url: javaScriptURL},
+              chrome.test.callbackFail('Cannot access contents of url ' +
+                   '"' + urlA + '". Extension manifest must request ' +
+                   'permission to access this host.'));
+        },
+
+        function javaScriptURLShouldSucceed() {
+          chrome.tabs.update(secondTabId, {url: javaScriptURL},
+              chrome.test.callbackPass());
+        }
+      ]);
+    });
   });
 });
 </script>
