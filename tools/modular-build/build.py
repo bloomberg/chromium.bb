@@ -66,10 +66,10 @@ def GetSources():
     # For a discussion of why nacl-glibc uses these, see
     # http://code.google.com/p/nativeclient/issues/detail?id=671
     "linux_headers": dirtree.GitTree(
-        "http://src.chromium.org/git/linux-headers-for-nacl.git",
+        "http://git.chromium.org/git/linux-headers-for-nacl.git",
         commit_id="0014b8d2e052dd3bf4cdc4be999d17e123c50dc2"),
     "glibc": dirtree.GitTree(
-        "http://src.chromium.org/git/nacl-glibc.git",
+        "http://git.chromium.org/git/nacl-glibc.git",
         commit_id="ef76cee2917920d209e00d3f617cc4e05655b031"),
     }
 
