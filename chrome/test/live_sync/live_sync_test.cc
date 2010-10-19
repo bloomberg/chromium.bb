@@ -107,6 +107,17 @@ void LiveSyncTest::SetUp() {
   if (!cl->HasSwitch(switches::kSyncNotificationMethod))
     cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "transitional");
 
+  // TODO(akalin): Delete this block of code once a local python notification
+  // server is implemented.
+  // The chrome sync builders are behind a firewall that blocks port 5222, the
+  // default port for XMPP notifications. This causes the tests to spend up to a
+  // minute waiting for a connection on port 5222 before they fail over to port
+  // 443, the default SSL/TCP port. This switch causes the tests to use port 443
+  // by default, without having to try port 5222.
+  if (!cl->HasSwitch(switches::kSyncUseSslTcp)) {
+    cl->AppendSwitch(switches::kSyncUseSslTcp);
+  }
+
   // TODO(sync): Remove this once passwords sync is enabled by default.
   if (!cl->HasSwitch(switches::kEnableSyncPasswords)) {
     cl->AppendSwitch(switches::kEnableSyncPasswords);

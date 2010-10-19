@@ -32,6 +32,7 @@ SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings)
       connection_generator_(
           login_settings_->host_resolver(),
           &login_settings_->connection_options(),
+          login_settings_->try_ssltcp_first(),
           login_settings_->server_list(),
           login_settings_->server_count()) {
   connection_generator_.SignalExhaustedSettings.connect(

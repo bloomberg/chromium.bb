@@ -975,10 +975,6 @@ const char kSingleProcess[]                 = "single-process";
 // Start the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
-// Allow insecure XMPP connections for sync (for testing).
-const char kSyncAllowInsecureXmppConnection[] =
-    "sync-allow-insecure-xmpp-connection";
-
 // Control Sync XMPP client settings.
 const char kSyncAllowPlain[]                = "allow-plain";
 
@@ -987,9 +983,6 @@ const char kSyncDisableTls[]                = "disable-tls";
 
 // Email used for sync.
 const char kSyncEmail[]                     = "email";
-
-// Invalidate any login info passed into sync's XMPP connection.
-const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
 
 // Use the SyncerThread implementation that matches up with the old pthread
 // impl semantics, but using Chrome synchronization primitives.  The only
@@ -1014,6 +1007,9 @@ const char kSyncServer[]                    = "server";
 
 // Override the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
+
+// Control Sync XMPP client settings.
+const char kSyncUseSslTcp[]                 = "use-ssl-tcp";
 
 // Control Sync XMPP client settings.
 const char kSyncUseCacheInvalidation[]      = "use-cache-invalidation";

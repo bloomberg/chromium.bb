@@ -41,7 +41,8 @@ ConnectionSettingsList::~ConnectionSettingsList() {}
 void ConnectionSettingsList::AddPermutations(const std::string& hostname,
                                              const std::vector<uint32>& iplist,
                                              int16 port,
-                                             bool special_port_magic) {
+                                             bool special_port_magic,
+                                             bool try_ssltcp_first) {
   // randomize the list. This ensures the iplist isn't always
   // evaluated in the order returned by DNS
   std::vector<uint32> iplist_random = iplist;
@@ -59,7 +60,8 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
   if (iplist_random.empty()) {
     // We couldn't pre-resolve the hostname, so let's hope it will resolve
     // further down the pipeline (by a proxy, for example).
-    PermuteForAddress(server, special_port_magic, &list_temp);
+    PermuteForAddress(server, special_port_magic, try_ssltcp_first,
+                      &list_temp);
   } else {
     // Generate a set of possibilities for each server address.
     // Don't do permute duplicates.
@@ -70,7 +72,8 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
       }
       iplist_seen_.push_back(iplist_random[index]);
       server.SetResolvedIP(iplist_random[index]);
-      PermuteForAddress(server, special_port_magic, &list_temp);
+      PermuteForAddress(server, special_port_magic, try_ssltcp_first,
+                        &list_temp);
     }
   }
 
@@ -85,6 +88,7 @@ void ConnectionSettingsList::AddPermutations(const std::string& hostname,
 void ConnectionSettingsList::PermuteForAddress(
     const talk_base::SocketAddress& server,
     bool special_port_magic,
+    bool try_ssltcp_first,
     std::deque<ConnectionSettings>* list_temp) {
   DCHECK(list_temp);
   *(template_.mutable_server()) = server;
@@ -97,7 +101,11 @@ void ConnectionSettingsList::PermuteForAddress(
     ConnectionSettings settings(template_);
     settings.set_protocol(cricket::PROTO_SSLTCP);
     settings.mutable_server()->SetPort(443);
-    list_temp->push_back(settings);
+    if (try_ssltcp_first) {
+      list_temp->push_front(settings);
+    } else {
+      list_temp->push_back(settings);
+    }
   }
 }
 }  // namespace notifier

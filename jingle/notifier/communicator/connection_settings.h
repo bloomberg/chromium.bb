@@ -48,10 +48,12 @@ class ConnectionSettingsList {
   void AddPermutations(const std::string& hostname,
                        const std::vector<uint32>& iplist,
                        int16 port,
-                       bool special_port_magic);
+                       bool special_port_magic,
+                       bool try_ssltcp_first);
  private:
   void PermuteForAddress(const talk_base::SocketAddress& server,
                          bool special_port_magic,
+                         bool try_ssltcp_first,
                          std::deque<ConnectionSettings>* list_temp);
 
   ConnectionSettings template_;

@@ -275,19 +275,14 @@ void ProfileSyncService::InitSettings() {
       notifier_options_.xmpp_host_port.set_host(value);
       notifier_options_.xmpp_host_port.set_port(notifier::kDefaultXmppPort);
     }
-    VLOG(1) << "Using " << notifier_options_.xmpp_host_port.ToString()
+    LOG(INFO) << "Using " << notifier_options_.xmpp_host_port.ToString()
         << " for test sync notification server.";
   }
 
-  notifier_options_.invalidate_xmpp_login =
-      command_line.HasSwitch(switches::kSyncInvalidateXmppLogin);
-  if (notifier_options_.invalidate_xmpp_login) {
-    VLOG(1) << "Invalidating sync XMPP login.";
-  }
-  notifier_options_.allow_insecure_connection =
-      command_line.HasSwitch(switches::kSyncAllowInsecureXmppConnection);
-  if (notifier_options_.allow_insecure_connection) {
-    VLOG(1) << "Allowing insecure XMPP connections.";
+  notifier_options_.try_ssltcp_first =
+      command_line.HasSwitch(switches::kSyncUseSslTcp);
+  if (notifier_options_.try_ssltcp_first) {
+    LOG(INFO) << "Trying SSL/TCP port before XMPP port for notifications.";
   }
 
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
@@ -394,7 +389,7 @@ void ProfileSyncService::CreateBackend() {
 void ProfileSyncService::StartUp() {
   // Don't start up multiple times.
   if (backend_.get()) {
-    VLOG(1) << "Skipping bringing up backend host.";
+    LOG(INFO) << "Skipping bringing up backend host.";
     return;
   }
 

@@ -41,10 +41,8 @@ class TalkMediatorImplTest : public testing::Test {
   TalkMediatorImpl* NewMockedTalkMediator(
       MockMediatorThread* mock_mediator_thread) {
     const bool kInvalidateXmppAuthToken = false;
-    const bool kAllowInsecureConnection = false;
     return new TalkMediatorImpl(mock_mediator_thread,
-                                kInvalidateXmppAuthToken,
-                                kAllowInsecureConnection);
+                                kInvalidateXmppAuthToken);
   }
 
   int last_message_;

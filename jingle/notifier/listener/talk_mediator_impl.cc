@@ -13,12 +13,10 @@
 namespace notifier {
 
 TalkMediatorImpl::TalkMediatorImpl(
-    MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token,
-    bool allow_insecure_connection)
+    MediatorThread* mediator_thread, bool invalidate_xmpp_auth_token)
     : delegate_(NULL),
       mediator_thread_(mediator_thread),
-      invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token),
-      allow_insecure_connection_(allow_insecure_connection) {
+      invalidate_xmpp_auth_token_(invalidate_xmpp_auth_token) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   mediator_thread_->Start();
   state_.started = 1;
@@ -92,10 +90,6 @@ bool TalkMediatorImpl::SetAuthToken(const std::string& email,
   xmpp_settings_.set_auth_cookie(invalidate_xmpp_auth_token_ ?
                                  token + "bogus" : token);
   xmpp_settings_.set_token_service(token_service);
-  if (allow_insecure_connection_) {
-    xmpp_settings_.set_allow_plain(true);
-    xmpp_settings_.set_use_tls(false);
-  }
 
   state_.initialized = 1;
   return true;

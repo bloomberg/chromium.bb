@@ -19,8 +19,10 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
                              const ConnectionOptions& options,
                              net::HostResolver* host_resolver,
                              ServerInformation* server_list,
-                             int server_count)
-    :  host_resolver_(host_resolver),
+                             int server_count,
+                             bool try_ssltcp_first)
+    :  try_ssltcp_first_(try_ssltcp_first),
+       host_resolver_(host_resolver),
        server_list_(new ServerInformation[server_count]),
        server_count_(server_count),
        user_settings_(new buzz::XmppClientSettings(user_settings)),

@@ -32,9 +32,14 @@ class LoginSettings {
                 const ConnectionOptions& options,
                 net::HostResolver* host_resolver,
                 ServerInformation* server_list,
-                int server_count);
+                int server_count,
+                bool try_ssltcp_first);
 
   ~LoginSettings();
+
+  bool try_ssltcp_first() const {
+    return try_ssltcp_first_;
+  }
 
   net::HostResolver* host_resolver() {
     return host_resolver_;
@@ -64,6 +69,8 @@ class LoginSettings {
   void clear_server_override();
 
  private:
+  bool try_ssltcp_first_;
+
   net::HostResolver* host_resolver_;
   talk_base::scoped_array<ServerInformation> server_list_;
   int server_count_;

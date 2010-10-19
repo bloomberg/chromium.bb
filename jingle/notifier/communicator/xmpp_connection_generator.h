@@ -36,11 +36,13 @@ struct ServerInformation {
 // combinations.
 class XmppConnectionGenerator : public sigslot::has_slots<> {
  public:
+  // try_ssltcp_first indicates that SSLTCP is tried before XMPP. Used by tests.
   // server_list is the list of connections to attempt in priority order.
   // server_count is the number of items in the server list.
   XmppConnectionGenerator(
       net::HostResolver* host_resolver,
       const ConnectionOptions* options,
+      bool try_ssltcp_first,
       const ServerInformation* server_list,
       int server_count);
   ~XmppConnectionGenerator();
@@ -72,6 +74,7 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   talk_base::scoped_array<ServerInformation> server_list_;
   int server_count_;
   int server_index_;  // The server that is current being used.
+  bool try_ssltcp_first_;  // Used when sync tests are run on chromium builders.
   bool successfully_resolved_dns_;
   int first_dns_error_;
   const ConnectionOptions* options_;

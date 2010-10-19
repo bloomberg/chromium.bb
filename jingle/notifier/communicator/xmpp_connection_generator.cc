@@ -39,6 +39,7 @@ namespace notifier {
 XmppConnectionGenerator::XmppConnectionGenerator(
     net::HostResolver* host_resolver,
     const ConnectionOptions* options,
+    bool try_ssltcp_first,
     const ServerInformation* server_list,
     int server_count)
     : host_resolver_(host_resolver),
@@ -51,6 +52,7 @@ XmppConnectionGenerator::XmppConnectionGenerator(
       server_list_(new ServerInformation[server_count]),
       server_count_(server_count),
       server_index_(-1),
+      try_ssltcp_first_(try_ssltcp_first),
       successfully_resolved_dns_(false),
       first_dns_error_(0),
       options_(options) {
@@ -160,7 +162,8 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
       server_list_[server_index_].server.host(),
       ip_list,
       server_list_[server_index_].server.port(),
-      server_list_[server_index_].special_port_magic);
+      server_list_[server_index_].special_port_magic,
+      try_ssltcp_first_);
 }
 
 static const char* const PROTO_NAMES[cricket::PROTO_LAST + 1] = {
