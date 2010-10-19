@@ -39,12 +39,13 @@ void GLES2DecoderTestBase::SetUp() {
 void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
+  group_ = ContextGroup::Ref(new ContextGroup());
 
   InSequence sequence;
 
   TestHelper::SetupContextGroupInitExpectations(gl_.get(), extensions);
 
-  EXPECT_TRUE(group_.Initialize(extensions));
+  EXPECT_TRUE(group_->Initialize(extensions));
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
@@ -100,8 +101,9 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
 
   context_ = new gfx::StubGLContext;
 
-  decoder_.reset(GLES2Decoder::Create(&group_));
-  decoder_->Initialize(context_, gfx::Size(), std::vector<int32>(), NULL, 0);
+  decoder_.reset(GLES2Decoder::Create(group_.get()));
+  decoder_->Initialize(
+      context_, gfx::Size(), NULL, std::vector<int32>(), NULL, 0);
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))
@@ -148,7 +150,8 @@ void GLES2DecoderTestBase::TearDown() {
       .RetiresOnSaturation();
   decoder_->Destroy();
   decoder_.reset();
-  group_.Destroy(false);
+  group_->SetLostContext();
+  group_ = NULL;
   engine_.reset();
   ::gfx::GLInterface::SetGLInterface(NULL);
   gl_.reset();

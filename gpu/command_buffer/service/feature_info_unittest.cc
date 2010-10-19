@@ -54,7 +54,7 @@ class FeatureInfoTest : public testing::Test {
 
 TEST_F(FeatureInfoTest, Basic) {
   // Test it starts off uninitialized.
-  EXPECT_FALSE(info_.feature_flags().ext_framebuffer_multisample);
+  EXPECT_FALSE(info_.feature_flags().chromium_framebuffer_multisample);
   EXPECT_FALSE(info_.feature_flags().oes_standard_derivatives);
   EXPECT_FALSE(info_.feature_flags().npot_ok);
   EXPECT_FALSE(info_.feature_flags().enable_texture_float_linear);
@@ -267,9 +267,9 @@ TEST_F(FeatureInfoTest, InitializeOES_texture_half_float_linearGLES2) {
 TEST_F(FeatureInfoTest, InitializeEXT_framebuffer_multisample) {
   SetupInitExpectations("GL_EXT_framebuffer_multisample");
   info_.Initialize(NULL);
-  EXPECT_TRUE(info_.feature_flags().ext_framebuffer_multisample);
-  EXPECT_THAT(info_.extensions(), HasSubstr("GL_EXT_framebuffer_multisample"));
-  EXPECT_THAT(info_.extensions(), HasSubstr("GL_EXT_framebuffer_blit"));
+  EXPECT_TRUE(info_.feature_flags().chromium_framebuffer_multisample);
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_CHROMIUM_framebuffer_multisample"));
   EXPECT_TRUE(info_.validators()->frame_buffer_target.IsValid(
       GL_READ_FRAMEBUFFER_EXT));
   EXPECT_TRUE(info_.validators()->frame_buffer_target.IsValid(

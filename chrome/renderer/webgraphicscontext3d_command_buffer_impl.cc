@@ -54,6 +54,11 @@ WebGraphicsContext3DCommandBufferImpl::
   }
 }
 
+static const char* kWebGraphicsContext3DPerferredGLExtensions =
+    "GL_EXT_packed_depth_stencil "
+    "GL_OES_packed_depth_stencil "
+    "GL_OES_depth24";
+
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
     WebKit::WebView* web_view,
@@ -98,6 +103,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         host,
         view_id,
         renderview->routing_id(),
+        kWebGraphicsContext3DPerferredGLExtensions,
         attribs);
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -117,10 +123,12 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         parent_context = context_impl->context_;
       }
     }
-    context_ = ggl::CreateOffscreenContext(host,
-                                           parent_context,
-                                           gfx::Size(1, 1),
-                                           attribs);
+    context_ = ggl::CreateOffscreenContext(
+        host,
+        parent_context,
+        gfx::Size(1, 1),
+        kWebGraphicsContext3DPerferredGLExtensions,
+        attribs);
     web_view_ = NULL;
   }
   if (!context_)

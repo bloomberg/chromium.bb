@@ -13,6 +13,7 @@
 #include "base/scoped_open_process.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_video_common.h"
 #include "chrome/common/message_router.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
@@ -65,14 +66,17 @@ class GpuChannel : public IPC::Channel::Listener,
   int GenerateRouteID();
 
   // Message handlers.
-  void OnCreateViewCommandBuffer(gfx::NativeViewId view,
-                                 int32 render_view_id,
-                                 int32* route_id);
-  void OnCreateOffscreenCommandBuffer(int32 parent_route_id,
-                                      const gfx::Size& size,
-                                      const std::vector<int32>& attribs,
-                                      uint32 parent_texture_id,
-                                      int32* route_id);
+  void OnCreateViewCommandBuffer(
+      gfx::NativeViewId view,
+      int32 render_view_id,
+      const GPUCreateCommandBufferConfig& init_params,
+      int32* route_id);
+  void OnCreateOffscreenCommandBuffer(
+      int32 parent_route_id,
+      const gfx::Size& size,
+      const GPUCreateCommandBufferConfig& init_params,
+      uint32 parent_texture_id,
+      int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
 
   void OnCreateVideoDecoder(int32 context_route_id,

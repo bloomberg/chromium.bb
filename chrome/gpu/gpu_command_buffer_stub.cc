@@ -14,15 +14,17 @@
 
 using gpu::Buffer;
 
-GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
-                                           gfx::PluginWindowHandle handle,
-                                           GpuCommandBufferStub* parent,
-                                           const gfx::Size& size,
-                                           const std::vector<int32>& attribs,
-                                           uint32 parent_texture_id,
-                                           int32 route_id,
-                                           int32 renderer_id,
-                                           int32 render_view_id)
+GpuCommandBufferStub::GpuCommandBufferStub(
+    GpuChannel* channel,
+    gfx::PluginWindowHandle handle,
+    GpuCommandBufferStub* parent,
+    const gfx::Size& size,
+    const std::string& allowed_extensions,
+    const std::vector<int32>& attribs,
+    uint32 parent_texture_id,
+    int32 route_id,
+    int32 renderer_id,
+    int32 render_view_id)
     : channel_(channel),
       handle_(handle),
       parent_(
@@ -82,10 +84,11 @@ void GpuCommandBufferStub::OnInitialize(
     if (buffer.shared_memory) {
       gpu::GPUProcessor* parent_processor =
           parent_ ? parent_->processor_.get() : NULL;
-      processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
+      processor_.reset(new gpu::GPUProcessor(command_buffer_.get(), NULL));
       if (processor_->Initialize(
           handle_,
           initial_size_,
+          allowed_extensions_.c_str(),
           requested_attribs_,
           parent_processor,
           parent_texture_id_)) {

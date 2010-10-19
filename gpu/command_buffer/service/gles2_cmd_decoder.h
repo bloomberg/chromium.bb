@@ -50,9 +50,9 @@ class GLES2Decoder : public CommonDecoder {
   // Parameters:
   //  context: the GL context to render to.
   //  size: the size if the GL context is offscreen.
-  //  allowed_features: A string in the same format as
+  //  allowed_extensions: A string in the same format as
   //      glGetString(GL_EXTENSIONS) that lists the extensions this context
-  //      should allow. Passing NULL means allow all extensions.
+  //      should allow. Passing NULL or "*" means allow all extensions.
   //  parent: the GLES2 decoder that can access this decoder's front buffer
   //      through a texture ID in its namespace.
   //  parent_client_texture_id: the texture ID of the front buffer in the
@@ -61,6 +61,7 @@ class GLES2Decoder : public CommonDecoder {
   //   true if successful.
   virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
+                          const char* allowed_extensions,
                           const std::vector<int32>& attribs,
                           GLES2Decoder* parent,
                           uint32 parent_client_texture_id) = 0;
@@ -85,6 +86,9 @@ class GLES2Decoder : public CommonDecoder {
   // Gets the associated GLContext.
   virtual gfx::GLContext* GetGLContext() = 0;
 
+  // Gets the associated ContextGroup
+  virtual ContextGroup* GetContextGroup() = 0;
+
   // Sets a callback which is called when a SwapBuffers command is processed.
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 
@@ -96,9 +100,7 @@ class GLES2Decoder : public CommonDecoder {
   }
 
  protected:
-  explicit GLES2Decoder(ContextGroup* group);
-
-  ContextGroup* group_;
+  GLES2Decoder();
 
  private:
   bool debug_;

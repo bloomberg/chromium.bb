@@ -4,6 +4,7 @@
 
 #include "chrome/common/gpu_messages.h"
 
+#include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/dx_diag_node.h"
 #include "gfx/rect.h"
@@ -185,4 +186,24 @@ void ParamTraits<gpu::CommandBuffer::State> ::Log(const param_type& p,
   l->append("<CommandBuffer::State>");
 }
 
-} // namespace IPC
+void ParamTraits<GPUCreateCommandBufferConfig> ::Write(
+    Message* m, const param_type& p) {
+  m->WriteString(p.allowed_extensions);
+  ParamTraits<std::vector<int> > ::Write(m, p.attribs);
+}
+
+bool ParamTraits<GPUCreateCommandBufferConfig> ::Read(
+    const Message* m, void** iter, param_type* p) {
+  if (!m->ReadString(iter, &p->allowed_extensions) ||
+      !ParamTraits<std::vector<int> > ::Read(m, iter, &p->attribs)) {
+    return false;
+  }
+  return true;
+}
+
+void ParamTraits<GPUCreateCommandBufferConfig> ::Log(
+    const param_type& p, std::string* l) {
+  l->append("<GPUCreateCommandBufferConfig>");
+}
+
+}  // namespace IPC

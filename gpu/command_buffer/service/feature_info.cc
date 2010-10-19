@@ -18,41 +18,64 @@ FeatureInfo::FeatureInfo() {
 // Helps query for extensions.
 class ExtensionHelper {
  public:
-  ExtensionHelper(const char* extensions, const char* allowed_features) {
-    std::set<std::string> sets[2];
-
-    for (int ii = 0; ii < 2; ++ii) {
-      const char* s = (ii == 0 ? extensions : allowed_features);
-      std::string str(s ? s : "");
-      std::string::size_type lastPos = 0;
-      while (true) {
-        std::string::size_type pos = str.find_first_of(" ", lastPos);
-        if (pos != std::string::npos) {
-          sets[ii].insert(str.substr(lastPos, pos - lastPos));
-          lastPos = pos + 1;
-        } else {
-          sets[ii].insert(str.substr(lastPos));
-          break;
-        }
-      }
+  ExtensionHelper(const char* extensions, const char* desired_features)
+      : desire_all_features_(false) {
+    // Check for "*"
+    if (desired_features &&
+        desired_features[0] == '*' &&
+        desired_features[1] == '\0') {
+      desired_features = NULL;
     }
 
-    if (allowed_features) {
-      std::set_intersection(
-          sets[0].begin(), sets[0].end(), sets[1].begin(), sets[1].end(),
-          std::inserter(extensions_, extensions_.begin()));
-    } else {
-      extensions_ = sets[0];
-    }
+    InitStringSet(extensions, &have_extensions_);
+    InitStringSet(desired_features, &desired_extensions_);
+
+    if (!desired_features) {
+       desire_all_features_ = true;
+     }
   }
 
   // Returns true if extension exists.
-  bool HasExtension(const char* extension) {
-    return extensions_.find(extension) != extensions_.end();
+  bool Have(const char* extension) {
+    return have_extensions_.find(extension) != have_extensions_.end();
+  }
+
+  // Returns true of an extension is desired. It may not exist.
+  bool Desire(const char* extension) {
+    return desire_all_features_ ||
+           desired_extensions_.find(extension) != desired_extensions_.end();
+  }
+
+  // Returns true if an extension exists and is desired.
+  bool HaveAndDesire(const char* extension) {
+    return Have(extension) && Desire(extension);
   }
 
  private:
-  std::set<std::string> extensions_;
+  void InitStringSet(const char* s, std::set<std::string>* string_set) {
+    std::string str(s ? s : "");
+    std::string::size_type lastPos = 0;
+    while (true) {
+      std::string::size_type pos = str.find_first_of(" ", lastPos);
+      if (pos != std::string::npos) {
+        if (pos - lastPos) {
+          string_set->insert(str.substr(lastPos, pos - lastPos));
+        }
+        lastPos = pos + 1;
+      } else {
+        string_set->insert(str.substr(lastPos));
+        break;
+      }
+    }
+  }
+
+  bool desire_all_features_;
+
+  // Extensions that exist.
+  std::set<std::string> have_extensions_;
+
+  // Extensions that are desired but may not exist.
+  std::set<std::string> desired_extensions_;
 };
 
 bool FeatureInfo::Initialize(const char* allowed_features) {
@@ -62,17 +85,13 @@ bool FeatureInfo::Initialize(const char* allowed_features) {
 
 void FeatureInfo::AddFeatures(const char* desired_features) {
   // Figure out what extensions to turn on.
-  std::string gl_extensions(
-      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
-
-  ExtensionHelper helper(
-      (gl_extensions +
-          (gl_extensions.empty() ? "" : " ") + "GL_CHROMIUM_map_sub").c_str(),
+  ExtensionHelper ext(
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
       desired_features);
 
   bool npot_ok = false;
 
-  if (helper.HasExtension("GL_CHROMIUM_map_sub")) {
+  if (ext.Desire("GL_CHROMIUM_map_sub")) {
     AddExtensionString("GL_CHROMIUM_map_sub");
   }
 
@@ -81,10 +100,10 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool enable_dxt1 = false;
   bool enable_s3tc = false;
 
-  if (helper.HasExtension("GL_EXT_texture_compression_dxt1")) {
+  if (ext.HaveAndDesire("GL_EXT_texture_compression_dxt1")) {
     enable_dxt1 = true;
   }
-  if (helper.HasExtension("GL_EXT_texture_compression_s3tc")) {
+  if (ext.HaveAndDesire("GL_EXT_texture_compression_s3tc")) {
     enable_dxt1 = true;
     enable_s3tc = true;
   }
@@ -106,7 +125,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   // Check if we should enable GL_EXT_texture_filter_anisotropic.
-  if (helper.HasExtension("GL_EXT_texture_filter_anisotropic")) {
+  if (ext.HaveAndDesire("GL_EXT_texture_filter_anisotropic")) {
     AddExtensionString("GL_EXT_texture_filter_anisotropic");
     validators_.texture_parameter.AddValue(
         GL_TEXTURE_MAX_ANISOTROPY_EXT);
@@ -121,8 +140,9 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   // GL_OES_packed_depth_stencil does not provide. Therefore we made up
   // GL_GOOGLE_depth_texture.
   bool enable_depth_texture = false;
-  if (helper.HasExtension("GL_ARB_depth_texture") ||
-      helper.HasExtension("GL_OES_depth_texture")) {
+  if (ext.Desire("GL_GOOGLE_depth_texture") &&
+      (ext.Have("GL_ARB_depth_texture") ||
+       ext.Have("GL_OES_depth_texture"))) {
     enable_depth_texture = true;
     AddExtensionString("GL_GOOGLE_depth_texture");
     validators_.texture_internal_format.AddValue(GL_DEPTH_COMPONENT);
@@ -132,8 +152,9 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
   // TODO(gman): Add depth types fo ElementsPerGroup and BytesPerElement
 
-  if (helper.HasExtension("GL_EXT_packed_depth_stencil") ||
-      helper.HasExtension("GL_OES_packed_depth_stencil")) {
+  if (ext.Desire("GL_OES_packed_depth_stencil") &&
+      (ext.Have("GL_EXT_packed_depth_stencil") ||
+       ext.Have("GL_OES_packed_depth_stencil"))) {
     AddExtensionString("GL_OES_packed_depth_stencil");
     if (enable_depth_texture) {
       validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
@@ -146,17 +167,18 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool enable_texture_format_bgra8888 = false;
   bool enable_read_format_bgra = false;
   // Check if we should allow GL_EXT_texture_format_BGRA8888
-  if (helper.HasExtension("GL_EXT_texture_format_BGRA8888") ||
-      helper.HasExtension("GL_APPLE_texture_format_BGRA8888")) {
+  if (ext.Desire("GL_EXT_texture_format_BGRA8888") &&
+      (ext.Have("GL_EXT_texture_format_BGRA8888") ||
+       ext.Have("GL_APPLE_texture_format_BGRA8888"))) {
     enable_texture_format_bgra8888 = true;
   }
 
-  if (helper.HasExtension("GL_EXT_bgra")) {
+  if (ext.HaveAndDesire("GL_EXT_bgra")) {
     enable_texture_format_bgra8888 = true;
     enable_read_format_bgra = true;
   }
 
-  if (helper.HasExtension("GL_EXT_read_format_bgra")) {
+  if (ext.HaveAndDesire("GL_EXT_read_format_bgra")) {
     enable_read_format_bgra = true;
   }
 
@@ -172,8 +194,9 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   // Check if we should allow GL_OES_texture_npot
-  if (helper.HasExtension("GL_ARB_texture_non_power_of_two") ||
-      helper.HasExtension("GL_OES_texture_npot")) {
+  if (ext.Desire("GL_OES_texture_npot") &&
+      (ext.Have("GL_ARB_texture_non_power_of_two") ||
+       ext.Have("GL_OES_texture_npot"))) {
     AddExtensionString("GL_OES_texture_npot");
     npot_ok = true;
   }
@@ -184,21 +207,21 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   bool enable_texture_float_linear = false;
   bool enable_texture_half_float = false;
   bool enable_texture_half_float_linear = false;
-  if (helper.HasExtension("GL_ARB_texture_float")) {
+  if (ext.HaveAndDesire("GL_ARB_texture_float")) {
     enable_texture_float = true;
     enable_texture_float_linear = true;
     enable_texture_half_float = true;
     enable_texture_half_float_linear = true;
   } else {
-    if (helper.HasExtension("GL_OES_texture_float")) {
+    if (ext.HaveAndDesire("GL_OES_texture_float")) {
       enable_texture_float = true;
-      if (helper.HasExtension("GL_OES_texture_float_linear")) {
+      if (ext.HaveAndDesire("GL_OES_texture_float_linear")) {
         enable_texture_float_linear = true;
       }
     }
-    if (helper.HasExtension("GL_OES_texture_half_float")) {
+    if (ext.HaveAndDesire("GL_OES_texture_half_float")) {
       enable_texture_half_float = true;
-      if (helper.HasExtension("GL_OES_texture_half_float_linear")) {
+      if (ext.HaveAndDesire("GL_OES_texture_half_float_linear")) {
         enable_texture_half_float_linear = true;
       }
     }
@@ -221,24 +244,26 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   // Check for multisample support
-  if (helper.HasExtension("GL_EXT_framebuffer_multisample")) {
-    feature_flags_.ext_framebuffer_multisample = true;
+  if (ext.Desire("GL_CHROMIUM_framebuffer_multisample") &&
+      ext.Have("GL_EXT_framebuffer_multisample")) {
+    feature_flags_.chromium_framebuffer_multisample = true;
     validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
     validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
     validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
     validators_.render_buffer_parameter.AddValue(GL_MAX_SAMPLES_EXT);
-    AddExtensionString("GL_EXT_framebuffer_multisample");
-    AddExtensionString("GL_EXT_framebuffer_blit");
+    AddExtensionString("GL_CHROMIUM_framebuffer_multisample");
   }
 
-  if (helper.HasExtension("GL_OES_depth24") ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+  if (ext.HaveAndDesire("GL_OES_depth24") ||
+      (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL &&
+       ext.Desire("GL_OES_depth24"))) {
     AddExtensionString("GL_OES_depth24");
     validators_.render_buffer_format.AddValue(GL_DEPTH_COMPONENT24);
   }
 
-  if (helper.HasExtension("GL_OES_standard_derivatives") ||
-      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+  if (ext.HaveAndDesire("GL_OES_standard_derivatives") ||
+      (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL &&
+       ext.Desire("GL_OES_standard_derivatives"))) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
   }

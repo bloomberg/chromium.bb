@@ -10,6 +10,7 @@
 // from it via utility_messages.h.
 
 #include <vector>
+#include <string>
 
 #include "base/shared_memory.h"
 #include "chrome/common/gpu_video_common.h"
@@ -23,6 +24,7 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+struct GPUCreateCommandBufferConfig;
 class GPUInfo;
 
 //------------------------------------------------------------------------------
@@ -157,9 +159,10 @@ IPC_BEGIN_MESSAGES(GpuChannel)
   // to a native view. The |render_view_id| is currently needed only on Mac OS
   // X in order to identify the window on the browser side into which the
   // rendering results go. A corresponding GpuCommandBufferStub is created.
-  IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateViewCommandBuffer,
+  IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateViewCommandBuffer,
                               gfx::NativeViewId, /* view */
                               int32, /* render_view_id */
+                              GPUCreateCommandBufferConfig, /* init_params */
                               int32 /* route_id */)
 
   // Tells the GPU process to create a new command buffer that renders to an
@@ -170,7 +173,7 @@ IPC_BEGIN_MESSAGES(GpuChannel)
   IPC_SYNC_MESSAGE_CONTROL4_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
                               int32, /* parent_route_id */
                               gfx::Size, /* size */
-                              std::vector<int>, /* attribs */
+                              GPUCreateCommandBufferConfig, /* init_params */
                               uint32, /* parent_texture_id */
                               int32 /* route_id */)
 

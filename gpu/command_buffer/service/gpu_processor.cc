@@ -12,12 +12,13 @@ using ::base::SharedMemory;
 
 namespace gpu {
 
-GPUProcessor::GPUProcessor(CommandBuffer* command_buffer)
+GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
+                           gles2::ContextGroup* group)
     : command_buffer_(command_buffer),
       commands_per_update_(100),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(command_buffer);
-  decoder_.reset(gles2::GLES2Decoder::Create(&group_));
+  decoder_.reset(gles2::GLES2Decoder::Create(group));
   decoder_->set_engine(this);
 }
 
@@ -39,6 +40,7 @@ GPUProcessor::~GPUProcessor() {
 
 bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
                                     const gfx::Size& size,
+                                    const char* allowed_extensions,
                                     const std::vector<int32>& attribs,
                                     gles2::GLES2Decoder* parent_decoder,
                                     uint32 parent_texture_id) {
@@ -58,16 +60,10 @@ bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
                                     decoder_.get()));
   }
 
-  if (!group_.Initialize(NULL)) {
-    LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
-               << "failed to initialize.";
-    Destroy();
-    return false;
-  }
-
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(context,
                             size,
+                            allowed_extensions,
                             attribs,
                             parent_decoder,
                             parent_texture_id)) {
@@ -87,8 +83,6 @@ void GPUProcessor::DestroyCommon() {
     decoder_->Destroy();
     decoder_.reset();
   }
-
-  group_.Destroy(have_context);
 
   parser_.reset();
 }

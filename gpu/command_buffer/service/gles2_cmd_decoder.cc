@@ -370,9 +370,8 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
 
 // }  // anonymous namespace.
 
-GLES2Decoder::GLES2Decoder(ContextGroup* group)
-    : group_(group),
-      debug_(false) {
+GLES2Decoder::GLES2Decoder()
+    : debug_(false) {
 }
 
 GLES2Decoder::~GLES2Decoder() {
@@ -627,6 +626,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Overridden from GLES2Decoder.
   virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
+                          const char* allowed_extensions,
                           const std::vector<int32>& attribs,
                           GLES2Decoder* parent,
                           uint32 parent_client_texture_id);
@@ -636,6 +636,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual bool MakeCurrent();
   virtual GLES2Util* GetGLES2Util() { return &util_; }
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
+  virtual ContextGroup* GetContextGroup() { return group_.get(); }
 
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -1267,6 +1268,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // The GL context this decoder renders to on behalf of the client.
   scoped_ptr<gfx::GLContext> context_;
 
+  // The ContextGroup for this decoder uses to track resources.
+  ContextGroup::Ref group_;
+
   // A parent decoder can access this decoders saved offscreen frame buffer.
   // The parent pointer is reset if the parent is destroyed.
   base::WeakPtr<GLES2DecoderImpl> parent_;
@@ -1653,7 +1657,8 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
 }
 
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
-    : GLES2Decoder(group),
+    : GLES2Decoder(),
+      group_(ContextGroup::Ref(group ? group : new ContextGroup())),
       error_bits_(0),
       util_(0),  // TODO(gman): Set to actual num compress texture formats.
       pack_alignment_(4),
@@ -1701,6 +1706,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
 
 bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
                                   const gfx::Size& size,
+                                  const char* allowed_extensions,
                                   const std::vector<int32>& attribs,
                                   GLES2Decoder* parent,
                                   uint32 parent_client_texture_id) {
@@ -1720,6 +1726,12 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
                << "MakeCurrent failed.";
     Destroy();
     return false;
+  }
+
+  if (!group_->Initialize(allowed_extensions)) {
+    LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
+               << "failed to initialize.";
+    Destroy();
   }
 
   CHECK_GL_ERROR();
@@ -1756,7 +1768,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
       return false;
 
     if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
-        (feature_info_->feature_flags().ext_framebuffer_multisample ||
+        (feature_info_->feature_flags().chromium_framebuffer_multisample ||
          context_->HasExtension("GL_ANGLE_framebuffer_multisample"))) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
       GLint max_sample_count;
@@ -2059,7 +2071,7 @@ static void RebindCurrentFramebuffer(
 }
 
 void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
-  if (!feature_info_->feature_flags().ext_framebuffer_multisample) {
+  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
     RebindCurrentFramebuffer(
         GL_FRAMEBUFFER,
         bound_draw_framebuffer_.get(),
@@ -2094,8 +2106,9 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
     int width = 0;
     int height = 0;
 
-    GLenum target = feature_info_->feature_flags().ext_framebuffer_multisample ?
-        GL_READ_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
+    GLenum target =
+        feature_info_->feature_flags().chromium_framebuffer_multisample ?
+            GL_READ_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
 
     // Assume we have to have COLOR_ATTACHMENT0. Should we check for depth and
     // stencil.
@@ -3378,7 +3391,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
-  if (!feature_info_->feature_flags().ext_framebuffer_multisample) {
+  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glBlitFramebufferEXT: function not available");
   }
@@ -3389,7 +3402,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
-  if (!feature_info_->feature_flags().ext_framebuffer_multisample) {
+  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glRenderbufferStorageMultisampleEXT: function not available");
     return;
@@ -5596,9 +5609,9 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         offscreen_saved_color_texture_->Copy(
             offscreen_saved_color_texture_->size());
 
-        // Ensure the side effects of the copy are visible to the parent context.
-        // There is no need to do this for ANGLE because it uses a single D3D
-        // device for all contexts.
+        // Ensure the side effects of the copy are visible to the parent
+        // context. There is no need to do this for ANGLE because it uses a
+        // single D3D device for all contexts.
         if (!IsAngle())
           glFlush();
       }

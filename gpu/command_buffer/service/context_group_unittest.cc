@@ -37,58 +37,62 @@ class ContextGroupTest : public testing::Test {
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
+    group_ = ContextGroup::Ref(new ContextGroup());
   }
 
   virtual void TearDown() {
-    group_.Destroy(false);
+    // we must release the ContextGroup before we clear out the GL interface.
+    // since its destructor uses GL.
+    group_->SetLostContext();
+    group_ = NULL;
     ::gfx::GLInterface::SetGLInterface(NULL);
     gl_.reset();
   }
 
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
-  ContextGroup group_;
+  ContextGroup::Ref group_;
 };
 
 TEST_F(ContextGroupTest, Basic) {
   // Test it starts off uninitialized.
-  EXPECT_EQ(0u, group_.max_vertex_attribs());
-  EXPECT_EQ(0u, group_.max_texture_units());
-  EXPECT_EQ(0u, group_.max_texture_image_units());
-  EXPECT_EQ(0u, group_.max_vertex_texture_image_units());
-  EXPECT_EQ(0u, group_.max_fragment_uniform_vectors());
-  EXPECT_EQ(0u, group_.max_varying_vectors());
-  EXPECT_EQ(0u, group_.max_vertex_uniform_vectors());
-  EXPECT_TRUE(group_.buffer_manager() == NULL);
-  EXPECT_TRUE(group_.framebuffer_manager() == NULL);
-  EXPECT_TRUE(group_.renderbuffer_manager() == NULL);
-  EXPECT_TRUE(group_.texture_manager() == NULL);
-  EXPECT_TRUE(group_.program_manager() == NULL);
-  EXPECT_TRUE(group_.shader_manager() == NULL);
+  EXPECT_EQ(0u, group_->max_vertex_attribs());
+  EXPECT_EQ(0u, group_->max_texture_units());
+  EXPECT_EQ(0u, group_->max_texture_image_units());
+  EXPECT_EQ(0u, group_->max_vertex_texture_image_units());
+  EXPECT_EQ(0u, group_->max_fragment_uniform_vectors());
+  EXPECT_EQ(0u, group_->max_varying_vectors());
+  EXPECT_EQ(0u, group_->max_vertex_uniform_vectors());
+  EXPECT_TRUE(group_->buffer_manager() == NULL);
+  EXPECT_TRUE(group_->framebuffer_manager() == NULL);
+  EXPECT_TRUE(group_->renderbuffer_manager() == NULL);
+  EXPECT_TRUE(group_->texture_manager() == NULL);
+  EXPECT_TRUE(group_->program_manager() == NULL);
+  EXPECT_TRUE(group_->shader_manager() == NULL);
 }
 
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
   TestHelper::SetupContextGroupInitExpectations(gl_.get(), "");
-  group_.Initialize("");
+  group_->Initialize("");
   EXPECT_EQ(static_cast<uint32>(TestHelper::kNumVertexAttribs),
-            group_.max_vertex_attribs());
+            group_->max_vertex_attribs());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kNumTextureUnits),
-            group_.max_texture_units());
+            group_->max_texture_units());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxTextureImageUnits),
-            group_.max_texture_image_units());
+            group_->max_texture_image_units());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxVertexTextureImageUnits),
-             group_.max_vertex_texture_image_units());
+             group_->max_vertex_texture_image_units());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxFragmentUniformVectors),
-            group_.max_fragment_uniform_vectors());
+            group_->max_fragment_uniform_vectors());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxVaryingVectors),
-            group_.max_varying_vectors());
+            group_->max_varying_vectors());
   EXPECT_EQ(static_cast<uint32>(TestHelper::kMaxVertexUniformVectors),
-            group_.max_vertex_uniform_vectors());
-  EXPECT_TRUE(group_.buffer_manager() != NULL);
-  EXPECT_TRUE(group_.framebuffer_manager() != NULL);
-  EXPECT_TRUE(group_.renderbuffer_manager() != NULL);
-  EXPECT_TRUE(group_.texture_manager() != NULL);
-  EXPECT_TRUE(group_.program_manager() != NULL);
-  EXPECT_TRUE(group_.shader_manager() != NULL);
+            group_->max_vertex_uniform_vectors());
+  EXPECT_TRUE(group_->buffer_manager() != NULL);
+  EXPECT_TRUE(group_->framebuffer_manager() != NULL);
+  EXPECT_TRUE(group_->renderbuffer_manager() != NULL);
+  EXPECT_TRUE(group_->texture_manager() != NULL);
+  EXPECT_TRUE(group_->program_manager() != NULL);
+  EXPECT_TRUE(group_->shader_manager() != NULL);
 }
 
 }  // namespace gles2

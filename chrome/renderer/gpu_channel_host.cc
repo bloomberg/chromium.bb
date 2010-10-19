@@ -5,6 +5,7 @@
 #include "chrome/renderer/gpu_channel_host.h"
 
 #include "chrome/common/child_process.h"
+#include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/gpu_video_service_host.h"
@@ -84,16 +85,22 @@ bool GpuChannelHost::Send(IPC::Message* message) {
 }
 
 CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
-    gfx::NativeViewId view, int render_view_id) {
+    gfx::NativeViewId view,
+    int render_view_id,
+    const std::string& allowed_extensions,
+    const std::vector<int32>& attribs) {
 #if defined(ENABLE_GPU)
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
     return NULL;
 
+  GPUCreateCommandBufferConfig init_params(allowed_extensions, attribs);
   int32 route_id;
-  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(view,
-                                                      render_view_id,
-                                                      &route_id)) &&
+  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(
+      view,
+      render_view_id,
+      init_params,
+      &route_id)) &&
       route_id != MSG_ROUTING_NONE) {
     return NULL;
   }
@@ -110,6 +117,7 @@ CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
 CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
     CommandBufferProxy* parent,
     const gfx::Size& size,
+    const std::string& allowed_extensions,
     const std::vector<int32>& attribs,
     uint32 parent_texture_id) {
 #if defined(ENABLE_GPU)
@@ -117,11 +125,12 @@ CommandBufferProxy* GpuChannelHost::CreateOffscreenCommandBuffer(
   if (!channel_.get())
     return NULL;
 
+  GPUCreateCommandBufferConfig init_params(allowed_extensions, attribs);
   int32 parent_route_id = parent ? parent->route_id() : 0;
   int32 route_id;
   if (!Send(new GpuChannelMsg_CreateOffscreenCommandBuffer(parent_route_id,
                                                            size,
-                                                           attribs,
+                                                           init_params,
                                                            parent_texture_id,
                                                            &route_id)) &&
       route_id != MSG_ROUTING_NONE) {

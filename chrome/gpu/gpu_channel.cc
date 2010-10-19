@@ -102,9 +102,11 @@ int GpuChannel::GenerateRouteID() {
   return ++last_id;
 }
 
-void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
-                                           int32 render_view_id,
-                                           int32* route_id) {
+void GpuChannel::OnCreateViewCommandBuffer(
+    gfx::NativeViewId view_id,
+    int32 render_view_id,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32* route_id) {
   *route_id = 0;
 
 #if defined(ENABLE_GPU)
@@ -143,11 +145,9 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
 #endif
 
   *route_id = GenerateRouteID();
-  // TODO(enne): implement context creation attributes for view buffers
-  std::vector<int32> attribs;
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, handle, NULL, gfx::Size(), attribs, 0, *route_id,
-      renderer_id_, render_view_id));
+      this, handle, NULL, gfx::Size(), init_params.allowed_extensions,
+      init_params.attribs, 0, *route_id, renderer_id_, render_view_id));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
@@ -156,7 +156,7 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     int32 parent_route_id,
     const gfx::Size& size,
-    const std::vector<int32>& attribs,
+    const GPUCreateCommandBufferConfig& init_params,
     uint32 parent_texture_id,
     int32* route_id) {
 #if defined(ENABLE_GPU)
@@ -170,7 +170,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       gfx::kNullPluginWindow,
       parent_stub,
       size,
-      attribs,
+      init_params.allowed_extensions,
+      init_params.attribs,
       parent_texture_id,
       *route_id,
       0, 0));

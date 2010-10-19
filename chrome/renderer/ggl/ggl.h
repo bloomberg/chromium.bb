@@ -19,10 +19,8 @@ class GpuChannelHost;
 class MessageLoop;
 
 namespace media {
-
 class VideoDecodeContext;
 class VideoDecodeEngine;
-
 }
 
 namespace ggl {
@@ -78,6 +76,7 @@ bool Terminate();
 Context* CreateViewContext(GpuChannelHost* channel,
                            gfx::NativeViewId view,
                            int render_view_id,
+                           const char* allowed_extensions,
                            const int32* attrib_list);
 
 #if defined(OS_MACOSX)
@@ -97,6 +96,7 @@ void ResizeOnscreenContext(Context* context, const gfx::Size& size);
 Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
                                 const gfx::Size& size,
+                                const char* allowed_extensions,
                                 const int32* attrib_list);
 
 // Resize an offscreen frame buffer. The resize occurs on the next call to

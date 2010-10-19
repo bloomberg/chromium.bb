@@ -22,16 +22,17 @@ namespace gles2 {
 class ContextGroup;
 class MockGLES2Decoder : public GLES2Decoder {
  public:
-  explicit MockGLES2Decoder(ContextGroup* group)
-      : GLES2Decoder(group) {
+  MockGLES2Decoder()
+      : GLES2Decoder() {
     ON_CALL(*this, GetCommandName(testing::_))
       .WillByDefault(testing::Return(""));
     ON_CALL(*this, MakeCurrent())
       .WillByDefault(testing::Return(true));
   }
 
-  MOCK_METHOD5(Initialize, bool(gfx::GLContext* context,
+  MOCK_METHOD6(Initialize, bool(gfx::GLContext* context,
                                 const gfx::Size& size,
+                                const char* allowed_extensions,
                                 const std::vector<int32>& attribs,
                                 GLES2Decoder* parent,
                                 uint32 parent_texture_id));
@@ -42,6 +43,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
   MOCK_METHOD0(GetGLContext, gfx::GLContext*());
+  MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_METHOD1(SetSwapBuffersCallback, void(Callback0::Type*));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,

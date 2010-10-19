@@ -13,6 +13,7 @@ namespace gpu {
 
 bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
                               const gfx::Size& size,
+                              const char* allowed_extensions,
                               const std::vector<int32>& attribs,
                               GPUProcessor* parent,
                               uint32 parent_texture_id) {
@@ -43,6 +44,7 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
 
   return InitializeCommon(context.release(),
                           size,
+                          allowed_extensions,
                           attribs,
                           parent_decoder,
                           parent_texture_id);

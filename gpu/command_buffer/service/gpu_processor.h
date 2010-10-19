@@ -18,7 +18,6 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
-#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 #if defined(OS_MACOSX)
@@ -30,12 +29,16 @@ class GLContext;
 }
 
 namespace gpu {
+namespace gles2 {
+class ContextGroup;
+}
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
 class GPUProcessor : public CommandBufferEngine {
  public:
-  explicit GPUProcessor(CommandBuffer* command_buffer);
+  // If a group is not passed in one will be created.
+  GPUProcessor(CommandBuffer* command_buffer, gles2::ContextGroup* group);
 
   // This constructor is for unit tests.
   GPUProcessor(CommandBuffer* command_buffer,
@@ -48,16 +51,10 @@ class GPUProcessor : public CommandBufferEngine {
   // Perform platform specific and common initialization.
   bool Initialize(gfx::PluginWindowHandle hwnd,
                   const gfx::Size& size,
+                  const char* allowed_extensions,
                   const std::vector<int32>& attribs,
                   GPUProcessor* parent,
                   uint32 parent_texture_id);
-
-  // Perform common initialization. Takes ownership of GLContext.
-  bool InitializeCommon(gfx::GLContext* context,
-                        const gfx::Size& size,
-                        const std::vector<int32>& attribs,
-                        gles2::GLES2Decoder* parent_decoder,
-                        uint32 parent_texture_id);
 
   void Destroy();
   void DestroyCommon();
@@ -96,6 +93,16 @@ class GPUProcessor : public CommandBufferEngine {
   // Get the GLES2Decoder associated with this processor.
   gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
 
+ protected:
+  // Perform common initialization. Takes ownership of GLContext.
+  bool InitializeCommon(gfx::GLContext* context,
+                        const gfx::Size& size,
+                        const char* allowed_extensions,
+                        const std::vector<int32>& attribs,
+                        gles2::GLES2Decoder* parent_decoder,
+                        uint32 parent_texture_id);
+
+
  private:
   // Called via a callback just before we are supposed to call the
   // user's swap buffers callback.
@@ -108,9 +115,6 @@ class GPUProcessor : public CommandBufferEngine {
 
   int commands_per_update_;
 
-  // TODO(gman): Group needs to be passed in so it can be shared by
-  //    multiple GPUProcessors.
-  gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
 

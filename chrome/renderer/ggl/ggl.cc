@@ -64,6 +64,7 @@ class Context : public base::SupportsWeakPtr<Context> {
   bool Initialize(gfx::NativeViewId view,
                   int render_view_id,
                   const gfx::Size& size,
+                  const char* allowed_extensions,
                   const int32* attrib_list);
 
 #if defined(OS_MACOSX)
@@ -151,6 +152,7 @@ Context::~Context() {
 bool Context::Initialize(gfx::NativeViewId view,
                          int render_view_id,
                          const gfx::Size& size,
+                         const char* allowed_extensions,
                          const int32* attrib_list) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
@@ -199,15 +201,18 @@ bool Context::Initialize(gfx::NativeViewId view,
 
   // Create a proxy to a command buffer in the GPU process.
   if (view) {
-    // TODO(enne): this call should also handle attribs
-    command_buffer_ =
-        channel_->CreateViewCommandBuffer(view, render_view_id);
+    command_buffer_ = channel_->CreateViewCommandBuffer(
+        view,
+        render_view_id,
+        allowed_extensions,
+        attribs);
   } else {
     CommandBufferProxy* parent_command_buffer =
         parent_.get() ? parent_->command_buffer_ : NULL;
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         parent_command_buffer,
         size,
+        allowed_extensions,
         attribs,
         parent_texture_id_);
   }
@@ -408,10 +413,12 @@ void Context::OnSwapBuffers() {
 Context* CreateViewContext(GpuChannelHost* channel,
                            gfx::NativeViewId view,
                            int render_view_id,
+                           const char* allowed_extensions,
                            const int32* attrib_list) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, NULL));
-  if (!context->Initialize(view, render_view_id, gfx::Size(), attrib_list))
+  if (!context->Initialize(
+      view, render_view_id, gfx::Size(), allowed_extensions, attrib_list))
     return NULL;
 
   return context.release();
@@ -431,10 +438,11 @@ void ResizeOnscreenContext(Context* context, const gfx::Size& size) {
 Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
                                 const gfx::Size& size,
+                                const char* allowed_extensions,
                                 const int32* attrib_list) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, parent));
-  if (!context->Initialize(0, 0, size, attrib_list))
+  if (!context->Initialize(0, 0, size, allowed_extensions, attrib_list))
     return NULL;
 
   return context.release();

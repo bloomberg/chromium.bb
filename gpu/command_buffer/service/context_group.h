@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/feature_info.h"
 
@@ -29,16 +30,20 @@ class TextureManager;
 
 // A Context Group helps manage multiple GLES2Decoders that share
 // resources.
-class ContextGroup {
+class ContextGroup : public base::RefCounted<ContextGroup> {
  public:
+  typedef scoped_refptr<ContextGroup> Ref;
+
   ContextGroup();
   ~ContextGroup();
 
   // This should only be called by GLES2Decoder.
   bool Initialize(const char* allowed_features);
 
-  // Destroys all the resources. MUST be called before destruction.
-  void Destroy(bool have_context);
+  // Sets the ContextGroup has having a lost context.
+  void SetLostContext() {
+    have_context_ = false;
+  }
 
   uint32 max_vertex_attribs() const {
     return max_vertex_attribs_;
@@ -99,8 +104,12 @@ class ContextGroup {
   IdAllocator* GetIdAllocator(unsigned namepsace_id);
 
  private:
+  // Destroys all the resources.
+  void Destroy();
+
   // Whether or not this context is initialized.
   bool initialized_;
+  bool have_context_;
 
   uint32 max_vertex_attribs_;
   uint32 max_texture_units_;

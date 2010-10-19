@@ -18,6 +18,7 @@ namespace gles2 {
 
 ContextGroup::ContextGroup()
     : initialized_(false),
+      have_context_(true),
       max_vertex_attribs_(0u),
       max_texture_units_(0u),
       max_texture_image_units_(0u),
@@ -28,13 +29,7 @@ ContextGroup::ContextGroup()
 }
 
 ContextGroup::~ContextGroup() {
-  // Check that Destroy has been called.
-  DCHECK(buffer_manager_ == NULL);
-  DCHECK(framebuffer_manager_ == NULL);
-  DCHECK(renderbuffer_manager_ == NULL);
-  DCHECK(texture_manager_ == NULL);
-  DCHECK(program_manager_ == NULL);
-  DCHECK(shader_manager_ == NULL);
+  Destroy();
 }
 
 static void GetIntegerv(GLenum pname, uint32* var) {
@@ -42,8 +37,6 @@ static void GetIntegerv(GLenum pname, uint32* var) {
   glGetIntegerv(pname, &value);
   *var = value;
 }
-
-
 
 bool ContextGroup::Initialize(const char* allowed_features) {
   if (initialized_) {
@@ -115,34 +108,34 @@ bool ContextGroup::Initialize(const char* allowed_features) {
   return true;
 }
 
-void ContextGroup::Destroy(bool have_context) {
+void ContextGroup::Destroy() {
   if (buffer_manager_ != NULL) {
-    buffer_manager_->Destroy(have_context);
+    buffer_manager_->Destroy(have_context_);
     buffer_manager_.reset();
   }
 
   if (framebuffer_manager_ != NULL) {
-    framebuffer_manager_->Destroy(have_context);
+    framebuffer_manager_->Destroy(have_context_);
     framebuffer_manager_.reset();
   }
 
   if (renderbuffer_manager_ != NULL) {
-    renderbuffer_manager_->Destroy(have_context);
+    renderbuffer_manager_->Destroy(have_context_);
     renderbuffer_manager_.reset();
   }
 
   if (texture_manager_ != NULL) {
-    texture_manager_->Destroy(have_context);
+    texture_manager_->Destroy(have_context_);
     texture_manager_.reset();
   }
 
   if (program_manager_ != NULL) {
-    program_manager_->Destroy(have_context);
+    program_manager_->Destroy(have_context_);
     program_manager_.reset();
   }
 
   if (shader_manager_ != NULL) {
-    shader_manager_->Destroy(have_context);
+    shader_manager_->Destroy(have_context_);
     shader_manager_.reset();
   }
 }
