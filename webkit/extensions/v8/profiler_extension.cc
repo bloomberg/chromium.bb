@@ -4,11 +4,22 @@
 
 #include "webkit/extensions/v8/profiler_extension.h"
 
-#include "base/profiler.h"
+#include "build/build_config.h"
+
+#if defined(QUANTIFY)
+// this #define is used to prevent people from directly using pure.h
+// instead of profiler.h
+#define PURIFY_PRIVATE_INCLUDE
+#include "base/third_party/purify/pure.h"
+#endif // QUANTIFY
+
+#if defined(USE_TCMALLOC) && defined(OS_LINUX)
+#include "third_party/tcmalloc/chromium/src/google/profiler.h"
+#endif
 
 namespace extensions_v8 {
 
-const char* kProfilerExtensionName = "v8/Profiler";
+const char kProfilerExtensionName[] = "v8/Profiler";
 
 class ProfilerWrapper : public v8::Extension {
  public:
@@ -58,25 +69,37 @@ class ProfilerWrapper : public v8::Extension {
 
   static v8::Handle<v8::Value> ProfilerStart(
       const v8::Arguments& args) {
-    base::Profiler::StartRecording();
+#if defined(QUANTIFY)
+    QuantifyStartRecordingData();
+#elif defined(USE_TCMALLOC) && defined(OS_LINUX)
+    ::ProfilerStart("chrome-profile");
+#endif
     return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> ProfilerStop(
       const v8::Arguments& args) {
-    base::Profiler::StopRecording();
+#if defined(QUANTIFY)
+    QuantifyStopRecordingData();
+#elif defined(USE_TCMALLOC) && defined(OS_LINUX)
+    ::ProfilerStop();
+#endif
     return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> ProfilerClearData(
       const v8::Arguments& args) {
-    base::Profiler::ClearData();
+#if defined(QUANTIFY)
+    QuantifyClearData();
+#endif
     return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> ProfilerFlush(
       const v8::Arguments& args) {
-    base::Profiler::Flush();
+#if defined(USE_TCMALLOC) && defined(OS_LINUX)
+    ::ProfilerFlush();
+#endif
     return v8::Undefined();
   }
 
@@ -87,7 +110,12 @@ class ProfilerWrapper : public v8::Extension {
       v8::Local<v8::String> inputString = args[0]->ToString();
       char nameBuffer[256];
       inputString->WriteAscii(nameBuffer, 0, sizeof(nameBuffer)-1);
-      base::Profiler::SetThreadName(nameBuffer);
+#if defined(QUANTIFY)
+      // make a copy since the Quantify function takes a char*, not const char*
+      char buffer[512];
+      base::snprintf(buffer, arraysize(buffer)-1, "%s", name);
+      QuantifySetThreadName(buffer);
+#endif
     }
     return v8::Undefined();
   }
