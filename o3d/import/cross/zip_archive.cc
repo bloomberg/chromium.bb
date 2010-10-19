@@ -711,19 +711,17 @@ void  ZipFileInfo::Print(bool print_header) {
   const char *string_method;
   if (compression_method == 0) {
     string_method = "Stored";
-  } else {
-    if (compression_method == Z_DEFLATED) {
-      uInt iLevel = (uInt)((flag & 0x6) / 2);
-      if (iLevel == 0) {
-        string_method = "Defl:N";
-      } else if (iLevel == 1) {
-        string_method = "Defl:X";
-      } else if ((iLevel == 2) || (iLevel == 3)) {
-        string_method = "Defl:F";  // 2:fast , 3 : extra fast
-      }
-    } else {
-      string_method = "Unkn. ";
+  } else if (compression_method == Z_DEFLATED) {
+    uInt iLevel = (uInt)((flag & 0x6) / 2);
+    if (iLevel == 0) {
+      string_method = "Defl:N";
+    } else if (iLevel == 1) {
+      string_method = "Defl:X";
+    } else {  // i.e., ((iLevel == 2) || (iLevel == 3))
+      string_method = "Defl:F";  // 2:fast , 3 : extra fast
     }
+  } else {
+    string_method = "Unkn. ";
   }
 
   printf("%7lu  %6s%c%7lu %3lu%%  %2.2lu-%2.2lu-%2.2lu  "
