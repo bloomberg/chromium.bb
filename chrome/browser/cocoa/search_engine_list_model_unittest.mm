@@ -75,10 +75,10 @@ TEST_F(SearchEngineListModelTest, Engines) {
 }
 
 TEST_F(SearchEngineListModelTest, Default) {
-  EXPECT_EQ([model_ defaultIndex], 0U);
+  EXPECT_EQ([model_ defaultIndex], -1);
 
   [model_ setDefaultIndex:1];
-  EXPECT_EQ([model_ defaultIndex], 1U);
+  EXPECT_EQ([model_ defaultIndex], 1);
 
   // Add two more URLs, neither of which are shown in the default list.
   TemplateURL* t_url = new TemplateURL();
@@ -101,7 +101,7 @@ TEST_F(SearchEngineListModelTest, Default) {
   // keyword list should be keyword4. Test for http://crbug.com/21898.
   template_model_->SetDefaultSearchProvider(t_url);
   EXPECT_EQ([[model_ searchEngines] count], 3U);
-  EXPECT_EQ([model_ defaultIndex], 2U);
+  EXPECT_EQ([model_ defaultIndex], 2);
 
   NSString* defaultString = [[model_ searchEngines] objectAtIndex:2];
   EXPECT_NSEQ(@"google4", defaultString);
