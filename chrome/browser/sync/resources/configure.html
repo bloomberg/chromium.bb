@@ -189,11 +189,24 @@ html[os='mac'] input[type='submit'] {
     setErrorState(args);
   }
 
+  function checkAllDataTypeCheckboxes() {
+    var checkboxes = document.getElementsByName("dataTypeCheckbox");
+    for (var i = 0; i < checkboxes.length; i++) {
+      checkboxes[i].checked = true;
+    }
+  }
+
+  function setCheckboxesToKeepEverythingSynced(value) {
+    setDataTypeCheckboxesEnabled(!value);
+    if (value)
+      checkAllDataTypeCheckboxes();
+  }
+
   // Can be called multiple times.
   function setChooseDataTypesCheckboxes(args) {
     // If this frame is on top, the focus should be on it, so pressing enter
     // submits this form.
-    if (args.iframeToShow == 'choose_data_types') {
+    if (args.iframeToShow == 'configure') {
       document.getElementById("okButton").focus();
     }
 
@@ -201,7 +214,6 @@ html[os='mac'] input[type='submit'] {
         args.keepEverythingSynced;
     document.getElementById("chooseDataTypesRadio").checked =
         !args.keepEverythingSynced;
-    setDataTypeCheckboxesEnabled(!args.keepEverythingSynced);
 
     document.getElementById("bookmarksCheckbox").checked = args.syncBookmarks;
     document.getElementById("preferencesCheckbox").checked =
@@ -240,6 +252,8 @@ html[os='mac'] input[type='submit'] {
     } else {
       document.getElementById("appsItem").className = "sync-item-hide";
     }
+
+    setCheckboxesToKeepEverythingSynced(args.keepEverythingSynced);
   }
 
   function setEncryptionCheckboxes(args) {
@@ -363,14 +377,14 @@ html[os='mac'] input[type='submit'] {
       <div class="sync-choice_radio">
         <input id="keepEverythingSyncedRadio" type="radio"
                name="syncChooseDataTypes"
-               onclick="setDataTypeCheckboxesEnabled(false)">
+               onclick="setCheckboxesToKeepEverythingSynced(true);">
         <label for="keepEverythingSyncedRadio"
                i18n-content="keepeverythingsynced">
         </label>
       </div>
       <div id="chooseDataTypes" class="sync-choice_radio">
         <input id="chooseDataTypesRadio" type="radio" name="syncChooseDataTypes" 
-               onclick="setDataTypeCheckboxesEnabled(true)">
+               onclick="setCheckboxesToKeepEverythingSynced(false)">
         <label for="chooseDataTypesRadio" i18n-content="choosedatatypes" ></label>
         <div id="chooseDataTypesBody">
           <div>
