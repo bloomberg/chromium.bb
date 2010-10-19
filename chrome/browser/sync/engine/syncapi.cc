@@ -395,13 +395,13 @@ void WriteNode::PutNigoriSpecificsAndMarkForSyncing(
 void WriteNode::SetPasswordSpecifics(
     const sync_pb::PasswordSpecificsData& data) {
   DCHECK(GetModelType() == syncable::PASSWORDS);
-  std::string serialized_data;
-  data.SerializeToString(&serialized_data);
+
   sync_pb::PasswordSpecifics new_value;
   if (!GetTransaction()->GetCryptographer()->Encrypt(
       data,
-      new_value.mutable_encrypted()))
+      new_value.mutable_encrypted())) {
     NOTREACHED();
+  }
 
   PutPasswordSpecificsAndMarkForSyncing(new_value);
 }
@@ -417,7 +417,6 @@ void WriteNode::SetThemeSpecifics(
   DCHECK(GetModelType() == syncable::THEMES);
   PutThemeSpecificsAndMarkForSyncing(new_value);
 }
-
 
 void WriteNode::SetSessionSpecifics(
     const sync_pb::SessionSpecifics& new_value) {
@@ -1155,6 +1154,8 @@ class SyncManager::SyncInternal
     }
   }
 
+  void ReEncryptEverything(WriteTransaction* trans);
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
@@ -1555,14 +1556,43 @@ void SyncManager::SyncInternal::SetPassphrase(
     }
     cryptographer->AddKey(params);
 
+    // TODO(tim): Bug 58231. It would be nice if SetPassphrase didn't require
+    // messing with the Nigori node, because we can't call SetPassphrase until
+    // download conditions are met vs Cryptographer init.  It seems like it's
+    // safe to defer this work.
     sync_pb::NigoriSpecifics specifics;
     cryptographer->GetKeys(specifics.mutable_encrypted());
     node.SetNigoriSpecifics(specifics);
+    ReEncryptEverything(&trans);
   }
 
   std::string bootstrap_token;
   cryptographer->GetBootstrapToken(&bootstrap_token);
   observer_->OnPassphraseAccepted(bootstrap_token);
+}
+
+void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
+  // TODO(tim): bug 59242.  We shouldn't lookup by data type and instead use
+  // a protocol flag or existence of an EncryptedData message, but for now,
+  // encryption is on if-and-only-if the type is passwords, and we haven't
+  // ironed out the protocol for generic encryption.
+  static const char* passwords_tag = "google_chrome_passwords";
+  ReadNode passwords_root(trans);
+  if (!passwords_root.InitByTagLookup(passwords_tag)) {
+    LOG(WARNING) << "No passwords to reencrypt.";
+    return;
+  }
+
+  int64 child_id = passwords_root.GetFirstChildId();
+  while (child_id != kInvalidId) {
+    WriteNode child(trans);
+    if (!child.InitByIdLookup(child_id)) {
+      NOTREACHED();
+      return;
+    }
+    child.SetPasswordSpecifics(child.GetPasswordSpecifics());
+    child_id = child.GetSuccessorId();
+  }
 }
 
 SyncManager::~SyncManager() {
