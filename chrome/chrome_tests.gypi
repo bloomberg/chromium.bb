@@ -2105,6 +2105,10 @@
             '../build/linux/system.gyp:nss',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
+          'sources': [
+            # TODO(estade): port to win/mac.
+            'browser/dom_ui/constrained_html_ui_browsertest.cc',
+          ],
         }],
         ['OS=="mac"', {
           'include_dirs': [
