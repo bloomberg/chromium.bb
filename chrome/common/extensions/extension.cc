@@ -14,10 +14,10 @@
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/sha2.h"
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
-#include "base/third_party/nss/sha256.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -463,15 +463,11 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
 
 bool Extension::GenerateId(const std::string& input, std::string* output) {
   CHECK(output);
-  if (input.length() == 0)
+  if (input.empty())
     return false;
 
-  const uint8* ubuf = reinterpret_cast<const unsigned char*>(input.data());
-  SHA256Context ctx;
-  SHA256_Begin(&ctx);
-  SHA256_Update(&ctx, ubuf, input.length());
   uint8 hash[Extension::kIdSize];
-  SHA256_End(&ctx, hash, NULL, sizeof(hash));
+  base::SHA256HashString(input, hash, sizeof(hash));
   *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
   ConvertHexadecimalToIDAlphabet(output);
 

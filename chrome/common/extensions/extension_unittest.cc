@@ -1142,3 +1142,18 @@ TEST(ExtensionTest, GetDistinctHosts) {
                  Extension::GetDistinctHosts(actual));
   }
 }
+
+TEST(ExtensionTest, GenerateId) {
+  std::string result;
+  EXPECT_FALSE(Extension::GenerateId("", &result));
+
+  EXPECT_TRUE(Extension::GenerateId("test", &result));
+  EXPECT_EQ(result, "jpignaibiiemhngfjkcpokkamffknabf");
+
+  EXPECT_TRUE(Extension::GenerateId("_", &result));
+  EXPECT_EQ(result, "ncocknphbhhlhkikpnnlmbcnbgdempcd");
+
+  EXPECT_TRUE(Extension::GenerateId(
+      "this_string_is_longer_than_a_single_sha256_hash_digest", &result));
+  EXPECT_EQ(result, "jimneklojkjdibfkgiiophfhjhbdgcfi");
+}
