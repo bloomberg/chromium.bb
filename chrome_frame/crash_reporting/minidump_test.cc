@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <windows.h>
@@ -131,8 +131,8 @@ class MinidumpTest: public testing::Test {
                                       &ex_info,
                                       NULL,
                                       NULL);
-    LOG(INFO) << "Flags: " << flags << " mindump size: " <<
-        ::GetFileSize(dump_file_handle_.Get(), NULL);
+    VLOG(1) << "Flags: " << flags << " mindump size: "
+            << ::GetFileSize(dump_file_handle_.Get(), NULL);
 
     return result == TRUE;
   }
@@ -287,8 +287,8 @@ class MinidumpTest: public testing::Test {
 TEST_F(MinidumpTest, Version) {
   API_VERSION* version = ::ImagehlpApiVersion();
 
-  LOG(INFO) << "Imagehlp Api Version: " << version->MajorVersion << "."
-      << version->MinorVersion << "." << version->Revision;
+  VLOG(1) << "Imagehlp Api Version: " << version->MajorVersion << "."
+          << version->MinorVersion << "." << version->Revision;
 
   HMODULE dbg_help = ::GetModuleHandle(L"dbghelp.dll");
   ASSERT_TRUE(dbg_help != NULL);
@@ -301,7 +301,7 @@ TEST_F(MinidumpTest, Version) {
       FileVersionInfo::CreateFileVersionInfo(dbg_help_file));
   ASSERT_TRUE(file_info != NULL);
 
-  LOG(INFO) << "DbgHelp.dll version: " << file_info->file_version();
+  VLOG(1) << "DbgHelp.dll version: " << file_info->file_version();
 }
 
 TEST_F(MinidumpTest, Normal) {

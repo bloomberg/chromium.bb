@@ -196,9 +196,8 @@ void SniffData::DetermineRendererType(bool last_chance) {
         }
       }
     }
-    DLOG(INFO) << __FUNCTION__ << "Url: " << url_ <<
-        base::StringPrintf("Renderer type: %s",
-                           renderer_type_ == CHROME ? "CHROME" : "OTHER");
+    DVLOG(1) << __FUNCTION__ << "Url: " << url_ << base::StringPrintf(
+          "Renderer type: %s", renderer_type_ == CHROME ? "CHROME" : "OTHER");
   }
 }
 
@@ -213,8 +212,8 @@ BSCBStorageBind::~BSCBStorageBind() {
 }
 
 HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
 
   std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
                                              std::wstring());
@@ -238,9 +237,9 @@ HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
 
 STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
                                     ULONG status_code, LPCWSTR status_text) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(
-      " status=%i tid=%i %ls", status_code, PlatformThread::CurrentId(),
-      status_text);
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" status=%i tid=%i %ls", status_code,
+                                 PlatformThread::CurrentId(), status_text);
   // Report all crashes in the exception handler if we wrap the callback.
   // Note that this avoids having the VEH report a crash if an SEH earlier in
   // the chain handles the exception.
@@ -273,8 +272,8 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
 STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
                                               FORMATETC* format_etc,
                                               STGMEDIUM* stgmed) {
-  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   // Report all crashes in the exception handler if we wrap the callback.
   // Note that this avoids having the VEH report a crash if an SEH earlier in
   // the chain handles the exception.
@@ -316,8 +315,8 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
 }
 
 STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
-  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   // Report all crashes in the exception handler if we wrap the callback.
   // Note that this avoids having the VEH report a crash if an SEH earlier in
   // the chain handles the exception.

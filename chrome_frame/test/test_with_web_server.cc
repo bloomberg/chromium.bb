@@ -355,8 +355,8 @@ void MockWebServer::SendResponseHelper(
                                                              headers);
     } else {
       EXPECT_TRUE(net::GetMimeTypeFromFile(file_path, &content_type));
-      DLOG(INFO) << "Going to send file (" << WideToUTF8(file_path.value())
-                 << ") with content type (" << content_type << ")";
+      DVLOG(1) << "Going to send file (" << WideToUTF8(file_path.value())
+               << ") with content type (" << content_type << ")";
       headers = CreateHttpHeaders(invocation, add_no_cache_header,
                                   content_type);
     }
@@ -371,8 +371,8 @@ void MockWebServer::SendResponseHelper(
           << "meta tag to HTML file.";
     }
   } else {
-    DLOG(INFO) << "Going to send 404 for non-existent file ("
-               << WideToUTF8(file_path.value()) << ")";
+    DVLOG(1) << "Going to send 404 for non-existent file ("
+             << WideToUTF8(file_path.value()) << ")";
     headers = "HTTP/1.1 404 Not Found";
     body = "";
   }

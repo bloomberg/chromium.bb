@@ -350,8 +350,8 @@ STDMETHODIMP CheckOutgoingInterface(void* obj, REFIID iid, void** ret,
     if (SUCCEEDED(hr)) {
       wchar_t iid_string[64] = {0};
       StringFromGUID2(iid, iid_string, arraysize(iid_string));
-      DLOG(INFO) << __FUNCTION__ << " Giving out wrapped interface: "
-          << iid_string;
+      DVLOG(1) << __FUNCTION__ << " Giving out wrapped interface: "
+               << iid_string;
     }
 #endif
   }

@@ -1,6 +1,7 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome_frame/task_marshaller.h"
 #include "base/task.h"
 
@@ -27,13 +28,14 @@ void TaskMarshallerThroughMessageQueue::PostTask(
     return;
 
   if (!::PostMessage(wnd_, msg_, 0, 0)) {
-    DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
+    DVLOG(1) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
     DeleteAll();
   }
 }
 
 void TaskMarshallerThroughMessageQueue::PostDelayedTask(
-    const tracked_objects::Location& source, Task* task,
+    const tracked_objects::Location& source,
+    Task* task,
     base::TimeDelta& delay) {
   DCHECK(wnd_ != NULL);
   AutoLock lock(lock_);
@@ -47,8 +49,11 @@ void TaskMarshallerThroughMessageQueue::PostDelayedTask(
 }
 
 BOOL TaskMarshallerThroughMessageQueue::ProcessWindowMessage(HWND hWnd,
-    UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult,
-    DWORD dwMsgMapID) {
+                                                             UINT uMsg,
+                                                             WPARAM wParam,
+                                                             LPARAM lParam,
+                                                             LRESULT& lResult,
+                                                             DWORD dwMsgMapID) {
   if (hWnd == wnd_ && uMsg == msg_) {
     ExecuteQueuedTasks();
     lResult = 0;

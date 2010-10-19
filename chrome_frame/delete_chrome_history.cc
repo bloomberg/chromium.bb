@@ -17,7 +17,7 @@
 
 DeleteChromeHistory::DeleteChromeHistory()
   : remove_mask_(0) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 }
 
 DeleteChromeHistory::~DeleteChromeHistory() {
@@ -25,13 +25,13 @@ DeleteChromeHistory::~DeleteChromeHistory() {
 
 
 HRESULT DeleteChromeHistory::FinalConstruct() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   Initialize();
   return S_OK;
 }
 
 void DeleteChromeHistory::OnAutomationServerReady() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   automation_client_->RemoveBrowsingData(remove_mask_);
   loop_.Quit();
 }
@@ -48,7 +48,7 @@ void DeleteChromeHistory::GetProfilePath(const std::wstring& profile_name,
 }
 
 STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   // Usually called inside a quick startup/tear-down routine by RunDLL32. You
   // can simulate the process by calling:
   //    RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 255

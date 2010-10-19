@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,7 +60,7 @@ bool TestAutomationProvider::Send(IPC::Message* msg) {
     DCHECK(tab_handle_ == -1) << "Currently only support one tab";
     void* iter = NULL;
     CHECK(msg->ReadInt(&iter, &tab_handle_));
-    DLOG(INFO) << "Got tab handle: " << tab_handle_;
+    DVLOG(1) << "Got tab handle: " << tab_handle_;
     DCHECK(tab_handle_ != -1 && tab_handle_ != 0);
     delegate_->OnInitialTabLoaded();
   }

@@ -65,7 +65,7 @@ void PolicySettings::RefreshFromRegistry() {
       "invalid default renderer setting: " << value;
 
   if (value != RENDER_IN_HOST && value != RENDER_IN_CHROME_FRAME) {
-    DLOG(INFO) << "default renderer not specified via policy";
+    DVLOG(1) << "default renderer not specified via policy";
   } else {
     default_renderer_ = static_cast<RendererForUrl>(value);
     const char* exclusion_list_name = (default_renderer_ == RENDER_IN_HOST) ?
@@ -75,9 +75,9 @@ void PolicySettings::RefreshFromRegistry() {
     EnumerateKeyValues(config_key.Handle(),
         ASCIIToWide(exclusion_list_name).c_str(), &renderer_exclusion_list_);
 
-    DLOG(INFO) << "Default renderer as specified via policy: " <<
-        default_renderer_ << " exclusion list size: " <<
-        renderer_exclusion_list_.size();
+    DVLOG(1) << "Default renderer as specified via policy: "
+             << default_renderer_
+             << " exclusion list size: " << renderer_exclusion_list_.size();
   }
 
   std::wstring sub_key(policy::kRegistrySubKey);

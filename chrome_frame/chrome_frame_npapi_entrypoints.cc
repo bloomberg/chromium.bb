@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ extern "C" {
 }
 
 NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   _pAtlModule->Lock();
   npapi::InitializeBrowserFunctions(browser_funcs);
   return NPERR_NO_ERROR;
@@ -41,7 +41,7 @@ NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs) {
 }
 
 void NPAPI NP_Shutdown() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 
   npapi::UninitializeBrowserFunctions();
 

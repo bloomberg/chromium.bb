@@ -103,7 +103,7 @@ STDMETHODIMP BuggyBhoTls::BuggyBhoInvoke(InvokeFunc original, IDispatch* me,
                                          WORD flags, DISPPARAMS* params,
                                          VARIANT* result, EXCEPINFO* ei,
                                          UINT* err) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 
   const BuggyBhoTls* tls = BuggyBhoTls::FromCurrentThread();
   if (tls && tls->IsBuggyObject(me)) {

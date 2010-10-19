@@ -86,11 +86,11 @@ ProtData::ProtocolDataMap ProtData::datamap_;
 Lock ProtData::datamap_lock_;
 
 ProtocolSinkWrap::ProtocolSinkWrap() {
-  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
+  DVLOG(1) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
 }
 
 ProtocolSinkWrap::~ProtocolSinkWrap() {
-  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
+  DVLOG(1) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
 }
 
 ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(
@@ -156,9 +156,9 @@ STDMETHODIMP ProtocolSinkWrap::Switch(PROTOCOLDATA* protocol_data) {
 
 STDMETHODIMP ProtocolSinkWrap::ReportProgress(ULONG status_code,
                                               LPCWSTR status_text) {
-  DLOG(INFO) << "ProtocolSinkWrap::ReportProgress: "
-      <<  BindStatus2Str(status_code)
-      << " Status: " << (status_text ? status_text : L"");
+  DVLOG(1) << "ProtocolSinkWrap::ReportProgress: "
+           << BindStatus2Str(status_code)
+           << " Status: " << (status_text ? status_text : L"");
 
   HRESULT hr = prot_data_->ReportProgress(delegate_, status_code, status_text);
   return hr;
@@ -167,8 +167,8 @@ STDMETHODIMP ProtocolSinkWrap::ReportProgress(ULONG status_code,
 STDMETHODIMP ProtocolSinkWrap::ReportData(DWORD flags, ULONG progress,
     ULONG max_progress) {
   DCHECK(delegate_);
-  DLOG(INFO) << "ProtocolSinkWrap::ReportData: " << Bscf2Str(flags) <<
-      " progress: " << progress << " progress_max: " << max_progress;
+  DVLOG(1) << "ProtocolSinkWrap::ReportData: " << Bscf2Str(flags)
+           << " progress: " << progress << " progress_max: " << max_progress;
 
   HRESULT hr = prot_data_->ReportData(delegate_, flags, progress, max_progress);
   return hr;
@@ -176,8 +176,9 @@ STDMETHODIMP ProtocolSinkWrap::ReportData(DWORD flags, ULONG progress,
 
 STDMETHODIMP ProtocolSinkWrap::ReportResult(HRESULT result, DWORD error,
     LPCWSTR result_text) {
-  DLOG(INFO) << "ProtocolSinkWrap::ReportResult: result: " << result <<
-      " error: " << error << " Text: " << (result_text ? result_text : L"");
+  DVLOG(1) << "ProtocolSinkWrap::ReportResult: result: " << result
+           << " error: " << error
+           << " Text: " << (result_text ? result_text : L"");
   ExceptionBarrier barrier;
   HRESULT hr = prot_data_->ReportResult(delegate_, result, error, result_text);
   return hr;
@@ -360,7 +361,7 @@ ProtData::ProtData(IInternetProtocol* protocol,
       renderer_type_(RENDERER_TYPE_UNDETERMINED), protocol_(protocol),
       read_fun_(read_fun), url_(url) {
   memset(buffer_, 0, arraysize(buffer_));
-  DLOG(INFO) << __FUNCTION__ << " " << this;
+  DVLOG(1) << __FUNCTION__ << " " << this;
 
   // Add to map.
   AutoLock lock(datamap_lock_);
@@ -369,7 +370,7 @@ ProtData::ProtData(IInternetProtocol* protocol,
 }
 
 ProtData::~ProtData() {
-  DLOG(INFO) << __FUNCTION__ << " " << this;
+  DVLOG(1) << __FUNCTION__ << " " << this;
   Invalidate();
 }
 
@@ -459,8 +460,8 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
       if (IsChrome(renderer_type_)) {
         // Suggested mime type is "text/html" and we have DEFAULT_RENDERER,
         // OPT_IN_URL, or RESPONSE_HEADER.
-        DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
-                   << kChromeMimeType;
+        DVLOG(1) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
+                 << kChromeMimeType;
         SaveReferrer(delegate);
         delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
       } else if (renderer_type_ == RENDERER_TYPE_OTHER) {
@@ -503,8 +504,7 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
   }
 
   if (IsChrome(renderer_type_)) {
-    DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
-        << kChromeMimeType;
+    DVLOG(1) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE " << kChromeMimeType;
     SaveReferrer(delegate);
     delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, kChromeMimeType);
   }
@@ -529,7 +529,7 @@ HRESULT ProtData::ReportResult(IInternetProtocolSink* delegate, HRESULT result,
   // We may receive ReportResult without ReportData, if the connection fails
   // for example.
   if (renderer_type_ == RENDERER_TYPE_UNDETERMINED) {
-    DLOG(INFO) << "ReportResult received but renderer type is yet unknown.";
+    DVLOG(1) << "ReportResult received but renderer type is yet unknown.";
     renderer_type_ = RENDERER_TYPE_OTHER;
     FireSuggestedMimeType(delegate);
   }
@@ -569,15 +569,15 @@ void ProtData::SaveSuggestedMimeType(LPCWSTR status_text) {
 
 void ProtData::FireSuggestedMimeType(IInternetProtocolSink* delegate) {
   if (has_server_mime_type_) {
-    DLOG(INFO) << "Forwarding BINDSTATUS_SERVER_MIMETYPEAVAILABLE "
-        << suggested_mime_type_;
+    DVLOG(1) << "Forwarding BINDSTATUS_SERVER_MIMETYPEAVAILABLE "
+             << suggested_mime_type_;
     delegate->ReportProgress(BINDSTATUS_SERVER_MIMETYPEAVAILABLE,
                              suggested_mime_type_);
   }
 
   if (has_suggested_mime_type_) {
-    DLOG(INFO) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
-        << suggested_mime_type_;
+    DVLOG(1) << "Forwarding BINDSTATUS_MIMETYPEAVAILABLE "
+             << suggested_mime_type_;
     delegate->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE,
                              suggested_mime_type_);
   }
@@ -681,7 +681,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
     // moniker and binding, by directly grabbing protocol from InternetSession
-    DLOG(INFO) << "DirectBind for " << url;
+    DVLOG(1) << "DirectBind for " << url;
     return ForwardHookStart(orig_start, protocol, url, prot_sink, bind_info,
                             flags, reserved);
   }
@@ -702,7 +702,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   }
 
   if (prot_data) {
-    DLOG(INFO) << "Found existing ProtData!";
+    DVLOG(1) << "Found existing ProtData!";
     prot_data->UpdateUrl(url);
     ScopedComPtr<IInternetProtocolSink> new_sink =
         ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);
@@ -756,7 +756,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
     // moniker and binding, by directly grabbing protocol from InternetSession.
-    DLOG(INFO) << "DirectBind for " << url;
+    DVLOG(1) << "DirectBind for " << url;
     return ForwardHookStartEx(orig_start_ex, protocol, uri, prot_sink,
                               bind_info, flags, reserved);
   }
@@ -777,7 +777,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   }
 
   if (prot_data) {
-    DLOG(INFO) << "Found existing ProtData!";
+    DVLOG(1) << "Found existing ProtData!";
     prot_data->UpdateUrl(url);
     ScopedComPtr<IInternetProtocolSink> new_sink =
         ProtocolSinkWrap::CreateNewSink(prot_sink, prot_data);

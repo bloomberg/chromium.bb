@@ -554,8 +554,8 @@ bool DetectRunningCrashService(int timeout_ms) {
 
 base::ProcessHandle StartCrashService() {
   if (DetectRunningCrashService(kCrashServiceStartupTimeoutMs)) {
-    DLOG(INFO) << "crash_service.exe is already running. We will use the "
-               << "existing process and leave it running after tests complete.";
+    DVLOG(1) << "crash_service.exe is already running. We will use the "
+                "existing process and leave it running after tests complete.";
     return NULL;
   }
 
@@ -567,7 +567,7 @@ base::ProcessHandle StartCrashService() {
 
   base::ProcessHandle crash_service = NULL;
 
-  DLOG(INFO) << "Starting crash_service.exe so you know if a test crashes!";
+  DVLOG(1) << "Starting crash_service.exe so you know if a test crashes!";
 
   FilePath crash_service_path = exe_dir.AppendASCII("crash_service.exe");
   if (!base::LaunchApp(crash_service_path.value(), false, false,
@@ -579,13 +579,13 @@ base::ProcessHandle StartCrashService() {
   base::Time start = base::Time::Now();
 
   if (DetectRunningCrashService(kCrashServiceStartupTimeoutMs)) {
-    DLOG(INFO) << "crash_service.exe is ready for clients in "
-               << (base::Time::Now() - start).InMilliseconds() << "ms.";
+    DVLOG(1) << "crash_service.exe is ready for clients in "
+             << (base::Time::Now() - start).InMilliseconds() << " ms.";
     return crash_service;
   } else {
     DLOG(ERROR) << "crash_service.exe failed to accept client connections "
-                << "within " << kCrashServiceStartupTimeoutMs << "ms. "
-                << "Terminating it now.";
+                   "within " << kCrashServiceStartupTimeoutMs << " ms. "
+                   "Terminating it now.";
 
     // First check to see if it's even still running just to minimize the
     // likelihood of spurious error messages from KillProcess.

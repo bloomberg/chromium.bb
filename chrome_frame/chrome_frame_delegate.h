@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,7 @@ template <class T> class TaskMarshallerThroughWindowsMessages
       PushTask(task);
       this_ptr->PostMessage(MSG_EXECUTE_TASK, reinterpret_cast<WPARAM>(task));
     } else {
-      DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
+      DVLOG(1) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
       delete task;
     }
   }

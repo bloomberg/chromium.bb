@@ -205,7 +205,7 @@ void ChromeFrameActivex::OnMessageFromChromeFrame(int tab_handle,
                                                   const std::string& message,
                                                   const std::string& origin,
                                                   const std::string& target) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 
   if (target.compare("*") != 0) {
     bool drop = true;
@@ -335,12 +335,12 @@ STDMETHODIMP ChromeFrameActivex::Load(IPropertyBag* bag, IErrorLog* error_log) {
                     << base::StringPrintf(L"hr=0x%08X, vt=%i", hr,
                                          value.type());
       } else {
-        DLOG(INFO) << "script block created for event " << prop <<
-            base::StringPrintf(" (0x%08X)", hr) << " connections: " <<
+        DVLOG(1) << "script block created for event " << prop
+                 << base::StringPrintf(" (0x%08X)", hr) << " connections: " <<
             ProxyDIChromeFrameEvents<ChromeFrameActivex>::m_vec.GetSize();
       }
     } else {
-      DLOG(INFO) << "event property " << prop << " not in property bag";
+      DVLOG(1) << "event property " << prop << " not in property bag";
     }
   }
 
@@ -633,7 +633,7 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
   }
 
   if (NavigationManager::GetThreadInstance() != NULL) {
-    DLOG(INFO) << "BHO already loaded";
+    DVLOG(1) << "BHO already loaded";
     return S_OK;
   }
 

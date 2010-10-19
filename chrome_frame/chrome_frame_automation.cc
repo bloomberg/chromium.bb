@@ -223,7 +223,7 @@ AutomationProxyCacheEntry::AutomationProxyCacheEntry(
 }
 
 AutomationProxyCacheEntry::~AutomationProxyCacheEntry() {
-  DLOG(INFO) << __FUNCTION__ << profile_name;
+  DVLOG(1) << __FUNCTION__ << profile_name;
   // Attempt to fix chrome_frame_tests crash seen at times on the IE6/IE7
   // builders. It appears that there are cases when we can enter here when the
   // AtExitManager is tearing down the global ProxyCache which causes a crash
@@ -295,7 +295,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   if (IsAccessibleMode())
     command_line->AppendSwitch(switches::kForceRendererAccessibility);
 
-  DLOG(INFO) << "Profile path: " << params->profile_path().value();
+  DVLOG(1) << "Profile path: " << params->profile_path().value();
   command_line->AppendSwitchPath(switches::kUserDataDir,
                                  params->profile_path());
 
@@ -471,7 +471,7 @@ void ProxyFactory::GetAutomationServer(
   }
 
   if (entry == NULL) {
-    DLOG(INFO) << __FUNCTION__ << " creating new proxy entry";
+    DVLOG(1) << __FUNCTION__ << " creating new proxy entry";
     entry = new AutomationProxyCacheEntry(params, delegate);
     proxies_.container().push_back(entry);
 
@@ -1002,7 +1002,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
     DCHECK(init_state_ == INITIALIZING);
     automation_server_ = proxy;
   } else {
-    DLOG(INFO) << "Not storing automation server pointer due to shutting down";
+    DVLOG(1) << "Not storing automation server pointer due to shutting down";
   }
 
   if (result == AUTOMATION_SUCCESS) {
@@ -1025,7 +1025,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
         automation_server_->SendAsAsync(message,
                                         new CreateExternalTabContext(this),
                                         this);
-        DLOG(INFO) << __FUNCTION__ << ": sending CreateExternalTabComplete";
+        DVLOG(1) << __FUNCTION__ << ": sending CreateExternalTabComplete";
       }
     }
   } else {

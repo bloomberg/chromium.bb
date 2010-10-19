@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ BEGIN_MSG_MAP(T)
 END_MSG_MAP()
 
   bool Initialize() {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     DCHECK(!automation_client_.get());
     automation_client_ = CreateAutomationClient();
     if (!automation_client_.get()) {
@@ -51,7 +51,7 @@ END_MSG_MAP()
   }
 
   void Uninitialize() {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     if (IsValid()) {
       automation_client_->Uninitialize();
       automation_client_ = NULL;
@@ -232,9 +232,8 @@ END_MSG_MAP()
       TabProxy* tab = automation_client_->tab();
       HWND chrome_window = automation_client_->tab_window();
       if (tab && ::IsWindow(chrome_window)) {
-        DLOG(INFO) << "Setting initial focus";
-        tab->SetInitialFocus(win_util::IsShiftPressed(),
-                             restore_focus_to_view);
+        DVLOG(1) << "Setting initial focus";
+        tab->SetInitialFocus(win_util::IsShiftPressed(), restore_focus_to_view);
       }
     }
   }
@@ -243,7 +242,7 @@ END_MSG_MAP()
                               FilePath* profile_path) {
     chrome::GetChromeFrameUserDataDirectory(profile_path);
     *profile_path = profile_path->Append(profile_name);
-    DLOG(INFO) << __FUNCTION__ << ": " << profile_path->value();
+    DVLOG(1) << __FUNCTION__ << ": " << profile_path->value();
   }
 
  protected:

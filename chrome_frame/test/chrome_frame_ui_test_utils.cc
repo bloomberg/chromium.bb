@@ -536,7 +536,7 @@ bool AccObjectMatcher::FindInWindow(HWND hwnd,
                                     scoped_refptr<AccObject>* match) const {
   scoped_refptr<AccObject> object(AccObject::CreateFromWindow(hwnd));
   if (!object) {
-    LOG(INFO) << "Failed to get accessible object from window";
+    VLOG(1) << "Failed to get accessible object from window";
     return false;
   }
   return Find(object.get(), match);

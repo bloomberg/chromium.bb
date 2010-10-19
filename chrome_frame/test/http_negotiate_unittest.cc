@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,7 +186,7 @@ END_COM_MAP()
 
 TEST_F(HttpNegotiateTest, ReportProgress) {
   if (chrome_frame_test::GetInstalledIEVersion() == IE_6) {
-    DLOG(INFO) << "Not running test for IE6";
+    DVLOG(1) << "Not running test for IE6";
     return;
   }
   static const int kReportProgressIndex = 4;

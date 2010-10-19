@@ -845,7 +845,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
     // IE6
     LPOLESTR url = NULL;
     if (SUCCEEDED(hr = moniker->GetDisplayName(bind_ctx, NULL, &url))) {
-      DLOG(INFO) << __FUNCTION__ << " " << url;
+      DVLOG(1) << __FUNCTION__ << " " << url;
       ScopedComPtr<IWebBrowserPriv> browser_priv;
       if (SUCCEEDED(hr = browser_priv.QueryFrom(web_browser2))) {
         GURL target_url(url);
@@ -968,12 +968,12 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
       // Only the top level window will return self when get_parent is called.
       current_frame->get_parent(parent_frame.Receive());
       if (parent_frame != current_frame) {
-        DLOG(INFO) << "Sub frame detected";
+        DVLOG(1) << "Sub frame detected";
         is_sub_frame_request = true;
       }
     }
   } else {
-    DLOG(INFO) << "IsSubFrameRequest - no IWebBrowser2";
+    DVLOG(1) << "IsSubFrameRequest - no IWebBrowser2";
     is_sub_frame_request = true;
   }
 
@@ -1124,7 +1124,7 @@ std::string GetHttpHeadersFromBinding(IBinding* binding) {
 }
 
 int GetHttpResponseStatusFromBinding(IBinding* binding) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   if (binding == NULL) {
     DLOG(WARNING) << "GetHttpResponseStatus - no binding_";
     return 0;

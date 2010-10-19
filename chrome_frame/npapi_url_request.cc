@@ -56,17 +56,17 @@ NPAPIUrlRequest::NPAPIUrlRequest(NPP instance)
       pending_read_size_(0),
       status_(URLRequestStatus::FAILED, net::ERR_FAILED),
       thread_(PlatformThread::CurrentId()) {
-  DLOG(INFO) << "Created request. Count: " << ++instance_count_;
+  DVLOG(1) << "Created request. Count: " << ++instance_count_;
 }
 
 NPAPIUrlRequest::~NPAPIUrlRequest() {
-  DLOG(INFO) << "Deleted request. Count: " << --instance_count_;
+  DVLOG(1) << "Deleted request. Count: " << --instance_count_;
 }
 
 // NPAPIUrlRequest member defines.
 bool NPAPIUrlRequest::Start() {
   NPError result = NPERR_GENERIC_ERROR;
-  DLOG(INFO) << "Starting URL request: " << url();
+  DVLOG(1) << "Starting URL request: " << url();
   if (LowerCaseEqualsASCII(method(), "get")) {
     // TODO(joshia): if we have extra headers for HTTP GET, then implement
     // it using XHR
@@ -119,8 +119,8 @@ bool NPAPIUrlRequest::Start() {
 }
 
 void NPAPIUrlRequest::Stop() {
-  DLOG(INFO) << "Finished request: Url - " << url() << " result: "
-      << static_cast<int>(status_.status());
+  DVLOG(1) << "Finished request: Url - " << url()
+           << " result: " << static_cast<int>(status_.status());
 
   status_.set_status(URLRequestStatus::CANCELED);
   if (stream_) {
@@ -270,12 +270,12 @@ void NPAPIUrlRequestManager::SetCookiesForUrl(const GURL& url,
     npapi::SetValueForURL(instance_, NPNURLVCookie, url.spec().c_str(),
                           cookie.c_str(), cookie.length());
   } else {
-    DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
-    DLOG(INFO) << "Attempting to set cookie using XPCOM cookie service";
+    DVLOG(1) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.  "
+                "Attempting to set cookie using XPCOM cookie service";
     if (np_utils::SetCookiesUsingXPCOMCookieService(instance_, url.spec(),
                                                     cookie)) {
-      DLOG(INFO) << "Successfully set cookies using XPCOM cookie service";
-      DLOG(INFO) << cookie.c_str();
+      DVLOG(1) << "Successfully set cookies using XPCOM cookie service "
+               << cookie;
     } else {
       NOTREACHED() << "Failed to set cookies for host";
     }
@@ -293,26 +293,26 @@ void NPAPIUrlRequestManager::GetCookiesForUrl(const GURL& url, int cookie_id) {
                                         url.spec().c_str(), &cookies,
                                         &cookie_length);
     if (ret == NPERR_NO_ERROR) {
-      DLOG(INFO) << "Obtained cookies:" << cookies << " from host";
+      DVLOG(1) << "Obtained cookies:" << cookies << " from host";
       cookie_string.append(cookies, cookie_length);
       npapi::MemFree(cookies);
     } else {
       success = false;
     }
   } else {
-    DLOG(INFO) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.";
-    DLOG(INFO) << "Attempting to read cookie using XPCOM cookie service";
+    DVLOG(1) << "Host does not support NPVERS_HAS_URL_AND_AUTH_INFO.  "
+                "Attempting to read cookie using XPCOM cookie service";
     if (np_utils::GetCookiesUsingXPCOMCookieService(instance_, url.spec(),
                                                     &cookie_string)) {
-      DLOG(INFO) << "Successfully read cookies using XPCOM cookie service";
-      DLOG(INFO) << cookie_string.c_str();
+      DVLOG(1) << "Successfully read cookies using XPCOM cookie service "
+               << cookie_string;
     } else {
       success = false;
     }
   }
 
   if (!success)
-    DLOG(INFO) << "Failed to return cookies for url:" << url.spec().c_str();
+    DVLOG(1) << "Failed to return cookies for url:" << url.spec();
 
   OnCookiesRetrieved(success, url, cookie_string, cookie_id);
 }

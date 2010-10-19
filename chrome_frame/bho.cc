@@ -118,7 +118,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
     return S_OK;
   }
 
-  DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
+  DVLOG(1) << "BeforeNavigate2: " << url->bstrVal;
 
   ScopedComPtr<IBrowserService> browser_service;
   DoQueryService(SID_SShellBrowser, web_browser2, browser_service.Receive());
@@ -140,11 +140,11 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
 }
 
 STDMETHODIMP_(void) Bho::NavigateComplete2(IDispatch* dispatch, VARIANT* url) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 }
 
 STDMETHODIMP_(void) Bho::DocumentComplete(IDispatch* dispatch, VARIANT* url) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 
   ScopedComPtr<IWebBrowser2> web_browser2;
   if (dispatch)
@@ -245,7 +245,7 @@ bool DocumentHasEmbeddedItems(IUnknown* browser) {
 HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
     IBrowserService* browser, IShellView* shell_view, BOOL done,
     VARIANT* in_arg, VARIANT* out_arg) {
-  DLOG(INFO) << __FUNCTION__ << " done:" << done;
+  DVLOG(1) << __FUNCTION__ << " done:" << done;
 
   // OnHttpEquiv with 'done' set to TRUE is called for all pages.
   // 0 or more calls with done set to FALSE are made.
@@ -265,8 +265,8 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       if (!DocumentHasEmbeddedItems(browser)) {
         NavigationManager* mgr = NavigationManager::GetThreadInstance();
         DCHECK(mgr);
-        DLOG(INFO) << "Found tag in page. Marking browser." <<
-            base::StringPrintf(" tid=0x%08X", ::GetCurrentThreadId());
+        DVLOG(1) << "Found tag in page. Marking browser."
+                 << base::StringPrintf(" tid=0x%08X", ::GetCurrentThreadId());
         if (mgr) {
           // TODO(tommi): See if we can't figure out a cleaner way to avoid
           // this.  For some documents we can hit a problem here.  When we
@@ -304,7 +304,7 @@ void Bho::ProcessOptInUrls(IWebBrowser2* browser, BSTR url) {
   if (IsValidUrlScheme(GURL(current_url), false)) {
     bool cf_protocol = StartsWith(current_url, kChromeProtocolPrefix, false);
     if (!cf_protocol && IsChrome(RendererTypeForUrl(current_url))) {
-      DLOG(INFO) << "Opt-in URL. Switching to cf.";
+      DVLOG(1) << "Opt-in URL. Switching to cf.";
       ScopedComPtr<IBrowserService> browser_service;
       DoQueryService(SID_SShellBrowser, browser, browser_service.Receive());
       DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed.";

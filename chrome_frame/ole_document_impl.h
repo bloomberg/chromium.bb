@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,46 +39,42 @@ class ATL_NO_VTABLE IOleDocumentImpl : public IOleDocument {
                         IStream* stream,
                         DWORD reserved ,
                         IOleDocumentView** new_view) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     if (new_view == NULL)
       return E_POINTER;
     T* t = static_cast<T*>(this);
     // If we've already created a view then we can't create another as we
     // currently only support the ability to create one view
-    if (t->m_spInPlaceSite) {
+    if (t->m_spInPlaceSite)
       return E_FAIL;
-    }
     IOleDocumentView* view;
     t->GetUnknown()->QueryInterface(IID_IOleDocumentView,
                                     reinterpret_cast<void**>(&view));
     // If we support IOleDocument we should support IOleDocumentView
     ATLENSURE(view != NULL);
     // If they've given us a site then use it
-    if (in_place_site != NULL) {
+    if (in_place_site != NULL)
       view->SetInPlaceSite(in_place_site);
-    }
     // If they have given us an IStream pointer then use it to
     // initialize the view
-    if (stream != NULL) {
+    if (stream != NULL)
       view->ApplyViewState(stream);
-    }
     // Return the view
     *new_view = view;
     return S_OK;
   }
 
   STDMETHOD(GetDocMiscStatus)(DWORD* status) {
-    DLOG(INFO) << __FUNCTION__;
-    if (NULL == status) {
+    DVLOG(1) << __FUNCTION__;
+    if (NULL == status)
       return E_POINTER;
-    }
     *status = DOCMISC_NOFILESUPPORT;
     return S_OK;
   }
 
   STDMETHOD(EnumViews)(IEnumOleDocumentViews** enum_views,
                        IOleDocumentView** view) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     if (view == NULL)
       return E_POINTER;
     T* t = static_cast<T*>(this);
@@ -95,15 +91,14 @@ template <class T>
 class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
  public:
   STDMETHOD(SetInPlaceSite)(IOleInPlaceSite* in_place_site) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     T* t = static_cast<T*>(this);
     if (t->m_spInPlaceSite) {
       // If we already have a site get rid of it
       UIActivate(FALSE);
       HRESULT hr = t->InPlaceDeactivate();
-      if (FAILED(hr)) {
+      if (FAILED(hr))
         return hr;
-      }
       DCHECK(!t->m_bInPlaceActive);
     }
     if (in_place_site != NULL) {
@@ -129,10 +124,9 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
   }
 
   STDMETHOD(GetInPlaceSite)(IOleInPlaceSite** in_place_site) {
-    DLOG(INFO) << __FUNCTION__;
-    if (in_place_site == NULL) {
+    DVLOG(1) << __FUNCTION__;
+    if (in_place_site == NULL)
       return E_POINTER;
-    }
     T* t = static_cast<T*>(this);
     return t->m_spInPlaceSite->QueryInterface(
         IID_IOleInPlaceSite,
@@ -140,10 +134,9 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
   }
 
   STDMETHOD(GetDocument)(IUnknown** document) {
-    DLOG(INFO) << __FUNCTION__;
-    if (document == NULL) {
+    DVLOG(1) << __FUNCTION__;
+    if (document == NULL)
       return E_POINTER;
-    }
     T* t = static_cast<T*>(this);
     *document = t->GetUnknown();
     (*document)->AddRef();
@@ -152,12 +145,12 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
 
   STDMETHOD(SetRect)(LPRECT view_rect) {
     static bool is_resizing = false;
-    if (is_resizing) {
+    if (is_resizing)
       return S_OK;
-    }
     is_resizing = true;
-    DLOG(INFO) << __FUNCTION__ << " " << view_rect->left << "," <<
-        view_rect->top << "," << view_rect->right << "," << view_rect->bottom;
+    DVLOG(1) << __FUNCTION__ << " " << view_rect->left << ","
+             << view_rect->top << "," << view_rect->right << ","
+             << view_rect->bottom;
     T* t = static_cast<T*>(this);
     t->SetObjectRects(view_rect, view_rect);
     is_resizing = false;
@@ -165,10 +158,9 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
   }
 
   STDMETHOD(GetRect)(LPRECT view_rect) {
-    DLOG(INFO) << __FUNCTION__;
-    if (view_rect == NULL) {
+    DVLOG(1) << __FUNCTION__;
+    if (view_rect == NULL)
       return E_POINTER;
-    }
     T* t = static_cast<T*>(this);
     *view_rect = t->m_rcPos;
     return S_OK;
@@ -178,12 +170,12 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
                             LPRECT hscroll_rect,
                             LPRECT vscroll_rect,
                             LPRECT size_box_rect) {
-    DLOG(INFO) << __FUNCTION__ << " not implemented";
+    DVLOG(1) << __FUNCTION__ << " not implemented";
     return E_NOTIMPL;
   }
 
   STDMETHOD(Show)(BOOL show) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     T* t = static_cast<T*>(this);
     HRESULT hr = S_OK;
     if (show) {
@@ -197,17 +189,15 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
   }
 
   STDMETHOD(UIActivate)(BOOL ui_activate) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     T* t = static_cast<T*>(this);
     HRESULT hr = S_OK;
     if (ui_activate) {
       // We must know the client site first
-      if (t->m_spInPlaceSite == NULL) {
+      if (t->m_spInPlaceSite == NULL)
         return E_UNEXPECTED;
-      }
-      if (!t->m_bUIActive) {
+      if (!t->m_bUIActive)
         hr = t->ActiveXDocActivate(OLEIVERB_UIACTIVATE);
-      }
     } else {
       // Menu integration is still not complete, so do not destroy
       // IE's menus.  If we call InPlaceMenuDestroy here, menu items such
@@ -221,12 +211,12 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
   }
 
   STDMETHOD(Open)() {
-    DLOG(INFO) << __FUNCTION__ << " not implemented";
+    DVLOG(1) << __FUNCTION__ << " not implemented";
     return E_NOTIMPL;
   }
 
   STDMETHOD(CloseView)(DWORD reserved) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     T* t = static_cast<T*>(this);
     t->Show(FALSE);
     t->SetInPlaceSite(NULL);
@@ -234,18 +224,18 @@ class ATL_NO_VTABLE IOleDocumentViewImpl : public IOleDocumentView {
   }
 
   STDMETHOD(SaveViewState)(LPSTREAM stream) {
-    DLOG(INFO) << __FUNCTION__ << " not implemented";
+    DVLOG(1) << __FUNCTION__ << " not implemented";
     return E_NOTIMPL;
   }
 
   STDMETHOD(ApplyViewState)(LPSTREAM stream) {
-    DLOG(INFO) << __FUNCTION__ << " not implemented";
+    DVLOG(1) << __FUNCTION__ << " not implemented";
     return E_NOTIMPL;
   }
 
   STDMETHOD(Clone)(IOleInPlaceSite* new_in_place_site,
                    IOleDocumentView** new_view) {
-    DLOG(INFO) << __FUNCTION__ << " not implemented";
+    DVLOG(1) << __FUNCTION__ << " not implemented";
     return E_NOTIMPL;
   }
 

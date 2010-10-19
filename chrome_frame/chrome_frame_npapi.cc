@@ -425,9 +425,9 @@ void ChromeFrameNPAPI::UrlNotify(const char* url, NPReason reason,
 
 void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
                                             const MSG& accel_message) {
-  DLOG(INFO) << __FUNCTION__ << " msg:"
-      << base::StringPrintf("0x%04X", accel_message.message) << " key:"
-      << accel_message.wParam;
+  DVLOG(1) << __FUNCTION__
+           << " msg:" << base::StringPrintf("0x%04X", accel_message.message)
+           << " key:" << accel_message.wParam;
 
   // The host browser does call TranslateMessage on messages like WM_KEYDOWN
   // WM_KEYUP, etc, which will result in messages like WM_CHAR, WM_SYSCHAR, etc
@@ -455,7 +455,7 @@ void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
 }
 
 void ChromeFrameNPAPI::OnTabbedOut(int tab_handle, bool reverse) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 
   ignore_setfocus_ = true;
   HWND parent = ::GetParent(m_hWnd);
@@ -731,13 +731,13 @@ bool ChromeFrameNPAPI::SetProperty(NPObject* object, NPIdentifier name,
 }
 
 void ChromeFrameNPAPI::OnFocus() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   PostMessage(WM_SETFOCUS, 0, 0);
 }
 
 void ChromeFrameNPAPI::OnEvent(const char* event_name) {
   DCHECK(event_name);
-  DLOG(INFO) << event_name;
+  DVLOG(1) << event_name;
 
   if (lstrcmpiA(event_name, "focus") == 0) {
     OnFocus();
@@ -778,11 +778,11 @@ LRESULT ChromeFrameNPAPI::OnSetFocus(UINT message, WPARAM wparam,
 }
 
 void ChromeFrameNPAPI::OnBlur() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 }
 
 void ChromeFrameNPAPI::OnLoad(int, const GURL& gurl) {
-  DLOG(INFO) << "Firing onload";
+  DVLOG(1) << "Firing onload";
   FireEvent("load", gurl.spec());
 }
 

@@ -101,7 +101,7 @@ class NavigationManager {
 
   // Called to set the current top level URL that's being navigated to.
   void set_url(const wchar_t* url) {
-    DLOG(INFO) << __FUNCTION__ << " " << url;
+    DVLOG(1) << __FUNCTION__ << " " << url;
     url_ = url;
   }
 

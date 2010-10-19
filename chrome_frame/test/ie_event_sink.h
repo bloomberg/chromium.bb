@@ -214,10 +214,14 @@ END_SINK_MAP()
   STDMETHOD_(void, OnQuit)();
 
 #ifdef _DEBUG
-  STDMETHOD(Invoke)(DISPID dispid, REFIID riid,
-    LCID lcid, WORD flags, DISPPARAMS* params, VARIANT* result,
-    EXCEPINFO* except_info, UINT* arg_error) {
-    DLOG(INFO) << __FUNCTION__ << L" disp id :"  << dispid;
+  STDMETHOD(Invoke)(DISPID dispid,
+                    REFIID riid, LCID lcid,
+                    WORD flags,
+                    DISPPARAMS* params,
+                    VARIANT* result,
+                    EXCEPINFO* except_info,
+                    UINT* arg_error) {
+    DVLOG(1) << __FUNCTION__ << L" disp id :"  << dispid;
     return DispEventsImpl::Invoke(dispid, riid, lcid, flags, params, result,
                                   except_info, arg_error);
   }

@@ -266,7 +266,7 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
 HRESULT HttpNegotiatePatch::BeginningTransaction(
     IHttpNegotiate_BeginningTransaction_Fn original, IHttpNegotiate* me,
     LPCWSTR url, LPCWSTR headers, DWORD reserved, LPWSTR* additional_headers) {
-  DLOG(INFO) << __FUNCTION__ << " " << url << " headers:\n" << headers;
+  DVLOG(1) << __FUNCTION__ << " " << url << " headers:\n" << headers;
 
   HRESULT hr = original(me, url, headers, reserved, additional_headers);
 
@@ -297,10 +297,10 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
         }
       }
     } else {
-      DLOG(INFO) << "No IWebBrowser2";
+      DVLOG(1) << "No IWebBrowser2";
     }
   } else {
-    DLOG(INFO) << "No NavigationManager";
+    DVLOG(1) << "No NavigationManager";
   }
 
   std::string updated(AppendCFUserAgentString(headers, *additional_headers));
@@ -345,8 +345,8 @@ HRESULT HttpNegotiatePatch::StartBinding(
 HRESULT HttpNegotiatePatch::ReportProgress(
     IInternetProtocolSink_ReportProgress_Fn original, IInternetProtocolSink* me,
     ULONG status_code, LPCWSTR status_text) {
-  DLOG(INFO) << __FUNCTION__
-      << base::StringPrintf(" %i %ls", status_code, status_text);
+  DVLOG(1) << __FUNCTION__
+           << base::StringPrintf(" %i %ls", status_code, status_text);
   bool updated_mime_type = false;
 
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||
@@ -409,11 +409,11 @@ HRESULT HttpNegotiatePatch::ReportProgress(
 
     if (render_in_chrome_frame) {
       if (IsTextHtmlMimeType(status_text)) {
-        DLOG(INFO) << "- changing mime type to " << kChromeMimeType;
+        DVLOG(1) << "- changing mime type to " << kChromeMimeType;
         status_text = kChromeMimeType;
         updated_mime_type = true;
       } else {
-        DLOG(INFO) << "- don't want to render " << status_text << " in cf";
+        DVLOG(1) << "- don't want to render " << status_text << " in cf";
       }
     }
   }

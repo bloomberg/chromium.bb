@@ -76,8 +76,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   if (cached_document && cached_document->IsValid()) {
     DCHECK(automation_client_.get() == NULL);
     automation_client_.swap(cached_document->automation_client_);
-    DLOG(INFO) << "Reusing automation client instance from "
-               << cached_document;
+    DVLOG(1) << "Reusing automation client instance from " << cached_document;
     DCHECK(automation_client_.get() != NULL);
     automation_client_->Reinitialize(this, url_fetcher_.get());
     is_automation_client_reused_ = true;
@@ -122,7 +121,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
 }
 
 ChromeActiveDocument::~ChromeActiveDocument() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   if (find_dialog_.IsWindow())
     find_dialog_.DestroyWindow();
   // ChromeFramePlugin
@@ -171,12 +170,12 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
 
 // Override IOleInPlaceActiveObjectImpl::OnDocWindowActivate
 STDMETHODIMP ChromeActiveDocument::OnDocWindowActivate(BOOL activate) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   return S_OK;
 }
 
 STDMETHODIMP ChromeActiveDocument::TranslateAccelerator(MSG* msg) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   if (msg == NULL)
     return E_POINTER;
 
@@ -194,7 +193,7 @@ STDMETHODIMP ChromeActiveDocument::TranslateAccelerator(MSG* msg) {
 }
 // Override IPersistStorageImpl::IsDirty
 STDMETHODIMP ChromeActiveDocument::IsDirty() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   return S_FALSE;
 }
 
@@ -330,7 +329,7 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
                                                ULONG number_of_commands,
                                                OLECMD commands[],
                                                OLECMDTEXT* command_text) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 
   CommandStatusMap* command_map = NULL;
 
@@ -349,14 +348,13 @@ STDMETHODIMP ChromeActiveDocument::QueryStatus(const GUID* cmd_group_guid,
   }
 
   if (!command_map) {
-    DLOG(INFO) << "unsupported command group: "
-        << GuidToString(*cmd_group_guid);
+    DVLOG(1) << "unsupported command group: " << GuidToString(*cmd_group_guid);
     return OLECMDERR_E_NOTSUPPORTED;
   }
 
   for (ULONG command_index = 0; command_index < number_of_commands;
        command_index++) {
-    DLOG(INFO) << "Command id = " << commands[command_index].cmdID;
+    DVLOG(1) << "Command id = " << commands[command_index].cmdID;
     CommandStatusMap::iterator index =
         command_map->find(commands[command_index].cmdID);
     if (index != command_map->end())
@@ -370,7 +368,7 @@ STDMETHODIMP ChromeActiveDocument::Exec(const GUID* cmd_group_guid,
                                         DWORD cmd_exec_opt,
                                         VARIANT* in_args,
                                         VARIANT* out_args) {
-  DLOG(INFO) << __FUNCTION__ << " Cmd id =" << command_id;
+  DVLOG(1) << __FUNCTION__ << " Cmd id =" << command_id;
   // Bail out if we have been uninitialized.
   if (automation_client_.get() && automation_client_->tab()) {
     return ProcessExecCommand(cmd_group_guid, command_id, cmd_exec_opt,
@@ -606,11 +604,13 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
 void ChromeActiveDocument::OnNavigationStateChanged(int tab_handle, int flags,
     const IPC::NavigationInfo& nav_info) {
   // TODO(joshia): handle INVALIDATE_TAB,INVALIDATE_LOAD etc.
-  DLOG(INFO) << __FUNCTION__ << std::endl << " Flags: " << flags
-      << "Url: " << nav_info.url <<
-      ", Title: " << nav_info.title <<
-      ", Type: " << nav_info.navigation_type << ", Relative Offset: " <<
-      nav_info.relative_offset << ", Index: " << nav_info.navigation_index;
+  DVLOG(1) << __FUNCTION__
+           << "\n Flags: " << flags
+           << ", Url: " << nav_info.url
+           << ", Title: " << nav_info.title
+           << ", Type: " << nav_info.navigation_type
+           << ", Relative Offset: " << nav_info.relative_offset
+           << ", Index: " << nav_info.navigation_index;
 
   UpdateNavigationState(nav_info);
 }
@@ -649,12 +649,12 @@ void ChromeActiveDocument::OnAcceleratorPressed(int tab_handle,
       BaseActiveX::OnAcceleratorPressed(tab_handle, accel_message);
     }
   } else {
-    DLOG(INFO) << "IE handled accel key " << accel_message.wParam;
+    DVLOG(1) << "IE handled accel key " << accel_message.wParam;
   }
 }
 
 void ChromeActiveDocument::OnTabbedOut(int tab_handle, bool reverse) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   if (in_place_frame_) {
     MSG msg = { NULL, WM_KEYDOWN, VK_TAB };
     in_place_frame_->TranslateAcceleratorW(&msg, 0);
@@ -663,17 +663,19 @@ void ChromeActiveDocument::OnTabbedOut(int tab_handle, bool reverse) {
 
 void ChromeActiveDocument::OnDidNavigate(int tab_handle,
                                          const IPC::NavigationInfo& nav_info) {
-  DLOG(INFO) << __FUNCTION__ << std::endl << "Url: " << nav_info.url <<
-      ", Title: " << nav_info.title <<
-      ", Type: " << nav_info.navigation_type << ", Relative Offset: " <<
-      nav_info.relative_offset << ", Index: " << nav_info.navigation_index;
+  DVLOG(1) << __FUNCTION__ << std::endl
+           << "Url: " << nav_info.url
+           << ", Title: " << nav_info.title
+           << ", Type: " << nav_info.navigation_type
+           << ", Relative Offset: " << nav_info.relative_offset
+           << ", Index: " << nav_info.navigation_index;
 
   CrashMetricsReporter::GetInstance()->IncrementMetric(
       CrashMetricsReporter::CHROME_FRAME_NAVIGATION_COUNT);
 
   // This could be NULL if the active document instance is being destroyed.
   if (!m_spInPlaceSite) {
-    DLOG(INFO) << __FUNCTION__ << "m_spInPlaceSite is NULL. Returning";
+    DVLOG(1) << __FUNCTION__ << "m_spInPlaceSite is NULL. Returning";
     return;
   }
 
@@ -1050,7 +1052,7 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
 
 HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
     DWORD command_id, DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   popup_allowed_ = false;
   if (in_args->vt == VT_I4 &&
       in_args->lVal & OLECMDIDF_REFRESH_PAGEACTION_POPUPWINDOW) {
@@ -1183,7 +1185,7 @@ HRESULT ChromeActiveDocument::OnEncodingChange(const GUID* cmd_group_guid,
 
 void ChromeActiveDocument::OnGoToHistoryEntryOffset(int tab_handle,
                                                     int offset) {
-  DLOG(INFO) <<  __FUNCTION__ << " - offset:" << offset;
+  DVLOG(1) <<  __FUNCTION__ << " - offset:" << offset;
 
   ScopedComPtr<IBrowserService> browser_service;
   ScopedComPtr<ITravelLog> travel_log;
@@ -1290,9 +1292,8 @@ void ChromeActiveDocument::SetWindowDimensions() {
                  web_browser2.Receive());
   if (!web_browser2)
     return;
-  DLOG(INFO) << "this:" << this;
-  DLOG(INFO) << "dimensions: width:" << dimensions_.width()
-             << "height:" << dimensions_.height();
+  DVLOG(1) << "this:" << this << "\ndimensions: width:" << dimensions_.width()
+           << " height:" << dimensions_.height();
   if (!dimensions_.IsEmpty()) {
     web_browser2->put_Width(dimensions_.width());
     web_browser2->put_Height(dimensions_.height());

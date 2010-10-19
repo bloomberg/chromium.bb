@@ -72,19 +72,19 @@ class ChromeFrameActiveXContainer
   END_MSG_MAP()
 
   HRESULT OnMessageCallback(const VARIANT* param) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     OnMessageCallbackImpl(param);
     return S_OK;
   }
 
   HRESULT OnLoadErrorCallback(const VARIANT* param) {
-    DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+    DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
     OnLoadErrorCallbackImpl(param);
     return S_OK;
   }
 
   HRESULT OnLoadCallback(const VARIANT* param) {
-    DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+    DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
     OnLoadCallbackImpl(param);
     return S_OK;
   }
@@ -464,7 +464,7 @@ class ChromeFrameStartupTestActiveXReference
 
     chrome_frame_dll_ = FilePath(
         chrome_frame_registrar_->GetReferenceChromeFrameDllPath());
-    DLOG(INFO) << __FUNCTION__ << ": " << chrome_frame_dll_.value();
+    DVLOG(1) << __FUNCTION__ << ": " << chrome_frame_dll_.value();
   }
 
   virtual void TearDown() {
@@ -593,7 +593,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     ASSERT_TRUE(param != NULL);
     ASSERT_EQ(VT_BSTR, param->vt);
 
-    DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+    DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
     InitiateNextNavigation();
   }
 
@@ -601,7 +601,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     ASSERT_TRUE(param != NULL);
     ASSERT_EQ(VT_BSTR, param->vt);
 
-    DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+    DVLOG(1) << __FUNCTION__ << " " << param->bstrVal;
     InitiateNextNavigation();
   }
 

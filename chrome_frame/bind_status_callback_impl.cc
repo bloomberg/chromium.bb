@@ -9,11 +9,11 @@
 #include "base/stringprintf.h"
 
 BSCBImpl::BSCBImpl() {
-  DLOG(INFO) << __FUNCTION__ << me();
+  DVLOG(1) << __FUNCTION__ << me();
 }
 
 BSCBImpl::~BSCBImpl() {
-  DLOG(INFO) << __FUNCTION__ << me();
+  DVLOG(1) << __FUNCTION__ << me();
 }
 
 std::string BSCBImpl::me() {
@@ -75,8 +75,8 @@ HRESULT BSCBImpl::QueryService(REFGUID service, REFIID iid, void** object) {
 
 // IBindStatusCallback
 HRESULT BSCBImpl::OnStartBinding(DWORD reserved, IBinding* binding) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     hr = delegate_->OnStartBinding(reserved, binding);
@@ -84,8 +84,8 @@ HRESULT BSCBImpl::OnStartBinding(DWORD reserved, IBinding* binding) {
 }
 
 HRESULT BSCBImpl::GetPriority(LONG* priority) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     hr = delegate_->GetPriority(priority);
@@ -93,8 +93,8 @@ HRESULT BSCBImpl::GetPriority(LONG* priority) {
 }
 
 HRESULT BSCBImpl::OnLowResource(DWORD reserved) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     hr = delegate_->OnLowResource(reserved);
@@ -103,9 +103,9 @@ HRESULT BSCBImpl::OnLowResource(DWORD reserved) {
 
 HRESULT BSCBImpl::OnProgress(ULONG progress, ULONG progress_max,
                               ULONG status_code, LPCWSTR status_text) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(
-      " status=%i tid=%i %ls", status_code, PlatformThread::CurrentId(),
-      status_text);
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" status=%i tid=%i %ls", status_code,
+                                 PlatformThread::CurrentId(), status_text);
   HRESULT hr = S_OK;
   if (delegate_)
     delegate_->OnProgress(progress, progress_max, status_code, status_text);
@@ -113,8 +113,9 @@ HRESULT BSCBImpl::OnProgress(ULONG progress, ULONG progress_max,
 }
 
 HRESULT BSCBImpl::OnStopBinding(HRESULT hresult, LPCWSTR error) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(
-      " hr=0x%08X '%ls' tid=%i", hresult, error, PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" hr=0x%08X '%ls' tid=%i", hresult, error,
+                                 PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     delegate_->OnStopBinding(hresult, error);
@@ -122,8 +123,8 @@ HRESULT BSCBImpl::OnStopBinding(HRESULT hresult, LPCWSTR error) {
 }
 
 HRESULT BSCBImpl::GetBindInfo(DWORD* bindf, BINDINFO* bind_info) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     delegate_->GetBindInfo(bindf, bind_info);
@@ -132,8 +133,8 @@ HRESULT BSCBImpl::GetBindInfo(DWORD* bindf, BINDINFO* bind_info) {
 
 HRESULT BSCBImpl::OnDataAvailable(DWORD bscf, DWORD size,
                                    FORMATETC* format_etc, STGMEDIUM* stgmed) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     hr = delegate_->OnDataAvailable(bscf, size, format_etc, stgmed);
@@ -141,8 +142,8 @@ HRESULT BSCBImpl::OnDataAvailable(DWORD bscf, DWORD size,
 }
 
 HRESULT BSCBImpl::OnObjectAvailable(REFIID iid, IUnknown* unk) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_)
     delegate_->OnObjectAvailable(iid, unk);
@@ -152,8 +153,8 @@ HRESULT BSCBImpl::OnObjectAvailable(REFIID iid, IUnknown* unk) {
 // IBindStatusCallbackEx
 HRESULT BSCBImpl::GetBindInfoEx(DWORD* bindf, BINDINFO* bind_info,
                                 DWORD* bindf2, DWORD* reserved) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
   HRESULT hr = S_OK;
   if (delegate_) {
     ScopedComPtr<IBindStatusCallbackEx> bscbex;
@@ -167,8 +168,8 @@ HRESULT BSCBImpl::GetBindInfoEx(DWORD* bindf, BINDINFO* bind_info,
 HRESULT BSCBImpl::BeginningTransaction(LPCWSTR url, LPCWSTR headers,
                                        DWORD reserved,
                                        LPWSTR* additional_headers) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
 
   HRESULT hr = S_OK;
   if (delegate_) {
@@ -187,8 +188,8 @@ HRESULT BSCBImpl::BeginningTransaction(LPCWSTR url, LPCWSTR headers,
 HRESULT BSCBImpl::OnResponse(DWORD response_code, LPCWSTR response_headers,
                              LPCWSTR request_headers,
                              LPWSTR* additional_headers) {
-  DLOG(INFO) << __FUNCTION__ << me() << base::StringPrintf(" tid=%i",
-      PlatformThread::CurrentId());
+  DVLOG(1) << __FUNCTION__ << me()
+           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
 
   HRESULT hr = S_OK;
   if (delegate_) {

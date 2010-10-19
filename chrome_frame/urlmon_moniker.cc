@@ -33,7 +33,7 @@ END_VTABLE_PATCHES()
 
 HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
   DCHECK(browser);
-  DLOG(INFO) << __FUNCTION__ << " " << url();
+  DVLOG(1) << __FUNCTION__ << " " << url();
 
   MarkBrowserOnThreadForCFNavigation(browser);
 
@@ -64,7 +64,7 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
 
       hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
           bind_context, fragment.c_str());
-      DLOG(INFO) << base::StringPrintf("NavigateBrowserToMoniker: 0x%08X", hr);
+      DVLOG(1) << base::StringPrintf("NavigateBrowserToMoniker: 0x%08X", hr);
     }
   }
 
@@ -122,14 +122,14 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   CComHeapPtr<WCHAR> url;
   HRESULT hr = moniker->GetDisplayName(bind_context, NULL, &url);
   if (!url) {
-    DLOG(INFO) << __FUNCTION__ << base::StringPrintf(
-        " GetDisplayName failed. Error: 0x%x", hr);
+    DVLOG(1) << __FUNCTION__
+             << base::StringPrintf(" GetDisplayName failed. Error: 0x%x", hr);
     return false;
   }
 
   if (!IsEqualIID(IID_IStream, iid)) {
-    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
-        " Not wrapping: IID is not IStream.";
+    DVLOG(1) << __FUNCTION__ << " Url: " << url
+             << " Not wrapping: IID is not IStream.";
     return false;
   }
 
@@ -137,15 +137,15 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   BindContextInfo::FromBindContext(bind_context, info.Receive());
   DCHECK(info);
   if (info && info->chrome_request()) {
-    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
-        " Not wrapping: request from chrome frame.";
+    DVLOG(1) << __FUNCTION__ << " Url: " << url
+             << " Not wrapping: request from chrome frame.";
     return false;
   }
 
   NavigationManager* mgr = NavigationManager::GetThreadInstance();
   if (!mgr) {
-    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
-        " No navigation manager to wrap";
+    DVLOG(1) << __FUNCTION__ << " Url: " << url
+             << " No navigation manager to wrap";
     return false;
   }
 
@@ -183,8 +183,8 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   // incorrect results.
   bool should_wrap = mgr->IsTopLevelUrl(url);
   if (!should_wrap) {
-    DLOG(INFO) << __FUNCTION__ << " Url: " << url <<
-        " Not wrapping: Not top level url.";
+    DVLOG(1) << __FUNCTION__ << " Url: " << url
+             << " Not wrapping: Not top level url.";
   }
   return should_wrap;
 }
@@ -193,7 +193,7 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
 HRESULT MonikerPatch::BindToObject(IMoniker_BindToObject_Fn original,
                                    IMoniker* me, IBindCtx* bind_ctx,
                                    IMoniker* to_left, REFIID iid, void** obj) {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
   DCHECK(to_left == NULL);
 
   ExceptionBarrierReportOnlyModule barrier;

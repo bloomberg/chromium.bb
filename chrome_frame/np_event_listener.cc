@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ bool DomEventListener::GetObjectElement(NPP instance, nsIDOMElement** element) {
   // in webkit.
   npapi::GetValue(instance, NPNVDOMElement, elem.Receive());
   if (!elem.get()) {
-    DLOG(INFO) << "Failed to get NPNVDOMElement";
+    DVLOG(1) << "Failed to get NPNVDOMElement";
     return false;
   }
 
@@ -177,10 +177,10 @@ NPObject* NPObjectEventListener::GetObjectElement(NPP instance) {
           object = NPVARIANT_TO_OBJECT(var);
         }
       } else {
-        DLOG(INFO) << __FUNCTION__ << " got " << tag;
+        DVLOG(1) << __FUNCTION__ << " got " << tag;
       }
     } else {
-      DLOG(INFO) << __FUNCTION__ << " failed to get the element's tag";
+      DVLOG(1) << __FUNCTION__ << " failed to get the element's tag";
     }
   } else {
     DLOG(WARNING) << __FUNCTION__ << " failed to get NPNVPluginElementNPObject";
@@ -285,7 +285,7 @@ void NPObjectEventListener::HandleEvent(Npo* npo, NPObject* event) {
     // Opera doesn't zero terminate its utf8 strings.
     const NPString& type = NPVARIANT_TO_STRING(result);
     std::string zero_terminated(type.UTF8Characters, type.UTF8Length);
-    DLOG(INFO) << "handleEvent: " << zero_terminated;
+    DVLOG(1) << "handleEvent: " << zero_terminated;
     delegate_->OnEvent(zero_terminated.c_str());
   }
 }

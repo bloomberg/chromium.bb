@@ -137,7 +137,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
   }
 
   ~ChromeFrameUploadRequestContext() {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
   }
@@ -219,7 +219,7 @@ class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
 
  private:
   ~ChromeFrameUploadRequestContextGetter() {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
   }
 
   scoped_refptr<URLRequestContext> context_;
@@ -244,12 +244,12 @@ class ChromeFrameMetricsDataUploader
 
   ChromeFrameMetricsDataUploader()
       : fetcher_(NULL) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     creator_thread_id_ = PlatformThread::CurrentId();
   }
 
   ~ChromeFrameMetricsDataUploader() {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     DCHECK(creator_thread_id_ == PlatformThread::CurrentId());
   }
 
@@ -331,11 +331,9 @@ class ChromeFrameMetricsDataUploader
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data) {
-    DLOG(INFO) << __FUNCTION__
-               << base::StringPrintf(
-                       ": url : %hs, status:%d, response code: %d\n",
-                       url.spec().c_str(), status.status(),
-                       response_code);
+    DVLOG(1) << __FUNCTION__ << base::StringPrintf(
+        ": url : %hs, status:%d, response code: %d\n", url.spec().c_str(),
+        status.status(), response_code);
     delete fetcher_;
     fetcher_ = NULL;
 
@@ -450,7 +448,7 @@ void CALLBACK MetricsService::TransmissionTimerProc(HWND window,
                                                     unsigned int message,
                                                     unsigned int event_id,
                                                     unsigned int time) {
-  DLOG(INFO) << "Transmission timer notified";
+  DVLOG(1) << "Transmission timer notified";
   DCHECK(GetInstance() != NULL);
   GetInstance()->UploadData();
   if (GetInstance()->initial_uma_upload_) {
@@ -564,7 +562,7 @@ bool MetricsService::UploadData() {
 
   static long currently_uploading = 0;
   if (InterlockedCompareExchange(&currently_uploading, 1, 0)) {
-    DLOG(INFO) << "Contention for uploading metrics data. Backing off";
+    DVLOG(1) << "Contention for uploading metrics data. Backing off";
     return false;
   }
 
@@ -572,7 +570,7 @@ bool MetricsService::UploadData() {
   DCHECK(!pending_log_text.empty());
 
   // Allow security conscious users to see all metrics logs that we send.
-  LOG(INFO) << "METRICS LOG: " << pending_log_text;
+  VLOG(1) << "METRICS LOG: " << pending_log_text;
 
   bool ret = true;
 

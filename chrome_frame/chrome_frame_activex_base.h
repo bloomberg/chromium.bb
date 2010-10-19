@@ -283,7 +283,7 @@ END_MSG_MAP()
 #ifndef NDEBUG
     wchar_t buffer[64] = {0};
     ::StringFromGUID2(riid, buffer, arraysize(buffer));
-    DLOG(INFO) << "E_NOINTERFACE: " << buffer;
+    DVLOG(1) << "E_NOINTERFACE: " << buffer;
 #endif
     return E_NOINTERFACE;
   }
@@ -403,7 +403,7 @@ END_MSG_MAP()
     } else {
       ChromeFramePlugin::GetProfilePath(profile_name, profile_path);
     }
-    DLOG(INFO) << __FUNCTION__ << ": " << profile_path->value();
+    DVLOG(1) << __FUNCTION__ << ": " << profile_path->value();
   }
 
 
@@ -532,7 +532,7 @@ END_MSG_MAP()
 
   LRESULT OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
                     BOOL& handled) {  // NO_LINT
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     return 0;
   }
 
@@ -548,7 +548,7 @@ END_MSG_MAP()
   // ChromeFrameDelegate override
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     if (reason == AUTOMATION_SERVER_CRASHED)
       draw_sad_tab_ = true;
 
@@ -678,7 +678,7 @@ END_MSG_MAP()
   }
 
   STDMETHOD(get_readyState)(long* ready_state) {  // NOLINT
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
     DCHECK(ready_state);
 
     if (!ready_state)
@@ -1075,8 +1075,8 @@ END_MSG_MAP()
     if (hr != S_OK)
       hr = AllowFrameToTranslateAccelerator(accel_message);
 
-    DLOG(INFO) << __FUNCTION__ << " browser response: "
-               << base::StringPrintf("0x%08x", hr);
+    DVLOG(1) << __FUNCTION__ << " browser response: "
+             << base::StringPrintf("0x%08x", hr);
 
     if (hr != S_OK) {
       // The WM_SYSCHAR message is not processed by the IOleControlSite
