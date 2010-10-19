@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,11 @@
 #include <commctrl.h>
 #endif
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/i18n/icu_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/test/test_suite.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -41,67 +40,74 @@ const char* const TestShellTest::kJavascriptDelayExitScript =
     "});"
   "</script>";
 
-int main(int argc, char* argv[]) {
-  base::mac::ScopedNSAutoreleasePool autorelease_pool;
-  base::EnableInProcessStackDumping();
-  base::EnableTerminationOnHeapCorruption();
-  // Some unittests may use base::Singleton<>, thus we need to instanciate
-  // the AtExitManager or else we will leak objects.
-  base::AtExitManager at_exit_manager;
+class TestShellTestSuite : public base::TestSuite {
+ public:
+  TestShellTestSuite(int argc, char** argv)
+      : base::TestSuite(argc, argv),
+        test_shell_webkit_init_(true),
+        platform_delegate_(*CommandLine::ForCurrentProcess()) {
+  }
 
+  virtual void Initialize() {
+    // Override DIR_EXE early in case anything in base::TestSuite uses it.
 #if defined(OS_MACOSX)
-  FilePath path;
-  PathService::Get(base::DIR_EXE, &path);
-  path = path.AppendASCII("TestShell.app");
-  mac_util::SetOverrideAppBundlePath(path);
+    FilePath path;
+    PathService::Get(base::DIR_EXE, &path);
+    path = path.AppendASCII("TestShell.app");
+    mac_util::SetOverrideAppBundlePath(path);
 #endif
 
-  TestShellPlatformDelegate::PreflightArgs(&argc, &argv);
-  CommandLine::Init(argc, argv);
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  TestShellPlatformDelegate platform(parsed_command_line);
+    base::TestSuite::Initialize();
 
-  // Allow tests to analyze GC information from V8 log, and expose GC
-  // triggering function.
-  std::string js_flags =
-      parsed_command_line.GetSwitchValueASCII(test_shell::kJavaScriptFlags);
-  js_flags += " --logfile=* --log_gc --expose_gc";
-  webkit_glue::SetJavaScriptFlags(js_flags);
+    const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
-  // Suppress error dialogs and do not show GP fault error box on Windows.
-  TestShell::InitLogging(true, false, false);
+    // Allow tests to analyze GC information from V8 log, and expose GC
+    // triggering function.
+    std::string js_flags =
+        parsed_command_line.GetSwitchValueASCII(test_shell::kJavaScriptFlags);
+    js_flags += " --logfile=* --log_gc --expose_gc";
+    webkit_glue::SetJavaScriptFlags(js_flags);
 
-  // Some of the individual tests wind up calling TestShell::WaitTestFinished
-  // which has a timeout in it.  For these tests, we don't care about a timeout
-  // so just set it to be really large.  This is necessary because
-  // we hit those timeouts under Purify and Valgrind.
-  TestShell::SetFileTestTimeout(10 * 60 * 60 * 1000);  // Ten hours.
+    // Suppress error dialogs and do not show GP fault error box on Windows.
+    TestShell::InitLogging(true, false, false);
 
-  // Initialize test shell in layout test mode, which will let us load one
-  // request than automatically quit.
-  TestShell::InitializeTestShell(true, false);
+    // Some of the individual tests wind up calling TestShell::WaitTestFinished
+    // which has a timeout in it.  For these tests, we don't care about
+    // a timeout so just set it to be really large.  This is necessary because
+    // we hit those timeouts under Purify and Valgrind.
+    TestShell::SetFileTestTimeout(10 * 60 * 60 * 1000);  // Ten hours.
 
+    // Initialize test shell in layout test mode, which will let us load one
+    // request than automatically quit.
+    TestShell::InitializeTestShell(true, false);
+
+    platform_delegate_.InitializeGUI();
+    platform_delegate_.SelectUnifiedTheme();
+  }
+
+  virtual void Shutdown() {
+    TestShell::ShutdownTestShell();
+    TestShell::CleanupLogging();
+
+    base::TestSuite::Shutdown();
+  }
+
+ private:
   // Allocate a message loop for this thread.  Although it is not used
   // directly, its constructor sets up some necessary state.
-  MessageLoopForUI main_message_loop;
+  MessageLoopForUI main_message_loop_;
 
   // Initialize WebKit for this scope.
-  TestShellWebKitInit test_shell_webkit_init(true);
+  TestShellWebKitInit test_shell_webkit_init_;
 
-  // Load ICU data tables
-  icu_util::Initialize();
+  TestShellPlatformDelegate platform_delegate_;
 
-  platform.InitializeGUI();
-  platform.SelectUnifiedTheme();
+  DISALLOW_COPY_AND_ASSIGN(TestShellTestSuite);
+};
 
-  // Run the actual tests
-  testing::InitGoogleTest(&argc, argv);
-  int result = RUN_ALL_TESTS();
+int main(int argc, char** argv) {
+  base::mac::ScopedNSAutoreleasePool scoped_pool;
 
-  TestShell::ShutdownTestShell();
-  TestShell::CleanupLogging();
-
-  CommandLine::Reset();
-
-  return result;
+  TestShellPlatformDelegate::PreflightArgs(&argc, &argv);
+  return TestShellTestSuite(argc, argv).Run();
 }

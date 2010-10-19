@@ -345,6 +345,7 @@
       'msvs_guid': 'E6766F81-1FCD-4CD7-BC16-E36964A14867',
       'dependencies': [
         'test_shell_common',
+        '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
