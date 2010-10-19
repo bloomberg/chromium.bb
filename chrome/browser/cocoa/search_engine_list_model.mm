@@ -98,10 +98,12 @@ class SearchEngineObserver : public TemplateURLModelObserver {
     for (std::vector<const TemplateURL*>::iterator it = urls.begin();
          it != urls.end(); ++it) {
       const TemplateURL* url = *it;
+      // Skip all the URLs not shown on the default list.
+      if (!url->ShowInDefaultList())
+        continue;
       if (url->id() == defaultSearchProvider->id())
         return index;
-      if (url->ShowInDefaultList())
-        ++index;
+      ++index;
     }
   }
   return -1;
@@ -111,9 +113,19 @@ class SearchEngineObserver : public TemplateURLModelObserver {
   if (model_) {
     typedef std::vector<const TemplateURL*> TemplateURLs;
     TemplateURLs urls = model_->GetTemplateURLs();
-    DCHECK(index >= 0);
-    DCHECK(index < (NSInteger)urls.size());
-    model_->SetDefaultSearchProvider(urls[index]);
+    for (std::vector<const TemplateURL*>::iterator it = urls.begin();
+         it != urls.end(); ++it) {
+      const TemplateURL* url = *it;
+      // Skip all the URLs not shown on the default list.
+      if (!url->ShowInDefaultList())
+        continue;
+      if (0 == index) {
+        model_->SetDefaultSearchProvider(url);
+        return;
+      }
+      --index;
+    }
+    DCHECK(false);
   }
 }
 

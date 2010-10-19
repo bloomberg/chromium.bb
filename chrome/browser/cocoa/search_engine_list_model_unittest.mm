@@ -107,6 +107,37 @@ TEST_F(SearchEngineListModelTest, Default) {
   EXPECT_NSEQ(@"google4", defaultString);
 }
 
+TEST_F(SearchEngineListModelTest, DefaultChosenFromUI) {
+  EXPECT_EQ([model_ defaultIndex], -1);
+
+  [model_ setDefaultIndex:1];
+  EXPECT_EQ([model_ defaultIndex], 1);
+
+  // Add two more URLs, the first one not shown in the default list.
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL("http://www.google3.com/?q={searchTerms}", 0, 0);
+  t_url->set_keyword(L"keyword3");
+  t_url->set_short_name(L"google3 not eligible");
+  t_url->set_show_in_default_list(false);
+  template_model_->Add(t_url);
+  t_url = new TemplateURL();
+  t_url->SetURL("http://www.google4.com/?q={searchTerms}", 0, 0);
+  t_url->set_keyword(L"keyword4");
+  t_url->set_short_name(L"google4");
+  t_url->set_show_in_default_list(true);
+  template_model_->Add(t_url);
+
+  // We should have 3 engines.
+  EXPECT_EQ([[model_ searchEngines] count], 3U);
+
+  // Simulate the UI setting the default to the third entry.
+  [model_ setDefaultIndex:2];
+  EXPECT_EQ([model_ defaultIndex], 2);
+
+  // The default search provider should be google4.
+  EXPECT_EQ(template_model_->GetDefaultSearchProvider(), t_url);
+}
+
 // Make sure that when the back-end model changes that we get a notification.
 TEST_F(SearchEngineListModelTest, Notification) {
   // Add one more item to force a notification.
