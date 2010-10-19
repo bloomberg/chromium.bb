@@ -609,7 +609,8 @@ def TryChange(argv,
     plural = ""
     if len(args) > 2:
       plural = "s"
-    print "Argument%s \"%s\" not understood" % (plural, " ".join(args[1:]))
+    print >> sys.stderr, (
+        'Argument%s \"%s\" not understood' % (plural, ' '.join(args[1:])))
     parser.print_help()
     return 1
 
@@ -746,7 +747,10 @@ def TryChange(argv,
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:
       return 1
-    print e
+    print >> sys.stderr, e
+    return 1
+  except gclient_utils.Error, e:
+    print >> sys.stderr, e
     return 1
   return 0
 
