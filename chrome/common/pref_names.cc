@@ -888,12 +888,13 @@ const char kDisableExtensions[] = "extensions.disabled";
 const char kBrowserActionContainerWidth[] =
     "extensions.browseractions.container.width";
 
-// A whitelist of extension the user can install. This is controlled by the
-// administrator.
+// A whitelist of extension ids the user can install: exceptions from the
+// following blacklist. This is controlled by the administrator.
 const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
-// A blacklist, containing extensions the user cannot install.  This is
-// controlled by the administrator. This list should not be confused with
-// the extension blacklist, which is Google controlled.
+// A blacklist, containing extensions the user cannot install. This list can
+// conatin "*" meaning all extensions. This is controlled by the administrator.
+// This list should not be confused with the extension blacklist, which is
+// Google controlled.
 const char kExtensionInstallDenyList[] = "extensions.install.denylist";
 
 // Time of the last, and next scheduled, extensions auto-update checks.

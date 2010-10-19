@@ -37,13 +37,6 @@ const char kPrefBlacklist[] = "blacklist";
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
 
-// A preference that tracks admin policy regarding which extensions the user
-// can and can not install. This preference is a list object, containing
-// strings that list extension ids. Denylist can contain "*" meaning all
-// extensions.
-const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
-const char kExtensionInstallDenyList[] = "extensions.install.denylist";
-
 // A preference that tracks browser action toolbar configuration. This is a list
 // object stored in the Preferences file. The extensions are stored by ID.
 const char kExtensionToolbar[] = "extensions.toolbar";
@@ -284,12 +277,14 @@ bool ExtensionPrefs::IsExtensionAllowedByPolicy(
     const std::string& extension_id) {
   std::string string_value;
 
-  const ListValue* blacklist = prefs_->GetList(kExtensionInstallDenyList);
+  const ListValue* blacklist =
+      prefs_->GetList(prefs::kExtensionInstallDenyList);
   if (!blacklist || blacklist->empty())
     return true;
 
   // Check the whitelist first.
-  const ListValue* whitelist = prefs_->GetList(kExtensionInstallAllowList);
+  const ListValue* whitelist =
+      prefs_->GetList(prefs::kExtensionInstallAllowList);
   if (whitelist) {
     for (ListValue::const_iterator it = whitelist->begin();
          it != whitelist->end(); ++it) {
@@ -906,7 +901,7 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(kExtensionToolbar);
   prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize, -1);
   prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
-  prefs->RegisterListPref(kExtensionInstallAllowList);
-  prefs->RegisterListPref(kExtensionInstallDenyList);
+  prefs->RegisterListPref(prefs::kExtensionInstallAllowList);
+  prefs->RegisterListPref(prefs::kExtensionInstallDenyList);
   prefs->RegisterStringPref(kWebStoreLogin, std::string() /* default_value */);
 }
