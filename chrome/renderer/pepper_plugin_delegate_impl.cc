@@ -14,6 +14,7 @@
 #include "base/string_split.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/render_messages.h"
@@ -723,6 +724,121 @@ bool PepperPluginDelegateImpl::Rename(
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->Move(file_path, new_file_path, dispatcher);
+}
+
+FilePath GetModuleLocalFilePath(const std::string& module_name,
+                                const FilePath& path) {
+#if defined(OS_WIN)
+  FilePath full_path(UTF8ToUTF16(module_name));
+#else
+  FilePath full_path(module_name);
+#endif
+  full_path = full_path.Append(path);
+  return full_path;
+}
+
+base::PlatformFileError PepperPluginDelegateImpl::OpenModuleLocalFile(
+    const std::string& module_name,
+    const FilePath& path,
+    int flags,
+    base::PlatformFile* file) {
+  FilePath full_path = GetModuleLocalFilePath(module_name, path);
+  if (full_path.empty()) {
+    *file = base::kInvalidPlatformFileValue;
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  IPC::PlatformFileForTransit transit_file;
+  base::PlatformFileError error;
+  IPC::Message* msg = new ViewHostMsg_PepperOpenFile(
+      full_path, flags, &error, &transit_file);
+  if (!render_view_->Send(msg)) {
+    *file = base::kInvalidPlatformFileValue;
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
+  return error;
+}
+
+base::PlatformFileError PepperPluginDelegateImpl::RenameModuleLocalFile(
+    const std::string& module_name,
+    const FilePath& path_from,
+    const FilePath& path_to) {
+  FilePath full_path_from = GetModuleLocalFilePath(module_name, path_from);
+  FilePath full_path_to = GetModuleLocalFilePath(module_name, path_to);
+  if (full_path_from.empty() || full_path_to.empty()) {
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  base::PlatformFileError error;
+  IPC::Message* msg = new ViewHostMsg_PepperRenameFile(
+      full_path_from, full_path_to, &error);
+  if (!render_view_->Send(msg)) {
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  return error;
+}
+
+base::PlatformFileError PepperPluginDelegateImpl::DeleteModuleLocalFileOrDir(
+    const std::string& module_name,
+    const FilePath& path,
+    bool recursive) {
+  FilePath full_path = GetModuleLocalFilePath(module_name, path);
+  if (full_path.empty()) {
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  base::PlatformFileError error;
+  IPC::Message* msg = new ViewHostMsg_PepperDeleteFileOrDir(
+      full_path, recursive, &error);
+  if (!render_view_->Send(msg)) {
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  return error;
+}
+
+base::PlatformFileError PepperPluginDelegateImpl::CreateModuleLocalDir(
+    const std::string& module_name,
+    const FilePath& path) {
+  FilePath full_path = GetModuleLocalFilePath(module_name, path);
+  if (full_path.empty()) {
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  base::PlatformFileError error;
+  IPC::Message* msg = new ViewHostMsg_PepperCreateDir(full_path, &error);
+  if (!render_view_->Send(msg)) {
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  return error;
+}
+
+base::PlatformFileError PepperPluginDelegateImpl::QueryModuleLocalFile(
+    const std::string& module_name,
+    const FilePath& path,
+    base::PlatformFileInfo* info) {
+  FilePath full_path = GetModuleLocalFilePath(module_name, path);
+  if (full_path.empty()) {
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  base::PlatformFileError error;
+  IPC::Message* msg = new ViewHostMsg_PepperQueryFile(full_path, info, &error);
+  if (!render_view_->Send(msg)) {
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  return error;
+}
+base::PlatformFileError PepperPluginDelegateImpl::GetModuleLocalDirContents(
+      const std::string& module_name,
+      const FilePath& path,
+      PepperDirContents* contents) {
+  FilePath full_path = GetModuleLocalFilePath(module_name, path);
+  if (full_path.empty()) {
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+  }
+  base::PlatformFileError error;
+  IPC::Message* msg =
+      new ViewHostMsg_PepperGetDirContents(full_path, contents, &error);
+  if (!render_view_->Send(msg)) {
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  return error;
 }
 
 scoped_refptr<base::MessageLoopProxy>

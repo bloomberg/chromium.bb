@@ -99,6 +99,30 @@ class PepperPluginDelegateImpl
   virtual bool Rename(const FilePath& file_path,
                       const FilePath& new_file_path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual base::PlatformFileError OpenModuleLocalFile(
+      const std::string& module_name,
+      const FilePath& path,
+      int flags,
+      base::PlatformFile* file);
+  virtual base::PlatformFileError RenameModuleLocalFile(
+      const std::string& module_name,
+      const FilePath& path_from,
+      const FilePath& path_to);
+  virtual base::PlatformFileError DeleteModuleLocalFileOrDir(
+      const std::string& module_name,
+      const FilePath& path,
+      bool recursive);
+  virtual base::PlatformFileError CreateModuleLocalDir(
+      const std::string& module_name,
+      const FilePath& path);
+  virtual base::PlatformFileError QueryModuleLocalFile(
+      const std::string& module_name,
+      const FilePath& path,
+      base::PlatformFileInfo* info);
+  virtual base::PlatformFileError GetModuleLocalDirContents(
+      const std::string& module_name,
+      const FilePath& path,
+      PepperDirContents* contents);
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
   virtual pepper::FullscreenContainer* CreateFullscreenContainer(
       pepper::PluginInstance* instance);

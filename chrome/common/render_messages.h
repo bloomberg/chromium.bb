@@ -29,6 +29,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
 #include "webkit/fileapi/file_system_types.h"  // enum fileapi::FileSystemType
+#include "webkit/glue/plugins/pepper_dir_contents.h"
 
 #if defined(OS_MACOSX)
 struct FontDescriptor;
@@ -601,6 +602,14 @@ struct SimilarTypeTraits<fileapi::FileSystemType> {
 template <>
 struct ParamTraits<AudioBuffersState> {
   typedef AudioBuffersState param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<PepperDirEntry> {
+  typedef PepperDirEntry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

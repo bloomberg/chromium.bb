@@ -16,6 +16,7 @@
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_stdint.h"
+#include "webkit/glue/plugins/pepper_dir_contents.h"
 
 class AudioMessageFilter;
 class GURL;
@@ -190,6 +191,31 @@ class PluginDelegate {
   virtual bool Rename(const FilePath& file_path,
                       const FilePath& new_file_path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+
+  virtual base::PlatformFileError OpenModuleLocalFile(
+      const std::string& module_name,
+      const FilePath& path,
+      int flags,
+      base::PlatformFile* file) = 0;
+  virtual base::PlatformFileError RenameModuleLocalFile(
+      const std::string& module_name,
+      const FilePath& path_from,
+      const FilePath& path_to) = 0;
+  virtual base::PlatformFileError DeleteModuleLocalFileOrDir(
+      const std::string& module_name,
+      const FilePath& path,
+      bool recursive) = 0;
+  virtual base::PlatformFileError CreateModuleLocalDir(
+      const std::string& module_name,
+      const FilePath& path) = 0;
+  virtual base::PlatformFileError QueryModuleLocalFile(
+      const std::string& module_name,
+      const FilePath& path,
+      base::PlatformFileInfo* info) = 0;
+  virtual base::PlatformFileError GetModuleLocalDirContents(
+      const std::string& module_name,
+      const FilePath& path,
+      PepperDirContents* contents) = 0;
 
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.

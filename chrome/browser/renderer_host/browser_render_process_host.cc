@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
+#include "chrome/browser/renderer_host/pepper_file_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
@@ -46,6 +48,7 @@
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/visitedlink_master.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/extensions/extension.h"
@@ -330,6 +333,10 @@ bool BrowserRenderProcessHost::Init(
   // with no time-out, which in the context of the browser process we should not
   // be doing.
   channel_->set_sync_messages_with_no_timeout_allowed(false);
+
+  scoped_refptr<PepperFileMessageFilter> pepper_file_message_filter =
+      new PepperFileMessageFilter(id(), profile());
+  channel_->AddFilter(pepper_file_message_filter);
 
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that

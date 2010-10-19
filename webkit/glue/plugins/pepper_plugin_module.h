@@ -61,6 +61,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
 
   PP_Module pp_module() const { return pp_module_; }
 
+  void set_name(const std::string& name) { name_ = name; }
+  const std::string& name() const { return name_; }
+
   PluginInstance* CreateInstance(PluginDelegate* delegate);
 
   // Returns "some" plugin instance associated with this module. This is not
@@ -114,6 +117,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // Contains pointers to the entry points of the actual plugin
   // implementation.
   EntryPoints entry_points_;
+
+  // The name of the module.
+  std::string name_;
 
   // Non-owning pointers to all instances associated with this module. When
   // there are no more instances, this object should be deleted.

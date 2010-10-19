@@ -193,6 +193,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
+    module->set_name(it->name);
     modules_[path] = module;
   }
 
@@ -208,6 +209,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
     }
+    module->set_name(plugins[i].name);
     modules_[path] = module;
   }
 }

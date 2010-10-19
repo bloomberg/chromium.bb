@@ -2986,4 +2986,42 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
                       int /* restrictions */)
 
+  // Trusted Pepper Filesystem messages ----------------------------------------
+
+  // Open the file.
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_PepperOpenFile,
+                              FilePath /* path */,
+                              int /* flags */,
+                              base::PlatformFileError /* error_code */,
+                              IPC::PlatformFileForTransit /* result */)
+
+  // Rename the file.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_PepperRenameFile,
+                              FilePath /* path_from */,
+                              FilePath /* path_to */,
+                              base::PlatformFileError /* error_code */)
+
+  // Delete the file.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_PepperDeleteFileOrDir,
+                              FilePath /* path */,
+                              bool /* recursive */,
+                              base::PlatformFileError /* error_code */)
+
+  // Create the directory.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_PepperCreateDir,
+                              FilePath /* path */,
+                              base::PlatformFileError /* error_code */)
+
+  // Query the file's info.
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_PepperQueryFile,
+                              FilePath /* path */,
+                              base::PlatformFileInfo, /* info */
+                              base::PlatformFileError /* error_code */)
+
+  // Get the directory's contents.
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_PepperGetDirContents,
+                              FilePath /* path */,
+                              PepperDirContents, /* contents */
+                              base::PlatformFileError /* error_code */)
+
 IPC_END_MESSAGES(ViewHost)

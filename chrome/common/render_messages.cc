@@ -1109,4 +1109,24 @@ void ParamTraits<AudioBuffersState>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
+void ParamTraits<PepperDirEntry>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.name);
+  WriteParam(m, p.is_dir);
+}
+
+bool ParamTraits<PepperDirEntry>::Read(const Message* m,
+                                    void** iter,
+                                    param_type* p) {
+  return ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->is_dir);
+}
+
+void ParamTraits<PepperDirEntry>::Log(const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.name, l);
+  l->append(", ");
+  LogParam(p.is_dir, l);
+  l->append(")");
+}
+
 }  // namespace IPC
