@@ -47,19 +47,19 @@ class OutputLogger {
   }
 
   void LogOneTrace(TraceBuffer* buffer) {
-    LOG(INFO) << "Trace: " << buffer->name();
+    VLOG(1) << "Trace: " << buffer->name();
     base::Time last_timestamp;
     for (int i = 0; i < buffer->record_size(); ++i) {
       const TraceRecord& record = buffer->record(i);
       base::Time timestamp = base::Time::FromInternalValue(record.timestamp());
       if (i == 0) {
-        LOG(INFO) << "  TS: " << record.timestamp()
-                  << " msg: " << record.annotation();
+        VLOG(1) << "  TS: " << record.timestamp()
+                << " msg: " << record.annotation();
       } else {
         base::TimeDelta delta = timestamp - last_timestamp;
-        LOG(INFO) << "  TS: " << record.timestamp()
-                  << " msg: " << record.annotation()
-                  << " [ " << delta.InMilliseconds() << "ms ]";
+        VLOG(1) << "  TS: " << record.timestamp()
+                << " msg: " << record.annotation()
+                << " [ " << delta.InMilliseconds() << "ms ]";
       }
       last_timestamp = timestamp;
     }

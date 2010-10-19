@@ -150,17 +150,17 @@ void ChromotingClient::DispatchMessage() {
 }
 
 void ChromotingClient::OnConnectionOpened(HostConnection* conn) {
-  LOG(INFO) << "ChromotingClient::OnConnectionOpened";
+  VLOG(1) << "ChromotingClient::OnConnectionOpened";
   SetConnectionState(CONNECTED);
 }
 
 void ChromotingClient::OnConnectionClosed(HostConnection* conn) {
-  LOG(INFO) << "ChromotingClient::OnConnectionClosed";
+  VLOG(1) << "ChromotingClient::OnConnectionClosed";
   SetConnectionState(DISCONNECTED);
 }
 
 void ChromotingClient::OnConnectionFailed(HostConnection* conn) {
-  LOG(INFO) << "ChromotingClient::OnConnectionFailed";
+  VLOG(1) << "ChromotingClient::OnConnectionFailed";
   SetConnectionState(FAILED);
 }
 
@@ -207,7 +207,7 @@ void ChromotingClient::InitClient(const InitClientMessage& init_client,
   // Resize the window.
   int width = init_client.width();
   int height = init_client.height();
-  LOG(INFO) << "Init client received geometry: " << width << "x" << height;
+  VLOG(1) << "Init client received geometry: " << width << "x" << height;
 
 //  TODO(ajwong): What to do here?  Does the decoder actually need to request
 //  the right frame size?  This is mainly an optimization right?

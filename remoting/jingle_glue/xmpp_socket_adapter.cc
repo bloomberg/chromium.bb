@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ bool XmppSocketAdapter::Connect(const talk_base::SocketAddress& addr) {
     return false;
   }
 
-  LOG(INFO) << "XmppSocketAdapter::Connect(" << addr.ToString() << ")";
+  VLOG(1) << "XmppSocketAdapter::Connect(" << addr.ToString() << ")";
 
   // Clean up any previous socket - cannot delete socket on close because close
   // happens during the child socket's stack callback.
@@ -250,8 +250,8 @@ bool XmppSocketAdapter::Close() {
   if (state_ != STATE_CLOSED) {
     // The socket was closed manually, not directly due to error.
     if (error_ != ERROR_NONE) {
-      LOG(INFO) << "XmppSocketAdapter::Close - previous Error: " << error_
-                << " WSAError: " << wsa_error_;
+      VLOG(1) << "XmppSocketAdapter::Close - previous Error: " << error_
+              << " WSAError: " << wsa_error_;
       error_ = ERROR_NONE;
       wsa_error_ = 0;
     }
@@ -264,8 +264,8 @@ void XmppSocketAdapter::NotifyClose() {
   if (state_ == STATE_CLOSED) {
     SetError(ERROR_WRONGSTATE);
   } else {
-    LOG(INFO) << "XmppSocketAdapter::NotifyClose - Error: " << error_
-              << " WSAError: " << wsa_error_;
+    VLOG(1) << "XmppSocketAdapter::NotifyClose - Error: " << error_
+            << " WSAError: " << wsa_error_;
     state_ = STATE_CLOSED;
     SignalClosed();
     FreeState();
@@ -275,12 +275,12 @@ void XmppSocketAdapter::NotifyClose() {
 void XmppSocketAdapter::OnConnectEvent(talk_base::AsyncSocket *socket) {
   if (state_ == STATE_CONNECTING) {
     state_ = STATE_OPEN;
-    LOG(INFO) << "XmppSocketAdapter::OnConnectEvent - STATE_OPEN";
+    VLOG(1) << "XmppSocketAdapter::OnConnectEvent - STATE_OPEN";
     SignalConnected();
 #if defined(FEATURE_ENABLE_SSL)
   } else if (state_ == STATE_TLS_CONNECTING) {
     state_ = STATE_TLS_OPEN;
-    LOG(INFO) << "XmppSocketAdapter::OnConnectEvent - STATE_TLS_OPEN";
+    VLOG(1) << "XmppSocketAdapter::OnConnectEvent - STATE_TLS_OPEN";
     SignalSSLConnected();
     if (write_buffer_length_ > 0) {
       HandleWritable();
@@ -302,7 +302,7 @@ void XmppSocketAdapter::OnWriteEvent(talk_base::AsyncSocket *socket) {
 
 void XmppSocketAdapter::OnCloseEvent(talk_base::AsyncSocket *socket,
                                      int error) {
-  LOG(INFO) << "XmppSocketAdapter::OnCloseEvent(" << error << ")";
+  VLOG(1) << "XmppSocketAdapter::OnCloseEvent(" << error << ")";
   SetWSAError(error);
   if (error == SOCKET_EACCES) {
     SignalAuthenticationError();  // Proxy needs authentication.

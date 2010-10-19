@@ -95,7 +95,7 @@ void HeartbeatSender::DoSendStanza() {
     // |STOPPED|, so don't touch it here unless we are in |STARTED| state.
     DCHECK(MessageLoop::current() == jingle_client_->message_loop());
 
-    LOG(INFO) << "Sending heartbeat stanza to " << kChromotingBotJid;
+    VLOG(1) << "Sending heartbeat stanza to " << kChromotingBotJid;
 
     request_->SendIq(buzz::STR_SET, kChromotingBotJid,
                      CreateHeartbeatMessage());

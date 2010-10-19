@@ -120,7 +120,7 @@ int SSLSocketAdapter::Recv(void* buf, size_t len) {
           } else {
             if (result < 0) {
               SetError(result);
-              LOG(INFO) << "Socket error " << result;
+              VLOG(1) << "Socket error " << result;
             }
             transport_buf_ = NULL;
           }

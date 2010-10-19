@@ -61,7 +61,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   // TODO(ajwong): See if there is a method for querying what thread we're on
   // from inside the pepper API.
   pepper_main_loop_dont_post_to_me_ = MessageLoop::current();
-  LOG(INFO) << "Started ChromotingInstance::Init";
+  VLOG(1) << "Started ChromotingInstance::Init";
 
   // Start all the threads.
   context_.Start();
@@ -114,11 +114,8 @@ void ChromotingInstance::ViewChanged(const pp::Rect& position,
 
   // TODO(ajwong): This is going to be a race condition when the view changes
   // and we're in the middle of a Paint().
-  LOG(INFO) << "ViewChanged "
-            << position.x() << ","
-            << position.y() << ","
-            << position.width() << ","
-            << position.height();
+  VLOG(1) << "ViewChanged " << position.x() << "," << position.y() << ","
+          << position.width() << "," << position.height();
 
   view_->SetViewport(position.x(), position.y(),
                      position.width(), position.height());

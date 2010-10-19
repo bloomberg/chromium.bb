@@ -152,7 +152,7 @@ void ChromotingHost::OnClientConnected(ClientConnection* client) {
   // Immediately add the client and start the session.
   session_->AddClient(client);
   session_->Start();
-  LOG(INFO) << "Session manager started";
+  VLOG(1) << "Session manager started";
 }
 
 void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
@@ -188,14 +188,14 @@ void ChromotingHost::OnConnectionOpened(ClientConnection* client) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Completes the client connection.
-  LOG(INFO) << "Connection to client established.";
+  VLOG(1) << "Connection to client established.";
   OnClientConnected(client_.get());
 }
 
 void ChromotingHost::OnConnectionClosed(ClientConnection* client) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  LOG(INFO) << "Connection to client closed.";
+  VLOG(1) << "Connection to client closed.";
   OnClientDisconnected(client_.get());
 }
 
@@ -212,8 +212,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
                                    JingleClient::State state) {
   if (state == JingleClient::CONNECTED) {
     DCHECK_EQ(jingle_client_.get(), jingle_client);
-    LOG(INFO) << "Host connected as "
-              << jingle_client->GetFullJid() << "." << std::endl;
+    VLOG(1) << "Host connected as " << jingle_client->GetFullJid();
 
     // Create and start |chromotocol_server_|.
     chromotocol_server_ =
@@ -226,7 +225,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     // Start heartbeating.
     heartbeat_sender_->Start();
   } else if (state == JingleClient::CLOSED) {
-    LOG(INFO) << "Host disconnected from talk network." << std::endl;
+    VLOG(1) << "Host disconnected from talk network.";
 
     // Stop heartbeating.
     heartbeat_sender_->Stop();
@@ -254,7 +253,7 @@ void ChromotingHost::OnNewClientConnection(
 
   *accept = true;
 
-  LOG(INFO) << "Client connected: " << connection->jid() << std::endl;
+  VLOG(1) << "Client connected: " << connection->jid();
 
   // If we accept the connected then create a client object and set the
   // callback.

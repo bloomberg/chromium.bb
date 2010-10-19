@@ -109,10 +109,10 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
   DCHECK(event_callback_);
 
   if (state == JingleClient::CONNECTED) {
-    LOG(INFO) << "Connected as: " << client->GetFullJid();
+    VLOG(1) << "Connected as: " << client->GetFullJid();
     InitConnection();
   } else if (state == JingleClient::CLOSED) {
-    LOG(INFO) << "Connection closed.";
+    VLOG(1) << "Connection closed.";
     event_callback_->OnConnectionClosed(this);
   }
 }

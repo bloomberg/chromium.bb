@@ -29,48 +29,37 @@ bool GetLoginInfoFromArgs(int argc, char** argv, ClientConfig* config) {
     std::string arg = argv[i];
     if (arg == "--host_jid") {
       if (++i >= argc) {
-        LOG(WARNING) << "Expected Host JID to follow --host_jid option"
-                     << std::endl;
+        LOG(WARNING) << "Expected Host JID to follow --host_jid option";
       } else {
         found_host_jid = true;
         host_jid = argv[i];
       }
     } else if (arg == "--jid") {
       if (++i >= argc) {
-        LOG(WARNING) << "Expected JID to follow --jid option" << std::endl;
+        LOG(WARNING) << "Expected JID to follow --jid option";
       } else {
         found_jid = true;
         username = argv[i];
       }
     } else if (arg == "--token") {
       if (++i >= argc) {
-        LOG(WARNING) << "Expected Auth token to follow --token option"
-                     << std::endl;
+        LOG(WARNING) << "Expected Auth token to follow --token option";
       } else {
         found_auth_token = true;
         auth_token = argv[i];
       }
     } else {
-      LOG(WARNING) << "Unrecognized option: " << arg << std::endl;
+      LOG(WARNING) << "Unrecognized option: " << arg;
     }
   }
 
-  if (!found_host_jid) {
+  if (!found_host_jid)
     return false;
-  }
 
   // Validate the chromoting host JID.
-  if (host_jid.find("/chromoting") == std::string::npos) {
+  if ((host_jid.find("/chromoting") == std::string::npos) || !found_jid ||
+      !found_auth_token)
     return false;
-  }
-
-  if (!found_jid) {
-    return false;
-  }
-
-  if (!found_auth_token) {
-    return false;
-  }
 
   config->host_jid = host_jid;
   config->username = username;
