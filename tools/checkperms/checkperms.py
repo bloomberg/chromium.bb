@@ -101,8 +101,8 @@ WHITELIST_FILES_REGEX = re.compile(r'(%s)$' % '|'.join(WHITELIST_FILES))
 # Set to true for more output. This is set by the command line options.
 VERBOSE = False
 
-# In lowercase, using forward slashes as directory separators, ending in a
-# forward slash. Set by the command line options.
+# Using forward slashes as directory separators, ending in a forward slash.
+# Set by the command line options.
 BASE_DIRECTORY = ''
 
 # The default if BASE_DIRECTORY is not set on the command line.
@@ -292,11 +292,6 @@ Examples:
   print 'Using base directory:', BASE_DIRECTORY
   print 'Checking directory:', start_dir
 
-  # The base directory should be lower case from here on since it will be used
-  # for substring matching against whitelists that all assume lowercase, and we
-  # compile on case-insensitive systems. Plus, we always use slashes here since
-  # the include parsing code will also normalize to slashes.
-  BASE_DIRECTORY = BASE_DIRECTORY.lower()
   BASE_DIRECTORY = BASE_DIRECTORY.replace('\\', '/')
   start_dir = start_dir.replace('\\', '/')
 
