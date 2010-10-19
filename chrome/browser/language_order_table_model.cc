@@ -19,7 +19,7 @@ LanguageOrderTableModel::LanguageOrderTableModel()
 void LanguageOrderTableModel::SetAcceptLanguagesString(
     const std::string& language_list) {
   std::vector<std::string> languages_vector;
-  ListToVector(language_list, &languages_vector);
+  base::SplitString(language_list, ',', &languages_vector);
   languages_.clear();
   std::set<std::string> added;
   for (int i = 0; i < static_cast<int>(languages_vector.size()); i++) {
@@ -105,22 +105,10 @@ void LanguageOrderTableModel::MoveUp(int index) {
     observer_->OnItemsChanged(0, RowCount());
 }
 
+std::string LanguageOrderTableModel::GetLanguageList() {
+  return JoinString(languages_, ',');
+}
+
 int LanguageOrderTableModel::RowCount() {
   return static_cast<int>(languages_.size());
-}
-
-void LanguageOrderTableModel::ListToVector(const std::string& list,
-                                           std::vector<std::string>* vector) {
-  base::SplitString(list, ',', vector);
-}
-
-std::string LanguageOrderTableModel::VectorToList(
-    const std::vector<std::string>& vector)  {
-  std::string list;
-  for (int i = 0 ; i < static_cast<int>(vector.size()) ; i++) {
-    list += vector.at(i);
-    if (i != static_cast<int>(vector.size()) - 1)
-      list += ',';
-  }
-  return list;
 }
