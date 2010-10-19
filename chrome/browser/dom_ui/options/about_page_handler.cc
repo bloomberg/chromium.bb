@@ -249,9 +249,17 @@ void AboutPageHandler::PageReady(const ListValue* args) {
                      NewCallback(this, &AboutPageHandler::OnOSVersion));
 
   update_observer_.reset(new UpdateObserver(this));
-  chromeos::CrosLibrary::Get()->GetUpdateLibrary()->
-      AddObserver(update_observer_.get());
+  chromeos::UpdateLibrary* update_library =
+      chromeos::CrosLibrary::Get()->GetUpdateLibrary();
+  update_library->AddObserver(update_observer_.get());
 
+  // Update the DOMUI page with the current status. See comments below.
+  UpdateStatus(update_library->status());
+
+  // Initiate update check. UpdateStatus() below will be called when we
+  // get update status via update_observer_. If the update has been
+  // already complete, update_observer_ won't receive a notification.
+  // This is why we manually update the DOMUI page above.
   CheckNow(NULL);
 #endif
 }
@@ -349,4 +357,3 @@ void AboutPageHandler::OnOSVersion(chromeos::VersionLoader::Handle handle,
   }
 }
 #endif
-
