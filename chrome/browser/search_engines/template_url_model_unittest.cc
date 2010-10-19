@@ -186,7 +186,8 @@ class TemplateURLModelTest : public testing::Test {
 
   // Set the managed preferences for the default search provider and trigger
   // notification.
-  void SetManagedDefaultSearchPreferences(const char* name,
+  void SetManagedDefaultSearchPreferences(bool enabled,
+                                          const char* name,
                                           const char* search_url,
                                           const char* suggest_url,
                                           const char* icon_url,
@@ -195,7 +196,7 @@ class TemplateURLModelTest : public testing::Test {
     TestingPrefService* service = profile()->GetTestingPrefService();
     service->SetManagedPrefWithoutNotification(
         prefs::kDefaultSearchProviderEnabled,
-        Value::CreateBooleanValue(true));
+        Value::CreateBooleanValue(enabled));
     service->SetManagedPrefWithoutNotification(
         prefs::kDefaultSearchProviderName,
         Value::CreateStringValue(name));
@@ -219,16 +220,6 @@ class TemplateURLModelTest : public testing::Test {
         prefs::kDefaultSearchProviderID, new StringValue(""));
     service->SetManagedPrefWithoutNotification(
         prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
-    NotifyManagedPrefsHaveChanged();
-  }
-
-  // Set the managed preferences for the default search provider and trigger
-  // notification.
-  void DisableManagedDefaultSearchProvider() {
-    TestingPrefService* service = profile()->GetTestingPrefService();
-    service->SetManagedPrefWithoutNotification(
-        prefs::kDefaultSearchProviderEnabled,
-        Value::CreateBooleanValue(false));
     NotifyManagedPrefsHaveChanged();
   }
 
@@ -1120,7 +1111,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   const char kSearchURL[] = "http://test.com/search?t={searchTerms}";
   const char kIconURL[] = "http://test.com/icon.jpg";
   const char kEncodings[] = "UTF-16;UTF-32";
-  SetManagedDefaultSearchPreferences(kName, kSearchURL, "", kIconURL,
+  SetManagedDefaultSearchPreferences(true, kName, kSearchURL, "", kIconURL,
                                      kEncodings, "");
   VerifyObserverCount(1);
   EXPECT_TRUE(model()->is_default_search_managed());
@@ -1144,8 +1135,8 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   const char kNewName[] = "test2";
   const char kNewSearchURL[] = "http://other.com/search?t={searchTerms}";
   const char kNewSuggestURL[] = "http://other.com/suggest?t={searchTerms}";
-  SetManagedDefaultSearchPreferences(kNewName, kNewSearchURL, kNewSuggestURL,
-                                     "", "", "");
+  SetManagedDefaultSearchPreferences(true, kNewName, kNewSearchURL,
+                                     kNewSuggestURL, "", "", "");
   VerifyObserverCount(1);
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
@@ -1174,14 +1165,14 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   EXPECT_EQ(actual_final_managed_default->show_in_default_list(), true);
 
   // Disable the default search provider through policy.
-  DisableManagedDefaultSearchProvider();
+  SetManagedDefaultSearchPreferences(false, "", "", "", "", "", "");
   VerifyObserverCount(1);
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(NULL == model()->GetDefaultSearchProvider());
   EXPECT_EQ(1 + initial_count, model()->GetTemplateURLs().size());
 
   // Re-enable it.
-  SetManagedDefaultSearchPreferences(kName, kSearchURL, "", kIconURL,
+  SetManagedDefaultSearchPreferences(true, kName, kSearchURL, "", kIconURL,
                                      kEncodings, "");
   VerifyObserverCount(1);
   EXPECT_TRUE(model()->is_default_search_managed());

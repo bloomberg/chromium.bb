@@ -86,9 +86,32 @@ void SetWelcomePosition(GtkFloatingContainer* container,
 // static
 bool FirstRunDialog::Show(Profile* profile,
                           bool randomize_search_engine_order) {
+  // Figure out which dialogs we will show.
+  // If the default search is managed via policy, we won't ask.
+  const TemplateURLModel* search_engines_model = profile->GetTemplateURLModel();
+  bool show_search_engines_dialog = search_engines_model &&
+      !search_engines_model->is_default_search_managed();
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // If the metrics reporting is managed, we won't ask.
+  const PrefService::Preference* metrics_reporting_pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kMetricsReportingEnabled);
+  bool show_reporting_dialog = !metrics_reporting_pref ||
+      !metrics_reporting_pref->IsManaged();
+#else
+  bool show_reporting_dialog = false;
+#endif
+
+  if (!show_search_engines_dialog && !show_reporting_dialog)
+    return true;  // Nothing to do
+
   int response = -1;
   // Object deletes itself.
-  new FirstRunDialog(profile, randomize_search_engine_order, response);
+  new FirstRunDialog(profile,
+                     show_reporting_dialog,
+                     show_search_engines_dialog,
+                     &response);
 
   // TODO(port): it should be sufficient to just run the dialog:
   // int response = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -101,16 +124,23 @@ bool FirstRunDialog::Show(Profile* profile,
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile,
-                               bool randomize_search_engine_order,
-                               int& response)
+                               bool show_reporting_dialog,
+                               bool show_search_engines_dialog,
+                               int* response)
     : search_engine_window_(NULL),
       dialog_(NULL),
       report_crashes_(NULL),
       make_default_(NULL),
       profile_(profile),
       chosen_search_engine_(NULL),
+      show_reporting_dialog_(show_reporting_dialog),
       response_(response) {
+  if (!show_search_engines_dialog) {
+    ShowReportingDialog();
+    return;
+  }
   search_engines_model_ = profile_->GetTemplateURLModel();
+
   ShowSearchEngineWindow();
 
   search_engines_model_->AddObserver(this);
@@ -191,21 +221,17 @@ void FirstRunDialog::ShowSearchEngineWindow() {
   gtk_window_present(GTK_WINDOW(search_engine_window_));
 }
 
-void FirstRunDialog::ShowDialog() {
+void FirstRunDialog::ShowReportingDialog() {
   // The purpose of the dialog is to ask the user to enable stats and crash
   // reporting. This setting may be controlled through configuration management
   // in enterprise scenarios. If that is the case, skip the dialog entirely,
   // it's not worth bothering the user for only the default browser question
   // (which is likely to be forced in enterprise deployments anyway).
-  const PrefService::Preference* metrics_reporting_pref =
-      g_browser_process->local_state()->FindPreference(
-          prefs::kMetricsReportingEnabled);
-  if (metrics_reporting_pref && metrics_reporting_pref->IsManaged()) {
+  if (!show_reporting_dialog_) {
     OnResponseDialog(NULL, GTK_RESPONSE_ACCEPT);
     return;
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str(),
       NULL,  // No parent
@@ -251,10 +277,6 @@ void FirstRunDialog::ShowDialog() {
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(OnResponseDialogThunk), this);
   gtk_widget_show_all(dialog_);
-#else  // !defined(GOOGLE_CHROME_BUILD)
-  // We don't show the dialog in chromium. Pretend the user accepted.
-  OnResponseDialog(NULL, GTK_RESPONSE_ACCEPT);
-#endif  // !defined(GOOGLE_CHROME_BUILD)
 }
 
 void FirstRunDialog::OnTemplateURLModelChanged() {
@@ -348,7 +370,7 @@ void FirstRunDialog::OnSearchEngineWindowDestroy(GtkWidget* sender) {
   search_engine_window_ = NULL;
   if (chosen_search_engine_) {
     search_engines_model_->SetDefaultSearchProvider(chosen_search_engine_);
-    ShowDialog();
+    ShowReportingDialog();
   } else {
     FirstRunDone();
   }
@@ -357,7 +379,7 @@ void FirstRunDialog::OnSearchEngineWindowDestroy(GtkWidget* sender) {
 void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
   if (dialog_)
     gtk_widget_hide_all(dialog_);
-  response_ = response;
+  *response_ = response;
 
   // Mark that first run has ran.
   FirstRun::CreateSentinel();

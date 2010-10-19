@@ -31,6 +31,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/views/first_run_search_engine_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -453,6 +454,12 @@ bool FirstRun::IsOrganic() {
 // static
 void FirstRun::ShowFirstRunDialog(Profile* profile,
                                   bool randomize_search_engine_experiment) {
+  // If the default search is managed via policy, we don't ask the user to
+  // choose.
+  TemplateURLModel* model = profile->GetTemplateURLModel();
+  if (NULL == model || model->is_default_search_managed())
+    return;
+
   views::Window* search_engine_dialog = views::Window::CreateChromeWindow(
       NULL,
       gfx::Rect(),

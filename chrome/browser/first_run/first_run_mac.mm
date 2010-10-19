@@ -9,6 +9,8 @@
 #import "chrome/browser/cocoa/first_run_dialog.h"
 #import "chrome/browser/cocoa/search_engine_dialog_controller.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -71,7 +73,12 @@ void ShowFirstRun(Profile* profile) {
   FirstRun::CreateSentinel();
 
   // Set preference to show first run bubble and welcome page.
-  FirstRun::SetShowFirstRunBubblePref(true);
+  // Don't display the minimal bubble if there is no default search provider.
+  TemplateURLModel* search_engines_model = profile->GetTemplateURLModel();
+  if (search_engines_model &&
+      search_engines_model->GetDefaultSearchProvider()) {
+    FirstRun::SetShowFirstRunBubblePref(true);
+  }
   FirstRun::SetShowWelcomePagePref();
 }
 
@@ -80,8 +87,13 @@ void ShowFirstRun(Profile* profile) {
 // static
 void FirstRun::ShowFirstRunDialog(Profile* profile,
                                   bool randomize_search_engine_experiment) {
-  ShowSearchEngineSelectionDialog(profile,
-                                  randomize_search_engine_experiment);
+  // If the default search is not managed via policy, ask the user to
+  // choose a default.
+  TemplateURLModel* model = profile->GetTemplateURLModel();
+  if (model && !model->is_default_search_managed()) {
+    ShowSearchEngineSelectionDialog(profile,
+                                    randomize_search_engine_experiment);
+  }
   ShowFirstRun(profile);
 }
 
