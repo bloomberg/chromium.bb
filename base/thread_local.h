@@ -6,7 +6,7 @@
 // sure that this is really the proper solution for what you're trying to
 // achieve.  Don't prematurely optimize, most likely you can just use a Lock.
 //
-// These classes implement a warpper around the platform's TLS storage
+// These classes implement a wrapper around the platform's TLS storage
 // mechanism.  On construction, they will allocate a TLS slot, and free the
 // TLS slot on destruction.  No memory management (creation or destruction) is
 // handled.  This means for uses of ThreadLocalPointer, you must correctly
