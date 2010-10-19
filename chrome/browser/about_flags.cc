@@ -22,9 +22,9 @@ namespace about_flags {
 
 namespace {
 
-enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 };
+enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 , kOsCrOS = 1 << 3 };
 
-unsigned kOsAll = kOsMac | kOsWin | kOsLinux;
+unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
 struct Experiment {
   // The internal name of the experiment. This is never shown to the user.
@@ -65,6 +65,8 @@ const Experiment kExperiments[] = {
     "vertical-tabs",  // Do not change; see above.
     IDS_FLAGS_SIDE_TABS_NAME,
     IDS_FLAGS_SIDE_TABS_DESCRIPTION,
+    // TODO(thakis): Move sidetabs to about:flags on ChromeOS
+    // http://crbug.com/57634
     kOsWin,
     switches::kEnableVerticalTabs
   },
@@ -72,7 +74,7 @@ const Experiment kExperiments[] = {
     "tabbed-options",  // Do not change; see above.
     IDS_FLAGS_TABBED_OPTIONS_NAME,
     IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION,
-    kOsAll,
+    kOsWin | kOsLinux | kOsMac,  // Enabled by default on CrOS.
     switches::kEnableTabbedOptions
   },
   {
@@ -81,14 +83,14 @@ const Experiment kExperiments[] = {
 #if defined(OS_WIN)
     // Windows only supports host functionality at the moment.
     IDS_FLAGS_REMOTING_HOST_DESCRIPTION,
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX)  // Also true for CrOS.
     // Linux only supports client functionality at the moment.
     IDS_FLAGS_REMOTING_CLIENT_DESCRIPTION,
 #else
     // On other platforms, this lab isn't available at all.
     0,
 #endif
-    kOsWin | kOsLinux,
+    kOsWin | kOsLinux | kOsCrOS,
     switches::kEnableRemoting
   },
   {
@@ -139,7 +141,7 @@ const Experiment kExperiments[] = {
     "gpu-canvas-2d", // Do not change; see above
     IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
     IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION,
-    kOsWin | kOsLinux,
+    kOsWin | kOsLinux | kOsCrOS,
     switches::kEnableAccelerated2dCanvas
   },
   // FIXME(scheib): Add Flags entry for WebGL,
@@ -251,6 +253,8 @@ int GetCurrentPlatform() {
   return kOsMac;
 #elif defined(OS_WIN)
   return kOsWin;
+#elif defined(OS_CHROMEOS)  // Needs to be before the OS_LINUX check.
+  return kOsCrOS;
 #elif defined(OS_LINUX)
   return kOsLinux;
 #else
@@ -259,15 +263,6 @@ int GetCurrentPlatform() {
 }
 
 }  // namespace
-
-bool IsEnabled() {
-#if defined(OS_CHROMEOS)
-  // TODO(thakis): Port about:flags to chromeos -- http://crbug.com/57634
-  return false;
-#else
-  return true;
-#endif
-}
 
 void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line) {
   FlagsState::instance()->ConvertFlagsToSwitches(prefs, command_line);
@@ -321,9 +316,6 @@ namespace {
 
 void FlagsState::ConvertFlagsToSwitches(
     PrefService* prefs, CommandLine* command_line) {
-  if (!IsEnabled())
-    return;
-
   if (command_line->HasSwitch(switches::kNoExperiments))
     return;
 

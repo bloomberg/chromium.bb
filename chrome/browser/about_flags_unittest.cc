@@ -29,18 +29,12 @@ class AboutFlagsTest : public ::testing::Test {
 };
 
 TEST_F(AboutFlagsTest, ChangeNeedsRestart) {
-  if (!IsEnabled())
-    return;
-
   EXPECT_FALSE(IsRestartNeededToCommitChanges());
   SetExperimentEnabled(&prefs_, kFlags1, true);
   EXPECT_TRUE(IsRestartNeededToCommitChanges());
 }
 
 TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
-  if (!IsEnabled())
-    return;
-
   // Add two experiments, check they're there.
   SetExperimentEnabled(&prefs_, kFlags1, true);
   SetExperimentEnabled(&prefs_, kFlags2, true);
@@ -70,9 +64,6 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveOne) {
 }
 
 TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
-  if (!IsEnabled())
-    return;
-
   // Add two experiments, check the pref exists.
   SetExperimentEnabled(&prefs_, kFlags1, true);
   SetExperimentEnabled(&prefs_, kFlags2, true);
@@ -88,9 +79,6 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
 }
 
 TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
-  if (!IsEnabled())
-    return;
-
   SetExperimentEnabled(&prefs_, kFlags1, true);
 
   CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
@@ -106,9 +94,6 @@ TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
 }
 
 TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
-  if (!IsEnabled())
-    return;
-
   std::map<std::string, CommandLine::StringType> switch_list;
   switch_list[kFlag1CommandLine] = CommandLine::StringType();
   switch_list[switches::kFlagSwitchesBegin] = CommandLine::StringType();

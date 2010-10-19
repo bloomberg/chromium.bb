@@ -133,7 +133,7 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)
     return &NewDOMUI<HistoryUI2>;
-  if (about_flags::IsEnabled() && url.host() == chrome::kChromeUIFlagsHost)
+  if (url.host() == chrome::kChromeUIFlagsHost)
     return &NewDOMUI<FlagsUI>;
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
@@ -274,7 +274,7 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
   if (page_url.host() == chrome::kChromeUIHistory2Host)
     return HistoryUI2::GetFaviconResourceBytes();
 
-  if (about_flags::IsEnabled() && page_url.host() == chrome::kChromeUIFlagsHost)
+  if (page_url.host() == chrome::kChromeUIFlagsHost)
     return FlagsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUISettingsHost)

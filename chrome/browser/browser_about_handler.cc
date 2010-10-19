@@ -260,8 +260,6 @@ std::string AboutAbout() {
   html.append("<html><head><title>About Pages</title></head><body>\n");
   html.append("<h2>List of About pages</h2><ul>\n");
   for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kFlagsPath && !about_flags::IsEnabled())
-      continue;
     if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
         kAllAboutPaths[i] == kBlobInternalsPath ||
         kAllAboutPaths[i] == kCachePath ||
@@ -1087,13 +1085,11 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
     return true;
   }
 
-  if (about_flags::IsEnabled()) {
-    // Rewrite about:flags and about:vaporware to chrome://flags/.
-    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL) ||
-        LowerCaseEqualsASCII(url->spec(), chrome::kAboutVaporwareURL)) {
-      *url = GURL(chrome::kChromeUIFlagsURL);
-      return true;
-    }
+  // Rewrite about:flags and about:vaporware to chrome://flags/.
+  if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL) ||
+      LowerCaseEqualsASCII(url->spec(), chrome::kAboutVaporwareURL)) {
+    *url = GURL(chrome::kChromeUIFlagsURL);
+    return true;
   }
 
   // Rewrite about:net-internals/* URLs to chrome://net-internals/*

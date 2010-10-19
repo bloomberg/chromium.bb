@@ -16,9 +16,6 @@ class PrefService;
 
 namespace about_flags {
 
-// Returns if Flags is enabled (it isn't for ChromeOS at the moment).
-bool IsEnabled();
-
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
 // commandline flags belonging to the active experiments to |command_line|.
 void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
