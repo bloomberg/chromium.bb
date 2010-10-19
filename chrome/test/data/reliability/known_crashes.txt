@@ -107,7 +107,8 @@ PREFIX: browserview::gettoolbarview___webcore::videolayerchromium::~videolayerch
 PREFIX: `anonymous namespace'::purecall____purecall___notificationservice::notify___browserlist::removebrowser___browser::~browser___browser::`scalar deleting destructor'___browserview::~browserview
 
 # 59329
-PREFIX: pluginprocesshost::replytorenderer___pluginprocesshost::onchannelcreated___ipc::messagewithtuple<tuple1<ipc::channelhandle> >::dispatch<pluginprocesshost,void (__thiscall pluginprocesshost::*)(ipc::channelhandle const &)>
+# (SUBSTRING rather than PREFIX since sometimes dies in purecall).
+SUBSTRING: pluginprocesshost::replytorenderer___pluginprocesshost::onchannelcreated___ipc::messagewithtuple<tuple1<ipc::channelhandle> >::dispatch<pluginprocesshost,void (__thiscall pluginprocesshost::*)(ipc::channelhandle const &)>
 
 # 59345
 PREFIX: windowdragresponsetask::run___messageloop::runtask
