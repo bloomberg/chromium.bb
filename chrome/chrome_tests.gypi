@@ -2148,6 +2148,8 @@
           ],
         }, { # else: toolkit_views == 0
           'sources!': [
+            # TODO(estade): port to linux/views.
+            'browser/dom_ui/constrained_html_ui_browsertest.cc',
             'browser/extensions/browser_action_test_util_views.cc',
             'browser/views/browser_actions_container_browsertest.cc',
             'browser/views/dom_view_browsertest.cc',
