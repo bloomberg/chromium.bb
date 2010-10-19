@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <objc/objc-runtime.h>
 
+#include "base/base_paths.h"
 #include "base/data_pack.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -16,6 +17,7 @@
 #include "base/string16.h"
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #import "webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h"
 
 static base::DataPack* g_resource_data_pack = NULL;
@@ -138,6 +140,12 @@ void AfterInitialize(bool unit_test_mode) {
   }
 
   SwizzleNSPasteboard();
+
+  // Add <app bundle's parent dir>/plugins to the plugin path so we can load
+  // test plugins.
+  PathService::Get(base::DIR_EXE, &plugins_dir);
+  plugins_dir = plugins_dir.AppendASCII("../../../plugins");
+  NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 
 void BeforeShutdown() {

@@ -9,10 +9,12 @@
 
 #include "webkit/tools/test_shell/test_shell.h"
 
+#include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/data_pack.h"
 #include "base/debug_on_start.h"
 #include "base/debug_util.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
@@ -194,7 +196,7 @@ void TestShell::PlatformShutdown() {
 }
 
 // static
-void TestShell::InitializeTestShell(bool layout_test_mode, 
+void TestShell::InitializeTestShell(bool layout_test_mode,
                                     bool allow_external_pages) {
   // This should move to a per-process platform-specific initialization function
   // when one exists.
@@ -202,7 +204,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   window_list_ = new WindowList;
   layout_test_mode_ = layout_test_mode;
   allow_external_pages_ = allow_external_pages;
-  
+
   web_prefs_ = new WebPreferences;
 
   // mmap the data pack which holds strings used by WebCore. This is only
@@ -240,6 +242,13 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
       DLOG(FATAL) << "ATSFontActivateFromFileReference " << ahem_path_c;
     }
   }
+
+  // Add <app bundle's parent dir>/plugins to the plugin path so we can load
+  // test plugins.
+  FilePath plugins_dir;
+  PathService::Get(base::DIR_EXE, &plugins_dir);
+  plugins_dir = plugins_dir.AppendASCII("../../../plugins");
+  NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 
 NSButton* MakeTestButton(NSRect* rect, NSString* title, NSView* parent) {
