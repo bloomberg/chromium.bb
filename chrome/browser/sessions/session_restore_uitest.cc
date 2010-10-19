@@ -435,19 +435,14 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
   ASSERT_EQ(url1_, GetActiveTabURL());
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-// Flaky, sometimes times out: http://crbug.com/52022
-#define MAYBE_ShareProcessesOnRestore FLAKY_ShareProcessesOnRestore
-#else
-#define MAYBE_ShareProcessesOnRestore ShareProcessesOnRestore
-#endif
 // Make sure after a restore the number of processes matches that of the number
 // of processes running before the restore. This creates a new tab so that
 // we should have two new tabs running.  (This test will pass in both
 // process-per-site and process-per-site-instance, because we treat the new tab
 // as a special case in process-per-site-instance so that it only ever uses one
 // process.)
-TEST_F(SessionRestoreUITest, MAYBE_ShareProcessesOnRestore) {
+// Flaky as per http://crbug.com/52022
+TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
   if (in_process_renderer()) {
     // No point in running this test in single process mode.
     return;
