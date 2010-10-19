@@ -75,6 +75,25 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
   static const int kNumHashKeys = 20;
   static const int kFileVersion = 1;
 
+  // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
+  // ORDERING OF THESE VALUES.
+  enum FailureType {
+    FAILURE_FILTER_READ_OPEN,
+    FAILURE_FILTER_READ_VERSION,
+    FAILURE_FILTER_READ_NUM_KEYS,
+    FAILURE_FILTER_READ_KEY,
+    FAILURE_FILTER_READ_DATA_MINSIZE,
+    FAILURE_FILTER_READ_DATA_MAXSIZE,
+    FAILURE_FILTER_READ_DATA_SHORT,
+    FAILURE_FILTER_READ_DATA,
+
+    // Histogram space is determined by the max.  If this is exceeded,
+    // simply start a new histogram.
+    FAILURE_MAX = 50
+  };
+
+  static void RecordFailure(FailureType failure_type);
+
   ~BloomFilter();
 
   int byte_size_;  // size in bytes

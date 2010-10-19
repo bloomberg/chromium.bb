@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
@@ -37,6 +38,11 @@ int BloomFilter::FilterSizeForKeyCount(int key_count) {
   const int number_of_keys = std::max(key_count, default_min);
   return std::min(number_of_keys * BloomFilter::kBloomFilterSizeRatio,
                   BloomFilter::kBloomFilterMaxSize * 8);
+}
+
+// static
+void BloomFilter::RecordFailure(FailureType failure_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.BloomFailure", failure_type, FAILURE_MAX);
 }
 
 BloomFilter::BloomFilter(int bit_size) {
@@ -82,42 +88,60 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
 
   if (filter.Open(filter_name,
                   base::PLATFORM_FILE_OPEN |
-                  base::PLATFORM_FILE_READ) != net::OK)
+                  base::PLATFORM_FILE_READ) != net::OK) {
+    RecordFailure(FAILURE_FILTER_READ_OPEN);
     return NULL;
+  }
 
   // Make sure we have a file version that we can understand.
   int file_version;
   int bytes_read = filter.Read(reinterpret_cast<char*>(&file_version),
                                sizeof(file_version), NULL);
-  if (bytes_read != sizeof(file_version) || file_version != kFileVersion)
+  if (bytes_read != sizeof(file_version) || file_version != kFileVersion) {
+    RecordFailure(FAILURE_FILTER_READ_VERSION);
     return NULL;
+  }
 
   // Get all the random hash keys.
   int num_keys;
   bytes_read = filter.Read(reinterpret_cast<char*>(&num_keys),
                            sizeof(num_keys), NULL);
-  if (bytes_read != sizeof(num_keys) || num_keys < 1 || num_keys > kNumHashKeys)
+  if (bytes_read != sizeof(num_keys) ||
+      num_keys < 1 || num_keys > kNumHashKeys) {
+    RecordFailure(FAILURE_FILTER_READ_NUM_KEYS);
     return NULL;
+  }
 
   HashKeys hash_keys;
   for (int i = 0; i < num_keys; ++i) {
     HashKey key;
     bytes_read = filter.Read(reinterpret_cast<char*>(&key), sizeof(key), NULL);
-    if (bytes_read != sizeof(key))
+    if (bytes_read != sizeof(key)) {
+      RecordFailure(FAILURE_FILTER_READ_KEY);
       return NULL;
+    }
     hash_keys.push_back(key);
   }
 
   // Read in the filter data, with sanity checks on min and max sizes.
   int64 remaining64 = filter.Available();
-  if (remaining64 < kBloomFilterMinSize || remaining64 > kBloomFilterMaxSize)
+  if (remaining64 < kBloomFilterMinSize) {
+    RecordFailure(FAILURE_FILTER_READ_DATA_MINSIZE);
     return NULL;
+  } else if (remaining64 > kBloomFilterMaxSize) {
+    RecordFailure(FAILURE_FILTER_READ_DATA_MAXSIZE);
+    return NULL;
+  }
 
   int byte_size = static_cast<int>(remaining64);
   scoped_array<char> data(new char[byte_size]);
   bytes_read = filter.Read(data.get(), byte_size, NULL);
-  if (bytes_read != byte_size)
+  if (bytes_read < byte_size) {
+    RecordFailure(FAILURE_FILTER_READ_DATA_SHORT);
+  } else if (bytes_read != byte_size) {
+    RecordFailure(FAILURE_FILTER_READ_DATA);
     return NULL;
+  }
 
   // We've read everything okay, commit the data.
   return new BloomFilter(data.release(), byte_size, hash_keys);
