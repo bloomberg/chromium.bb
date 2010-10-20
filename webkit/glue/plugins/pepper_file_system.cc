@@ -34,7 +34,7 @@ PP_Resource Create(PP_Instance instance, PP_FileSystemType_Dev type) {
 }
 
 int32_t Open(PP_Resource file_system_id,
-             long long expected_size,
+             int64 expected_size,
              PP_CompletionCallback callback) {
   scoped_refptr<FileSystem> file_system(
       Resource::GetAs<FileSystem>(file_system_id));
