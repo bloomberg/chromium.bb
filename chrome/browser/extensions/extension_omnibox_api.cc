@@ -158,3 +158,12 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
 
   return true;
 }
+
+ExtensionOmniboxSuggestion::ExtensionOmniboxSuggestion() {}
+
+ExtensionOmniboxSuggestion::~ExtensionOmniboxSuggestion() {}
+
+ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() {}
+
+ExtensionOmniboxSuggestions::~ExtensionOmniboxSuggestions() {}
+

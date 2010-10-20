@@ -26,6 +26,9 @@ struct HistoryDetails {
 
 // Details for HISTORY_URL_VISITED.
 struct URLVisitedDetails : public HistoryDetails {
+  URLVisitedDetails();
+  ~URLVisitedDetails();
+
   PageTransition::Type transition;
   URLRow row;
 
@@ -38,12 +41,18 @@ struct URLVisitedDetails : public HistoryDetails {
 
 // Details for NOTIFY_HISTORY_TYPED_URLS_MODIFIED.
 struct URLsModifiedDetails : public HistoryDetails {
+  URLsModifiedDetails();
+  ~URLsModifiedDetails();
+
   // Lists the information for each of the URLs affected.
   std::vector<URLRow> changed_urls;
 };
 
 // Details for NOTIFY_HISTORY_URLS_DELETED.
 struct URLsDeletedDetails : public HistoryDetails {
+  URLsDeletedDetails();
+  ~URLsDeletedDetails();
+
   // Set when all history was deleted. False means just a subset was deleted.
   bool all_history;
 
@@ -55,7 +64,8 @@ struct URLsDeletedDetails : public HistoryDetails {
 
 // Details for NOTIFY_URLS_STARRED.
 struct URLsStarredDetails : public HistoryDetails {
-  explicit URLsStarredDetails(bool being_starred) : starred(being_starred) {}
+  explicit URLsStarredDetails(bool being_starred);
+  ~URLsStarredDetails();
 
   // The new starred state of the list of URLs. True when they are being
   // starred, false when they are being unstarred.
@@ -67,6 +77,9 @@ struct URLsStarredDetails : public HistoryDetails {
 
 // Details for NOTIFY_FAVICON_CHANGED.
 struct FavIconChangeDetails : public HistoryDetails {
+  FavIconChangeDetails();
+  ~FavIconChangeDetails();
+
   std::set<GURL> urls;
 };
 

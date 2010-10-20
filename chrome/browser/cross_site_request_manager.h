@@ -40,7 +40,8 @@ class CrossSiteRequestManager {
 
   // Obtain an instance of CrossSiteRequestManager via
   // Singleton<CrossSiteRequestManager>().
-  CrossSiteRequestManager() {}
+  CrossSiteRequestManager();
+  ~CrossSiteRequestManager();
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.

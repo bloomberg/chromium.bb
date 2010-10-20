@@ -23,6 +23,8 @@ PluginExceptionsTableModel::PluginExceptionsTableModel(
                  NotificationService::AllSources());
 }
 
+PluginExceptionsTableModel::~PluginExceptionsTableModel() {}
+
 bool PluginExceptionsTableModel::CanRemoveRows(const Rows& rows) const {
   return !rows.empty();
 }

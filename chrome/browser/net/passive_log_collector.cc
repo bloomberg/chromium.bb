@@ -37,6 +37,31 @@ bool SortByOrderComparator(const PassiveLogCollector::Entry& a,
 
 }  // namespace
 
+PassiveLogCollector::Entry::Entry(uint32 order,
+                                  net::NetLog::EventType type,
+                                  const base::TimeTicks& time,
+                                  net::NetLog::Source source,
+                                  net::NetLog::EventPhase phase,
+                                  net::NetLog::EventParameters* params)
+    : order(order),
+      type(type),
+      time(time),
+      source(source),
+      phase(phase),
+      params(params) {
+}
+
+PassiveLogCollector::Entry::~Entry() {}
+
+PassiveLogCollector::SourceInfo::SourceInfo()
+    : source_id(net::NetLog::Source::kInvalidId),
+      num_entries_truncated(0),
+      reference_count(0),
+      is_alive(true) {
+}
+
+PassiveLogCollector::SourceInfo::~SourceInfo() {}
+
 //----------------------------------------------------------------------------
 // PassiveLogCollector
 //----------------------------------------------------------------------------

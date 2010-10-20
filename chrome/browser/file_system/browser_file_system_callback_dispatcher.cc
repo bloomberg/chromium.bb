@@ -14,6 +14,8 @@ BrowserFileSystemCallbackDispatcher::BrowserFileSystemCallbackDispatcher(
   DCHECK(dispatcher_host_);
 }
 
+BrowserFileSystemCallbackDispatcher::~BrowserFileSystemCallbackDispatcher() {}
+
 void BrowserFileSystemCallbackDispatcher::DidSucceed() {
   dispatcher_host_->Send(new ViewMsg_FileSystem_DidSucceed(request_id_));
   dispatcher_host_->RemoveCompletedOperation(request_id_);

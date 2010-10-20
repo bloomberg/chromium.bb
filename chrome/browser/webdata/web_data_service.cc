@@ -34,11 +34,16 @@ using base::Time;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
 
-WDAppImagesResult::WDAppImagesResult() : has_all_images(false) {
+WDAppImagesResult::WDAppImagesResult() : has_all_images(false) {}
+
+WDAppImagesResult::~WDAppImagesResult() {}
+
+WDKeywordsResult::WDKeywordsResult()
+  : default_search_provider_id(0),
+    builtin_keyword_version(0) {
 }
 
-WDAppImagesResult::~WDAppImagesResult() {
-}
+WDKeywordsResult::~WDKeywordsResult() {}
 
 WebDataService::WebDataService()
   : is_running_(false),

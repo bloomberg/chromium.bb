@@ -154,6 +154,10 @@ static void ServerNameToSyncAPIName(const std::string& server_name,
   }
 }
 
+UserShare::UserShare() {}
+
+UserShare::~UserShare() {}
+
 ////////////////////////////////////
 // BaseNode member definitions.
 

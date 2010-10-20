@@ -46,10 +46,34 @@ void BalloonHost::Shutdown() {
   }
 }
 
+Browser* BalloonHost::GetBrowser() const {
+  // Notifications aren't associated with a particular browser.
+  return NULL;
+}
+
+gfx::NativeView BalloonHost::GetNativeViewOfHost() {
+  // TODO(aa): Should this return the native view of the BalloonView*?
+  return NULL;
+}
+
+TabContents* BalloonHost::associated_tab_contents() const { return NULL; }
+
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences prefs;
   prefs.allow_scripts_to_close_windows = true;
   return prefs;
+}
+
+SiteInstance* BalloonHost::GetSiteInstance() const {
+  return site_instance_.get();
+}
+
+Profile* BalloonHost::GetProfile() const {
+  return balloon_->profile();
+}
+
+const GURL& BalloonHost::GetURL() const {
+  return balloon_->notification().content_url();
 }
 
 void BalloonHost::Close(RenderViewHost* render_view_host) {
@@ -74,6 +98,18 @@ void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
 
 void BalloonHost::RenderViewGone(RenderViewHost* render_view_host) {
   Close(render_view_host);
+}
+
+int BalloonHost::GetBrowserWindowID() const {
+  return extension_misc::kUnknownWindowId;
+}
+
+ViewType::Type BalloonHost::GetRenderViewType() const {
+  return ViewType::NOTIFICATION;
+}
+
+RenderViewHostDelegate::View* BalloonHost::GetViewDelegate() {
+  return this;
 }
 
 void BalloonHost::ProcessDOMUIMessage(
@@ -175,6 +211,8 @@ void BalloonHost::UpdateInspectorSetting(const std::string& key,
 void BalloonHost::ClearInspectorSettings() {
   RenderViewHostDelegateHelper::ClearInspectorSettings(GetProfile());
 }
+
+BalloonHost::~BalloonHost() {}
 
 void BalloonHost::NotifyDisconnect() {
   if (!should_notify_on_disconnect_)

@@ -132,12 +132,11 @@ class InMemoryURLIndex {
   // A helper class which performs the final filter on each candidate
   // history URL match, inserting accepted matches into |scored_matches_|
   // and trimming the maximum number of matches to 10.
-  class AddHistoryMatch : std::unary_function<HistoryID, void> {
+  class AddHistoryMatch : public std::unary_function<HistoryID, void> {
    public:
     AddHistoryMatch(const InMemoryURLIndex& index,
-                    const String16Vector& lower_terms)
-        : index_(index),
-          lower_terms_(lower_terms) {}
+                    const String16Vector& lower_terms);
+    ~AddHistoryMatch();
 
     void operator()(const HistoryID history_id);
 

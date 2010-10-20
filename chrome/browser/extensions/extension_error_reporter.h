@@ -42,6 +42,7 @@ class ExtensionErrorReporter {
   static ExtensionErrorReporter* instance_;
 
   explicit ExtensionErrorReporter(bool enable_noisy_errors);
+  ~ExtensionErrorReporter();
 
   MessageLoop* ui_loop_;
   std::vector<std::string> errors_;

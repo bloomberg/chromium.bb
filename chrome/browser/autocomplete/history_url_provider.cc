@@ -113,6 +113,8 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       languages(languages) {
 }
 
+HistoryURLProviderParams::~HistoryURLProviderParams() {}
+
 HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
                                        Profile* profile)
     : HistoryProvider(listener, profile, "HistoryURL"),

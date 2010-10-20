@@ -43,10 +43,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
           const base::TimeTicks& time,
           net::NetLog::Source source,
           net::NetLog::EventPhase phase,
-          net::NetLog::EventParameters* params)
-        : order(order), type(type), time(time), source(source), phase(phase),
-          params(params) {
-    }
+          net::NetLog::EventParameters* params);
+    ~Entry();
 
     uint32 order;
     net::NetLog::EventType type;
@@ -60,9 +58,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   typedef std::vector<net::NetLog::Source> SourceDependencyList;
 
   struct SourceInfo {
-    SourceInfo()
-        : source_id(net::NetLog::Source::kInvalidId),
-          num_entries_truncated(0), reference_count(0), is_alive(true) {}
+    SourceInfo();
+    ~SourceInfo();
 
     // Returns the URL that corresponds with this source. This is
     // only meaningful for certain source types (URL_REQUEST, SOCKET_STREAM).

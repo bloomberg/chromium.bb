@@ -47,6 +47,7 @@ struct ExtensionSyncTraits {
       ExtensionSpecificsGetter extension_specifics_getter,
       ExtensionSpecificsSetter extension_specifics_setter,
       ExtensionSpecificsEntityGetter extension_specifics_entity_getter);
+  ~ExtensionSyncTraits();
 
   // The sync type for the data type.
   const syncable::ModelType model_type;

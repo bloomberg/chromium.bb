@@ -47,6 +47,20 @@ int CompareOrigins(const GURL& origin1, const GURL& origin2) {
 }
 }  // namespace
 
+struct GeolocationExceptionsTableModel::Entry {
+  Entry(const GURL& in_origin,
+        const GURL& in_embedding_origin,
+        ContentSetting in_setting)
+      : origin(in_origin),
+        embedding_origin(in_embedding_origin),
+        setting(in_setting) {
+  }
+
+  GURL origin;
+  GURL embedding_origin;
+  ContentSetting setting;
+};
+
 GeolocationExceptionsTableModel::GeolocationExceptionsTableModel(
     GeolocationContentSettingsMap* map)
     : map_(map),
@@ -57,6 +71,8 @@ GeolocationExceptionsTableModel::GeolocationExceptionsTableModel(
   for (i = settings.begin(); i != settings.end(); ++i)
     AddEntriesForOrigin(i->first, i->second);
 }
+
+GeolocationExceptionsTableModel::~GeolocationExceptionsTableModel() {}
 
 bool GeolocationExceptionsTableModel::CanRemoveRows(
     const Rows& rows) const {
@@ -236,12 +252,4 @@ void GeolocationExceptionsTableModel::AddEntriesForOrigin(
 
     entries_.push_back(Entry(origin, i->first, i->second));
   }
-}
-
-GeolocationExceptionsTableModel::Entry::Entry(const GURL& in_origin,
-                                              const GURL& in_embedding_origin,
-                                              ContentSetting in_setting)
-    : origin(in_origin),
-      embedding_origin(in_embedding_origin),
-      setting(in_setting) {
 }

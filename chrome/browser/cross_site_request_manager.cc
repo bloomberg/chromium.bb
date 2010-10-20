@@ -25,3 +25,7 @@ void CrossSiteRequestManager::SetHasPendingCrossSiteRequest(int renderer_id,
     pending_cross_site_views_.erase(key);
   }
 }
+
+CrossSiteRequestManager::CrossSiteRequestManager() {}
+
+CrossSiteRequestManager::~CrossSiteRequestManager() {}

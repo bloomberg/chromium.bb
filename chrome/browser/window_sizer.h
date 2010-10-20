@@ -42,7 +42,8 @@ class WindowSizer {
   // the monitors on the system.
   class MonitorInfoProvider {
    public:
-    virtual ~MonitorInfoProvider() { }
+    MonitorInfoProvider();
+    virtual ~MonitorInfoProvider();
 
     // Returns the bounds of the work area of the primary monitor.
     virtual gfx::Rect GetPrimaryMonitorWorkArea() const = 0;

@@ -55,7 +55,7 @@ class NotificationsPrefsCache
  private:
   friend class base::RefCountedThreadSafe<NotificationsPrefsCache>;
 
-  ~NotificationsPrefsCache() {}
+  virtual ~NotificationsPrefsCache();
 
   // Helper functions which read preferences.
   bool IsOriginAllowed(const GURL& origin);

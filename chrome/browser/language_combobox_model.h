@@ -36,7 +36,7 @@ class LanguageList {
 
   explicit LanguageList(const std::vector<std::string>& locale_codes);
 
-  virtual ~LanguageList() {}
+  virtual ~LanguageList();
 
   // Duplicates specified languages at the beginning of the list for
   // easier access.
@@ -76,7 +76,7 @@ class LanguageComboboxModel : public LanguageList, public ComboboxModel {
   LanguageComboboxModel(Profile* profile,
                         const std::vector<std::string>& locale_codes);
 
-  virtual ~LanguageComboboxModel() {}
+  virtual ~LanguageComboboxModel();
 
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);

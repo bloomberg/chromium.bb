@@ -40,10 +40,12 @@ ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
   gtk_box_pack_start(GTK_BOX(content_area), label, FALSE, FALSE, 0);
 
   g_signal_connect(dialog_, "response",
-                   G_CALLBACK(HandleOnResponseDialog), this);
+                   G_CALLBACK(OnDialogResponseThunk), this);
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
   gtk_widget_show_all(dialog_);
 }
+
+ImportLockDialogGtk::~ImportLockDialogGtk() {}
 
 void ImportLockDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {
   if (response == GTK_RESPONSE_ACCEPT) {

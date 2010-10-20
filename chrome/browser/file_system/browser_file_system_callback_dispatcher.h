@@ -14,6 +14,7 @@ class BrowserFileSystemCallbackDispatcher
  public:
   BrowserFileSystemCallbackDispatcher(FileSystemDispatcherHost* dispatcher_host,
                                       int request_id);
+  virtual ~BrowserFileSystemCallbackDispatcher();
 
   // FileSystemCallbackDispatcher implementation.
   virtual void DidSucceed();

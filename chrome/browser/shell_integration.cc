@@ -13,6 +13,14 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 
+ShellIntegration::ShortcutInfo::ShortcutInfo()
+    : create_on_desktop(false),
+      create_in_applications_menu(false),
+      create_in_quick_launch_bar(false) {
+}
+
+ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
+
 std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
     const string16& extension_app_id) {
   const CommandLine cmd = *CommandLine::ForCurrentProcess();

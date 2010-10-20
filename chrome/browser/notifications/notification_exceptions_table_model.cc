@@ -7,9 +7,19 @@
 #include "app/l10n_util.h"
 #include "app/table_model_observer.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_helper.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+
+struct NotificationExceptionsTableModel::Entry {
+  Entry(const GURL& origin, ContentSetting setting);
+  bool operator<(const Entry& b) const;
+
+  GURL origin;
+  ContentSetting setting;
+};
 
 NotificationExceptionsTableModel::NotificationExceptionsTableModel(
     DesktopNotificationService* service)
@@ -24,6 +34,8 @@ NotificationExceptionsTableModel::NotificationExceptionsTableModel(
     entries_.push_back(Entry(blocked[i], CONTENT_SETTING_BLOCK));
   sort(entries_.begin(), entries_.end());
 }
+
+NotificationExceptionsTableModel::~NotificationExceptionsTableModel() {}
 
 bool NotificationExceptionsTableModel::CanRemoveRows(
     const Rows& rows) const {

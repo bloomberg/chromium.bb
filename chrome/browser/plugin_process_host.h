@@ -41,7 +41,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
                           public ResolveProxyMsgHelper::Delegate {
  public:
   PluginProcessHost();
-  ~PluginProcessHost();
+  virtual ~PluginProcessHost();
 
   // Initialize the new plugin process, returning true on success. This must
   // be called before the object can be used.
@@ -141,9 +141,9 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   struct ChannelRequest {
     ChannelRequest(ResourceMessageFilter* renderer_message_filter,
-                   const std::string& m, IPC::Message* r) :
-        mime_type(m), reply_msg(r),
-        renderer_message_filter_(renderer_message_filter) { }
+                   const std::string& m, IPC::Message* r);
+    ~ChannelRequest();
+
     std::string mime_type;
     IPC::Message* reply_msg;
     scoped_refptr<ResourceMessageFilter> renderer_message_filter_;

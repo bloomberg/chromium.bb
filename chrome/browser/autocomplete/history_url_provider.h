@@ -86,6 +86,7 @@ struct HistoryURLProviderParams {
   HistoryURLProviderParams(const AutocompleteInput& input,
                            bool trim_http,
                            const std::string& languages);
+  ~HistoryURLProviderParams();
 
   MessageLoop* message_loop;
 

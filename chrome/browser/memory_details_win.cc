@@ -32,14 +32,13 @@ enum {
   MAX_BROWSERS
 } BrowserProcess;
 
-// Template of static data we use for finding browser process information.
-// These entries must match the ordering for MemoryDetails::BrowserProcess.
-static ProcessData g_process_template[MAX_BROWSERS];
-
 MemoryDetails::MemoryDetails() {
   static const std::wstring google_browser_name =
       l10n_util::GetString(IDS_PRODUCT_NAME);
-  ProcessData g_process_template[MAX_BROWSERS] = {
+  struct {
+    const wchar_t* name;
+    const wchar_t* process_name;
+  } process_template[MAX_BROWSERS] = {
     { google_browser_name.c_str(), L"chrome.exe", },
     { google_browser_name.c_str(), L"nacl64.exe", },
     { L"IE", L"iexplore.exe", },
@@ -50,10 +49,10 @@ MemoryDetails::MemoryDetails() {
     { L"Konqueror", L"konqueror.exe", },
   };
 
-  for (int index = 0; index < arraysize(g_process_template); ++index) {
+  for (int index = 0; index < MAX_BROWSERS; ++index) {
     ProcessData process;
-    process.name = g_process_template[index].name;
-    process.process_name = g_process_template[index].process_name;
+    process.name = process_template[index].name;
+    process.process_name = process_template[index].process_name;
     process_data_.push_back(process);
   }
 }
@@ -67,7 +66,7 @@ void MemoryDetails::CollectProcessData(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Clear old data.
-  for (int index = 0; index < arraysize(g_process_template); index++)
+  for (unsigned int index = 0; index < process_data_.size(); index++)
     process_data_[index].processes.clear();
 
   SYSTEM_INFO system_info;
@@ -100,7 +99,7 @@ void MemoryDetails::CollectProcessData(
       IsWow64Process(handle, &is_wow64);
       is_64bit_process = !is_wow64;
     }
-    for (int index2 = 0; index2 < arraysize(g_process_template); index2++) {
+    for (unsigned int index2 = 0; index2 < process_data_.size(); index2++) {
       if (_wcsicmp(process_data_[index2].process_name.c_str(),
                    process_entry.szExeFile) != 0)
         continue;

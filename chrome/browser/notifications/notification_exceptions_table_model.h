@@ -11,13 +11,12 @@
 
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/remove_rows_table_model.h"
-#include "chrome/common/content_settings.h"
-#include "chrome/common/content_settings_types.h"
 
 class NotificationExceptionsTableModel : public RemoveRowsTableModel {
  public:
   explicit NotificationExceptionsTableModel(
       DesktopNotificationService* service);
+  virtual ~NotificationExceptionsTableModel();
 
   // RemoveRowsTableModel overrides:
   virtual bool CanRemoveRows(const Rows& rows) const;
@@ -30,13 +29,7 @@ class NotificationExceptionsTableModel : public RemoveRowsTableModel {
   virtual void SetObserver(TableModelObserver* observer);
 
  private:
-  struct Entry {
-    Entry(const GURL& origin, ContentSetting setting);
-    bool operator<(const Entry& b) const;
-
-    GURL origin;
-    ContentSetting setting;
-  };
+  struct Entry;
 
   DesktopNotificationService* service_;
 

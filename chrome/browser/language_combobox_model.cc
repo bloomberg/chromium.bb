@@ -32,6 +32,8 @@ LanguageList::LanguageList(
   InitNativeNames(locale_codes);
 }
 
+LanguageList::~LanguageList() {}
+
 void LanguageList::InitNativeNames(
     const std::vector<std::string>& locale_codes) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -151,6 +153,8 @@ LanguageComboboxModel::LanguageComboboxModel(
     : LanguageList(locale_codes),
       profile_(profile) {
 }
+
+LanguageComboboxModel::~LanguageComboboxModel() {}
 
 int LanguageComboboxModel::GetItemCount() {
   return get_languages_count();

@@ -42,6 +42,10 @@ void GConfTitlebarListener::RemoveObserver(BrowserTitlebar* titlebar) {
   titlebars_.erase(titlebar);
 }
 
+// Protected:
+
+GConfTitlebarListener::~GConfTitlebarListener() {}
+
 // Private:
 
 GConfTitlebarListener::GConfTitlebarListener() : client_(NULL) {

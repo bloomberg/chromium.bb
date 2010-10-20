@@ -90,6 +90,9 @@ struct WDAppImagesResult {
 };
 
 struct WDKeywordsResult {
+  WDKeywordsResult();
+  ~WDKeywordsResult();
+
   std::vector<TemplateURL*> keywords;
   // Identifies the ID of the TemplateURL that is the default search. A value of
   // 0 indicates there is no default search provider.

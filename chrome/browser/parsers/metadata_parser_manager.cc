@@ -33,6 +33,8 @@ MetadataParserManager::MetadataParserManager() {
   RegisterParserFactory(factory);
 }
 
+MetadataParserManager::~MetadataParserManager() {}
+
 MetadataParser* MetadataParserManager::GetParserForFile(const FilePath& path) {
 
   char buffer[kAmountToRead];

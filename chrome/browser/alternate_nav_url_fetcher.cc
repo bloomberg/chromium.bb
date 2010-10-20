@@ -30,6 +30,8 @@ AlternateNavURLFetcher::AlternateNavURLFetcher(
                  NotificationService::AllSources());
 }
 
+AlternateNavURLFetcher::~AlternateNavURLFetcher() {}
+
 void AlternateNavURLFetcher::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {

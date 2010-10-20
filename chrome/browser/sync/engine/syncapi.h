@@ -107,6 +107,9 @@ class WriteTransaction;
 // This encompasses all pieces required to build transaction objects on the
 // syncable share.
 struct UserShare {
+  UserShare();
+  ~UserShare();
+
   // The DirectoryManager itself, which is the parent of Transactions and can
   // be shared across multiple threads (unlike Directory).
   scoped_ptr<syncable::DirectoryManager> dir_manager;

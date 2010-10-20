@@ -189,6 +189,8 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 }
 
+ImportProgressDialogGtk::~ImportProgressDialogGtk() {}
+
 void ImportProgressDialogGtk::CloseDialog() {
   gtk_widget_destroy(dialog_);
   dialog_ = NULL;

@@ -33,7 +33,7 @@ class GConfTitlebarListener {
   void RemoveObserver(BrowserTitlebar* titlebar);
 
  protected:
-  virtual ~GConfTitlebarListener() {}
+  virtual ~GConfTitlebarListener();
 
  private:
   // Private constructor to enforce singleton access.

@@ -12,7 +12,7 @@
 class AcceleratorsGtk {
  public:
   AcceleratorsGtk();
-  ~AcceleratorsGtk() { }
+  ~AcceleratorsGtk();
 
   typedef std::vector<std::pair<int, menus::AcceleratorGtk> >
       AcceleratorGtkList;

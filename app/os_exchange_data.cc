@@ -7,6 +7,15 @@
 #include "base/pickle.h"
 #include "googleurl/src/gurl.h"
 
+OSExchangeData::DownloadFileInfo::DownloadFileInfo(
+    const FilePath& filename,
+    DownloadFileProvider* downloader)
+    : filename(filename),
+      downloader(downloader) {
+}
+
+OSExchangeData::DownloadFileInfo::~DownloadFileInfo() {}
+
 OSExchangeData::OSExchangeData() : provider_(CreateProvider()) {
 }
 

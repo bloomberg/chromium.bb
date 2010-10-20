@@ -473,3 +473,14 @@ void PluginProcessHost::OnPluginMessage(
     chrome_plugin->functions().on_message(data_ptr, data_len);
   }
 }
+
+PluginProcessHost::ChannelRequest::ChannelRequest(
+    ResourceMessageFilter* renderer_message_filter,
+    const std::string& m,
+    IPC::Message* r)
+    : mime_type(m),
+      reply_msg(r),
+      renderer_message_filter_(renderer_message_filter) {
+}
+
+PluginProcessHost::ChannelRequest::~ChannelRequest() {}

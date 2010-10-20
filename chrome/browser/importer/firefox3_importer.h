@@ -46,16 +46,7 @@ class Firefox3Importer : public Importer {
   void GetSearchEnginesXMLFiles(std::vector<FilePath>* files);
 
   // The struct stores the information about a bookmark item.
-  struct BookmarkItem {
-    int parent;
-    int id;
-    GURL url;
-    std::wstring title;
-    int type;
-    std::string keyword;
-    base::Time date_added;
-    int64 favicon;
-  };
+  struct BookmarkItem;
   typedef std::vector<BookmarkItem*> BookmarkList;
 
   // Gets the specific IDs of bookmark root node from |db|.

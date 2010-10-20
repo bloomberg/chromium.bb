@@ -46,6 +46,9 @@ class OmniboxSendSuggestionsFunction : public SyncExtensionFunction {
 };
 
 struct ExtensionOmniboxSuggestion {
+  ExtensionOmniboxSuggestion();
+  ~ExtensionOmniboxSuggestion();
+
   // The text that gets put in the edit box.
   string16 content;
 
@@ -57,8 +60,15 @@ struct ExtensionOmniboxSuggestion {
 };
 
 struct ExtensionOmniboxSuggestions {
+  ExtensionOmniboxSuggestions();
+  ~ExtensionOmniboxSuggestions();
+
   int request_id;
   std::vector<ExtensionOmniboxSuggestion> suggestions;
+
+ private:
+  // This class is passed around by pointer.
+  DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxSuggestions);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_OMNIBOX_API_H_

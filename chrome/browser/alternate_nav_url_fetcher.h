@@ -39,6 +39,7 @@ class AlternateNavURLFetcher : public NotificationObserver,
   };
 
   explicit AlternateNavURLFetcher(const GURL& alternate_nav_url);
+  virtual ~AlternateNavURLFetcher();
 
   State state() const { return state_; }
 

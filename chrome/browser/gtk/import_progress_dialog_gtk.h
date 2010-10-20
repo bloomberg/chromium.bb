@@ -32,7 +32,7 @@ class ImportProgressDialogGtk : public ImporterHost::Observer {
   ImportProgressDialogGtk(const string16& source_profile, int16 items,
       ImporterHost* importer_host, ImportObserver* observer,
       GtkWindow* parent, bool bookmarks_import);
-  ~ImportProgressDialogGtk() { }
+  virtual ~ImportProgressDialogGtk();
 
   static void HandleOnResponseDialog(GtkWidget* widget,
                                      int response,

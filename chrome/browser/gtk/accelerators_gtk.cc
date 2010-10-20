@@ -188,6 +188,8 @@ AcceleratorsGtk::AcceleratorsGtk() {
   }
 }
 
+AcceleratorsGtk::~AcceleratorsGtk() {}
+
 const menus::AcceleratorGtk* AcceleratorsGtk::GetPrimaryAcceleratorForCommand(
     int command_id) {
   base::hash_map<int, menus::AcceleratorGtk>::const_iterator iter =

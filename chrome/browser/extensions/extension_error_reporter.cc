@@ -36,6 +36,8 @@ ExtensionErrorReporter::ExtensionErrorReporter(bool enable_noisy_errors)
       enable_noisy_errors_(enable_noisy_errors) {
 }
 
+ExtensionErrorReporter::~ExtensionErrorReporter() {}
+
 void ExtensionErrorReporter::ReportError(const std::string& message,
                                          bool be_noisy) {
   // NOTE: There won't be a ui_loop_ in the unit test environment.

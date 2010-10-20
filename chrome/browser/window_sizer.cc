@@ -107,6 +107,13 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// MonitorInfoProvider, public:
+
+WindowSizer::MonitorInfoProvider::MonitorInfoProvider() {}
+
+WindowSizer::MonitorInfoProvider::~MonitorInfoProvider() {}
+
+///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
 WindowSizer::WindowSizer(

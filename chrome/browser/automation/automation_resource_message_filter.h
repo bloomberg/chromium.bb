@@ -34,13 +34,10 @@ class AutomationResourceMessageFilter
  public:
   // Information needed to send IPCs through automation.
   struct AutomationDetails {
-    AutomationDetails() : tab_handle(0), ref_count(1),
-                          is_pending_render_view(false) {}
+    AutomationDetails();
     AutomationDetails(int tab, AutomationResourceMessageFilter* flt,
-                      bool pending_view)
-      : tab_handle(tab), ref_count(1), filter(flt),
-        is_pending_render_view(pending_view) {
-    }
+                      bool pending_view);
+    ~AutomationDetails();
 
     void set_cookie_store(net::CookieStore* cookie_store) {
       cookie_store_ = cookie_store;

@@ -80,6 +80,9 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   const DocumentInfoSet& documents() { return document_set_; }
 
  private:
+  friend class base::RefCounted<WorkerDocumentSet>;
+  virtual ~WorkerDocumentSet();
+
   DocumentInfoSet document_set_;
 };
 

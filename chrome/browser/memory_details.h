@@ -44,6 +44,11 @@ typedef std::vector<ProcessMemoryInformation> ProcessMemoryInformationList;
 
 // Browser Process Information.
 struct ProcessData {
+  ProcessData();
+  ProcessData(const ProcessData& rhs);
+  ~ProcessData();
+  ProcessData& operator=(const ProcessData& rhs);
+
   std::wstring name;
   std::wstring process_name;
   ProcessMemoryInformationList processes;

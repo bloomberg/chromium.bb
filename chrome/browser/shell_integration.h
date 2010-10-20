@@ -49,6 +49,9 @@ class ShellIntegration {
   static bool IsFirefoxDefaultBrowser();
 
   struct ShortcutInfo {
+    ShortcutInfo();
+    ~ShortcutInfo();
+
     GURL url;
     // If |extension_id| is non-empty, this is short cut is to an extension-app
     // and the launch url will be detected at start-up. In this case, |url|

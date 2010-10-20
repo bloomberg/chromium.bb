@@ -27,8 +27,23 @@ static const char kContinueUrlFormat[] =
 
 static const char kReportParams[] = "?tpl=%s&continue=%s&url=%s";
 
+// SBChunk ---------------------------------------------------------------------
+
+SBChunk::SBChunk()
+    : chunk_number(0),
+      list_id(0),
+      is_add(false) {
+}
+
+SBChunk::~SBChunk() {}
 
 // SBChunkList -----------------------------------------------------------------
+
+SBChunkList::SBChunkList() {}
+
+SBChunkList::~SBChunkList() {
+  clear();
+}
 
 void SBChunkList::clear() {
   for (std::vector<SBChunk>::iterator citer = chunks_.begin();
@@ -43,6 +58,16 @@ void SBChunkList::clear() {
   }
   chunks_.clear();
 }
+
+// SBListChunkRanges -----------------------------------------------------------
+
+SBListChunkRanges::SBListChunkRanges(const std::string& n) : name(n) {}
+
+// SBChunkDelete ---------------------------------------------------------------
+
+SBChunkDelete::SBChunkDelete() : is_sub_del(false) {}
+
+SBChunkDelete::~SBChunkDelete() {}
 
 // SBEntry ---------------------------------------------------------------------
 

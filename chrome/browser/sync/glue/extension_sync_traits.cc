@@ -28,6 +28,8 @@ ExtensionSyncTraits::ExtensionSyncTraits(
       extension_specifics_setter(extension_specifics_setter),
       extension_specifics_entity_getter(extension_specifics_entity_getter) {}
 
+ExtensionSyncTraits::~ExtensionSyncTraits() {}
+
 namespace {
 
 const sync_pb::ExtensionSpecifics& GetExtensionSpecifics(

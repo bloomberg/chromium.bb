@@ -477,6 +477,15 @@ Time InMemoryURLIndex::RecentThreshold() {
   return Time::Now() - TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays);
 }
 
+InMemoryURLIndex::AddHistoryMatch::AddHistoryMatch(
+    const InMemoryURLIndex& index,
+    const String16Vector& lower_terms)
+    : index_(index),
+      lower_terms_(lower_terms) {
+}
+
+InMemoryURLIndex::AddHistoryMatch::~AddHistoryMatch() {}
+
 void InMemoryURLIndex::AddHistoryMatch::operator()(
     const InMemoryURLIndex::HistoryID history_id) {
   HistoryInfoMap::const_iterator hist_pos =

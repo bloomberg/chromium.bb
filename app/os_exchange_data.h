@@ -63,12 +63,12 @@ class OSExchangeData {
 
   // Encapsulates the info about a file to be downloaded.
   struct DownloadFileInfo {
+    DownloadFileInfo(const FilePath& filename,
+                     DownloadFileProvider* downloader);
+    ~DownloadFileInfo();
+
     FilePath filename;
     scoped_refptr<DownloadFileProvider> downloader;
-
-    DownloadFileInfo(const FilePath& filename, DownloadFileProvider* downloader)
-        : filename(filename),
-          downloader(downloader) {}
   };
 
   // Provider defines the platform specific part of OSExchangeData that

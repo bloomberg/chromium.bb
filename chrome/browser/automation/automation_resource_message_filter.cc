@@ -82,6 +82,22 @@ class AutomationCookieStore : public net::CookieStore {
   DISALLOW_COPY_AND_ASSIGN(AutomationCookieStore);
 };
 
+AutomationResourceMessageFilter::AutomationDetails::AutomationDetails()
+    : tab_handle(0),
+      ref_count(1),
+      is_pending_render_view(false) {
+}
+
+AutomationResourceMessageFilter::AutomationDetails::AutomationDetails(
+    int tab,
+    AutomationResourceMessageFilter* flt,
+    bool pending_view)
+    : tab_handle(tab), ref_count(1), filter(flt),
+      is_pending_render_view(pending_view) {
+}
+
+AutomationResourceMessageFilter::AutomationDetails::~AutomationDetails() {}
+
 struct AutomationResourceMessageFilter::CookieCompletionInfo {
   net::CompletionCallback* completion_callback;
   scoped_refptr<net::CookieStore> cookie_store;

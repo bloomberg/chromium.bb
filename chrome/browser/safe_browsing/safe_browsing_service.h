@@ -171,12 +171,7 @@ class SafeBrowsingService
   typedef base::hash_map<SBPrefix, GetHashRequestors> GetHashRequests;
 
   // Used for whitelisting a render view when the user ignores our warning.
-  struct WhiteListedEntry {
-    int render_process_host_id;
-    int render_view_id;
-    std::string domain;
-    UrlCheckResult result;
-  };
+  struct WhiteListedEntry;
 
   // Clients that we've queued up for checking later once the database is ready.
   struct QueuedCheck {

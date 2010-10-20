@@ -50,6 +50,13 @@ static Profile* GetDefaultProfile() {
   return profile_manager->GetDefaultProfile(user_data_dir);
 }
 
+struct SafeBrowsingService::WhiteListedEntry {
+  int render_process_host_id;
+  int render_view_id;
+  std::string domain;
+  UrlCheckResult result;
+};
+
 SafeBrowsingService::SafeBrowsingService()
     : database_(NULL),
       protocol_manager_(NULL),

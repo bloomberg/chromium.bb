@@ -33,6 +33,23 @@ ProcessMemoryInformation::ProcessMemoryInformation()
 
 ProcessMemoryInformation::~ProcessMemoryInformation() {}
 
+ProcessData::ProcessData() {}
+
+ProcessData::ProcessData(const ProcessData& rhs)
+    : name(rhs.name),
+      process_name(rhs.process_name),
+      processes(rhs.processes) {
+}
+
+ProcessData::~ProcessData() {}
+
+ProcessData& ProcessData::operator=(const ProcessData& rhs) {
+  name = rhs.name;
+  process_name = rhs.process_name;
+  processes = rhs.processes;
+  return *this;
+}
+
 // About threading:
 //
 // This operation will hit no fewer than 3 threads.

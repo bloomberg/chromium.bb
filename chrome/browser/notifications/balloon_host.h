@@ -34,15 +34,9 @@ class BalloonHost : public RenderViewHostDelegate,
   void Shutdown();
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual Browser* GetBrowser() const {
-    // Notifications aren't associated with a particular browser.
-    return NULL;
-  }
-  virtual gfx::NativeView GetNativeViewOfHost() {
-    // TODO(aa): Should this return the native view of the BalloonView*?
-    return NULL;
-  }
-  virtual TabContents* associated_tab_contents() const { return NULL; }
+  virtual Browser* GetBrowser() const;
+  virtual gfx::NativeView GetNativeViewOfHost();
+  virtual TabContents* associated_tab_contents() const;
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 
@@ -52,28 +46,18 @@ class BalloonHost : public RenderViewHostDelegate,
 
   // RenderViewHostDelegate overrides.
   virtual WebPreferences GetWebkitPrefs();
-  virtual SiteInstance* GetSiteInstance() const {
-    return site_instance_.get();
-  }
-  virtual Profile* GetProfile() const { return balloon_->profile(); }
-  virtual const GURL& GetURL() const {
-    return balloon_->notification().content_url();
-  }
+  virtual SiteInstance* GetSiteInstance() const;
+  virtual Profile* GetProfile() const;
+  virtual const GURL& GetURL() const;
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReady(RenderViewHost* render_view_host);
   virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id, const std::wstring& title) {}
-  virtual int GetBrowserWindowID() const {
-    return extension_misc::kUnknownWindowId;
-  }
-  virtual ViewType::Type GetRenderViewType() const {
-    return ViewType::NOTIFICATION;
-  }
-  virtual RenderViewHostDelegate::View* GetViewDelegate() {
-    return this;
-  }
+  virtual int GetBrowserWindowID() const;
+  virtual ViewType::Type GetRenderViewType() const;
+  virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
@@ -126,7 +110,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void ClearInspectorSettings();
 
  protected:
-  virtual ~BalloonHost() {}
+  virtual ~BalloonHost();
   // Must override in platform specific implementations.
   virtual void InitRenderWidgetHostView() = 0;
   virtual RenderWidgetHostView* render_widget_host_view() const = 0;

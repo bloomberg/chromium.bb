@@ -82,6 +82,7 @@ class ManifestFetchData {
 class ManifestFetchesBuilder {
  public:
   explicit ManifestFetchesBuilder(ExtensionUpdateService* service);
+  ~ManifestFetchesBuilder();
 
   void AddExtension(const Extension& extension);
 

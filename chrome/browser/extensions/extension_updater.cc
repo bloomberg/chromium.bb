@@ -167,6 +167,8 @@ ManifestFetchesBuilder::ManifestFetchesBuilder(
   DCHECK(service_);
 }
 
+ManifestFetchesBuilder::~ManifestFetchesBuilder() {}
+
 void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
   // Skip extensions with empty update URLs converted from user
   // scripts.

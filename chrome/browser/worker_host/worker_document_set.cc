@@ -62,3 +62,5 @@ WorkerDocumentSet::DocumentInfo::DocumentInfo(
       renderer_id_(renderer_id),
       render_view_route_id_(render_view_route_id) {
 }
+
+WorkerDocumentSet::~WorkerDocumentSet() {}

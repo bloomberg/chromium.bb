@@ -54,6 +54,9 @@ struct SBChunkHost {
 
 // Container for an add/sub chunk.
 struct SBChunk {
+  SBChunk();
+  ~SBChunk();
+
   int chunk_number;
   int list_id;
   bool is_add;
@@ -69,10 +72,8 @@ struct SBChunk {
 // dissappear.
 class SBChunkList {
  public:
-  SBChunkList() {}
-  ~SBChunkList() {
-    clear();
-  }
+  SBChunkList();
+  ~SBChunkList();
 
   // Implement that subset of the |std::deque<>| interface which
   // callers expect.
@@ -113,15 +114,18 @@ struct SBFullHashResult {
 
 // Contains information about a list in the database.
 struct SBListChunkRanges {
+  explicit SBListChunkRanges(const std::string& n);
+
   std::string name;  // The list name.
   std::string adds;  // The ranges for add chunks.
   std::string subs;  // The ranges for sub chunks.
-
-  explicit SBListChunkRanges(const std::string& n) : name(n) { }
 };
 
 // Container for deleting chunks from the database.
 struct SBChunkDelete {
+  SBChunkDelete();
+  ~SBChunkDelete();
+
   std::string list_name;
   bool is_sub_del;
   std::vector<ChunkRange> chunk_del;

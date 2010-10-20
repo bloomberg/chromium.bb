@@ -12,6 +12,7 @@
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_info.h"
@@ -172,6 +173,21 @@ void GpuProcessHost::Synchronize(IPC::Message* reply,
 GPUInfo GpuProcessHost::gpu_info() const {
   return gpu_info_;
 }
+
+GpuProcessHost::ChannelRequest::ChannelRequest(ResourceMessageFilter* filter)
+    : filter(filter) {
+}
+
+GpuProcessHost::ChannelRequest::~ChannelRequest() {}
+
+GpuProcessHost::SynchronizationRequest::SynchronizationRequest(
+    IPC::Message* reply,
+    ResourceMessageFilter* filter)
+    : reply(reply),
+      filter(filter) {
+}
+
+GpuProcessHost::SynchronizationRequest::~SynchronizationRequest() {}
 
 void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)

@@ -17,6 +17,7 @@ class GeolocationExceptionsTableModel : public RemoveRowsTableModel {
  public:
   explicit GeolocationExceptionsTableModel(
       GeolocationContentSettingsMap* map);
+  virtual ~GeolocationExceptionsTableModel();
 
   // RemoveRowsTableModel overrides:
 
@@ -42,22 +43,13 @@ class GeolocationExceptionsTableModel : public RemoveRowsTableModel {
   virtual int CompareValues(int row1, int row2, int column_id);
 
  private:
-  struct Entry {
-    Entry(const GURL& origin,
-          const GURL& embedding_origin,
-          ContentSetting setting);
-
-    GURL origin;
-    GURL embedding_origin;
-    ContentSetting setting;
-  };
-
   void AddEntriesForOrigin(
       const GURL& origin,
       const GeolocationContentSettingsMap::OneOriginSettings& settings);
 
   GeolocationContentSettingsMap* map_;
 
+  struct Entry;
   typedef std::vector<Entry> EntriesVector;
   EntriesVector entries_;
 

@@ -23,7 +23,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
  public:
   PluginExceptionsTableModel(HostContentSettingsMap* content_settings_map,
                              HostContentSettingsMap* otr_content_settings_map);
-  virtual ~PluginExceptionsTableModel() {}
+  virtual ~PluginExceptionsTableModel();
 
   // Load plugin exceptions from the HostContentSettingsMaps. You should call
   // this method after creating a new PluginExceptionsTableModel.

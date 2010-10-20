@@ -19,6 +19,7 @@ class MetadataParserManager {
  public:
   // Creates a new MetadataParserManager.
   MetadataParserManager();
+  ~MetadataParserManager();
 
   // Gets the singleton
   static MetadataParserManager* Get();

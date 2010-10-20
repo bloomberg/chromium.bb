@@ -79,6 +79,8 @@ int NotificationsPrefsCache::HasPermission(const GURL& origin) {
   }
 }
 
+NotificationsPrefsCache::~NotificationsPrefsCache() {}
+
 bool NotificationsPrefsCache::IsOriginAllowed(
     const GURL& origin) {
   CheckThreadAccess();
