@@ -29,8 +29,6 @@
 - (id)initWithObject:(BrowserAccessibility*)accessibility
             delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate;
 
-// Backing source of accessibility info.
-@property(nonatomic, assign) BrowserAccessibility* browserAccessibility;
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.
 @property(nonatomic, readonly) NSArray* children;

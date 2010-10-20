@@ -65,8 +65,6 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 @implementation BrowserAccessibilityCocoa
 
-@synthesize browserAccessibility = browserAccessibility_;
-
 - (id)initWithObject:(BrowserAccessibility*)accessibility
             delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate {
   if ((self = [super init])) {

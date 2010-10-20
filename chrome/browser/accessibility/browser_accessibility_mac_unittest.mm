@@ -72,14 +72,13 @@ class BrowserAccessibilityTest : public CocoaTest {
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     manager_.reset(
         BrowserAccessibilityManager::Create(delegate_, root, NULL));
-    // The manager still owns this object.
-    accessibility_ = manager_->GetRoot()->toBrowserAccessibilityCocoa();
+    accessibility_.reset([manager_->GetRoot()->toBrowserAccessibilityCocoa()
+        retain]);
   }
 
  protected:
   scoped_nsobject<MockAccessibilityDelegate> delegate_;
-  // We do not own this object.
-  BrowserAccessibilityCocoa* accessibility_;
+  scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
   scoped_ptr<BrowserAccessibilityManager> manager_;
 };
 

@@ -34,7 +34,8 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
 
   // Allows access to the BrowserAccessibilityCocoa which wraps this.
   // BrowserAccessibility.
-  // We own this object.
+  // We own this object until our manager calls ReleaseReference;
+  // thereafter, the cocoa object owns us.
   BrowserAccessibilityCocoa* browser_accessibility_cocoa_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityMac);
 };
