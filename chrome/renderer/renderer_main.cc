@@ -103,16 +103,16 @@ class ShutdownDetector : public PlatformThread::Delegate {
     } while (bytes_read < sizeof(signal));
 
     if (bytes_read == sizeof(signal))
-      LOG(INFO) << "Handling shutdown for signal " << signal << ".";
+      VLOG(1) << "Handling shutdown for signal " << signal << ".";
     else
-      LOG(INFO) << "Handling shutdown for unknown signal.";
+      VLOG(1) << "Handling shutdown for unknown signal.";
 
     // Clean up Breakpad if necessary.
     if (IsCrashReporterEnabled()) {
-      LOG(INFO) << "Cleaning up Breakpad.";
+      VLOG(1) << "Cleaning up Breakpad.";
       DestructCrashReporter();
     } else {
-      LOG(INFO) << "Breakpad not enabled; no clean-up needed.";
+      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
     }
 
     // Something went seriously wrong, so get out.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
   const CommandLine& command_line = parameters_.command_line_;
 
-  DLOG(INFO) << "Started renderer with " << command_line.command_line_string();
+  DVLOG(1) << "Started renderer with " << command_line.command_line_string();
 
   sandbox::TargetServices* target_services =
       parameters_.sandbox_info_.TargetServices();
@@ -134,7 +134,7 @@ void RendererMainPlatformDelegate::RunSandboxTests() {
     DCHECK(run_security_tests);
     if (run_security_tests) {
       int test_count = 0;
-      DLOG(INFO) << "Running renderer security tests";
+      DVLOG(1) << "Running renderer security tests";
       BOOL result = run_security_tests(&test_count);
       CHECK(result) << "Test number " << test_count << " has failed.";
     }

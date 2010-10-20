@@ -5564,10 +5564,8 @@ void RenderView::LogNavigationState(const NavigationState* state,
   Time start = state->start_load_time();
   Time finish = state->finish_load_time();
   // TODO(mbelshe): should we log more stats?
-  LOG(INFO) << "PLT: "
-            << (finish - start).InMilliseconds()
-            << "ms "
-            << url.spec();
+  VLOG(1) << "PLT: " << (finish - start).InMilliseconds() << "ms "
+          << url.spec();
 }
 
 void RenderView::postAccessibilityNotification(

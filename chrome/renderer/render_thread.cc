@@ -154,10 +154,10 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
     // stopgap, to avoid leaking due to not releasing Breakpad properly.
     // TODO(viettrungluu): Investigate why this is being called.
     if (IsCrashReporterEnabled()) {
-      LOG(INFO) << "Cleaning up Breakpad.";
+      VLOG(1) << "Cleaning up Breakpad.";
       DestructCrashReporter();
     } else {
-      LOG(INFO) << "Breakpad not enabled; no clean-up needed.";
+      VLOG(1) << "Breakpad not enabled; no clean-up needed.";
     }
 #endif  // OS_MACOSX
 
