@@ -63,8 +63,7 @@ for t in ['eh_virtual_dtor',
           'eh_loop_break']:
   EH_TESTS=['toolchain_tests', 'small_tests']
   # http://code.google.com/p/nativeclient/issues/detail?id=720
-  if ARGUMENTS.get('bitcode'):
-    if t == 'eh_catch_many' or eh_env['TARGET_FULLARCH'] != 'x86-32':
+  if ARGUMENTS.get('bitcode') and eh_env['TARGET_FULLARCH'] != 'x86-32':
       EH_TESTS=[]
 
   nexe = eh_env.ComponentProgram(t + '.nexe', t + '.cc')
