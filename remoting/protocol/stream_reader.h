@@ -2,47 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_MESSAGES_STREAM_READER_H_
-#define REMOTING_PROTOCOL_MESSAGES_STREAM_READER_H_
+#ifndef REMOTING_PROTOCOL_STREAM_READER_H_
+#define REMOTING_PROTOCOL_STREAM_READER_H_
 
 #include "base/callback.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "net/base/completion_callback.h"
-#include "remoting/protocol/messages_decoder.h"
-
-namespace net {
-class Socket;
-}  // namespace net
+#include "remoting/protocol/socket_reader_base.h"
 
 namespace remoting {
 
-class ChromotingConnection;
-
-class StreamReaderBase {
- public:
-  StreamReaderBase();
-  virtual ~StreamReaderBase();
-
-  // Stops reading. Must be called on the same thread as Init().
-  void Close();
-
- protected:
-  void Init(net::Socket* socket);
-  virtual void OnDataReceived(net::IOBuffer* buffer, int data_size) = 0;
-
- private:
-  void DoRead();
-  void OnRead(int result);
-  void HandleReadResult(int result);
-
-  net::Socket* socket_;
-  bool closed_;
-  scoped_refptr<net::IOBuffer> read_buffer_;
-  net::CompletionCallbackImpl<StreamReaderBase> read_callback_;
-};
-
-class EventsStreamReader : public StreamReaderBase {
+class EventsStreamReader : public SocketReaderBase {
  public:
   EventsStreamReader();
   ~EventsStreamReader();
@@ -67,7 +36,7 @@ class EventsStreamReader : public StreamReaderBase {
   DISALLOW_COPY_AND_ASSIGN(EventsStreamReader);
 };
 
-class VideoStreamReader : public StreamReaderBase {
+class VideoStreamReader : public SocketReaderBase {
  public:
   VideoStreamReader();
   ~VideoStreamReader();
@@ -94,4 +63,4 @@ class VideoStreamReader : public StreamReaderBase {
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_MESSAGES_STREAM_READER_H_
+#endif  // REMOTING_PROTOCOL_STREAM_READER_H_
