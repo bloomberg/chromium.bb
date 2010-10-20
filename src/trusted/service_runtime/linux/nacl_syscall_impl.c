@@ -629,6 +629,12 @@ int32_t NaClSysSysconf(struct NaClAppThread *natp,
       break;
     }
 #endif
+    case NACL_ABI__SC_SENDMSG_MAX_SIZE: {
+      /* TODO(sehr,bsy): this value needs to be determined at run time. */
+      const int32_t kImcSendMsgMaxSize = 1 << 16;
+      *(int32_t*)sysaddr = kImcSendMsgMaxSize;
+      break;
+    }
     default:
       retval = -NACL_ABI_EINVAL;
       goto cleanup;
@@ -658,4 +664,3 @@ int32_t NaClSysDyncode_Delete(struct NaClAppThread *natp,
                             uint32_t             size) {
   return NaClTextSysDyncode_Delete(natp, dest, size);
 }
-

@@ -263,6 +263,8 @@ int     _EXFUN(symlink, (const char *__name1, const char *__name2));
  *  TODO: this needs a few more comments
  */
 enum {
+  NACL_ABI__SC_SENDMSG_MAX_SIZE,
+#define NACL_ABI__SC_SENDMSG_MAX_SIZE NACL_ABI__SC_SENDMSG_MAX_SIZE
   NACL_ABI__SC_NPROCESSORS_ONLN,
 #define NACL_ABI__SC_NPROCESSORS_ONLN NACL_ABI__SC_NPROCESSORS_ONLN
   NACL_ABI__SC_LAST
