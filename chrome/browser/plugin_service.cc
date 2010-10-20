@@ -260,7 +260,7 @@ void PluginService::OpenChannelToPlugin(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
-          renderer_msg_filter, url, mime_type, reply_msg));
+          make_scoped_refptr(renderer_msg_filter), url, mime_type, reply_msg));
 }
 
 void PluginService::GetAllowedPluginForOpenChannelToPlugin(
@@ -280,7 +280,8 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &PluginService::FinishOpenChannelToPlugin,
-          renderer_msg_filter, mime_type, plugin_path, reply_msg));
+          make_scoped_refptr(renderer_msg_filter), mime_type, plugin_path,
+          reply_msg));
 }
 
 void PluginService::FinishOpenChannelToPlugin(
