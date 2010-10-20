@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,16 +39,17 @@ CommandParser::CommandParser(void *shm_address,
 // - get_ is modified *after* the command has been executed.
 error::Error CommandParser::ProcessCommand() {
   CommandBufferOffset get = get_;
-  if (get == put_) return error::kNoError;
+  if (get == put_)
+    return error::kNoError;
 
   CommandHeader header = buffer_[get].value_header;
   if (header.size == 0) {
-    DLOG(INFO) << "Error: zero sized command in command buffer";
+    DVLOG(1) << "Error: zero sized command in command buffer";
     return error::kInvalidSize;
   }
 
   if (static_cast<int>(header.size) + get > entry_count_) {
-    DLOG(INFO) << "Error: get offset out of bounds";
+    DVLOG(1) << "Error: get offset out of bounds";
     return error::kOutOfBounds;
   }
 
@@ -62,16 +63,15 @@ error::Error CommandParser::ProcessCommand() {
   }
 
   // If get was not set somewhere else advance it.
-  if (get == get_) {
+  if (get == get_)
     get_ = (get + header.size) % entry_count_;
-  }
   return result;
 }
 
 void CommandParser::ReportError(unsigned int command_id,
                                 error::Error result) {
-  DLOG(INFO) << "Error: " << result << " for Command "
-             << handler_->GetCommandName(command_id);
+  DVLOG(1) << "Error: " << result << " for Command "
+           << handler_->GetCommandName(command_id);
 }
 
 // Processes all the commands, while the buffer is not empty. Stop if an error
@@ -79,7 +79,8 @@ void CommandParser::ReportError(unsigned int command_id,
 error::Error CommandParser::ProcessAllCommands() {
   while (!IsEmpty()) {
     error::Error error = ProcessCommand();
-    if (error) return error;
+    if (error)
+      return error;
   }
   return error::kNoError;
 }

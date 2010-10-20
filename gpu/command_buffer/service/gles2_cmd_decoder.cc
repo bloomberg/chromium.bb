@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1798,11 +1798,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
       // available.
       const bool depth24_stencil8_supported =
           context_->HasExtension("GL_OES_packed_depth_stencil");
-      if (depth24_stencil8_supported) {
-        LOG(INFO) << "GL_OES_packed_depth_stencil supported.";
-      } else {
-        LOG(INFO) << "GL_OES_packed_depth_stencil not supported.";
-      }
+      VLOG(1) << "GL_OES_packed_depth_stencil "
+              << (depth24_stencil8_supported ? "" : "not ") << "supported.";
       if ((attrib_parser.depth_size_ > 0 || attrib_parser.stencil_size_ > 0) &&
           depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
@@ -1824,11 +1821,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
       // formats for depth attachments.
       const bool depth24_stencil8_supported =
           context_->HasExtension("GL_EXT_packed_depth_stencil");
-      if (depth24_stencil8_supported) {
-        LOG(INFO) << "GL_EXT_packed_depth_stencil supported.";
-      } else {
-        LOG(INFO) << "GL_EXT_packed_depth_stencil not supported.";
-      }
+      VLOG(1) << "GL_EXT_packed_depth_stencil "
+              << (depth24_stencil8_supported ? "" : "not ") << "supported.";
 
       if ((attrib_parser.depth_size_ > 0 || attrib_parser.stencil_size_ > 0) &&
           depth24_stencil8_supported) {
@@ -2459,7 +2453,7 @@ error::Error GLES2DecoderImpl::DoCommand(
   error::Error result = error::kNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
-    DLOG(INFO) << "cmd: " << GetCommandName(command);
+    DVLOG(1) << "cmd: " << GetCommandName(command);
   }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
@@ -2485,8 +2479,7 @@ error::Error GLES2DecoderImpl::DoCommand(
         while ((error = glGetError()) != GL_NO_ERROR) {
           // TODO(gman): Change output to something useful for NaCl.
           SetGLError(error, NULL);
-          DLOG(INFO) << "GL ERROR: " << error
-                     << " : " << GetCommandName(command);
+          DVLOG(1) << "GL ERROR: " << error << " : " << GetCommandName(command);
         }
       }
     } else {
