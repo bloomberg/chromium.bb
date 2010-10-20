@@ -201,8 +201,6 @@
         'plugins/pepper_error_util.h',
         'plugins/pepper_event_conversion.cc',
         'plugins/pepper_event_conversion.h',
-        'plugins/pepper_file_callbacks.cc',
-        'plugins/pepper_file_callbacks.h',
         'plugins/pepper_file_chooser.cc',
         'plugins/pepper_file_chooser.h',
         'plugins/pepper_file_io.cc',

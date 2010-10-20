@@ -85,11 +85,6 @@ class PepperPluginDelegateImpl
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback);
-  virtual bool OpenFileSystem(
-      const GURL& url,
-      fileapi::FileSystemType type,
-      long long size,
-      fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual bool MakeDirectory(const FilePath& path,
                              bool recursive,
                              fileapi::FileSystemCallbackDispatcher* dispatcher);

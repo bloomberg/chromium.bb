@@ -13,11 +13,9 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/task.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_stdint.h"
-#include "webkit/fileapi/file_system_types.h"
 #include "webkit/glue/plugins/pepper_dir_contents.h"
 
 class AudioMessageFilter;
@@ -178,11 +176,6 @@ class PluginDelegate {
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback) = 0;
-  virtual bool OpenFileSystem(
-      const GURL& url,
-      fileapi::FileSystemType type,
-      long long size,
-      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool MakeDirectory(
       const FilePath& path,
       bool recursive,

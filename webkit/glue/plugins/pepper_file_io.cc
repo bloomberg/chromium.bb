@@ -225,11 +225,12 @@ int32_t FileIO::Open(FileRef* file_ref,
     flags |= base::PLATFORM_FILE_WRITE;
     flags |= base::PLATFORM_FILE_WRITE_ATTRIBUTES;
   }
-
   if (open_flags & PP_FILEOPENFLAG_TRUNCATE) {
-    DCHECK(open_flags & PP_FILEOPENFLAG_WRITE);
+    DCHECK(flags & PP_FILEOPENFLAG_WRITE);
     flags |= base::PLATFORM_FILE_TRUNCATE;
-  } else if (open_flags & PP_FILEOPENFLAG_CREATE) {
+  }
+
+  if (open_flags & PP_FILEOPENFLAG_CREATE) {
     if (open_flags & PP_FILEOPENFLAG_EXCLUSIVE)
       flags |= base::PLATFORM_FILE_CREATE;
     else
@@ -237,9 +238,9 @@ int32_t FileIO::Open(FileRef* file_ref,
   } else
     flags |= base::PLATFORM_FILE_OPEN;
 
-  file_system_type_ = file_ref->GetFileSystemType();
+  file_system_type_ = file_ref->file_system_type();
   if (!delegate_->AsyncOpenFile(
-          file_ref->GetSystemPath(), flags,
+          file_ref->system_path(), flags,
           callback_factory_.NewCallback(&FileIO::AsyncOpenFileCallback)))
     return PP_ERROR_FAILED;
 

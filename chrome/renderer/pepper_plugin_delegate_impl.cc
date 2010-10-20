@@ -679,17 +679,6 @@ void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
     (*i)->SetContentAreaFocus(has_focus);
 }
 
-bool PepperPluginDelegateImpl::OpenFileSystem(
-    const GURL& url,
-    fileapi::FileSystemType type,
-    long long size,
-    fileapi::FileSystemCallbackDispatcher* dispatcher) {
-  FileSystemDispatcher* file_system_dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->OpenFileSystem(
-      url, type, size, dispatcher);
-}
-
 bool PepperPluginDelegateImpl::MakeDirectory(
     const FilePath& path,
     bool recursive,

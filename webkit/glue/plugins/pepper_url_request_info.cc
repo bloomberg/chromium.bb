@@ -238,8 +238,7 @@ WebURLRequest URLRequestInfo::ToWebURLRequest(WebFrame* frame) const {
     for (size_t i = 0; i < body_.size(); ++i) {
       if (body_[i].file_ref) {
         http_body.appendFileRange(
-            webkit_glue::FilePathToWebString(
-                body_[i].file_ref->GetSystemPath()),
+            webkit_glue::FilePathToWebString(body_[i].file_ref->system_path()),
             body_[i].start_offset,
             body_[i].number_of_bytes,
             body_[i].expected_last_modified_time);
