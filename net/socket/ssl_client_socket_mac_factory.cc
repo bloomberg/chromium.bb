@@ -5,6 +5,7 @@
 #include "net/socket/client_socket_factory.h"
 
 #include "net/socket/ssl_client_socket_mac.h"
+#include "net/socket/ssl_host_info.h"
 
 namespace net {
 

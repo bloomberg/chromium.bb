@@ -11,8 +11,8 @@
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/base/ssl_host_info.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/socket/ssl_host_info.h"
 
 namespace net {
 
@@ -30,8 +30,7 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   // Implementation of SSLHostInfo
   virtual void Start();
   virtual int WaitForDataReady(CompletionCallback* callback);
-  virtual const std::string& data() const { return data_; }
-  virtual void Set(const std::string& new_data);
+  virtual void Persist();
 
  private:
   ~DiskCacheBasedSSLHostInfo();

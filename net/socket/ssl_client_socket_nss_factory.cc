@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "net/socket/ssl_client_socket_nss.h"
+#include "net/socket/ssl_host_info.h"
 #if defined(OS_WIN)
 #include "net/socket/ssl_client_socket_win.h"
 #endif
