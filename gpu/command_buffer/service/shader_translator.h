@@ -23,7 +23,9 @@ class ShaderTranslator {
 
   // Initializes the translator.
   // Must be called once before using the translator object.
-  bool Init(ShShaderType shader_type, const ShBuiltInResources* resources);
+  bool Init(ShShaderType shader_type,
+            ShShaderSpec shader_spec,
+            const ShBuiltInResources* resources);
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
   bool Translate(const char* shader);
@@ -46,13 +48,14 @@ class ShaderTranslator {
 
  private:
   void ClearResults();
-  DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);
 
   ShHandle compiler_;
   scoped_array<char> translated_shader_;
   scoped_array<char> info_log_;
   VariableMap attrib_map_;
   VariableMap uniform_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);
 };
 
 }  // namespace gles2

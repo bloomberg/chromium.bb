@@ -55,9 +55,10 @@ WebGraphicsContext3DCommandBufferImpl::
 }
 
 static const char* kWebGraphicsContext3DPerferredGLExtensions =
-    "GL_EXT_packed_depth_stencil "
     "GL_OES_packed_depth_stencil "
-    "GL_OES_depth24";
+    "GL_OES_depth24 "
+    "GL_CHROMIUM_strict_attribs "
+    "GL_CHROMIUM_webglsl";
 
 bool WebGraphicsContext3DCommandBufferImpl::initialize(
     WebGraphicsContext3D::Attributes attributes,
@@ -195,12 +196,8 @@ bool WebGraphicsContext3DCommandBufferImpl::isGLES2Compliant() {
   return true;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::isGLES2ParameterStrict() {
-  return false;
-}
-
 bool WebGraphicsContext3DCommandBufferImpl::isGLES2NPOTStrict() {
-  return false;
+  return true;
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::

@@ -21,8 +21,10 @@ class ShaderTranslatorTest : public testing::Test {
     ShBuiltInResources resources;
     ShInitBuiltInResources(&resources);
 
-    ASSERT_TRUE(vertex_translator_.Init(SH_VERTEX_SHADER, &resources));
-    ASSERT_TRUE(fragment_translator_.Init(SH_FRAGMENT_SHADER, &resources));
+    ASSERT_TRUE(vertex_translator_.Init(
+        SH_VERTEX_SHADER, SH_GLES2_SPEC, &resources));
+    ASSERT_TRUE(fragment_translator_.Init(
+        SH_FRAGMENT_SHADER, SH_GLES2_SPEC, &resources));
     // Post-init the results must be empty.
     // Vertex translator results.
     EXPECT_TRUE(vertex_translator_.translated_shader() == NULL);

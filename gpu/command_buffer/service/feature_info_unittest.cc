@@ -59,6 +59,8 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_.feature_flags().npot_ok);
   EXPECT_FALSE(info_.feature_flags().enable_texture_float_linear);
   EXPECT_FALSE(info_.feature_flags().enable_texture_half_float_linear);
+  EXPECT_FALSE(info_.feature_flags().chromium_strict_attribs);
+  EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
@@ -69,6 +71,8 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   EXPECT_THAT(info_.extensions(),
               Not(HasSubstr("GL_EXT_texture_compression_dxt1")));
   EXPECT_FALSE(info_.feature_flags().npot_ok);
+  EXPECT_FALSE(info_.feature_flags().chromium_strict_attribs);
+  EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_FALSE(info_.validators()->compressed_texture_format.IsValid(
@@ -372,6 +376,20 @@ TEST_F(FeatureInfoTest, InitializeOES_standard_derivatives) {
   info_.Initialize(NULL);
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_OES_standard_derivatives"));
   EXPECT_TRUE(info_.feature_flags().oes_standard_derivatives);
+}
+
+TEST_F(FeatureInfoTest, InitializeCHROMIUM_strict_attribs) {
+  SetupInitExpectations("");
+  info_.Initialize("GL_CHROMIUM_strict_attribs");
+  EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_strict_attribs"));
+  EXPECT_TRUE(info_.feature_flags().chromium_strict_attribs);
+}
+
+TEST_F(FeatureInfoTest, InitializeCHROMIUM_webglsl) {
+  SetupInitExpectations("");
+  info_.Initialize("GL_CHROMIUM_webglsl");
+  EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_webglsl"));
+  EXPECT_TRUE(info_.feature_flags().chromium_webglsl);
 }
 
 }  // namespace gles2

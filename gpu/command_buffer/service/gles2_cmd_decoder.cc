@@ -1917,13 +1917,16 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     resources.OES_standard_derivatives =
         feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
     vertex_translator_.reset(new ShaderTranslator);
-    if (!vertex_translator_->Init(SH_VERTEX_SHADER, &resources)) {
+    ShShaderSpec shader_spec = feature_info_->feature_flags().chromium_webglsl ?
+        SH_WEBGL_SPEC : SH_GLES2_SPEC;
+    if (!vertex_translator_->Init(SH_VERTEX_SHADER, shader_spec, &resources)) {
         LOG(ERROR) << "Could not initialize vertex shader translator.";
         Destroy();
         return false;
     }
     fragment_translator_.reset(new ShaderTranslator);
-    if (!fragment_translator_->Init(SH_FRAGMENT_SHADER, &resources)) {
+    if (!fragment_translator_->Init(
+        SH_FRAGMENT_SHADER, shader_spec, &resources)) {
         LOG(ERROR) << "Could not initialize fragment shader translator.";
         Destroy();
         return false;

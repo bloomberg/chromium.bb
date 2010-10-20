@@ -95,6 +95,18 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     AddExtensionString("GL_CHROMIUM_map_sub");
   }
 
+  // Only turn this feature on if it is requested. Not by default.
+  if (desired_features && ext.Desire("GL_CHROMIUM_strict_attribs")) {
+    AddExtensionString("GL_CHROMIUM_strict_attribs");
+    feature_flags_.chromium_strict_attribs = true;
+  }
+
+  // Only turn this feature on if it is requested. Not by default.
+  if (desired_features && ext.Desire("GL_CHROMIUM_webglsl")) {
+    AddExtensionString("GL_CHROMIUM_webglsl");
+    feature_flags_.chromium_webglsl = true;
+  }
+
   // Check if we should allow GL_EXT_texture_compression_dxt1 and
   // GL_EXT_texture_compression_s3tc.
   bool enable_dxt1 = false;

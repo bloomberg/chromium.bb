@@ -30,6 +30,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       parent_(
           parent ? parent->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>()),
       initial_size_(size),
+      allowed_extensions_(allowed_extensions),
       requested_attribs_(attribs),
       parent_texture_id_(parent_texture_id),
       route_id_(route_id),
