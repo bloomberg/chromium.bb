@@ -112,11 +112,11 @@ const struct {
     true,
     false,
     true, },
-  { "http://www.foo.com/auto-open.pdf",
+  { "http://www.foo.com/always_prompt.pdf",
     "application/pdf",
     false,
     true,
-    false, },
+    true, },
 };
 
 }  // namespace
