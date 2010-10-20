@@ -386,9 +386,6 @@ void SafeBrowsingService::OnIOInitialize(
                                                       mackey_url_prefix,
                                                       disable_auto_update);
 
-  // Balance the reference added by Start().
-  request_context_getter->Release();
-
   protocol_manager_->Initialize();
 }
 
@@ -648,9 +645,8 @@ void SafeBrowsingService::Start() {
   }
 
   // We will issue network fetches using the default profile's request context.
-  URLRequestContextGetter* request_context_getter =
+  scoped_refptr<URLRequestContextGetter> request_context_getter =
       GetDefaultProfile()->GetRequestContext();
-  request_context_getter->AddRef();  // Balanced in OnIOInitialize.
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
