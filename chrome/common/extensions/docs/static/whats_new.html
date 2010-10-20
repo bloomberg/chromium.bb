@@ -1,52 +1,97 @@
 <div id="pageData-name" class="pageData">What's New in Extensions?</div>
-
-
 <!-- <div id="pageData-showTOC" class="pageData">true</div> -->
 
-<style>
-#changes-listing .section {
-  margin-top:1em;
-}
-</style>
+<p>
+This page lists the API and manifest changes
+made in recent releases.
+</p>
 
-<h4>Google Chrome 6</h4>
-<ul id="changes-listing">
-  <li class="section"><b>New APIs</b>
-    <ul>
-      <li>The <a href="contextMenus.html">context menus API</a> allows you to
-        add context menus to pages or specific objects on a page
-      <li>The <a href="cookies.html">cookies API</a> allows you to manage the
-        browser's cookie system 
-      <li>The <a href="idle.html">idle API</a> allows you to detect when the
-        machine's idle state changes
-    </ul>
-  <li class="section"><b>Manifest changes</b>
-    <ul>
-      <li>The <a href="manifest.html#geolocation">geolocation</a> permission
-        gives an extension access to the user's physical location
-      <li><a href="match_patterns.html">Match patterns</a> can now select all
-        schemes or all URLs
-      <li>Access to file:/// URLs no longer triggers the "access to your machine"
-        security warning, but now requires user opt-in from the extensions
-        management page
-    </ul>
-  <li class="section"><b>Additions to existing APIs</b>
-    <ul>
-      <li><a
-        href="extension.html#method-getViews">chrome.extension.getViews()</a>
-        can now return popup views
-      <li>Added <a
-        href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
-        for when focus shifts away from the browser
-      <li>The <a
-        href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
-        returns the tab associated with the currently executing script
-    </ul>
-  <li class="section"><b>New experimental APIs</b>
-    <ul>
-      <li>The <a href="experimental.omnibox.html">omnibox API</a> allows you to
-        add functionality to the browser's address bar
-      <li>The <a href="experimental.infobars.html">infobars API</a> allows you
-        to add a UI panel across the top of a tab
-    </ul>
+<ul>
+  <li> <a href="#7">Google Chrome 7</a> </li>
+  <li> <a href="#6">Google Chrome 6</a> </li>
 </ul>
+
+
+<h2 name="7"> Google Chrome 7 </h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li> All users can now install
+      <a href="http://code.google.com/chrome/apps/index.html">apps</a>;
+      packaged apps can use extension APIs
+      </li>
+    <li> The <a href="management.html">management API</a>
+      lets you work with installed apps and extensions
+      </li>
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li> Introduced <a href="manifest.html#incognito">split incognito</a>
+      mode as the default for installable web apps
+      (also available to extensions)
+      </li>
+    <li> The <a href="tabs.html">tabs API</a>
+      <code>create()</code> and <code>update()</code> methods
+      no longer require the "tabs" permission, removing one common cause of
+      <a href="permission_warnings.html">scary dialogs</a>
+      </li>
+  </ul>
+
+<!--
+<h4> New experimental APIs </h4>
+  <ul>
+    <li> a change </li>
+  </ul>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li> a change </li>
+  </ul>
+-->
+
+
+<h2 name="6">Google Chrome 6</h2>
+
+<h4> New APIs </h4>
+  <ul>
+    <li>The <a href="contextMenus.html">context menus API</a> allows you to
+      add context menus to pages or specific objects on a page
+    <li>The <a href="cookies.html">cookies API</a> allows you to manage the
+      browser's cookie system 
+    <li>The <a href="idle.html">idle API</a> allows you to detect when the
+      machine's idle state changes
+  </ul>
+
+<h4> New experimental APIs </h4>
+  <ul>
+    <li>The <a href="experimental.omnibox.html">omnibox API</a> allows you to
+      add functionality to the browser's address bar
+    <li>The <a href="experimental.infobars.html">infobars API</a> allows you
+      to add a UI panel across the top of a tab
+  </ul>
+
+<h4> Additions to existing APIs </h4>
+  <ul>
+    <li>The <a
+      href="extension.html#method-getViews">chrome.extension.getViews()</a>
+      method can now return popup views
+    <li>A new <a
+      href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
+      identifies when focus shifts away from the browser
+    <li>The new <a
+      href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
+      returns the tab associated with the currently executing script
+  </ul>
+
+<h4> Manifest changes </h4>
+  <ul>
+    <li>The <a href="manifest.html#geolocation">geolocation</a> permission
+      gives an extension access to the user's physical location
+    <li><a href="match_patterns.html">Match patterns</a> can now select all
+      schemes or all URLs
+    <li>Access to file:/// URLs no longer triggers the "access to your machine"
+      security warning, but now requires user opt-in from the extensions
+      management page
+  </ul>
+
