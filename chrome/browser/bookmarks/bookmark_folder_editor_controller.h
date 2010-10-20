@@ -20,30 +20,27 @@ class Profile;
 class BookmarkFolderEditorController : public InputWindowDialog::Delegate,
                                        public BaseBookmarkModelObserver {
  public:
-  enum Details {
-    NONE            = 1 << 0,
-    IS_NEW          = 1 << 1,
-    SHOW_IN_MANAGER = 1 << 2,
+  enum Type {
+    NEW_BOOKMARK,  // Indicates that we are creating a new bookmark.
+    EXISTING_BOOKMARK,  // Indicates that we are renaming an existing bookmark.
   };
 
   virtual ~BookmarkFolderEditorController();
 
-  // |details| is a bitmask of Details (see above).
   static void Show(Profile* profile,
                    gfx::NativeWindow wnd,
                    const BookmarkNode* node,
                    int index,
-                   uint32 details);
+                   Type type);
 
  private:
   BookmarkFolderEditorController(Profile* profile,
                                  gfx::NativeWindow wnd,
                                  const BookmarkNode* node,
                                  int index,
-                                 uint32 details);
-  void Show();
+                                 Type type);
 
-  // Overriden from InputWindowDialog::Delegate:
+  // Overridden from InputWindowDialog::Delegate:
   virtual bool IsValid(const std::wstring& text);
   virtual void InputAccepted(const std::wstring& text);
   virtual void InputCanceled();
@@ -52,23 +49,18 @@ class BookmarkFolderEditorController : public InputWindowDialog::Delegate,
   virtual void BookmarkModelChanged();
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
 
-  // Returns true if we are creating a new bookmark folder, otherwise returns
-  // false if we are editing the bookmark folder.
-  bool IsNew();
-
   Profile* profile_;
 
   BookmarkModel* model_;
 
-  // If IsNew() is true, this is the parent to create the new node under.
+  // If |is_new_| is true, this is the parent to create the new node under.
   // Otherwise this is the node to change the title of.
   const BookmarkNode* node_;
 
   // Index to insert the new folder at.
   int index_;
 
-  // The bitmask of Details (see the enum above).
-  const uint32 details_;
+  const bool is_new_;
 
   InputWindowDialog* dialog_;
 

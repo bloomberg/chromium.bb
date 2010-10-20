@@ -21,11 +21,9 @@ void BookmarkFolderEditorController::Show(Profile* profile,
                                           gfx::NativeWindow wnd,
                                           const BookmarkNode* node,
                                           int index,
-                                          uint32 details) {
+                                          Type type) {
   // BookmarkFolderEditorController deletes itself when done.
-  BookmarkFolderEditorController* editor =
-      new BookmarkFolderEditorController(profile, wnd, node, index, details);
-  editor->Show();
+  new BookmarkFolderEditorController(profile, wnd, node, index, type);
 }
 
 BookmarkFolderEditorController::BookmarkFolderEditorController(
@@ -33,20 +31,20 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
     gfx::NativeWindow wnd,
     const BookmarkNode* node,
     int index,
-    uint32 details)
+    Type type)
     : profile_(profile),
       model_(profile->GetBookmarkModel()),
       node_(node),
       index_(index),
-      details_(details) {
-  DCHECK(IsNew() || node);
+      is_new_(type == NEW_BOOKMARK) {
+  DCHECK(is_new_ || node);
 
-  string16 title = IsNew() ?
+  string16 title = is_new_ ?
       l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW) :
       l10n_util::GetStringUTF16(IDS_BOOMARK_FOLDER_EDITOR_WINDOW_TITLE);
   string16 label =
       l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
-  string16 contents = IsNew() ?
+  string16 contents = is_new_ ?
       l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
       node_->GetTitle();
 
@@ -56,9 +54,7 @@ BookmarkFolderEditorController::BookmarkFolderEditorController(
                                       UTF16ToWideHack(contents),
                                       this);
   model_->AddObserver(this);
-}
 
-void BookmarkFolderEditorController::Show() {
   dialog_->Show();
 }
 
@@ -67,7 +63,7 @@ bool BookmarkFolderEditorController::IsValid(const std::wstring& text) {
 }
 
 void BookmarkFolderEditorController::InputAccepted(const std::wstring& text) {
-  if (IsNew())
+  if (is_new_)
     model_->AddGroup(node_, index_, WideToUTF16Hack(text));
   else
     model_->SetTitle(node_, WideToUTF16Hack(text));
@@ -85,8 +81,4 @@ void BookmarkFolderEditorController::BookmarkModelBeingDeleted(
   model_->RemoveObserver(this);
   model_ = NULL;
   BookmarkModelChanged();
-}
-
-bool BookmarkFolderEditorController::IsNew() {
-  return (details_ & IS_NEW) != 0;
 }

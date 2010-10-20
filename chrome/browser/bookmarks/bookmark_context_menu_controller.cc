@@ -164,7 +164,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
                              BookmarkEditor::SHOW_TREE);
       } else {
         BookmarkFolderEditorController::Show(profile_, parent_window_,
-            selection_[0], -1, BookmarkFolderEditorController::NONE);
+            selection_[0], -1,
+            BookmarkFolderEditorController::EXISTING_BOOKMARK);
       }
       break;
 
@@ -202,7 +203,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       const BookmarkNode* parent =
           bookmark_utils::GetParentForNewNodes(parent_, selection_, &index);
       BookmarkFolderEditorController::Show(profile_, parent_window_, parent,
-          index, BookmarkFolderEditorController::IS_NEW);
+          index, BookmarkFolderEditorController::NEW_BOOKMARK);
       break;
     }
 
