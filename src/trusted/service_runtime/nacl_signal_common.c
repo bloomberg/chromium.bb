@@ -188,7 +188,8 @@ void NaClSignalHandlerInit() {
   NaClSignalHandlerInitPlatform();
   NaClSignalHandlerAdd(NaClSignalHandleAll);
   if (getenv("NACL_CRASH_TEST") != NULL) {
-     NaClLog(LOG_ERROR, "[CRASH_TEST] Causing crash in NaCl trusted code...\n");
+    NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
+                           "trusted code...\n");
     *(int *) 0 = 0;
   }
 }

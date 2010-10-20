@@ -59,6 +59,8 @@ static struct sigaction s_OldActions[SIGNAL_COUNT];
 #if NACL_OSX
 /* From: /usr/include/mach/i386/_structs.h */
   #define REG_EIP 10
+  #define REG_CS 11
+  #define REG_GS 15
   #define REG_RIP 16
   #if __DARWIN_UNIX03
     #define GET_CTX_REG(x, r) ((intptr_t *) &((x)->__ss))[r]
@@ -170,20 +172,44 @@ static void ExceptionCatch(int sig, siginfo_t *info, void *uc) {
   int untrusted = 0;
 
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86) && (NACL_TARGET_SUBARCH==32)
+  ucontext_t *context = uc;
   struct NaClThreadContext *nacl_thread;
-  uint16_t cs = NaClGetCs();
-  uint16_t gs = NaClGetGs();
-  uint16_t es = NaClGetEs();
-  uint16_t fs = NaClGetFs();
+  /*
+   * We need to drop the top 16 bits with this implicit cast.  In some
+   * situations, Linux does not assign to the top 2 bytes of the
+   * REG_CS array entry when writing %cs to the stack.  Therefore we
+   * need to drop the undefined top 2 bytes.  This happens in 32-bit
+   * processes running on 64-bit kernels, but not on 32-bit kernels.
+   */
+  uint16_t cs = GET_CTX_REG(context->uc_mcontext, REG_CS);
+  uint16_t gs = GET_CTX_REG(context->uc_mcontext, REG_GS);
   if (cs != NaClGetGlobalCs()) {
     /*
-     * We need to restore segment registers before we can make any
-     * calls, because some libraries will require them.
+     * On Linux, the kernel does not restore %gs when entering the
+     * signal handler, so we must do that here.  We need to do this
+     * for glibc's TLS to work.  Some builds of glibc fetch a syscall
+     * function pointer from glibc's static TLS area.  If we failed to
+     * restore %gs, this function pointer would be under the control
+     * of untrusted code, and we would have a vulnerability.
+     *
+     * Note that, in comparison, Breakpad tries to avoid using libc
+     * calls at all when a crash occurs.
+     *
+     * On Mac OS X, the kernel *does* restore the original %gs when
+     * entering the signal handler.  Our assignment to %gs here is
+     * therefore not strictly necessary, but not harmful.  However,
+     * this does mean we need to check the original %gs value (from
+     * the signal frame) rather than the current %gs value (from
+     * NaClGetGs()).
+     *
+     * Both systems necessarily restore %cs and %ds, otherwise we
+     * would have a hard time handling signals in untrusted code at
+     * all.
      */
     nacl_thread = nacl_sys[gs >> 3];
     NaClSetGs(nacl_thread->gs);
     NaClSetEs(nacl_thread->es);
-    NaClSetFs(nacl_thread->es);
+    NaClSetFs(nacl_thread->fs);
     untrusted = 1;
   }
 #else
@@ -221,12 +247,6 @@ static void ExceptionCatch(int sig, siginfo_t *info, void *uc) {
       }
     }
   }
-
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86) && (NACL_TARGET_SUBARCH==32)
-  NaClSetGs(gs);
-  NaClSetEs(es);
-  NaClSetFs(fs);
-#endif
 }
 
 void NaClSignalHandlerInitPlatform() {
