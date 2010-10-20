@@ -159,6 +159,20 @@ OnDemandSymbolSupplier::GetSymbolFile(const CodeModule *module,
   return s;
 }
 
+SymbolSupplier::SymbolResult
+OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule *module,
+                                             const SystemInfo *system_info,
+                                             string *symbol_file,
+                                             char **symbol_data) {
+  std::string symbol_data_string;
+  SymbolSupplier::SymbolResult result = GetSymbolFile(module,
+                                                      system_info,
+                                                      symbol_file,
+                                                      &symbol_data_string);
+  strcpy(*symbol_data, symbol_data_string.c_str());
+  return result;
+}
+
 string OnDemandSymbolSupplier::GetLocalModulePath(const CodeModule *module) {
   NSFileManager *mgr = [NSFileManager defaultManager];
   const char *moduleStr = module->code_file().c_str();

@@ -61,6 +61,10 @@ class OnDemandSymbolSupplier : public SymbolSupplier {
                                      const SystemInfo *system_info,
                                      string *symbol_file,
                                      string *symbol_data);
+  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
+                                            const SystemInfo *system_info,
+                                            string *symbol_file,
+                                            char **symbol_data);
  protected:
   // Search directory
   string search_dir_;
