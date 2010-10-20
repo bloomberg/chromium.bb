@@ -95,7 +95,7 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
         FROM_HERE,
         NewRunnableMethod(this,
                           &DevToolsHttpProtocolHandler::OnHttpRequestUI,
-                          make_scoped_refptr(socket),
+                          socket,
                           info));
     return;
   }
@@ -123,7 +123,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequest(
       NewRunnableMethod(
           this,
           &DevToolsHttpProtocolHandler::OnWebSocketRequestUI,
-          make_scoped_refptr(socket),
+          socket,
           request));
 }
 
@@ -135,7 +135,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessage(HttpListenSocket* socket,
       NewRunnableMethod(
           this,
           &DevToolsHttpProtocolHandler::OnWebSocketMessageUI,
-          make_scoped_refptr(socket),
+          socket,
           data));
 }
 
@@ -160,7 +160,7 @@ void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
       NewRunnableMethod(
           this,
           &DevToolsHttpProtocolHandler::OnCloseUI,
-          make_scoped_refptr(socket)));
+          socket));
 }
 
 void DevToolsHttpProtocolHandler::OnHttpRequestUI(
