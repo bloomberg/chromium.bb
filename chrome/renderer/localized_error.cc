@@ -142,9 +142,6 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
    SUGGEST_LEARNMORE,
   },
-  // TODO(mmenke): Once Linux-specific instructions are added, remove this
-  // conditional, and the one further down as well.
-#if defined(OS_MACOSX) || defined(OS_WIN)
   {net::ERR_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_TITLE_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
@@ -152,15 +149,6 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
    SUGGEST_NONE,
   },
-#else
-  {net::ERR_INTERNET_DISCONNECTED,
-   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
-   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
-   IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
-   SUGGEST_NONE,
-  },
-#endif
 };
 
 const LocalizedErrorMap http_error_options[] = {
@@ -379,6 +367,8 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
                 IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM)));
   }
 
+  // Platform specific instructions for diagnosing network issues on OSX and
+  // Windows.
 #if defined(OS_MACOSX) || defined(OS_WIN)
   if (error_domain == net::kErrorDomain &&
       error_code == net::ERR_INTERNET_DISCONNECTED) {
@@ -399,9 +389,12 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
           IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA;
     }
 #endif  // defined(OS_WIN)
-    // Suffix the platform dependent portion of the summary section.
+    // Lead with the general error description, and suffix with the platform
+    // dependent portion of the summary section.
     summary->SetString("msg",
-        l10n_util::GetStringFUTF16(options.summary_resource_id,
+        l10n_util::GetStringFUTF16(
+            IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE,
+            l10n_util::GetStringUTF16(options.summary_resource_id),
             l10n_util::GetStringUTF16(platform_string_id)));
   }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
