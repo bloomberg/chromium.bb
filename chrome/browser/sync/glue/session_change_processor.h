@@ -57,8 +57,6 @@ class SessionChangeProcessor : public ChangeProcessor,
  private:
   void StartObserving();
   void StopObserving();
-  void UpdateModel(const sync_api::BaseTransaction* trans,
-      const sync_api::SyncManager::ChangeRecord& change, bool associate);
   SessionModelAssociator* session_model_associator_;
   NotificationRegistrar notification_registrar_;
 
@@ -71,4 +69,3 @@ class SessionChangeProcessor : public ChangeProcessor,
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_SESSION_CHANGE_PROCESSOR_H_
-

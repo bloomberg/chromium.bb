@@ -128,6 +128,12 @@ static bool GetConfiguration(const std::string& json,
   if (sync_typed_urls)
     config->data_types.insert(syncable::TYPED_URLS);
 
+  bool sync_sessions;
+  if (!result->GetBoolean("syncSessions", &sync_sessions))
+    return false;
+  if (sync_sessions)
+    config->data_types.insert(syncable::SESSIONS);
+
   bool sync_apps;
   if (!result->GetBoolean("syncApps", &sync_apps))
     return false;

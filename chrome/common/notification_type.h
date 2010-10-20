@@ -1064,10 +1064,9 @@ class NotificationType {
     // session data.
     FOREIGN_SESSION_UPDATED,
 
-    // A foreign session has been deleted.  If a new tab page is open, the
-    // foreign session handler needs to update the new tab page's foreign
+    // Foreign sessions has been disabled. New tabs should not display foreign
     // session data.
-    FOREIGN_SESSION_DELETED,
+    FOREIGN_SESSION_DISABLED,
 
     // The syncer requires a passphrase to decrypt sensitive updates. This
     // notification is sent when the first sensitive data type is setup by the

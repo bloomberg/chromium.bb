@@ -56,8 +56,7 @@ class ProfileSyncServiceSessionTest
  public:
   ProfileSyncServiceSessionTest()
       : window_bounds_(0, 1, 2, 3),
-        notified_of_update_(false),
-        notification_sync_id_(0) {}
+        notified_of_update_(false) {}
 
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
@@ -76,24 +75,15 @@ class ProfileSyncServiceSessionTest
     service()->SetWindowBounds(window_id_, window_bounds_, false);
     registrar_.Add(this, NotificationType::FOREIGN_SESSION_UPDATED,
         NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::FOREIGN_SESSION_DELETED,
-        NotificationService::AllSources());
   }
 
   void Observe(NotificationType type,
       const NotificationSource& source,
       const NotificationDetails& details) {
     switch (type.value) {
-      case NotificationType::FOREIGN_SESSION_UPDATED: {
+      case NotificationType::FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;
-        notification_sync_id_ = *Details<int64>(details).ptr();
         break;
-      }
-      case NotificationType::FOREIGN_SESSION_DELETED: {
-        notified_of_update_ = true;
-        notification_sync_id_ = -1;
-        break;
-      }
       default:
         NOTREACHED();
         break;
@@ -147,7 +137,6 @@ class ProfileSyncServiceSessionTest
   TestIdFactory ids_;
   const gfx::Rect window_bounds_;
   bool notified_of_update_;
-  int64 notification_sync_id_;
   NotificationRegistrar registrar_;
 };
 
@@ -236,7 +225,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteFilledSessionToNode) {
 
   // Check that this machine's data is not included in the foreign windows.
   ScopedVector<ForeignSession> foreign_sessions;
-  model_associator_->GetSessionDataFromSyncModel(&foreign_sessions.get());
+  model_associator_->GetSessionData(&foreign_sessions.get());
   ASSERT_EQ(foreign_sessions.size(), 0U);
 
   // Get the windows for this machine from the node and check that they were
@@ -309,6 +298,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
     sync_api::ReadNode root(&trans);
     ASSERT_TRUE(root.InitByTagLookup(kSessionsTag));
     model_associator_->UpdateSyncModel(&specifics, &trans, &root);
+    model_associator_->UpdateFromSyncModel(&trans);
   }
 
   // Check that the foreign session was written to a node and retrieve the data.
@@ -320,8 +310,8 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
       model_associator_->GetChromeNodeFromSyncId(sync_id));
   ASSERT_TRUE(sync_specifics != NULL);
   ScopedVector<ForeignSession> foreign_sessions;
-  model_associator_->GetSessionDataFromSyncModel(&foreign_sessions.get());
-  ASSERT_EQ(foreign_sessions.size(), 1U);
+  model_associator_->GetSessionData(&foreign_sessions.get());
+  ASSERT_EQ(1U, foreign_sessions.size());
   ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs[0]->navigations.size());
@@ -364,13 +354,11 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionUpdate) {
   scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
   record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
   record->id = node_id;
-  ASSERT_EQ(notification_sync_id_, 0);
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
-  ASSERT_EQ(notification_sync_id_, node_id);
   ASSERT_TRUE(notified_of_update_);
 }
 
@@ -385,13 +373,11 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionAdd) {
   scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
   record->action = SyncManager::ChangeRecord::ACTION_ADD;
   record->id = node_id;
-  ASSERT_EQ(notification_sync_id_, 0);
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
-  ASSERT_EQ(notification_sync_id_, node_id);
   ASSERT_TRUE(notified_of_update_);
 }
 
@@ -406,13 +392,11 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
   scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
   record->action = SyncManager::ChangeRecord::ACTION_DELETE;
   record->id = node_id;
-  ASSERT_EQ(notification_sync_id_, 0);
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(backend()->GetUserShareHandle());
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
-  ASSERT_EQ(notification_sync_id_, -1);
   ASSERT_TRUE(notified_of_update_);
 }
 

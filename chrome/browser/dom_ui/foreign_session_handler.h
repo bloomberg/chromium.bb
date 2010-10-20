@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_DOM_UI_FOREIGN_SESSION_HANDLER_H_
 #pragma once
 
+#include <vector>
+
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -59,4 +61,3 @@ class ForeignSessionHandler : public DOMMessageHandler,
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_DOM_UI_FOREIGN_SESSION_HANDLER_H_
-

@@ -447,7 +447,7 @@ void SessionService::Save() {
         &last_updated_save_time_);
     NotificationService::current()->Notify(
         NotificationType::SESSION_SERVICE_SAVED,
-        NotificationService::AllSources(),
+        Source<Profile>(profile()),
         NotificationService::NoDetails());
   }
 }
@@ -1473,4 +1473,3 @@ void SessionService::RecordUpdatedSaveTime(base::TimeDelta delta,
         50);
   }
 }
-

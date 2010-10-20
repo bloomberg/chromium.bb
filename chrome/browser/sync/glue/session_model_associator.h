@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
+#include "base/scoped_vector.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -36,8 +37,13 @@ class SessionSpecifics;
 namespace browser_sync {
 
 static const char kSessionsTag[] = "google_chrome_sessions";
+
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
+// In the case of sessions, our local model is nothing but a buffer (specifics_)
+// that gets overwritten everytime there is an update. From it, we build a new
+// foreign session windows list each time |GetSessionData| is called by the
+// ForeignSessionHandler.
 class SessionModelAssociator : public PerDataTypeAssociatorInterface<
     sync_pb::SessionSpecifics, std::string>, public NonThreadSafe {
  public:
@@ -54,11 +60,13 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
     // thread.
   }
 
-  // Used to re-associate a foreign session.
+  // Dummy method, we do everything all-at-once in UpdateFromSyncModel.
   virtual void Associate(const sync_pb::SessionSpecifics* specifics,
-    int64 sync_id);
+    int64 sync_id) {
+  }
 
-  // Updates the sync model with the local client data.
+  // Updates the sync model with the local client data. (calls
+  // UpdateFromSyncModel)
   virtual bool AssociateModels();
 
   // The has_nodes out parameter is set to true if the chrome model
@@ -66,16 +74,12 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   // occurred.
   virtual bool ChromeModelHasUserCreatedNodes(bool* has_nodes);
 
-  // Will update the new tab page with current foreign sessions excluding the
-  // one being disassociated.
-  virtual void Disassociate(int64 sync_id);
-
-  // TODO(jerrica): Add functionality to stop rendering foreign sessions to the
-  // new tab page.
-  virtual bool DisassociateModels() {
-    // There is no local model stored with which to disassociate.
-    return true;
+  // Dummy method, we do everything all-at-once in UpdateFromSyncModel.
+  virtual void Disassociate(int64 sync_id) {
   }
+
+  // Clear specifics_ buffer and notify foreign session handlers.
+  virtual bool DisassociateModels();
 
   // Returns the chrome session specifics for the given sync id.
   // Returns NULL if no specifics are found for the given sync id.
@@ -109,10 +113,21 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   // sync model.
   std::string GetCurrentMachineTag();
 
-  // Pulls the current sync model from the server, and returns true upon update
-  // of the client model.
-  bool GetSessionDataFromSyncModel(std::vector<ForeignSession*>* windows);
+  // Updates the server data based upon the current client session.  If no node
+  // corresponding to this machine exists in the sync model, one is created.
+  void UpdateSyncModelDataFromClient();
 
+  // Pulls the current sync model from the sync database and returns true upon
+  // update of the client model. Called by SessionChangeProcessor.
+  // Note that the specifics_ vector is reset and built from scratch each time.
+  bool UpdateFromSyncModel(const sync_api::BaseTransaction* trans);
+
+  // Helper for UpdateFromSyncModel. Appends sync data to a vector of specifics.
+  bool QuerySyncModel(const sync_api::BaseTransaction* trans,
+      std::vector<const sync_pb::SessionSpecifics*>& specifics);
+
+  // Builds sessions from buffered specifics data
+  bool GetSessionData(std::vector<ForeignSession*>* sessions);
 
   // Helper method for converting session specifics to windows.
   void AppendForeignSessionFromSpecifics(
@@ -129,10 +144,6 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   // Returns the syncable model type.
   static syncable::ModelType model_type() { return syncable::SESSIONS; }
 
-  // Updates the server data based upon the current client session.  If no node
-  // corresponding to this machine exists in the sync model, one is created.
-  void UpdateSyncModelDataFromClient();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest, WriteSessionToNode);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceSessionTest,
@@ -142,6 +153,7 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   SessionService* GetSessionService();
 
   // Initializes the tag corresponding to this machine.
+  // Note: creates a syncable::BaseTransaction.
   void InitializeCurrentMachineTag();
 
   // Populates the navigation portion of the session specifics.
@@ -182,9 +194,13 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   bool UpdateSyncModel(sync_pb::SessionSpecifics* session_data,
                     sync_api::WriteTransaction* trans,
                     const sync_api::ReadNode* root);
-
   // Stores the machine tag.
   std::string current_machine_tag_;
+
+  // Stores the current set of foreign session specifics.
+  // Used by ForeignSessionHandler through |GetSessionData|.
+  // Built by |QuerySyncModel| via |UpdateFromSyncModel|.
+  std::vector<const sync_pb::SessionSpecifics*> specifics_;
 
   // Weak pointer.
   ProfileSyncService* sync_service_;
@@ -198,4 +214,3 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_SESSION_MODEL_ASSOCIATOR_H_
-

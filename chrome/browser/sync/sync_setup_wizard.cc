@@ -115,7 +115,6 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "success", IDS_SYNC_SUCCESS);
     AddString(dict, "errorsigningin", IDS_SYNC_ERROR_SIGNING_IN);
     AddString(dict, "captchainstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS);
-
     AddString(dict, "invalidaccesscode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL);
     AddString(dict, "enteraccesscode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL);
     AddString(dict, "getaccesscodehelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL);
@@ -141,6 +140,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "extensions", IDS_SYNC_DATATYPE_EXTENSIONS);
     AddString(dict, "typedurls", IDS_SYNC_DATATYPE_TYPED_URLS);
     AddString(dict, "apps", IDS_SYNC_DATATYPE_APPS);
+    AddString(dict, "foreignsessions", IDS_SYNC_DATATYPE_SESSIONS);
     AddString(dict, "synczerodatatypeserror", IDS_SYNC_ZERO_DATA_TYPES_ERROR);
     AddString(dict, "abortederror", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR);
 

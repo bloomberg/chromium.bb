@@ -52,6 +52,8 @@ void SyncOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_THEMES));
   localized_strings->SetString("syncapps",
       l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_APPS));
+  localized_strings->SetString("syncsessions",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_SESSIONS));
 }
 
 void SyncOptionsHandler::Initialize() {

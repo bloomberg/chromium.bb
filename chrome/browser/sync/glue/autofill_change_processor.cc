@@ -41,7 +41,6 @@ AutofillChangeProcessor::AutofillChangeProcessor(
 void AutofillChangeProcessor::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  LOG(INFO) << "Observed autofill change.";
   // Ensure this notification came from our web database.
   WebDataService* wds = Source<WebDataService>(source).ptr();
   if (!wds || wds->GetDatabase() != web_database_)

@@ -35,24 +35,30 @@ void ForeignSessionHandler::RegisterMessages() {
 
 void ForeignSessionHandler::Init() {
   registrar_.Add(this, NotificationType::SYNC_CONFIGURE_DONE,
-      NotificationService::AllSources());
+                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::FOREIGN_SESSION_UPDATED,
-      NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::FOREIGN_SESSION_DELETED,
-      NotificationService::AllSources());
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::FOREIGN_SESSION_DISABLED,
+                 NotificationService::AllSources());
 }
 
 void ForeignSessionHandler::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  if (type != NotificationType::SYNC_CONFIGURE_DONE &&
-      type != NotificationType::FOREIGN_SESSION_UPDATED &&
-      type != NotificationType::FOREIGN_SESSION_DELETED) {
-    NOTREACHED();
-    return;
-  }
   ListValue list_value;
-  HandleGetForeignSessions(&list_value);
+  switch (type.value) {
+    case NotificationType::SYNC_CONFIGURE_DONE:
+    case NotificationType::FOREIGN_SESSION_UPDATED:
+      HandleGetForeignSessions(&list_value);
+      break;
+    case NotificationType::FOREIGN_SESSION_DISABLED:
+      // Calling foreignSessions with empty list will automatically hide
+      // foreign session section.
+      dom_ui_->CallJavascriptFunction(L"foreignSessions", list_value);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
@@ -106,36 +112,49 @@ void ForeignSessionHandler::OpenForeignSession(
 
 void ForeignSessionHandler::GetForeignSessions(
     SessionModelAssociator* associator) {
-  ScopedVector<ForeignSession> windows;
-  associator->GetSessionDataFromSyncModel(&windows.get());
+  ScopedVector<ForeignSession> clients;
+  if (!associator->GetSessionData(&clients.get())) {
+    LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
+        "SessionModelAssociator.";
+    return;
+  }
   int added_count = 0;
-  ListValue list_value;
+  ListValue client_list;
   for (std::vector<ForeignSession*>::const_iterator i =
-      windows.begin(); i != windows.end() &&
+      clients->begin(); i != clients->end() &&
       added_count < kMaxSessionsToShow; ++i) {
     ForeignSession* foreign_session = *i;
     std::vector<TabRestoreService::Entry*> entries;
     dom_ui_->GetProfile()->GetTabRestoreService()->CreateEntriesFromWindows(
         &foreign_session->windows, &entries);
+    scoped_ptr<ListValue> window_list(new ListValue());
     for (std::vector<TabRestoreService::Entry*>::const_iterator it =
         entries.begin(); it != entries.end(); ++it) {
       TabRestoreService::Entry* entry = *it;
-      scoped_ptr<DictionaryValue> value(new DictionaryValue());
+      scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
       if (entry->type == TabRestoreService::WINDOW &&
           ValueHelper::WindowToValue(
-              *static_cast<TabRestoreService::Window*>(entry), value.get())) {
+              *static_cast<TabRestoreService::Window*>(entry),
+              window_data.get())) {
         // The javascript checks if the session id is a valid session id,
         // when rendering session information to the new tab page, and it
         // sends the sessionTag back when we need to restore a session.
-        value->SetString("sessionTag", foreign_session->foreign_tession_tag);
-        value->SetInteger("sessionId", entry->id);
-        list_value.Append(value.release());  // Give ownership to |list_value|.
+
+        // TODO(zea): sessionTag is per client, it might be better per window.
+        window_data->SetString("sessionTag",
+            foreign_session->foreign_tession_tag);
+        window_data->SetInteger("sessionId", entry->id);
+
+        // Give ownership to |list_value|.
+        window_list->Append(window_data.release());
       }
     }
     added_count++;
+
+    // Give ownership to |client_list|
+    client_list.Append(window_list.release());
   }
-  dom_ui_->CallJavascriptFunction(L"foreignSessions", list_value);
+  dom_ui_->CallJavascriptFunction(L"foreignSessions", client_list);
 }
 
 }  // namespace browser_sync
-

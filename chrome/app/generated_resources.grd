@@ -8020,6 +8020,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_APPS" desc="Apps, one of the data types that we allow syncing.">
         Apps
       </message>
+      <message name="IDS_SYNC_DATATYPE_SESSIONS" desc="Sessions, one of the data types that we allow syncing.">
+	Foreign Sessions
+      </message>
 
       <!-- Encryption tab of the configure sync dialog -->
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">

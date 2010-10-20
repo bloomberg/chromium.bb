@@ -322,8 +322,8 @@ class SessionRestoreImpl : public NotificationObserver {
       ShowBrowser(browser, initial_tab_count,
           (*i)->selected_tab_index);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
-      FinishedTabCreation(true, has_tabbed_browser);
     }
+    FinishedTabCreation(true, has_tabbed_browser);
   }
 
   ~SessionRestoreImpl() {
