@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,9 +119,9 @@ void MemoryWatcher::OnTrack(HANDLE heap, int32 id, int32 size) {
       active_thread_id_ = GetCurrentThreadId();
       PrivateAllocatorString output;
       block_it->second->ToString(&output);
-     // LOG(INFO) << "First Stack size " << stack->size() << "was\n" << output;
+     // VLOG(1) << "First Stack size " << stack->size() << "was\n" << output;
       stack->ToString(&output);
-     // LOG(INFO) << "Second Stack size " << stack->size() << "was\n" << output;
+     // VLOG(1) << "Second Stack size " << stack->size() << "was\n" << output;
 #endif  // 0
 
       // TODO(jar): We should delete one stack, and keep the other, perhaps

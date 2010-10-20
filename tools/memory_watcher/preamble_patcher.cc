@@ -1,36 +1,6 @@
-/* Copyright (c) 2007, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ---
- *
- * Implementation of PreamblePatcher
- */
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "preamble_patcher.h"
 #include "memory_hook.h"
@@ -91,8 +61,8 @@ SideStepError PreamblePatcher::RawPatchWithStubAndProtections(
   // old version of the instructions (before our patch).
   //
   // FlushInstructionCache is actually a no-op at least on single-processor
-  // XP machines.  I'm not sure why this is so, but it is, yet I want to keep the
-  // call to the API here for correctness in case there is a difference in
+  // XP machines.  I'm not sure why this is so, but it is, yet I want to keep
+  // the call to the API here for correctness in case there is a difference in
   // some variants of Windows/hardware.
   succeeded = ::FlushInstructionCache(::GetCurrentProcess(),
                                       target_function,
@@ -156,8 +126,8 @@ SideStepError PreamblePatcher::RawPatch(void* target_function,
   // allocate.  Basically, we've hooked malloc, but not necessarily
   // hooked free yet.  To do anything which uses the heap could crash
   // with a mismatched malloc/free!
-  //LOG(INFO) << "PreamblePatcher::RawPatch successfully patched 0x" <<
-  //         target_function;
+  //VLOG(1) << "PreamblePatcher::RawPatch successfully patched 0x"
+  //        << target_function;
 
   return SIDESTEP_SUCCESS;
 }
@@ -175,10 +145,9 @@ SideStepError PreamblePatcher::Unpatch(void* target_function,
   MiniDisassembler disassembler;
   unsigned int preamble_bytes = 0;
   while (preamble_bytes < 5) {
-    InstructionType instruction_type =
-      disassembler.Disassemble(
-        reinterpret_cast<unsigned char*>(original_function_stub) + preamble_bytes,
-        preamble_bytes);
+    InstructionType instruction_type = disassembler.Disassemble(
+        reinterpret_cast<unsigned char*>(original_function_stub) +
+        preamble_bytes, preamble_bytes);
     if (IT_GENERIC != instruction_type) {
       ASSERT(false, "Should only have generic instructions in stub!!");
       return SIDESTEP_UNSUPPORTED_INSTRUCTION;
@@ -251,8 +220,8 @@ SideStepError PreamblePatcher::Unpatch(void* target_function,
     return SIDESTEP_UNEXPECTED;
   }
 
-  LOG(INFO) << "PreamblePatcher::Unpatch successfully unpatched 0x" <<
-           target_function;
+  VLOG(1) << "PreamblePatcher::Unpatch successfully unpatched 0x"
+          << target_function;
   return SIDESTEP_SUCCESS;
 }
 
