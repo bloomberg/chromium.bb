@@ -160,7 +160,6 @@ void IPCVideoRenderer::DoUpdateVideo() {
 
   Send(new ViewHostMsg_UpdateVideo(routing_id_,
                                    transport_dib_->id(),
-                                   transport_dib_->handle(),
                                    video_rect_));
 }
 

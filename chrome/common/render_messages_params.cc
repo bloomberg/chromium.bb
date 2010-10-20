@@ -38,11 +38,11 @@ ViewHostMsg_FrameNavigate_Params::~ViewHostMsg_FrameNavigate_Params() {
 }
 
 ViewHostMsg_UpdateRect_Params::ViewHostMsg_UpdateRect_Params()
-    : dib_id(0),
-      dib_handle(TransportDIB::DefaultHandleValue()),
-      dx(0),
+    : dx(0),
       dy(0),
       flags(0) {
+    // On windows, bitmap is of type "struct HandleAndSequenceNum"
+    memset(&bitmap, 0, sizeof(bitmap));
 }
 
 ViewHostMsg_UpdateRect_Params::~ViewHostMsg_UpdateRect_Params() {
@@ -835,8 +835,7 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
 
 void ParamTraits<ViewHostMsg_UpdateRect_Params>::Write(
     Message* m, const param_type& p) {
-  WriteParam(m, p.dib_id);
-  WriteParam(m, p.dib_handle);
+  WriteParam(m, p.bitmap);
   WriteParam(m, p.bitmap_rect);
   WriteParam(m, p.dx);
   WriteParam(m, p.dy);
@@ -850,8 +849,7 @@ void ParamTraits<ViewHostMsg_UpdateRect_Params>::Write(
 bool ParamTraits<ViewHostMsg_UpdateRect_Params>::Read(
     const Message* m, void** iter, param_type* p) {
   return
-      ReadParam(m, iter, &p->dib_id) &&
-      ReadParam(m, iter, &p->dib_handle) &&
+      ReadParam(m, iter, &p->bitmap) &&
       ReadParam(m, iter, &p->bitmap_rect) &&
       ReadParam(m, iter, &p->dx) &&
       ReadParam(m, iter, &p->dy) &&
@@ -865,9 +863,7 @@ bool ParamTraits<ViewHostMsg_UpdateRect_Params>::Read(
 void ParamTraits<ViewHostMsg_UpdateRect_Params>::Log(const param_type& p,
                                                      std::string* l) {
   l->append("(");
-  LogParam(p.dib_id, l);
-  l->append(", ");
-  LogParam(p.dib_handle, l);
+  LogParam(p.bitmap, l);
   l->append(", ");
   LogParam(p.bitmap_rect, l);
   l->append(", ");

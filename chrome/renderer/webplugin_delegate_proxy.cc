@@ -1506,10 +1506,9 @@ void WebPluginDelegateProxy::OnAcceleratedSurfaceSetTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
-  TransportDIB::ScopedHandle scoped_dib_handle(transport_dib);
   if (render_view_)
     render_view_->AcceleratedSurfaceSetTransportDIB(window, width, height,
-        scoped_dib_handle.release());
+                                                    transport_dib);
 }
 
 void WebPluginDelegateProxy::OnAcceleratedSurfaceAllocTransportDIB(

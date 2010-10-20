@@ -508,7 +508,6 @@ void RenderWidget::DoDeferredUpdate() {
   // A plugin may be able to do an optimized paint. First check this, in which
   // case we can skip all of the bitmap generation and regular paint code.
   TransportDIB::Id dib_id = TransportDIB::Id();
-  TransportDIB::Handle dib_handle = TransportDIB::DefaultHandleValue();
   TransportDIB* dib = NULL;
   std::vector<gfx::Rect> copy_rects;
   gfx::Rect optimized_copy_rect, optimized_copy_location;
@@ -519,7 +518,6 @@ void RenderWidget::DoDeferredUpdate() {
     bounds = optimized_copy_location;
     copy_rects.push_back(optimized_copy_rect);
     dib_id = dib->id();
-    dib_handle = dib->handle();
   } else if (!is_gpu_rendering_active_) {
     // Compute a buffer for painting and cache it.
     scoped_ptr<skia::PlatformCanvas> canvas(
@@ -555,7 +553,6 @@ void RenderWidget::DoDeferredUpdate() {
       PaintRect(copy_rects[i], bounds.origin(), canvas.get());
 
     dib_id = current_paint_buf_->id();
-    dib_handle = current_paint_buf_->handle();
   } else {  // Accelerated compositing path
     // Begin painting.
     bool finish = next_paint_is_resize_ack();
@@ -564,8 +561,7 @@ void RenderWidget::DoDeferredUpdate() {
 
   // sending an ack to browser process that the paint is complete...
   ViewHostMsg_UpdateRect_Params params;
-  params.dib_id = dib_id;
-  params.dib_handle = dib_handle;
+  params.bitmap = dib_id;
   params.bitmap_rect = bounds;
   params.dx = update.scroll_delta.x();
   params.dy = update.scroll_delta.y();
@@ -823,8 +819,7 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
                                     int tag,
                                     const gfx::Size& page_size,
                                     const gfx::Size& desired_size) {
-  TransportDIB::ScopedHandle scoped_dib_handle(dib_handle);
-  if (!webwidget_ || !TransportDIB::is_valid(dib_handle))
+  if (!webwidget_ || dib_handle == TransportDIB::DefaultHandleValue())
     return;
 
   if (page_size.IsEmpty() || desired_size.IsEmpty()) {
@@ -836,17 +831,13 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
 
   // Map the given DIB ID into this process, and unmap it at the end
   // of this function.
-  scoped_ptr<TransportDIB> paint_at_size_buffer(
-      TransportDIB::CreateWithHandle(scoped_dib_handle.release()));
-  gfx::Size canvas_size = page_size;
-  scoped_ptr<skia::PlatformCanvas> canvas(
-      paint_at_size_buffer->GetPlatformCanvas(canvas_size.width(),
-                                              canvas_size.height()));
-  if (!canvas.get()) {
-    NOTREACHED();
-    return;
-  }
+  scoped_ptr<TransportDIB> paint_at_size_buffer(TransportDIB::Map(dib_handle));
 
+  DCHECK(paint_at_size_buffer.get());
+  if (!paint_at_size_buffer.get())
+    return;
+
+  gfx::Size canvas_size = page_size;
   float x_scale = static_cast<float>(desired_size.width()) /
                   static_cast<float>(canvas_size.width());
   float y_scale = static_cast<float>(desired_size.height()) /
@@ -856,6 +847,14 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
   canvas_size.set_width(static_cast<int>(canvas_size.width() * x_scale));
   canvas_size.set_height(static_cast<int>(canvas_size.height() * y_scale));
   gfx::Rect bounds(canvas_size);
+
+  scoped_ptr<skia::PlatformCanvas> canvas(
+      paint_at_size_buffer->GetPlatformCanvas(canvas_size.width(),
+                                              canvas_size.height()));
+  if (!canvas.get()) {
+    NOTREACHED();
+    return;
+  }
 
   // Reset bounds to what we actually received, but they should be the
   // same.

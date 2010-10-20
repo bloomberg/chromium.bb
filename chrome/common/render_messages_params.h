@@ -321,12 +321,9 @@ struct ViewHostMsg_UpdateRect_Params {
   ViewHostMsg_UpdateRect_Params();
   ~ViewHostMsg_UpdateRect_Params();
 
-  // The ID of the bitmap to be painted into the view at the locations specified
-  // by update_rects.
-  TransportDIB::Id dib_id;
-
-  // The handle to the bitmap, in case it needs to be mapped on the browser.
-  TransportDIB::Handle dib_handle;
+  // The bitmap to be painted into the view at the locations specified by
+  // update_rects.
+  TransportDIB::Id bitmap;
 
   // The position and size of the bitmap.
   gfx::Rect bitmap_rect;

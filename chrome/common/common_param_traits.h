@@ -12,10 +12,6 @@
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include "app/surface/transport_dib.h"
 #include "base/file_util.h"
 #include "base/ref_counted.h"
@@ -240,33 +236,22 @@ struct ParamTraits<webkit_glue::WebApplicationInfo> {
 
 
 #if defined(OS_WIN)
-template <>
-struct ParamTraits<TransportDIB::Handle> {
-  typedef TransportDIB::Handle param_type;
+template<>
+struct ParamTraits<TransportDIB::Id> {
+  typedef TransportDIB::Id param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.section());
-    WriteParam(m, p.owner_id());
-    WriteParam(m, p.should_dup_on_map());
+    WriteParam(m, p.handle);
+    WriteParam(m, p.sequence_num);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    HANDLE section;
-    base::ProcessId owner_id;
-    bool should_dup_on_map;
-    bool success = ReadParam(m, iter, &section) &&
-                   ReadParam(m, iter, &owner_id) &&
-                   ReadParam(m, iter, &should_dup_on_map);
-    if (success) {
-      *r = TransportDIB::Handle(section, owner_id, should_dup_on_map);
-    }
-    return success;
+    return (ReadParam(m, iter, &r->handle) &&
+            ReadParam(m, iter, &r->sequence_num));
   }
   static void Log(const param_type& p, std::string* l) {
-    l->append("TransportDIB::Handle(");
-    LogParam(p.section(), l);
+    l->append("TransportDIB(");
+    LogParam(p.handle, l);
     l->append(", ");
-    LogParam(p.owner_id(), l);
-    l->append(", ");
-    LogParam(p.should_dup_on_map(), l);
+    LogParam(p.sequence_num, l);
     l->append(")");
   }
 };

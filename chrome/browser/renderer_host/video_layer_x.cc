@@ -44,10 +44,8 @@ VideoLayerX::~VideoLayerX() {
 }
 
 void VideoLayerX::CopyTransportDIB(RenderProcessHost* process,
-                                   TransportDIB::Id dib_id,
-                                   TransportDIB::Handle dib_handle,
+                                   TransportDIB::Id bitmap,
                                    const gfx::Rect& bitmap_rect) {
-  TransportDIB::ScopedHandle scoped_dib_handle(dib_handle);
   if (!display_)
     return;
 
@@ -78,8 +76,7 @@ void VideoLayerX::CopyTransportDIB(RenderProcessHost* process,
     rgb_frame_size_ = new_rgb_frame_size;
   }
 
-  TransportDIB* dib = process->GetTransportDIB(dib_id,
-                                               scoped_dib_handle.release());
+  TransportDIB* dib = process->GetTransportDIB(bitmap);
   if (!dib)
     return;
 

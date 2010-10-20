@@ -74,10 +74,12 @@ IPC_BEGIN_MESSAGES(Gpu)
   // Updates the backing store with the given bitmap. The GPU process will send
   // back a GpuHostMsg_PaintToBackingStore_ACK after the paint is complete to
   // let the caller know the TransportDIB can be freed or reused.
-  IPC_MESSAGE_ROUTED3(GpuMsg_PaintToBackingStore,
-                      TransportDIB::Handle, /* bitmap_handle */
+  IPC_MESSAGE_ROUTED4(GpuMsg_PaintToBackingStore,
+                      base::ProcessId, /* process */
+                      TransportDIB::Id, /* bitmap */
                       gfx::Rect, /* bitmap_rect */
                       std::vector<gfx::Rect>) /* copy_rects */
+
 
   IPC_MESSAGE_ROUTED4(GpuMsg_ScrollBackingStore,
                       int, /* dx */
@@ -93,8 +95,9 @@ IPC_BEGIN_MESSAGES(Gpu)
   // Updates the video layer with the given YUV data. The GPU process will send
   // back a GpuHostMsg_PaintToVideoLayer_ACK after the paint is complete to
   // let the caller know the TransportDIB can be freed or reused.
-  IPC_MESSAGE_ROUTED2(GpuMsg_PaintToVideoLayer,
-                      TransportDIB::Handle, /* bitmap_handle */
+  IPC_MESSAGE_ROUTED3(GpuMsg_PaintToVideoLayer,
+                      base::ProcessId, /* process */
+                      TransportDIB::Id, /* bitmap */
                       gfx::Rect) /* bitmap_rect */
 
 IPC_END_MESSAGES(Gpu)

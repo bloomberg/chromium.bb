@@ -116,10 +116,21 @@ void GpuBackingStoreWin::OnChannelError() {
 }
 
 void GpuBackingStoreWin::OnPaintToBackingStore(
-    TransportDIB::Handle dib_handle,
+    base::ProcessId source_process_id,
+    TransportDIB::Id id,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects) {
-  scoped_ptr<TransportDIB> dib(TransportDIB::Map(dib_handle));
+  HANDLE source_process_handle = OpenProcess(PROCESS_ALL_ACCESS,
+                                             FALSE, source_process_id);
+  CHECK(source_process_handle);
+
+  // On Windows we need to duplicate the handle from the remote process.
+  // See BrowserRenderProcessHost::MapTransportDIB for how to do this on other
+  // platforms.
+  HANDLE section = win_util::GetSectionFromProcess(
+      id.handle, source_process_handle, false /* read write */);
+  CHECK(section);
+  scoped_ptr<TransportDIB> dib(TransportDIB::Map(section));
   CHECK(dib.get());
 
   if (!backing_store_dib_) {
@@ -157,6 +168,7 @@ void GpuBackingStoreWin::OnPaintToBackingStore(
     view_->InvalidateRect(&paint_rect.ToRECT());
   }
 
+  CloseHandle(source_process_handle);
   gpu_thread_->Send(new GpuHostMsg_PaintToBackingStore_ACK(routing_id_));
 }
 

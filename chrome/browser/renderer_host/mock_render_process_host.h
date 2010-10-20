@@ -53,8 +53,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
   virtual base::ProcessHandle GetHandle();
 
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id,
-                                        TransportDIB::Handle dib_handle);
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg);

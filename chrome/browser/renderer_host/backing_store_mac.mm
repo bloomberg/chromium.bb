@@ -54,8 +54,7 @@ BackingStoreMac::~BackingStoreMac() {
 
 void BackingStoreMac::PaintToBackingStore(
     RenderProcessHost* process,
-    TransportDIB::Id dib_id,
-    TransportDIB::Handle dib_handle,
+    TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     bool* painted_synchronously) {
@@ -65,7 +64,7 @@ void BackingStoreMac::PaintToBackingStore(
 
   DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
 
-  TransportDIB* dib = process->GetTransportDIB(dib_id, dib_handle);
+  TransportDIB* dib = process->GetTransportDIB(bitmap);
   if (!dib)
     return;
 

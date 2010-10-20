@@ -51,8 +51,7 @@ class BackingStoreManager {
   static void PrepareBackingStore(
       RenderWidgetHost* host,
       const gfx::Size& backing_store_size,
-      TransportDIB::Id dib_id,
-      TransportDIB::Handle dib_handle,
+      TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
       bool* needs_full_paint,
