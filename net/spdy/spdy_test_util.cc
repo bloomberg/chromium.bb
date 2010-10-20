@@ -416,7 +416,6 @@ spdy::SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
     "url", "www.google.com:443",
     "host", "www.google.com",
     "version", "HTTP/1.1",
-    "proxy-connection", "keep-alive",
   };
   return ConstructSpdyControlFrame(extra_headers,
                                    extra_header_count,
