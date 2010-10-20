@@ -52,7 +52,7 @@ class LivePasswordsSyncTest : public LiveSyncTest {
     return GetProfile(index)->GetPasswordStore(Profile::IMPLICIT_ACCESS);
   }
 
-  PasswordStore* GetVerififerPasswordStore() {
+  PasswordStore* GetVerifierPasswordStore() {
     return verifier()->GetPasswordStore(Profile::IMPLICIT_ACCESS);
   }
 

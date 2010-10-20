@@ -218,6 +218,12 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       LogClientInfo("FULLY_SYNCED");
       break;
     }
+    case WAITING_FOR_PASSPHRASE_ACCEPTED: {
+      LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
+      if (!service()->observed_passphrase_required())
+        SignalStateCompleteWithNextState(FULLY_SYNCED);
+      break;
+    }
     case SYNC_DISABLED: {
       // Syncing is disabled for the client. There is nothing to do.
       LogClientInfo("SYNC_DISABLED");
@@ -233,6 +239,20 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
 
 void ProfileSyncServiceTestHarness::OnStateChanged() {
   RunStateChangeMachine();
+}
+
+bool ProfileSyncServiceTestHarness::AwaitPassphraseAccepted() {
+  LogClientInfo("AwaitPassphraseAccepted");
+  if (wait_state_ == SYNC_DISABLED) {
+    LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
+    return false;
+  }
+  if (!service()->observed_passphrase_required())
+    return true;
+  wait_state_ = WAITING_FOR_PASSPHRASE_ACCEPTED;
+  return AwaitStatusChangeWithTimeout(
+      TestTimeouts::live_operation_timeout_ms(),
+      "Waiting for passphrase accepted.");
 }
 
 bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
@@ -276,10 +296,6 @@ bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
 bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceTestHarness* partner) {
   LogClientInfo("AwaitMutualSyncCycleCompletion");
-  if (wait_state_ == SYNC_DISABLED) {
-    LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
-    return false;
-  }
   if (!AwaitSyncCycleCompletion("Sync cycle completion on active client."))
     return false;
   return partner->WaitUntilTimestampIsAtLeast(last_timestamp_,
@@ -289,10 +305,6 @@ bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
 bool ProfileSyncServiceTestHarness::AwaitGroupSyncCycleCompletion(
     std::vector<ProfileSyncServiceTestHarness*>& partners) {
   LogClientInfo("AwaitGroupSyncCycleCompletion");
-  if (wait_state_ == SYNC_DISABLED) {
-    LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
-    return false;
-  }
   if (!AwaitSyncCycleCompletion("Sync cycle completion on active client."))
     return false;
   bool return_value = true;

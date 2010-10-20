@@ -396,6 +396,16 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 }
 
 // static
+void SyncSetupFlow::GetArgsForEnterPassphrase(
+    const ProfileSyncService* service, DictionaryValue* args) {
+  args->SetString("iframeToShow", "passphrase");
+  if (service->IsUsingSecondaryPassphrase())
+    args->SetString("mode", "enter");
+  else
+    args->SetString("mode", "gaia");
+}
+
+// static
 void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
                                         DictionaryValue* args) {
   args->SetString("iframeToShow", "configure");
@@ -522,10 +532,7 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
     }
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
-      if (service_->IsUsingSecondaryPassphrase())
-        args.SetString("mode", "enter");
-      else
-        args.SetString("mode", "gaia");
+      SyncSetupFlow::GetArgsForEnterPassphrase(service_, &args);
       flow_handler_->ShowPassphraseEntry(args);
       break;
     }
@@ -587,6 +594,8 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
     SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
   else if (start == SyncSetupWizard::CONFIGURE)
     SyncSetupFlow::GetArgsForConfigure(service, &args);
+  else if (start == SyncSetupWizard::ENTER_PASSPHRASE)
+    SyncSetupFlow::GetArgsForEnterPassphrase(service, &args);
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 

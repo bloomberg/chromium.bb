@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/password_form_data.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/test/live_sync/live_passwords_sync_test.h"
 
 using webkit_glue::PasswordForm;
+
+static const char* kValidPassphrase = "passphrase!";
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -15,13 +18,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Add) {
   form.username_value = ASCIIToUTF16("username");
   form.password_value = ASCIIToUTF16("password");
 
-  AddLogin(GetVerififerPasswordStore(), form);
+  AddLogin(GetVerifierPasswordStore(), form);
   AddLogin(GetPasswordStore(0), form);
 
   EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   std::vector<PasswordForm> expected;
-  GetLogins(GetVerififerPasswordStore(), form, expected);
+  GetLogins(GetVerifierPasswordStore(), form, expected);
   EXPECT_EQ(1U, expected.size());
 
   std::vector<PasswordForm> actual_zero;
@@ -62,4 +65,39 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
   EXPECT_EQ(1U, actual_one.size());
 
   EXPECT_TRUE(ContainsSamePasswordForms(actual_zero, actual_one));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase);
+  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
+  EXPECT_TRUE(GetClient(1)->service()->observed_passphrase_required());
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase);
+  GetClient(1)->AwaitPassphraseAccepted();
+  EXPECT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       SetPassphraseAndAddPassword) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase);
+
+  PasswordForm form;
+  form.origin = GURL("http://www.google.com/");
+  form.username_value = ASCIIToUTF16("username");
+  form.password_value = ASCIIToUTF16("password");
+
+  AddLogin(GetPasswordStore(0), form);
+
+  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
+  EXPECT_TRUE(GetClient(1)->service()->observed_passphrase_required());
+  EXPECT_EQ(1, GetClient(1)->GetLastSessionSnapshot()->
+      num_conflicting_updates);
+
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase);
+  GetClient(1)->AwaitSyncCycleCompletion("Accept passphrase and decrypt.");
+  GetClient(1)->AwaitPassphraseAccepted();
+  EXPECT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+  EXPECT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
+      num_conflicting_updates);
 }

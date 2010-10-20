@@ -1156,6 +1156,15 @@ class SyncManager::SyncInternal
 
   void ReEncryptEverything(WriteTransaction* trans);
 
+  // Initializes (bootstraps) the Cryptographer if NIGORI has finished
+  // initial sync so that it can immediately start encrypting / decrypting.
+  // If the restored key is incompatible with the current version of the NIGORI
+  // node (which could happen if a restart occurred just after an update to
+  // NIGORI was downloaded and the user must enter a new passphrase to decrypt)
+  // then we will raise OnPassphraseRequired and set pending keys for
+  // decryption.  Otherwise, the cryptographer is made ready (is_ready()).
+  void BootstrapEncryption(const std::string& restored_key_for_bootstrapping);
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
@@ -1330,8 +1339,6 @@ bool SyncManager::SyncInternal::Init(
   setup_for_test_mode_ = setup_for_test_mode;
 
   share_.dir_manager.reset(new DirectoryManager(database_location));
-  share_.dir_manager->cryptographer()->Bootstrap(
-      restored_key_for_bootstrapping);
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, user_agent, post_factory));
@@ -1363,7 +1370,43 @@ bool SyncManager::SyncInternal::Init(
     syncer_thread_ = new SyncerThread(context);
   }
 
-  return SignIn(credentials);
+  bool signed_in = SignIn(credentials);
+
+  // Do this once the directory is opened.
+  BootstrapEncryption(restored_key_for_bootstrapping);
+  return signed_in;
+}
+
+void SyncManager::SyncInternal::BootstrapEncryption(
+    const std::string& restored_key_for_bootstrapping) {
+  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+  if (!lookup.good()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (!lookup->initial_sync_ended_for_type(syncable::NIGORI))
+    return;
+
+  Cryptographer* cryptographer = share_.dir_manager->cryptographer();
+  cryptographer->Bootstrap(restored_key_for_bootstrapping);
+
+  ReadTransaction trans(GetUserShare());
+  ReadNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    NOTREACHED();
+    return;
+  }
+
+  const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();
+  if (!nigori.encrypted().blob().empty()) {
+    if (cryptographer->CanDecrypt(nigori.encrypted())) {
+      cryptographer->SetKeys(nigori.encrypted());
+    } else {
+      cryptographer->SetPendingKeys(nigori.encrypted());
+      observer_->OnPassphraseRequired();
+    }
+  }
 }
 
 void SyncManager::SyncInternal::StartSyncing() {

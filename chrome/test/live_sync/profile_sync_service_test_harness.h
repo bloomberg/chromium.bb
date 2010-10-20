@@ -71,6 +71,10 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   static bool AwaitQuiescence(
       std::vector<ProfileSyncServiceTestHarness*>& clients);
 
+  // If a SetPassphrase call has been issued with a valid passphrase, this
+  // will wait until the Cryptographer broadcasts SYNC_PASSPHRASE_ACCEPTED.
+  bool AwaitPassphraseAccepted();
+
   // Returns the ProfileSyncService member of the the sync client.
   ProfileSyncService* service() { return service_; }
 
@@ -91,6 +95,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
   // Disables sync for all sync datatypes.
   void DisableSyncForAllDatatypes();
+
+  // Returns a snapshot of the current sync session.
+  const SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
  private:
   friend class StateChangeTimeoutEvent;
@@ -113,6 +120,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
     // The sync client is fully synced and there are no pending updates.
     FULLY_SYNCED,
+
+    // Waiting for a set passphrase to be accepted by the cryptographer.
+    WAITING_FOR_PASSPHRASE_ACCEPTED,
 
     // Syncing is disabled for the client.
     SYNC_DISABLED,
@@ -142,9 +152,6 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
   Profile* profile_;
   ProfileSyncService* service_;
-
-  // Returns a snapshot of the current sync session.
-  const SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
   // Updates |last_timestamp_| with the timestamp of the current sync session.
   // Returns the new value of |last_timestamp_|.

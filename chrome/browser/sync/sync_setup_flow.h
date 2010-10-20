@@ -58,6 +58,11 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
       ProfileSyncService* service,
       DictionaryValue* args);
 
+  // Fills |args| for the enter passphrase screen.
+  static void GetArgsForEnterPassphrase(
+      const ProfileSyncService* service,
+      DictionaryValue* args);
+
   // Triggers a state machine transition to advance_state.
   void Advance(SyncSetupWizard::State advance_state);
 
