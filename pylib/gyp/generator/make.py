@@ -189,6 +189,8 @@ DEPFLAGS = -MMD -MF $(depfile).raw
 # and dollar signs past make, the shell, and sed at the same time."""
 r"""
 define fixup_dep
+# The depfile may not exist if the input file didn't have any #includes.
+touch $(depfile).raw
 # Fixup path as in (1).
 sed -e "s|^$(notdir $@)|$@|" $(depfile).raw >> $(depfile)
 # Add extra rules as in (2).
