@@ -988,7 +988,7 @@ void View::PrintViewHierarchyImp(int indent) {
   buf << L' ';
   buf << this;
 
-  LOG(INFO) << buf.str();
+  VLOG(1) << buf.str();
   std::cout << buf.str() << std::endl;
 
   for (int i = 0, count = GetChildViewCount(); i < count; ++i)
@@ -1013,7 +1013,7 @@ void View::PrintFocusHierarchyImp(int indent) {
   buf << L' ';
   buf << this;
 
-  LOG(INFO) << buf.str();
+  VLOG(1) << buf.str();
   std::cout << buf.str() << std::endl;
 
   if (GetChildViewCount() > 0)
@@ -1292,7 +1292,7 @@ void View::OnMouseExited(const MouseEvent& e) {
 
 #if defined(TOUCH_UI)
 bool View::OnTouchEvent(const TouchEvent& event) {
-  DLOG(INFO) << "visited the OnTouchEvent";
+  DVLOG(1) << "visited the OnTouchEvent";
   return false;
 }
 #endif

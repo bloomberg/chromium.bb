@@ -100,9 +100,6 @@ void MenuHostWin::OnDestroy() {
 void MenuHostWin::OnCaptureChanged(HWND hwnd) {
   WidgetWin::OnCaptureChanged(hwnd);
   owns_capture_ = false;
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "Capture changed";
-#endif
 }
 
 void MenuHostWin::OnCancelMode() {
@@ -122,9 +119,6 @@ void MenuHostWin::DoCapture() {
   owns_capture_ = true;
   SetCapture();
   has_capture_ = true;
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "Doing capture";
-#endif
 }
 
 }  // namespace views

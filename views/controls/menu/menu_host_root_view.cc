@@ -15,9 +15,6 @@ MenuHostRootView::MenuHostRootView(Widget* widget,
       submenu_(submenu),
       forward_drag_to_menu_controller_(true),
       suspend_events_(false) {
-#ifdef DEBUG_MENU
-  DLOG(INFO) << " new MenuHostRootView " << this;
-#endif
 }
 
 bool MenuHostRootView::OnMousePressed(const MouseEvent& event) {
@@ -38,9 +35,6 @@ bool MenuHostRootView::OnMouseDragged(const MouseEvent& event) {
     return true;
 
   if (forward_drag_to_menu_controller_ && GetMenuController()) {
-#ifdef DEBUG_MENU
-    DLOG(INFO) << " MenuHostRootView::OnMouseDragged source=" << submenu_;
-#endif
     GetMenuController()->OnMouseDragged(submenu_, event);
     return true;
   }

@@ -25,35 +25,34 @@ bool GestureManager::ProcessTouchEventForGesture(const TouchEvent& event,
                                                  bool previouslyHandled) {
   // TODO(rjkroege): A realistic version of the GestureManager will
   // appear in a subsequent CL. This interim version permits verifying that the
-  // event distirbution code works by turning all touch inputs into
+  // event distribution code works by turning all touch inputs into
   // mouse approximations.
-  bool handled = false;
   if (event.GetType() == Event::ET_TOUCH_PRESSED) {
-    DLOG(INFO) << "GestureManager::ProcessTouchEventForGesture: " <<
-        "TouchPressed\n";
+    DVLOG(1) << "GestureManager::ProcessTouchEventForGesture: TouchPressed";
     MouseEvent mouse_event(Event::ET_MOUSE_PRESSED, event.x(), event.y(),
                            event.GetFlags());
     source->OnMousePressed(mouse_event);
-    handled = true;
-  } else if (event.GetType() == Event::ET_TOUCH_RELEASED) {
-    DLOG(INFO) << "GestureManager::ProcessTouchEventForGesture: " <<
-        "TouchReleased\n";
+    return true;
+  }
+
+  if (event.GetType() == Event::ET_TOUCH_RELEASED) {
+    DVLOG(1) << "GestureManager::ProcessTouchEventForGesture: TouchReleased";
     MouseEvent mouse_event(Event::ET_MOUSE_RELEASED, event.x(), event.y(),
                            event.GetFlags());
     source->OnMouseReleased(mouse_event, false);
-    handled = true;
-  } else if (event.GetType() == Event::ET_TOUCH_MOVED) {
-    DLOG(INFO) << "GestureManager::ProcessTouchEventForGesture: " <<
-        "TouchMotion\n";
+    return true;
+  }
+
+  if (event.GetType() == Event::ET_TOUCH_MOVED) {
+    DVLOG(1) << "GestureManager::ProcessTouchEventForGesture: TouchMotion";
     MouseEvent mouse_event(Event::ET_MOUSE_DRAGGED, event.x(), event.y(),
                            event.GetFlags());
     source->OnMouseDragged(mouse_event);
-    handled = true;
-  } else {
-    DLOG(INFO) << "GestureManager::ProcessTouchEventForGesture: " <<
-        "unhandled event\n";
+    return true;
   }
-  return handled;
+
+  DVLOG(1) << "GestureManager::ProcessTouchEventForGesture: unhandled event";
+  return false;
 }
 
 GestureManager::GestureManager() {

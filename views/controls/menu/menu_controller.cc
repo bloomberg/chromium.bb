@@ -249,11 +249,6 @@ MenuController* MenuController::GetActiveInstance() {
   return active_instance_;
 }
 
-#ifdef DEBUG_MENU
-static int instance_count = 0;
-static int nested_depth = 0;
-#endif
-
 MenuItemView* MenuController::Run(gfx::NativeWindow parent,
                                   MenuButton* button,
                                   MenuItemView* root,
@@ -298,11 +293,6 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
     menu_button_ = button;
   }
 
-#ifdef DEBUG_MENU
-  nested_depth++;
-  DLOG(INFO) << " entering nested loop, depth=" << nested_depth;
-#endif
-
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->AddRef();
@@ -319,11 +309,6 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->ReleaseRef();
-
-#ifdef DEBUG_MENU
-  nested_depth--;
-  DLOG(INFO) << " exiting nested loop,  depth=" << nested_depth;
-#endif
 
   // Close any open menus.
   SetSelection(NULL, false, true);
@@ -448,9 +433,6 @@ void MenuController::Cancel(ExitType type) {
 
 void MenuController::OnMousePressed(SubmenuView* source,
                                     const MouseEvent& event) {
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "OnMousePressed source=" << source;
-#endif
   if (!blocking_run_)
     return;
 
@@ -497,9 +479,6 @@ void MenuController::OnMousePressed(SubmenuView* source,
 
 void MenuController::OnMouseDragged(SubmenuView* source,
                                     const MouseEvent& event) {
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "OnMouseDragged source=" << source;
-#endif
   MenuPart part = GetMenuPartByScreenCoordinate(source, event.x(), event.y());
   UpdateScrolling(part);
 
@@ -557,9 +536,6 @@ void MenuController::OnMouseDragged(SubmenuView* source,
 
 void MenuController::OnMouseReleased(SubmenuView* source,
                                      const MouseEvent& event) {
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "OnMouseReleased source=" << source;
-#endif
   if (!blocking_run_)
     return;
 
@@ -608,9 +584,6 @@ void MenuController::OnMouseReleased(SubmenuView* source,
 
 void MenuController::OnMouseMoved(SubmenuView* source,
                                   const MouseEvent& event) {
-#ifdef DEBUG_MENU
-  DLOG(INFO) << "OnMouseMoved source=" << source;
-#endif
   if (showing_submenu_)
     return;
 
@@ -974,20 +947,12 @@ MenuController::MenuController(bool blocking)
       showing_submenu_(false),
       menu_button_(NULL),
       active_mouse_view_(NULL) {
-#ifdef DEBUG_MENU
-  instance_count++;
-  DLOG(INFO) << "created MC, count=" << instance_count;
-#endif
 }
 
 MenuController::~MenuController() {
   DCHECK(!showing_);
   StopShowTimer();
   StopCancelAllTimer();
-#ifdef DEBUG_MENU
-  instance_count--;
-  DLOG(INFO) << "destroyed MC, count=" << instance_count;
-#endif
 }
 
 bool MenuController::SendAcceleratorToHotTrackedView() {
@@ -1674,10 +1639,6 @@ void MenuController::RepostEvent(SubmenuView* source,
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
   HWND window = WindowFromPoint(screen_loc.ToPOINT());
   if (window) {
-#ifdef DEBUG_MENU
-    DLOG(INFO) << "RepostEvent on press";
-#endif
-
     // Release the capture.
     SubmenuView* submenu = state_.item->GetRootMenuItem()->GetSubmenu();
     submenu->ReleaseCapture();
