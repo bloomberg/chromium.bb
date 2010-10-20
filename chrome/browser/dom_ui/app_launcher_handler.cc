@@ -218,7 +218,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   TabContents* new_contents = Browser::OpenApplication(
       profile, extension, extension->launch_container(), old_contents);
 
-  if (new_contents != old_contents)
+  if (new_contents != old_contents && browser->tab_count() > 1)
     browser->CloseTabContents(old_contents);
 }
 
