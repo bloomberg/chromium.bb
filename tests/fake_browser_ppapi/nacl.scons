@@ -20,6 +20,11 @@ if env.Bit('disable_hardy64_vmware_failures'):
   # we skip this test on hardy64 bots.
   Return()
 
+if env.get('COVERAGE_ENABLED') and env.Bit('windows'):
+  # Disable the coverage test on Windows.  This is related to bug:
+  # http://code.google.com/p/nativeclient/issues/detail?id=1030
+  # TODO(dspringer): re-enable this test once the bug is fixed.
+  Return()
 
 trusted_env = env['TRUSTED_ENV'].Clone()
 
