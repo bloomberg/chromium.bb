@@ -50,8 +50,8 @@ void GpuChannel::OnChannelConnected(int32 peer_pid) {
 
 void GpuChannel::OnMessageReceived(const IPC::Message& message) {
   if (log_messages_) {
-    LOG(INFO) << "received message @" << &message << " on channel @" << this
-              << " with type " << message.type();
+    VLOG(1) << "received message @" << &message << " on channel @" << this
+            << " with type " << message.type();
   }
 
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
@@ -69,8 +69,8 @@ void GpuChannel::OnChannelError() {
 
 bool GpuChannel::Send(IPC::Message* message) {
   if (log_messages_) {
-    LOG(INFO) << "sending message @" << message << " on channel @" << this
-              << " with type " << message->type();
+    VLOG(1) << "sending message @" << message << " on channel @" << this
+            << " with type " << message->type();
   }
 
   if (!channel_.get()) {
@@ -192,7 +192,7 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
                                       int32 decoder_host_id) {
 #if defined(ENABLE_GPU)
-  LOG(INFO) << "GpuChannel::OnCreateVideoDecoder";
+  VLOG(1) << "GpuChannel::OnCreateVideoDecoder";
   GpuVideoService* service = GpuVideoService::get();
   if (service == NULL) {
     // TODO(hclam): Need to send a failure message.
