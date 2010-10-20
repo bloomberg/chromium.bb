@@ -51,7 +51,7 @@ env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
 
 # c.f.: http://code.google.com/p/nativeclient/issues/detail?id=1069
 RA_TEST=['toolchain_tests', 'small_tests']
-if not ARGUMENTS.get('bitcode') and env['TARGET_FULLARCH'] == 'x86-64':
+if ARGUMENTS.get('bitcode') and env['TARGET_FULLARCH'] == 'x86-64':
   RA_TEST=[]
 sloppy_env = env.Clone()
 sloppy_env.FilterOut(CFLAGS=['-pedantic', '-O2'])
