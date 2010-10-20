@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
@@ -31,6 +32,7 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
   static bool cached_allow_new_user();
   static bool cached_show_users_on_signin();
   static const ListValue* cached_whitelist();
+  static std::string cached_owner();
 
   // CrosSettingsProvider implementation.
   virtual void Set(const std::string& path, Value* in_value);
@@ -48,8 +50,16 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
   void WhitelistUser(const std::string& email);
   void UnwhitelistUser(const std::string& email);
 
+  // Updates cached value of the owner.
+  static void UpdateCachedOwner(const std::string& email);
+
  private:
   void StartFetchingBoolSetting(const std::string& name);
+  void StartFetchingStringSetting(const std::string& name);
+  void StartFetchingSetting(const std::string& name);
+
+  base::hash_set<std::string> bool_settings_;
+  base::hash_set<std::string> string_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCrosSettingsProvider);
 };

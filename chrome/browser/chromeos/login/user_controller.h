@@ -184,6 +184,9 @@ class UserController : public views::ButtonListener,
   // Is this the guest pod?
   const bool is_guest_;
 
+  // Is this user the owner?
+  const bool is_owner_;
+
   // Should we show tooltips above user image and label to help distinguish
   // users with the same display name.
   bool show_name_tooltip_;

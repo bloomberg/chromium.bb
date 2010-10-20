@@ -17,6 +17,8 @@ extern const char kAccountsPrefUsers[];
 
 extern const char kSystemTimezone[];
 
+extern const char kDeviceOwner[];
+
 extern const char kStatsReportingPref[];
 
 }  // namespace chromeos

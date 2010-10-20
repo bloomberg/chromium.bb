@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 #include "chrome/browser/chromeos/login/guest_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -138,6 +139,7 @@ UserController::UserController(Delegate* delegate, bool is_guest)
       is_user_selected_(false),
       is_new_user_(!is_guest),
       is_guest_(is_guest),
+      is_owner_(false),
       show_name_tooltip_(false),
       delegate_(delegate),
       controls_window_(NULL),
@@ -163,6 +165,11 @@ UserController::UserController(Delegate* delegate,
       is_user_selected_(false),
       is_new_user_(false),
       is_guest_(false),
+      // Empty 'cached_owner()' means that owner hasn't been cached yet, not
+      // that owner has an empty email.
+      is_owner_(
+          !user.email().empty() &&
+          UserCrosSettingsProvider::cached_owner() == user.email()),
       show_name_tooltip_(false),
       user_(user),
       delegate_(delegate),
@@ -332,7 +339,8 @@ void UserController::IsActiveChanged(bool active) {
   is_user_selected_ = active;
   if (active) {
     delegate_->OnUserSelected(this);
-    user_view_->SetRemoveButtonVisible(!is_new_user_ && !is_guest_);
+    user_view_->SetRemoveButtonVisible(
+        !is_new_user_ && !is_guest_ && !is_owner_);
     // Background is NULL for inactive new user pod to make it transparent.
     if (is_new_user_ && !border_window_->GetRootView()->background()) {
       views::Painter* painter = CreateWizardPainter(

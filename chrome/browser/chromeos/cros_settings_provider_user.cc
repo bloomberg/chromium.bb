@@ -26,9 +26,16 @@ Value* CreateSettingsBooleanValue(bool value, bool managed) {
   return dict;
 }
 
-void UpdateCache(const char* name, bool value) {
+// static
+void UpdateCacheBool(const char* name, bool value) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(name, value);
+  prefs->ScheduleSavePersistentPrefs();
+}
+
+void UpdateCacheString(const char* name, const std::string& value) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(name, value);
   prefs->ScheduleSavePersistentPrefs();
 }
 
@@ -73,6 +80,7 @@ UserCrosSettingsProvider::UserCrosSettingsProvider() {
   StartFetchingBoolSetting(kAccountsPrefAllowGuest);
   StartFetchingBoolSetting(kAccountsPrefAllowNewUser);
   StartFetchingBoolSetting(kAccountsPrefShowUserNamesOnSignIn);
+  StartFetchingStringSetting(kDeviceOwner);
 }
 
 UserCrosSettingsProvider::~UserCrosSettingsProvider() {
@@ -86,6 +94,7 @@ void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kAccountsPrefAllowNewUser, true);
   local_state->RegisterBooleanPref(kAccountsPrefShowUserNamesOnSignIn, true);
   local_state->RegisterListPref(kAccountsPrefUsers);
+  local_state->RegisterStringPref(kDeviceOwner, "");
 }
 
 bool UserCrosSettingsProvider::cached_allow_guest() {
@@ -116,6 +125,10 @@ const ListValue* UserCrosSettingsProvider::cached_whitelist() {
   return cached_users;
 }
 
+std::string UserCrosSettingsProvider::cached_owner() {
+  return g_browser_process->local_state()->GetString(kDeviceOwner);
+}
+
 void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
   if (!UserManager::Get()->current_user_is_owner()) {
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
@@ -132,10 +145,13 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
     if (in_value->GetAsBoolean(&bool_value)) {
       std::string value = bool_value ? "true" : "false";
       SignedSettingsHelper::Get()->StartStorePropertyOp(path, value, this);
-      UpdateCache(path.c_str(), bool_value);
+      UpdateCacheBool(path.c_str(), bool_value);
 
       LOG(INFO) << "Set cros setting " << path << "=" << value;
     }
+  } else if (path == kDeviceOwner) {
+    LOG(INFO) << "Setting owner is not supported. "
+              << "Please use 'UpdateCachedOwner' instead.";
   } else if (path == kAccountsPrefUsers) {
     LOG(INFO) << "Setting user whitelist is not implemented."
               << "Please use whitelist/unwhitelist instead.";
@@ -204,7 +220,14 @@ void UserCrosSettingsProvider::OnRetrievePropertyCompleted(
 
   LOG(INFO) << "Retrieved cros setting " << name << "=" << value;
 
-  UpdateCache(name.c_str(), value == "true" ? true : false);
+  if (bool_settings_.count(name)) {
+    UpdateCacheBool(name.c_str(), value == "true" ? true : false);
+  }
+
+  if (string_settings_.count(name)) {
+    UpdateCacheString(name.c_str(), value);
+  }
+
   CrosSettings::Get()->FireObservers(name.c_str());
 }
 
@@ -227,7 +250,24 @@ void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
     prefs->ScheduleSavePersistentPrefs();
 }
 
+// static
+void UserCrosSettingsProvider::UpdateCachedOwner(const std::string& email) {
+  UpdateCacheString(kDeviceOwner, email);
+}
+
 void UserCrosSettingsProvider::StartFetchingBoolSetting(
+    const std::string& name) {
+  bool_settings_.insert(name);
+  StartFetchingSetting(name);
+}
+
+void UserCrosSettingsProvider::StartFetchingStringSetting(
+    const std::string& name) {
+  string_settings_.insert(name);
+  StartFetchingSetting(name);
+}
+
+void UserCrosSettingsProvider::StartFetchingSetting(
     const std::string& name) {
   if (CrosLibrary::Get()->EnsureLoaded())
     SignedSettingsHelper::Get()->StartRetrieveProperty(name, this);

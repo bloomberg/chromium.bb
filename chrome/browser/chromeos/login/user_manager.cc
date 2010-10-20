@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
+#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -112,12 +113,31 @@ bool IsDefaultImagePath(const std::string& path, size_t* image_id) {
   return false;
 }
 
+// Updates current user ownership on UI thread.
+void UpdateOwnership(bool is_owner) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  UserManager* user_manager = UserManager::Get();
+  user_manager->set_current_user_is_owner(is_owner);
+
+  if (is_owner) {
+    // Also update cached value.
+    UserCrosSettingsProvider::UpdateCachedOwner(
+      user_manager->logged_in_user().email());
+  }
+}
+
 // Checks current user's ownership on file thread.
 void CheckOwnership() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  UserManager::Get()->set_current_user_is_owner(
-      OwnershipService::GetSharedInstance()->CurrentUserIsOwner());
+  bool is_owner = OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
+
+  // UserManager should be accessed only on UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(&UpdateOwnership, is_owner));
 }
 
 }  // namespace
