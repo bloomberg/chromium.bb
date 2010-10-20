@@ -207,15 +207,26 @@ TEST_F(UnloadTest, CrossSiteInfiniteUnloadSync) {
   ASSERT_TRUE(IsBrowserRunning());
 }
 
-// TODO(creis): This test is currently failing intermittently on one of the test
-// bots.  Investigating with crbug.com/34827.
-//
+// TODO(creis): This test is currently failing intermittently on Linux and
+// consistently on Mac and Vista.  http://crbug.com/38427
+#if defined(OS_MACOSX)
+#define MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent \
+    DISABLED_CrossSiteInfiniteUnloadAsyncInputEvent
+#elif defined(OS_WIN)
+#define MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent \
+    DISABLED_CrossSiteInfiniteUnloadAsyncInputEvent
+#else
+// Flaky on Linux.  http://crbug.com/38427
+#define MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent \
+    FLAKY_CrossSiteInfiniteUnloadAsyncInputEvent
+#endif
+
 // Navigate to a page with an infinite unload handler.
 // Then an async crosssite request followed by an input event to ensure that
 // the short unload timeout (not the long input event timeout) is used.
 // See crbug.com/11007.
-TEST_F(UnloadTest, FLAKY_CrossSiteInfiniteUnloadAsyncInputEvent) {
-  // Tests makes no sense in single-process mode since the renderer is hung.c
+TEST_F(UnloadTest, MAYBE_CrossSiteInfiniteUnloadAsyncInputEvent) {
+  // Tests makes no sense in single-process mode since the renderer is hung.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return;
 
