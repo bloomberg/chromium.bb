@@ -98,8 +98,8 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   // allow closing of all tabs and browsers in this situation.
   bool signing_off_;
 
-  // In BWSI session?
-  bool bwsi_session_;
+  // Is in guest session?
+  bool guest_session_;
 
   NotificationRegistrar notification_registrar_;
 

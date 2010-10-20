@@ -91,7 +91,7 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
     const std::string& display_name =
         controllers[i]->user().GetDisplayName();
     bool show_tooltip = controllers[i]->is_new_user() ||
-                        controllers[i]->is_bwsi() ||
+                        controllers[i]->is_guest() ||
                         visible_display_names[display_name] > 1;
     controllers[i]->EnableNameTooltip(show_tooltip);
   }
@@ -154,7 +154,7 @@ ExistingUserController::ExistingUserController(
     }
   }
 
-  if (!controllers_.empty() && UserCrosSettingsProvider::cached_allow_bwsi())
+  if (!controllers_.empty() && UserCrosSettingsProvider::cached_allow_guest())
     controllers_.push_back(new UserController(this, true));
 
   // Add the view representing the new user.
@@ -179,12 +179,12 @@ void ExistingUserController::Init() {
 
     background_window_->Show();
   }
-  // If there's only new user pod, show BWSI link on it.
-  bool show_bwsi_link = controllers_.size() == 1;
+  // If there's only new user pod, show the guest session link on it.
+  bool show_guest_link = controllers_.size() == 1;
   for (size_t i = 0; i < controllers_.size(); ++i) {
     (controllers_[i])->Init(static_cast<int>(i),
                             static_cast<int>(controllers_.size()),
-                            show_bwsi_link);
+                            show_guest_link);
   }
 
   EnableTooltipsIfNeeded(controllers_);
@@ -293,8 +293,8 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
 }
 
 void ExistingUserController::LoginOffTheRecord() {
-  // Check allow_bwsi in case this call is fired from key accelerator.
-  if (!UserCrosSettingsProvider::cached_allow_bwsi())
+  // Check allow_guest in case this call is fired from key accelerator.
+  if (!UserCrosSettingsProvider::cached_allow_guest())
     return;
 
   // Disable clicking on other windows.

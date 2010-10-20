@@ -250,7 +250,7 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
   // Special case because IDC_NEW_WINDOW item should be disabled in BWSI mode,
   // but accelerator should work.
   if (command_id == IDC_NEW_WINDOW &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kBWSI))
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
     return false;
 #endif
 
@@ -399,7 +399,7 @@ void WrenchMenuModel::Build() {
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();
 #if defined(OS_CHROMEOS)
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBWSI)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
       AddItemWithStringId(IDC_EXIT, IDS_EXIT_GUEST_MODE);
     } else {
       AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);

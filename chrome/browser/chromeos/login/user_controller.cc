@@ -133,11 +133,11 @@ const int UserController::kPadding = 20;
 // Max size needed when an entry is not selected.
 const int UserController::kUnselectedSize = 100;
 
-UserController::UserController(Delegate* delegate, bool is_bwsi)
+UserController::UserController(Delegate* delegate, bool is_guest)
     : user_index_(-1),
       is_user_selected_(false),
-      is_new_user_(!is_bwsi),
-      is_bwsi_(is_bwsi),
+      is_new_user_(!is_guest),
+      is_guest_(is_guest),
       show_name_tooltip_(false),
       delegate_(delegate),
       controls_window_(NULL),
@@ -162,7 +162,7 @@ UserController::UserController(Delegate* delegate,
     : user_index_(-1),
       is_user_selected_(false),
       is_new_user_(false),
-      is_bwsi_(false),
+      is_guest_(false),
       show_name_tooltip_(false),
       user_(user),
       delegate_(delegate),
@@ -222,7 +222,7 @@ void UserController::SetPasswordEnabled(bool enable) {
 std::wstring UserController::GetNameTooltip() const {
   if (is_new_user_)
     return l10n_util::GetString(IDS_ADD_USER);
-  if (is_bwsi_)
+  if (is_guest_)
     return l10n_util::GetString(IDS_GO_INCOGNITO_BUTTON);
 
   // Tooltip contains user's display name and his email domain to distinguish
@@ -255,7 +255,7 @@ void UserController::ClearAndEnablePassword() {
 void UserController::ClearAndEnableFields() {
   if (is_new_user_) {
     new_user_view_->ClearAndEnableFields();
-  } else if (is_bwsi_) {
+  } else if (is_guest_) {
     guest_user_view_->FocusSignInButton();
   } else {
     ClearAndEnablePassword();
@@ -276,7 +276,7 @@ void UserController::EnableNameTooltip(bool enable) {
 }
 
 void UserController::ButtonPressed(views::Button* sender,
-	                           const views::Event& event) {
+                                   const views::Event& event) {
   Login();
 }
 
@@ -318,7 +318,7 @@ void UserController::Observe(
 }
 
 void UserController::Login() {
-  if (is_bwsi_) {
+  if (is_guest_) {
     delegate_->LoginOffTheRecord();
   } else {
     // Delegate will reenable as necessary.
@@ -332,7 +332,7 @@ void UserController::IsActiveChanged(bool active) {
   is_user_selected_ = active;
   if (active) {
     delegate_->OnUserSelected(this);
-    user_view_->SetRemoveButtonVisible(!is_new_user_ && !is_bwsi_);
+    user_view_->SetRemoveButtonVisible(!is_new_user_ && !is_guest_);
     // Background is NULL for inactive new user pod to make it transparent.
     if (is_new_user_ && !border_window_->GetRootView()->background()) {
       views::Painter* painter = CreateWizardPainter(
@@ -392,7 +392,7 @@ WidgetGtk* UserController::CreateControlsWindow(
         new NewUserView(this, false, need_browse_without_signin);
     new_user_view_->Init();
     control_view = new_user_view_;
-  } else if (is_bwsi_) {
+  } else if (is_guest_) {
     guest_user_view_ = new GuestUserView(this);
     guest_user_view_->RecreateFields();
     control_view = guest_user_view_;
@@ -418,7 +418,7 @@ WidgetGtk* UserController::CreateControlsWindow(
 WidgetGtk* UserController::CreateImageWindow(int index) {
   user_view_ = new UserView(this, true, !is_new_user_);
 
-  if (is_bwsi_) {
+  if (is_guest_) {
     user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_LOGIN_GUEST));
   } else if (is_new_user_) {
@@ -484,7 +484,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
       rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD) :
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   std::wstring text;
-  if (is_bwsi_) {
+  if (is_guest_) {
     text = l10n_util::GetString(IDS_GUEST);
   } else if (is_new_user_) {
     // Add user should have label only in activated state.

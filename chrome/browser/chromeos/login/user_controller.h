@@ -57,8 +57,8 @@ class UserController : public views::ButtonListener,
     virtual ~Delegate() {}
   };
 
-  // Creates a UserController representing new user or bwsi login.
-  UserController(Delegate* delegate, bool is_bwsi);
+  // Creates a UserController representing new user or guest login.
+  UserController(Delegate* delegate, bool is_guest);
 
   // Creates a UserController for the specified user.
   UserController(Delegate* delegate, const UserManager::User& user);
@@ -77,7 +77,7 @@ class UserController : public views::ButtonListener,
   int user_index() const { return user_index_; }
   bool is_user_selected() const { return is_user_selected_; }
   bool is_new_user() const { return is_new_user_; }
-  bool is_bwsi() const { return is_bwsi_; }
+  bool is_guest() const { return is_guest_; }
   NewUserView* new_user_view() const { return new_user_view_; }
 
   const UserManager::User& user() const { return user_; }
@@ -181,14 +181,14 @@ class UserController : public views::ButtonListener,
   // Is this the new user pod?
   const bool is_new_user_;
 
-  // Is this the bwsi pod?
-  const bool is_bwsi_;
+  // Is this the guest pod?
+  const bool is_guest_;
 
   // Should we show tooltips above user image and label to help distinguish
   // users with the same display name.
   bool show_name_tooltip_;
 
-  // If is_new_user_ and is_bwsi_ are false, this is the user being shown.
+  // If is_new_user_ and is_guest_ are false, this is the user being shown.
   UserManager::User user_;
 
   Delegate* delegate_;

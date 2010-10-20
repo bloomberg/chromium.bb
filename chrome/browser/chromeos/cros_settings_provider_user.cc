@@ -70,7 +70,7 @@ bool GetUserWhitelist(ListValue* user_list) {
 }  // namespace
 
 UserCrosSettingsProvider::UserCrosSettingsProvider() {
-  StartFetchingBoolSetting(kAccountsPrefAllowBWSI);
+  StartFetchingBoolSetting(kAccountsPrefAllowGuest);
   StartFetchingBoolSetting(kAccountsPrefAllowNewUser);
   StartFetchingBoolSetting(kAccountsPrefShowUserNamesOnSignIn);
 }
@@ -82,14 +82,14 @@ UserCrosSettingsProvider::~UserCrosSettingsProvider() {
 
 void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
   // Cached signed settings values
-  local_state->RegisterBooleanPref(kAccountsPrefAllowBWSI, true);
+  local_state->RegisterBooleanPref(kAccountsPrefAllowGuest, true);
   local_state->RegisterBooleanPref(kAccountsPrefAllowNewUser, true);
   local_state->RegisterBooleanPref(kAccountsPrefShowUserNamesOnSignIn, true);
   local_state->RegisterListPref(kAccountsPrefUsers);
 }
 
-bool UserCrosSettingsProvider::cached_allow_bwsi() {
-  return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowBWSI);
+bool UserCrosSettingsProvider::cached_allow_guest() {
+  return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowGuest);
 }
 
 bool UserCrosSettingsProvider::cached_allow_new_user() {
@@ -125,7 +125,7 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
     return;
   }
 
-  if (path == kAccountsPrefAllowBWSI ||
+  if (path == kAccountsPrefAllowGuest ||
       path == kAccountsPrefAllowNewUser ||
       path == kAccountsPrefShowUserNamesOnSignIn) {
     bool bool_value = false;
@@ -146,7 +146,7 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
 
 bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
-  if (path == kAccountsPrefAllowBWSI ||
+  if (path == kAccountsPrefAllowGuest ||
       path == kAccountsPrefAllowNewUser ||
       path == kAccountsPrefShowUserNamesOnSignIn) {
     *out_value = CreateSettingsBooleanValue(

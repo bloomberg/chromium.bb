@@ -10,7 +10,7 @@ namespace chromeos {
 
 extern const char kCrosSettingsPrefix[];
 
-extern const char kAccountsPrefAllowBWSI[];
+extern const char kAccountsPrefAllowGuest[];
 extern const char kAccountsPrefAllowNewUser[];
 extern const char kAccountsPrefShowUserNamesOnSignIn[];
 extern const char kAccountsPrefUsers[];

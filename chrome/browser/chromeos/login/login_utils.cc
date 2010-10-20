@@ -230,8 +230,8 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   UserManager::Get()->OffTheRecordUserLoggedIn();
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    // For BWSI we ask session manager to restart Chrome with --bwsi flag.
-    // We keep only some of the arguments of this process.
+    // For guest session we ask session manager to restart Chrome with --bwsi
+    // flag. We keep only some of the arguments of this process.
     static const char* kForwardSwitches[] = {
         switches::kLoggingLevel,
         switches::kEnableLogging,
@@ -247,7 +247,7 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
     command_line.CopySwitchesFrom(browser_command_line,
                                   kForwardSwitches,
                                   arraysize(kForwardSwitches));
-    command_line.AppendSwitch(switches::kBWSI);
+    command_line.AppendSwitch(switches::kGuestSession);
     command_line.AppendSwitch(switches::kIncognito);
     command_line.AppendSwitch(switches::kEnableTabbedOptions);
     command_line.AppendSwitchASCII(

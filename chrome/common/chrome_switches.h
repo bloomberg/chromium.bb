@@ -329,7 +329,7 @@ extern const char kLoginPassword[];
 extern const char kParallelAuth[];
 extern const char kChromeosFrame[];
 extern const char kCandidateWindowLang[];
-extern const char kBWSI[];
+extern const char kGuestSession[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];

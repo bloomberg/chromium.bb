@@ -592,7 +592,7 @@ int ChromeMain(int argc, char** argv) {
   }
 
 #if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(switches::kBWSI)) {
+  if (parsed_command_line.HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kDisableSync);

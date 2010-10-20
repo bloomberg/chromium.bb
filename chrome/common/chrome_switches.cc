@@ -1155,9 +1155,9 @@ const char kChromeosFrame[]                 = "chromeos-frame";
 // Use the given language for UI in the input method candidate window.
 const char kCandidateWindowLang[]           = "lang";
 
-// Indicates that the browser is in "browse without sign-in" mode.
-// Should completely disable extensions, sync and bookmarks.
-const char kBWSI[]                          = "bwsi";
+// Indicates that the browser is in "browse without sign-in" (Guest session)
+// mode. Should completely disable extensions, sync and bookmarks.
+const char kGuestSession[]                  = "bwsi";
 
 // Indicates that stub implementations of the libcros library should be used.
 // This is typically used to test the chromeos build of chrome on the desktop.
