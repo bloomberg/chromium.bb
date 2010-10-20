@@ -114,8 +114,6 @@ TEST_F(RendererMainTest, CreateDestroy) {
 
   ASSERT_TRUE(control_channel.Connect());
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
-                                          TestTimeouts::action_timeout_ms());
   MessageLoop::current()->Run();
 
   // The renderer should exit when we close the channel.
