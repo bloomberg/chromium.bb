@@ -43,13 +43,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(6U, controller_states_ptr->size());
+  EXPECT_EQ(7U, controller_states_ptr->size());
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofill) {
@@ -59,13 +60,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofill) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(5U, controller_states_ptr->size());
+  EXPECT_EQ(6U, controller_states_ptr->size());
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(0U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
@@ -75,13 +77,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(5U, controller_states_ptr->size());
+  EXPECT_EQ(6U, controller_states_ptr->size());
   EXPECT_EQ(0U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePreferences) {
@@ -91,13 +94,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePreferences) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(5U, controller_states_ptr->size());
+  EXPECT_EQ(6U, controller_states_ptr->size());
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(0U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableThemes) {
@@ -107,13 +111,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableThemes) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(5U, controller_states_ptr->size());
+  EXPECT_EQ(6U, controller_states_ptr->size());
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(0U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableExtensions) {
@@ -123,13 +128,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableExtensions) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(5U, controller_states_ptr->size());
+  EXPECT_EQ(6U, controller_states_ptr->size());
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(0U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
 }
 
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableApps) {
@@ -139,11 +145,29 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableApps) {
   DataTypeController::StateMap controller_states;
   DataTypeController::StateMap* controller_states_ptr = &controller_states;
   pss->GetDataTypeControllerStates(controller_states_ptr);
-  EXPECT_EQ(5U, controller_states_ptr->size());
+  EXPECT_EQ(6U, controller_states_ptr->size());
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
   EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
   EXPECT_EQ(0U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PASSWORDS));
+}
+
+TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePasswords) {
+  command_line_->AppendSwitch(switches::kDisableSyncPasswords);
+  scoped_ptr<ProfileSyncService> pss;
+  pss.reset(profile_sync_service_factory_->CreateProfileSyncService(""));
+  DataTypeController::StateMap controller_states;
+  DataTypeController::StateMap* controller_states_ptr = &controller_states;
+  pss->GetDataTypeControllerStates(controller_states_ptr);
+  EXPECT_EQ(6U, controller_states_ptr->size());
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::PREFERENCES));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::AUTOFILL));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::THEMES));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::EXTENSIONS));
+  EXPECT_EQ(1U, controller_states_ptr->count(syncable::APPS));
+  EXPECT_EQ(0U, controller_states_ptr->count(syncable::PASSWORDS));
 }
