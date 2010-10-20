@@ -84,7 +84,8 @@ void WifiConfigView::UpdateCanLogin(void) {
 }
 
 void WifiConfigView::UpdateCanViewPassword() {
-  if (!passphrase_visible_button_->IsVisible() &&
+  if (passphrase_visible_button_ &&
+      !passphrase_visible_button_->IsVisible() &&
       passphrase_textfield_->text().empty()) {
     // Once initial password has been deleted, it's safe to show field content.
     passphrase_visible_button_->SetVisible(true);
