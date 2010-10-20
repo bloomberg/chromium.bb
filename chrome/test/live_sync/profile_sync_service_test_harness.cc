@@ -322,7 +322,7 @@ bool ProfileSyncServiceTestHarness::AwaitGroupSyncCycleCompletion(
 // static
 bool ProfileSyncServiceTestHarness::AwaitQuiescence(
     std::vector<ProfileSyncServiceTestHarness*>& clients) {
-  LOG(INFO) << "AwaitQuiescence.";
+  VLOG(1) << "AwaitQuiescence.";
   bool return_value = true;
   for (std::vector<ProfileSyncServiceTestHarness*>::iterator it =
       clients.begin(); it != clients.end(); ++it) {
@@ -419,13 +419,11 @@ void ProfileSyncServiceTestHarness::EnableSyncForDatatype(
       service()->OnUserChoseDatatypes(false, synced_datatypes);
       wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
       AwaitSyncCycleCompletion("Waiting for datatype configuration.");
-      LOG(INFO) << "EnableSyncForDatatype(): Enabled sync for datatype "
-                << syncable::ModelTypeToString(datatype)
-                << " on Client " << id_ << ".";
+      VLOG(1) << "EnableSyncForDatatype(): Enabled sync for datatype "
+              << syncable::ModelTypeToString(datatype) << " on Client " << id_;
     } else {
-      LOG(INFO) << "EnableSyncForDatatype(): Sync already enabled for datatype "
-                << syncable::ModelTypeToString(datatype)
-                << " on Client " << id_ << ".";
+      VLOG(1) << "EnableSyncForDatatype(): Sync already enabled for datatype "
+              << syncable::ModelTypeToString(datatype) << " on Client " << id_;
     }
   }
 }
@@ -442,13 +440,11 @@ void ProfileSyncServiceTestHarness::DisableSyncForDatatype(
     synced_datatypes.erase(it);
     service()->OnUserChoseDatatypes(false, synced_datatypes);
     AwaitSyncCycleCompletion("Waiting for datatype configuration.");
-    LOG(INFO) << "DisableSyncForDatatype(): Disabled sync for datatype "
-              << syncable::ModelTypeToString(datatype)
-              << " on Client " << id_ << ".";
+    VLOG(1) << "DisableSyncForDatatype(): Disabled sync for datatype "
+            << syncable::ModelTypeToString(datatype) << " on Client " << id_;
   } else {
-    LOG(INFO) << "DisableSyncForDatatype(): Sync already disabled for datatype "
-              << syncable::ModelTypeToString(datatype)
-              << " on Client " << id_ << ".";
+    VLOG(1) << "DisableSyncForDatatype(): Sync already disabled for datatype "
+            << syncable::ModelTypeToString(datatype) << " on Client " << id_;
   }
 }
 
@@ -469,8 +465,8 @@ void ProfileSyncServiceTestHarness::EnableSyncForAllDatatypes() {
     service()->OnUserChoseDatatypes(true, synced_datatypes);
     wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
     AwaitSyncCycleCompletion("Waiting for datatype configuration.");
-    LOG(INFO) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes"
-              << " on Client " << id_ << ".";
+    VLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes on "
+               "Client " << id_;
   }
 }
 
@@ -480,8 +476,8 @@ void ProfileSyncServiceTestHarness::DisableSyncForAllDatatypes() {
       << "EnableSyncForAllDatatypes(): service() is null.";
   service()->DisableForUser();
   wait_state_ = SYNC_DISABLED;
-  LOG(INFO) << "DisableSyncForAllDatatypes(): Disabled sync for all datatypes"
-            << " on Client " << id_ << ".";
+  VLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all datatypes on "
+             "Client " << id_;
 }
 
 int64 ProfileSyncServiceTestHarness::GetUpdatedTimestamp() {
@@ -495,16 +491,17 @@ int64 ProfileSyncServiceTestHarness::GetUpdatedTimestamp() {
 void ProfileSyncServiceTestHarness::LogClientInfo(std::string message) {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   if (snap) {
-    LOG(INFO) << "Client " << id_ << ": " << message << ": "
-        << "max_local_timestamp: " << snap->max_local_timestamp
-        << ", has_more_to_sync: " << snap->has_more_to_sync
-        << ", unsynced_count: " << snap->unsynced_count
-        << ", has_unsynced_items: " << service()->backend()->HasUnsyncedItems()
-        << ", notifications_enabled: " << GetStatus().notifications_enabled
-        << ", service_is_pushing_changes: " << ServiceIsPushingChanges()
-        << ".";
+    VLOG(1) << "Client " << id_ << ": " << message
+            << ": max_local_timestamp: " << snap->max_local_timestamp
+            << ", has_more_to_sync: " << snap->has_more_to_sync
+            << ", unsynced_count: " << snap->unsynced_count
+            << ", has_unsynced_items: "
+            << service()->backend()->HasUnsyncedItems()
+            << ", notifications_enabled: "
+            << GetStatus().notifications_enabled
+            << ", service_is_pushing_changes: " << ServiceIsPushingChanges();
   } else {
-    LOG(INFO) << "Client " << id_ << ": " << message << ": "
-        << "Sync session snapshot not available.";
+    VLOG(1) << "Client " << id_ << ": " << message
+            << ": Sync session snapshot not available.";
   }
 }

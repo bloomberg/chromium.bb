@@ -271,20 +271,20 @@ class LiveAutofillSyncTest : public LiveSyncTest {
     for (size_t i = 0; i < profiles.size(); ++i) {
       const AutoFillProfile* p = profiles[i];
       if (!expected_profiles_map.count(p->Label())) {
-        LOG(INFO) << "Label " << p->Label() << " not in expected";
+        VLOG(1) << "Label " << p->Label() << " not in expected";
         return false;
       }
       AutoFillProfile* expected_profile = &expected_profiles_map[p->Label()];
       expected_profile->set_unique_id(p->unique_id());
       if (*expected_profile != *p) {
-        LOG(INFO) << "Profile mismatch";
+        VLOG(1) << "Profile mismatch";
         return false;
       }
       expected_profiles_map.erase(p->Label());
     }
 
     if (expected_profiles_map.size()) {
-      LOG(INFO) << "Labels in expected but not supplied";
+      VLOG(1) << "Labels in expected but not supplied";
       return false;
     }
 

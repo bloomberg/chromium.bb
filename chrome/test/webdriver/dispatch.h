@@ -54,7 +54,7 @@ void Dispatch(struct mg_connection* connection,
   DictionaryValue* parameters = NULL;
   if ((method == "POST" || method == "PUT") &&
       request_info->post_data_len > 0) {
-    LOG(INFO) << "...parsing request body";
+    VLOG(1) << "...parsing request body";
     std::string json(request_info->post_data, request_info->post_data_len);
     std::string error;
     if (!ParseJSONDictionary(json, &parameters, &error)) {
@@ -66,9 +66,8 @@ void Dispatch(struct mg_connection* connection,
     }
   }
 
-  LOG(INFO) << "Dispatching " << method << " " << uri
-            << std::string(request_info->post_data,
-                           request_info->post_data_len) << std::endl;
+  VLOG(1) << "Dispatching " << method << " " << uri
+          << std::string(request_info->post_data, request_info->post_data_len);
   scoped_ptr<CommandType> ptr(new CommandType(path_segments, parameters));
   DispatchCommand(ptr.get(), method, &response);
   SendResponse(connection, request_info, response);

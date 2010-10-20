@@ -281,8 +281,8 @@ void LiveSyncTest::SetUpTestServerIfRequired() {
       LOG(FATAL) << "Failed to set up local python test server";
   } else if (!cl->HasSwitch(switches::kSyncServiceURL) &&
              cl->HasSwitch(switches::kSyncServerCommandLine)) {
-    LOG(FATAL)
-        << "Sync server command line must be accompanied by sync service URL.";
+    LOG(FATAL) << "Sync server command line must be accompanied by sync "
+                  "service URL.";
   }
 }
 
@@ -295,7 +295,7 @@ bool LiveSyncTest::SetUpLocalPythonTestServer() {
       test_server()->host_port_pair().host().c_str(),
       test_server()->host_port_pair().port());
   cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
-  LOG(INFO) << "Started local python test server at " << sync_service_url;
+  VLOG(1) << "Started local python test server at " << sync_service_url;
 
   // TODO(akalin): Set the kSyncNotificationHost switch here once a local python
   // notification server is implemented.
@@ -321,8 +321,8 @@ bool LiveSyncTest::SetUpLocalTestServer() {
   const int kMaxWaitTime = TestTimeouts::live_operation_timeout_ms();
   const int kNumIntervals = 15;
   if (WaitForTestServerToStart(kMaxWaitTime, kNumIntervals)) {
-    LOG(INFO) << "Started local test server at "
-              << cl->GetSwitchValueASCII(switches::kSyncServiceURL) << ".";
+    VLOG(1) << "Started local test server at "
+            << cl->GetSwitchValueASCII(switches::kSyncServiceURL) << ".";
     return true;
   } else {
     LOG(ERROR) << "Could not start local test server at "

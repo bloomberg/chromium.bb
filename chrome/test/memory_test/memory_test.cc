@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -244,7 +244,7 @@ class MemoryTest : public UIPerfTest {
   //   sets temp_dir_ to the containing temporary directory,
   //   and sets cleanup_temp_dir_on_exit_ to true.
   bool SetupTempDirectory(const FilePath& src_dir) {
-    LOG(INFO) << "Setting up temp directory in " << src_dir.value();
+    VLOG(1) << "Setting up temp directory in " << src_dir.value();
     // We create a copy of the test dir and use it so that each
     // run of this test starts with the same data.  Running this
     // test has the side effect that it will change the profile.
@@ -262,7 +262,7 @@ class MemoryTest : public UIPerfTest {
     // directory as its base name, so point user_data_dir_ there.
     user_data_dir_ = temp_dir_.Append(src_dir.BaseName());
     cleanup_temp_dir_on_exit_ = true;
-    LOG(INFO) << "Finished temp directory setup.";
+    VLOG(1) << "Finished temp directory setup.";
     return true;
   }
 

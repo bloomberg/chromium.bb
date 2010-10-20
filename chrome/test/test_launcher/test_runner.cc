@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,14 +74,13 @@ ResultsPrinter::ResultsPrinter(const CommandLine& command_line) : out_(NULL) {
   FilePath dir_name = path.DirName();
   if (!file_util::DirectoryExists(dir_name)) {
     LOG(WARNING) << "The output directory does not exist. "
-                 << "Creating the directory: " << dir_name.value() << std::endl;
+                 << "Creating the directory: " << dir_name.value();
     // Create the directory if necessary (because the gtest does the same).
     file_util::CreateDirectory(dir_name);
   }
   out_ = file_util::OpenFile(path, "w");
   if (!out_) {
-    LOG(ERROR) << "Cannot open output file: "
-               << path.value() << "." << std::endl;
+    LOG(ERROR) << "Cannot open output file: " << path.value() << ".";
     return;
   }
   fprintf(out_, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");

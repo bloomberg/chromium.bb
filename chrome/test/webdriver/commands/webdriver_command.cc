@@ -50,7 +50,7 @@ bool WebDriverCommand::Init(Response* const response) {
     return false;
   }
 
-  LOG(INFO) << "Fetching session: " << session_id;
+  VLOG(1) << "Fetching session: " << session_id;
   session_ = Singleton<SessionManager>::get()->GetSession(session_id);
   if (session_ == NULL) {
     response->set_value(Value::CreateStringValue(

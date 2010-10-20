@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     port = cmd_line.GetSwitchValueASCII(std::string("port"));
   }
 
-  LOG(INFO) << "Using port: " << port;
+  VLOG(1) << "Using port: " << port;
   webdriver::SessionManager* session =
       Singleton<webdriver::SessionManager>::get();
   session->SetIPAddress(port);
@@ -115,9 +115,8 @@ int main(int argc, char *argv[]) {
 
   std::cout << "Starting server" << std::endl;
   // The default behavior is to run this service forever.
-  while (true) {
+  while (true)
     PlatformThread::Sleep(3600);
-  }
 
   // We should not reach here since the service should never quit.
   // TODO(jmikhail): register a listener for SIGTERM and break the

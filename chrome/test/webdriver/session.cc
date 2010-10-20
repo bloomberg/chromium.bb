@@ -69,8 +69,8 @@ bool Session::Init() {
   // Create a temp directory for the new profile.
   if (!CreateTemporaryProfileDirectory()) {
     LOG(ERROR) << "Could not make a temp profile directory, "
-               << tmp_profile_dir() << std::endl
-               << "Need to quit, the issue must be fixed";
+               << tmp_profile_dir()
+               << "\nNeed to quit, the issue must be fixed";
     exit(-1);
   }
 
@@ -163,7 +163,7 @@ bool Session::CreateTemporaryProfileDirectory() {
     return false;
   }
 #endif
-  LOG(INFO) << "Using temporary profile directory: " << tmp_profile_dir_;
+  VLOG(1) << "Using temporary profile directory: " << tmp_profile_dir_;
   return true;
 }
 
@@ -174,10 +174,8 @@ void Session::Terminate() {
 #elif OS_WIN
   FilePath del_dir = FilePath(ASCIIToWide(tmp_profile_dir()));
 #endif
-  if (file_util::PathExists(del_dir) && !file_util::Delete(del_dir, true)) {
-    LOG(ERROR) << "Could not clean up temp directory: "
-               << tmp_profile_dir() << std::endl;
-  }
+  if (file_util::PathExists(del_dir) && !file_util::Delete(del_dir, true))
+    LOG(ERROR) << "Could not clean up temp directory: " << tmp_profile_dir();
 }
 
 ErrorCode Session::ExecuteScript(const std::wstring& script,
@@ -188,21 +186,17 @@ ErrorCode Session::ExecuteScript(const std::wstring& script,
                           /*pretty_print=*/false,
                           &args_as_json);
 
-  std::wstring jscript = L"window.domAutomationController.send(";
-  jscript.append(L"(function(){")
-  // Every injected script is fed through the executeScript atom. This atom
-  // will catch any errors that are thrown and convert them to the
-  // appropriate JSON structure.
-  .append(build_atom(EXECUTE_SCRIPT, sizeof EXECUTE_SCRIPT))
-  .append(L"var result = executeScript(function(){")
-  .append(script)
-  .append(L"},")
-  .append(ASCIIToWide(args_as_json))
-  .append(L");return JSON.stringify(result);})());");
+  std::wstring jscript = L"window.domAutomationController.send((function(){" +
+      // Every injected script is fed through the executeScript atom. This atom
+      // will catch any errors that are thrown and convert them to the
+      // appropriate JSON structure.
+      build_atom(EXECUTE_SCRIPT, sizeof EXECUTE_SCRIPT) +
+      L"var result = executeScript(function(){" + script + L"}," +
+      ASCIIToWide(args_as_json) + L");return JSON.stringify(result);})());";
 
   // Should we also log the script that's being executed? It could be several KB
   // in size and will add lots of noise to the logs.
-  LOG(INFO) << "Executing script in frame: " << current_frame_xpath_;
+  VLOG(1) << "Executing script in frame: " << current_frame_xpath_;
 
   std::wstring result;
   scoped_refptr<TabProxy> tab = ActiveTab();
@@ -212,7 +206,7 @@ ErrorCode Session::ExecuteScript(const std::wstring& script,
     return kUnknownError;
   }
 
-  LOG(INFO) << "...script result: " << result;
+  VLOG(1) << "...script result: " << result;
   std::string temp = WideToASCII(result);
   scoped_ptr<Value> r(base::JSONReader::ReadAndReturnError(
       temp, true, NULL, NULL));
@@ -225,9 +219,8 @@ ErrorCode Session::ExecuteScript(const std::wstring& script,
   if (r->GetType() != Value::TYPE_DICTIONARY) {
     std::ostringstream stream;
     stream << "Internal script execution error: script result must be a "
-      << print_valuetype(Value::TYPE_DICTIONARY)
-      << ", but was "
-      << print_valuetype(r->GetType()) << ": " << result;
+           << print_valuetype(Value::TYPE_DICTIONARY) << ", but was "
+           << print_valuetype(r->GetType()) << ": " << result;
     *value = Value::CreateStringValue(stream.str());
     return kUnknownError;
   }

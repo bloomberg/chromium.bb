@@ -243,7 +243,7 @@ class FindInPageNotificationObserver : public NotificationObserver {
           number_of_matches_ = find_details->number_of_matches();
           MessageLoopForUI::current()->Quit();
         } else {
-          DLOG(INFO) << "Ignoring, since we only care about the final message";
+          DVLOG(1) << "Ignoring, since we only care about the final message";
         }
       }
     } else {

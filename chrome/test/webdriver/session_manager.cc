@@ -141,8 +141,8 @@ bool SessionManager::Create(std::string* id) {
 
   // Start chrome, if it doesn't startup quit.
   const int ap_timeout = TestTimeouts::command_execution_timeout_ms();
-  LOG(INFO) << "Waiting for a max of " << ap_timeout << " ms to "
-            << "start the chrome browser";
+  VLOG(1) << "Waiting for a max of " << ap_timeout << " ms to start the chrome "
+             "browser";
 
   scoped_ptr<Session> session(new Session(*id));
 
@@ -162,10 +162,10 @@ bool SessionManager::Has(const std::string& id) const {
 bool SessionManager::Delete(const std::string& id) {
   std::map<std::string, Session*>::iterator it;
 
-  LOG(INFO) << "Deleting session with ID " << id;
+  VLOG(1) << "Deleting session with ID " << id;
   it = map_.find(id);
   if (it == map_.end()) {
-    LOG(INFO) << "No such session with ID " << id;
+    VLOG(1) << "No such session with ID " << id;
     return false;
   }
 
@@ -178,7 +178,7 @@ Session* SessionManager::GetSession(const std::string& id) const {
   std::map<std::string, Session*>::const_iterator it;
   it = map_.find(id);
   if (it == map_.end()) {
-    LOG(INFO) << "No such session with ID " << id;
+    VLOG(1) << "No such session with ID " << id;
     return NULL;
   }
   return it->second;

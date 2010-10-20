@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         }
     }
   }
-  LOG(INFO) << "Adding several bookmarks under other bookmarks";
+  VLOG(1) << "Adding several bookmarks under other bookmarks";
   for (int index = 0; index < 10; index++) {
     wstring title(L"Other - TestBookmark");
     title.append(IntToWStringHack(index));

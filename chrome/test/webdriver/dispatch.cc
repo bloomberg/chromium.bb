@@ -26,10 +26,9 @@ void SendHttpOk(struct mg_connection* const connection,
       << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
       << "Accept-Ranges: bytes\r\n"
       << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0) {
+  if (strcmp(request_info->request_method, "HEAD") != 0)
     out << json << "\r\n";
-  }
-  LOG(INFO) << out.str();
+  VLOG(1) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -48,7 +47,7 @@ void SendHttpSeeOther(struct mg_connection* const connection,
       << "Location: " << location << "\r\n"
       << "Content-Type: text/html\r\n"
       << "Content-Length: 0\r\n\r\n";
-  LOG(INFO) << out.str();
+  VLOG(1) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -63,10 +62,9 @@ void SendHttpBadRequest(struct mg_connection* const connection,
       << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
       << "Accept-Ranges: bytes\r\n"
       << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0) {
+  if (strcmp(request_info->request_method, "HEAD") != 0)
     out << json << "\r\n";
-  }
-  LOG(INFO) << out.str();
+  VLOG(1) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -81,10 +79,9 @@ void SendHttpNotFound(struct mg_connection* const connection,
       << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
       << "Accept-Ranges: bytes\r\n"
       << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0) {
+  if (strcmp(request_info->request_method, "HEAD") != 0)
     out << json << "\r\n";
-  }
-  LOG(INFO) << out.str();
+  VLOG(1) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -108,7 +105,7 @@ void SendHttpMethodNotAllowed(struct mg_connection* const connection,
       << "Content-Type: text/html\r\n"
       << "Content-Length: 0\r\n"
       << "Allow: " << JoinString(allowed_methods, ',') << "\r\n\r\n";
-  LOG(INFO) << out.str();
+  VLOG(1) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -123,10 +120,9 @@ void SendHttpInternalError(struct mg_connection* const connection,
       << "Vary: Accept-Charset, Accept-Encoding, Accept-Language, Accept\r\n"
       << "Accept-Ranges: bytes\r\n"
       << "Connection: close\r\n\r\n";
-  if (strcmp(request_info->request_method, "HEAD") != 0) {
+  if (strcmp(request_info->request_method, "HEAD") != 0)
     out << json << "\r\n";
-  }
-  LOG(INFO) << out.str();
+  VLOG(1) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -136,29 +132,24 @@ void SendHttpInternalError(struct mg_connection* const connection,
 void DispatchCommand(Command* const command, const std::string& method,
                      Response* response) {
   if (command->DoesPost() && method == "POST") {
-    if (command->Init(response)) {
+    if (command->Init(response))
       command->ExecutePost(response);
-    }
   } else if (command->DoesGet() && method == "GET") {
-    if (command->Init(response)) {
+    if (command->Init(response))
       command->ExecuteGet(response);
-    }
   } else if (command->DoesDelete() && method == "DELETE") {
-    if (command->Init(response)) {
+    if (command->Init(response))
       command->ExecuteDelete(response);
-    }
   } else {
     ListValue* methods = new ListValue;
-    if (command->DoesPost()) {
+    if (command->DoesPost())
       methods->Append(Value::CreateStringValue("POST"));
-    }
     if (command->DoesGet()) {
       methods->Append(Value::CreateStringValue("GET"));
       methods->Append(Value::CreateStringValue("HEAD"));
     }
-    if (command->DoesDelete()) {
+    if (command->DoesDelete())
       methods->Append(Value::CreateStringValue("DELETE"));
-    }
     response->set_status(kMethodNotAllowed);
     response->set_value(methods);  // Assumes ownership.
   }

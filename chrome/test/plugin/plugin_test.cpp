@@ -209,7 +209,7 @@ class PluginInstallerDownloadTest
     }
 
     ~UploadRequestContext() {
-      DLOG(INFO) << __FUNCTION__;
+      DVLOG(1) << __FUNCTION__;
       delete http_transaction_factory_;
       delete http_auth_handler_factory_;
     }

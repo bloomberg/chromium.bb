@@ -255,8 +255,8 @@ void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
   // Compares the results.
   EXPECT_STREQ(expected_result_value.c_str(), value.c_str());
 
-  LOG(INFO) << "Test " << test_case_file_name << " took "
-            << (base::Time::Now() - start).InMilliseconds() << "ms";
+  VLOG(1) << "Test " << test_case_file_name
+          << " took " << (base::Time::Now() - start).InMilliseconds() << "ms";
 }
 
 bool UILayoutTest::ReadExpectedResult(const FilePath& result_dir_path,

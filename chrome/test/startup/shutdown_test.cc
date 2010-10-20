@@ -75,13 +75,12 @@ class ShutdownTest : public UIPerfTest {
     if (env->GetVar(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
         base::StringToInt(numCyclesEnv, &numCycles)) {
       if (numCycles <= kNumCyclesMax) {
-        LOG(INFO) << env_vars::kStartupTestsNumCycles
-                  << " set in environment, so setting numCycles to "
-                  << numCycles;
+        VLOG(1) << env_vars::kStartupTestsNumCycles
+                << " set in environment, so setting numCycles to " << numCycles;
       } else {
-        LOG(INFO) << env_vars::kStartupTestsNumCycles
-                  << " is higher than the max, setting numCycles to "
-                  << kNumCyclesMax;
+        VLOG(1) << env_vars::kStartupTestsNumCycles
+                << " is higher than the max, setting numCycles to "
+                << kNumCyclesMax;
         numCycles = kNumCyclesMax;
       }
     }

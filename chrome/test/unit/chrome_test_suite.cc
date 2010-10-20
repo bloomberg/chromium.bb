@@ -67,8 +67,8 @@ int LocalHostResolverProc::Resolve(const std::string& host,
   // If you really need to make an external DNS query, use
   // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
   if (!local) {
-    DLOG(INFO) << "To avoid external dependencies, simulating failure for "
-               << "external DNS lookup of " << host;
+    DVLOG(1) << "To avoid external dependencies, simulating failure for "
+                "external DNS lookup of " << host;
     return net::ERR_NOT_IMPLEMENTED;
   }
 

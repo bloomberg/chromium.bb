@@ -174,8 +174,7 @@ void UITestBase::TearDown() {
 // TODO(phajdan.jr): get rid of set_command_execution_timeout_ms.
 void UITestBase::set_command_execution_timeout_ms(int timeout) {
   server_->set_command_execution_timeout_ms(timeout);
-  LOG(INFO) << "Automation command execution timeout set to "
-            << timeout << " milli secs.";
+  VLOG(1) << "Automation command execution timeout set to " << timeout << " ms";
 }
 
 AutomationProxy* UITestBase::CreateAutomationProxy(int execution_timeout) {
@@ -772,8 +771,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
     command_line.PrependWrapper(browser_wrapper);
-    LOG(INFO) << "BROWSER_WRAPPER was set, prefixing command_line with "
-              << browser_wrapper;
+    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
+            << browser_wrapper;
   }
 
   bool started = base::LaunchApp(command_line.argv(),

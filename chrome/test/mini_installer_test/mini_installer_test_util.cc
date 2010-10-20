@@ -81,7 +81,7 @@ bool MiniInstallerTestUtil::GetCommandForTagging(std::wstring *return_command) {
   return_command->append(mini_installer_constants::kStandaloneInstaller);
   return_command->append(L" ");
   return_command->append(mini_installer_constants::kChromeApplyTagParameters);
-  LOG(INFO) << "Command to run Apply tag: " << return_command->c_str();
+  VLOG(1) << "Command to run Apply tag: " << return_command->c_str();
   return true;
 }
 
@@ -89,7 +89,7 @@ std::wstring MiniInstallerTestUtil::GetFilePath(const wchar_t* exe_name) {
   FilePath installer_path;
   PathService::Get(base::DIR_EXE, &installer_path);
   installer_path = installer_path.Append(exe_name);
-  LOG(INFO) << "Chrome exe path: " << installer_path.value().c_str();
+  VLOG(1) << "Chrome exe path: " << installer_path.value().c_str();
   return installer_path.ToWStringHack();
 }
 
@@ -136,7 +136,7 @@ bool MiniInstallerTestUtil::GetLatestFile(const wchar_t* file_name,
   WIN32_FIND_DATA find_file_data;
   HANDLE file_handle = FindFirstFile(file_name, &find_file_data);
   if (file_handle == INVALID_HANDLE_VALUE) {
-    LOG(INFO) << "Handle is invalid.";
+    VLOG(1) << "Handle is invalid.";
     return false;
   }
   BOOL ret = TRUE;
@@ -248,7 +248,7 @@ bool MiniInstallerTestUtil::GetStandaloneVersion(
   file_name.replace(pos, 1, L".");
   file_name = L"3.0." + file_name;
   return_file_name->assign(file_name.c_str());
-  LOG(INFO) << "Standalone installer version: " << file_name.c_str();
+  VLOG(1) << "Standalone installer version: " << file_name.c_str();
   return true;
 }
 
@@ -288,14 +288,14 @@ bool MiniInstallerTestUtil::VerifyProcessClose(
     const wchar_t* process_name) {
   int timer = 0;
   if (base::GetProcessCount(process_name, NULL) > 0) {
-    LOG(INFO) << "Waiting for this process to end: " << process_name;
+    VLOG(1) << "Waiting for this process to end: " << process_name;
     while ((base::GetProcessCount(process_name, NULL) > 0) &&
            (timer < TestTimeouts::large_test_timeout_ms())) {
       PlatformThread::Sleep(200);
       timer = timer + 200;
     }
   } else {
-  if (base::GetProcessCount(process_name, NULL) != 0)
+    if (base::GetProcessCount(process_name, NULL) != 0)
       return false;
   }
   return true;

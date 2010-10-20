@@ -24,7 +24,7 @@ void CreateSession::ExecutePost(Response* const response) {
     return;
   }
 
-  LOG(INFO) << "Created session " << session_id;
+  VLOG(1) << "Created session " << session_id;
   std::ostringstream stream;
   stream << "http://" << session_manager->GetIPAddress() << "/session/"
          << session_id;
