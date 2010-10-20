@@ -350,15 +350,12 @@ void BugReportUtil::SendReport(Profile* profile,
   // Include the page image if we have one.
   if (zipped_logs_data && CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kCompressSystemFeedback)) {
-/* TODO(zelidrag): http://crosbug.com/7344 - Uncomment this block once proto
-// buffer for ProductSpecificBinaryData gets defined by Feedback team.
     userfeedback::ProductSpecificBinaryData attachment;
     attachment.set_mime_type(kBZip2MimeType);
     attachment.set_name(kLogsAttachmentName);
-    attachment.set_binary_content(std::string(zipped_logs_data,
-                                              zipped_logs_length));
-    *(feedback_data.mutable_productSpecificBinaryData()) = attachment;
-*/
+    attachment.set_data(std::string(zipped_logs_data, zipped_logs_length));
+
+    *(feedback_data.add_product_specific_binary_data()) = attachment;
   }
 #endif
 
