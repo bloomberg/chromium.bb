@@ -416,6 +416,16 @@ void WebDataService::RemoveAutoFillProfile(int profile_id) {
                                  request));
 }
 
+void WebDataService::RemoveAutoFillProfile(const std::string& guid) {
+  GenericRequest<std::string>* request =
+      new GenericRequest<std::string>(
+          this, GetNextRequestHandle(), NULL, guid);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveAutoFillProfileGUIDImpl,
+                                 request));
+}
+
 WebDataService::Handle WebDataService::GetAutoFillProfiles(
     WebDataServiceConsumer* consumer) {
   WebDataRequest* request =
@@ -455,6 +465,16 @@ void WebDataService::RemoveCreditCard(int creditcard_id) {
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this,
                                  &WebDataService::RemoveCreditCardImpl,
+                                 request));
+}
+
+void WebDataService::RemoveCreditCard(const std::string& guid) {
+  GenericRequest<std::string>* request =
+      new GenericRequest<std::string>(
+          this, GetNextRequestHandle(), NULL, guid);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveCreditCardGUIDImpl,
                                  request));
 }
 
@@ -1055,6 +1075,34 @@ void WebDataService::RemoveAutoFillProfileImpl(
   request->RequestComplete();
 }
 
+void WebDataService::RemoveAutoFillProfileGUIDImpl(
+    GenericRequest<std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::string guid = request->GetArgument();
+    AutoFillProfile* profile = NULL;
+    if (!db_->GetAutoFillProfileForGUID(guid, &profile))
+      NOTREACHED();
+
+    if (profile) {
+      scoped_ptr<AutoFillProfile> dead_profile(profile);
+      if (!db_->RemoveAutoFillProfile(guid))
+        NOTREACHED();
+      ScheduleCommit();
+
+      // TODO(dhollowa): Deprecate and label.  http://crbug.com/58813
+      AutofillProfileChange change(AutofillProfileChange::REMOVE,
+                                   dead_profile->Label(),
+                                   NULL, string16());
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_PROFILE_CHANGED,
+          Source<WebDataService>(this),
+          Details<AutofillProfileChange>(&change));
+    }
+  }
+  request->RequestComplete();
+}
+
 void WebDataService::GetAutoFillProfilesImpl(WebDataRequest* request) {
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
@@ -1110,19 +1158,47 @@ void WebDataService::RemoveCreditCardImpl(
   InitializeDatabaseIfNecessary();
   if (db_ && !request->IsCancelled()) {
     int creditcard_id = request->GetArgument();
-    CreditCard* dead_card_ptr = NULL;
-    if (!db_->GetCreditCardForID(creditcard_id, &dead_card_ptr))
+    CreditCard* credit_card = NULL;
+    if (!db_->GetCreditCardForID(creditcard_id, &credit_card))
       NOTREACHED();
 
-    scoped_ptr<CreditCard> dead_card(dead_card_ptr);
-    if (!db_->RemoveCreditCard(creditcard_id))
-      NOTREACHED();
+    if (credit_card) {
+      scoped_ptr<CreditCard> dead_credit_card(credit_card);
+      if (!db_->RemoveCreditCard(creditcard_id))
+        NOTREACHED();
 
-    ScheduleCommit();
+      ScheduleCommit();
 
-    if (dead_card.get()) {
       AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
-                                      dead_card->Label(), NULL);
+                                      dead_credit_card->Label(), NULL);
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
+          Source<WebDataService>(this),
+          Details<AutofillCreditCardChange>(&change));
+    }
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::RemoveCreditCardGUIDImpl(
+    GenericRequest<std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::string guid = request->GetArgument();
+    CreditCard* credit_card = NULL;
+    if (!db_->GetCreditCardForGUID(guid, &credit_card))
+      NOTREACHED();
+
+    if (credit_card) {
+      scoped_ptr<CreditCard> dead_credit_card(credit_card);
+      if (!db_->RemoveCreditCard(guid))
+        NOTREACHED();
+
+      ScheduleCommit();
+
+      // TODO(dhollowa): Deprecate and label.  http://crbug.com/58813
+      AutofillCreditCardChange change(AutofillCreditCardChange::REMOVE,
+                                      dead_credit_card->Label(), NULL);
       NotificationService::current()->Notify(
           NotificationType::AUTOFILL_CREDIT_CARD_CHANGED,
           Source<WebDataService>(this),

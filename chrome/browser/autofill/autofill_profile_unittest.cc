@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/guid.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -360,6 +361,26 @@ TEST(AutoFillProfileTest, MergeWith) {
       "19384284720");
   EXPECT_EQ(expected_a, *a);
   EXPECT_EQ(expected_b, *b);
+}
+
+TEST(AutoFillProfileTest, Compare) {
+  AutoFillProfile a, b;
+
+  // Empty profiles are the same.
+  EXPECT_EQ(0, a.Compare(b));
+
+  // GUIDs don't count.
+  a.set_guid(guid::GenerateGUID());
+  b.set_guid(guid::GenerateGUID());
+  EXPECT_EQ(0, a.Compare(b));
+
+  // Different values produce non-zero results.
+  autofill_test::SetProfileInfo(&a, "label1", "Jimmy", NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  autofill_test::SetProfileInfo(&b, "label1", "Ringo", NULL, NULL, NULL,
+      NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  EXPECT_GT(0, a.Compare(b));
+  EXPECT_LT(0, b.Compare(a));
 }
 
 }  // namespace

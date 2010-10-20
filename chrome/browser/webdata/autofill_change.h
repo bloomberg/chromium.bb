@@ -63,6 +63,8 @@ class AutofillProfileChange : public GenericAutofillChange<string16> {
       return false;
     if (type() == REMOVE)
       return true;
+    // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
+    // http://crbug.com/58813
     if (*profile() != *change.profile())
       return false;
     return type() == ADD || pre_update_label_ == change.pre_update_label();

@@ -11,6 +11,8 @@
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
+#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/guid.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -286,6 +289,45 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
   done_event_.TimedWait(test_timeout_);
 }
 
+TEST_F(WebDataServiceAutofillTest, ProfileRemoveGUID) {
+  AutoFillProfile profile(name1_, unique_id1_);
+
+  // Add a profile.
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->AddAutoFillProfile(profile);
+  done_event_.TimedWait(test_timeout_);
+
+  // Check that it was added.
+  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer;
+  WebDataService::Handle handle = wds_->GetAutoFillProfiles(&consumer);
+  MessageLoop::current()->Run();
+  EXPECT_EQ(handle, consumer.handle());
+  ASSERT_EQ(1U, consumer.result().size());
+  EXPECT_EQ(profile, *consumer.result()[0]);
+  STLDeleteElements(&consumer.result());
+
+  // Remove the profile.
+  const AutofillProfileChange expected_change(
+      AutofillProfileChange::REMOVE, name1_, NULL, string16());
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
+              Source<WebDataService>(wds_.get()),
+              Property(&Details<const AutofillProfileChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->RemoveAutoFillProfile(profile.guid());
+  done_event_.TimedWait(test_timeout_);
+
+  // Check that it was removed.
+  AutofillWebDataServiceConsumer<std::vector<AutoFillProfile*> > consumer2;
+  WebDataService::Handle handle2 = wds_->GetAutoFillProfiles(&consumer2);
+  MessageLoop::current()->Run();
+  EXPECT_EQ(handle2, consumer2.handle());
+  ASSERT_EQ(0U, consumer2.result().size());
+}
+
 TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
   AutoFillProfile profile1(name1_, unique_id1_);
   AutoFillProfile profile2(name2_, unique_id2_);
@@ -354,6 +396,45 @@ TEST_F(WebDataServiceAutofillTest, CreditRemove) {
 
   wds_->RemoveCreditCard(card.unique_id());
   done_event_.TimedWait(test_timeout_);
+}
+
+TEST_F(WebDataServiceAutofillTest, CreditCardRemoveGUID) {
+  CreditCard card(name1_, unique_id1_);
+
+  // Add a credit card.
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->AddCreditCard(card);
+  done_event_.TimedWait(test_timeout_);
+
+  // Check that it was added.
+  AutofillWebDataServiceConsumer<std::vector<CreditCard*> > consumer;
+  WebDataService::Handle handle = wds_->GetCreditCards(&consumer);
+  MessageLoop::current()->Run();
+  EXPECT_EQ(handle, consumer.handle());
+  ASSERT_EQ(1U, consumer.result().size());
+  EXPECT_EQ(card, *consumer.result()[0]);
+  STLDeleteElements(&consumer.result());
+
+  // Remove the credit card.
+  const AutofillCreditCardChange expected_change(
+      AutofillCreditCardChange::REMOVE, name1_, NULL);
+  EXPECT_CALL(
+      *observer_helper_->observer(),
+      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
+              Source<WebDataService>(wds_.get()),
+              Property(&Details<const AutofillCreditCardChange>::ptr,
+                       Pointee(expected_change)))).
+      WillOnce(SignalEvent(&done_event_));
+  wds_->RemoveCreditCard(card.guid());
+  done_event_.TimedWait(test_timeout_);
+
+  // Check that it was removed.
+  AutofillWebDataServiceConsumer<std::vector<CreditCard*> > consumer2;
+  WebDataService::Handle handle2 = wds_->GetCreditCards(&consumer2);
+  MessageLoop::current()->Run();
+  EXPECT_EQ(handle2, consumer2.handle());
+  ASSERT_EQ(0U, consumer2.result().size());
 }
 
 TEST_F(WebDataServiceAutofillTest, CreditUpdate) {

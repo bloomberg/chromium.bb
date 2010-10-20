@@ -1956,6 +1956,7 @@
         'browser/gtk/view_id_util.cc',
         'browser/gtk/view_id_util.h',
         'browser/guid.h',
+        'browser/guid.cc',
         'browser/guid_posix.cc',
         'browser/guid_win.cc',
         'browser/hang_monitor/hung_plugin_action.cc',

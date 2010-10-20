@@ -130,6 +130,8 @@ bool AutofillModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
           return false;
         }
         tag = ProfileLabelToTag(label);
+        // TODO(dhollowa): Replace with |AutoFillProfile::set_guid|.
+        // http://crbug.com/58813
         (*ix)->set_label(label);
         if (!MakeNewAutofillProfileSyncNode(write_trans, autofill_root,
                                             tag, **ix, &sync_id)) {

@@ -19,6 +19,7 @@
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_address.h"
 #include "chrome/browser/autofill/home_phone_number.h"
+#include "chrome/browser/guid.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -34,7 +35,14 @@ void InitPersonalInfo(FormGroupMap* personal_info) {
 
 AutoFillProfile::AutoFillProfile(const string16& label, int unique_id)
     : label_(label),
-      unique_id_(unique_id) {
+      unique_id_(unique_id),
+      guid_(guid::GenerateGUID()) {
+  InitPersonalInfo(&personal_info_);
+}
+
+AutoFillProfile::AutoFillProfile(const std::string& guid)
+    : unique_id_(0),
+      guid_(guid) {
   InitPersonalInfo(&personal_info_);
 }
 
@@ -150,6 +158,7 @@ FormGroup* AutoFillProfile::Clone() const {
   AutoFillProfile* profile = new AutoFillProfile();
   profile->label_ = label_;
   profile->unique_id_ = unique_id();
+  profile->guid_ = guid();
 
   FormGroupMap::const_iterator iter;
   for (iter = personal_info_.begin(); iter != personal_info_.end(); ++iter) {
@@ -390,6 +399,7 @@ bool AutoFillProfile::IsEmpty() const {
 void AutoFillProfile::operator=(const AutoFillProfile& source) {
   label_ = source.label_;
   unique_id_ = source.unique_id_;
+  guid_ = source.guid_;
 
   STLDeleteContainerPairSecondPointers(personal_info_.begin(),
                                        personal_info_.end());
@@ -401,6 +411,33 @@ void AutoFillProfile::operator=(const AutoFillProfile& source) {
        ++iter) {
     personal_info_[iter->first] = iter->second->Clone();
   }
+}
+
+int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
+  // The following AutoFill field types are the only types we store in the WebDB
+  // so far, so we're only concerned with matching these types in the profile.
+  const AutoFillFieldType types[] = { NAME_FIRST,
+                                      NAME_MIDDLE,
+                                      NAME_LAST,
+                                      EMAIL_ADDRESS,
+                                      COMPANY_NAME,
+                                      ADDRESS_HOME_LINE1,
+                                      ADDRESS_HOME_LINE2,
+                                      ADDRESS_HOME_CITY,
+                                      ADDRESS_HOME_STATE,
+                                      ADDRESS_HOME_ZIP,
+                                      ADDRESS_HOME_COUNTRY,
+                                      PHONE_HOME_NUMBER,
+                                      PHONE_FAX_NUMBER };
+
+  for (size_t index = 0; index < arraysize(types); ++index) {
+    int comparison = GetFieldText(AutoFillType(types[index])).compare(
+        profile.GetFieldText(AutoFillType(types[index])));
+    if (comparison != 0)
+      return comparison;
+  }
+
+  return 0;
 }
 
 bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
@@ -472,6 +509,8 @@ std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
       << UTF16ToUTF8(profile.Label())
       << " "
       << profile.unique_id()
+      << " "
+      << profile.guid()
       << " "
       << UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_FIRST)))
       << " "

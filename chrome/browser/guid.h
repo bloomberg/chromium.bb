@@ -19,6 +19,9 @@ namespace guid {
 // the GUID.  The Windows implementation uses system services.
 std::string GenerateGUID();
 
+// Returns true if the input string conforms to the GUID format.
+bool IsValidGUID(const std::string& guid);
+
 #if defined(OS_POSIX)
 // For unit testing purposes only.  Do not use outside of tests.
 std::string RandomDataToGUIDString(const uint64 bytes[2]);

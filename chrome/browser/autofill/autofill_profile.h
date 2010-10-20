@@ -21,7 +21,11 @@ typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
 // to the requested form group type.
 class AutoFillProfile : public FormGroup {
  public:
+  // DEPRECATED
+  // TODO(dhollowa): Remove unique ID and label.  http://crbug.com/58813
   AutoFillProfile(const string16& label, int unique_id);
+  explicit AutoFillProfile(const std::string& guid);
+
   // For use in STL containers.
   AutoFillProfile();
   AutoFillProfile(const AutoFillProfile&);
@@ -44,8 +48,12 @@ class AutoFillProfile : public FormGroup {
   virtual FormGroup* Clone() const;
   virtual const string16& Label() const;
 
-  void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }
+  void set_unique_id(int id) { unique_id_ = id; }
+
+  // This guid is the primary identifier for |AutoFillProfile| objects.
+  const std::string guid() const { return guid_; }
+  void set_guid(const std::string& guid) { guid_ = guid; }
 
   // Profile summary string for UI.
   // Constructs a summary string based on NAME_FIRST, NAME_LAST, and
@@ -88,7 +96,17 @@ class AutoFillProfile : public FormGroup {
   // For use in STL containers.
   void operator=(const AutoFillProfile&);
 
-  // For WebData and Sync.
+  // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
+  // or < 0, or > 0 if it is different.  The implied ordering can be used for
+  // culling duplicates.
+  // GUIDs, labels, and unique IDs are not compared, only the values of the
+  // profiles themselves.
+  int Compare(const AutoFillProfile& profile) const;
+
+  // TODO(dhollowa): These operators need to be made private and then the unit
+  // tests that use them made friends.  The public |Compare| method should be
+  // used by external clients (such as Sync).
+  // http://crbug.com/58813
   bool operator==(const AutoFillProfile& profile) const;
   virtual bool operator!=(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
@@ -108,6 +126,9 @@ class AutoFillProfile : public FormGroup {
 
   // The unique ID of this profile.
   int unique_id_;
+
+  // The guid of this profile.
+  std::string guid_;
 
   // Personal information for this profile.
   FormGroupMap personal_info_;

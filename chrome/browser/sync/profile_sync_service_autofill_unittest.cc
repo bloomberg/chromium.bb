@@ -769,6 +769,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
+  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
+  // http://crbug.com/58813
   EXPECT_TRUE(sync_profile == new_sync_profiles[0]);
 }
 
@@ -829,6 +831,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
+  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
+  // http://crbug.com/58813
   EXPECT_TRUE(added_profile == new_sync_profiles[0]);
 }
 
@@ -957,6 +961,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
+  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
+  // http://crbug.com/58813
   EXPECT_TRUE(update_profile == new_sync_profiles[0]);
 }
 
@@ -995,6 +1001,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
+  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
+  // http://crbug.com/58813
   EXPECT_TRUE(update_profile == new_sync_profiles[0]);
 }
 
@@ -1029,6 +1037,8 @@ TEST_F(ProfileSyncServiceAutofillTest,
   // idempotent, settling on the same name and not triggering a sync upload.
   for (int pass = 0; pass < 2; ++pass) {
     AutoFillProfile josephine_update(josephine);
+    // TODO(dhollowa): Replace with |AutoFillProfile::set_guid|.
+    // http://crbug.com/58813
     josephine_update.set_label(ASCIIToUTF16("ExistingLabel"));
 
     AutoFillProfile relabelled_profile;

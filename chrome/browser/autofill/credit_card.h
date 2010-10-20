@@ -14,11 +14,15 @@
 // A form group that stores credit card information.
 class CreditCard : public FormGroup {
  public:
-  CreditCard();
+  // DEPRECATED
+  // TODO(dhollowa): Remove unique ID and label.  http://crbug.com/58813
   CreditCard(const string16& label, int unique_id);
+  explicit CreditCard(const std::string& guid);
+
   // For use in STL containers.
+  CreditCard();
   CreditCard(const CreditCard& card);
-  ~CreditCard();
+  virtual ~CreditCard();
 
   // FormGroup implementation:
   FormGroup* Clone() const;
@@ -42,13 +46,18 @@ class CreditCard : public FormGroup {
 
   const string16& type() const { return type_; }
   int billing_address_id() const { return billing_address_id_; }
+
   int unique_id() const { return unique_id_; }
+  void set_unique_id(int id) { unique_id_ = id; }
+
+  // The guid is the primary identifier for |CreditCard| objects.
+  const std::string guid() const { return guid_; }
+  void set_guid(const std::string& guid) { guid_ = guid; }
 
   // The caller should verify that the corresponding AutoFillProfile exists.
   void set_billing_address_id(int address_id) {
     billing_address_id_ = address_id;
   }
-  void set_unique_id(int id) { unique_id_ = id; }
 
   // For use in STL containers.
   void operator=(const CreditCard&);
@@ -144,6 +153,9 @@ class CreditCard : public FormGroup {
 
   // The unique ID of this credit card.
   int unique_id_;
+
+  // The guid of this credit card.
+  std::string guid_;
 };
 
 // So we can compare CreditCards with EXPECT_EQ().

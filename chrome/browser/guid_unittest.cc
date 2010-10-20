@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,16 +26,7 @@ TEST(GUIDTest, GUIDCorrectlyFormatted) {
   const int kIterations = 10;
   for (int it = 0; it < kIterations; ++it) {
     std::string guid = guid::GenerateGUID();
-    EXPECT_EQ(36U, guid.length());
-    std::string hexchars = "0123456789ABCDEF";
-    for (uint32 i = 0; i < guid.length(); ++i) {
-      char current = guid.at(i);
-      if (i == 8 || i == 13 || i == 18 || i == 23) {
-        EXPECT_EQ('-', current);
-      } else {
-        EXPECT_TRUE(std::string::npos != hexchars.find(current));
-      }
-    }
+    EXPECT_TRUE(guid::IsValidGUID(guid));
   }
 }
 
