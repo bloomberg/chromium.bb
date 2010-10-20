@@ -461,6 +461,27 @@
     },
   ],
   'conditions': [
+    # http://code.google.com/p/chromium/issues/detail?id=18337
+    ['target_arch!="x64" and target_arch!="arm"', {
+      'targets': [
+        {
+          'target_name': 'chrome_mesa',
+          'type': 'none',
+          'dependencies': [
+            'chrome',
+            '../third_party/mesa/mesa.gyp:osmesa',
+          ],
+          'conditions': [
+            ['OS=="mac"', {
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)/<(branding).app/Contents/Versions/<(version_full)/<(branding) Helper.app/Contents/MacOS/',
+                'files': ['<(PRODUCT_DIR)/osmesa.so'],
+              }],
+            }],
+          ],
+        },
+      ],
+    }],
     ['OS=="win"', {
       'targets': [
         {

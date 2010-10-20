@@ -7,12 +7,14 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
+#include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_implementation.h"
+#include "app/gfx/gl/gl_interface.h"
 
 #import <Cocoa/Cocoa.h>
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
-#import <OpenGL/gl.h>
 
 namespace gpu_info_collector {
 
@@ -128,6 +130,8 @@ static std::wstring CollectGLInfo(int *out_gl_version,
 
 
 bool CollectGraphicsInfo(GPUInfo* gpu_info) {
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
+    return false;
   // Video Card data.
   int vendor_id = 0, device_id = 0;
   // OpenGL data.
