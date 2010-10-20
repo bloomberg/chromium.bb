@@ -886,6 +886,7 @@
         'browser/cocoa/collected_cookies_mac.mm',
         'browser/cocoa/command_observer_bridge.h',
         'browser/cocoa/command_observer_bridge.mm',
+        'browser/cocoa/constrained_html_delegate_mac.mm',
         'browser/cocoa/constrained_window_mac.h',
         'browser/cocoa/constrained_window_mac.mm',
         'browser/cocoa/content_exceptions_window_controller.h',
