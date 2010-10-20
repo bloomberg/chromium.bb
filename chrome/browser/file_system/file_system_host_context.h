@@ -32,10 +32,11 @@ class FileSystemHostContext
   fileapi::FileSystemPathManager* path_manager() { return path_manager_.get(); }
 
  private:
-  bool allow_file_access_from_files_;
-
   scoped_ptr<fileapi::FileSystemQuota> quota_manager_;
   scoped_ptr<fileapi::FileSystemPathManager> path_manager_;
+
+  bool allow_file_access_from_files_;
+  bool unlimited_quota_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemHostContext);
 };

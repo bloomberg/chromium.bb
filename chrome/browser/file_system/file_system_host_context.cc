@@ -15,19 +15,24 @@
 
 FileSystemHostContext::FileSystemHostContext(
     const FilePath& data_path, bool is_incognito)
-    : allow_file_access_from_files_(CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAllowFileAccessFromFiles)),
-      quota_manager_(new fileapi::FileSystemQuota()),
+    : quota_manager_(new fileapi::FileSystemQuota()),
       path_manager_(new fileapi::FileSystemPathManager(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           data_path, is_incognito, allow_file_access_from_files_)) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  allow_file_access_from_files_ =
+      command_line->HasSwitch(switches::kAllowFileAccessFromFiles);
+  unlimited_quota_ =
+      command_line->HasSwitch(switches::kUnlimitedQuotaForFiles);
 }
 
 bool FileSystemHostContext::CheckOriginQuota(const GURL& url, int64 growth) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // If allow-file-access-from-files flag is explicitly given and the scheme
-  // is file, always return true.
-  if (url.SchemeIsFile() && allow_file_access_from_files_)
+  // is file, or if unlimited quota for this process was explicitly requested,
+  // return true.
+  if (unlimited_quota_ ||
+      (url.SchemeIsFile() && allow_file_access_from_files_))
     return true;
   return quota_manager_->CheckOriginQuota(url, growth);
 }

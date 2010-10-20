@@ -297,6 +297,7 @@ extern const char kUninstall[];
 extern const char kUseSpdy[];
 extern const char kIgnoreCertificateErrors[];
 extern const char kMaxSpdySessionsPerDomain[];
+extern const char kUnlimitedQuotaForFiles[];
 extern const char kUseLowFragHeapCrt[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];

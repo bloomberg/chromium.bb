@@ -1054,6 +1054,12 @@ const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
 // Set the maximum SPDY sessions per domain.
 const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";
 
+// Grant unlimited quota to store files to this process.
+// Used for testing Pepper's FileRef/FileIO/FileSystem implementations.
+// DO NOT USE FOR OTHER PURPOSES.
+// TODO(dumi): remove the switch when we have a real quota implementation.
+const char kUnlimitedQuotaForFiles[]        = "unlimited-quota-for-files";
+
 // Use the low fragmentation heap for the CRT.
 const char kUseLowFragHeapCrt[]             = "use-lf-heap";
 

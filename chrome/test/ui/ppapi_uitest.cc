@@ -47,6 +47,11 @@ class PPAPITest : public UITest {
     // Some stuff is hung off of the testing interface which is not enabled
     // by default.
     launch_arguments_.AppendSwitch(switches::kEnablePepperTesting);
+
+    // Give unlimited quota for files to Pepper tests.
+    // TODO(dumi): remove this switch once we have a quota management
+    // system in place.
+    launch_arguments_.AppendSwitch(switches::kUnlimitedQuotaForFiles);
   }
 
   void RunTest(const std::string& test_case) {
