@@ -218,8 +218,8 @@ function handleWindowResize() {
 // instance is constructed for each section on each layout.
 function SectionLayoutInfo(section) {
   this.section = section;
-  this.header = section.getElementsByTagName('h2')[0];
-  this.miniview = section.getElementsByClassName('miniview')[0];
+  this.header = section.querySelector('h2');
+  this.miniview = section.querySelector('.miniview');
   this.maxiview = getSectionMaxiview(section);
   this.expanded = this.maxiview && !section.classList.contains('hidden');
   this.fixedHeight = this.section.offsetHeight;
@@ -473,9 +473,9 @@ function hideSection(section) {
 
       var maxiview = getSectionMaxiview(el);
       if (maxiview)
-        maxiview.classList.add('hiding');
+        maxiview.classList.add(isDoneLoading() ? 'hiding' : 'hidden');
 
-      var miniview = el.getElementsByClassName('miniview')[0];
+      var miniview = el.querySelector('.miniview');
       if (miniview)
         updateMiniviewClipping(miniview);
     }
@@ -518,7 +518,7 @@ function setShownSections(newShownSections) {
 
 function layoutRecentlyClosed() {
   var recentElement = $('recently-closed');
-  var miniview = recentElement.getElementsByClassName('miniview')[0];
+  var miniview = recentElement.querySelector('.miniview');
 
   updateMiniviewClipping(miniview);
 
@@ -1064,12 +1064,9 @@ function initializeLogin() {
 }
 
 function updateLogin(login) {
-  if (login) {
-    document.getElementById("login-username").innerText = login;
-    document.getElementById("login").style.display = 'block';
-  } else {
-    document.getElementById("login").style.display = 'none';
-  }
+  if (login)
+    $('login-username').textContent = login;
+  $('login').style.display = login ? 'block' : 'none';
 }
 
 var mostVisited = new MostVisited(
