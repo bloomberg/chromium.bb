@@ -28,6 +28,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
@@ -51,6 +52,8 @@
 
 using WebKit::WebCString;
 using WebKit::WebDevToolsAgentClient;
+using WebKit::WebFileSystem;
+using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFrame;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebPlugin;
@@ -533,6 +536,21 @@ WebURL GetDevToolsPathAsURL() {
   FilePath devToolsPath = dirExe.AppendASCII(
       "resources/inspector/devtools.html");
   return net::FilePathToFileURL(devToolsPath);
+}
+
+// FileSystem
+void OpenFileSystem(WebFrame*, WebFileSystem::Type,
+    WebFileSystemCallbacks* callbacks) {
+  // TODO(kinuko): hook up FileSystemPathManager in a way that the code could
+  // be shared with test_shell.
+  if (test_environment->webkit_client()->file_system_root().empty()) {
+    callbacks->didFail(WebKit::WebFileErrorSecurity);
+  } else {
+    callbacks->didOpenFileSystem(
+        "TestShellFileSystem",
+        webkit_glue::FilePathToWebString(
+            test_environment->webkit_client()->file_system_root()));
+  }
 }
 
 }  // namespace webkit_support

@@ -117,6 +117,12 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
 
   file_utilities_.set_sandbox_enabled(false);
 
+  if (!file_system_root_.CreateUniqueTempDir()) {
+    LOG(WARNING) << "Failed to create a temp dir for the filesystem."
+                    "FileSystem feature will be disabled.";
+    DCHECK(file_system_root_.path().empty());
+  }
+
 #if defined(OS_WIN)
   // Ensure we pick up the default theme engine.
   SetThemeEngine(NULL);

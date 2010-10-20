@@ -73,6 +73,10 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
     return &url_loader_factory_;
   }
 
+  const FilePath& file_system_root() const {
+    return file_system_root_.path();
+  }
+
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -83,6 +87,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   SimpleWebCookieJarImpl cookie_jar_;
   scoped_refptr<TestShellWebBlobRegistryImpl> blob_registry_;
   SimpleFileSystem file_system_;
+  ScopedTempDir file_system_root_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
 

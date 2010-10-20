@@ -12,12 +12,14 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 
 class WebURLLoaderMockFactory;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCString;
+class WebFileSystemCallbacks;
 class WebFrame;
 class WebKitClient;
 class WebMediaPlayer;
@@ -152,6 +154,10 @@ WebKit::WebThemeEngine* GetThemeEngine();
 // - DevTools
 WebKit::WebCString GetDevToolsDebuggerScriptSource();
 WebKit::WebURL GetDevToolsPathAsURL();
+
+// - FileSystem
+void OpenFileSystem(WebKit::WebFrame* frame, WebKit::WebFileSystem::Type type,
+    WebKit::WebFileSystemCallbacks* callbacks);
 
 // -------- Keyboard code
 enum {
