@@ -327,10 +327,11 @@ static int NaClDescSysvShmUnmapCommon(struct NaClDesc         *vself,
   for (addr = (uintptr_t) start_addr, end_addr = addr + len;
        addr < end_addr;
        addr += NACL_MAP_PAGESIZE) {
-    if (NaClIsNegErrno((*effp->vtbl->MapAnonymousMemory)(effp,
+    uintptr_t result = (*effp->vtbl->MapAnonymousMemory)(effp,
                                                          addr,
                                                          NACL_MAP_PAGESIZE,
-                                                         PROT_NONE))) {
+                                                         PROT_NONE);
+    if (NaClPtrIsNegErrno(&result)) {
       NaClLog(LOG_ERROR, "NaClDescSysvShmUnmapCommon: could not fill hole\n");
       return -NACL_ABI_E_MOVE_ADDRESS_SPACE;
     }

@@ -351,7 +351,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
   retval = (*((struct NaClDescVtbl const *) channel->base.vtbl)->
             SendMsg)(channel, &kern_msg_hdr, flags);
   NaClLog(4, "SendMsg returned %"NACL_PRIdS"\n", retval);
-  if (NaClIsNegErrno(retval)) {
+  if (NaClSSizeIsNegErrno(&retval)) {
     /*
      * NaClWouldBlock uses TSD (for both the errno-based and
      * GetLastError()-based implementations), so this is threadsafe.
@@ -512,7 +512,7 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                       RecvMsg)(channel,
                                &recv_hdr,
                                flags);
-  if (NaClIsNegErrno(total_recv_bytes)) {
+  if (NaClSSizeIsNegErrno(&total_recv_bytes)) {
     NaClLog(1, "RecvMsg failed, returned %"NACL_PRIdS"\n", total_recv_bytes);
     retval = total_recv_bytes;
     goto cleanup;

@@ -225,7 +225,7 @@ NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
     this_usec = __NaClSrpcGetUsec();
     channel->imc_read_usec += this_usec;
   }
-  if (!NaClIsNegErrno(retval)) {
+  if (!NaClSSizeIsNegErrno(&retval)) {
     channel->receive_buf.next_byte = 0;
     channel->receive_buf.last_byte = nacl_abi_size_t_saturate(retval);
   } else {

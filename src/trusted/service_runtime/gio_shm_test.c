@@ -386,7 +386,7 @@ int main(int ac,
                NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                NACL_ABI_MAP_SHARED,
                0);
-  if (NaClIsNegErrno(addr)) {
+  if (NaClPtrIsNegErrno(&addr)) {
     printf("Map failed\n");
     return EXIT_FAILURE;
   }
@@ -407,7 +407,7 @@ int main(int ac,
                 NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                 NACL_ABI_MAP_SHARED,
                 0);
-  if (NaClIsNegErrno(addr2)) {
+  if (NaClPtrIsNegErrno(&addr2)) {
     printf("Second Map failed\n");
     return EXIT_FAILURE;
   }

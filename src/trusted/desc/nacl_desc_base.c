@@ -537,7 +537,7 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
     NaClLog(4,
             "NaClDescMapDescriptor: result is %"NACL_PRIxPTR"\n",
             rval_ptr);
-    if (NaClIsNegErrno(rval_ptr)) {
+    if (NaClPtrIsNegErrno(&rval_ptr)) {
       /*
        * A nonzero return from NaClIsNegErrno
        * indicates that the value is within the range

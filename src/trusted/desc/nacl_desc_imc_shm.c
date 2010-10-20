@@ -305,10 +305,11 @@ static int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
 #endif
     /* there's still a race condition */
     if (safe_mode) {
-      if (NaClIsNegErrno((*effp->vtbl->MapAnonymousMemory)(effp,
+      uintptr_t result = (*effp->vtbl->MapAnonymousMemory)(effp,
                                                            addr,
                                                            NACL_MAP_PAGESIZE,
-                                                           PROT_NONE))) {
+                                                           PROT_NONE);
+      if (NaClPtrIsNegErrno(&result)) {
         NaClLog(LOG_ERROR, "NaClDescImcShmUnmapCommon: could not fill hole\n");
         retval = -NACL_ABI_E_MOVE_ADDRESS_SPACE;
         goto done;

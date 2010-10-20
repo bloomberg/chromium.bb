@@ -515,14 +515,14 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
    * 2)
    * nap->dynamic_mapcache_offset != 0
    * nap->dynamic_mapcache_size != 0
-   * !NaClIsNegError(nap->dynamic_mapcache_ret)
+   * !NaClPtrIsNegError(nap->dynamic_mapcache_ret)
    *
    * We have a cached mmap result stored, that must be unmapped.
    *
    * 3)
    * nap->dynamic_mapcache_offset != 0
    * nap->dynamic_mapcache_size != 0
-   * NaClIsNegError(nap->dynamic_mapcache_ret)
+   * NaClPtrIsNegError(nap->dynamic_mapcache_ret)
    *
    * The last mmap was an error, cache the error but don't unmap on next call.
    *
@@ -543,7 +543,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
      * cache miss, first clear the old cache if needed
      */
     if (nap->dynamic_mapcache_size > 0
-               && !NaClIsNegErrno(nap->dynamic_mapcache_ret)) {
+               && !NaClPtrIsNegErrno(&nap->dynamic_mapcache_ret)) {
       if (0 != (*((struct NaClDescVtbl const *) shm->base.vtbl)->
             UnmapUnsafe)(shm,
                          (struct NaClDescEffector*) &shm_effector,
@@ -610,7 +610,7 @@ static INLINE int NaclTextMapWrapper(struct NaClApp *nap,
   mmap_ret = CachedMapWritableText(nap,
                                    shm_map_offset,
                                    shm_map_size);
-  if (NaClIsNegErrno(mmap_ret)) {
+  if (NaClPtrIsNegErrno(&mmap_ret)) {
     return 0;
   }
   mmap_result = (uint8_t *) mmap_ret;

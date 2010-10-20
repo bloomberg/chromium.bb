@@ -624,7 +624,7 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
                   Getdents)(ndp,
                             (void *) sysaddr,
                             count);
-  if ((getdents_ret < INT32_MIN && !NaClIsNegErrno(getdents_ret))
+  if ((getdents_ret < INT32_MIN && !NaClSSizeIsNegErrno(&getdents_ret))
       || INT32_MAX < getdents_ret) {
     /* This should never happen, because we already clamped the input count */
     NaClLog(LOG_FATAL, "Overflow in Getdents: return value is %"NACL_PRIxS,
@@ -1371,7 +1371,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
      * "Small" negative integers are errno values.  Larger ones are
      * virtual addresses.
      */
-    if (NaClIsNegErrno((uintptr_t) map_result)) {
+    if (NaClPtrIsNegErrno(&map_result)) {
       NaClLog(LOG_FATAL,
               ("NaClSysMmap: Map failed, but we"
                " cannot handle address space move, error %"NACL_PRIuS"\n"),
@@ -1411,7 +1411,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
                                  prot,
                                  NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                                  (off_t) 0);
-    if (NaClIsNegErrno(map_result)) {
+    if (NaClPtrIsNegErrno(&map_result)) {
       NaClLog(LOG_ERROR,
               ("Could not create zero-filled pages for memory range"
                " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
@@ -1439,7 +1439,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
                              NACL_ABI_PROT_NONE,
                              NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
                              (off_t) 0);
-    if (NaClIsNegErrno(map_result)) {
+    if (NaClPtrIsNegErrno(&map_result)) {
       NaClLog(LOG_ERROR,
             ("Could not create inaccessible pages for memory range"
              " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR
@@ -1464,7 +1464,7 @@ cleanup:
   if (NULL != ndp) {
     NaClDescUnref(ndp);
   }
-  if (NaClIsNegErrno(map_result)) {
+  if (NaClPtrIsNegErrno(&map_result)) {
     free(nmop);
   }
 
@@ -1478,7 +1478,7 @@ cleanup:
    * they will be disjoint.
    */
   if (map_result > UINT32_MAX
-      && !NaClIsNegErrno(map_result)) {
+      && !NaClPtrIsNegErrno(&map_result)) {
     NaClLog(LOG_FATAL, "Overflow in NaClSysMmap: return address is "
                        "0x%"NACL_PRIxPTR"\n", map_result);
   }
@@ -1724,7 +1724,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
 
   ssize_retval = NaClImcSendTypedMessage(ndp, &kern_msg_hdr, flags);
 
-  if (NaClIsNegErrno(ssize_retval)) {
+  if (NaClSSizeIsNegErrno(&ssize_retval)) {
     /*
      * NaClWouldBlock uses TSD (for both the errno-based and
      * GetLastError()-based implementations), so this is threadsafe.
@@ -1894,7 +1894,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
   NaClLog(3, "NaClCommonSysImc_RecvMsg: "
           "NaClImcRecvTypedMessage returned %"NACL_PRIdS"\n",
           ssize_retval);
-  if (NaClIsNegErrno(ssize_retval)) {
+  if (NaClSSizeIsNegErrno(&ssize_retval)) {
     /* negative error numbers all have valid 32-bit representations,
      * so this cast is safe. */
     retval = (int32_t) ssize_retval;

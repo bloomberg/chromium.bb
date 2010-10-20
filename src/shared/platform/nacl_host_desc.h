@@ -65,23 +65,33 @@ typedef struct _stati64 nacl_host_stat_t;
  * Currently that's not possible, unless we want to forego NaClIsNegErrno in
  * trusted code, and go back to writing if(retval < 0) to check for errors.
  */
-static INLINE int NaClIsNegErrno(int64_t val) {
-  /*
-   * On 64-bit Linux, the app has the entire 32-bit address space
-   * (kernel no longer occupies the top 1G), so what is an errno and
-   * what is an address is trickier: we require that our NACL_ABI_
-   * errno values be at most 64K.
-   *
-   * NB: The runtime assumes that valid errno values can ALWAYS be
-   * represented using no more than 16 bits. If this assumption
-   * changes, all code dealing with error number should be reviewed.
-   *
-   * NB 2010-02-03: The original code for this function did not work:
-   *   return ((uint64_t) val) >= ~((uint64_t) 0xffff);
-   * Macintosh optimized builds were not able to recognize negative values.
-   * All other platforms as well as Macintosh debug builds worked fine.
-   */
-  return (val & ~((uint64_t) 0xffff)) == ~((uint64_t) 0xffff);
+
+/*
+ * On 64-bit Linux, the app has the entire 32-bit address space
+ * (kernel no longer occupies the top 1G), so what is an errno and
+ * what is an address is trickier: we require that our NACL_ABI_
+ * errno values be at most 64K.
+ *
+ * NB: The runtime assumes that valid errno values can ALWAYS be
+ * represented using no more than 16 bits. If this assumption
+ * changes, all code dealing with error number should be reviewed.
+ *
+ * NB 2010-02-03: The original code for this function did not work:
+ *   return ((uint64_t) val) >= ~((uint64_t) 0xffff);
+ * Macintosh optimized builds were not able to recognize negative values.
+ * All other platforms as well as Macintosh debug builds worked fine.
+ *
+ * NB the 3rd, 2010-10-19: these functions take pointer arguments
+ * to discourage accidental use of narrowing/widening conversions,
+ * which have caused problems in the past.  We assume without proof
+ * that the compiler will do the right thing when inlining.
+ */
+static INLINE int NaClPtrIsNegErrno(const uintptr_t *val) {
+  return (*val & ~((uintptr_t) 0xffff)) == ~((uintptr_t) 0xffff);
+}
+
+static INLINE int NaClSSizeIsNegErrno(const ssize_t *val) {
+  return (*val & ~((ssize_t) 0xffff)) == ~((ssize_t) 0xffff);
 }
 
 extern int NaClXlateErrno(int errnum);
