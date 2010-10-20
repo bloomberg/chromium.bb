@@ -275,7 +275,7 @@ prereq_changed = $(filter-out $|,$?)
 
 # do_cmd: run a command via the above cmd_foo names, if necessary.
 # Should always run for a given target to handle command-line changes.
-# Second argument, if non-zero, makes it do C/C++ dependency munging.
+# Second argument, if non-zero, makes it do asm/C/C++ dependency munging.
 define do_cmd
 $(if $(or $(command_changed),$(prereq_changed)),
   @$(call exact_echo,  $($(quiet)cmd_$(1)))
@@ -303,9 +303,9 @@ ROOT_HEADER_SUFFIX_RULES = ("""\
 $(obj).$(TOOLSET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj).$(TOOLSET)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
@@ -317,9 +317,9 @@ $(obj).$(TOOLSET)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cpp FORCE_DO_CMD
@@ -330,9 +330,9 @@ $(obj).$(TOOLSET)/%.o: $(obj).$(TOOLSET)/%.cxx FORCE_DO_CMD
 $(obj).$(TOOLSET)/%.o: $(obj)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(obj)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(obj)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 $(obj).$(TOOLSET)/%.o: $(obj)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj).$(TOOLSET)/%.o: $(obj)/%.cpp FORCE_DO_CMD
@@ -352,11 +352,11 @@ $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 """),
     '.s': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.s FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 """),
     '.S': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.S FORCE_DO_CMD
-	@$(call do_cmd,cc)
+	@$(call do_cmd,cc,1)
 """),
     '.cpp': ("""\
 $(obj).$(TOOLSET)/$(TARGET)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
