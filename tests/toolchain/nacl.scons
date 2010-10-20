@@ -49,6 +49,19 @@ node = env.CommandSelLdrTestNacl('initfini.out',
 env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
 
 
+# c.f.: http://code.google.com/p/nativeclient/issues/detail?id=1069
+RA_TEST=['toolchain_tests', 'small_tests']
+if not ARGUMENTS.get('bitcode') and env['TARGET_FULLARCH'] == 'x86-64':
+  RA_TEST=[]
+sloppy_env = env.Clone()
+sloppy_env.FilterOut(CFLAGS=['-pedantic', '-O2'])
+sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-O2'])
+nexe = sloppy_env.ComponentProgram('return_address.nexe', 'return_address.c')
+node = sloppy_env.CommandSelLdrTestNacl('return_address.out',
+                                        command=[nexe],
+                                        exit_status='55')
+sloppy_env.AddNodeToTestSuite(node, RA_TEST, 'run_return_address_test')
+
 
 eh_env = env.Clone()
 if ARGUMENTS.get('bitcode'):
