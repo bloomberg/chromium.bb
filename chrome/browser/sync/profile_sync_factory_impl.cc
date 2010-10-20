@@ -111,7 +111,7 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
 
   // Password sync is disabled by default.  Register only if
   // explicitly enabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncPasswords)) {
+  if (command_line_->HasSwitch(switches::kEnableSyncPasswords)) {
     pss->RegisterDataTypeController(
         new PasswordDataTypeController(this, profile_, pss));
   }
