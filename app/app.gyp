@@ -41,7 +41,6 @@
         'animation_container_unittest.cc',
         'animation_unittest.cc',
         'clipboard/clipboard_unittest.cc',
-        'hi_res_timer_manager_unittest.cc',
         'l10n_util_mac_unittest.mm',
         'l10n_util_unittest.cc',
         'multi_animation_unittest.cc',
