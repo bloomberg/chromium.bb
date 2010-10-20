@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,13 +19,46 @@ static const char kTest3[] = "CHROMEOS_RELEASE_DESCRIPTION=\"0.2.3.3\"";
 static const char kTest4[] = "CHROMEOS_RELEASE_DESCRIPTION=\"\"\"";
 static const char kTest5[] = "CHROMEOS_RELEASE_DESCRIPTION=\"\"";
 
+static const char kTest6[] =
+    "CHROMEOS_RELEASE_DESCRIPTION=1\nCHROMEOS_RELEASE_VERSION=0.2.3.3\nFOO=BAR";
+static const char kTest7[] = "DIST_ID=1\nCHROMEOS_RELEASE_VERSION=0.2.3.3";
+static const char kTest8[] = "CHROMEOS_RELEASE_VERSION=\"0.2.3.3\"";
+static const char kTest9[] = "CHROMEOS_RELEASE_VERSION=\"\"";
+
+TEST_F(VersionLoaderTest, ParseFullVersion) {
+  EXPECT_EQ("0.2.3.3",
+            VersionLoader::ParseVersion(kTest1,
+                                        VersionLoader::kFullVersionPrefix));
+  EXPECT_EQ("0.2.3.3",
+            VersionLoader::ParseVersion(kTest2,
+                                        VersionLoader::kFullVersionPrefix));
+  EXPECT_EQ("0.2.3.3",
+            VersionLoader::ParseVersion(kTest3,
+                                        VersionLoader::kFullVersionPrefix));
+  EXPECT_EQ("\"",
+            VersionLoader::ParseVersion(kTest4,
+                                        VersionLoader::kFullVersionPrefix));
+  EXPECT_EQ(std::string(),
+            VersionLoader::ParseVersion(kTest5,
+                                        VersionLoader::kFullVersionPrefix));
+  EXPECT_EQ(std::string(),
+            VersionLoader::ParseVersion(std::string(),
+                                        VersionLoader::kFullVersionPrefix));
+}
+
 TEST_F(VersionLoaderTest, ParseVersion) {
-  EXPECT_EQ("0.2.3.3", VersionLoader::ParseVersion(kTest1));
-  EXPECT_EQ("0.2.3.3", VersionLoader::ParseVersion(kTest2));
-  EXPECT_EQ("0.2.3.3", VersionLoader::ParseVersion(kTest3));
-  EXPECT_EQ("\"", VersionLoader::ParseVersion(kTest4));
-  EXPECT_EQ(std::string(), VersionLoader::ParseVersion(kTest5));
-  EXPECT_EQ(std::string(), VersionLoader::ParseVersion(std::string()));
+  EXPECT_EQ("0.2.3.3",
+            VersionLoader::ParseVersion(kTest6,
+                                        VersionLoader::kVersionPrefix));
+  EXPECT_EQ("0.2.3.3",
+            VersionLoader::ParseVersion(kTest7,
+                                        VersionLoader::kVersionPrefix));
+  EXPECT_EQ("0.2.3.3",
+            VersionLoader::ParseVersion(kTest8,
+                                        VersionLoader::kVersionPrefix));
+  EXPECT_EQ(std::string(),
+            VersionLoader::ParseVersion(kTest9,
+                                        VersionLoader::kFullVersionPrefix));
 }
 
 }  // namespace chromeos

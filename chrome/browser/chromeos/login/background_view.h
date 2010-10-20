@@ -169,6 +169,9 @@ class BackgroundView : public views::View,
   // 'OnOwnerChanged()' for more info.
   Delegate *delegate_;
 
+  // True if running official BUILD.
+  bool is_official_build_;
+
   // DOMView for rendering a webpage as a background.
   DOMView* background_area_;
 

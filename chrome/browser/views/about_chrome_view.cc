@@ -115,7 +115,7 @@ AboutChromeView::AboutChromeView(Profile* profile)
   DCHECK(profile);
 #if defined(OS_CHROMEOS)
   loader_.GetVersion(&consumer_,
-      NewCallback(this, &AboutChromeView::OnOSVersion));
+      NewCallback(this, &AboutChromeView::OnOSVersion), true);
 #endif
   Init();
 

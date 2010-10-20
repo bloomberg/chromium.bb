@@ -246,7 +246,8 @@ void AboutPageHandler::PageReady(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
   loader_.GetVersion(&consumer_,
-                     NewCallback(this, &AboutPageHandler::OnOSVersion));
+                     NewCallback(this, &AboutPageHandler::OnOSVersion),
+                     true);
 
   update_observer_.reset(new UpdateObserver(this));
   chromeos::UpdateLibrary* update_library =

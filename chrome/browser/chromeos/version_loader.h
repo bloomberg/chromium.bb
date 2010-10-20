@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ namespace chromeos {
 
 // ChromeOSVersionLoader loads the version of Chrome OS from the file system.
 // Loading is done asynchronously on the file thread. Once loaded,
-// ChromeOSVersionLoader callsback to a method of your choice with the version
+// ChromeOSVersionLoader callback to a method of your choice with the version
 // (or an empty string if the version couldn't be found).
 // To use ChromeOSVersionLoader do the following:
 //
@@ -38,10 +38,17 @@ class VersionLoader : public CancelableRequestProvider {
   typedef CancelableRequest<GetVersionCallback> GetVersionRequest;
 
   // Asynchronously requests the version.
+  // If |full_version| is true version string with extra info is extracted,
+  // otherwise it's in short format x.x.xx.x.
   Handle GetVersion(CancelableRequestConsumerBase* consumer,
-                    GetVersionCallback* callback);
+                    GetVersionCallback* callback,
+                    bool full_version);
+
+  static const char kFullVersionPrefix[];
+  static const char kVersionPrefix[];
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseFullVersion);
   FRIEND_TEST_ALL_PREFIXES(VersionLoaderTest, ParseVersion);
 
   // VersionLoader calls into the Backend on the file thread to load
@@ -52,7 +59,9 @@ class VersionLoader : public CancelableRequestProvider {
 
     // Calls ParseVersion to get the version # and notifies request.
     // This is invoked on the file thread.
-    void GetVersion(scoped_refptr<GetVersionRequest> request);
+    // If |full_version| is true then extra info is passed in version string.
+    void GetVersion(scoped_refptr<GetVersionRequest> request,
+                    bool full_version);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;
@@ -63,7 +72,9 @@ class VersionLoader : public CancelableRequestProvider {
   };
 
   // Extracts the version from the file.
-  static std::string ParseVersion(const std::string& contents);
+  // |prefix| specifies what key defines version data.
+  static std::string ParseVersion(const std::string& contents,
+                                  const std::string& prefix);
 
   scoped_refptr<Backend> backend_;
 

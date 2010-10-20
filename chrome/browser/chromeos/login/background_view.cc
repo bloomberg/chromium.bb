@@ -45,6 +45,8 @@ using views::WidgetGtk;
 
 namespace {
 
+const SkColor kVersionColor = 0xff5c739f;
+
 // The same as TextButton but switches cursor to hand cursor when mouse
 // is over the button.
 class TextButtonWithHandCursorOver : public views::TextButton {
@@ -95,6 +97,11 @@ BackgroundView::BackgroundView()
       go_incognito_button_(NULL),
       did_paint_(false),
       delegate_(NULL),
+#if defined(OFFICIAL_BUILD)
+      is_official_build_(true),
+#else
+      is_official_build_(false),
+#endif
       background_area_(NULL) {
 }
 
@@ -220,8 +227,8 @@ void BackgroundView::Paint(gfx::Canvas* canvas) {
 
 void BackgroundView::Layout() {
   const int kCornerPadding = 5;
-  const int kInfoLeftPadding = 60;
-  const int kInfoBottomPadding = 10;
+  const int kInfoLeftPadding = 15;
+  const int kInfoBottomPadding = 15;
   const int kInfoBetweenLinesPadding = 4;
   const int kProgressBarBottomPadding = 20;
   const int kProgressBarWidth = 750;
@@ -235,19 +242,21 @@ void BackgroundView::Layout() {
       status_area_size.width(),
       status_area_size.height());
   gfx::Size version_size = os_version_label_->GetPreferredSize();
+  int os_version_y = height() - version_size.height() - kInfoBottomPadding;
+  if (!is_official_build_)
+    os_version_y -= version_size.height() - kInfoBetweenLinesPadding;
   os_version_label_->SetBounds(
       kInfoLeftPadding,
-      height() -
-          ((2 * version_size.height()) +
-          kInfoBottomPadding +
-          kInfoBetweenLinesPadding),
+      os_version_y,
       width() - 2 * kInfoLeftPadding,
       version_size.height());
-  boot_times_label_->SetBounds(
-      kInfoLeftPadding,
-      height() - (version_size.height() + kInfoBottomPadding),
-      width() - 2 * kCornerPadding,
-      version_size.height());
+  if (!is_official_build_) {
+    boot_times_label_->SetBounds(
+        kInfoLeftPadding,
+        height() - (version_size.height() + kInfoBottomPadding),
+        width() - 2 * kInfoLeftPadding,
+        version_size.height());
+  }
   if (progress_bar_) {
     progress_bar_->SetBounds(
         (width() - kProgressBarWidth) / 2,
@@ -329,7 +338,6 @@ void BackgroundView::InitStatusArea() {
 }
 
 void BackgroundView::InitInfoLabels() {
-  const SkColor kVersionColor = 0xff8eb1f4;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   os_version_label_ = new views::Label();
@@ -337,17 +345,24 @@ void BackgroundView::InitInfoLabels() {
   os_version_label_->SetColor(kVersionColor);
   os_version_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   AddChildView(os_version_label_);
-  boot_times_label_ = new views::Label();
-  boot_times_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  boot_times_label_->SetColor(kVersionColor);
-  boot_times_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
-  AddChildView(boot_times_label_);
+  if (!is_official_build_) {
+    boot_times_label_ = new views::Label();
+    boot_times_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    boot_times_label_->SetColor(kVersionColor);
+    boot_times_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+    AddChildView(boot_times_label_);
+  }
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
     version_loader_.GetVersion(
-        &version_consumer_, NewCallback(this, &BackgroundView::OnVersion));
-    boot_times_loader_.GetBootTimes(
-        &boot_times_consumer_, NewCallback(this, &BackgroundView::OnBootTimes));
+        &version_consumer_,
+        NewCallback(this, &BackgroundView::OnVersion),
+        !is_official_build_);
+    if (!is_official_build_) {
+      boot_times_loader_.GetBootTimes(
+          &boot_times_consumer_,
+          NewCallback(this, &BackgroundView::OnBootTimes));
+    }
   } else {
     os_version_label_->SetText(
         ASCIIToWide(CrosLibrary::Get()->load_error_string()));
@@ -437,8 +452,6 @@ void BackgroundView::OnVersion(
 
 void BackgroundView::OnBootTimes(
     BootTimesLoader::Handle handle, BootTimesLoader::BootTimes boot_times) {
-  // TODO(davemoore) if we decide to keep these times visible we will need
-  // to localize the strings.
   const char* kBootTimesNoChromeExec =
       "Boot took %.2f seconds (firmware %.2fs, kernel %.2fs, system %.2fs)";
   const char* kBootTimesChromeExec =

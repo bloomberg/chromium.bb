@@ -240,8 +240,10 @@ void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
      version_loader_.GetVersion(
-         &version_consumer_, NewCallback(this,
-                                         &RegisterPageHandler::OnVersion));
+         &version_consumer_,
+         NewCallback(this,
+                     &RegisterPageHandler::OnVersion),
+         true);
   } else {
     SkipRegistration("CrosLibrary is not loaded.");
   }
