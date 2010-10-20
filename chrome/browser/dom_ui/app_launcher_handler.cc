@@ -268,6 +268,19 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
 }
 
 void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
+  // If the user has intentionally hidden the promotion, we'll uninstall all the
+  // default apps (we know the user hasn't installed any apps on their own at
+  // this point, or the promotion wouldn't have been shown).
+  DefaultApps* default_apps = extensions_service_->default_apps();
+  const ExtensionIdSet* app_ids = default_apps->GetDefaultApps();
+  DCHECK(*app_ids == extensions_service_->GetAppIds());
+
+  for (ExtensionIdSet::const_iterator iter = app_ids->begin();
+       iter != app_ids->end(); ++iter) {
+    if (extensions_service_->GetExtensionById(*iter, true))
+      extensions_service_->UninstallExtension(*iter, false);
+  }
+
   extensions_service_->default_apps()->SetPromoHidden();
 }
 

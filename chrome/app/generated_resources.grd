@@ -3923,7 +3923,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         What's an app? Try one of these:
       </message>
       <message name="IDS_APPS_PROMO_HIDE" desc="Text on the button that hides the apps promo">
-        Hide this message
+        Hide this
       </message>
 
       <!-- Plugins -->

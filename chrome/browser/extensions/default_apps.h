@@ -43,6 +43,9 @@ class DefaultApps {
   // no apps need to be installed.
   const ExtensionIdSet* GetAppsToInstall() const;
 
+  // Gets the list of default apps.
+  const ExtensionIdSet* GetDefaultApps() const;
+
   // Should be called after each app is installed. Once installed_ids contains
   // all the default apps, GetAppsToInstall() will start returning NULL.
   void DidInstallApp(const ExtensionIdSet& installed_ids);

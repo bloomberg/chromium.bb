@@ -16,6 +16,7 @@ TEST(DefaultApps, Basics) {
   ASSERT_GT(default_app_ids.size(), 0u);
   EXPECT_FALSE(default_apps.GetDefaultAppsInstalled());
   EXPECT_EQ(0, default_apps.GetPromoCounter());
+  EXPECT_EQ(default_app_ids, *default_apps.GetDefaultApps());
 
   // The promo should not be shown until the default apps have been installed.
   ExtensionIdSet installed_app_ids;

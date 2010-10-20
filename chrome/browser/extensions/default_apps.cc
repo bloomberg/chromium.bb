@@ -34,6 +34,10 @@ const ExtensionIdSet* DefaultApps::GetAppsToInstall() const {
     return &ids_;
 }
 
+const ExtensionIdSet* DefaultApps::GetDefaultApps() const {
+  return &ids_;
+}
+
 void DefaultApps::DidInstallApp(const ExtensionIdSet& installed_ids) {
   // If all the default apps have been installed, stop trying to install them.
   // Note that we use std::includes here instead of == because apps might have
