@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,16 +24,15 @@ ListenTask::~ListenTask() {
 }
 
 int ListenTask::ProcessStart() {
-  LOG(INFO) << "P2P: Listener task started.";
+  VLOG(1) << "P2P: Listener task started.";
   return STATE_RESPONSE;
 }
 
 int ListenTask::ProcessResponse() {
-  LOG(INFO) << "P2P: Listener response received.";
+  VLOG(1) << "P2P: Listener response received.";
   const buzz::XmlElement* stanza = NextStanza();
-  if (stanza == NULL) {
+  if (stanza == NULL)
     return STATE_BLOCKED;
-  }
   // Acknowledge receipt of the notification to the buzz server.
   scoped_ptr<buzz::XmlElement> response_stanza(MakeIqResult(stanza));
   SendStanza(response_stanza.get());
@@ -115,7 +114,7 @@ int ListenTask::ProcessResponse() {
 }
 
 bool ListenTask::HandleStanza(const buzz::XmlElement* stanza) {
-  LOG(INFO) << "P2P: Stanza received: " << XmlElementToString(*stanza);
+  VLOG(1) << "P2P: Stanza received: " << XmlElementToString(*stanza);
   // TODO(akalin): Do more verification on stanza depending on
   // the sync notification method
   if (IsValidNotification(stanza)) {

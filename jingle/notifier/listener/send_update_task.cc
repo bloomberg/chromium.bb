@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,12 +33,11 @@ bool SendUpdateTask::HandleStanza(const buzz::XmlElement* stanza) {
 }
 
 int SendUpdateTask::ProcessStart() {
-  LOG(INFO) << "P2P: Notification task started.";
+  VLOG(1) << "P2P: Notification task started.";
   scoped_ptr<buzz::XmlElement> stanza(
       MakeUpdateMessage(notification_data_,
                         GetClient()->jid().BareJid(), task_id()));
-  LOG(INFO) << "P2P: Notification stanza: "
-            << XmlElementToString(*stanza.get());
+  VLOG(1) << "P2P: Notification stanza: " << XmlElementToString(*stanza.get());
 
   if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
     // TODO(brg) : Retry on error.
@@ -52,12 +51,12 @@ int SendUpdateTask::ProcessStart() {
 }
 
 int SendUpdateTask::ProcessResponse() {
-  LOG(INFO) << "P2P: Notification response received.";
+  VLOG(1) << "P2P: Notification response received.";
   const buzz::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
-  LOG(INFO) << "P2P: Notification response: " << XmlElementToString(*stanza);
+  VLOG(1) << "P2P: Notification response: " << XmlElementToString(*stanza);
   if (stanza->HasAttr(buzz::QN_TYPE) &&
     stanza->Attr(buzz::QN_TYPE) == buzz::STR_RESULT) {
     // Notify listeners of success.

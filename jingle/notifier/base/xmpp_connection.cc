@@ -83,7 +83,7 @@ XmppConnection::~XmppConnection() {
 
 void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  LOG(INFO) << "XmppClient state changed to " << state;
+  VLOG(1) << "XmppClient state changed to " << state;
   if (!weak_xmpp_client_.get()) {
     LOG(DFATAL) << "weak_xmpp_client_ unexpectedly NULL";
     return;

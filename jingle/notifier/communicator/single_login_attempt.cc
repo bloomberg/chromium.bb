@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,11 +53,10 @@ void SingleLoginAttempt::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
 
 void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
                                  const buzz::XmlElement* stream_error) {
-  LOG(INFO) << "Error: " << error << ", subcode: " << subcode;
+  VLOG(1) << "Error: " << error << ", subcode: " << subcode;
   if (stream_error) {
     DCHECK_EQ(error, buzz::XmppEngine::ERROR_STREAM);
-    LOG(INFO) << "Stream error: "
-              << XmlElementToString(*stream_error);
+    VLOG(1) << "Stream error: " << XmlElementToString(*stream_error);
   }
 
   // Check for redirection.
@@ -101,10 +100,9 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
 void SingleLoginAttempt::OnAttemptedAllConnections(
     bool successfully_resolved_dns,
     int first_dns_error) {
-  if (!successfully_resolved_dns) {
-    LOG(INFO) << "Could not resolve DNS: " << first_dns_error;
-  }
-  LOG(INFO) << "Could not connect to any XMPP server";
+  if (!successfully_resolved_dns)
+    VLOG(1) << "Could not resolve DNS: " << first_dns_error;
+  VLOG(1) << "Could not connect to any XMPP server";
   SignalNeedAutoReconnect();
 }
 

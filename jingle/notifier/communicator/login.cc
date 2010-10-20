@@ -64,7 +64,7 @@ void Login::StartConnection() {
     login_settings_->clear_server_override();
   }
 
-  LOG(INFO) << "Starting connection...";
+  VLOG(1) << "Starting connection...";
 
   single_attempt_.reset(new SingleLoginAttempt(login_settings_.get()));
 
@@ -95,7 +95,7 @@ void Login::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
 }
 
 void Login::OnIPAddressChanged() {
-  LOG(INFO) << "Detected IP address change";
+  VLOG(1) << "Detected IP address change";
   // Reconnect in 1 to 9 seconds (vary the time a little to try to
   // avoid spikey behavior on network hiccups).
   reconnect_interval_ = base::TimeDelta::FromSeconds(base::RandInt(1, 9));
@@ -112,8 +112,8 @@ void Login::TryReconnect() {
   DCHECK_GT(reconnect_interval_.InSeconds(), 0);
   single_attempt_.reset();
   reconnect_timer_.Stop();
-  LOG(INFO) << "Reconnecting in "
-            << reconnect_interval_.InSeconds() << " seconds";
+  VLOG(1) << "Reconnecting in "
+          << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
       reconnect_interval_, this, &Login::DoReconnect);
   SignalDisconnect();
@@ -124,10 +124,9 @@ void Login::DoReconnect() {
   const base::TimeDelta kMaxReconnectInterval =
       base::TimeDelta::FromMinutes(30);
   reconnect_interval_ *= 2;
-  if (reconnect_interval_ > kMaxReconnectInterval) {
+  if (reconnect_interval_ > kMaxReconnectInterval)
     reconnect_interval_ = kMaxReconnectInterval;
-  }
-  LOG(INFO) << "Reconnecting...";
+  VLOG(1) << "Reconnecting...";
   StartConnection();
 }
 

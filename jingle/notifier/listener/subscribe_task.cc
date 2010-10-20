@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,12 +36,12 @@ bool SubscribeTask::HandleStanza(const buzz::XmlElement* stanza) {
 }
 
 int SubscribeTask::ProcessStart() {
-  LOG(INFO) << "P2P: Subscription task started.";
+  VLOG(1) << "P2P: Subscription task started.";
   scoped_ptr<buzz::XmlElement> iq_stanza(
       MakeSubscriptionMessage(subscribed_services_list_,
                               GetClient()->jid().BareJid(), task_id()));
-  LOG(INFO) << "P2P: Subscription stanza: "
-            << XmlElementToString(*iq_stanza.get());
+  VLOG(1) << "P2P: Subscription stanza: "
+          << XmlElementToString(*iq_stanza.get());
 
   if (SendStanza(iq_stanza.get()) != buzz::XMPP_RETURN_OK) {
     SignalStatusUpdate(false);
@@ -52,12 +52,12 @@ int SubscribeTask::ProcessStart() {
 }
 
 int SubscribeTask::ProcessResponse() {
-  LOG(INFO) << "P2P: Subscription response received.";
+  VLOG(1) << "P2P: Subscription response received.";
   const buzz::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
-  LOG(INFO) << "P2P: Subscription response: " << XmlElementToString(*stanza);
+  VLOG(1) << "P2P: Subscription response: " << XmlElementToString(*stanza);
   // We've receieved a response to our subscription request.
   if (stanza->HasAttr(buzz::QN_TYPE) &&
     stanza->Attr(buzz::QN_TYPE) == buzz::STR_RESULT) {

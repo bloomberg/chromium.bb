@@ -117,7 +117,7 @@ MessageLoop* MediatorThreadImpl::worker_message_loop() {
 void MediatorThreadImpl::DoLogin(
     const buzz::XmppClientSettings& settings) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  LOG(INFO) << "P2P: Thread logging into talk network.";
+  VLOG(1) << "P2P: Thread logging into talk network.";
 
   base_task_.reset();
 
@@ -166,7 +166,7 @@ void MediatorThreadImpl::DoLogin(
 
 void MediatorThreadImpl::DoDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  LOG(INFO) << "P2P: Thread logging out of talk network.";
+  VLOG(1) << "P2P: Thread logging out of talk network.";
   login_.reset();
   host_resolver_.reset();
   base_task_.reset();

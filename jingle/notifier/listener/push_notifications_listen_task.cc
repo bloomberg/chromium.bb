@@ -29,12 +29,12 @@ PushNotificationsListenTask::~PushNotificationsListenTask() {
 }
 
 int PushNotificationsListenTask::ProcessStart() {
-  LOG(INFO) << "Push notifications: Listener task started.";
+  VLOG(1) << "Push notifications: Listener task started.";
   return STATE_RESPONSE;
 }
 
 int PushNotificationsListenTask::ProcessResponse() {
-  LOG(INFO) << "Push notifications: Listener response received.";
+  VLOG(1) << "Push notifications: Listener response received.";
   const buzz::XmlElement* stanza = NextStanza();
   if (stanza == NULL) {
     return STATE_BLOCKED;
@@ -74,8 +74,8 @@ int PushNotificationsListenTask::ProcessResponse() {
 }
 
 bool PushNotificationsListenTask::HandleStanza(const buzz::XmlElement* stanza) {
-  LOG(INFO) << "Push notifications: Stanza received: "
-      << XmlElementToString(*stanza);
+  VLOG(1) << "Push notifications: Stanza received: "
+          << XmlElementToString(*stanza);
   if (IsValidNotification(stanza)) {
     QueueStanza(stanza);
     return true;
