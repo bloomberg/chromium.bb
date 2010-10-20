@@ -75,8 +75,9 @@ END_MSG_MAP()
     // is Google Chrome Frame.
     FilePath actual_profile_name = profile_path.BaseName();
     launch_params_ = new ChromeFrameLaunchParams(url, referrer, profile_path,
-        actual_profile_name.value(), extra_chrome_arguments, incognito_mode,
-        is_widget_mode, route_all_top_level_navigations);
+        actual_profile_name.value(), SimpleResourceLoader::GetLanguage(),
+        extra_chrome_arguments, incognito_mode, is_widget_mode,
+        route_all_top_level_navigations);
     return automation_client_->Initialize(this, launch_params_);
   }
 

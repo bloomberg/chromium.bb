@@ -23,6 +23,7 @@ const wchar_t* kAllowedSwitches[] = {
   L"disable-renderer-accessibility",
   L"enable-experimental-extension-apis",
   L"force-renderer-accessibility",
+  L"lang",
   L"no-default-browser-check",
   L"noerrdialogs",
   L"no-first-run",

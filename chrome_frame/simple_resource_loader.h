@@ -12,6 +12,7 @@
 
 #include <windows.h>
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -24,33 +25,50 @@ class SimpleResourceLoader {
     return Singleton<SimpleResourceLoader>::get();
   }
 
+  // Returns the language tag for the active language.
+  static std::wstring GetLanguage();
+
   // Helper method to return the string resource identified by message_id
   // from the currently loaded locale dll.
   static std::wstring Get(int message_id);
 
   // Retrieves the HINSTANCE of the loaded module handle. May be NULL if a
   // resource DLL could not be loaded.
-  HINSTANCE GetResourceModuleHandle();
+  HMODULE GetResourceModuleHandle();
+
+  // Retrieves the preferred languages for the current thread, adding them to
+  // |language_tags|.
+  static void GetPreferredLanguages(std::vector<std::wstring>* language_tags);
+
+  // Retrieves the thread/process/user/system preferred languages on Vista+,
+  // adding them and their fallbacks to |language_tags|.  Returns |false| if the
+  // platform does not support such (i.e., XP).
+  static bool GetThreadPreferredUILanguages(
+      std::vector<std::wstring>* language_tags);
+
+  // Retrieves the system language and the region using ICU (used on XP).
+  static void GetICUSystemLanguage(std::wstring* language,
+                                   std::wstring* region);
+
+  // Populates |locales_path| with the path to the "Locales" directory.
+  static void DetermineLocalesDirectory(FilePath* locales_path);
+
+  // Returns false if |language_tag| is malformed.
+  static bool IsValidLanguageTag(const std::wstring& language_tag);
 
  private:
   SimpleResourceLoader();
   ~SimpleResourceLoader();
 
-  // Retrieves the system language and the region using ICU.
-  void GetSystemLocale(std::wstring* language, std::wstring* region);
-
-  // Uses |locale| to build the resource DLL name and then looks for the named
-  // DLL in known locales paths. If it doesn't find it, it falls back to
-  // looking for an en-US.dll.
+  // Finds the most-preferred resource DLL for the laguages in |language_tags|
+  // in |locales_path|.
   //
-  // Returns true if a locale DLL can be found, false otherwise.
-  bool GetLocaleFilePath(const std::wstring& language,
-                         const std::wstring& region,
-                         FilePath* file_path);
-
-  // Loads the locale dll at the given path. Returns a handle to the DLL or
-  // NULL on failure.
-  HINSTANCE LoadLocaleDll(const FilePath& dll_path);
+  // Returns true on success with a handle to the DLL that was loaded in
+  // |dll_handle| and its path in |file_path|.
+  static bool LoadLocaleDll(const std::vector<std::wstring>& language_tags,
+                            const FilePath& locales_path,
+                            HMODULE* dll_handle,
+                            FilePath* file_path);
 
   // Returns the string resource identified by message_id from the currently
   // loaded locale dll.
@@ -58,9 +76,10 @@ class SimpleResourceLoader {
 
   friend struct DefaultSingletonTraits<SimpleResourceLoader>;
 
-  FRIEND_TEST_ALL_PREFIXES(SimpleResourceLoaderTest, GetLocaleFilePath);
+  FRIEND_TEST_ALL_PREFIXES(SimpleResourceLoaderTest, LoadLocaleDll);
 
-  static HINSTANCE locale_dll_handle_;
+  std::wstring language_;
+  HINSTANCE locale_dll_handle_;
 };
 
 #endif  // CHROME_FRAME_SIMPLE_RESOURCE_LOADER_H_

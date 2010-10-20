@@ -4,12 +4,26 @@
 
 #include "chrome_frame/policy_settings.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome_frame/utils.h"
+
+namespace {
+
+// This array specifies the order in which registry keys are tested.  Do not
+// change this unless the decision is made product-wide (i.e., in Chrome's
+// configuration policy provider).
+const HKEY kRootKeys[] = {
+  HKEY_LOCAL_MACHINE,
+  HKEY_CURRENT_USER
+};
+
+}  // namespace
 
 PolicySettings::RendererForUrl PolicySettings::GetRendererForUrl(
     const wchar_t* url) {
@@ -41,21 +55,24 @@ PolicySettings::RendererForUrl PolicySettings::GetRendererForContentType(
   return renderer;
 }
 
-void PolicySettings::RefreshFromRegistry() {
-  default_renderer_ = RENDERER_NOT_SPECIFIED;
-  renderer_exclusion_list_.clear();
+// static
+void PolicySettings::ReadUrlSettings(
+    RendererForUrl* default_renderer,
+    std::vector<std::wstring>* renderer_exclusion_list) {
+  DCHECK(default_renderer);
+  DCHECK(renderer_exclusion_list);
+
+  *default_renderer = RENDERER_NOT_SPECIFIED;
+  renderer_exclusion_list->clear();
 
   base::win::RegKey config_key;
   DWORD value = RENDERER_NOT_SPECIFIED;
-  HKEY root_key[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
   std::wstring settings_value(
       ASCIIToWide(policy::key::kChromeFrameRendererSettings));
-  for (int i = 0; i < arraysize(root_key); ++i) {
-    if (config_key.Open(root_key[i], policy::kRegistrySubKey, KEY_READ) &&
+  for (int i = 0; i < arraysize(kRootKeys); ++i) {
+    if (config_key.Open(kRootKeys[i], policy::kRegistrySubKey, KEY_READ) &&
         config_key.ReadValueDW(settings_value.c_str(), &value)) {
       break;
-    } else {
-      config_key.Close();
     }
   }
 
@@ -67,26 +84,72 @@ void PolicySettings::RefreshFromRegistry() {
   if (value != RENDER_IN_HOST && value != RENDER_IN_CHROME_FRAME) {
     DVLOG(1) << "default renderer not specified via policy";
   } else {
-    default_renderer_ = static_cast<RendererForUrl>(value);
-    const char* exclusion_list_name = (default_renderer_ == RENDER_IN_HOST) ?
+    *default_renderer = static_cast<RendererForUrl>(value);
+    const char* exclusion_list_name = (*default_renderer == RENDER_IN_HOST) ?
         policy::key::kRenderInChromeFrameList :
         policy::key::kRenderInHostList;
 
     EnumerateKeyValues(config_key.Handle(),
-        ASCIIToWide(exclusion_list_name).c_str(), &renderer_exclusion_list_);
+        ASCIIToWide(exclusion_list_name).c_str(), renderer_exclusion_list);
 
     DVLOG(1) << "Default renderer as specified via policy: "
-             << default_renderer_
-             << " exclusion list size: " << renderer_exclusion_list_.size();
+             << *default_renderer
+             << " exclusion list size: " << renderer_exclusion_list->size();
   }
+}
+
+// static
+void PolicySettings::ReadContentTypeSetting(
+    std::vector<std::wstring>* content_type_list) {
+  DCHECK(content_type_list);
 
   std::wstring sub_key(policy::kRegistrySubKey);
   sub_key += L"\\";
   sub_key += ASCIIToWide(policy::key::kChromeFrameContentTypes);
 
-  for (int i = 0; i < arraysize(root_key) && content_type_list_.size() == 0;
+  content_type_list->clear();
+  for (int i = 0; i < arraysize(kRootKeys) && content_type_list->size() == 0;
        ++i) {
-    EnumerateKeyValues(root_key[i], sub_key.c_str(), &content_type_list_);
+    EnumerateKeyValues(kRootKeys[i], sub_key.c_str(), content_type_list);
   }
+}
+
+// static
+void PolicySettings::ReadApplicationLocaleSetting(
+    std::wstring* application_locale) {
+  DCHECK(application_locale);
+
+  application_locale->clear();
+  base::win::RegKey config_key;
+  std::wstring application_locale_value(
+      ASCIIToWide(policy::key::kApplicationLocaleValue));
+  for (int i = 0; i < arraysize(kRootKeys); ++i) {
+    if (config_key.Open(kRootKeys[i], policy::kRegistrySubKey, KEY_READ) &&
+        config_key.ReadValue(application_locale_value.c_str(),
+                             application_locale)) {
+      break;
+    }
+  }
+}
+
+void PolicySettings::RefreshFromRegistry() {
+  RendererForUrl default_renderer;
+  std::vector<std::wstring> renderer_exclusion_list;
+  std::vector<std::wstring> content_type_list;
+  std::wstring application_locale;
+
+  // Read the latest settings from the registry
+  ReadUrlSettings(&default_renderer, &renderer_exclusion_list);
+  ReadContentTypeSetting(&content_type_list);
+  ReadApplicationLocaleSetting(&application_locale);
+
+  // Nofail swap in the new values.  (Note: this is all that need be protected
+  // under a mutex if/when this becomes thread safe.)
+  using std::swap;
+
+  swap(default_renderer_, default_renderer);
+  swap(renderer_exclusion_list_, renderer_exclusion_list);
+  swap(content_type_list_, content_type_list);
+  swap(application_locale_, application_locale);
 }
 

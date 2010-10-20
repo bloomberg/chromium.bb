@@ -177,7 +177,8 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
       : ready_state_(READYSTATE_UNINITIALIZED),
       url_fetcher_(new UrlmonUrlRequestManager()),
       failed_to_fetch_in_place_frame_(false),
-      draw_sad_tab_(false) {
+      draw_sad_tab_(false),
+      prev_resource_instance_(NULL) {
     m_bWindowOnly = TRUE;
     url_fetcher_->set_container(static_cast<IDispatch*>(this));
   }
@@ -244,10 +245,16 @@ END_MSG_MAP()
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
   virtual void SetResourceModule() {
+    DCHECK(NULL == prev_resource_instance_);
     SimpleResourceLoader* loader_instance = SimpleResourceLoader::instance();
     DCHECK(loader_instance);
-    HINSTANCE res_dll = loader_instance->GetResourceModuleHandle();
-    _AtlBaseModule.SetResourceInstance(res_dll);
+    HMODULE res_dll = loader_instance->GetResourceModuleHandle();
+    prev_resource_instance_ = _AtlBaseModule.SetResourceInstance(res_dll);
+  }
+
+  virtual void ClearResourceModule() {
+    _AtlBaseModule.SetResourceInstance(prev_resource_instance_);
+    prev_resource_instance_ = NULL;
   }
 
   HRESULT FinalConstruct() {
@@ -272,6 +279,8 @@ END_MSG_MAP()
 
   void FinalRelease() {
     Uninitialize();
+
+    ClearResourceModule();
   }
 
   void ResetUrlRequestManager() {
@@ -1243,6 +1252,8 @@ END_MSG_MAP()
   // Handle network requests when host network stack is used. Passed to the
   // automation client on initialization.
   scoped_ptr<UrlmonUrlRequestManager> url_fetcher_;
+
+  HINSTANCE prev_resource_instance_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_BASE_H_

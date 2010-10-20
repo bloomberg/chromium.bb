@@ -24,6 +24,7 @@ class AutomationMockDelegate
   AutomationMockDelegate(MessageLoop* caller_message_loop,
       int launch_timeout, bool perform_version_check,
       const std::wstring& profile_name,
+      const std::wstring& language,
       const std::wstring& extra_chrome_arguments, bool incognito,
       bool is_widget_mode)
       : caller_message_loop_(caller_message_loop), is_connected_(false),
@@ -40,7 +41,8 @@ class AutomationMockDelegate
     GURL empty;
     scoped_refptr<ChromeFrameLaunchParams> clp(
         new ChromeFrameLaunchParams(empty, empty, profile_path, profile_name,
-            extra_chrome_arguments, incognito, is_widget_mode, false));
+            language, extra_chrome_arguments, incognito, is_widget_mode,
+            false));
     clp->set_launch_timeout(launch_timeout);
     clp->set_version_check(perform_version_check);
     automation_client_->Initialize(this, clp);
@@ -145,7 +147,7 @@ class AutomationMockLaunch
   typedef AutomationMockDelegate<AutomationMockLaunch> Base;
   AutomationMockLaunch(MessageLoop* caller_message_loop,
                        int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
+      : Base(caller_message_loop, launch_timeout, true, L"", L"", L"", false,
              false) {
   }
   virtual void OnAutomationServerReady() {
@@ -163,7 +165,7 @@ class AutomationMockNavigate
   typedef AutomationMockDelegate<AutomationMockNavigate> Base;
   AutomationMockNavigate(MessageLoop* caller_message_loop,
                          int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false,
+      : Base(caller_message_loop, launch_timeout, true, L"", L"", L"", false,
              false) {
   }
   virtual void OnLoad(int tab_handle, const GURL& url) {
@@ -178,7 +180,8 @@ class AutomationMockPostMessage
   typedef AutomationMockDelegate<AutomationMockPostMessage> Base;
   AutomationMockPostMessage(MessageLoop* caller_message_loop,
                             int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false, false),
+      : Base(caller_message_loop, launch_timeout, true, L"", L"", L"", false,
+             false),
         postmessage_result_(false) {}
   bool postmessage_result() const {
     return postmessage_result_;
@@ -206,7 +209,8 @@ class AutomationMockHostNetworkRequestStart
   typedef AutomationMockDelegate<AutomationMockHostNetworkRequestStart> Base;
   AutomationMockHostNetworkRequestStart(MessageLoop* caller_message_loop,
       int launch_timeout)
-      : Base(caller_message_loop, launch_timeout, true, L"", L"", false, false),
+      : Base(caller_message_loop, launch_timeout, true, L"", L"", L"", false,
+             false),
         request_start_result_(false) {
     if (automation()) {
       automation()->set_use_chrome_network(false);

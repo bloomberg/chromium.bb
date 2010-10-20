@@ -4,6 +4,7 @@
 
 #include "chrome_frame/chrome_frame_automation.h"
 
+#include "app/app_switches.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -26,6 +27,7 @@
 #include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/custom_sync_call_context.h"
+#include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
 
 #ifdef NDEBUG
@@ -298,6 +300,9 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   DVLOG(1) << "Profile path: " << params->profile_path().value();
   command_line->AppendSwitchPath(switches::kUserDataDir,
                                  params->profile_path());
+
+  if (!params->language().empty())
+    command_line->AppendSwitchNative(switches::kLang, params->language());
 
   std::wstring command_line_string(command_line->command_line_string());
   // If there are any extra arguments, append them to the command line.
@@ -720,8 +725,8 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
     if (!chrome_launch_params_) {
       FilePath profile_path;
       chrome_launch_params_ = new ChromeFrameLaunchParams(parsed_url,
-          referrer_gurl, profile_path, L"", L"", false, false,
-          route_all_top_level_navigations_);
+          referrer_gurl, profile_path, L"", SimpleResourceLoader::GetLanguage(),
+          L"", false, false, route_all_top_level_navigations_);
     } else {
       chrome_launch_params_->set_referrer(referrer_gurl);
       chrome_launch_params_->set_url(parsed_url);

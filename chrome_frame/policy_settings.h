@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+
 // A simple class that reads and caches policy settings for Chrome Frame.
 // TODO(tommi): Support refreshing when new settings are pushed.
 // TODO(tommi): Use Chrome's classes for this (and the notification service).
@@ -34,6 +36,19 @@ class PolicySettings {
 
   RendererForUrl GetRendererForContentType(const wchar_t* content_type);
 
+  // Returns the policy-configured Chrome app locale, or an empty string if none
+  // is configured.
+  const std::wstring& ApplicationLocale() const {
+    return application_locale_;
+  }
+
+  // Helper functions for reading settings from the registry
+  static void ReadUrlSettings(RendererForUrl* default_renderer,
+      std::vector<std::wstring>* renderer_exclusion_list);
+  static void ReadContentTypeSetting(
+      std::vector<std::wstring>* content_type_list);
+  static void ReadApplicationLocaleSetting(std::wstring* application_locale);
+
  protected:
   // Protected for now since the class is not thread safe.
   void RefreshFromRegistry();
@@ -42,6 +57,10 @@ class PolicySettings {
   RendererForUrl default_renderer_;
   std::vector<std::wstring> renderer_exclusion_list_;
   std::vector<std::wstring> content_type_list_;
+  std::wstring application_locale_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PolicySettings);
 };
 
 

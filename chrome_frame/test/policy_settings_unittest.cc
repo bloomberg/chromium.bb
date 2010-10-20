@@ -25,6 +25,7 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInChromeFrameList).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInHostList).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kChromeFrameContentTypes).c_str());
+    key.DeleteKey(ASCIIToWide(policy::key::kApplicationLocaleValue).c_str());
   }
 }
 
@@ -115,6 +116,17 @@ bool SetCFContentTypes(HKEY policy_root, const wchar_t* content_types[],
   std::wstring type_list(ASCIIToWide(policy::key::kChromeFrameContentTypes));
   WritePolicyList(&policy_key, type_list.c_str(), content_types, count);
 
+  return true;
+}
+
+bool SetChromeApplicationLocale(HKEY policy_root, const wchar_t* locale) {
+  RegKey policy_key;
+  if (!InitializePolicyKey(policy_root, &policy_key))
+    return false;
+
+  std::wstring application_locale_value(
+      ASCIIToWide(policy::key::kApplicationLocaleValue));
+  EXPECT_TRUE(policy_key.WriteValue(application_locale_value.c_str(), locale));
   return true;
 }
 
@@ -215,3 +227,26 @@ TEST(PolicySettings, RendererForContentType) {
   }
 }
 
+TEST(PolicySettings, ApplicationLocale) {
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  scoped_ptr<TempRegKeyOverride> hklm_pol(
+      new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
+  scoped_ptr<TempRegKeyOverride> hkcu_pol(
+      new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
+
+  scoped_ptr<PolicySettings> settings(new PolicySettings());
+  EXPECT_TRUE(settings->ApplicationLocale().empty());
+
+  static const wchar_t kTestApplicationLocale[] = L"fr-CA";
+
+  HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+  for (int i = 0; i < arraysize(root); ++i) {
+    SetChromeApplicationLocale(root[i], kTestApplicationLocale);
+    settings.reset(new PolicySettings());
+    EXPECT_EQ(std::wstring(kTestApplicationLocale),
+              settings->ApplicationLocale());
+
+    DeleteChromeFramePolicyEntries(root[i]);
+  }
+}
