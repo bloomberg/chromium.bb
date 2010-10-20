@@ -106,7 +106,7 @@ TEST_F(PPAPITest, FLAKY_ImageData) {
   RunTest("ImageData");
 }
 
-TEST_F(PPAPITest, Buffer) {
+TEST_F(PPAPITest, FAILS_Buffer) {
   RunTest("Buffer");
 }
 
@@ -135,4 +135,12 @@ TEST_F(PPAPITest, CharSet) {
 
 TEST_F(PPAPITest, Var) {
   RunTest("Var");
+}
+
+TEST_F(PPAPITest, FileRef) {
+  RunTestViaHTTP("FileRef");
+}
+
+TEST_F(PPAPITest, FileIO) {
+  RunTestViaHTTP("FileIO");
 }
