@@ -898,3 +898,17 @@
    fun:_ZN24BrowserAccessibilityTest5SetUpEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_59963
+   Memcheck:Addr4
+   fun:_ZN23BrowserAccessibilityMac16ReleaseReferenceEv
+   ...
+   fun:_ZN27BrowserAccessibilityManagerD2Ev
+   fun:_ZN30BrowserAccessibilityManagerMacD0Ev
+   fun:_ZN10scoped_ptrI27BrowserAccessibilityManagerED2Ev
+   fun:_ZN10scoped_ptrI27BrowserAccessibilityManagerED1Ev
+   fun:_ZN24BrowserAccessibilityTestD2Ev
+   fun:_ZN41BrowserAccessibilityTest_EdgeHitTest_TestD0Ev
+   fun:_ZN7testing4Test11DeleteSelf_Ev
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
