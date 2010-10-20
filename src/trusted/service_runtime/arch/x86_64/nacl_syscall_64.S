@@ -63,6 +63,13 @@ IDENTIFIER(NaClSyscallSeg):
 #if NACL_LINUX
         /* Linux uses TLS. */
         movl    %fs:nacl_thread_index@TPOFF, %eax
+#elif NACL_OSX
+        /*
+         * This assumes a particular implementation of OS X's
+         * pthread_getspecific(), which we check for in NaClTlsInit().
+         */
+        movl    _nacl_thread_index_tls_offset(%rip), %eax
+        movl    %gs:(%eax), %eax
 #elif NACL_WINDOWS
        /*
         * The Windows linker won't insert the correct offset for
@@ -90,8 +97,6 @@ IDENTIFIER(NaClSyscallSeg):
         movq %gs:0x58, %rax
         movq (%rax,%rcx,8), %rax
         movl (%rdx,%rax), %eax
-#elif NACL_OSX
-# error "64-bit OSX is not a supported NaCl runtime target platform"
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif

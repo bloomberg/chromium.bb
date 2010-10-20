@@ -1398,17 +1398,28 @@ mac_env = unix_like_env.Clone(
     PLUGIN_SUFFIX = '.bundle',
 )
 
+if mac_env['BUILD_SUBARCH'] == '64':
+  # OS X 10.5 was the first version to support x86-64.  We need to
+  # specify 10.5 rather than 10.4 here otherwise building
+  # get_plugin_dirname.mm gives the warning (converted to an error)
+  # "Mac OS X version 10.5 or later is needed for use of the new objc abi".
+  mac_env.Append(
+      CCFLAGS=['-mmacosx-version-min=10.5'],
+      LINKFLAGS=['-mmacosx-version-min=10.5'],
+      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_5']])
+else:
+  mac_env.Append(
+      CCFLAGS=['-mmacosx-version-min=10.4'],
+      LINKFLAGS=['-mmacosx-version-min=10.4'],
+      CPPDEFINES=[['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4']])
+subarch_flag = '-m%s' % mac_env['BUILD_SUBARCH']
 mac_env.Append(
-    # TODO(bradnelson): Update the hard-coded -m32 flags when we support
-    # 64-bit builds on the Mac.
-    CCFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
-    ASFLAGS = ['-m32'],
-    LINKFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
-    # TODO(bradnelson): remove UNIX_LIKE_CFLAGS when scons bug is fixed
+    CCFLAGS=[subarch_flag, '-fPIC'],
+    ASFLAGS=[subarch_flag],
+    LINKFLAGS=[subarch_flag, '-fPIC'],
     CPPDEFINES = [['NACL_WINDOWS', '0'],
                   ['NACL_OSX', '1'],
                   ['NACL_LINUX', '0'],
-                  ['MAC_OS_X_VERSION_MIN_REQUIRED', 'MAC_OS_X_VERSION_10_4'],
                   # defining _DARWIN_C_SOURCE breaks 10.4
                   #['_DARWIN_C_SOURCE', '1'],
                   #['__STDC_LIMIT_MACROS', '1']

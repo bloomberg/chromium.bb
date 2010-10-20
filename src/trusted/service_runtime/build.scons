@@ -65,19 +65,6 @@ env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
             )
 
 
-# On Linux, only turn on 32-bit flags (like -m32) when needed.
-# On Mac, force 32-bit always (even on 10.6 where 64-bit is the default).
-# (Note from jrg on 5/11/10: this only appears relevant on Mac).
-if not env.Bit('windows'):
-  if ((env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_SUBARCH'] == '32') or
-      env.Bit('mac')):
-    env.FilterOut(ASFLAGS=['-m64'])
-    env.FilterOut(CCFLAGS=['-m64'])
-    env.FilterOut(LINKFLAGS = ['-m64', '-L/usr/lib64'])
-    env.Prepend(ASFLAGS = ['-m32', ],
-                CCFLAGS = ['-m32', ],
-                LINKFLAGS = ['-m32', '-L/usr/lib32'])
-
 # ----------------------------------------------------------
 # TODO(robertm): this library is too big and needs to be split up
 #                for easier unit testing

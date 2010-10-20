@@ -4,9 +4,6 @@
  * be found in the LICENSE file.
  */
 
-/*
- * NB: 64-bit OSX support is not tested at this point.
- */
 #if NACL_OSX
 # include <pthread.h>
 #endif
@@ -94,9 +91,45 @@ uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
 #if NACL_OSX
 
 pthread_key_t nacl_thread_info_key;
+uint32_t nacl_thread_index_tls_offset;
 
 int NaClTlsInit() {
   int errnum;
+
+  /*
+   * Unlike Linux and Windows, Mac OS X does not provide TLS variables
+   * that can be accessed via a TLS register without a function call,
+   * which we need in order to restore the thread's trusted stack in
+   * nacl_syscall_64.S.
+   *
+   * OS X only provides pthread_getspecific().  However, its code is
+   * trivial, so we can inline it.  Of course, this assumes a
+   * particular pthread implementation, so we check this assumption.
+   * If the pthread implementation changes, we will need to update
+   * this code.
+   *
+   * The current expected code is:
+   *   65 48 8b 04 fd 60 00 00 00  movq %gs:_PTHREAD_TSD_OFFSET(,%rdi,8),%rax
+   *   c3                          ret
+   * in which _PTHREAD_TSD_OFFSET == 0x60.
+   * But we accept other values of _PTHREAD_TSD_OFFSET below.
+   */
+  uint8_t *code = (uint8_t *) (uintptr_t) pthread_getspecific;
+  uint32_t pthread_tsd_offset;
+  if (!(code[0] == 0x65 &&
+        code[1] == 0x48 &&
+        code[2] == 0x8b &&
+        code[3] == 0x04 &&
+        code[4] == 0xfd &&
+        code[9] == 0xc3)) {
+    NaClLog(LOG_FATAL, "NaClTlsInit: Unexpected implementation of "
+            "pthread_getspecific().  NaCl requires porting to the version "
+            "of Mac OS X's pthread library on this system.\n");
+  }
+  pthread_tsd_offset = *(uint32_t *) (code + 5);
+  NaClLog(2, "NaClTlsInit: Found expected implementation of "
+          "pthread_getspecific(), and _PTHREAD_TSD_OFFSET=0x%"NACL_PRIx32"\n",
+          pthread_tsd_offset);
 
   NaClThreadStartupCheck();
 
@@ -111,6 +144,7 @@ int NaClTlsInit() {
             errnum);
     return 0;
   }
+  nacl_thread_index_tls_offset = pthread_tsd_offset + 8 * nacl_thread_info_key;
   return 1;
 }
 
@@ -154,13 +188,28 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
 
 
 void NaClTlsSetIdx(uint32_t tls_idx) {
+  uint32_t tls_idx_check;
+
 #if 1  /* PARANOIA */
   if (NULL != pthread_getspecific(nacl_thread_info_key)) {
     NaClLog(LOG_WARNING,
             "NaClSetThreadInfo invoked twice for the same thread\n");
   }
 #endif
-  pthread_setspecific(nacl_thread_info_key, (void *) tls_idx);
+  pthread_setspecific(nacl_thread_info_key, (void *) (uintptr_t) tls_idx);
+
+  /*
+   * Sanity check:  Make sure that reading back the value using our
+   * knowledge of Mac OS X's TLS internals gives us the correct value.
+   * This checks that we inferred _PTHREAD_TSD_OFFSET correctly earlier.
+   */
+  asm("movl %%gs:(%1), %0"
+      : "=r"(tls_idx_check)
+      : "r"(nacl_thread_index_tls_offset));
+  if (tls_idx_check != tls_idx) {
+    NaClLog(LOG_FATAL, "NaClTlsSetIdx: Sanity check failed: "
+            "TLS offset must be wrong\n");
+  }
 }
 
 
