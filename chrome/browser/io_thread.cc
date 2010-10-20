@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/leak_tracker.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -52,6 +53,37 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     } else {
       LOG(ERROR) << "Invalid switch for host resolver parallelism: " << s;
     }
+  } else {
+    // Set up a field trial to see what impact the total number of concurrent
+    // resolutions have on DNS resolutions.
+    base::FieldTrial::Probability kDivisor = 1000;
+    // For each option (i.e., non-default), we have a fixed probability.
+    base::FieldTrial::Probability kProbabilityPerGroup = 100;  // 10%.
+
+    scoped_refptr<base::FieldTrial> trial =
+        new base::FieldTrial("DnsParallelism", kDivisor);
+
+    // List options with different counts.
+    // Firefox limits total to 8 in parallel, and default is currently 50.
+    int parallel_6 = trial->AppendGroup("parallel_6", kProbabilityPerGroup);
+    int parallel_8 = trial->AppendGroup("parallel_8", kProbabilityPerGroup);
+    int parallel_10 = trial->AppendGroup("parallel_10", kProbabilityPerGroup);
+    int parallel_14 = trial->AppendGroup("parallel_14", kProbabilityPerGroup);
+    int parallel_20 = trial->AppendGroup("parallel_20", kProbabilityPerGroup);
+
+    trial->AppendGroup("parallel_default",
+                        base::FieldTrial::kAllRemainingProbability);
+
+    if (trial->group() == parallel_6)
+      parallelism = 6;
+    else if (trial->group() == parallel_8)
+      parallelism = 8;
+    else if (trial->group() == parallel_10)
+      parallelism = 10;
+    else if (trial->group() == parallel_14)
+      parallelism = 14;
+    else if (trial->group() == parallel_20)
+      parallelism = 20;
   }
 
   net::HostResolver* global_host_resolver =
@@ -206,7 +238,7 @@ void IOThread::Init() {
 
 #if defined(USE_NSS)
   net::SetMessageLoopForOCSP();
-#endif // defined(USE_NSS)
+#endif  // defined(USE_NSS)
 
   DCHECK(!globals_);
   globals_ = new Globals;
