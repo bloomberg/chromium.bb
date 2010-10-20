@@ -31,7 +31,7 @@ void NaClMainPlatformDelegate::PlatformUninitialize() {
 void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
   const CommandLine& command_line = parameters_.command_line_;
 
-  DLOG(INFO) << "Started NaClLdr with " << command_line.command_line_string();
+  DVLOG(1) << "Started NaClLdr with " << command_line.command_line_string();
 
   sandbox::TargetServices* target_services =
       parameters_.sandbox_info_.TargetServices();
@@ -43,17 +43,17 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
       // At this point, hack on the suffix according to with bitness
       // of your windows process.
 #if defined(_WIN64)
-      DLOG(INFO) << "Using 64-bit test dll\n";
+      DVLOG(1) << "Using 64-bit test dll\n";
       test_dll_name = test_dll_name.InsertBeforeExtension(L"64");
-    test_dll_name = test_dll_name.ReplaceExtension(L"dll");
+      test_dll_name = test_dll_name.ReplaceExtension(L"dll");
 #else
-      DLOG(INFO) << "Using 32-bit test dll\n";
+      DVLOG(1) << "Using 32-bit test dll\n";
       test_dll_name = test_dll_name.ReplaceExtension(L"dll");
 #endif
-      DLOG(INFO) << "Loading test lib " << test_dll_name.value() << "\n";
+      DVLOG(1) << "Loading test lib " << test_dll_name.value() << "\n";
       sandbox_test_module_ = base::LoadNativeLibrary(test_dll_name);
       CHECK(sandbox_test_module_);
-      LOG(INFO) << "Testing NaCl sandbox\n";
+      VLOG(1) << "Testing NaCl sandbox\n";
     }
   }
 }
@@ -79,10 +79,10 @@ bool NaClMainPlatformDelegate::RunSandboxTests() {
         base::GetFunctionPointerFromNativeLibrary(sandbox_test_module_,
                                                   kNaClLoaderTestCall));
     if (run_security_tests) {
-      DLOG(INFO) << "Running NaCl Loader security tests";
+      DVLOG(1) << "Running NaCl Loader security tests";
       result = (*run_security_tests)();
     } else {
-      LOG(INFO) << "Failed to get NaCl sandbox test function";
+      VLOG(1) << "Failed to get NaCl sandbox test function";
       result = false;
     }
     base::UnloadNativeLibrary(sandbox_test_module_);

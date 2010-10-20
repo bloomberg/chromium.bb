@@ -36,12 +36,11 @@ void NaClMainPlatformDelegate::PlatformUninitialize() {
 void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
   const CommandLine& command_line = parameters_.command_line_;
 
-  DLOG(INFO) << "Started NaClLdr with ";
+  DVLOG(1) << "Started NaClLdr with ";
   const std::vector<std::string>& argstrings = command_line.argv();
   for (std::vector<std::string>::const_iterator ii = argstrings.begin();
-       ii != argstrings.end(); ++ii) {
-    DLOG(INFO) << *ii;
-  }
+       ii != argstrings.end(); ++ii)
+    DVLOG(1) << *ii;
 
   // Be sure not to load the sandbox test DLL if the sandbox isn't on.
   // Comment-out guard and recompile if you REALLY want to test w/out the SB.
@@ -75,10 +74,10 @@ bool NaClMainPlatformDelegate::RunSandboxTests() {
         base::GetFunctionPointerFromNativeLibrary(sandbox_test_module_,
                                                   kNaClLoaderTestCall));
     if (run_security_tests) {
-      DLOG(INFO) << "Running NaCl Loader security tests";
+      DVLOG(1) << "Running NaCl Loader security tests";
       result = (*run_security_tests)();
     } else {
-      LOG(INFO) << "Failed to get NaCl sandbox test function";
+      VLOG(1) << "Failed to get NaCl sandbox test function";
       result = false;
     }
     base::UnloadNativeLibrary(sandbox_test_module_);

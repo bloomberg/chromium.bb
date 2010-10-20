@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,8 +43,8 @@ int NaClBrokerMain(const MainFunctionParams& parameters) {
 
   const CommandLine& parsed_command_line = parameters.command_line_;
 
-  DLOG(INFO) << "Started NaCL broker with " <<
-      parsed_command_line.command_line_string();
+  DVLOG(1) << "Started NaCL broker with "
+           << parsed_command_line.command_line_string();
 
   // NOTE: this code is duplicated from browser_main.cc
   // IMPORTANT: This piece of code needs to run as early as possible in the
@@ -127,7 +127,7 @@ int NaClMain(const MainFunctionParams& parameters) {
     // as a way of communicating test failure, because the nexe won't reply.
     // TODO(jvoung): find a better way to indicate failure that doesn't
     // require waiting for a timeout.
-    LOG(INFO) << "Sandbox test failed: Not launching NaCl process";
+    VLOG(1) << "Sandbox test failed: Not launching NaCl process";
   }
 #else
   NOTIMPLEMENTED() << " not implemented startup, plugin startup dialog etc.";
