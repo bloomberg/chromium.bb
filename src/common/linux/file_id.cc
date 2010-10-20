@@ -38,7 +38,11 @@
 #include <assert.h>
 #include <elf.h>
 #include <fcntl.h>
+#if defined(__ANDROID__)
+#include "client/linux/android_link.h"
+#else
 #include <link.h>
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>

@@ -36,8 +36,14 @@
 
 using namespace google_breakpad;
 
+#if !defined(__ANDROID__)
+#define TEMPDIR "/tmp"
+#else
+#define TEMPDIR "/data/local/tmp"
+#endif
+
 static int TemporaryFile() {
-  static const char templ[] = "/tmp/line-reader-unittest-XXXXXX";
+  static const char templ[] = TEMPDIR "/line-reader-unittest-XXXXXX";
   char templ_copy[sizeof(templ)];
   memcpy(templ_copy, templ, sizeof(templ));
   const int fd = mkstemp(templ_copy);

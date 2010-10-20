@@ -27,6 +27,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <string>
+
 #include <limits.h>
 #include <unistd.h>
 #include <signal.h>
@@ -37,6 +39,7 @@
 #include "common/linux/file_id.h"
 #include "common/memory.h"
 
+using std::string;
 using namespace google_breakpad;
 
 // This provides a wrapper around system calls which may be
@@ -87,21 +90,36 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
 
   pid_t child_pid = fork();
   if (child_pid == 0) {
+    // Locate helper binary next to the current binary.
+    char self_path[PATH_MAX];
+    if (readlink("/proc/self/exe", self_path, sizeof(self_path) - 1) == -1) {
+      FAIL() << "readlink failed: " << strerror(errno);
+      exit(1);
+    }
+    string helper_path(self_path);
+    size_t pos = helper_path.rfind('/');
+    if (pos == string::npos) {
+      FAIL() << "no trailing slash in path: " << helper_path;
+      exit(1);
+    }
+    helper_path.erase(pos + 1);
+    helper_path += "linux_dumper_unittest_helper";
+
     // Set the number of threads
-    execl("src/client/linux/linux_dumper_unittest_helper",
+    execl(helper_path.c_str(),
           "linux_dumper_unittest_helper",
           kNumberOfThreadsArgument,
           NULL);
     // Kill if we get here.
     printf("Errno from exec: %d", errno);
-    FAIL() << "Exec failed: " << strerror(errno);
+    FAIL() << "Exec of " << helper_path << " failed: " << strerror(errno);
     exit(0);
   }
   // The sleep is flaky, but prevents us from reading
   // the child process before all threads have been created.
   sleep(1);
   LinuxDumper dumper(child_pid);
-  EXPECT_TRUE(dumper.Init());
+  ASSERT_TRUE(dumper.Init());
   EXPECT_EQ((size_t)kNumberOfThreadsInHelperProgram, dumper.threads().size());
   EXPECT_TRUE(dumper.ThreadsSuspend());
 

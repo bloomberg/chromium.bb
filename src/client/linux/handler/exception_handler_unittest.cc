@@ -36,6 +36,7 @@
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
+#include <sys/wait.h>
 
 #include "breakpad_googletest_includes.h"
 #include "client/linux/handler/exception_handler.h"
@@ -46,6 +47,12 @@
 #include "google_breakpad/processor/minidump.h"
 
 using namespace google_breakpad;
+
+#if !defined(__ANDROID__)
+#define TEMPDIR "/tmp"
+#else
+#define TEMPDIR "/data/local/tmp"
+#endif
 
 static void sigchld_handler(int signo) { }
 
@@ -67,7 +74,7 @@ class ExceptionHandlerTest : public ::testing::Test {
 };
 
 TEST(ExceptionHandlerTest, Simple) {
-  ExceptionHandler handler("/tmp", NULL, NULL, NULL, true);
+  ExceptionHandler handler(TEMPDIR, NULL, NULL, NULL, true);
 }
 
 static bool DoneCallback(const char* dump_path,
@@ -93,7 +100,7 @@ TEST(ExceptionHandlerTest, ChildCrash) {
   const pid_t child = fork();
   if (child == 0) {
     close(fds[0]);
-    ExceptionHandler handler("/tmp", NULL, DoneCallback, (void*) fds[1],
+    ExceptionHandler handler(TEMPDIR, NULL, DoneCallback, (void*) fds[1],
                              true);
     *reinterpret_cast<int*>(NULL) = 0;
   }
@@ -121,7 +128,7 @@ TEST(ExceptionHandlerTest, ChildCrash) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = std::string("/tmp/") + filename +
+  const std::string minidump_filename = std::string(TEMPDIR) + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -146,7 +153,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemory) {
   const pid_t child = fork();
   if (child == 0) {
     close(fds[0]);
-    ExceptionHandler handler("/tmp", NULL, DoneCallback, (void*) fds[1],
+    ExceptionHandler handler(TEMPDIR, NULL, DoneCallback, (void*) fds[1],
                              true);
     // Get some executable memory.
     char* memory =
@@ -194,7 +201,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemory) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = std::string("/tmp/") + filename +
+  const std::string minidump_filename = std::string(TEMPDIR) + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -270,7 +277,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
   const pid_t child = fork();
   if (child == 0) {
     close(fds[0]);
-    ExceptionHandler handler("/tmp", NULL, DoneCallback, (void*) fds[1],
+    ExceptionHandler handler(TEMPDIR, NULL, DoneCallback, (void*) fds[1],
                              true);
     // Get some executable memory.
     char* memory =
@@ -318,7 +325,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = std::string("/tmp/") + filename +
+  const std::string minidump_filename = std::string(TEMPDIR) + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -394,7 +401,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   const pid_t child = fork();
   if (child == 0) {
     close(fds[0]);
-    ExceptionHandler handler("/tmp", NULL, DoneCallback, (void*) fds[1],
+    ExceptionHandler handler(TEMPDIR, NULL, DoneCallback, (void*) fds[1],
                              true);
     // Get some executable memory.
     char* memory =
@@ -442,7 +449,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = std::string("/tmp/") + filename +
+  const std::string minidump_filename = std::string(TEMPDIR) + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -510,7 +517,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
   const pid_t child = fork();
   if (child == 0) {
     close(fds[0]);
-    ExceptionHandler handler("/tmp", NULL, DoneCallback, (void*) fds[1],
+    ExceptionHandler handler(TEMPDIR, NULL, DoneCallback, (void*) fds[1],
                              true);
     // Try calling a NULL pointer.
     typedef void (*void_function)(void);
@@ -542,7 +549,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryNullPointer) {
   filename[len] = 0;
   close(fds[0]);
 
-  const std::string minidump_filename = std::string("/tmp/") + filename +
+  const std::string minidump_filename = std::string(TEMPDIR) + "/" + filename +
                                         ".dmp";
 
   struct stat st;
@@ -663,7 +670,7 @@ TEST(ExceptionHandlerTest, ExternalDumper) {
   ASSERT_NE(crashing_pid, -1);
   ASSERT_NE(signal_fd, -1);
 
-  char templ[] = "/tmp/exception-handler-unittest-XXXXXX";
+  char templ[] = TEMPDIR "/exception-handler-unittest-XXXXXX";
   mktemp(templ);
   ASSERT_TRUE(WriteMinidump(templ, crashing_pid, context,
                             kCrashContextSize));

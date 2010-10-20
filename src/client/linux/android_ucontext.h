@@ -1,4 +1,4 @@
-// Copyright (c) 2010, Google Inc.
+// Copyright (c) 2009, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,50 +26,52 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Helper program for the linux_dumper class, which creates a bunch of
-// threads. The first word of each thread's stack is set to the thread
-// id.
 
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/syscall.h>
-#include <unistd.h>
+// Android runs a fairly new Linux kernel, so signal info is there,
+// but the NDK doesn't have the structs defined, so define
+// them here.
+// Adapted from platform-linux.cc in V8
 
-#include "third_party/lss/linux_syscall_support.h"
+#ifndef GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
+#define GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_
 
-#if defined(__ARM_EABI__)
-#define TID_PTR_REGISTER "r3"
-#elif defined(__i386)
-#define TID_PTR_REGISTER "ecx"
-#elif defined(__x86_64)
-#define TID_PTR_REGISTER "rcx"
-#else
-#error This test has not been ported to this platform.
+#include <signal.h>
+
+#if !defined(__GLIBC__) && (defined(__arm__) || defined(__thumb__))
+
+struct sigcontext {
+  uint32_t trap_no;
+  uint32_t error_code;
+  uint32_t oldmask;
+  uint32_t arm_r0;
+  uint32_t arm_r1;
+  uint32_t arm_r2;
+  uint32_t arm_r3;
+  uint32_t arm_r4;
+  uint32_t arm_r5;
+  uint32_t arm_r6;
+  uint32_t arm_r7;
+  uint32_t arm_r8;
+  uint32_t arm_r9;
+  uint32_t arm_r10;
+  uint32_t arm_fp;
+  uint32_t arm_ip;
+  uint32_t arm_sp;
+  uint32_t arm_lr;
+  uint32_t arm_pc;
+  uint32_t arm_cpsr;
+  uint32_t fault_address;
+};
+typedef uint32_t __sigset_t;
+typedef struct sigcontext mcontext_t;
+typedef struct ucontext {
+  uint32_t uc_flags;
+  struct ucontext* uc_link;
+  stack_t uc_stack;
+  mcontext_t uc_mcontext;
+  __sigset_t uc_sigmask;
+} ucontext_t;
+
 #endif
 
-void *thread_function(void *data) {
-  volatile pid_t thread_id = syscall(__NR_gettid);
-  register volatile pid_t *thread_id_ptr asm(TID_PTR_REGISTER) = &thread_id;
-  while (true)
-    asm volatile ("" : : "r" (thread_id_ptr));
-  return NULL;
-}
-
-int main(int argc, char *argv[]) {
-  int num_threads = atoi(argv[1]);
-  if (num_threads < 1) {
-    fprintf(stderr, "ERROR: number of threads is 0");
-    return 1;
-  }
-  pthread_t threads[num_threads];
-  pthread_attr_t thread_attributes;
-  pthread_attr_init(&thread_attributes);
-  pthread_attr_setdetachstate(&thread_attributes, PTHREAD_CREATE_DETACHED);
-  for (int i = 1; i < num_threads; i++) {
-    pthread_create(&threads[i], &thread_attributes, &thread_function, NULL);
-  }
-  thread_function(NULL);
-  return 0;
-}
+#endif  // GOOGLE_BREAKPAD_CLIENT_LINUX_ANDROID_UCONTEXT_H_

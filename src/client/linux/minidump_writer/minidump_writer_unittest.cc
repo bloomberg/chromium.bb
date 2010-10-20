@@ -37,6 +37,12 @@
 
 using namespace google_breakpad;
 
+#if !defined(__ANDROID__)
+#define TEMPDIR "/tmp"
+#else
+#define TEMPDIR "/data/local/tmp"
+#endif
+
 namespace {
 typedef testing::Test MinidumpWriterTest;
 }
@@ -58,7 +64,7 @@ TEST(MinidumpWriterTest, Setup) {
   ExceptionHandler::CrashContext context;
   memset(&context, 0, sizeof(context));
 
-  char templ[] = "/tmp/minidump-writer-unittest-XXXXXX";
+  char templ[] = TEMPDIR "/minidump-writer-unittest-XXXXXX";
   mktemp(templ);
   ASSERT_TRUE(WriteMinidump(templ, child, &context, sizeof(context)));
   struct stat st;

@@ -52,7 +52,7 @@ AX_PTHREAD
 
 # Only build Linux client libs when compiling for Linux
 case $host in
-     *-*-linux*)
+     *-*-linux* | *-android* )
         LINUX_HOST=true
         ;;
 esac
