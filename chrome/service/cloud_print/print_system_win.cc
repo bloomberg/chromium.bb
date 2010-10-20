@@ -14,11 +14,10 @@
 #include "base/lock.h"
 #include "base/file_util.h"
 #include "base/object_watcher.h"
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_handle_win.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
@@ -28,6 +27,9 @@
 
 #pragma comment(lib, "prntvpt.lib")
 #pragma comment(lib, "rpcrt4.lib")
+
+using base::win::ScopedBstr;
+using base::win::ScopedComPtr;
 
 namespace {
 

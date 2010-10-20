@@ -22,13 +22,13 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/thread_local.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_variant.h"
 #include "grit/generated_resources.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -394,7 +394,7 @@ STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
   stream->Stat(&statstg, STATFLAG_NONAME);
 
   DWORD url_size = statstg.cbSize.LowPart - cur_pos.LowPart;
-  ScopedBstr url_bstr;
+  base::win::ScopedBstr url_bstr;
   DWORD bytes_read = 0;
   stream->Read(url_bstr.AllocateBytes(url_size), url_size, &bytes_read);
   std::wstring url(url_bstr);
@@ -711,7 +711,7 @@ void ChromeActiveDocument::UpdateNavigationState(
         break;
     }
 
-    ScopedVariant secure_lock_status(lock_status);
+    base::win::ScopedVariant secure_lock_status(lock_status);
     IEExec(&CGID_ShellDocView, INTERNAL_CMDID_SET_SSL_LOCK,
            OLECMDEXECOPT_DODEFAULT, secure_lock_status.AsInput(), NULL);
   }
@@ -776,7 +776,7 @@ void ChromeActiveDocument::UpdateNavigationState(
     // We need to tell IE that we support navigation so that IE will query us
     // for IPersistHistory and call GetPositionCookie to save our navigation
     // index.
-    ScopedVariant html_window(static_cast<IUnknown*>(
+    base::win::ScopedVariant html_window(static_cast<IUnknown*>(
         static_cast<IHTMLWindow2*>(this)));
     IEExec(&CGID_DocHostCmdPriv, DOCHOST_DOCCANNAVIGATE, 0,
            html_window.AsInput(), NULL);
@@ -787,7 +787,7 @@ void ChromeActiveDocument::UpdateNavigationState(
     // navigations. This will ensure that IE calls GetPositionCookie
     // to save the current position cookie in the travel log and then call
     // SetPositionCookie when the user hits Back/Forward to come back here.
-    ScopedVariant internal_navigation(HLNF_INTERNALJUMP);
+    base::win::ScopedVariant internal_navigation(HLNF_INTERNALJUMP);
     IEExec(&CGID_Explorer, INTERNAL_CMDID_FINALIZE_TRAVEL_LOG, 0,
            internal_navigation.AsInput(), NULL);
 
@@ -807,7 +807,7 @@ void ChromeActiveDocument::UpdateNavigationState(
   }
 
   if (is_title_changed) {
-    ScopedVariant title(new_navigation_info.title.c_str());
+    base::win::ScopedVariant title(new_navigation_info.title.c_str());
     IEExec(NULL, OLECMDID_SETTITLE, OLECMDEXECOPT_DONTPROMPTUSER,
            title.AsInput(), NULL);
   }

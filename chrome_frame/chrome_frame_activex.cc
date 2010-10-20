@@ -380,7 +380,7 @@ STDMETHODIMP ChromeFrameActivex::put_src(BSTR src) {
   if (document_url.SchemeIsSecure()) {
     GURL source_url(src);
     if (!source_url.SchemeIsSecure()) {
-      Base::put_src(ScopedBstr(g_activex_insecure_content_error));
+      Base::put_src(base::win::ScopedBstr(g_activex_insecure_content_error));
       return E_ACCESSDENIED;
     }
   }
@@ -408,7 +408,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     ScopedComPtr<IHTMLDocument2> document;
     GetContainingDocument(document.Receive());
     if (document) {
-      ScopedBstr url;
+      base::win::ScopedBstr url;
       if (SUCCEEDED(document->get_URL(url.Receive())))
         WideToUTF8(url, url.Length(), &document_url_);
     }
@@ -440,7 +440,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
         chrome_extra_arguments.assign(extra_arguments_arg,
                                       extra_arguments_arg.Length());
 
-      ScopedBstr automated_functions_arg;
+      base::win::ScopedBstr automated_functions_arg;
       service_hr = service->GetExtensionApisToAutomate(
           automated_functions_arg.Receive());
       if (S_OK == service_hr && automated_functions_arg) {
@@ -666,6 +666,6 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
   }
 
   web_browser2->PutProperty(base::win::ScopedBstr(bho_class_id_as_string),
-                            ScopedVariant(bho));
+                            base::win::ScopedVariant(bho));
   return S_OK;
 }

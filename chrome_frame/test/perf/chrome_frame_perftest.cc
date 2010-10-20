@@ -18,15 +18,15 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/trace_event_win.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -173,7 +173,7 @@ class ChromeFrameActiveXContainer
   void Navigate(const char* url) {
     BeforeNavigateImpl(url);
 
-    HRESULT hr = tab_->put_src(ScopedBstr(UTF8ToWide(url).c_str()));
+    HRESULT hr = tab_->put_src(base::win::ScopedBstr(UTF8ToWide(url).c_str()));
     DCHECK(hr == S_OK) << "Chrome frame NavigateToURL(" << url
                        << base::StringPrintf(L") failed 0x%08X", hr);
   }
@@ -183,9 +183,9 @@ class ChromeFrameActiveXContainer
                            &prop_notify_cookie_);
     DCHECK(hr == S_OK) << "AtlAdvice for IPropertyNotifySink failed " << hr;
 
-    ScopedVariant onmessage(onmsg_.ToDispatch());
-    ScopedVariant onloaderror(onloaderror_.ToDispatch());
-    ScopedVariant onload(onload_.ToDispatch());
+    base::win::ScopedVariant onmessage(onmsg_.ToDispatch());
+    base::win::ScopedVariant onloaderror(onloaderror_.ToDispatch());
+    base::win::ScopedVariant onload(onload_.ToDispatch());
     EXPECT_HRESULT_SUCCEEDED(tab_->put_onmessage(onmessage));
     EXPECT_HRESULT_SUCCEEDED(tab_->put_onloaderror(onloaderror));
     EXPECT_HRESULT_SUCCEEDED(tab_->put_onload(onload));
@@ -209,7 +209,7 @@ class ChromeFrameActiveXContainer
   virtual void BeforeNavigateImpl(const char* url) {}
 
   CAxWindow chromeview_;
-  ScopedComPtr<IChromeFrame> tab_;
+  base::win::ScopedComPtr<IChromeFrame> tab_;
   DWORD prop_notify_cookie_;
   DispCallback<ChromeFrameActiveXContainer> onmsg_;
   DispCallback<ChromeFrameActiveXContainer> onloaderror_;

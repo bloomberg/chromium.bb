@@ -17,12 +17,12 @@
 #include <vector>
 
 #include "base/metrics/histogram.h"
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "grit/chrome_frame_resources.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/chrome_frame_plugin.h"
@@ -38,7 +38,6 @@
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
 
-
 // Connection point class to support firing IChromeFrameEvents (dispinterface).
 template<class T>
 class ATL_NO_VTABLE ProxyDIChromeFrameEvents
@@ -52,7 +51,8 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
     // a threading issue, but a re-entrance issue, because the connection
     // can be affected by the implementation of the sinks receiving the event.
     me->Lock();
-    std::vector< ScopedComPtr<IUnknown> > sink_array(m_vec.GetSize());
+    std::vector< base::win::ScopedComPtr<IUnknown> > sink_array(
+        m_vec.GetSize());
     for (int connection = 0; connection < m_vec.GetSize(); ++connection)
       sink_array[connection] = m_vec.GetAt(connection);
     me->Unlock();
@@ -169,7 +169,7 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public CComControl<T>,
   public ChromeFramePlugin<T> {
  protected:
-  typedef std::set<ScopedComPtr<IDispatch> > EventHandlers;
+  typedef std::set<base::win::ScopedComPtr<IDispatch> > EventHandlers;
   typedef ChromeFrameActivexBase<T, class_id> BasePlugin;
 
  public:
@@ -432,10 +432,10 @@ END_MSG_MAP()
   void OnMessageFromChromeFrame(int tab_handle, const std::string& message,
                                 const std::string& origin,
                                 const std::string& target) {
-    ScopedComPtr<IDispatch> message_event;
+    base::win::ScopedComPtr<IDispatch> message_event;
     if (SUCCEEDED(CreateDomEvent("message", message, origin,
                                  message_event.Receive()))) {
-      ScopedVariant event_var;
+      base::win::ScopedVariant event_var;
       event_var.Set(static_cast<IDispatch*>(message_event));
       InvokeScriptFunction(onmessage_handler_, event_var.AsInput());
     }
@@ -446,7 +446,7 @@ END_MSG_MAP()
 
     HWND parent = ::GetParent(m_hWnd);
     ::SetFocus(parent);
-    ScopedComPtr<IOleControlSite> control_site;
+    base::win::ScopedComPtr<IOleControlSite> control_site;
     control_site.QueryFrom(m_spClientSite);
     if (control_site)
       control_site->OnFocus(FALSE);
@@ -464,9 +464,11 @@ END_MSG_MAP()
   // There's room for improvement here and also see todo below.
   LPARAM OnDownloadRequestInHost(UINT message, WPARAM wparam, LPARAM lparam,
                                  BOOL& handled) {
-    ScopedComPtr<IMoniker> moniker(reinterpret_cast<IMoniker*>(lparam));
+    base::win::ScopedComPtr<IMoniker> moniker(
+        reinterpret_cast<IMoniker*>(lparam));
     DCHECK(moniker);
-    ScopedComPtr<IBindCtx> bind_context(reinterpret_cast<IBindCtx*>(wparam));
+    base::win::ScopedComPtr<IBindCtx> bind_context(
+        reinterpret_cast<IBindCtx*>(wparam));
 
     // TODO(tommi): It looks like we might have to switch the request object
     // into a pass-through request object and serve up any thus far received
@@ -772,7 +774,7 @@ END_MSG_MAP()
 
     DCHECK(handlers != NULL);
 
-    handlers->insert(ScopedComPtr<IDispatch>(listener));
+    handlers->insert(base::win::ScopedComPtr<IDispatch>(listener));
 
     return hr;
   }
@@ -943,7 +945,7 @@ END_MSG_MAP()
     if (SUCCEEDED(hr)) {
       ev->AddRef();
 
-      ScopedComPtr<IOleContainer> container;
+      base::win::ScopedComPtr<IOleContainer> container;
       m_spClientSite->GetContainer(container.Receive());
       if (ev->Initialize(container, data, origin, event_type)) {
         *event = ev;
@@ -960,7 +962,7 @@ END_MSG_MAP()
   // Helper function to execute a function on a script IDispatch interface.
   HRESULT InvokeScriptFunction(const VARIANT& script_object,
                                const std::string& param) {
-    ScopedVariant script_arg(UTF8ToWide(param.c_str()).c_str());
+    base::win::ScopedVariant script_arg(UTF8ToWide(param.c_str()).c_str());
     return InvokeScriptFunction(script_object, script_arg.AsInput());
   }
 
@@ -1007,7 +1009,7 @@ END_MSG_MAP()
     MSG accel_message = msg;
     accel_message.hwnd = ::GetParent(m_hWnd);
     HRESULT hr = S_FALSE;
-    ScopedComPtr<IBrowserService2> bs2;
+    base::win::ScopedComPtr<IBrowserService2> bs2;
 
     // For non-IE containers, we use the standard IOleInPlaceFrame contract
     // (which IE does not support). For IE, we try to use IBrowserService2,
@@ -1017,7 +1019,7 @@ END_MSG_MAP()
     // retry, and we fall back to the IBrowserService2 and PostMessage
     // approaches below.
     if (!in_place_frame_ && !failed_to_fetch_in_place_frame_) {
-      ScopedComPtr<IOleInPlaceUIWindow> dummy_ui_window;
+      base::win::ScopedComPtr<IOleInPlaceUIWindow> dummy_ui_window;
       RECT dummy_pos_rect = {0};
       RECT dummy_clip_rect = {0};
       OLEINPLACEFRAMEINFO dummy_frame_info = {0};
@@ -1121,13 +1123,13 @@ END_MSG_MAP()
  protected:
   void HostNavigate(const GURL& url_to_open,
                     const GURL& referrer, int open_disposition) {
-    ScopedComPtr<IWebBrowser2> web_browser2;
+    base::win::ScopedComPtr<IWebBrowser2> web_browser2;
     DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
     if (!web_browser2) {
       NOTREACHED() << "Failed to retrieve IWebBrowser2 interface";
       return;
     }
-    ScopedVariant url;
+    base::win::ScopedVariant url;
     // Check to see if the URL uses a "view-source:" prefix, if so, open it
     // using chrome frame full tab mode by using 'cf:' protocol handler.
     // Also change the disposition to NEW_WINDOW since IE6 doesn't have tabs.
@@ -1196,8 +1198,8 @@ END_MSG_MAP()
     //       L"No_Name", uri, L"");
     // }
     // End of MSHTML-like logic
-    VARIANT empty = ScopedVariant::kEmptyVariant;
-    ScopedVariant http_headers;
+    VARIANT empty = base::win::ScopedVariant::kEmptyVariant;
+    base::win::ScopedVariant http_headers;
 
     if (referrer.is_valid()) {
       std::wstring referrer_header = L"Referer: ";
@@ -1222,15 +1224,15 @@ END_MSG_MAP()
     automation_client_->set_use_chrome_network(chrome_network);
   }
 
-  ScopedBstr url_;
-  ScopedComPtr<IOleDocumentSite> doc_site_;
+  base::win::ScopedBstr url_;
+  base::win::ScopedComPtr<IOleDocumentSite> doc_site_;
 
   // If false, we tried but failed to fetch an IOleInPlaceFrame from our host.
   // Cached here so we don't try to fetch it every time if we keep failing.
   bool failed_to_fetch_in_place_frame_;
   bool draw_sad_tab_;
 
-  ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
+  base::win::ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
 
   // For more information on the ready_state_ property see:
   // http://msdn.microsoft.com/en-us/library/aa768179(VS.85).aspx#
@@ -1238,9 +1240,9 @@ END_MSG_MAP()
 
   // The following members contain IDispatch interfaces representing the
   // onload/onerror/onmessage handlers on the page.
-  ScopedVariant onload_handler_;
-  ScopedVariant onerror_handler_;
-  ScopedVariant onmessage_handler_;
+  base::win::ScopedVariant onload_handler_;
+  base::win::ScopedVariant onerror_handler_;
+  base::win::ScopedVariant onmessage_handler_;
 
   EventHandlers onmessage_;
   EventHandlers onloaderror_;

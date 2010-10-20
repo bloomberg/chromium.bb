@@ -8,11 +8,11 @@
 #include "chrome_frame/protocol_sink_wrap.h"
 
 #include "base/logging.h"
-#include "base/scoped_bstr_win.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/exception_barrier.h"
@@ -748,7 +748,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   if (!uri || !prot_sink || !bind_info)
     return E_INVALIDARG;
 
-  ScopedBstr url;
+  base::win::ScopedBstr url;
   uri->GetPropertyBSTR(Uri_PROPERTY_ABSOLUTE_URI, url.Receive(), 0);
   DLOG_IF(INFO, url != NULL) << "OnStartEx: " << url << PiFlags2Str(flags);
 

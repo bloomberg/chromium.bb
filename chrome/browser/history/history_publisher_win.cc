@@ -9,14 +9,17 @@
 #include <oleauto.h>
 #include <wtypes.h>
 
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "googleurl/src/gurl.h"
+
+using base::win::ScopedVariant;
+using base::win::ScopedBstr;
 
 namespace {
 

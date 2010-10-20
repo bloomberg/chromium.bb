@@ -16,9 +16,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
@@ -26,6 +23,9 @@
 #include "base/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
+#include "base/win/scoped_variant.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -40,6 +40,8 @@
 #include "net/http/http_util.h"
 
 using base::win::RegKey;
+using base::win::ScopedComPtr;
+using base::win::ScopedVariant;
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -462,7 +464,7 @@ FilePath GetIETemporaryFilesFolder() {
                                            SHGDN_NORMAL | SHGDN_FORPARSING,
                                            &path);
       DCHECK(SUCCEEDED(hr));
-      ScopedBstr temp_internet_files_bstr;
+      base::win::ScopedBstr temp_internet_files_bstr;
       StrRetToBSTR(&path, relative_pidl, temp_internet_files_bstr.Receive());
       FilePath temp_internet_files(static_cast<BSTR>(temp_internet_files_bstr));
       ILFree(tif_pidl);

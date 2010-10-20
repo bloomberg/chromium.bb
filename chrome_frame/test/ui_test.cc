@@ -5,9 +5,10 @@
 #include <mshtmcid.h>
 #include <string>
 
-#include "base/scoped_variant_win.h"
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_variant.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
@@ -266,7 +267,7 @@ TEST_P(FullTabUITest, ViewSource) {
 void NavigateToCurrentUrl(MockIEEventSink* mock) {
   IWebBrowser2* browser = mock->event_sink()->web_browser2();
   DCHECK(browser);
-  ScopedBstr bstr;
+  base::win::ScopedBstr bstr;
   HRESULT hr = browser->get_LocationURL(bstr.Receive());
   EXPECT_HRESULT_SUCCEEDED(hr);
   if (SUCCEEDED(hr)) {

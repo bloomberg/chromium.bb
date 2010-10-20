@@ -10,11 +10,11 @@
 #include <stack>
 
 #include "base/message_loop.h"
-#include "base/scoped_bstr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "chrome_frame/test/win_event_receiver.h"
@@ -146,7 +146,7 @@ bool AccObject::Select() {
 }
 
 bool AccObject::SetValue(const std::wstring& value) {
-  ScopedBstr value_bstr(value.c_str());
+  base::win::ScopedBstr value_bstr(value.c_str());
   EXPECT_HRESULT_SUCCEEDED(accessible_->put_accValue(child_id_, value_bstr));
 
   // Double check that the object's value has actually changed. Some objects'
@@ -163,7 +163,7 @@ bool AccObject::SetValue(const std::wstring& value) {
 
 bool AccObject::GetName(std::wstring* name) {
   DCHECK(name);
-  ScopedBstr name_bstr;
+  base::win::ScopedBstr name_bstr;
   HRESULT result = accessible_->get_accName(child_id_, name_bstr.Receive());
   if (SUCCEEDED(result))
     name->assign(name_bstr, name_bstr.Length());
@@ -198,7 +198,7 @@ bool AccObject::GetRoleText(std::wstring* role_text) {
 
 bool AccObject::GetValue(std::wstring* value) {
   DCHECK(value);
-  ScopedBstr value_bstr;
+  base::win::ScopedBstr value_bstr;
   HRESULT result = accessible_->get_accValue(child_id_, value_bstr.Receive());
   if (SUCCEEDED(result))
     value->assign(value_bstr, value_bstr.Length());

@@ -4,14 +4,17 @@
 
 #include "chrome_frame/test/ie_event_sink.h"
 
-#include "base/scoped_bstr_win.h"
 #include "base/scoped_handle.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_variant.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::ScopedBstr;
+using base::win::ScopedVariant;
 
 namespace chrome_frame_test {
 

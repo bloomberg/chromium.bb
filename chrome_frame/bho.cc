@@ -9,9 +9,9 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/scoped_bstr_win.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/win/scoped_bstr.h"
 #include "chrome_tab.h" // NOLINT
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/extra_system_apis.h"
@@ -219,7 +219,7 @@ bool DocumentHasEmbeddedItems(IUnknown* browser) {
             // via document.write.
             // TODO(ananta)
             // Revisit this and come up with a better approach.
-            ScopedBstr location_url;
+            base::win::ScopedBstr location_url;
             embedded_web_browser2->get_LocationURL(location_url.Receive());
 
             std::wstring location_url_string;

@@ -5,10 +5,10 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -134,7 +134,8 @@ class TestInternetProtocolSink
     HRESULT hr = browser_.CreateInstance(CLSID_InternetExplorer);
     CHECK(SUCCEEDED(hr));
     if (SUCCEEDED(hr)) {
-      browser_->Navigate(ScopedBstr(L"about:blank"), NULL, NULL, NULL, NULL);
+      browser_->Navigate(base::win::ScopedBstr(L"about:blank"),
+                         NULL, NULL, NULL, NULL);
     }
   }
 
@@ -181,7 +182,7 @@ END_COM_MAP()
  protected:
   ULONG status_;
   std::wstring status_text_;
-  ScopedComPtr<IWebBrowser2> browser_;
+  base::win::ScopedComPtr<IWebBrowser2> browser_;
 };
 
 TEST_F(HttpNegotiateTest, ReportProgress) {
@@ -254,7 +255,7 @@ TEST_F(HttpNegotiateTest, ReportProgress) {
       L"bar" },
   };
 
-  ScopedComPtr<IBrowserService> browser;
+  base::win::ScopedComPtr<IBrowserService> browser;
   EXPECT_HRESULT_SUCCEEDED(GetBrowserServiceFromProtocolSink(&test_sink,
       browser.Receive()));
 
