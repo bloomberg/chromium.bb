@@ -30,15 +30,14 @@ void CreateDirWorkItem::GetTopDirToCreate() {
 }
 
 bool CreateDirWorkItem::Do() {
-  LOG(INFO) << "creating directory " << path_.value();
+  VLOG(1) << "creating directory " << path_.value();
   GetTopDirToCreate();
   if (top_path_.empty())
     return true;
 
-  LOG(INFO) << "top directory that needs to be created: " \
-            << top_path_.value();
+  VLOG(1) << "top directory that needs to be created: " << top_path_.value();
   bool result = file_util::CreateDirectory(path_);
-  LOG(INFO) << "directory creation result: " << result;
+  VLOG(1) << "directory creation result: " << result;
 
   rollback_needed_ = true;
 

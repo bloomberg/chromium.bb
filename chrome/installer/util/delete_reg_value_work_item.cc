@@ -57,11 +57,11 @@ bool DeleteRegValueWorkItem::Do() {
 }
 
 void DeleteRegValueWorkItem::Rollback() {
-  if (status_ == DELETE_VALUE || status_ == VALUE_ROLLED_BACK) {
+  if (status_ == DELETE_VALUE || status_ == VALUE_ROLLED_BACK)
     return;
-  } else if (status_ == VALUE_UNCHANGED || status_ == VALUE_NOT_FOUND) {
+  if (status_ == VALUE_UNCHANGED || status_ == VALUE_NOT_FOUND) {
     status_ = VALUE_ROLLED_BACK;
-    LOG(INFO) << "rollback: setting unchanged, nothing to do";
+    VLOG(1) << "rollback: setting unchanged, nothing to do";
     return;
   }
 
@@ -75,7 +75,7 @@ void DeleteRegValueWorkItem::Rollback() {
              (!is_str_type_ && key.WriteValue(value_name_.c_str(),
                                               old_dw_))) {
     status_ = VALUE_ROLLED_BACK;
-    LOG(INFO) << "rollback: restored " << value_name_;
+    VLOG(1) << "rollback: restored " << value_name_;
   } else {
     LOG(ERROR) << "failed to restore value " << value_name_;
   }

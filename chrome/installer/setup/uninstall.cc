@@ -130,7 +130,7 @@ void DeleteChromeShortcuts(bool system_uninstall) {
   } else {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     shortcut_path = shortcut_path.Append(dist->GetAppShortCutName());
-    LOG(INFO) << "Deleting shortcut " << shortcut_path.value();
+    VLOG(1) << "Deleting shortcut " << shortcut_path.value();
     if (!file_util::Delete(shortcut_path, true))
       LOG(ERROR) << "Failed to delete folder: " << shortcut_path.value();
   }
@@ -195,9 +195,8 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   if (install_path.empty()) {
     LOG(ERROR) << "Could not get installation destination path.";
     return DELETE_FAILED;  // Nothing else we can do to uninstall, so we return.
-  } else {
-    LOG(INFO) << "install destination path: " << install_path;
   }
+  VLOG(1) << "install destination path: " << install_path;
 
   // Move setup.exe to the temp path.
   std::wstring setup_exe(installer::GetInstallerPathUnderChrome(
@@ -238,7 +237,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
 
   DeleteResult result = DELETE_SUCCEEDED;
 
-  LOG(INFO) << "Deleting install path " << install_path;
+  VLOG(1) << "Deleting install path " << install_path;
   if (!file_util::Delete(install_path, true)) {
     LOG(ERROR) << "Failed to delete folder (1st try): " << install_path;
     if (InstallUtil::IsChromeFrameProcess()) {
@@ -258,7 +257,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   }
 
   if (delete_profile && got_local_state) {
-    LOG(INFO) << "Deleting user profile" << user_local_state.value();
+    VLOG(1) << "Deleting user profile" << user_local_state.value();
     if (!file_util::Delete(user_local_state, true)) {
       LOG(ERROR) << "Failed to delete user profile dir: "
                  << user_local_state.value();
@@ -306,19 +305,18 @@ installer_util::InstallStatus IsChromeActiveOrUserCancelled(
   // - HUNG - chrome.exe was killed by HuntForZombieProcesses() (until we can
   //          give this method some brains and not kill chrome.exe launched
   //          by us, we will not uninstall if we get this return code).
-  LOG(INFO) << "Launching Chrome to do uninstall tasks.";
+  VLOG(1) << "Launching Chrome to do uninstall tasks.";
   if (installer::LaunchChromeAndWaitForResult(system_uninstall,
                                               kCmdLineOptions,
                                               &exit_code)) {
-    LOG(INFO) << "chrome.exe launched for uninstall confirmation returned: "
-              << exit_code;
+    VLOG(1) << "chrome.exe launched for uninstall confirmation returned: "
+            << exit_code;
     if ((exit_code == ResultCodes::UNINSTALL_CHROME_ALIVE) ||
         (exit_code == ResultCodes::UNINSTALL_USER_CANCEL) ||
-        (exit_code == ResultCodes::HUNG)) {
+        (exit_code == ResultCodes::HUNG))
       return installer_util::UNINSTALL_CANCELLED;
-    } else if (exit_code == ResultCodes::UNINSTALL_DELETE_PROFILE) {
+    if (exit_code == ResultCodes::UNINSTALL_DELETE_PROFILE)
       return installer_util::UNINSTALL_DELETE_PROFILE;
-    }
   } else {
     LOG(ERROR) << "Failed to launch chrome.exe for uninstall confirmation.";
   }
@@ -586,7 +584,7 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
   }
 
   if (!force_uninstall) {
-    LOG(INFO) << "Uninstallation complete. Launching Uninstall survey.";
+    VLOG(1) << "Uninstallation complete. Launching Uninstall survey.";
     dist->DoPostUninstallOperations(*installed_version, local_state_path,
                                     distribution_data);
   }

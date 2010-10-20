@@ -38,7 +38,7 @@ bool WorkItemList::Do() {
   }
 
   if (result)
-    LOG(INFO) << "list execution succeeded";
+    VLOG(1) << "list execution succeeded";
 
   status_ = LIST_EXECUTED;
   return result;

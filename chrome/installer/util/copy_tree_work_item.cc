@@ -44,9 +44,9 @@ bool CopyTreeWorkItem::Do() {
       (!file_util::DirectoryExists(source_path_)) &&
       (!file_util::DirectoryExists(dest_path_)) &&
       (file_util::ContentsEqual(source_path_, dest_path_))) {
-    LOG(INFO) << "Source file " << source_path_.value()
-              << " and destination file " << dest_path_.value()
-              << " are exactly same. Returning true.";
+    VLOG(1) << "Source file " << source_path_.value()
+            << " and destination file " << dest_path_.value()
+            << " are exactly same. Returning true.";
     return true;
   } else if ((dest_exist) &&
              (overwrite_option_ == WorkItem::NEW_NAME_IF_IN_USE) &&
@@ -57,13 +57,13 @@ bool CopyTreeWorkItem::Do() {
     if (alternative_path_.empty() ||
         file_util::PathExists(alternative_path_) ||
         !file_util::CopyFile(source_path_, alternative_path_)) {
-      LOG(ERROR) << "failed to copy " << source_path_.value() <<
-                    " to " << alternative_path_.value();
+      LOG(ERROR) << "failed to copy " << source_path_.value()
+                 << " to " << alternative_path_.value();
       return false;
     } else {
       copied_to_alternate_path_ = true;
-      LOG(INFO) << "Copied source file " << source_path_.value()
-                << " to alternative path " << alternative_path_.value();
+      VLOG(1) << "Copied source file " << source_path_.value()
+              << " to alternative path " << alternative_path_.value();
       return true;
     }
   } else if ((dest_exist) &&
@@ -79,11 +79,11 @@ bool CopyTreeWorkItem::Do() {
 
     if (file_util::Move(dest_path_, backup_path_)) {
       moved_to_backup_ = true;
-      LOG(INFO) << "Moved destination " << dest_path_.value() <<
-                   " to backup path " << backup_path_.value();
+      VLOG(1) << "Moved destination " << dest_path_.value() <<
+                 " to backup path " << backup_path_.value();
     } else {
-      LOG(ERROR) << "failed moving " << dest_path_.value() << " to " <<
-                     backup_path_.value();
+      LOG(ERROR) << "failed moving " << dest_path_.value()
+                 << " to " << backup_path_.value();
       return false;
     }
   }
@@ -91,11 +91,11 @@ bool CopyTreeWorkItem::Do() {
   // In all cases that reach here, copy source to destination.
   if (file_util::CopyDirectory(source_path_, dest_path_, true)) {
     copied_to_dest_path_ = true;
-    LOG(INFO) << "Copied source " << source_path_.value()
-              << " to destination " << dest_path_.value();
+    VLOG(1) << "Copied source " << source_path_.value()
+            << " to destination " << dest_path_.value();
   } else {
-    LOG(ERROR) << "failed copy " << source_path_.value() <<
-                  " to " << dest_path_.value();
+    LOG(ERROR) << "failed copy " << source_path_.value()
+               << " to " << dest_path_.value();
     return false;
   }
 
@@ -112,8 +112,8 @@ void CopyTreeWorkItem::Rollback() {
     LOG(ERROR) << "Can not delete " << dest_path_.value();
   }
   if (moved_to_backup_ && !file_util::Move(backup_path_, dest_path_)) {
-    LOG(ERROR) << "failed move " << backup_path_.value() << " to " <<
-                  dest_path_.value();
+    LOG(ERROR) << "failed move " << backup_path_.value()
+               << " to " << dest_path_.value();
   }
   if (copied_to_alternate_path_ &&
       !file_util::Delete(alternative_path_, true)) {

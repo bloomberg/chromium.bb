@@ -71,12 +71,12 @@ installer::Version* InstallUtil::GetChromeVersion(bool system_install) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ) ||
       !key.ReadValue(google_update::kRegVersionField, &version_str)) {
-    LOG(INFO) << "No existing Chrome install found.";
+    VLOG(1) << "No existing Chrome install found.";
     key.Close();
     return NULL;
   }
   key.Close();
-  LOG(INFO) << "Existing Chrome version found " << version_str;
+  VLOG(1) << "Existing Chrome version found " << version_str;
   return installer::Version::GetVersionFromString(version_str);
 }
 
@@ -86,13 +86,10 @@ bool InstallUtil::IsOSSupported() {
   base::win::GetServicePackLevel(&major, &minor);
 
   // We do not support Win2K or older, or XP without service pack 2.
-  LOG(INFO) << "Windows Version: " << version
-            << ", Service Pack: " << major << "." << minor;
-  if ((version > base::win::VERSION_XP) ||
-      (version == base::win::VERSION_XP && major >= 2)) {
-    return true;
-  }
-  return false;
+  VLOG(1) << "Windows Version: " << version
+          << ", Service Pack: " << major << "." << minor;
+  return (version > base::win::VERSION_XP) ||
+      (version == base::win::VERSION_XP && major >= 2);
 }
 
 void InstallUtil::WriteInstallerResult(bool system_install,
@@ -260,7 +257,7 @@ bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
 // otherwise false.
 bool InstallUtil::DeleteRegistryKey(RegKey& root_key,
                                     const std::wstring& key_path) {
-  LOG(INFO) << "Deleting registry key " << key_path;
+  VLOG(1) << "Deleting registry key " << key_path;
   if (!root_key.DeleteKey(key_path.c_str()) &&
       ::GetLastError() != ERROR_MOD_NOT_FOUND) {
     LOG(ERROR) << "Failed to delete registry key: " << key_path;
@@ -276,7 +273,7 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
                                       const std::wstring& key_path,
                                       const std::wstring& value_name) {
   RegKey key(reg_root, key_path.c_str(), KEY_ALL_ACCESS);
-  LOG(INFO) << "Deleting registry value " << value_name;
+  VLOG(1) << "Deleting registry value " << value_name;
   if (key.ValueExists(value_name.c_str()) &&
       !key.DeleteValue(value_name.c_str())) {
     LOG(ERROR) << "Failed to delete registry value: " << value_name;

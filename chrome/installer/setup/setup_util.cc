@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,9 +16,8 @@
 int setup_util::ApplyDiffPatch(const FilePath& src,
                                const FilePath& patch,
                                const FilePath& dest) {
-  LOG(INFO) << "Applying patch " << patch.value()
-            << " to file " << src.value()
-            << " and generating file " << dest.value();
+  VLOG(1) << "Applying patch " << patch.value() << " to file " << src.value()
+          << " and generating file " << dest.value();
 
   // Try Courgette first.  Courgette checks the patch file first and fails
   // quickly if the patch file does not have a valid Courgette header.
@@ -26,21 +25,17 @@ int setup_util::ApplyDiffPatch(const FilePath& src,
       courgette::ApplyEnsemblePatch(src.value().c_str(),
                                     patch.value().c_str(),
                                     dest.value().c_str());
-  if (patch_status == courgette::C_OK) {
+  if (patch_status == courgette::C_OK)
     return 0;
-  } else {
-    LOG(INFO) << "Failed to apply patch " << patch.value()
-              << " using courgette.";
-  }
 
+  VLOG(1) << "Failed to apply patch " << patch.value() << " using courgette.";
   return ApplyBinaryPatch(src.value().c_str(), patch.value().c_str(),
                           dest.value().c_str());
 }
 
 installer::Version* setup_util::GetVersionFromDir(
     const FilePath& chrome_path) {
-  LOG(INFO) << "Looking for Chrome version folder under "
-            << chrome_path.value();
+  VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
   FilePath root_path = chrome_path.Append(L"*");
 
   WIN32_FIND_DATA find_data;
@@ -52,9 +47,10 @@ installer::Version* setup_util::GetVersionFromDir(
   // version directory.
   while (ret) {
     if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-      LOG(INFO) << "directory found: " << find_data.cFileName;
+      VLOG(1) << "directory found: " << find_data.cFileName;
       version = installer::Version::GetVersionFromString(find_data.cFileName);
-      if (version) break;
+      if (version)
+        break;
     }
     ret = FindNextFile(file_handle, &find_data);
   }

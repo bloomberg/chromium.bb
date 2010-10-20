@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -33,23 +33,19 @@ bool IsSafeDirectoryNameForDeletion(const wchar_t* dir_name) {
   DCHECK(dir_name);
 
   // empty name isn't allowed
-  if (!(dir_name && *dir_name)) {
+  if (!(dir_name && *dir_name))
     return false;
-  }
 
   // require a character other than \/:. after the last :
   // disallow anything with ".."
   bool ok = false;
   for (const wchar_t* s = dir_name; *s; ++s) {
-    if (*s != L'\\' && *s != L'/' && *s != L':' && *s != L'.') {
+    if (*s != L'\\' && *s != L'/' && *s != L':' && *s != L'.')
       ok = true;
-    }
-    if (*s == L'.' && s > dir_name && *(s - 1) == L'.') {
+    if (*s == L'.' && s > dir_name && *(s - 1) == L'.')
       return false;
-    }
-    if (*s == L':') {
+    if (*s == L':')
       ok = false;
-    }
   }
   return ok;
 }
@@ -76,7 +72,7 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
     return false;
   }
 
-  LOG(INFO) << "Scheduled for deletion: " << path;
+  VLOG(1) << "Scheduled for deletion: " << path;
   return true;
 }
 
@@ -134,9 +130,8 @@ bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   }
 
   // Now schedule the empty directory itself
-  if (!ScheduleFileSystemEntityForDeletion(dir_name)) {
+  if (!ScheduleFileSystemEntityForDeletion(dir_name))
     LOG(ERROR) << "Failed to schedule directory for deletion: " << dir_name;
-  }
 
   return true;
 }
@@ -248,9 +243,8 @@ HRESULT GetPendingMovesValue(
   base::win::RegKey session_manager_key(HKEY_LOCAL_MACHINE, kSessionManagerKey,
                                         KEY_QUERY_VALUE);
   HKEY session_manager_handle = session_manager_key.Handle();
-  if (!session_manager_handle) {
+  if (!session_manager_handle)
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-  }
 
   // The base::RegKey Read code squashes the return code from
   // ReqQueryValueEx, we have to do things ourselves:
@@ -265,30 +259,30 @@ HRESULT GetPendingMovesValue(
   if (result == ERROR_FILE_NOT_FOUND) {
     // No pending moves were found.
     return HRESULT_FROM_WIN32(result);
-  } else if (result == ERROR_MORE_DATA) {
-    if (type != REG_MULTI_SZ) {
-      DLOG(ERROR) << "Found PendingRename value of unexpected type.";
-      return E_UNEXPECTED;
-    }
-    if (buffer_size % 2) {
-      // The buffer size should be an even number (since we expect wchar_ts).
-      // If this is not the case, fail here.
-      DLOG(ERROR) << "Corrupt PendingRename value.";
-      return E_UNEXPECTED;
-    }
-
-    // There are pending file renames. Read them in.
-    buffer.resize(buffer_size);
-    result = RegQueryValueEx(session_manager_handle, kPendingFileRenameOps,
-                             0, &type, reinterpret_cast<LPBYTE>(&buffer[0]),
-                             &buffer_size);
-    if (result != ERROR_SUCCESS) {
-      DLOG(ERROR) << "Failed to read from " << kPendingFileRenameOps;
-      return HRESULT_FROM_WIN32(result);
-    }
-  } else {
+  }
+  if (result != ERROR_MORE_DATA) {
     // That was unexpected.
     DLOG(ERROR) << "Unexpected result from RegQueryValueEx: " << result;
+    return HRESULT_FROM_WIN32(result);
+  }
+  if (type != REG_MULTI_SZ) {
+    DLOG(ERROR) << "Found PendingRename value of unexpected type.";
+    return E_UNEXPECTED;
+  }
+  if (buffer_size % 2) {
+    // The buffer size should be an even number (since we expect wchar_ts).
+    // If this is not the case, fail here.
+    DLOG(ERROR) << "Corrupt PendingRename value.";
+    return E_UNEXPECTED;
+  }
+
+  // There are pending file renames. Read them in.
+  buffer.resize(buffer_size);
+  result = RegQueryValueEx(session_manager_handle, kPendingFileRenameOps,
+                           0, &type, reinterpret_cast<LPBYTE>(&buffer[0]),
+                           &buffer_size);
+  if (result != ERROR_SUCCESS) {
+    DLOG(ERROR) << "Failed to read from " << kPendingFileRenameOps;
     return HRESULT_FROM_WIN32(result);
   }
 
@@ -306,9 +300,8 @@ bool MatchPendingDeletePath(const std::wstring& short_form_needle,
 
   // First chomp the prefix since that will mess up GetShortPathName.
   std::wstring prefix(L"\\??\\");
-  if (StartsWith(match_path, prefix, false)) {
+  if (StartsWith(match_path, prefix, false))
     match_path = match_path.substr(4);
-  }
 
   // Get the short path name of the entry.
   std::wstring short_match_path(GetShortPathName(match_path.c_str()));
@@ -327,7 +320,8 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
   if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND)) {
     // No pending moves, nothing to do.
     return true;
-  } else if (FAILED(hr)) {
+  }
+  if (FAILED(hr)) {
     // Couldn't read the key or the key was corrupt.
     return false;
   }
@@ -336,8 +330,8 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
   std::wstring short_directory(GetShortPathName(directory));
 
   std::vector<PendingMove> strings_to_keep;
-  std::vector<PendingMove>::const_iterator iter(pending_moves.begin());
-  for (; iter != pending_moves.end(); iter++) {
+  for (std::vector<PendingMove>::const_iterator iter(pending_moves.begin());
+       iter != pending_moves.end(); iter++) {
     if (!MatchPendingDeletePath(short_directory, iter->first)) {
       // This doesn't match the deletions we are looking for. Preserve
       // this string pair, making sure that it is in fact a pair.
@@ -359,18 +353,15 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
     return false;
   }
 
-  if (strings_to_keep.size() > 1) {
-    std::vector<char> buffer;
-    StringArrayToMultiSZBytes(strings_to_keep, &buffer);
-    DCHECK(buffer.size() > 0);
-    if (buffer.size() > 0) {
-      return session_manager_key.WriteValue(kPendingFileRenameOps, &buffer[0],
-                                            buffer.size(), REG_MULTI_SZ);
-    } else {
-      return false;
-    }
-  } else {
+  if (strings_to_keep.size() <= 1) {
     // We have only the trailing NULL string. Don't bother writing that.
     return session_manager_key.DeleteValue(kPendingFileRenameOps);
   }
+  std::vector<char> buffer;
+  StringArrayToMultiSZBytes(strings_to_keep, &buffer);
+  DCHECK(buffer.size() > 0);
+  if (buffer.empty())
+    return false;
+  return session_manager_key.WriteValue(kPendingFileRenameOps, &buffer[0],
+                                        buffer.size(), REG_MULTI_SZ);
 }

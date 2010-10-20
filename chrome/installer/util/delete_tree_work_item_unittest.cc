@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,8 +189,8 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   file_util::CopyFile(exe_full_path, key_path);
   ASSERT_TRUE(file_util::PathExists(key_path));
 
-  LOG(INFO) << "copy ourself from "
-            << exe_full_path.value() << " to " << key_path.value();
+  VLOG(1) << "copy ourself from " << exe_full_path.value()
+          << " to " << key_path.value();
 
   // Run the key path file to keep it in use.
   STARTUPINFOW si = {sizeof(si)};

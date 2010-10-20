@@ -76,7 +76,7 @@ bool SetRegValueWorkItem::Do() {
         success = key.WriteValue(value_name_.c_str(), value_data_dword_);
       }
       if (success) {
-        LOG(INFO) << "overwritten value for " << value_name_;
+        VLOG(1) << "overwritten value for " << value_name_;
         status_ = VALUE_OVERWRITTEN;
         result = true;
       } else {
@@ -85,7 +85,7 @@ bool SetRegValueWorkItem::Do() {
         result = false;
       }
     } else {
-      LOG(INFO) << value_name_ << " exists. not changed ";
+      VLOG(1) << value_name_ << " exists. not changed ";
       status_ = VALUE_UNCHANGED;
       result = true;
     }
@@ -97,7 +97,7 @@ bool SetRegValueWorkItem::Do() {
       success = key.WriteValue(value_name_.c_str(), value_data_dword_);
     }
     if (success) {
-      LOG(INFO) << "created value for " << value_name_;
+      VLOG(1) << "created value for " << value_name_;
       status_ = NEW_VALUE_CREATED;
       result = true;
     } else {
@@ -117,7 +117,7 @@ void SetRegValueWorkItem::Rollback() {
 
   if (status_ == VALUE_UNCHANGED) {
     status_ = VALUE_ROLL_BACK;
-    LOG(INFO) << "rollback: setting unchanged, nothing to do";
+    VLOG(1) << "rollback: setting unchanged, nothing to do";
     return;
   }
 
@@ -125,7 +125,7 @@ void SetRegValueWorkItem::Rollback() {
   if (!key.Open(predefined_root_, key_path_.c_str(),
                 KEY_READ | KEY_SET_VALUE)) {
     status_ = VALUE_ROLL_BACK;
-    LOG(INFO) << "rollback: can not open " << key_path_;
+    VLOG(1) << "rollback: can not open " << key_path_;
     return;
   }
 
@@ -133,7 +133,7 @@ void SetRegValueWorkItem::Rollback() {
   if (status_ == NEW_VALUE_CREATED) {
     if (key.DeleteValue(value_name_.c_str()))
       result_str.assign(L" succeeded");
-    LOG(INFO) << "rollback: deleting " << value_name_ << result_str;
+    VLOG(1) << "rollback: deleting " << value_name_ << result_str;
   } else if (status_ == VALUE_OVERWRITTEN) {
     // try restore the previous value
     bool success = true;
@@ -145,7 +145,7 @@ void SetRegValueWorkItem::Rollback() {
     }
     if (success)
       result_str.assign(L" succeeded");
-    LOG(INFO) << "rollback: restoring " << value_name_ << result_str;
+    VLOG(1) << "rollback: restoring " << value_name_ << result_str;
   } else {
     // Not reached.
   }

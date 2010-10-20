@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,29 +48,23 @@ SZ_RESULT SzFileSeekImp(void *object, CFileSize pos) {
   value.HighPart = (LONG) ((UInt64) pos >> 32);
   value.LowPart = SetFilePointer(s->File, value.LowPart, &value.HighPart,
                                  FILE_BEGIN);
-  if (value.LowPart == 0xFFFFFFFF) {
-    if (GetLastError() != NO_ERROR) {
-      return SZE_FAIL;
-    }
-  }
-  return SZ_OK;
+  return ((value.LowPart == 0xFFFFFFFF) && (GetLastError() != NO_ERROR)) ?
+      SZE_FAIL : SZ_OK;
 }
 
 SZ_RESULT SzFileReadImp(void *object, void **buffer,
                         size_t maxRequiredSize, size_t *processedSize) {
   const int kBufferSize = 1 << 12;
   static Byte g_Buffer[kBufferSize];
-  if (maxRequiredSize > kBufferSize) {
+  if (maxRequiredSize > kBufferSize)
     maxRequiredSize = kBufferSize;
-  }
 
   CFileInStream *s = (CFileInStream *) object;
   size_t processedSizeLoc;
   processedSizeLoc = LzmaReadFile(s->File, g_Buffer, maxRequiredSize);
   *buffer = g_Buffer;
-  if (processedSize != 0) {
+  if (processedSize != 0)
     *processedSize = processedSizeLoc;
-  }
   return SZ_OK;
 }
 
@@ -80,14 +74,14 @@ SZ_RESULT SzFileReadImp(void *object, void **buffer,
 int32 LzmaUtil::UnPackArchive(const std::wstring& archive,
                              const std::wstring& output_dir,
                              std::wstring* output_file) {
-  LOG(INFO) << "Opening archive " << archive;
+  VLOG(1) << "Opening archive " << archive;
   LzmaUtil lzma_util;
   DWORD ret;
   if ((ret = lzma_util.OpenArchive(archive)) != NO_ERROR) {
     LOG(ERROR) << "Unable to open install archive: " << archive
                << ", error: " << ret;
   } else {
-    LOG(INFO) << "Uncompressing archive to path " << output_dir;
+    VLOG(1) << "Uncompressing archive to path " << output_dir;
     if ((ret = lzma_util.UnPack(output_dir, output_file)) != NO_ERROR) {
       LOG(ERROR) << "Unable to uncompress archive: " << archive
                  << ", error: " << ret;
@@ -111,9 +105,8 @@ DWORD LzmaUtil::OpenArchive(const std::wstring& archivePath) {
   DWORD ret = NO_ERROR;
   archive_handle_ = CreateFile(archivePath.c_str(), GENERIC_READ,
       FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (archive_handle_ == INVALID_HANDLE_VALUE) {
+  if (archive_handle_ == INVALID_HANDLE_VALUE)
     ret = GetLastError();
-  }
   return ret;
 }
 

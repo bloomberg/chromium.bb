@@ -195,9 +195,9 @@ void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
   reg_key.append(product_guid);
   if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
       !key.ReadValue(google_update::kRegApField, &ap_key_value)) {
-    LOG(INFO) << "Application key not found.";
+    VLOG(1) << "Application key not found.";
     if (!incremental_install || !install_return_code) {
-      LOG(INFO) << "Returning without changing application key.";
+      VLOG(1) << "Returning without changing application key.";
       key.Close();
       return;
     } else if (!key.Valid()) {
@@ -229,17 +229,17 @@ std::wstring GoogleUpdateSettings::GetNewGoogleUpdateApKey(
   bool has_magic_string = false;
   if ((value.length() >= kMagicSuffix.length()) &&
       (value.rfind(kMagicSuffix) == (value.length() - kMagicSuffix.length()))) {
-    LOG(INFO) << "Incremental installer failure key already set.";
+    VLOG(1) << "Incremental installer failure key already set.";
     has_magic_string = true;
   }
 
   std::wstring new_value(value);
   if ((!diff_install || !install_return_code) && has_magic_string) {
-    LOG(INFO) << "Removing failure key from value " << value;
+    VLOG(1) << "Removing failure key from value " << value;
     new_value = value.substr(0, value.length() - kMagicSuffix.length());
   } else if ((diff_install && install_return_code) &&
              !has_magic_string) {
-    LOG(INFO) << "Incremental installer failed, setting failure key.";
+    VLOG(1) << "Incremental installer failed, setting failure key.";
     new_value.append(kMagicSuffix);
   }
 

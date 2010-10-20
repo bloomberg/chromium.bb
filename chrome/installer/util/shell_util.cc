@@ -622,7 +622,7 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    LOG(INFO) << "Registering Chrome as default browser on Vista.";
+    VLOG(1) << "Registering Chrome as default browser on Vista.";
     IApplicationAssociationRegistration* pAAR;
     HRESULT hr = CoCreateInstance(CLSID_ApplicationAssociationRegistration,
         NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistration),

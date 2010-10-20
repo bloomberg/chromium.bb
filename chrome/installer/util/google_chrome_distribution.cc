@@ -584,7 +584,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   std::wstring brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
     // Testing only: the user automatically qualifies for the experiment.
-    LOG(INFO) << "Experiment qualification bypass";
+    VLOG(1) << "Experiment qualification bypass";
   } else {
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory.
@@ -600,19 +600,19 @@ void GoogleChromeDistribution::LaunchUserExperiment(
       return;
     } else if (dir_age_hours < kThirtyDays) {
       // An active user, so it does not qualify.
-      LOG(INFO) << "Chrome used in last " << dir_age_hours << " hours";
+      VLOG(1) << "Chrome used in last " << dir_age_hours << " hours";
       SetClient(GetExperimentGroup(kToastActiveGroup, flavor), true);
       return;
     }
     // 1% are in the control group that qualifies but does not get drafted.
     if (base::RandDouble() > 0.99) {
       SetClient(GetExperimentGroup(kToastExpControlGroup, flavor), true);
-      LOG(INFO) << "User is control group";
+      VLOG(1) << "User is control group";
       return;
     }
   }
 
-  LOG(INFO) << "User drafted for toast experiment " << flavor;
+  VLOG(1) << "User drafted for toast experiment " << flavor;
   SetClient(GetExperimentGroup(kToastExpBaseGroup, flavor), false);
   // User level: The experiment needs to be performed in a different process
   // because google_update expects the upgrade process to be quick and nimble.

@@ -105,7 +105,7 @@ void installer::RemoveOldVersionDirs(const std::wstring& chrome_path,
   // latest_version.
   while (ret) {
     if (find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-      LOG(INFO) << "directory found: " << find_file_data.cFileName;
+      VLOG(1) << "directory found: " << find_file_data.cFileName;
       version.reset(
           installer::Version::GetVersionFromString(find_file_data.cFileName));
       if (version.get() && latest_version->IsHigherThan(version.get())) {
@@ -113,7 +113,7 @@ void installer::RemoveOldVersionDirs(const std::wstring& chrome_path,
         file_util::AppendToPath(&remove_dir, find_file_data.cFileName);
         std::wstring chrome_dll_path(remove_dir);
         file_util::AppendToPath(&chrome_dll_path, installer_util::kChromeDll);
-        LOG(INFO) << "deleting directory " << remove_dir;
+        VLOG(1) << "deleting directory " << remove_dir;
         scoped_ptr<DeleteTreeWorkItem> item;
         item.reset(WorkItem::CreateDeleteTreeWorkItem(remove_dir,
                                                       chrome_dll_path));

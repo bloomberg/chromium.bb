@@ -43,8 +43,8 @@ bool MoveTreeWorkItem::Do() {
 
     if (file_util::Move(dest_path_, backup_path_)) {
       moved_to_backup_ = true;
-      LOG(INFO) << "Moved destination " << dest_path_.value()
-                << " to backup path " << backup_path_.value();
+      VLOG(1) << "Moved destination " << dest_path_.value()
+              << " to backup path " << backup_path_.value();
     } else {
       LOG(ERROR) << "failed moving " << dest_path_.value()
                  << " to " << backup_path_.value();
@@ -55,11 +55,11 @@ bool MoveTreeWorkItem::Do() {
   // Now move source to destination.
   if (file_util::Move(source_path_, dest_path_)) {
     moved_to_dest_path_ = true;
-    LOG(INFO) << "Moved source " << source_path_.value()
-              << " to destination " << dest_path_.value();
+    VLOG(1) << "Moved source " << source_path_.value()
+            << " to destination " << dest_path_.value();
   } else {
-    LOG(ERROR) << "failed move " << source_path_.value() << " to " <<
-                  dest_path_.value();
+    LOG(ERROR) << "failed move " << source_path_.value()
+               << " to " << dest_path_.value();
     return false;
   }
 
@@ -68,10 +68,10 @@ bool MoveTreeWorkItem::Do() {
 
 void MoveTreeWorkItem::Rollback() {
   if (moved_to_dest_path_ && !file_util::Move(dest_path_, source_path_))
-    LOG(ERROR) << "Can not move " << dest_path_.value() <<
-                   " to " << source_path_.value();
+    LOG(ERROR) << "Can not move " << dest_path_.value()
+               << " to " << source_path_.value();
 
   if (moved_to_backup_ && !file_util::Move(backup_path_, dest_path_))
-    LOG(ERROR) << "failed move " << backup_path_.value() <<
-                  " to " << dest_path_.value();
+    LOG(ERROR) << "failed move " << backup_path_.value()
+               << " to " << dest_path_.value();
 }
