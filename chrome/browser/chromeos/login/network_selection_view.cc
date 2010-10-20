@@ -307,8 +307,8 @@ void NetworkSelectionView::Init() {
   keyboards_menubutton_->SetFocusable(true);
   keyboards_menubutton_->SetNormalHasBorder(true);
   keyboards_menubutton_->set_animate_on_state_change(false);
-  delegate_->keyboard_switch_menu()->SetMenuOffset(kMenuHorizontalOffset,
-                                                   kMenuVerticalOffset);
+  keyboards_menubutton_->set_menu_offset(kMenuHorizontalOffset,
+                                         kMenuVerticalOffset);
 
   select_network_label_ = new views::Label();
   select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));

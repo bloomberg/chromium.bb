@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 
 #include "app/resource_bundle.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "views/controls/button/menu_button.h"
 #include "views/widget/widget_gtk.h"
 
 namespace {
@@ -30,7 +32,8 @@ namespace chromeos {
 
 LanguageSwitchMenu::LanguageSwitchMenu()
     : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)),
+      menu_alignment_(views::Menu2::ALIGN_TOPRIGHT) {
 }
 
 void LanguageSwitchMenu::InitLanguageMenu() {
@@ -106,7 +109,18 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
 
 void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   DCHECK(menu_ != NULL);
-  menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+  views::MenuButton* button = static_cast<views::MenuButton*>(source);
+  // We align the on left edge of the button for non RTL case.
+  gfx::Point new_pt(pt);
+  if (menu_alignment_ == views::Menu2::ALIGN_TOPLEFT) {
+    int reverse_offset = button->width() + button->menu_offset().x() * 2;
+    if (base::i18n::IsRTL()) {
+      new_pt.set_x(pt.x() + reverse_offset);
+    } else {
+      new_pt.set_x(pt.x() - reverse_offset);
+    }
+  }
+  menu_->RunMenuAt(new_pt, menu_alignment_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

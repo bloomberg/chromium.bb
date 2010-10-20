@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/keyboard_switch_menu.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
@@ -17,9 +18,7 @@ namespace chromeos {
 KeyboardSwitchMenu::KeyboardSwitchMenu()
     : InputMethodMenu(NULL /* pref_service */,
                       false /* is_browser_mode */,
-                      false /* is_screen_locker */),
-      delta_x_(0),
-      delta_y_(0) {
+                      false /* is_screen_locker */) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,10 +32,18 @@ void KeyboardSwitchMenu::UpdateUI(
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::ViewMenuDelegate implementation.
-void KeyboardSwitchMenu::RunMenu(views::View* source, const gfx::Point& point) {
-  gfx::Point offset_point(point);
-  offset_point.Offset(delta_x_, delta_y_);
-  InputMethodMenu::RunMenu(source, offset_point);
+void KeyboardSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
+  PrepareForMenuOpen();
+  gfx::Point new_pt(pt);
+  views::MenuButton* button = static_cast<views::MenuButton*>(source);
+  // Keyboard switch menu is aligned on left by default.
+  int reverse_offset = button->width() + button->menu_offset().x() * 2;
+  if (base::i18n::IsRTL()) {
+    new_pt.set_x(pt.x() + reverse_offset);
+  } else {
+    new_pt.set_x(pt.x() - reverse_offset);
+  }
+  language_menu().RunMenuAt(new_pt, views::Menu2::ALIGN_TOPLEFT);
 }
 
 std::wstring KeyboardSwitchMenu::GetCurrentKeyboardName() const {

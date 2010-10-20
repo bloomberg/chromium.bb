@@ -56,7 +56,8 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   // views::ViewMenuDelegate implementation. Sub classes can override the method
   // to adjust the position of the menu.
-  virtual void RunMenu(views::View* unused_source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* unused_source,
+                       const gfx::Point& pt);
 
   // InputMethodLibrary::Observer implementation.
   virtual void InputMethodChanged(InputMethodLibrary* obj);
@@ -86,6 +87,14 @@ class InputMethodMenu : public views::ViewMenuDelegate,
  protected:
   // Parses |input_method| and then calls UpdateUI().
   void UpdateUIFromInputMethod(const InputMethodDescriptor& input_method);
+
+  // Rebuilds model and menu2 objects in preparetion to open the menu.
+  void PrepareForMenuOpen();
+
+  // Returns menu2 object for language menu.
+  views::Menu2& language_menu() {
+    return language_menu_;
+  }
 
  private:
   // Updates UI of a container of the menu (e.g. the "US" menu button in the

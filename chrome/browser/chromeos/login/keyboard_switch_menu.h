@@ -35,16 +35,7 @@ class KeyboardSwitchMenu : public InputMethodMenu {
   // Returns current keyboard name to be placed on the keyboard menu-button.
   std::wstring GetCurrentKeyboardName() const;
 
-  // Changes the position of the dropdown menu.
-  void SetMenuOffset(int delta_x, int delta_y) {
-    delta_x_ = delta_x;
-    delta_y_ = delta_y;
-  }
-
  private:
-  int delta_x_;
-  int delta_y_;
-
   DISALLOW_COPY_AND_ASSIGN(KeyboardSwitchMenu);
 };
 

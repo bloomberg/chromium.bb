@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include <gtk/gtk.h>  // for gtk_menu_shell_set_take_focus.
-
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_split.h"
@@ -368,35 +366,7 @@ void InputMethodMenu::ActivatedAt(int index) {
 
 void InputMethodMenu::RunMenu(
     views::View* unused_source, const gfx::Point& pt) {
-  UserMetrics::RecordAction(UserMetricsAction("LanguageMenuButton_Open"));
-  input_method_descriptors_.reset(CrosLibrary::Get()->GetInputMethodLibrary()->
-                                  GetActiveInputMethods());
-  RebuildModel();
-  language_menu_.Rebuild();
-
-  // Disallow the menu widget to grab the keyboard focus. This is necessary to
-  // enable users to change status of an input method (e.g. change the input
-  // mode from Japanese Hiragana to Japanese Katakana) without discarding a
-  // preedit string. See crosbug.com/5796 for details. Note that menus other
-  // than this one should not call the Gtk+ API since it is a special API only
-  // for a menu related to IME/keyboard. See the Gtk+ API reference at:
-  // http://library.gnome.org/devel/gtk/stable/GtkMenuShell.html
-/*
-  Temporarily disable due to crash. (http://crosbug.com/7598)
-
-  gfx::NativeMenu native_menu = language_menu_.GetNativeMenu();
-  if (native_menu) {
-    gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(native_menu), FALSE);
-  } else {
-    LOG(ERROR)
-        << "Can't call gtk_menu_shell_set_take_focus since NativeMenu is NULL";
-  }
-*/
-
-  language_menu_.UpdateStates();
-  if (minimum_language_menu_width_ > 0) {
-    language_menu_.SetMinimumWidth(minimum_language_menu_width_);
-  }
+  PrepareForMenuOpen();
   language_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
@@ -429,6 +399,17 @@ void InputMethodMenu::InputMethodChanged(InputMethodLibrary* obj) {
             language_prefs::kPreferredKeyboardLayout, current_input_method.id);
         g_browser_process->local_state()->SavePersistentPrefs();
     }
+  }
+}
+
+void InputMethodMenu::PrepareForMenuOpen() {
+  UserMetrics::RecordAction(UserMetricsAction("LanguageMenuButton_Open"));
+  input_method_descriptors_.reset(CrosLibrary::Get()->GetInputMethodLibrary()->
+                                  GetActiveInputMethods());
+  RebuildModel();
+  language_menu_.Rebuild();
+  if (minimum_language_menu_width_ > 0) {
+    language_menu_.SetMinimumWidth(minimum_language_menu_width_);
   }
 }
 

@@ -16,6 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
@@ -43,6 +44,7 @@ NetworkScreen::NetworkScreen(WizardScreenDelegate* delegate)
       is_network_subscribed_(false),
       continue_pressed_(false),
       bubble_(NULL) {
+  language_switch_menu_.set_menu_alignment(views::Menu2::ALIGN_TOPLEFT);
 }
 
 NetworkScreen::~NetworkScreen() {
