@@ -56,7 +56,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
-  virtual void CellularDataPlanChanged(NetworkLibrary* obj);
 
   // Sets the badge icon.
   void SetBadge(const SkBitmap& badge);

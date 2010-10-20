@@ -30,7 +30,8 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(chromeos::NetworkLibrary* obj);
-  virtual void CellularDataPlanChanged(chromeos::NetworkLibrary* obj);
+  virtual void CellularDataPlanChanged(const std::string& service_path,
+      const chromeos::CellularDataPlanList& plans);
 
  private:
   // Passes data needed to show details overlay for network.

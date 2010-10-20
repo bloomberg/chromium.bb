@@ -526,45 +526,25 @@
         <include name="IDR_STATUSBAR_FEEDBACK_PRESSED" file="statusbar_feedback_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G" file="statusbar_network_3g.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_3G_LOWDATA" file="statusbar_network_3g_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_3G_VLOWDATA" file="statusbar_network_3g_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS0" file="statusbar_network_bars0.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS1" file="statusbar_network_bars1.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS1_BLACK" file="statusbar_network_bars1b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS1_LOWDATA" file="statusbar_network_bars1_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS1_VLOWDATA" file="statusbar_network_bars1_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS2" file="statusbar_network_bars2.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS2_BLACK" file="statusbar_network_bars2b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS2_LOWDATA" file="statusbar_network_bars2_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS2_VLOWDATA" file="statusbar_network_bars2_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS3" file="statusbar_network_bars3.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS3_BLACK" file="statusbar_network_bars3b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS3_LOWDATA" file="statusbar_network_bars3_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS3_VLOWDATA" file="statusbar_network_bars3_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS4" file="statusbar_network_bars4.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS4_BLACK" file="statusbar_network_bars4b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS4_LOWDATA" file="statusbar_network_bars4_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS4_VLOWDATA" file="statusbar_network_bars4_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS5" file="statusbar_network_bars5.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS5_BLACK" file="statusbar_network_bars5b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS5_LOWDATA" file="statusbar_network_bars5_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS5_VLOWDATA" file="statusbar_network_bars5_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS6" file="statusbar_network_bars6.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS6_BLACK" file="statusbar_network_bars6b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS6_LOWDATA" file="statusbar_network_bars6_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS6_VLOWDATA" file="statusbar_network_bars6_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS7" file="statusbar_network_bars7.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS7_BLACK" file="statusbar_network_bars7b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS7_LOWDATA" file="statusbar_network_bars7_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS7_VLOWDATA" file="statusbar_network_bars7_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS8" file="statusbar_network_bars8.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS8_BLACK" file="statusbar_network_bars8b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS8_LOWDATA" file="statusbar_network_bars8_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS8_VLOWDATA" file="statusbar_network_bars8_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS9" file="statusbar_network_bars9.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS9_BLACK" file="statusbar_network_bars9b.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS9_LOWDATA" file="statusbar_network_bars9_lowdata.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS9_VLOWDATA" file="statusbar_network_bars9_vlowdata.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS_PRESSED" file="statusbar_network_bars_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="statusbar_network_edge.png" type="BINDATA" />

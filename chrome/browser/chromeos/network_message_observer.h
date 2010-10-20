@@ -20,6 +20,12 @@ class WindowDelegate;
 
 namespace chromeos {
 
+// We show nearing expiration notification when less than 30 minutes.
+static const int kDataNearingExpirationSecs = 30 * 60;
+
+// We show low data notification when less than 50MB.
+static const int kDataLowDataBytes = 50 * 1024;
+
 // The network message observer displays a system notification for network
 // messages.
 
@@ -36,7 +42,8 @@ class NetworkMessageObserver : public NetworkLibrary::Observer {
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
-  virtual void CellularDataPlanChanged(NetworkLibrary* obj);
+  virtual void CellularDataPlanChanged(const std::string& service_path,
+                                       const CellularDataPlanList& plans);
 
   bool initialized_;
   // Wifi networks by service path.

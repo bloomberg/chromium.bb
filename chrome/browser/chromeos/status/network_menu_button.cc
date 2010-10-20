@@ -120,16 +120,11 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
             UTF8ToWide(cros->wifi_network().name())));
       } else if (cros->cellular_connected()) {
-        const CellularNetwork& cellular = cros->cellular_network();
-        if (cellular.data_left() == CellularNetwork::DATA_NONE) {
-          // If no data, then we show 0 bars.
-          SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
-        } else {
-          SetIcon(IconForNetworkStrength(cellular));
-        }
+        SetIcon(IconForNetworkStrength(
+            cros->cellular_network().strength(), false));
         SetTooltipText(l10n_util::GetStringF(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cellular.name())));
+            UTF8ToWide(cros->cellular_network().name())));
       } else {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
         SetTooltipText(l10n_util::GetString(
@@ -141,20 +136,9 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
       SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
     } else if (!cros->ethernet_connected() && !cros->wifi_connected() &&
         (cros->cellular_connecting() || cros->cellular_connected())) {
-      int id;
-      switch (cros->cellular_network().data_left()) {
-        case CellularNetwork::DATA_NONE:
-        case CellularNetwork::DATA_VERY_LOW:
-          id = IDR_STATUSBAR_NETWORK_3G_VLOWDATA;
-          break;
-        case CellularNetwork::DATA_LOW:
-          id = IDR_STATUSBAR_NETWORK_3G_LOWDATA;
-          break;
-        case CellularNetwork::DATA_NORMAL:
-          id = IDR_STATUSBAR_NETWORK_3G;
-          break;
-      }
-      SetBadge(*rb.GetBitmapNamed(id));
+      // TODO(chocobo): Check cellular network 3g/edge.
+      SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G));
+//      SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE));
     } else {
       SetBadge(SkBitmap());
     }
@@ -167,11 +151,6 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
 
   SchedulePaint();
   UpdateMenu();
-}
-
-void NetworkMenuButton::CellularDataPlanChanged(NetworkLibrary* cros) {
-  // Call NetworkChanged which will update the icon.
-  NetworkChanged(cros);
 }
 
 void NetworkMenuButton::SetBadge(const SkBitmap& badge) {
