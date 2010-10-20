@@ -265,10 +265,6 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
   ChromeFrameAutomationProxyImpl* proxy =
       new ChromeFrameAutomationProxyImpl(this, params->launch_timeout());
 
-  // Ensure that the automation proxy actually respects our choice on whether
-  // or not to check the version.
-  proxy->set_perform_version_check(params->version_check());
-
   // Launch browser
   scoped_ptr<CommandLine> command_line(
       chrome_launcher::CreateLaunchCommandLine());

@@ -224,7 +224,6 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../chrome/chrome.gyp:browser',
@@ -279,7 +278,6 @@
         'test/url_request_test.cc',
         'test/win_event_receiver.cc',
         'test/win_event_receiver.h',
-        'chrome_launcher_version.rc',
         'chrome_tab.h',
         'chrome_tab.idl',
         'test_utils.cc',
