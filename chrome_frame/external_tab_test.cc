@@ -157,6 +157,7 @@ TEST(ExternalTabProxy, CancelledCreateTab) {
   scoped_ptr<ExternalTabProxy> tab(new ExternalTabProxy());
   AsyncEventCreator async_events(tab.get());
   StrictMock<MockProxy>* proxy = new StrictMock<MockProxy>();
+  TimedMsgLoop loop;
   tab->set_proxy_factory(&factory);
 
   EXPECT_CALL(factory, CreateProxy()).WillOnce(Return(proxy));
@@ -165,6 +166,9 @@ TEST(ExternalTabProxy, CancelledCreateTab) {
       CreateFunctor(&async_events, &AsyncEventCreator::Fire_Connected,
       proxy, base::TimeDelta::FromMilliseconds(30))),
       Return(1)));
+
+  EXPECT_CALL(*proxy, CreateTab(tab.get(), _))
+      .WillOnce(QUIT_LOOP(loop));
 
   EXPECT_CALL(*proxy, RemoveDelegate(_)).WillOnce(DoAll(
       InvokeWithoutArgs(CreateFunctor(&async_events,
@@ -181,6 +185,8 @@ TEST(ExternalTabProxy, CancelledCreateTab) {
   tab_params.url = GURL("http://Xanadu.org");
 
   tab->CreateTab(tab_params, &ui_delegate);
+  loop.RunFor(5);
+  EXPECT_FALSE(loop.WasTimedOut());
   tab.reset();
 }
 
