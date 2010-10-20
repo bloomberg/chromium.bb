@@ -27,59 +27,36 @@ HRESULT ViewAccessibility::Initialize(views::View* view) {
 // TODO(ctguil): Handle case where child View is not contained by parent.
 STDMETHODIMP ViewAccessibility::accHitTest(
     LONG x_left, LONG y_top, VARIANT* child) {
-  if (!child) {
+  if (!child)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
 
-  gfx::Point pt(x_left, y_top);
-  views::View::ConvertPointToView(NULL, view_, &pt);
+  gfx::Point point(x_left, y_top);
+  views::View::ConvertPointToView(NULL, view_, &point);
 
-  if (!view_->HitTest(pt)) {
+  if (!view_->HitTest(point)) {
     // If containing parent is not hit, return with failure.
     child->vt = VT_EMPTY;
     return S_FALSE;
   }
 
-  int child_count = view_->GetChildViewCount();
-  bool child_hit = false;
-  views::View* child_view = NULL;
-  for (int child_id = 0; child_id < child_count; ++child_id) {
-    // Search for hit within any of the children.
-    child_view = view_->GetChildViewAt(child_id);
-    views::View::ConvertPointToView(view_, child_view, &pt);
-    if (child_view->HitTest(pt)) {
-      // Store child_id (adjusted with +1 to convert to MSAA indexing).
-      child->lVal = child_id + 1;
-      child_hit = true;
-      break;
-    }
-    // Convert point back to parent view to test next child.
-    views::View::ConvertPointToView(child_view, view_, &pt);
-  }
-
-  child->vt = VT_I4;
-
-  if (!child_hit) {
+  views::View* view = view_->GetViewForPoint(point);
+  if (view == view_) {
     // No child hit, return parent id.
+    child->vt = VT_I4;
     child->lVal = CHILDID_SELF;
   } else {
-    if (child_view == NULL) {
-      return E_FAIL;
-    } else if (child_view->GetChildViewCount() != 0) {
-      // Retrieve IDispatch for child, if it is not a leaf.
-      child->vt = VT_DISPATCH;
-      if ((GetViewAccessibilityWrapper(child_view))->
-          GetInstance(IID_IAccessible,
-                      reinterpret_cast<void**>(&child->pdispVal)) == S_OK) {
-        // Increment the reference count for the retrieved interface.
-        child->pdispVal->AddRef();
-        return S_OK;
-      } else {
-        return E_NOINTERFACE;
-      }
+    child->vt = VT_DISPATCH;
+    if ((GetViewAccessibilityWrapper(view))->
+        GetInstance(IID_IAccessible,
+                    reinterpret_cast<void**>(&child->pdispVal)) == S_OK) {
+      // Increment the reference count for the retrieved interface.
+      child->pdispVal->AddRef();
+      return S_OK;
+    } else {
+      return E_NOINTERFACE;
     }
   }
 
