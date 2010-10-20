@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,17 +49,17 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
                        logging::LOCK_LOG_FILE, logging::APPEND_TO_OLD_LOG_FILE);
   logging::SetLogItems(true, true, true, false);
 
-  LOG(INFO) << "session start. cmdline is [" << cmd_line << "]";
+  VLOG(1) << "session start. cmdline is [" << cmd_line << "]";
 
   CrashService crash_service(operating_dir.ToWStringHack());
   if (!crash_service.Initialize(::GetCommandLineW()))
     return 1;
 
-  LOG(INFO) << "ready to process crash requests";
+  VLOG(1) << "ready to process crash requests";
 
   // Enter the message loop.
   int retv = crash_service.ProcessingLoop();
   // Time to exit.
-  LOG(INFO) << "session end. return code is " << retv;
+  VLOG(1) << "session end. return code is " << retv;
   return retv;
 }

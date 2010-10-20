@@ -105,7 +105,7 @@ bool CreateTopWindow(HINSTANCE instance, bool visible) {
     return false;
 
   ::UpdateWindow(window);
-  LOG(INFO) << "window handle is " << window;
+  VLOG(1) << "window handle is " << window;
   g_top_window = window;
   return true;
 }
@@ -253,15 +253,15 @@ bool CrashService::Initialize(const std::wstring& command_line) {
     reporter_tag_ = cmd_line.GetSwitchValueNative(kReporterTag);
 
   // Log basic information.
-  LOG(INFO) << "pipe name is " << pipe_name;
-  LOG(INFO) << "dumps at " << dumps_path;
-  LOG(INFO) << "reports at " << report_path_;
+  VLOG(1) << "pipe name is " << pipe_name
+          << "\ndumps at " << dumps_path
+          << "\nreports at " << report_path_;
 
   if (sender_) {
-    LOG(INFO) << "checkpoint is " << checkpoint_path;
-    LOG(INFO) << "server is " << kCrashReportURL;
-    LOG(INFO) << "maximum " << sender_->max_reports_per_day() << " reports/day";
-    LOG(INFO) << "reporter is " << reporter_tag_;
+    VLOG(1) << "checkpoint is " << checkpoint_path
+            << "\nserver is " << kCrashReportURL
+            << "\nmaximum " << sender_->max_reports_per_day() << " reports/day"
+            << "\nreporter is " << reporter_tag_;
   }
   // Start servicing clients.
   if (!dumper_->Start()) {
@@ -290,7 +290,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 void CrashService::OnClientConnected(void* context,
     const google_breakpad::ClientInfo* client_info) {
   ProcessingLock lock;
-  LOG(INFO) << "client start. pid = " << client_info->pid();
+  VLOG(1) << "client start. pid = " << client_info->pid();
   CrashService* self = static_cast<CrashService*>(context);
   ::InterlockedIncrement(&self->clients_connected_);
 }
@@ -298,7 +298,7 @@ void CrashService::OnClientConnected(void* context,
 void CrashService::OnClientExited(void* context,
     const google_breakpad::ClientInfo* client_info) {
   ProcessingLock lock;
-  LOG(INFO) << "client end. pid = " << client_info->pid();
+  VLOG(1) << "client end. pid = " << client_info->pid();
   CrashService* self = static_cast<CrashService*>(context);
   ::InterlockedIncrement(&self->clients_terminated_);
 
@@ -319,7 +319,7 @@ void CrashService::OnClientExited(void* context,
     // Some people can restart chrome very fast, check again if we have
     // a new client before exiting for real.
     if (self->clients_connected_ == self->clients_terminated_) {
-      LOG(INFO) << "zero clients. exiting";
+      VLOG(1) << "zero clients. exiting";
       ::PostMessage(g_top_window, WM_CLOSE, 0, 0);
     }
   }
@@ -340,7 +340,7 @@ void CrashService::OnClientDumpRequest(void* context,
   }
 
   DWORD pid = client_info->pid();
-  LOG(INFO) << "dump for pid = " << pid << " is " << *file_path;
+  VLOG(1) << "dump for pid = " << pid << " is " << *file_path;
 
   CrashService* self = static_cast<CrashService*>(context);
   if (!self) {
@@ -396,7 +396,7 @@ unsigned long CrashService::AsyncSendDump(void* context) {
       // Take the server lock while sending. This also prevent early
       // termination of the service object.
       AutoLock lock(info->self->sending_);
-      LOG(INFO) << "trying to send report for pid = " << info->pid;
+      VLOG(1) << "trying to send report for pid = " << info->pid;
       google_breakpad::ReportResult send_result
           = info->self->sender_->SendCrashReport(kCrashReportURL, info->map,
                                                  info->dump_path, &report_id);
@@ -423,7 +423,7 @@ unsigned long CrashService::AsyncSendDump(void* context) {
       };
     }
 
-    LOG(INFO) << "dump for pid =" << info->pid << " crash2 id =" << report_id;
+    VLOG(1) << "dump for pid =" << info->pid << " crash2 id =" << report_id;
     --retry_round;
   } while (retry_round >= 0);
 
@@ -441,15 +441,15 @@ int CrashService::ProcessingLoop() {
     DispatchMessage(&msg);
   }
 
-  LOG(INFO) << "session ending..";
+  VLOG(1) << "session ending..";
   while (ProcessingLock::IsWorking()) {
     ::Sleep(50);
   }
 
-  LOG(INFO) << "clients connected :" << clients_connected_;
-  LOG(INFO) << "clients terminated :" << clients_terminated_;
-  LOG(INFO) << "dumps serviced :" << requests_handled_;
-  LOG(INFO) << "dumps reported :" << requests_sent_;
+  VLOG(1) << "clients connected :" << clients_connected_
+          << "\nclients terminated :" << clients_terminated_
+          << "\ndumps serviced :" << requests_handled_
+          << "\ndumps reported :" << requests_sent_;
 
   return static_cast<int>(msg.wParam);
 }
