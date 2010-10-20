@@ -37,6 +37,10 @@ PersonalOptionsHandler::PersonalOptionsHandler() {
 }
 
 PersonalOptionsHandler::~PersonalOptionsHandler() {
+  ProfileSyncService* sync_service =
+      dom_ui_->GetProfile()->GetProfileSyncService();
+  if (sync_service)
+    sync_service->RemoveObserver(this);
 }
 
 void PersonalOptionsHandler::GetLocalizedValues(
@@ -63,6 +67,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
   localized_strings->SetString("stop_syncing_confirm_button_label",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL));
+  localized_strings->SetString("privacy_dashboard_link",
+      l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
 
   localized_strings->SetString("passwords",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME));
@@ -111,8 +117,12 @@ void PersonalOptionsHandler::GetLocalizedValues(
 void PersonalOptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
   dom_ui_->RegisterMessageCallback(
-      "getSyncStatus",
-      NewCallback(this, &PersonalOptionsHandler::SetSyncStatusUIString));
+      "showSyncLoginDialog",
+      NewCallback(this, &PersonalOptionsHandler::ShowSyncLoginDialog));
+  dom_ui_->RegisterMessageCallback(
+      "openPrivacyDashboardTabAndActivate",
+      NewCallback(this,
+                  &PersonalOptionsHandler::OpenPrivacyDashboardTabAndActivate));
   dom_ui_->RegisterMessageCallback(
       "themesReset",
       NewCallback(this, &PersonalOptionsHandler::ThemesReset));
@@ -133,6 +143,95 @@ void PersonalOptionsHandler::Observe(NotificationType type,
     ObserveThemeChanged();
   else
     OptionsPageUIHandler::Observe(type, source, details);
+}
+
+void PersonalOptionsHandler::OnStateChanged() {
+  string16 status_label;
+  string16 link_label;
+  ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
+  bool managed = service->IsManaged();
+  bool sync_setup_completed = service->HasSyncSetupCompleted();
+  bool status_has_error = sync_ui_util::GetStatusLabels(service,
+      &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
+
+  string16 start_stop_button_label;
+  bool is_start_stop_button_visible = false;
+  bool is_start_stop_button_enabled = false;
+  if (sync_setup_completed) {
+    start_stop_button_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+#if defined(OS_CHROMEOS)
+    is_start_stop_button_visible = false;
+#else
+    is_start_stop_button_visible = true;
+#endif
+    is_start_stop_button_enabled = !managed;
+  } else if (service->SetupInProgress()) {
+    start_stop_button_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    is_start_stop_button_visible = true;
+    is_start_stop_button_enabled = false;
+  } else {
+    start_stop_button_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    is_start_stop_button_visible = true;
+    is_start_stop_button_enabled = !managed;
+  }
+
+  scoped_ptr<Value> completed(Value::CreateBooleanValue(sync_setup_completed));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncSetupCompleted",
+                                  *completed);
+
+  scoped_ptr<Value> label(Value::CreateStringValue(status_label));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncStatus",
+                                  *label);
+
+  scoped_ptr<Value> enabled(
+      Value::CreateBooleanValue(is_start_stop_button_enabled));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonEnabled",
+                                  *enabled);
+
+  scoped_ptr<Value> visible(
+      Value::CreateBooleanValue(is_start_stop_button_visible));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonVisible",
+                                  *visible);
+
+  label.reset(Value::CreateStringValue(start_stop_button_label));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setStartStopButtonLabel",
+                                  *label);
+
+  visible.reset(Value::CreateBooleanValue(
+      sync_setup_completed && !status_has_error));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setCustomizeButtonVisible",
+                                  *visible);
+
+  enabled.reset(Value::CreateBooleanValue(!managed));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setCustomizeButtonEnabled",
+                                  *enabled);
+
+  string16 customize_button_label =
+    l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
+  label.reset(Value::CreateStringValue(customize_button_label));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setCustomizeButtonLabel",
+                                  *label);
+
+#if !defined(OS_CHROMEOS)
+  label.reset(Value::CreateStringValue(link_label));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkLabel",
+                                  *label);
+
+  enabled.reset(Value::CreateBooleanValue(!managed));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.setSyncActionLinkEnabled",
+                                  *enabled);
+#endif
+
+  visible.reset(Value::CreateBooleanValue(status_has_error));
+  dom_ui_->CallJavascriptFunction(
+    L"PersonalOptions.setSyncStatusErrorVisible", *visible);
+#if !defined(OS_CHROMEOS)
+  dom_ui_->CallJavascriptFunction(
+    L"PersonalOptions.setSyncActionLinkErrorVisible", *visible);
+#endif
 }
 
 void PersonalOptionsHandler::ObserveThemeChanged() {
@@ -160,31 +259,35 @@ void PersonalOptionsHandler::Initialize() {
       new OptionsManagedBannerHandler(dom_ui_,
                                       ASCIIToUTF16("PersonalOptions"),
                                       OPTIONS_PAGE_CONTENT));
+
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();
+
   // Explicitly enable synchronization option if needed.
   scoped_ptr<Value> is_sync_enabled(
       Value::CreateBooleanValue(ProfileSyncService::IsSyncEnabled()));
   dom_ui_->CallJavascriptFunction(L"PersonalOptions.enableSync",
                                   *is_sync_enabled);
+
+  ProfileSyncService* sync_service =
+      dom_ui_->GetProfile()->GetProfileSyncService();
+  if (sync_service) {
+    sync_service->AddObserver(this);
+    OnStateChanged();
+  }
 }
 
-void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {
+void PersonalOptionsHandler::ShowSyncLoginDialog(const ListValue* args) {
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
-  if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
-    string16 status_label;
-    // TODO(estade): use |link_label|.
-    string16 link_label;
-    sync_ui_util::GetStatusLabels(service, &status_label, &link_label);
+  service->ShowLoginDialog(NULL);
+  ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
+}
 
-    scoped_ptr<Value> status_string(Value::CreateStringValue(status_label));
-
-    dom_ui_->CallJavascriptFunction(
-        L"PersonalOptions.syncStatusCallback",
-        *(status_string.get()));
-  }
+void PersonalOptionsHandler::OpenPrivacyDashboardTabAndActivate(
+    const ListValue* args) {
+  BrowserList::GetLastActive()->OpenPrivacyDashboardTabAndActivate();
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {

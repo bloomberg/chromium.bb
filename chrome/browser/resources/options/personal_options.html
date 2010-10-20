@@ -20,26 +20,14 @@
   <section>
     <h3 i18n-content="sync_section"></h3>
     <div>
-      <div id="sync-disabled-controls" class="hidden">
-        <div class="section-text" id="sync_disabled_info"
-            i18n-content="sync_disabled_info"></div>
+      <div id="sync-status" class="section-text"></div>
+      <button id="sync-action-link" class="link-button"></button>
+      <div>
+        <button id="start-stop-sync"></button>
+        <button id="customize-sync""></button>
       </div>
-      <div id="not-synced-controls" class="hidden">
-        <div class="section-text" id="sync_not_setup_info"
-            i18n-content="sync_not_setup_info"></div>
-        <div>
-          <button id="start-sync" i18n-content="start_sync"></button>
-        </div>
-      </div>
-      <div id="synced-controls" class="hidden">
-        <div class="section-text" id="synced_to_user_with_time"></div>
-        <div>
-<if expr="not pp_ifdef('chromeos')">
-          <button id="stop-sync" i18n-content="stop_sync"></button>
-</if>
-          <button id="sync-customize" i18n-content="sync_customize"></button>
-        </div>
-      </div>
+      <button id="privacy-dashboard-link" class="link-button"
+          i18n-content="privacy_dashboard_link"></button>
     </div>
   </section>
   <section>

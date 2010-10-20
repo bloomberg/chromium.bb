@@ -1366,6 +1366,8 @@
         'browser/dom_ui/options/passwords_exceptions_handler.h',
         'browser/dom_ui/options/personal_options_handler.cc',
         'browser/dom_ui/options/personal_options_handler.h',
+        'browser/dom_ui/options/stop_syncing_handler.cc',
+        'browser/dom_ui/options/stop_syncing_handler.h',
         'browser/dom_ui/options/sync_options_handler.cc',
         'browser/dom_ui/options/sync_options_handler.h',
         'browser/dom_ui/options/search_engine_manager_handler.cc',

@@ -6,6 +6,10 @@ cr.define('options', function() {
 
   var OptionsPage = options.OptionsPage;
 
+  // State variables.
+  var syncEnabled = false;
+  var syncSetupCompleted = false;
+
   //
   // PersonalOptions class
   // Encapsulated handling of personal options page.
@@ -13,9 +17,6 @@ cr.define('options', function() {
   function PersonalOptions() {
     OptionsPage.call(this, 'personal', templateData.personalPage,
                      'personalPage');
-    // State variables.
-    this.syncEnabled = false;
-    this.hasSetupCompleted = false;
   }
 
   cr.addSingletonGetter(PersonalOptions);
@@ -29,21 +30,19 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      $('sync-customize').onclick = function(event) {
+      var self = this;
+      $('customize-sync').onclick = function(event) {
         OptionsPage.showPageByName('sync');
       };
-      $('start-sync').onclick = function(event) {
-        //TODO(sargrass): Show start-sync subpage, after dhg done.
+      $('start-stop-sync').onclick = function(event) {
+        if (self.syncSetupCompleted)
+          self.showStopSyncingOverlay_();
+        else
+          self.showSyncLoginDialog_();
       };
-
-      Preferences.getInstance().addEventListener('sync.has_setup_completed',
-          function(event) {
-            var personalOptions = PersonalOptions.getInstance();
-            personalOptions.hasSetupCompleted = event.value;
-            if (personalOptions.hasSetupCompleted)
-              chrome.send('getSyncStatus');
-            personalOptions.updateControlsVisibility_();
-          });
+      $('privacy-dashboard-link').onclick = function(event) {
+        chrome.send('openPrivacyDashboardTabAndActivate');
+      };
 
       $('showpasswords').onclick = function(event) {
         PasswordsExceptions.load();
@@ -60,13 +59,6 @@ cr.define('options', function() {
       };
 
       if (!cr.isChromeOS) {
-        $('stop-sync').onclick = function(event) {
-          AlertOverlay.show(localStrings.getString('stop_syncing_title'),
-              localStrings.getString('stop_syncing_explanation'),
-              localStrings.getString('stop_syncing_confirm_button_label'),
-              undefined,
-              function() { chrome.send('stopSyncing'); });
-        };
         $('import_data').onclick = function(event) {
           OptionsPage.showOverlay('importDataOverlay');
           chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
@@ -100,8 +92,86 @@ cr.define('options', function() {
       }
     },
 
-    syncStatusCallback_: function(statusString) {
-      $('synced_to_user_with_time').textContent = statusString;
+    showStopSyncingOverlay_: function(event) {
+      AlertOverlay.show(
+          localStrings.getString('stop_syncing_title'),
+          localStrings.getString('stop_syncing_explanation'),
+          localStrings.getString('stop_syncing_confirm_button_label'),
+          undefined,
+          function() { chrome.send('stopSyncing'); });
+    },
+
+    showSyncLoginDialog_: function(event) {
+      chrome.send('showSyncLoginDialog');
+    },
+
+    setElementVisible_: function(element, visible) {
+      element.style.display = visible ? 'inline' : 'none';
+    },
+
+    setElementClassSyncError_: function(element, visible) {
+      visible ? element.classList.add('sync-error') :
+                element.classList.remove('sync-error');
+    },
+
+    setSyncEnabled_: function(enabled) {
+      this.syncEnabled = enabled;
+    },
+
+    setSyncSetupCompleted_: function(completed) {
+      this.syncSetupCompleted = completed;
+    },
+
+    setAccountPicture_: function(image) {
+      $('account-picture').src = image;
+    },
+
+    setSyncStatus_: function(status) {
+      $('sync-status').textContent = status;
+    },
+
+    setSyncStatusErrorVisible_: function(visible) {
+      this.setElementClassSyncError_($('sync-status'), visible);
+    },
+
+    setSyncActionLinkErrorVisible_: function(visible) {
+      this.setElementClassSyncError_($('sync-action-link'), visible);
+    },
+
+    setSyncActionLinkEnabled_: function(enabled) {
+      $('sync-action-link').disabled = !enabled;
+    },
+
+    setSyncActionLinkLabel_: function(status) {
+      $('sync-action-link').textContent = status;
+
+      // link-button does is not zero-area when the contents of the button are
+      // empty, so explicitly hide the element.
+      this.setElementVisible_($('sync-action-link'), status.length != 0);
+    },
+
+    setStartStopButtonVisible_: function(visible) {
+      this.setElementVisible_($('start-stop-sync'), visible);
+    },
+
+    setStartStopButtonEnabled_: function(enabled) {
+      $('start-stop-sync').disabled = !enabled;
+    },
+
+    setStartStopButtonLabel_: function(label) {
+      $('start-stop-sync').textContent = label;
+    },
+
+    setCustomizeButtonVisible_: function(visible) {
+      this.setElementVisible_($('customize-sync'), visible);
+    },
+
+    setCustomizeButtonEnabled_: function(enabled) {
+      $('customize-sync').disabled = !enabled;
+    },
+
+    setCustomizeButtonLabel_: function(label) {
+      $('customize-sync').textContent = label;
     },
 
     setGtkThemeButtonEnabled_: function(enabled) {
@@ -115,48 +185,31 @@ cr.define('options', function() {
         $('themes_set_classic').disabled = !enabled;
       }
     },
-
-    updateControl_: function(control, visible) {
-      if (visible)
-        control.classList.remove('hidden');
-      else
-        control.classList.add('hidden');
-    },
-
-    updateControlsVisibility_: function() {
-      this.updateControl_($('synced-controls'),
-                          this.syncEnabled && this.hasSetupCompleted);
-      this.updateControl_($('not-synced-controls'),
-                          this.syncEnabled && !this.hasSetupCompleted);
-      this.updateControl_($('sync-disabled-controls'), !this.syncEnabled);
-    },
-
   };
 
-  // Enables synchronization option.
-  // NOTE: by default synchronization option is disabled, so handler should
-  // explicitly enable it.
-  PersonalOptions.enableSync = function(enabled) {
-    var personalOptions = PersonalOptions.getInstance();
-    personalOptions.syncEnabled = enabled;
-    personalOptions.updateControlsVisibility_();
-  };
-
-  PersonalOptions.syncStatusCallback = function(statusString) {
-    PersonalOptions.getInstance().syncStatusCallback_(statusString);
-  };
-
-  PersonalOptions.setGtkThemeButtonEnabled = function(enabled) {
-    PersonalOptions.getInstance().setGtkThemeButtonEnabled_(enabled);
-  };
-
-  PersonalOptions.setClassicThemeButtonEnabled = function(enabled) {
-    PersonalOptions.getInstance().setClassicThemeButtonEnabled_(enabled);
-  };
-
-  PersonalOptions.setAccountPicture = function(image) {
-    $('account-picture').src = image;
-  }
+  // Forward public APIs to private implementations.
+  [
+    'setSyncEnabled',
+    'setSyncSetupCompleted',
+    'setAccountPicture',
+    'setSyncStatus',
+    'setSyncStatusErrorVisible',
+    'setSyncActionLinkErrorVisible',
+    'setSyncActionLinkEnabled',
+    'setSyncActionLinkLabel',
+    'setStartStopButtonVisible',
+    'setStartStopButtonEnabled',
+    'setStartStopButtonLabel',
+    'setCustomizeButtonVisible',
+    'setCustomizeButtonEnabled',
+    'setCustomizeButtonLabel',
+    'setGtkThemeButtonEnabled',
+    'setClassicThemeButtonEnabled',
+  ].forEach(function(name) {
+    PersonalOptions[name] = function(value) {
+      PersonalOptions.getInstance()[name + '_'](value);
+    };
+  });
 
   // Export
   return {

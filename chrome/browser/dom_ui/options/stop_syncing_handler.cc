@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/stop_syncing_handler.h"
+#include "chrome/browser/dom_ui/options/stop_syncing_handler.h"
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
@@ -39,9 +39,8 @@ void StopSyncingHandler::RegisterMessages() {
 }
 
 void StopSyncingHandler::StopSyncing(const ListValue* args){
-  DCHECK(dom_ui_);
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
-  if(service != NULL && ProfileSyncService::IsSyncEnabled()) {
+  if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     service->DisableForUser();
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
   }

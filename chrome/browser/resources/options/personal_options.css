@@ -4,3 +4,7 @@
   width: 70px;
   height: 70px;
 }
+
+.sync-error {
+  background-color: #FF9A9A;
+}

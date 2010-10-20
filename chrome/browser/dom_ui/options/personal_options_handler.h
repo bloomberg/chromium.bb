@@ -12,7 +12,8 @@
 class OptionsManagedBannerHandler;
 
 // Chrome personal options page UI handler.
-class PersonalOptionsHandler : public OptionsPageUIHandler {
+class PersonalOptionsHandler : public OptionsPageUIHandler,
+                               public ProfileSyncServiceObserver {
  public:
   PersonalOptionsHandler();
   virtual ~PersonalOptionsHandler();
@@ -29,9 +30,13 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // ProfileSyncServiceObserver implementation.
+  virtual void OnStateChanged();
+
  private:
   void ObserveThemeChanged();
-  void SetSyncStatusUIString(const ListValue* args);
+  void ShowSyncLoginDialog(const ListValue* args);
+  void OpenPrivacyDashboardTabAndActivate(const ListValue* args);
   void ThemesReset(const ListValue* args);
   void ThemesGallery(const ListValue* args);
 #if defined(TOOLKIT_GTK)
