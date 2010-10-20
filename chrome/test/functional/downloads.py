@@ -50,6 +50,16 @@ class DownloadsTest(pyauto.PyUITest):
     """
     self._files_to_remove.append(path)
 
+  def _ClearLocalDownloadState(self, path):
+    """Prepare for downloading the given path.
+
+    Clears the given path and the corresponding .crdownload, to prepare it to
+    be downloaded.
+    """
+    os.path.exists(path) and os.remove(path)
+    crdownload = path + '.crdownload'
+    os.path.exists(crdownload) and os.remove(crdownload)
+
   def _GetDangerousDownload(self):
     """Returns the file url for a dangerous download for this OS."""
     sub_path = os.path.join(self.DataDir(), 'downloads', 'dangerous')
@@ -113,7 +123,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
 
@@ -134,7 +144,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
 
     self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)  # open incognito window
     # Downloads from incognito window do not figure in GetDownloadsInfo()
@@ -151,7 +161,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(),
@@ -169,7 +179,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(),
@@ -185,7 +195,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(), 'remove')
@@ -210,7 +220,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self._DeleteAfterShutdown(downloaded_pkg)
     # Waiting for big file to download might exceed automation timeout.
@@ -239,7 +249,7 @@ class DownloadsTest(pyauto.PyUITest):
         expected_filename = os.path.join(download_dir,
                                          'a_zip_file (%d).zip' % i)
         renamed_files.append(expected_filename)
-      os.path.exists(expected_filename) and os.remove(expected_filename)
+      self._ClearLocalDownloadState(expected_filename)
       self.DownloadAndWaitForStart(file_url)
 
     self.WaitForAllDownloadsToComplete()
@@ -281,7 +291,7 @@ class DownloadsTest(pyauto.PyUITest):
       _CreateFile(os.path.join(temp_dir, filename))  # unicode file.
       file_url = self.GetFileURLForPath(file_path)
       downloaded_file = os.path.join(download_dir, filename)
-      os.path.exists(downloaded_file) and os.remove(downloaded_file)
+      self._ClearLocalDownloadState(downloaded_file)
       self.DownloadAndWaitForStart(file_url)
     self.WaitForAllDownloadsToComplete()
 
@@ -303,7 +313,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self.assertTrue(self.IsDownloadShelfVisible())
     # Restart the browser and assert that the download was removed.
@@ -325,7 +335,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
 
     self._DeleteAfterShutdown(downloaded_pkg)
@@ -366,7 +376,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(), 'cancel')
     self._DeleteAfterShutdown(file_path)
@@ -387,7 +397,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(os.path.join(test_dir, 'a_zip_file.zip'))
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'a_zip_file.zip')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     downloads = self.GetDownloadsInfo().Downloads()
     self.assertEqual(1, len(downloads))
@@ -412,7 +422,7 @@ class DownloadsTest(pyauto.PyUITest):
     file_url = self.GetFileURLForPath(os.path.join(test_dir, 'theme.crx'))
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   'theme.crx')
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._ClearLocalDownloadState(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(),
