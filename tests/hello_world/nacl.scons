@@ -22,7 +22,7 @@ def CheckFileSize(target, source, env):
   actual_size = os.stat(source[0].abspath).st_size
   if actual_size > expected_max:
     raise Exception("File %s larger than expected: expected upto %i but got %i"
-                    % (source[0].abspath, expected_size, actual_max))
+                    % (source[0].abspath, expected_max, actual_size))
 
 if env.Bit('nacl_glibc'):
   # Check the (unstripped) executable size.  The main purpose of this
