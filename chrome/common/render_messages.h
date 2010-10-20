@@ -49,6 +49,10 @@ class HttpResponseHeaders;
 class UploadData;
 }
 
+namespace webkit_blob {
+class BlobData;
+}
+
 namespace webkit_glue {
 struct FormData;
 class FormField;
@@ -584,6 +588,14 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
   typedef webkit_glue::WebAccessibility param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<scoped_refptr<webkit_blob::BlobData> > {
+  typedef scoped_refptr<webkit_blob::BlobData> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
