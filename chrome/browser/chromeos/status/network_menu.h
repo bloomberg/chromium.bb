@@ -114,6 +114,10 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // on a light background or a white icon for display on a dark background.
   static SkBitmap IconForNetworkStrength(int strength, bool black);
 
+  // Returns the Icon for a network strength for CellularNetwork |cellular|.
+  // This returns different colored bars depending on cellular data left.
+  static SkBitmap IconForNetworkStrength(CellularNetwork cellular);
+
   // This method will convert the |icon| bitmap to the correct size for display.
   // If the |badge| icon is not empty, it will draw that on top of the icon.
   static SkBitmap IconForDisplay(SkBitmap icon, SkBitmap badge);
@@ -189,6 +193,12 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   // The number of wifi strength images.
   static const int kNumWifiImages;
+
+  // Bars image resources.
+  static const int kBarsImages[];
+  static const int kBarsImagesBlack[];
+  static const int kBarsImagesLowData[];
+  static const int kBarsImagesVLowData[];
 
   // Our menu items.
   MenuItemVector menu_items_;

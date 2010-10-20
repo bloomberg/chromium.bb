@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
-#include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -326,10 +325,11 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
 }
 
 void InternetOptionsHandler::CellularDataPlanChanged(
-    const std::string& service_path,
-    const chromeos::CellularDataPlanList& plans) {
+    chromeos::NetworkLibrary* obj) {
   if (!dom_ui_)
     return;
+  const chromeos::CellularNetwork cellular = obj->cellular_network();
+  const chromeos::CellularDataPlanList& plans = cellular.GetDataPlans();
   DictionaryValue connection_plans;
   ListValue* plan_list = new ListValue();
   for (chromeos::CellularDataPlanList::const_iterator iter = plans.begin();
@@ -337,7 +337,7 @@ void InternetOptionsHandler::CellularDataPlanChanged(
        ++iter) {
     plan_list->Append(CellularDataPlanToDictionary(*iter));
   }
-  connection_plans.SetString("servicePath", service_path);
+  connection_plans.SetString("servicePath", cellular.service_path());
   connection_plans.Set("plans", plan_list);
   dom_ui_->CallJavascriptFunction(
       L"options.InternetOptions.updateCellularPlans", connection_plans);
@@ -416,7 +416,7 @@ string16 InternetOptionsHandler::GetPlanWarning(
     if (time_left <= 0) {
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0"));
-    } else if (time_left <= chromeos::kDataNearingExpirationSecs) {
+    } else if (time_left <= chromeos::kCellularDataVeryLowSecs) {
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
           UTF8ToUTF16(base::Int64ToString(time_left/60)));
@@ -428,10 +428,10 @@ string16 InternetOptionsHandler::GetPlanWarning(
     if (bytes_remaining <= 0) {
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0"));
-    } else if (bytes_remaining <= chromeos::kDataLowDataBytes) {
+    } else if (bytes_remaining <= chromeos::kCellularDataVeryLowBytes) {
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_DATA_REMAINING_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(bytes_remaining/1024)));
+          UTF8ToUTF16(base::Int64ToString(bytes_remaining/(1024*1024))));
     }
   }
   return string16();
