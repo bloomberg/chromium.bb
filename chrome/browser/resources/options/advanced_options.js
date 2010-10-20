@@ -120,6 +120,26 @@ var OptionsPage = options.OptionsPage;
           chrome.send('showGearsSettings');
         };
       }
+
+      // 'cloudPrintProxyEnabled' is true for Chrome branded builds on
+      // certain platforms, or could be enabled by a lab.
+      if (!cr.isChromeOS &&
+          localStrings.getString('enable-cloud-print-proxy') == 'true') {
+        $('cloudPrintProxySetupButton').onclick = function(event) {
+          if ($('cloudPrintProxyManageButton').style.display == 'none') {
+            // Disable the button, set it's text to the intermediate state.
+            $('cloudPrintProxySetupButton').textContent =
+              localStrings.getString('cloudPrintProxyEnablingButton');
+            $('cloudPrintProxySetupButton').disabled = true;
+            chrome.send('showCloudPrintSetupDialog');
+          } else {
+            chrome.send('disableCloudPrintProxy');
+          }
+        };
+        $('cloudPrintProxyManageButton').onclick = function(event) {
+          chrome.send('showCloudPrintManagePage');
+        };
+      }
     },
 
     /**
@@ -187,6 +207,23 @@ var OptionsPage = options.OptionsPage;
   AdvancedOptions.SetUseTLS1CheckboxState = function(checked, disabled) {
     $('sslUseTLS1').checked = checked;
     $('sslUseTLS1').disabled = disabled;
+  };
+
+  // Set the Cloud Print proxy UI to enabled, disabled, or processing.
+  AdvancedOptions.SetupCloudPrintProxySection = function(disabled, label) {
+    if (!cr.isChromeOS) {
+      $('cloudPrintProxyLabel').textContent = label;
+      if (disabled) {
+        $('cloudPrintProxySetupButton').textContent =
+          localStrings.getString('cloudPrintProxyDisabledButton');
+        $('cloudPrintProxyManageButton').style.display = 'none';
+      } else {
+        $('cloudPrintProxySetupButton').textContent =
+          localStrings.getString('cloudPrintProxyEnabledButton');
+        $('cloudPrintProxyManageButton').style.display = 'inline';
+      }
+      $('cloudPrintProxySetupButton').disabled = false;
+    }
   };
 
   // Export

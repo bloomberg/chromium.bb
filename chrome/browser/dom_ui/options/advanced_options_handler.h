@@ -9,6 +9,7 @@
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class OptionsManagedBannerHandler;
@@ -16,7 +17,8 @@ class OptionsManagedBannerHandler;
 // Chrome advanced options page UI handler.
 class AdvancedOptionsHandler
     : public OptionsPageUIHandler,
-      public SelectFileDialog::Listener {
+      public SelectFileDialog::Listener,
+      public CloudPrintSetupFlow::Delegate {
  public:
   AdvancedOptionsHandler();
   virtual ~AdvancedOptionsHandler();
@@ -36,6 +38,9 @@ class AdvancedOptionsHandler
 
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const FilePath& path, int index, void* params);
+
+  // CloudPrintSetupFlow::Delegate implementation.
+  virtual void OnDialogClosed();
 
  private:
   // Callback for the "selectDownloadLocation" message.  This will prompt
@@ -86,6 +91,27 @@ class AdvancedOptionsHandler
   void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
+#if !defined(OS_CHROMEOS)
+  // Callback for the Sign in to Cloud Print button.  This will start
+  // the authentication process.
+  void ShowCloudPrintSetupDialog(const ListValue* args);
+
+  // Callback for the Disable Cloud Print button.  This will sign out
+  // of cloud print.
+  void HandleDisableCloudPrintProxy(const ListValue* args);
+
+  // Callback for the Cloud Print manage button.  This will open a new
+  // tab pointed at the management URL.
+  void ShowCloudPrintManagePage(const ListValue* args);
+
+  // Pings the service to send us it's current notion of the enabled state.
+  void RefreshCloudPrintStatusFromService();
+
+  // Setup the enabled or disabled state of the cloud print proxy
+  // management UI.
+  void SetupCloudPrintProxySection();
+#endif
+
   // Setup the checked state for the metrics reporting checkbox.
   void SetupMetricsReportingCheckbox(bool user_changed);
 
@@ -107,6 +133,7 @@ class AdvancedOptionsHandler
 
 #if !defined(OS_CHROMEOS)
   BooleanPrefMember enable_metrics_recording_;
+  StringPrefMember cloud_print_proxy_email_;
 #endif
 
   FilePathPrefMember default_download_location_;

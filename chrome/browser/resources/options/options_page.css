@@ -331,6 +331,14 @@ html[enable-background-mode=false] #background-mode-section {
  display: none;
 }
 
+html[enable-cloud-print-proxy=false] #cloud-print-proxy-section {
+ display: none;
+}
+
+html[enable-cloud-print-proxy=true] #cloudPrintProxyManageButton {
+ display: none;
+}
+
 input[type=checkbox],
 input[type=radio],
 button {
