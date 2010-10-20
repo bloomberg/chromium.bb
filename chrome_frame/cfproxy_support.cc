@@ -4,6 +4,7 @@
 
 #include "chrome_frame/cfproxy_private.h"
 
+#include <vector>
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/process_util.h"
@@ -227,9 +228,29 @@ void SyncMsgSender::QueueSyncMessage(const IPC::SyncMessage* msg,
   }
 }
 
+// Cancel all outgoing calls for this delegate.
 void SyncMsgSender::Cancel(ChromeProxyDelegate* delegate) {
-  // TODO(stoyan): Cancel all outgoing calls for this delegate
-  // We may not need this. :)
+  std::vector<SingleSentMessage*> cancelled;
+  {
+    AutoLock lock(messages_lock_);
+    SentMessages::iterator it = messages_.begin();
+    for (; it != messages_.end(); ) {
+      SingleSentMessage* origin = it->second;
+      if (origin->delegate_ == delegate) {
+        cancelled.push_back(origin);
+        it = messages_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  for (std::vector<SingleSentMessage*>::iterator it = cancelled.begin();
+       it != cancelled.end(); ++it) {
+    SingleSentMessage* origin = *it;
+    DispatchReplyFail(origin->type_, delegate, origin->ctx_);
+    delete origin;
+  }
 }
 
 SyncMsgSender::SingleSentMessage* SyncMsgSender::RemoveMessage(int id) {

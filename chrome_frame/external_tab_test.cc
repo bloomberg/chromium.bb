@@ -3,19 +3,33 @@
 // found in the LICENSE file.
 
 #include "chrome_frame/external_tab.h"
-// #include "base/tracked.h"
-// #include "base/task.h"
+#include "base/task.h"
+#include "base/thread.h"
+#include "base/tracked.h"
+
 // #include "base/waitable_event.h"
 
 #include "chrome/test/automation/automation_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 
 
 
 // DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
 // DISABLE_RUNNABLE_METHOD_REFCOUNT(UIDelegate);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeProxyDelegate);
 
+using testing::StrictMock;
+using testing::_;
+using testing::Invoke;
+using testing::InvokeWithoutArgs;
+using testing::CreateFunctor;
+using testing::Return;
+using testing::DoAll;
+using testing::Field;
+using chrome_frame_test::TimedMsgLoop;
 
 struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD2(OnNavigationStateChanged, void(int flags,
@@ -82,11 +96,143 @@ struct MockProxy : public ChromeProxy {
       const GURL& referrer));
   MOCK_METHOD2(Tab_OverrideEncoding, void(int tab, const char* encoding));
 
- private:
   MOCK_METHOD1(Init, void(const ProxyParams& params));
   MOCK_METHOD1(AddDelegate, int(ChromeProxyDelegate* delegate));
   MOCK_METHOD1(RemoveDelegate, int(ChromeProxyDelegate* delegate));
 };
 
-TEST(ExternalTabProxy, Simple) {
+struct MockFactory : public ChromeProxyFactory {
+  MOCK_METHOD0(CreateProxy, ChromeProxy*());
+};
+
+
+// This class just calls methods of ChromeProxyDelegate but in background thread
+struct AsyncEventCreator {
+ public:
+  explicit AsyncEventCreator(ChromeProxyDelegate* delegate)
+      : delegate_(delegate), ipc_thread_("ipc") {
+    base::Thread::Options options(MessageLoop::TYPE_IO, 0);
+    ipc_thread_.StartWithOptions(options);
+    ipc_loop_ = ipc_thread_.message_loop();
+  }
+
+  void Fire_Connected(ChromeProxy* proxy, base::TimeDelta delay) {
+    ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
+        &ChromeProxyDelegate::Connected, proxy), delay.InMilliseconds());
+  }
+
+  void Fire_PeerLost(ChromeProxy* proxy,
+      ChromeProxyDelegate::DisconnectReason reason, base::TimeDelta delay) {
+    ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
+        &ChromeProxyDelegate::PeerLost, proxy, reason), delay.InMilliseconds());
+  }
+
+  void Fire_Disconnected(base::TimeDelta delay) {
+    ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
+        &ChromeProxyDelegate::Disconnected), delay.InMilliseconds());
+  }
+
+  void Fire_CompletedCreateTab(bool success, HWND chrome_wnd, HWND tab_window,
+                               int tab_handle, base::TimeDelta delay) {
+    ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
+        &ChromeProxyDelegate::Completed_CreateTab, success, chrome_wnd,
+        tab_window, tab_handle), delay.InMilliseconds());
+  }
+
+  void Fire_TabLoaded(const GURL& url, base::TimeDelta delay) {
+    ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
+        &ChromeProxyDelegate::TabLoaded, url), delay.InMilliseconds());
+  }
+
+ private:
+  ChromeProxyDelegate* delegate_;
+  base::Thread ipc_thread_;
+  MessageLoop* ipc_loop_;
+};
+
+// We may want the same test with 'real' proxy and mock 'proxy traits'.
+TEST(ExternalTabProxy, CancelledCreateTab) {
+  MockUIDelegate ui_delegate;
+  StrictMock<MockFactory> factory;
+  scoped_ptr<ExternalTabProxy> tab(new ExternalTabProxy());
+  AsyncEventCreator async_events(tab.get());
+  StrictMock<MockProxy>* proxy = new StrictMock<MockProxy>();
+  tab->set_proxy_factory(&factory);
+
+  EXPECT_CALL(factory, CreateProxy()).WillOnce(Return(proxy));
+  EXPECT_CALL(*proxy, Init(_));
+  EXPECT_CALL(*proxy, AddDelegate(tab.get())).WillOnce(DoAll(InvokeWithoutArgs(
+      CreateFunctor(&async_events, &AsyncEventCreator::Fire_Connected,
+      proxy, base::TimeDelta::FromMilliseconds(30))),
+      Return(1)));
+
+  EXPECT_CALL(*proxy, RemoveDelegate(_)).WillOnce(DoAll(
+      InvokeWithoutArgs(CreateFunctor(&async_events,
+          &AsyncEventCreator::Fire_CompletedCreateTab, false, HWND(0), HWND(0),
+          0, base::TimeDelta::FromMilliseconds(0))),
+      InvokeWithoutArgs(CreateFunctor(&async_events,
+          &AsyncEventCreator::Fire_Disconnected,
+          base::TimeDelta::FromMilliseconds(0))),
+      Return(0)));
+
+  CreateTabParams tab_params;
+  tab_params.is_incognito = true;
+  tab_params.is_widget_mode = false;
+  tab_params.url = GURL("http://Xanadu.org");
+
+  tab->CreateTab(tab_params, &ui_delegate);
+  tab.reset();
+}
+
+// CreateTab with initial url, and the navigate to different url before
+// initialization completes.
+TEST(ExternalTabProxy, NavigateAfterCreate) {
+  MockUIDelegate ui_delegate;
+  StrictMock<MockFactory> factory;
+  scoped_ptr<ExternalTabProxy> tab(new ExternalTabProxy());
+  AsyncEventCreator async_events(tab.get());
+  StrictMock<MockProxy>* proxy = new StrictMock<MockProxy>();
+  TimedMsgLoop loop;
+  tab->set_proxy_factory(&factory);
+  GURL initial_url("http://Xanadu.org");
+  GURL real_url("http://asgard.org");
+
+  EXPECT_CALL(factory, CreateProxy()).WillOnce(Return(proxy));
+  EXPECT_CALL(*proxy, Init(_));
+  EXPECT_CALL(*proxy, AddDelegate(tab.get()))
+      .WillOnce(DoAll(InvokeWithoutArgs(CreateFunctor(&async_events,
+          &AsyncEventCreator::Fire_Connected, proxy,
+          base::TimeDelta::FromMilliseconds(30))),
+      Return(1)));
+
+  EXPECT_CALL(*proxy, CreateTab(tab.get(),
+          Field(&IPC::ExternalTabSettings::initial_url, real_url)))
+      .WillOnce(DoAll(
+      InvokeWithoutArgs(CreateFunctor(&async_events,
+          &AsyncEventCreator::Fire_CompletedCreateTab,
+          true, HWND(0), HWND(0), 7, base::TimeDelta::FromMilliseconds(9))),
+      InvokeWithoutArgs(CreateFunctor(&async_events,
+          &AsyncEventCreator::Fire_TabLoaded, real_url,
+          base::TimeDelta::FromMilliseconds(150)))));
+
+  EXPECT_CALL(ui_delegate, OnLoad(real_url))
+      .WillOnce(QUIT_LOOP(loop));
+
+  EXPECT_CALL(*proxy, RemoveDelegate(_))
+      .WillOnce(DoAll(InvokeWithoutArgs(CreateFunctor(&async_events,
+          &AsyncEventCreator::Fire_Disconnected,
+          base::TimeDelta::FromMilliseconds(0))),
+      Return(0)));
+
+  CreateTabParams tab_params;
+  tab_params.is_incognito = true;
+  tab_params.is_widget_mode = false;
+  tab_params.url = initial_url;
+
+  tab->CreateTab(tab_params, &ui_delegate);
+  tab->Navigate("http://asgard.org", EmptyString(), true);
+
+  loop.RunFor(5);
+  EXPECT_FALSE(loop.WasTimedOut());
+  tab.reset();
 }

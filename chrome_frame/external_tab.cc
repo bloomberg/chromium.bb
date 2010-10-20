@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome_frame/external_tab.h"
+#include "base/singleton.h"
 #include "base/tracked.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
@@ -13,6 +14,8 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(UIDelegate);
 
 namespace {
+  Singleton<ChromeProxyFactory> g_proxy_factory;
+
   struct UserDataHolder : public SyncMessageContext {
     explicit UserDataHolder(void* p) : data(p) {}
     void* data;
@@ -20,7 +23,8 @@ namespace {
 }
 
 
-ExternalTabProxy::ExternalTabProxy() : state_(NONE), tab_(0), proxy_(NULL),
+ExternalTabProxy::ExternalTabProxy() : state_(NONE), tab_(0), tab_wnd_(NULL),
+    chrome_wnd_(NULL), proxy_factory_(g_proxy_factory.get()), proxy_(NULL),
     ui_delegate_(NULL) {
 }
 
@@ -42,22 +46,33 @@ void ExternalTabProxy::Init() {
 
 void ExternalTabProxy::Destroy() {
   DCHECK(NULL == done_.get());
-  done_.reset(new base::WaitableEvent(true, false));
-  proxy_factory_->ReleaseProxy(this, tab_params_.proxy_params.profile);
-  done_->Wait();
-  done_.reset(NULL);
+  // TODO(stoyan): Should we release proxy first and then destroy the window
+  // (parent of the chrome window) or the other way around?
+  if (state_ != NONE) {
+    done_.reset(new base::WaitableEvent(true, false));
+    proxy_factory_->ReleaseProxy(this, tab_params_.proxy_params.profile);
+    done_->Wait();
+    done_.reset(NULL);
 
-  proxy_ = NULL;
-  tab_ = 0;
+    state_ = NONE;
+    proxy_ = NULL;
+    tab_ = 0;
+    CWindowImpl<ExternalTabProxy>::DestroyWindow();
+    tab_wnd_ = NULL;
+    chrome_wnd_ = NULL;
+    // We shall tell the TaskMarshaller to delete queued tasks.
+    // ui_.DeleteAll();
+  }
 }
 
 void ExternalTabProxy::CreateTab(const CreateTabParams& create_params,
                                  UIDelegate* delegate) {
-  DCHECK(ui_delegate_ != NULL);
+  DCHECK(ui_delegate_ == NULL);
   DCHECK_EQ(NONE, state_);
   // Create host window if needed.
   Init();
   ui_delegate_ = delegate;
+  // TODO(stoyan): Shall we check the CanNavigate(create_params.url)?
   tab_params_ = create_params;
   state_ = INIT_IN_PROGRESS;
   proxy_factory_->GetProxy(this, create_params.proxy_params);
@@ -72,7 +87,21 @@ void ExternalTabProxy::Connected(ChromeProxy* proxy) {
 void ExternalTabProxy::UiConnected(ChromeProxy* proxy) {
   proxy_ = proxy;
   IPC::ExternalTabSettings settings;
-  // TODO(stoyan): Initialize settings.
+  settings.parent = m_hWnd;
+  settings.style = WS_CHILD;
+  settings.is_off_the_record = tab_params_.is_incognito;
+  // TODO(stoyan): FIX this.
+  settings.load_requests_via_automation = true;
+  // TODO(stoyan): FIX this.
+  settings.handle_top_level_requests = true;
+  settings.initial_url = tab_params_.url;
+  settings.referrer = tab_params_.referrer;
+  // Infobars are disabled in widget mode.
+  settings.infobars_enabled = !tab_params_.is_widget_mode;
+  // TODO(stoyan): FIX this.
+  settings.route_all_top_level_navigations = false;
+
+  state_ = CREATE_TAB_IN_PROGRESS;
   proxy->CreateTab(this, settings);
 }
 
@@ -122,7 +151,6 @@ void ExternalTabProxy::ConnectToExternalTab(uint64 external_tab_cookie) {
   proxy_->ConnectTab(this, m_hWnd, external_tab_cookie);
 }
 
-
 void ExternalTabProxy::BlockExternalTab(uint64 cookie) {
   proxy_->BlockTab(cookie);
 }
@@ -165,10 +193,28 @@ void ExternalTabProxy::ChromeFrameHostMoved() {
 }
 
 //////////////////////////////////////////////////////////////////////////
+void ExternalTabProxy::UiCompleted_CreateTab(bool success, HWND chrome_window,
+                                             HWND tab_window, int tab_handle) {
+  if (success) {
+    state_ = READY;
+    tab_ = tab_handle;
+    tab_wnd_ = tab_window;
+    chrome_wnd_ = chrome_window;
+
+    // If a navigation request came while tab creation was in progress -
+    // go ahead and navigate.
+    if (pending_navigation_.url.is_valid())
+      proxy_->Tab_Navigate(tab_, pending_navigation_.url,
+                           pending_navigation_.referrer);
+  }
+}
+
 void ExternalTabProxy::Completed_CreateTab(bool success, HWND chrome_wnd,
                                            HWND tab_window, int tab_handle) {
   // in ipc_thread.
-  // ui_.PostTask()
+  ui_.PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ExternalTabProxy::UiCompleted_CreateTab,
+      success, chrome_wnd, tab_window, tab_handle));
 }
 
 void ExternalTabProxy::Completed_ConnectToTab(bool success,

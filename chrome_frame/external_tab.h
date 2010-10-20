@@ -180,6 +180,8 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   // The UiXXXX are the ChromeProxyDelegate methods but on UI thread.
   void UiConnected(ChromeProxy* proxy);
   void UiPeerLost(ChromeProxy* proxy, DisconnectReason reason);
+  void UiCompleted_CreateTab(bool success, HWND chrome_window,
+                             HWND tab_window, int tab_handle);
 
   // With the present state of affairs the only response we can possibly handle
   // in the background IPC thread is Completed_CreateTab() where we can
@@ -194,6 +196,8 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
     RELEASE_CF_PROXY_IN_PROGRESS
   } state_;
   int tab_;
+  HWND tab_wnd_;
+  HWND chrome_wnd_;
   ChromeProxyFactory* proxy_factory_;
   // Accessed only in the UI thread for simplicity.
   ChromeProxy* proxy_;

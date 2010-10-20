@@ -30,30 +30,32 @@ void CFProxy::Init(const ProxyParams& params) {
       &CFProxy::InitInIoThread, params));
 }
 
-int CFProxy::AddDelegate(ChromeProxyDelegate* proxy) {
+int CFProxy::AddDelegate(ChromeProxyDelegate* delegate) {
   ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CFProxy::AddDelegateOnIoThread, proxy));
+      &CFProxy::AddDelegateOnIoThread, delegate));
   return ++delegate_count_;
 }
 
-int CFProxy::RemoveDelegate(ChromeProxyDelegate* proxy) {
+int CFProxy::RemoveDelegate(ChromeProxyDelegate* delegate) {
   ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CFProxy::RemoveDelegateOnIoThread, proxy));
+      &CFProxy::RemoveDelegateOnIoThread, delegate));
   return --delegate_count_;
 }
 
-void CFProxy::AddDelegateOnIoThread(ChromeProxyDelegate* proxy) {
+void CFProxy::AddDelegateOnIoThread(ChromeProxyDelegate* delegate) {
   DCHECK(CalledOnIpcThread());
-  DelegateHolder::AddDelegate(proxy);
+  DelegateHolder::AddDelegate(delegate);
   if (is_connected_) {
-    proxy->Connected(this);
+    delegate->Connected(this);
   }
 }
 
-void CFProxy::RemoveDelegateOnIoThread(ChromeProxyDelegate* proxy) {
+void CFProxy::RemoveDelegateOnIoThread(ChromeProxyDelegate* delegate) {
   DCHECK(CalledOnIpcThread());
-  DelegateHolder::RemoveDelegate(proxy);
-  proxy->Disconnected();
+  // Cancel any calls in progress.
+  sync_dispatcher_.Cancel(delegate);
+  DelegateHolder::RemoveDelegate(delegate);
+  delegate->Disconnected();
 }
 
 void CFProxy::InitInIoThread(const ProxyParams& params) {

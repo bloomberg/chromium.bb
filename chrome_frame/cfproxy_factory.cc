@@ -33,7 +33,8 @@ ChromeProxyFactory::~ChromeProxyFactory() {
   AutoLock lock(lock_);
   ProxyMap::iterator it = proxies_.begin();
   for (; it != proxies_.end(); ++it) {
-    delete it->second;
+    ChromeProxy* proxy = it->second;
+    delete proxy;
   }
   proxies_.clear();
 }
