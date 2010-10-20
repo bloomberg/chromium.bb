@@ -105,7 +105,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
     GetCloudPrintProxy()->EnableForUser(lsid);
   }
 
-  LOG(INFO) << "Starting Service Process IPC Server";
+  VLOG(1) << "Starting Service Process IPC Server";
   ipc_server_.reset(new ServiceIPCServer(GetServiceProcessChannelName()));
   ipc_server_->Init();
 
@@ -374,9 +374,8 @@ void ServiceProcess::LoadChromotingConfig() {
       user_data_dir.Append(FILE_PATH_LITERAL(".ChromotingConfig.json"));
   chromoting_config_ = new remoting::JsonHostConfig(
       chromoting_config_path, file_thread_->message_loop_proxy());
-  if (!chromoting_config_->Read()) {
-    LOG(INFO) << "Failed to read chromoting config file.";
-  }
+  if (!chromoting_config_->Read())
+    VLOG(1) << "Failed to read chromoting config file.";
 }
 
 void ServiceProcess::OnChromotingHostShutdown() {

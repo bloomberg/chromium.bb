@@ -307,7 +307,7 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     const std::string cloud_print_xmpp_token,
     const std::string email, const std::string& proxy_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Starting proxy, id: " << proxy_id;
+  VLOG(1) << "CP_PROXY: Starting proxy, id: " << proxy_id;
 
   print_system_ =
       cloud_print::PrintSystem::CreateInstance(print_system_settings_.get());
@@ -362,7 +362,7 @@ void CloudPrintProxyBackend::Core::EndRegistration() {
 
 void CloudPrintProxyBackend::Core::DoShutdown() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Shutdown proxy, id: " << proxy_id_;
+  VLOG(1) << "CP_PROXY: Shutdown proxy, id: " << proxy_id_;
   if (print_server_watcher_ != NULL)
     print_server_watcher_->StopWatching();
 
@@ -485,14 +485,14 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
 void CloudPrintProxyBackend::Core::HandlePrinterNotification(
     const std::string& printer_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Handle printer notification, id: " << printer_id;
+  VLOG(1) << "CP_PROXY: Handle printer notification, id: " << printer_id;
   JobHandlerMap::iterator index = job_handler_map_.find(printer_id);
   if (index != job_handler_map_.end())
     index->second->NotifyJobAvailable();
 }
 
 void CloudPrintProxyBackend::Core::PollForJobs() {
-  LOG(INFO) << "CP_PROXY: Polling for jobs.";
+  VLOG(1) << "CP_PROXY: Polling for jobs.";
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   for (JobHandlerMap::iterator index = job_handler_map_.begin();
        index != job_handler_map_.end(); index++) {
@@ -500,9 +500,8 @@ void CloudPrintProxyBackend::Core::PollForJobs() {
   }
   job_poll_scheduled_ = false;
   // If we don't have notifications, poll again after a while.
-  if (!notifications_enabled_) {
+  if (!notifications_enabled_)
     ScheduleJobPoll();
-  }
 }
 
 void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
@@ -601,9 +600,8 @@ void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
     }
   }
 
-  if (!succeeded) {
+  if (!succeeded)
     HandleServerError(NewRunnableMethod(this, &Core::GetRegisteredPrinters));
-  }
 }
 
 void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
@@ -613,8 +611,8 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
   PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
   printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
   DCHECK(!printer_info_cloud.printer_id.empty());
-  LOG(INFO) << "CP_PROXY: Init job handler for printer id: " <<
-      printer_info_cloud.printer_id;
+  VLOG(1) << "CP_PROXY: Init job handler for printer id: "
+          << printer_info_cloud.printer_id;
   JobHandlerMap::iterator index = job_handler_map_.find(
       printer_info_cloud.printer_id);
   // We might already have a job handler for this printer
@@ -638,9 +636,8 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
           std::vector<std::string> tag_parts;
           base::SplitStringDontTrim(tag, '=', &tag_parts);
           DCHECK(tag_parts.size() == 2);
-          if (tag_parts.size() == 2) {
+          if (tag_parts.size() == 2)
             printer_info_cloud.tags_hash = tag_parts[1];
-          }
         }
       }
     }
@@ -658,8 +655,8 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
     int response_code, const ResponseCookies& cookies,
     const std::string& data) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Handle register printer response, code: " <<
-      response_code;
+  VLOG(1) << "CP_PROXY: Handle register printer response, code: "
+          << response_code;
   Task* next_task =
       NewRunnableMethod(this,
                         &CloudPrintProxyBackend::Core::RegisterNextPrinter);
@@ -675,9 +672,8 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
       DCHECK(printer_list);
       if (printer_list) {
         DictionaryValue* printer_data = NULL;
-        if (printer_list->GetDictionary(0, &printer_data)) {
+        if (printer_list->GetDictionary(0, &printer_data))
           InitJobHandlerForPrinter(printer_data);
-        }
       }
     }
     server_error_count_ = 0;
@@ -690,7 +686,7 @@ void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
 
 void CloudPrintProxyBackend::Core::HandleServerError(Task* task_to_retry) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Server error.";
+  VLOG(1) << "CP_PROXY: Server error.";
   CloudPrintHelpers::HandleServerError(
       &server_error_count_, -1, kMaxRetryInterval, kBaseRetryInterval,
       task_to_retry, NULL);
@@ -699,17 +695,15 @@ void CloudPrintProxyBackend::Core::HandleServerError(Task* task_to_retry) {
 bool CloudPrintProxyBackend::Core::RemovePrinterFromList(
     const std::string& printer_name) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  bool ret = false;
   for (cloud_print::PrinterList::iterator index = printer_list_.begin();
        index != printer_list_.end(); index++) {
     if (0 == base::strcasecmp(index->printer_name.c_str(),
                               printer_name.c_str())) {
       index = printer_list_.erase(index);
-      ret = true;
-      break;
+      return true;
     }
   }
-  return ret;
+  return false;
 }
 
 void CloudPrintProxyBackend::Core::OnNotificationStateChange(
@@ -733,11 +727,10 @@ void CloudPrintProxyBackend::Core::OnNotificationStateChange(
 void CloudPrintProxyBackend::Core::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Incoming notification.";
+  VLOG(1) << "CP_PROXY: Incoming notification.";
   if (0 == base::strcasecmp(push_notifications_channel_.c_str(),
-                            notification_data.service_url.c_str())) {
+                            notification_data.service_url.c_str()))
     HandlePrinterNotification(notification_data.service_specific_data);
-  }
 }
 
 void CloudPrintProxyBackend::Core::OnOutgoingNotification() {}
@@ -745,24 +738,23 @@ void CloudPrintProxyBackend::Core::OnOutgoingNotification() {}
 // cloud_print::PrinterChangeNotifier::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterAdded() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  if (request_.get()) {
+  if (request_.get())
     new_printers_available_ = true;
-  } else {
+  else
     StartRegistration();
-  }
 }
 
 // PrinterJobHandler::Delegate implementation
 void CloudPrintProxyBackend::Core::OnPrinterJobHandlerShutdown(
     PrinterJobHandler* job_handler, const std::string& printer_id) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Printer job handle shutdown, id " << printer_id;
+  VLOG(1) << "CP_PROXY: Printer job handle shutdown, id " << printer_id;
   job_handler_map_.erase(printer_id);
 }
 
 void CloudPrintProxyBackend::Core::OnAuthError() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  LOG(INFO) << "CP_PROXY: Auth Error";
+  VLOG(1) << "CP_PROXY: Auth Error";
   backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &Core::NotifyAuthenticationFailed));
 }
