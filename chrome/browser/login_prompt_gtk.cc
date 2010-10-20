@@ -36,7 +36,10 @@ class LoginHandlerGtk : public LoginHandler,
                         public ConstrainedWindowGtkDelegate {
  public:
   LoginHandlerGtk(net::AuthChallengeInfo* auth_info, URLRequest* request)
-      : LoginHandler(auth_info, request) {
+      : LoginHandler(auth_info, request),
+        username_entry_(NULL),
+        password_entry_(NULL),
+        ok_(NULL) {
   }
 
   virtual ~LoginHandlerGtk() {

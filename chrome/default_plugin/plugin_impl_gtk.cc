@@ -20,7 +20,10 @@
 // implemented.
 
 PluginInstallerImpl::PluginInstallerImpl(int16 mode)
-  : container_(NULL) {
+  : instance_(NULL),
+    plugin_install_stream_(NULL),
+    plugin_installer_state_(PluginInstallerStateUndefined),
+    container_(NULL) {
 }
 
 PluginInstallerImpl::~PluginInstallerImpl() {

@@ -165,7 +165,9 @@ class PrintSystemCUPS : public PrintSystem {
    public:
      explicit PrinterWatcherCUPS(PrintSystemCUPS* print_system,
                                  const std::string& printer_name)
-         : printer_name_(printer_name), print_system_(print_system) {
+         : printer_name_(printer_name),
+           delegate_(NULL),
+           print_system_(print_system) {
      }
 
     // PrintSystem::PrinterWatcher interface

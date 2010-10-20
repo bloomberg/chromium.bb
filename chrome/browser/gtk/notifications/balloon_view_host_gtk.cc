@@ -10,7 +10,8 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
-    : BalloonHost(balloon) {
+    : BalloonHost(balloon),
+      render_widget_host_view_(NULL) {
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {

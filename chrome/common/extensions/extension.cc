@@ -254,6 +254,7 @@ const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
 Extension::StaticData::StaticData()
     : incognito_split_mode(false),
+      location(INVALID),
       converted_from_user_script(false),
       is_theme(false),
       is_app(false),

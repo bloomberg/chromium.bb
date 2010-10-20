@@ -57,10 +57,13 @@ NPVariant_Param::~NPVariant_Param() {
 }
 
 PluginMsg_UpdateGeometry_Param::PluginMsg_UpdateGeometry_Param()
-    : transparent(false)
-#if defined(OS_MACOSX)
-    , ack_key(-1)
-#endif
+    : transparent(false),
+#if !defined(OS_MACOSX)
+      windowless_buffer(NULL),
+      background_buffer(NULL)
+#else
+      ack_key(-1)
+#endif  // !defined(OS_MACOSX)
 {
 }
 

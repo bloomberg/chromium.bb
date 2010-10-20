@@ -22,19 +22,26 @@
 // autocomplete provider without the hassle of serializing it.
 struct AutocompleteMatchData {
  public:
-  AutocompleteMatchData() {}
+  AutocompleteMatchData()
+      : relevance(0),
+        deletable(false),
+        inline_autocomplete_offset(0),
+        is_history_what_you_typed_match(false),
+        starred(false) {
+  }
+
   explicit AutocompleteMatchData(const AutocompleteMatch& match)
-    : provider_name(match.provider->name()),
-      relevance(match.relevance),
-      deletable(match.deletable),
-      fill_into_edit(match.fill_into_edit),
-      inline_autocomplete_offset(match.inline_autocomplete_offset),
-      destination_url(match.destination_url),
-      contents(match.contents),
-      description(match.description),
-      is_history_what_you_typed_match(match.is_history_what_you_typed_match),
-      type(AutocompleteMatch::TypeToString(match.type)),
-      starred(match.starred) {
+      : provider_name(match.provider->name()),
+        relevance(match.relevance),
+        deletable(match.deletable),
+        fill_into_edit(match.fill_into_edit),
+        inline_autocomplete_offset(match.inline_autocomplete_offset),
+        destination_url(match.destination_url),
+        contents(match.contents),
+        description(match.description),
+        is_history_what_you_typed_match(match.is_history_what_you_typed_match),
+        type(AutocompleteMatch::TypeToString(match.type)),
+        starred(match.starred) {
   }
 
   std::string provider_name;

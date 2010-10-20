@@ -53,10 +53,12 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
 }
 
 ZygoteHost::ZygoteHost()
-    : pid_(-1),
+    : control_fd_(-1),
+      pid_(-1),
       init_(false),
       using_suid_sandbox_(false),
-      have_read_sandbox_status_word_(false) {
+      have_read_sandbox_status_word_(false),
+      sandbox_status_(0) {
 }
 
 ZygoteHost::~ZygoteHost() {
