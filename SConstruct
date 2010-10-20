@@ -299,9 +299,6 @@ nacl_glibc_skiplist = [
     # This tests the absence of "-s" but that is no good because
     # we currently force that option on.
     'run_stubout_mode_test',
-    # This fails because of a bug in mmap()'s zero-fill behaviour.
-    # See http://code.google.com/p/nativeclient/issues/detail?id=824
-    'run_app_lib_test',
     # Struct layouts differ.
     'run_abi_test',
     # Syscall wrappers not implemented yet.
