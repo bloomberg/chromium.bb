@@ -50,10 +50,6 @@ class InstantLoader {
   // when showing results for a search provider that supports instant.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Destroys the preview TabContents. Does nothing if the preview TabContents
-  // has not been created.
-  void DestroyPreviewContents();
-
   // Returns true if the mouse is down as the result of activating the preview
   // content.
   bool IsMouseDownFromActivate();

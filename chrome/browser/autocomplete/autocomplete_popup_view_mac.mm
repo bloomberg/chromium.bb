@@ -485,12 +485,6 @@ AutocompletePopupModel* AutocompletePopupViewMac::GetModel() {
   return model_.get();
 }
 
-int AutocompletePopupViewMac::GetMaxYCoordinate() {
-  // TODO: implement if match preview pans out.
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   DCHECK_GE(row, 0);
 

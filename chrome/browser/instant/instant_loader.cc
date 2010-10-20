@@ -606,15 +606,6 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   }
 }
 
-void InstantLoader::DestroyPreviewContents() {
-  if (!preview_contents_.get()) {
-    // We're not showing anything, nothing to do.
-    return;
-  }
-
-  delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
-}
-
 bool InstantLoader::IsMouseDownFromActivate() {
   return preview_tab_contents_delegate_->is_mouse_down_from_activate();
 }

@@ -41,7 +41,6 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
   virtual AutocompletePopupModel* GetModel();
-  virtual int GetMaxYCoordinate();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

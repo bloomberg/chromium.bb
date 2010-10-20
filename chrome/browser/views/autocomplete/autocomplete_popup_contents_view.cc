@@ -849,15 +849,6 @@ AutocompletePopupModel* AutocompletePopupContentsView::GetModel() {
   return model_.get();
 }
 
-int AutocompletePopupContentsView::GetMaxYCoordinate() {
-  // Add one to kMaxMatches to account for the history shortcut that may be
-  // added.
-  return CalculateTargetBounds(
-      (static_cast<int>(AutocompleteResult::kMaxMatches) + 1) *
-      AutocompleteResultView::GetPreferredHeight(
-          result_font_, result_bold_font_)).bottom();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, AutocompleteResultViewModel implementation:
 

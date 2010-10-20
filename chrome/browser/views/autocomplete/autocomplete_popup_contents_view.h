@@ -65,7 +65,6 @@ class AutocompletePopupContentsView : public views::View,
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
   virtual AutocompletePopupModel* GetModel();
-  virtual int GetMaxYCoordinate();
 
   // Overridden from AutocompleteResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const;

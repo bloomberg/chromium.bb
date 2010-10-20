@@ -356,7 +356,6 @@ void AutocompletePopupViewGtk::UpdatePopupAppearance() {
 }
 
 gfx::Rect AutocompletePopupViewGtk::GetTargetBounds() {
-  NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
@@ -372,12 +371,6 @@ void AutocompletePopupViewGtk::OnDragCanceled() {
 
 AutocompletePopupModel* AutocompletePopupViewGtk::GetModel() {
   return model_.get();
-}
-
-int AutocompletePopupViewGtk::GetMaxYCoordinate() {
-  // TODO: implement if match preview pans out.
-  NOTIMPLEMENTED();
-  return 0;
 }
 
 void AutocompletePopupViewGtk::Observe(NotificationType type,

@@ -76,8 +76,6 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // Returns the popup's model.
   virtual AutocompletePopupModel* GetModel();
 
-  virtual int GetMaxYCoordinate();
-
   // Opens the URL corresponding to the given |row|.  If |force_background| is
   // true, forces the URL to open in a background tab.  Otherwise, determines
   // the proper window open disposition from the modifier flags on |[NSApp
