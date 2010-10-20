@@ -14,6 +14,10 @@ namespace pepper {
 
 // If you inherit from resource, make sure you add the class name here.
 #define FOR_ALL_RESOURCES(F) \
+  F(Audio) \
+  F(AudioConfig) \
+  F(Buffer) \
+  F(DirectoryReader) \
   F(FileChooser) \
   F(FileIO) \
   F(FileRef) \
