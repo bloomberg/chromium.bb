@@ -3171,6 +3171,9 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
         frame, UserScript::DOCUMENT_END);
   }
 
+  // InjectScripts() can end up creating a new NavigationState if it triggers a
+  // fragment navigation, so we need to re-fetch it here.
+  navigation_state = NavigationState::FromDataSource(ds);
   navigation_state->user_script_idle_scheduler()->DidFinishDocumentLoad();
 }
 
