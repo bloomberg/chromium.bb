@@ -22,7 +22,6 @@ class LocationProviderBase;
 class URLRequestContextGetter;
 struct Geoposition;
 
-
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.

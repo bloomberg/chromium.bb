@@ -1271,6 +1271,7 @@
         'browser/geolocation/gateway_data_provider_common_unittest.cc',
         'browser/geolocation/geolocation_content_settings_map_unittest.cc',
         'browser/geolocation/geolocation_exceptions_table_model_unittest.cc',
+        'browser/geolocation/geolocation_provider_unittest.cc',
         'browser/geolocation/geolocation_permission_context_unittest.cc',
         'browser/geolocation/geolocation_settings_state_unittest.cc',
         'browser/geolocation/gps_location_provider_unittest_linux.cc',

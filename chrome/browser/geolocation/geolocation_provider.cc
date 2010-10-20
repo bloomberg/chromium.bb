@@ -49,8 +49,11 @@ void GeolocationProvider::OnObserversChanged() {
   if (observers_.empty()) {
     Stop();
   } else {
-    if (!IsRunning())
+    if (!IsRunning()) {
       Start();
+      if (HasPermissionBeenGranted())
+        InformProvidersPermissionGranted(most_recent_authorized_frame_);
+    }
     // The high accuracy requirement may have changed.
     Task* task = NewRunnableMethod(this,
         &GeolocationProvider::SetObserverOptions,
@@ -75,26 +78,38 @@ void GeolocationProvider::NotifyObservers(const Geoposition& position) {
 void GeolocationProvider::SetObserverOptions(
     const GeolocationObserverOptions& options) {
   DCHECK(OnGeolocationThread());
-  if (!arbitrator_)
-    arbitrator_ = GeolocationArbitrator::Create(this);
+  DCHECK(arbitrator_);
   arbitrator_->SetObserverOptions(options);
 }
 
 void GeolocationProvider::OnPermissionGranted(const GURL& requesting_frame) {
+  DCHECK(OnClientThread());
+  most_recent_authorized_frame_ = requesting_frame;
+  if (IsRunning())
+    InformProvidersPermissionGranted(requesting_frame);
+}
+
+void GeolocationProvider::InformProvidersPermissionGranted(
+    const GURL& requesting_frame) {
+  DCHECK(IsRunning());
+  DCHECK(requesting_frame.is_valid());
   if (!OnGeolocationThread()) {
-    DCHECK(OnClientThread());
-    most_recent_authorized_frame_ = requesting_frame;
-    Task* task = NewRunnableMethod(this,
-        &GeolocationProvider::OnPermissionGranted, requesting_frame);
+    Task* task = NewRunnableMethod(
+        this,
+        &GeolocationProvider::InformProvidersPermissionGranted,
+        requesting_frame);
     message_loop()->PostTask(FROM_HERE, task);
     return;
   }
   DCHECK(OnGeolocationThread());
+  DCHECK(arbitrator_);
   arbitrator_->OnPermissionGranted(requesting_frame);
 }
 
 void GeolocationProvider::Init() {
   DCHECK(OnGeolocationThread());
+  DCHECK(!arbitrator_);
+  arbitrator_ = GeolocationArbitrator::Create(this);
 }
 
 void GeolocationProvider::CleanUp() {

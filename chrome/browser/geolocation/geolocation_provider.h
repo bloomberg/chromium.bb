@@ -62,6 +62,8 @@ class GeolocationProvider : public base::Thread, public GeolocationObserver {
   void OnObserversChanged();
   // Passes the observers' geolocation options through to the arbitrator.
   void SetObserverOptions(const GeolocationObserverOptions& options);
+  // Update the providers on the geolocation thread, which must be running.
+  void InformProvidersPermissionGranted(const GURL& requesting_frame);
   // Notifies observers when a new position fix is available.
   void NotifyObservers(const Geoposition& position);
 
