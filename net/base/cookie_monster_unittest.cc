@@ -1953,7 +1953,8 @@ static net::CookieMonster* CreateMonsterForGC(int num_cookies) {
 // get rid of cookies when we should).  The perftest is probing for
 // whether garbage collection happens when it shouldn't.  See comments
 // before that test for more details.
-TEST(CookieMonsterTest, GarbageCollectionTriggers) {
+// Flaky as per http://crbug.com/60015
+TEST(CookieMonsterTest, FLAKY_GarbageCollectionTriggers) {
   // First we check to make sure that a whole lot of recent cookies
   // doesn't get rid of anything after garbage collection is checked for.
   {
