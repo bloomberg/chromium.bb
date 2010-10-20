@@ -5,7 +5,6 @@
 #include "chrome/browser/renderer_host/video_layer_proxy.h"
 
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/gpu_messages.h"
 #include "gfx/rect.h"
 
@@ -24,17 +23,12 @@ VideoLayerProxy::~VideoLayerProxy() {
 }
 
 void VideoLayerProxy::CopyTransportDIB(RenderProcessHost* process,
-                                       TransportDIB::Id bitmap,
+                                       TransportDIB::Id dib_id,
+                                       TransportDIB::Handle dib_handle,
                                        const gfx::Rect& bitmap_rect) {
-  base::ProcessId process_id;
-#if defined(OS_WIN)
-  process_id = ::GetProcessId(process->GetHandle());
-#elif defined(OS_POSIX)
-  process_id = process->GetHandle();
-#endif
-
+  TransportDIB::ScopedHandle scoped_dib_handle(dib_handle);
   if (process_shim_->Send(new GpuMsg_PaintToVideoLayer(
-          routing_id_, process_id, bitmap, bitmap_rect))) {
+          routing_id_, scoped_dib_handle.release(), bitmap_rect))) {
   } else {
     // TODO(scherkus): what to do ?!?!
   }

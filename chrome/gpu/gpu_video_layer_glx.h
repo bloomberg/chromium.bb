@@ -40,8 +40,7 @@ class GpuVideoLayerGLX : public IPC::Channel::Listener {
 
  private:
   // Message handlers.
-  void OnPaintToVideoLayer(base::ProcessId source_process_id,
-                           TransportDIB::Id id,
+  void OnPaintToVideoLayer(TransportDIB::Handle dib_handle,
                            const gfx::Rect& bitmap_rect);
 
   // Calculates vertices for |object| relative to |world|, where |world| is

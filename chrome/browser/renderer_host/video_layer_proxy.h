@@ -20,7 +20,8 @@ class VideoLayerProxy : public VideoLayer, public IPC::Channel::Listener {
 
   // VideoLayer implementation.
   virtual void CopyTransportDIB(RenderProcessHost* process,
-                                TransportDIB::Id bitmap,
+                                TransportDIB::Id dib_id,
+                                TransportDIB::Handle dib_handle,
                                 const gfx::Rect& bitmap_rect);
 
   // IPC::Channel::Listener implementation.

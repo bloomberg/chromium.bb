@@ -251,9 +251,9 @@ void GpuVideoLayerGLX::OnChannelError() {
   NOTIMPLEMENTED();
 }
 
-void GpuVideoLayerGLX::OnPaintToVideoLayer(base::ProcessId source_process_id,
-                                           TransportDIB::Id id,
+void GpuVideoLayerGLX::OnPaintToVideoLayer(TransportDIB::Handle dib_handle,
                                            const gfx::Rect& bitmap_rect) {
+  TransportDIB::ScopedHandle scoped_dib_handle(dib_handle);
   // TODO(scherkus): |native_size_| is set in constructor, so perhaps this check
   // should be a DCHECK().
   const int width = native_size_.width();
@@ -264,7 +264,7 @@ void GpuVideoLayerGLX::OnPaintToVideoLayer(base::ProcessId source_process_id,
       height <= 0 || height > kMaxVideoLayerSize)
     return;
 
-  TransportDIB* dib = TransportDIB::Map(id);
+  TransportDIB* dib = TransportDIB::Map(scoped_dib_handle.release());
   if (!dib)
     return;
 

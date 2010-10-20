@@ -205,9 +205,9 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   // Variables used for desynchronized windowless plugin painting.  See note in
   // webplugin_delegate_proxy.h for how this works.
   bool transparent_;
-#if defined(OS_MACOSX)
   scoped_ptr<TransportDIB> windowless_dib_;
   scoped_ptr<TransportDIB> background_dib_;
+#if defined(OS_MACOSX)
   base::mac::ScopedCFTypeRef<CGContextRef> windowless_context_;
   base::mac::ScopedCFTypeRef<CGContextRef> background_context_;
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
@@ -216,8 +216,6 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   scoped_ptr<skia::PlatformCanvas> background_canvas_;
 
 #if defined(USE_X11)
-  scoped_ptr<TransportDIB> windowless_dib_;
-  scoped_ptr<TransportDIB> background_dib_;
   // If we can use SHM pixmaps for windowless plugin painting or not.
   bool use_shm_pixmap_;
   // The SHM pixmap for windowless plugin painting.
