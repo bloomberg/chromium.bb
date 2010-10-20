@@ -22,6 +22,7 @@ SCons.Warnings.warningAsException()
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(
     Dir('#/../testing/gtest'))
+Dir('tests/ppapi_tests').addRepository(Dir('#/../ppapi/tests'))
 
 # ----------------------------------------------------------
 # REPORT
@@ -1620,6 +1621,9 @@ nacl_env.Append(
     'tests/npapi_bridge/nacl.scons',
     'tests/npapi_geturl/nacl.scons',
     # 'tests/ppapi_geturl/nacl.scons',
+    # uncomment this test once issue
+    # http://code.google.com/p/nativeclient/issues/detail?id=902 gets fixed
+    # 'tests/ppapi_tests/nacl.scons',
     'tests/npapi_hw/nacl.scons',
     'tests/npapi_pi/nacl.scons',
     'tests/npapi_runtime/nacl.scons',
