@@ -68,6 +68,14 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
 
+  MOCK_METHOD0(TpmIsReady, bool(void));
+  MOCK_METHOD0(TpmIsEnabled, bool(void));
+  MOCK_METHOD0(TpmIsOwned, bool(void));
+  MOCK_METHOD0(TpmIsBeingOwned, bool(void));
+  MOCK_METHOD1(TpmGetPassword, bool(std::string* password));
+  MOCK_METHOD0(TpmCanAttemptOwnership, void(void));
+  MOCK_METHOD0(TpmClearStoredPassword, void(void));
+
   void SetAsyncBehavior(bool outcome, int code) {
     outcome_ = outcome;
     code_ = code;

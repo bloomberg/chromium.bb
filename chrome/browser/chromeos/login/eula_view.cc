@@ -11,13 +11,17 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros_settings_provider_stats.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -28,7 +32,6 @@
 #include "chrome/browser/views/window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/url_constants.h"
-#include "cros/chromeos_cryptohome.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -36,6 +39,7 @@
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
+#include "views/controls/throbber.h"
 #include "views/grid_layout.h"
 #include "views/layout_manager.h"
 #include "views/standard_layout.h"
@@ -48,10 +52,11 @@ using views::WidgetGtk;
 namespace {
 
 const int kBorderSize = 10;
-const int kMargin = 20;
-const int kLastButtonHorizontalMargin = 10;
 const int kCheckBowWidth = 22;
+const int kLastButtonHorizontalMargin = 10;
+const int kMargin = 20;
 const int kTextMargin = 10;
+const int kTpmCheckIntervalMs = 500;
 
 // TODO(glotov): this URL should be changed to actual Google ChromeOS EULA.
 // See crbug.com/4647
@@ -81,7 +86,12 @@ struct FillLayoutWithBorder : public views::LayoutManager {
 class TpmInfoView : public views::View,
                     public views::DialogDelegate {
  public:
-  explicit TpmInfoView(std::wstring password) : password_(password) { }
+  explicit TpmInfoView(std::string* password)
+      : ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
+        password_(password) {
+    DCHECK(password_);
+  }
+
   void Init();
 
  protected:
@@ -105,7 +115,17 @@ class TpmInfoView : public views::View,
   }
 
  private:
-  std::wstring password_;
+  void PullPassword();
+
+  ScopedRunnableMethodFactory<TpmInfoView> runnable_method_factory_;
+
+  // Holds pointer to the password storage.
+  std::string* password_;
+
+  views::Label* busy_label_;
+  views::Label* password_label_;
+  views::Throbber* throbber_;
+
   DISALLOW_COPY_AND_ASSIGN(TpmInfoView);
 };
 
@@ -119,6 +139,7 @@ void TpmInfoView::Init() {
   views::Label* label = new views::Label(
       l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION));
   label->SetMultiLine(true);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
@@ -126,6 +147,7 @@ void TpmInfoView::Init() {
   label = new views::Label(
       l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY));
   label->SetMultiLine(true);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
@@ -136,9 +158,68 @@ void TpmInfoView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font password_font =
       rb.GetFont(ResourceBundle::MediumFont).DeriveFont(0, gfx::Font::BOLD);
-  label = new views::Label(password_, password_font);
-  layout->AddView(label);
+  // Password will be set later.
+  password_label_ = new views::Label(L"", password_font);
+  password_label_->SetVisible(false);
+  layout->AddView(password_label_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  column_set = layout->AddColumnSet(2);
+  column_set->AddPaddingColumn(1, 0);
+  // Resize of the throbber and label is not allowed, since we want they to be
+  // placed in the center.
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(1, 0);
+  // Border padding columns should have the same width. It guaranties that
+  // throbber and label will be placed in the center.
+  column_set->LinkColumnSizes(0, 4, -1);
+
+  layout->StartRow(0, 2);
+  throbber_ = chromeos::CreateDefaultThrobber();
+  throbber_->Start();
+  layout->AddView(throbber_);
+  busy_label_ = new views::Label(l10n_util::GetString(IDS_EULA_TPM_BUSY));
+  layout->AddView(busy_label_);
+  layout->AddPaddingRow(0, kRelatedControlHorizontalSpacing);
+
+  PullPassword();
+}
+
+void TpmInfoView::PullPassword() {
+  // Since this method is also called directly.
+  runnable_method_factory_.RevokeAll();
+
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+
+  bool password_was_cleared = false;
+  if (password_->empty() && cryptohome->TpmIsReady()) {
+    bool password_acquired = cryptohome->TpmGetPassword(password_);
+    if (password_acquired) {
+      cryptohome->TpmClearStoredPassword();
+      if (password_->empty())
+        password_was_cleared = true;
+    } else {
+      password_->clear();
+    }
+  }
+  if (password_->empty() && !password_was_cleared) {
+    // Password hasn't been acquired, reschedule pulling.
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        runnable_method_factory_.NewRunnableMethod(&TpmInfoView::PullPassword),
+        kTpmCheckIntervalMs);
+  } else {
+    password_label_->SetText(ASCIIToWide(*password_));
+    password_label_->SetVisible(true);
+    busy_label_->SetVisible(false);
+    throbber_->Stop();
+    throbber_->SetVisible(false);
+  }
 }
 
 }  // namespace
@@ -230,7 +311,8 @@ static GURL GetOemEulaPagePath() {
 void EulaView::Init() {
   // First, command to own the TPM.
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CryptohomeTpmCanAttemptOwnership();
+    chromeos::CrosLibrary::Get()->
+        GetCryptohomeLibrary()->TpmCanAttemptOwnership();
   } else {
     LOG(ERROR) << "Cros library not loaded. "
                << "We must have disabled the link that led here.";
@@ -302,10 +384,13 @@ void EulaView::Init() {
   layout->StartRow(0, LAST_ROW);
   system_security_settings_link_ = new views::Link();
   system_security_settings_link_->SetController(this);
+
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded() ||
-      !chromeos::CryptohomeTpmIsEnabled()) {
+      !chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->
+          TpmIsEnabled()) {
     system_security_settings_link_->SetEnabled(false);
   }
+
   layout->AddView(system_security_settings_link_);
 
   back_button_ = new views::NativeButton(this, std::wstring());
@@ -383,31 +468,12 @@ void EulaView::LinkActivated(views::Link* source, int event_flags) {
       help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
-    // Pull the password from TPM.
-    bool password_acquired = false;
-    if (tpm_password_.empty() && chromeos::CryptohomeTpmIsReady()) {
-      // TODO(glotov): Sanitize memory used to store password when
-      // it's destroyed.
-      password_acquired = chromeos::CryptohomeTpmGetPassword(&tpm_password_);
-      chromeos::CryptohomeTpmClearStoredPassword();
-    }
-    if (!tpm_password_.empty() || password_acquired) {
-      TpmInfoView* view = new TpmInfoView(ASCIIToWide(tpm_password_));
-      view->Init();
-      views::Window* window = browser::CreateViewsWindow(
-          GetNativeWindow(), gfx::Rect(), view);
-      window->SetIsAlwaysOnTop(true);
-      window->Show();
-    } else {
-      if (!bubble_)
-        bubble_ = MessageBubble::Show(
-            system_security_settings_link_->GetWidget(),
-            system_security_settings_link_->GetScreenBounds(),
-            BubbleBorder::LEFT_TOP,
-            ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-            l10n_util::GetString(IDS_EULA_TPM_BUSY),
-            std::wstring(), this);
-    }
+    TpmInfoView* view = new TpmInfoView(&tpm_password_);
+    view->Init();
+    views::Window* window = browser::CreateViewsWindow(
+        GetNativeWindow(), gfx::Rect(), view);
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
   }
 }
 

@@ -108,6 +108,34 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     return chromeos::CryptohomeGetSystemSalt();
   }
 
+  bool TpmIsReady() {
+    return chromeos::CryptohomeTpmIsReady();
+  }
+
+  bool TpmIsEnabled() {
+    return chromeos::CryptohomeTpmIsEnabled();
+  }
+
+  bool TpmIsOwned() {
+    return chromeos::CryptohomeTpmIsOwned();
+  }
+
+  bool TpmIsBeingOwned() {
+    return chromeos::CryptohomeTpmIsBeingOwned();
+  }
+
+  bool TpmGetPassword(std::string* password) {
+    return chromeos::CryptohomeTpmGetPassword(password);
+  }
+
+  void TpmCanAttemptOwnership() {
+    chromeos::CryptohomeTpmCanAttemptOwnership();
+  }
+
+  void TpmClearStoredPassword() {
+    chromeos::CryptohomeTpmClearStoredPassword();
+  }
+
  private:
   static void Handler(const chromeos::CryptohomeAsyncCallStatus& event,
                       void* cryptohome_library) {
@@ -234,6 +262,33 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     salt.push_back(0);
     return salt;
   }
+
+  // Tpm begin ready after 20-th call.
+  bool TpmIsReady() {
+    static int counter = 0;
+    return ++counter > 20;
+  }
+
+  bool TpmIsEnabled() {
+    return true;
+  }
+
+  bool TpmIsOwned() {
+    return true;
+  }
+
+  bool TpmIsBeingOwned() {
+    return true;
+  }
+
+  bool TpmGetPassword(std::string* password) {
+    *password = "Stub-TPM-password";
+    return true;
+  }
+
+  void TpmCanAttemptOwnership() {}
+
+  void TpmClearStoredPassword() {}
 
  private:
   static void DoStubCallback(Delegate* callback) {

@@ -170,12 +170,14 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
 
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
-  if (chromeos::CryptohomeTpmIsEnabled() &&
-      !chromeos::CryptohomeTpmIsBeingOwned()) {
-    if (chromeos::CryptohomeTpmIsOwned()) {
-      chromeos::CryptohomeTpmClearStoredPassword();
-    } else {
-      chromeos::CryptohomeTpmCanAttemptOwnership();
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
+    if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
+      if (cryptohome->TpmIsOwned()) {
+        cryptohome->TpmClearStoredPassword();
+      } else {
+        cryptohome->TpmCanAttemptOwnership();
+      }
     }
   }
 

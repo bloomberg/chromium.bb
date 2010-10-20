@@ -103,6 +103,32 @@ class CryptohomeLibrary {
   // Asks cryptohomed for the system salt.
   virtual CryptohomeBlob GetSystemSalt() = 0;
 
+
+  // Wrappers of the functions for working with Tpm.
+
+  // Returns whether Tpm is ready.
+  virtual bool TpmIsReady() = 0;
+
+  // Returns whether Tpm is presented and enabled.
+  virtual bool TpmIsEnabled() = 0;
+
+  // Returns whether device has already been owned.
+  virtual bool TpmIsOwned() = 0;
+
+  // Returns whether device is being owned (Tpm password is generating).
+  virtual bool TpmIsBeingOwned() = 0;
+
+  // Returns Tpm password (if password was cleared empty one is returned).
+  // Return value is true if password was successfully acquired.
+  virtual bool TpmGetPassword(std::string* password) = 0;
+
+  // Attempts to start owning (if device isn't owned and isn't being owned).
+  virtual void TpmCanAttemptOwnership() = 0;
+
+  // Clears Tpm password. Password should be cleared after it was generated and
+  // shown to user.
+  virtual void TpmClearStoredPassword() = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
   static CryptohomeLibrary* GetImpl(bool stub);
