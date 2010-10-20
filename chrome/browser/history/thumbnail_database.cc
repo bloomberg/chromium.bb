@@ -260,7 +260,7 @@ void ThumbnailDatabase::SetPageThumbnail(
       SkAutoLockPixels thumbnail_lock(thumbnail);
       bool encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_BGRA, thumbnail.width(),
+          gfx::JPEGCodec::FORMAT_SkBitmap, thumbnail.width(),
           thumbnail.height(),
           static_cast<int>(thumbnail.rowBytes()), 90,
           &jpeg_data);

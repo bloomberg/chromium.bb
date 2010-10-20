@@ -983,7 +983,7 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
     case FORMAT_JPEG:
       encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_BGRA,
+          gfx::JPEGCodec::FORMAT_SkBitmap,
           screen_capture.width(),
           screen_capture.height(),
           static_cast<int>(screen_capture.rowBytes()),
