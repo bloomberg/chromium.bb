@@ -119,8 +119,7 @@ void FileChooser::StoreChosenFiles(const std::vector<std::string>& files) {
   std::vector<std::string>::const_iterator end_it = files.end();
   for (std::vector<std::string>::const_iterator it = files.begin();
        it != end_it; it++)
-    chosen_files_.push_back(
-        new FileRef(module(), PP_FILESYSTEMTYPE_LOCALPERSISTENT, *it, ""));
+    chosen_files_.push_back(new FileRef(module(), FilePath().AppendASCII(*it)));
 
   if (!completion_callback_.func)
     return;

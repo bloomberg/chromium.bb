@@ -16,7 +16,6 @@
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PP_CompletionCallback;
-struct PP_FileInfo_Dev;
 struct PPB_FileIO_Dev;
 struct PPB_FileIOTrusted_Dev;
 
