@@ -79,8 +79,8 @@ void PluginInstallationJobMonitorThread::WaitForJobThread() {
             install_job_completion_port_, &job_event,
             &completion_key, &overlapped, INFINITE)) {
       if (job_event == JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO) {
-        DLOG(INFO) << "All processes in the installer job have exited.";
-        DLOG(INFO) << "Initiating refresh on the plugins list";
+        DVLOG(1) << "All processes in the installer job have exited.  "
+                    "Initiating refresh on the plugins list";
         DCHECK(::IsWindow(plugin_window_));
         PostMessageW(plugin_window_,
                      PluginInstallerImpl::kRefreshPluginsMessage, 0, 0);

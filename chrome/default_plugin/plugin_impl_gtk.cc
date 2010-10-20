@@ -31,7 +31,7 @@ PluginInstallerImpl::~PluginInstallerImpl() {
 bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
                                      NPMIMEType mime_type, int16 argc,
                                      char* argn[], char* argv[]) {
-  DLOG(INFO) << __FUNCTION__ << " MIME Type : " << mime_type;
+  DVLOG(1) << __FUNCTION__ << " MIME Type : " << mime_type;
   DCHECK(instance != NULL);
 
   if (mime_type == NULL || strlen(mime_type) == 0) {

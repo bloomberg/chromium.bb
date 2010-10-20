@@ -53,7 +53,7 @@ PluginInstallerImpl::~PluginInstallerImpl() {
 bool PluginInstallerImpl::Initialize(HINSTANCE module_handle, NPP instance,
                                      NPMIMEType mime_type, int16 argc,
                                      char* argn[], char* argv[]) {
-  DLOG(INFO) << __FUNCTION__ << " MIME Type : " << mime_type;
+  DVLOG(1) << __FUNCTION__ << " MIME Type : " << mime_type;
   DCHECK(instance != NULL);
   DCHECK(module_handle != NULL);
 
@@ -226,7 +226,7 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
   if (plugin_installer_state_ == PluginListDownloadInitiated) {
     bool plugin_available = false;
     if (reason == NPRES_DONE) {
-      DLOG(INFO) << "Received Done notification for plugin list download";
+      DVLOG(1) << "Received Done notification for plugin list download";
       plugin_database_handler_.ParsePluginList();
       if (plugin_database_handler_.GetPluginDetailsForMimeType(
               mime_type_.c_str(), desired_language_.c_str(),
@@ -248,7 +248,7 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
     }
 
     if (plugin_available) {
-      DLOG(INFO) << "Plugin available for mime type " << mime_type_;
+      DVLOG(1) << "Plugin available for mime type " << mime_type_;
       DisplayAvailablePluginStatus();
       NotifyPluginStatus(default_plugin::MISSING_PLUGIN_AVAILABLE);
     } else {
@@ -327,8 +327,8 @@ bool PluginInstallerImpl::NPP_SetWindow(NPWindow* window_info) {
 void PluginInstallerImpl::DownloadPlugin() {
   set_plugin_installer_state(PluginDownloadInitiated);
 
-  DLOG(INFO) << "Initiating download for plugin URL "
-             << plugin_download_url_.c_str();
+  DVLOG(1) << "Initiating download for plugin URL "
+           << plugin_download_url_.c_str();
 
   DisplayStatus(IDS_DEFAULT_PLUGIN_DOWNLOADING_PLUGIN_MSG);
 
@@ -578,7 +578,7 @@ LRESULT PluginInstallerImpl::OnCopyData(UINT message, WPARAM wparam,
     set_plugin_installer_state(PluginDownloadFailed);
     DisplayPluginDownloadFailedStatus();
   } else {
-    DLOG(INFO) << "Successfully downloaded plugin installer";
+    DVLOG(1) << "Successfully downloaded plugin installer";
     set_plugin_installer_state(PluginDownloadCompleted);
 
     std::wstring file_path =
@@ -601,7 +601,7 @@ LRESULT PluginInstallerImpl::OnCopyData(UINT message, WPARAM wparam,
       DisplayStatus(IDS_DEFAULT_PLUGIN_INSTALLATION_FAILED_MSG);
       NOTREACHED();
     } else {
-      DLOG(INFO) << "Successfully launched plugin installer";
+      DVLOG(1) << "Successfully launched plugin installer";
       set_plugin_installer_state(PluginInstallerLaunchSuccess);
       installation_job_monitor_thread_->AssignProcessToJob(
           shell_execute_info.hProcess);

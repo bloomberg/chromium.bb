@@ -73,8 +73,8 @@ bool PluginDatabaseHandler::DownloadPluginsFileIfNeeded(
   }
 
   if (initiate_download) {
-    DLOG(INFO) << "Initiating GetURLNotify on the plugin finder URL "
-               << plugin_finder_url.c_str();
+    DVLOG(1) << "Initiating GetURLNotify on the plugin finder URL "
+             << plugin_finder_url.c_str();
 
     plugin_installer_instance_.set_plugin_installer_state(
         PluginListDownloadInitiated);
@@ -84,15 +84,13 @@ bool PluginDatabaseHandler::DownloadPluginsFileIfNeeded(
         plugin_installer_instance_.instance(), plugin_finder_url.c_str(),
         NULL, NULL);
   } else {
-    DLOG(INFO) << "Plugins file " << plugins_file_.c_str()
-               << " already exists";
+    DVLOG(1) << "Plugins file " << plugins_file_ << " already exists";
     plugin_downloads_file_ = ::CreateFile(plugins_file_.c_str(), GENERIC_READ,
                                           FILE_SHARE_READ, NULL, OPEN_EXISTING,
                                           FILE_ATTRIBUTE_NORMAL, NULL);
     if (plugin_downloads_file_ == INVALID_HANDLE_VALUE) {
-      DLOG(INFO) << "Failed to open plugins file "
-                 << plugins_file_.c_str() << " Error "
-                 << ::GetLastError();
+      DVLOG(1) << "Failed to open plugins file " << plugins_file_
+               << " Error " << ::GetLastError();
       NOTREACHED();
       return false;
     }
@@ -113,7 +111,7 @@ int32 PluginDatabaseHandler::Write(NPStream* stream, int32 offset,
   }
 
   if (plugin_downloads_file_ == INVALID_HANDLE_VALUE) {
-    DLOG(INFO) << "About to create plugins file " << plugins_file_.c_str();
+    DVLOG(1) << "About to create plugins file " << plugins_file_;
     plugin_downloads_file_ = CreateFile(plugins_file_.c_str(),
                                         GENERIC_READ | GENERIC_WRITE,
                                         FILE_SHARE_READ, NULL, CREATE_ALWAYS,
@@ -133,9 +131,8 @@ int32 PluginDatabaseHandler::Write(NPStream* stream, int32 offset,
         }
       }
 
-      DLOG(INFO) << "Failed to create plugins file "
-                 << plugins_file_.c_str() << " Error "
-                 << ::GetLastError();
+      DVLOG(1) << "Failed to create plugins file " << plugins_file_
+               << " Error " << ::GetLastError();
       NOTREACHED();
       return 0;
     }
@@ -212,7 +209,7 @@ bool PluginDatabaseHandler::ParsePluginList() {
   xmlXPathFreeObject(plugins_result);
   xmlFreeDoc(plugin_downloads_doc);
   xmlCleanupParser();
-  DLOG(INFO) << "Parse plugins file result " << parse_result;
+  DVLOG(1) << "Parse plugins file result " << parse_result;
   return parse_result;
 }
 
