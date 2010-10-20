@@ -39,12 +39,17 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void FileSystemDispatcher::OpenFileSystem(
+bool FileSystemDispatcher::OpenFileSystem(
     const GURL& origin_url, fileapi::FileSystemType type,
     long long size, fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  ChildThread::current()->Send(new ViewHostMsg_OpenFileSystemRequest(
-      request_id, origin_url, type, size));
+  if (!ChildThread::current()->Send(new ViewHostMsg_OpenFileSystemRequest(
+          request_id, origin_url, type, size))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::Move(
@@ -52,8 +57,13 @@ bool FileSystemDispatcher::Move(
     const FilePath& dest_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(new ViewHostMsg_FileSystem_Move(
-      request_id, src_path, dest_path));
+  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_Move(
+          request_id, src_path, dest_path))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::Copy(
@@ -61,8 +71,13 @@ bool FileSystemDispatcher::Copy(
     const FilePath& dest_path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(new ViewHostMsg_FileSystem_Copy(
-      request_id, src_path, dest_path));
+  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_Copy(
+          request_id, src_path, dest_path))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::Remove(
@@ -70,16 +85,26 @@ bool FileSystemDispatcher::Remove(
     bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Remove(request_id, path, recursive));
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_Remove(request_id, path, recursive))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::ReadMetadata(
     const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_ReadMetadata(request_id, path));
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_ReadMetadata(request_id, path))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::Create(
@@ -89,8 +114,13 @@ bool FileSystemDispatcher::Create(
     bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(new ViewHostMsg_FileSystem_Create(
-      request_id, path, exclusive, is_directory, recursive));
+  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_Create(
+          request_id, path, exclusive, is_directory, recursive))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::Exists(
@@ -98,16 +128,26 @@ bool FileSystemDispatcher::Exists(
     bool is_directory,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Exists(request_id, path, is_directory));
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_Exists(request_id, path, is_directory))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::ReadDirectory(
     const FilePath& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_ReadDirectory(request_id, path));
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_ReadDirectory(request_id, path))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::Truncate(
@@ -116,13 +156,15 @@ bool FileSystemDispatcher::Truncate(
     int* request_id_out,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Truncate(request_id, path, offset))) {
-    if (request_id_out)
-      *request_id_out = request_id;
-    return true;
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_Truncate(request_id, path, offset))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
   }
-  return false;
+
+  if (request_id_out)
+    *request_id_out = request_id;
+  return true;
 }
 
 bool FileSystemDispatcher::Write(
@@ -132,22 +174,29 @@ bool FileSystemDispatcher::Write(
     int* request_id_out,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  if (ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Write(
-          request_id, path, blob_url, offset))) {
-    if (request_id_out)
-      *request_id_out = request_id;
-    return true;
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_Write(
+              request_id, path, blob_url, offset))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
   }
-  return false;
+
+  if (request_id_out)
+    *request_id_out = request_id;
+  return true;
 }
 
 bool FileSystemDispatcher::Cancel(
     int request_id_to_cancel,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_CancelWrite(request_id, request_id_to_cancel));
+  if (!ChildThread::current()->Send(new ViewHostMsg_FileSystem_CancelWrite(
+          request_id, request_id_to_cancel))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 bool FileSystemDispatcher::TouchFile(
@@ -156,9 +205,14 @@ bool FileSystemDispatcher::TouchFile(
     const base::Time& last_modified_time,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
-  return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_TouchFile(
-          request_id, path, last_access_time, last_modified_time));
+  if (!ChildThread::current()->Send(
+          new ViewHostMsg_FileSystem_TouchFile(
+              request_id, path, last_access_time, last_modified_time))) {
+    dispatchers_.Remove(request_id);  // destroys |dispatcher|
+    return false;
+  }
+
+  return true;
 }
 
 void FileSystemDispatcher::OnOpenFileSystemRequestComplete(

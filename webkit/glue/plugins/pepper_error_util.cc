@@ -17,6 +17,7 @@ int PlatformFileErrorToPepperError(base::PlatformFileError error_code) {
     case base::PLATFORM_FILE_ERROR_NOT_FOUND:
       return PP_ERROR_FILENOTFOUND;
     case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
+    case base::PLATFORM_FILE_ERROR_SECURITY:
       return PP_ERROR_NOACCESS;
     case base::PLATFORM_FILE_ERROR_NO_MEMORY:
       return PP_ERROR_NOMEMORY;

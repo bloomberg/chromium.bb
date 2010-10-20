@@ -14,13 +14,10 @@ namespace pepper {
 
 // If you inherit from resource, make sure you add the class name here.
 #define FOR_ALL_RESOURCES(F) \
-  F(Audio) \
-  F(Buffer) \
-  F(AudioConfig) \
-  F(DirectoryReader) \
   F(FileChooser) \
   F(FileIO) \
   F(FileRef) \
+  F(FileSystem) \
   F(Font) \
   F(Graphics2D) \
   F(Graphics3D) \
@@ -92,7 +89,6 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 
-
  private:
   // If referenced by a plugin, holds the id of this resource object. Do not
   // access this member directly, because it is possible that the plugin holds
@@ -118,6 +114,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   template <> inline Type* Resource::Cast<Type>() {  \
       return As##Type();                             \
   }
+
 FOR_ALL_RESOURCES(DEFINE_RESOURCE_CAST)
 #undef DEFINE_RESOURCE_CAST
 

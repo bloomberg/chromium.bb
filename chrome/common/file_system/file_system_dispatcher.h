@@ -32,7 +32,7 @@ class FileSystemDispatcher {
 
   bool OnMessageReceived(const IPC::Message& msg);
 
-  void OpenFileSystem(const GURL& origin_url,
+  bool OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,
                       long long size,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
