@@ -219,6 +219,12 @@
             'host/event_executor_linux.cc',
             'host/event_executor_linux.h',
           ],
+          'link_settings': {
+            'libraries': [
+              '-lX11',
+              '-lXdamage',
+            ],
+          },
         }],
         ['OS=="mac"', {
           'sources': [

@@ -33,7 +33,7 @@
 #include "remoting/host/capturer_gdi.h"
 #include "remoting/host/event_executor_win.h"
 #elif defined(OS_LINUX)
-#include "remoting/host/capturer_fake.h"
+#include "remoting/host/capturer_linux.h"
 #include "remoting/host/event_executor_linux.h"
 #elif defined(OS_MACOSX)
 #include "remoting/host/capturer_mac.h"
@@ -86,12 +86,19 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   DictionaryValue* values = service_prefs_->prefs();
   bool remoting_host_enabled = false;
 
+  // For development, we allow forcing the enabling of the host daemon via a
+  // commandline flag, regardless of the preference setting.
+  //
+  // TODO(ajwong): When we've gotten the preference setting workflow more
+  // stable, we should remove the command-line flag force-enable.
+  values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled);
+  remoting_host_enabled |= command_line.HasSwitch(switches::kEnableRemoting);
+
   // Check if remoting host is already enabled.
-  if (values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled) &&
-      remoting_host_enabled) {
-    // If true then we start the host.
+  if (remoting_host_enabled) {
     StartChromotingHost();
   }
+
   // Enable Cloud Print if needed. First check the command-line.
   bool cloud_print_proxy_enabled =
       command_line.HasSwitch(switches::kEnableCloudPrintProxy);
@@ -257,7 +264,7 @@ bool ServiceProcess::StartChromotingHost() {
   capturer.reset(new remoting::CapturerGdi());
   executor.reset(new remoting::EventExecutorWin(capturer.get()));
 #elif defined(OS_LINUX)
-  capturer.reset(new remoting::CapturerFake());
+  capturer.reset(new remoting::CapturerLinux());
   executor.reset(new remoting::EventExecutorLinux(capturer.get()));
 #elif defined(OS_MACOSX)
   capturer.reset(new remoting::CapturerMac());

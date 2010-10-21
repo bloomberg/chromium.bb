@@ -9,6 +9,8 @@
 
 namespace remoting {
 
+class CapturerLinuxPimpl;
+
 // A class to perform capturing for Linux.
 class CapturerLinux : public Capturer {
  public:
@@ -18,10 +20,12 @@ class CapturerLinux : public Capturer {
   virtual void ScreenConfigurationChanged();
 
  private:
+  friend class CapturerLinuxPimpl;
   virtual void CalculateInvalidRects();
   virtual void CaptureRects(const InvalidRects& rects,
                             CaptureCompletedCallback* callback);
 
+  scoped_ptr<CapturerLinuxPimpl> pimpl_;
   DISALLOW_COPY_AND_ASSIGN(CapturerLinux);
 };
 

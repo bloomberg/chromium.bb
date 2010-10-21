@@ -217,6 +217,8 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     // Create and start |chromotocol_server_|.
     chromotocol_server_ =
         new JingleChromotingServer(context_->jingle_thread()->message_loop());
+    // TODO(ajwong): Make this a command switch when we're more stable.
+    chromotocol_server_->set_allow_local_ips(true);
     chromotocol_server_->Init(
         jingle_client->GetFullJid(),
         jingle_client->session_manager(),

@@ -27,7 +27,8 @@ void EncoderZlib::Encode(scoped_refptr<CaptureData> capture_data,
                          bool key_frame,
                          DataAvailableCallback* data_available_callback) {
   CHECK(capture_data->pixel_format() == PixelFormatRgb32)
-      << "Zlib Encoder only works with RGB32";
+      << "Zlib Encoder only works with RGB32. Got "
+      << capture_data->pixel_format();
   capture_data_ = capture_data;
   callback_.reset(data_available_callback);
 

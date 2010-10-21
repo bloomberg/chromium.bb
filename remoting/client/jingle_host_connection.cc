@@ -65,6 +65,8 @@ void JingleHostConnection::InitConnection() {
   // Initialize |chromotocol_server_|.
   JingleChromotingServer* chromotocol_server =
       new JingleChromotingServer(message_loop());
+  // TODO(ajwong): Make this a command switch when we're more stable.
+  chromotocol_server->set_allow_local_ips(true);
   chromotocol_server->Init(
       jingle_client_->GetFullJid(),
       jingle_client_->session_manager(),
