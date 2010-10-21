@@ -84,7 +84,8 @@ TEST(UrlmonUrlRequestTest, Simple1) {
       "",      // extra request
       NULL,    // upload data
       ResourceType::MAIN_FRAME,  // resource type
-      true);   // frame busting
+      true,
+      0);   // frame busting
 
   testing::InSequence s;
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
@@ -131,7 +132,8 @@ TEST(UrlmonUrlRequestTest, Head) {
       "",      // extra request
       NULL,    // upload data
       ResourceType::MAIN_FRAME,  // resource type
-      true);   // frame busting
+      true,
+      0);   // frame busting
 
   testing::InSequence s;
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
@@ -172,7 +174,8 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
       "",      // extra request
       NULL,    // upload data
       ResourceType::MAIN_FRAME,  // resource type
-      true);   // frame busting
+      true,
+      0);   // frame busting
 
   // Expect headers
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_,
@@ -209,7 +212,8 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
       "",      // extra request
       NULL,    // upload data
       ResourceType::MAIN_FRAME,  // resource type
-      true);   // frame busting
+      true,
+      0);   // frame busting
 
   // Expect headers
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,

@@ -899,4 +899,45 @@ TEST_F(HttpHeaderTest, ImageSvgXml) {
   HeaderTestWithData("image/svg+xml", kImageSvg);
 }
 
+// Tests refreshing causes a page load.
+TEST_P(FullTabNavigationTest, RefreshContents) {
+  bool in_cf = GetParam().invokes_cf();
+  if (!in_cf) {
+    LOG(INFO) << "Disabled for this configuration";
+    return;
+  }
+
+  std::wstring src_url = server_mock_.Resolve(L"/refresh_src.html");
+
+  EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"), _))
+      .Times(2)
+      .WillRepeatedly(
+        SendFast(
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n",
+            "<html>"
+            "<head><meta http-equiv=\"x-ua-compatible\" content=\"chrome=1\""
+            "/></head>"
+            "<body>Hi there. Got new content?"
+            "</body></html>"));
+
+  EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
+
+  EXPECT_CALL(ie_mock_,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                                  StrEq(src_url)),
+                                _, _, _, _, _));
+  EXPECT_CALL(ie_mock_,
+              OnNavigateComplete2(_, testing::Field(&VARIANT::bstrVal,
+                                                    StrEq(src_url))))
+      .WillOnce(testing::DoAll(
+          DelayRefresh(&ie_mock_, &loop_, 2000),
+          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
+
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
+      .Times(2);
+
+  LaunchIEAndNavigate(src_url);
+}
+
 }  // namespace chrome_frame_test

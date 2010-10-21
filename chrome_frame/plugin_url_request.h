@@ -123,7 +123,7 @@ class PluginUrlRequest {
       int remote_request_id, const std::string& url, const std::string& method,
       const std::string& referrer, const std::string& extra_headers,
       net::UploadData* upload_data, ResourceType::Type resource_type,
-      bool enable_frame_busting_);
+      bool enable_frame_busting_, int load_flags);
 
   // Accessors.
   int id() const {
@@ -180,6 +180,7 @@ class PluginUrlRequest {
   std::string referrer_;
   std::string extra_headers_;
   ResourceType::Type resource_type_;
+  int load_flags_;
   ScopedComPtr<IStream> upload_data_;
 };
 

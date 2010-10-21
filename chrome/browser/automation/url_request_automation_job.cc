@@ -431,7 +431,8 @@ void URLRequestAutomationJob::StartAsync() {
     referrer.spec(),
     new_request_headers.ToString(),
     request_->get_upload(),
-    resource_type
+    resource_type,
+    request_->load_flags()
   };
 
   DCHECK(message_filter_);

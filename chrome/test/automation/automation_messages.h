@@ -302,6 +302,7 @@ struct AutomationURLRequest {
   std::string extra_request_headers;
   scoped_refptr<net::UploadData> upload_data;
   int resource_type;  // see webkit/glue/resource_type.h
+  int load_flags; // see net/base/load_flags.h
 };
 
 // Traits for AutomationURLRequest structure to pack/unpack.
@@ -315,6 +316,7 @@ struct ParamTraits<AutomationURLRequest> {
     WriteParam(m, p.extra_request_headers);
     WriteParam(m, p.upload_data);
     WriteParam(m, p.resource_type);
+    WriteParam(m, p.load_flags);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->url) &&
@@ -322,7 +324,8 @@ struct ParamTraits<AutomationURLRequest> {
            ReadParam(m, iter, &p->referrer) &&
            ReadParam(m, iter, &p->extra_request_headers) &&
            ReadParam(m, iter, &p->upload_data) &&
-           ReadParam(m, iter, &p->resource_type);
+           ReadParam(m, iter, &p->resource_type) &&
+           ReadParam(m, iter, &p->load_flags);
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("(");
@@ -337,6 +340,8 @@ struct ParamTraits<AutomationURLRequest> {
     LogParam(p.upload_data, l);
     l->append(", ");
     LogParam(p.resource_type, l);
+    l->append(", ");
+    LogParam(p.load_flags, l);
     l->append(")");
   }
 };

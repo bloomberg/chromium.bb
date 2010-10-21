@@ -20,6 +20,7 @@
 #include "chrome_frame/urlmon_url_request_private.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/http/http_response_headers.h"
 
@@ -425,6 +426,15 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     return E_INVALIDARG;
 
   *bind_flags = BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE | BINDF_PULLDATA;
+
+  // TODO(ananta)
+  // Look into whether the other load flags need to be supported in chrome
+  // frame.
+  if (load_flags_ & net::LOAD_VALIDATE_CACHE)
+    *bind_flags |= BINDF_RESYNCHRONIZE;
+
+  if (load_flags_ & net::LOAD_BYPASS_CACHE)
+    *bind_flags |= BINDF_GETNEWESTVERSION;
 
   bool upload_data = false;
 
@@ -990,7 +1000,8 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
       request_info.extra_request_headers,
       request_info.upload_data,
       static_cast<ResourceType::Type>(request_info.resource_type),
-      enable_frame_busting_);
+      enable_frame_busting_,
+      request_info.load_flags);
   new_request->set_parent_window(notification_window_);
   new_request->set_privileged_mode(privileged_mode_);
 
