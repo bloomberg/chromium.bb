@@ -25,8 +25,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
-#include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
+#include "native_client/src/trusted/service_runtime/sel_qualify.h"
 
 static int const kSrpcFd = 5;
 
@@ -50,6 +49,8 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   /* Mac dynamic libraries cannot access the environ variable directly. */
   envp = (const char **) *_NSGetEnviron();
 #else
+  /* Overzealous code style check is overzealous. */
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
   extern char **environ;
   envp = (const char **) environ;
 #endif
@@ -89,18 +90,8 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   /*
    * Ensure this operating system platform is supported.
    */
-  if (!NaClOsIsSupported()) {
-    errcode = LOAD_UNSUPPORTED_OS_PLATFORM;
-    nap->module_load_status = errcode;
-    fprintf(stderr, "Error while loading in SelMain: %s\n",
-            NaClErrorString(errcode));
-  }
-
-  /*
-   * Ensure this platform has Data Execution Prevention enabled.
-   */
-  if (!NaClCheckDEP()) {
-    errcode = LOAD_DEP_UNSUPPORTED;
+  errcode = NaClRunSelQualificationTests();
+  if (LOAD_OK != errcode) {
     nap->module_load_status = errcode;
     fprintf(stderr, "Error while loading in SelMain: %s\n",
             NaClErrorString(errcode));

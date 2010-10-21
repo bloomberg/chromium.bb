@@ -29,9 +29,6 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-#include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
-#include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
-
 #ifdef NACL_BREAKPAD
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #endif
@@ -44,6 +41,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/outer_sandbox.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_qualify.h"
 
 /* may redefine main() to install a hook */
 #if defined(HAVE_SDL)
@@ -483,14 +481,18 @@ int main(int  argc,
    */
 
   /*
-   * Ensure this operating system platform is supported.
+   * Ensure the platform qualification checks pass.
    */
-  if (!skip_qualification && !NaClOsIsSupported()) {
-    errcode = LOAD_UNSUPPORTED_OS_PLATFORM;
-    nap->module_load_status = errcode;
-    fprintf(stderr, "Error while loading \"%s\": %s\n",
-            NULL != nacl_file ? nacl_file : "(no file, to-be-supplied-via-RPC)",
-            NaClErrorString(errcode));
+  if (!skip_qualification) {
+    NaClErrorCode pq_error = NaClRunSelQualificationTests();
+    if (LOAD_OK != pq_error) {
+      errcode = pq_error;
+      nap->module_load_status = pq_error;
+      fprintf(stderr, "Error while loading \"%s\": %s\n",
+              NULL != nacl_file ? nacl_file
+                                : "(no file, to-be-supplied-via-RPC)",
+              NaClErrorString(errcode));
+    }
   }
 
   if (!rpc_supplies_nexe) {

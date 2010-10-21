@@ -27,8 +27,6 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
-#include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
-#include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/expiration.h"
@@ -37,6 +35,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/web_worker_stub.h"
 
 static int const kSrpcFd = 5;
@@ -139,15 +138,10 @@ int NaClStartNativeWebWorker(char *buffer,
   /*
    * Ensure this operating system platform is supported.
    */
-  if (!NaClOsIsSupported()) {
+  if (LOAD_OK != NaClRunSelQualificationTests()) {
     goto done;
   }
-  /*
-   * Ensure this platform has Data Execution Prevention enabled.
-   */
-  if (!NaClCheckDEP()) {
-    goto done;
-  }
+
   /*
    * Load the NaCl module from the memory file.
    */
