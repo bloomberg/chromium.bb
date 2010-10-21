@@ -31,7 +31,7 @@ const char unknown_string[] = "unknown_other_switch";
 
 // Tests a simple string pref on the command line.
 TEST(CommandLinePrefStoreTest, SimpleStringPref) {
-  CommandLine cl(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
@@ -43,7 +43,7 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
 
 // Tests a simple boolean pref on the command line.
 TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
-  CommandLine cl(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitch(switches::kNoProxyServer);
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
@@ -55,7 +55,7 @@ TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
 
 // Tests a command line with no recognized prefs.
 TEST(CommandLinePrefStoreTest, NoPrefs) {
-  CommandLine cl(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitchASCII(unknown_bool, "a value");
   CommandLinePrefStore store(&cl);
@@ -72,7 +72,7 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
 
 // Tests a complex command line with multiple known and unknown switches.
 TEST(CommandLinePrefStoreTest, MultipleSwitches) {
-  CommandLine cl(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitch(unknown_string);
   cl.AppendSwitch(switches::kProxyAutoDetect);
   cl.AppendSwitchASCII(switches::kProxyServer, "proxy");
@@ -99,7 +99,7 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
 
 // Tests proxy switch validation.
 TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
-  CommandLine cl(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cl(CommandLine::NO_PROGRAM);
 
   // No switches.
   TestCommandLinePrefStore store(&cl);
@@ -119,7 +119,7 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
   EXPECT_FALSE(store3.ProxySwitchesAreValid());
 
   // All proxy switches except no-proxy.
-  CommandLine cl2(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cl2(CommandLine::NO_PROGRAM);
   cl2.AppendSwitch(switches::kProxyAutoDetect);
   cl2.AppendSwitchASCII(switches::kProxyServer, "server");
   cl2.AppendSwitchASCII(switches::kProxyPacUrl, "url");

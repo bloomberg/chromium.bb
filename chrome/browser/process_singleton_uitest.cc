@@ -72,7 +72,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
 
     // Add the normal test-mode switches, except for the ones we're adding
     // ourselves.
-    CommandLine standard_switches(CommandLine::ARGUMENTS_ONLY);
+    CommandLine standard_switches(CommandLine::NO_PROGRAM);
     test_launcher_utils::PrepareBrowserCommandLineForTests(&standard_switches);
     const CommandLine::SwitchMap& switch_map = standard_switches.GetSwitches();
     for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();

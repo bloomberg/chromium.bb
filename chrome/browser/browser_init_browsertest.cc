@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   ASSERT_EQ(popup->type(), Browser::TYPE_POPUP);
   ASSERT_EQ(popup, observer.added_browser_);
 
-  CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
+  CommandLine dummy(CommandLine::NO_PROGRAM);
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy);
   // This should create a new window, but re-use the profile from |popup|. If
   // it used a NULL or invalid profile, it would crash.
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
   const char* testurlstr = "http://localhost/";
   const GURL testurl(testurlstr);
-  CommandLine cmdline(CommandLine::ARGUMENTS_ONLY);
+  CommandLine cmdline(CommandLine::NO_PROGRAM);
   cmdline.AppendArg(testurlstr);
   cmdline.AppendArg("javascript:alert('boo')");
   cmdline.AppendArg(testurlstr);

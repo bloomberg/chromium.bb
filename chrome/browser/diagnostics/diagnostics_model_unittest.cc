@@ -12,7 +12,7 @@ class DiagnosticsModelTest : public testing::Test {
  protected:
   DiagnosticsModelTest()
       : model_(NULL),
-        cmdline_(CommandLine::ARGUMENTS_ONLY) {
+        cmdline_(CommandLine::NO_PROGRAM) {
   }
 
   virtual ~DiagnosticsModelTest() { }

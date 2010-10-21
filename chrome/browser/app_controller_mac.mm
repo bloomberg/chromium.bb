@@ -938,7 +938,7 @@ void RecordLastRunAppBundlePath() {
     browser->window()->Show();
   }
 
-  CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
+  CommandLine dummy(CommandLine::NO_PROGRAM);
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy);
   launch.OpenURLsInBrowser(browser, false, urls);
 }

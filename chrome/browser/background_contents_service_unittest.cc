@@ -24,7 +24,7 @@ class BackgroundContentsServiceTest : public testing::Test {
   BackgroundContentsServiceTest() {}
   ~BackgroundContentsServiceTest() {}
   void SetUp() {
-    command_line_.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
+    command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   }
 
   DictionaryValue* GetPrefs(Profile* profile) {

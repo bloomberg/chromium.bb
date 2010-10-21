@@ -277,7 +277,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     UITest::TearDown();
     // Clear all arguments for session restore, or the number of open tabs
     // will grow with each restore.
-    launch_arguments_ = CommandLine(CommandLine::ARGUMENTS_ONLY);
+    launch_arguments_ = CommandLine(CommandLine::NO_PROGRAM);
     // The session will be restored once per cycle for numCycles test cycles,
     // and each time, UITest::SetUp will wait for |tab_count| tabs to
     // finish loading.

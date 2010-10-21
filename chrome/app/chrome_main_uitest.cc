@@ -19,7 +19,7 @@ TEST_F(ChromeMainTest, SecondLaunch) {
   include_testing_id_ = false;
 
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(
-                  CommandLine(CommandLine::ARGUMENTS_ONLY)));
+                  CommandLine(CommandLine::NO_PROGRAM)));
 
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 }
@@ -29,7 +29,7 @@ TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
 
   FilePath test_file = test_data_directory_.AppendASCII("empty.html");
 
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendArgPath(test_file);
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
 

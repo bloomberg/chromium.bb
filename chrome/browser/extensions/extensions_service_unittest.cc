@@ -2532,7 +2532,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
       .AppendASCII(ExtensionsService::kInstallDirectoryName);
 
   // By default, we are enabled.
-  command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
+  command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
   service = profile->CreateExtensionsService(command_line.get(),
                                              install_dir);
   EXPECT_TRUE(service->extensions_enabled());
@@ -2564,7 +2564,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
+  command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
   service = profile->CreateExtensionsService(command_line.get(),
                                              install_dir);
   EXPECT_FALSE(service->extensions_enabled());

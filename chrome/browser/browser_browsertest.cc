@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   PinnedTabCodec::WritePinnedTabs(browser()->profile());
 
   // Simulate launching again.
-  CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
+  CommandLine dummy(CommandLine::NO_PROGRAM);
   BrowserInit::LaunchWithProfile launch(FilePath(), dummy);
   launch.profile_ = browser()->profile();
   launch.ProcessStartupURLs(std::vector<GURL>());

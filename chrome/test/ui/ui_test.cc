@@ -90,7 +90,7 @@ std::string UITestBase::log_level_ = "";
 // #define WAIT_FOR_DEBUGGER_ON_OPEN 1
 
 UITestBase::UITestBase()
-    : launch_arguments_(CommandLine::ARGUMENTS_ONLY),
+    : launch_arguments_(CommandLine::NO_PROGRAM),
       expected_errors_(0),
       expected_crashes_(0),
       homepage_(chrome::kAboutBlankURL),
@@ -110,7 +110,7 @@ UITestBase::UITestBase()
 }
 
 UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
-    : launch_arguments_(CommandLine::ARGUMENTS_ONLY),
+    : launch_arguments_(CommandLine::NO_PROGRAM),
       expected_errors_(0),
       expected_crashes_(0),
       homepage_(chrome::kAboutBlankURL),

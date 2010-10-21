@@ -58,7 +58,7 @@ void RenderViewFakeResourcesTest::SetUp() {
   // to fetch network resources.  These are then served canned content
   // in OnRequestResource().
   sandbox_init_wrapper_.reset(new SandboxInitWrapper);
-  command_line_.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
+  command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   params_.reset(new MainFunctionParams(*command_line_,
                                        *sandbox_init_wrapper_, NULL));
   platform_.reset(new RendererMainPlatformDelegate(*params_));

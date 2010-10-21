@@ -81,7 +81,7 @@ TEST_F(AboutFlagsTest, AddTwoFlagsRemoveBoth) {
 TEST_F(AboutFlagsTest, ConvertFlagsToSwitches) {
   SetExperimentEnabled(&prefs_, kFlags1, true);
 
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("foo");
 
   EXPECT_TRUE(command_line.HasSwitch("foo"));
@@ -113,7 +113,7 @@ TEST_F(AboutFlagsTest, RemoveFlagSwitches) {
   EXPECT_TRUE(switch_list.find("foo") != switch_list.end());
 
   // Call ConvertFlagsToSwitches(), then RemoveFlagsSwitches() again.
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch("foo");
   ConvertFlagsToSwitches(&prefs_, &command_line);
   RemoveFlagsSwitches(&switch_list);

@@ -421,7 +421,7 @@ bool UpdateJumpList(const wchar_t* app_id,
     return false;
 
   // Retrieve the command-line switches of this process.
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   FilePath user_data_dir = CommandLine::ForCurrentProcess()->
       GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())

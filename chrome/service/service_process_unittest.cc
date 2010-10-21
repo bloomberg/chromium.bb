@@ -17,7 +17,7 @@
 TEST(ServiceProcessTest, DISABLED_Run) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
   EXPECT_TRUE(process.Teardown());
 }
@@ -27,7 +27,7 @@ TEST(ServiceProcessTest, DISABLED_Run) {
 TEST(ServiceProcessTest, DISABLED_RunChromoting) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
 
   // Then config the chromoting host and start it.
@@ -52,7 +52,7 @@ ACTION_P(QuitMessageLoop, message_loop) {
 TEST(ServiceProcessTest, DISABLED_RunChromotingUntilShutdown) {
   MessageLoopForUI main_message_loop;
   MockServiceProcess process;
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
 
   // Expect chromoting shutdown be called because the login token is invalid.

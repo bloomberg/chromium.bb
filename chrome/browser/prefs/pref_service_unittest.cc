@@ -186,7 +186,7 @@ TEST(PrefServiceTest, Observers) {
 }
 
 TEST(PrefServiceTest, ProxyFromCommandLineNotPolicy) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   TestingPrefService prefs(NULL, &command_line);
   browser::RegisterUserPrefs(&prefs);
@@ -198,7 +198,7 @@ TEST(PrefServiceTest, ProxyFromCommandLineNotPolicy) {
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kProxyBypassList, "123");
   command_line.AppendSwitchASCII(switches::kProxyPacUrl, "456");
   command_line.AppendSwitchASCII(switches::kProxyServer, "789");
@@ -242,7 +242,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kProxyBypassList, "123");
   command_line.AppendSwitchASCII(switches::kProxyPacUrl, "456");
   command_line.AppendSwitchASCII(switches::kProxyServer, "789");
@@ -278,7 +278,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kNoProxyServer);
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
@@ -311,7 +311,7 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
-  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
