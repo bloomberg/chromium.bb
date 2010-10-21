@@ -67,6 +67,18 @@ static std::string SafeString(const char* s) {
   return s ? std::string(s) : std::string();
 }
 
+static bool EnsureCrosLoaded() {
+  if (!CrosLibrary::Get()->EnsureLoaded()) {
+    return false;
+  } else {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      LOG(ERROR) << "chromeos_library calls made from non UI thread!";
+      NOTREACHED();
+    }
+    return true;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
@@ -86,7 +98,7 @@ void Network::ConfigureFromService(const ServiceInfo& service) {
   device_path_ = SafeString(service.device_path);
   ip_address_.clear();
   // If connected, get ip config.
-  if (connected() && service.device_path) {
+  if (EnsureCrosLoaded() && connected() && service.device_path) {
     IPConfigStatus* ipconfig_status = ListIPConfigs(service.device_path);
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; i++) {
@@ -199,7 +211,7 @@ CellularNetwork::CellularNetwork()
 }
 
 bool CellularNetwork::StartActivation() const {
-  if (!CrosLibrary::Get()->EnsureLoaded())
+  if (!EnsureCrosLoaded())
     return false;
   return ActivateCellularModem(service_path_.c_str(), NULL);
 }
@@ -451,7 +463,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         enabled_devices_(0),
         connected_devices_(0),
         offline_mode_(false) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       Init();
     } else {
       InitTestData();
@@ -459,11 +471,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   ~NetworkLibraryImpl() {
-    if (network_status_connection_) {
-      DisconnectMonitorNetwork(network_status_connection_);
-    }
-    if (data_plan_monitor_) {
-      DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
+    if (EnsureCrosLoaded()) {
+      if (network_status_connection_) {
+        DisconnectMonitorNetwork(network_status_connection_);
+      }
+      if (data_plan_monitor_) {
+        DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
+      }
     }
   }
 
@@ -549,13 +563,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void RequestWifiScan() {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       RequestScan(TYPE_WIFI);
     }
   }
 
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
-    if (!CrosLibrary::Get()->EnsureLoaded())
+    if (!EnsureCrosLoaded())
       return false;
     DeviceNetworkList* network_list = GetDeviceNetworkList();
     if (network_list == NULL)
@@ -583,7 +597,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       if (ConnectToNetworkWithCertInfo(network.service_path().c_str(),
           password.empty() ? NULL : password.c_str(),
           identity.empty() ? NULL : identity.c_str(),
@@ -608,7 +622,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       // First create a service from hidden network.
       ServiceInfo* service = GetWifiService(ssid.c_str(),
                                             SECURITY_UNKNOWN);
@@ -631,7 +645,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void ConnectToCellularNetwork(CellularNetwork network) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       if (ConnectToNetwork(network.service_path().c_str(), NULL)) {
         // Update local cache and notify listeners.
         CellularNetwork* cellular = GetWirelessNetworkByPath(
@@ -646,13 +660,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void RefreshCellularDataPlans(const CellularNetwork& network) {
-    if (!CrosLibrary::Get()->EnsureLoaded())
+    if (!EnsureCrosLoaded())
       return;
     RequestCellularDataPlanUpdate(network.service_path().c_str());
   }
 
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       if (DisconnectFromNetwork(network.service_path().c_str())) {
         // Update local cache and notify listeners.
         if (network.type() == TYPE_WIFI) {
@@ -683,7 +697,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       *cellular = network;
 
     // Update the cellular network with libcros.
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       SetAutoConnect(network.service_path().c_str(), network.auto_connect());
     }
   }
@@ -696,7 +710,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       *wifi = network;
 
     // Update the wifi network with libcros.
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       SetPassphrase(
           network.service_path().c_str(), network.passphrase().c_str());
       SetIdentity(network.service_path().c_str(), network.identity().c_str());
@@ -706,7 +720,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void ForgetWirelessNetwork(const std::string& service_path) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       if (DeleteRememberedService(service_path.c_str())) {
         // Update local cache and notify listeners.
         remembered_wifi_networks_.erase(
@@ -759,7 +773,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual void EnableOfflineMode(bool enable) {
-    if (!CrosLibrary::Get()->EnsureLoaded())
+    if (!EnsureCrosLoaded())
       return;
 
     // If network device is already enabled/disabled, then don't do anything.
@@ -782,7 +796,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                              std::string* hardware_address) {
     hardware_address->clear();
     NetworkIPConfigVector ipconfig_vector;
-    if (!device_path.empty()) {
+    if (EnsureCrosLoaded() && !device_path.empty()) {
       IPConfigStatus* ipconfig_status = ListIPConfigs(device_path.c_str());
       if (ipconfig_status) {
         for (int i = 0; i < ipconfig_status->size; i++) {
@@ -1038,7 +1052,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void UpdateSystemInfo() {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (EnsureCrosLoaded()) {
       UpdateNetworkStatus();
     }
   }
@@ -1070,7 +1084,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void EnableNetworkDeviceType(ConnectionType device, bool enable) {
-    if (!CrosLibrary::Get()->EnsureLoaded())
+    if (!EnsureCrosLoaded())
       return;
 
     // If network device is already enabled/disabled, then don't do anything.
