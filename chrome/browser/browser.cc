@@ -1844,9 +1844,7 @@ void Browser::OpenKeywordEditor() {
   UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
-    ShowOptionsTab(
-        chrome::kBrowserOptionsSubPage + kHashMark +
-        chrome::kSearchEnginesOptionsSubPage);
+    ShowOptionsTab(chrome::kSearchEnginesSubPage);
   } else {
     window_->ShowSearchEnginesDialog();
   }

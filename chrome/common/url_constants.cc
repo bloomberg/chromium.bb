@@ -146,19 +146,20 @@ const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
 
 // Option sub pages.
-const char kDefaultOptionsSubPage[] =  "";
-const char kBrowserOptionsSubPage[] =  "browser";
-const char kPersonalOptionsSubPage[] =  "personal";
 const char kAdvancedOptionsSubPage[] =  "advanced";
 const char kAutoFillSubPage[] = "autoFillOptions";
-const char kSearchEnginesOptionsSubPage[] = "editSearchEngineOverlay";
+const char kBrowserOptionsSubPage[] =  "browser";
 const char kClearBrowserDataSubPage[] = "clearBrowserDataOverlay";
-const char kImportDataSubPage[] = "importDataOverlay";
 const char kContentSettingsSubPage[] = "content";
+const char kDefaultOptionsSubPage[] =  "";
+const char kImportDataSubPage[] = "importDataOverlay";
+const char kPersonalOptionsSubPage[] =  "personal";
+const char kSearchEnginesOptionsSubPage[] = "editSearchEngineOverlay";
+const char kSearchEnginesSubPage[] = "searchEngines";
 #if defined(OS_CHROMEOS)
-const char kSystemOptionsSubPage[] = "system";
-const char kLanguageOptionsSubPage[] = "language";
 const char kInternetOptionsSubPage[] = "internet";
+const char kLanguageOptionsSubPage[] = "language";
+const char kSystemOptionsSubPage[] = "system";
 #endif
 
 void RegisterChromeSchemes() {
