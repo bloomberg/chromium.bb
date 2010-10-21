@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -91,12 +92,31 @@ TEST_F(RedirectTest, Client) {
 TEST_F(RedirectTest, ClientEmptyReferer) {
   ASSERT_TRUE(test_server_.Start());
 
+  // Create the file contents, which will do a redirect to the
+  // test server.
   GURL final_url = test_server_.GetURL(std::string());
-  FilePath test_file(test_data_directory_);
-  test_file = test_file.AppendASCII("file_client_redirect.html");
-  GURL first_url = net::FilePathToFileURL(test_file);
+  ASSERT_TRUE(final_url.is_valid());
+  std::string file_redirect_contents = StringPrintf(
+      "<html>"
+      "<head></head>"
+      "<body onload=\"document.location='%s'\"></body>"
+      "</html>",
+      final_url.spec().c_str());
 
-  // The client redirect appears as two page visits in the browser.
+  // Write the contents to a temporary file.
+  ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  FilePath temp_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),
+                                                  &temp_file));
+  ASSERT_EQ(static_cast<int>(file_redirect_contents.size()),
+            file_util::WriteFile(temp_file,
+                                 file_redirect_contents.data(),
+                                 file_redirect_contents.size()));
+
+  // Navigate to the file through the browser. The client redirect will appear
+  // as two page visits in the browser.
+  GURL first_url = net::FilePathToFileURL(temp_file);
   NavigateToURLBlockUntilNavigationsComplete(first_url, 2);
 
   std::vector<GURL> redirects;
