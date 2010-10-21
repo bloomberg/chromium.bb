@@ -265,12 +265,6 @@ void PersonalOptionsHandler::Initialize() {
                  NotificationService::AllSources());
   ObserveThemeChanged();
 
-  // Explicitly enable synchronization option if needed.
-  scoped_ptr<Value> is_sync_enabled(
-      Value::CreateBooleanValue(ProfileSyncService::IsSyncEnabled()));
-  dom_ui_->CallJavascriptFunction(L"PersonalOptions.enableSync",
-                                  *is_sync_enabled);
-
   ProfileSyncService* sync_service =
       dom_ui_->GetProfile()->GetProfileSyncService();
   if (sync_service) {
