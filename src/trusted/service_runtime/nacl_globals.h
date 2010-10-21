@@ -49,9 +49,6 @@ void NaClInitGlobals(void);
 /* hack for gdb */
 extern uintptr_t nacl_global_xlate_base;
 
-struct NaClApp        *GetCurProc(void);
-struct NaClAppThread  *GetCurThread(void);
-
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_GLOBALS_H__ */
