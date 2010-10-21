@@ -709,12 +709,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       if (DeleteRememberedService(service_path.c_str())) {
         // Update local cache and notify listeners.
-        std::remove_if(remembered_wifi_networks_.begin(),
-                       remembered_wifi_networks_.end(),
-                       WirelessNetwork::ServicePathEq(service_path));
-        std::remove_if(remembered_cellular_networks_.begin(),
-                       remembered_cellular_networks_.end(),
-                       WirelessNetwork::ServicePathEq(service_path));
+        remembered_wifi_networks_.erase(
+            std::remove_if(remembered_wifi_networks_.begin(),
+                           remembered_wifi_networks_.end(),
+                           WirelessNetwork::ServicePathEq(service_path)),
+            remembered_wifi_networks_.end());
+        remembered_cellular_networks_.erase(
+            std::remove_if(remembered_cellular_networks_.begin(),
+                           remembered_cellular_networks_.end(),
+                           WirelessNetwork::ServicePathEq(service_path)),
+            remembered_cellular_networks_.end());
         NotifyNetworkChanged();
       }
     }
