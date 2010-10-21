@@ -54,11 +54,6 @@ class PromptBrowserLoginFunction : public AsyncExtensionFunction,
   virtual bool RunImpl();
 
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.promptBrowserLogin");
-
- private:
-  // This indicates whether we're currently registered as an observer of the
-  // ProfileSyncService, and need to unregister ourselves at destruction.
-  bool observing_sync_state_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_

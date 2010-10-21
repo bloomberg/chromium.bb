@@ -127,10 +127,7 @@ bool SetStoreLoginFunction::RunImpl() {
   return true;
 }
 
-PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {
-  if (observing_sync_state_)
-    GetSyncService(profile_)->RemoveObserver(this);
-}
+PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {}
 
 bool PromptBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
@@ -150,7 +147,6 @@ bool PromptBrowserLoginFunction::RunImpl() {
   // Matched with a Release in OnStateChanged().
   AddRef();
 
-  observing_sync_state_ = true;
   sync_service->AddObserver(this);
   // TODO(mirandac/estade) - make use of |preferred_email| to pre-populate the
   // browser login dialog if it was set to non-empty above.
@@ -164,6 +160,7 @@ void PromptBrowserLoginFunction::OnStateChanged() {
   ProfileSyncService* sync_service = GetSyncService(profile_);
   // If the setup is finished, we'll report back what happened.
   if (!sync_service->SetupInProgress()) {
+    sync_service->RemoveObserver(this);
     DictionaryValue* dictionary = new DictionaryValue();
 
     // TODO(asargent) - send the browser login token here too if available.
