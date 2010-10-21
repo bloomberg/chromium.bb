@@ -1209,6 +1209,9 @@ class NotificationType {
     // This is only sent from ChromeOS's TabCloseableStateWatcher.
     TAB_CLOSEABLE_STATE_CHANGED,
 
+    // Sent each time the InstantController is updated.
+    INSTANT_CONTROLLER_UPDATED,
+
     // Password Store ----------------------------------------------------------
     // This notification is sent whenenever login entries stored in the password
     // store are changed. The detail of this notification is a list of changes

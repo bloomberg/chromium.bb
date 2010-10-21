@@ -66,6 +66,10 @@ class OmniBoxUsageObserver : public NotificationObserver {
   OmniBoxUsageObserver() {
     registrar_.Add(this, NotificationType::OMNIBOX_OPENED_URL,
                    NotificationService::AllSources());
+    // If instant is enabled we'll start searching as soon as the user starts
+    // typing in the omnibox (which triggers INSTANT_CONTROLLER_UPDATED).
+    registrar_.Add(this, NotificationType::INSTANT_CONTROLLER_UPDATED,
+                   NotificationService::AllSources());
     omnibox_used_ = false;
     DCHECK(!instance_);
     instance_ = this;

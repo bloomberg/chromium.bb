@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 
@@ -84,6 +85,11 @@ void InstantController::Update(TabContents* tab_contents,
   } else {
     ScheduleUpdate(match.destination_url);
   }
+
+  NotificationService::current()->Notify(
+      NotificationType::INSTANT_CONTROLLER_UPDATED,
+      Source<InstantController>(this),
+      NotificationService::NoDetails());
 }
 
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
