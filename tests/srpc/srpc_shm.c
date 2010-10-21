@@ -31,7 +31,9 @@ NaClSrpcError GetShmHandle(NaClSrpcChannel *channel,
     map_addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, desc, 0);
     if (MAP_FAILED == map_addr) {
       printf("GetShmHandle: mmap failed\n");
-      /* TODO(sehr): close handle */
+      if (close(desc) < 0) {
+        printf("GetShmHandle: close failed\n");
+      }
       desc = -1;
     }
   } else {
@@ -43,7 +45,7 @@ NaClSrpcError GetShmHandle(NaClSrpcChannel *channel,
 }
 
 /*
- * GetInvalidHandle creates and returns a shared memory region.
+ * GetInvalidHandle returns an invalid shared memory descriptor.
  */
 NaClSrpcError GetInvalidHandle(NaClSrpcChannel *channel,
                                NaClSrpcArg **in_args,
