@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/common/dx_diag_node.h"
 
@@ -22,6 +23,10 @@ class GPUInfo {
 
   // Returns whether this GPUInfo has been initialized with information
   bool initialized() const;
+
+  // The amount of time taken to get from the process starting to the message
+  // loop being pumped.
+  base::TimeDelta initialization_time() const;
 
   // Return the DWORD (uint32) representing the graphics card vendor id.
   uint32 vendor_id() const;
@@ -55,6 +60,8 @@ class GPUInfo {
   // semantics are available.
   bool can_lose_context() const;
 
+  void SetInitializationTime(const base::TimeDelta& initialization_time);
+
   // Populate variables with passed in values
   void SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
                        const std::wstring& driver_version,
@@ -72,6 +79,7 @@ class GPUInfo {
 
  private:
   bool initialized_;
+  base::TimeDelta initialization_time_;
   uint32 vendor_id_;
   uint32 device_id_;
   std::wstring driver_version_;

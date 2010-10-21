@@ -16,6 +16,10 @@ bool GPUInfo::initialized() const {
   return initialized_;
 }
 
+base::TimeDelta GPUInfo::initialization_time() const {
+  return initialization_time_;
+}
+
 uint32 GPUInfo::vendor_id() const {
   return vendor_id_;
 }
@@ -44,6 +48,12 @@ uint32 GPUInfo::gl_version() const {
 bool GPUInfo::can_lose_context() const {
   return can_lose_context_;
 }
+
+void GPUInfo::SetInitializationTime(
+    const base::TimeDelta& initialization_time) {
+  initialization_time_ = initialization_time;
+}
+
 
 void GPUInfo::SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
                               const std::wstring& driver_version,

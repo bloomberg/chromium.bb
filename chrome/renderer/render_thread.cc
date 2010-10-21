@@ -772,12 +772,12 @@ void RenderThread::EstablishGpuChannel() {
   if (gpu_channel_.get()) {
     // Do nothing if we already have a GPU channel or are already
     // establishing one.
-    if (gpu_channel_->state() == GpuChannelHost::UNCONNECTED ||
-        gpu_channel_->state() == GpuChannelHost::CONNECTED)
+    if (gpu_channel_->state() == GpuChannelHost::kUnconnected ||
+        gpu_channel_->state() == GpuChannelHost::kConnected)
       return;
 
     // Recreate the channel if it has been lost.
-    if (gpu_channel_->state() == GpuChannelHost::LOST)
+    if (gpu_channel_->state() == GpuChannelHost::kLost)
       gpu_channel_ = NULL;
   }
 
@@ -798,7 +798,7 @@ GpuChannelHost* RenderThread::GetGpuChannel() {
   if (!gpu_channel_.get())
     return NULL;
 
-  if (gpu_channel_->state() != GpuChannelHost::CONNECTED)
+  if (gpu_channel_->state() != GpuChannelHost::kConnected)
     return NULL;
 
   return gpu_channel_.get();

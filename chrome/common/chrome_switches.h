@@ -67,6 +67,7 @@ extern const char kDisableExtensions[];
 extern const char kDisableFileSystem[];
 extern const char kDisableGLSLTranslator[];
 extern const char kDisableGeolocation[];
+extern const char kDisableGpuWatchdog[];
 extern const char kDisableHangMonitor[];
 extern const char kDisableHistoryQuickProvider[];
 extern const char kDisableHistoryURLProvider[];

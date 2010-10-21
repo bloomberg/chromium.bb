@@ -28,13 +28,6 @@ class GpuProcessHost : public BrowserChildProcessHost {
   // Getter for the singleton. This will return NULL on failure.
   static GpuProcessHost* Get();
 
-  // Tells the GPU process to crash. Useful for testing.
-  static void SendAboutGpuCrash();
-
-  // Tells the GPU process to let its main thread enter an infinite loop.
-  // Useful for testing.
-  static void SendAboutGpuHang();
-
   // Shutdown routine, which should only be called upon process
   // termination.
   static void Shutdown();

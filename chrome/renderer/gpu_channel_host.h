@@ -30,12 +30,12 @@ class GpuChannelHost : public IPC::Channel::Listener,
  public:
   enum State {
     // Not yet connected.
-    UNCONNECTED,
+    kUnconnected,
     // Ready to use.
-    CONNECTED,
+    kConnected,
     // An error caused the host to become disconnected. Recreate channel to
     // reestablish connection.
-    LOST
+    kLost
   };
 
   // Called on the render thread
