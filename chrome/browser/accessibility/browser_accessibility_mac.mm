@@ -33,12 +33,15 @@ void BrowserAccessibilityMac::Initialize() {
 
 void BrowserAccessibilityMac::ReleaseReference() {
   if (browser_accessibility_cocoa_) {
-    // Relinquish ownership of the cocoa obj.
-    [browser_accessibility_cocoa_ release];
+    BrowserAccessibilityCocoa* temp = browser_accessibility_cocoa_;
     browser_accessibility_cocoa_ = nil;
+    // Relinquish ownership of the cocoa obj.
+    [temp release];
     // At this point, other processes may have a reference to
-    // browser_accessibility_cocoa_. When the retain count hits zero, it will
+    // the cocoa object. When the retain count hits zero, it will
     // destroy us in dealloc.
+    // For that reason, do *not* make any more calls here after
+    // as we might have been deleted.
   }
 }
 
