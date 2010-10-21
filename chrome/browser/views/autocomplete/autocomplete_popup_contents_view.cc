@@ -4,8 +4,6 @@
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 
-#include "unicode/ubidi.h"
-
 #include "app/bidi_line_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -26,9 +24,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "unicode/ubidi.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
+#include "views/painter.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -129,12 +129,57 @@ const int kOptInButtonPadding = 2;
 
 // Padding around the opt in view.
 const int kOptInLeftPadding = 12;
-const int kOptInRightPadding = 0;
+const int kOptInRightPadding = 6;
 const int kOptInTopPadding = 6;
 const int kOptInBottomPadding = 3;
 
 // Padding between the top of the opt-in view and the separator.
 const int kOptInSeparatorSpacing = 2;
+
+// Border for instant opt-in buttons. Consists of two 9 patch painters: one for
+// the normal state, the other for the pressed state.
+class OptInButtonBorder : public views::Border {
+ public:
+  OptInButtonBorder() {
+    border_painter_.reset(CreatePainter(IDR_OPT_IN_BUTTON));
+    border_pushed_painter_.reset(CreatePainter(IDR_OPT_IN_BUTTON_P));
+  }
+
+  virtual void Paint(const views::View& view, gfx::Canvas* canvas) const {
+    views::Painter* painter;
+    if (static_cast<const views::CustomButton&>(view).state() ==
+        views::CustomButton::BS_PUSHED) {
+      painter = border_pushed_painter_.get();
+    } else {
+      painter = border_painter_.get();
+    }
+    painter->Paint(view.width(), view.height(), canvas);
+  }
+
+  virtual void GetInsets(gfx::Insets* insets) const {
+    insets->Set(3, 8, 3, 8);
+  }
+
+ private:
+  // Creates 9 patch painter from the image with the id |image_id|.
+  views::Painter* CreatePainter(int image_id) {
+    SkBitmap* image =
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(image_id);
+    int w = image->width() / 2;
+    if (image->width() % 2 == 0)
+      w--;
+    int h = image->height() / 2;
+    if (image->height() % 2 == 0)
+      h--;
+    gfx::Insets insets(h, w, h, w);
+    return views::Painter::CreateImagePainter(*image, insets, true);
+  }
+
+  scoped_ptr<views::Painter> border_painter_;
+  scoped_ptr<views::Painter> border_pushed_painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(OptInButtonBorder);
+};
 
 }  // namespace
 
@@ -158,7 +203,7 @@ class AutocompletePopupContentsView::InstantOptInView :
     const int first_column_set = 1;
     views::GridLayout::Alignment v_align = views::GridLayout::CENTER;
     views::ColumnSet* column_set = layout->AddColumnSet(first_column_set);
-    column_set->AddColumn(views::GridLayout::LEADING, v_align, 1,
+    column_set->AddColumn(views::GridLayout::TRAILING, v_align, 1,
                           views::GridLayout::USE_PREF, 0, 0);
     column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
     column_set->AddColumn(views::GridLayout::CENTER, v_align, 0,
@@ -169,8 +214,8 @@ class AutocompletePopupContentsView::InstantOptInView :
     column_set->LinkColumnSizes(2, 4, -1);
     layout->StartRow(0, first_column_set);
     layout->AddView(label);
-    layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_NO_THANKS, button_font));
     layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_ENABLE, button_font));
+    layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_NO_THANKS, button_font));
   }
 
   virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
@@ -180,9 +225,11 @@ class AutocompletePopupContentsView::InstantOptInView :
   }
 
   virtual void Paint(gfx::Canvas* canvas) {
+    SkColor line_color = color_utils::AlphaBlend(GetColor(NORMAL, DIMMED_TEXT),
+                                                 GetColor(NORMAL, BACKGROUND),
+                                                 48);
     canvas->DrawLineInt(
-        GetColor(NORMAL, DIMMED_TEXT), 0, kOptInSeparatorSpacing, width(),
-        kOptInSeparatorSpacing);
+        line_color, 0, kOptInSeparatorSpacing, width(), kOptInSeparatorSpacing);
   }
 
  private:
@@ -194,6 +241,7 @@ class AutocompletePopupContentsView::InstantOptInView :
     // use.
     views::TextButton* button =
         new views::TextButton(this, l10n_util::GetString(id));
+    button->set_border(new OptInButtonBorder());
     button->SetNormalHasBorder(true);
     button->set_tag(id);
     button->SetFont(font);

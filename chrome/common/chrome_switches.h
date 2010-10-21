@@ -268,6 +268,7 @@ extern const char kServiceProcess[];
 extern const char kServiceAccountLsid[];
 extern const char kShowCompositedLayerBorders[];
 extern const char kShowIcons[];
+extern const char kShowInstantOptIn[];
 extern const char kShowPaintRects[];
 extern const char kSilentDumpOnDCHECK[];
 extern const char kSimpleDataSource[];
