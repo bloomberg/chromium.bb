@@ -658,13 +658,13 @@ void TopSites::StartQueryForMostVisited() {
           &cancelable_consumer_,
           NewCallback(this, &TopSites::OnTopSitesAvailable));
     } else {
-      LOG(INFO) << "History Service not available.";
+      VLOG(1) << "History Service not available.";
     }
   }
 }
 
 void TopSites::StartMigration() {
-  LOG(INFO) << "Starting migration to TopSites.";
+  VLOG(1) << "Starting migration to TopSites.";
   migration_in_progress_ = true;
   StartQueryForMostVisited();
   MigratePinnedURLs();

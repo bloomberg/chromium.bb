@@ -87,7 +87,7 @@ void PolicyDirLoader::Reload() {
 
   // There's a change, report it!
   if (changed) {
-    LOG(INFO) << "Policy reload from " << config_dir_.value() << " succeeded.";
+    VLOG(1) << "Policy reload from " << config_dir_.value() << " succeeded.";
     origin_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &PolicyDirLoader::NotifyPolicyChanged));
   }

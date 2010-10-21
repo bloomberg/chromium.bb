@@ -656,7 +656,7 @@ void MetricsService::Observe(NotificationType type,
   HandleIdleSinceLastTransmission(false);
 
   if (current_log_)
-    DLOG(INFO) << "METRICS: NUMBER OF EVENTS = " << current_log_->num_events();
+    DVLOG(1) << "METRICS: NUMBER OF EVENTS = " << current_log_->num_events();
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -1305,7 +1305,7 @@ void MetricsService::PreparePendingLogText() {
 
   if (Bzip2Compress(pending_log_text, &compressed_log_)) {
     // Allow security conscious users to see all metrics logs that we send.
-    LOG(INFO) << "COMPRESSED FOLLOWING METRICS LOG: " << pending_log_text;
+    VLOG(1) << "COMPRESSED FOLLOWING METRICS LOG: " << pending_log_text;
   } else {
     LOG(DFATAL) << "Failed to compress log for transmission.";
     // We can't discard the logs as other caller functions expect that
@@ -1365,8 +1365,8 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   current_fetch_.reset(NULL);  // We're not allowed to re-use it.
 
   // Confirm send so that we can move on.
-  LOG(INFO) << "METRICS RESPONSE CODE: " << response_code << " status=" <<
-      StatusToString(status);
+  VLOG(1) << "METRICS RESPONSE CODE: " << response_code
+          << " status=" << StatusToString(status);
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
@@ -1384,11 +1384,11 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
   }
 
   if (response_code != 200 && !discard_log) {
-    LOG(INFO) << "METRICS: transmission attempt returned a failure code: "
-      << response_code << ". Verify network connectivity";
+    VLOG(1) << "METRICS: transmission attempt returned a failure code: "
+            << response_code << ". Verify network connectivity";
     HandleBadResponseCode();
   } else {  // Successful receipt (or we are discarding log).
-    LOG(INFO) << "METRICS RESPONSE DATA: " << data;
+    VLOG(1) << "METRICS RESPONSE DATA: " << data;
     switch (state_) {
       case INITIAL_LOG_READY:
         state_ = SEND_OLD_INITIAL_LOGS;
@@ -1438,10 +1438,10 @@ void MetricsService::OnURLFetchComplete(const URLFetcher* source,
 }
 
 void MetricsService::HandleBadResponseCode() {
-  LOG(INFO) << "Verify your metrics logs are formatted correctly.  "
-               "Verify server is active at " << server_url_;
+  VLOG(1) << "Verify your metrics logs are formatted correctly.  Verify server "
+             "is active at " << server_url_;
   if (!pending_log()) {
-    LOG(INFO) << "METRICS: Recorder shutdown during log transmission.";
+    VLOG(1) << "METRICS: Recorder shutdown during log transmission.";
   } else {
     // Send progressively less frequently.
     DCHECK(kBackoff > 1.0);
@@ -1454,9 +1454,9 @@ void MetricsService::HandleBadResponseCode() {
           TimeDelta::FromSeconds(kMinSecondsPerLog);
     }
 
-    LOG(INFO) << "METRICS: transmission retry being scheduled in " <<
-        interlog_duration_.InSeconds() << " seconds for " <<
-        compressed_log_;
+    VLOG(1) << "METRICS: transmission retry being scheduled in "
+            << interlog_duration_.InSeconds() << " seconds for "
+            << compressed_log_;
   }
 }
 
@@ -1464,18 +1464,18 @@ void MetricsService::GetSettingsFromResponseData(const std::string& data) {
   // We assume that the file is structured as a block opened by <response>
   // and that inside response, there is a block opened by tag <chrome_config>
   // other tags are ignored for now except the content of <chrome_config>.
-  LOG(INFO) << "METRICS: getting settings from response data: " << data;
+  VLOG(1) << "METRICS: getting settings from response data: " << data;
 
   int data_size = static_cast<int>(data.size());
   if (data_size < 0) {
-    LOG(INFO) << "METRICS: server response data bad size: " << data_size <<
-      "; aborting extraction of settings";
+    VLOG(1) << "METRICS: server response data bad size: " << data_size
+            << "; aborting extraction of settings";
     return;
   }
   xmlDocPtr doc = xmlReadMemory(data.c_str(), data_size, "", NULL, 0);
   // If the document is malformed, we just use the settings that were there.
   if (!doc) {
-    LOG(INFO) << "METRICS: reading xml from server response data failed";
+    VLOG(1) << "METRICS: reading xml from server response data failed";
     return;
   }
 

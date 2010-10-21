@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -521,8 +521,8 @@ void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
                                            const ResponseCookies& cookies,
                                            const std::string& data) {
   upload_response_code_ = response_code;
-  LOG(INFO) << "Response code:" << response_code;
-  LOG(INFO) << "request url" << url;
+  VLOG(1) << "Response code: " << response_code;
+  VLOG(1) << "Request url: " << url;
   if (StartsWithASCII(url.spec(), kPicasawebUserPrefix, true)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

@@ -410,7 +410,7 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
       if (IsStringUTF8(value))
         prefs->SetString(key, value);
       else
-        LOG(INFO) << "Non UTF8 value for key " << key << ", ignored.";
+        VLOG(1) << "Non UTF8 value for key " << key << ", ignored.";
       continue;
     }
 
@@ -421,8 +421,8 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
       continue;
     }
 
-    LOG(ERROR) << "Invalid value found in Firefox pref file '" <<
-          pref_file.value() << "' value is '" << value << "'.";
+    LOG(ERROR) << "Invalid value found in Firefox pref file '"
+               << pref_file.value() << "' value is '" << value << "'.";
   }
   return true;
 }
@@ -434,7 +434,7 @@ std::string GetPrefsJsValue(const std::string& content,
                            std::string("\", ");
   size_t prop_index = content.find(search_for);
   if (prop_index == std::string::npos)
-    return "";
+    return std::string();
 
   size_t start = prop_index + search_for.length();
   size_t stop = std::string::npos;

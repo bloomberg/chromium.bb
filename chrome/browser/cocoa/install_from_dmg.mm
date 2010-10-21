@@ -393,8 +393,8 @@ bool MaybeInstallFromDiskImage() {
   if (![file_manager fileExistsAtPath:application_directory
                           isDirectory:&is_directory] ||
       !is_directory) {
-    LOG(INFO) << "No application directory at "
-              << [application_directory UTF8String];
+    VLOG(1) << "No application directory at "
+            << [application_directory UTF8String];
     return false;
   }
 
@@ -404,14 +404,14 @@ bool MaybeInstallFromDiskImage() {
       [application_directory stringByAppendingPathComponent:application_name];
 
   if ([file_manager fileExistsAtPath:target_path]) {
-    LOG(INFO) << "Something already exists at " << [target_path UTF8String];
+    VLOG(1) << "Something already exists at " << [target_path UTF8String];
     return false;
   }
 
   NSString* installer_path =
       [mac_util::MainAppBundle() pathForResource:@"install" ofType:@"sh"];
   if (!installer_path) {
-    LOG(INFO) << "Could not locate install.sh";
+    VLOG(1) << "Could not locate install.sh";
     return false;
   }
 

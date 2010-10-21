@@ -605,13 +605,13 @@ void UpdateAppIconDownloadProgress(int download_count,
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result)) {
-    LOG(INFO) << "failed creating a TaskbarList object: " << result;
+    VLOG(1) << "Failed creating a TaskbarList object: " << result;
     return;
   }
 
   result = taskbar->HrInit();
   if (FAILED(result)) {
-    LOG(ERROR) << "failed initializing an ITaskbarList3 interface.";
+    LOG(ERROR) << "Failed initializing an ITaskbarList3 interface.";
     return;
   }
 

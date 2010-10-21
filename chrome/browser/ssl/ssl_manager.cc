@@ -27,8 +27,8 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                                        URLRequest* request,
                                        int cert_error,
                                        net::X509Certificate* cert) {
-  DLOG(INFO) << "OnSSLCertificateError() cert_error: " << cert_error <<
-                " url: " << request->url().spec();
+  DVLOG(1) << "OnSSLCertificateError() cert_error: " << cert_error
+           << " url: " << request->url().spec();
 
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);

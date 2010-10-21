@@ -574,7 +574,7 @@ void BrowserThemeProvider::LoadThemePrefs() {
 }
 
 void BrowserThemeProvider::NotifyThemeChanged(Extension* extension) {
-  LOG(INFO) << "Sending BROWSER_THEME_CHANGED";
+  VLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::BROWSER_THEME_CHANGED,

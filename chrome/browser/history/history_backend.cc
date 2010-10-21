@@ -602,7 +602,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   if (history::TopSites::IsEnabled()) {
     // TODO(sky): fix when reenabling top sites migration.
     // if (db_->needs_version_18_migration()) {
-    // LOG(INFO) << "Starting TopSites migration";
+    // VLOG(1) << "Starting TopSites migration";
     // delegate_->StartTopSitesMigration();
     // }
   }

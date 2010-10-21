@@ -1637,9 +1637,8 @@ const int kDisabledIndex = 1;
   GoogleUpdateSettings::SetCollectStatsConsent(enabled);
   bool update_pref = GoogleUpdateSettings::GetCollectStatsConsent();
   if (enabled != update_pref) {
-    DLOG(INFO) <<
-        "GENERAL SECTION: Unable to set crash report status to " <<
-        enabled;
+    DVLOG(1) << "GENERAL SECTION: Unable to set crash report status to "
+             << enabled;
   }
   // Only change the pref if GoogleUpdateSettings::GetCollectStatsConsent
   // succeeds.

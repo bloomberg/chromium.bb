@@ -130,7 +130,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
   if (request) {
     // The request can be NULL if it was cancelled by the renderer (as the
     // result of the user navigating to a new page from the location bar).
-    DLOG(INFO) << "CompleteCancelRequest() url: " << request->url().spec();
+    DVLOG(1) << "CompleteCancelRequest() url: " << request->url().spec();
     SSLCertErrorHandler* cert_error = AsSSLCertErrorHandler();
     if (cert_error)
       request->SimulateSSLError(error, cert_error->ssl_info());
@@ -157,7 +157,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
   if (request) {
     // The request can be NULL if it was cancelled by the renderer (as the
     // result of the user navigating to a new page from the location bar).
-    DLOG(INFO) << "CompleteContinueRequest() url: " << request->url().spec();
+    DVLOG(1) << "CompleteContinueRequest() url: " << request->url().spec();
     request->ContinueDespiteLastError();
   }
   request_has_been_notified_ = true;

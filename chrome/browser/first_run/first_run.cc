@@ -133,10 +133,10 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
         ::ExitProcess(1);
       }
       if (retcode == installer_util::EULA_ACCEPTED) {
-        LOG(INFO) << "EULA : no collection";
+        VLOG(1) << "EULA : no collection";
         GoogleUpdateSettings::SetCollectStatsConsent(false);
       } else if (retcode == installer_util::EULA_ACCEPTED_OPT_IN) {
-        LOG(INFO) << "EULA : collection consent";
+        VLOG(1) << "EULA : collection consent";
         GoogleUpdateSettings::SetCollectStatsConsent(true);
       }
     }
@@ -159,7 +159,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 #if defined(OS_WIN)
   DictionaryValue* extensions = 0;
   if (installer_util::HasExtensionsBlock(prefs.get(), &extensions)) {
-    LOG(INFO) << "Extensions block found in master preferences";
+    VLOG(1) << "Extensions block found in master preferences";
     DoDelayedInstallExtensions();
   }
 #endif

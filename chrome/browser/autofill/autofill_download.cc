@@ -97,7 +97,7 @@ bool AutoFillDownloadManager::StartUploadRequest(
   double upload_rate = form_was_matched ? GetPositiveUploadRate() :
                                           GetNegativeUploadRate();
   if (base::RandDouble() > upload_rate) {
-    LOG(INFO) << "AutoFillDownloadManager: Upload request is ignored";
+    VLOG(1) << "AutoFillDownloadManager: Upload request is ignored";
     // If we ever need notification that upload was skipped, add it here.
     return false;
   }
@@ -238,16 +238,16 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
       }
     }
 
-    LOG(INFO) << "AutoFillDownloadManager: " << type_of_request <<
-        " request has failed with response" << response_code;
+    VLOG(1) << "AutoFillDownloadManager: " << type_of_request
+            << " request has failed with response" << response_code;
     if (observer_) {
       observer_->OnHeuristicsRequestError(it->second.form_signatures[0],
                                           it->second.request_type,
                                           response_code);
     }
   } else {
-    LOG(INFO) << "AutoFillDownloadManager: " << type_of_request <<
-        " request has succeeded";
+    VLOG(1) << "AutoFillDownloadManager: " << type_of_request
+            << " request has succeeded";
     if (it->second.request_type == AutoFillDownloadManager::REQUEST_QUERY) {
       if (observer_)
         observer_->OnLoadedAutoFillHeuristics(data);

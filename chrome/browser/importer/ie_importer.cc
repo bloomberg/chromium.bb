@@ -364,7 +364,7 @@ void IEImporter::ImportSearchEngines() {
     RegKey sub_key(HKEY_CURRENT_USER, sub_key_name.c_str(), KEY_READ);
     std::wstring wide_url;
     if (!sub_key.ReadValue(L"URL", &wide_url) || wide_url.empty()) {
-      LOG(INFO) << "No URL for IE search engine at " << key_iterator.Name();
+      VLOG(1) << "No URL for IE search engine at " << key_iterator.Name();
       ++key_iterator;
       continue;
     }
@@ -375,7 +375,7 @@ void IEImporter::ImportSearchEngines() {
     if (!sub_key.ReadValue(NULL, &name) || name.empty()) {
       // Try the displayable name.
       if (!sub_key.ReadValue(L"DisplayName", &name) || name.empty()) {
-        LOG(INFO) << "No name for IE search engine at " << key_iterator.Name();
+        VLOG(1) << "No name for IE search engine at " << key_iterator.Name();
         ++key_iterator;
         continue;
       }

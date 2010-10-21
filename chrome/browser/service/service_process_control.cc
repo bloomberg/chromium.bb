@@ -102,7 +102,7 @@ void ServiceProcessControl::ConnectInternal() {
   }
 
   // Actually going to connect.
-  LOG(INFO) << "Connecting to Service Process IPC Server";
+  VLOG(1) << "Connecting to Service Process IPC Server";
   // Run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();
 

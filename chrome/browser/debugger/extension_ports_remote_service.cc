@@ -203,7 +203,7 @@ void ExtensionPortsRemoteService::HandleMessage(
 }
 
 void ExtensionPortsRemoteService::OnConnectionLost() {
-  LOG(INFO) << "OnConnectionLost";
+  VLOG(1) << "OnConnectionLost";
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK(service_);
   for (PortIdSet::iterator it = openPortIds_.begin();
@@ -264,8 +264,7 @@ void ExtensionPortsRemoteService::OnExtensionMessageInvoke(
 
 void ExtensionPortsRemoteService::OnExtensionMessage(
     const std::string& message, int port_id) {
-  LOG(INFO) << "Message event: from port " << port_id
-            << ", < " << message << ">";
+  VLOG(1) << "Message event: from port " << port_id << ", < " << message << ">";
   // Transpose the information into a JSON message for the external client.
   DictionaryValue content;
   content.SetString(kCommandKey, kOnMessage);
@@ -281,7 +280,7 @@ void ExtensionPortsRemoteService::OnExtensionMessage(
 }
 
 void ExtensionPortsRemoteService::OnExtensionPortDisconnected(int port_id) {
-  LOG(INFO) << "Disconnect event for port " << port_id;
+  VLOG(1) << "Disconnect event for port " << port_id;
   openPortIds_.erase(port_id);
   DictionaryValue content;
   content.SetString(kCommandKey, kOnDisconnect);
@@ -316,32 +315,32 @@ void ExtensionPortsRemoteService::ConnectCommand(
     if (it != navcon_map.end())
       tab_contents = it->second->tab_contents();
     if (!tab_contents) {
-      LOG(INFO) << "tab not found: " << tab_id;
+      VLOG(1) << "tab not found: " << tab_id;
       response->SetInteger(kResultKey, RESULT_TAB_NOT_FOUND);
       return;
     }
     // Ask the ExtensionMessageService to open the channel.
-    LOG(INFO) << "Connect: extension_id <" << extension_id
-              << ">, channel_name <" << channel_name << ">"
-              << ", tab " << tab_id;
+    VLOG(1) << "Connect: extension_id <" << extension_id
+            << ">, channel_name <" << channel_name
+            << ">, tab " << tab_id;
     DCHECK(service_);
     port_id = service_->OpenSpecialChannelToTab(
         extension_id, channel_name, tab_contents, this);
   } else {  // no tab: channel to an extension' background page / toolstrip.
     // Ask the ExtensionMessageService to open the channel.
-    LOG(INFO) << "Connect: extension_id <" << extension_id
-              << ">, channel_name <" << channel_name << ">";
+    VLOG(1) << "Connect: extension_id <" << extension_id
+            << ">, channel_name <" << channel_name << ">";
     DCHECK(service_);
     port_id = service_->OpenSpecialChannelToExtension(
         extension_id, channel_name, "null", this);
   }
   if (port_id == -1) {
     // Failure: probably the extension ID doesn't exist.
-    LOG(INFO) << "Connect failed";
+    VLOG(1) << "Connect failed";
     response->SetInteger(kResultKey, RESULT_CONNECT_FAILED);
     return;
   }
-  LOG(INFO) << "Connected: port " << port_id;
+  VLOG(1) << "Connected: port " << port_id;
   openPortIds_.insert(port_id);
   // Reply to external client with the port ID assigned to the new channel.
   DictionaryValue* reply_data = new DictionaryValue();
@@ -352,10 +351,10 @@ void ExtensionPortsRemoteService::ConnectCommand(
 
 void ExtensionPortsRemoteService::DisconnectCommand(
     int port_id, DictionaryValue* response) {
-  LOG(INFO) << "Disconnect port " << port_id;
+  VLOG(1) << "Disconnect port " << port_id;
   PortIdSet::iterator portEntry = openPortIds_.find(port_id);
   if (portEntry == openPortIds_.end()) {  // unknown port ID.
-    LOG(INFO) << "unknown port: " << port_id;
+    VLOG(1) << "unknown port: " << port_id;
     response->SetInteger(kResultKey, RESULT_UNKNOWN_PORT);
     return;
   }
@@ -375,11 +374,11 @@ void ExtensionPortsRemoteService::PostMessageCommand(
   std::string message;
   // Stringified the JSON message body.
   base::JSONWriter::Write(data, false, &message);
-  LOG(INFO) << "postMessage: port " << port_id
-            << ", message: <" << message << ">";
+  VLOG(1) << "postMessage: port " << port_id
+          << ", message: <" << message << ">";
   PortIdSet::iterator portEntry = openPortIds_.find(port_id);
   if (portEntry == openPortIds_.end()) {  // Unknown port ID.
-    LOG(INFO) << "unknown port: " << port_id;
+    VLOG(1) << "unknown port: " << port_id;
     response->SetInteger(kResultKey, RESULT_UNKNOWN_PORT);
     return;
   }
