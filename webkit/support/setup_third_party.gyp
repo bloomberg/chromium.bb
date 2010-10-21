@@ -4,59 +4,61 @@
 
 {
   'variables': {
-    'list_headers_cmd': ['python', 'list_headers.py'],
-    'destination': '<(DEPTH)/third_party/WebKit/WebKit/chromium/public',
+    'setup_third_party_cmd': ['python', 'setup_third_party.py'],
+    'destination': '<(SHARED_INTERMEDIATE_DIR)/webkit/third_party/WebKit/WebKit/chromium/public',
+    'destination_mac': '<(SHARED_INTERMEDIATE_DIR)/webkit/third_party/WebKit/WebKit/mac/WebCoreSupport',
   },
   'targets': [
     {
-      # TODO(tony): Would be nice if this would make symlinks on linux/mac
-      # and try to make hardlinks on ntfs.
       'target_name': 'third_party_headers',
       'type': 'none',
-      'copies': [
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit',
+        ],
+      },
+      'actions': [
         {
-          'destination': '<(destination)',
-          'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/)',
+          'action_name': 'third_party_forwarding_headers',
+          'inputs': [
+            '<!@(<(setup_third_party_cmd) inputs <(DEPTH)/public)',
+            'setup_third_party.py',
           ],
-        },
-        {
-          'destination': '<(destination)/gtk',
-          'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/gtk/)',
+          'outputs': [
+            "<!@(<(setup_third_party_cmd) outputs <(DEPTH)/public '<(destination)')",
           ],
-        },
-        {
-          'destination': '<(destination)/linux',
-          'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/linux/)',
+          'action': [
+            '<@(setup_third_party_cmd)',
+            'setup_headers',
+            '<(DEPTH)/public',
+            '<(destination)',
           ],
+          'message': 'Generating forwarding headers for third_party/WebKit/WebKit/chromium/public',
         },
-        {
-          'destination': '<(destination)/mac',
-          'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/mac/)',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'actions': [
+            {
+              'action_name': 'third_party_mac_forwarding_headers',
+              'inputs': [
+                '<!@(<(setup_third_party_cmd) inputs <(DEPTH)/../mac/WebCoreSupport)',
+                'setup_third_party.py',
+              ],
+              'outputs': [
+                "<!@(<(setup_third_party_cmd) outputs <(DEPTH)/../mac/WebCoreSupport '<(destination_mac)')",
+              ],
+              'action': [
+                '<@(setup_third_party_cmd)',
+                'setup_headers',
+                '<(DEPTH)/../mac/WebCoreSupport',
+                '<(destination_mac)',
+              ],
+              'message': 'Generating forwarding headers for third_party/WebKit/WebKit/mac/WebCoreSupport',
+            },
           ],
-        },
-        {
-          'destination': '<(destination)/win',
-          'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/win/)',
-          ],
-        },
-        {
-          'destination': '<(destination)/x11',
-          'files': [
-            '<!@(<(list_headers_cmd) <(DEPTH)/public/x11/)',
-          ],
-        },
-        {
-          'destination': '<(DEPTH)/third_party/WebKit/WebKit/mac/WebCoreSupport',
-          'files': [
-            '<(DEPTH)/../mac/WebCoreSupport/WebSystemInterface.h',
-          ],
-        },
-      ]
+        }],
+      ],
     },
   ],
 }
