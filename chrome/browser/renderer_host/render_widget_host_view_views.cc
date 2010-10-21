@@ -36,6 +36,23 @@ static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
 
+namespace {
+
+int WebInputEventFlagsFromViewsEvent(const views::Event& event) {
+  int modifiers = 0;
+
+  if (event.IsShiftDown())
+    modifiers |= WebKit::WebInputEvent::ShiftKey;
+  if (event.IsControlDown())
+    modifiers |= WebKit::WebInputEvent::ControlKey;
+  if (event.IsAltDown())
+    modifiers |= WebKit::WebInputEvent::AltKey;
+
+  return modifiers;
+}
+
+}  // namespace
+
 // static
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
     RenderWidgetHost* widget) {
@@ -392,30 +409,11 @@ bool RenderWidgetHostViewViews::OnMousePressed(const views::MouseEvent& event) {
   RequestFocus();
 
   // TODO(anicolao): validate event generation.
-  WebKit::WebMouseEvent e;
-  e.timeStampSeconds = base::Time::Now().ToDoubleT();
-  e.modifiers = 0;
-  if (event.IsMiddleMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-    e.button = WebKit::WebMouseEvent::ButtonMiddle;
-  }
-  if (event.IsRightMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::RightButtonDown;
-    e.button = WebKit::WebMouseEvent::ButtonRight;
-  }
-  if (event.IsLeftMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-    e.button = WebKit::WebMouseEvent::ButtonLeft;
-  }
-  e.windowX = e.x = event.x();
-  e.windowY = e.y = event.y();
-  int x, y;
-  gdk_window_get_origin(GetNativeView()->window, &x, &y);
-  e.globalX = e.x + x;
-  e.globalY = e.y + y;
-  e.clickCount = 1;
+  WebKit::WebMouseEvent e = WebMouseEventFromViewsEvent(event);
+
   // TODO(anicolao): deal with double clicks
   e.type = WebKit::WebInputEvent::MouseDown;
+  e.clickCount = 1;
 
   GetRenderWidgetHost()->ForwardMouseEvent(e);
   return true;
@@ -423,28 +421,11 @@ bool RenderWidgetHostViewViews::OnMousePressed(const views::MouseEvent& event) {
 
 void RenderWidgetHostViewViews::OnMouseReleased(const views::MouseEvent& event,
                                                 bool canceled) {
-  WebKit::WebMouseEvent e;
-  e.timeStampSeconds = base::Time::Now().ToDoubleT();
-  e.windowX = e.x = event.x();
-  e.windowY = e.y = event.y();
-  int x, y;
-  gdk_window_get_origin(GetNativeView()->window, &x, &y);
-  e.globalX = e.x + x;
-  e.globalY = e.y + y;
-  e.clickCount = 1;
+  WebKit::WebMouseEvent e = WebMouseEventFromViewsEvent(event);
+
   e.type = WebKit::WebInputEvent::MouseUp;
-  if (event.IsMiddleMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-    e.button = WebKit::WebMouseEvent::ButtonMiddle;
-  }
-  if (event.IsRightMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::RightButtonDown;
-    e.button = WebKit::WebMouseEvent::ButtonRight;
-  }
-  if (event.IsLeftMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-    e.button = WebKit::WebMouseEvent::ButtonLeft;
-  }
+  e.clickCount = 1;
+
   GetRenderWidgetHost()->ForwardMouseEvent(e);
 }
 
@@ -454,24 +435,10 @@ bool RenderWidgetHostViewViews::OnMouseDragged(const views::MouseEvent& event) {
 }
 
 void RenderWidgetHostViewViews::OnMouseMoved(const views::MouseEvent& event) {
-  WebKit::WebMouseEvent e;
-  e.timeStampSeconds = base::Time::Now().ToDoubleT();
-  e.windowX = e.x = event.x();
-  e.windowY = e.y = event.y();
-  int x, y;
-  gdk_window_get_origin(GetNativeView()->window, &x, &y);
-  e.globalX = e.x + x;
-  e.globalY = e.y + y;
+  WebKit::WebMouseEvent e = WebMouseEventFromViewsEvent(event);
+
   e.type = WebKit::WebInputEvent::MouseMove;
-  if (event.IsMiddleMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-  }
-  if (event.IsRightMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::RightButtonDown;
-  }
-  if (event.IsLeftMouseButton()) {
-    e.modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-  }
+
   GetRenderWidgetHost()->ForwardMouseEvent(e);
 }
 
@@ -501,9 +468,7 @@ bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
     static_cast<unsigned short>(gdk_keyval_to_unicode(
           app::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(), false /*shift*/)));
 
-  // If ctrl key is pressed down, then control character shall be input.
-  // TODO(anicolao): deal with modifiers
-
+  wke.modifiers = WebInputEventFlagsFromViewsEvent(e);
   ForwardKeyboardEvent(wke);
 
   // send the keypress event
@@ -598,6 +563,37 @@ bool RenderWidgetHostViewViews::ContainsNativeView(
   NOTREACHED() <<
     "RenderWidgetHostViewViews::ContainsNativeView not implemented.";
   return false;
+}
+
+WebKit::WebMouseEvent RenderWidgetHostViewViews::WebMouseEventFromViewsEvent(
+    const views::MouseEvent& event) {
+  WebKit::WebMouseEvent wmevent;
+
+  wmevent.timeStampSeconds = base::Time::Now().ToDoubleT();
+  wmevent.windowX = wmevent.x = event.x();
+  wmevent.windowY = wmevent.y = event.y();
+  int x, y;
+  gdk_window_get_origin(GetNativeView()->window, &x, &y);
+  wmevent.globalX = wmevent.x + x;
+  wmevent.globalY = wmevent.y + y;
+  wmevent.modifiers = WebInputEventFlagsFromViewsEvent(event);
+
+  // Setting |wmevent.button| is not necessary for -move events, but it is
+  // necessary for -clicks and -drags.
+  if (event.IsMiddleMouseButton()) {
+    wmevent.modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
+    wmevent.button = WebKit::WebMouseEvent::ButtonMiddle;
+  }
+  if (event.IsRightMouseButton()) {
+    wmevent.modifiers |= WebKit::WebInputEvent::RightButtonDown;
+    wmevent.button = WebKit::WebMouseEvent::ButtonRight;
+  }
+  if (event.IsLeftMouseButton()) {
+    wmevent.modifiers |= WebKit::WebInputEvent::LeftButtonDown;
+    wmevent.button = WebKit::WebMouseEvent::ButtonLeft;
+  }
+
+  return wmevent;
 }
 
 void RenderWidgetHostViewViews::ForwardKeyboardEvent(

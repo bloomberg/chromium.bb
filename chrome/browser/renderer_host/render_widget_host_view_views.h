@@ -23,6 +23,10 @@ class RenderWidgetHost;
 class GpuViewHost;
 struct NativeWebKeyboardEvent;
 
+namespace WebKit {
+class WebMouseEvent;
+}
+
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
@@ -111,6 +115,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // Update the display cursor for the render view.
   void ShowCurrentCursor();
+
+  // Translate a views::MouseEvent into a WebKit::WebMouseEvent.
+  WebKit::WebMouseEvent WebMouseEventFromViewsEvent(
+      const views::MouseEvent& event);
 
   // The model object.
   RenderWidgetHost* host_;
