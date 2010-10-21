@@ -240,7 +240,7 @@ void BootTimesLoader::WriteLoginTimes(
   std::string output =
       base::StringPrintf("%s: %.2f", kUmaLogin, total.InSecondsF());
   base::Time prev = first;
-  for (unsigned int i = 1; i < login_times.size(); ++i) {
+  for (unsigned int i = 0; i < login_times.size(); ++i) {
     TimeMarker tm = login_times[i];
     base::TimeDelta since_first = tm.time() - first;
     base::TimeDelta since_prev = tm.time() - prev;
@@ -300,6 +300,7 @@ void BootTimesLoader::RecordChromeMainStats() {
 }
 
 void BootTimesLoader::RecordLoginAttempted() {
+  login_time_markers_.clear();
   AddLoginTimeMarker("LoginStarted", false);
   if (!have_registered_) {
     have_registered_ = true;
