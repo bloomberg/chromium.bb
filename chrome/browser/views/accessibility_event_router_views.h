@@ -120,6 +120,8 @@ class AccessibilityEventRouterViews {
       views::View* view, NotificationType type, Profile* profile);
   void SendMenuItemNotification(
       views::View* view, NotificationType type, Profile* profile);
+  void SendLocationBarNotification(
+      views::View* view, NotificationType type, Profile* profile);
 
   // Return true if it's an event on a menu.
   bool IsMenuEvent(views::View* view, NotificationType type);

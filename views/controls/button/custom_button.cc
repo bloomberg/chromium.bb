@@ -13,6 +13,9 @@ namespace views {
 // How long the hover animation takes if uninterrupted.
 static const int kHoverFadeDurationMs = 150;
 
+// static
+const char CustomButton::kViewClassName[] = "views/CustomButton";
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, public:
 
@@ -101,6 +104,10 @@ bool CustomButton::IsMouseHovered() const {
   gfx::Point cursor_pos(Screen::GetCursorScreenPoint());
   ConvertPointToView(NULL, this, &cursor_pos);
   return HitTest(cursor_pos);
+}
+
+std::string CustomButton::GetClassName() const {
+  return kViewClassName;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

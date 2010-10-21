@@ -21,6 +21,9 @@ namespace views {
 class CustomButton : public Button,
                      public AnimationDelegate {
  public:
+  // The menu button's class name.
+  static const char kViewClassName[];
+
   virtual ~CustomButton();
 
   // Possible states
@@ -72,6 +75,9 @@ class CustomButton : public Button,
   // isn't the same as IsHotTracked() because the mouse may be over the control
   // when it's disabled.
   bool IsMouseHovered() const;
+
+  // Returns views/CustomButton.
+  virtual std::string GetClassName() const;
 
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.

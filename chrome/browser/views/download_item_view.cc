@@ -1071,6 +1071,6 @@ void DownloadItemView::UpdateAccessibleName() {
   if (new_name != current_name) {
     SetAccessibleName(new_name);
     if (GetWidget())
-      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_NAMECHANGE);
+      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_NAME_CHANGED);
   }
 }

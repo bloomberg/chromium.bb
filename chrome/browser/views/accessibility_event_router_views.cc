@@ -10,15 +10,21 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/common/notification_type.h"
 #include "views/accessibility/accessibility_types.h"
-#include "views/controls/button/image_button.h"
+#include "views/controls/button/custom_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/link.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/view.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
+#endif
 
 using views::FocusManager;
 
@@ -66,6 +72,11 @@ void AccessibilityEventRouterViews::RemoveView(views::View* view) {
 
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
     views::View* view, AccessibilityTypes::Event event_type) {
+  if (!ExtensionAccessibilityEventRouter::GetInstance()->
+      IsAccessibilityEnabled()) {
+    return;
+  }
+
   switch (event_type) {
     case AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
@@ -81,8 +92,17 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_MENU_CLOSED);
       break;
+    case AccessibilityTypes::EVENT_TEXT_CHANGED:
+    case AccessibilityTypes::EVENT_SELECTION_CHANGED:
+      DispatchAccessibilityNotification(
+          view, NotificationType::ACCESSIBILITY_TEXT_CHANGED);
+      break;
+    case AccessibilityTypes::EVENT_VALUE_CHANGED:
+      DispatchAccessibilityNotification(
+          view, NotificationType::ACCESSIBILITY_CONTROL_ACTION);
+      break;
     case AccessibilityTypes::EVENT_ALERT:
-    case AccessibilityTypes::EVENT_NAMECHANGE:
+    case AccessibilityTypes::EVENT_NAME_CHANGED:
       // TODO(dmazzoni): re-evaluate this list later and see
       // if supporting any of these would be useful feature requests or
       // they'd just be superfluous.
@@ -111,6 +131,7 @@ void AccessibilityEventRouterViews::FindView(
       break;
     }
   }
+
   if (!*is_accessible)
     return;
 
@@ -169,12 +190,16 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     SendMenuNotification(view, type, profile);
   } else if (is_menu_event) {
     SendMenuItemNotification(view, type, profile);
-  } else if (class_name == views::ImageButton::kViewClassName ||
+  } else if (class_name == views::CustomButton::kViewClassName ||
              class_name == views::NativeButton::kViewClassName ||
              class_name == views::TextButton::kViewClassName) {
     SendButtonNotification(view, type, profile);
   } else if (class_name == views::Link::kViewClassName) {
     SendLinkNotification(view, type, profile);
+  } else if (class_name == LocationBarView::kViewClassName) {
+    SendLocationBarNotification(view, type, profile);
+  } else {
+    class_name += " ";
   }
 }
 
@@ -256,4 +281,25 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
   }
 
   return false;
+}
+
+void AccessibilityEventRouterViews::SendLocationBarNotification(
+    views::View* view, NotificationType type, Profile* profile) {
+#if defined(OS_WIN)
+  // This particular method isn't needed on Linux/Views, we get text
+  // notifications directly from GTK.
+  std::string name = GetViewName(view);
+  LocationBarView* location_bar = static_cast<LocationBarView*>(view);
+  AutocompleteEditViewWin* location_entry =
+      static_cast<AutocompleteEditViewWin*>(location_bar->location_entry());
+
+  std::string value = WideToUTF8(location_entry->GetText());
+  std::wstring::size_type selection_start;
+  std::wstring::size_type selection_end;
+  location_entry->GetSelectionBounds(&selection_start, &selection_end);
+
+  AccessibilityTextBoxInfo info(profile, name, false);
+  info.SetValue(value, selection_start, selection_end);
+  SendAccessibilityNotification(type, &info);
+#endif
 }

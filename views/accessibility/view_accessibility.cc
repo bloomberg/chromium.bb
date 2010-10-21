@@ -653,8 +653,14 @@ int32 ViewAccessibility::MSAAEvent(AccessibilityTypes::Event event) {
       return EVENT_SYSTEM_MENUPOPUPSTART;
     case AccessibilityTypes::EVENT_MENUPOPUPEND:
       return EVENT_SYSTEM_MENUPOPUPEND;
-    case AccessibilityTypes::EVENT_NAMECHANGE:
+    case AccessibilityTypes::EVENT_NAME_CHANGED:
       return EVENT_OBJECT_NAMECHANGE;
+    case AccessibilityTypes::EVENT_TEXT_CHANGED:
+      return EVENT_OBJECT_VALUECHANGE;
+    case AccessibilityTypes::EVENT_SELECTION_CHANGED:
+      return EVENT_OBJECT_TEXTSELECTIONCHANGED;
+    case AccessibilityTypes::EVENT_VALUE_CHANGED:
+      return EVENT_OBJECT_VALUECHANGE;
     default:
       // Not supported or invalid event.
       NOTREACHED();

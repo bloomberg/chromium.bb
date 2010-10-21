@@ -208,6 +208,8 @@ void LocationBarView::Init() {
   // AutocompleteEditView to close its popup.
   SetNotifyWhenVisibleBoundsInRootChanges(true);
 
+  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
+
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.
   Update(NULL);

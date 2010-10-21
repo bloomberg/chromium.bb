@@ -888,6 +888,17 @@ bool AutocompleteEditViewWin::OnAfterPossibleChange() {
   if (something_changed && text_differs)
     TextChanged();
 
+  if (text_differs) {
+    // Note that a TEXT_CHANGED event implies that the cursor/selection
+    // probably changed too, so we don't need to send both.
+    parent_view_->NotifyAccessibilityEvent(
+        AccessibilityTypes::EVENT_TEXT_CHANGED);
+  } else if (selection_differs) {
+    // Notify assistive technology that the cursor or selection changed.
+    parent_view_->NotifyAccessibilityEvent(
+        AccessibilityTypes::EVENT_SELECTION_CHANGED);
+  }
+
   return something_changed;
 }
 
