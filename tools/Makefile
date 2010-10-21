@@ -67,6 +67,7 @@ SHELL=/bin/bash
 
 CROSSARCH=nacl64
 GITRW=ssh://git@gitrw.chromium.org:9222
+GITRO=http://git.chromium.org/git
 TOOLCHAINLOC?=/usr/local
 SDKLOC?=$(TOOLCHAINLOC)
 SDKNAME=nacl-sdk
@@ -74,14 +75,12 @@ SDKROOT=$(SDKLOC)/$(SDKNAME)
 DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
 
+# Toplevel installation directory.
+# MUST be an absolute pathname, for configure --prefix=$(PREFIX)
+PREFIX=$(abspath $(SDKROOT))
+
 # Convert CROSSARCH (nacl or nacl64) to (32 or 64).
 BITSPLATFORM=$(subst 3264,64,$(subst nacl,32,$(CROSSARCH)))
-
-# Convert (nacl or nacl64) to (i486 or x86_64).
-GLIBC_ARCH=$(if $(filter 32,$(BITSPLATFORM)),i486,x86_64)
-
-# Convert (nacl or nacl64) to ("-march=i486" or "").
-GLIBC_MARCH=$(if $(filter 32,$(BITSPLATFORM)),-march=i486,)
 
 LINUX_HEADERS="$(abspath $(dir $(THISMAKEFILE)))/SRC/linux-headers-for-nacl/include"
 HPREFIX=BUILD/build-nacl-headers
@@ -327,14 +326,14 @@ fetch-glibc-sources-readonly: SRC/stamp-glibc SRC/stamp-linux-headers
 SRC/stamp-glibc: | SRC
 	rm -rf SRC/glibc
 	@echo "Fetching glibc"
-	git clone http://src.chromium.org/git/nacl-glibc.git SRC/glibc
+	git clone $(GITRO)/nacl-glibc.git SRC/glibc
 	touch $@
 
 # Create linux headers source directory, and mark that we've done that.
 SRC/stamp-linux-headers: | SRC
 	@echo "Fetching linux headers for glibc."
 	rm -rf SRC/linux-headers-for-nacl
-	git clone http://src.chromium.org/git/linux-headers-for-nacl.git \
+	git clone $(GITRO)/linux-headers-for-nacl.git \
 	  SRC/linux-headers-for-nacl
 	cd SRC/linux-headers-for-nacl && \
 	  git checkout 0014b8d2e052dd3bf4cdc4be999d17e123c50dc2
@@ -449,6 +448,64 @@ BUILD/stamp-pregcc: SRC/stamp-gcc | BUILD
 .PHONY: pregcc
 pregcc: BUILD/stamp-pregcc
 
+
+##################################################################
+# pregcc-standalone:
+# Builds the cross gcc used to build glibc.
+# TODO(eaeltsin): now works for Linux only, enable for Windows/Mac
+# TODO(eaeltsin): get rid of pregcc in favor of pregcc-standalone
+##################################################################
+
+# Toplevel installation directory for pregcc.
+# MUST be an absolute pathname, for configure --prefix=$(PREGCC_PREFIX)
+# Pregcc is installed separately so that it is not overwritten with full gcc.
+# Pregcc is needed for rebuilding glibc, while full gcc can't do that because
+# of its incompatible libgcc.
+PREGCC_PREFIX=$(abspath BUILD/install-pregcc-$(CROSSARCH))
+
+# Build directory for pregcc.
+PREGCC_BUILD_DIR=BUILD/build-pregcc-$(CROSSARCH)
+
+# Build pregcc:
+# create links to binutils:
+#   Alternate approaches are to make PATH point to nacl binutils or to use
+#   pregcc with -B option. Both seem unreliable, as after full gcc is installed
+#   the search path will include full gcc stuff that should not be picked.
+# make install:
+#   DESTDIR should be ignored at this step.
+BUILD/stamp-pregcc-standalone: SRC/stamp-gcc | BUILD
+	rm -rf $(PREGCC_PREFIX)
+	mkdir -p $(PREGCC_PREFIX)/$(CROSSARCH)/bin
+	for f in '$(PREFIX)/$(CROSSARCH)/bin/*'; do \
+	    ln -s $$f $(PREGCC_PREFIX)/$(CROSSARCH)/bin; \
+	    done
+	rm -rf $(PREGCC_BUILD_DIR)
+	mkdir $(PREGCC_BUILD_DIR)
+	$(MAKE) \
+	    -C $(PREGCC_BUILD_DIR) \
+	    -f ../../Makefile.gcc \
+	    prefix=$(PREGCC_PREFIX) \
+	    srcdir=../../SRC/gcc \
+	    target=$(CROSSARCH) \
+	    DEFAULT_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) \
+	    DEFAULT_ALIGN_POW2=$(DEFAULT_ALIGN_POW2) \
+	    MULTILIB=$(MULTILIB) \
+	    configure-pregcc
+	$(MAKE) \
+	    -C $(PREGCC_BUILD_DIR) \
+	    all-gcc \
+	    all-target-libgcc
+	$(MAKE) \
+	    -C $(PREGCC_BUILD_DIR) \
+	    install-gcc \
+	    install-target-libgcc
+	echo '/* Intentionally empty */' > \
+	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libnacl.so
+	echo '/* Intentionally empty */' > \
+	    $(PREGCC_PREFIX)/$(CROSSARCH)/lib/libcrt_platform.so
+	touch $@
+
+
 ##################################################################
 # newlib:
 # Builds the bare-bones library used by NativeClient applications.
@@ -517,32 +574,44 @@ BUILD/stamp-newlib: SRC/stamp-newlib | BUILD
 .PHONY: newlib
 newlib: BUILD/stamp-newlib
 
+
 ##################################################################
 # glibc:
 ##################################################################
+
+# Build directory for glibc.
+GLIBC_BUILD_DIR=BUILD/build-glibc-$(CROSSARCH)
+
+# Glibc is built with pregcc.
+GLIBC_CC=$(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
+
+# Convert (nacl or nacl64) to (i486 or x86_64).
+GLIBC_HOST=$(if $(filter 32,$(BITSPLATFORM)),i486,x86_64)-linux-gnu
+
+# Convert (nacl or nacl64) to ("-march=i486" or "").
+GLIBC_HOST_CFLAGS=$(if $(filter 32,$(BITSPLATFORM)),-march=i486,)
+
+# CFLAGS for building glibc.
+GLIBC_CFLAGS=-O2 -g
+
+# Build glibc:
 BUILD/stamp-glibc: SRC/stamp-glibc SRC/stamp-linux-headers
-	rm -rf BUILD/build-glibc-$(CROSSARCH)
-	mkdir -p BUILD/build-glibc-$(CROSSARCH)/lib
-	echo '/* Intentionally empty */' > \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnacl.so
-	echo '/* Intentionally empty */' > \
-		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
-	cd BUILD/build-glibc-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) \
-	  BUILD_CC="gcc -O2" \
-	    libc_cv_forced_unwind=yes libc_cv_c_cleanup=yes ../../SRC/glibc/configure \
-	      CFLAGS="$(GLIBC_MARCH) -pipe -fno-strict-aliasing -O2 -mno-tls-direct-seg-refs -g" \
-	      CC=$(CROSSARCH)-gcc \
-	      --prefix=$(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
-	      --host=$(GLIBC_ARCH)-linux-gnu \
-	      --with-headers=$(LINUX_HEADERS) \
-	      --enable-kernel=2.2.0
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-glibc-$(CROSSARCH)
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-glibc-$(CROSSARCH) \
-	    DESTDIR=$(DESTDIR)$(SDKROOT)/$(CROSSARCH) install
+	rm -rf $(GLIBC_BUILD_DIR)
+	mkdir -p $(GLIBC_BUILD_DIR)/lib
+	cd $(GLIBC_BUILD_DIR) && ../../SRC/glibc/configure \
+	    BUILD_CC="gcc -O2 -g" \
+	    CC=$(GLIBC_CC) \
+	    CFLAGS="$(GLIBC_CFLAGS) $(GLIBC_HOST_CFLAGS) -pipe -fno-strict-aliasing -mno-tls-direct-seg-refs" \
+	    libc_cv_forced_unwind=yes \
+	    libc_cv_c_cleanup=yes \
+	    --prefix=$(PREFIX)/$(CROSSARCH) \
+	    --host=$(GLIBC_HOST) \
+	    --with-headers=$(LINUX_HEADERS) \
+	    --enable-kernel=2.2.0
+	$(MAKE) -C $(GLIBC_BUILD_DIR)
+	$(MAKE) -C $(GLIBC_BUILD_DIR) DESTDIR=$(DESTDIR) install
 	touch $@
+
 
 ##################################################################
 # Ad hoc linker scripts and a selection of NaCl headers for GCC.
@@ -825,7 +894,7 @@ build-with-glibc: ALWAYS
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
 	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc-standalone
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-glibc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-full-gcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-nacl-libs-glibc
