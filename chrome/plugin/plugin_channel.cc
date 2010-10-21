@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -189,8 +189,8 @@ PluginChannel::~PluginChannel() {
 bool PluginChannel::Send(IPC::Message* msg) {
   in_send_++;
   if (log_messages_) {
-    LOG(INFO) << "sending message @" << msg << " on channel @" << this
-              << " with type " << msg->type();
+    VLOG(1) << "sending message @" << msg << " on channel @" << this
+            << " with type " << msg->type();
   }
   bool result = PluginChannelBase::Send(msg);
   in_send_--;
@@ -199,8 +199,8 @@ bool PluginChannel::Send(IPC::Message* msg) {
 
 void PluginChannel::OnMessageReceived(const IPC::Message& msg) {
   if (log_messages_) {
-    LOG(INFO) << "received message @" << &msg << " on channel @" << this
-              << " with type " << msg.type();
+    VLOG(1) << "received message @" << &msg << " on channel @" << this
+            << " with type " << msg.type();
   }
   PluginChannelBase::OnMessageReceived(msg);
 }
