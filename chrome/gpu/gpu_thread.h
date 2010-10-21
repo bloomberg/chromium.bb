@@ -8,10 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
@@ -26,8 +24,6 @@ class GpuThread : public ChildThread {
  public:
   GpuThread();
   ~GpuThread();
-
-  void Init(const base::Time& process_start_time);
 
 #if defined(GPU_USE_GLX)
   GpuBackingStoreGLXContext* GetGLXContext();
@@ -58,9 +54,6 @@ class GpuThread : public ChildThread {
   Display* display_;
   scoped_ptr<GpuBackingStoreGLXContext> glx_context_;
 #endif
-
-  // Information about the GPU, such as device and vendor ID.
-  GPUInfo gpu_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuThread);
 };

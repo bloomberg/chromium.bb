@@ -12,7 +12,6 @@
 #include <set>
 #include <vector>
 
-#include "app/app_switches.h"
 #include "app/sql/connection.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -136,9 +135,6 @@ void UITestBase::SetUp() {
   AssertAppNotRunning(L"Please close any other instances "
                       L"of the app before testing.");
 
-  // Force all tests to use OSMesa if they launch the GPU process.
-  launch_arguments_.AppendSwitchASCII(switches::kUseGL, "osmesa");
-  
   JavaScriptExecutionController::set_timeout(
       TestTimeouts::action_max_timeout_ms());
   test_start_time_ = Time::NowFromSystemTime();

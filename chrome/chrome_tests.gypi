@@ -455,7 +455,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
-        '../third_party/mesa/mesa.gyp:osmesa',
         'default_plugin/default_plugin.gyp:default_plugin',
         '../third_party/ppapi/ppapi.gyp:ppapi_tests',
         '../webkit/support/webkit_support.gyp:copy_npapi_layout_test_plugin',
@@ -523,6 +522,7 @@
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
+            '../third_party/mesa/mesa.gyp:osmesa',
           ],
         }],
         # Only copy the pepper plugin on Windows which is the only platform
