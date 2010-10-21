@@ -233,6 +233,10 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
           CharAdvance(&buf, &buf_size,
                       SNPRINTF(buf, buf_size, "es:$G"));
           break;
+        case DS_G_Operand:
+          CharAdvance(&buf, &buf_size,
+                      SNPRINTF(buf, buf_size, "ds:$G"));
+          break;
         case G_OpcodeBase:
           CharAdvance(&buf, &buf_size,
                       SNPRINTF(buf, buf_size, "$/r"));
@@ -395,6 +399,7 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
         case RegRESI:
         case RegREDI:
         case RegDS_EDI:
+        case RegDS_EBX:
         case RegES_EDI:
         case RegST0:
         case RegST1:
@@ -1736,6 +1741,8 @@ static void NaClBuildInstTables() {
       "sp", ((X86_32 == NACL_FLAGS_run_mode) ? "esp" : "rsp"), st);
   NaClSymbolTablePutText(
       "ip", ((X86_32 == NACL_FLAGS_run_mode) ? "eip" : "rip"), st);
+  NaClSymbolTablePutText(
+      "bp", ((X86_32 == NACL_FLAGS_run_mode) ? "ebp" : "rbp"), st);
 
   NaClInitInstTables();
   NaClDefPrefixBytes();

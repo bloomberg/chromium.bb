@@ -378,11 +378,12 @@
       'sources': ['ncdecode_tablegen.c',
                   'ncdecode_forms.c',
                   'zero_extends.c',
-		  'nc_rep_prefix.c',
+                  'long_mode.c',
+                  'nc_rep_prefix.c',
                   'defsize64.c',
                   'nacl_illegal.c',
                   'lock_insts.c',
-		  'ncdecode_st.c',
+                  'ncdecode_st.c',
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
                   'ncdecode_sse.c',
@@ -464,10 +465,10 @@
       ],
       # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate_gen' ],
-      'sources': [ 'ncdis_util.c', 
+      'sources': [ 'ncdis_util.c',
                    'ncdis_segments.c',
-		   'nc_read_segment.c',
-		   'ncenuminsts.c'
+                   'nc_read_segment.c',
+                   'ncenuminsts.c'
                  ],
       'cflags!': [
         '-Wextra',

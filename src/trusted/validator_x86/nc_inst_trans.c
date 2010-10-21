@@ -892,16 +892,17 @@ static NaClExp* NaClAppendSegmentAddress(NaClInstState* state) {
   return NaClAppendExp(ExprSegmentAddress, 0, flags, &state->nodes);
 }
 
-/* Same as NaClAppendOperandReg, except register is combined with ES
- * To define a segment address.
+/* Same as NaClAppendOperandReg, except that a segment register is combined with
+ * the indexed register to define a segment address.
  */
-static NaClExp* NaClAppendEsOpReg(
+static NaClExp* NaClAppendSegmentOpReg(
     NaClInstState* state,
     NaClOp* operand,
+    NaClOpKind seg_register,
     int reg_index,
     NaClModRmRegKind modrm_reg_kind) {
   NaClExp* results = NaClAppendSegmentAddress(state);
-  NaClAppendReg(NaClGetEsSegmentReg(state), &state->nodes);
+  NaClAppendReg(seg_register, &state->nodes);
   NaClAppendOperandReg(state, operand, reg_index, modrm_reg_kind);
   return results;
 }
@@ -1371,11 +1372,36 @@ static void NaClAppendEDI(NaClInstState* state) {
   }
 }
 
+static void NaClAppendEBX(NaClInstState* state) {
+  switch (state->address_size) {
+    case 16:
+      NaClAppendReg(RegBX, &state->nodes);
+      break;
+    case 32:
+      NaClAppendReg(RegEBX, &state->nodes);
+      break;
+    case 64:
+      NaClAppendReg(RegRDX, &state->nodes);
+      break;
+    default:
+      NaClFatal("Address size for DS:EDX not correctly defined", state);
+      break;
+  }
+}
+
 static NaClExp* NaClAppendDS_EDI(NaClInstState* state) {
   NaClExp* results = NaClAppendSegmentAddress(state);
   results->flags |= NACL_EFLAG(ExprDSrDICase);
   NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
   NaClAppendEDI(state);
+  return results;
+}
+
+static NaClExp* NaClAppendDS_EBX(NaClInstState* state) {
+  NaClExp* results = NaClAppendSegmentAddress(state);
+  results->flags |= NACL_EFLAG(ExprDSrDICase);
+  NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
+  NaClAppendEBX(state);
   return results;
 }
 
@@ -1569,8 +1595,11 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
                                   ModRmGeneral);
 
     case ES_G_Operand:
-      return NaClAppendEsOpReg(state, operand, NaClGetGenRegRegister(state),
-                               ModRmGeneral);
+      return NaClAppendSegmentOpReg(state, operand, RegES,
+                                    NaClGetGenRegRegister(state), ModRmGeneral);
+    case DS_G_Operand:
+      return NaClAppendSegmentOpReg(state, operand, RegDS,
+                                    NaClGetGenRegRegister(state), ModRmGeneral);
     case G_OpcodeBase:
       return NaClAppendOpcodeBaseReg(state, operand);
     case I_Operand:
@@ -1744,7 +1773,8 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
 
     case RegDS_EDI:
       return NaClAppendDS_EDI(state);
-
+    case RegDS_EBX:
+      return NaClAppendDS_EBX(state);
     case RegES_EDI:
       return NaClAppendES_EDI(state);
 

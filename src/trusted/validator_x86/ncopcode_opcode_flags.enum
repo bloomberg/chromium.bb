@@ -124,6 +124,9 @@ OperandSizeDefaultIs64
 # Operand size must be 64 in 64-bit mode.
 OperandSizeForce64
 
+# The instruction requires that the CPUID sets bit 29 (long mode).
+LongMode
+
 # Ignore multiple 66 prefices when counting the number of prefices allowed
 # in NACL.
 IgnorePrefixDATA16

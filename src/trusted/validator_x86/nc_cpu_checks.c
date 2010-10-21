@@ -141,6 +141,10 @@ void NaClCpuCheck(struct NaClValidatorState* state,
     case NACLi_E3DNOW:
       NACL_CHECK_FEATURE(f_E3DNOW, "E3DNOW");
       break;
+    case NACLi_LONGMODE:
+      /* TODO(karl): Remove this when NACLi_LONGMODE is no longer needed */
+      NACL_CHECK_FEATURE(f_LM, "LM");
+      break;
     case NACLi_SSE2x:
       /* This case requires CPUID checking code */
       /* DATA16 prefix required */
@@ -153,6 +157,9 @@ void NaClCpuCheck(struct NaClValidatorState* state,
       break;
     default:
       break;
+  }
+  if (state->cur_inst->flags & NACL_IFLAG(LongMode)) {
+    NACL_CHECK_FEATURE(f_LM, "LM");
   }
   if (squash_me) {
     /* Replace all bytes with the stop instruction. */

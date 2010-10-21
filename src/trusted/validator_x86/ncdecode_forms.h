@@ -54,6 +54,7 @@ typedef enum NaClInstCat {
   /* The following are for categorizing operations with 2 or more operands. */
   Move,       /* Dest := f(Source) for some f. */
   Binary,     /* Dest := f(Dest, Source) for some f. */
+  O2Binary,   /* Dest1,Dest2 = f(Dest2, Source) for some f. */
   Compare,    /* Sets flag using f(Dest, Source). The value of Dest is not
                * modified.
                */

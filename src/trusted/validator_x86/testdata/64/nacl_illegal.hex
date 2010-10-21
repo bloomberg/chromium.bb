@@ -1,2 +1,3 @@
 # Example of an instruction marked illegal by native client.
-63 c6
+#    ret
+c3

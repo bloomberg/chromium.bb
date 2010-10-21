@@ -40,6 +40,7 @@ static const NaClMnemonic kLockableOp[] = {
   /* InstCmpxchg16b, */
   InstDec,
   InstInc,
+  InstNeg,
   InstNot,
   InstOr,
   InstSbb,

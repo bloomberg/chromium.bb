@@ -81,6 +81,9 @@ Gdq_Operand
 # Models a G operand which is combined with ES to generate a segment address
 ES_G_Operand
 
+# Models a G operand which is combined with DS to generate a segment address
+DS_G_Operand
+
 # Models registers using the difference in the opcode base, from the opcode
 # value.
 G_OpcodeBase
@@ -348,6 +351,8 @@ RegREDI
 RegDS_EDI
 # Use ES:(E)DI, like that specified in the insb, insw, and insd instructions.
 RegES_EDI
+# Use DS:(E)BX, like that specified in the xlat instruction.
+RegDS_EBX,
 
 # Floating point stack registers.
 RegST0

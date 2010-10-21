@@ -32,9 +32,12 @@ Call
 Cbw
 Cdq
 Cdqe
+Clc
 Cld
 Clflush
+Cli
 Clts
+Cmc
 Cmovo
 Cmovno
 Cmovb
@@ -200,7 +203,8 @@ Insd
 Insertq
 Insw
 Int
-Int0
+Into
+Int1
 Int3
 Invd
 Invlpg
@@ -308,6 +312,7 @@ Not
 Or
 Orpd
 Orps
+Out
 Outsb
 Outsd
 Outsw
@@ -464,6 +469,7 @@ Ror
 Rsqrtps
 Rsqrtss
 Sahf
+Salc
 Sar
 Sbb
 Scasb
@@ -501,6 +507,9 @@ Sqrtps
 Sqrtpd
 Sqrtsd
 Sqrtss
+Stc
+Std
+Sti
 Stosb
 Stosd
 Stosq
@@ -527,6 +536,7 @@ Wbinvd
 Wrmsr
 Xadd
 Xchg
+Xlat
 Xor
 Xorpd
 Xorps

@@ -41,6 +41,7 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstBtc,            /* OF BB, OF BA/7 */
   InstBtr,            /* OF B3, OF BA/6 */
   InstBts,            /* OF AB, OF BA /5 */
+  InstCwde,
   InstCmovo,          /* All CMovcc ops: 0F 40 through 0F 4F. */
   InstCmovno,
   InstCmovb,
@@ -63,13 +64,13 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstIdiv,           /* f7/7 */
   InstImul,           /* f7/5 , 0f af , 69 , 6b */
   InstIn,             /* E5 , ED */
-  /* InstLar,            // 0F , 02 */
+  /* InstLar,            ** 0F , 02 */
   InstLea,            /* 8D */
-  /* InstLfs,            // 0f b4 */
-  /* InstLgs,            // 0f b5 */
-  /* InstLsl,            // 0f 03 */
-  /* InstLss,            // 0f b2 */
-  /* InstLzcnt,          // f3 0f bd */
+  /* InstLfs,            ** 0f b4 */
+  /* InstLgs,            ** 0f b5 */
+  /* InstLsl,            ** 0f 03 */
+  /* InstLss,            ** 0f b2 */
+  /* InstLzcnt,          ** f3 0f bd */
   InstMov,            /* 89, 8b, c7, b8 through bf, a1 (moffset),
                          a3 (moffset)
                       */
@@ -81,13 +82,13 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstNeg,            /* f7/3 */
   InstNot,            /* f7/2 */
   InstOr,             /* 09, 0b, 0d, 81/1, 83/1 */
-  /* InstPopcnt,         // f3 0f b8 */
+  /* InstPopcnt,         ** f3 0f b8 */
   InstRcl,            /* D1/2, D3/2, C1/2 */
   InstRcr,            /* D1/3, D3/3, c1/3 */
-  /* InstRdmsr,          // 0f 32 */
-  /* InstRdpmc,          // 0f 33 */
-  /* InstRdtsc           // 0f 31 */
-  /* InstRdtscp          // 0f 01 f9 */
+  /* InstRdmsr,          ** 0f 32 */
+  /* InstRdpmc,          ** 0f 33 */
+  /* InstRdtsc           ** 0f 31 */
+  /* InstRdtscp          ** 0f 01 f9 */
   InstRol,            /* D1/0, D3/0, C1/0 */
   InstRor,            /* D1/1, D3/1, C1/1 */
   InstSar,            /* D1/7, D3/7, C1/7 */
@@ -96,7 +97,7 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstShld,           /* 0f a4, 0f a5 */
   InstShr,            /* D1/5, D3/5, C1/5 */
   InstShrd,           /* 0f ac, 0f ad */
-  /* InstSmsw,           // 0f 01/4 */
+  /* InstSmsw,           ** 0f 01/4 */
   InstSub,            /* 29, 2b, 2d, 81/5, 83/5 */
   InstXadd,           /* 0f c1 */
   InstXchg,           /* 87, 90 through 97 */
@@ -118,7 +119,9 @@ static void AddZeroExtendToOpDestArgs(NaClInst* inst) {
   if (inst->flags & NACL_IFLAG(OperandSize_v)) {
     int i;
     for (i = 0; i < inst->num_operands; ++i) {
-      if (inst->operands[i].flags & NACL_OPFLAG(OpDest)) {
+      if ((inst->operands[i].flags & NACL_OPFLAG(OpSet)) &&
+          (NACL_EMPTY_OPFLAGS ==
+           (inst->operands[i].flags & NACL_OPFLAG(OpImplicit)))) {
         NaClAddOpFlags(i, NACL_OPFLAG(OperandZeroExtends_v));
       }
     }
