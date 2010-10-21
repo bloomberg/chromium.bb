@@ -29,20 +29,19 @@ extern void __av_wait();
  * are referenced in libgcc_eh.a
  * c.f. http://code.google.com/p/nativeclient/issues/detail?id=1044
  */
-void HackToForceSymbolsToBeLinkedIn(char *s) {
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[4] */
-  extern void abort();
-  extern int strlen(const char* cp);
-  extern void *malloc(int);
-  extern void free(void*);
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[4] */
+extern void abort();
+extern void* malloc(int);
+extern void free(void*);
+extern void* memcpy(void*, const void *, int);
 
-  char* d = malloc(10);
-  if (d == 0) {
-    malloc(strlen(s));
-    abort();
-  }
-  free(d);
-}
+typedef void  (*FUN_PTR)();
+volatile FUN_PTR HACK_TO_KEEP_SYMBOLS_ALIVE[] = {
+  (FUN_PTR) abort,
+  (FUN_PTR) malloc,
+  (FUN_PTR) free,
+  (FUN_PTR) memcpy };
+
 
 /*
  *  __nacl_startup is called from crt1XXX, it ultimately calls main().
@@ -89,8 +88,6 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
    * definition in libnacl that can be overridden by libsrpc.
    */
   __srpc_init();
-
-  HackToForceSymbolsToBeLinkedIn(argv[0]);
 
   /*
    * Wait for libav startup to connect to the browser.  There is a weak
