@@ -56,17 +56,14 @@ bool g_multi_threading = false;  // can be overridden on cmd line
 bool g_render_dots = true;       // can be overridden on cmd line
 bool g_checksum = false;         // can be overridden on cmd line
 
-// seed for rand_r() - we only call rand_r from main thread.
-static unsigned int g_seed = 0xC0DE533D;
-
 // random number helper
 inline unsigned char rand255() {
-  return static_cast<unsigned char>(rand_r(&g_seed) & 255);
+  return lrand48() & 0xff;
 }
 
 // random number helper
 inline float frand() {
-  return (static_cast<float>(rand_r(&g_seed)) / static_cast<float>(RAND_MAX));
+  return drand48();
 }
 
 // build a packed color
@@ -596,13 +593,13 @@ Surface* Initialize() {
 
 
 void Checksum(Surface *surface) {
-  static unsigned int seed = 0x12345678;
   int size = surface->width * surface->height;
   uint32_t checksum = 0;
   for (int i = 0; i < size; ++i) {
-    checksum = checksum ^ (surface->pixels[i] ^ rand_r(&seed));
+    checksum = checksum ^ (surface->pixels[i] ^ lrand48());
+    srand48(checksum);
   }
-  printf("Checksum: 0x0%X\n", static_cast<unsigned int>(checksum));
+  printf("Checksum: 0x%08X\n", static_cast<unsigned int>(checksum));
 }
 
 
@@ -734,6 +731,10 @@ void ParseCmdLineArgs(int argc, char **argv) {
 
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
 int main(int argc, char **argv) {
+  // Initialise with an arbitrary seed in order to get consistent
+  // results between newlib and glibc.
+  srand48(0xC0DE533D);
+
   ParseCmdLineArgs(argc, argv);
   Surface *surface = Initialize();
   RunDemo(surface);

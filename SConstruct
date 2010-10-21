@@ -281,8 +281,6 @@ nacl_glibc_skiplist = [
     # run_thread_test fails, apparently because
     # global_futex_emulation_mutex_desc is getting corrupted.
     'run_thread_test',
-    # Checksum assumes newlib's random number generator.
-    'run_voronoi',
     # This test assumes it can allocate address ranges from the
     # dynamic code area itself.  However, this does not work when
     # ld.so assumes it can do the same.  To fix this, ld.so will need
