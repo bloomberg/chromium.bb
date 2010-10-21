@@ -75,6 +75,18 @@ class PowerLibraryImpl : public PowerLibrary {
     chromeos::EnableScreenLock(enable);
   }
 
+  virtual void RequestRestart() {
+    if (!CrosLibrary::Get()->EnsureLoaded())
+      return;
+    chromeos::RequestRestart();
+  }
+
+  virtual void RequestShutdown() {
+    if (!CrosLibrary::Get()->EnsureLoaded())
+      return;
+    chromeos::RequestShutdown();
+  }
+
  private:
   static void PowerStatusChangedHandler(void* object,
       const chromeos::PowerStatus& status) {
@@ -136,6 +148,8 @@ class PowerLibraryStubImpl : public PowerLibrary {
     return base::TimeDelta::FromSeconds(0);
   }
   virtual void EnableScreenLock(bool enable) {}
+  virtual void RequestRestart() {}
+  virtual void RequestShutdown() {}
 };
 
 // static
@@ -151,4 +165,3 @@ PowerLibrary* PowerLibrary::GetImpl(bool stub) {
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::PowerLibraryImpl);
-
