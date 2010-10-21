@@ -91,12 +91,15 @@ eh_env2.FilterOut(CFLAGS=['-pedantic', '-O2'])
 eh_env2.FilterOut(CCFLAGS=['-pedantic', '-O2'])
 # http://code.google.com/p/nativeclient/issues/detail?id=720
 TRACE_TESTS=['toolchain_tests', 'small_tests']
-if ARGUMENTS.get('bitcode') and eh_env['TARGET_FULLARCH'] != 'x86-32':
+if ARGUMENTS.get('bitcode') and eh_env2['TARGET_FULLARCH'] != 'x86-32':
   TRACE_TESTS=[]
-nexe = eh_env2.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
-node = eh_env2.CommandSelLdrTestNacl('unwind_trace.out',
-                                    command=[nexe],
-                                    exit_status='55')
-eh_env2.AddNodeToTestSuite(node,
-                          TRACE_TESTS,
-                          'run_unwind_trace_test')
+
+# TODO(robertm): put a dummy Unwind_Backtrace into the pnacl TC
+if  eh_env2['TARGET_FULLARCH'] != 'arm':
+  nexe = eh_env2.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
+  node = eh_env2.CommandSelLdrTestNacl('unwind_trace.out',
+                                       command=[nexe],
+                                       exit_status='55')
+  eh_env2.AddNodeToTestSuite(node,
+                             TRACE_TESTS,
+                             'run_unwind_trace_test')
