@@ -162,6 +162,14 @@ void ScreenLockView::SetEnabled(bool enabled) {
 
   if (!enabled) {
     user_view_->StartThrobber();
+    // TODO(oshima): Re-enabling does not move the focus to the view
+    // that had a focus (issue http://crbug.com/43131).
+    // Clear focus on the textfield so that re-enabling can set focus
+    // back to the text field.
+    // FocusManager may be null if the view does not have
+    // associated Widget yet.
+    if (password_field_->GetFocusManager())
+      password_field_->GetFocusManager()->ClearFocus();
   } else {
     user_view_->StopThrobber();
   }
