@@ -641,8 +641,11 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
              inView:(NSView *)controlView {
   NSSize size = [title size];
 
-  // Don't complicate drawing unless we need to clip
-  if (floor(size.width) <= NSWidth(cellFrame)) {
+  // Empirically, Cocoa will draw an extra 2 pixels past NSWidth(cellFrame)
+  // before it clips the text.
+  const CGFloat kOverflowBeforeClip = 2;
+  // Don't complicate drawing unless we need to clip.
+  if (floor(size.width) <= (NSWidth(cellFrame) + kOverflowBeforeClip)) {
     return [super drawTitle:title withFrame:cellFrame inView:controlView];
   }
 
