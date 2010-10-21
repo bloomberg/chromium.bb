@@ -101,3 +101,8 @@ DomStorageEmptyDatabaseTest.NonEmptyDirAfterSet
 
 # Hangs; See http://crbug.com/58569
 SearchProviderTest.TestIsSearchProviderInstalled
+
+# Following tests crash with LOG(FATAL) on valgrind mac; See http://crbug.com/60036
+OptionsUITest.FLAKY_TwoCommandsOneTab
+OptionsUITest.FLAKY_CommandAgainGoesBackToOptionsTab
+
