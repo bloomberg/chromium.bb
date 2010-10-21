@@ -138,6 +138,7 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
   bytes_read = filter.Read(data.get(), byte_size, NULL);
   if (bytes_read < byte_size) {
     RecordFailure(FAILURE_FILTER_READ_DATA_SHORT);
+    return NULL;
   } else if (bytes_read != byte_size) {
     RecordFailure(FAILURE_FILTER_READ_DATA);
     return NULL;
