@@ -30,7 +30,7 @@ std::string Authenticator::Canonicalize(const std::string& email_address) {
   if (parts[0].find('+') != std::string::npos)
     parts[0].erase(parts[0].find('+'));
   std::string new_email = StringToLowerASCII(JoinString(parts, at));
-  LOG(INFO) << "Canonicalized " << email_address << " to " << new_email;
+  VLOG(1) << "Canonicalized " << email_address << " to " << new_email;
   return new_email;
 }
 

@@ -106,11 +106,11 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
                                          PageTransition::Type transition) {
   if (url.spec() == kRegistrationSuccessUrl) {
     source->Stop();
-    LOG(INFO) << "Registration form completed.";
+    VLOG(1) << "Registration form completed.";
     CloseScreen(ScreenObserver::REGISTRATION_SUCCESS);
   } else if (url.spec() == kRegistrationSkippedUrl) {
     source->Stop();
-    LOG(INFO) << "Registration form skipped.";
+    VLOG(1) << "Registration form skipped.";
     CloseScreen(ScreenObserver::REGISTRATION_SKIPPED);
   } else {
     source->Stop();
@@ -144,7 +144,7 @@ void RegistrationScreen::CloseScreen(ScreenObserver::ExitCodes code) {
 // static
 URLRequestJob* RegistrationScreen::Factory(URLRequest* request,
                                            const std::string& scheme) {
-  LOG(INFO) << "Handling url: " << request->url().spec().c_str();
+  VLOG(1) << "Handling url: " << request->url().spec().c_str();
   return new URLRequestAboutJob(request);
 }
 

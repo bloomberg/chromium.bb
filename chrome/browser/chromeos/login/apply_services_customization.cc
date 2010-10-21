@@ -132,14 +132,14 @@ void ApplyServicesCustomization::Apply(const std::string& manifest) {
     return;
   }
 
-  LOG(INFO) << "Partner services customizations manifest loaded successfully";
+  VLOG(1) << "Partner services customizations manifest loaded successfully";
   if (!customization.initial_start_page_url().empty()) {
     // Append partner's start page url to command line so it gets opened
     // on browser startup.
     CommandLine::ForCurrentProcess()->AppendArg(
         customization.initial_start_page_url());
-    LOG(INFO) << "initial_start_page_url: "
-              << customization.initial_start_page_url();
+    VLOG(1) << "initial_start_page_url: "
+            << customization.initial_start_page_url();
   }
   // TODO(dpolukhin): apply customized apps, exts and support page.
 

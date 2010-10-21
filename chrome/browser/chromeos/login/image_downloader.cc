@@ -52,7 +52,7 @@ void ImageDownloader::OnURLFetchComplete(const URLFetcher* source,
     return;
   }
 
-  LOG(INFO) << "Decoding the image...";
+  VLOG(1) << "Decoding the image...";
   std::vector<unsigned char> image_data(data.begin(), data.end());
   scoped_refptr<ImageDecoder> image_decoder = new ImageDecoder(delegate_,
                                                                image_data);

@@ -68,7 +68,7 @@ GoogleAuthenticator::~GoogleAuthenticator() {}
 
 void GoogleAuthenticator::CancelClientLogin() {
   if (gaia_authenticator_->HasPendingFetch()) {
-    LOG(INFO) << "Canceling ClientLogin attempt.";
+    VLOG(1) << "Canceling ClientLogin attempt.";
     gaia_authenticator_->CancelRequest();
 
     BrowserThread::PostTask(
@@ -145,7 +145,7 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
   unlock_ = true;
   LoadLocalaccount(kLocalaccountFile);
   if (!localaccount_.empty() && localaccount_ == username) {
-    LOG(INFO) << "unlocking local account";
+    VLOG(1) << "Unlocking localaccount";
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
@@ -180,7 +180,7 @@ void GoogleAuthenticator::LoginOffTheRecord() {
 void GoogleAuthenticator::OnClientLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
-  LOG(INFO) << "Online login successful!";
+  VLOG(1) << "Online login successful!";
   ClearClientLoginAttempt();
 
   BrowserThread::PostTask(
@@ -261,12 +261,12 @@ void GoogleAuthenticator::OnLoginSuccess(
 }
 
 void GoogleAuthenticator::CheckOffline(const LoginFailure& error) {
-  LOG(INFO) << "Attempting offline login";
+  VLOG(1) << "Attempting offline login";
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->CheckKey(
           username_.c_str(),
           ascii_hash_.c_str())) {
     // The fetch didn't succeed, but offline login did.
-    LOG(INFO) << "Offline login successful!";
+    VLOG(1) << "Offline login successful!";
     OnLoginSuccess(GaiaAuthConsumer::ClientLoginResult(), false);
   } else {
     // We couldn't hit the network, and offline login failed.
@@ -277,7 +277,7 @@ void GoogleAuthenticator::CheckOffline(const LoginFailure& error) {
 void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
   {
     AutoLock for_this_block(localaccount_lock_);
-    LOG(INFO) << "Checking localaccount";
+    VLOG(1) << "Checking localaccount";
     if (!checked_for_localaccount_) {
       BrowserThread::PostDelayedTask(
           BrowserThread::UI,
@@ -369,13 +369,13 @@ void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
   std::string localaccount;
   if (PathService::Get(base::DIR_EXE, &localaccount_file)) {
     localaccount_file = localaccount_file.Append(filename);
-    LOG(INFO) << "looking for localaccount in " << localaccount_file.value();
+    VLOG(1) << "Looking for localaccount in " << localaccount_file.value();
 
     ReadFileToString(localaccount_file, &localaccount);
     TrimWhitespaceASCII(localaccount, TRIM_TRAILING, &localaccount);
-    LOG(INFO) << "Loading localaccount: " << localaccount;
+    VLOG(1) << "Loading localaccount: " << localaccount;
   } else {
-    LOG(INFO) << "Assuming no localaccount";
+    VLOG(1) << "Assuming no localaccount";
   }
   SetLocalaccount(localaccount);
 }

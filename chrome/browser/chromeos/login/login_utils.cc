@@ -119,7 +119,7 @@ class LoginUtilsWrapper {
 void LoginUtilsImpl::CompleteLogin(const std::string& username,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
-  LOG(INFO) << "Completing login for " << username;
+  VLOG(1) << "Completing login for " << username;
 
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
@@ -227,7 +227,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
-  LOG(INFO) << "Completing off the record login";
+  VLOG(1) << "Completing off the record login";
 
   UserManager::Get()->OffTheRecordUserLoggedIn();
 
@@ -296,7 +296,7 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
   CommandLine::ForCurrentProcess()->InitFromArgv(
       CommandLine::ForCurrentProcess()->argv());
 
-  LOG(INFO) << "Launching browser...";
+  VLOG(1) << "Launching browser...";
   BrowserInit browser_init;
   int return_code;
   browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),

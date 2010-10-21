@@ -29,7 +29,7 @@ CookieFetcher::CookieFetcher(Profile* profile) : profile_(profile) {
 }
 
 void CookieFetcher::AttemptFetch(const std::string& credentials) {
-  LOG(INFO) << "getting auth token...";
+  VLOG(1) << "Getting auth token...";
   fetcher_.reset(client_login_handler_->Handle(credentials, this));
 }
 
@@ -41,12 +41,12 @@ void CookieFetcher::OnURLFetchComplete(const URLFetcher* source,
                                        const std::string& data) {
   if (status.is_success() && response_code == kHttpSuccess) {
     if (issue_handler_->CanHandle(url)) {
-      LOG(INFO) << "Handling auth token";
+      VLOG(1) << "Handling auth token";
       fetcher_.reset(issue_handler_->Handle(data, this));
       return;
     }
   }
-  LOG(INFO) << "Calling DoLaunch";
+  VLOG(1) << "Calling DoLaunch";
   launcher_->DoLaunch(profile_);
   delete this;
 }

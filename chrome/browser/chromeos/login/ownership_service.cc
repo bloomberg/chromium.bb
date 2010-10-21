@@ -40,7 +40,7 @@ bool OwnershipService::StartLoadOwnerKeyAttempt() {
 
 bool OwnershipService::StartTakeOwnershipAttempt(const std::string& owner) {
   if (IsAlreadyOwned()) {
-    LOG(INFO) << "Device is already owned";
+    VLOG(1) << "Device is already owned";
     return false;
   }
   BrowserThread::PostTask(

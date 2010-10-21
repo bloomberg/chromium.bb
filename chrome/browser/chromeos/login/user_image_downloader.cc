@@ -78,7 +78,7 @@ void UserImageDownloader::OnURLFetchComplete(const URLFetcher* source,
       LOG(ERROR) << "Didn't find image url in " << data;
       return;
     }
-    LOG(INFO) << "Sending request to " << image_url;
+    VLOG(1) << "Sending request to " << image_url;
     new ImageDownloader(this, GURL(image_url), auth_token_);
   }
 }

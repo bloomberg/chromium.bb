@@ -37,25 +37,18 @@ class MockAuthenticator : public Authenticator {
                                    const std::string& password,
                                    const std::string& login_token,
                                    const std::string& login_captcha) {
-    if (expected_username_ == username &&
-        expected_password_ == password) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &MockAuthenticator::OnLoginSuccess,
-                            GaiaAuthConsumer::ClientLoginResult(),
-                            false));
+    if (expected_username_ == username && expected_password_ == password) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &MockAuthenticator::OnLoginSuccess,
+                            GaiaAuthConsumer::ClientLoginResult(), false));
       return true;
-    } else {
-      GoogleServiceAuthError error(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &MockAuthenticator::OnLoginFailure,
-                            LoginFailure::FromNetworkAuthFailure(error)));
-      return false;
     }
+    GoogleServiceAuthError error(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &MockAuthenticator::OnLoginFailure,
+                          LoginFailure::FromNetworkAuthFailure(error)));
+    return false;
   }
 
   virtual bool AuthenticateToUnlock(const std::string& username,
@@ -79,7 +72,7 @@ class MockAuthenticator : public Authenticator {
 
   void OnLoginFailure(const LoginFailure& failure) {
       consumer_->OnLoginFailure(failure);
-      LOG(INFO) << "Posting a QuitTask to UI thread";
+      VLOG(1) << "Posting a QuitTask to UI thread";
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
   }

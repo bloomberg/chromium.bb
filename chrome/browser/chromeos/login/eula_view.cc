@@ -291,7 +291,7 @@ static GURL GetOemEulaPagePath() {
     std::string locale = g_browser_process->GetApplicationLocale();
     FilePath eula_page_path = customization->GetEULAPagePath(locale);
     if (eula_page_path.empty()) {
-      LOG(INFO) << "No eula found for locale: " << locale;
+      VLOG(1) << "No eula found for locale: " << locale;
       locale = customization->initial_locale();
       eula_page_path = customization->GetEULAPagePath(locale);
     }
@@ -300,7 +300,7 @@ static GURL GetOemEulaPagePath() {
           chrome::kStandardSchemeSeparator + eula_page_path.value();
       return GURL(page_path);
     } else {
-      LOG(INFO) << "No eula found for locale: " << locale;
+      VLOG(1) << "No eula found for locale: " << locale;
     }
   } else {
     LOG(ERROR) << "No manifest found.";

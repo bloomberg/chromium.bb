@@ -69,7 +69,7 @@ void SavePathToLocalState(const std::string& username,
   DictionaryValue* images =
       local_state->GetMutableDictionary(kUserImages);
   images->SetWithoutPathExpansion(username, new StringValue(image_path));
-  DLOG(INFO) << "Saving path to user image in Local State.";
+  DVLOG(1) << "Saving path to user image in Local State.";
   local_state->SavePersistentPrefs();
 }
 
@@ -301,7 +301,7 @@ void UserManager::SaveUserImage(const std::string& username,
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   FilePath image_path = user_data_dir.AppendASCII(filename);
-  DLOG(INFO) << "Saving user image to " << image_path.value();
+  DVLOG(1) << "Saving user image to " << image_path.value();
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
@@ -355,7 +355,7 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
 
 void UserManager::OnImageLoaded(const std::string& username,
                                 const SkBitmap& image) {
-  DLOG(INFO) << "Loaded image for " << username;
+  DVLOG(1) << "Loaded image for " << username;
   user_images_[username] = image;
   User user;
   user.set_email(username);

@@ -87,7 +87,7 @@ void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
 }
 
 void WizardAccessibilityHelper::EnableAccessibility(views::View* view_tree) {
-  LOG(INFO) << "Enabling accessibility.";
+  VLOG(1) << "Enabling accessibility.";
   if (!registered_notifications_)
     RegisterNotifications();
   if (g_browser_process) {

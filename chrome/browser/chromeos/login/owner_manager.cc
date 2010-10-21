@@ -25,7 +25,7 @@ OwnerManager::~OwnerManager() {}
 
 void OwnerManager::LoadOwnerKey() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  LOG(INFO) << "Loading owner key";
+  VLOG(1) << "Loading owner key";
   NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
 
   // If |public_key_| isn't empty, we already have the key, so don't
@@ -47,7 +47,7 @@ void OwnerManager::LoadOwnerKey() {
 
 void OwnerManager::GenerateKeysAndExportPublic() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  LOG(INFO) << "Generating key pair";
+  VLOG(1) << "Generating key pair";
 
   private_key_.reset(utils_->GenerateKeyPair());
 
@@ -69,7 +69,7 @@ void OwnerManager::GenerateKeysAndExportPublic() {
 }
 
 void OwnerManager::ExportKey() {
-  LOG(INFO) << "Exporting public key";
+  VLOG(1) << "Exporting public key";
   if (!utils_->ExportPublicKeyViaDbus(private_key_.get(), this)) {
     private_key_.reset(NULL);
     BrowserThread::PostTask(
@@ -82,7 +82,7 @@ void OwnerManager::ExportKey() {
 }
 
 void OwnerManager::OnComplete(bool value) {
-  LOG(INFO) << "Export public key attempt: " << (value ? "success" : "fail");
+  VLOG(1) << "Export public key attempt: " << (value ? "success" : "fail");
   NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
   if (!value)
     result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
@@ -130,7 +130,7 @@ void OwnerManager::Sign(const BrowserThread::ID thread_id,
     return;
   }
 
-  LOG(INFO) << "Starting signing attempt";
+  VLOG(1) << "Starting signing attempt";
   KeyOpCode return_code = SUCCESS;
   std::vector<uint8> signature;
   if (!utils_->Sign(data, &signature, private_key_.get())) {
@@ -159,7 +159,7 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
     return;
   }
 
-  LOG(INFO) << "Starting verify attempt";
+  VLOG(1) << "Starting verify attempt";
   KeyOpCode return_code = SUCCESS;
   if (!utils_->Verify(data, signature, public_key_)) {
     return_code = OPERATION_FAILED;

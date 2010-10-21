@@ -67,8 +67,8 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
   void OnComplete(bool success, int return_code) {
     // Log the error, but there's not much we can do.
     if (!success) {
-      LOG(INFO) << "Removal of cryptohome for " << user_email_
-                << " failed, return code: " << return_code;
+      VLOG(1) << "Removal of cryptohome for " << user_email_
+              << " failed, return code: " << return_code;
     }
     delete this;
   }

@@ -50,7 +50,7 @@ void HTMLPageScreen::CreateView() {
 }
 
 void HTMLPageScreen::Refresh() {
-  LOG(INFO) << "HTMLPageScreen::Refresh(): " << url_;
+  VLOG(1) << "HTMLPageScreen::Refresh(): " << url_;
   StartTimeoutTimer();
   GURL url(url_);
   Profile* profile = ProfileManager::GetDefaultProfile();
@@ -72,7 +72,7 @@ void HTMLPageScreen::LoadingStateChanged(TabContents* source) {
     source->Stop();
     // TODO(dpolukhin): use special code for this case but now
     // ACCOUNT_CREATE_BACK works as we would like, i.e. get to login page.
-    LOG(INFO) << "HTMLPageScreen::LoadingStateChanged: " << url;
+    VLOG(1) << "HTMLPageScreen::LoadingStateChanged: " << url;
     CloseScreen(ScreenObserver::ACCOUNT_CREATE_BACK);
   }
 }
@@ -102,14 +102,14 @@ void HTMLPageScreen::OnPageLoaded() {
 }
 
 void HTMLPageScreen::OnPageLoadFailed(const std::string& url) {
-  LOG(INFO) << "HTMLPageScreen::OnPageLoadFailed: " << url;
+  VLOG(1) << "HTMLPageScreen::OnPageLoadFailed: " << url;
   CloseScreen(ScreenObserver::CONNECTION_FAILED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageScreen, WebPageScreen implementation:
 void HTMLPageScreen::OnNetworkTimeout() {
-  LOG(INFO) << "HTMLPageScreen::OnNetworkTimeout";
+  VLOG(1) << "HTMLPageScreen::OnNetworkTimeout";
   // Just show what we have now. We shouldn't exit from the screen on timeout.
   OnPageLoaded();
 }

@@ -77,7 +77,7 @@ void LoginScreen::ClearErrors() {
 
 void LoginScreen::OnLoginFailure(const LoginFailure& failure) {
   const std::string error = failure.GetErrorString();
-  LOG(INFO) << "LoginManagerView: OnLoginFailure() " << error;
+  VLOG(1) << "LoginManagerView: OnLoginFailure() " << error;
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
 
   // Check networking after trying to login in case user is

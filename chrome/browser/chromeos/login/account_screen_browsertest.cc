@@ -55,7 +55,7 @@ static bool inspector_called = false;  // had to use global flag as
 
 static URLRequestJob* InspectorHook(URLRequest* request,
                                     const std::string& scheme) {
-  LOG(INFO) << "Intercepted: " << request->url() << ", scheme: " << scheme;
+  VLOG(1) << "Intercepted: " << request->url() << ", scheme: " << scheme;
 
   // Expect that the parameters are the same as new_account.html gave us.
   EXPECT_STREQ("cros://inspector/?param1=value1+param2",

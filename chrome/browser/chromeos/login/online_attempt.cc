@@ -54,7 +54,7 @@ void OnlineAttempt::Initiate(Profile* profile) {
 void OnlineAttempt::OnClientLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  LOG(INFO) << "Online login successful!";
+  VLOG(1) << "Online login successful!";
   if (fetch_canceler_) {
     fetch_canceler_->Cancel();
     fetch_canceler_ = NULL;

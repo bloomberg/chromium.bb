@@ -22,14 +22,14 @@ bool IssueResponseHandler::CanHandle(const GURL& url) {
 URLFetcher* IssueResponseHandler::Handle(
     const std::string& to_process,
     URLFetcher::Delegate* catcher) {
-  LOG(INFO) << "Handling IssueAuthToken response";
+  VLOG(1) << "Handling IssueAuthToken response";
   token_url_.assign(base::StringPrintf("%s%s",
       AuthResponseHandler::kTokenAuthUrl, to_process.c_str()));
   URLFetcher* fetcher =
       new URLFetcher(GURL(token_url_), URLFetcher::GET, catcher);
   fetcher->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
   if (getter_) {
-    LOG(INFO) << "Fetching " << AuthResponseHandler::kTokenAuthUrl;
+    VLOG(1) << "Fetching " << AuthResponseHandler::kTokenAuthUrl;
     fetcher->set_request_context(getter_);
     fetcher->Start();
   }
