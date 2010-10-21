@@ -58,8 +58,14 @@ class WizardController : public chromeos::ScreenObserver,
     return default_controller_;
   }
 
+  // Returns true if EULA has been accepted.
+  static bool IsEulaAccepted();
+
   // Returns OOBE completion status.
   static bool IsOobeCompleted();
+
+  // Marks EULA status as accepted.
+  static void MarkEulaAccepted();
 
   // Marks OOBE process as completed.
   static void MarkOobeCompleted();
@@ -169,6 +175,9 @@ class WizardController : public chromeos::ScreenObserver,
   void OnRegistrationSuccess();
   void OnRegistrationSkipped();
   void OnOOBECompleted();
+
+  // Shows update screen and starts update process.
+  void InitiateOOBEUpdate();
 
   // Creates wizard screen window with the specified |bounds|.
   // If |initial_show| initial animation (window & background) is shown.

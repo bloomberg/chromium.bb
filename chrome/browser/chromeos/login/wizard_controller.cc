@@ -55,6 +55,9 @@
 
 namespace {
 
+// A boolean pref of the EULA accepted flag.
+const char kEulaAccepted[] = "EulaAccepted";
+
 // A boolean pref of the OOBE complete flag.
 const char kOobeComplete[] = "OobeComplete";
 
@@ -205,6 +208,13 @@ bool IsRegistrationScreenValid(
     const chromeos::StartupCustomizationDocument* startup_manifest) {
   return startup_manifest != NULL &&
          GURL(startup_manifest->registration_url()).is_valid();
+}
+
+// Saves boolean "Local State" preference and forces it's persistence to disk.
+void SaveBoolPreferenceForced(const char* pref_name, bool value) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(pref_name, value);
+  prefs->SavePersistentPrefs();
 }
 
 }  // namespace
@@ -490,6 +500,7 @@ void WizardController::SkipRegistration() {
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete, false);
+  local_state->RegisterBooleanPref(kEulaAccepted, false);
   // Check if the pref is already registered in case
   // Preferences::RegisterUserPrefs runs before this code in the future.
   if (local_state->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
@@ -521,10 +532,17 @@ void WizardController::OnLoginCreateAccount() {
 
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
-    ShowEulaScreen();
+    if (!IsEulaAccepted()) {
+      ShowEulaScreen();
+    } else {
+      // Possible cases:
+      // 1. EULA was accepted, forced shutdown/reboot during update.
+      // 2. EULA was accepted, planned reboot after update.
+      // Make sure that device is up-to-date.
+      InitiateOOBEUpdate();
+    }
   } else {
-    ShowUpdateScreen();
-    GetUpdateScreen()->StartUpdate();
+    InitiateOOBEUpdate();
   }
 }
 
@@ -561,8 +579,8 @@ void WizardController::OnUpdateCompleted() {
 }
 
 void WizardController::OnEulaAccepted() {
-  ShowUpdateScreen();
-  GetUpdateScreen()->StartUpdate();
+  MarkEulaAccepted();
+  InitiateOOBEUpdate();
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
@@ -616,6 +634,11 @@ void WizardController::OnRegistrationSkipped() {
 void WizardController::OnOOBECompleted() {
   MarkOobeCompleted();
   ShowLoginScreen();
+}
+
+void WizardController::InitiateOOBEUpdate() {
+  ShowUpdateScreen();
+  GetUpdateScreen()->StartUpdate();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -711,8 +734,7 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   } else if (first_screen_name == kAccountScreenName) {
     ShowAccountScreen();
   } else if (first_screen_name == kUpdateScreenName) {
-    ShowUpdateScreen();
-    GetUpdateScreen()->StartUpdate();
+    InitiateOOBEUpdate();
   } else if (first_screen_name == kUserImageScreenName) {
     ShowUserImageScreen();
   } else if (first_screen_name == kEulaScreenName) {
@@ -749,16 +771,23 @@ void WizardController::Login(const std::string& username,
 }
 
 // static
+bool WizardController::IsEulaAccepted() {
+  return g_browser_process->local_state()->GetBoolean(kEulaAccepted);
+}
+
+// static
 bool WizardController::IsOobeCompleted() {
   return g_browser_process->local_state()->GetBoolean(kOobeComplete);
 }
 
 // static
+void WizardController::MarkEulaAccepted() {
+  SaveBoolPreferenceForced(kEulaAccepted, true);
+}
+
+// static
 void WizardController::MarkOobeCompleted() {
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(kOobeComplete, true);
-  // Make sure that changes are reflected immediately.
-  prefs->SavePersistentPrefs();
+  SaveBoolPreferenceForced(kOobeComplete, true);
 }
 
 // static
