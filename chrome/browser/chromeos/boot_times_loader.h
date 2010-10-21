@@ -69,6 +69,12 @@ class BootTimesLoader
       CancelableRequestConsumerBase* consumer,
       GetBootTimesCallback* callback);
 
+  // Add a time marker for login. A timeline will be dumped to
+  // /tmp/login-times-sent after login is done. If |send_to_uma| is true
+  // the time between this marker and the last will be sent to UMA with
+  // the identifier BootTime.|marker_name|.
+  void AddLoginTimeMarker(const std::string& marker_name, bool send_to_uma);
+
   // Records current uptime and disk usage for metrics use.
   // Posts task to file thread.
   // name will be used as part of file names in /tmp.
@@ -109,30 +115,44 @@ class BootTimesLoader
     DISALLOW_COPY_AND_ASSIGN(Backend);
   };
 
+  class TimeMarker {
+   public:
+    TimeMarker(const std::string& name, bool send_to_uma)
+        : name_(name),
+          time_(base::Time::NowFromSystemTime()),
+          send_to_uma_(send_to_uma) {}
+    std::string name() const { return name_; }
+    base::Time time() const { return time_; }
+    bool send_to_uma() const { return send_to_uma_; }
+
+   private:
+    friend class std::vector<TimeMarker>;
+    std::string name_;
+    base::Time time_;
+    bool send_to_uma_;
+  };
+
   struct Stats {
+   public:
     std::string uptime;
     std::string disk;
-
-    Stats() : uptime(std::string()), disk(std::string()) {}
   };
 
   static void RecordStats(
       const std::string& name, const Stats& stats);
   static Stats GetCurrentStats();
+  static void WriteLoginTimes(const std::vector<TimeMarker> login_times);
 
   // Used to hold the stats at main().
   Stats chrome_main_stats_;
   scoped_refptr<Backend> backend_;
 
-  // Times for authentication and login metrics.
-  base::Time login_attempt_;
-  base::Time login_success_;
-  base::Time chrome_first_render_;
-
   // Used to track notifications for login.
   NotificationRegistrar registrar_;
   base::AtomicSequenceNumber num_tabs_;
   bool have_registered_;
+
+  std::vector<TimeMarker> login_time_markers_;
 
   DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
 };

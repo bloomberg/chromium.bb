@@ -18,6 +18,7 @@
 #include "base/third_party/nss/sha256.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
@@ -247,10 +248,12 @@ void GoogleAuthenticator::OnLoginSuccess(
       Details<AuthenticationNotificationDetails>(&details));
 
   int mount_error = chromeos::kCryptohomeMountErrorNone;
+  BootTimesLoader::Get()->AddLoginTimeMarker("CryptohomeMounting", false);
   if (unlock_ ||
       (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
                                                          ascii_hash_.c_str(),
                                                          &mount_error))) {
+    BootTimesLoader::Get()->AddLoginTimeMarker("CryptohomeMounted", true);
     consumer_->OnLoginSuccess(username_, credentials, request_pending);
   } else if (!unlock_ &&
              mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {

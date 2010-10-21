@@ -54,8 +54,6 @@ class LoginUtils {
   // Returns if browser launch enabled now or not.
   virtual bool IsBrowserLaunchEnabled() const = 0;
 
-  // Returns auth token for 'cp' Contacts service.
-  virtual const std::string& GetAuthToken() const = 0;
 };
 
 }  // namespace chromeos

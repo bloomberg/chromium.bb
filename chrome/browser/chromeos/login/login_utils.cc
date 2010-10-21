@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -80,16 +81,9 @@ class LoginUtilsImpl : public LoginUtils {
   // Returns if browser launch enabled now or not.
   virtual bool IsBrowserLaunchEnabled() const;
 
-  // Returns auth token for 'cp' Contacts service.
-  virtual const std::string& GetAuthToken() const { return auth_token_; }
-
  private:
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
-
-  // Auth token for Contacts service. Received by GoogleAuthenticator as
-  // part of ClientLogin response.
-  std::string auth_token_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -118,16 +112,21 @@ class LoginUtilsWrapper {
 
 void LoginUtilsImpl::CompleteLogin(const std::string& username,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  BootTimesLoader* btl = BootTimesLoader::Get();
 
   VLOG(1) << "Completing login for " << username;
+  btl->AddLoginTimeMarker("CompletingLogin", false);
 
-  if (CrosLibrary::Get()->EnsureLoaded())
+  if (CrosLibrary::Get()->EnsureLoaded()) {
     CrosLibrary::Get()->GetLoginLibrary()->StartSession(username, "");
+    btl->AddLoginTimeMarker("StartedSession", false);
+  }
 
   bool first_login = !UserManager::Get()->IsKnownUser(username);
   UserManager::Get()->UserLoggedIn(username);
+  btl->AddLoginTimeMarker("UserLoggedIn", false);
 
-  // Now launch the initial browser window.
+  // Now get the new profile.
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -137,10 +136,12 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
       *(CommandLine::ForCurrentProcess()),
       logging::DELETE_OLD_LOG_FILE);
+  btl->AddLoginTimeMarker("LoggingRedirected", false);
 
   // The default profile will have been changed because the ProfileManager
   // will process the notification that the UserManager sends out.
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  btl->AddLoginTimeMarker("UserProfileGotten", false);
 
   // Init extension event routers; this normally happens in browser_main
   // but on Chrome OS it has to be deferred until the user finishes
@@ -149,6 +150,12 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       profile->GetExtensionsService()->extensions_enabled()) {
     profile->GetExtensionsService()->InitEventRouters();
   }
+  btl->AddLoginTimeMarker("ExtensionsServiceStarted", false);
+
+  logging::RedirectChromeLogging(
+      user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
+      *(CommandLine::ForCurrentProcess()),
+      logging::DELETE_OLD_LOG_FILE);
 
   // Supply credentials for sync and others to use. Load tokens from disk.
   TokenService* token_service = profile->GetTokenService();
@@ -159,15 +166,16 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   if (token_service->AreCredentialsValid()) {
     token_service->StartFetchingTokens();
   }
+  btl->AddLoginTimeMarker("TokensGotten", false);
 
   // Set the CrOS user by getting this constructor run with the
   // user's email on first retrieval.
   profile->GetProfileSyncService(username);
+  btl->AddLoginTimeMarker("SyncStarted", false);
 
   // Attempt to take ownership; this will fail if device is already owned.
   OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt(
       UserManager::Get()->logged_in_user().email());
-
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
   if (CrosLibrary::Get()->EnsureLoaded()) {
@@ -180,6 +188,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       }
     }
   }
+  btl->AddLoginTimeMarker("TPMOwned", false);
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is
@@ -189,7 +198,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   // delete itself.
   CookieFetcher* cf = new CookieFetcher(profile);
   cf->AttemptFetch(credentials.data);
-  auth_token_ = credentials.token;
+  btl->AddLoginTimeMarker("CookieFetchStarted", false);
 
   static const char kFallbackInputMethodLocale[] = "en-US";
   if (first_login) {
@@ -222,6 +231,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       preferred_languages += ",";
       preferred_languages += kFallbackInputMethodLocale;
       language_preferred_languages.SetValue(preferred_languages);
+      btl->AddLoginTimeMarker("IMESTarted", false);
     }
   }
 }
@@ -288,6 +298,7 @@ void LoginUtils::Set(LoginUtils* mock) {
 }
 
 void LoginUtils::DoBrowserLaunch(Profile* profile) {
+  BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
   // Browser launch was disabled due to some post login screen.
   if (!LoginUtils::Get()->IsBrowserLaunchEnabled())
     return;

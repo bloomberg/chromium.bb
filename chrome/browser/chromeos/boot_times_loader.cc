@@ -37,6 +37,8 @@ static const char kDiskPrefix[] = "disk-";
 static const char kChromeMain[] = "chrome-main";
 // Delay in milliseconds between file read attempts.
 static const int64 kReadAttemptDelayMs = 250;
+// Delay in milliseconds before writing the login times to disk.
+static const int64 kLoginTimeWriteDelayMs = 3000;
 
 // Names of login stats files.
 static const char kLoginSuccess[] = "login-success";
@@ -52,6 +54,7 @@ static const char kLoginTimes[] = "login-times-sent";
 BootTimesLoader::BootTimesLoader()
     : backend_(new Backend()),
       have_registered_(false) {
+  login_time_markers_.reserve(30);
 }
 
 // static
@@ -215,16 +218,54 @@ static void RecordStatsDelayed(
     file_util::WriteFile(disk_output, disk.data(), disk.size());
 }
 
-static void WriteLoginTimes(
-    base::Time login_attempt,
-    base::Time login_success,
-    base::Time chrome_first_render) {
+// static
+void BootTimesLoader::WriteLoginTimes(
+    const std::vector<TimeMarker> login_times) {
+  const int kMinTimeMillis = 1;
+  const int kMaxTimeMillis = 30;
+  const int kNumBuckets = 100;
+  const char kUmaPrefix[] = "BootTime.";
   const FilePath log_path(kLogPath);
+
+  base::Time first = login_times.front().time();
+  base::Time last = login_times.back().time();
+  base::TimeDelta total = last - first;
+  scoped_refptr<base::Histogram>total_hist = base::Histogram::FactoryTimeGet(
+      kUmaLogin,
+      base::TimeDelta::FromMilliseconds(kMinTimeMillis),
+      base::TimeDelta::FromMilliseconds(kMaxTimeMillis),
+      kNumBuckets,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  total_hist->AddTime(total);
   std::string output =
-      base::StringPrintf("total: %.2f\nauth: %.2f\nlogin: %.2f\n",
-          (chrome_first_render - login_attempt).InSecondsF(),
-          (login_success - login_attempt).InSecondsF(),
-          (chrome_first_render - login_success).InSecondsF());
+      base::StringPrintf("%s: %.2f", kUmaLogin, total.InSecondsF());
+  base::Time prev = first;
+  for (unsigned int i = 1; i < login_times.size(); ++i) {
+    TimeMarker tm = login_times[i];
+    base::TimeDelta since_first = tm.time() - first;
+    base::TimeDelta since_prev = tm.time() - prev;
+    std::string name;
+
+    if (tm.send_to_uma()) {
+      name = kUmaPrefix + tm.name();
+      scoped_refptr<base::Histogram>prev_hist = base::Histogram::FactoryTimeGet(
+          name,
+          base::TimeDelta::FromMilliseconds(kMinTimeMillis),
+          base::TimeDelta::FromMilliseconds(kMaxTimeMillis),
+          kNumBuckets,
+          base::Histogram::kUmaTargetedHistogramFlag);
+      prev_hist->AddTime(since_prev);
+    } else {
+      name = tm.name();
+    }
+    output +=
+        StringPrintf(
+            "\n%.2f +%.2f %s",
+            since_first.InSecondsF(),
+            since_prev.InSecondsF(),
+            name.data());
+    prev = tm.time();
+  }
   file_util::WriteFile(
       log_path.Append(kLoginTimes), output.data(), output.size());
 }
@@ -259,7 +300,7 @@ void BootTimesLoader::RecordChromeMainStats() {
 }
 
 void BootTimesLoader::RecordLoginAttempted() {
-  login_attempt_ = base::Time::NowFromSystemTime();
+  AddLoginTimeMarker("LoginStarted", false);
   if (!have_registered_) {
     have_registered_ = true;
     registrar_.Add(this, NotificationType::LOAD_START,
@@ -269,16 +310,20 @@ void BootTimesLoader::RecordLoginAttempted() {
   }
 }
 
+void BootTimesLoader::AddLoginTimeMarker(
+    const std::string& marker_name, bool send_to_uma) {
+  login_time_markers_.push_back(TimeMarker(marker_name, send_to_uma));
+}
+
 void BootTimesLoader::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
   if (type == NotificationType::LOGIN_AUTHENTICATION) {
     Details<AuthenticationNotificationDetails> auth_details(details);
-    if (!login_attempt_.is_null() && auth_details->success()) {
-      login_success_ = base::Time::NowFromSystemTime();
+    if (auth_details->success()) {
+      AddLoginTimeMarker("Authenticate", true);
       RecordCurrentStats(kLoginSuccess);
-      UMA_HISTOGRAM_TIMES(kUmaAuthenticate, login_success_ - login_attempt_);
       registrar_.Remove(this, NotificationType::LOGIN_AUTHENTICATION,
                         NotificationService::AllSources());
     }
@@ -286,21 +331,21 @@ void BootTimesLoader::Observe(
     // Only log for first tab to render.  Make sure this is only done once.
     // If the network isn't connected we'll get a second LOAD_START once it is
     // and the page is reloaded.
-    if (!login_success_.is_null() &&
-        NetworkStateNotifier::Get()->is_connected()) {
+    if (NetworkStateNotifier::Get()->is_connected()) {
       // Post difference between first tab and login success time.
-      chrome_first_render_ = base::Time::NowFromSystemTime();
+      AddLoginTimeMarker("LoginDone", false);
       RecordCurrentStats(kChromeFirstRender);
-      UMA_HISTOGRAM_TIMES(kUmaLogin, chrome_first_render_ - login_success_);
       // Post chrome first render stat.
       registrar_.Remove(this, NotificationType::LOAD_START,
                         NotificationService::AllSources());
-      BrowserThread::PostTask(
+      // Don't swamp the FILE thread right away.
+      BrowserThread::PostDelayedTask(
           BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(
-              WriteLoginTimes,
-              login_attempt_, login_success_, chrome_first_render_));
+          NewRunnableFunction(WriteLoginTimes, login_time_markers_),
+          kLoginTimeWriteDelayMs);
       have_registered_ = false;
+    } else {
+      AddLoginTimeMarker("LoginRenderNoNetwork", false);
     }
   }
 }

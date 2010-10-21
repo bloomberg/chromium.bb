@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/profile.h"
@@ -136,6 +137,7 @@ void LoginPerformer::ResyncEncryptedData() {
 // LoginPerformer, private:
 
 void LoginPerformer::StartAuthentication() {
+  BootTimesLoader::Get()->AddLoginTimeMarker("AuthStarted", false);
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
   BrowserThread::PostTask(

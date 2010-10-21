@@ -816,6 +816,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     browser::ShowLoginWizard(first_screen, size);
   } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
       parsed_command_line.HasSwitch(switches::kLoginPassword)) {
+    chromeos::BootTimesLoader::Get()->RecordLoginAttempted();
     new StubLogin(
         parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
         parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
