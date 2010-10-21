@@ -1064,9 +1064,10 @@ function initializeLogin() {
 }
 
 function updateLogin(login) {
+  $('login-container').style.display = login ? 'block' : '';
   if (login)
     $('login-username').textContent = login;
-  $('login').style.display = login ? 'block' : 'none';
+
 }
 
 var mostVisited = new MostVisited(

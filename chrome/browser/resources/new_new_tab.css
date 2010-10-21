@@ -29,7 +29,6 @@ body.loading #main {
 }
 
 #main,
-#login-container,
 .section,
 .maxiview {
   width: 920px;
@@ -281,11 +280,10 @@ html[anim=true][enable-section-animations=true] .section {
 }
 
 #login-container {
-  position: relative;
-}
-#login {
-  position: absolute;
-  right: 0;
+  display: none;
+  height: 0;  /* This should not take any vertical space and this simpler than
+                 position absolute which changes the width to intrinsic */
+  text-align: end;
 }
 
 .section.disabled,
