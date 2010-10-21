@@ -332,6 +332,9 @@ const char kDnsLogDetails[]                 = "dns-log-details";
 // Disables prefetching of DNS information.
 const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
+// Use the specified DNS server for raw DNS resolution.
+const char kDnsServer[]                     = "dns-server";
+
 // Specifies if the dom_automation_controller_ needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
 // be a performance bottleneck. One should only enable it when automating

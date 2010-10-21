@@ -159,7 +159,14 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
     kOsAll,
     switches::kEnablePrintPreview
-  }
+  },
+  {
+    "dns-server",
+    IDS_FLAGS_DNS_SERVER_NAME,
+    IDS_FLAGS_DNS_SERVER_DESCRIPTION,
+    kOsLinux,
+    switches::kDnsServer
+  },
 };
 
 // Stores and encapsulates the little state that about:flags has.
