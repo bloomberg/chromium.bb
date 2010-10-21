@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
@@ -29,7 +28,6 @@ class ScreenLockerTester;
 // ScreenLockView creates view components necessary to authenticate
 // a user to unlock the screen.
 class ScreenLockView : public views::View,
-                       public views::ButtonListener,
                        public views::Textfield::Controller,
                        public NotificationObserver,
                        public UserView::Delegate {
@@ -50,14 +48,13 @@ class ScreenLockView : public views::View,
 
   // views::View implementation:
   virtual void SetEnabled(bool enabled);
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
 
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  // views::ButtonListener implmeentation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // views::Textfield::Controller implementation:
   virtual void ContentsChanged(views::Textfield* sender,
@@ -81,12 +78,17 @@ class ScreenLockView : public views::View,
 
   // For editing the password.
   views::Textfield* password_field_;
-  views::Button* unlock_button_;
 
   // ScreenLocker is owned by itself.
   ScreenLocker* screen_locker_;
 
   NotificationRegistrar registrar_;
+
+  // User's picture, signout button and password field.
+  views::View* main_;
+
+  // Username thaty overlays on top of user's picture.
+  views::View* username_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockView);
 };

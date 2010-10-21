@@ -636,6 +636,8 @@
         'browser/chromeos/login/user_manager.h',
         'browser/chromeos/login/user_view.cc',
         'browser/chromeos/login/user_view.h',
+        'browser/chromeos/login/username_view.cc',
+        'browser/chromeos/login/username_view.h',
         'browser/chromeos/login/view_screen.h',
         'browser/chromeos/login/web_page_screen.cc',
         'browser/chromeos/login/web_page_screen.h',

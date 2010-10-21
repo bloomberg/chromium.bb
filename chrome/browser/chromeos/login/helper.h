@@ -47,7 +47,6 @@ namespace login {
 
 // Command tag for buttons on the lock screen.
 enum Command {
-  UNLOCK,
   SIGN_OUT,
 };
 

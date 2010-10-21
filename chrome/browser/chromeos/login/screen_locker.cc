@@ -340,8 +340,7 @@ class ScreenLockerBackgroundView : public chromeos::BackgroundView {
   virtual void Layout() {
     chromeos::BackgroundView::Layout();
     gfx::Rect screen = bounds();
-    gfx::Rect size;
-    lock_widget_->GetBounds(&size, false);
+    gfx::Size size = lock_widget_->GetRootView()->GetPreferredSize();
     lock_widget_->SetBounds(
         gfx::Rect((screen.width() - size.width()) / 2,
                   (screen.height() - size.height()) / 2,
@@ -524,12 +523,10 @@ void ScreenLocker::Init() {
                    G_CALLBACK(OnClientEventThunk), this);
 
   // GTK does not like zero width/height.
-  gfx::Size size(1, 1);
   if (!unlock_on_input_) {
     screen_lock_view_ = new ScreenLockView(this);
     screen_lock_view_->Init();
     screen_lock_view_->SetEnabled(false);
-    size = screen_lock_view_->GetPreferredSize();
   } else {
     input_event_observer_.reset(new InputEventObserver(this));
     MessageLoopForUI::current()->AddObserver(input_event_observer_.get());
@@ -537,7 +534,7 @@ void ScreenLocker::Init() {
 
   lock_widget_ = new GrabWidget(this);
   lock_widget_->MakeTransparent();
-  lock_widget_->InitWithWidget(lock_window_, gfx::Rect(size));
+  lock_widget_->InitWithWidget(lock_window_, gfx::Rect());
   if (screen_lock_view_)
     lock_widget_->SetContentsView(screen_lock_view_);
   lock_widget_->Show();

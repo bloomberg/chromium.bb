@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_view.h"
+#include "chrome/browser/chromeos/login/username_view.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
@@ -19,7 +20,6 @@
 #include "grit/theme_resources.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
@@ -59,9 +59,24 @@ using login::kBorderSize;
 ScreenLockView::ScreenLockView(ScreenLocker* screen_locker)
     : user_view_(NULL),
       password_field_(NULL),
-      unlock_button_(NULL),
-      screen_locker_(screen_locker) {
+      screen_locker_(screen_locker),
+      main_(NULL),
+      username_(NULL) {
   DCHECK(screen_locker_);
+}
+
+gfx::Size ScreenLockView::GetPreferredSize() {
+  return main_->GetPreferredSize();
+}
+
+void ScreenLockView::Layout() {
+  int username_height = username_->GetPreferredSize().height();
+  main_->SetBounds(0, 0, width(), height());
+  username_->SetBounds(
+      kBorderSize,
+      login::kUserImageSize - username_height + kBorderSize,
+      login::kUserImageSize,
+      username_height);
 }
 
 void ScreenLockView::Init() {
@@ -72,23 +87,18 @@ void ScreenLockView::Init() {
   user_view_ = new UserView(this,
                             false,  // is_login
                             true);  // need_background
-  views::View* main = new views::View();
+  main_ = new views::View();
   // Use rounded rect background.
   views::Painter* painter =
       CreateWizardPainter(&BorderDefinition::kUserBorder);
 
-  main->set_background(
+  main_->set_background(
       views::Background::CreateBackgroundPainter(true, painter));
-  main->set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
+  main_->set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
 
   // Password field.
   password_field_ = new PasswordField();
   password_field_->SetController(this);
-
-  // Unlock button.
-  unlock_button_ = new views::TextButton(
-      this, l10n_util::GetString(IDS_UNLOCK_BUTTON));
-  unlock_button_->set_tag(login::UNLOCK);
 
   // User icon.
   UserManager::User user = screen_locker_->user();
@@ -96,16 +106,14 @@ void ScreenLockView::Init() {
 
   // User name.
   std::wstring text = UTF8ToWide(user.GetDisplayName());
-  views::Label* label = new views::Label(text);
-  label->SetColor(login::kTextColor);
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font =
       rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD);
-  label->SetFont(font);
 
   // Layouts image, textfield and button components.
-  GridLayout* layout = new GridLayout(main);
-  main->SetLayoutManager(layout);
+  GridLayout* layout = new GridLayout(main_);
+  main_->SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddPaddingColumn(0, kBorderSize);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
@@ -117,9 +125,6 @@ void ScreenLockView::Init() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 5);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, 5);
 
   layout->AddPaddingRow(0, kBorderSize);
   layout->StartRow(0, 0);
@@ -127,26 +132,14 @@ void ScreenLockView::Init() {
   layout->AddPaddingRow(0, kBorderSize);
   layout->StartRow(0, 1);
   layout->AddView(password_field_);
-  layout->AddView(unlock_button_);
-  layout->AddPaddingRow(0, 5);
+  layout->AddPaddingRow(0, kBorderSize);
 
-  unlock_button_->SetFocusable(true);
+  AddChildView(main_);
 
-  // Layouts the main view and the account label.
-  layout = new GridLayout(this);
-  SetLayoutManager(layout);
-  column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  column_set = layout->AddColumnSet(1);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
-
-  layout->StartRow(0, 0);
-  layout->AddView(main);
-  layout->StartRow(0, 1);
-  layout->AddView(label);
+  UsernameView* username = new UsernameView(text);
+  username_ = username;
+  username->SetFont(font);
+  AddChildView(username);
 }
 
 void ScreenLockView::ClearAndSetFocusToPassword() {
@@ -169,23 +162,10 @@ void ScreenLockView::SetEnabled(bool enabled) {
 
   if (!enabled) {
     user_view_->StartThrobber();
-    // TODO(oshima): Re-enabling does not move the focus to the view
-    // that had a focus (issue http://crbug.com/43131).
-    // Move the focus to other field as a workaround.
-    unlock_button_->RequestFocus();
   } else {
     user_view_->StopThrobber();
   }
-  unlock_button_->SetEnabled(enabled);
   password_field_->SetEnabled(enabled);
-}
-
-void ScreenLockView::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
-  if (sender->tag() == login::UNLOCK)
-    screen_locker_->Authenticate(password_field_->text());
-  else
-    NOTREACHED();
 }
 
 void ScreenLockView::OnSignout() {
@@ -213,7 +193,6 @@ void ScreenLockView::Observe(
   UserManager::User* user = Details<UserManager::User>(details).ptr();
   if (screen_locker_->user().email() != user->email())
     return;
-
   user_view_->SetImage(user->image());
 }
 

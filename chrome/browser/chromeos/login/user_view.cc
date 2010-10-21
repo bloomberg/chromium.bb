@@ -8,19 +8,24 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/background.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/throbber.h"
+#include "views/painter.h"
 
 namespace {
 
-// Background color of the login status label and signout button.
+// Background color and corner radius of the login status label and
+// signout button.
 const SkColor kSignoutBackgroundColor = 0xFF007700;
+const int kSignoutBackgroundCornerRadius = 4;
 
 // Horiz/Vert insets for Signout view.
 const int kSignoutViewHorizontalInsets = 10;
@@ -28,6 +33,29 @@ const int kSignoutViewVerticalInsets = 5;
 
 // Padding between remove button and top right image corner.
 const int kRemoveButtonPadding = 3;
+
+// Draws green-ish background for signout view with
+// rounded corners at the bottom.
+class SignoutBackgroundPainter : public views::Painter {
+  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
+    SkRect rect = {0, 0, w, h};
+    SkPath path;
+    SkScalar corners[] = {
+      0, 0,
+      0, 0,
+      kSignoutBackgroundCornerRadius,
+      kSignoutBackgroundCornerRadius,
+      kSignoutBackgroundCornerRadius,
+      kSignoutBackgroundCornerRadius,
+    };
+    path.addRoundRect(rect, corners);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(kSignoutBackgroundColor);
+    canvas->AsCanvasSkia()->drawPath(path, paint);
+  }
+};
 
 }  // namespace
 
@@ -59,8 +87,8 @@ class SignoutView : public views::View {
     AddChildView(active_user_label_);
     AddChildView(signout_link_);
 
-    set_background(views::Background::CreateSolidBackground(
-        kSignoutBackgroundColor));
+    set_background(views::Background::CreateBackgroundPainter(
+        true, new SignoutBackgroundPainter()));
   }
 
   // views::View overrides.
