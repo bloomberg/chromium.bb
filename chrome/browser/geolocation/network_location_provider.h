@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GEOLOCATION_NETWORK_LOCATION_PROVIDER_H_
 #pragma once
 
+#include <list>
 #include <string>
 
 #include "base/basictypes.h"
@@ -27,6 +28,43 @@ class NetworkLocationProvider
       public WifiDataProvider::ListenerInterface,
       public NetworkLocationRequest::ListenerInterface {
  public:
+  // Cache of recently resolved locations. Public for tests.
+  class PositionCache {
+   public:
+    // The maximum size of the cache of positions for previously requested
+    // device data.
+    static const size_t kMaximumSize;
+
+    // Caches the current position response for the current set of cell ID and
+    // WiFi data. In the case of the cache exceeding kMaximumSize this will
+    // evict old entries in FIFO orderer of being added.
+    // Returns true on success, false otherwise.
+    bool CachePosition(const GatewayData& gateway_data,
+                       const WifiData& wifi_data,
+                       const Geoposition& position);
+
+    // Searches for a cached position response for the current set of device
+    // data. Returns NULL if the position is not in the cache, or the cached
+    // position if available. Ownership remains with the cache.
+    const Geoposition* FindPosition(const GatewayData& gateway_data,
+                                    const WifiData& wifi_data);
+
+   private:
+    // Makes the key for the map of cached positions, using a set of
+    // device data. Returns true if a good key was generated, false otherwise.
+    static bool MakeKey(const GatewayData& gateway_data,
+                        const WifiData& wifi_data,
+                        string16* key);
+
+    // The cache of positions. This is stored as a map keyed on a string that
+    // represents a set of device data, and a list to provide
+    // least-recently-added eviction.
+    typedef std::map<string16, Geoposition> CacheMap;
+    CacheMap cache_;
+    typedef std::list<CacheMap::iterator> CacheAgeList;
+    CacheAgeList cache_age_list_;  // Oldest first.
+  };
+
   NetworkLocationProvider(AccessTokenStore* access_token_store,
                           URLRequestContextGetter* context,
                           const GURL& url,
@@ -41,9 +79,6 @@ class NetworkLocationProvider
   virtual void OnPermissionGranted(const GURL& requesting_frame);
 
  private:
-  // PositionCache is an implementation detail of NetworkLocationProvider.
-  class PositionCache;
-
   // Satisfies a position request from cache or network.
   void RequestPosition();
 

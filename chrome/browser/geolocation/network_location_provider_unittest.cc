@@ -14,9 +14,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+// Constants used in multiple tests.
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
 const char kTestHost[] = "myclienthost.test";
 const char kTestHostUrl[] = "http://myclienthost.test/some/path";
+// Using #define so we can easily paste this into various other strings.
+#define REFERENCE_ACCESS_TOKEN "2:k7j3G6LaL6u_lafw:4iXOeOpTh1glSXe"
+
 }  // namespace
 
 // Stops the specified (nested) message loop when the listener is called back.
@@ -125,6 +129,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   virtual void TearDown() {
     WifiDataProvider::ResetFactory();
     RadioDataProvider::ResetFactory();
+    GatewayDataProvider::ResetFactory();
     URLFetcher::set_factory(NULL);
   }
 
@@ -190,6 +195,15 @@ class GeolocationNetworkProviderTest : public testing::Test {
       data.router_data.insert(router);
     }
     return data;
+  }
+
+  static Geoposition CreateReferencePosition(int id) {
+    Geoposition pos;
+    pos.latitude = id;
+    pos.longitude = -(id + 1);
+    pos.altitude = 2 * id;
+    pos.timestamp = base::Time::Now();
+    return pos;
   }
 
   static void ParseGatewayRequest(const std::string& request_data,
@@ -412,9 +426,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   CheckEmptyRequestIsValid(fetcher->upload_data());
-  // Complete the network request with bad position fix (using #define so we
-  // can paste this into various other strings below)
-  #define REFERENCE_ACCESS_TOKEN "2:k7j3G6LaL6u_lafw:4iXOeOpTh1glSXe"
+  // Complete the network request with bad position fix.
   const char* kNoFixNetworkResponse =
       "{"
       "  \"location\": null,"
@@ -737,3 +749,33 @@ TEST_F(GeolocationNetworkProviderTest,
   CheckRequestIsValid(fetcher->upload_data(), 0,
                       kScanCount, REFERENCE_ACCESS_TOKEN);
 }
+
+TEST_F(GeolocationNetworkProviderTest, NetworkPositionCache) {
+  NetworkLocationProvider::PositionCache cache;
+
+  const int kCacheSize = NetworkLocationProvider::PositionCache::kMaximumSize;
+  for (int i = 0; i < kCacheSize * 2 + 1; ++i) {
+    Geoposition pos = CreateReferencePosition(i);
+    bool ret = cache.CachePosition(CreateReferenceRouterData(2),
+                                   CreateReferenceWifiScanData(i), pos);
+    EXPECT_TRUE(ret)  << i;
+    const Geoposition* item = cache.FindPosition(
+        CreateReferenceRouterData(2),
+        CreateReferenceWifiScanData(i));
+    ASSERT_TRUE(item) << i;
+    EXPECT_EQ(pos.latitude, item->latitude)  << i;
+    EXPECT_EQ(pos.longitude, item->longitude)  << i;
+    if (i < kCacheSize) {
+      // Nothing should have spilled yet; check oldest item is still there.
+      EXPECT_TRUE(cache.FindPosition(CreateReferenceRouterData(2),
+                                     CreateReferenceWifiScanData(0)));
+    } else {
+      const int evicted = i - kCacheSize;
+      EXPECT_FALSE(cache.FindPosition(CreateReferenceRouterData(2),
+                                      CreateReferenceWifiScanData(evicted)));
+      EXPECT_TRUE(cache.FindPosition(CreateReferenceRouterData(2),
+                                     CreateReferenceWifiScanData(evicted + 1)));
+    }
+  }
+}
+

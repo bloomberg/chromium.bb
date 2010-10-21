@@ -12,103 +12,92 @@ namespace {
 // The maximum period of time we'll wait for a complete set of device data
 // before sending the request.
 const int kDataCompleteWaitPeriod = 1000 * 2;  // 2 seconds
-
-// The maximum size of the cache of positions for previously requested device
-// data.
-const size_t kMaximumCacheSize = 10;
 }  // namespace
 
-// The PositionCache handles caching and retrieving a position returned by a
-// network location provider. It is not thread safe. It's methods are called on
-// multiple threads by NetworkLocationProvider, but the timing is such that
-// thread safety is not required.
-class NetworkLocationProvider::PositionCache {
- public:
-  // Caches the current position response for the current set of cell ID and
-  // WiFi data. Returns true on success, false otherwise.
-  bool CachePosition(const GatewayData& gateway_data,
-                     const RadioData& radio_data,
-                     const WifiData& wifi_data,
-                     const Geoposition& position) {
-    // Check that we can generate a valid key for the device data.
-    string16 key;
-    if (!MakeKey(gateway_data, radio_data, wifi_data, &key)) {
-      return false;
-    }
-    // If the cache is full, remove the oldest entry.
-    if (cache_.size() == kMaximumCacheSize) {
-      DCHECK(cache_times_.size() == kMaximumCacheSize);
-      CacheTimesMap::iterator oldest_entry = cache_times_.begin();
-      DCHECK(oldest_entry != cache_times_.end());
-      cache_.erase(oldest_entry->second);
-      cache_times_.erase(oldest_entry);
-    }
-    // Insert the position into the cache.
-    std::pair<CacheMap::iterator, bool> result =
-        cache_.insert(std::make_pair(key, position));
-    DCHECK(result.second);
-    cache_times_[position.timestamp] = result.first;
-    DCHECK(cache_.size() == cache_times_.size());
-    return true;
-  }
+// static
+const size_t NetworkLocationProvider::PositionCache::kMaximumSize = 10;
 
-  // Searches for a cached position response for the current set of cell ID and
-  // WiFi data. Returns the cached position if available, NULL otherwise.
-  const Geoposition *FindPosition(const GatewayData &gateway_data,
-                                  const RadioData &radio_data,
-                                  const WifiData &wifi_data) {
-    string16 key;
-    if (!MakeKey(gateway_data, radio_data, wifi_data, &key)) {
-      return NULL;
-    }
-    CacheMap::const_iterator iter = cache_.find(key);
-    return iter == cache_.end() ? NULL : &iter->second;
+bool NetworkLocationProvider::PositionCache::CachePosition(
+    const GatewayData& gateway_data,
+    const WifiData& wifi_data,
+    const Geoposition& position) {
+  // Check that we can generate a valid key for the device data.
+  string16 key;
+  if (!MakeKey(gateway_data, wifi_data, &key)) {
+    return false;
   }
-
-  // Makes the key for the map of cached positions, using a set of
-  // device data. Returns true if a good key was generated, false otherwise.
-  static bool MakeKey(const GatewayData& gateway_data,
-                      const RadioData& /*radio_data*/,
-                      const WifiData& wifi_data,
-                      string16* key) {
-    // Currently we use only the WiFi data and gateway data, and base the
-    // key only on the MAC addresses.
-    // TODO(steveblock): Make use of radio_data.
-    DCHECK(key);
-    key->clear();
-    key->reserve(wifi_data.access_point_data.size() * 19 +
-        gateway_data.router_data.size() * 19);
-    const string16 separator(ASCIIToUTF16("|"));
-    for (GatewayData::RouterDataSet::const_iterator iter =
-         gateway_data.router_data.begin();
-         iter != gateway_data.router_data.end();
-         iter++) {
-      *key += separator;
-      *key += iter->mac_address;
-      *key += separator;
-    }
-    for (WifiData::AccessPointDataSet::const_iterator iter =
-         wifi_data.access_point_data.begin();
-         iter != wifi_data.access_point_data.end();
-         iter++) {
-      *key += separator;
-      *key += iter->mac_address;
-      *key += separator;
-    }
-    // If the key is the empty string, return false, as we don't want to cache a
-    // position for such a set of device data.
-    return !key->empty();
+  // If the cache is full, remove the oldest entry.
+  if (cache_.size() == kMaximumSize) {
+    DCHECK(cache_age_list_.size() == kMaximumSize);
+    CacheAgeList::iterator oldest_entry = cache_age_list_.begin();
+    DCHECK(oldest_entry != cache_age_list_.end());
+    cache_.erase(*oldest_entry);
+    cache_age_list_.erase(oldest_entry);
   }
+  DCHECK_LT(cache_.size(), kMaximumSize);
+  // Insert the position into the cache.
+  std::pair<CacheMap::iterator, bool> result =
+      cache_.insert(std::make_pair(key, position));
+  if (!result.second) {
+    NOTREACHED();  // We never try to add the same key twice.
+    CHECK_EQ(cache_.size(), cache_age_list_.size());
+    return false;
+  }
+  cache_age_list_.push_back(result.first);
+  DCHECK_EQ(cache_.size(), cache_age_list_.size());
+  return true;
+}
 
- private:
-  // The cache of positions. This is stored using two maps. One map is keyed on
-  // a string that represents a set of device data, the other is keyed on the
-  // timestamp of the position.
-  typedef std::map<string16, Geoposition> CacheMap;
-  CacheMap cache_;
-  typedef std::map<base::Time, CacheMap::iterator> CacheTimesMap;
-  CacheTimesMap cache_times_;
-};
+// Searches for a cached position response for the current set of cell ID and
+// WiFi data. Returns the cached position if available, NULL otherwise.
+const Geoposition* NetworkLocationProvider::PositionCache::FindPosition(
+    const GatewayData& gateway_data,
+    const WifiData& wifi_data) {
+  string16 key;
+  if (!MakeKey(gateway_data, wifi_data, &key)) {
+    return NULL;
+  }
+  CacheMap::const_iterator iter = cache_.find(key);
+  return iter == cache_.end() ? NULL : &iter->second;
+}
+
+// Makes the key for the map of cached positions, using a set of
+// device data. Returns true if a good key was generated, false otherwise.
+//
+// static
+bool NetworkLocationProvider::PositionCache::MakeKey(
+    const GatewayData& gateway_data,
+    const WifiData& wifi_data,
+    string16* key) {
+  // Currently we use only the WiFi data and gateway data, and base the
+  // key only on the MAC addresses.
+  // TODO(joth): Make use of radio_data.
+  DCHECK(key);
+  key->clear();
+  const size_t kCharsPerMacAddress = 6 * 3 + 1;  // e.g. "11:22:33:44:55:66|"
+  key->reserve(wifi_data.access_point_data.size() * kCharsPerMacAddress
+               + gateway_data.router_data.size() * kCharsPerMacAddress);
+  const string16 separator(ASCIIToUTF16("|"));
+  for (GatewayData::RouterDataSet::const_iterator iter =
+       gateway_data.router_data.begin();
+       iter != gateway_data.router_data.end();
+       iter++) {
+    *key += separator;
+    *key += iter->mac_address;
+    *key += separator;
+  }
+  for (WifiData::AccessPointDataSet::const_iterator iter =
+       wifi_data.access_point_data.begin();
+       iter != wifi_data.access_point_data.end();
+       iter++) {
+    *key += separator;
+    *key += iter->mac_address;
+    *key += separator;
+  }
+  // If the key is the empty string, return false, as we don't want to cache a
+  // position for such a set of device data.
+  return !key->empty();
+}
 
 // NetworkLocationProvider factory function
 LocationProviderBase* NewNetworkLocationProvider(
@@ -207,8 +196,7 @@ void NetworkLocationProvider::LocationResponseAvailable(
   // Record the position and update our cache.
   position_ = position;
   if (position.IsValidFix()) {
-    position_cache_->CachePosition(gateway_data, radio_data,
-                                   wifi_data, position);
+    position_cache_->CachePosition(gateway_data, wifi_data, position);
   }
 
   // Record access_token if it's set.
@@ -273,7 +261,7 @@ void NetworkLocationProvider::RequestPosition() {
     return;
 
   const Geoposition* cached_position =
-      position_cache_->FindPosition(gateway_data_, radio_data_, wifi_data_);
+      position_cache_->FindPosition(gateway_data_, wifi_data_);
   DCHECK(!device_data_updated_timestamp_.is_null()) <<
       "Timestamp must be set before looking up position";
   if (cached_position) {
