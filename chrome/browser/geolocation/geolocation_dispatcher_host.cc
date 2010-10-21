@@ -141,34 +141,40 @@ void GeolocationDispatcherHostImpl::OnUnregisterDispatcher(int render_view_id) {
 }
 
 void GeolocationDispatcherHostImpl::OnRequestPermission(
-    int render_view_id, int bridge_id, const GURL& requesting_frame) {
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
-             << ":" << render_view_id << ":" << bridge_id;
+  DVLOG(1) << __FUNCTION__ << " " << resource_message_filter_process_id_ << ":"
+           << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->RequestGeolocationPermission(
       resource_message_filter_process_id_, render_view_id, bridge_id,
       requesting_frame);
 }
 
 void GeolocationDispatcherHostImpl::OnCancelPermissionRequest(
-    int render_view_id, int bridge_id, const GURL& requesting_frame) {
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
-             << ":" << render_view_id << ":" << bridge_id;
+  DVLOG(1) << __FUNCTION__ << " " << resource_message_filter_process_id_ << ":"
+           << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->CancelGeolocationPermissionRequest(
       resource_message_filter_process_id_, render_view_id, bridge_id,
       requesting_frame);
 }
 
 void GeolocationDispatcherHostImpl::OnStartUpdating(
-    int render_view_id, int bridge_id, const GURL& requesting_frame,
+    int render_view_id,
+    int bridge_id,
+    const GURL& requesting_frame,
     bool enable_high_accuracy) {
   // WebKit sends the startupdating request before checking permissions, to
   // optimize the no-location-available case and reduce latency in the success
   // case (location lookup happens in parallel with the permission request).
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
-             << ":" << render_view_id << ":" << bridge_id;
+  DVLOG(1) << __FUNCTION__ << " " << resource_message_filter_process_id_ << ":"
+           << render_view_id << ":" << bridge_id;
   bridge_update_options_[std::make_pair(render_view_id, bridge_id)] =
       GeolocationObserverOptions(enable_high_accuracy);
   geolocation_permission_context_->StartUpdatingRequested(
@@ -177,30 +183,30 @@ void GeolocationDispatcherHostImpl::OnStartUpdating(
   RefreshGeolocationObserverOptions();
 }
 
-void GeolocationDispatcherHostImpl::OnStopUpdating(
-    int render_view_id, int bridge_id) {
+void GeolocationDispatcherHostImpl::OnStopUpdating(int render_view_id,
+                                                   int bridge_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
-             << ":" << render_view_id << ":" << bridge_id;
+  DVLOG(1) << __FUNCTION__ << " " << resource_message_filter_process_id_ << ":"
+           << render_view_id << ":" << bridge_id;
   if (bridge_update_options_.erase(std::make_pair(render_view_id, bridge_id)))
     RefreshGeolocationObserverOptions();
   geolocation_permission_context_->StopUpdatingRequested(
       resource_message_filter_process_id_, render_view_id, bridge_id);
 }
 
-void GeolocationDispatcherHostImpl::OnSuspend(
-    int render_view_id, int bridge_id) {
+void GeolocationDispatcherHostImpl::OnSuspend(int render_view_id,
+                                              int bridge_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
-             << ":" << render_view_id << ":" << bridge_id;
+  DVLOG(1) << __FUNCTION__ << " " << resource_message_filter_process_id_ << ":"
+           << render_view_id << ":" << bridge_id;
   // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
-void GeolocationDispatcherHostImpl::OnResume(
-    int render_view_id, int bridge_id) {
+void GeolocationDispatcherHostImpl::OnResume(int render_view_id,
+                                             int bridge_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
-             << ":" << render_view_id << ":" << bridge_id;
+  DVLOG(1) << __FUNCTION__ << " " << resource_message_filter_process_id_ << ":"
+           << render_view_id << ":" << bridge_id;
   // TODO(bulach): connect this with GeolocationArbitrator.
 }
 

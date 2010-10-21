@@ -267,8 +267,8 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
   if (CheckError())
     return false;
 
-  DLOG(INFO) << "Wireless adapter " << adapter_path << " found "
-             << ap_list->len << " access points.";
+  DVLOG(1) << "Wireless adapter " << adapter_path << " found " << ap_list->len
+           << " access points.";
 
   for (guint i = 0; i < ap_list->len; i++) {
     const gchar* ap_path =

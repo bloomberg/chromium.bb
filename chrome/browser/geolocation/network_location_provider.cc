@@ -287,9 +287,9 @@ void NetworkLocationProvider::RequestPosition() {
   // TODO(joth): Rather than cancel pending requests, we should create a new
   // NetworkLocationRequest for each and hold a set of pending requests.
   if (request_->is_request_pending()) {
-    LOG(INFO) << "NetworkLocationProvider - pre-empting pending network request"
-              << "with new data. Wifi APs: "
-              << wifi_data_.access_point_data.size();
+    VLOG(1) << "NetworkLocationProvider - pre-empting pending network request "
+               "with new data. Wifi APs: "
+            << wifi_data_.access_point_data.size();
   }
   // The hostname sent in the request is just to give a first-order
   // approximation of usage. We do not need to guarantee that this network

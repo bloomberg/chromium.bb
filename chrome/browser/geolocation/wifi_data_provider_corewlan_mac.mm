@@ -70,7 +70,7 @@ bool CoreWlanApi::Init() {
   bundle_.reset([[NSBundle alloc]
       initWithPath:@"/System/Library/Frameworks/CoreWLAN.framework"]);
   if (!bundle_) {
-    DLOG(INFO) << "Failed to load the CoreWLAN framework bundle";
+    DVLOG(1) << "Failed to load the CoreWLAN framework bundle";
     return false;
   }
 
@@ -79,8 +79,8 @@ bool CoreWlanApi::Init() {
   void* dl_handle = dlopen([[bundle_ executablePath] fileSystemRepresentation],
                            RTLD_LAZY | RTLD_LOCAL);
   if (dl_handle) {
-    const NSString* key = *reinterpret_cast<const NSString**>(
-        dlsym(dl_handle, "kCWScanKeyMerge"));
+    NSString* key = *reinterpret_cast<NSString**>(dlsym(dl_handle,
+                                                        "kCWScanKeyMerge"));
     if (key)
       merge_key_.reset([key copy]);
   }
@@ -130,7 +130,7 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       ++interface_error_count;
       continue;
     }
-    DLOG(INFO) << interface_name << ": found " << count << " wifi APs";
+    DVLOG(1) << interface_name << ": found " << count << " wifi APs";
 
     for (CWNetwork* network in scan) {
       DCHECK(network);

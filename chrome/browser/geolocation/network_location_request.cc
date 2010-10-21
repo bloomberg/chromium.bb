@@ -93,7 +93,7 @@ bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
                                          const WifiData& wifi_data,
                                          const base::Time& timestamp) {
   if (url_fetcher_ != NULL) {
-    DLOG(INFO) << "NetworkLocationRequest : Cancelling pending request";
+    DVLOG(1) << "NetworkLocationRequest : Cancelling pending request";
     url_fetcher_.reset();
   }
   gateway_data_ = gateway_data;
@@ -134,8 +134,7 @@ void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source,
   url_fetcher_.reset();
 
   DCHECK(listener_);
-  DLOG(INFO) << "NetworkLocationRequest::Run() : "
-                "Calling listener with position.\n";
+  DVLOG(1) << "NetworkLocationRequest::Run() : Calling listener with position.";
   listener_->LocationResponseAvailable(position, server_error, access_token,
                                        gateway_data_, radio_data_, wifi_data_);
 }
@@ -176,8 +175,8 @@ void FormRequestBody(const std::string& host_name,
   AddGatewayData(gateway_data, age, &body_object);
 
   base::JSONWriter::Write(&body_object, false, data);
-  DLOG(INFO) << "NetworkLocationRequest::FormRequestBody(): Formed body "
-             << *data << ".\n";
+  DVLOG(1) << "NetworkLocationRequest::FormRequestBody(): Formed body " << *data
+           << ".";
 }
 
 void FormatPositionError(const GURL& server_url,
@@ -189,8 +188,8 @@ void FormatPositionError(const GURL& server_url,
     position->error_message += "' : ";
     position->error_message += message;
     position->error_message += ".";
-    LOG(INFO) << "NetworkLocationRequest::GetLocationFromResponse() : "
-              << position->error_message;
+    VLOG(1) << "NetworkLocationRequest::GetLocationFromResponse() : "
+            << position->error_message;
 }
 
 void GetLocationFromResponse(bool http_post_result,
@@ -295,11 +294,10 @@ bool ParseServerResponse(const std::string& response_body,
   DCHECK(!timestamp.is_null());
 
   if (response_body.empty()) {
-    LOG(WARNING) << "ParseServerResponse() : Response was empty.\n";
+    LOG(WARNING) << "ParseServerResponse() : Response was empty.";
     return false;
   }
-  DLOG(INFO) << "ParseServerResponse() : Parsing response "
-             << response_body << ".\n";
+  DVLOG(1) << "ParseServerResponse() : Parsing response " << response_body;
 
   // Parse the response, ignoring comments.
   std::string error_msg;
@@ -307,13 +305,13 @@ bool ParseServerResponse(const std::string& response_body,
       response_body, false, NULL, &error_msg));
   if (response_value == NULL) {
     LOG(WARNING) << "ParseServerResponse() : JSONReader failed : "
-                 << error_msg << ".\n";
+                 << error_msg;
     return false;
   }
 
   if (!response_value->IsType(Value::TYPE_DICTIONARY)) {
-    LOG(INFO) << "ParseServerResponse() : Unexpected resopnse type "
-              << response_value->GetType() <<  ".\n";
+    VLOG(1) << "ParseServerResponse() : Unexpected resopnse type "
+            << response_value->GetType();
     return false;
   }
   const DictionaryValue* response_object =
@@ -325,7 +323,7 @@ bool ParseServerResponse(const std::string& response_body,
   // Get the location
   Value* location_value = NULL;
   if (!response_object->Get(kLocationString, &location_value)) {
-    LOG(INFO) << "ParseServerResponse() : Missing location attribute.\n";
+    VLOG(1) << "ParseServerResponse() : Missing location attribute.";
     // GLS returns a response with no location property to represent
     // no fix available; return true to indicate successful parse.
     return true;
@@ -334,8 +332,8 @@ bool ParseServerResponse(const std::string& response_body,
 
   if (!location_value->IsType(Value::TYPE_DICTIONARY)) {
     if (!location_value->IsType(Value::TYPE_NULL)) {
-      LOG(INFO) << "ParseServerResponse() : Unexpected location type"
-                << location_value->GetType() << ".\n";
+      VLOG(1) << "ParseServerResponse() : Unexpected location type "
+              << location_value->GetType();
       // If the network provider was unable to provide a position fix, it should
       // return a HTTP 200, with "location" : null. Otherwise it's an error.
       return false;
@@ -349,7 +347,7 @@ bool ParseServerResponse(const std::string& response_body,
   double latitude, longitude;
   if (!GetAsDouble(*location_object, kLatitudeString, &latitude) ||
       !GetAsDouble(*location_object, kLongitudeString, &longitude)) {
-    LOG(INFO) << "ParseServerResponse() : location lacks lat and/or long.\n";
+    VLOG(1) << "ParseServerResponse() : location lacks lat and/or long.";
     return false;
   }
   // All error paths covered: now start actually modifying postion.

@@ -63,7 +63,7 @@ Apple80211Api::~Apple80211Api() {
 }
 
 bool Apple80211Api::Init() {
-  DLOG(INFO) << "Apple80211Api::Init";
+  DVLOG(1) << "Apple80211Api::Init";
   apple_80211_library_ = dlopen(
       "/System/Library/PrivateFrameworks/Apple80211.framework/Apple80211",
       RTLD_LAZY);
@@ -98,7 +98,7 @@ bool Apple80211Api::Init() {
 }
 
 bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
-  DLOG(INFO) << "Apple80211Api::GetAccessPointData";
+  DVLOG(1) << "Apple80211Api::GetAccessPointData";
   DCHECK(data);
   DCHECK(WirelessScanSplit_function_);
   CFArrayRef managed_access_points = NULL;
@@ -118,7 +118,7 @@ bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   }
 
   int num_access_points = CFArrayGetCount(managed_access_points);
-  DLOG(INFO) << "Found " << num_access_points << " managed access points";
+  DVLOG(1) << "Found " << num_access_points << " managed access points";
   for (int i = 0; i < num_access_points; ++i) {
     const WirelessNetworkInfo* access_point_info =
         reinterpret_cast<const WirelessNetworkInfo*>(
@@ -172,7 +172,7 @@ MacWifiDataProvider::WlanApiInterface* MacWifiDataProvider::NewWlanApi() {
   if (wlan_api->Init())
     return wlan_api.release();
 
-  DLOG(INFO) << "MacWifiDataProvider : failed to initialize any wlan api";
+  DVLOG(1) << "MacWifiDataProvider : failed to initialize any wlan api";
   return NULL;
 }
 
