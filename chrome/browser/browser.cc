@@ -3599,18 +3599,15 @@ void Browser::UpdateCommandsForTabState() {
       browser_defaults::bookmarks_enabled && CanBookmarkAllTabs());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->controller().CanViewSource());
+  command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
+      current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
+
+  // Changing the encoding is not possible on Chrome-internal webpages.
   // Instead of using GetURL here, we use url() (which is the "real" url of the
   // page) from the NavigationEntry because its reflects their origin rather
   // than the display one (returned by GetURL) which may be different (like
   // having "view-source:" on the front).
   NavigationEntry* active_entry = nc.GetActiveEntry();
-  bool is_savable_url =
-      SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL());
-  command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, is_savable_url);
-  command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
-      current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
-
-  // Changing the encoding is not possible on Chrome-internal webpages.
   bool is_chrome_internal = (active_entry ?
       active_entry->url().SchemeIs(chrome::kChromeUIScheme) : false);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_MENU,
@@ -3631,8 +3628,13 @@ void Browser::UpdateCommandsForTabState() {
 void Browser::UpdateCommandsForContentRestrictionState() {
   int restrictions = 0;
   TabContents* current_tab = GetSelectedTabContents();
-  if (current_tab)
+  if (current_tab) {
     restrictions = current_tab->content_restrictions();
+    NavigationEntry* active_entry = current_tab->controller().GetActiveEntry();
+    // See comment in UpdateCommandsForTabState about why we call url().
+    if (!SavePackage::IsSavableURL(active_entry ? active_entry->url() : GURL()))
+      restrictions |= CONTENT_RESTRICTION_SAVE;
+  }
 
   command_updater_.UpdateCommandEnabled(
       IDC_COPY, !(restrictions & CONTENT_RESTRICTION_COPY));
@@ -3640,6 +3642,8 @@ void Browser::UpdateCommandsForContentRestrictionState() {
       IDC_CUT, !(restrictions & CONTENT_RESTRICTION_CUT));
   command_updater_.UpdateCommandEnabled(
       IDC_PASTE, !(restrictions & CONTENT_RESTRICTION_PASTE));
+  command_updater_.UpdateCommandEnabled(
+      IDC_SAVE_PAGE, !(restrictions & CONTENT_RESTRICTION_SAVE));
   UpdatePrintingState(restrictions);
 }
 
