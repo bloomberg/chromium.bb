@@ -33,6 +33,7 @@
       ]}],
       ['touchui==0', {'sources/': [
         ['exclude', 'touchui/'],
+        ['exclude', '_(touch)\\.cc$'],
       ]}],
     ],
   },
@@ -238,6 +239,7 @@
         'fill_layout.h',
         'focus/accelerator_handler.h',
         'focus/accelerator_handler_gtk.cc',
+        'focus/accelerator_handler_touch.cc',
         'focus/accelerator_handler_win.cc',
         'focus/external_focus_tracker.cc',
         'focus/external_focus_tracker.h',
@@ -265,8 +267,10 @@
         'screen_gtk.cc',
         'screen_win.cc',
         'standard_layout.h',
-        'touchui/gesture_manager.h',
         'touchui/gesture_manager.cc',
+        'touchui/gesture_manager.h',
+        'touchui/touch_event_dispatcher_gtk.cc',
+        'touchui/touch_event_dispatcher_gtk.h',
         'view.cc',
         'view.h',
         'view_constants.cc',
@@ -368,6 +372,9 @@
         }],
         ['touchui==1', {
           'defines': ['TOUCH_UI=1'],
+          'sources/': [
+            ['exclude', 'focus/accelerator_handler_gtk.cc'],
+          ],
         }],
         ['OS=="win"', {
           'sources!': [

@@ -208,6 +208,9 @@ class WidgetGtk
   // Returns true if it's handled by the focus manager.
   bool HandleKeyboardEvent(GdkEventKey* event);
 
+  // Returns the view::Event::flags for a GdkEventButton.
+  static int GetFlagsForEventButton(const GdkEventButton& event);
+
  protected:
   // If widget containes another widget, translates event coordinates to the
   // contained widget's coordinates, else returns original event coordinates.
@@ -228,9 +231,6 @@ class WidgetGtk
     }
     return false;
   }
-
-  // Returns the view::Event::flags for a GdkEventButton.
-  static int GetFlagsForEventButton(const GdkEventButton& event);
 
   // Event handlers:
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonPress, GdkEventButton*);

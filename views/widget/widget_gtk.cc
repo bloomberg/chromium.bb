@@ -908,9 +908,6 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
   return handled;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WidgetGtk, protected:
-
 // static
 int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
   int flags = Event::GetFlagsFromGdkState(event.state);
@@ -932,6 +929,9 @@ int WidgetGtk::GetFlagsForEventButton(const GdkEventButton& event) {
     flags |= MouseEvent::EF_IS_DOUBLE_CLICK;
   return flags;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetGtk, protected:
 
 void WidgetGtk::OnSizeRequest(GtkWidget* widget, GtkRequisition* requisition) {
   // Do only return the preferred size for child windows. GtkWindow interprets
