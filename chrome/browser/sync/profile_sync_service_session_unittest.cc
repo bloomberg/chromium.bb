@@ -60,7 +60,7 @@ class ProfileSyncServiceSessionTest
 
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
-  TestIdFactory* ids() { return &ids_; }
+  TestIdFactory* ids() { return sync_service_->id_factory(); }
 
  protected:
   SessionService* service() { return helper_.service(); }
@@ -134,7 +134,6 @@ class ProfileSyncServiceSessionTest
   SessionID window_id_;
   ProfileSyncFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> sync_service_;
-  TestIdFactory ids_;
   const gfx::Rect window_bounds_;
   bool notified_of_update_;
   NotificationRegistrar registrar_;
