@@ -471,13 +471,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   ~NetworkLibraryImpl() {
-    if (EnsureCrosLoaded()) {
-      if (network_status_connection_) {
-        DisconnectMonitorNetwork(network_status_connection_);
-      }
-      if (data_plan_monitor_) {
-        DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
-      }
+    if (network_status_connection_) {
+      DisconnectMonitorNetwork(network_status_connection_);
+    }
+    if (data_plan_monitor_) {
+      DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
     }
   }
 
