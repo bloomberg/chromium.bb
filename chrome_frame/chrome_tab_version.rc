@@ -1,7 +1,9 @@
 #include "version.h"
 
+#include "winres.h"
+
 #ifdef APSTUDIO_INVOKED
-# error Don't open this in the GUI, it'll be massacred on save.
+# error Don't open this in the GUI, it'll be massacred on save. Don't do it.
 #endif // APSTUDIO_INVOKED
 
 /////////////////////////////////////////////////////////////////////////////

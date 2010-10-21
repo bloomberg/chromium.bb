@@ -6,6 +6,10 @@
 // Seemingly innocuous edits totally destroy registration of the DLL. 
 // Edit at your own peril.
 
+#ifdef APSTUDIO_INVOKED
+# error Don't open this in the GUI, it'll be massacred on save.
+#endif // APSTUDIO_INVOKED
+
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -25,44 +29,10 @@
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 #endif //_WIN32
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include ""winres.h""\r\n"
-    "\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "1 TYPELIB ""chrome_tab.tlb""\r\n"
-    "\0"
-END
-#else
-#include "chrome_tab_version.rc"
-#endif    // APSTUDIO_INVOKED
-
 #endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
 
-
-
-#ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
 1 TYPELIB "chrome_tab.tlb"
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
