@@ -154,7 +154,7 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  return rb.GetNSImageNamed(resource_id);
+  return rb.GetNativeImageNamed(resource_id);
 }
 
 AutocompleteEditViewMac::AutocompleteEditViewMac(

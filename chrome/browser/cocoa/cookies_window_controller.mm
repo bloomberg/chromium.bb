@@ -436,7 +436,7 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   // Default icon will be the last item in the array.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   // TODO(rsesek): Rename this resource now that it's in multiple places.
-  [icons_ addObject:rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
+  [icons_ addObject:rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
 
   // Create the Cocoa model.
   CookieTreeNode* root = static_cast<CookieTreeNode*>(treeModel_->GetRoot());

@@ -53,7 +53,8 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
 
   if (!folder_image_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    folder_image_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
+    folder_image_.reset(
+        [rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
   }
 
   ClearBookmarkMenu(bookmark_menu);

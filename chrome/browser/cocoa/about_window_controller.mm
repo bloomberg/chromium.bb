@@ -153,10 +153,10 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
   // Put the two images into the UI.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* backgroundImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND_COLOR);
+  NSImage* backgroundImage = rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND_COLOR);
   DCHECK(backgroundImage);
   [backgroundView_ setTileImage:backgroundImage];
-  NSImage* logoImage = rb.GetNSImageNamed(IDR_ABOUT_BACKGROUND);
+  NSImage* logoImage = rb.GetNativeImageNamed(IDR_ABOUT_BACKGROUND);
   DCHECK(logoImage);
   [logoView_ setImage:logoImage];
 
@@ -366,7 +366,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
   [spinner_ setHidden:YES];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* statusImage = rb.GetNSImageNamed(imageID);
+  NSImage* statusImage = rb.GetNativeImageNamed(imageID);
   DCHECK(statusImage);
   [updateStatusIndicator_ setImage:statusImage];
   [updateStatusIndicator_ setHidden:NO];

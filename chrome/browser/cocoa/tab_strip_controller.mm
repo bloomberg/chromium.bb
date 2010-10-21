@@ -297,7 +297,7 @@ private:
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    defaultFavIcon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+    defaultFavIcon_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
     [self setIndentForControls:[[self class] defaultIndentForControls]];
 
@@ -1221,13 +1221,13 @@ private:
     return;
 
   static NSImage* throbberWaitingImage =
-      [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_THROBBER_WAITING)
-        retain];
+      [ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_THROBBER_WAITING) retain];
   static NSImage* throbberLoadingImage =
-      [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_THROBBER)
+      [ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_THROBBER)
         retain];
   static NSImage* sadFaviconImage =
-      [ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_SAD_FAVICON)
+      [ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_SAD_FAVICON)
         retain];
 
   // Take closing tabs into account.

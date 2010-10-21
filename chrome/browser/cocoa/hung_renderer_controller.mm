@@ -53,7 +53,7 @@ HungRendererController* g_instance = NULL;
 - (void)awakeFromNib {
   // Load in the image
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* backgroundImage = rb.GetNSImageNamed(IDR_FROZEN_TAB_ICON);
+  NSImage* backgroundImage = rb.GetNativeImageNamed(IDR_FROZEN_TAB_ICON);
   DCHECK(backgroundImage);
   [imageView_ setImage:backgroundImage];
 
@@ -149,7 +149,7 @@ HungRendererController* g_instance = NULL;
         [favicons addObject:gfx::SkBitmapToNSImage(bitmap)];
       } else {
         ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-        [favicons addObject:rb.GetNSImageNamed(IDR_DEFAULT_FAVICON)];
+        [favicons addObject:rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON)];
       }
     }
   }

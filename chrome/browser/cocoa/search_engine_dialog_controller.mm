@@ -111,7 +111,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
   [win setBackgroundColor:[NSColor whiteColor]];
 
   NSImage* headerImage = ResourceBundle::GetSharedInstance().
-      GetNSImageNamed(IDR_SEARCH_ENGINE_DIALOG_TOP);
+      GetNativeImageNamed(IDR_SEARCH_ENGINE_DIALOG_TOP);
   [headerImageView_ setImage:headerImage];
 
   // Is the user's default search engine included in the first three
@@ -191,7 +191,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
   int logoId = engine->logo_id();
   if (useImages && logoId > 0) {
     NSImage* logoImage =
-        ResourceBundle::GetSharedInstance().GetNSImageNamed(logoId);
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(logoId);
     NSRect logoBounds = NSZeroRect;
     logoBounds.size = [logoImage size];
     NSImageView* logoView =

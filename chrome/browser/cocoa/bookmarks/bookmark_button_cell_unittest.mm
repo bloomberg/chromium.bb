@@ -66,7 +66,7 @@ TEST_F(BookmarkButtonCellTest, IconOnlySqueeze) {
   [[test_window() contentView] addSubview:view];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_nsobject<NSImage> image([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON)
+  scoped_nsobject<NSImage> image([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON)
                                     retain]);
   EXPECT_TRUE(image.get());
 

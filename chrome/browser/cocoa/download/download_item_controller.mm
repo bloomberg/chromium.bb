@@ -153,7 +153,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   [buttonTweaker_ setFrameOrigin:frameOrigin];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* alertIcon = rb.GetNSImageNamed(IDR_WARNING);
+  NSImage* alertIcon = rb.GetNativeImageNamed(IDR_WARNING);
   DCHECK(alertIcon);
   [image_ setImage:alertIcon];
 

@@ -938,7 +938,7 @@ class PreferenceObserver : public NotificationObserver {
     profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
                     base::SysNSStringToUTF16(string));
     if (profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
-      image = rb.GetNSImageNamed(IDR_INPUT_ALERT);
+      image = rb.GetNativeImageNamed(IDR_INPUT_ALERT);
       DCHECK(image);
       return image;
     }
@@ -946,7 +946,7 @@ class PreferenceObserver : public NotificationObserver {
 
   // No alert icon, so must be valid input.
   if (!image) {
-    image = rb.GetNSImageNamed(IDR_INPUT_GOOD);
+    image = rb.GetNativeImageNamed(IDR_INPUT_GOOD);
     DCHECK(image);
     return image;
   }

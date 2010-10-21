@@ -946,7 +946,7 @@ void AnimateCALayerFrameFromTo(
   // it from an SkBitmap. Either way, just show the default.
   if (!nsFavicon) {
     NSImage* defaultFavIcon =
-        ResourceBundle::GetSharedInstance().GetNSImageNamed(
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_DEFAULT_FAVICON);
     nsFavicon = defaultFavIcon;
   }

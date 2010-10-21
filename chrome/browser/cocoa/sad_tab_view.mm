@@ -26,7 +26,7 @@ static const CGFloat kTabHorzMargin = 13;
 - (void)awakeFromNib {
   // Load resource for image and set it.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNSImageNamed(IDR_SAD_TAB);
+  NSImage* image = rb.GetNativeImageNamed(IDR_SAD_TAB);
   DCHECK(image);
   [image_ setImage:image];
 

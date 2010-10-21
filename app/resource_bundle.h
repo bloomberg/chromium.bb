@@ -129,8 +129,11 @@ class ResourceBundle {
   // Loads and returns a cursor from the app module.
   HCURSOR LoadCursor(int cursor_id);
 #elif defined(OS_MACOSX)
+ private:
   // Wrapper for GetBitmapNamed. Converts the bitmap to an autoreleased NSImage.
+  // TODO(rsesek): Move implementation into GetNativeImageNamed().
   NSImage* GetNSImageNamed(int resource_id);
+ public:
 #elif defined(USE_X11)
   // Gets the GdkPixbuf with the specified resource_id from the main data pak
   // file. Returns a pointer to a shared instance of the GdkPixbuf.  This

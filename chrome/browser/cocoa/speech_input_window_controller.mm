@@ -79,7 +79,7 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
   int newWidth = cancelSize.width + tryAgainSize.width;
 
   if (![iconImage_ isHidden]) {
-    NSImage* icon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
+    NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
         IDR_SPEECH_INPUT_MIC_EMPTY);
     NSSize size = [icon size];
     newHeight += size.height + kBubbleControlVerticalSpacing;
@@ -147,7 +147,7 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
     [instructionLabel_ setStringValue:l10n_util::GetNSString(
         IDS_SPEECH_INPUT_BUBBLE_HEADING)];
     if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
-      NSImage* icon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
+      NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_SPEECH_INPUT_MIC_EMPTY);
       [iconImage_ setImage:icon];
     }

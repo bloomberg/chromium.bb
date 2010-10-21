@@ -91,11 +91,11 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
   }
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  default_favicon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+  default_favicon_.reset([rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
   // Set the static icons in the menu.
   NSMenuItem* item = [HistoryMenu() itemWithTag:IDC_SHOW_HISTORY];
-  [item setImage:rb.GetNSImageNamed(IDR_HISTORY_FAVICON)];
+  [item setImage:rb.GetNativeImageNamed(IDR_HISTORY_FAVICON)];
 
   // The service is not ready for use yet, so become notified when it does.
   if (!history_service_) {

@@ -51,7 +51,7 @@ bool PluginInstallerImpl::Initialize(void* module_handle, NPP instance,
       IDS_DEFAULT_PLUGIN_NO_PLUGIN_AVAILABLE_MSG)) retain];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  image_ = [rb.GetNSImageNamed(IDR_PLUGIN_ICON) retain];
+  image_ = [rb.GetNativeImageNamed(IDR_PLUGIN_ICON) retain];
 
   return true;
 }

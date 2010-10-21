@@ -80,8 +80,8 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
                                         delta:windowDelta];
 
   ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
-  goodImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_GOOD) retain]);
-  badImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_ALERT) retain]);
+  goodImage_.reset([bundle.GetNativeImageNamed(IDR_INPUT_GOOD) retain]);
+  badImage_.reset([bundle.GetNativeImageNamed(IDR_INPUT_ALERT) retain]);
   if (templateURL_) {
     // Defaults to |..._NEW_WINDOW_TITLE|.
     [window setTitle:l10n_util::GetNSString(

@@ -93,7 +93,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
                       object:[self view]];
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* favicon = rb.GetNSImageNamed(IDR_DOWNLOADS_FAVICON);
+  NSImage* favicon = rb.GetNativeImageNamed(IDR_DOWNLOADS_FAVICON);
   DCHECK(favicon);
   [image_ setImage:favicon];
 }

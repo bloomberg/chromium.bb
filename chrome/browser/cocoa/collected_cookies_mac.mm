@@ -149,7 +149,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (void)awakeFromNib {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* infoIcon = rb.GetNSImageNamed(IDR_INFO);
+  NSImage* infoIcon = rb.GetNativeImageNamed(IDR_INFO);
   DCHECK(infoIcon);
   [infoBarIcon_ setImage:infoIcon];
 
@@ -367,7 +367,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   // Default icon will be the last item in the array.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   // TODO(rsesek): Rename this resource now that it's in multiple places.
-  [icons_ addObject:rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
+  [icons_ addObject:rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER)];
 
   // Create the Cocoa model.
   CookieTreeNode* root =
