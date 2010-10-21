@@ -440,6 +440,10 @@ END_EXEC_COMMAND_MAP()
   // the information passed in from Chrome during window.open.
   void SetWindowDimensions();
 
+  // Returns true if the NavigationInfo object passed in represents a new
+  // navigation initiated by the renderer.
+  bool IsNewNavigation(const IPC::NavigationInfo& new_navigation_info) const;
+
  protected:
   typedef std::map<int, OLECMDF> CommandStatusMap;
 

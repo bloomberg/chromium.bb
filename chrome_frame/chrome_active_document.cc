@@ -735,9 +735,9 @@ void ChromeActiveDocument::UpdateNavigationState(
   ChromeFrameUrl cf_url;
   bool is_attach_external_tab_url = cf_url.Parse(std::wstring(url_)) &&
       cf_url.attach_to_external_tab();
-  bool is_internal_navigation = ((new_navigation_info.navigation_index > 0) &&
-      (new_navigation_info.navigation_index !=
-       navigation_info_.navigation_index)) || is_attach_external_tab_url;
+
+  bool is_internal_navigation =
+      IsNewNavigation(new_navigation_info) || is_attach_external_tab_url;
 
   if (new_navigation_info.url.is_valid())
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
@@ -1306,3 +1306,32 @@ void ChromeActiveDocument::SetWindowDimensions() {
     dimensions_.set_width(0);
   }
 }
+
+bool ChromeActiveDocument::IsNewNavigation(
+    const IPC::NavigationInfo& new_navigation_info) const {
+  // A new navigation is typically an internal navigation which is initiated by
+  // the renderer(WebKit). Condition 1 below has to be true along with the
+  // any of the other conditions below.
+  // 1. The navigation index is greater than 0 which means that a top level
+  //    navigation was initiated on the current external tab.
+  // 2. The navigation type has changed.
+  // 3. The url or the referrer are different.
+  if (new_navigation_info.navigation_index <= 0)
+    return false;
+
+  if (new_navigation_info.navigation_index ==
+      navigation_info_.navigation_index)
+    return false;
+
+  if (new_navigation_info.navigation_type != navigation_info_.navigation_type)
+    return true;
+
+  if (new_navigation_info.url != navigation_info_.url)
+    return true;
+
+  if (new_navigation_info.referrer != navigation_info_.referrer)
+    return true;
+
+  return false;
+}
+
