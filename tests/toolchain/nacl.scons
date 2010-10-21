@@ -68,6 +68,7 @@ if ARGUMENTS.get('bitcode'):
   eh_env.FilterOut(CFLAGS=['-O2'])
   eh_env.FilterOut(CCFLAGS=['-O2'])
 
+
 for t in ['eh_virtual_dtor',
           'eh_loop_single',
           'eh_loop_many',
@@ -83,3 +84,19 @@ for t in ['eh_virtual_dtor',
                                       command=[nexe],
                                       exit_status='55')
   eh_env.AddNodeToTestSuite(node, EH_TESTS, 'run_' + t + '_test')
+
+
+eh_env2 = env.Clone()
+eh_env2.FilterOut(CFLAGS=['-pedantic', '-O2'])
+eh_env2.FilterOut(CCFLAGS=['-pedantic', '-O2'])
+# http://code.google.com/p/nativeclient/issues/detail?id=720
+TRACE_TESTS=['toolchain_tests', 'small_tests']
+if ARGUMENTS.get('bitcode') and eh_env['TARGET_FULLARCH'] != 'x86-32':
+  TRACE_TESTS=[]
+nexe = eh_env2.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
+node = eh_env2.CommandSelLdrTestNacl('unwind_trace.out',
+                                    command=[nexe],
+                                    exit_status='55')
+eh_env2.AddNodeToTestSuite(node,
+                          TRACE_TESTS,
+                          'run_unwind_trace_test')
