@@ -37,6 +37,13 @@
 #include "views/window/window.h"
 #endif  // defined(OS_CHROMEOS)
 
+using WebKit::WebDragOperationsMask;
+using WebKit::WebDragOperation;
+using WebKit::WebDragOperationNone;
+using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationLink;
+using WebKit::WebDragOperationMove;
+
 namespace {
 
 const char kBoldLabelMarkup[] = "<span weight='bold'>%s</span>";
@@ -1105,6 +1112,28 @@ void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
   gtk_widget_size_request(label, &size);
   gtk_widget_set_size_request(label, size.width, size.height);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+}
+
+GdkDragAction WebDragOpToGdkDragAction(WebDragOperationsMask op) {
+  GdkDragAction action = static_cast<GdkDragAction>(0);
+  if (op & WebDragOperationCopy)
+    action = static_cast<GdkDragAction>(action | GDK_ACTION_COPY);
+  if (op & WebDragOperationLink)
+    action = static_cast<GdkDragAction>(action | GDK_ACTION_LINK);
+  if (op & WebDragOperationMove)
+    action = static_cast<GdkDragAction>(action | GDK_ACTION_MOVE);
+  return action;
+}
+
+WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action) {
+  WebDragOperationsMask op = WebDragOperationNone;
+  if (action & GDK_ACTION_COPY)
+    op = static_cast<WebDragOperationsMask>(op | WebDragOperationCopy);
+  if (action & GDK_ACTION_LINK)
+    op = static_cast<WebDragOperationsMask>(op | WebDragOperationLink);
+  if (action & GDK_ACTION_MOVE)
+    op = static_cast<WebDragOperationsMask>(op | WebDragOperationMove);
+  return op;
 }
 
 void DrawTopDropShadowForRenderView(cairo_t* cr, const gfx::Point& origin,

@@ -1,5 +1,3 @@
-# Do NOT add chrome to the list below.  We shouldn't be including files from
-# src/chrome in src/app.
 include_rules = [
   "+gfx",
   "+grit/app_locale_settings.h",
@@ -7,4 +5,7 @@ include_rules = [
   "+net",
   "+skia",
   "+third_party/mozilla",
+
+  "-chrome",
+  "-third_party/WebKit",
 ]

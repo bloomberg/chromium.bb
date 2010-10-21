@@ -74,7 +74,7 @@ WebDragDestGtk::~WebDragDestGtk() {
 void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
   if (context_) {
     is_drop_target_ = operation != WebDragOperationNone;
-    gdk_drag_status(context_, gtk_dnd_util::WebDragOpToGdkDragAction(operation),
+    gdk_drag_status(context_, gtk_util::WebDragOpToGdkDragAction(operation),
                     drag_over_time_);
   }
 }
@@ -125,7 +125,7 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
         DragTargetDragOver(
             gtk_util::ClientPoint(widget_),
             gtk_util::ScreenPoint(widget_),
-            gtk_dnd_util::GdkDragActionToWebDragOp(context->actions));
+            gtk_util::GdkDragActionToWebDragOp(context->actions));
     if (tab_contents_->GetBookmarkDragDelegate())
       tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data_);
     drag_over_time_ = time;
@@ -233,7 +233,7 @@ void WebDragDestGtk::OnDragDataReceived(
         DragTargetDragEnter(*drop_data_.get(),
             gtk_util::ClientPoint(widget_),
             gtk_util::ScreenPoint(widget_),
-            gtk_dnd_util::GdkDragActionToWebDragOp(context->actions));
+            gtk_util::GdkDragActionToWebDragOp(context->actions));
 
     // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
     // support for (at the moment experimental) drag and drop extensions.

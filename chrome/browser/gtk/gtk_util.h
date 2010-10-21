@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
 typedef struct _cairo cairo_t;
@@ -337,6 +338,11 @@ void SetLabelWidth(GtkWidget* label, int pixel_width);
 // It must be done when the label is mapped (become visible on the screen),
 // to make sure the pango can get correct font information for the calculation.
 void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label);
+
+// Convenience methods for converting between web drag operations and the GDK
+// equivalent.
+GdkDragAction WebDragOpToGdkDragAction(WebKit::WebDragOperationsMask op);
+WebKit::WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action);
 
 // Code to draw the drop shadow below an infobar (at the top of the render
 // view).

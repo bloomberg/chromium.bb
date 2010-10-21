@@ -126,7 +126,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // initiating event from webkit.
   GdkDragContext* context = gtk_drag_begin(
       drag_widget_, list,
-      gtk_dnd_util::WebDragOpToGdkDragAction(allowed_ops),
+      gtk_util::WebDragOpToGdkDragAction(allowed_ops),
       1,  // Drags are always initiated by the left button.
       reinterpret_cast<GdkEvent*>(last_mouse_down));
   // The drag adds a ref; let it own the list.
@@ -356,7 +356,7 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
     if (tab_contents()->render_view_host()) {
       tab_contents()->render_view_host()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
-          gtk_dnd_util::GdkDragActionToWebDragOp(drag_context->action));
+          gtk_util::GdkDragActionToWebDragOp(drag_context->action));
     }
   }
 

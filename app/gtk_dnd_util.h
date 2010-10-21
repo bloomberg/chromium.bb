@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 
 class GURL;
 
@@ -78,11 +77,6 @@ bool ExtractNamedURL(GtkSelectionData* selection_data,
 // Extracts data of type TEXT_URI_LIST from |selection_data| into |urls|.
 bool ExtractURIList(GtkSelectionData* selection_data,
                     std::vector<GURL>* urls);
-
-// Convenience methods for converting between web drag operations and the GDK
-// equivalent.
-GdkDragAction WebDragOpToGdkDragAction(WebKit::WebDragOperationsMask op);
-WebKit::WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action);
 
 }  // namespace gtk_dnd_util
 

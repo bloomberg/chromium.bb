@@ -13,13 +13,6 @@
 
 static const int kBitsPerByte = 8;
 
-using WebKit::WebDragOperationsMask;
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationNone;
-using WebKit::WebDragOperationCopy;
-using WebKit::WebDragOperationLink;
-using WebKit::WebDragOperationMove;
-
 namespace {
 
 void AddTargetToList(GtkTargetList* targets, int target_code) {
@@ -236,28 +229,6 @@ bool ExtractURIList(GtkSelectionData* selection_data, std::vector<GURL>* urls) {
 
   g_strfreev(uris);
   return true;
-}
-
-GdkDragAction WebDragOpToGdkDragAction(WebDragOperationsMask op) {
-  GdkDragAction action = static_cast<GdkDragAction>(0);
-  if (op & WebDragOperationCopy)
-    action = static_cast<GdkDragAction>(action | GDK_ACTION_COPY);
-  if (op & WebDragOperationLink)
-    action = static_cast<GdkDragAction>(action | GDK_ACTION_LINK);
-  if (op & WebDragOperationMove)
-    action = static_cast<GdkDragAction>(action | GDK_ACTION_MOVE);
-  return action;
-}
-
-WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action) {
-  WebDragOperationsMask op = WebDragOperationNone;
-  if (action & GDK_ACTION_COPY)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationCopy);
-  if (action & GDK_ACTION_LINK)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationLink);
-  if (action & GDK_ACTION_MOVE)
-    op = static_cast<WebDragOperationsMask>(op | WebDragOperationMove);
-  return op;
 }
 
 }  // namespace gtk_dnd_util
