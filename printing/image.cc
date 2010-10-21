@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,55 +8,7 @@
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
 #include "gfx/codec/png_codec.h"
-#include "gfx/rect.h"
-#include "skia/ext/platform_device.h"
-
-#if defined(OS_WIN)
-#include "gfx/gdi_util.h"  // EMF support
-#elif defined(OS_MACOSX)
-#include <ApplicationServices/ApplicationServices.h>
-#include "base/mac/scoped_cftyperef.h"
-#endif
-
-namespace {
-
-// A simple class which temporarily overrides system settings.
-// The bitmap image rendered via the PlayEnhMetaFile() function depends on
-// some system settings.
-// As a workaround for such dependency, this class saves the system settings
-// and changes them. This class also restore the saved settings in its
-// destructor.
-class DisableFontSmoothing {
- public:
-  explicit DisableFontSmoothing(bool disable) : enable_again_(false) {
-    if (disable) {
-#if defined(OS_WIN)
-      BOOL enabled;
-      if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) &&
-          enabled) {
-        if (SystemParametersInfo(SPI_SETFONTSMOOTHING, FALSE, NULL, 0))
-          enable_again_ = true;
-      }
-#endif
-    }
-  }
-
-  ~DisableFontSmoothing() {
-    if (enable_again_) {
-#if defined(OS_WIN)
-      BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHING, TRUE, NULL, 0);
-      DCHECK(result);
-#endif
-    }
-  }
-
- private:
-  bool enable_again_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisableFontSmoothing);
-};
-
-}  // namespace
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace printing {
 
@@ -192,73 +144,9 @@ bool Image::LoadPng(const std::string& compressed) {
 
 bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
-#if defined(OS_WIN) || defined(OS_MACOSX)
   NativeMetafile metafile;
   metafile.Init(data.data(), data.size());
   return LoadMetafile(metafile);
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
-}
-
-bool Image::LoadMetafile(const NativeMetafile& metafile) {
-#if defined(OS_WIN)
-  gfx::Rect rect(metafile.GetBounds());
-  DisableFontSmoothing disable_in_this_scope(true);
-  // Create a temporary HDC and bitmap to retrieve the rendered data.
-  HDC hdc = CreateCompatibleDC(NULL);
-  BITMAPV4HEADER hdr;
-  DCHECK_EQ(rect.x(), 0);
-  DCHECK_EQ(rect.y(), 0);
-  DCHECK_GE(rect.width(), 0);  // Metafile could be empty.
-  DCHECK_GE(rect.height(), 0);
-  if (rect.width() > 0 && rect.height() > 0) {
-    size_ = rect.size();
-    gfx::CreateBitmapV4Header(rect.width(), rect.height(), &hdr);
-    void* bits;
-    HBITMAP bitmap = CreateDIBSection(hdc,
-                                      reinterpret_cast<BITMAPINFO*>(&hdr), 0,
-                                      &bits, NULL, 0);
-    DCHECK(bitmap);
-    DCHECK(SelectObject(hdc, bitmap));
-    skia::PlatformDevice::InitializeDC(hdc);
-    bool success = metafile.Playback(hdc, NULL);
-    row_length_ = size_.width() * sizeof(uint32);
-    size_t bytes = row_length_ * size_.height();
-    DCHECK(bytes);
-    data_.resize(bytes);
-    memcpy(&*data_.begin(), bits, bytes);
-    DeleteDC(hdc);
-    DeleteObject(bitmap);
-    return success;
-  }
-#elif defined(OS_MACOSX)
-  // The printing system uses single-page metafiles (page indexes are 1-based).
-  const unsigned int page_number = 1;
-  gfx::Rect rect(metafile.GetPageBounds(page_number));
-  if (rect.width() > 0 && rect.height() > 0) {
-    size_ = rect.size();
-    row_length_ = size_.width() * sizeof(uint32);
-    size_t bytes = row_length_ * size_.height();
-    DCHECK(bytes);
-    data_.resize(bytes);
-    base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-        CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-    base::mac::ScopedCFTypeRef<CGContextRef> bitmap_context(
-        CGBitmapContextCreate(&*data_.begin(), size_.width(), size_.height(),
-                              8, row_length_, color_space,
-                              kCGImageAlphaPremultipliedLast));
-    DCHECK(bitmap_context.get());
-    metafile.RenderPage(page_number, bitmap_context,
-                        CGRectMake(0, 0, size_.width(), size_.height()),
-                        true, false, false, false);
-  }
-#else
-  NOTIMPLEMENTED();
-#endif
-
-  return false;
 }
 
 }  // namespace printing
