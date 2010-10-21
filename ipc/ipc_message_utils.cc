@@ -250,6 +250,25 @@ void ParamTraits<base::Time>::Log(const param_type& p, std::string* l) {
   ParamTraits<int64>::Log(p.ToInternalValue(), l);
 }
 
+void ParamTraits<base::TimeDelta> ::Write(Message* m, const param_type& p) {
+  ParamTraits<int64> ::Write(m, p.InMicroseconds());
+}
+
+bool ParamTraits<base::TimeDelta> ::Read(const Message* m,
+                                         void** iter,
+                                         param_type* r) {
+  int64 value;
+  bool ret = ParamTraits<int64> ::Read(m, iter, &value);
+  if (ret)
+    *r = base::TimeDelta::FromMicroseconds(value);
+
+  return ret;
+}
+
+void ParamTraits<base::TimeDelta> ::Log(const param_type& p, std::string* l) {
+  ParamTraits<int64> ::Log(p.InMicroseconds(), l);
+}
+
 void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {
   WriteValue(m, &p, 0);
 }
