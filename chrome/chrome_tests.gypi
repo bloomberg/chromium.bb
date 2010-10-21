@@ -312,9 +312,7 @@
         'test/interactive_ui/npapi_interactive_test.cc',
         'test/interactive_ui/view_event_test_base.cc',
         'test/interactive_ui/view_event_test_base.h',
-        'test/test_launcher/out_of_proc_test_runner.cc',
-        'test/test_launcher/test_runner.cc',
-        'test/test_launcher/test_runner.h',
+        'test/out_of_proc_test_runner.cc',
         'test/unit/chrome_test_suite.h',
       ],
       'conditions': [
@@ -2019,11 +2017,9 @@
         'test/automation/dom_automation_browsertest.cc',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
+        'test/out_of_proc_test_runner.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
-        'test/test_launcher/out_of_proc_test_runner.cc',
-        'test/test_launcher/test_runner.cc',
-        'test/test_launcher/test_runner.h',
       ],
       'conditions': [
         ['chromeos==0', {
@@ -2186,9 +2182,7 @@
         'browser/safe_browsing/safe_browsing_test.cc',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
-        'test/test_launcher/out_of_proc_test_runner.cc',
-        'test/test_launcher/test_runner.cc',
-        'test/test_launcher/test_runner.h',
+        'test/out_of_proc_test_runner.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -2652,9 +2646,7 @@
         'test/bookmark_load_observer.h',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
-        'test/test_launcher/out_of_proc_test_runner.cc',
-        'test/test_launcher/test_runner.cc',
-        'test/test_launcher/test_runner.h',
+        'test/out_of_proc_test_runner.cc',
         'test/live_sync/bookmark_model_verifier.cc',
         'test/live_sync/bookmark_model_verifier.h',
         'test/live_sync/live_autofill_sync_test.h',
