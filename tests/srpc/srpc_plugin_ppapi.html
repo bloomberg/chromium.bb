@@ -49,7 +49,7 @@ var PluginProperties = function() {
                server.__height = new Array(10);
              });
   // Attempt to set __height to a valid type.
-  expectFail('plugin_height_conforming',
+  expectPass('plugin_height_conforming',
              false,
              function() {
                server.__height = 100;

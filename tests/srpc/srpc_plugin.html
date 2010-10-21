@@ -53,7 +53,7 @@ var PluginProperties = function() {
                });
   }
   // Attempt to set height to a valid type.
-  expectFail('plugin_height_conforming',
+  expectPass('plugin_height_conforming',
              false,
              function() {
                server.height = 100;
