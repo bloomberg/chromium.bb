@@ -81,7 +81,8 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousMouseMove) {
   }
 }
 
-TEST_F(NPAPIVisiblePluginTester, GetURLRequest404Response) {
+// Flaky, http://crbug.com/60071.
+TEST_F(NPAPIVisiblePluginTester, FLAKY_GetURLRequest404Response) {
   if (UITest::in_process_renderer())
     return;
 
