@@ -68,7 +68,8 @@ void SpeechInputDispatcher::stopRecording(int request_id) {
 void SpeechInputDispatcher::OnSpeechRecognitionResult(
     int request_id, const string16& result) {
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult enter";
-  listener_->setRecognitionResult(request_id, result);
+  WebKit::WebString webkit_result(result);
+  listener_->setRecognitionResult(request_id, webkit_result);
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult exit";
 }
 
