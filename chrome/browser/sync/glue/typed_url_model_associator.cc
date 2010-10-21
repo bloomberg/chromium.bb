@@ -30,7 +30,7 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
 }
 
 bool TypedUrlModelAssociator::AssociateModels() {
-  LOG(INFO) << "Associating TypedUrl Models";
+  VLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());
 
   std::vector<history::URLRow> typed_urls;

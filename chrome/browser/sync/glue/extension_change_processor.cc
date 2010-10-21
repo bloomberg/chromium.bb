@@ -66,15 +66,15 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
             *uninstalled_extension_info);
     if (ContainsKey(traits_.allowed_extension_types, extension_type)) {
       const std::string& id = uninstalled_extension_info->extension_id;
-      LOG(INFO) << "Removing server data for uninstalled extension "
-                << id << " of type " << extension_type;
+      VLOG(1) << "Removing server data for uninstalled extension " << id
+              << " of type " << extension_type;
       RemoveServerData(traits_, id, profile_->GetProfileSyncService());
     }
   } else {
     const Extension* extension = Details<Extension>(details).ptr();
     CHECK(extension);
-    LOG(INFO) << "Updating server data for extension " << extension->id()
-              << " (notification type = " << type.value << ")";
+    VLOG(1) << "Updating server data for extension " << extension->id()
+            << " (notification type = " << type.value << ")";
     // Ignore non-syncable extensions.
     if (!IsExtensionValidAndSyncable(
             *extension, traits_.allowed_extension_types)) {
@@ -189,7 +189,7 @@ void ExtensionChangeProcessor::StartObserving() {
 void ExtensionChangeProcessor::StopObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  LOG(INFO) << "Unobserving all notifications";
+  VLOG(1) << "Unobserving all notifications";
   notification_registrar_.RemoveAll();
 }
 

@@ -84,14 +84,13 @@ void SetCurrentThemeFromThemeSpecifics(
     // (i.e., those not on either Google gallery).
     std::string id(theme_specifics.custom_theme_id());
     GURL update_url(theme_specifics.custom_theme_update_url());
-    LOG(INFO) << "Applying theme " << id << " with update_url "
-              << update_url;
+    VLOG(1) << "Applying theme " << id << " with update_url " << update_url;
     ExtensionsService* extensions_service = profile->GetExtensionsService();
     CHECK(extensions_service);
     Extension* extension = extensions_service->GetExtensionById(id, true);
     if (extension) {
       if (!extension->is_theme()) {
-        LOG(INFO) << "Extension " << id << " is not a theme; aborting";
+        VLOG(1) << "Extension " << id << " is not a theme; aborting";
         return;
       }
       ExtensionPrefs* extension_prefs = extensions_service->extension_prefs();
@@ -102,7 +101,7 @@ void SetCurrentThemeFromThemeSpecifics(
       // function that does so.
       if (extension_prefs->GetExtensionState(extension->id()) !=
           Extension::ENABLED) {
-        LOG(INFO) << "Theme " << id << " is not enabled; aborting";
+        VLOG(1) << "Theme " << id << " is not enabled; aborting";
         return;
       }
       // Get previous theme info before we set the new theme.

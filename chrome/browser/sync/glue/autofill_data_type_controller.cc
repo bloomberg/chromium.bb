@@ -41,7 +41,7 @@ AutofillDataTypeController::~AutofillDataTypeController() {
 }
 
 void AutofillDataTypeController::Start(StartCallback* start_callback) {
-  LOG(INFO) << "Starting autofill data controller.";
+  VLOG(1) << "Starting autofill data controller.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state() != NOT_RUNNING) {
@@ -90,7 +90,7 @@ void AutofillDataTypeController::OnPersonalDataLoaded() {
 void AutofillDataTypeController::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  LOG(INFO) << "Web database loaded observed.";
+  VLOG(1) << "Web database loaded observed.";
   notification_registrar_.RemoveAll();
   set_state(ASSOCIATING);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
@@ -100,7 +100,7 @@ void AutofillDataTypeController::Observe(NotificationType type,
 }
 
 void AutofillDataTypeController::Stop() {
-  LOG(INFO) << "Stopping autofill data type controller.";
+  VLOG(1) << "Stopping autofill data type controller.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If Stop() is called while Start() is waiting for association to
@@ -143,7 +143,7 @@ void AutofillDataTypeController::Stop() {
 }
 
 void AutofillDataTypeController::StartImpl() {
-  LOG(INFO) << "Autofill data type controller StartImpl called.";
+  VLOG(1) << "Autofill data type controller StartImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // No additional services need to be started before we can proceed
   // with model association.
@@ -185,7 +185,7 @@ void AutofillDataTypeController::StartImpl() {
 void AutofillDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
-  LOG(INFO) << "Autofill data type controller StartDone called.";
+  VLOG(1) << "Autofill data type controller StartDone called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   abort_association_complete_.Signal();
@@ -203,7 +203,7 @@ void AutofillDataTypeController::StartDone(
 void AutofillDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
-  LOG(INFO) << "Autofill data type controller StartDoneImpl called.";
+  VLOG(1) << "Autofill data type controller StartDoneImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   set_state(new_state);
@@ -218,7 +218,7 @@ void AutofillDataTypeController::StartDoneImpl(
 }
 
 void AutofillDataTypeController::StopImpl() {
-  LOG(INFO) << "Autofill data type controller StopImpl called.";
+  VLOG(1) << "Autofill data type controller StopImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   change_processor_.reset();

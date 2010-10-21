@@ -217,7 +217,7 @@ bool AutofillModelAssociator::LoadAutofillData(
 }
 
 bool AutofillModelAssociator::AssociateModels() {
-  LOG(INFO) << "Associating Autofill Models";
+  VLOG(1) << "Associating Autofill Models";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   {
     AutoLock lock(abort_association_pending_lock_);

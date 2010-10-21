@@ -48,7 +48,7 @@ void TypedUrlChangeProcessor::Observe(NotificationType type,
   if (!observing_)
     return;
 
-  LOG(INFO) << "Observed typed_url change.";
+  VLOG(1) << "Observed typed_url change.";
   DCHECK(running());
   DCHECK(NotificationType::HISTORY_TYPED_URLS_MODIFIED == type ||
          NotificationType::HISTORY_URLS_DELETED == type ||

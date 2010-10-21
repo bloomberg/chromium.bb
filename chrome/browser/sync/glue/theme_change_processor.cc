@@ -51,8 +51,8 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       // one that was already installed.  Otherwise, current_theme
       // still points to the previous theme until it gets installed
       // and loaded (and we get an EXTENSION_LOADED notification).
-      LOG(INFO) << "Got BROWSER_THEME_CHANGED notification for theme "
-                << GetThemeId(extension);
+      VLOG(1) << "Got BROWSER_THEME_CHANGED notification for theme "
+              << GetThemeId(extension);
       DCHECK_EQ(Source<BrowserThemeProvider>(source).ptr(),
                 profile_->GetThemeProvider());
       if (extension != NULL) {
@@ -74,8 +74,8 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       if (!extension->is_theme()) {
         return;
       }
-      LOG(INFO) << "Got EXTENSION_LOADED notification for theme "
-                << extension->id();
+      VLOG(1) << "Got EXTENSION_LOADED notification for theme "
+              << extension->id();
       DCHECK_EQ(extension->id(), current_or_future_theme_id);
       DCHECK_EQ(extension, current_theme);
       break;
@@ -90,8 +90,8 @@ void ThemeChangeProcessor::Observe(NotificationType type,
       if (!extension->is_theme()) {
         return;
       }
-      LOG(INFO) << "Got EXTENSION_UNLOADED notification for theme "
-                << extension->id();
+      VLOG(1) << "Got EXTENSION_UNLOADED notification for theme "
+              << extension->id();
       extension = current_theme;
       break;
     default:
@@ -103,7 +103,7 @@ void ThemeChangeProcessor::Observe(NotificationType type,
   if (extension) {
     DCHECK(extension->is_theme());
   }
-  LOG(INFO) << "Theme changed to " << GetThemeId(extension);
+  VLOG(1) << "Theme changed to " << GetThemeId(extension);
 
   // Here, we know that a theme is being set; the theme is a custom
   // theme iff extension is non-NULL.
@@ -193,8 +193,8 @@ void ThemeChangeProcessor::StopImpl() {
 
 void ThemeChangeProcessor::StartObserving() {
   DCHECK(profile_);
-  LOG(INFO) << "Observing BROWSER_THEME_CHANGED, EXTENSION_LOADED, "
-            << "and EXTENSION_UNLOADED";
+  VLOG(1) << "Observing BROWSER_THEME_CHANGED, EXTENSION_LOADED, and "
+             "EXTENSION_UNLOADED";
   notification_registrar_.Add(
       this, NotificationType::BROWSER_THEME_CHANGED,
       Source<BrowserThemeProvider>(profile_->GetThemeProvider()));
@@ -208,7 +208,7 @@ void ThemeChangeProcessor::StartObserving() {
 
 void ThemeChangeProcessor::StopObserving() {
   DCHECK(profile_);
-  LOG(INFO) << "Unobserving all notifications";
+  VLOG(1) << "Unobserving all notifications";
   notification_registrar_.RemoveAll();
 }
 
