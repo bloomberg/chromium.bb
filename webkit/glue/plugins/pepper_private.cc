@@ -118,7 +118,7 @@ PP_Resource GetResourceImage(PP_Module module_id, PP_ResourceImage image_id) {
   if (!module)
     return 0;
   scoped_refptr<pepper::ImageData> image_data(new pepper::ImageData(module));
-  if (!image_data->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  if (!image_data->Init(ImageData::GetNativeImageDataFormat(),
                         res_bitmap->width(), res_bitmap->height(), false)) {
     return 0;
   }
