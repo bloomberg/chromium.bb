@@ -7,6 +7,7 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "media/base/media.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
@@ -78,6 +79,8 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
 }
 
 TestShellWebKitInit::~TestShellWebKitInit() {
+  if (RunningOnValgrind())
+    WebKit::WebCache::clear();
   WebKit::shutdown();
 }
 

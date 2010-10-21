@@ -14,6 +14,7 @@
 #include "net/http/http_cache.h"
 #include "net/test/test_server.h"
 #include "media/base/media.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
@@ -142,6 +143,8 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
 }
 
 TestWebKitClient::~TestWebKitClient() {
+  if (RunningOnValgrind())
+    WebKit::WebCache::clear();
   WebKit::shutdown();
 }
 
