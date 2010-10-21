@@ -203,7 +203,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
                                SinkStream* patch_stream)
 {
   base::Time start_bsdiff_time = base::Time::Now();
-  LOG(INFO) << "Start bsdiff";
+  VLOG(1) << "Start bsdiff";
   size_t initial_patch_stream_length = patch_stream->Length();
 
   SinkStreamSet patch_streams;
@@ -236,8 +236,8 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
   base::Time q_start_time = base::Time::Now();
   qsufsort(I, V, old, oldsize);
-  LOG(INFO) << " done qsufsort "
-            << (base::Time::Now() - q_start_time).InSecondsF();
+  VLOG(1) << " done qsufsort "
+          << (base::Time::Now() - q_start_time).InSecondsF();
   V.clear();
 
   const uint8* newbuf = new_stream->Buffer();
@@ -398,9 +398,9 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       control_stream_seeks->WriteVarint32Signed(seek_adjustment);
       ++control_length;
 #ifdef DEBUG_bsmedberg
-      LOG(INFO) << StringPrintf(
-          "Writing a block:  copy: %-8u extra: %-8u seek: %+-9d",
-          copy_count, extra_count, seek_adjustment);
+      VLOG(1) << StringPrintf("Writing a block:  copy: %-8u extra: %-8u seek: "
+                              "%+-9d", copy_count, extra_count,
+                              seek_adjustment);
 #endif
 
       lastscan = scan - lenb;   // Include the backward extension in seed.
@@ -427,17 +427,15 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   size_t diff_skips_length = diff_skips->Length();
   patch_streams.CopyTo(patch_stream);
 
-  LOG(INFO) << "Control tuples: " << control_length
-            << "  copy bytes: " << diff_bytes_length
-            << "  mistakes: " << diff_bytes_nonzero
-            << "  (skips: " << diff_skips_length << ")"
-            << "  extra bytes: " << extra_bytes_length;
-
-  LOG(INFO) << "Uncompressed bsdiff patch size "
-            << patch_stream->Length() - initial_patch_stream_length;
-
-  LOG(INFO) << "End bsdiff "
-            << (base::Time::Now() - start_bsdiff_time).InSecondsF();
+  VLOG(1) << "Control tuples: " << control_length
+          << "  copy bytes: " << diff_bytes_length
+          << "  mistakes: " << diff_bytes_nonzero
+          << "  (skips: " << diff_skips_length << ")"
+          << "  extra bytes: " << extra_bytes_length;
+          << "\nUncompressed bsdiff patch size "
+          << patch_stream->Length() - initial_patch_stream_length;
+          << "\nEnd bsdiff "
+          << (base::Time::Now() - start_bsdiff_time).InSecondsF();
 
   return OK;
 }

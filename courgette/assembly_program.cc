@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -218,7 +218,7 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
     }
   }
 
-  LOG(INFO) << used << " of " << labels->size() << " labels pre-assigned";
+  VLOG(1) << used << " of " << labels->size() << " labels pre-assigned";
 
   // Are there any unused labels that happen to be adjacent following a used
   // label?
@@ -282,10 +282,9 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
     }
   }
 
-  LOG(INFO) << "  fill"
-            << " forward " << fill_forward_count << " "
-            << " backward " << fill_backward_count << " "
-            << " infill " << fill_infill_count;
+  VLOG(1) << "  fill forward " << fill_forward_count
+          << "  backward " << fill_backward_count
+          << "  infill " << fill_infill_count;
 }
 
 typedef void (EncodedProgram::*DefineLabelMethod)(int index, RVA value);

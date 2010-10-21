@@ -23,17 +23,6 @@
 
 namespace courgette {
 
-// We have three discretionary information logging levels for algorithm
-// development.  For now just configure with #defines.
-// TODO(sra): make dependent of some configurable setting.
-#define NO_LOG DLOG_IF(INFO, false)
-// #define ALOG1 LOG(INFO)
-// #define ALOG2 LOG(INFO)
-// #define ALOG3 LOG(INFO)
-#define ALOG1 NO_LOG
-#define ALOG2 NO_LOG
-#define ALOG3 NO_LOG
-
 ////////////////////////////////////////////////////////////////////////////////
 
 class NullAdjustmentMethod : public AdjustmentMethod {
@@ -242,14 +231,14 @@ class AssignmentProblem {
       TrySolveNode(node);
     }
 
-    ALOG1 << unsolved_.size() << " unsolved items";
+    VLOG(2) << unsolved_.size() << " unsolved items";
     return true;
   }
 
  private:
   void AddToQueue(Node* node) {
     if (node->length_ >= 10) {
-      ALOG3 << "Length clipped " << ToString(node->prev_);
+      VLOG(4) << "Length clipped " << ToString(node->prev_);
       return;
     }
     if (node->in_queue_) {
@@ -274,7 +263,7 @@ class AssignmentProblem {
       node->edges_in_frequency_order.pop_front();
     }
     if (skipped > 0)
-      ALOG3 << "Skipped " << skipped << " at " << ToString(node);
+      VLOG(4) << "Skipped " << skipped << " at " << ToString(node);
   }
 
   void TrySolveNode(Node* p_node) {
@@ -292,7 +281,7 @@ class AssignmentProblem {
     Node* m_node = FindModelNode(p_node);
 
     if (m_node == NULL) {
-      ALOG1 << "Can't find model node";
+      VLOG(2) << "Can't find model node";
       unsolved_.insert(p_node);
       return;
     }
@@ -302,8 +291,8 @@ class AssignmentProblem {
 
     SkipCommittedLabels(m_node);
     if (m_node->edges_in_frequency_order.empty()) {
-      ALOG3 << "Punting, no elements left in model vs "
-            << p_node->edges_in_frequency_order.size();
+      VLOG(4) << "Punting, no elements left in model vs "
+              << p_node->edges_in_frequency_order.size();
       unsolved_.insert(p_node);
       return;
     }
@@ -312,9 +301,9 @@ class AssignmentProblem {
 
     if (p_match->count_ > 1.1 * m_match->count_  ||
         m_match->count_ > 1.1 * p_match->count_) {
-      ALOG2 << "Tricky distribution "
-            << p_match->count_ << ":" << m_match->count_ << "  "
-            << ToString(p_match) << " vs " << ToString(m_match);
+      VLOG(3) << "Tricky distribution "
+              << p_match->count_ << ":" << m_match->count_ << "  "
+              << ToString(p_match) << " vs " << ToString(m_match);
       return;
     }
 
@@ -325,7 +314,7 @@ class AssignmentProblem {
     LabelInfo* m_label_info = m_match->in_edge_;
     int m_index = p_label_info->label_->index_;
     if (m_index != Label::kNoIndex) {
-      ALOG1 << "Cant use unassigned label from model " << m_index;
+      VLOG(2) << "Cant use unassigned label from model " << m_index;
       unsolved_.insert(p_node);
       return;
     }
@@ -338,7 +327,7 @@ class AssignmentProblem {
 
   void Assign(LabelInfo* p_info, LabelInfo* m_info) {
     AssignOne(p_info, m_info);
-    ALOG3 << "Assign " << ToString(p_info) << " := " << ToString(m_info);
+    VLOG(4) << "Assign " << ToString(p_info) << " := " << ToString(m_info);
     // Now consider unassigned adjacent addresses
     TryExtendAssignment(p_info, m_info);
   }
@@ -386,8 +375,8 @@ class AssignmentProblem {
         break;
       }
 
-      ALOG3 << "  Extending assignment -> "
-            << ToString(p_info_next) << " := " << ToString(m_info_next);
+      VLOG(4) << "  Extending assignment -> "
+              << ToString(p_info_next) << " := " << ToString(m_info_next);
 
       AssignOne(p_info_next, m_info_next);
 
@@ -426,8 +415,8 @@ class AssignmentProblem {
       }
 
       AssignOne(p_info_prev, m_info_prev);
-      ALOG3 << "  Extending assignment <- " << ToString(p_info_prev) << " := "
-            << ToString(m_info_prev);
+      VLOG(4) << "  Extending assignment <- " << ToString(p_info_prev) << " := "
+              << ToString(m_info_prev);
 
       p_info_prev = p_info_prev_prev;
       m_info_prev = m_info_prev_prev;
@@ -459,10 +448,8 @@ class AssignmentProblem {
         break;
 
       AssignOne(p_info, m_info);
-      ALOG3 << "    Extending assignment seq"
-            << "[+" << p_pos - p_pos_start << "]"
-            << " -> "
-            << ToString(p_info) << " := " << ToString(m_info);
+      VLOG(4) << "    Extending assignment seq[+" << p_pos - p_pos_start
+              << "] -> " << ToString(p_info) << " := " << ToString(m_info);
 
       ++p_pos;
       ++m_pos;
@@ -497,10 +484,8 @@ class AssignmentProblem {
         break;
 
       AssignOne(p_info, m_info);
-      ALOG3 << "    Extending assignment seq"
-            << "[-" << p_pos_start - p_pos << "]"
-            << " <- "
-            << ToString(p_info) << " := " << ToString(m_info);
+      VLOG(4) << "    Extending assignment seq[-" << p_pos_start - p_pos
+              << "] <- " << ToString(p_info) << " := " << ToString(m_info);
 
       --p_pos;
       --m_pos;
@@ -523,13 +508,13 @@ class AssignmentProblem {
     LabelInfo* p_label = node->in_edge_;
     LabelInfo* m_label = p_label->assignment_;
     if (m_label == NULL) {
-      ALOG1 << "Expected assigned prefix";
+      VLOG(2) << "Expected assigned prefix";
       return NULL;
     }
 
     Node::Edges::iterator e = m_parent->edges_.find(m_label);
     if (e == m_parent->edges_.end()) {
-      ALOG2 << "Expected defined edge in parent";
+      VLOG(3) << "Expected defined edge in parent";
       return NULL;
     }
 
@@ -589,7 +574,7 @@ class GraphAdjuster : public AdjustmentMethod {
   ~GraphAdjuster() {}
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {
-    LOG(INFO) << "GraphAdjuster::Adjust";
+    VLOG(1) << "GraphAdjuster::Adjust";
     prog_ = program;
     model_ = &model;
     debug_label_index_gen_ = 0;

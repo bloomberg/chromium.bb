@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,10 +117,10 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSections() {
   std::sort(rel32_locations_.begin(), rel32_locations_.end());
 
 #if COURGETTE_HISTOGRAM_TARGETS
-  LOG(INFO) << "abs32_locations_ " << abs32_locations_.size();
-  LOG(INFO) << "rel32_locations_ " << rel32_locations_.size();
-  LOG(INFO) << "abs32_target_rvas_ " << abs32_target_rvas_.size();
-  LOG(INFO) << "rel32_target_rvas_ " << rel32_target_rvas_.size();
+  VLOG(1) << "abs32_locations_ " << abs32_locations_.size()
+          << "\nrel32_locations_ " << rel32_locations_.size()
+          << "\nabs32_target_rvas_ " << abs32_target_rvas_.size()
+          << "\nrel32_target_rvas_ " << rel32_target_rvas_.size();
 
   int common = 0;
   std::map<RVA, int>::iterator abs32_iter = abs32_target_rvas_.begin();
@@ -137,7 +137,7 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSections() {
       ++rel32_iter;
     }
   }
-  LOG(INFO) << "common " << common;
+  VLOG(1) << "common " << common;
 #endif
 }
 

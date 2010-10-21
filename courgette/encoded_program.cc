@@ -233,16 +233,16 @@ void EncodedProgram::AddMakeRelocs() {
 }
 
 void EncodedProgram::DebuggingSummary() {
-  LOG(INFO) << "EncodedProgram Summary";
-  LOG(INFO) << "  image base  " << image_base_;
-  LOG(INFO) << "  abs32 rvas  " << abs32_rva_.size();
-  LOG(INFO) << "  rel32 rvas  " << rel32_rva_.size();
-  LOG(INFO) << "  ops         " << ops_.size();
-  LOG(INFO) << "  origins     " << origins_.size();
-  LOG(INFO) << "  copy_counts " << copy_counts_.size();
-  LOG(INFO) << "  copy_bytes  " << copy_bytes_.size();
-  LOG(INFO) << "  abs32_ix    " << abs32_ix_.size();
-  LOG(INFO) << "  rel32_ix    " << rel32_ix_.size();
+  VLOG(1) << "EncodedProgram Summary"
+          << "\n  image base  " << image_base_
+          << "\n  abs32 rvas  " << abs32_rva_.size()
+          << "\n  rel32 rvas  " << rel32_rva_.size()
+          << "\n  ops         " << ops_.size()
+          << "\n  origins     " << origins_.size()
+          << "\n  copy_counts " << copy_counts_.size()
+          << "\n  copy_bytes  " << copy_bytes_.size()
+          << "\n  abs32_ix    " << abs32_ix_.size()
+          << "\n  rel32_ix    " << rel32_ix_.size();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

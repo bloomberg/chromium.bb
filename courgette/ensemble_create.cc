@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,14 +113,14 @@ Status FindGenerators(Ensemble* old_ensemble, Ensemble* new_ensemble,
   base::Time start_find_time = base::Time::Now();
   old_ensemble->FindEmbeddedElements();
   new_ensemble->FindEmbeddedElements();
-  LOG(INFO) << "done FindEmbeddedElements "
-            << (base::Time::Now() - start_find_time).InSecondsF();
+  VLOG(1) << "done FindEmbeddedElements "
+          << (base::Time::Now() - start_find_time).InSecondsF();
 
   std::vector<Element*> old_elements(old_ensemble->elements());
   std::vector<Element*> new_elements(new_ensemble->elements());
 
-  LOG(INFO) << "old has " << old_elements.size() << " elements";
-  LOG(INFO) << "new has " << new_elements.size() << " elements";
+  VLOG(1) << "old has " << old_elements.size() << " elements";
+  VLOG(1) << "new has " << new_elements.size() << " elements";
 
   DifferenceEstimator difference_estimator;
   std::vector<DifferenceEstimator::Base*> bases;
@@ -130,9 +130,8 @@ Status FindGenerators(Ensemble* old_ensemble, Ensemble* new_ensemble,
     bases.push_back(
         difference_estimator.MakeBase(old_elements[i]->region()));
   }
-  LOG(INFO) << "done make bases "
-            << (base::Time::Now() - start_bases_time).InSecondsF()
-            << "s";
+  VLOG(1) << "done make bases "
+          << (base::Time::Now() - start_bases_time).InSecondsF() << "s";
 
   for (size_t new_index = 0;  new_index < new_elements.size();  ++new_index) {
     Element* new_element = new_elements[new_index];
@@ -165,14 +164,14 @@ Status FindGenerators(Ensemble* old_ensemble, Ensemble* new_ensemble,
       DifferenceEstimator::Base* old_base = bases[old_index];
       size_t difference = difference_estimator.Measure(old_base, new_subject);
 
-      LOG(INFO) << "Compare " << old_element->Name()
-                << " to " << new_element->Name()
-                << " --> " << difference
-                << " in " << (base::Time::Now() - start_compare).InSecondsF()
-                << "s";
+      VLOG(1) << "Compare " << old_element->Name()
+              << " to " << new_element->Name()
+              << " --> " << difference
+              << " in " << (base::Time::Now() - start_compare).InSecondsF()
+              << "s";
       if (difference == 0) {
-        LOG(INFO) << "Skip " << new_element->Name()
-                  << " - identical to " << old_element->Name();
+        VLOG(1) << "Skip " << new_element->Name()
+                << " - identical to " << old_element->Name();
         best_difference = 0;
         best_old_element = NULL;
         break;
@@ -184,9 +183,9 @@ Status FindGenerators(Ensemble* old_ensemble, Ensemble* new_ensemble,
     }
 
     if (best_old_element) {
-      LOG(INFO) << "Matched " << best_old_element->Name()
-                << " to " << new_element->Name()
-                << " --> " << best_difference;
+      VLOG(1) << "Matched " << best_old_element->Name()
+              << " to " << new_element->Name()
+              << " --> " << best_difference;
       TransformationPatchGenerator* generator =
           MakeGenerator(best_old_element, new_element);
       if (generator)
@@ -194,9 +193,9 @@ Status FindGenerators(Ensemble* old_ensemble, Ensemble* new_ensemble,
     }
   }
 
-  LOG(INFO) << "done FindGenerators "
-            << "found " << generators->size() << " in "
-            << (base::Time::Now() - start_find_time).InSecondsF() << "s";
+  VLOG(1) << "done FindGenerators found " << generators->size()
+          << " in " << (base::Time::Now() - start_find_time).InSecondsF()
+          << "s";
 
   return C_OK;
 }
@@ -213,7 +212,7 @@ void FreeGenerators(std::vector<TransformationPatchGenerator*>* generators) {
 Status GenerateEnsemblePatch(SourceStream* base,
                              SourceStream* update,
                              SinkStream* final_patch) {
-  LOG(INFO) << "start GenerateEnsemblePatch";
+  VLOG(1) << "start GenerateEnsemblePatch";
   base::Time start_time = base::Time::Now();
 
   Region old_region(base->Buffer(), base->Remaining());
@@ -406,8 +405,8 @@ Status GenerateEnsemblePatch(SourceStream* base,
   if (!patch_streams.CopyTo(final_patch))
     return C_STREAM_ERROR;
 
-  LOG(INFO) << "done GenerateEnsemblePatch "
-            << (base::Time::Now() - start_time).InSecondsF() << "s";
+  VLOG(1) << "done GenerateEnsemblePatch "
+          << (base::Time::Now() - start_time).InSecondsF() << "s";
 
   return C_OK;
 }
