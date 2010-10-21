@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,13 +208,13 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
     // Note that the server's get_time path doesn't require authentication.
     string get_time_path =
         MakeSyncServerPath(kSyncServerGetTimePath, post_body);
-    LOG(INFO) << "Requesting get_time from:" << get_time_path;
+    VLOG(1) << "Requesting get_time from:" << get_time_path;
 
     string blank_post_body;
     bool ok = post->Init(get_time_path.c_str(), blank_post_body,
         blank_post_body, &response);
     if (!ok) {
-      LOG(INFO) << "Unable to check the time";
+      VLOG(1) << "Unable to check the time";
       continue;
     }
     string time_response;
@@ -228,7 +228,7 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
       continue;
     }
     *out_time = atoi(time_response.c_str());
-    LOG(INFO) << "Server was reachable.";
+    VLOG(1) << "Server was reachable.";
     return true;
   }
   IncrementErrorCount();
@@ -320,9 +320,8 @@ std::string ServerConnectionManager::GetServerHost() const {
   bool use_ssl;
   GetServerParameters(&server_url, &port, &use_ssl);
   // For unit tests.
-  if (server_url.empty()) {
-    return "";
-  }
+  if (server_url.empty())
+    return std::string();
   // We just want the hostname, so we don't need to switch on use_ssl.
   server_url = "http://" + server_url;
   GURL gurl(server_url);
@@ -335,7 +334,7 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
                                  const std::string& share) {
   syncable::ScopedDirLookup dir(manager, share);
   if (!dir.good()) {
-    LOG(INFO) << "Dir lookup failed";
+    VLOG(1) << "Dir lookup failed";
     return false;
   }
   string birthday = dir->store_birthday();

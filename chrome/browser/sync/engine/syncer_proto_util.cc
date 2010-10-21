@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,35 +42,37 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
     response_trace << "Server response trace:";
 
     if (response.profiling_data().has_user_lookup_time()) {
-      response_trace << " " << "user lookup: " <<
-          response.profiling_data().user_lookup_time() << "ms";
+      response_trace << " user lookup: "
+                     << response.profiling_data().user_lookup_time() << "ms";
     }
 
     if (response.profiling_data().has_meta_data_write_time()) {
-      response_trace << " " << "meta write: " <<
-          response.profiling_data().meta_data_write_time() << "ms";
+      response_trace << " meta write: "
+                     << response.profiling_data().meta_data_write_time()
+                     << "ms";
     }
 
     if (response.profiling_data().has_meta_data_read_time()) {
-      response_trace << " " << "meta read: " <<
-          response.profiling_data().meta_data_read_time() << "ms";
+      response_trace << " meta read: "
+                     << response.profiling_data().meta_data_read_time() << "ms";
     }
 
     if (response.profiling_data().has_file_data_write_time()) {
-      response_trace << " " << "file write: " <<
-          response.profiling_data().file_data_write_time() << "ms";
+      response_trace << " file write: "
+                     << response.profiling_data().file_data_write_time()
+                     << "ms";
     }
 
     if (response.profiling_data().has_file_data_read_time()) {
-      response_trace << " " << "file read: " <<
-          response.profiling_data().file_data_read_time() << "ms";
+      response_trace << " file read: "
+                     << response.profiling_data().file_data_read_time() << "ms";
     }
 
     if (response.profiling_data().has_total_request_time()) {
-      response_trace << " " << "total time: " <<
-          response.profiling_data().total_request_time() << "ms";
+      response_trace << " total time: "
+                     << response.profiling_data().total_request_time() << "ms";
     }
-    LOG(INFO) << response_trace.str();
+    VLOG(1) << response_trace.str();
   }
 }
 
@@ -95,7 +97,7 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
       return false;
     }
 
-    LOG(INFO) << "New store birthday: " << response->store_birthday();
+    VLOG(1) << "New store birthday: " << response->store_birthday();
     dir->set_store_birthday(response->store_birthday());
     return true;
   }
@@ -117,9 +119,8 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
 // static
 void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
                                          ClientToServerMessage* msg) {
-  if (!dir->store_birthday().empty()) {
+  if (!dir->store_birthday().empty())
     msg->set_store_birthday(dir->store_birthday());
-  }
 }
 
 // static
@@ -140,31 +141,30 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
   if (!scm->PostBufferWithCachedAuth(&params, &server_status_watcher)) {
     LOG(WARNING) << "Error posting from syncer:" << http_response;
     return false;
-  } else {
-    std::string new_token =
-        http_response.update_client_auth_header;
-    if (!new_token.empty()) {
-      SyncEngineEvent event(SyncEngineEvent::UPDATED_TOKEN);
-      event.updated_token = new_token;
-      session->context()->NotifyListeners(event);
-    }
-
-    if (response->ParseFromString(rx)) {
-      // TODO(tim): This is an egregious layering violation (bug 35060).
-      switch (response->error_code()) {
-        case ClientToServerResponse::ACCESS_DENIED:
-        case ClientToServerResponse::AUTH_INVALID:
-        case ClientToServerResponse::USER_NOT_ACTIVATED:
-          // Fires on ScopedServerStatusWatcher
-          http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-          return false;
-        default:
-          return true;
-      }
-    }
-
-    return false;
   }
+
+  std::string new_token = http_response.update_client_auth_header;
+  if (!new_token.empty()) {
+    SyncEngineEvent event(SyncEngineEvent::UPDATED_TOKEN);
+    event.updated_token = new_token;
+    session->context()->NotifyListeners(event);
+  }
+
+  if (response->ParseFromString(rx)) {
+    // TODO(tim): This is an egregious layering violation (bug 35060).
+    switch (response->error_code()) {
+      case ClientToServerResponse::ACCESS_DENIED:
+      case ClientToServerResponse::AUTH_INVALID:
+      case ClientToServerResponse::USER_NOT_ACTIVATED:
+        // Fires on ScopedServerStatusWatcher
+        http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+        return false;
+      default:
+        return true;
+    }
+  }
+
+  return false;
 }
 
 // static
@@ -181,16 +181,12 @@ bool SyncerProtoUtil::PostClientToServerMessage(
 
   ScopedDirLookup dir(session->context()->directory_manager(),
       session->context()->account_name());
-  if (!dir.good()) {
+  if (!dir.good())
     return false;
-  }
 
-  if (!PostAndProcessHeaders(session->context()->connection_manager(),
-                             session,
-                             msg,
-                             response)) {
+  if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
+                             msg, response))
     return false;
-  }
 
   if (!VerifyResponseBirthday(dir, response)) {
     session->status_controller()->set_syncer_stuck(true);
@@ -224,11 +220,11 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
   const std::string name = NameFromSyncEntity(server_entry);
 
   CHECK(local_entry.Get(ID) == server_entry.id()) <<
-    " SyncerProtoUtil::Compare precondition not met.";
+      " SyncerProtoUtil::Compare precondition not met.";
   CHECK(server_entry.version() == local_entry.Get(BASE_VERSION)) <<
-    " SyncerProtoUtil::Compare precondition not met.";
+      " SyncerProtoUtil::Compare precondition not met.";
   CHECK(!local_entry.Get(IS_UNSYNCED)) <<
-    " SyncerProtoUtil::Compare precondition not met.";
+      " SyncerProtoUtil::Compare precondition not met.";
 
   if (local_entry.Get(IS_DEL) && server_entry.deleted())
     return true;
@@ -291,22 +287,16 @@ void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
 // static
 const std::string& SyncerProtoUtil::NameFromSyncEntity(
     const sync_pb::SyncEntity& entry) {
-
-  if (entry.has_non_unique_name()) {
+  if (entry.has_non_unique_name())
     return entry.non_unique_name();
-  }
-
   return entry.name();
 }
 
 // static
 const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
     const CommitResponse_EntryResponse& entry) {
-
-  if (entry.has_non_unique_name()) {
-      return entry.non_unique_name();
-  }
-
+  if (entry.has_non_unique_name())
+    return entry.non_unique_name();
   return entry.name();
 }
 
@@ -344,9 +334,8 @@ std::string SyncerProtoUtil::ClientToServerResponseDebugString(
     const sync_pb::ClientToServerResponse& response) {
   // Add more handlers as needed.
   std::string output;
-  if (response.has_get_updates()) {
+  if (response.has_get_updates())
     output.append(GetUpdatesResponseString(response.get_updates()));
-  }
   return output;
 }
 

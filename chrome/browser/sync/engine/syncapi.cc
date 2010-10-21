@@ -890,7 +890,7 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
     int os_error_code = 0;
     int int_response_code = 0;
     if (!http->MakeSynchronousPost(&os_error_code, &int_response_code)) {
-      LOG(INFO) << "Http POST failed, error returns: " << os_error_code;
+      VLOG(1) << "Http POST failed, error returns: " << os_error_code;
       return false;
     }
     *response_code = static_cast<int>(int_response_code);
@@ -1262,7 +1262,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        const std::string& restored_key_for_bootstrapping,
                        bool setup_for_test_mode) {
   DCHECK(post_factory);
-  LOG(INFO) << "SyncManager starting Init...";
+  VLOG(1) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
   return data_->Init(database_location,
                      server_string,
@@ -1334,7 +1334,7 @@ bool SyncManager::SyncInternal::Init(
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode) {
 
-  LOG(INFO) << "Starting SyncInternal initialization.";
+  VLOG(1) << "Starting SyncInternal initialization.";
 
   core_message_loop_ = MessageLoop::current();
   DCHECK(core_message_loop_);
@@ -1360,7 +1360,7 @@ bool SyncManager::SyncInternal::Init(
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode) {
     // Build a SyncSessionContext and store the worker in it.
-    LOG(INFO) << "Sync is bringing up SyncSessionContext.";
+    VLOG(1) << "Sync is bringing up SyncSessionContext.";
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(&allstatus_);
     listeners.push_back(this);
@@ -1446,15 +1446,15 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
             notifier::NOTIFICATION_SERVER);
   notification_pending_ = notification_pending_ || new_pending_notification;
   if (!notification_pending_) {
-    LOG(INFO) << "Not sending notification: no pending notification";
+    VLOG(1) << "Not sending notification: no pending notification";
     return;
   }
   if (!talk_mediator_.get()) {
-    LOG(INFO) << "Not sending notification: shutting down "
-              << "(talk_mediator_ is NULL)";
+    VLOG(1) << "Not sending notification: shutting down (talk_mediator_ is "
+               "NULL)";
     return;
   }
-  LOG(INFO) << "Sending XMPP notification...";
+  VLOG(1) << "Sending XMPP notification...";
   OutgoingNotificationData notification_data;
   if (notifier_options_.notification_method == notifier::NOTIFICATION_LEGACY) {
     notification_data.service_id = browser_sync::kSyncLegacyServiceId;
@@ -1477,9 +1477,9 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
   bool success = talk_mediator_->SendNotification(notification_data);
   if (success) {
     notification_pending_ = false;
-    LOG(INFO) << "Sent XMPP notification";
+    VLOG(1) << "Sent XMPP notification";
   } else {
-    LOG(INFO) << "Could not send XMPP notification";
+    VLOG(1) << "Could not send XMPP notification";
   }
 }
 
@@ -1489,9 +1489,8 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   bool share_opened = dir_manager()->Open(username_for_share());
   DCHECK(share_opened);
   if (!share_opened) {
-    if (observer_) {
+    if (observer_)
       observer_->OnStopSyncingPermanently();
-    }
 
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
@@ -1519,10 +1518,9 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   DCHECK(share_.name.empty());
   share_.name = credentials.email;
 
-  LOG(INFO) << "Signing in user: " << username_for_share();
-  if (!OpenDirectory()) {
+  VLOG(1) << "Signing in user: " << username_for_share();
+  if (!OpenDirectory())
     return false;
-  }
 
   UpdateCredentials(credentials);
   return true;
@@ -1543,15 +1541,14 @@ void SyncManager::SyncInternal::InitializeTalkMediator() {
       notifier::NOTIFICATION_SERVER) {
     syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
     std::string state;
-    if (lookup.good()) {
+    if (lookup.good())
       state = lookup->GetAndClearNotificationState();
-    } else {
+    else
       LOG(ERROR) << "Could not read notification state";
-    }
     if (VLOG_IS_ON(1)) {
       std::string encoded_state;
       base::Base64Encode(state, &encoded_state);
-      LOG(INFO) << "Read notification state: " << encoded_state;
+      VLOG(1) << "Read notification state: " << encoded_state;
     }
     sync_notifier::ServerNotifierThread* server_notifier_thread =
         new sync_notifier::ServerNotifierThread(
@@ -1676,11 +1673,11 @@ void SyncManager::SyncInternal::Shutdown() {
 
   // Shutdown the xmpp buzz connection.
   if (talk_mediator.get()) {
-    LOG(INFO) << "P2P: Mediator logout started.";
+    VLOG(1) << "P2P: Mediator logout started.";
     talk_mediator->Logout();
-    LOG(INFO) << "P2P: Mediator logout completed.";
+    VLOG(1) << "P2P: Mediator logout completed.";
     talk_mediator.reset();
-    LOG(INFO) << "P2P: Mediator destroyed.";
+    VLOG(1) << "P2P: Mediator destroyed.";
   }
 
   // Pump any messages the auth watcher, syncer thread, or talk
@@ -1715,7 +1712,7 @@ void SyncManager::SyncInternal::Shutdown() {
 }
 
 void SyncManager::SyncInternal::OnIPAddressChanged() {
-  LOG(INFO) << "IP address change detected";
+  VLOG(1) << "IP address change detected";
   // TODO(akalin): CheckServerReachable() can block, which may cause
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
@@ -2047,8 +2044,8 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
 
 void SyncManager::SyncInternal::OnNotificationStateChange(
     bool notifications_enabled) {
-  LOG(INFO) << "P2P: Notifications enabled = "
-            << (notifications_enabled ? "true" : "false");
+  VLOG(1) << "P2P: Notifications enabled = "
+          << (notifications_enabled ? "true" : "false");
   allstatus_.SetNotificationsEnabled(notifications_enabled);
   if (syncer_thread()) {
     syncer_thread()->SetNotificationsEnabled(notifications_enabled);
@@ -2096,7 +2093,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
        browser_sync::kSyncLegacyServiceUrl) ||
       (notification_data.service_url ==
        browser_sync::kSyncServiceUrl)) {
-    LOG(INFO) << "P2P: Updates on server, pushing syncer";
+    VLOG(1) << "P2P: Updates on server, pushing syncer";
     if (syncer_thread()) {
       // Introduce a delay to help coalesce initial notifications.
       syncer_thread()->NudgeSyncer(250, SyncerThread::kNotification);
@@ -2125,7 +2122,7 @@ void SyncManager::SyncInternal::WriteState(const std::string& state) {
   if (VLOG_IS_ON(1)) {
     std::string encoded_state;
     base::Base64Encode(state, &encoded_state);
-    LOG(INFO) << "Writing notification state: " << encoded_state;
+    VLOG(1) << "Writing notification state: " << encoded_state;
   }
   lookup->SetNotificationState(state);
   lookup->SaveChanges();

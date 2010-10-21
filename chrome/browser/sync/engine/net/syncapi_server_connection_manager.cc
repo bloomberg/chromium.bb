@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
   int os_error_code = 0;
   int response_code = 0;
   if (!http->MakeSynchronousPost(&os_error_code, &response_code)) {
-    LOG(INFO) << "Http POST failed, error returns: " << os_error_code;
+    VLOG(1) << "Http POST failed, error returns: " << os_error_code;
     response->server_status = HttpResponse::IO_ERROR;
     factory_->Destroy(http);
     return false;

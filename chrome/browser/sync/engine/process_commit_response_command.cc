@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -228,7 +228,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     return CommitResponse::INVALID_MESSAGE;
   }
   if (CommitResponse::TRANSIENT_ERROR == response) {
-    LOG(INFO) << "Transient Error Committing: " << local_entry;
+    VLOG(1) << "Transient Error Committing: " << local_entry;
     LogServerError(server_entry);
     return CommitResponse::TRANSIENT_ERROR;
   }
@@ -238,7 +238,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     return response;
   }
   if (CommitResponse::CONFLICT == response) {
-    LOG(INFO) << "Conflict Committing: " << local_entry;
+    VLOG(1) << "Conflict Committing: " << local_entry;
     // TODO(nick): conflicting_new_folder_ids is a purposeless anachronism.
     if (!pre_commit_id.ServerKnows() && local_entry.Get(IS_DIR)) {
       conflicting_new_folder_ids->insert(pre_commit_id);
@@ -246,7 +246,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     return response;
   }
   if (CommitResponse::RETRY == response) {
-    LOG(INFO) << "Retry Committing: " << local_entry;
+    VLOG(1) << "Retry Committing: " << local_entry;
     return response;
   }
   if (CommitResponse::OVER_QUOTA == response) {
@@ -321,8 +321,8 @@ bool ProcessCommitResponseCommand::UpdateVersionAfterCommit(
   // here, even if syncing_was_set is false; that's because local changes were
   // on top of the successfully committed version.
   local_entry->Put(BASE_VERSION, new_version);
-  LOG(INFO) << "Commit is changing base version of "
-            << local_entry->Get(ID) << " to: " << new_version;
+  VLOG(1) << "Commit is changing base version of " << local_entry->Get(ID)
+          << " to: " << new_version;
   local_entry->Put(SERVER_VERSION, new_version);
   return true;
 }
@@ -336,8 +336,8 @@ bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
     if (pre_commit_id.ServerKnows()) {
       // The server can sometimes generate a new ID on commit; for example,
       // when committing an undeletion.
-      LOG(INFO) << " ID changed while committing an old entry. "
-                << pre_commit_id << " became " << entry_response.id() << ".";
+      VLOG(1) << " ID changed while committing an old entry. "
+              << pre_commit_id << " became " << entry_response.id() << ".";
     }
     MutableEntry same_id(trans, GET_BY_ID, entry_response.id());
     // We should trap this before this function.
@@ -348,7 +348,7 @@ bool ProcessCommitResponseCommand::ChangeIdAfterCommit(
     }
     SyncerUtil::ChangeEntryIDAndUpdateChildren(
         trans, local_entry, entry_response.id());
-    LOG(INFO) << "Changing ID to " << entry_response.id();
+    VLOG(1) << "Changing ID to " << entry_response.id();
   }
   return true;
 }
@@ -421,8 +421,8 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
       local_entry->Get(syncable::NON_UNIQUE_NAME);
 
   if (!server_name.empty() && old_name != server_name) {
-    LOG(INFO) << "During commit, server changed name: " << old_name
-              << " to new name: " << server_name;
+    VLOG(1) << "During commit, server changed name: " << old_name
+            << " to new name: " << server_name;
     local_entry->Put(syncable::NON_UNIQUE_NAME, server_name);
   }
 
@@ -438,9 +438,8 @@ void ProcessCommitResponseCommand::OverrideClientFieldsAfterCommit(
     syncable::Id new_prev = SyncerUtil::ComputePrevIdFromServerPosition(
         local_entry->write_transaction(), local_entry,
         local_entry->Get(PARENT_ID));
-    if (!local_entry->PutPredecessor(new_prev)) {
+    if (!local_entry->PutPredecessor(new_prev))
       LOG(WARNING) << "PutPredecessor failed after successful commit";
-    }
   }
 }
 

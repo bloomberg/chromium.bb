@@ -30,7 +30,7 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
   sessions::StatusController* status = session->status_controller();
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();
-    LOG(INFO) << "Changes remaining:" << changes_left;
+    VLOG(1) << "Changes remaining:" << changes_left;
     status->set_num_server_changes_remaining(changes_left);
   }
 

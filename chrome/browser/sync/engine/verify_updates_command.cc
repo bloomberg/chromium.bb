@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -28,7 +28,7 @@ VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
 void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     sessions::SyncSession* session) {
-  LOG(INFO) << "Beginning Update Verification";
+  VLOG(1) << "Beginning Update Verification";
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
   if (!dir.good()) {
@@ -40,7 +40,7 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();
 
-  LOG(INFO) << update_count << " entries to verify";
+  VLOG(1) << update_count << " entries to verify";
   for (int i = 0; i < update_count; i++) {
     const SyncEntity& update =
         *reinterpret_cast<const SyncEntity *>(&(updates.entries(i)));

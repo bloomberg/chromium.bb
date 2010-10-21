@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,9 +231,9 @@ syncable::Id SyncerUtil::FindLocalIdToUpdate(
       // Just a quick sanity check.
       DCHECK(!local_entry.Get(ID).ServerKnows());
 
-      LOG(INFO) << "Reuniting lost commit response IDs."
-                << " server id: " << update.id() << " local id: "
-                << local_entry.Get(ID) << " new version: " << new_version;
+      VLOG(1) << "Reuniting lost commit response IDs. server id: "
+              << update.id() << " local id: " << local_entry.Get(ID)
+              << " new version: " << new_version;
 
       return local_entry.Get(ID);
     }
@@ -255,8 +255,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   syncable::Id id = entry->Get(ID);
 
   if (entry->Get(IS_UNSYNCED)) {
-    LOG(INFO) << "Skipping update, returning conflict for: " << id
-              << " ; it's unsynced.";
+    VLOG(1) << "Skipping update, returning conflict for: " << id
+            << " ; it's unsynced.";
     return CONFLICT;
   }
   if (!entry->Get(SERVER_IS_DEL)) {
@@ -273,8 +273,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
     if (entry->Get(PARENT_ID) != new_parent) {
       if (!entry->Get(IS_DEL) && !IsLegalNewParent(trans, id, new_parent)) {
-        LOG(INFO) << "Not updating item " << id << ", illegal new parent "
-          "(would cause loop).";
+        VLOG(1) << "Not updating item " << id
+                << ", illegal new parent (would cause loop).";
         return CONFLICT;
       }
     }
@@ -284,7 +284,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     if (!handles.empty()) {
       // If we have still-existing children, then we need to deal with
       // them before we can process this change.
-      LOG(INFO) << "Not deleting directory; it's not empty " << *entry;
+      VLOG(1) << "Not deleting directory; it's not empty " << *entry;
       return CONFLICT;
     }
   }
@@ -506,8 +506,8 @@ void SyncerUtil::SplitServerInformationIntoNewEntry(
   CopyServerFields(entry, &new_entry);
   ClearServerData(entry);
 
-  LOG(INFO) << "Splitting server information, local entry: " << *entry <<
-    " server entry: " << new_entry;
+  VLOG(1) << "Splitting server information, local entry: " << *entry
+          << " server entry: " << new_entry;
 }
 
 // This function is called on an entry when we can update the user-facing data
@@ -791,8 +791,8 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
   // (where items go to version 0 when they're deleted), or else
   // removed entirely (if this type of undeletion is indeed impossible).
   CHECK(target->good());
-  LOG(INFO) << "Server update is attempting undelete. " << *target
-            << "Update:" << SyncerProtoUtil::SyncEntityDebugString(update);
+  VLOG(1) << "Server update is attempting undelete. " << *target
+          << "Update:" << SyncerProtoUtil::SyncEntityDebugString(update);
   // Move the old one aside and start over.  It's too tricky to get the old one
   // back into a state that would pass CheckTreeInvariants().
   if (target->Get(IS_DEL)) {
@@ -805,8 +805,9 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
     return VERIFY_SUCCESS;
   }
   if (update.version() < target->Get(SERVER_VERSION)) {
-    LOG(WARNING) << "Update older than current server version for" <<
-        *target << "Update:" << SyncerProtoUtil::SyncEntityDebugString(update);
+    LOG(WARNING) << "Update older than current server version for "
+                 << *target << " Update:"
+                 << SyncerProtoUtil::SyncEntityDebugString(update);
     return VERIFY_SUCCESS;  // Expected in new sync protocol.
   }
   return VERIFY_UNDECIDED;

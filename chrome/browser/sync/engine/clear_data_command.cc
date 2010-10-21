@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,14 +45,14 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
 
-  LOG(INFO) << "Clearing server data";
+  VLOG(1) << "Clearing server data";
 
   bool ok = SyncerProtoUtil::PostClientToServerMessage(
       client_to_server_message,
       &client_to_server_response,
       session);
 
-  DLOG(INFO) << SyncerProtoUtil::ClientToServerResponseDebugString(
+  DVLOG(1) << SyncerProtoUtil::ClientToServerResponseDebugString(
       client_to_server_response);
 
   // Clear pending indicates that the server has received our clear message
@@ -75,7 +75,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   session->delegate()->OnShouldStopSyncingPermanently();
 
-  LOG(INFO) << "ClearData succeeded.";
+  VLOG(1) << "ClearData succeeded.";
 }
 
 }  // namespace browser_sync

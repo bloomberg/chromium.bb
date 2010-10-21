@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
         unapplied_count++;
     }
     if (conflict_set->size() == unsynced_count && 0 == unapplied_count) {
-      LOG(INFO) << "Skipped transactional commit attempt.";
+      VLOG(1) << "Skipped transactional commit attempt.";
     } else if (conflict_set->size() == unapplied_count && 0 == unsynced_count &&
           ApplyUpdatesTransactionally(trans, conflict_set, resolver,
                                       cryptographer, routes, status)) {
@@ -271,8 +271,8 @@ void BuildAndProcessConflictSetsCommand::MergeSetsForIntroducedLoops(
   while (!parent_id.IsRoot()) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
     if (!parent.good()) {
-      LOG(INFO) << "Bad parent in loop check, skipping. Bad parent id: "
-        << parent_id << " entry: " << *entry;
+      VLOG(1) << "Bad parent in loop check, skipping. Bad parent id: "
+              << parent_id << " entry: " << *entry;
       return;
     }
     if (parent.Get(syncable::IS_UNSYNCED) &&
