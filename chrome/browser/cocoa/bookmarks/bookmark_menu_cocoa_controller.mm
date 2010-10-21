@@ -31,11 +31,11 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToWide([nsfont fontName]),
                  static_cast<int>([nsfont pointSize]));
-  std::wstring title = gfx::ElideText(UTF16ToWideHack(node->GetTitle()),
-                                      font,
-                                      kMaximumMenuPixelsWide,
-                                      false);
-  return base::SysWideToNSString(title);
+  string16 title = gfx::ElideText(node->GetTitle(),
+                                  font,
+                                  kMaximumMenuPixelsWide,
+                                  false);
+  return base::SysUTF16ToNSString(title);
 }
 
 - (id)initWithBridge:(BookmarkMenuBridge *)bridge {

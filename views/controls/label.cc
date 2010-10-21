@@ -437,7 +437,8 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
     *paint_text = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
         WideToUTF16(*paint_text)));
   } else if (elide_in_middle_) {
-    *paint_text = gfx::ElideText(text_, font_, width(), true);
+    *paint_text = UTF16ToWideHack(gfx::ElideText(WideToUTF16Hack(text_),
+        font_, width(), true));
   } else {
     *paint_text = text_;
   }

@@ -11,6 +11,7 @@
 #include "app/text_elider.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/instant/instant_opt_in.h"
@@ -183,9 +184,9 @@ class OptInButtonBorder : public views::Border {
 
 }  // namespace
 
-class AutocompletePopupContentsView::InstantOptInView :
-    public views::View,
-    public views::ButtonListener {
+class AutocompletePopupContentsView::InstantOptInView
+    : public views::View,
+      public views::ButtonListener {
  public:
   InstantOptInView(AutocompletePopupContentsView* contents_view,
                    const gfx::Font& label_font,
@@ -696,8 +697,9 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
       first_classification = false;
 
       // Can we fit at least an ellipsis?
-      std::wstring elided_text(
-          gfx::ElideText(j->text, *j->font, remaining_width, false));
+      std::wstring elided_text(UTF16ToWideHack(
+          gfx::ElideText(WideToUTF16Hack(j->text), *j->font, remaining_width,
+                         false)));
       Classifications::reverse_iterator prior_classification(j);
       ++prior_classification;
       const bool on_first_classification =

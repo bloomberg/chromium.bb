@@ -40,10 +40,10 @@ std::wstring ElideUrl(const GURL& url,
 // Elides |text| to fit in |available_pixel_width|.  If |elide_in_middle| is
 // set the ellipsis is placed in the middle of the string; otherwise it is
 // placed at the end.
-std::wstring ElideText(const std::wstring& text,
-                       const gfx::Font& font,
-                       int available_pixel_width,
-                       bool elide_in_middle);
+string16 ElideText(const string16& text,
+                   const gfx::Font& font,
+                   int available_pixel_width,
+                   bool elide_in_middle);
 
 // Elide a filename to fit a given pixel width, with an emphasis on not hiding
 // the extension unless we have to. If filename contains a path, the path will

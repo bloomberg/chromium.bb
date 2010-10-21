@@ -26,9 +26,9 @@ struct FileTestcase {
   const std::wstring output;
 };
 
-struct WideTestcase {
-  const std::wstring input;
-  const std::wstring output;
+struct UTF16Testcase {
+  const string16 input;
+  const string16 output;
 };
 
 struct TestData {
@@ -188,21 +188,21 @@ TEST(TextEliderTest, TestFilenameEliding) {
 }
 
 TEST(TextEliderTest, ElideTextLongStrings) {
-  const std::wstring kEllipsisStr(kEllipsis);
-  std::wstring data_scheme(L"data:text/plain,");
+  const string16 kEllipsisStr(WideToUTF16(kEllipsis));
+  string16 data_scheme(UTF8ToUTF16("data:text/plain,"));
   size_t data_scheme_length = data_scheme.length();
 
-  std::wstring ten_a(10, L'a');
-  std::wstring hundred_a(100, L'a');
-  std::wstring thousand_a(1000, L'a');
-  std::wstring ten_thousand_a(10000, L'a');
-  std::wstring hundred_thousand_a(100000, L'a');
-  std::wstring million_a(1000000, L'a');
+  string16 ten_a(10, 'a');
+  string16 hundred_a(100, 'a');
+  string16 thousand_a(1000, 'a');
+  string16 ten_thousand_a(10000, 'a');
+  string16 hundred_thousand_a(100000, 'a');
+  string16 million_a(1000000, 'a');
 
   size_t number_of_as = 156;
-  std::wstring long_string_end(
-      data_scheme + std::wstring(number_of_as, L'a') + kEllipsisStr);
-  WideTestcase testcases_end[] = {
+  string16 long_string_end(
+      data_scheme + string16(number_of_as, 'a') + kEllipsisStr);
+  UTF16Testcase testcases_end[] = {
      {data_scheme + ten_a,              data_scheme + ten_a},
      {data_scheme + hundred_a,          data_scheme + hundred_a},
      {data_scheme + thousand_a,         long_string_end},
@@ -212,23 +212,24 @@ TEST(TextEliderTest, ElideTextLongStrings) {
   };
 
   const gfx::Font font;
-  int ellipsis_width = font.GetStringWidth(kEllipsisStr);
+  int ellipsis_width = font.GetStringWidth(UTF16ToWideHack(kEllipsisStr));
   for (size_t i = 0; i < arraysize(testcases_end); ++i) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
     EXPECT_EQ(testcases_end[i].output.size(),
               ElideText(testcases_end[i].input, font,
-                        font.GetStringWidth(testcases_end[i].output),
+                        font.GetStringWidth(UTF16ToWideHack(
+                            testcases_end[i].output)),
                         false).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_end[i].input, font, ellipsis_width, false));
   }
 
   size_t number_of_trailing_as = (data_scheme_length + number_of_as) / 2;
-  std::wstring long_string_middle(data_scheme +
-      std::wstring(number_of_as - number_of_trailing_as, L'a') + kEllipsisStr +
-      std::wstring(number_of_trailing_as, L'a'));
-  WideTestcase testcases_middle[] = {
+  string16 long_string_middle(data_scheme +
+      string16(number_of_as - number_of_trailing_as, 'a') + kEllipsisStr +
+      string16(number_of_trailing_as, 'a'));
+  UTF16Testcase testcases_middle[] = {
      {data_scheme + ten_a,              data_scheme + ten_a},
      {data_scheme + hundred_a,          data_scheme + hundred_a},
      {data_scheme + thousand_a,         long_string_middle},
@@ -242,7 +243,8 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     // output is rather long.
     EXPECT_EQ(testcases_middle[i].output.size(),
               ElideText(testcases_middle[i].input, font,
-                        font.GetStringWidth(testcases_middle[i].output),
+                        font.GetStringWidth(UTF16ToWideHack(
+                            testcases_middle[i].output)),
                         false).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_middle[i].input, font, ellipsis_width,

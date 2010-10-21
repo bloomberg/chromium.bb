@@ -143,9 +143,10 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
   // First the title.
   if (!title.empty()) {
     std::wstring localized_title;
-    result.append(gfx::ElideText(
-        base::i18n::AdjustStringForLocaleDirection(title, &localized_title) ?
-        localized_title : title, tt_font, max_width, false));
+    if (!base::i18n::AdjustStringForLocaleDirection(title, &localized_title))
+      localized_title = title;
+    result.append(UTF16ToWideHack(gfx::ElideText(WideToUTF16Hack(
+        localized_title), tt_font, max_width, false)));
   }
 
   // Only show the URL if the url and title differ.

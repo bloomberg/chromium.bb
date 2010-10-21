@@ -26,22 +26,31 @@ const wchar_t kEllipsis[] = L"\x2026";
 // beginning and end of the string; otherwise, the end of the string is removed
 // and only the beginning remains.  If |insert_ellipsis| is true, then an
 // ellipsis character will by inserted at the cut point.
-std::wstring CutString(const std::wstring& text,
+string16 CutString(const string16& text,
                        size_t length,
                        bool cut_in_middle,
                        bool insert_ellipsis) {
-  const std::wstring insert(insert_ellipsis ? kEllipsis : L"");
+  // TODO(tony): This is wrong, it might split the string in the middle of a
+  // surrogate pair.
+  const string16 kInsert = WideToUTF16(insert_ellipsis ? kEllipsis : L"");
   if (!cut_in_middle)
-    return text.substr(0, length) + insert;
+    return text.substr(0, length) + kInsert;
   // We put the extra character, if any, before the cut.
   const size_t half_length = length / 2;
-  return text.substr(0, length - half_length) + insert +
+  return text.substr(0, length - half_length) + kInsert +
       text.substr(text.length() - half_length, half_length);
 }
 
 // TODO(tony): Get rid of wstrings.
 string16 GetDisplayStringInLTRDirectionality(const std::wstring& text) {
   return base::i18n::GetDisplayStringInLTRDirectionality(WideToUTF16(text));
+}
+
+// TODO(tony): This is just a crutch until we convert ElideUrl to string16.
+std::wstring ElideTextWide(const std::wstring& text, const gfx::Font& font,
+                           int available_pixel_width, bool elide_in_middle) {
+  return UTF16ToWideHack(ElideText(WideToUTF16Hack(text), font,
+                         available_pixel_width, elide_in_middle));
 }
 
 }  // namespace
@@ -72,7 +81,7 @@ std::wstring ElideUrl(const GURL& url,
 
   // If non-standard or not file type, return plain eliding.
   if (!(url.SchemeIsFile() || url.IsStandard()))
-    return ElideText(url_string, font, available_pixel_width, false);
+    return ElideTextWide(url_string, font, available_pixel_width, false);
 
   // Now start eliding url_string to fit within available pixel width.
   // Fist pass - check to see whether entire url_string fits.
@@ -90,7 +99,7 @@ std::wstring ElideUrl(const GURL& url,
   std::wstring url_minus_query = url_string.substr(0, path_start_index +
       path_len);
   if (available_pixel_width >= font.GetStringWidth(url_minus_query))
-    return ElideText(url_string, font, available_pixel_width, false);
+    return ElideTextWide(url_string, font, available_pixel_width, false);
 
   // Get Host.
   std::wstring url_host = UTF8ToWide(url.host());
@@ -157,8 +166,8 @@ std::wstring ElideUrl(const GURL& url,
     if (available_pixel_width >= (pixel_width_url_subdomain +
         pixel_width_url_domain + pixel_width_url_path -
         font.GetStringWidth(url_query))) {
-      return ElideText(url_subdomain + url_domain + url_path_query_etc, font,
-                       available_pixel_width, false);
+      return ElideTextWide(url_subdomain + url_domain + url_path_query_etc,
+                           font, available_pixel_width, false);
     }
   }
 
@@ -184,8 +193,8 @@ std::wstring ElideUrl(const GURL& url,
       url_path_number_of_elements > kMaxNumberOfUrlPathElementsAllowed) {
     // No path to elide, or too long of a path (could overflow in loop below)
     // Just elide this as a text string.
-    return ElideText(url_subdomain + url_domain + url_path_query_etc, font,
-                     available_pixel_width, false);
+    return ElideTextWide(url_subdomain + url_domain + url_path_query_etc, font,
+                         available_pixel_width, false);
   }
 
   // Start eliding the path and replacing elements by "../".
@@ -226,8 +235,8 @@ std::wstring ElideUrl(const GURL& url,
     if (available_pixel_width >=
         pixel_width_url_subdomain + pixel_width_url_domain +
         pixel_width_elided_path) {
-      return ElideText(url_subdomain + url_domain + elided_path + url_query,
-                       font, available_pixel_width, false);
+      return ElideTextWide(url_subdomain + url_domain + elided_path + url_query,
+                           font, available_pixel_width, false);
     }
   }
 
@@ -268,8 +277,8 @@ std::wstring ElideUrl(const GURL& url,
 
       if (available_pixel_width >=
           pixel_width_url_elided_domain + pixel_width_elided_path) {
-        return ElideText(url_elided_domain + elided_path + url_query, font,
-                         available_pixel_width, false);
+        return ElideTextWide(url_elided_domain + elided_path + url_query, font,
+                             available_pixel_width, false);
       }
     }
   }
@@ -283,7 +292,8 @@ std::wstring ElideUrl(const GURL& url,
   else
     final_elided_url_string += url_path;
 
-  return ElideText(final_elided_url_string, font, available_pixel_width, false);
+  return ElideTextWide(final_elided_url_string, font, available_pixel_width,
+                       false);
 }
 
 string16 ElideFilename(const FilePath& filename,
@@ -304,8 +314,8 @@ string16 ElideFilename(const FilePath& filename,
       filename.BaseName().RemoveExtension().ToWStringHack();
 
   if (rootname.empty() || extension.empty()) {
-    std::wstring elided_name = ElideText(filename.ToWStringHack(), font,
-                                         available_pixel_width, false);
+    std::wstring elided_name = ElideTextWide(filename.ToWStringHack(), font,
+                                             available_pixel_width, false);
     return GetDisplayStringInLTRDirectionality(elided_name);
   }
 
@@ -320,21 +330,21 @@ string16 ElideFilename(const FilePath& filename,
 
   int available_root_width = available_pixel_width - ext_width;
   std::wstring elided_name =
-      ElideText(rootname, font, available_root_width, false);
+      ElideTextWide(rootname, font, available_root_width, false);
   elided_name += extension;
   return GetDisplayStringInLTRDirectionality(elided_name);
 }
 
 // This function adds an ellipsis at the end of the text if the text
 // does not fit the given pixel width.
-std::wstring ElideText(const std::wstring& text,
-                       const gfx::Font& font,
-                       int available_pixel_width,
-                       bool elide_in_middle) {
+string16 ElideText(const string16& text,
+                   const gfx::Font& font,
+                   int available_pixel_width,
+                   bool elide_in_middle) {
   if (text.empty())
     return text;
 
-  int current_text_pixel_width = font.GetStringWidth(text);
+  int current_text_pixel_width = font.GetStringWidth(UTF16ToWideHack(text));
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.
@@ -353,7 +363,7 @@ std::wstring ElideText(const std::wstring& text,
     return text;
 
   if (font.GetStringWidth(kEllipsis) > available_pixel_width)
-    return std::wstring();
+    return string16();
 
   // Use binary search to compute the elided text.
   size_t lo = 0;
@@ -361,8 +371,8 @@ std::wstring ElideText(const std::wstring& text,
   for (size_t guess = (lo + hi) / 2; guess != lo; guess = (lo + hi) / 2) {
     // We check the length of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
-    int guess_length =
-        font.GetStringWidth(CutString(text, guess, elide_in_middle, true));
+    int guess_length = font.GetStringWidth(UTF16ToWide(
+        CutString(text, guess, elide_in_middle, true)));
     // Check again that we didn't hit a Pango width overflow. If so, cut the
     // current string in half and start over.
     if (guess_length <= 0) {
