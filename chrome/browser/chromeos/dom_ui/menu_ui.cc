@@ -525,7 +525,7 @@ void MenuHandler::HandleLog(const ListValue* values) {
   std::string msg;
   bool success = values->GetString(0, &msg);
   DCHECK(success);
-  DLOG(INFO) << msg;
+  DVLOG(1) << msg;
 }
 
 void MenuHandler::UpdatePreferredSize(const gfx::Size& new_size) {

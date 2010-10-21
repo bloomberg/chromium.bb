@@ -184,13 +184,13 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
   scoped_ptr<Value> root(base::JSONReader::Read(config, true));
   DCHECK(root.get() != NULL);
   if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
-    LOG(INFO) << "Bad cellular config file";
+    VLOG(1) << "Bad cellular config file";
     return false;
   }
 
   DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
   if (!root_dict->GetString(kVersionField, &version_)) {
-    LOG(INFO) << "Cellular config file missing version";
+    VLOG(1) << "Cellular config file missing version";
     return false;
   }
   DictionaryValue* errors = NULL;
@@ -201,7 +201,7 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
        ++keys) {
     std::string value;
     if (!errors->GetString(*keys, &value)) {
-      LOG(INFO) << "Bad cellular config error value";
+      VLOG(1) << "Bad cellular config error value";
       error_map_.clear();
       return false;
     }
@@ -464,7 +464,7 @@ void MobileSetupHandler::LoadCellularConfig() {
     scoped_ptr<CellularConfigDocument> config(new CellularConfigDocument());
     bool config_loaded = config->LoadFromFile(config_path);
     if (config_loaded) {
-      LOG(INFO) << "Cellular config file loaded: " << kCellularConfigPath;
+      VLOG(1) << "Cellular config file loaded: " << kCellularConfigPath;
       // lock
       cellular_config_.reset(config.release());
     } else {

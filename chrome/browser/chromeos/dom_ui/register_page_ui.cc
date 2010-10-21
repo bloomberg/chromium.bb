@@ -222,7 +222,7 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
       WizardController::default_controller()->GetCustomization()) {
     const std::string& url = WizardController::default_controller()->
         GetCustomization()->registration_url();
-    LOG(INFO) << "Loading registration form with URL: " << url;
+    VLOG(1) << "Loading registration form with URL: " << url;
     GURL register_url(url);
     if (!register_url.is_valid()) {
       SkipRegistration("Registration URL defined in manifest is invalid.");
