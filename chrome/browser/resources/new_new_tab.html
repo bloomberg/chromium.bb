@@ -45,6 +45,7 @@ function registerCallback(name) {
 
 chrome.send('getMostVisited');
 chrome.send('getRecentlyClosedTabs');
+chrome.send('getForeignSessions');
 chrome.send('getApps');
 
 registerCallback('mostVisitedPages');
@@ -52,6 +53,7 @@ registerCallback('recentlyClosedTabs');
 registerCallback('syncMessageChanged');
 registerCallback('getAppsCallback');
 registerCallback('setShownSections');
+registerCallback('foreignSessions');
 
 </script>
 <!-- template data placeholder -->
@@ -178,6 +180,16 @@ if ('mode' in hashParams) {
         <div class="back"></div>
         <span i18n-content="recentlyclosed"></span>
         <button class="section-close-button"></button>
+      </h2>
+      <div class="miniview"></div>
+    </div>
+
+    <!-- Start disabled until sync is enabled and foreign sessions are
+         available. -->
+    <div id="foreign-sessions" class="section hidden disabled" section="SYNC">
+      <h2>
+        <div class="back"></div>
+        <span i18n-content="foreignsessions"></span>
       </h2>
       <div class="miniview"></div>
     </div>

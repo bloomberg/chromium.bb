@@ -254,6 +254,12 @@ html[os='mac'] input[type='submit'] {
     }
 
     setCheckboxesToKeepEverythingSynced(args.keepEverythingSynced);
+    if (args.sessionsRegistered) {
+      document.getElementById("sessionsCheckbox").checked = args.syncSessions;
+      document.getElementById("sessionsItem").className = "sync-item-show";
+    } else {
+      document.getElementById("sessionsItem").className = "sync-item-hide";
+    }
   }
 
   function setEncryptionCheckboxes(args) {
@@ -330,6 +336,7 @@ html[os='mac'] input[type='submit'] {
         "syncExtensions": syncAll || f.extensionsCheckbox.checked,
         "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked,
         "syncApps": syncAll || f.appsCheckbox.checked,
+        "syncSessions": syncAll || f.sessionsCheckbox.checked,
         "usePassphrase": document.getElementById("usePassphraseCheckbox").checked
     });
     chrome.send("Configure", [result]);
@@ -442,6 +449,13 @@ html[os='mac'] input[type='submit'] {
               <input id="themesCheckbox" name="dataTypeCheckbox" type="checkbox">
               <label id="themesCheckboxLabel" name="dataTypeLabel" for="themesCheckbox"
                      i18n-content="themes" i18n-values="title:themes"></label>
+            </div>
+            <!-- Sessions -->
+            <div class="sync-item-show" id="sessionsItem">
+              <input id="sessionsCheckbox" name="dataTypeCheckbox" type="checkbox">
+              <label id="sessionsCheckboxLabel" name="dataTypeLabel" 
+                     for="sessionsCheckbox" i18n-content="foreignsessions"
+                     il8n-values="title:sessions"></label>
             </div>
           </div>
         </div>

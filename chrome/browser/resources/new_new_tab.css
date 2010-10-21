@@ -202,6 +202,42 @@ html[dir=rtl] .item {
   -webkit-box-orient: horizontal;
 }
 
+.foreign-session-client {
+  float: left;
+  max-width: 114px; /* Selected so that we can fit 5 items in EN-US */
+  font-weight: normal;
+  margin: 0;
+  position: relative;
+}
+
+html[dir=rtl] .foreign-session-client {
+  float: right;
+}
+
+.foreign-session-client > p  {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 100%;
+  margin: 0 10px;
+}
+
+#foreign-sessions .nav {
+  max-width: none !important;
+}
+
+.nav > a {
+  /* no icon */
+  padding: 0;
+}
+
+.nav > a:after {
+  content: '\u00bb'; /* raque gets flipped automatically in rtl */
+  font-size: 115%;
+  -webkit-padding-start: 2px;
+}
+
 #sync-status > div {
   border-radius: 6px;
   padding: 5px 0;

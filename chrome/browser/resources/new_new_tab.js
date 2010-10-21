@@ -112,6 +112,77 @@ function updateSimpleSection(id, section) {
   }
 }
 
+var sessionItems = [];
+
+function foreignSessions(data) {
+  logEvent('received foreign sessions');
+  // We need to store the foreign sessions so we can update the layout on a
+  // resize.
+  sessionItems = data;
+  renderForeignSessions();
+  layoutSections();
+}
+
+function renderForeignSessions() {
+  // Remove all existing items and create new items.
+  var sessionElement = $('foreign-sessions');
+  var parentSessionElement = sessionElement.lastElementChild;
+  parentSessionElement.textContent = '';
+
+  // For each client, create entries and append the lists together.
+  sessionItems.forEach(function(item, i) {
+    // TODO(zea): Get real client names. See issue 59672
+    var name = 'Client ' + i;
+    parentSessionElement.appendChild(createForeignSession(item, name));
+  });
+
+  layoutForeignSessions();
+}
+
+function layoutForeignSessions() {
+  var sessionElement = $('foreign-sessions');
+  // We cannot use clientWidth here since the width has a transition.
+  var availWidth = useSmallGrid() ? 692 : 920;
+  var parentSessEl = sessionElement.lastElementChild;
+
+  if (parentSessEl.hasChildNodes()) {
+    sessionElement.classList.remove('disabled');
+  } else {
+    sessionElement.classList.add('disabled');
+  }
+}
+
+function createForeignSession(client, name) {
+  // Vertically stack the windows in a client.
+  var stack = document.createElement('div');
+  stack.className = 'foreign-session-client';
+  stack.textContent = name;
+
+  client.forEach(function(win) {
+    // We know these are lists of multiple tabs, don't need the special case for
+    // single url + favicon.
+    var el = document.createElement('p');
+    el.className = 'item link window';
+    el.tabItems = win.tabs;
+    el.tabIndex = 0;
+    el.textContent = formatTabsText(win.tabs.length);
+
+    el.sessionId = win.sessionId;
+    el.xtitle = win.title;
+    el.sessionTag = win.sessionTag;
+
+    // Add the actual tab listing.
+    stack.appendChild(el);
+
+    // TODO(zea): Should there be a clickHandler as well? We appear to be
+    // breaking windowTooltip's hide: removeEventListener(onMouseOver) when we
+    // click.
+  });
+  return stack;
+}
+
+var recentItems = [];
+
 function recentlyClosedTabs(data) {
   logEvent('received recently closed tabs');
   // We need to store the recent items so we can update the layout on a resize.
@@ -119,8 +190,6 @@ function recentlyClosedTabs(data) {
   renderRecentlyClosed();
   layoutSections();
 }
-
-var recentItems = [];
 
 function renderRecentlyClosed() {
   // Remove all existing items and create new items.
@@ -158,6 +227,7 @@ function createRecentItem(data) {
   }
   el.sessionId = data.sessionId;
   el.xtitle = data.title;
+  el.sessionTag = data.sessionTag;
   var wrapperEl = document.createElement('span');
   wrapperEl.appendChild(el);
   return wrapperEl;
@@ -208,6 +278,7 @@ function handleWindowResize() {
     mostVisited.useSmallGrid = b;
     mostVisited.layout();
     renderRecentlyClosed();
+    renderForeignSessions();
     updateAllMiniviewClippings();
   }
 
@@ -845,13 +916,28 @@ function maybeReopenTab(e) {
     chrome.send('reopenTab', [String(el.sessionId)]);
     e.preventDefault();
 
-    // HACK(arv): After the window onblur event happens we get a mouseover event
-    // on the next item and we want to make sure that we do not show a tooltip
-    // for that.
-    window.setTimeout(function() {
-      windowTooltip.hide();
-    }, 2 * WindowTooltip.DELAY);
+    setWindowTooltipTimeout();
   }
+}
+
+function maybeReopenSession(e) {
+  var el = findAncestor(e.target, function(el) {
+    return el.sessionId;
+  });
+  if (el) {
+    chrome.send('reopenForeignSession', [String(el.sessionTag)]);
+
+    setWindowTooltipTimeout();
+  }
+}
+
+// HACK(arv): After the window onblur event happens we get a mouseover event
+// on the next item and we want to make sure that we do not show a tooltip
+// for that.
+function setWindowTooltipTimeout(e) {
+  window.setTimeout(function() {
+    windowTooltip.hide();
+  }, 2 * WindowTooltip.DELAY);
 }
 
 function maybeShowWindowTooltip(e) {
@@ -874,6 +960,15 @@ recentlyClosedElement.addEventListener('keydown',
 
 recentlyClosedElement.addEventListener('mouseover', maybeShowWindowTooltip);
 recentlyClosedElement.addEventListener('focus', maybeShowWindowTooltip, true);
+
+var foreignSessionElement = $('foreign-sessions');
+
+foreignSessionElement.addEventListener('click', maybeReopenSession);
+foreignSessionElement.addEventListener('keydown',
+                                       handleIfEnterKey(maybeReopenSession));
+
+foreignSessionElement.addEventListener('mouseover', maybeShowWindowTooltip);
+foreignSessionElement.addEventListener('focus', maybeShowWindowTooltip, true);
 
 /**
  * This object represents a tooltip representing a closed window. It is
