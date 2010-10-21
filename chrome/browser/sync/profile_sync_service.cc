@@ -119,10 +119,6 @@ bool ProfileSyncService::AreCredentialsAvailable() {
     return false;
   }
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-    return false;
-  }
-
   // CrOS user is always logged in. Chrome uses signin_ to check logged in.
   if (!cros_user_.empty() || !signin_.GetUsername().empty()) {
     // TODO(chron): Verify CrOS unit test behavior.
@@ -171,8 +167,13 @@ void ProfileSyncService::Initialize() {
 
   if (!HasSyncSetupCompleted()) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
-    if (!cros_user_.empty() && AreCredentialsAvailable()) {
-      StartUp();  // Under ChromeOS, just autostart it anyway if creds are here.
+
+    // Under ChromeOS, just autostart it anyway if creds are here and start
+    // is not being suppressed by preferences.
+    if (!cros_user_.empty() &&
+        !profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart) &&
+        AreCredentialsAvailable()) {
+      StartUp();
     }
   } else if (AreCredentialsAvailable()) {
     // If we have credentials and sync setup finished, autostart the backend.
@@ -1042,7 +1043,8 @@ void ProfileSyncService::Observe(NotificationType type,
           backend_->UpdateCredentials(GetCredentials());
         }
 
-        StartUp();
+        if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart))
+          StartUp();
       }
       break;
     }
