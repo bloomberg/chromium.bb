@@ -150,7 +150,7 @@ bool SpeechRecognizer::StartRecording() {
   audio_controller_ =
       AudioInputController::Create(this, params, samples_per_packet);
   DCHECK(audio_controller_.get());
-  LOG(INFO) << "SpeechRecognizer starting record.";
+  VLOG(1) << "SpeechRecognizer starting record.";
   num_samples_recorded_ = 0;
   audio_controller_->Record();
 
@@ -163,12 +163,12 @@ void SpeechRecognizer::CancelRecognition() {
 
   // Stop recording if required.
   if (audio_controller_.get()) {
-    LOG(INFO) << "SpeechRecognizer stopping record.";
+    VLOG(1) << "SpeechRecognizer stopping record.";
     audio_controller_->Close();
     audio_controller_ = NULL;  // Releases the ref ptr.
   }
 
-  LOG(INFO) << "SpeechRecognizer canceling recognition.";
+  VLOG(1) << "SpeechRecognizer canceling recognition.";
   ReleaseAudioBuffers();
   request_.reset();
 }
@@ -181,7 +181,7 @@ void SpeechRecognizer::StopRecording() {
   if (!audio_controller_.get())
     return;
 
-  LOG(INFO) << "SpeechRecognizer stopping record.";
+  VLOG(1) << "SpeechRecognizer stopping record.";
   audio_controller_->Close();
   audio_controller_ = NULL;  // Releases the ref ptr.
 

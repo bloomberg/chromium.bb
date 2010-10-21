@@ -21,25 +21,23 @@ bool ParseServerResponse(const std::string& response_body, string16* value) {
   DCHECK(value);
 
   if (response_body.empty()) {
-    LOG(WARNING) << "ParseServerResponse: Response was empty.\n";
+    LOG(WARNING) << "ParseServerResponse: Response was empty.";
     return false;
   }
-  DLOG(INFO) << "ParseServerResponse: Parsing response "
-             << response_body << ".\n";
+  DVLOG(1) << "ParseServerResponse: Parsing response " << response_body;
 
   // Parse the response, ignoring comments.
   std::string error_msg;
   scoped_ptr<Value> response_value(base::JSONReader::ReadAndReturnError(
       response_body, false, NULL, &error_msg));
   if (response_value == NULL) {
-    LOG(WARNING) << "ParseServerResponse: JSONReader failed : "
-                 << error_msg << ".\n";
+    LOG(WARNING) << "ParseServerResponse: JSONReader failed : " << error_msg;
     return false;
   }
 
   if (!response_value->IsType(Value::TYPE_DICTIONARY)) {
-    LOG(INFO) << "ParseServerResponse: Unexpected response type "
-              << response_value->GetType() <<  ".\n";
+    VLOG(1) << "ParseServerResponse: Unexpected response type "
+            << response_value->GetType();
     return false;
   }
   const DictionaryValue* response_object =
@@ -48,36 +46,36 @@ bool ParseServerResponse(const std::string& response_body, string16* value) {
   // Get the hypotheses
   Value* hypotheses_value = NULL;
   if (!response_object->Get(kHypothesesString, &hypotheses_value)) {
-    LOG(INFO) << "ParseServerResponse: Missing hypotheses attribute.\n";
+    VLOG(1) << "ParseServerResponse: Missing hypotheses attribute.";
     return false;
   }
   DCHECK(hypotheses_value);
   if (!hypotheses_value->IsType(Value::TYPE_LIST)) {
-    LOG(INFO) << "ParseServerResponse: Unexpected hypotheses type "
-              << hypotheses_value->GetType() <<  ".\n";
+    VLOG(1) << "ParseServerResponse: Unexpected hypotheses type "
+            << hypotheses_value->GetType();
     return false;
   }
   const ListValue* hypotheses_list = static_cast<ListValue*>(hypotheses_value);
   if (hypotheses_list->GetSize() == 0) {
-    LOG(INFO) << "ParseServerResponse: hypotheses list is empty.\n";
+    VLOG(1) << "ParseServerResponse: hypotheses list is empty.";
     return false;
   }
 
   Value* first_hypotheses = NULL;
   if (!hypotheses_list->Get(0, &first_hypotheses)) {
-    LOG(INFO) << "ParseServerResponse: Unable to read hypotheses value.\n";
+    LOG(WARNING) << "ParseServerResponse: Unable to read hypotheses value.";
     return false;
   }
   DCHECK(first_hypotheses);
   if (!first_hypotheses->IsType(Value::TYPE_DICTIONARY)) {
-    LOG(INFO) << "ParseServerResponse: Unexpected value type "
-              << first_hypotheses->GetType() <<  ".\n";
+    LOG(WARNING) << "ParseServerResponse: Unexpected value type "
+                 << first_hypotheses->GetType();
     return false;
   }
   const DictionaryValue* first_hypotheses_value =
       static_cast<DictionaryValue*>(first_hypotheses);
   if (!first_hypotheses_value->GetString(kUtteranceString, value)) {
-    LOG(INFO) << "ParseServerResponse: Missing utterance value.\n";
+    LOG(WARNING) << "ParseServerResponse: Missing utterance value.";
     return false;
   }
 
@@ -134,7 +132,7 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
     error = !ParseServerResponse(data, &value);
   url_fetcher_.reset();
 
-  DLOG(INFO) << "SpeechRecognitionRequest: Invoking delegate with result.";
+  DVLOG(1) << "SpeechRecognitionRequest: Invoking delegate with result.";
   delegate_->SetRecognitionResult(error, value);
 }
 

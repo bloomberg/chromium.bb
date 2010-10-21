@@ -23,13 +23,13 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
   };
 
   MockSpeechInputBubble(TabContents*, Delegate* delegate, const gfx::Rect&) {
-    LOG(INFO) << "MockSpeechInputBubble created";
+    VLOG(1) << "MockSpeechInputBubble created";
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableFunction(&InvokeDelegate, delegate));
   }
 
   static void InvokeDelegate(Delegate* delegate) {
-    LOG(INFO) << "MockSpeechInputBubble invoking delegate for type " << type_;
+    VLOG(1) << "MockSpeechInputBubble invoking delegate for type " << type_;
     switch (type_) {
       case BUBBLE_TEST_FOCUS_CHANGED:
         delegate->InfoBubbleFocusChanged();
@@ -84,7 +84,7 @@ class SpeechInputBubbleControllerTest
   // SpeechInputBubbleControllerDelegate methods.
   virtual void InfoBubbleButtonClicked(int caller_id,
                                        SpeechInputBubble::Button button) {
-    LOG(INFO) << "Received InfoBubbleButtonClicked for button " << button;
+    VLOG(1) << "Received InfoBubbleButtonClicked for button " << button;
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (button == SpeechInputBubble::BUTTON_CANCEL) {
       cancel_clicked_ = true;
@@ -95,7 +95,7 @@ class SpeechInputBubbleControllerTest
   }
 
   virtual void InfoBubbleFocusChanged(int caller_id) {
-    LOG(INFO) << "Received InfoBubbleFocusChanged";
+    VLOG(1) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;
     MessageLoop::current()->Quit();

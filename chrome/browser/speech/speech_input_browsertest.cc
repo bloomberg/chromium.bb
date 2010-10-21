@@ -43,7 +43,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
                         int render_process_id,
                         int render_view_id,
                         const gfx::Rect& element_rect) {
-    LOG(INFO) << "StartRecognition invoked.";
+    VLOG(1) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);
     EXPECT_EQ(NULL, delegate_);
     caller_id_ = caller_id;
@@ -53,13 +53,13 @@ class FakeSpeechInputManager : public SpeechInputManager {
         &FakeSpeechInputManager::SetFakeRecognitionResult));
   }
   void CancelRecognition(int caller_id) {
-    LOG(INFO) << "CancelRecognition invoked.";
+    VLOG(1) << "CancelRecognition invoked.";
     EXPECT_EQ(caller_id_, caller_id);
     caller_id_ = 0;
     delegate_ = NULL;
   }
   void StopRecording(int caller_id) {
-    LOG(INFO) << "StopRecording invoked.";
+    VLOG(1) << "StopRecording invoked.";
     EXPECT_EQ(caller_id_, caller_id);
     // Nothing to do here since we aren't really recording.
   }
@@ -67,14 +67,14 @@ class FakeSpeechInputManager : public SpeechInputManager {
  private:
   void SetFakeRecognitionResult() {
     if (caller_id_) {  // Do a check in case we were cancelled..
-      LOG(INFO) << "Setting fake recognition result.";
+      VLOG(1) << "Setting fake recognition result.";
       delegate_->DidCompleteRecording(caller_id_);
       delegate_->SetRecognitionResult(caller_id_,
                                       ASCIIToUTF16(kTestResult));
       delegate_->DidCompleteRecognition(caller_id_);
       caller_id_ = 0;
       delegate_ = NULL;
-      LOG(INFO) << "Finished setting fake recognition result.";
+      VLOG(1) << "Finished setting fake recognition result.";
     }
   }
 
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, FLAKY_TestBasicRecognition) {
   GURL test_url = testUrl(FILE_PATH_LITERAL("basic_recognition.html"));
   ui_test_utils::NavigateToURL(browser(), test_url);
   std::string coords = browser()->GetSelectedTabContents()->GetURL().ref();
-  LOG(INFO) << "Coordinates given by script: " << coords;
+  VLOG(1) << "Coordinates given by script: " << coords;
   int comma_pos = coords.find(',');
   ASSERT_NE(-1, comma_pos);
   int x = 0;
