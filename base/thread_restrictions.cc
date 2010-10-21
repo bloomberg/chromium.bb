@@ -11,14 +11,14 @@
 #include "base/logging.h"
 #include "base/thread_local.h"
 
+namespace base {
+
 namespace {
 
-static base::LazyInstance<base::ThreadLocalBoolean>
-    g_io_disallowed(base::LINKER_INITIALIZED);
+LazyInstance<ThreadLocalBoolean, LeakyLazyInstanceTraits<ThreadLocalBoolean> >
+    g_io_disallowed(LINKER_INITIALIZED);
 
 }  // anonymous namespace
-
-namespace base {
 
 // static
 void ThreadRestrictions::SetIOAllowed(bool allowed) {
