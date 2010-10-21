@@ -42,9 +42,6 @@ deps = {
   "third_party/pdiff":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),
 
-  "third_party/scons":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/scons@" + Var("o3d_code_rev"),
-
   "third_party/zip_utils":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
 
@@ -165,18 +162,8 @@ deps_os = {
   },
   "unix": {
     # Linux, really.
-    "site_scons":
-      Var("chromium_trunk") + "/src/site_scons@" + Var("chromium_rev"),
-    # TODO(bradnelson): make these optional!!!
-    # These are currently required by gyp on linux (even though o3d isn't using
-    # data_pack or grit).
-    "tools/grit":
-      Var("chromium_trunk") + "/src/tools/grit@" + Var("chromium_rev"),
-    "tools/data_pack":
-      Var("chromium_trunk") + "/src/tools/data_pack@" + Var("chromium_rev"),
     "tools/xdisplaycheck":
       Var("chromium_trunk") + "/src/tools/xdisplaycheck@" + Var("chromium_rev"),
-
   },
 }
 
