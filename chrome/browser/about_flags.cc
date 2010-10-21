@@ -130,13 +130,13 @@ const Experiment kExperiments[] = {
   },
   // FIXME(scheib): Add Flags entry for accelerated Compositing,
   // or pull it and the strings in generated_resources.grd by Dec 2010
-  //{
-  //  "gpu-compositing", // Do not change; see above
-  //  IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
-  //  IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
-  //  kOsAll,
-  //  switches::kDisableAcceleratedCompositing
-  //},
+  // {
+  //   "gpu-compositing", // Do not change; see above
+  //   IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
+  //   IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
+  //   kOsAll,
+  //   switches::kDisableAcceleratedCompositing
+  // },
   {
     "gpu-canvas-2d", // Do not change; see above
     IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
@@ -146,13 +146,13 @@ const Experiment kExperiments[] = {
   },
   // FIXME(scheib): Add Flags entry for WebGL,
   // or pull it and the strings in generated_resources.grd by Dec 2010
-  //{
-  //  "webgl", // Do not change; see above
-  //  IDS_FLAGS_WEBGL_NAME,
-  //  IDS_FLAGS_WEBGL_DESCRIPTION,
-  //  kOsAll,
-  //  switches::kDisableExperimentalWebGL
-  //}
+  // {
+  //   "webgl", // Do not change; see above
+  //   IDS_FLAGS_WEBGL_NAME,
+  //   IDS_FLAGS_WEBGL_DESCRIPTION,
+  //   kOsAll,
+  //   switches::kDisableExperimentalWebGL
+  // }
   {
     "print-preview",  // Do not change; see above
     IDS_FLAGS_PRINT_PREVIEW_NAME,
@@ -167,6 +167,13 @@ const Experiment kExperiments[] = {
     kOsLinux,
     switches::kDnsServer
   },
+  {
+    "secure-infobars",  // Do not change; see above
+    IDS_FLAGS_SECURE_INFOBARS_NAME,
+    IDS_FLAGS_SECURE_INFOBARS_DESCRIPTION,
+    kOsAll,
+    switches::kEnableSecureInfoBars
+  }
 };
 
 // Stores and encapsulates the little state that about:flags has.
