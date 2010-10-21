@@ -32,8 +32,9 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
 // and target=_blank should create a new SiteInstance.
+// Disabled, http://crbug.com/60079.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       SwapProcessWithRelNoreferrerAndTargetBlank) {
+                       DISABLED_SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server_(
@@ -75,8 +76,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with just
 // target=_blank should not create a new SiteInstance.
+// Disabled, http://crbug.com/60078.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       DontSwapProcessWithOnlyTargetBlank) {
+                       DISABLED_DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server_(
@@ -118,8 +120,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
 // and no target=_blank should not create a new SiteInstance.
+// Disabled, http://crbug.com/60077.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
-                       DontSwapProcessWithOnlyRelNoreferrer) {
+                       DISABLED_DontSwapProcessWithOnlyRelNoreferrer) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::TestServer https_server_(
