@@ -91,7 +91,7 @@ void LanguageMozcConfigView::ItemChanged(
     if (current.combobox == sender) {
       const std::string config_value =
           current.combobox_model->GetConfigValueAt(new_index);
-      LOG(INFO) << "Changing Mozc pref to " << config_value;
+      VLOG(1) << "Changing Mozc pref to " << config_value;
       // Update the Chrome pref.
       current.multiple_choice_pref.SetValue(config_value);
       break;

@@ -385,7 +385,7 @@ void LanguageSection::ButtonPressed(
 void LanguageSection::ItemChanged(views::Combobox* sender,
                                   int prev_index,
                                   int new_index) {
-  LOG(INFO) << "Changing XKB modofier pref to " << new_index;
+  VLOG(1) << "Changing XKB modofier pref to " << new_index;
   switch (new_index) {
     default:
       LOG(ERROR) << "Unexpected mapping: " << new_index;

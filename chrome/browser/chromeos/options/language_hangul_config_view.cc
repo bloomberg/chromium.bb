@@ -95,7 +95,7 @@ void LanguageHangulConfigView::ItemChanged(
     views::Combobox* sender, int prev_index, int new_index) {
   const std::string id =
       hangul_keyboard_combobox_model_->GetItemIDAt(new_index);
-  LOG(INFO) << "Changing Hangul keyboard pref to " << id;
+  VLOG(1) << "Changing Hangul keyboard pref to " << id;
   keyboard_pref_.SetValue(id);
 }
 

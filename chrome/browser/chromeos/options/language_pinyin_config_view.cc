@@ -58,7 +58,7 @@ void LanguagePinyinConfigView::ItemChanged(
   if (double_pinyin_schema_.combobox == sender) {
     const int config_value =
         double_pinyin_schema_.combobox_model->GetConfigValueAt(new_index);
-    LOG(INFO) << "Changing Pinyin pref to " << config_value;
+    VLOG(1) << "Changing Pinyin pref to " << config_value;
     // Update the Chrome pref.
     double_pinyin_schema_.multiple_choice_pref.SetValue(config_value);
   }

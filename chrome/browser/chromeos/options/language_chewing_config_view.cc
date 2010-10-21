@@ -76,7 +76,7 @@ void LanguageChewingConfigView::ItemChanged(
     if (current.combobox == sender) {
       const std::string config_value =
           current.combobox_model->GetConfigValueAt(new_index);
-      LOG(INFO) << "Changing Chewing pref to " << config_value;
+      VLOG(1) << "Changing Chewing pref to " << config_value;
       // Update the Chrome pref.
       current.multiple_choice_pref.SetValue(config_value);
       break;
@@ -85,7 +85,7 @@ void LanguageChewingConfigView::ItemChanged(
   if (hsu_sel_key_type_.combobox == sender) {
     const int config_value =
         hsu_sel_key_type_.combobox_model->GetConfigValueAt(new_index);
-    LOG(INFO) << "Changing Chewing pref to " << config_value;
+    VLOG(1) << "Changing Chewing pref to " << config_value;
     // Update the Chrome pref.
     hsu_sel_key_type_.multiple_choice_pref.SetValue(config_value);
   }
