@@ -106,6 +106,7 @@ class ContainedRangeMap {
 
  private:
   friend class ContainedRangeMapSerializer<AddressType, EntryType>;
+  friend class ModuleComparer;
 
   // AddressToRangeMap stores pointers.  This makes reparenting simpler in
   // StoreRange, because it doesn't need to copy entire objects.

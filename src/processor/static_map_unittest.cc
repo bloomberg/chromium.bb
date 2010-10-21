@@ -314,7 +314,7 @@ class TestValidMap : public ::testing::Test {
 TEST_F(TestValidMap, TestEmptyMap) {
   int test_case = 0;
   // Assert memory size allocated during serialization is correct.
-  ASSERT_EQ(correct_size[test_case], size[test_case]);;
+  ASSERT_EQ(correct_size[test_case], size[test_case]);
 
   // Sanity check of serialized data:
   ASSERT_TRUE(test_map[test_case].ValidateInMemoryStructure());
@@ -365,7 +365,7 @@ TEST_F(TestValidMap, Test100Elements) {
 TEST_F(TestValidMap, Test1000RandomElements) {
   int test_case = 3;
   // Assert memory size allocated during serialization is correct.
-  ASSERT_EQ(correct_size[test_case], size[test_case]);;
+  ASSERT_EQ(correct_size[test_case], size[test_case]);
 
   // Sanity check of serialized data:
   ASSERT_TRUE(test_map[test_case].ValidateInMemoryStructure());

@@ -26,68 +26,82 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-// basic_source_line_resolver.h: BasicSourceLineResolver is derived from
-// SourceLineResolverBase, and is a concrete implementation of
-// SourceLineResolverInterface, using address map files produced by a
-// compatible writer, e.g. PDBSourceLineWriter.
 //
-// see "processor/source_line_resolver_base.h"
-// and "source_line_resolver_interface.h" for more documentation.
+// fast_source_line_resolver.h: FastSourceLineResolver is derived from
+// SourceLineResolverBase, and is a concrete implementation of
+// SourceLineResolverInterface.
+//
+// FastSourceLineResolver is a sibling class of BasicSourceLineResolver.  The
+// difference is FastSourceLineResolver loads a serialized memory chunk of data
+// which can be used directly a Module without parsing or copying of underlying
+// data.  Therefore loading a symbol in FastSourceLineResolver is much faster
+// and more memory-efficient than BasicSourceLineResolver.
+//
+// See "source_line_resolver_base.h" and
+// "google_breakpad/source_line_resolver_interface.h" for more reference.
+//
+// Author: Siyang Xie (lambxsy@google.com)
 
-#ifndef GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
-#define GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_FAST_SOURCE_LINE_RESOLVER_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_FAST_SOURCE_LINE_RESOLVER_H__
 
 #include <map>
+#include <string>
 
 #include "google_breakpad/processor/source_line_resolver_base.h"
 
 namespace google_breakpad {
 
-using std::string;
 using std::map;
 
-class BasicSourceLineResolver : public SourceLineResolverBase {
+class FastSourceLineResolver : public SourceLineResolverBase {
  public:
-  BasicSourceLineResolver();
-  virtual ~BasicSourceLineResolver() { }
+  FastSourceLineResolver();
+  virtual ~FastSourceLineResolver() { }
 
+  using SourceLineResolverBase::FillSourceLineInfo;
+  using SourceLineResolverBase::FindCFIFrameInfo;
+  using SourceLineResolverBase::FindWindowsFrameInfo;
+  using SourceLineResolverBase::HasModule;
   using SourceLineResolverBase::LoadModule;
   using SourceLineResolverBase::LoadModuleUsingMapBuffer;
   using SourceLineResolverBase::LoadModuleUsingMemoryBuffer;
   using SourceLineResolverBase::UnloadModule;
-  using SourceLineResolverBase::HasModule;
-  using SourceLineResolverBase::FillSourceLineInfo;
-  using SourceLineResolverBase::FindWindowsFrameInfo;
-  using SourceLineResolverBase::FindCFIFrameInfo;
 
  private:
-  // friend declarations:
-  friend class BasicModuleFactory;
+  // Friend declarations.
   friend class ModuleComparer;
   friend class ModuleSerializer;
-  template<class> friend class SimpleSerializer;
+  friend class FastModuleFactory;
 
-  // Function derives from SourceLineResolverBase::Function.
+  // Nested types that will derive from corresponding nested types defined in
+  // SourceLineResolverBase.
+  struct Line;
   struct Function;
-  // Module implements SourceLineResolverBase::Module interface.
+  struct PublicSymbol;
   class Module;
+
+  // Deserialize raw memory data to construct a WindowsFrameInfo object.
+  static WindowsFrameInfo CopyWFI(const char *raw_memory);
 
   // Helper methods to manage C-String format symbol data.
   // See "google_breakpad/processor/source_line_resolver_base.h" for more
   // comments about these helper methods.
-  virtual void DeleteDataAfterLoad(char *symbol_data);
-  // No-op helper methods.
-  virtual void DeleteDataUnload(const CodeModule *module) { }
-  virtual void ClearLocalMemory() { }
-  virtual void StoreDataBeforeLoad(const CodeModule *module,
-                                   char *symbol_data) { }
+  virtual void StoreDataBeforeLoad(const CodeModule *module, char *symbol_data);
+  virtual void DeleteDataUnload(const CodeModule *module);
+  virtual void ClearLocalMemory();
+  // No-op helper method.
+  virtual void DeleteDataAfterLoad(char *symbol_data) { }
+
+  // Store memory data allocated in LoadModule and LoadModuleUsingMapBuffer.
+  typedef std::map<string, char*, CompareString> MemoryMap;
+  MemoryMap memory_chunks_;
 
   // Disallow unwanted copy ctor and assignment operator
-  BasicSourceLineResolver(const BasicSourceLineResolver&);
-  void operator=(const BasicSourceLineResolver&);
+  FastSourceLineResolver(const FastSourceLineResolver&);
+  void operator=(const FastSourceLineResolver&);
 };
 
 }  // namespace google_breakpad
 
-#endif  // GOOGLE_BREAKPAD_PROCESSOR_BASIC_SOURCE_LINE_RESOLVER_H__
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_FAST_SOURCE_LINE_RESOLVER_H__

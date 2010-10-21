@@ -85,6 +85,7 @@ src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/processor/code_module.h \
 	src/google_breakpad/processor/code_modules.h \
 	src/google_breakpad/processor/exploitability.h \
+	src/google_breakpad/processor/fast_source_line_resolver.h \
 	src/google_breakpad/processor/memory_region.h \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
@@ -116,6 +117,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/exploitability.cc \
 	src/processor/exploitability_win.h \
 	src/processor/exploitability_win.cc \
+	src/processor/fast_source_line_resolver_types.h \
+	src/processor/fast_source_line_resolver.cc \
 	src/processor/linked_ptr.h \
 	src/processor/logging.h \
 	src/processor/logging.cc \
@@ -123,6 +126,9 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/map_serializers.h \
 	src/processor/minidump.cc \
 	src/processor/minidump_processor.cc \
+	src/processor/module_comparer.cc \
+	src/processor/module_comparer.h \
+	src/processor/module_factory.h \
 	src/processor/network_interface.h \
 	src/processor/network_source_line_resolver.cc \
 	src/processor/network_source_line_server.cc \
@@ -221,6 +227,7 @@ check_PROGRAMS += \
 	src/processor/contained_range_map_unittest \
 	src/processor/disassembler_x86_unittest \
 	src/processor/exploitability_unittest \
+	src/processor/fast_source_line_resolver_unittest \
 	src/processor/map_serializers_unittest \
 	src/processor/minidump_processor_unittest \
 	src/processor/minidump_unittest \
@@ -413,6 +420,27 @@ src_processor_disassembler_x86_unittest_CPPFLAGS = \
 src_processor_disassembler_x86_unittest_LDADD = \
 	src/processor/disassembler_x86.o \
 	src/third_party/libdisasm/libdisasm.a
+
+src_processor_fast_source_line_resolver_unittest_SOURCES = \
+  src/processor/fast_source_line_resolver_unittest.cc \
+  src/testing/gtest/src/gtest-all.cc \
+  src/testing/src/gmock-all.cc
+src_processor_fast_source_line_resolver_unittest_CPPFLAGS = \
+  -I$(top_srcdir)/src \
+  -I$(top_srcdir)/src/testing/include \
+  -I$(top_srcdir)/src/testing/gtest/include \
+  -I$(top_srcdir)/src/testing/gtest \
+  -I$(top_srcdir)/src/testing
+src_processor_fast_source_line_resolver_unittest_LDADD = \
+  src/processor/fast_source_line_resolver.o \
+  src/processor/basic_source_line_resolver.o \
+  src/processor/cfi_frame_info.o \
+  src/processor/module_comparer.o \
+  src/processor/module_serializer.o \
+  src/processor/pathname_stripper.o \
+  src/processor/logging.o \
+  src/processor/source_line_resolver_base.o \
+  src/processor/tokenize.o
 
 src_processor_map_serializers_unittest_SOURCES = \
 	src/processor/map_serializers_unittest.cc \

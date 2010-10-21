@@ -96,6 +96,7 @@ class RangeMap {
 
  private:
   // Friend declarations.
+  friend class ModuleComparer;
   friend class RangeMapSerializer<AddressType, EntryType>;
 
   class Range {

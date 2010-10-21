@@ -50,7 +50,6 @@ StaticContainedRangeMap<AddressType, EntryType>::StaticContainedRangeMap(
       entry_ptr_(reinterpret_cast<const EntryType *>(
           base + sizeof(base_) + sizeof(entry_size_))),
       map_(base + sizeof(base_) + sizeof(entry_size_) + entry_size_) {
-
   if (entry_size_ == 0)
     entry_ptr_ = NULL;
 }

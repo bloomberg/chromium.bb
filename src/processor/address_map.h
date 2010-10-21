@@ -69,6 +69,7 @@ class AddressMap {
 
  private:
   friend class AddressMapSerializer<AddressType, EntryType>;
+  friend class ModuleComparer;
 
   // Convenience types.
   typedef std::map<AddressType, EntryType> AddressToEntryMap;
