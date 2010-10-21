@@ -211,6 +211,13 @@ cr.define('options', function() {
       $('inetGateway').textContent = '?';
       $('inetDns').textContent = '?';
     }
+    if (data.hardwareAddress) {
+      $('hardwareAddress').textContent = data.hardwareAddress;
+      $('hardwareAddressRow').style.display = 'table-row';
+    } else {
+      // This is most likely a device without a hardware address.
+      $('hardwareAddressRow').style.display = 'none';
+    }
     if (data.type == 2) {
       OptionsPage.showTab($('wifiNetworkNavTab'));
       page.setAttribute('wireless', true);

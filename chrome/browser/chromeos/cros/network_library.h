@@ -306,7 +306,7 @@ struct NetworkIPConfig {
 
   std::string device_path;
   IPConfigType type;
-  std::string address;
+  std::string address;  // This looks like "/device/0011aa22bb33"
   std::string netmask;
   std::string gateway;
   std::string name_servers;
@@ -442,9 +442,13 @@ class NetworkLibrary {
   // Enables/disables offline mode.
   virtual void EnableOfflineMode(bool enable) = 0;
 
-  // Fetches IP configs for a given device_path
+  // Fetches IP configs and hardware address for a given device_path.
+  // The hardware address is usually a MAC address like "0011AA22BB33".
+  // |hardware_address| will be an empty string, if no hardware address is
+  // found.
   virtual NetworkIPConfigVector GetIPConfigs(
-      const std::string& device_path) = 0;
+      const std::string& device_path,
+      std::string* hardware_address) = 0;
 
   // Fetches debug network info for display in about:network.
   // The page will have a meta refresh of |refresh| seconds if |refresh| > 0.

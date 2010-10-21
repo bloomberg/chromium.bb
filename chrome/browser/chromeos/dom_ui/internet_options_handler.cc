@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/dom_ui/internet_options_handler.h"
 
+#include <ctype.h>
+
 #include <string>
 #include <vector>
 
@@ -36,6 +38,22 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 static const char kOtherNetworksFakePath[] = "?";
+
+namespace {
+
+// Format the hardware address like "0011AA22BB33" => "00:11:AA:22:BB:33".
+std::string FormatHardwareAddress(const std::string& address) {
+  std::string output;
+  for (size_t i = 0; i < address.size(); ++i) {
+    if (i != 0 && i % 2 == 0) {
+      output.push_back(':');
+    }
+    output.push_back(toupper(address[i]));
+  }
+  return output;
+}
+
+}  // namespace
 
 InternetOptionsHandler::InternetOptionsHandler() {
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
@@ -106,6 +124,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetDns",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER));
+  localized_strings->SetString("hardwareAddress",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS));
 
   localized_strings->SetString("inetSsid",
       l10n_util::GetStringUTF16(
@@ -534,8 +555,9 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     const chromeos::Network& net, chromeos::NetworkLibrary* cros) {
   DictionaryValue dictionary;
   chromeos::ConnectionType type = net.type();
+  std::string hardware_address;
   chromeos::NetworkIPConfigVector ipconfigs =
-      cros->GetIPConfigs(net.device_path());
+      cros->GetIPConfigs(net.device_path(), &hardware_address);
   scoped_ptr<ListValue> ipconfig_list(new ListValue());
   for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {
@@ -620,6 +642,11 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       dictionary.SetBoolean("gsm", cellular.is_gsm());
     }
   }
+  if (!hardware_address.empty()) {
+    dictionary.SetString("hardwareAddress",
+                         FormatHardwareAddress(hardware_address));
+  }
+
   dom_ui_->CallJavascriptFunction(
       L"options.InternetOptions.showDetailedInfo", dictionary);
 }

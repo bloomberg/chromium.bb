@@ -778,7 +778,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path) {
+  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path,
+                                             std::string* hardware_address) {
+    hardware_address->clear();
     NetworkIPConfigVector ipconfig_vector;
     if (!device_path.empty()) {
       IPConfigStatus* ipconfig_status = ListIPConfigs(device_path.c_str());
@@ -790,6 +792,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                               ipconfig.netmask, ipconfig.gateway,
                               ipconfig.name_servers));
         }
+        *hardware_address = ipconfig_status->hardware_address;
         FreeIPConfigStatus(ipconfig_status);
         // Sort the list of ip configs by type.
         std::sort(ipconfig_vector.begin(), ipconfig_vector.end());
@@ -1268,7 +1271,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual void EnableWifiNetworkDevice(bool enable) {}
   virtual void EnableCellularNetworkDevice(bool enable) {}
   virtual void EnableOfflineMode(bool enable) {}
-  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path) {
+  virtual NetworkIPConfigVector GetIPConfigs(const std::string& device_path,
+                                             std::string* hardware_address) {
+    hardware_address->clear();
     return NetworkIPConfigVector();
   }
   virtual std::string GetHtmlInfo(int refresh) { return std::string(); }

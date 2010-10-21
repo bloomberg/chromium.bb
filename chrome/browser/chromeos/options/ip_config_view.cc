@@ -31,8 +31,10 @@ IPConfigView::IPConfigView(const std::string& device_path)
 }
 
 void IPConfigView::RefreshData() {
+  std::string hardware_address;
   NetworkIPConfigVector ipconfigs =
-      CrosLibrary::Get()->GetNetworkLibrary()->GetIPConfigs(device_path_);
+      CrosLibrary::Get()->GetNetworkLibrary()->GetIPConfigs(device_path_,
+                                                            &hardware_address);
   for (NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {
     const NetworkIPConfig& ipconfig = *it;
