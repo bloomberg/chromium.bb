@@ -1,0 +1,14 @@
+
+
+deps = {
+  'src/chrome/test/data': '/trunk/src/chrome/test/data',
+  'src/chrome/test/pyautolib': '/trunk/src/chrome/test/pyautolib',
+  'src/chrome/test/functional': '/trunk/src/chrome/test/functional',
+  'third_party/simplejson': '/trunk/third_party/simplejson',
+}
+
+deps_os = {
+  'win': {
+    'src/third_party/python_24': '/trunk/deps/third_party/python_24@22967',
+  }
+}
