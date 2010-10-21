@@ -687,14 +687,7 @@ DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
   return item;
 }
 
-ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
-  return CreateMenuUIHTMLSource(*this,
-                                chrome::kChromeUIMenu,
-                                "Menu" /* class name */,
-                                kNoExtraResource,
-                                kNoExtraResource);
-}
-
+// static
 ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
     const MenuUI& menu_ui,
     const std::string& source_name,
@@ -706,6 +699,20 @@ ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
                               menu_class,
                               menu_source_id,
                               menu_css_id);
+}
+
+// static
+bool MenuUI::IsEnabled() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDOMUIMenu);
+}
+
+ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
+  return CreateMenuUIHTMLSource(*this,
+                                chrome::kChromeUIMenu,
+                                "Menu" /* class name */,
+                                kNoExtraResource,
+                                kNoExtraResource);
 }
 
 }  // namespace chromeos

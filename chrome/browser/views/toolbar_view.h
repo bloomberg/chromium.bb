@@ -31,9 +31,8 @@ class Profile;
 namespace views {
 class Menu2;
 }  // namespace views
-#else
-class WrenchMenu;
 #endif
+class WrenchMenu;
 
 // The Browser Window's toolbar.
 class ToolbarView : public AccessiblePaneView,
@@ -200,18 +199,17 @@ class ToolbarView : public AccessiblePaneView,
   scoped_ptr<menus::SimpleMenuModel> wrench_menu_model_;
 
 #if defined(OS_CHROMEOS)
-  // Wrench menu.
-  scoped_ptr<views::Menu2> wrench_menu_;
+  // Wrench menu using domui menu.
+  // MenuLister is managed by Menu2.
+  scoped_ptr<views::Menu2> wrench_menu_2_;
+#endif
 
-  // MenuLister is managed by Menu2 on chromeos.
-
-#else
   // Wrench menu.
   scoped_refptr<WrenchMenu> wrench_menu_;
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
-#endif
+
   // The animation that makes the update reminder pulse.
   scoped_ptr<SlideAnimation> update_reminder_animation_;
 

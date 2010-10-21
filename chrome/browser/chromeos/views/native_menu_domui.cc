@@ -12,12 +12,14 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/native_menu_gtk.h"
 
 namespace {
 
@@ -57,6 +59,10 @@ namespace chromeos {
 
 // static
 void NativeMenuDOMUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
+  // No-op if DOMUI menu is disabled.
+  if (!MenuUI::IsEnabled())
+    return;
+
   gfx::NativeView native = menu2->GetNativeMenu();
   DCHECK(native);
   DOMUIMenuWidget* widget = DOMUIMenuWidget::FindDOMUIMenuWidget(native);
@@ -370,7 +376,11 @@ namespace views {
 // static
 MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
   menus::MenuModel* model = menu->model();
-  return new chromeos::NativeMenuDOMUI(model, true);
+  if (chromeos::MenuUI::IsEnabled()) {
+    return new chromeos::NativeMenuDOMUI(model, true);
+  } else {
+    return new NativeMenuGtk(menu);
+  }
 }
 
 }  // namespace views

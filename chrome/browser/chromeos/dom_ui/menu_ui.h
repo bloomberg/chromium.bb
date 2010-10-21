@@ -56,6 +56,9 @@ class MenuUI : public DOMUI {
       int menu_source_res_id,
       int menu_css_res_id);
 
+  // Returns true if DMOUI menu is enabled.
+  static bool IsEnabled();
+
  protected:
   // A constructor for subclass to initialize the MenuUI with
   // different data source.
