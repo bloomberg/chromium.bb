@@ -22,8 +22,8 @@ namespace base {
 // CRYPT_NEWKEYSET or CRYPT_DELETEKEYSET is specified in the dwFlags
 // parameter."
 BOOL CryptAcquireContextLocked(HCRYPTPROV* prov,
-                               const TCHAR* container,
-                               const TCHAR* provider,
+                               LPCWSTR container,
+                               LPCWSTR provider,
                                DWORD prov_type,
                                DWORD flags);
 

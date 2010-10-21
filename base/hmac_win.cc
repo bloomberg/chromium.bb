@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/crypto/scoped_capi_types.h"
 #include "base/logging.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
@@ -72,12 +73,17 @@ void ComputeHMACSHA256(const unsigned char* key, size_t key_len,
 }  // namespace
 
 struct HMACPlatformData {
-  HMACPlatformData() : provider_(0), hash_(0), hkey_(0) {}
+  ~HMACPlatformData() {
+    if (!raw_key_.empty()) {
+      SecureZeroMemory(&raw_key_[0], raw_key_.size());
+    }
 
-  // Windows Crypt API resources.
-  HCRYPTPROV provider_;
-  HCRYPTHASH hash_;
-  HCRYPTKEY hkey_;
+    // Destroy the key before releasing the provider.
+    key_.reset();
+  }
+
+  ScopedHCRYPTPROV provider_;
+  ScopedHCRYPTKEY key_;
 
   // For HMAC-SHA-256 only.
   std::vector<unsigned char> raw_key_;
@@ -89,8 +95,8 @@ HMAC::HMAC(HashAlgorithm hash_alg)
   DCHECK(hash_alg_ == SHA1 || hash_alg_ == SHA256);
 }
 
-bool HMAC::Init(const unsigned char *key, int key_length) {
-  if (plat_->provider_ || plat_->hkey_ || !plat_->raw_key_.empty()) {
+bool HMAC::Init(const unsigned char* key, int key_length) {
+  if (plat_->provider_ || plat_->key_ || !plat_->raw_key_.empty()) {
     // Init must not be called more than once on the same HMAC object.
     NOTREACHED();
     return false;
@@ -103,10 +109,9 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
     return true;
   }
 
-  if (!CryptAcquireContext(&plat_->provider_, NULL, NULL,
+  if (!CryptAcquireContext(plat_->provider_.receive(), NULL, NULL,
                            PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
     NOTREACHED();
-    plat_->provider_ = NULL;
     return false;
   }
 
@@ -135,9 +140,8 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
 
   if (!CryptImportKey(plat_->provider_, &key_blob_storage[0],
                       key_blob_storage.size(), 0, CRYPT_IPSEC_HMAC_KEY,
-                      &plat_->hkey_)) {
+                      plat_->key_.receive())) {
     NOTREACHED();
-    plat_->hkey_ = NULL;
     return false;
   }
 
@@ -148,22 +152,6 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
 }
 
 HMAC::~HMAC() {
-  if (!plat_->raw_key_.empty())
-    SecureZeroMemory(&plat_->raw_key_[0], plat_->raw_key_.size());
-
-  BOOL ok;
-  if (plat_->hkey_) {
-    ok = CryptDestroyKey(plat_->hkey_);
-    DCHECK(ok);
-  }
-  if (plat_->hash_) {
-    ok = CryptDestroyHash(plat_->hash_);
-    DCHECK(ok);
-  }
-  if (plat_->provider_) {
-    ok = CryptReleaseContext(plat_->provider_, 0);
-    DCHECK(ok);
-  }
 }
 
 bool HMAC::Sign(const std::string& data,
@@ -178,7 +166,7 @@ bool HMAC::Sign(const std::string& data,
     return true;
   }
 
-  if (!plat_->provider_ || !plat_->hkey_)
+  if (!plat_->provider_ || !plat_->key_)
     return false;
 
   if (hash_alg_ != SHA1) {
@@ -186,27 +174,24 @@ bool HMAC::Sign(const std::string& data,
     return false;
   }
 
-  if (!CryptCreateHash(
-          plat_->provider_, CALG_HMAC, plat_->hkey_, 0, &plat_->hash_))
+  ScopedHCRYPTHASH hash;
+  if (!CryptCreateHash(plat_->provider_, CALG_HMAC, plat_->key_, 0,
+                       hash.receive()))
     return false;
 
   HMAC_INFO hmac_info;
   memset(&hmac_info, 0, sizeof(hmac_info));
   hmac_info.HashAlgid = CALG_SHA1;
-  if (!CryptSetHashParam(plat_->hash_, HP_HMAC_INFO,
+  if (!CryptSetHashParam(hash, HP_HMAC_INFO,
                          reinterpret_cast<BYTE*>(&hmac_info), 0))
     return false;
 
-  if (!CryptHashData(plat_->hash_,
-                     reinterpret_cast<const BYTE*>(data.data()),
+  if (!CryptHashData(hash, reinterpret_cast<const BYTE*>(data.data()),
                      static_cast<DWORD>(data.size()), 0))
     return false;
 
   DWORD sha1_size = digest_length;
-  if (!CryptGetHashParam(plat_->hash_, HP_HASHVAL, digest, &sha1_size, 0))
-    return false;
-
-  return true;
+  return !!CryptGetHashParam(hash, HP_HASHVAL, digest, &sha1_size, 0);
 }
 
 }  // namespace base

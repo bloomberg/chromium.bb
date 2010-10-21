@@ -48,8 +48,10 @@ ALG_ID GetAESAlgIDForKeySize(size_t key_size_in_bits) {
 // CALG_HMAC.
 // If successful, returns true and stores the imported key in |*key|.
 // TODO(wtc): use this function in hmac_win.cc.
-bool ImportRawKey(HCRYPTPROV provider, ALG_ID alg, const void* key_data,
-                  DWORD key_size, ScopedHCRYPTKEY* key) {
+bool ImportRawKey(HCRYPTPROV provider,
+                  ALG_ID alg,
+                  const void* key_data, DWORD key_size,
+                  ScopedHCRYPTKEY* key) {
   DCHECK_GT(key_size, 0);
 
   DWORD actual_size = sizeof(PlaintextBlobHeader) + key_size;
@@ -77,8 +79,8 @@ bool ImportRawKey(HCRYPTPROV provider, ALG_ID alg, const void* key_data,
     flags |= CRYPT_IPSEC_HMAC_KEY;
   }
 
-  BOOL ok = CryptImportKey(provider, actual_key, actual_size, NULL,
-                           flags, &unsafe_key);
+  BOOL ok =
+      CryptImportKey(provider, actual_key, actual_size, 0, flags, &unsafe_key);
 
   // Clean up the temporary copy of key, regardless of whether it was imported
   // sucessfully or not.
@@ -94,7 +96,8 @@ bool ImportRawKey(HCRYPTPROV provider, ALG_ID alg, const void* key_data,
 // Attempts to generate a random AES key of |key_size_in_bits|. Returns true
 // if generation is successful, storing the generated key in |*key| and the
 // key provider (CSP) in |*provider|.
-bool GenerateAESKey(size_t key_size_in_bits, ScopedHCRYPTPROV* provider,
+bool GenerateAESKey(size_t key_size_in_bits,
+                    ScopedHCRYPTPROV* provider,
                     ScopedHCRYPTKEY* key) {
   DCHECK(provider);
   DCHECK(key);
@@ -161,8 +164,10 @@ bool CheckHMACKeySize(size_t key_size_in_bits, ALG_ID alg) {
 // |key_size_in_bits| must be >= 1/2 the hash size of |alg| for security.
 // Returns true if generation is successful, storing the generated key in
 // |*key| and the key provider (CSP) in |*provider|.
-bool GenerateHMACKey(size_t key_size_in_bits, ALG_ID alg,
-                     ScopedHCRYPTPROV* provider, ScopedHCRYPTKEY* key,
+bool GenerateHMACKey(size_t key_size_in_bits,
+                     ALG_ID alg,
+                     ScopedHCRYPTPROV* provider,
+                     ScopedHCRYPTKEY* key,
                      scoped_array<BYTE>* raw_key) {
   DCHECK(provider);
   DCHECK(key);
@@ -202,7 +207,9 @@ bool GenerateHMACKey(size_t key_size_in_bits, ALG_ID alg,
 // and |key|. The inner hash function will be |hash_alg|. If successful,
 // returns true and stores the hash in |*hash|.
 // TODO(wtc): use this function in hmac_win.cc.
-bool CreateHMACHash(HCRYPTPROV provider, HCRYPTKEY key, ALG_ID hash_alg,
+bool CreateHMACHash(HCRYPTPROV provider,
+                    HCRYPTKEY key,
+                    ALG_ID hash_alg,
                     ScopedHCRYPTHASH* hash) {
   ScopedHCRYPTHASH safe_hash;
   BOOL ok = CryptCreateHash(provider, CALG_HMAC, key, 0, safe_hash.receive());
@@ -228,9 +235,12 @@ bool CreateHMACHash(HCRYPTPROV provider, HCRYPTKEY key, ALG_ID hash_alg,
 // |output_buf| must have enough space to accomodate the output of the PRF
 // specified by |hash|.
 // Returns true if the block was successfully computed.
-bool ComputePBKDF2Block(HCRYPTHASH hash, DWORD hash_size,
-                        const std::string& salt, size_t iterations,
-                        uint32 block_index, BYTE* output_buf) {
+bool ComputePBKDF2Block(HCRYPTHASH hash,
+                        DWORD hash_size,
+                        const std::string& salt,
+                        size_t iterations,
+                        uint32 block_index,
+                        BYTE* output_buf) {
   // From RFC 2898:
   // 3. <snip> The function F is defined as the exclusive-or sum of the first
   //    c iterates of the underlying pseudorandom function PRF applied to the
@@ -247,9 +257,8 @@ bool ComputePBKDF2Block(HCRYPTHASH hash, DWORD hash_size,
     return false;
 
   // Iteration U_1: Compute PRF for S.
-  ok = CryptHashData(safe_hash,
-                     reinterpret_cast<const BYTE*>(salt.data()), salt.size(),
-                     0);
+  ok = CryptHashData(safe_hash, reinterpret_cast<const BYTE*>(salt.data()),
+                     salt.size(), 0);
   if (!ok)
     return false;
 
@@ -432,10 +441,9 @@ SymmetricKey* SymmetricKey::DeriveKeyFromPassword(Algorithm algorithm,
   //    a derived key DK:
   //    DK = T_1 || T_2 || ... || T_l<0..r-1>
   for (uint32 block_index = 1; block_index <= L; ++block_index) {
-    if (!ComputePBKDF2Block(prf, hLen, salt, iterations,
-                            block_index, block_offset)) {
+    if (!ComputePBKDF2Block(prf, hLen, salt, iterations, block_index,
+                            block_offset))
         return NULL;
-    }
     block_offset += hLen;
   }
 
@@ -474,8 +482,8 @@ SymmetricKey* SymmetricKey::Import(Algorithm algorithm,
     return NULL;
 
   ScopedHCRYPTPROV provider;
-  BOOL ok = CryptAcquireContext(provider.receive(), NULL, NULL,
-                                provider_type, CRYPT_VERIFYCONTEXT);
+  BOOL ok = CryptAcquireContext(provider.receive(), NULL, NULL, provider_type,
+                                CRYPT_VERIFYCONTEXT);
   if (!ok)
     return NULL;
 
@@ -495,13 +503,13 @@ bool SymmetricKey::GetRawKey(std::string* raw_key) {
   }
 
   DWORD size = 0;
-  BOOL ok = CryptExportKey(key_, NULL, PLAINTEXTKEYBLOB, 0, NULL, &size);
+  BOOL ok = CryptExportKey(key_, 0, PLAINTEXTKEYBLOB, 0, NULL, &size);
   if (!ok)
     return false;
 
   std::vector<BYTE> result(size);
 
-  ok = CryptExportKey(key_, NULL, PLAINTEXTKEYBLOB, 0, &result[0], &size);
+  ok = CryptExportKey(key_, 0, PLAINTEXTKEYBLOB, 0, &result[0], &size);
   if (!ok)
     return false;
 
@@ -515,7 +523,8 @@ bool SymmetricKey::GetRawKey(std::string* raw_key) {
   return true;
 }
 
-SymmetricKey::SymmetricKey(HCRYPTPROV provider, HCRYPTKEY key,
+SymmetricKey::SymmetricKey(HCRYPTPROV provider,
+                           HCRYPTKEY key,
                            const void* key_data, size_t key_size_in_bytes)
     : provider_(provider), key_(key) {
   if (key_data) {

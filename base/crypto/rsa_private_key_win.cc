@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,15 +96,15 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   dest += pki.exponent2()->size();
   memcpy(dest, &pki.coefficient()->front(), pki.coefficient()->size());
   dest += pki.coefficient()->size();
-  memcpy(dest, &pki.private_exponent()->front(), pki.private_exponent()->size());
+  memcpy(dest, &pki.private_exponent()->front(),
+         pki.private_exponent()->size());
   dest += pki.private_exponent()->size();
 
   READ_ASSERT(dest == blob.get() + blob_size);
-  if (!CryptImportKey(
-      result->provider_, reinterpret_cast<uint8*>(public_key_struc),
-      blob_size, NULL, CRYPT_EXPORTABLE, result->key_.receive())) {
+  if (!CryptImportKey(result->provider_,
+                      reinterpret_cast<uint8*>(public_key_struc), blob_size, 0,
+                      CRYPT_EXPORTABLE, result->key_.receive()))
     return NULL;
-  }
 
   return result.release();
 }
@@ -135,14 +135,13 @@ bool RSAPrivateKey::InitProvider() {
 bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) {
   // Export the key
   DWORD blob_length = 0;
-  if (!CryptExportKey(key_, NULL, PRIVATEKEYBLOB, 0, NULL, &blob_length)) {
+  if (!CryptExportKey(key_, 0, PRIVATEKEYBLOB, 0, NULL, &blob_length)) {
     NOTREACHED();
     return false;
   }
 
   scoped_array<uint8> blob(new uint8[blob_length]);
-  if (!CryptExportKey(key_, NULL, PRIVATEKEYBLOB, 0, blob.get(),
-                      &blob_length)) {
+  if (!CryptExportKey(key_, 0, PRIVATEKEYBLOB, 0, blob.get(), &blob_length)) {
     NOTREACHED();
     return false;
   }

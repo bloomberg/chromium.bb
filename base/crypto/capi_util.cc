@@ -38,8 +38,8 @@ class CAPIUtilSingleton {
 namespace base {
 
 BOOL CryptAcquireContextLocked(HCRYPTPROV* prov,
-                               const TCHAR* container,
-                               const TCHAR* provider,
+                               LPCWSTR container,
+                               LPCWSTR provider,
                                DWORD prov_type,
                                DWORD flags)
 {
