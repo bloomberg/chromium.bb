@@ -57,6 +57,7 @@ class MediaTest : public UITest {
 #define MAYBE_VideoBearSilentWebm DISABLED_VideoBearSilentWebm
 #define MAYBE_VideoBearMp4 DISABLED_VideoBearMp4
 #define MAYBE_VideoBearSilentMp4 DISABLED_VideoBearSilentMp4
+#define MAYBE_VideoBearWav DISABLED_VideoBearWav
 #define MAYBE_MediaUILayoutTest DISABLED_MediaUILayoutTest
 
 #else
@@ -67,6 +68,7 @@ class MediaTest : public UITest {
 #define MAYBE_VideoBearSilentWebm VideoBearSilentWebm
 #define MAYBE_VideoBearMp4 VideoBearMp4
 #define MAYBE_VideoBearSilentMp4 VideoBearSilentMp4
+#define MAYBE_VideoBearWav VideoBearWav
 
 #if defined(OS_LINUX)
 // Test fails on linux: http://crbug.com/56364
@@ -102,6 +104,10 @@ TEST_F(MediaTest, MAYBE_VideoBearSilentMp4) {
   PlayVideo("bear_silent.mp4");
 }
 #endif
+
+TEST_F(MediaTest, MAYBE_VideoBearWav) {
+  PlayVideo("bear.wav");
+}
 
 TEST_F(UILayoutTest, MAYBE_MediaUILayoutTest) {
   static const char* kResources[] = {
