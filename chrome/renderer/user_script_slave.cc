@@ -203,6 +203,12 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
     ExtensionRendererInfo* extension =
         ExtensionRendererInfo::GetByID(script->extension_id());
+
+    // Since extension info is sent separately from user script info, they can
+    // be out of sync. We just ignore this situation.
+    if (!extension)
+      continue;
+
     if (!Extension::CanExecuteScriptOnPage(
             frame_url,
             extension->allowed_to_execute_script_everywhere(),

@@ -5697,6 +5697,11 @@ void RenderView::ExecuteCodeImpl(WebFrame* frame,
       ExtensionRendererInfo* extension =
           ExtensionRendererInfo::GetByID(params.extension_id);
 
+    // Since extension info is sent separately from user script info, they can
+    // be out of sync. We just ignore this situation.
+    if (!extension)
+      continue;
+
       const std::vector<URLPattern> host_permissions =
           extension->host_permissions();
       if (!Extension::CanExecuteScriptOnPage(
