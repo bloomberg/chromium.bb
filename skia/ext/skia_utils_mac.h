@@ -23,6 +23,8 @@ typedef struct _NSSize NSSize;
 
 #ifdef __OBJC__
 @class NSImage;
+#else
+class NSImage;
 #endif
 
 namespace gfx {
@@ -59,13 +61,11 @@ CGColorRef SkColorToCGColorRef(SkColor color);
 // Converts a CGImage to a SkBitmap.
 SkBitmap CGImageToSkBitmap(CGImageRef image);
 
-#ifdef __OBJC__
 // Draws an NSImage with a given size into a SkBitmap.
 SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque);
 
 // Given an SkBitmap, return an autoreleased NSImage.
 NSImage* SkBitmapToNSImage(const SkBitmap& icon);
-#endif
 
 // Returns |[NSImage imageNamed:@"NSApplicationIcon"]| as SkBitmap.
 SkBitmap AppplicationIconAtSize(int size);

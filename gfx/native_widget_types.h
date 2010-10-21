@@ -96,12 +96,13 @@ typedef GdkRegion* NativeRegion;
 #endif
 
 #if defined(OS_MACOSX)
-typedef NSImage* NativeImage;
-#elif defined(USE_X11) && !defined(TOOLKIT_VIEWS)
-typedef GdkPixbuf* NativeImage;
+typedef NSImage NativeImageType;
+#elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+typedef GdkPixbuf NativeImageType;
 #else
-typedef const SkBitmap* NativeImage;
+typedef SkBitmap NativeImageType;
 #endif
+typedef NativeImageType* NativeImage;
 
 // Note: for test_shell we're packing a pointer into the NativeViewId. So, if
 // you make it a type which is smaller than a pointer, you have to fix
