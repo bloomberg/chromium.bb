@@ -30,8 +30,8 @@
 // Disabled on Toolkit views bot. See http://crbug.com/42614
 #define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
 #elif defined(OS_WIN)
-// Fails on Windows. See http://crbug.com/57687
-#define MAYBE_Tab1Tab3Escape FLAKY_Tab1Tab3Escape
+// Disabled on Windows. See http://crbug.com/57687
+#define MAYBE_Tab1Tab3Escape DISABLED_Tab1Tab3Escape
 #else
 #define MAYBE_Tab1Tab3Escape Tab1Tab3Escape
 #endif
