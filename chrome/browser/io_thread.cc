@@ -259,6 +259,10 @@ void IOThread::Init() {
 }
 
 void IOThread::CleanUp() {
+#if defined(USE_NSS)
+  net::ShutdownOCSP();
+#endif  // defined(USE_NSS)
+
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();
 
