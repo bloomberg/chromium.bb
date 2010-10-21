@@ -431,9 +431,9 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
           << "  copy bytes: " << diff_bytes_length
           << "  mistakes: " << diff_bytes_nonzero
           << "  (skips: " << diff_skips_length << ")"
-          << "  extra bytes: " << extra_bytes_length;
+          << "  extra bytes: " << extra_bytes_length
           << "\nUncompressed bsdiff patch size "
-          << patch_stream->Length() - initial_patch_stream_length;
+          << patch_stream->Length() - initial_patch_stream_length
           << "\nEnd bsdiff "
           << (base::Time::Now() - start_bsdiff_time).InSecondsF();
 
