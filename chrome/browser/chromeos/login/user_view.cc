@@ -132,52 +132,58 @@ class RemoveButton : public views::TextButton {
     : views::TextButton(listener, std::wstring()),
       icon_(icon),
       text_(text),
-      top_right_(top_right) {
+      top_right_(top_right),
+      was_first_click_(false) {
     SetEnabledColor(SK_ColorWHITE);
     SetDisabledColor(SK_ColorWHITE);
     SetHighlightColor(SK_ColorWHITE);
     SetHoverColor(SK_ColorWHITE);
     SetIcon(icon_);
-    set_border(NULL);
     UpdatePosition();
   }
 
  protected:
   // Overridden from View:
-  virtual void OnMouseEntered(const views::MouseEvent& e) {
-    SetIcon(SkBitmap());
-    views::TextButton::SetText(text_);
-
-    const SkColor kStrokeColor = SK_ColorWHITE;
-    const SkColor kButtonColor = 0xFFE94949;
-    const int kStrokeWidth = 1;
-    const int kVerticalPadding = 4;
-    const int kHorizontalPadding = 8;
-    const int kCornerRadius = 4;
-
-    set_background(
-        CreateRoundedBackground(
-            kCornerRadius, kStrokeWidth, kButtonColor, kStrokeColor));
-
-    set_border(
-        views::Border::CreateEmptyBorder(kVerticalPadding,
-                                         kHorizontalPadding,
-                                         kVerticalPadding,
-                                         kHorizontalPadding));
-
-    UpdatePosition();
-  }
-
-  void OnMouseMoved(const views::MouseEvent& e) {
-  }
-
-  virtual void OnMouseExited(const views::MouseEvent& e) {
+  virtual void OnMouseExited(const views::MouseEvent& event) {
     SetIcon(icon_);
     views::TextButton::SetText(std::wstring());
     ClearMaxTextSize();
     set_background(NULL);
-    set_border(NULL);
+    set_border(new views::TextButtonBorder);
     UpdatePosition();
+    views::TextButton::OnMouseExited(event);
+    was_first_click_ = false;
+  }
+
+  void NotifyClick(const views::Event& event) {
+    if (!was_first_click_) {
+      // On first click transform image to "remove" label.
+      SetIcon(SkBitmap());
+      views::TextButton::SetText(text_);
+
+      const SkColor kStrokeColor = SK_ColorWHITE;
+      const SkColor kButtonColor = 0xFFE94949;
+      const int kStrokeWidth = 1;
+      const int kVerticalPadding = 4;
+      const int kHorizontalPadding = 8;
+      const int kCornerRadius = 4;
+
+      set_background(
+          CreateRoundedBackground(
+              kCornerRadius, kStrokeWidth, kButtonColor, kStrokeColor));
+
+      set_border(
+          views::Border::CreateEmptyBorder(kVerticalPadding,
+                                           kHorizontalPadding,
+                                           kVerticalPadding,
+                                           kHorizontalPadding));
+
+      UpdatePosition();
+      was_first_click_ = true;
+    } else {
+      // On second click propagate to base class to fire ButtonPressed.
+      views::TextButton::NotifyClick(event);
+    }
   }
 
   void SetText(const std::wstring& text) {
@@ -199,6 +205,7 @@ class RemoveButton : public views::TextButton {
   SkBitmap icon_;
   std::wstring text_;
   gfx::Point top_right_;
+  bool was_first_click_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveButton);
 };
