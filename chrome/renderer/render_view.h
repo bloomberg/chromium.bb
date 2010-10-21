@@ -25,6 +25,7 @@
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
@@ -649,6 +650,15 @@ class RenderView : public RenderWidget,
   typedef std::map<GURL, ContentSettings> HostContentSettings;
   typedef std::map<GURL, double> HostZoomLevels;
 
+  // Identifies an accessibility notification from webkit.
+  struct RendererAccessibilityNotification {
+    // The webkit glue id of the accessibility object.
+    int32 id;
+
+    // The accessibility notification type.
+    ViewHostMsg_AccessibilityNotification_Params::NotificationType type;
+  };
+
   enum ErrorPageType {
     DNS_ERROR,
     HTTP_404,
@@ -732,6 +742,9 @@ class RenderView : public RenderWidget,
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
   void TextFieldDidChangeImpl(const WebKit::WebInputElement& element);
+
+  // Send queued accessibility notifications from the renderer to the browser.
+  void SendPendingAccessibilityNotifications();
 
   // IPC message handlers ------------------------------------------------------
   //
@@ -1249,6 +1262,7 @@ class RenderView : public RenderWidget,
 
   ScopedRunnableMethodFactory<RenderView> page_info_method_factory_;
   ScopedRunnableMethodFactory<RenderView> autofill_method_factory_;
+  ScopedRunnableMethodFactory<RenderView> accessibility_method_factory_;
 
   // Responsible for translating the page contents to other languages.
   TranslateHelper translate_helper_;
@@ -1293,8 +1307,11 @@ class RenderView : public RenderWidget,
 
   // Collect renderer accessibility notifications until they are ready to be
   // sent to the browser.
-  std::vector<ViewHostMsg_AccessibilityNotification_Params>
+  std::vector<RendererAccessibilityNotification>
       pending_accessibility_notifications_;
+
+  // Set if we are waiting for a accessibility notification ack.
+  bool accessibility_ack_pending_;
 
   // The speech dispatcher attached to this view, lazily initialized.
   scoped_ptr<SpeechInputDispatcher> speech_input_dispatcher_;

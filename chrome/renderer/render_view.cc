@@ -40,7 +40,6 @@
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -403,6 +402,41 @@ static std::string DetermineTextLanguage(const string16& text) {
   return language;
 }
 
+static bool WebAccessibilityNotificationToViewHostMsg(
+    WebAccessibilityNotification notification,
+    ViewHostMsg_AccessibilityNotification_Params::NotificationType* type) {
+  switch (notification) {
+    case WebKit::WebAccessibilityNotificationCheckedStateChanged:
+      *type = ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_CHECK_STATE_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationChildrenChanged:
+      *type = ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_CHILDREN_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
+      *type = ViewHostMsg_AccessibilityNotification_Params::
+           NOTIFICATION_TYPE_FOCUS_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationLoadComplete:
+      *type = ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_LOAD_COMPLETE;
+      break;
+    case WebKit::WebAccessibilityNotificationValueChanged:
+      *type = ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_VALUE_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationSelectedTextChanged:
+      *type = ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED;
+      break;
+    default:
+      // TODO(ctguil): Support additional webkit notifications.
+      return false;
+  }
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 int32 RenderView::next_page_id_ = 1;
@@ -449,10 +483,12 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(autofill_method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(accessibility_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           notification_provider_(new NotificationProvider(this))),
+      accessibility_ack_pending_(false),
       session_storage_namespace_id_(session_storage_namespace_id),
       decrement_shared_popup_at_destruction_(false) {
   password_autocomplete_manager_.reset(new PasswordAutocompleteManager(this));
@@ -1942,6 +1978,32 @@ void RenderView::TextFieldDidChangeImpl(
   if (password_autocomplete_manager_->TextDidChangeInTextField(element))
     return;
   autofill_helper_->TextDidChangeInTextField(element);
+}
+
+void RenderView::SendPendingAccessibilityNotifications() {
+  if (!accessibility_.get())
+    return;
+
+  if (pending_accessibility_notifications_.empty())
+    return;
+
+  // Send all pending accessibility notifications.
+  std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
+  for (size_t i = 0; i < pending_accessibility_notifications_.size(); i++) {
+    RendererAccessibilityNotification& notification =
+        pending_accessibility_notifications_[i];
+    WebAccessibilityObject obj = accessibility_->getObjectById(notification.id);
+    if (!obj.isValid())
+      continue;
+
+    ViewHostMsg_AccessibilityNotification_Params param;
+    param.notification_type = pending_accessibility_notifications_[i].type;
+    param.acc_obj = WebAccessibility(obj, accessibility_.get());
+    notifications.push_back(param);
+  }
+  pending_accessibility_notifications_.clear();
+  Send(new ViewHostMsg_AccessibilityNotifications(routing_id_, notifications));
+  accessibility_ack_pending_ = true;
 }
 
 void RenderView::textFieldDidReceiveKeyDown(
@@ -4514,16 +4576,9 @@ void RenderView::OnAccessibilityDoDefaultAction(int acc_obj_id) {
 }
 
 void RenderView::OnAccessibilityNotificationsAck() {
-  if (!accessibility_.get())
-    return;
-
-  if (!pending_accessibility_notifications_.empty()) {
-    Send(new ViewHostMsg_AccessibilityNotifications(
-        routing_id_,
-        pending_accessibility_notifications_));
-  }
-
-  pending_accessibility_notifications_.clear();
+  DCHECK(accessibility_ack_pending_);
+  accessibility_ack_pending_ = false;
+  SendPendingAccessibilityNotifications();
 }
 
 void RenderView::OnGetAllSavableResourceLinksForCurrentPage(
@@ -5601,53 +5656,35 @@ void RenderView::postAccessibilityNotification(
   }
 
   // Add the accessibility object to our cache and ensure it's valid.
-  if (accessibility_->addOrGetId(obj) < 0)
+  RendererAccessibilityNotification acc_notification;
+  acc_notification.id = accessibility_->addOrGetId(obj);
+  if (acc_notification.id < 0)
     return;
 
-  ViewHostMsg_AccessibilityNotification_Params param;
-  switch (notification) {
-    case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-      param.notification_type =
-          ViewHostMsg_AccessibilityNotification_Params::
-              NOTIFICATION_TYPE_CHECK_STATE_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationChildrenChanged:
-      param.notification_type =
-          ViewHostMsg_AccessibilityNotification_Params::
-              NOTIFICATION_TYPE_CHILDREN_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-      param.notification_type =
-          ViewHostMsg_AccessibilityNotification_Params::
-              NOTIFICATION_TYPE_FOCUS_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationLoadComplete:
-      param.notification_type =
-          ViewHostMsg_AccessibilityNotification_Params::
-              NOTIFICATION_TYPE_LOAD_COMPLETE;
-      break;
-    case WebKit::WebAccessibilityNotificationValueChanged:
-      param.notification_type =
-          ViewHostMsg_AccessibilityNotification_Params::
-              NOTIFICATION_TYPE_VALUE_CHANGED;
-      break;
-    case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-      param.notification_type =
-          ViewHostMsg_AccessibilityNotification_Params::
-              NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED;
-      break;
-    default:
+  if (!WebAccessibilityNotificationToViewHostMsg(
+          notification,
+          &acc_notification.type)) {
+    return;
+  }
+
+  // Discard duplicate accessibility notifications.
+  for (uint32 i = 0; i < pending_accessibility_notifications_.size(); i++) {
+    if (pending_accessibility_notifications_[i].id == acc_notification.id &&
+        pending_accessibility_notifications_[i].type == acc_notification.type) {
       return;
+    }
   }
-  param.acc_obj = WebAccessibility(obj, accessibility_.get());
+  pending_accessibility_notifications_.push_back(acc_notification);
 
-  if (pending_accessibility_notifications_.empty()) {
-    Send(new ViewHostMsg_AccessibilityNotifications(
-        routing_id_,
-        pending_accessibility_notifications_));
+  if (!accessibility_ack_pending_ && accessibility_method_factory_.empty()) {
+    // When no accessibility notifications are in-flight post a task to send
+    // the notifications to the browser. We use PostTask so that we can queue
+    // up additional notifications.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        accessibility_method_factory_.NewRunnableMethod(
+            &RenderView::SendPendingAccessibilityNotifications));
   }
-
-  pending_accessibility_notifications_.push_back(param);
 }
 
 void RenderView::Print(WebFrame* frame, bool script_initiated) {
