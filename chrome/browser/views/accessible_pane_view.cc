@@ -6,7 +6,7 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "chrome/browser/views/accessible_toolbar_view.h"
+#include "chrome/browser/views/accessible_pane_view.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_search.h"
@@ -14,8 +14,8 @@
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 
-AccessibleToolbarView::AccessibleToolbarView()
-    : toolbar_has_focus_(false),
+AccessiblePaneView::AccessiblePaneView()
+    : pane_has_focus_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       focus_manager_(NULL),
       home_key_(app::VKEY_HOME, false, false, false),
@@ -27,14 +27,14 @@ AccessibleToolbarView::AccessibleToolbarView()
   focus_search_.reset(new views::FocusSearch(this, true, true));
 }
 
-AccessibleToolbarView::~AccessibleToolbarView() {
-  if (toolbar_has_focus_) {
+AccessiblePaneView::~AccessiblePaneView() {
+  if (pane_has_focus_) {
     focus_manager_->RemoveFocusChangeListener(this);
   }
 }
 
-bool AccessibleToolbarView::SetToolbarFocus(int view_storage_id,
-                                            views::View* initial_focus) {
+bool AccessiblePaneView::SetPaneFocus(int view_storage_id,
+                                      views::View* initial_focus) {
   if (!IsVisible())
     return false;
 
@@ -66,12 +66,12 @@ bool AccessibleToolbarView::SetToolbarFocus(int view_storage_id,
     focus_manager_->SetFocusedView(initial_focus);
   }
 
-  // If we already have toolbar focus, we're done.
-  if (toolbar_has_focus_)
+  // If we already have pane focus, we're done.
+  if (pane_has_focus_)
     return true;
 
   // Otherwise, set accelerators and start listening for focus change events.
-  toolbar_has_focus_ = true;
+  pane_has_focus_ = true;
   focus_manager_->RegisterAccelerator(home_key_, this);
   focus_manager_->RegisterAccelerator(end_key_, this);
   focus_manager_->RegisterAccelerator(escape_key_, this);
@@ -82,14 +82,14 @@ bool AccessibleToolbarView::SetToolbarFocus(int view_storage_id,
   return true;
 }
 
-bool AccessibleToolbarView::SetToolbarFocusAndFocusDefault(
+bool AccessiblePaneView::SetPaneFocusAndFocusDefault(
     int view_storage_id) {
-  return SetToolbarFocus(view_storage_id, GetDefaultFocusableChild());
+  return SetPaneFocus(view_storage_id, GetDefaultFocusableChild());
 }
 
-void AccessibleToolbarView::RemoveToolbarFocus() {
+void AccessiblePaneView::RemovePaneFocus() {
   focus_manager_->RemoveFocusChangeListener(this);
-  toolbar_has_focus_ = false;
+  pane_has_focus_ = false;
 
   focus_manager_->UnregisterAccelerator(home_key_, this);
   focus_manager_->UnregisterAccelerator(end_key_, this);
@@ -98,7 +98,7 @@ void AccessibleToolbarView::RemoveToolbarFocus() {
   focus_manager_->UnregisterAccelerator(right_key_, this);
 }
 
-void AccessibleToolbarView::LocationBarSelectAll() {
+void AccessiblePaneView::LocationBarSelectAll() {
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   if (focused_view &&
       focused_view->GetClassName() == LocationBarView::kViewClassName) {
@@ -106,7 +106,7 @@ void AccessibleToolbarView::LocationBarSelectAll() {
   }
 }
 
-void AccessibleToolbarView::RestoreLastFocusedView() {
+void AccessiblePaneView::RestoreLastFocusedView() {
   views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
@@ -123,7 +123,7 @@ void AccessibleToolbarView::RestoreLastFocusedView() {
   }
 }
 
-views::View* AccessibleToolbarView::GetFirstFocusableChild() {
+views::View* AccessiblePaneView::GetFirstFocusableChild() {
   FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
   return focus_search_->FindNextFocusableView(
@@ -131,7 +131,7 @@ views::View* AccessibleToolbarView::GetFirstFocusableChild() {
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
-views::View* AccessibleToolbarView::GetLastFocusableChild() {
+views::View* AccessiblePaneView::GetLastFocusableChild() {
   FocusTraversable* dummy_focus_traversable;
   views::View* dummy_focus_traversable_view;
   return focus_search_->FindNextFocusableView(
@@ -142,14 +142,14 @@ views::View* AccessibleToolbarView::GetLastFocusableChild() {
 ////////////////////////////////////////////////////////////////////////////////
 // View overrides:
 
-views::FocusTraversable* AccessibleToolbarView::GetPaneFocusTraversable() {
-  if (toolbar_has_focus_)
+views::FocusTraversable* AccessiblePaneView::GetPaneFocusTraversable() {
+  if (pane_has_focus_)
     return this;
   else
     return NULL;
 }
 
-bool AccessibleToolbarView::AcceleratorPressed(
+bool AccessiblePaneView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   // Special case: don't handle any accelerators for the location bar,
   // so that it behaves exactly the same whether you focus it with Ctrl+L
@@ -162,7 +162,7 @@ bool AccessibleToolbarView::AcceleratorPressed(
 
   switch (accelerator.GetKeyCode()) {
     case app::VKEY_ESCAPE:
-      RemoveToolbarFocus();
+      RemovePaneFocus();
       RestoreLastFocusedView();
       return true;
     case app::VKEY_LEFT:
@@ -184,23 +184,23 @@ bool AccessibleToolbarView::AcceleratorPressed(
   }
 }
 
-void AccessibleToolbarView::SetVisible(bool flag) {
-  if (IsVisible() && !flag && toolbar_has_focus_) {
-    RemoveToolbarFocus();
+void AccessiblePaneView::SetVisible(bool flag) {
+  if (IsVisible() && !flag && pane_has_focus_) {
+    RemovePaneFocus();
     RestoreLastFocusedView();
   }
   View::SetVisible(flag);
 }
 
-AccessibilityTypes::Role AccessibleToolbarView::GetAccessibleRole() {
-  return AccessibilityTypes::ROLE_TOOLBAR;
+AccessibilityTypes::Role AccessiblePaneView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PANE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // FocusChangeListener overrides:
 
-void AccessibleToolbarView::FocusWillChange(views::View* focused_before,
-                                            views::View* focused_now) {
+void AccessiblePaneView::FocusWillChange(views::View* focused_before,
+                                         views::View* focused_now) {
   if (!focused_now)
     return;
 
@@ -213,39 +213,39 @@ void AccessibleToolbarView::FocusWillChange(views::View* focused_before,
     // after the focus.
     MessageLoop::current()->PostTask(
         FROM_HERE, method_factory_.NewRunnableMethod(
-            &AccessibleToolbarView::LocationBarSelectAll));
+            &AccessiblePaneView::LocationBarSelectAll));
   }
 
   if (!IsParentOf(focused_now) ||
       reason == views::FocusManager::kReasonDirectFocusChange) {
-    // We should remove toolbar focus (i.e. make most of the controls
-    // not focusable again) either because the focus is leaving the toolbar,
-    // or because the focus changed within the toolbar due to the user
+    // We should remove pane focus (i.e. make most of the controls
+    // not focusable again) either because the focus is leaving the pane,
+    // or because the focus changed within the pane due to the user
     // directly focusing to a specific view (e.g., clicking on it).
     //
-    // Defer rather than calling RemoveToolbarFocus right away, because we can't
+    // Defer rather than calling RemovePaneFocus right away, because we can't
     // remove |this| as a focus change listener while FocusManager is in the
     // middle of iterating over the list of listeners.
     MessageLoop::current()->PostTask(
         FROM_HERE, method_factory_.NewRunnableMethod(
-            &AccessibleToolbarView::RemoveToolbarFocus));
+            &AccessiblePaneView::RemovePaneFocus));
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // FocusTraversable overrides:
 
-views::FocusSearch* AccessibleToolbarView::GetFocusSearch() {
-  DCHECK(toolbar_has_focus_);
+views::FocusSearch* AccessiblePaneView::GetFocusSearch() {
+  DCHECK(pane_has_focus_);
   return focus_search_.get();
 }
 
-views::FocusTraversable* AccessibleToolbarView::GetFocusTraversableParent() {
-  DCHECK(toolbar_has_focus_);
+views::FocusTraversable* AccessiblePaneView::GetFocusTraversableParent() {
+  DCHECK(pane_has_focus_);
   return NULL;
 }
 
-views::View* AccessibleToolbarView::GetFocusTraversableParentView() {
-  DCHECK(toolbar_has_focus_);
+views::View* AccessiblePaneView::GetFocusTraversableParentView() {
+  DCHECK(pane_has_focus_);
   return NULL;
 }

@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_VIEWS_DETACHABLE_TOOLBAR_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/accessible_toolbar_view.h"
+#include "chrome/browser/views/accessible_pane_view.h"
 
 class SkBitmap;
 struct SkRect;
 
 // DetachableToolbarView contains functionality common to views that can detach
 // from the Chrome frame, such as the BookmarkBarView and the Extension shelf.
-class DetachableToolbarView : public AccessibleToolbarView {
+class DetachableToolbarView : public AccessiblePaneView {
  public:
   // The color gradient start value close to the edge of the divider.
   static const SkColor kEdgeDividerColor;

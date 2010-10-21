@@ -260,7 +260,7 @@ void BrowserView::Show() {
 
 void BrowserView::FocusChromeOSStatus() {
   SaveFocusedView();
-  status_area_->SetToolbarFocus(last_focused_view_storage_id(), NULL);
+  status_area_->SetPaneFocus(last_focused_view_storage_id(), NULL);
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
@@ -339,10 +339,10 @@ bool BrowserView::IsScreenLockerMode() const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserView protected:
 
-void BrowserView::GetAccessibleToolbars(
-    std::vector<AccessibleToolbarView*>* toolbars) {
-  ::BrowserView::GetAccessibleToolbars(toolbars);
-  toolbars->push_back(status_area_);
+void BrowserView::GetAccessiblePanes(
+    std::vector<AccessiblePaneView*>* panes) {
+  ::BrowserView::GetAccessiblePanes(panes);
+  panes->push_back(status_area_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

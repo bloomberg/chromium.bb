@@ -37,7 +37,7 @@
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
-class AccessibleToolbarView;
+class AccessiblePaneView;
 class AccessibleViewHelper;
 class BookmarkBarView;
 class Browser;
@@ -391,11 +391,11 @@ class BrowserView : public BrowserBubbleHost,
   virtual void InfoBarSizeChanged(bool is_animating);
 
  protected:
-  // Appends to |toolbars| a pointer to each AccessibleToolbarView that
+  // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.
   // Abstracted here so that it can be extended for Chrome OS.
-  virtual void GetAccessibleToolbars(
-      std::vector<AccessibleToolbarView*>* toolbars);
+  virtual void GetAccessiblePanes(
+      std::vector<AccessiblePaneView*>* panes);
 
   // Save the current focused view to view storage
   void SaveFocusedView();

@@ -217,12 +217,12 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
     browser_actions_->RefreshBrowserActionViews();
 }
 
-void ToolbarView::SetToolbarFocusAndFocusLocationBar(int view_storage_id) {
-  SetToolbarFocus(view_storage_id, location_bar_);
+void ToolbarView::SetPaneFocusAndFocusLocationBar(int view_storage_id) {
+  SetPaneFocus(view_storage_id, location_bar_);
 }
 
-void ToolbarView::SetToolbarFocusAndFocusAppMenu(int view_storage_id) {
-  SetToolbarFocus(view_storage_id, app_menu_);
+void ToolbarView::SetPaneFocusAndFocusAppMenu(int view_storage_id) {
+  SetPaneFocus(view_storage_id, app_menu_);
 }
 
 bool ToolbarView::IsAppMenuFocused() {
@@ -254,15 +254,19 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, AccessibleToolbarView overrides:
+// ToolbarView, AccessiblePaneView overrides:
 
-bool ToolbarView::SetToolbarFocus(
+bool ToolbarView::SetPaneFocus(
     int view_storage_id, views::View* initial_focus) {
-  if (!AccessibleToolbarView::SetToolbarFocus(view_storage_id, initial_focus))
+  if (!AccessiblePaneView::SetPaneFocus(view_storage_id, initial_focus))
     return false;
 
   location_bar_->SetShowFocusRect(true);
   return true;
+}
+
+AccessibilityTypes::Role ToolbarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_TOOLBAR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -549,8 +553,8 @@ views::View* ToolbarView::GetDefaultFocusableChild() {
   return location_bar_;
 }
 
-void ToolbarView::RemoveToolbarFocus() {
-  AccessibleToolbarView::RemoveToolbarFocus();
+void ToolbarView::RemovePaneFocus() {
+  AccessiblePaneView::RemovePaneFocus();
   location_bar_->SetShowFocusRect(false);
 }
 

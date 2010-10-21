@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
 #pragma once
 
+#include "chrome/browser/views/accessible_pane_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/view.h"
@@ -16,7 +17,7 @@ class TabContents;
 
 // A views::View subclass that contains a collection of InfoBars associated with
 // a TabContents.
-class InfoBarContainer : public views::View,
+class InfoBarContainer : public AccessiblePaneView,
                          public NotificationObserver {
  public:
   // Implement this interface when you want to receive notifications from the

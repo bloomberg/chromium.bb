@@ -8,6 +8,7 @@
 
 #include "app/slide_animation.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/views/accessible_pane_view.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/mouse_watcher.h"
@@ -29,12 +30,12 @@ class DownloadItemView;
 //
 // DownloadShelfView does not hold an infinite number of download views, rather
 // it'll automatically remove views once a certain point is reached.
-class DownloadShelfView : public AnimationDelegate,
+class DownloadShelfView : public AccessiblePaneView,
+                          public AnimationDelegate,
                           public DownloadShelf,
                           public views::ButtonListener,
                           public views::LinkController,
-                          public views::MouseWatcherListener,
-                          public views::View {
+                          public views::MouseWatcherListener {
  public:
   DownloadShelfView(Browser* browser, BrowserView* parent);
   virtual ~DownloadShelfView();
@@ -71,9 +72,17 @@ class DownloadShelfView : public AnimationDelegate,
   // Implementation of MouseWatcherDelegate.
   virtual void MouseMovedOutOfView();
 
+  // Override views::FocusChangeListener method from AccessiblePaneView.
+  virtual void FocusWillChange(View* focused_before,
+                               View* focused_now);
+
   // Removes a specified download view. The supplied view is deleted after
   // it's removed.
   void RemoveDownloadView(views::View* view);
+
+ protected:
+  // From AccessiblePaneView
+  virtual views::View* GetDefaultFocusableChild();
 
  private:
   void Init();
@@ -101,6 +110,15 @@ class DownloadShelfView : public AnimationDelegate,
   // Returns true if we can auto close. We can auto-close if all the items on
   // the shelf have been opened.
   bool CanAutoClose();
+
+  // Called when any view |view| gains or loses focus. If it's one of our
+  // DownloadItemView children, call SchedulePaint on its bounds
+  // so that its focus rect is repainted.
+  void SchedulePaintForDownloadItem(views::View* view);
+
+  // Get the rect that perfectly surrounds a DownloadItemView so we can
+  // draw a focus rect around it.
+  gfx::Rect GetFocusRectBounds(const DownloadItemView* download_item_view);
 
   // The browser for this shelf.
   Browser* browser_;

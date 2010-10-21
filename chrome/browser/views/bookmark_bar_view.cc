@@ -713,6 +713,10 @@ bool BookmarkBarView::IsAccessibleViewTraversable(views::View* view) {
   return view != bookmarks_separator_view_ && view != instructions_;
 }
 
+AccessibilityTypes::Role BookmarkBarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_TOOLBAR;
+}
+
 void BookmarkBarView::OnStateChanged() {
   // When the sync state changes, it is sufficient to invoke View::Layout since
   // during layout we query the profile sync service and determine whether the

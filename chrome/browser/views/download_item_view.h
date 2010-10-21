@@ -66,6 +66,10 @@ class DownloadItemView : public views::ButtonListener,
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool OnMouseDragged(const views::MouseEvent& event);
+  virtual bool OnKeyPressed(const views::KeyEvent& e);
+  virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -154,6 +158,11 @@ class DownloadItemView : public views::ButtonListener,
   // Given |x|, returns whether |x| is within the x coordinate range of
   // the drop-down button or not.
   bool InDropDownButtonXCoordinateRange(int x);
+
+  // Update the accessible name to reflect the current state of the control,
+  // so that screenreaders can access the filename, status text, and
+  // dangerous download warning message (if any).
+  void UpdateAccessibleName();
 
   // The different images used for the background.
   BodyImageSet normal_body_image_set_;

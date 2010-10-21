@@ -134,8 +134,9 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
   virtual void ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture);
 
-  // AccessibleToolbarView methods:
+  // AccessiblePaneView methods:
   virtual bool IsAccessibleViewTraversable(views::View* view);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();

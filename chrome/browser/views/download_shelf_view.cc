@@ -113,6 +113,7 @@ void DownloadShelfView::Init() {
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+  close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   UpdateButtonColors();
   AddChildView(close_button_);
 
@@ -149,6 +150,13 @@ void DownloadShelfView::MouseMovedOutOfView() {
   Close();
 }
 
+void DownloadShelfView::FocusWillChange(views::View* focused_before,
+                                        views::View* focused_now) {
+  SchedulePaintForDownloadItem(focused_before);
+  SchedulePaintForDownloadItem(focused_now);
+  AccessiblePaneView::FocusWillChange(focused_before, focused_now);
+}
+
 void DownloadShelfView::RemoveDownloadView(View* view) {
   DCHECK(view);
   std::vector<DownloadItemView*>::iterator i =
@@ -165,9 +173,25 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
   SchedulePaint();
 }
 
+views::View* DownloadShelfView::GetDefaultFocusableChild() {
+  if (!download_views_.empty())
+    return download_views_[0];
+  else
+    return show_all_view_;
+}
+
 void DownloadShelfView::Paint(gfx::Canvas* canvas) {
   PaintBackground(canvas);
   PaintBorder(canvas);
+
+  // Draw the focus rect here, since it's outside the bounds of the item.
+  for (size_t i = 0; i < download_views_.size(); ++i) {
+    if (download_views_[i]->HasFocus()) {
+      gfx::Rect r = GetFocusRectBounds(download_views_[i]);
+      canvas->DrawFocusRect(r.x(), r.y(), r.width(), r.height() - 1);
+      break;
+    }
+  }
 }
 
 void DownloadShelfView::PaintBorder(gfx::Canvas* canvas) {
@@ -380,4 +404,36 @@ bool DownloadShelfView::CanAutoClose() {
       return false;
   }
   return true;
+}
+
+void DownloadShelfView::SchedulePaintForDownloadItem(views::View* view) {
+  // Make sure it's not NULL.  (Focus sometimes changes to or from NULL.)
+  if (!view)
+    return;
+
+  // Make sure it's one of our DownloadItemViews.
+  bool found = false;
+  for (size_t i = 0; i < download_views_.size(); ++i) {
+    if (download_views_[i] == view)
+      found = true;
+  }
+  if (!found)
+    return;
+
+  // Invalidate it
+  gfx::Rect invalid_rect =
+      GetFocusRectBounds(static_cast<DownloadItemView*>(view));
+  SchedulePaint(invalid_rect, false);
+}
+
+gfx::Rect DownloadShelfView::GetFocusRectBounds(
+    const DownloadItemView* download_item_view) {
+  gfx::Rect bounds = download_item_view->bounds();
+
+#if defined(TOOLKIT_VIEWS)
+  bounds.set_height(bounds.height() - 1);
+  bounds.Offset(0, 3);
+#endif
+
+  return bounds;
 }

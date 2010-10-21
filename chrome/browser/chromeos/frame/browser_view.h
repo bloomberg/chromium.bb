@@ -69,8 +69,8 @@ class BrowserView : public ::BrowserView,
   virtual bool IsScreenLockerMode() const;
 
  protected:
-  virtual void GetAccessibleToolbars(
-      std::vector<AccessibleToolbarView*>* toolbars);
+  virtual void GetAccessiblePanes(
+      std::vector<AccessiblePaneView*>* panes);
 
  private:
   void InitSystemMenu();

@@ -15,7 +15,7 @@
 #include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/views/accessible_toolbar_view.h"
+#include "chrome/browser/views/accessible_pane_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "chrome/browser/views/reload_button.h"
 #include "views/controls/button/menu_button.h"
@@ -36,7 +36,7 @@ class WrenchMenu;
 #endif
 
 // The Browser Window's toolbar.
-class ToolbarView : public AccessibleToolbarView,
+class ToolbarView : public AccessiblePaneView,
                     public views::ViewMenuDelegate,
                     public menus::AcceleratorProvider,
                     public LocationBarView::Delegate,
@@ -64,12 +64,12 @@ class ToolbarView : public AccessibleToolbarView,
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the location bar. Focus will be restored
   // to the ViewStorage with id |view_storage_id| if the user escapes.
-  void SetToolbarFocusAndFocusLocationBar(int view_storage_id);
+  void SetPaneFocusAndFocusLocationBar(int view_storage_id);
 
   // Set focus to the toolbar with complete keyboard access, with the
   // focus initially set to the app menu. Focus will be restored
   // to the ViewStorage with id |view_storage_id| if the user escapes.
-  void SetToolbarFocusAndFocusAppMenu(int view_storage_id);
+  void SetPaneFocusAndFocusAppMenu(int view_storage_id);
 
   // Returns true if the app menu is focused.
   bool IsAppMenuFocused();
@@ -87,8 +87,9 @@ class ToolbarView : public AccessibleToolbarView,
   LocationBarView* location_bar() const { return location_bar_; }
   views::MenuButton* app_menu() const { return app_menu_; }
 
-  // Overridden from AccessibleToolbarView
-  virtual bool SetToolbarFocus(int view_storage_id, View* initial_focus);
+  // Overridden from AccessiblePaneView
+  virtual bool SetPaneFocus(int view_storage_id, View* initial_focus);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Overridden from Menu::BaseControllerDelegate:
   virtual bool GetAcceleratorInfo(int id, menus::Accelerator* accel);
@@ -134,9 +135,9 @@ class ToolbarView : public AccessibleToolbarView,
 
  protected:
 
-  // Overridden from AccessibleToolbarView
+  // Overridden from AccessiblePaneView
   virtual views::View* GetDefaultFocusableChild();
-  virtual void RemoveToolbarFocus();
+  virtual void RemovePaneFocus();
 
  private:
   // Returns true if we should show the upgrade recommended dot.

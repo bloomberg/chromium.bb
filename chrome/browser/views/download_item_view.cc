@@ -298,6 +298,9 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     SizeLabelToMinWidth();
   }
 
+  UpdateAccessibleName();
+  set_accessibility_focusable(true);
+
   // Set up our animation.
   StartDownloadProgress();
 }
@@ -379,6 +382,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   }
 
   status_text_ = status_text;
+  UpdateAccessibleName();
 
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there
   // are spaces between each DownloadItemView that the parent is responsible
@@ -721,6 +725,10 @@ void DownloadItemView::ClearDangerousMode() {
   delete dangerous_download_label_;
   dangerous_download_label_ = NULL;
 
+  // Set the accessible name back to the status and filename instead of the
+  // download warning.
+  UpdateAccessibleName();
+
   // We need to load the icon now that the download_ has the real path.
   LoadIcon();
   tooltip_text_ = download_->GetFileName().ToWStringHack();
@@ -770,7 +778,8 @@ void DownloadItemView::OnMouseExited(const views::MouseEvent& event) {
   drop_hover_animation_->Hide();
 }
 
-// Display the context menu for this item.
+// Handle a mouse click and open the context menu if the mouse is
+// over the drop-down region.
 bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
   // Mouse should not activate us in dangerous mode.
   if (IsDangerousMode())
@@ -781,54 +790,12 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
     complete_animation_->End();
 
   if (event.IsOnlyLeftMouseButton()) {
-    gfx::Point point(event.location());
     if (!InDropDownButtonXCoordinateRange(event.x())) {
       SetState(PUSHED, NORMAL);
       return true;
     }
 
-    drop_down_pressed_ = true;
-    SetState(NORMAL, PUSHED);
-
-    // Similar hack as in MenuButton.
-    // We're about to show the menu from a mouse press. By showing from the
-    // mouse press event we block RootView in mouse dispatching. This also
-    // appears to cause RootView to get a mouse pressed BEFORE the mouse
-    // release is seen, which means RootView sends us another mouse press no
-    // matter where the user pressed. To force RootView to recalculate the
-    // mouse target during the mouse press we explicitly set the mouse handler
-    // to NULL.
-    GetRootView()->SetMouseHandler(NULL);
-
-    // The menu's position is different depending on the UI layout.
-    // DownloadShelfContextMenu will take care of setting the right anchor for
-    // the menu depending on the locale.
-    point.set_y(height());
-    if (base::i18n::IsRTL())
-      point.set_x(drop_down_x_right_);
-    else
-      point.set_x(drop_down_x_left_);
-
-    views::View::ConvertPointToScreen(this, &point);
-
-    if (!context_menu_.get())
-      context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
-    // When we call the Run method on the menu, it runs an inner message loop
-    // that might causes us to be deleted.
-    bool deleted = false;
-    deleted_ = &deleted;
-    context_menu_->Run(point);
-    if (deleted)
-      return true;  // We have been deleted! Don't access 'this'.
-    deleted_ = NULL;
-
-    // If the menu action was to remove the download, this view will also be
-    // invalid so we must not access 'this' in this case.
-    if (context_menu_->download()) {
-      drop_down_pressed_ = false;
-      // Showing the menu blocks. Here we revert the state.
-      SetState(NORMAL, NORMAL);
-    }
+    ShowContextMenu(event.location(), false);
   }
   return true;
 }
@@ -862,8 +829,9 @@ void DownloadItemView::OnMouseReleased(const views::MouseEvent& event,
     return;
   }
   if (event.IsOnlyLeftMouseButton() &&
-      !InDropDownButtonXCoordinateRange(event.x()))
+      !InDropDownButtonXCoordinateRange(event.x())) {
     OpenDownload();
+  }
 
   SetState(NORMAL, NORMAL);
 }
@@ -897,6 +865,78 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
+bool DownloadItemView::OnKeyPressed(const views::KeyEvent& e) {
+  // Key press should not activate us in dangerous mode.
+  if (IsDangerousMode())
+    return true;
+
+  if (e.GetKeyCode() == app::VKEY_SPACE ||
+      e.GetKeyCode() == app::VKEY_RETURN) {
+    OpenDownload();
+    return true;
+  }
+  return false;
+}
+
+void DownloadItemView::ShowContextMenu(const gfx::Point& p,
+                                       bool is_mouse_gesture) {
+  gfx::Point point = p;
+  drop_down_pressed_ = true;
+  SetState(NORMAL, PUSHED);
+
+  // Similar hack as in MenuButton.
+  // We're about to show the menu from a mouse press. By showing from the
+  // mouse press event we block RootView in mouse dispatching. This also
+  // appears to cause RootView to get a mouse pressed BEFORE the mouse
+  // release is seen, which means RootView sends us another mouse press no
+  // matter where the user pressed. To force RootView to recalculate the
+  // mouse target during the mouse press we explicitly set the mouse handler
+  // to NULL.
+  GetRootView()->SetMouseHandler(NULL);
+
+  // The menu's position is different depending on the UI layout.
+  // DownloadShelfContextMenu will take care of setting the right anchor for
+  // the menu depending on the locale.
+  point.set_y(height());
+  if (base::i18n::IsRTL())
+    point.set_x(drop_down_x_right_);
+  else
+    point.set_x(drop_down_x_left_);
+
+  views::View::ConvertPointToScreen(this, &point);
+
+  if (!context_menu_.get())
+    context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
+  // When we call the Run method on the menu, it runs an inner message loop
+  // that might causes us to be deleted.
+  bool deleted = false;
+  deleted_ = &deleted;
+  context_menu_->Run(point);
+  if (deleted)
+    return;  // We have been deleted! Don't access 'this'.
+  deleted_ = NULL;
+
+  // If the menu action was to remove the download, this view will also be
+  // invalid so we must not access 'this' in this case.
+  if (context_menu_->download()) {
+    drop_down_pressed_ = false;
+    // Showing the menu blocks. Here we revert the state.
+    SetState(NORMAL, NORMAL);
+  }
+}
+
+AccessibilityTypes::Role DownloadItemView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
+}
+
+AccessibilityTypes::State DownloadItemView::GetAccessibleState() {
+  if (download_->safety_state() == DownloadItem::DANGEROUS) {
+    return AccessibilityTypes::STATE_UNAVAILABLE;
+  } else {
+    return AccessibilityTypes::STATE_HASPOPUP;
+  }
+}
+
 void DownloadItemView::AnimationProgressed(const Animation* animation) {
   // We don't care if what animation (body button/drop button/complete),
   // is calling back, as they all have to go through the same paint call.
@@ -909,6 +949,7 @@ void DownloadItemView::OpenDownload() {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
                            base::Time::Now() - creation_time_);
   download_->OpenDownload();
+  UpdateAccessibleName();
 }
 
 void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
@@ -1010,4 +1051,26 @@ bool DownloadItemView::InDropDownButtonXCoordinateRange(int x) {
   if (x > drop_down_x_left_ && x < drop_down_x_right_)
     return true;
   return false;
+}
+
+void DownloadItemView::UpdateAccessibleName() {
+  std::wstring current_name;
+  GetAccessibleName(&current_name);
+
+  std::wstring new_name;
+  if (download_->safety_state() == DownloadItem::DANGEROUS) {
+    new_name = dangerous_download_label_->GetText();
+  } else {
+    new_name = status_text_ + L" " +
+        download_->GetFileName().ToWStringHack();
+  }
+
+  // If the name has changed, call SetAccessibleName and notify
+  // assistive technology that the name has changed so they can
+  // announce it immediately.
+  if (new_name != current_name) {
+    SetAccessibleName(new_name);
+    if (GetWidget())
+      NotifyAccessibilityEvent(AccessibilityTypes::EVENT_NAMECHANGE);
+  }
 }

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "chrome/browser/views/accessible_toolbar_view.h"
+#include "chrome/browser/views/accessible_pane_view.h"
 #include "views/view.h"
 
 namespace chromeos {
@@ -21,7 +21,7 @@ class StatusAreaHost;
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
-class StatusAreaView : public AccessibleToolbarView {
+class StatusAreaView : public AccessiblePaneView {
  public:
   explicit StatusAreaView(StatusAreaHost* host);
   virtual ~StatusAreaView() {}

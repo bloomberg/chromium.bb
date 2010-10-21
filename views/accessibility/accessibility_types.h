@@ -88,7 +88,8 @@ class AccessibilityTypes {
     EVENT_MENUSTART,
     EVENT_MENUEND,
     EVENT_MENUPOPUPSTART,
-    EVENT_MENUPOPUPEND
+    EVENT_MENUPOPUPEND,
+    EVENT_NAMECHANGE
   };
 
  private:

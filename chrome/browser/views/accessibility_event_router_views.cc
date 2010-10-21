@@ -67,9 +67,6 @@ void AccessibilityEventRouterViews::RemoveView(views::View* view) {
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
     views::View* view, AccessibilityTypes::Event event_type) {
   switch (event_type) {
-    case AccessibilityTypes::EVENT_ALERT:
-      // TODO(dtseng): does this have any meaning in this context.
-      break;
     case AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
@@ -83,6 +80,13 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
     case AccessibilityTypes::EVENT_MENUPOPUPEND:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_MENU_CLOSED);
+      break;
+    case AccessibilityTypes::EVENT_ALERT:
+    case AccessibilityTypes::EVENT_NAMECHANGE:
+      // TODO(dmazzoni): re-evaluate this list later and see
+      // if supporting any of these would be useful feature requests or
+      // they'd just be superfluous.
+      NOTIMPLEMENTED();
       break;
   }
 }
