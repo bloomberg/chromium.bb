@@ -66,21 +66,36 @@ ExtensionBrowserEventRouter* ExtensionBrowserEventRouter::GetInstance() {
 
 static void DispatchEvent(Profile* profile,
                           const char* event_name,
-                          const std::string json_args) {
+                          const std::string& json_args) {
   if (profile->GetExtensionEventRouter()) {
     profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, profile, GURL());
   }
 }
 
+static void DispatchEventToExtension(Profile* profile,
+                                     const std::string& extension_id,
+                                     const char* event_name,
+                                     const std::string& json_args) {
+  if (profile->GetExtensionEventRouter()) {
+    profile->GetExtensionEventRouter()->DispatchEventToExtension(
+        extension_id, event_name, json_args, profile, GURL());
+  }
+}
+
 static void DispatchEventWithTab(Profile* profile,
+                                 const std::string& extension_id,
                                  const char* event_name,
                                  const TabContents* tab_contents) {
   ListValue args;
   args.Append(ExtensionTabUtil::CreateTabValue(tab_contents));
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  DispatchEvent(profile, event_name, json_args);
+  if (!extension_id.empty()) {
+    DispatchEventToExtension(profile, extension_id, event_name, json_args);
+  } else {
+    DispatchEvent(profile, event_name, json_args);
+  }
 }
 
 static void DispatchSimpleBrowserEvent(Profile* profile,
@@ -244,7 +259,8 @@ void ExtensionBrowserEventRouter::OnBrowserSetLastActive(
 void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
                                                int index,
                                                bool foreground) {
-  DispatchEventWithTab(contents->profile(), events::kOnTabCreated, contents);
+  DispatchEventWithTab(contents->profile(), "", events::kOnTabCreated,
+                       contents);
 
   RegisterForTabNotifications(contents);
 }
@@ -460,8 +476,7 @@ void ExtensionBrowserEventRouter::DispatchOldPageActionEvent(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  std::string event_name = std::string("pageActions/") + extension_id;
-  DispatchEvent(profile, event_name.c_str(), json_args);
+  DispatchEventToExtension(profile, extension_id, "pageActions", json_args);
 }
 
 void ExtensionBrowserEventRouter::PageActionExecuted(
@@ -478,9 +493,8 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
                                     NULL, NULL, &tab_contents, NULL)) {
     return;
   }
-  std::string event_name = ExtensionEventRouter::GetPerExtensionEventName(
-      "pageAction.onClicked", extension_id);
-  DispatchEventWithTab(profile, event_name.c_str(), tab_contents);
+  DispatchEventWithTab(profile, extension_id, "pageAction.onClicked",
+                       tab_contents);
 }
 
 void ExtensionBrowserEventRouter::BrowserActionExecuted(
@@ -489,7 +503,6 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   int tab_id = 0;
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
-  std::string event_name = ExtensionEventRouter::GetPerExtensionEventName(
-      "browserAction.onClicked", extension_id);
-  DispatchEventWithTab(profile, event_name.c_str(), tab_contents);
+  DispatchEventWithTab(profile, extension_id, "browserAction.onClicked",
+                       tab_contents);
 }

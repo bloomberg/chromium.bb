@@ -1066,18 +1066,20 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 }
 
 void BrowserRenderProcessHost::OnExtensionAddListener(
+    const std::string& extension_id,
     const std::string& event_name) {
   if (profile()->GetExtensionEventRouter()) {
     profile()->GetExtensionEventRouter()->AddEventListener(
-        event_name, id());
+        event_name, this, extension_id);
   }
 }
 
 void BrowserRenderProcessHost::OnExtensionRemoveListener(
+    const std::string& extension_id,
     const std::string& event_name) {
   if (profile()->GetExtensionEventRouter()) {
     profile()->GetExtensionEventRouter()->RemoveEventListener(
-        event_name, id());
+        event_name, this, extension_id);
   }
 }
 

@@ -70,7 +70,7 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
   args.Set(4, Value::CreateStringValue(target_extension_id));
   CHECK(port.sender);
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-       ExtensionMessageService::kDispatchOnConnect, args, false, GURL()));
+       "", ExtensionMessageService::kDispatchOnConnect, args, GURL()));
 }
 
 static void DispatchOnDisconnect(
@@ -78,7 +78,7 @@ static void DispatchOnDisconnect(
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-      ExtensionMessageService::kDispatchOnDisconnect, args, false, GURL()));
+      "", ExtensionMessageService::kDispatchOnDisconnect, args, GURL()));
 }
 
 static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
@@ -87,7 +87,7 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
   args.Set(0, Value::CreateStringValue(message));
   args.Set(1, Value::CreateIntegerValue(source_port_id));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-      ExtensionMessageService::kDispatchOnMessage, args, false, GURL()));
+      "", ExtensionMessageService::kDispatchOnMessage, args, GURL()));
 }
 
 }  // namespace

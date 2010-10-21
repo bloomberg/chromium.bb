@@ -110,10 +110,10 @@ var chrome = chrome || {};
 
   // Registers a callback to be called when this event is dispatched.
   chrome.Event.prototype.addListener = function(cb) {
-    this.listeners_.push(cb);
-    if (this.listeners_.length == 1) {
+    if (this.listeners_.length == 0) {
       this.attach_();
     }
+    this.listeners_.push(cb);
   };
 
   // Unregisters a callback.

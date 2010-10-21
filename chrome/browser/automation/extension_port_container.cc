@@ -107,9 +107,9 @@ bool ExtensionPortContainer::Send(IPC::Message *message) {
 }
 
 void ExtensionPortContainer::OnExtensionMessageInvoke(
+    const std::string& extension_id,
     const std::string& function_name,
     const ListValue& args,
-    bool requires_incognito_access,
     const GURL& event_url) {
   if (function_name == ExtensionMessageService::kDispatchOnMessage) {
     DCHECK_EQ(args.GetSize(), 2u);

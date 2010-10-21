@@ -750,11 +750,13 @@ IPC_BEGIN_MESSAGES(View)
   // will call a javascript function in every registered context in the
   // target process.  If routed, it will be restricted to the contexts that
   // are part of the target RenderView.
-  // |args| is a list of primitive Value types that are passed to the function.
+  // If |extension_id| is non-empty, the function will be invoked only in
+  // contexts owned by the extension. |args| is a list of primitive Value types
+  // that are passed to the function.
   IPC_MESSAGE_ROUTED4(ViewMsg_ExtensionMessageInvoke,
+                      std::string /* extension_id */,
                       std::string /* function_name */,
                       ListValue /* args */,
-                      bool /* requires incognito access */,
                       GURL /* event URL */)
 
   // Tell the renderer process all known extension function names.
@@ -772,13 +774,6 @@ IPC_BEGIN_MESSAGES(View)
       ViewMsg_Extension_SetHostPermissions,
       GURL /* source extension's origin */,
       std::vector<URLPattern> /* URLPatterns the extension can access */)
-
-  // Tell the renderer process that the given extension is enabled or disabled
-  // for incognito mode, and what kind of incognito behavior it has.
-  IPC_MESSAGE_CONTROL3(ViewMsg_Extension_ExtensionSetIncognitoEnabled,
-                       std::string /* extension_id */,
-                       bool /* enabled */,
-                       bool /* incognito_split_mode */)
 
   // Tell the renderer process all known page action ids for a particular
   // extension.
@@ -2125,12 +2120,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_ExtensionRequest,
                       ViewHostMsg_DomMessage_Params)
 
-  // Notify the browser that this renderer added a listener to an event.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionAddListener,
+  // Notify the browser that the given extension added a listener to an event.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_ExtensionAddListener,
+                       std::string /* extension_id */,
                        std::string /* name */)
 
-  // Notify the browser that this renderer removed a listener from an event.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionRemoveListener,
+  // Notify the browser that the given extension removed a listener from an
+  // event.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_ExtensionRemoveListener,
+                       std::string /* extension_id */,
                        std::string /* name */)
 
 #if defined(OS_MACOSX)

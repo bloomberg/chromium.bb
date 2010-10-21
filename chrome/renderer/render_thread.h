@@ -267,10 +267,6 @@ class RenderThread : public RenderThreadBase,
   void OnExtensionSetHostPermissions(
       const GURL& extension_url,
       const std::vector<URLPattern>& permissions);
-  void OnExtensionSetIncognitoEnabled(
-      const std::string& extension_id,
-      bool enabled,
-      bool incognito_split_mode);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
@@ -289,9 +285,9 @@ class RenderThread : public RenderThreadBase,
   void OnGetRendererTcmalloc();
   void OnGetV8HeapStats();
 
-  void OnExtensionMessageInvoke(const std::string& function_name,
+  void OnExtensionMessageInvoke(const std::string& extension_id,
+                                const std::string& function_name,
                                 const ListValue& args,
-                                bool cross_incognito,
                                 const GURL& event_url);
   void OnPurgeMemory();
   void OnPurgePluginListCache(bool reload_pages);

@@ -24,18 +24,23 @@ class ExtensionEventRouter : public NotificationObserver {
   explicit ExtensionEventRouter(Profile* profile);
   ~ExtensionEventRouter();
 
-  // Returns the event name for an event that is extension-specific.
-  static std::string GetPerExtensionEventName(const std::string& event_name,
-                                              const std::string& extension_id);
-
-  // Add or remove |render_process_id| as a listener for |event_name|.
+  // Add or remove the process/extension pair as a listener for |event_name|.
+  // Note that multiple extensions can share a process due to process
+  // collapsing. Also, a single extension can have 2 processes if it is a split
+  // mode extension.
   void AddEventListener(const std::string& event_name,
-                        int render_process_id);
+                        RenderProcessHost* process,
+                        const std::string& extension_id);
   void RemoveEventListener(const std::string& event_name,
-                           int render_process_id);
+                           RenderProcessHost* process,
+                           const std::string& extension_id);
 
   // Returns true if there is at least one listener for the given event.
   bool HasEventListener(const std::string& event_name);
+
+  // Returns true if the extension is listening to the given event.
+  bool ExtensionHasEventListener(const std::string& extension_id,
+                                 const std::string& event_name);
 
   // Send an event to every registered extension renderer. If
   // |restrict_to_profile| is non-NULL, then the event will not be sent to other
@@ -43,18 +48,28 @@ class ExtensionEventRouter : public NotificationObserver {
   // normal profile only works if extension is allowed incognito access). If
   // |event_url| is not empty, the event is only sent to extension with host
   // permissions for this url.
-  virtual void DispatchEventToRenderers(
+  void DispatchEventToRenderers(
       const std::string& event_name, const std::string& event_args,
       Profile* restrict_to_profile, const GURL& event_url);
 
-  // Same as above, except use the extension-specific naming scheme for the
-  // event. This is used by events that are per-extension.
+  // Same as above, except only send the event to the given extension.
   void DispatchEventToExtension(
       const std::string& extension_id,
       const std::string& event_name, const std::string& event_args,
       Profile* restrict_to_profile, const GURL& event_url);
 
+ protected:
+  // Shared by DispatchEvent*. If |extension_id| is empty, the event is
+  // broadcast.
+  virtual void DispatchEventImpl(
+      const std::string& extension_id,
+      const std::string& event_name, const std::string& event_args,
+      Profile* restrict_to_profile, const GURL& event_url);
+
  private:
+  // An extension listening to an event.
+  struct EventListener;
+
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -65,9 +80,9 @@ class ExtensionEventRouter : public NotificationObserver {
 
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
 
-  // A map between an event name and a set of process id's that are listening
+  // A map between an event name and a set of extensions that are listening
   // to that event.
-  typedef std::map<std::string, std::set<int> > ListenerMap;
+  typedef std::map<std::string, std::set<EventListener> > ListenerMap;
   ListenerMap listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEventRouter);

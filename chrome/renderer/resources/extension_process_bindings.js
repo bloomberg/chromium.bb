@@ -238,7 +238,7 @@ var chrome = chrome || {};
   function setupPageActionEvents(extensionId) {
     var pageActions = GetCurrentPageActions(extensionId);
 
-    var oldStyleEventName = "pageActions/" + extensionId;
+    var oldStyleEventName = "pageActions";
     // TODO(EXTENSIONS_DEPRECATED): only one page action
     for (var i = 0; i < pageActions.length; ++i) {
       // Setup events for each extension_id/page_action_id string we find.
@@ -264,7 +264,7 @@ var chrome = chrome || {};
     chromeHidden.contextMenus = {};
     chromeHidden.contextMenus.nextId = 1;
     chromeHidden.contextMenus.handlers = {};
-    var eventName = "contextMenus/" + extensionId;
+    var eventName = "contextMenus";
     chromeHidden.contextMenus.event = new chrome.Event(eventName);
     chromeHidden.contextMenus.ensureListenerSetup = function() {
       if (chromeHidden.contextMenus.listening) {
@@ -382,8 +382,6 @@ var chrome = chrome || {};
             return;
 
           var eventName = apiDef.namespace + "." + eventDef.name;
-          if (eventDef.perExtensionEvent)
-            eventName = eventName + "/" + extensionId;
           module[eventDef.name] = new chrome.Event(eventName,
               eventDef.parameters);
         });
@@ -422,8 +420,7 @@ var chrome = chrome || {};
       if (connectInfo) {
         name = connectInfo.name || name;
       }
-      var portId = OpenChannelToTab(
-          tabId, chromeHidden.extensionId, name);
+      var portId = OpenChannelToTab(tabId, chromeHidden.extensionId, name);
       return chromeHidden.Port.createPort(portId, name);
     };
 

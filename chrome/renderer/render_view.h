@@ -811,9 +811,9 @@ class RenderView : public RenderWidget,
   void OnEnableViewSourceMode();
   void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
-  void OnExtensionMessageInvoke(const std::string& function_name,
+  void OnExtensionMessageInvoke(const std::string& extension_id,
+                                const std::string& function_name,
                                 const ListValue& args,
-                                bool cross_incognito,
                                 const GURL& event_url);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);

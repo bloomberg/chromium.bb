@@ -43,9 +43,8 @@ void ExtensionOmniboxEventRouter::OnInputStarted(
 bool ExtensionOmniboxEventRouter::OnInputChanged(
     Profile* profile, const std::string& extension_id,
     const std::string& input, int suggest_id) {
-  std::string event_name = ExtensionEventRouter::GetPerExtensionEventName(
-      events::kOnInputChanged, extension_id);
-  if (!profile->GetExtensionEventRouter()->HasEventListener(event_name))
+  if (!profile->GetExtensionEventRouter()->ExtensionHasEventListener(
+        extension_id, events::kOnInputChanged))
     return false;
 
   ListValue args;
@@ -63,8 +62,6 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
 void ExtensionOmniboxEventRouter::OnInputEntered(
     Profile* profile, const std::string& extension_id,
     const std::string& input) {
-  std::string event_name = events::kOnInputEntered + extension_id;
-
   ListValue args;
   args.Set(0, Value::CreateStringValue(input));
   std::string json_args;

@@ -25,8 +25,10 @@ class RendererExtensionBindings {
   static v8::Extension* Get();
 
   // Call the given javascript function with the specified arguments.
-  static void Invoke(const std::string& function_name, const ListValue& args,
-                     RenderView* renderview, bool cross_incognito,
+  static void Invoke(const std::string& extension_id,
+                     const std::string& function_name,
+                     const ListValue& args,
+                     RenderView* renderview,
                      const GURL& event_url);
 };
 

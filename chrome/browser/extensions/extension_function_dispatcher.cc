@@ -373,9 +373,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   epm->RegisterExtensionProcess(extension_id(),
                                 render_view_host->process()->id());
 
-  bool incognito_enabled =
-      profile()->GetExtensionsService()->IsIncognitoEnabled(extension);
-
   // If the extension has permission to load chrome://favicon/ resources we need
   // to make sure that the DOMUIFavIconSource is registered with the
   // ChromeURLDataManager.
@@ -395,8 +392,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
       extension->id(), extension->api_permissions()));
   render_view_host->Send(new ViewMsg_Extension_SetHostPermissions(
       extension->url(), extension->host_permissions()));
-  render_view_host->Send(new ViewMsg_Extension_ExtensionSetIncognitoEnabled(
-      extension->id(), incognito_enabled, extension->incognito_split_mode()));
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_FUNCTION_DISPATCHER_CREATED,

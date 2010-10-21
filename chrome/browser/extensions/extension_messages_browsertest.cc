@@ -22,15 +22,14 @@ static void DispatchOnConnect(int source_port_id, const std::string& name,
   args.Set(3, Value::CreateStringValue(EventBindings::kTestingExtensionId));
   args.Set(4, Value::CreateStringValue(EventBindings::kTestingExtensionId));
   RendererExtensionBindings::Invoke(
-      ExtensionMessageService::kDispatchOnConnect, args, NULL, false, GURL());
+      "", ExtensionMessageService::kDispatchOnConnect, args, NULL, GURL());
 }
 
 static void DispatchOnDisconnect(int source_port_id) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   RendererExtensionBindings::Invoke(
-      ExtensionMessageService::kDispatchOnDisconnect, args, NULL, false,
-      GURL());
+      "", ExtensionMessageService::kDispatchOnDisconnect, args, NULL, GURL());
 }
 
 static void DispatchOnMessage(const std::string& message, int source_port_id) {
@@ -38,7 +37,7 @@ static void DispatchOnMessage(const std::string& message, int source_port_id) {
   args.Set(0, Value::CreateStringValue(message));
   args.Set(1, Value::CreateIntegerValue(source_port_id));
   RendererExtensionBindings::Invoke(
-      ExtensionMessageService::kDispatchOnMessage, args, NULL, false, GURL());
+      "", ExtensionMessageService::kDispatchOnMessage, args, NULL, GURL());
 }
 
 // Tests that the bindings for opening a channel to an extension and sending

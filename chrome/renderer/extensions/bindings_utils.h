@@ -78,6 +78,10 @@ struct ContextInfo {
   // a valid pointer, and is used for comparisons only.  Do not dereference.
   RenderView* render_view;
 
+  // A map of event names to the number of listeners for that event. We notify
+  // the browser about event listeners when we transition between 0 and 1.
+  std::map<std::string, int> listener_counts;
+
   // A count of the number of events that are listening in this context. When
   // this is zero, |context| will be a weak handle.
   int num_connected_events;

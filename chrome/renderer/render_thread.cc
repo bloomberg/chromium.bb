@@ -551,12 +551,6 @@ void RenderThread::OnExtensionSetHostPermissions(
   ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
 }
 
-void RenderThread::OnExtensionSetIncognitoEnabled(
-    const std::string& extension_id, bool enabled, bool incognito_split_mode) {
-  ExtensionProcessBindings::SetIncognitoEnabled(extension_id, enabled,
-                                                incognito_split_mode);
-}
-
 void RenderThread::OnDOMStorageEvent(
     const ViewMsg_DOMStorageEvent_Params& params) {
   if (!dom_storage_event_dispatcher_.get())
@@ -617,8 +611,6 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetAPIPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
                         OnExtensionSetHostPermissions)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_ExtensionSetIncognitoEnabled,
-                        OnExtensionSetIncognitoEnabled)
     IPC_MESSAGE_HANDLER(ViewMsg_DOMStorageEvent,
                         OnDOMStorageEvent)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
@@ -974,12 +966,12 @@ void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
       this, &RenderThread::IdleHandler);
 }
 
-void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
+void RenderThread::OnExtensionMessageInvoke(const std::string& extension_id,
+                                            const std::string& function_name,
                                             const ListValue& args,
-                                            bool cross_incognito,
                                             const GURL& event_url) {
   RendererExtensionBindings::Invoke(
-      function_name, args, NULL, cross_incognito, event_url);
+      extension_id, function_name, args, NULL, event_url);
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch, for which Invoke is the chokepoint.

@@ -51,18 +51,6 @@ static bool in_unit_tests = false;
 // are disabled.
 static bool bindings_registered = false;
 
-struct ExtensionData {
-  std::map<std::string, int> listener_count;
-};
-int EventIncrementListenerCount(const std::string& event_name) {
-  ExtensionData *data = Singleton<ExtensionData>::get();
-  return ++(data->listener_count[event_name]);
-}
-int EventDecrementListenerCount(const std::string& event_name) {
-  ExtensionData *data = Singleton<ExtensionData>::get();
-  return --(data->listener_count[event_name]);
-}
-
 class ExtensionImpl : public ExtensionBase {
  public:
   ExtensionImpl()
@@ -89,25 +77,25 @@ class ExtensionImpl : public ExtensionBase {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
+      ContextInfo* context_info = GetInfoForCurrentContext();
       std::string event_name(*v8::String::AsciiValue(args[0]));
       bool has_permission =
           ExtensionProcessBindings::CurrentContextHasPermission(event_name);
-
-      // Increment the count even if the caller doesn't have permission, so that
-      // refcounts stay balanced.
-      if (EventIncrementListenerCount(event_name) == 1 && has_permission) {
-        EventBindings::GetRenderThread()->Send(
-            new ViewHostMsg_ExtensionAddListener(event_name));
-      }
-
-      ContextInfo* current_context_info = GetInfoForCurrentContext();
-      if (++current_context_info->num_connected_events == 1)
-        current_context_info->context.ClearWeak();
 
       if (!has_permission) {
         return ExtensionProcessBindings::ThrowPermissionDeniedException(
             event_name);
       }
+
+      if (++context_info->listener_counts[event_name] == 1) {
+        EventBindings::GetRenderThread()->Send(
+            new ViewHostMsg_ExtensionAddListener(context_info->extension_id,
+                                                 event_name));
+      }
+
+      if (++context_info->num_connected_events == 1)
+        context_info->context.ClearWeak();
+
     }
 
     return v8::Undefined();
@@ -119,17 +107,19 @@ class ExtensionImpl : public ExtensionBase {
     DCHECK(args[0]->IsString() || args[0]->IsUndefined());
 
     if (args[0]->IsString()) {
+      ContextInfo* context_info = GetInfoForCurrentContext();
+      if (!context_info)
+        return v8::Undefined();
+
       std::string event_name(*v8::String::AsciiValue(args[0]));
-      if (EventDecrementListenerCount(event_name) == 0) {
+      if (--context_info->listener_counts[event_name] == 0) {
         EventBindings::GetRenderThread()->Send(
-          new ViewHostMsg_ExtensionRemoveListener(event_name));
+            new ViewHostMsg_ExtensionRemoveListener(context_info->extension_id,
+                                                    event_name));
       }
 
-      ContextInfo* current_context_info = GetInfoForCurrentContext();
-      if (current_context_info &&
-          --current_context_info->num_connected_events == 0) {
-        current_context_info->context.MakeWeak(NULL,
-            &ContextWeakReferenceCallback);
+      if (--context_info->num_connected_events == 0) {
+        context_info->context.MakeWeak(NULL, &ContextWeakReferenceCallback);
       }
     }
 
@@ -140,14 +130,8 @@ class ExtensionImpl : public ExtensionBase {
 // Returns true if the extension running in the given |context| has sufficient
 // permissions to access the data.
 static bool HasSufficientPermissions(ContextInfo* context,
-                                     bool cross_incognito,
                                      const GURL& event_url) {
   v8::Context::Scope context_scope(context->context);
-
-  bool cross_profile_ok = (!cross_incognito ||
-      ExtensionProcessBindings::AllowCrossIncognito(context->extension_id));
-  if (!cross_profile_ok)
-    return false;
 
   // During unit tests, we might be invoked without a v8 context. In these
   // cases, we only allow empty event_urls and short-circuit before retrieving
@@ -335,10 +319,10 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 }
 
 // static
-void EventBindings::CallFunction(const std::string& function_name,
+void EventBindings::CallFunction(const std::string& extension_id,
+                                 const std::string& function_name,
                                  int argc, v8::Handle<v8::Value>* argv,
                                  RenderView* render_view,
-                                 bool cross_incognito,
                                  const GURL& event_url) {
   // We copy the context list, because calling into javascript may modify it
   // out from under us. We also guard against deleted contexts by checking if
@@ -350,10 +334,13 @@ void EventBindings::CallFunction(const std::string& function_name,
     if (render_view && render_view != (*it)->render_view)
       continue;
 
+    if (!extension_id.empty() && extension_id != (*it)->extension_id)
+      continue;
+
     if ((*it)->context.IsEmpty())
       continue;
 
-    if (!HasSufficientPermissions(it->get(), cross_incognito, event_url))
+    if (!HasSufficientPermissions(it->get(), event_url))
       continue;
 
     v8::Handle<v8::Value> retval = CallFunctionInContext((*it)->context,

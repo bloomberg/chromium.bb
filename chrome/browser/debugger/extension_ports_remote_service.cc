@@ -238,9 +238,9 @@ bool ExtensionPortsRemoteService::Send(IPC::Message *message) {
 }
 
 void ExtensionPortsRemoteService::OnExtensionMessageInvoke(
+    const std::string& extension_id,
     const std::string& function_name,
     const ListValue& args,
-    bool requires_incognito_access,
     const GURL& event_url) {
   if (function_name == ExtensionMessageService::kDispatchOnMessage) {
     DCHECK_EQ(args.GetSize(), 2u);

@@ -336,10 +336,11 @@ class MockExtensionEventRouter : public ExtensionEventRouter {
   explicit MockExtensionEventRouter(Profile* profile) :
       ExtensionEventRouter(profile) {}
 
-  MOCK_METHOD4(DispatchEventToRenderers, void(const std::string& event_name,
-                                              const std::string& event_args,
-                                              Profile* source_profile,
-                                              const GURL& event_url));
+  MOCK_METHOD5(DispatchEventImpl, void(const std::string& extension_id,
+                                       const std::string& event_name,
+                                       const std::string& event_args,
+                                       Profile* source_profile,
+                                       const GURL& event_url));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockExtensionEventRouter);
@@ -414,15 +415,17 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
       .WillOnce(Return(mock_event_router.get()));
 
   // Use the magic of googlemock to save a parameter to our mock's
-  // DispatchEventToRenderers method into event_args.
+  // DispatchEventImpl method into event_args.
   std::string event_args;
-  std::string expected_event_name = "contextMenus/" + item->extension_id();
+  std::string expected_event_name = "contextMenus";
   EXPECT_CALL(*mock_event_router.get(),
-              DispatchEventToRenderers(expected_event_name, _,
-                                       &profile,
-                                       GURL()))
+              DispatchEventImpl(item->extension_id(),
+                                expected_event_name,
+                                _,
+                                &profile,
+                                GURL()))
       .Times(1)
-      .WillOnce(SaveArg<1>(&event_args));
+      .WillOnce(SaveArg<2>(&event_args));
 
   manager_.ExecuteCommand(&profile, NULL /* tab_contents */, params, id);
 

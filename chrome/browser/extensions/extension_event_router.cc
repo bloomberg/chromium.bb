@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/extensions/extension.h"
@@ -21,26 +22,46 @@ namespace {
 const char kDispatchEvent[] = "Event.dispatchJSON";
 
 static void DispatchEvent(RenderProcessHost* renderer,
+                          const std::string& extension_id,
                           const std::string& event_name,
                           const std::string& event_args,
-                          bool cross_incognito,
                           const GURL& event_url) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
   renderer->Send(new ViewMsg_ExtensionMessageInvoke(MSG_ROUTING_CONTROL,
-      kDispatchEvent, args, cross_incognito, event_url));
+      extension_id, kDispatchEvent, args, event_url));
+}
+
+static bool CanCrossIncognito(Profile* profile,
+                              const std::string& extension_id) {
+  // We allow the extension to see events and data from another profile iff it
+  // uses "spanning" behavior and it has incognito access. "split" mode
+  // extensions only see events for a matching profile.
+  Extension* extension =
+      profile->GetExtensionsService()->GetExtensionById(extension_id, false);
+  return (profile->GetExtensionsService()->IsIncognitoEnabled(extension) &&
+          !extension->incognito_split_mode());
 }
 
 }  // namespace
 
-// static
-std::string ExtensionEventRouter::GetPerExtensionEventName(
-    const std::string& event_name, const std::string& extension_id) {
-  // This should match the method we use in extension_process_binding.js when
-  // setting up the corresponding chrome.Event object.
-  return event_name + "/" + extension_id;
-}
+struct ExtensionEventRouter::EventListener {
+  RenderProcessHost* process;
+  std::string extension_id;
+
+  explicit EventListener(RenderProcessHost* process,
+                         const std::string& extension_id)
+      : process(process), extension_id(extension_id) {}
+
+  bool operator<(const EventListener& that) const {
+    if (process < that.process)
+      return true;
+    if (process == that.process && extension_id < that.extension_id)
+      return true;
+    return false;
+  }
+};
 
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
     : profile_(profile),
@@ -56,14 +77,14 @@ ExtensionEventRouter::~ExtensionEventRouter() {
 
 void ExtensionEventRouter::AddEventListener(
     const std::string& event_name,
-    int render_process_id) {
-  DCHECK_EQ(listeners_[event_name].count(render_process_id), 0u) << event_name;
-  listeners_[event_name].insert(render_process_id);
+    RenderProcessHost* process,
+    const std::string& extension_id) {
+  EventListener listener(process, extension_id);
+  DCHECK_EQ(listeners_[event_name].count(listener), 0u) << event_name;
+  listeners_[event_name].insert(listener);
 
-  if (extension_devtools_manager_.get()) {
-    extension_devtools_manager_->AddEventListener(event_name,
-                                                  render_process_id);
-  }
+  if (extension_devtools_manager_.get())
+    extension_devtools_manager_->AddEventListener(event_name, process->id());
 
   // We lazily tell the TaskManager to start updating when listeners to the
   // processes.onUpdated event arrive.
@@ -73,15 +94,16 @@ void ExtensionEventRouter::AddEventListener(
 
 void ExtensionEventRouter::RemoveEventListener(
     const std::string& event_name,
-    int render_process_id) {
-  DCHECK_EQ(listeners_[event_name].count(render_process_id), 1u) <<
-      " PID=" << render_process_id << " event=" << event_name;
-  listeners_[event_name].erase(render_process_id);
+    RenderProcessHost* process,
+    const std::string& extension_id) {
+  EventListener listener(process, extension_id);
+  DCHECK_EQ(listeners_[event_name].count(listener), 1u) <<
+      " PID=" << process->id() << " extension=" << extension_id <<
+      " event=" << event_name;
+  listeners_[event_name].erase(listener);
 
-  if (extension_devtools_manager_.get()) {
-    extension_devtools_manager_->RemoveEventListener(event_name,
-                                                     render_process_id);
-  }
+  if (extension_devtools_manager_.get())
+    extension_devtools_manager_->RemoveEventListener(event_name, process->id());
 
   // If a processes.onUpdated event listener is removed (or a process with one
   // exits), then we let the TaskManager know that it has one fewer listener.
@@ -94,7 +116,38 @@ bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {
           !listeners_[event_name].empty());
 }
 
+bool ExtensionEventRouter::ExtensionHasEventListener(
+    const std::string& extension_id, const std::string& event_name) {
+  ListenerMap::iterator it = listeners_.find(event_name);
+  if (it == listeners_.end())
+    return false;
+
+  std::set<EventListener>& listeners = it->second;
+  for (std::set<EventListener>::iterator listener = listeners.begin();
+       listener != listeners.end(); ++listener) {
+    if (listener->extension_id == extension_id)
+      return true;
+  }
+  return false;
+}
+
 void ExtensionEventRouter::DispatchEventToRenderers(
+    const std::string& event_name, const std::string& event_args,
+    Profile* restrict_to_profile, const GURL& event_url) {
+  DispatchEventImpl("", event_name, event_args, restrict_to_profile, event_url);
+}
+
+void ExtensionEventRouter::DispatchEventToExtension(
+    const std::string& extension_id,
+    const std::string& event_name, const std::string& event_args,
+    Profile* restrict_to_profile, const GURL& event_url) {
+  DCHECK(!extension_id.empty());
+  DispatchEventImpl(extension_id, event_name, event_args, restrict_to_profile,
+                    event_url);
+}
+
+void ExtensionEventRouter::DispatchEventImpl(
+    const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
     Profile* restrict_to_profile, const GURL& event_url) {
   if (!profile_)
@@ -107,33 +160,30 @@ void ExtensionEventRouter::DispatchEventToRenderers(
   if (it == listeners_.end())
     return;
 
-  std::set<int>& pids = it->second;
+  std::set<EventListener>& listeners = it->second;
 
   // Send the event only to renderers that are listening for it.
-  for (std::set<int>::iterator pid = pids.begin(); pid != pids.end(); ++pid) {
-    RenderProcessHost* renderer = RenderProcessHost::FromID(*pid);
-    if (!renderer)
-      continue;
+  for (std::set<EventListener>::iterator listener = listeners.begin();
+       listener != listeners.end(); ++listener) {
     if (!ChildProcessSecurityPolicy::GetInstance()->
-            HasExtensionBindings(*pid)) {
+            HasExtensionBindings(listener->process->id())) {
       // Don't send browser-level events to unprivileged processes.
       continue;
     }
 
+    if (!extension_id.empty() && extension_id != listener->extension_id)
+      continue;
+
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).
-    bool cross_incognito =
-        restrict_to_profile && renderer->profile() != restrict_to_profile;
-    DispatchEvent(renderer, event_name, event_args, cross_incognito, event_url);
-  }
-}
+    bool cross_incognito = restrict_to_profile &&
+        listener->process->profile() != restrict_to_profile;
+    if (cross_incognito && !CanCrossIncognito(profile_, listener->extension_id))
+      continue;
 
-void ExtensionEventRouter::DispatchEventToExtension(
-    const std::string& extension_id,
-    const std::string& event_name, const std::string& event_args,
-    Profile* restrict_to_profile, const GURL& event_url) {
-  DispatchEventToRenderers(GetPerExtensionEventName(event_name, extension_id),
-                           event_args, restrict_to_profile, event_url);
+    DispatchEvent(listener->process, listener->extension_id,
+                  event_name, event_args, event_url);
+  }
 }
 
 void ExtensionEventRouter::Observe(NotificationType type,
@@ -146,9 +196,16 @@ void ExtensionEventRouter::Observe(NotificationType type,
       // Remove all event listeners associated with this renderer
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {
-        ListenerMap::iterator current = it++;
-        if (current->second.count(renderer->id()) != 0)
-          RemoveEventListener(current->first, renderer->id());
+        ListenerMap::iterator current_it = it++;
+        for (std::set<EventListener>::iterator jt = current_it->second.begin();
+             jt != current_it->second.end(); ) {
+          std::set<EventListener>::iterator current_jt = jt++;
+          if (current_jt->process == renderer) {
+            RemoveEventListener(current_it->first,
+                                current_jt->process,
+                                current_jt->extension_id);
+          }
+        }
       }
       break;
     }

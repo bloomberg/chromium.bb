@@ -41,10 +41,10 @@ class EventBindings {
   // bindings_utils::CallFunctionInContext for more details.
   // The called javascript function should not return a value other than
   // v8::Undefined(). A DCHECK is setup to break if it is otherwise.
-  static void CallFunction(const std::string& function_name, int argc,
-                           v8::Handle<v8::Value>* argv,
+  static void CallFunction(const std::string& extension_id,
+                           const std::string& function_name,
+                           int argc, v8::Handle<v8::Value>* argv,
                            RenderView* render_view,
-                           bool cross_incognito,
                            const GURL& event_url);
 };
 

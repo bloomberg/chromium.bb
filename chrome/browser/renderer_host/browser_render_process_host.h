@@ -108,8 +108,10 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Control message handlers.
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void SuddenTerminationChanged(bool enabled);
-  void OnExtensionAddListener(const std::string& event_name);
-  void OnExtensionRemoveListener(const std::string& event_name);
+  void OnExtensionAddListener(const std::string& extension_id,
+                              const std::string& event_name);
+  void OnExtensionRemoveListener(const std::string& extension_id,
+                                 const std::string& event_name);
   void OnExtensionCloseChannel(int port_id);
 
   // Initialize support for visited links. Send the renderer process its initial

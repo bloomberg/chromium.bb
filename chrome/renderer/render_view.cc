@@ -4947,12 +4947,12 @@ void RenderView::OnExtensionResponse(int request_id,
       request_id, success, response, error);
 }
 
-void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
+void RenderView::OnExtensionMessageInvoke(const std::string& extension_id,
+                                          const std::string& function_name,
                                           const ListValue& args,
-                                          bool cross_incognito,
                                           const GURL& event_url) {
   RendererExtensionBindings::Invoke(
-      function_name, args, this, cross_incognito, event_url);
+      extension_id, function_name, args, this, event_url);
 }
 
 // Dump all load time histograms.
