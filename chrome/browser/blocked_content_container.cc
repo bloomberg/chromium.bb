@@ -39,8 +39,8 @@ void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
                                              bool user_gesture) {
   if (blocked_contents_.size() == (kImpossibleNumberOfPopups - 1)) {
     delete tab_contents;
-    LOG(INFO) << "Warning: Renderer is sending more popups to us than should "
-        "be possible. Renderer compromised?";
+    VLOG(1) << "Warning: Renderer is sending more popups to us than should be "
+               "possible. Renderer compromised?";
     return;
   }
 

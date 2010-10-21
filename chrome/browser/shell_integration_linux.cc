@@ -279,9 +279,9 @@ bool ShellIntegration::GetDesktopShortcutTemplate(
   for (std::vector<FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
     FilePath path = (*i).Append(template_filename);
-    LOG(INFO) << "Looking for desktop file template in " << path.value();
+    VLOG(1) << "Looking for desktop file template in " << path.value();
     if (file_util::PathExists(path)) {
-      LOG(INFO) << "Found desktop file template at " << path.value();
+      VLOG(1) << "Found desktop file template at " << path.value();
       return file_util::ReadFileToString(path, output);
     }
   }

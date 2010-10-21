@@ -986,7 +986,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
         base::Int64ToString(aggregate.working_set.shareable)));
   }
   if (log_string.length() > 0)
-    LOG(INFO) << "memory: " << log_string;
+    VLOG(1) << "memory: " << log_string;
 
   // Set the browser & renderer detailed process data.
   DictionaryValue* browser_data = new DictionaryValue();

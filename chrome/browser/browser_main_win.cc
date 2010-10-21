@@ -92,15 +92,15 @@ int DoUninstallTasks(bool chrome_still_running) {
 
   if (ret != ResultCodes::UNINSTALL_USER_CANCEL) {
     // The following actions are just best effort.
-    LOG(INFO) << "Executing uninstall actions";
+    VLOG(1) << "Executing uninstall actions";
     if (!FirstRun::RemoveSentinel())
-      LOG(INFO) << "Failed to delete sentinel file.";
+      VLOG(1) << "Failed to delete sentinel file.";
     // We want to remove user level shortcuts and we only care about the ones
     // created by us and not by the installer so |alternate| is false.
     if (!ShellUtil::RemoveChromeDesktopShortcut(ShellUtil::CURRENT_USER, false))
-      LOG(INFO) << "Failed to delete desktop shortcut.";
+      VLOG(1) << "Failed to delete desktop shortcut.";
     if (!ShellUtil::RemoveChromeQuickLaunchShortcut(ShellUtil::CURRENT_USER))
-      LOG(INFO) << "Failed to delete quick launch shortcut.";
+      VLOG(1) << "Failed to delete quick launch shortcut.";
   }
   return ret;
 }

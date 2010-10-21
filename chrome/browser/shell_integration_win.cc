@@ -278,7 +278,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
     return false;
   }
 
-  LOG(INFO) << "Chrome registered as default browser.";
+  VLOG(1) << "Chrome registered as default browser.";
   return true;
 }
 

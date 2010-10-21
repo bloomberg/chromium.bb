@@ -100,9 +100,7 @@ bool OptionsUtil::ResolveMetricsReportingEnabled(bool enabled) {
   bool update_pref = GoogleUpdateSettings::GetCollectStatsConsent();
 
   if (enabled != update_pref) {
-    DLOG(INFO) <<
-        "OptionsUtil: Unable to set crash report status to " <<
-        enabled;
+    DVLOG(1) << "OptionsUtil: Unable to set crash report status to " << enabled;
   }
 
   // Only change the pref if GoogleUpdateSettings::GetCollectStatsConsent

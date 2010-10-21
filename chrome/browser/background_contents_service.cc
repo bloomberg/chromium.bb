@@ -153,7 +153,7 @@ void BackgroundContentsService::CreateBackgroundContents(
   DCHECK(!GetAppBackgroundContents(application_id));
   DCHECK(!application_id.empty());
   DCHECK(url.is_valid());
-  DLOG(INFO) << "Loading background content url: " << url;
+  DVLOG(1) << "Loading background content url: " << url;
 
   // Check to make sure that the parent extension is still enabled.
   ExtensionsService* extensions_service = profile->GetExtensionsService();
@@ -165,8 +165,8 @@ void BackgroundContentsService::CreateBackgroundContents(
     // to become uninstalled without the associated BackgroundContents being
     // unregistered via the EXTENSIONS_UNLOADED notification, unless there's a
     // crash before we could save our prefs.
-    NOTREACHED() << "No extension found for BackgroundContents - id = " <<
-        application_id;
+    NOTREACHED() << "No extension found for BackgroundContents - id = "
+                 << application_id;
     return;
   }
 

@@ -108,7 +108,7 @@ void ShutdownDetector::ThreadMain() {
     bytes_read += ret;
   } while (bytes_read < sizeof(signal));
 
-  LOG(INFO) << "Handling shutdown for signal " << signal << ".";
+  VLOG(1) << "Handling shutdown for signal " << signal << ".";
 
   if (!BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

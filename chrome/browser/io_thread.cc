@@ -130,7 +130,7 @@ class LoggingNetworkChangeObserver
   }
 
   virtual void OnIPAddressChanged() {
-    LOG(INFO) << "Observed a change to the network IP addresses";
+    VLOG(1) << "Observed a change to the network IP addresses";
 
     net_log_->AddEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED,
                        base::TimeTicks::Now(),

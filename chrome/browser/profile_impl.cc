@@ -940,8 +940,8 @@ void ProfileImpl::CreatePasswordStore() {
   } else if (store_type == "detect") {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     desktop_env = base::nix::GetDesktopEnvironment(env.get());
-    LOG(INFO) << "Password storage detected desktop environment: " <<
-              base::nix::GetDesktopEnvironmentName(desktop_env);
+    VLOG(1) << "Password storage detected desktop environment: "
+            << base::nix::GetDesktopEnvironmentName(desktop_env);
   } else {
     // TODO(mdm): If the flag is not given, or has an unknown value, use the
     // default store for now. Once we're confident in the other stores, we can
@@ -952,26 +952,26 @@ void ProfileImpl::CreatePasswordStore() {
   scoped_ptr<PasswordStoreX::NativeBackend> backend;
   if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
     // KDE3 didn't use DBus, which our KWallet store uses.
-    LOG(INFO) << "Trying KWallet for password storage.";
+    VLOG(1) << "Trying KWallet for password storage.";
     backend.reset(new NativeBackendKWallet());
     if (backend->Init())
-      LOG(INFO) << "Using KWallet for password storage.";
+      VLOG(1) << "Using KWallet for password storage.";
     else
       backend.reset();
   } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
 #if defined(USE_GNOME_KEYRING)
-    LOG(INFO) << "Trying GNOME keyring for password storage.";
+    VLOG(1) << "Trying GNOME keyring for password storage.";
     backend.reset(new NativeBackendGnome());
     if (backend->Init())
-      LOG(INFO) << "Using GNOME keyring for password storage.";
+      VLOG(1) << "Using GNOME keyring for password storage.";
     else
       backend.reset();
 #endif  // defined(USE_GNOME_KEYRING)
   }
   // TODO(mdm): this can change to a WARNING when we detect by default.
   if (!backend.get())
-    LOG(INFO) << "Using default (unencrypted) store for password storage.";
+    VLOG(1) << "Using default (unencrypted) store for password storage.";
 
   ps = new PasswordStoreX(login_db, this,
                           GetWebDataService(Profile::IMPLICIT_ACCESS),

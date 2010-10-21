@@ -243,7 +243,7 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
   if (msg.substr(0, first_null) == L"START") {
     // Another instance is starting parse the command line & do what it would
     // have done.
-    LOG(INFO) << "Handling STARTUP request from another process";
+    VLOG(1) << "Handling STARTUP request from another process";
     const std::wstring::size_type second_null =
       msg.find_first_of(L'\0', first_null + 1);
     if (second_null == std::wstring::npos ||

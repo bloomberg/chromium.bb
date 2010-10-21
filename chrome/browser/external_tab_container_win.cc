@@ -1092,7 +1092,7 @@ TemporaryPopupExternalTabContainer::TemporaryPopupExternalTabContainer(
 }
 
 TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
-  DLOG(INFO) << __FUNCTION__;
+  DVLOG(1) << __FUNCTION__;
 }
 
 void TemporaryPopupExternalTabContainer::OpenURLFromTab(

@@ -1192,7 +1192,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       !parsed_command_line.HasSwitch(switches::kLoginPassword)) {
     std::string username =
         parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
-    LOG(INFO) << "Relaunching browser for user: " << username;
+    VLOG(1) << "Relaunching browser for user: " << username;
     chromeos::UserManager::Get()->UserLoggedIn(username);
 
     // Redirect logs.

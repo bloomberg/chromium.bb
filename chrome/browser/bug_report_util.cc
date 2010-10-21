@@ -145,18 +145,18 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
   if (response_code == kHttpPostSuccessNoContent) {
     error_stream << "Success";
   } else if (response_code == kHttpPostFailNoConnection) {
-        error_stream << "No connection to server.";
+    error_stream << "No connection to server.";
   } else if ((response_code > kHttpPostFailClientError) &&
       (response_code < kHttpPostFailServerError)) {
-        error_stream << "Client error: HTTP response code " << response_code;
+    error_stream << "Client error: HTTP response code " << response_code;
   } else if (response_code > kHttpPostFailServerError) {
-        error_stream << "Server error: HTTP response code " << response_code;
+    error_stream << "Server error: HTTP response code " << response_code;
   } else {
-        error_stream << "Unknown error: HTTP response code " << response_code;
+    error_stream << "Unknown error: HTTP response code " << response_code;
   }
 
-  LOG(WARNING) << "Submission to feedback server (" << url <<
-      ") status: " << error_stream.str() << std::endl;
+  LOG(WARNING) << "Submission to feedback server (" << url
+               << ") status: " << error_stream.str();
 
 #if defined(OS_CHROMEOS)
   // Show the notification to the user; this notification will stay active till
