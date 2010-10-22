@@ -446,18 +446,12 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
   } else if (LowerCaseEqualsASCII(method(), "put")) {
     bind_info->dwBindVerb = BINDVERB_PUT;
     upload_data = true;
-  } else if (LowerCaseEqualsASCII(method(), "head") ||
-             LowerCaseEqualsASCII(method(), "delete")) {
+  } else {
     std::wstring verb(ASCIIToWide(StringToUpperASCII(method())));
     bind_info->dwBindVerb = BINDVERB_CUSTOM;
     bind_info->szCustomVerb = reinterpret_cast<wchar_t*>(
         ::CoTaskMemAlloc((verb.length() + 1) * sizeof(wchar_t)));
     lstrcpyW(bind_info->szCustomVerb, verb.c_str());
-  } else {
-    NOTREACHED() << "Unknown HTTP method.";
-    status_.set_result(URLRequestStatus::FAILED, net::ERR_METHOD_NOT_SUPPORTED);
-    NotifyDelegateAndDie();
-    return E_FAIL;
   }
 
   if (upload_data) {
