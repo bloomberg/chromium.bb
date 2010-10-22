@@ -249,17 +249,6 @@
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
 # e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
 {
-  bug_38293
-  Heapcheck:Leak
-  ...
-  fun:ScopedRunnableMethodFactory::NewRunnableMethod
-  fun:BookmarkBarGtk::BookmarkNodeAdded
-  fun:BookmarkModel::AddNode
-  fun:BookmarkModel::AddURLWithCreationTime
-  fun:BookmarkModel::AddURL
-  fun:BookmarkBarGtkUnittest_*
-}
-{
   bug_38305
   Heapcheck:Leak
   fun:browser_sync::UIModelWorker::DoWorkAndWaitUntilDone

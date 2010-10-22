@@ -41,11 +41,12 @@ class BookmarkBarGtkUnittest : public ::testing::Test {
   }
 
   virtual void TearDown() {
+    message_loop_.RunAllPending();
+
     bookmark_bar_.reset();
     origin_provider_.reset();
     browser_.reset();
     profile_.reset();
-    message_loop_.RunAllPending();
   }
 
   MessageLoopForUI message_loop_;
