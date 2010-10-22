@@ -145,6 +145,8 @@
         'controls/menu/native_menu_gtk.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',
+        'controls/menu/nested_dispatcher_gtk.cc',
+        'controls/menu/nested_dispatcher_gtk.h',
         'controls/menu/radio_button_image_gtk.cc',
         'controls/menu/radio_button_image_gtk.h',
         'controls/menu/submenu_view.cc',

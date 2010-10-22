@@ -20,8 +20,12 @@
 #include "gfx/rect.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/native_menu_gtk.h"
+#include "views/controls/menu/nested_dispatcher_gtk.h"
 
 namespace {
+
+using chromeos::NativeMenuDOMUI;
+using chromeos::DOMUIMenuWidget;
 
 // Returns true if the menu item type specified can be executed as a command.
 bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
@@ -31,9 +35,11 @@ bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
 }
 
 gboolean Destroy(GtkWidget* widget, gpointer data) {
-  chromeos::NativeMenuDOMUI* domui_menu =
-      static_cast<chromeos::NativeMenuDOMUI*>(data);
-  domui_menu->Hide();
+  DOMUIMenuWidget* menu_widget = static_cast<DOMUIMenuWidget*>(data);
+  NativeMenuDOMUI* domui_menu = menu_widget->domui_menu();
+  // domui_menu can be NULL if widget is destroyed by signal.
+  if (domui_menu)
+    domui_menu->Hide();
   return true;
 }
 
@@ -51,7 +57,7 @@ gfx::NativeWindow FindActiveToplevelWindow() {
 }
 
 // Currently opened menu. See RunMenuAt for reason why we need this.
-chromeos::NativeMenuDOMUI* current_ = NULL;
+NativeMenuDOMUI* current_ = NULL;
 
 }  // namespace
 
@@ -83,7 +89,8 @@ NativeMenuDOMUI::NativeMenuDOMUI(menus::MenuModel* menu_model, bool root)
       activated_index_(-1),
       menu_action_(MENU_ACTION_NONE),
       menu_url_(StringPrintf("chrome://%s", chrome::kChromeUIMenu)),
-      on_menu_opened_called_(false) {
+      on_menu_opened_called_(false),
+      nested_dispatcher_(NULL) {
   menu_widget_ = new DOMUIMenuWidget(this, root);
   // Set the initial location off the screen not to show small
   // window with dropshadow.
@@ -91,7 +98,12 @@ NativeMenuDOMUI::NativeMenuDOMUI(menus::MenuModel* menu_model, bool root)
 }
 
 NativeMenuDOMUI::~NativeMenuDOMUI() {
-  DCHECK(!menu_shown_) << "Deleting while the menu is shown";
+  if (nested_dispatcher_) {
+    // Menu is destroyed while its in message loop.
+    // Let nested dispatcher know the creator is deleted.
+    nested_dispatcher_->CreatorDestroyed();
+    Hide();
+  }
   if (menu_widget_) {
     menu_widget_->Close();
     menu_widget_ = NULL;
@@ -141,15 +153,20 @@ void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
   if (parent) {
     handle = g_signal_connect(G_OBJECT(parent), "destroy",
                               G_CALLBACK(&Destroy),
-                              this);
+                              menu_widget_);
   }
-
   // We need to turn on nestable tasks as a renderer uses tasks internally.
   // Without this, renderer cannnot finish loading page.
-  bool nestable = MessageLoopForUI::current()->NestableTasksAllowed();
-  MessageLoopForUI::current()->SetNestableTasksAllowed(true);
-  MessageLoopForUI::current()->Run(this);
-  MessageLoopForUI::current()->SetNestableTasksAllowed(nestable);
+  nested_dispatcher_ =
+      new views::NestedDispatcherGtk(this, true /* allow nested */);
+  bool deleted = nested_dispatcher_->RunAndSelfDestruct();
+  current_ = NULL;  // this is static and safe to access.
+  if (deleted) {
+    // The menu was destryed while menu is shown, so return immediately.
+    // Don't touch the instance which is already deleted.
+    return;
+  }
+  nested_dispatcher_ = NULL;
   if (menu_shown_) {
     // If this happens it means we haven't yet gotten the hide signal and
     // someone else quit the message loop on us.
@@ -162,7 +179,6 @@ void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
   menu_widget_->Hide();
   // Close All submenus.
   submenu_.reset();
-  current_ = NULL;
   ProcessActivate();
 }
 
@@ -359,7 +375,8 @@ void NativeMenuDOMUI::ShowAt(MenuLocator* locator) {
 NativeMenuDOMUI* NativeMenuDOMUI::FindMenuAt(const gfx::Point& point) {
   if (submenu_.get()) {
     NativeMenuDOMUI* found = submenu_->FindMenuAt(point);
-    if (found) return found;
+    if (found)
+      return found;
   }
   gfx::Rect bounds;
   menu_widget_->GetBounds(&bounds, false);

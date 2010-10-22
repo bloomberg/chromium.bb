@@ -21,6 +21,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
+#include "views/controls/menu/nested_dispatcher_gtk.h"
 
 namespace {
 
@@ -63,10 +64,16 @@ NativeMenuGtk::NativeMenuGtk(Menu2* menu)
       activated_index_(-1),
       activate_factory_(this),
       host_menu_(menu),
-      menu_action_(MENU_ACTION_NONE) {
+      menu_action_(MENU_ACTION_NONE),
+      nested_dispatcher_(NULL) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
+  if (nested_dispatcher_) {
+    // Menu is destroyed while its in message loop.
+    // Let nested dispatcher know the creator is deleted.
+    nested_dispatcher_->CreatorDestroyed();
+  }
   if (menu_) {
     // Don't call MenuDestroyed because menu2 has already been destroyed.
     g_signal_handler_disconnect(menu_, destroy_handler_id_);
@@ -104,7 +111,14 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
                        G_CALLBACK(OnMenuMoveCurrentThunk), this);
 
   // Block until menu is no longer shown by running a nested message loop.
-  MessageLoopForUI::current()->Run(this);
+  nested_dispatcher_ = new NestedDispatcherGtk(this, false);
+  bool deleted = nested_dispatcher_->RunAndSelfDestruct();
+  if (deleted) {
+    // The menu was destryed while menu is shown, so return immediately.
+    // Don't touch the instance which is already deleted.
+    return;
+  }
+  nested_dispatcher_ = NULL;
   if (!menu_hidden_) {
     // If this happens it means we haven't yet gotten the hide signal and
     // someone else quit the message loop on us.

@@ -21,6 +21,8 @@ class MenuModel;
 
 namespace views {
 
+class NestedDispatcherGtk;
+
 // A Gtk implementation of MenuWrapper.
 //
 // NOTE: On windows the activate message is not sent immediately when an item
@@ -135,6 +137,11 @@ class NativeMenuGtk : public MenuWrapper,
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<MenuListener*> listeners_;
+
+  // Nested dispatcher object that can outlive this object.
+  // This is to deal with the menu being deleted while the nested
+  // message loop is handled. see http://crosbug.com/7228 .
+  NestedDispatcherGtk* nested_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };
