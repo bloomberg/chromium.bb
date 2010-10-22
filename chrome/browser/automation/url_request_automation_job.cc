@@ -54,7 +54,7 @@ URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
       redirect_status_(0),
       request_id_(request_id),
       is_pending_(is_pending) {
-  DLOG(INFO) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
+  DVLOG(1) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
   DCHECK(message_filter_ != NULL);
 
   if (message_filter_) {
@@ -64,7 +64,7 @@ URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
 }
 
 URLRequestAutomationJob::~URLRequestAutomationJob() {
-  DLOG(INFO) << "URLRequestAutomationJob delete. Count: " << --instance_count_;
+  DVLOG(1) << "URLRequestAutomationJob delete. Count: " << --instance_count_;
   Cleanup();
 }
 
@@ -148,8 +148,8 @@ void URLRequestAutomationJob::Kill() {
 
 bool URLRequestAutomationJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int* bytes_read) {
-  DLOG(INFO) << "URLRequestAutomationJob: " <<
-      request_->url().spec() << " - read pending: " << buf_size;
+  DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
+           << " - read pending: " << buf_size;
 
   // We should not receive a read request for a pending job.
   DCHECK(!is_pending());
@@ -259,8 +259,8 @@ void URLRequestAutomationJob::OnMessage(const IPC::Message& message) {
 
 void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     const IPC::AutomationURLResponse& response) {
-  DLOG(INFO) << "URLRequestAutomationJob: " <<
-      request_->url().spec() << " - response started.";
+  DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
+           << " - response started.";
   set_expected_content_size(response.content_length);
   mime_type_ = response.mime_type;
 
@@ -279,8 +279,8 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
 
 void URLRequestAutomationJob::OnDataAvailable(
     int tab, int id, const std::string& bytes) {
-  DLOG(INFO) << "URLRequestAutomationJob: " <<
-      request_->url().spec() << " - data available, Size: " << bytes.size();
+  DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
+           << " - data available, Size: " << bytes.size();
   DCHECK(!bytes.empty());
 
   // The request completed, and we have all the data.
@@ -307,8 +307,8 @@ void URLRequestAutomationJob::OnRequestEnd(
   std::string url;
   if (request_)
     url = request_->url().spec();
-  DLOG(INFO) << "URLRequestAutomationJob: "
-      << url << " - request end. Status: " << status.status();
+  DVLOG(1) << "URLRequestAutomationJob: " << url << " - request end. Status: "
+           << status.status();
 #endif
 
   // TODO(tommi): When we hit certificate errors, notify the delegate via
@@ -362,8 +362,8 @@ void URLRequestAutomationJob::Cleanup() {
 }
 
 void URLRequestAutomationJob::StartAsync() {
-  DLOG(INFO) << "URLRequestAutomationJob: start request: " <<
-      (request_ ? request_->url().spec() : "NULL request");
+  DVLOG(1) << "URLRequestAutomationJob: start request: "
+           << (request_ ? request_->url().spec() : "NULL request");
 
   // If the job is cancelled before we got a chance to start it
   // we have nothing much to do here.
@@ -411,8 +411,8 @@ void URLRequestAutomationJob::StartAsync() {
   // The referrer header must be suppressed if the preceding URL was
   // a secure one and the new one is not.
   if (referrer.SchemeIsSecure() && !request_->url().SchemeIsSecure()) {
-    DLOG(INFO) <<
-        "Suppressing referrer header since going from secure to non-secure";
+    DVLOG(1) << "Suppressing referrer header since going from secure to "
+                "non-secure";
     referrer = GURL();
   }
 

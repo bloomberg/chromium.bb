@@ -45,7 +45,7 @@ class AutomationCookieStore : public net::CookieStore {
   }
 
   virtual ~AutomationCookieStore() {
-    DLOG(INFO) << "In " << __FUNCTION__;
+    DVLOG(1) << "In " << __FUNCTION__;
   }
 
   // CookieStore implementation.
@@ -318,7 +318,7 @@ void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
                                                    renderer_id)));
 
   if (automation_details_iter == filtered_render_views_.Get().end()) {
-    LOG(INFO) << "UnRegisterRenderViewInIOThread: already unregistered";
+    VLOG(1) << "UnRegisterRenderViewInIOThread: already unregistered";
     return;
   }
 

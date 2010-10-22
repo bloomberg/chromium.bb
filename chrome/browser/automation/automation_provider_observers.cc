@@ -854,7 +854,7 @@ void FindInPageNotificationObserver::Observe(
     const NotificationDetails& details) {
   Details<FindNotificationDetails> find_details(details);
   if (!(find_details->final_update() && reply_message_ != NULL)) {
-    DLOG(INFO) << "Ignoring, since we only care about the final message";
+    DVLOG(1) << "Ignoring, since we only care about the final message";
     return;
   }
   // We get multiple responses and one of those will contain the ordinal.

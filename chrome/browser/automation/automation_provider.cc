@@ -434,7 +434,7 @@ void AutomationProvider::HandleUnused(const IPC::Message& message, int handle) {
 }
 
 void AutomationProvider::OnChannelError() {
-  LOG(INFO) << "AutomationProxy went away, shutting down app.";
+  VLOG(1) << "AutomationProxy went away, shutting down app.";
   AutomationProviderList::GetInstance()->RemoveProvider(this);
 }
 
