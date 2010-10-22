@@ -104,7 +104,7 @@ void PepperFileMessageFilter::OnMessageReceivedFileThread(
   }
 }
 
-void PepperFileMessageFilter::OnDestruct() const {
+void PepperFileMessageFilter::OnDestruct() {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 

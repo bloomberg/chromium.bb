@@ -33,8 +33,7 @@ class URLRequestContextGetter
   // Returns a MessageLoopProxy corresponding to the thread on which the
   // request IO happens (the thread on which the returned URLRequestContext
   // may be used).
-  virtual scoped_refptr<base::MessageLoopProxy>
-      GetIOMessageLoopProxy() const = 0;
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() = 0;
 
   // Controls whether or not the URLRequestContextGetter considers itself to be
   // the the "main" URLRequestContextGetter.  Note that each Profile will have a
@@ -45,7 +44,7 @@ class URLRequestContextGetter
   void set_is_main(bool is_main) { is_main_ = is_main; }
 
  protected:
-  friend class DeleteTask<const URLRequestContextGetter>;
+  friend class DeleteTask<URLRequestContextGetter>;
   friend struct URLRequestContextGetterTraits;
 
   URLRequestContextGetter();
@@ -56,7 +55,7 @@ class URLRequestContextGetter
  private:
   // OnDestruct is meant to ensure deletion on the thread on which the request
   // IO happens.
-  void OnDestruct() const;
+  void OnDestruct();
 
   // Indicates whether or not this is the default URLRequestContextGetter for
   // the main Profile.
@@ -64,7 +63,7 @@ class URLRequestContextGetter
 };
 
 struct URLRequestContextGetterTraits {
-  static void Destruct(const URLRequestContextGetter* context_getter) {
+  static void Destruct(URLRequestContextGetter* context_getter) {
     context_getter->OnDestruct();
   }
 };

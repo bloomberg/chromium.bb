@@ -37,7 +37,7 @@ class PepperFileMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual void OnChannelError();
   virtual void OnChannelClosing();
   virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnDestruct() const;
+  virtual void OnDestruct();
 
   // Called from the FILE thread.
   void Send(IPC::Message* message);

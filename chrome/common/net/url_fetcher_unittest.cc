@@ -34,7 +34,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestURLRequestContext();
     return context_;
   }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
     return io_message_loop_proxy_;
   }
 
@@ -199,7 +199,7 @@ class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
     }
     return context_;
   }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
     return io_message_loop_proxy_;
   }
   void WaitForContextCreation() {

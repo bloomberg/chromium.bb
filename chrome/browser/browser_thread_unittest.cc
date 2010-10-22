@@ -11,7 +11,7 @@
 
 class BrowserThreadTest : public testing::Test {
  public:
-  void Release() const {
+  void Release() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
   }
@@ -77,9 +77,7 @@ class BrowserThreadTest : public testing::Test {
  private:
   scoped_ptr<BrowserThread> ui_thread_;
   scoped_ptr<BrowserThread> file_thread_;
-  // It's kind of ugly to make this mutable - solely so we can post the Quit
-  // Task from Release(). This should be fixed.
-  mutable MessageLoop loop_;
+  MessageLoop loop_;
 };
 
 TEST_F(BrowserThreadTest, PostTask) {

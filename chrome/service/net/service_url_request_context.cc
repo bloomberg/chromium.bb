@@ -64,15 +64,14 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
           g_service_process->io_thread()->message_loop_proxy()) {
 }
 
-URLRequestContext*
-ServiceURLRequestContextGetter::GetURLRequestContext() {
+URLRequestContext* ServiceURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_)
     url_request_context_ = new ServiceURLRequestContext();
   return url_request_context_;
 }
 
 scoped_refptr<base::MessageLoopProxy>
-ServiceURLRequestContextGetter::GetIOMessageLoopProxy() const {
+ServiceURLRequestContextGetter::GetIOMessageLoopProxy() {
   return io_message_loop_proxy_;
 }
 
