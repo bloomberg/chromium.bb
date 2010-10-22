@@ -13,7 +13,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigation) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationEvents) {
+// This test is flaky: http://crbug.com/60229
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_WebNavigationEvents) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
