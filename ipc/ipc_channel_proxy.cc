@@ -54,7 +54,7 @@ bool ChannelProxy::MessageFilter::OnMessageReceived(const Message& message) {
   return false;
 }
 
-void ChannelProxy::MessageFilter::OnDestruct() {
+void ChannelProxy::MessageFilter::OnDestruct() const {
   delete this;
 }
 

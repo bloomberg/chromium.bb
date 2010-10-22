@@ -59,7 +59,7 @@ class ServiceURLRequestContextGetter : public URLRequestContextGetter {
   ServiceURLRequestContextGetter();
 
   virtual URLRequestContext* GetURLRequestContext();
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy();
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
   void set_user_agent(const std::string& ua) {
     user_agent_ = ua;

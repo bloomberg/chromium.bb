@@ -532,7 +532,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-void ResourceMessageFilter::OnDestruct() {
+void ResourceMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
