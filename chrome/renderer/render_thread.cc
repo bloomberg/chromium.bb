@@ -910,7 +910,7 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableGeolocation));
 
   WebRuntimeFeatures::enableWebGL(
-      command_line.HasSwitch(switches::kEnableExperimentalWebGL));
+      !command_line.HasSwitch(switches::kDisableExperimentalWebGL));
 
   WebRuntimeFeatures::enablePushState(true);
 
