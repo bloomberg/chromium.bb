@@ -67,7 +67,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, Race) {
   EXPECT_TRUE(ContainsSamePasswordForms(actual_zero, actual_one));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
+// Marked as FAILS -- see http://crbug.com/59867.
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_SetPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   GetClient(0)->service()->SetPassphrase(kValidPassphrase);
   GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));

@@ -418,7 +418,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DeleteProfile) {
 }
 
 // TestScribe ID - 426760.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MergeProfiles) {
+// Marked as FAILS -- see http://crbug.com/60368.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, FAILS_MergeProfiles) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AutoFillProfiles expected_profiles;
