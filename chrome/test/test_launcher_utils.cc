@@ -17,7 +17,7 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kDisableWebResources);
 
   // Turn off preconnects because they break the brittle python webserver;
-  // see http://crbug.com/57491.
+  // see http://crbug.com/60035.
   command_line->AppendSwitch(switches::kDisablePreconnect);
 
   // Don't show the first run ui.

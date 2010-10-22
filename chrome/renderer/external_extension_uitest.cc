@@ -112,8 +112,7 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
   EXPECT_STREQ("1\n", value.c_str());
 }
 
-// Flaky, http://crbug.com/57405.
-TEST_F(SearchProviderTest, FLAKY_TestIsSearchProviderInstalled) {
+TEST_F(SearchProviderTest, TestIsSearchProviderInstalled) {
   ASSERT_TRUE(test_server_.Start());
 
   // Use the default search provider, other installed search provider, and
@@ -150,7 +149,7 @@ TEST_F(SearchProviderTest, FLAKY_TestIsSearchProviderInstalled) {
   }
 
   // The following should be re-enabled. At the moment, there are problems with
-  // doing all of these queries in parallel -- see http://crbug.com/57491.
+  // doing all of these queries in parallel -- see http://crbug.com/60043.
 #if 0
   // Remove the calls to FinishIsSearchProviderInstalledTest above when
   // re-enabling this code.
