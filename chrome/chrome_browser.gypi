@@ -3882,6 +3882,8 @@
                 ['include', '^browser/views/toolbar_view.h'],
                 ['include', '^browser/views/unhandled_keyboard_event_handler.cc'],
                 ['include', '^browser/views/unhandled_keyboard_event_handler.h'],
+                ['include', '^browser/views/update_recommended_message_box.h'],
+                ['include', '^browser/views/update_recommended_message_box.cc'],
                 ['include', '^browser/views/view_text_utils.cc'],
                 ['include', '^browser/views/view_text_utils.h'],
                 ['include', '^browser/views/window.cc'],

@@ -29,7 +29,12 @@ class AboutPageHandler : public OptionsPageUIHandler {
   void PageReady(const ListValue* args);
 
 #if defined(OS_CHROMEOS)
+  // Initiates update check.
   void CheckNow(const ListValue* args);
+
+  // Restarts the system.
+  void RestartNow(const ListValue* args);
+
   // Callback from chromeos::VersionLoader giving the version.
   void OnOSVersion(chromeos::VersionLoader::Handle handle,
                    std::string version);

@@ -9,11 +9,17 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // UpdateRecommendedMessageBox, public:
@@ -30,6 +36,10 @@ bool UpdateRecommendedMessageBox::Accept() {
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
 
+#if defined(OS_CHROMEOS)
+  chromeos::CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
+  // If running the Chrome OS build, but we're not on the device, fall through
+#endif
   BrowserList::CloseAllBrowsersAndExit();
 
   return true;
@@ -71,14 +81,18 @@ views::View* UpdateRecommendedMessageBox::GetContentsView() {
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
     gfx::NativeWindow parent_window) {
   const int kDialogWidth = 400;
+#if defined(OS_CHROMEOS)
+  const std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_OS_NAME);
+#else
+  const std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
+#endif
   // Also deleted when the window closes.
   message_box_view_ = new MessageBoxView(
       MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
-      l10n_util::GetStringF(IDS_UPDATE_RECOMMENDED,
-                            l10n_util::GetString(IDS_PRODUCT_NAME)),
+      l10n_util::GetStringF(IDS_UPDATE_RECOMMENDED, product_name),
       std::wstring(),
       kDialogWidth);
-  views::Window::CreateChromeWindow(parent_window, gfx::Rect(), this)->Show();
+  browser::CreateViewsWindow(parent_window, gfx::Rect(), this)->Show();
 }
 
 UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {

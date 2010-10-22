@@ -49,6 +49,15 @@ cr.define('options', function() {
     updateEnable_: function(enable) {
       $('checkNow').disabled = !enable;
     },
+
+    // Changes the "check now" button to "restart now" button.
+    changeToRestartButton_: function() {
+      $('checkNow').textContent = localStrings.getString('restart_now');
+      $('checkNow').disabled = false;
+      $('checkNow').onclick = function(event) {
+        chrome.send('RestartNow');
+      };
+    },
   };
 
   AboutPage.updateOSVersionCallback = function(versionString) {
@@ -65,6 +74,10 @@ cr.define('options', function() {
 
   AboutPage.setUpdateImage = function(state) {
     $('updateIcon').className= 'update-icon ' + state;
+  };
+
+  AboutPage.changeToRestartButton = function() {
+    AboutPage.getInstance().changeToRestartButton_();
   };
 
   // Export

@@ -33,6 +33,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #endif
 
@@ -66,6 +67,7 @@ const LocalizeEntry localize_table[] = {
     { "loading", IDS_ABOUT_PAGE_LOADING },
     { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
     { "update_status", IDS_UPGRADE_CHECK_STARTED },
+    { "restart_now", IDS_RESTART_AND_UPDATE },
 #else
     { "product", IDS_PRODUCT_NAME },
     { "check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },
@@ -239,6 +241,8 @@ void AboutPageHandler::RegisterMessages() {
 #if defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("CheckNow",
       NewCallback(this, &AboutPageHandler::CheckNow));
+  dom_ui_->RegisterMessageCallback("RestartNow",
+      NewCallback(this, &AboutPageHandler::RestartNow));
 #endif
 }
 
@@ -270,6 +274,10 @@ void AboutPageHandler::PageReady(const ListValue* args) {
 void AboutPageHandler::CheckNow(const ListValue* args) {
   if (chromeos::InitiateUpdateCheck)
     chromeos::InitiateUpdateCheck();
+}
+
+void AboutPageHandler::RestartNow(const ListValue* args) {
+  chromeos::CrosLibrary::Get()->GetPowerLibrary()->RequestRestart();
 }
 
 void AboutPageHandler::UpdateStatus(
@@ -346,6 +354,10 @@ void AboutPageHandler::UpdateStatus(
     scoped_ptr<Value> image_string(Value::CreateStringValue(image));
     dom_ui_->CallJavascriptFunction(L"AboutPage.setUpdateImage",
                                     *image_string);
+  }
+  // We'll change the "Check For Update" button to "Restart" button.
+  if (status.status == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+    dom_ui_->CallJavascriptFunction(L"AboutPage.changeToRestartButton");
   }
 }
 

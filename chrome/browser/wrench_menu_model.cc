@@ -44,6 +44,11 @@
 #include "chrome/browser/browser_window.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
 
@@ -258,8 +263,14 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
-  if (command_id == IDC_UPGRADE_DIALOG)
+  if (command_id == IDC_UPGRADE_DIALOG) {
+#if defined(OS_CHROMEOS)
+    return (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status
+            == chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT);
+#else
     return Singleton<UpgradeDetector>::get()->notify_upgrade();
+#endif
+  }
   return true;
 }
 
@@ -383,14 +394,19 @@ void WrenchMenuModel::Build() {
 #endif
   }
 
+#if defined(OS_CHROMEOS)
+  const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
+#else
+  const string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+#endif
   // On Mac, there is no About item.
   if (browser_defaults::kShowAboutMenuItem) {
     AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(
-        IDS_ABOUT, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+        IDS_ABOUT, product_name));
   }
 
   AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
-      IDS_UPDATE_NOW, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+      IDS_UPDATE_NOW, product_name));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_UPGRADE_DIALOG),
           *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE));
