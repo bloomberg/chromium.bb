@@ -2878,7 +2878,8 @@ WebPreferences TabContents::GetWebkitPrefs() {
 
   // Force accelerated compositing and 2d canvas off for chrome: and
   // chrome-extension: pages.
-  if (GetURL().SchemeIs(chrome::kChromeUIScheme)) {
+  if (GetURL().SchemeIs(chrome::kChromeDevToolsScheme) ||
+      GetURL().SchemeIs(chrome::kChromeUIScheme)) {
     web_prefs.accelerated_compositing_enabled = false;
     web_prefs.accelerated_2d_canvas_enabled = false;
   }

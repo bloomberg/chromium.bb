@@ -1,3 +1,4 @@
+
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -11,6 +12,7 @@ namespace chrome {
 
 const char kAboutScheme[] = "about";
 const char kBlobScheme[] = "blob";
+const char kChromeDevToolsScheme[] = "chrome-devtools";
 const char kChromeInternalScheme[] = "chrome-internal";
 const char kChromeUIScheme[] = "chrome";
 const char kDataScheme[] = "data";
@@ -38,6 +40,7 @@ const char* kSavableSchemes[] = {
   kFileScheme,
   kFtpScheme,
   kExtensionScheme,
+  kChromeDevToolsScheme,
   kChromeUIScheme,
   NULL
 };
@@ -72,7 +75,7 @@ const char kChromeUIAppLauncherURL[] = "chrome://newtab/#mode=app-launcher";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIBugReportURL[] = "chrome://bugreport/";
 const char kChromeUIConstrainedHTMLTestURL[] = "chrome://constrained-test/";
-const char kChromeUIDevToolsURL[] = "chrome://devtools/";
+const char kChromeUIDevToolsURL[] = "chrome-devtools://devtools/";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
 const char kChromeUIExtensionsURL[] = "chrome://extensions/";
 const char kChromeUIFavIconURL[] = "chrome://favicon/";
@@ -165,6 +168,7 @@ const char kSystemOptionsSubPage[] = "system";
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.
+  url_util::AddStandardScheme(kChromeDevToolsScheme);
   url_util::AddStandardScheme(kChromeUIScheme);
   url_util::AddStandardScheme(kGearsScheme);
   url_util::AddStandardScheme(kExtensionScheme);

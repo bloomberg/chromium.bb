@@ -358,9 +358,10 @@ ChromeURLRequestContext* FactoryForExtensions::Create() {
   net::CookieMonster* cookie_monster =
       new net::CookieMonster(cookie_db.get(), NULL);
 
-  // Enable cookies for extension URLs only.
-  const char* schemes[] = {chrome::kExtensionScheme};
-  cookie_monster->SetCookieableSchemes(schemes, 1);
+  // Enable cookies for devtools and extension URLs.
+  const char* schemes[] = {chrome::kChromeDevToolsScheme,
+                           chrome::kExtensionScheme};
+  cookie_monster->SetCookieableSchemes(schemes, 2);
   context->set_cookie_store(cookie_monster);
   // TODO(cbentzel): How should extensions handle HTTP Authentication?
   context->set_http_auth_handler_factory(

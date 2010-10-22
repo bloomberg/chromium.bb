@@ -673,6 +673,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
   // typed.  Right now, however, these are marked as typed even when triggered
   // by a shortcut or menu action.
   if (url.SchemeIs(chrome::kJavaScriptScheme) ||
+      url.SchemeIs(chrome::kChromeDevToolsScheme) ||
       url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(chrome::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeInternalScheme))

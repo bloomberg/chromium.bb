@@ -97,7 +97,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
 
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes (gears was handled above) to filter out most URLs.
-  if (!url.SchemeIs(chrome::kChromeInternalScheme) &&
+  if (!url.SchemeIs(chrome::kChromeDevToolsScheme) &&
+      !url.SchemeIs(chrome::kChromeInternalScheme) &&
       !url.SchemeIs(chrome::kChromeUIScheme))
     return NULL;
 
@@ -206,7 +207,8 @@ DOMUITypeID DOMUIFactory::GetDOMUIType(Profile* profile, const GURL& url) {
 
 // static
 bool DOMUIFactory::HasDOMUIScheme(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeInternalScheme) ||
+  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
          url.SchemeIs(chrome::kExtensionScheme);
 }

@@ -84,11 +84,6 @@ class ChildProcessSecurityPolicy {
   // scheme.
   void GrantScheme(int renderer_id, const std::string& scheme);
 
-  // Whenever the browser processes commands the renderer to run web inspector,
-  // it should call this method to grant the renderer process the capability to
-  // run the inspector.
-  void GrantInspectElement(int renderer_id);
-
   // Grant this renderer the ability to use DOM UI Bindings.
   void GrantDOMUIBindings(int renderer_id);
 

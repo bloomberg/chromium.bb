@@ -273,12 +273,6 @@ void ChildProcessSecurityPolicy::GrantScheme(int renderer_id,
   state->second->GrantScheme(scheme);
 }
 
-void ChildProcessSecurityPolicy::GrantInspectElement(int renderer_id) {
-  // The inspector is served from a chrome: URL.  In order to run the
-  // inspector, the renderer needs to be able to load chrome: URLs.
-  GrantScheme(renderer_id, chrome::kChromeUIScheme);
-}
-
 void ChildProcessSecurityPolicy::GrantDOMUIBindings(int renderer_id) {
   AutoLock lock(lock_);
 

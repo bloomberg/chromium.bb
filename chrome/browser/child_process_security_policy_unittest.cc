@@ -287,20 +287,6 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
   p->Remove(kRendererID);
 }
 
-TEST_F(ChildProcessSecurityPolicyTest, CanServiceInspectElement) {
-  ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
-
-  GURL url("chrome://devtools/devtools.html");
-
-  p->Add(kRendererID);
-
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, url));
-  p->GrantInspectElement(kRendererID);
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, url));
-
-  p->Remove(kRendererID);
-}
-
 TEST_F(ChildProcessSecurityPolicyTest, CanServiceDOMUIBindings) {
   ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
 

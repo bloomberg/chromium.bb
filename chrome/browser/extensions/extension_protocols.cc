@@ -84,7 +84,8 @@ bool AllowExtensionResourceLoad(URLRequest* request,
 
   // chrome:// URLs are always allowed to load chrome-extension:// resources.
   // The app launcher in the NTP uses this feature, as does dev tools.
-  if (origin_url.SchemeIs(chrome::kChromeUIScheme))
+  if (origin_url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+      origin_url.SchemeIs(chrome::kChromeUIScheme))
     return true;
 
   // Disallow loading of packaged resources for hosted apps. We don't allow

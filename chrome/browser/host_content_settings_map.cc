@@ -93,7 +93,8 @@ const bool kRequiresResourceIdentifier[CONTENT_SETTINGS_NUM_TYPES] = {
 // true for various internal objects like chrome:// URLs, so UI and other
 // things users think of as "not webpages" don't break.
 static bool ShouldAllowAllContent(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeInternalScheme) ||
+  return url.SchemeIs(chrome::kChromeDevToolsScheme) ||
+         url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
          url.SchemeIs(chrome::kExtensionScheme) ||
          url.SchemeIs(chrome::kGearsScheme) ||
