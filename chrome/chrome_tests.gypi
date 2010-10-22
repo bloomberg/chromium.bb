@@ -1051,6 +1051,7 @@
         'browser/chromeos/login/mock_login_status_consumer.h',
         'browser/chromeos/login/mock_url_fetchers.h',
         'browser/chromeos/login/mock_url_fetchers.cc',
+        'browser/chromeos/login/mock_user_manager.h',
         'browser/chromeos/login/online_attempt_unittest.cc',
         'browser/chromeos/login/owner_key_utils_unittest.cc',
         'browser/chromeos/login/owner_manager_unittest.cc',

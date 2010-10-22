@@ -86,6 +86,23 @@ class FailFetcher : public URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(FailFetcher);
 };
 
+class HostedFetcher : public URLFetcher {
+ public:
+  HostedFetcher(bool success,
+                const GURL& url,
+                const std::string& results,
+                URLFetcher::RequestType request_type,
+                URLFetcher::Delegate* d);
+  virtual ~HostedFetcher();
+
+  void Start();
+
+ private:
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(HostedFetcher);
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_URL_FETCHERS_H_

@@ -77,9 +77,10 @@ SuccessFetcher::SuccessFetcher(bool success,
 SuccessFetcher::~SuccessFetcher() {}
 
 void SuccessFetcher::Start() {
+  URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
   delegate()->OnURLFetchComplete(this,
                                  url_,
-                                 URLRequestStatus(URLRequestStatus::SUCCESS, 0),
+                                 success,
                                  RC_REQUEST_OK,
                                  ResponseCookies(),
                                  std::string());
@@ -104,6 +105,35 @@ void FailFetcher::Start() {
                                  RC_REQUEST_OK,
                                  ResponseCookies(),
                                  std::string());
+}
+
+HostedFetcher::HostedFetcher(bool success,
+                               const GURL& url,
+                               const std::string& results,
+                               URLFetcher::RequestType request_type,
+                               URLFetcher::Delegate* d)
+    : URLFetcher(url, request_type, d),
+      url_(url) {
+}
+
+HostedFetcher::~HostedFetcher() {}
+
+void HostedFetcher::Start() {
+  URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
+  int response_code = RC_REQUEST_OK;
+  std::string data;
+  LOG(INFO) << upload_data();
+  if (upload_data().find("HOSTED") == std::string::npos) {
+    LOG(INFO) << "HostedFetcher failing request";
+    response_code = RC_FORBIDDEN;
+    data.assign("Error=BadAuthentication");
+  }
+  delegate()->OnURLFetchComplete(this,
+                                 url_,
+                                 success,
+                                 response_code,
+                                 ResponseCookies(),
+                                 data);
 }
 
 }  // namespace chromeos

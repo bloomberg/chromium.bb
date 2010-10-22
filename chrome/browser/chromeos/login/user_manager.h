@@ -57,23 +57,23 @@ class UserManager : public UserImageLoader::Delegate,
 
   // Returns a list of the users who have logged into this device previously.
   // It is sorted in order of recency, with most recent at the beginning.
-  std::vector<User> GetUsers() const;
+  virtual std::vector<User> GetUsers() const;
 
   // Indicates that user just started off the record session.
-  void OffTheRecordUserLoggedIn();
+  virtual void OffTheRecordUserLoggedIn();
 
   // Indicates that a user with the given email has just logged in.
   // The persistent list will be updated accordingly.
-  void UserLoggedIn(const std::string& email);
+  virtual void UserLoggedIn(const std::string& email);
 
   // Remove user from persistent list. NOTE: user's data won't be removed.
-  void RemoveUser(const std::string& email);
+  virtual void RemoveUser(const std::string& email);
 
   // Returns true if given user has logged into the device before.
-  bool IsKnownUser(const std::string& email);
+  virtual bool IsKnownUser(const std::string& email);
 
   // Returns the logged-in user.
-  const User& logged_in_user() {
+  virtual const User& logged_in_user() {
     return logged_in_user_;
   }
 
@@ -83,7 +83,7 @@ class UserManager : public UserImageLoader::Delegate,
 
   // Saves image to file and saves image path in local state preferences.
   void SaveUserImage(const std::string& username,
-                     const SkBitmap& image);
+                             const SkBitmap& image);
 
   // Sets one of the default images to the specified user and saves this
   // setting in local state.
@@ -99,17 +99,18 @@ class UserManager : public UserImageLoader::Delegate,
                        const NotificationDetails& details);
 
   // Accessor for current_user_is_owner_
-  bool current_user_is_owner() const {
+  virtual bool current_user_is_owner() const {
     return current_user_is_owner_;
   }
-  void set_current_user_is_owner(bool current_user_is_owner) {
+  virtual void set_current_user_is_owner(bool current_user_is_owner) {
     current_user_is_owner_ = current_user_is_owner;
   }
 
- private:
+ protected:
   UserManager();
-  ~UserManager();
+  virtual ~UserManager();
 
+ private:
   // Notifies on new user session.
   void NotifyOnLogin();
 

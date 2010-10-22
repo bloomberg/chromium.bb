@@ -16,12 +16,12 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/gaia_authenticator2.h"
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 
 class Lock;
 class Profile;
-class GaiaAuthenticator2;
 class GoogleServiceAuthError;
 class LoginFailure;
 
@@ -29,6 +29,7 @@ namespace chromeos {
 
 class GoogleAuthenticatorTest;
 class LoginStatusConsumer;
+class UserManager;
 
 class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
  public:
@@ -68,6 +69,9 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   void set_username(const std::string& fake_user) { username_ = fake_user; }
   void set_password_hash(const std::string& fake_hash) {
     ascii_hash_ = fake_hash;
+  }
+  void set_user_manager(UserManager* new_manager) {
+    user_manager_ = new_manager;
   }
   void SetLocalaccount(const std::string& new_name);
 
@@ -124,11 +128,12 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // Clear any cached credentials after we've given up trying to authenticate.
   void ClearClientLoginAttempt();
 
-  // Start a client login attempt. You should set up the
-  // GaiaAuthenticator2 first.
-  // Reuses existing credentials from the last attempt. You should
+  // Start a client login attempt.  |hosted_policy_| governs whether we are
+  // willing to authenticate accounts that are HOSTED or not.
+  // You must set up |gaia_authenticator_| first.
+  // Reuses existing credentials from the last attempt. You must
   // PrepareClientLoginAttempt before calling this.
-  void TryClientLogin();
+   void TryClientLogin();
 
   // A callback for use on the UI thread. Cancel the current login
   // attempt, and produce a login failure.
@@ -143,6 +148,10 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
                           char* hex_string,
                           const unsigned int len);
 
+  void set_hosted_policy(GaiaAuthenticator2::HostedAccountsSetting policy) {
+    hosted_policy_ = policy;
+  }
+
   // The format of said POST body when CAPTCHA token & answer are specified.
   static const char kFormatCaptcha[];
 
@@ -156,11 +165,17 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // Handles all net communications with Gaia.
   scoped_ptr<GaiaAuthenticator2> gaia_authenticator_;
 
+  // Allows us to look up users of the device.
+  UserManager* user_manager_;
+
   // Milliseconds until we timeout our attempt to hit ClientLogin.
   static const int kClientLoginTimeoutMs;
 
   // Milliseconds until we re-check whether we've gotten the localaccount name.
   static const int kLocalaccountRetryIntervalMs;
+
+  // Whether or not we're accepting HOSTED accounts on this auth attempt.
+  GaiaAuthenticator2::HostedAccountsSetting hosted_policy_;
 
   std::string username_;
   // These fields are saved so we can retry client login.
