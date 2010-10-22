@@ -13,6 +13,7 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
@@ -33,6 +34,7 @@ SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
     channel_(kInvalidHandle),
     socket_address_(NULL),
     sel_ldr_locator_(sel_ldr_locator) {
+  CHECK(sel_ldr_locator != NULL);
 }
 
 void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
@@ -137,41 +139,41 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 }
 
 
-void SelLdrLauncher::BuildArgv(vector<nacl::string>* command) {
-  assert(sel_ldr_ != "");  // Make sure InitCommandLine() was called.
+void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
+  assert(sel_ldr_ != NACL_NO_FILE_PATH);  // Set by InitCommandLine().
 
   command->push_back(sel_ldr_);
-  command->push_back("-f");
-  command->push_back(application_file_);
-
-  for (size_t i = 0; i < sel_ldr_argv_.size(); ++i) {
-    command->push_back(sel_ldr_argv_[i]);
+  if (application_file_ != NACL_NO_FILE_PATH) {
+    command->push_back("-f");
+    command->push_back(application_file_);
+  } else {
+    command->push_back("-R");  // RPC will be used to point to the nexe.
   }
+
+  command->insert(command->end(), sel_ldr_argv_.begin(), sel_ldr_argv_.end());
 
   if (application_argv_.size() > 0) {
     // Separator between sel_universal and app args.
     command->push_back("--");
-
-    for (size_t i = 0; i < application_argv_.size(); ++i) {
-      command->push_back(application_argv_[i]);
-    }
+    command->insert(command->end(),
+                    application_argv_.begin(), application_argv_.end());
   }
 }
 
 
-void SelLdrLauncher::InitCommandLine(const nacl::string& application_file,
+void SelLdrLauncher::InitCommandLine(const nacl::string& app_file,
                                      int imc_fd,
                                      const vector<nacl::string>& sel_ldr_argv,
                                      const vector<nacl::string>& app_argv) {
-  // make sure we don't call this twice
-  assert(sel_ldr_ == "");
+  assert(sel_ldr_ == NACL_NO_FILE_PATH);  // Make sure we don't call this twice.
+
   char* var = getenv("NACL_SEL_LDR");
   if (var != NULL) {
     sel_ldr_ = var;
   } else {
     sel_ldr_ = GetSelLdrPathName();
   }
-  application_file_ = application_file;
+  application_file_ = app_file;
   copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
   copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));
   channel_number_ = imc_fd;

@@ -77,7 +77,7 @@ bool SelLdrLauncher::LaunchFromCommandLine() {
 
   // complete command line setup
   vector<nacl::string> command;
-  BuildArgv(&command);
+  BuildCommandLine(&command);
   if (kMaxExecArgs <= command.size()) {
     // TODO(robertm): emit error message
     return false;

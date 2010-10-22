@@ -101,7 +101,7 @@ bool SelLdrLauncher::LaunchFromCommandLine() {
   }
 
   vector<nacl::string> command;
-  BuildArgv(&command);
+  BuildCommandLine(&command);
 
   // Convert to single string for process creation.
   nacl::string str = "";

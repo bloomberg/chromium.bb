@@ -97,7 +97,9 @@ void NaClDescUnref(struct NaClDesc *ndp) {
 }
 
 void NaClDescSafeUnref(struct NaClDesc *ndp) {
-  NaClRefCountSafeUnref(&ndp->base);
+  if (NULL != ndp) {
+    NaClRefCountUnref(&ndp->base);
+  }
 }
 
 int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,

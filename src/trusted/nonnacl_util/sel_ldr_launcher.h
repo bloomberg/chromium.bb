@@ -76,14 +76,16 @@ struct SelLdrLauncher {
   /////////////////////////////////////////////////////////////////////////////
   // Command line start-up:
   //
-  // The command line must include a file path for the nexe application.
+  // The command line must include a file path for the nexe application or an
+  // indicator that a reference will be supplied after the launch over RPC.
   /////////////////////////////////////////////////////////////////////////////
 
   // Creates a socket pair.  Maps the first socket into the NaCl
-  // subprocess's FD table as dest_fd.  Returns the second socket.
-  // Returns kInvalidHandle on failure.
+  // subprocess's FD table as dest_fd. Sets the corresponding command line arg.
+  // Returns the second socket. Returns kInvalidHandle on failure.
   Handle ExportImcFD(int dest_fd);
 
+  // |application_file| is empty if nexe reference will be passed over RPC.
   void InitCommandLine(const nacl::string& application_file,
                        int imc_fd,
                        const std::vector<nacl::string>& sel_ldr_argv,
@@ -94,6 +96,7 @@ struct SelLdrLauncher {
   // You must call InitCommandLine() before calling this function.
   bool LaunchFromCommandLine();
 
+  // |application_file| is empty if nexe reference will be passed over RPC.
   bool StartFromCommandLine(const nacl::string& application_file,
                             int imc_fd,
                             const std::vector<nacl::string>& sel_ldr_argv,
@@ -101,6 +104,9 @@ struct SelLdrLauncher {
     InitCommandLine(application_file, imc_fd, sel_ldr_argv, app_argv);
     return LaunchFromCommandLine();
   }
+
+  // Builds a command line out of the prepopulated args.
+  void BuildCommandLine(std::vector<nacl::string>* command);
 
   // OpenSrpcChannels essentially is a pair Ctor for the two
   // NaClSrpcChannel objects; if it returns true (success), both were
@@ -117,17 +123,17 @@ struct SelLdrLauncher {
   Handle channel() const { return channel_; }
 
   // Returns the file path of the NaCl module to be run within the sel_ldr.
-  nacl::string get_application_file() const { return application_file_; }
+  nacl::string application_file() const { return application_file_; }
 
   // Returns the socket address used to connect to the sel_ldr.
   struct NaClDesc* socket_address() const { return socket_address_; }
-
 
   /////////////////////////////////////////////////////////////////////////////
   // Browser-based start-up (Chrome only):
   //
   // A message is sent to the browser process to launch the sel_ldr process.
-  // No nexe information is passed at this point.
+  // No nexe information is passed at this point. It will be supplied over
+  // RPC after start-up.
   /////////////////////////////////////////////////////////////////////////////
 
   bool StartFromBrowser(const char* url, int socket_count,
@@ -136,19 +142,18 @@ struct SelLdrLauncher {
  private:
   void GetPluginDirectory(char* buffer, size_t len);
   nacl::string GetSelLdrPathName();
-  void BuildArgv(std::vector<nacl::string>* argv);
   void CloseHandlesAfterLaunch();
 
   Handle child_process_;
   Handle channel_;
-  int channel_number_;
+  int channel_number_;  // IMC file descriptor.
 
-  // The following strings and vectors are used by BuildArgv to
-  // create a command line, they are initialized by InitBasic().
+  // The following members are used to initialize and build the command line.
   nacl::string sel_ldr_;
   nacl::string application_file_;
   std::vector<nacl::string> sel_ldr_argv_;
   std::vector<nacl::string> application_argv_;
+
   std::vector<Handle> close_after_launch_;
 
   // The socket address returned from sel_ldr for connects.
