@@ -866,7 +866,8 @@ void ChromeFrameNPAPI::OnAutomationServerLaunchFailed(
     AutomationLaunchResult reason, const std::string& server_version) {
   SetReadyState(READYSTATE_UNINITIALIZED);
 
-  if (reason == AUTOMATION_VERSION_MISMATCH) {
+  // Do not display warnings for privileged instances of Chrome Frame.
+  if (reason == AUTOMATION_VERSION_MISMATCH && !is_privileged_) {
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }
 }
