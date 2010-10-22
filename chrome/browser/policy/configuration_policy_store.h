@@ -48,7 +48,6 @@ class ConfigurationPolicyStore {
     kPolicyApplicationLocale,
     kPolicyExtensionInstallAllowList,
     kPolicyExtensionInstallDenyList,
-    kPolicyExtensionInstallForceList,
     kPolicyShowHomeButton,
     kPolicyDisabledPlugins,
     kPolicyPrintingEnabled,

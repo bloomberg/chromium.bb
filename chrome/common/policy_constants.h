@@ -47,7 +47,6 @@ extern const char kApplicationLocaleValue[];
 extern const char kSyncDisabled[];
 extern const char kExtensionInstallAllowList[];
 extern const char kExtensionInstallDenyList[];
-extern const char kExtensionInstallForceList[];
 extern const char kShowHomeButton[];
 extern const char kPrintingEnabled[];
 extern const char kJavascriptEnabled[];

@@ -903,6 +903,5 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
   prefs->RegisterListPref(prefs::kExtensionInstallAllowList);
   prefs->RegisterListPref(prefs::kExtensionInstallDenyList);
-  prefs->RegisterDictionaryPref(prefs::kExtensionInstallForceList);
   prefs->RegisterStringPref(kWebStoreLogin, std::string() /* default_value */);
 }
