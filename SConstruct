@@ -426,6 +426,7 @@ def GetPlatform(name):
            % ('platform', name))
     assert 0
 
+
 # Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
 def DecodePlatform(platform):
   if platform in AVAILABLE_PLATFORMS:
@@ -442,6 +443,8 @@ TARGET_NAME = GetPlatform('targetplatform')
 pre_base_env.Replace(TARGET_FULLARCH=TARGET_NAME)
 pre_base_env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
+
+pre_base_env.Replace(BUILD_ISA_NAME=GetPlatform('buildplatform'))
 
 # TODO(robertm): hacks for not breaking things while switching to pnacl TC
 #                This should be fixed by integrating pnacl more tightly

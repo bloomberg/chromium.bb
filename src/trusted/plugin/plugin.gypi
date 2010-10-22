@@ -76,6 +76,21 @@
       'ppapi/scriptable_handle_ppapi.cc',
       'ppapi/var_utils.cc',
     ],
+    # Append the arch-specific ISA code to common_sources.
+    'conditions': [
+      # Note: this test assumes that if this is not an ARM build, then this is
+      # is an x86 build.  This is because |target_arch| for x86 can be one of a
+      # number of values (x64, ia32, etc.).
+      ['target_arch=="arm"', {
+        'common_sources': [
+          'arch_arm/sandbox_isa.cc',
+        ],
+      }, {  # else: 'target_arch != "arm"
+        'common_sources': [
+          'arch_x86/sandbox_isa.cc',
+        ],
+      }],
+    ],
   },
   'includes': [
     '../../../build/common.gypi',

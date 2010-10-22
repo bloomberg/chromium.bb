@@ -53,7 +53,7 @@
 
 #if NACL_WINDOWS
 /* disable warnings for deprecated functions like getenv, etc. */
-#pragma warning( disable : 4996)
+#pragma warning(disable : 4996)
 # include <malloc.h>
 /* TODO: eliminate port_win.h */
 # include "native_client/src/include/win/port_win.h"
@@ -73,9 +73,7 @@
 
 #if NACL_WINDOWS
 # define DLLEXPORT __declspec(dllexport)
-#elif NACL_OSX
-# define DLLEXPORT
-#elif  NACL_LINUX
+#elif defined(NACL_LINUX) || defined(NACL_OSX)
 # define DLLEXPORT __attribute__ ((visibility("default")))
 #elif defined(__native_client__)
 /* do nothing */
@@ -143,8 +141,8 @@
 
 #if NACL_WINDOWS
 # define LOCALTIME_R(in_time_t_ptr, out_struct_tm_ptr) \
-  (0 == localtime_s(out_struct_tm_ptr, in_time_t_ptr)                   \
-   ? out_struct_tm_ptr : (struct tm *) 0)  /* NULL requires stdio.h */
+  (0 == localtime_s(out_struct_tm_ptr, in_time_t_ptr) ? \
+      out_struct_tm_ptr : (struct tm *) 0)  /* NULL requires stdio.h */
 
 struct timezone {
   int tz_minuteswest;

@@ -1,8 +1,6 @@
-/*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- */
+// Copyright 2010 The Native Client Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can
+// be found in the LICENSE file.
 
 #include "native_client/src/trusted/plugin/nexe_arch.h"
 
@@ -12,47 +10,9 @@
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-namespace plugin {
-
-// Returns the kind of SFI sandbox implemented by sel_ldr on this
-// platform: ARM, x86-32, x86-64.
-//
-// This is a function of the current CPU, OS, browser, installed
-// sel_ldr(s).  It is not sufficient to derive the result only from
-// build-time parameters since, for example, an x86-32 plugin is
-// capable of launching a 64-bit NaCl sandbox if a 64-bit sel_ldr is
-// installed (and indeed, may only be capable of launching a 64-bit
-// sandbox).
-//
-// TODO(adonovan): this function changes over time as we deploy
-// different things.  It should be defined once, authoritatively,
-// instead of guessed at where it's needed, e.g. here.
-static nacl::string GetSandbox();
-
-#if NACL_ARCH_CPU_X86_FAMILY
-
-static nacl::string GetSandbox() {
-#if !defined(NACL_STANDALONE) && NACL_ARCH_CPU_X86_64 && NACL_LINUX
-  return "x86-64";  // 64-bit Chrome on Linux
-#else
-  return NaClOsIs64BitWindows() == 1
-      ? "x86-64"   // 64-bit Windows (Chrome, Firefox)
-      : "x86-32";  // everything else.
-#endif
-}
-
-#elif NACL_ARCH_CPU_ARM_FAMILY
-
-static nacl::string GetSandbox() { return "ARM"; }
-
-#else /* hopefully unreachable */
-
-#error GetSandbox() missing on this platform
-
-#endif
-
+namespace {
 // Removes leading and trailing ASCII whitespace from |*s|.
-static nacl::string TrimWhitespace(const nacl::string& s) {
+nacl::string TrimWhitespace(const nacl::string& s) {
   size_t start = s.find_first_not_of(" \t");
   size_t end = s.find_last_not_of(" \t");
   return start == nacl::string::npos
@@ -62,9 +22,9 @@ static nacl::string TrimWhitespace(const nacl::string& s) {
 
 // Parse one line of the nexes attribute.
 // Returns true iff it's a match, and writes URL to |*url|.
-static bool ParseOneNexeLine(const nacl::string& nexe_line,
-                             const nacl::string& sandbox,
-                             nacl::string* url) {
+bool ParseOneNexeLine(const nacl::string& nexe_line,
+                      const nacl::string& sandbox,
+                      nacl::string* url) {
   size_t semi = nexe_line.find(':');
   if (semi == nacl::string::npos) {
     PLUGIN_PRINTF(("missing colon in line of 'nexes' attribute"));
@@ -90,9 +50,9 @@ static bool ParseOneNexeLine(const nacl::string& nexe_line,
 //
 // Spaces surrounding <sandbox> and <nexe-url> are ignored, but
 // <nexe-url> may contain internal spaces.
-static bool FindNexeForSandbox(const nacl::string& nexes_attr,
-                               const nacl::string& sandbox,
-                               nacl::string* url) {
+bool FindNexeForSandbox(const nacl::string& nexes_attr,
+                        const nacl::string& sandbox,
+                        nacl::string* url) {
   size_t pos, oldpos;
   for (oldpos = 0, pos = nexes_attr.find('\n', oldpos);
        pos != nacl::string::npos;
@@ -108,10 +68,24 @@ static bool FindNexeForSandbox(const nacl::string& nexes_attr,
   return false;
 }
 
-// See nexe_arch.h.
-// An entry point for testing.
+}  // namespace
+
+namespace plugin {
+bool GetNexeURLFromManifest(const nacl::string& nexe_manifest_json,
+                            nacl::string* result) {
+  const nacl::string sandbox_isa(GetSandboxISA());
+  PLUGIN_PRINTF(
+      ("GetNexeURLFromManifest(): sandbox='%s' nexe_manifest_json='%s'.\n",
+       sandbox_isa.c_str(), nexe_manifest_json.c_str()));
+  *result = "Selecting a .nexe ISA from a manifest is not supported yet.";
+  return false;
+}
+
+// TODO(dspringer): deprecate the "nexes" attribute of the <embed> tag and
+// migrate this code to use a JSON parser, per issue:
+//   http://code.google.com/p/nativeclient/issues/detail?id=1040
 bool GetNexeURL(const char* nexes_attr, nacl::string* result) {
-  const nacl::string sandbox = GetSandbox();
+  const nacl::string sandbox(GetSandboxISA());
   PLUGIN_PRINTF(("GetNexeURL(): sandbox='%s' nexes='%s'.\n",
                  sandbox.c_str(), nexes_attr));
   if (FindNexeForSandbox(nexes_attr, sandbox, result)) return true;
@@ -121,3 +95,15 @@ bool GetNexeURL(const char* nexes_attr, nacl::string* result) {
 }
 
 }  // namespace plugin
+
+EXTERN_C_BEGIN
+const char* NaClPluginGetSandboxISA() {
+  return plugin::GetSandboxISA();
+}
+
+bool NaClPluginGetNexeURLFromManifest(const nacl::string& nexe_manifest,
+                                      nacl::string* result) {
+  return plugin::GetNexeURLFromManifest(nexe_manifest, result);
+}
+EXTERN_C_END
+
