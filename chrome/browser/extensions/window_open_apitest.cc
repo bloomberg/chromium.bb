@@ -11,13 +11,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
-// crbug.com/60156
-#if defined(OS_MACOSX)
-// On mac, this test basically never succeeds.
-#define FLAKY_WindowOpen DISABLED_WindowOpen
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_WindowOpen) {
+// Disabled, http://crbug.com/60156
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

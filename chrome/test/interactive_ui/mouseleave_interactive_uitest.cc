@@ -26,7 +26,7 @@ class MouseLeaveTest : public UITest {
 
 #if defined(OS_MACOSX)
 // Missing automation provider support: http://crbug.com/45892
-#define MAYBE_TestOnMouseOut FAILS_TestOnMouseOut
+#define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
 #else
 #define MAYBE_TestOnMouseOut TestOnMouseOut
 #endif

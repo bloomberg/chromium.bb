@@ -48,8 +48,8 @@
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_MACOSX)
 // TODO(suzhe): http://crbug.com/49738 (following two tests)
-#define MAYBE_FocusTraversal FAILS_FocusTraversal
-#define MAYBE_FocusTraversalOnInterstitial FAILS_FocusTraversalOnInterstitial
+#define MAYBE_FocusTraversal DISABLED_FocusTraversal
+#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 // TODO(suzhe): http://crbug.com/49737
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_WIN)

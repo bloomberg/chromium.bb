@@ -19,7 +19,7 @@
 
 // Possible race in ChromeURLDataManager. http://crbug.com/59198
 #if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_TabOnRemoved FLAKY_TabOnRemoved
+#define MAYBE_TabOnRemoved DISABLED_TabOnRemoved
 #else
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif

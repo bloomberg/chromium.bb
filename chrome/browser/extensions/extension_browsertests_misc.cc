@@ -701,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 #define MAYBE_PluginLoadUnload PluginLoadUnload
 #elif defined(OS_LINUX)
 // http://crbug.com/47598
-#define MAYBE_PluginLoadUnload FLAKY_PluginLoadUnload
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
 // TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
