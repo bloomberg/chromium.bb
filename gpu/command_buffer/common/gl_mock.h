@@ -211,6 +211,12 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD1(GetString, const GLubyte*(GLenum name));
 
+  MOCK_METHOD4(GetTexLevelParameterfv, void(
+      GLenum target, GLint level, GLenum pname, GLfloat* params));
+
+  MOCK_METHOD4(GetTexLevelParameteriv, void(
+      GLenum target, GLint level, GLenum pname, GLint* params));
+
   MOCK_METHOD3(GetTexParameterfv, void(
       GLenum target, GLenum pname, GLfloat* params));
 

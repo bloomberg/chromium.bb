@@ -218,6 +218,12 @@ class GLInterface {
 
   virtual const GLubyte* GetString(GLenum name) = 0;
 
+  virtual void GetTexLevelParameterfv(
+      GLenum target, GLint level, GLenum pname, GLfloat* params) = 0;
+
+  virtual void GetTexLevelParameteriv(
+      GLenum target, GLint level, GLenum pname, GLint* params) = 0;
+
   virtual void GetTexParameterfv(
       GLenum target, GLenum pname, GLfloat* params) = 0;
 
