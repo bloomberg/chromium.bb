@@ -269,6 +269,9 @@ class ChromeTests:
   def TestApp(self):
     return self.SimpleTest("chrome", "app_unittests")
 
+  def TestGfx(self):
+    return self.SimpleTest("chrome", "gfx_unittests")
+
   def TestUI(self):
     return self.SimpleTest("chrome", "ui_tests",
                            valgrind_test_args=[
@@ -406,6 +409,7 @@ class ChromeTests:
     "ui": TestUI,                "ui_tests": TestUI,
     "unit": TestUnit,            "unit_tests": TestUnit,
     "app": TestApp,              "app_unittests": TestApp,
+    "gfx": TestGfx,              "gfx_unittests": TestGfx,
   }
 
 def _main(_):
