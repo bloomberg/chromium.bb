@@ -226,8 +226,9 @@ bool MatchesFilter(const std::string& name, const std::string& filter) {
   }
 }
 
-// Returns true if the test succeeded, false if it failed.
-bool RunTest(const std::string& test_name) {
+// Runs test specified by |test_name| in a child process,
+// and returns the exit code.
+int RunTest(const std::string& test_name) {
   // Some of the below method calls will leak objects if there is no
   // autorelease pool in place.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -319,7 +320,7 @@ bool RunTest(const std::string& test_name) {
   }
 #endif
 
-  return exit_code == 0;
+  return exit_code;
 }
 
 bool RunTests() {
@@ -361,18 +362,27 @@ bool RunTests() {
       }
       base::Time start_time = base::Time::Now();
       ++test_run_count;
-      if (!RunTest(test_name.c_str())) {
+      int exit_code = RunTest(test_name);
+      if (exit_code == 0) {
+        // Test passed.
+        printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
+                          false,
+                          (base::Time::Now() - start_time).InMillisecondsF());
+      } else {
         failed_tests.push_back(test_name);
-        bool ignore_failure = base::TestSuite::ShouldIgnoreFailure(*test_info);
+
+        bool ignore_failure = false;
+
+        // -1 exit code means a crash or hang. Never ignore those failures,
+        // they are serious and should always be visible.
+        if (exit_code != -1)
+          ignore_failure = base::TestSuite::ShouldIgnoreFailure(*test_info);
+
         printer.OnTestEnd(test_info->name(), test_case->name(), true, true,
                           ignore_failure,
                           (base::Time::Now() - start_time).InMillisecondsF());
         if (ignore_failure)
           ++ignored_failure_count;
-      } else {
-        printer.OnTestEnd(test_info->name(), test_case->name(), true, false,
-                          false,
-                          (base::Time::Now() - start_time).InMillisecondsF());
       }
     }
   }
