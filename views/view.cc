@@ -26,7 +26,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "views/accessibility/view_accessibility_wrapper.h"
+#include "views/accessibility/view_accessibility.h"
 #endif
 #if defined(OS_LINUX)
 #include "app/scoped_handle_gtk.h"
@@ -68,9 +68,6 @@ View::View()
       accelerator_focus_manager_(NULL),
       registered_accelerator_count_(0),
       context_menu_controller_(NULL),
-#if defined(OS_WIN)
-      accessibility_(NULL),
-#endif
       drag_controller_(NULL),
       flip_canvas_on_paint_for_rtl_ui_(false) {
 }
@@ -87,8 +84,8 @@ View::~View() {
   }
 
 #if defined(OS_WIN)
-  if (accessibility_.get())
-    accessibility_->Uninitialize();
+  if (view_accessibility_.get())
+    view_accessibility_->set_view(NULL);
 #endif
 }
 

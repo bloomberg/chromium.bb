@@ -631,39 +631,13 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
 
   // Accessibility readers will send an OBJID_CLIENT message
   if (OBJID_CLIENT == l_param) {
-    // If our MSAA root is already created, reuse that pointer. Otherwise,
-    // create a new one.
-    if (!accessibility_root_) {
-      CComObject<ViewAccessibility>* instance = NULL;
+    // Retrieve MSAA dispatch object for the root view.
+    ScopedComPtr<IAccessible> root(
+        ViewAccessibility::GetAccessibleForView(GetRootView()));
 
-      HRESULT hr = CComObject<ViewAccessibility>::CreateInstance(&instance);
-      DCHECK(SUCCEEDED(hr));
-
-      if (!instance) {
-        // Return with failure.
-        return static_cast<LRESULT>(0L);
-      }
-
-      ScopedComPtr<IAccessible> accessibility_instance(instance);
-
-      if (!SUCCEEDED(instance->Initialize(root_view_.get()))) {
-        // Return with failure.
-        return static_cast<LRESULT>(0L);
-      }
-
-      // All is well, assign the temp instance to the class smart pointer
-      accessibility_root_.Attach(accessibility_instance.Detach());
-
-      if (!accessibility_root_) {
-        // Return with failure.
-        return static_cast<LRESULT>(0L);
-      }
-    }
-
-    // Create a reference to ViewAccessibility that MSAA will marshall
-    // to the client.
+    // Create a reference that MSAA will marshall to the client.
     reference_result = LresultFromObject(IID_IAccessible, w_param,
-        static_cast<IAccessible*>(accessibility_root_));
+        static_cast<IAccessible*>(root.Detach()));
   }
 
   if (OBJID_CUSTOM == l_param) {

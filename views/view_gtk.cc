@@ -31,7 +31,7 @@ void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
   // notification should be sent here.
 }
 
-ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
+ViewAccessibility* View::GetViewAccessibility() {
   NOTIMPLEMENTED();
   return NULL;
 }

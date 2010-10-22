@@ -4,24 +4,51 @@
 
 #include "views/accessibility/view_accessibility.h"
 
-#include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_win.h"
-
-const wchar_t kViewsUninitializeAccessibilityInstance[] =
-  L"Views_Uninitialize_AccessibilityInstance";
 
 const wchar_t kViewsNativeHostPropForAccessibility[] =
   L"Views_NativeViewHostHWNDForAccessibility";
 
+// static
+scoped_refptr<ViewAccessibility> ViewAccessibility::Create(views::View* view) {
+  CComObject<ViewAccessibility>* instance = NULL;
+  HRESULT hr = CComObject<ViewAccessibility>::CreateInstance(&instance);
+  DCHECK(SUCCEEDED(hr));
+  instance->set_view(view);
+  return scoped_refptr<ViewAccessibility>(instance);
+}
 
-HRESULT ViewAccessibility::Initialize(views::View* view) {
-  if (!view) {
-    return E_INVALIDARG;
+// static
+IAccessible* ViewAccessibility::GetAccessibleForView(views::View* view) {
+  IAccessible* accessible = NULL;
+
+  // First, check to see if the view is a native view.
+  if (view->GetClassName() == views::NativeViewHost::kViewClassName) {
+    views::NativeViewHost* native_host =
+        static_cast<views::NativeViewHost*>(view);
+    if (GetNativeIAccessibleInterface(native_host, &accessible) == S_OK)
+      return accessible;
   }
 
-  view_ = view;
-  return S_OK;
+  // Next, see if the view is a widget container.
+  if (view->child_widget()) {
+    views::WidgetWin* native_widget =
+      reinterpret_cast<views::WidgetWin*>(view->child_widget());
+    if (GetNativeIAccessibleInterface(
+        native_widget->GetNativeView(), &accessible) == S_OK) {
+      return accessible;
+    }
+  }
+
+  // Finally, use our ViewAccessibility implementation.
+  return view->GetViewAccessibility();
+}
+
+ViewAccessibility::ViewAccessibility() : view_(NULL) {
+}
+
+ViewAccessibility::~ViewAccessibility() {
 }
 
 // TODO(ctguil): Handle case where child View is not contained by parent.
@@ -49,25 +76,16 @@ STDMETHODIMP ViewAccessibility::accHitTest(
     child->lVal = CHILDID_SELF;
   } else {
     child->vt = VT_DISPATCH;
-    if ((GetViewAccessibilityWrapper(view))->
-        GetInstance(IID_IAccessible,
-                    reinterpret_cast<void**>(&child->pdispVal)) == S_OK) {
-      // Increment the reference count for the retrieved interface.
-      child->pdispVal->AddRef();
-      return S_OK;
-    } else {
-      return E_NOINTERFACE;
-    }
+    child->pdispVal = GetAccessibleForView(view);
+    child->pdispVal->AddRef();
   }
-
   return S_OK;
 }
 
 STDMETHODIMP ViewAccessibility::accLocation(
     LONG* x_left, LONG* y_top, LONG* width, LONG* height, VARIANT var_id) {
-  if (!IsValidId(var_id) || !x_left || !y_top || !width || !height) {
+  if (!IsValidId(var_id) || !x_left || !y_top || !width || !height)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
@@ -101,9 +119,8 @@ STDMETHODIMP ViewAccessibility::accLocation(
 
 STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
                                             VARIANT* end) {
-  if (start.vt != VT_I4 || !end) {
+  if (start.vt != VT_I4 || !end)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
@@ -126,25 +143,10 @@ STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
       }
 
       views::View* child = view_->GetChildViewAt(child_id);
-
-      if (child->GetChildViewCount() != 0) {
-        end->vt = VT_DISPATCH;
-        if ((GetViewAccessibilityWrapper(child))->
-            GetInstance(IID_IAccessible,
-                        reinterpret_cast<void**>(&end->pdispVal)) == S_OK) {
-          // Increment the reference count for the retrieved interface.
-          end->pdispVal->AddRef();
-          return S_OK;
-        } else {
-          return E_NOINTERFACE;
-        }
-      } else {
-        end->vt = VT_I4;
-        // Set return child lVal, adjusted for MSAA indexing. (MSAA
-        // child indexing starts with 1, whereas View indexing starts with 0).
-        end->lVal = child_id + 1;
-      }
-      break;
+      end->vt = VT_DISPATCH;
+      end->pdispVal = GetAccessibleForView(child);
+      end->pdispVal->AddRef();
+      return S_OK;
     }
     case NAVDIR_LEFT:
     case NAVDIR_UP:
@@ -176,24 +178,10 @@ STDMETHODIMP ViewAccessibility::accNavigate(LONG nav_dir, VARIANT start,
         }
 
         views::View* child = parent->GetChildViewAt(view_index);
-        if (child->GetChildViewCount() != 0) {
-          end->vt = VT_DISPATCH;
-          // Retrieve IDispatch for non-leaf child.
-          if ((GetViewAccessibilityWrapper(child))->
-              GetInstance(IID_IAccessible,
-                          reinterpret_cast<void**>(&end->pdispVal)) == S_OK) {
-            // Increment the reference count for the retrieved interface.
-            end->pdispVal->AddRef();
-            return S_OK;
-          } else {
-            return E_NOINTERFACE;
-          }
-        } else {
-          end->vt = VT_I4;
-          // Modifying view_index to give lVal correct MSAA-based value. (MSAA
-          // child indexing starts with 1, whereas View indexing starts with 0).
-          end->lVal = view_index + 1;
-        }
+        end->pdispVal = GetAccessibleForView(child);
+        end->vt = VT_DISPATCH;
+        end->pdispVal->AddRef();
+        return S_OK;
       } else {
         // Check navigation bounds, adjusting for MSAA child indexing (MSAA
         // child indexing starts with 1, whereas View indexing starts with 0).
@@ -269,42 +257,14 @@ STDMETHODIMP ViewAccessibility::get_accChild(VARIANT var_child,
     return E_FAIL;
   }
 
-  // First, check to see if the child is a native view.
-  if (child_view->GetClassName() == views::NativeViewHost::kViewClassName) {
-    views::NativeViewHost* native_host =
-        static_cast<views::NativeViewHost*>(child_view);
-    if (GetNativeIAccessibleInterface(native_host, disp_child) == S_OK)
-      return S_OK;
-  }
-
-  // Next, see if the child view is a widget container.
-  if (child_view->child_widget()) {
-    views::WidgetWin* native_widget =
-      reinterpret_cast<views::WidgetWin*>(child_view->child_widget());
-    if (GetNativeIAccessibleInterface(
-        native_widget->GetNativeView(), disp_child) == S_OK) {
-      return S_OK;
-    }
-  }
-
-  // Finally, try our ViewAccessibility implementation.
-  // Retrieve the IUnknown interface for the requested child view, and
-  // assign the IDispatch returned.
-  HRESULT hr = GetViewAccessibilityWrapper(child_view)->
-      GetInstance(IID_IAccessible, reinterpret_cast<void**>(disp_child));
-  if (hr == S_OK) {
-    // Increment the reference count for the retrieved interface.
-    (*disp_child)->AddRef();
-    return S_OK;
-  } else {
-    return E_NOINTERFACE;
-  }
+  *disp_child = GetAccessibleForView(child_view);
+  (*disp_child)->AddRef();
+  return S_OK;
 }
 
 STDMETHODIMP ViewAccessibility::get_accChildCount(LONG* child_count) {
-  if (!child_count || !view_) {
+  if (!child_count || !view_)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
@@ -315,9 +275,8 @@ STDMETHODIMP ViewAccessibility::get_accChildCount(LONG* child_count) {
 
 STDMETHODIMP ViewAccessibility::get_accDefaultAction(
     VARIANT var_id, BSTR* def_action) {
-  if (!IsValidId(var_id) || !def_action) {
+  if (!IsValidId(var_id) || !def_action)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
@@ -334,9 +293,11 @@ STDMETHODIMP ViewAccessibility::get_accDefaultAction(
 }
 
 STDMETHODIMP ViewAccessibility::get_accDescription(VARIANT var_id, BSTR* desc) {
-  if (!IsValidId(var_id) || !desc) {
+  if (!IsValidId(var_id) || !desc)
     return E_INVALIDARG;
-  }
+
+  if (!view_)
+    return E_FAIL;
 
   std::wstring temp_desc;
 
@@ -351,42 +312,29 @@ STDMETHODIMP ViewAccessibility::get_accDescription(VARIANT var_id, BSTR* desc) {
 }
 
 STDMETHODIMP ViewAccessibility::get_accFocus(VARIANT* focus_child) {
-  if (!focus_child) {
+  if (!focus_child)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
 
-  if (view_->GetChildViewCount() == 0 && view_->HasFocus()) {
-    // Parent view has focus.
+  views::View* focus = NULL;
+  views::FocusManager* focus_manager = view_->GetFocusManager();
+  if (focus_manager)
+    focus = focus_manager->GetFocusedView();
+  if (focus == view_) {
+    // This view has focus.
     focus_child->vt = VT_I4;
     focus_child->lVal = CHILDID_SELF;
+  } else if (focus && view_->IsParentOf(focus)) {
+    // Return the child object that has the keyboard focus.
+    focus_child->pdispVal = GetAccessibleForView(focus);
+    focus_child->pdispVal->AddRef();
+    return S_OK;
   } else {
-    bool has_focus = false;
-    int child_count = view_->GetChildViewCount();
-    // Search for child view with focus.
-    for (int child_id = 0; child_id < child_count; ++child_id) {
-      if (view_->GetChildViewAt(child_id)->HasFocus()) {
-        focus_child->vt = VT_I4;
-        focus_child->lVal = child_id + 1;
-
-        // If child view is no leaf, retrieve IDispatch.
-        if (view_->GetChildViewAt(child_id)->GetChildViewCount() != 0) {
-          focus_child->vt = VT_DISPATCH;
-          this->get_accChild(*focus_child, &focus_child->pdispVal);
-        }
-        has_focus = true;
-        break;
-      }
-    }
-    // No current focus on any of the children.
-    if (!has_focus) {
-      focus_child->vt = VT_EMPTY;
-      return S_FALSE;
-    }
+    // Neither this object nor any of its children has the keyboard focus.
+    focus_child->vt = VT_EMPTY;
   }
-
   return S_OK;
 }
 
@@ -410,9 +358,8 @@ STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(
 }
 
 STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
-  if (!IsValidId(var_id) || !name) {
+  if (!IsValidId(var_id) || !name)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
@@ -433,9 +380,8 @@ STDMETHODIMP ViewAccessibility::get_accName(VARIANT var_id, BSTR* name) {
 }
 
 STDMETHODIMP ViewAccessibility::get_accParent(IDispatch** disp_parent) {
-  if (!disp_parent) {
+  if (!disp_parent)
     return E_INVALIDARG;
-  }
 
   if (!view_)
     return E_FAIL;
@@ -466,22 +412,17 @@ STDMETHODIMP ViewAccessibility::get_accParent(IDispatch** disp_parent) {
     return S_OK;
   }
 
-  // Retrieve the IUnknown interface for the parent view, and assign the
-  // IDispatch returned.
-  if ((GetViewAccessibilityWrapper(parent_view))->
-      GetInstance(IID_IAccessible,
-                  reinterpret_cast<void**>(disp_parent)) == S_OK) {
-    // Increment the reference count for the retrieved interface.
-    (*disp_parent)->AddRef();
-    return S_OK;
-  } else {
-    return E_NOINTERFACE;
-  }
+  *disp_parent = GetAccessibleForView(parent_view);
+  (*disp_parent)->AddRef();
+  return S_OK;
 }
 
 STDMETHODIMP ViewAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
   if (!IsValidId(var_id) || !role)
     return E_INVALIDARG;
+
+  if (!view_)
+    return E_FAIL;
 
   role->vt = VT_I4;
   role->lVal = MSAARole(view_->GetAccessibleRole());
@@ -489,14 +430,16 @@ STDMETHODIMP ViewAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
 }
 
 STDMETHODIMP ViewAccessibility::get_accState(VARIANT var_id, VARIANT* state) {
-  if (!IsValidId(var_id) || !state) {
+  if (!IsValidId(var_id) || !state)
     return E_INVALIDARG;
-  }
+
+  if (!view_)
+    return E_FAIL;
 
   state->vt = VT_I4;
 
   // Retrieve all currently applicable states of the parent.
-  this->SetState(state, view_);
+  SetState(state, view_);
 
   // Make sure that state is not empty, and has the proper type.
   if (state->vt == VT_EMPTY)
@@ -628,13 +571,6 @@ STDMETHODIMP ViewAccessibility::put_accName(VARIANT var_id, BSTR put_name) {
 }
 
 STDMETHODIMP ViewAccessibility::put_accValue(VARIANT var_id, BSTR put_val) {
-  // TODO(ctguil): This use looks incorrect. var_id should be of type VT_I4.
-  if (V_VT(&var_id) == VT_BSTR) {
-    if (!lstrcmpi(var_id.bstrVal, kViewsUninitializeAccessibilityInstance)) {
-      view_ = NULL;
-      return S_OK;
-    }
-  }
   // Deprecated.
   return E_NOTIMPL;
 }
@@ -768,11 +704,11 @@ int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
   return msaa_state;
 }
 
+// static
 HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
-    views::NativeViewHost* native_host, IDispatch** disp_child) {
-  if (!native_host || !disp_child) {
+    views::NativeViewHost* native_host, IAccessible** accessible) {
+  if (!native_host || !accessible)
     return E_INVALIDARG;
-  }
 
   HWND native_view_window =
       static_cast<HWND>(GetProp(native_host->native_view(),
@@ -781,16 +717,17 @@ HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
     native_view_window = native_host->native_view();
   }
 
-  return GetNativeIAccessibleInterface(native_view_window, disp_child);
+  return GetNativeIAccessibleInterface(native_view_window, accessible);
 }
 
+// static
 HRESULT ViewAccessibility::GetNativeIAccessibleInterface(
-    HWND native_view_window , IDispatch** disp_child) {
+    HWND native_view_window , IAccessible** accessible) {
   if (IsWindow(native_view_window)) {
     LRESULT ret = SendMessage(native_view_window, WM_GETOBJECT, 0,
                               OBJID_CLIENT);
     return ObjectFromLresult(ret, IID_IDispatch, 0,
-                             reinterpret_cast<void**>(disp_child));
+                             reinterpret_cast<void**>(accessible));
   }
 
   return E_FAIL;

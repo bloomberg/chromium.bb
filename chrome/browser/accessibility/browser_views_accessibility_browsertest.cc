@@ -18,7 +18,7 @@
 #include "chrome/test/ui_test_utils.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "views/accessibility/view_accessibility_wrapper.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
@@ -83,13 +83,8 @@ class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
                                    int32 role) {
     ASSERT_TRUE(NULL != view);
 
-    IAccessible* acc_obj = NULL;
-    HRESULT hr = view->GetViewAccessibilityWrapper()->GetInstance(
-        IID_IAccessible, reinterpret_cast<void**>(&acc_obj));
-    ASSERT_EQ(S_OK, hr);
-    ASSERT_TRUE(NULL != acc_obj);
-
-    TestAccessibilityInfo(acc_obj, name, role);
+    TestAccessibilityInfo(
+        ViewAccessibility::GetAccessibleForView(view), name, role);
   }
 
 

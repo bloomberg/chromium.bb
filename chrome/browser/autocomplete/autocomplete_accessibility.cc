@@ -8,7 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
 #include "grit/generated_resources.h"
-#include "views/accessibility/view_accessibility_wrapper.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/view.h"
 
 HRESULT AutocompleteAccessibility::Initialize(
@@ -58,16 +58,12 @@ STDMETHODIMP AutocompleteAccessibility::get_accParent(IDispatch** disp_parent) {
     return S_FALSE;
   }
 
-  // Retrieve the IUnknown interface for the parent view, and assign the
-  // IDispatch returned.
-  if (edit_box_->parent_view()->GetViewAccessibilityWrapper()->GetInstance(
-      IID_IAccessible, reinterpret_cast<void**>(disp_parent)) == S_OK) {
-    // Increment the reference count for the retrieved interface.
-    (*disp_parent)->AddRef();
-    return S_OK;
-  } else {
-    return E_NOINTERFACE;
-  }
+  // Retrieve the IDispatch interface for the parent view.
+  *disp_parent =
+      ViewAccessibility::GetAccessibleForView(edit_box_->parent_view());
+  // Increment the reference count for the retrieved interface.
+  (*disp_parent)->AddRef();
+  return S_OK;
 }
 
 STDMETHODIMP AutocompleteAccessibility::accNavigate(LONG nav_dir, VARIANT start,

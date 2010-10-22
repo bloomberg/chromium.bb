@@ -4,12 +4,16 @@
 
 #include "views/view.h"
 
+#include <atlcomcli.h>
+//  Necessary to define oleacc GUID's used in window_win.cc.
+#include <initguid.h>
+#include <oleacc.h>
+
 #include "app/drag_drop_types.h"
 #include "base/string_util.h"
 #include "gfx/canvas.h"
 #include "gfx/path.h"
 #include "views/accessibility/view_accessibility.h"
-#include "views/accessibility/view_accessibility_wrapper.h"
 #include "views/border.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
@@ -49,11 +53,10 @@ void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
   }
 }
 
-ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
-  if (accessibility_.get() == NULL) {
-    accessibility_.reset(new ViewAccessibilityWrapper(this));
-  }
-  return accessibility_.get();
+ViewAccessibility* View::GetViewAccessibility() {
+  if (!view_accessibility_.get())
+    view_accessibility_.swap(ViewAccessibility::Create(this));
+  return view_accessibility_.get();
 }
 
 int View::GetHorizontalDragThreshold() {

@@ -11,6 +11,7 @@
 
 #include <oleacc.h>
 
+#include "base/scoped_ptr.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/view.h"
 
@@ -32,10 +33,15 @@ class ATL_NO_VTABLE ViewAccessibility
     COM_INTERFACE_ENTRY(IAccessible)
   END_COM_MAP()
 
-  ViewAccessibility() {}
-  ~ViewAccessibility() {}
+  // Create method for view accessibility.
+  static scoped_refptr<ViewAccessibility> Create(views::View* view);
 
-  HRESULT Initialize(views::View* view);
+  // Returns the IAccessible interface for a view.
+  static IAccessible* GetAccessibleForView(views::View* view);
+
+  virtual ~ViewAccessibility();
+
+  void set_view(views::View* view) { view_ = view; }
 
   // Supported IAccessible methods.
 
@@ -117,6 +123,8 @@ class ATL_NO_VTABLE ViewAccessibility
   static int32 MSAAState(AccessibilityTypes::State state);
 
  private:
+  ViewAccessibility();
+
   // Determines navigation direction for accNavigate, based on left, up and
   // previous being mapped all to previous and right, down, next being mapped
   // to next. Returns true if navigation direction is next, false otherwise.
@@ -132,21 +140,19 @@ class ATL_NO_VTABLE ViewAccessibility
   // Determines if the child id variant is valid.
   bool IsValidId(const VARIANT& child) const;
 
-  // Wrapper to retrieve the view's instance of IAccessible.
-  ViewAccessibilityWrapper* GetViewAccessibilityWrapper(views::View* v) const {
-    return v->GetViewAccessibilityWrapper();
-  }
-
   // Helper function which sets applicable states of view.
   void SetState(VARIANT* msaa_state, views::View* view);
 
   // Returns the IAccessible interface for a native view if applicable.
   // Returns S_OK on success.
-  HRESULT GetNativeIAccessibleInterface(views::NativeViewHost* native_host,
-                                        IDispatch** disp_child);
+  static HRESULT GetNativeIAccessibleInterface(
+      views::NativeViewHost* native_host, IAccessible** accessible);
 
-  HRESULT GetNativeIAccessibleInterface(HWND native_view_window,
-                                        IDispatch** disp_child);
+  static HRESULT GetNativeIAccessibleInterface(
+      HWND native_view_window, IAccessible** accessible);
+
+  // Give CComObject access to the class constructor.
+  template <class Base> friend class CComObject;
 
   // Member View needed for view-specific calls.
   views::View* view_;
@@ -154,7 +160,6 @@ class ATL_NO_VTABLE ViewAccessibility
   DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };
 
-extern const wchar_t kViewsUninitializeAccessibilityInstance[];
 extern const wchar_t kViewsNativeHostPropForAccessibility[];
 
 #endif  // VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_

@@ -57,8 +57,6 @@
         'accessibility/accessibility_types.h',
         'accessibility/view_accessibility.cc',
         'accessibility/view_accessibility.h',
-        'accessibility/view_accessibility_wrapper.cc',
-        'accessibility/view_accessibility_wrapper.h',
         'animation/bounds_animator.cc',
         'animation/bounds_animator.h',
         'background.cc',

@@ -30,8 +30,8 @@ class Insets;
 class Path;
 }
 
-class ViewAccessibilityWrapper;
 class ThemeProvider;
+class ViewAccessibility;
 
 namespace views {
 
@@ -601,10 +601,9 @@ class View : public AcceleratorTarget {
   // certain type.
   void SetAccessibleName(const std::wstring& name);
 
-  // Returns an instance of a wrapper class implementing the (platform-specific)
-  // accessibility interface for a given View. If one exists, it will be
-  // re-used, otherwise a new instance will be created.
-  ViewAccessibilityWrapper* GetViewAccessibilityWrapper();
+  // Returns an instance of the (platform-specific) accessibility interface for
+  // the View.
+  ViewAccessibility* GetViewAccessibility();
 
   // Utility functions
 
@@ -1316,7 +1315,7 @@ class View : public AcceleratorTarget {
 
 #if defined(OS_WIN)
   // The accessibility implementation for this View.
-  scoped_ptr<ViewAccessibilityWrapper> accessibility_;
+  scoped_refptr<ViewAccessibility> view_accessibility_;
 #endif
 
   DragController* drag_controller_;
