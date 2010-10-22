@@ -11,10 +11,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
-// The info-bubble point should look like it points to the point
-// between the star's lower tips. The popup should be where the
-// Omnibox popup ends up (2px below field). Determined via Pixie.app
-// magnification.
+// The info-bubble point should look like it points to the bottom of the lock
+// icon. Determined with Pixie.app.
 const CGFloat kBubblePointYOffset = 2.0;
 
 LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)

@@ -29,6 +29,10 @@ class EVBubbleDecoration : public BubbleDecoration {
   // fits, else it will set an elided version.
   void SetFullLabel(NSString* full_label);
 
+  // Get the point where the page info bubble should point within the
+  // decoration's frame, in the cell's coordinates.
+  NSPoint GetBubblePointInFrame(NSRect frame);
+
   // Implement |LocationBarDecoration|.
   virtual CGFloat GetWidthForSpace(CGFloat width);
   virtual bool IsDraggable();

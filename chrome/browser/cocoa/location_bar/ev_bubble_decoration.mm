@@ -28,6 +28,10 @@ const CGFloat kMinElidedBubbleWidth = 150.0;
 // |kMinElidedBubbleWidth|.
 const float kMaxBubbleFraction = 0.5;
 
+// The info-bubble point should look like it points to the bottom of the lock
+// icon. Determined with Pixie.app.
+const CGFloat kPageInfoBubblePointYOffset = 6.0;
+
 // TODO(shess): This is ugly, find a better way.  Using it right now
 // so that I can crib from gtk and still be able to see that I'm using
 // the same values easily.
@@ -59,6 +63,12 @@ EVBubbleDecoration::EVBubbleDecoration(
 void EVBubbleDecoration::SetFullLabel(NSString* label) {
   full_label_.reset([label retain]);
   SetLabel(full_label_);
+}
+
+NSPoint EVBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
+  NSRect image_rect = GetImageRectInFrame(frame);
+  return NSMakePoint(NSMidX(image_rect),
+                     NSMaxY(image_rect) - kPageInfoBubblePointYOffset);
 }
 
 CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width) {
