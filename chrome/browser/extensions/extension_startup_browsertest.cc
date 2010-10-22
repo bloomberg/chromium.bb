@@ -200,13 +200,7 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
   }
 };
 
-// Flaky (times out) on Mac/Windows. http://crbug.com/46301.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_Test FLAKY_Test
-#else
-#define MAYBE_Test Test
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, MAYBE_Test) {
+IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
   WaitForServicesToStart(1, false);
   TestInjection(true, true);
 }
