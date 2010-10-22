@@ -15,15 +15,15 @@
 
 FileSystemHostContext::FileSystemHostContext(
     const FilePath& data_path, bool is_incognito)
-    : quota_manager_(new fileapi::FileSystemQuota()),
-      path_manager_(new fileapi::FileSystemPathManager(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          data_path, is_incognito, allow_file_access_from_files_)) {
+    : quota_manager_(new fileapi::FileSystemQuota()) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   allow_file_access_from_files_ =
       command_line->HasSwitch(switches::kAllowFileAccessFromFiles);
   unlimited_quota_ =
       command_line->HasSwitch(switches::kUnlimitedQuotaForFiles);
+  path_manager_.reset(new fileapi::FileSystemPathManager(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      data_path, is_incognito, allow_file_access_from_files_));
 }
 
 bool FileSystemHostContext::CheckOriginQuota(const GURL& url, int64 growth) {
