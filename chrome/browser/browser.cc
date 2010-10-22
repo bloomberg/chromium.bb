@@ -1475,8 +1475,15 @@ void Browser::Search() {
   }
 
   // Exit fullscreen to show omnibox.
-  if (window_->IsFullscreen())
+  if (window_->IsFullscreen()) {
     ToggleFullscreenMode();
+    // ToggleFullscreenMode is asynchronous, so we don't have omnibox
+    // visible at this point. Wait for next event cycle which toggles
+    // the visibility of omnibox before creating new tab.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, method_factory_.NewRunnableMethod(&Browser::Search));
+    return;
+  }
 
   // Otherwise just open it.
   NewTab();
