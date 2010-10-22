@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
-#define CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
+#ifndef CHROME_RENDERER_GEOLOCATION_DISPATCHER_OLD_H_
+#define CHROME_RENDERER_GEOLOCATION_DISPATCHER_OLD_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -16,13 +16,17 @@ class GURL;
 class RenderView;
 struct Geoposition;
 
-// GeolocationDispatcher is a delegate for Geolocation messages used by
+// GeolocationDispatcherOld is a delegate for Geolocation messages used by
 // WebKit.
-// It's the complement of GeolocationDispatcherHost (owned by RenderViewHost).
-class GeolocationDispatcher : public WebKit::WebGeolocationService {
+// It's the complement of GeolocationDispatcherHostOld (owned by
+// RenderViewHost).
+
+// TODO(jknotten): Remove this class once the new client-based implementation is
+// checked in (see http://crbug.com/59908).
+class GeolocationDispatcherOld : public WebKit::WebGeolocationService {
  public:
-  explicit GeolocationDispatcher(RenderView* render_view);
-  virtual ~GeolocationDispatcher();
+  explicit GeolocationDispatcherOld(RenderView* render_view);
+  virtual ~GeolocationDispatcherOld();
 
   // Called to possibly handle the incoming IPC message. Returns true if
   // handled. Called in render thread.
@@ -52,7 +56,7 @@ class GeolocationDispatcher : public WebKit::WebGeolocationService {
   // The geolocation services attached to this dispatcher.
   IDMap<WebKit::WebGeolocationServiceBridge> bridges_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherOld);
 };
 
-#endif  // CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
+#endif  // CHROME_RENDERER_GEOLOCATION_DISPATCHER_OLD_H_

@@ -60,7 +60,7 @@
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
-#include "chrome/renderer/geolocation_dispatcher.h"
+#include "chrome/renderer/geolocation_dispatcher_old.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
@@ -5940,7 +5940,7 @@ void RenderView::OnPageTranslated() {
 
 WebKit::WebGeolocationService* RenderView::geolocationService() {
   if (!geolocation_dispatcher_.get())
-    geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
+    geolocation_dispatcher_.reset(new GeolocationDispatcherOld(this));
   return geolocation_dispatcher_.get();
 }
 

@@ -60,7 +60,7 @@ class DomAutomationController;
 class DOMUIBindings;
 class ExternalHostBindings;
 class FilePath;
-class GeolocationDispatcher;
+class GeolocationDispatcherOld;
 class GURL;
 class ListValue;
 class NavigationState;
@@ -1299,7 +1299,7 @@ class RenderView : public RenderWidget,
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
   // The geolocation dispatcher attached to this view, lazily initialized.
-  scoped_ptr<GeolocationDispatcher> geolocation_dispatcher_;
+  scoped_ptr<GeolocationDispatcherOld> geolocation_dispatcher_;
 
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.

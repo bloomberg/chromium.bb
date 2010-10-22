@@ -39,7 +39,7 @@ class DOMStorageDispatcherHost;
 class FileSystemDispatcherHost;
 class FileUtilitiesDispatcherHost;
 struct FontDescriptor;
-class GeolocationDispatcherHost;
+class GeolocationDispatcherHostOld;
 class HostZoomMap;
 class IndexedDBDispatcherHost;
 class NotificationsPrefsCache;
@@ -479,7 +479,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
       speech_input_dispatcher_host_;
 
   // Used to handle geolocation-related messages.
-  scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
+  scoped_refptr<GeolocationDispatcherHostOld> geolocation_dispatcher_host_;
 
   // Used to handle search provider related messages.
   scoped_ptr<SearchProviderInstallStateDispatcherHost>

@@ -32,7 +32,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
-#include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
+#include "chrome/browser/geolocation/geolocation_dispatcher_host_old.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -239,7 +239,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_dispatcher_host_(
           new speech_input::SpeechInputDispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
-          GeolocationDispatcherHost::New(
+          GeolocationDispatcherHostOld::New(
               this->id(), profile->GetGeolocationPermissionContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           search_provider_install_state_dispatcher_host_(

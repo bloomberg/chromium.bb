@@ -10,7 +10,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 
-class GeolocationDispatcherHost;
 class GeolocationInfoBarQueueController;
 class GeolocationPermissionContext;
 class GURL;
