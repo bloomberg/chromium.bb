@@ -1,5 +1,5 @@
 <script>
-var server = 'http://b.com:1337';
+var server = 'http://b.com:PORT';
 var relativePath = '/files/extensions/api_test/executescript/file_after_close/';
 var extensionPage = chrome.extension.getURL('extension_page.html');
 var webPage1 = server + relativePath + 'web_page1.html';
@@ -14,7 +14,7 @@ var listener = function(tabId, changeInfo, tab) {
   if (!extensionPageOpened && tab.url == webPage1) {
     chrome.tabs.create({ url: extensionPage });
     extensionPageOpened = true;
-    return;    
+    return;
   }
 
   if (tab.url == webPage2) {
@@ -25,5 +25,10 @@ var listener = function(tabId, changeInfo, tab) {
 };
 
 chrome.tabs.onUpdated.addListener(listener);
-chrome.tabs.create({ url: webPage1 });
+chrome.test.getConfig(function(config) {
+  webPage1 = webPage1.replace(/PORT/, config.testServer.port);
+  webPage2 = webPage2.replace(/PORT/, config.testServer.port);
+  chrome.tabs.create({ url: webPage1 });
+});
+
 </script>

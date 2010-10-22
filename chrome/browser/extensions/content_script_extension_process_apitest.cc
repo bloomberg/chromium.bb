@@ -10,6 +10,7 @@
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionProcess) {
-  ASSERT_TRUE(test_server()->Start());
-  ASSERT_TRUE(RunExtensionTest("content_scripts/extension_process")) << message_;
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(
+      RunExtensionTest("content_scripts/extension_process")) << message_;
 }

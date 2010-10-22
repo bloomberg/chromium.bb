@@ -6,7 +6,7 @@ var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 var relativePath =
     '/files/extensions/api_test/executescript/in_frame/test_executescript.html';
-var testUrl = 'http://a.com:1337' + relativePath;
+var testUrl = 'http://a.com:PORT' + relativePath;
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (changeInfo.status != 'complete')
@@ -63,6 +63,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   ]);
 });
 
-chrome.tabs.create({ url: testUrl });
+chrome.test.getConfig(function(config) {
+  testUrl = testUrl.replace(/PORT/, config.testServer.port);
+  chrome.tabs.create({ url: testUrl });
+});
 
 </script>
