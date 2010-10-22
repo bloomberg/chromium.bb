@@ -118,6 +118,7 @@ cr.define('options.internet', function() {
    * @type {number}
    */
   NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH = 5;
+  NetworkItem.MIN_WIRELESS_SSID_LENGTH = 1;
   // Cellular activation states:
   NetworkItem.ACTIVATION_STATE_UNKNOWN             = 0;
   NetworkItem.ACTIVATION_STATE_ACTIVATED           = 1;
@@ -312,9 +313,6 @@ cr.define('options.internet', function() {
       passwordDiv.appendChild(ssidInput);
       var passInput = this.ownerDocument.createElement('input');
       passInput.placeholder = localStrings.getString('inetPassPrompt');
-      passInput.addEventListener('keydown', function(e) {
-        e.returnValue = e.keyCode != ' '.charCodeAt();
-      });
       passwordDiv.appendChild(passInput);
       var buttonEl = this.ownerDocument.createElement('button');
       buttonEl.textContent = localStrings.getString('inetLogin');
@@ -323,6 +321,11 @@ cr.define('options.internet', function() {
       buttonEl.style.visibility = 'visible';
       passwordDiv.appendChild(buttonEl);
       this.appendChild(passwordDiv);
+
+      ssidInput.addEventListener('keydown', function(e) {
+        buttonEl.disabled =
+          ssidInput.value.length < NetworkItem.MIN_WIRELESS_SSID_LENGTH;
+      });
       this.connecting = true;
     },
 

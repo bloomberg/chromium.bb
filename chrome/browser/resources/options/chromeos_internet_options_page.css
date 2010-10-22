@@ -20,7 +20,8 @@
 }
 
 #networkingControls {
-  text-align: center;
+  display: -webkit-box;
+  -webkit-margin-start: 10px;
 }
 
 .networks {
@@ -157,14 +158,5 @@ html[dir='rtl'] .details-button {
 }
 
 #wirelessButtons > * > button {
-  display: block;
-}
-
-#wirelessButtons[wifiEnabled] > * > #enableWifi,
-#wirelessButtons:not([wifiEnabled]) > * > #disableWifi,
-#wirelessButtons[cellularEnabled] > * > #enableCellular,
-#wirelessButtons:not([cellularEnabled]) > * > #disableCellular,
-#wirelessButtons:not([cellularAvail]) > * > #disableCellular,
-#wirelessButtons:not([cellularAvail]) > * > #enableCellular {
-  display: none;
+  margin-left: 5px;
 }
