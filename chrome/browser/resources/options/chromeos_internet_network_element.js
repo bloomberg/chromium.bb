@@ -105,7 +105,8 @@ cr.define('options.internet', function() {
       connected: network[4],
       connecting: network[5],
       iconURL: network[6],
-      remembered: network[7]
+      remembered: network[7],
+      activation_state: network[8]
     };
     NetworkItem.decorate(el);
     return el;
@@ -117,6 +118,18 @@ cr.define('options.internet', function() {
    * @type {number}
    */
   NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH = 5;
+  // Cellular activation states:
+  NetworkItem.ACTIVATION_STATE_UNKNOWN             = 0;
+  NetworkItem.ACTIVATION_STATE_ACTIVATED           = 1;
+  NetworkItem.ACTIVATION_STATE_ACTIVATING          = 2;
+  NetworkItem.ACTIVATION_STATE_NOT_ACTIVATED       = 3;
+  NetworkItem.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
+  NetworkItem.TYPE_UNKNOWN   = 0;
+  NetworkItem.TYPE_ETHERNET  = 1;
+  NetworkItem.TYPE_WIFI      = 2;
+  NetworkItem.TYPE_WIMAX     = 3;
+  NetworkItem.TYPE_BLUETOOTH = 4;
+  NetworkItem.TYPE_CELLULAR  = 5;
 
   /**
    * Decorates an element as a network item.
@@ -170,16 +183,48 @@ cr.define('options.internet', function() {
       this.appendChild(spacerDiv);
 
       var buttonsDiv = this.ownerDocument.createElement('div');
+      var self = this;
       if (!this.data.remembered) {
-        if (this.data.connected) {
-          // disconnect button (if not ethernet)
-          if (this.data.networkType != 1)
-             buttonsDiv.appendChild(this.createButton_('disconnect_button',
-                 'disconnect'));
+        var show_activate =
+          this.data.networkType == NetworkItem.TYPE_CELLULAR &&
+          this.data.activation_state !=
+              NetworkItem.ACTIVATION_STATE_ACTIVATED &&
+          this.data.activation_state !=
+              NetworkItem.ACTIVATION_STATE_ACTIVATING;
 
-          // options button
-          buttonsDiv.appendChild(this.createButton_('options_button',
-              'options'));
+        // Disconnect button if not ethernet and if cellular it should be
+        // activated.
+        if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
+            !show_activate && this.data.connected) {
+          buttonsDiv.appendChild(
+              this.createButton_('disconnect_button',
+                                  function(e) {
+                 chrome.send('buttonClickCallback',
+                             [String(self.data.networkType),
+                              self.data.servicePath,
+                              'disconnect']);
+               }));
+        }
+        // Show [Activate] button for non-activated Cellular network.
+        if (show_activate) {
+          buttonsDiv.appendChild(
+              this.createButton_('activate_button',
+                                 function(e) {
+                chrome.send('buttonClickCallback',
+                            [String(self.data.networkType),
+                             self.data.servicePath,
+                             'activate']);
+              }));
+        }
+        if (this.data.connected) {
+          buttonsDiv.appendChild(
+              this.createButton_('options_button',
+                                 function(e) {
+                chrome.send('buttonClickCallback',
+                            [String(self.data.networkType),
+                             self.data.servicePath,
+                             'options']);
+              }));
         }
       } else {
         // forget button
@@ -306,12 +351,10 @@ cr.define('options.internet', function() {
      * @param {Object} name The name of the localStrings to use for the text.
      * @param {Object} type The type of button.
      */
-    createButton_: function(name, type) {
+    createButton_: function(name, callback) {
       var buttonEl = this.ownerDocument.createElement('button');
       buttonEl.textContent = localStrings.getString(name);
-      buttonEl.buttonType = type;
-      buttonEl.networkType = this.data.networkType;
-      buttonEl.servicePath = this.data.servicePath;
+      buttonEl.addEventListener('click', callback);
       return buttonEl;
     }
   };

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 #include <algorithm>
+#include <map>
 
 #include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
@@ -342,8 +343,9 @@ std::string CellularNetwork::GetNetworkTechnologyString() const {
   }
 }
 
-std::string CellularNetwork::GetActivationStateString() const {
-  switch (this->activation_state_) {
+std::string CellularNetwork::ActivationStateToString(
+    ActivationState activation_state) {
+  switch (activation_state) {
     case ACTIVATION_STATE_ACTIVATED:
       return l10n_util::GetStringUTF8(
           IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATED);
@@ -365,6 +367,10 @@ std::string CellularNetwork::GetActivationStateString() const {
           IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN);
       break;
   }
+}
+
+std::string CellularNetwork::GetActivationStateString() const {
+  return ActivationStateToString(this->activation_state_);
 }
 
 std::string CellularNetwork::GetRoamingStateString() const {
@@ -477,6 +483,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (data_plan_monitor_) {
       DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
     }
+    // DCHECK(!observers_.size());
+    DCHECK(!property_observers_.size());
+    for (PropertyChangeObserverMap::iterator iter = property_observers_.begin();
+         iter != property_observers_.end();
+         ++iter) {
+      delete iter->second;
+    }
   }
 
   void AddObserver(Observer* observer) {
@@ -485,6 +498,40 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void RemoveObserver(Observer* observer) {
     observers_.RemoveObserver(observer);
+  }
+
+  virtual void AddProperyObserver(const char* service_path,
+                                  PropertyObserver* observer) {
+    DCHECK(service_path);
+    DCHECK(observer);
+    // First, add the observer to the callback map.
+    PropertyChangeObserverMap::iterator iter = property_observers_.find(
+        std::string(service_path));
+    if (iter != property_observers_.end()) {
+      iter->second->AddObserver(observer);
+    } else {
+      std::pair<PropertyChangeObserverMap::iterator, bool> inserted =
+        property_observers_.insert(
+            std::pair<std::string, PropertyObserverList*>(
+                std::string(service_path),
+                new PropertyObserverList(this, service_path)));
+      inserted.first->second->AddObserver(observer);
+    }
+  }
+
+  virtual void RemoveProperyObserver(PropertyObserver* observer) {
+    DCHECK(observer);
+    PropertyChangeObserverMap::iterator map_iter =
+          property_observers_.begin();
+    while (map_iter != property_observers_.end()) {
+      map_iter->second->RemoveObserver(observer);
+      if (!map_iter->second->size()) {
+        delete map_iter->second;
+        property_observers_.erase(map_iter++);
+      } else {
+        ++map_iter;
+      }
+    }
   }
 
   virtual const EthernetNetwork& ethernet_network() const { return ethernet_; }
@@ -872,6 +919,37 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
  private:
+
+  class PropertyObserverList : public ObserverList<PropertyObserver> {
+   public:
+    PropertyObserverList(NetworkLibraryImpl* library,
+                         const char* service_path) {
+      DCHECK(service_path);
+      property_change_monitor_ = MonitorNetworkService(&PropertyChangeHandler,
+                                                       service_path,
+                                                       library);
+    }
+
+    virtual ~PropertyObserverList() {
+      if (property_change_monitor_)
+        DisconnectPropertyChangeMonitor(property_change_monitor_);
+    }
+
+   private:
+    static void PropertyChangeHandler(void* object,
+                                      const char* path,
+                                      const char* key,
+                                      const Value* value) {
+      NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
+      DCHECK(network);
+      network->NotifyPropertyChange(path, key, value);
+    }
+    PropertyChangeMonitor property_change_monitor_;
+  };
+
+  typedef std::map<std::string, PropertyObserverList*>
+      PropertyChangeObserverMap;
+
   static void NetworkStatusChangedHandler(void* object) {
     NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(network);
@@ -994,35 +1072,21 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
     cellular_networks_.clear();
 
-    cellular_networks_.clear();
     CellularNetwork cellular1 = CellularNetwork();
     cellular1.set_service_path("fc1");
     cellular1.set_name("Fake Cellular 1");
-    cellular1.set_strength(90);
-    cellular1.set_connected(false);
+    cellular1.set_strength(70);
+    cellular1.set_connected(true);
+    cellular1.set_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
+    cellular1.set_payment_url(std::string("http://www.google.com"));
     cellular_networks_.push_back(cellular1);
-
-    CellularNetwork cellular2 = CellularNetwork();
-    cellular2.set_service_path("fc2");
-    cellular2.set_name("Fake Cellular 2");
-    cellular2.set_strength(70);
-    cellular2.set_connected(true);
-    cellular_networks_.push_back(cellular2);
-
-    CellularNetwork cellular3 = CellularNetwork();
-    cellular3.set_service_path("fc3");
-    cellular3.set_name("Fake Cellular 3");
-    cellular3.set_strength(50);
-    cellular3.set_connected(false);
-    cellular_networks_.push_back(cellular3);
-
-    cellular_ = cellular2;
+    cellular_ = cellular1;
 
     remembered_wifi_networks_.clear();
     remembered_wifi_networks_.push_back(wifi2);
 
     remembered_cellular_networks_.clear();
-    remembered_cellular_networks_.push_back(cellular2);
+    remembered_cellular_networks_.push_back(cellular1);
 
     int devices = (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) |
         (1 << TYPE_CELLULAR);
@@ -1108,6 +1172,24 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     FOR_EACH_OBSERVER(Observer, observers_, CellularDataPlanChanged(this));
   }
 
+  void NotifyPropertyChange(const char* service_path,
+                            const char* key,
+                            const Value* value) {
+    DCHECK(service_path);
+    DCHECK(key);
+    DCHECK(value);
+    PropertyChangeObserverMap::const_iterator iter = property_observers_.find(
+        std::string(service_path));
+    if (iter != property_observers_.end()) {
+      FOR_EACH_OBSERVER(PropertyObserver, *(iter->second),
+          PropertyChanged(service_path, key, value));
+    } else {
+      NOTREACHED() <<
+          "There weren't supposed to be any property change observers of " <<
+          service_path;
+    }
+  }
+
   void UpdateNetworkStatus() {
     // Make sure we run on UI thread.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -1167,11 +1249,17 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   ObserverList<Observer> observers_;
 
+  // Property change observer map
+  PropertyChangeObserverMap  property_observers_;
+
   // The network status connection for monitoring network status changes.
   MonitorNetworkConnection network_status_connection_;
 
   // For monitoring data plan changes to the connected cellular network.
   DataPlanUpdateMonitor data_plan_monitor_;
+
+  // The property change connection for monitoring service property changes.
+  std::map<std::string, PropertyChangeMonitor> property_change_monitors_;
 
   // The ethernet network.
   EthernetNetwork ethernet_;
@@ -1212,8 +1300,11 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
  public:
   NetworkLibraryStubImpl() : ip_address_("1.1.1.1") {}
   ~NetworkLibraryStubImpl() {}
-  void AddObserver(Observer* observer) {}
-  void RemoveObserver(Observer* observer) {}
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual void AddProperyObserver(const char* service_path,
+                                  PropertyObserver* observer) {}
+  virtual void RemoveProperyObserver(PropertyObserver* observer) {}
   virtual const EthernetNetwork& ethernet_network() const {
     return ethernet_;
   }

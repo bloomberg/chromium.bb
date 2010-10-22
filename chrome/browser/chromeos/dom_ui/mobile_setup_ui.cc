@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -38,11 +39,12 @@
 namespace {
 
 // Host page JS API function names.
+const char kJsApiStartActivation[] = "startActivation";
 const char kJsApiCloseTab[] = "closeTab";
 const char kJsApiSetTransactionStatus[] = "setTransactionStatus";
 
 const wchar_t kJsDeviceStatusChangedHandler[] =
-    L"handler.MobileSetup.deviceStateChanged";
+    L"mobile.MobileSetup.deviceStateChanged";
 
 // Collular device states that are reported to DOM UI layer.
 const char kStateUnknown[] = "unknown";
@@ -116,6 +118,7 @@ class MobileSetupUIHTMLSource : public ChromeURLDataManager::DataSource {
 // The handler for Javascript messages related to the "register" view.
 class MobileSetupHandler : public DOMMessageHandler,
                            public chromeos::NetworkLibrary::Observer,
+                           public chromeos::NetworkLibrary::PropertyObserver,
                            public base::SupportsWeakPtr<MobileSetupHandler> {
  public:
   MobileSetupHandler();
@@ -130,32 +133,65 @@ class MobileSetupHandler : public DOMMessageHandler,
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(chromeos::NetworkLibrary* obj);
+  // NetworkLibrary::PropertyObserver implementation.
+  virtual void PropertyChanged(const char* service_path,
+                               const char* key,
+                               const Value* value);
+
+  // Returns currently present cellular network, NULL if no network found.
+  static const chromeos::CellularNetwork* GetNetwork();
 
  private:
+  typedef enum PlanActivationState {
+    PLAN_ACTIVATION_PAGE_LOADING = -1,
+    PLAN_ACTIVATION_START = 0,
+    PLAN_ACTIVATION_INITIATING_ACTIVATION = 1,
+    PLAN_ACTIVATION_ACTIVATING = 2,
+    PLAN_ACTIVATION_SHOWING_PAYMENT = 3,
+    PLAN_ACTIVATION_DONE = 4,
+    PLAN_ACTIVATION_ERROR = 5,
+  } PlanActivationState;
+
   // Handlers for JS DOMUI messages.
+  void HandleStartActivation(const ListValue* args);
   void HandleCloseTab(const ListValue* args);
   void HandleSetTransactionStatus(const ListValue* args);
 
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
 
+  // Verify the state of cellular network and modify internal state.
+  void EvaluateCellularNetwork();
+  // Check the current cellular network for error conditions.
+  bool GotActivationError(const chromeos::CellularNetwork* network,
+                          std::string* error);
+  void ChangeState(const chromeos::CellularNetwork* network,
+                   PlanActivationState new_state,
+                   const std::string& error_description);
+
   // Converts the currently active CellularNetwork device into a JS object.
-  static bool GetDeviceInfo(DictionaryValue* value);
+  static void GetDeviceInfo(const chromeos::CellularNetwork* network,
+                            DictionaryValue* value);
   static bool ShouldReportDeviceState(std::string* state, std::string* error);
 
   // Performs activation state cellular device evaluation.
   // Returns false if device activation failed. In this case |error|
   // will contain error message to be reported to DOM UI.
-  static bool CheckForActivationError(chromeos::CellularNetwork network,
-                                      std::string* error);
+  static bool EvaluateCellularDeviceState(bool* report_status,
+                                          std::string* state,
+                                          std::string* error);
 
   // Return error message for a given code.
   static std::string GetErrorMessage(const std::string& code);
   static void LoadCellularConfig();
 
+  static const char* GetStateDescription(PlanActivationState state);
+
   static scoped_ptr<CellularConfigDocument> cellular_config_;
 
   TabContents* tab_contents_;
+  // Internal handler state.
+  PlanActivationState state_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -224,10 +260,13 @@ MobileSetupUIHTMLSource::MobileSetupUIHTMLSource()
 void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                                                 bool is_off_the_record,
                                                 int request_id) {
+  const chromeos::CellularNetwork* network = MobileSetupHandler::GetNetwork();
+
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
   strings.SetString("connecting_header",
-                    l10n_util::GetStringUTF16(IDS_MOBILE_CONNECTING_HEADER));
+                    l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
+                    network ? UTF8ToUTF16(network->name()) : string16()));
   strings.SetString("error_header",
                     l10n_util::GetStringUTF16(IDS_MOBILE_ERROR_HEADER));
   strings.SetString("activating_header",
@@ -256,11 +295,15 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
 // MobileSetupHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-MobileSetupHandler::MobileSetupHandler() : tab_contents_(NULL) {
+MobileSetupHandler::MobileSetupHandler()
+    : tab_contents_(NULL), state_(PLAN_ACTIVATION_PAGE_LOADING) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+  chromeos::NetworkLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  lib->RemoveObserver(this);
+  lib->RemoveProperyObserver(this);
 }
 
 DOMMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
@@ -269,13 +312,12 @@ DOMMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
 
 void MobileSetupHandler::Init(TabContents* contents) {
   tab_contents_ = contents;
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
-
-  // TODO(zelidrag): We might want to move this to another thread.
   LoadCellularConfig();
 }
 
 void MobileSetupHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback(kJsApiStartActivation,
+      NewCallback(this, &MobileSetupHandler::HandleStartActivation));
   dom_ui_->RegisterMessageCallback(kJsApiCloseTab,
       NewCallback(this, &MobileSetupHandler::HandleCloseTab));
   dom_ui_->RegisterMessageCallback(kJsApiSetTransactionStatus,
@@ -283,25 +325,53 @@ void MobileSetupHandler::RegisterMessages() {
 }
 
 void MobileSetupHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
-  if (!dom_ui_)
+  if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
-  DictionaryValue device;
-  GetDeviceInfo(&device);
-  std::string state, error;
-  if (!ShouldReportDeviceState(&state, &error))
-    return;
+  EvaluateCellularNetwork();
+}
 
-  device.SetString("state", state);
-  if (error.length())
-    device.SetString("error", error);
-  dom_ui_->CallJavascriptFunction(
-      kJsDeviceStatusChangedHandler, device);
+void MobileSetupHandler::PropertyChanged(const char* service_path,
+                                         const char* key,
+                                         const Value* value) {
+  if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
+    return;
+  const chromeos::CellularNetwork* network = GetNetwork();
+  if (network->service_path() != service_path) {
+    NOTREACHED();
+    return;
+  }
+  std::string value_string;
+  LOG(INFO) << "Cellular property change: " << key << " = " <<
+      value_string.c_str();
+  // Force status updates.
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->UpdateSystemInfo();
+  EvaluateCellularNetwork();
 }
 
 void MobileSetupHandler::HandleCloseTab(const ListValue* args) {
-  Browser* browser = BrowserList::GetLastActive();
+  if (!dom_ui_)
+    return;
+  Browser* browser = BrowserList::FindBrowserWithFeature(
+      dom_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
   if (browser)
     browser->CloseTabContents(tab_contents_);
+}
+
+void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
+  const chromeos::CellularNetwork* network = GetNetwork();
+  if (!network) {
+    ChangeState(NULL, PLAN_ACTIVATION_ERROR, std::string());
+    return;
+  }
+
+  // Start monitoring network and service property changes.
+  chromeos::NetworkLibrary* lib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  lib->AddObserver(this);
+  lib->AddProperyObserver(network->service_path().c_str(),
+                          this);
+  state_ = PLAN_ACTIVATION_START;
+  EvaluateCellularNetwork();
 }
 
 void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
@@ -314,104 +384,235 @@ void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
   if (!args->GetString(0, &status))
     return;
 
-  chromeos::NetworkLibrary* network_lib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  const chromeos::CellularNetworkVector& cell_networks =
-      network_lib->cellular_networks();
-  if (!cell_networks.size())
+  // The payment is received, try to reconnect and check the status all over
+  // again.
+  if (LowerCaseEqualsASCII(status, "OK")) {
+    ChangeState(GetNetwork(), PLAN_ACTIVATION_START, std::string());
+  }
+}
+
+
+void MobileSetupHandler::EvaluateCellularNetwork() {
+  if (!dom_ui_)
     return;
 
-  // We assume only one cellular network will come from flimflam for now.
-  const chromeos::CellularNetwork& network = *(cell_networks.begin());
-
-  if (LowerCaseEqualsASCII(status, "OK")) {
-    network.StartActivation();
+  PlanActivationState new_state = state_;
+  const chromeos::CellularNetwork* network = GetNetwork();
+  if (network) {
+    LOG(INFO) << "Cellular:\n  service=" << network->GetStateString().c_str() <<
+        "\n  ui=" << GetStateDescription(state_) <<
+        "\n  activation=" << network->GetActivationStateString().c_str() <<
+        "\n  restricted=" << (network->restricted_pool() ? "yes" : "no") <<
+         "\n  error=" << network->GetErrorString().c_str() <<
+         "\n  setvice_path=" << network->service_path().c_str();
   } else {
-    DictionaryValue value;
-    value.SetString("state", kFailedPaymentError);
-    dom_ui_->CallJavascriptFunction(kJsDeviceStatusChangedHandler, value);
+    LOG(WARNING) << "Cellular service lost";
   }
+  switch (state_) {
+    case PLAN_ACTIVATION_START:
+      if (network) {
+        switch (network->activation_state()) {
+          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          case chromeos::ACTIVATION_STATE_ACTIVATED:
+            if (network->failed_or_disconnected()) {
+              new_state = PLAN_ACTIVATION_ACTIVATING;
+            } else if (network->connection_state() == chromeos::STATE_READY) {
+              if (network->restricted_pool()) {
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+              } else {
+                new_state = PLAN_ACTIVATION_DONE;
+              }
+            }
+            break;
+          case chromeos::ACTIVATION_STATE_UNKNOWN:
+          case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
+            if (network->failed_or_disconnected()) {
+              new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+            } if (network->connected()) {
+              LOG(INFO) << "Disconnecting from " <<
+                  network->service_path().c_str();
+              chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+                  DisconnectFromWirelessNetwork(*network);
+            }
+            break;
+          default:
+            new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+            break;
+        }
+      }
+      break;
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+      if (network) {
+        switch (network->activation_state()) {
+          case chromeos::ACTIVATION_STATE_ACTIVATED:
+            if (network->failed_or_disconnected()) {
+              new_state = PLAN_ACTIVATION_ACTIVATING;
+            } else if (network->connection_state() == chromeos::STATE_READY) {
+              if (network->restricted_pool()) {
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+              } else {
+                new_state = PLAN_ACTIVATION_DONE;
+              }
+            }
+            break;
+          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+            if (network->connected())
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            else
+              new_state = PLAN_ACTIVATION_ACTIVATING;
+            break;
+          case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
+            // Wait in this state until activation state changes.
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      }
+      break;
+    case PLAN_ACTIVATION_ACTIVATING:
+      // Wait until the service shows up and gets activated.
+      if (network) {
+        switch (network->activation_state()) {
+          case chromeos::ACTIVATION_STATE_ACTIVATED:
+            if (network->connection_state() == chromeos::STATE_READY) {
+              if (network->restricted_pool()) {
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+              } else {
+                new_state = PLAN_ACTIVATION_DONE;
+              }
+            }
+            break;
+          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+            if (network->connected()) {
+              if (network->restricted_pool())
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            }
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      }
+      break;
+    case PLAN_ACTIVATION_PAGE_LOADING:
+      break;
+    // Just ignore all signals until the site confirms payment.
+    case PLAN_ACTIVATION_SHOWING_PAYMENT:
+      // Activation completed/failed, ignore network changes.
+    case PLAN_ACTIVATION_DONE:
+    case PLAN_ACTIVATION_ERROR:
+      break;
+  }
+
+  std::string error_description;
+  if (GotActivationError(network, &error_description)) {
+    new_state = PLAN_ACTIVATION_ERROR;
+  }
+  ChangeState(network, new_state, error_description);
 }
 
-bool MobileSetupHandler::ShouldReportDeviceState(std::string* state,
-                                                 std::string* error) {
-  DCHECK(state);
-  DCHECK(error);
-  chromeos::NetworkLibrary* network_lib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-
-  const chromeos::CellularNetworkVector& cell_networks =
-      network_lib->cellular_networks();
-  // No cellular network present? Treat as network is disconnected.
-  // This could be transient state that is the result of activation process.
-  if (!cell_networks.size()) {
-    *state = kStateDisconnected;
-    return true;
+// Debugging helper function, will take it out at the end.
+const char* MobileSetupHandler::GetStateDescription(
+    PlanActivationState state) {
+  switch (state) {
+    case PLAN_ACTIVATION_PAGE_LOADING:
+      return "PAGE_LOADING";
+    case PLAN_ACTIVATION_START:
+      return "ACTIVATION_START";
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+      return "INITIATING_ACTIVATION";
+    case PLAN_ACTIVATION_ACTIVATING :
+      return "ACTIVATING";
+    case PLAN_ACTIVATION_SHOWING_PAYMENT:
+      return "SHOWING_PAYMENT";
+    case PLAN_ACTIVATION_DONE:
+      return "DONE";
+    case PLAN_ACTIVATION_ERROR:
+      return "ERROR";
   }
-  const chromeos::CellularNetwork& network = cell_networks.at(0);
+  return "UNKNOWN";
+}
 
-  // First, check if device activation / plan payment failed.
-  // It's slightly more complex than just single state check
-  // that we are doing for other states below.
-  if (!CheckForActivationError(network, error)) {
-    *state = kStateError;
-    return true;
+void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
+                                     PlanActivationState new_state,
+                                     const std::string& error_description) {
+  static bool first_time = true;
+  if (state_ == new_state && !first_time)
+    return;
+  LOG(INFO) << "Activation state flip old = " << GetStateDescription(state_) <<
+      ", new = " << GetStateDescription(new_state);
+  first_time = false;
+  state_ = new_state;
+  switch (new_state) {
+    case PLAN_ACTIVATION_START:
+      break;
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
+      DCHECK(network);
+      LOG(INFO) << "Activating service " << network->service_path().c_str();
+      if (!network->StartActivation()) {
+        new_state = PLAN_ACTIVATION_ERROR;
+      }
+      break;
+    case PLAN_ACTIVATION_ACTIVATING:
+      DCHECK(network);
+      if (network) {
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+            ConnectToCellularNetwork(*network);
+      }
+      break;
+    case PLAN_ACTIVATION_PAGE_LOADING:
+      return;
+    case PLAN_ACTIVATION_SHOWING_PAYMENT:
+    case PLAN_ACTIVATION_DONE:
+    case PLAN_ACTIVATION_ERROR:
+      break;
   }
 
-  switch (network.activation_state()) {
-    case chromeos::ACTIVATION_STATE_UNKNOWN:
-    case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
-      // If this page is shown, I assume that we have already kicked off the
-      // process of starting the activation even though the device status
-      // reporting might not have caught up with us yet.
-      *state = kStateConnecting;
-      return true;
-    case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-    case chromeos::ACTIVATION_STATE_ACTIVATING:
-      *state = kStateActivating;
-      return true;
-    case chromeos::ACTIVATION_STATE_ACTIVATED:
-      *state = kStateConnected;
-      return true;
-  }
-
-  // We don't report states that we don't understand to DOM UI.
-  *state = kStateUnknown;
-  return false;
+  DictionaryValue device_dict;
+  if (network)
+    GetDeviceInfo(network, &device_dict);
+  device_dict.SetInteger("state", new_state);
+  if (error_description.length())
+    device_dict.SetString("error", error_description);
+  dom_ui_->CallJavascriptFunction(
+      kJsDeviceStatusChangedHandler, device_dict);
 }
 
 
-bool MobileSetupHandler::CheckForActivationError(
-    chromeos::CellularNetwork network, std::string* error) {
+bool MobileSetupHandler::GotActivationError(
+    const chromeos::CellularNetwork* network, std::string* error) {
+  if (network)
+    return false;
   bool got_error = false;
   const char* error_code = kErrorDefault;
 
-  // This is the magic of error selecting based
-  if (network.connection_state() == chromeos::STATE_FAILURE &&
-      network.error() == chromeos::ERROR_AAA_FAILED ) {
-    if (network.activation_state() ==
+  // This is the magic for detection of errors in during activation process.
+  if (network->connection_state() == chromeos::STATE_FAILURE &&
+      network->error() == chromeos::ERROR_AAA_FAILED ) {
+    if (network->activation_state() ==
             chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
       error_code = kErrorBadConnectionPartial;
-    } else if (network.activation_state() ==
+    } else if (network->activation_state() ==
             chromeos::ACTIVATION_STATE_ACTIVATED) {
-      if (network.roaming_state() == chromeos::ROAMING_STATE_HOME) {
+      if (network->roaming_state() == chromeos::ROAMING_STATE_HOME) {
         error_code = kErrorBadConnectionActivated;
-      } else if (network.roaming_state() == chromeos::ROAMING_STATE_ROAMING) {
+      } else if (network->roaming_state() == chromeos::ROAMING_STATE_ROAMING) {
         error_code = kErrorRoamingOnConnection;
       }
     }
     got_error = true;
-  } else if (network.connection_state() ==
+  } else if (network->connection_state() ==
                  chromeos::STATE_ACTIVATION_FAILURE) {
-    if (network.error() == chromeos::ERROR_NEED_EVDO) {
-      if (network.activation_state() ==
+    if (network->error() == chromeos::ERROR_NEED_EVDO) {
+      if (network->activation_state() ==
               chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED)
         error_code = kErrorNoEVDO;
-    } else if (network.error() == chromeos::ERROR_NEED_HOME_NETWORK) {
-      if (network.activation_state() ==
+    } else if (network->error() == chromeos::ERROR_NEED_HOME_NETWORK) {
+      if (network->activation_state() ==
               chromeos::ACTIVATION_STATE_NOT_ACTIVATED) {
         error_code = kErrorRoamingActivation;
-      } else if (network.activation_state() ==
+      } else if (network->activation_state() ==
                     chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED) {
         error_code = kErrorRoamingPartiallyActivated;
       }
@@ -422,29 +623,29 @@ bool MobileSetupHandler::CheckForActivationError(
   if (got_error)
     *error = GetErrorMessage(error_code);
 
-  return !got_error;
+  return got_error;
 }
 
-bool MobileSetupHandler::GetDeviceInfo(DictionaryValue* value) {
-  DCHECK(value);
+const chromeos::CellularNetwork* MobileSetupHandler::GetNetwork() {
   chromeos::NetworkLibrary* network_lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
   const chromeos::CellularNetworkVector& cell_networks =
       network_lib->cellular_networks();
-  if (!cell_networks.size()) {
-    return false;
-  }
+  if (!cell_networks.size())
+    return NULL;
+  return &(*(cell_networks.begin()));
+}
 
-  const chromeos::CellularNetwork& network = *(cell_networks.begin());
-  value->SetString("carrier", UTF8ToUTF16(network.name()));
-  value->SetString("payment_url", UTF8ToUTF16(network.payment_url()));
-  value->SetString("MEID", UTF8ToUTF16(network.meid()));
-  value->SetString("IMEI", UTF8ToUTF16(network.imei()));
-  value->SetString("IMSI", UTF8ToUTF16(network.imsi()));
-  value->SetString("ESN", UTF8ToUTF16(network.esn()));
-  value->SetString("MDN", UTF8ToUTF16(network.mdn()));
-  return true;
+void MobileSetupHandler::GetDeviceInfo(const chromeos::CellularNetwork* network,
+          DictionaryValue* value) {
+  if (!network)
+    return;
+  value->SetString("carrier", network->name());
+  value->SetString("payment_url", network->payment_url());
+  value->SetString("MEID", network->meid());
+  value->SetString("IMEI", network->imei());
+  value->SetString("MDN", network->mdn());
 }
 
 std::string MobileSetupHandler::GetErrorMessage(const std::string& code) {

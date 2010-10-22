@@ -92,6 +92,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("forget_button",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_FORGET));
+  localized_strings->SetString("activate_button",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_ACTIVATE));
 
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
@@ -324,7 +327,10 @@ void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
-  Browser* browser = BrowserList::GetLastActive();
+  if (!dom_ui_)
+    return;
+  Browser* browser = BrowserList::FindBrowserWithFeature(
+      dom_ui_->GetProfile(), Browser::FEATURE_TABSTRIP);
   if (browser)
     browser->OpenMobilePlanTabAndActivate();
 }
@@ -787,6 +793,10 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
         cros->ConnectToCellularNetwork(cellular);
       } else if (command == "disconnect") {
         cros->DisconnectFromWirelessNetwork(cellular);
+      } else if (command == "activate") {
+        Browser* browser = BrowserList::GetLastActive();
+        if (browser)
+          browser->OpenMobilePlanTabAndActivate();
       } else if (command == "options") {
         PopulateDictionaryDetails(cellular, cros);
       }
@@ -816,17 +826,23 @@ void InternetOptionsHandler::RefreshCellularPlanCallback(
 
 ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
     const SkBitmap& icon, const std::string& name, bool connecting,
-    bool connected, int connection_type, bool remembered) {
+    bool connected, chromeos::ConnectionType connection_type, bool remembered,
+    chromeos::ActivationState activation_state) {
 
   ListValue* network = new ListValue();
 
-  int s = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  int connection_state = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
   if (connecting)
-    s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
   else if (connected)
-    s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  string16 status = l10n_util::GetStringUTF16(s);
-
+    connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  std::string status = l10n_util::GetStringUTF8(connection_state);
+  if (connection_type == chromeos::TYPE_CELLULAR &&
+      activation_state != chromeos::ACTIVATION_STATE_ACTIVATED) {
+    status.append(" / ");
+    status.append(
+        chromeos::CellularNetwork::ActivationStateToString(activation_state));
+  }
   // service path
   network->Append(Value::CreateStringValue(service_path));
   // name
@@ -834,7 +850,7 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
   // status
   network->Append(Value::CreateStringValue(status));
   // type
-  network->Append(Value::CreateIntegerValue(connection_type));
+  network->Append(Value::CreateIntegerValue(static_cast<int>(connection_type)));
   // connected
   network->Append(Value::CreateBooleanValue(connected));
   // connecting
@@ -844,6 +860,9 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
       dom_ui_util::GetImageDataUrl(icon)));
   // remembered
   network->Append(Value::CreateBooleanValue(remembered));
+  // activation_state
+  network->Append(Value::CreateIntegerValue(
+                    static_cast<int>(activation_state)));
   return network;
 }
 
@@ -870,7 +889,8 @@ ListValue* InternetOptionsHandler::GetWiredList() {
         ethernet_network.connecting(),
         ethernet_network.connected(),
         chromeos::TYPE_ETHERNET,
-        false));
+        false,
+        chromeos::ACTIVATION_STATE_UNKNOWN));
   }
   return list;
 }
@@ -897,7 +917,8 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         it->connecting(),
         it->connected(),
         chromeos::TYPE_WIFI,
-        false));
+        false,
+        chromeos::ACTIVATION_STATE_UNKNOWN));
   }
 
   const chromeos::CellularNetworkVector& cellular_networks =
@@ -915,7 +936,8 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         it->connecting(),
         it->connected(),
         chromeos::TYPE_CELLULAR,
-        false));
+        false,
+        it->activation_state()));
   }
 
   // Add "Other..." if wifi is enabled.
@@ -927,7 +949,8 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false,
         false,
         chromeos::TYPE_WIFI,
-        false));
+        false,
+        chromeos::ACTIVATION_STATE_UNKNOWN));
   }
 
   return list;
@@ -955,7 +978,8 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
         it->connecting(),
         it->connected(),
         chromeos::TYPE_WIFI,
-        true));
+        true,
+        chromeos::ACTIVATION_STATE_UNKNOWN));
   }
 
   const chromeos::CellularNetworkVector& cellular_networks =
@@ -972,7 +996,8 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
         it->connecting(),
         it->connected(),
         chromeos::TYPE_CELLULAR,
-        true));
+        true,
+        it->activation_state()));
   }
 
   return list;

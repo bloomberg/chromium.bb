@@ -72,7 +72,8 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
   // Creates the map of a network
   ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,
       const std::string& name, bool connecting, bool connected,
-      int connection_type, bool remembered);
+      chromeos::ConnectionType connection_type, bool remembered,
+      chromeos::ActivationState activation_state);
 
   // Creates the map of wired networks
   ListValue* GetWiredList();

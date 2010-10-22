@@ -10,7 +10,6 @@ found in the LICENSE file.
                                left bottom,
                                from(white),
                                to(#f3f3f3));
-  border-bottom: 1px solid #a0a0a0;
   padding: 4px 8px;
 }
 

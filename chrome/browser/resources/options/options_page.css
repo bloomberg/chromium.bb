@@ -56,8 +56,10 @@ html[dir='rtl'] #close-overlay {
 }
 
 .overlay .button-strip {
-  padding-top: 20px;
-  text-align: end;
+  padding: 12px;
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
 }
 
 .overlay > div {
@@ -173,7 +175,7 @@ html[hide-menu=true] #mainview {
 }
 
 #mainview-content {
-  width: 550px;
+  width: 600px;
   padding: 0 24px;
 }
 

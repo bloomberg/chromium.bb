@@ -15,6 +15,8 @@
 #include "base/timer.h"
 #include "cros/chromeos_network.h"
 
+class Value;
+
 namespace chromeos {
 
 // Cellular network is considered low data when less than 60 minues.
@@ -41,6 +43,8 @@ class Network {
   bool connected() const { return state_ == STATE_READY; }
   bool connecting_or_connected() const { return connecting() || connected(); }
   bool failed() const { return state_ == STATE_FAILURE; }
+  bool failed_or_disconnected() const { return failed() ||
+      state_ == STATE_IDLE; }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
 
@@ -146,6 +150,9 @@ class CellularNetwork : public WirelessNetwork {
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
+  void set_activation_state(ActivationState state) {
+    activation_state_ = state;
+  }
   const ActivationState activation_state() const { return activation_state_; }
   const NetworkTechnology network_technology() const {
     return network_technology_;
@@ -156,6 +163,9 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& payment_url() const { return payment_url_; }
+  void set_payment_url(const std::string& url) {
+    payment_url_ = url;
+  }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
   const std::string& imsi() const { return imsi_; }
@@ -188,6 +198,9 @@ class CellularNetwork : public WirelessNetwork {
   std::string GetActivationStateString() const;
   // Return a string representation of roaming state.
   std::string GetRoamingStateString() const;
+
+  // Return a string representation of |activation_state|.
+  static std::string ActivationStateToString(ActivationState activation_state);
 
  protected:
   ActivationState activation_state_;
@@ -326,9 +339,19 @@ class NetworkLibrary {
     virtual void CellularDataPlanChanged(NetworkLibrary* obj) {}
   };
 
+  class PropertyObserver {
+   public:
+    virtual void PropertyChanged(const char* service_path,
+                                 const char* key,
+                                 const Value* value) = 0;
+  };
+
   virtual ~NetworkLibrary() {}
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void AddProperyObserver(const char* service_path,
+                                  PropertyObserver* observer) = 0;
+  virtual void RemoveProperyObserver(PropertyObserver* observer) = 0;
 
   // Return the active Ethernet network (or a default structure if inactive).
   virtual const EthernetNetwork& ethernet_network() const = 0;

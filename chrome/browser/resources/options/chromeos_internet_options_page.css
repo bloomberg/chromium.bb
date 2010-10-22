@@ -78,7 +78,7 @@
   background: 0 50% no-repeat;
   cursor: default;
   display: table-cell;
-  height: 24px;
+  height: 32px;
   line-height: 100%;
   max-width: 320px;
   overflow: hidden;
@@ -115,10 +115,19 @@
 #detailsInternetPage {
   min-width: 400px;
   min-height: 360px;
+  position: relative;
 }
 
 .details-button {
   float: right;
+}
+
+#details-plan-table {
+  width: 100%;
+}
+
+#planSummary {
+  width: 250px;
 }
 
 html[dir='rtl'] .details-button {
@@ -150,7 +159,6 @@ html[dir='rtl'] .details-button {
 #wirelessButtons > * > button {
   display: block;
 }
-
 
 #wirelessButtons[wifiEnabled] > * > #enableWifi,
 #wirelessButtons:not([wifiEnabled]) > * > #disableWifi,

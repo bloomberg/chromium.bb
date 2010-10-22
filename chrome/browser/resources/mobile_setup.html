@@ -22,7 +22,7 @@ iframe {
   top: 0;
   bottom: 0;
   z-index: 10;
-  padding: 20px;
+  padding: 100px;
   -webkit-box-align: center;
   -webkit-box-pack: center;
 }
@@ -45,7 +45,7 @@ iframe {
   text-align: center;
 }
 
-#payment-form {
+#paymentForm {
   display: -webkit-box;
   position: absolute;
   left: 0;
@@ -61,7 +61,7 @@ iframe {
   height: 58px;
 }
 
-#error-msg {
+#errorMessage {
   margin: 20px;
 }
 
@@ -69,13 +69,13 @@ iframe {
   display: -webkit-box;
 }
 
-#final-logo {
+#finalLogo {
   position: absolute;
-  right: 30px;
+  right: 130px;
   width: 150px;
 }
 
-#activation-logo {
+#activationLogo {
   background-position: center;
   margin-bottom: 20px;
   margin-top: 20px;
@@ -90,80 +90,39 @@ iframe {
   height: 1px;
 }
 
-body[state='connecting'] > #payment-form,
-body[state='connecting'] > #final-message,
-body[state='connecting'] > * > #error-message {
-  display: none
-}
-body[state='connecting'] > #system-status {
-  display: block
-}
-
-body[state='error'] > #payment-form,
-body[state='error'] > #final-message {
-  display: none
-}
-body[state='error'] > * > #error-message,
-body[state='error'] > #system-status {
-  display: block
-}
-
-body[state='payment'] > * > #error-message,
-body[state='payment'] > #final-message,
-body[state='payment'] > #system-status {
-  display: none
-}
-body[state='payment'] > #payment-form {
-  display: block
-}
-
-body[state='activating'] > #payment-form,
-body[state='activating'] > #final-message,
-body[state='activating'] > * > #error-message {
-  display: none
-}
-body[state='activating'] > #system-status {
-  display: block
-}
-
-body[state='connected'] > * > #error-message,
-body[state='connected'] > #system-status {
-  display: none
-}
-body[state='connected'] > #payment-form,
-body[state='connected'] > #final-message {
-  display: block
+.hidden {
+  display: none;
 }
 
 .testing-only {
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
 </style>
 <script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 <script src="mobile_setup.js"></script>
-<script>
-  mobile.MobileSetup.getInstance().initialize('payment-form');
-</script>
 </head>
-<body state="connecting" onload="setInterval(mobile.MobileSetup.drawProgress, 100);"
-    i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <iframe id="payment-form" frameborder="0"></iframe>
-  <div id="system-status" class="startup">
-    <div class="status-header"><h3 id="header"
-      i18n-content="status_header"></h3></div>
-    <div id="error-message"></div>
+<body onload="mobile.MobileSetup.loadPage();"
+  i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <iframe class="hidden" id="paymentForm" frameborder="0"></iframe>
+  <div id="systemStatus" class="startup hidden">
+    <div><h3 id="statusHeader"></h3></div>
+    <div id="errorMessage"></div>
     <canvas id="canvas" width="56" height="56"></canvas>
     <div id="splitter"></div>
-    <div id="activation-logo" class="logo"></div>
+    <div id="activationLogo" class="logo"></div>
   </div>
-  <div id="final-message" class="overlay">
+  <div id="finalMessage" class="overlay hidden">
     <div class="box">
       <div>
         <div class="header"><h3 i18n-content="completed_header"></h3></div>
         <div id="action" i18n-content="completed_text"></div>
       </div>
-      <div id="final-logo" class="logo"></div>
+      <div id="finalLogo" class="logo"></div>
     </div>
   </div>
   <div class="testing-only">
