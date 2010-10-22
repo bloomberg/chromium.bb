@@ -75,7 +75,7 @@ extern const char kDisableSpdy[];
 extern const char kCookiePromptExpanded[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(USE_OPENSSL)
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL2Enabled[];
 extern const char kSSL3Enabled[];

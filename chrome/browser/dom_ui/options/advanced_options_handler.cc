@@ -239,7 +239,7 @@ void AdvancedOptionsHandler::RegisterMessages() {
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleMetricsReportingCheckbox));
 #endif
-#if !defined(USE_NSS)
+#if !defined(USE_NSS) && !defined(USE_OPENSSL)
   dom_ui_->RegisterMessageCallback("showManageSSLCertificates",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
@@ -404,7 +404,7 @@ void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
 }
 #endif
 
-#if !defined(USE_NSS)
+#if !defined(USE_NSS) && !defined(USE_OPENSSL)
 void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
   AdvancedOptionsUtilities::ShowManageSSLCertificates(dom_ui_->tab_contents());

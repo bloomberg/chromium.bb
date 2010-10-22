@@ -212,9 +212,9 @@ const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 
-#if defined(USE_NSS)
+#if defined(USE_NSS) || defined(USE_OPENSSL)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
-// and used by NSS-using OSes.
+// and used by NSS/OpenSSL using OSes.
 const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
 const char kSSL2Enabled[] = "ssl.ssl2.enabled";
 const char kSSL3Enabled[] = "ssl.ssl3.enabled";

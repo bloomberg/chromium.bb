@@ -65,7 +65,10 @@ class SymmetricKey {
   bool GetRawKey(std::string* raw_key);
 
  private:
-#if defined(USE_NSS)
+#if defined(USE_OPENSSL)
+  // TODO(joth): Add a constructor that accepts OpenSSL symmetric key data, and
+  // the appropriate data members to store it in.
+#elif defined(USE_NSS)
   explicit SymmetricKey(PK11SymKey* key);
   ScopedPK11SymKey key_;
 #elif defined(OS_MACOSX)

@@ -6,6 +6,8 @@
 
 #if defined(OS_WIN)
 #include <winsock2.h>  // for htonl
+#else
+#include <arpa/inet.h>
 #endif
 
 #include <sstream>

@@ -926,8 +926,10 @@ int ChromeMain(int argc, char** argv) {
     ZygoteHost* zhost = Singleton<ZygoteHost>::get();
     zhost->Init(sandbox_cmd);
 
+#if defined(USE_NSS)
     // We want to be sure to init NSPR on the main thread.
     base::EnsureNSPRInit();
+#endif
 
     g_thread_init(NULL);
     // Glib type system initialization. Needed at least for gconf,
