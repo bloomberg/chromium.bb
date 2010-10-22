@@ -204,6 +204,11 @@ html[hide-menu=true] #mainview {
   width: 24px;
   height: 21px;
   display: inline-block;
+  vertical-align: middle;
+}
+
+#managed-prefs-text {
+  vertical-align: middle;
 }
 
 .page > h1 {
