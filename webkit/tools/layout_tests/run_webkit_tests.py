@@ -11,12 +11,7 @@ import sys
 
 def main():
     cmd = [sys.executable]
-    src_dir = sys.argv[0];
-    if sys.platform != 'cygwin':
-        src_dir = os.path.abspath(sys.argv[0])
-    print src_dir
-    src_dir=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
-                         os.path.dirname(src_dir)))))
+    src_dir = os.path.abspath(os.path.join(sys.path[0], '..', '..', '..'))
     script_dir=os.path.join(src_dir, "third_party", "WebKit", "WebKitTools",
                             "Scripts")
     script = os.path.join(script_dir, 'new-run-webkit-tests')
