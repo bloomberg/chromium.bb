@@ -154,11 +154,8 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
         net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
     DCHECK(proxy_config_service);
 
-    const size_t kNetLogBound = 50u;
-    net_log_.reset(new net::CapturingNetLog(kNetLogBound));
-
     proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
-        proxy_config_service, 0, net_log_.get());
+        proxy_config_service, 0, NULL);
     DCHECK(proxy_service_);
 
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
@@ -193,7 +190,6 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
  private:
   std::string user_agent_;
   MessageLoop* io_loop_;
-  scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLSecurityManager> url_security_manager_;
 };
 
