@@ -53,9 +53,6 @@ if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
   elif env['TARGET_SUBARCH'] == '32':
     pql_inputs += ['arch/x86_32/nacl_dep_qualify_arch.c']
 
-# TODO(bradchen): re-enable when issue 440 is fixed
-#  env.ComponentProgram('platform_qual_test',
-#                       'arch/x86/platform_qual_test.c')
   env.ComponentProgram('nacl_cpuwhitelist_test',
                        'arch/x86/nacl_cpuwhitelist_test.c')
 
@@ -71,6 +68,17 @@ if env['BUILD_ARCHITECTURE'] == 'arm':
 # ----------------------------------------------------------
 env.DualLibrary('platform_qual_lib', pql_inputs)
 
+platform_qual_test = env.ComponentProgram('platform_qual_test',
+                                          ['platform_qual_test.c'],
+                                          LIBS=['platform_qual_lib'])
+test_node = env.CommandTest('platform_qual_test.out',
+                            command=[platform_qual_test])
+
+# TODO(noelallen): enable this for Windows test when signal handling is a
+# separate library.
+if ('PLATFORM_QUALIFICATION_DISABLED' not in env and
+    not env.Bit('windows')):
+  env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_platform_qual_test')
 
 # These tests use assembly which seem to make the coverage instrumentation
 # on windows unhappy. Disable them for now on coverage for windows.

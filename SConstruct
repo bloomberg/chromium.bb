@@ -873,6 +873,7 @@ def CommandSelLdrTestNacl(env, name, command,
     env.Bit('disable_hardy64_vmware_failures') or \
     env.IsRunningUnderValgrind():
     sel_ldr_flags += ['-Q']
+    env['DISABLE_PLATFORM_QUALIFICATION'] = '1'
 
   if env.Bit('nacl_glibc'):
     command = ['${NACL_SDK_LIB}/runnable-ld.so',
