@@ -23,13 +23,6 @@ using ::testing::Invoke;
 using ::testing::Unused;
 using ::testing::_;
 
-class MockDelegate : public CookieFetcher::Delegate {
- public:
-  MockDelegate() {}
-  virtual ~MockDelegate() {}
-  MOCK_METHOD1(DoLaunch, void(Profile* profile));
-};
-
 class CookieFetcherTest : public ::testing::Test {
  public:
   CookieFetcherTest()
@@ -58,9 +51,8 @@ TEST_F(CookieFetcherTest, SuccessfulFetchTest) {
       new MockAuthResponseHandler(iat_url_, status, kHttpSuccess, token_);
   MockAuthResponseHandler* i_handler =
       new MockAuthResponseHandler(ta_url_, status, kHttpSuccess, std::string());
-  MockDelegate* delegate = new MockDelegate;
 
-  CookieFetcher* cf = new CookieFetcher(NULL, cl_handler, i_handler, delegate);
+  CookieFetcher* cf = new CookieFetcher(NULL, cl_handler, i_handler);
 
   EXPECT_CALL(*cl_handler, Handle(client_login_data_, cf))
       .Times(1);
@@ -70,9 +62,6 @@ TEST_F(CookieFetcherTest, SuccessfulFetchTest) {
   EXPECT_CALL(*i_handler, CanHandle(ta_url_))
       .WillOnce(Return(false));
   EXPECT_CALL(*i_handler, Handle(token_, cf))
-      .Times(1);
-
-  EXPECT_CALL(*delegate, DoLaunch(_))
       .Times(1);
 
   cf->AttemptFetch(client_login_data_);
@@ -86,19 +75,15 @@ TEST_F(CookieFetcherTest, IssueAuthTokenNetworkFailureTest) {
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_, failed, kHttpSuccess, token_);
-  MockDelegate* delegate = new MockDelegate;
   // I expect nothing in i_handler to get called anyway
   MockAuthResponseHandler* i_handler =
       new MockAuthResponseHandler(ta_url_, failed, kHttpSuccess, std::string());
 
   CookieFetcher* cf = new CookieFetcher(&profile_,
                                         cl_handler,
-                                        i_handler,
-                                        delegate);
+                                        i_handler);
 
   EXPECT_CALL(*cl_handler, Handle(client_login_data_, cf))
-      .Times(1);
-  EXPECT_CALL(*delegate, DoLaunch(_))
       .Times(1);
 
   cf->AttemptFetch(client_login_data_);
@@ -115,12 +100,10 @@ TEST_F(CookieFetcherTest, TokenAuthNetworkFailureTest) {
       new MockAuthResponseHandler(iat_url_, success, kHttpSuccess, token_);
   MockAuthResponseHandler* i_handler =
       new MockAuthResponseHandler(ta_url_, failed, 0, std::string());
-  MockDelegate* delegate = new MockDelegate;
 
   CookieFetcher* cf = new CookieFetcher(&profile_,
                                         cl_handler,
-                                        i_handler,
-                                        delegate);
+                                        i_handler);
 
   EXPECT_CALL(*cl_handler, Handle(client_login_data_, cf))
       .Times(1);
@@ -128,9 +111,6 @@ TEST_F(CookieFetcherTest, TokenAuthNetworkFailureTest) {
   EXPECT_CALL(*i_handler, CanHandle(iat_url_))
       .WillOnce(Return(true));
   EXPECT_CALL(*i_handler, Handle(token_, cf))
-      .Times(1);
-
-  EXPECT_CALL(*delegate, DoLaunch(_))
       .Times(1);
 
   cf->AttemptFetch(client_login_data_);
@@ -144,19 +124,15 @@ TEST_F(CookieFetcherTest, IssueAuthTokenDeniedTest) {
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_, success, 403, std::string());
-  MockDelegate* delegate = new MockDelegate;
   // I expect nothing in i_handler to get called anyway.
   MockAuthResponseHandler* i_handler =
       new MockAuthResponseHandler(ta_url_, success, 0, std::string());
 
   CookieFetcher* cf = new CookieFetcher(&profile_,
                                         cl_handler,
-                                        i_handler,
-                                        delegate);
+                                        i_handler);
 
   EXPECT_CALL(*cl_handler, Handle(client_login_data_, cf))
-      .Times(1);
-  EXPECT_CALL(*delegate, DoLaunch(_))
       .Times(1);
 
   cf->AttemptFetch(client_login_data_);
@@ -175,12 +151,10 @@ TEST_F(CookieFetcherTest, TokenAuthDeniedTest) {
                                   token_);
   MockAuthResponseHandler* i_handler =
       new MockAuthResponseHandler(ta_url_, success, 403, std::string());
-  MockDelegate* delegate = new MockDelegate;
 
   CookieFetcher* cf = new CookieFetcher(&profile_,
                                         cl_handler,
-                                        i_handler,
-                                        delegate);
+                                        i_handler);
 
   EXPECT_CALL(*cl_handler, Handle(client_login_data_, cf))
       .Times(1);
@@ -188,9 +162,6 @@ TEST_F(CookieFetcherTest, TokenAuthDeniedTest) {
   EXPECT_CALL(*i_handler, CanHandle(iat_url_))
       .WillOnce(Return(true));
   EXPECT_CALL(*i_handler, Handle(token_, cf))
-      .Times(1);
-
-  EXPECT_CALL(*delegate, DoLaunch(_))
       .Times(1);
 
   cf->AttemptFetch(client_login_data_);

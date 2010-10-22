@@ -26,7 +26,6 @@ CookieFetcher::CookieFetcher(Profile* profile) : profile_(profile) {
       new ClientLoginResponseHandler(profile_->GetRequestContext()));
   issue_handler_.reset(
       new IssueResponseHandler(profile_->GetRequestContext()));
-  launcher_.reset(new DelegateImpl);
 }
 
 void CookieFetcher::AttemptFetch(const std::string& credentials) {
@@ -49,15 +48,6 @@ void CookieFetcher::OnURLFetchComplete(const URLFetcher* source,
   }
   BootTimesLoader::Get()->AddLoginTimeMarker("CookiesFetched", false);
   delete this;
-}
-
-void CookieFetcher::DelegateImpl::DoLaunch(Profile* profile) {
-  if (profile == ProfileManager::GetDefaultProfile()) {
-    LoginUtils::DoBrowserLaunch(profile);
-  } else {
-    LOG(ERROR) <<
-        "Profile has changed since we started populating it with cookies";
-  }
 }
 
 }  // namespace chromeos
