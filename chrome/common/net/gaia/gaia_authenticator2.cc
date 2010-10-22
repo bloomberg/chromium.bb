@@ -252,7 +252,7 @@ void GaiaAuthenticator2::StartClientLogin(
 
   // This class is thread agnostic, so be sure to call this only on the
   // same thread each time.
-  LOG(INFO) << "Starting new ClientLogin fetch for:" << username;
+  VLOG(1) << "Starting new ClientLogin fetch for:" << username;
 
   // Must outlive fetcher_.
   request_body_ = MakeClientLoginBody(username,
@@ -276,7 +276,7 @@ void GaiaAuthenticator2::StartIssueAuthToken(const std::string& sid,
 
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  LOG(INFO) << "Starting IssueAuthToken for: " << service;
+  VLOG(1) << "Starting IssueAuthToken for: " << service;
   requested_service_ = service;
   request_body_ = MakeIssueAuthTokenBody(sid, lsid, service);
   fetcher_.reset(CreateGaiaFetcher(getter_,
@@ -291,7 +291,7 @@ void GaiaAuthenticator2::StartGetUserInfo(const std::string& lsid,
                                           const std::string& info_key) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  LOG(INFO) << "Starting GetUserInfo for lsid=" << lsid;
+  VLOG(1) << "Starting GetUserInfo for lsid=" << lsid;
   request_body_ = MakeGetUserInfoBody(lsid);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
@@ -332,11 +332,12 @@ GoogleServiceAuthError GaiaAuthenticator2::GenerateAuthError(
       GURL unlock_url(url);
       return GoogleServiceAuthError::FromCaptchaChallenge(
           captcha_token, image_url, unlock_url);
-    } else if (error == kAccountDeletedError) {
+    }
+    if (error == kAccountDeletedError)
       return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
-    } else if (error == kAccountDisabledError) {
+    if (error == kAccountDisabledError)
       return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
-    } else if (error == kServiceUnavailableError) {
+    if (error == kServiceUnavailableError) {
       return GoogleServiceAuthError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE);
     }
@@ -353,7 +354,7 @@ void GaiaAuthenticator2::OnClientLoginFetched(const std::string& data,
                                               int response_code) {
 
   if (status.is_success() && response_code == RC_REQUEST_OK) {
-    LOG(INFO) << "ClientLogin successful!";
+    VLOG(1) << "ClientLogin successful!";
     std::string sid;
     std::string lsid;
     std::string token;

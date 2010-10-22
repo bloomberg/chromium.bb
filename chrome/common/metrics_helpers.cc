@@ -195,15 +195,15 @@ std::string MetricsLogBase::CreateHash(const std::string& value) {
   // name.  We can then use this logging to find out what histogram name was
   // being hashed to a given MD5 value by just running the version of Chromium
   // in question with --enable-logging.
-  LOG(INFO) << "Metrics: Hash numeric [" << value << "]=["
-      << reverse_uint64 << "]";
+  VLOG(1) << "Metrics: Hash numeric [" << value
+          << "]=[" << reverse_uint64 << "]";
   return std::string(reinterpret_cast<char*>(digest.a), arraysize(digest.a));
 }
 
 std::string MetricsLogBase::CreateBase64Hash(const std::string& string) {
   std::string encoded_digest;
   if (base::Base64Encode(CreateHash(string), &encoded_digest)) {
-    DLOG(INFO) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
+    DVLOG(1) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
     return encoded_digest;
   }
   return std::string();

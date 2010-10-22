@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,12 +132,8 @@ NotificationService::~NotificationService() {
     if (observer_counts_[i] > 0) {
       // This may not be completely fixable -- see
       // http://code.google.com/p/chromium/issues/detail?id=11010 .
-
-      // It would be nice to track new leaks, but this currently
-      // spams the console too much to be useful, making it hard to track
-      // down other problems.
-      // LOG(INFO) << observer_counts_[i] << " notification observer(s) leaked"
-      //    << " of notification type " << i;
+      VLOG(1) << observer_counts_[i] << " notification observer(s) leaked "
+                 " of notification type " << i;
     }
   }
 #endif
@@ -145,9 +141,8 @@ NotificationService::~NotificationService() {
   for (int i = 0; i < NotificationType::NOTIFICATION_TYPE_COUNT; i++) {
     NotificationSourceMap omap = observers_[i];
     for (NotificationSourceMap::iterator it = omap.begin();
-         it != omap.end(); ++it) {
+         it != omap.end(); ++it)
       delete it->second;
-    }
   }
 }
 

@@ -15,12 +15,6 @@
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::endl;
-using std::ostream;
-using std::string;
-using std::stringstream;
-using std::vector;
-
 namespace {
 
 class Pair;
@@ -43,7 +37,7 @@ struct TestEventTraits {
 class Pair {
  public:
   typedef EventChannel<TestEventTraits> Channel;
-  explicit Pair(const string& name) : name_(name), a_(0), b_(0) {
+  explicit Pair(const std::string& name) : name_(name), a_(0), b_(0) {
     TestEvent shutdown = { this, TestEvent::PAIR_BEING_DELETED, 0 };
     event_channel_ = new Channel(shutdown);
   }
@@ -62,11 +56,11 @@ class Pair {
   }
   int a() const { return a_; }
   int b() const { return b_; }
-  const string& name() { return name_; }
+  const std::string& name() { return name_; }
   Channel* event_channel() const { return event_channel_; }
 
  protected:
-  const string name_;
+  const std::string name_;
   int a_;
   int b_;
   Channel* event_channel_;
@@ -74,19 +68,19 @@ class Pair {
 
 class EventLogger {
  public:
-  explicit EventLogger(ostream& out) : out_(out) { }
+  explicit EventLogger(std::ostream* out) : out_(out) { }
   ~EventLogger() {
     for (Hookups::iterator i = hookups_.begin(); i != hookups_.end(); ++i)
       delete *i;
   }
 
-  void Hookup(const string name, Pair::Channel* channel) {
+  void Hookup(const std::string name, Pair::Channel* channel) {
     hookups_.push_back(NewEventListenerHookup(channel, this,
                                               &EventLogger::HandlePairEvent,
                                               name));
   }
 
-  void HandlePairEvent(const string& name, const TestEvent& event) {
+  void HandlePairEvent(const std::string& name, const TestEvent& event) {
     const char* what_changed = NULL;
     int new_value = 0;
     Hookups::iterator dead;
@@ -100,21 +94,21 @@ class EventLogger {
       new_value = event.source->b();
       break;
     case TestEvent::PAIR_BEING_DELETED:
-      out_ << name << " heard " << event.source->name() << " being deleted."
-           << endl;
+      *out_ << name << " heard " << event.source->name() << " being deleted."
+            << std::endl;
       return;
     default:
       FAIL() << "Bad event.what_happened: " << event.what_happened;
       break;
     }
-    out_ << name << " heard " << event.source->name() << "'s " << what_changed
-         << " change from "
-         << event.old_value << " to " << new_value << endl;
+    *out_ << name << " heard " << event.source->name() << "'s " << what_changed
+          << " change from " << event.old_value
+          << " to " << new_value << std::endl;
   }
 
-  typedef vector<EventListenerHookup*> Hookups;
+  typedef std::vector<EventListenerHookup*> Hookups;
   Hookups hookups_;
-  ostream& out_;
+  std::ostream* out_;
 };
 
 const char golden_result[] = "Larry heard Sally's B change from 0 to 2\n"
@@ -126,8 +120,8 @@ const char golden_result[] = "Larry heard Sally's B change from 0 to 2\n"
 TEST(EventSys, Basic) {
   Pair sally("Sally"), sam("Sam");
   sally.set_a(1);
-  stringstream log;
-  EventLogger logger(log);
+  std::stringstream log;
+  EventLogger logger(&log);
   logger.Hookup("Larry", sally.event_channel());
   sally.set_b(2);
   sally.set_a(3);
@@ -236,7 +230,7 @@ class ThreadTester : public EventListener<TestEvent>,
   bool remove_event_bool_;
   Lock completed_mutex_;
   bool completed_;
-  vector<ThreadInfo> threads_;
+  std::vector<ThreadInfo> threads_;
   ThreadArgs args_;
 };
 

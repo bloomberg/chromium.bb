@@ -52,7 +52,7 @@ void ServiceProcessState::SignalReady(Task* shutdown_task) {
   FILE* file = file_util::OpenFile(path, "wb+");
   if (!file)
     return;
-  LOG(INFO) << "Created Service Process lock file: " << path.value();
+  VLOG(1) << "Created Service Process lock file: " << path.value();
   file_util::TruncateFile(file) && file_util::CloseFile(file);
 }
 

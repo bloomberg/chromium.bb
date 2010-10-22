@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -198,8 +198,8 @@ ChromePluginLib::~ChromePluginLib() {
 }
 
 bool ChromePluginLib::CP_Initialize(const CPBrowserFuncs* bfuncs) {
-  LOG(INFO) << "ChromePluginLib::CP_Initialize(" << filename_.value() <<
-               "): initialized=" << initialized_;
+  VLOG(1) << "ChromePluginLib::CP_Initialize(" << filename_.value()
+          << "): initialized=" << initialized_;
   if (initialized_)
     return true;
 
@@ -210,7 +210,7 @@ bool ChromePluginLib::CP_Initialize(const CPBrowserFuncs* bfuncs) {
     uint16 selected_version = 0;
     CPError rv = CP_VersionNegotiate_(CP_VERSION, CP_VERSION,
                                       &selected_version);
-    if ( (rv != CPERR_SUCCESS) || (selected_version != CP_VERSION))
+    if ((rv != CPERR_SUCCESS) || (selected_version != CP_VERSION))
       return false;
   }
 
@@ -219,9 +219,8 @@ bool ChromePluginLib::CP_Initialize(const CPBrowserFuncs* bfuncs) {
   initialized_ = (rv == CPERR_SUCCESS) &&
       (CP_GET_MAJOR_VERSION(plugin_funcs_.version) == CP_MAJOR_VERSION) &&
       (CP_GET_MINOR_VERSION(plugin_funcs_.version) <= CP_MINOR_VERSION);
-  LOG(INFO) << "ChromePluginLib::CP_Initialize(" << filename_.value() <<
-               "): initialized=" << initialized_ <<
-               "): result=" << rv;
+  VLOG(1) << "ChromePluginLib::CP_Initialize(" << filename_.value()
+          << "): initialized=" << initialized_ << "): result=" << rv;
 
   return initialized_;
 }

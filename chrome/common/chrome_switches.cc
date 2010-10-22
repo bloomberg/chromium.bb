@@ -688,7 +688,7 @@ const char kLoadPlugin[]                    = "load-plugin";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
-// Make plugin processes log their sent and received messages to LOG(INFO).
+// Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
 
 // Sets the minimum log level. Valid values are from 0 to 3:

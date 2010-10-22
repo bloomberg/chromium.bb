@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,8 @@ IPCWebSocketStreamHandleBridge* IPCWebSocketStreamHandleBridge::FromSocketId(
 }
 
 IPCWebSocketStreamHandleBridge::~IPCWebSocketStreamHandleBridge() {
-  DLOG(INFO) << "IPCWebSocketStreamHandleBridge destructor socket_id="
-             << socket_id_;
+  DVLOG(1) << "IPCWebSocketStreamHandleBridge destructor socket_id="
+           << socket_id_;
   if (socket_id_ != chrome_common_net::kNoSocketId) {
     child_thread_->Send(new ViewHostMsg_Close(socket_id_));
     socket_id_ = chrome_common_net::kNoSocketId;
@@ -79,7 +79,7 @@ IPCWebSocketStreamHandleBridge::~IPCWebSocketStreamHandleBridge() {
 
 void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
   DCHECK(child_thread_);
-  DLOG(INFO) << "Connect url=" << url;
+  DVLOG(1) << "Connect url=" << url;
   child_thread_->message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &IPCWebSocketStreamHandleBridge::DoConnect,
@@ -88,9 +88,9 @@ void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
 
 bool IPCWebSocketStreamHandleBridge::Send(
     const std::vector<char>& data) {
-  DLOG(INFO) << "Send data.size=" << data.size();
+  DVLOG(1) << "Send data.size=" << data.size();
   if (child_thread_->Send(
-          new ViewHostMsg_SocketStream_SendData(socket_id_, data))) {
+      new ViewHostMsg_SocketStream_SendData(socket_id_, data))) {
     if (delegate_)
       delegate_->WillSendData(handle_, &data[0], data.size());
     return true;
@@ -99,13 +99,13 @@ bool IPCWebSocketStreamHandleBridge::Send(
 }
 
 void IPCWebSocketStreamHandleBridge::Close() {
-  DLOG(INFO) << "Close socket_id" << socket_id_;
+  DVLOG(1) << "Close socket_id" << socket_id_;
   child_thread_->Send(new ViewHostMsg_SocketStream_Close(socket_id_));
 }
 
 void IPCWebSocketStreamHandleBridge::OnConnected(int max_pending_send_allowed) {
-  DLOG(INFO) << "IPCWebSocketStreamHandleBridge::OnConnected socket_id="
-             << socket_id_;
+  DVLOG(1) << "IPCWebSocketStreamHandleBridge::OnConnected socket_id="
+           << socket_id_;
   if (delegate_)
     delegate_->DidOpenStream(handle_, max_pending_send_allowed);
 }
@@ -122,14 +122,13 @@ void IPCWebSocketStreamHandleBridge::OnReceivedData(
 }
 
 void IPCWebSocketStreamHandleBridge::OnClosed() {
-  DLOG(INFO) << "IPCWebSocketStreamHandleBridge::OnClosed";
+  DVLOG(1) << "IPCWebSocketStreamHandleBridge::OnClosed";
   if (socket_id_ != chrome_common_net::kNoSocketId) {
     all_bridges.Remove(socket_id_);
     socket_id_ = chrome_common_net::kNoSocketId;
   }
-  if (delegate_) {
+  if (delegate_)
     delegate_->DidClose(handle_);
-  }
   delegate_ = NULL;
   Release();
 }
@@ -143,8 +142,8 @@ void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
   socket_id_ = all_bridges.Add(this);
   DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
   if (child_thread_->Send(
-          new ViewHostMsg_SocketStream_Connect(url, socket_id_))) {
-    DLOG(INFO) << "Connect socket_id=" << socket_id_;
+      new ViewHostMsg_SocketStream_Connect(url, socket_id_))) {
+    DVLOG(1) << "Connect socket_id=" << socket_id_;
     AddRef();  // Released in OnClosed().
     // TODO(ukai): timeout to OnConnected.
   } else {
@@ -179,8 +178,8 @@ bool SocketStreamDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void SocketStreamDispatcher::OnConnected(int socket_id,
                                          int max_pending_send_allowed) {
-  DLOG(INFO) << "SocketStreamDispatcher::OnConnected socket_id=" << socket_id
-             << " max_pending_send_allowed=" << max_pending_send_allowed;
+  DVLOG(1) << "SocketStreamDispatcher::OnConnected socket_id=" << socket_id
+           << " max_pending_send_allowed=" << max_pending_send_allowed;
   IPCWebSocketStreamHandleBridge* bridge =
       IPCWebSocketStreamHandleBridge::FromSocketId(socket_id);
   if (bridge)

@@ -143,7 +143,7 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
 }
 
 bool ExtensionUnpacker::Run() {
-  LOG(INFO) << "Installing extension " << extension_path_.value();
+  VLOG(1) << "Installing extension " << extension_path_.value();
 
   // <profile>/Extensions/INSTALL_TEMP/<version>
   temp_install_dir_ =
