@@ -4,8 +4,14 @@
 
 #include "chrome/common/net/url_fetcher.h"
 
+#include <set>
+
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
+#include "base/lock.h"
 #include "base/message_loop_proxy.h"
+#include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/common/net/url_fetcher_protect.h"
@@ -58,16 +64,38 @@ class URLFetcher::Core
 
   URLFetcher::Delegate* delegate() const { return delegate_; }
 
+  static void CancelAll();
+
  private:
   friend class base::RefCountedThreadSafe<URLFetcher::Core>;
 
-  ~Core() {}
+  class Registry {
+   public:
+    Registry();
+    ~Registry();
+
+    void AddURLFetcherCore(Core* core);
+    void RemoveURLFetcherCore(Core* core);
+
+    void CancelAll();
+
+   private:
+    std::set<Core*> fetchers_;
+
+    DISALLOW_COPY_AND_ASSIGN(Registry);
+  };
+
+  ~Core();
 
   // Wrapper functions that allow us to ensure actions happen on the right
   // thread.
   void StartURLRequest();
   void CancelURLRequest();
   void OnCompletedURLRequest(const URLRequestStatus& status);
+
+  // Deletes the request, removes it from the registry, and removes the
+  // destruction observer.
+  void ReleaseRequest();
 
   URLFetcher* fetcher_;              // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
@@ -78,7 +106,7 @@ class URLFetcher::Core
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
                                      // The message loop proxy for the thread
                                      // on which the request IO happens.
-  URLRequest* request_;              // The actual request this wraps
+  scoped_ptr<URLRequest> request_;   // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
   std::string data_;                 // Results of the request
@@ -107,9 +135,37 @@ class URLFetcher::Core
   // True if the URLFetcher has been cancelled.
   bool was_cancelled_;
 
+  static base::LazyInstance<Registry> g_registry;
+
   friend class URLFetcher;
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
+
+URLFetcher::Core::Registry::Registry() {}
+URLFetcher::Core::Registry::~Registry() {}
+
+void URLFetcher::Core::Registry::AddURLFetcherCore(Core* core) {
+  DCHECK(!ContainsKey(fetchers_, core));
+  fetchers_.insert(core);
+}
+
+void URLFetcher::Core::Registry::RemoveURLFetcherCore(Core* core) {
+  DCHECK(ContainsKey(fetchers_, core));
+  fetchers_.erase(core);
+}
+
+void URLFetcher::Core::Registry::CancelAll() {
+  std::set<Core*> fetchers;
+  fetchers.swap(fetchers_);
+
+  for (std::set<Core*>::iterator it = fetchers.begin();
+       it != fetchers.end(); ++it)
+    (*it)->CancelURLRequest();
+}
+
+// static
+base::LazyInstance<URLFetcher::Core::Registry>
+    URLFetcher::Core::g_registry(base::LINKER_INITIALIZED);
 
 // static
 URLFetcher::Factory* URLFetcher::factory_ = NULL;
@@ -152,6 +208,12 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       was_cancelled_(false) {
 }
 
+URLFetcher::Core::~Core() {
+  // |request_| should be NULL.  If not, it's unsafe to delete it here since we
+  // may not be on the IO thread.
+  DCHECK(!request_.get());
+}
+
 void URLFetcher::Core::Start() {
   DCHECK(delegate_loop_);
   CHECK(request_context_getter_) << "We need an URLRequestContext!";
@@ -180,8 +242,12 @@ void URLFetcher::Core::WillDestroyCurrentMessageLoop() {
   // we just want to avoid leaks.
 }
 
+void URLFetcher::Core::CancelAll() {
+  g_registry.Get().CancelAll();
+}
+
 void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
-  DCHECK(request == request_);
+  DCHECK_EQ(request, request_.get());
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (request_->status().is_success()) {
     response_code_ = request_->GetResponseCode();
@@ -195,7 +261,7 @@ void URLFetcher::Core::OnResponseStarted(URLRequest* request) {
   // about is the response code and headers, which we already have).
   if (request_->status().is_success() && (request_type_ != HEAD))
     request_->Read(buffer_, kBufferSize, &bytes_read);
-  OnReadCompleted(request_, bytes_read);
+  OnReadCompleted(request_.get(), bytes_read);
 }
 
 void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
@@ -217,9 +283,7 @@ void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
   if (!request_->status().is_io_pending() || (request_type_ == HEAD)) {
     delegate_loop_->PostTask(FROM_HERE, NewRunnableMethod(
         this, &Core::OnCompletedURLRequest, request_->status()));
-    delete request_;
-    request_ = NULL;
-    MessageLoop::current()->RemoveDestructionObserver(this);
+    ReleaseRequest();
   }
 }
 
@@ -233,11 +297,11 @@ void URLFetcher::Core::StartURLRequest() {
   }
 
   CHECK(request_context_getter_);
-  DCHECK(!request_);
+  DCHECK(!request_.get());
 
   MessageLoop::current()->AddDestructionObserver(this);
-
-  request_ = new URLRequest(original_url_, this);
+  g_registry.Get().AddURLFetcherCore(this);
+  request_.reset(new URLRequest(original_url_, this));
   int flags = request_->load_flags() | load_flags_;
   if (!g_interception_enabled) {
     flags = flags | net::LOAD_DISABLE_INTERCEPT;
@@ -277,11 +341,9 @@ void URLFetcher::Core::StartURLRequest() {
 void URLFetcher::Core::CancelURLRequest() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (request_) {
+  if (request_.get()) {
     request_->Cancel();
-    delete request_;
-    request_ = NULL;
-    MessageLoop::current()->RemoveDestructionObserver(this);
+    ReleaseRequest();
   }
   // Release the reference to the request context. There could be multiple
   // references to URLFetcher::Core at this point so it may take a while to
@@ -327,6 +389,12 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
   }
 }
 
+void URLFetcher::Core::ReleaseRequest() {
+  request_.reset();
+  g_registry.Get().RemoveURLFetcherCore(this);
+  MessageLoop::current()->RemoveDestructionObserver(this);
+}
+
 void URLFetcher::set_upload_data(const std::string& upload_content_type,
                      const std::string& upload_content) {
   core_->upload_content_type_ = upload_content_type;
@@ -370,6 +438,11 @@ void URLFetcher::Start() {
 
 const GURL& URLFetcher::url() const {
   return core_->url_;
+}
+
+// static
+void URLFetcher::CancelAll() {
+  Core::CancelAll();
 }
 
 URLFetcher::Delegate* URLFetcher::delegate() const {

@@ -263,6 +263,9 @@ void IOThread::CleanUp() {
   net::ShutdownOCSP();
 #endif  // defined(USE_NSS)
 
+  // Destroy all URLRequests started by URLFetchers.
+  URLFetcher::CancelAll();
+
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();
 

@@ -6,6 +6,10 @@
 // low-level details like thread safety, ref counting, and incremental buffer
 // reading.  This is useful for callers who simply want to get the data from a
 // URL and don't care about all the nitty-gritty details.
+//
+// NOTE(willchan): Only one "IO" thread is supported for URLFetcher.  This is a
+// temporary situation.  We will work on allowing support for multiple "io"
+// threads per process.
 
 #ifndef CHROME_COMMON_NET_URL_FETCHER_H_
 #define CHROME_COMMON_NET_URL_FETCHER_H_
@@ -169,6 +173,14 @@ class URLFetcher {
 
   // Return the URL that this fetcher is processing.
   const GURL& url() const;
+
+  // Cancels all existing URLRequests.  Will notify the URLFetcher::Delegates.
+  // Note that any new URLFetchers created while this is running will not be
+  // cancelled.  Typically, one would call this in the CleanUp() method of an IO
+  // thread, so that no new URLRequests would be able to start on the IO thread
+  // anyway.  This doesn't prevent new URLFetchers from trying to post to the IO
+  // thread though, even though the task won't ever run.
+  static void CancelAll();
 
  protected:
   // Returns the delegate.
