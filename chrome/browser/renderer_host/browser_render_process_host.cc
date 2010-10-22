@@ -604,10 +604,10 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     // WebGLArray constructors on the DOMWindow visible. This
     // information is needed very early during bringup. We prefer to
     // use the WebPreferences to set this flag on a page-by-page basis.
-    switches::kDisableExperimentalWebGL,
+    switches::kEnableExperimentalWebGL,
     switches::kDisableGLSLTranslator,
     switches::kInProcessWebGL,
-    switches::kDisableAcceleratedCompositing,
+    switches::kEnableAcceleratedCompositing,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,

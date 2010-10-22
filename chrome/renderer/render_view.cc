@@ -2550,7 +2550,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   }
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
-      !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
+      cmd_line->HasSwitch(switches::kEnableAcceleratedCompositing)) {
     // Add the hardware video decoder factory.
     // TODO(hclam): This assumes that ggl::Context is set to current
     // internally. I need to make it more explicit to get the context.

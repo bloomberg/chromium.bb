@@ -22,7 +22,7 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
     // Browser process isn't sandboxed.
     return true;
   } else if (process_type == switches::kRendererProcess) {
-    if (!command_line.HasSwitch(switches::kDisableExperimentalWebGL) &&
+    if (command_line.HasSwitch(switches::kEnableExperimentalWebGL) &&
         command_line.HasSwitch(switches::kInProcessWebGL)) {
       // TODO(kbr): this check seems to be necessary only on this
       // platform because the sandbox is initialized later. Remove
