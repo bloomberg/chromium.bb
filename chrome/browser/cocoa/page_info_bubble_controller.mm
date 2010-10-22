@@ -26,9 +26,9 @@
 - (PageInfoModel*)model;
 - (NSButton*)certificateButtonWithFrame:(NSRect)frame;
 - (void)configureTextFieldAsLabel:(NSTextField*)textField;
-- (CGFloat)addTitleViewForInfo:(const PageInfoModel::SectionInfo&)info
-                    toSubviews:(NSMutableArray*)subviews
-                       atPoint:(NSPoint)point;
+- (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
+                       toSubviews:(NSMutableArray*)subviews
+                          atPoint:(NSPoint)point;
 - (CGFloat)addDescriptionViewForInfo:(const PageInfoModel::SectionInfo&)info
                           toSubviews:(NSMutableArray*)subviews
                              atPoint:(NSPoint)point;
@@ -45,6 +45,19 @@
                              parentWindow:(NSWindow*)parent;
 @end
 
+// This simple NSView subclass is used as the single subview of the page info
+// bubble's window's contentView. Drawing is flipped so that layout of the
+// sections is easier. Apple recommends flipping the coordinate origin when
+// doing a lot of text layout because it's more natural.
+@interface PageInfoContentView : NSView {
+}
+@end
+@implementation PageInfoContentView
+- (BOOL)isFlipped {
+  return YES;
+}
+@end
+
 namespace {
 
 // The width of the window, in view coordinates. The height will be determined
@@ -57,8 +70,8 @@ const NSInteger kVerticalSpacing = 10;
 // Padding along on the X-axis between the window frame and content.
 const NSInteger kFramePadding = 20;
 
-// Spacing between the title and description text views.
-const NSInteger kTitleSpacing = 2;
+// Spacing between the optional headline and description text views.
+const NSInteger kHeadlineSpacing = 2;
 
 // Spacing between the image and the text.
 const NSInteger kImageSpacing = 10;
@@ -173,28 +186,33 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // not using HTTPS.
 - (void)performLayout {
   // |offset| is the Y position that should be drawn at next.
-  CGFloat offset = kVerticalSpacing;
+  CGFloat offset = kFramePadding;
 
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
 
-  // First item, drawn at the bottom of the window, is the help center link.
-  offset += [self addHelpButtonToSubviews:subviews atOffset:offset];
-  offset += kVerticalSpacing;
-  offset += [self addSeparatorToSubviews:subviews atOffset:offset];
-
-  // Build the window from bottom-up because Cocoa's coordinate origin is the
-  // lower left.
-  for (int i = model_->GetSectionCount() - 1; i >= 0; --i) {
+  // The subviews will be attached to the PageInfoContentView, which has a
+  // flipped origin. This allows the code to build top-to-bottom.
+  const int sectionCount = model_->GetSectionCount();
+  for (int i = 0; i < sectionCount; ++i) {
     PageInfoModel::SectionInfo info = model_->GetSectionInfo(i);
 
     // Only certain sections have images. This affects the X position.
     BOOL hasImage = model_->GetIconImage(info.icon_id) != nil;
     CGFloat xPosition = (hasImage ? kTextXPosition : kTextXPositionNoImage);
 
-    if (info.type == PageInfoModel::SECTION_INFO_IDENTITY) {
-      offset += [self addCertificateButtonToSubviews:subviews
-          atOffset:offset];
+    // Insert the image subview for sections that are appropriate.
+    CGFloat imageBaseline = offset + kImageSize;
+    if (hasImage) {
+      [self addImageViewForInfo:info toSubviews:subviews atOffset:offset];
+    }
+
+    // Add the title.
+    if (!info.headline.empty()) {
+      offset += [self addHeadlineViewForInfo:info
+                                  toSubviews:subviews
+                                     atPoint:NSMakePoint(xPosition, offset)];
+      offset += kHeadlineSpacing;
     }
 
     // Create the description of the state.
@@ -202,31 +220,37 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                                    toSubviews:subviews
                                       atPoint:NSMakePoint(xPosition, offset)];
 
-    // Add the title.
-    offset += kTitleSpacing;
-    offset += [self addTitleViewForInfo:info
-                             toSubviews:subviews
-                                atPoint:NSMakePoint(xPosition, offset)];
-
-    // Insert the image subview for sections that are appropriate.
-    if (hasImage) {
-      [self addImageViewForInfo:info toSubviews:subviews atOffset:offset];
+    if (info.type == PageInfoModel::SECTION_INFO_IDENTITY && certID_) {
+      offset += kVerticalSpacing;
+      offset += [self addCertificateButtonToSubviews:subviews atOffset:offset];
     }
+
+    // If at this point the description and optional headline and button are
+    // not as tall as the image, adjust the offset by the difference.
+    CGFloat imageBaselineDelta = imageBaseline - offset;
+    if (imageBaselineDelta > 0)
+      offset += imageBaselineDelta;
 
     // Add the separators.
-    if (i != 0) {
-      offset += kVerticalSpacing;
-      offset += [self addSeparatorToSubviews:subviews atOffset:offset];
-    }
+    offset += kVerticalSpacing;
+    offset += [self addSeparatorToSubviews:subviews atOffset:offset];
   }
 
+  // The last item at the bottom of the window is the help center link.
+  offset += [self addHelpButtonToSubviews:subviews atOffset:offset];
+  offset += kVerticalSpacing;
+
+  // Create the dummy view that uses flipped coordinates.
+  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, offset);
+  scoped_nsobject<PageInfoContentView> contentView(
+      [[PageInfoContentView alloc] initWithFrame:contentFrame]);
+  [contentView setSubviews:subviews];
+
   // Replace the window's content.
-  [[[self window] contentView] setSubviews:subviews];
+  [[[self window] contentView] setSubviews:
+      [NSArray arrayWithObject:contentView]];
 
-  offset += kFramePadding;
-
-  NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, 0);
-  windowFrame.size.height += offset;
+  NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
   windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
                                                        toView:nil];
   // Adjust the origin by the difference in height.
@@ -273,21 +297,21 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
 // Adds the title text field at the given x,y position, and returns the y
 // position for the next element.
-- (CGFloat)addTitleViewForInfo:(const PageInfoModel::SectionInfo&)info
-                    toSubviews:(NSMutableArray*)subviews
-                       atPoint:(NSPoint)point {
+- (CGFloat)addHeadlineViewForInfo:(const PageInfoModel::SectionInfo&)info
+                       toSubviews:(NSMutableArray*)subviews
+                          atPoint:(NSPoint)point {
   NSRect frame = NSMakeRect(point.x, point.y, kTextWidth, kImageSpacing);
-  scoped_nsobject<NSTextField> titleField(
+  scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:frame]);
-  [self configureTextFieldAsLabel:titleField.get()];
-  [titleField setStringValue:base::SysUTF16ToNSString(info.title)];
+  [self configureTextFieldAsLabel:textField.get()];
+  [textField setStringValue:base::SysUTF16ToNSString(info.headline)];
   NSFont* font = [NSFont boldSystemFontOfSize:[NSFont smallSystemFontSize]];
-  [titleField setFont:font];
+  [textField setFont:font];
   frame.size.height +=
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
-          titleField];
-  [titleField setFrame:frame];
-  [subviews addObject:titleField.get()];
+          textField];
+  [textField setFrame:frame];
+  [subviews addObject:textField.get()];
   return NSHeight(frame);
 }
 
@@ -315,6 +339,9 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // Returns the y position for the next element.
 - (CGFloat)addCertificateButtonToSubviews:(NSMutableArray*)subviews
                                  atOffset:(CGFloat)offset {
+  // The certificate button should only be added if there is SSL information.
+  DCHECK(certID_);
+
   // Create the certificate button. The frame will be fixed up by GTM, so
   // use arbitrary values.
   NSRect frame = NSMakeRect(kTextXPosition, offset, 100, 14);
@@ -323,19 +350,17 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:certButton];
 
   // By default, assume that we don't have certificate information to show.
-  [certButton setEnabled:NO];
-  if (certID_) {
-    scoped_refptr<net::X509Certificate> cert;
-    CertStore::GetSharedInstance()->RetrieveCert(certID_, &cert);
+  scoped_refptr<net::X509Certificate> cert;
+  CertStore::GetSharedInstance()->RetrieveCert(certID_, &cert);
 
-    // Don't bother showing certificates if there isn't one. Gears runs
-    // with no OS root certificate.
-    if (cert.get() && cert->os_cert_handle()) {
-      [certButton setEnabled:YES];
-    }
+  // Don't bother showing certificates if there isn't one. Gears runs
+  // with no OS root certificate.
+  if (!cert.get() || !cert->os_cert_handle()) {
+    // This should only ever happen in unit tests.
+    [certButton setEnabled:NO];
   }
 
-  return NSHeight(frame) + kVerticalSpacing;
+  return NSHeight([certButton frame]);
 }
 
 // Adds the state image at a pre-determined x position and the given y. This
@@ -344,7 +369,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 - (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
                  toSubviews:(NSMutableArray*)subviews
                    atOffset:(CGFloat)offset {
-  NSRect frame = NSMakeRect(kFramePadding, offset - kImageSize, kImageSize,
+  NSRect frame = NSMakeRect(kFramePadding, offset, kImageSize,
       kImageSize);
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);

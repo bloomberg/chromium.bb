@@ -22,11 +22,11 @@ class FakeModel : public PageInfoModel {
   FakeModel() : PageInfoModel() {}
 
   void AddSection(SectionStateIcon icon_id,
-                  const string16& title,
+                  const string16& headline,
                   const string16& description,
                   SectionInfoType type) {
     sections_.push_back(SectionInfo(
-        icon_id, title, string16(), description, type));
+        icon_id, string16(), headline, description, type));
   }
 };
 
@@ -67,7 +67,13 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     int link_count = 1;
     ++spacer_count;
 
-    for (NSView* view in [[window_ contentView] subviews]) {
+    // The window's only immediate child is an invisible view that has a flipped
+    // coordinate origin. It is into this that all views get placed.
+    NSArray* windowSubviews = [[window_ contentView] subviews];
+    EXPECT_EQ(1U, [windowSubviews count]);
+    NSArray* subviews = [[windowSubviews lastObject] subviews];
+
+    for (NSView* view in subviews) {
       if ([view isKindOfClass:[NSTextField class]]) {
         --text_count;
       } else if ([view isKindOfClass:[NSImageView class]]) {
@@ -113,28 +119,28 @@ class PageInfoBubbleControllerTest : public CocoaTest {
 
 TEST_F(PageInfoBubbleControllerTest, NoHistoryNoSecurity) {
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
+      string16(),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY),
       PageInfoModel::SECTION_INFO_IDENTITY);
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
+      string16(),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_CONNECTION);
 
   CreateBubble();
-  CheckWindow(/*text=*/4, /*image=*/2, /*spacer=*/1, /*button=*/1);
+  CheckWindow(/*text=*/2, /*image=*/2, /*spacer=*/1, /*button=*/0);
 }
 
 
 TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
+      string16(),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY),
       PageInfoModel::SECTION_INFO_IDENTITY);
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
+      string16(),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
           ASCIIToUTF16("google.com")),
@@ -153,13 +159,13 @@ TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
 
   [controller_ performLayout];
 
-  CheckWindow(/*text=*/6, /*image=*/3, /*spacer=*/2, /*button=*/1);
+  CheckWindow(/*text=*/4, /*image=*/3, /*spacer=*/2, /*button=*/0);
 }
 
 
 TEST_F(PageInfoBubbleControllerTest, NoHistoryMixedSecurity) {
   model_->AddSection(PageInfoModel::ICON_STATE_OK,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
+      string16(),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY,
           ASCIIToUTF16("Goat Security Systems")),
@@ -177,17 +183,20 @@ TEST_F(PageInfoBubbleControllerTest, NoHistoryMixedSecurity) {
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING));
 
   model_->AddSection(PageInfoModel::ICON_STATE_OK,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
+      string16(),
       description,
       PageInfoModel::SECTION_INFO_CONNECTION);
 
-  CreateBubble();
 
-  NSArray* subviews = [[window_ contentView] subviews];
-  CheckWindow(/*text=*/4, /*image=*/2, /*spacer=*/1, /*button=*/1);
+  CreateBubble();
+  [controller_ setCertID:1];
+  [controller_ performLayout];
+
+  CheckWindow(/*text=*/2, /*image=*/2, /*spacer=*/1, /*button=*/1);
 
   // Look for the over-sized box.
   NSString* targetDesc = base::SysUTF16ToNSString(description);
+  NSArray* subviews = [[window_ contentView] subviews];
   for (NSView* subview in subviews) {
     if ([subview isKindOfClass:[NSTextField class]]) {
       NSTextField* desc = static_cast<NSTextField*>(subview);
