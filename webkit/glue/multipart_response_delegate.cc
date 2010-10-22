@@ -342,12 +342,6 @@ bool MultipartResponseDelegate::ReadContentRanges(
     return false;
   }
 
-  size_t byte_range_lower_bound_characters =
-      byte_range_lower_bound_end_offset - byte_range_lower_bound_start_offset;
-  std::string byte_range_lower_bound =
-      content_range.substr(byte_range_lower_bound_start_offset,
-                           byte_range_lower_bound_characters);
-
   size_t byte_range_upper_bound_start_offset =
       byte_range_lower_bound_end_offset + 1;
 
@@ -357,16 +351,16 @@ bool MultipartResponseDelegate::ReadContentRanges(
     return false;
   }
 
-  size_t byte_range_upper_bound_characters =
-      byte_range_upper_bound_end_offset - byte_range_upper_bound_start_offset;
-
-  std::string byte_range_upper_bound =
-      content_range.substr(byte_range_upper_bound_start_offset,
-                           byte_range_upper_bound_characters);
-
-  if (!base::StringToInt(byte_range_lower_bound, content_range_lower_bound))
+  if (!base::StringToInt(
+      content_range.begin() + byte_range_lower_bound_start_offset,
+      content_range.begin() + byte_range_lower_bound_end_offset,
+      content_range_lower_bound))
     return false;
-  if (!base::StringToInt(byte_range_upper_bound, content_range_upper_bound))
+
+  if (!base::StringToInt(
+      content_range.begin() + byte_range_upper_bound_start_offset,
+      content_range.begin() + byte_range_upper_bound_end_offset,
+      content_range_upper_bound))
     return false;
   return true;
 }

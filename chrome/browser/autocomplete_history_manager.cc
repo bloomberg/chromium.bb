@@ -31,8 +31,6 @@ const string16 kSSNSeparators = ASCIIToUTF16(" -");
 bool IsSSN(const string16& text) {
   string16 number_string;
   RemoveChars(text, kSSNSeparators.c_str(), &number_string);
-  if (number_string.length() != 9 || !IsStringASCII(number_string))
-    return false;
 
   // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
   // serial number). The validation we do here is simply checking if the area,
@@ -42,13 +40,13 @@ bool IsSSN(const string16& text) {
   // See: http://www.socialsecurity.gov/history/ssn/geocard.html
   //      http://www.socialsecurity.gov/employer/stateweb.htm
   //      http://www.socialsecurity.gov/employer/ssnvhighgroup.htm
-
-  string16 area_string = number_string.substr(0, 3);
-  string16 group_string = number_string.substr(3, 2);
-  string16 serial_string = number_string.substr(5, 4);
+  if (number_string.length() != 9 || !IsStringASCII(number_string))
+    return false;
 
   int area;
-  if (!base::StringToInt(area_string, &area))
+  if (!base::StringToInt(number_string.begin(),
+                         number_string.begin() + 3,
+                         &area))
     return false;
   if (area < 1 ||
       area == 666 ||
@@ -57,11 +55,15 @@ bool IsSSN(const string16& text) {
     return false;
 
   int group;
-  if (!base::StringToInt(group_string, &group) || group == 0)
+  if (!base::StringToInt(number_string.begin() + 3,
+                         number_string.begin() + 5,
+                         &group) || group == 0)
     return false;
 
   int serial;
-  if (!base::StringToInt(serial_string, &serial) || serial == 0)
+  if (!base::StringToInt(number_string.begin() + 5,
+                         number_string.begin() + 9,
+                         &serial) || serial == 0)
     return false;
 
   return true;

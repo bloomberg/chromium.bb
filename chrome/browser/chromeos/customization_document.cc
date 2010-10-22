@@ -103,7 +103,9 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
   if (!background_color_string.empty()) {
     if (background_color_string[0] == '#') {
       int background_int;
-      base::HexStringToInt(background_color_string.substr(1), &background_int);
+      base::HexStringToInt(background_color_string.begin() + 1,
+                           background_color_string.end(),
+                           &background_int);
       background_color_ = static_cast<SkColor>(0xff000000 | background_int);
     } else {
       // Literal color constants are not supported yet.

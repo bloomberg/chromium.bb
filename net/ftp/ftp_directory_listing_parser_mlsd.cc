@@ -28,15 +28,23 @@ bool MlsdDateListingToTime(const string16& text, base::Time* time) {
   if (text.length() < 14)
     return false;
 
-  if (!base::StringToInt(text.substr(0, 4), &time_exploded.year))
+  if (!base::StringToInt(text.begin(), text.begin() + 4, &time_exploded.year))
     return false;
-  if (!base::StringToInt(text.substr(4, 2), &time_exploded.month))
+  if (!base::StringToInt(text.begin() + 4,
+                         text.begin() + 6,
+                         &time_exploded.month))
     return false;
-  if (!base::StringToInt(text.substr(6, 2), &time_exploded.day_of_month))
+  if (!base::StringToInt(text.begin() + 6,
+                         text.begin() + 8,
+                         &time_exploded.day_of_month))
     return false;
-  if (!base::StringToInt(text.substr(8, 2), &time_exploded.hour))
+  if (!base::StringToInt(text.begin() + 8,
+                         text.begin() + 10,
+                         &time_exploded.hour))
     return false;
-  if (!base::StringToInt(text.substr(10, 2), &time_exploded.minute))
+  if (!base::StringToInt(text.begin() + 10,
+                         text.begin() + 12,
+                         &time_exploded.minute))
     return false;
 
   // We don't know the time zone of the server, so just use local time.

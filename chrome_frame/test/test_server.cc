@@ -48,7 +48,9 @@ void Request::ParseHeaders(const std::string& headers) {
   while (it.GetNext()) {
     if (LowerCaseEqualsASCII(it.name(), "content-length")) {
       int int_content_length;
-      base::StringToInt(it.values().c_str(), &int_content_length);
+      base::StringToInt(it.values().begin(),
+                        it.values().end(),
+                        &int_content_length);
       content_length_ = int_content_length;
       break;
     }

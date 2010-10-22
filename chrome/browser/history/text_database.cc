@@ -112,8 +112,8 @@ TextDatabase::DBIdent TextDatabase::FileNameToID(const FilePath& file_path) {
   }
 
   int year, month;
-  base::StringToInt(suffix.substr(0, 4), &year);
-  base::StringToInt(suffix.substr(5, 2), &month);
+  base::StringToInt(suffix.begin(), suffix.begin() + 4, &year);
+  base::StringToInt(suffix.begin() + 5, suffix.begin() + 7, &month);
 
   return year * 100 + month;
 }

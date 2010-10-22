@@ -614,7 +614,8 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
     // Return the least significant 8 characters (i.e. 4 bytes)
     // of the 32 character hexadecimal result as an int.
     int int_val;
-    base::HexStringToInt(hex_md5.substr(24), &int_val);
+    DCHECK_EQ(hex_md5.length(), 32u);
+    base::HexStringToInt(hex_md5.begin() + 24, hex_md5.end(), &int_val);
     *value = int_val;
     return NPERR_NO_ERROR;
   }

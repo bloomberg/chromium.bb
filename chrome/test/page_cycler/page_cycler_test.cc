@@ -366,8 +366,9 @@ static bool HasDatabaseErrors(const std::string timings) {
     new_pos = timings.find(',', pos);
     if (new_pos == std::string::npos)
       new_pos = timings.length();
-    time_str = timings.substr(pos, new_pos - pos);
-    if (!base::StringToInt(time_str, &time)) {
+    if (!base::StringToInt(timings.begin() + pos,
+                           timings.begin() + new_pos,
+                           &time)) {
       LOG(ERROR) << "Invalid time reported: " << time_str;
       return true;
     }

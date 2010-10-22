@@ -44,7 +44,9 @@ static int GetNumObjects(int log_skip, const std::string& constructor) {
   size_t j = v8_log.find(",", i);
   CHECK(j != std::string::npos);
   int num_objects;
-  CHECK(base::StringToInt(v8_log.substr(i, j - i), &num_objects));
+  CHECK(base::StringToInt(v8_log.begin() + i,
+                          v8_log.begin() + j,
+                          &num_objects));
   return num_objects;
 }
 

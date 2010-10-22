@@ -64,7 +64,7 @@ const int kRSAKeySize = 1024;
 static void ConvertHexadecimalToIDAlphabet(std::string* id) {
   for (size_t i = 0; i < id->size(); ++i) {
     int val;
-    if (base::HexStringToInt(id->substr(i, 1), &val))
+    if (base::HexStringToInt(id->begin() + i, id->begin() + i + 1, &val))
       (*id)[i] = val + 'a';
     else
       (*id)[i] = 'a';

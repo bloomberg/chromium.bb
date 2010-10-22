@@ -261,7 +261,7 @@ void CalculateBloomFilterFalsePositives(
     if (use_weights) {
       std::string::size_type pos = url.find_last_of(",");
       if (pos != std::string::npos) {
-        base::StringToInt(std::string(url, pos + 1), &weight);
+        base::StringToInt(url.begin() + pos + 1, url.end(), &weight);
         url = url.substr(0, pos);
       }
     }

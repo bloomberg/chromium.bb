@@ -331,9 +331,10 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   size_t colon_index = command.find(':');
   if (colon_index != std::string::npos) {
     DCHECK(colon_index < command.size() - 1);
-    std::string index_str = command.substr(colon_index + 1);
     command = command.substr(0, colon_index);
-    bool result = base::StringToInt(index_str, &element_index);
+    bool result = base::StringToInt(command.begin() + colon_index + 1,
+                                    command.end(),
+                                    &element_index);
     DCHECK(result);
   }
 
