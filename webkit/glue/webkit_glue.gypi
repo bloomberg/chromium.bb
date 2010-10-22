@@ -175,6 +175,8 @@
         'media/simple_data_source.h',
         'media/video_renderer_impl.cc',
         'media/video_renderer_impl.h',
+        'media/web_data_source.cc',
+        'media/web_data_source.h',
         'media/web_video_renderer.h',
         'plugins/carbon_plugin_window_tracker_mac.h',
         'plugins/carbon_plugin_window_tracker_mac.cc',

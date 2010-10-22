@@ -21,6 +21,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVideoFrame.h"
+#include "webkit/glue/media/buffered_data_source.h"
+#include "webkit/glue/media/media_resource_loader_bridge_factory.h"
+#include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/media/web_video_renderer.h"
 #include "webkit/glue/webvideoframe_impl.h"
@@ -85,6 +88,10 @@ void WebMediaPlayerImpl::Proxy::Repaint() {
   }
 }
 
+void WebMediaPlayerImpl::Proxy::SetDataSource(WebDataSource* data_source) {
+  data_source_ = data_source;
+}
+
 void WebMediaPlayerImpl::Proxy::SetVideoRenderer(
     WebVideoRenderer* video_renderer) {
   video_renderer_ = video_renderer;
@@ -105,10 +112,18 @@ void WebMediaPlayerImpl::Proxy::SetSize(const gfx::Rect& rect) {
   }
 }
 
+void WebMediaPlayerImpl::Proxy::AbortDataSource() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (data_source_) {
+    data_source_->Abort();
+  }
+}
+
 void WebMediaPlayerImpl::Proxy::Detach() {
   DCHECK(MessageLoop::current() == render_loop_);
   webmediaplayer_ = NULL;
   video_renderer_ = NULL;
+  data_source_ = NULL;
 }
 
 void WebMediaPlayerImpl::Proxy::PipelineInitializationCallback() {
@@ -198,10 +213,12 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
 /////////////////////////////////////////////////////////////////////////////
 // WebMediaPlayerImpl implementation
 
-WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                                       media::FilterFactoryCollection* factory,
-                                       WebVideoRendererFactoryFactory*
-                                           video_renderer_factory)
+WebMediaPlayerImpl::WebMediaPlayerImpl(
+    WebKit::WebMediaPlayerClient* client,
+    media::FilterFactoryCollection* factory,
+    MediaResourceLoaderBridgeFactory* bridge_factory,
+    bool use_simple_data_source,
+    WebVideoRendererFactoryFactory* video_renderer_factory)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),
@@ -240,6 +257,23 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
       &WebMediaPlayerImpl::Proxy::PipelineErrorCallback));
   pipeline_->SetNetworkEventCallback(NewCallback(proxy_.get(),
       &WebMediaPlayerImpl::Proxy::NetworkEventCallback));
+
+  // A simple data source that keeps all data in memory.
+  media::FilterFactory* simple_data_source_factory =
+      webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
+                                                   bridge_factory);
+  // A sophisticated data source that does memory caching.
+  media::FilterFactory* buffered_data_source_factory =
+      webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
+                                                     bridge_factory,
+                                                     proxy_);
+  if (use_simple_data_source) {
+    factory->AddFactory(simple_data_source_factory);
+    factory->AddFactory(buffered_data_source_factory);
+  } else {
+    factory->AddFactory(buffered_data_source_factory);
+    factory->AddFactory(simple_data_source_factory);
+  }
 
   // Add in the default filter factories.
   filter_factory_->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
@@ -726,6 +760,11 @@ void WebMediaPlayerImpl::SetReadyState(
 
 void WebMediaPlayerImpl::Destroy() {
   DCHECK(MessageLoop::current() == main_loop_);
+
+  // Tell the data source to abort any pending reads so that the pipeline is
+  // not blocked when issuing stop commands to the other filters.
+  if (proxy_)
+    proxy_->AbortDataSource();
 
   // Make sure to kill the pipeline so there's no more media threads running.
   // Note: stopping the pipeline might block for a long time.

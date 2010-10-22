@@ -21,6 +21,8 @@
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
+#include "webkit/glue/media/web_data_source.h"
+#include "webkit/glue/webmediaplayer_impl.h"
 
 namespace webkit_glue {
 /////////////////////////////////////////////////////////////////////////////
@@ -212,18 +214,20 @@ class BufferedResourceLoader :
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceLoader);
 };
 
-class BufferedDataSource : public media::DataSource {
+class BufferedDataSource : public WebDataSource {
  public:
   // Methods called from pipeline thread
   // Static methods for creating this class.
   static media::FilterFactory* CreateFactory(
       MessageLoop* message_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory) {
-    return new media::FilterFactoryImpl2<
+      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
+      webkit_glue::WebMediaPlayerImpl::Proxy* proxy) {
+    return new media::FilterFactoryImpl3<
         BufferedDataSource,
         MessageLoop*,
-        webkit_glue::MediaResourceLoaderBridgeFactory*>(
-        message_loop, bridge_factory);
+        webkit_glue::MediaResourceLoaderBridgeFactory*,
+        webkit_glue::WebMediaPlayerImpl::Proxy*>(
+        message_loop, bridge_factory, proxy);
   }
 
   // media::FilterFactoryImpl2 implementation.
@@ -248,10 +252,14 @@ class BufferedDataSource : public media::DataSource {
     return media_format_;
   }
 
+  // webkit_glue::WebDataSource implementation.
+  virtual void Abort();
+
  protected:
   BufferedDataSource(
       MessageLoop* render_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory);
+      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
+      webkit_glue::WebMediaPlayerImpl::Proxy* proxy);
   virtual ~BufferedDataSource();
 
   // A factory method to create a BufferedResourceLoader based on the read
@@ -266,10 +274,11 @@ class BufferedDataSource : public media::DataSource {
   virtual base::TimeDelta GetTimeoutMilliseconds();
 
  private:
-  friend class media::FilterFactoryImpl2<
+  friend class media::FilterFactoryImpl3<
       BufferedDataSource,
       MessageLoop*,
-      webkit_glue::MediaResourceLoaderBridgeFactory*>;
+      webkit_glue::MediaResourceLoaderBridgeFactory*,
+      webkit_glue::WebMediaPlayerImpl::Proxy*>;
 
   // Posted to perform initialization on render thread and start resource
   // loading.

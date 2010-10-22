@@ -561,7 +561,7 @@ class MockBufferedDataSource : public BufferedDataSource {
  protected:
   MockBufferedDataSource(
       MessageLoop* message_loop, MediaResourceLoaderBridgeFactory* factory)
-      : BufferedDataSource(message_loop, factory) {
+      : BufferedDataSource(message_loop, factory, NULL) {
   }
 
  private:
@@ -757,6 +757,23 @@ class BufferedDataSourceTest : public testing::Test {
               memcmp(buffer_, data_ + static_cast<int>(position), read_size));
   }
 
+  void ReadDataSourceHang(int64 position, int size) {
+    EXPECT_TRUE(loader_);
+
+    // Expect a call to read, but the call never returns.
+    EXPECT_CALL(*loader_, Read(position, size, NotNull(), NotNull()));
+    data_source_->Read(
+        position, size, buffer_,
+        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+    message_loop_->RunAllPending();
+
+    // Now expect the read to return after aborting the data source.
+    EXPECT_CALL(*this, ReadCallback(_));
+    EXPECT_CALL(*loader_, Stop());
+    data_source_->Abort();
+    message_loop_->RunAllPending();
+  }
+
   void ReadDataSourceMiss(int64 position, int size) {
     EXPECT_TRUE(loader_);
 
@@ -944,6 +961,11 @@ TEST_F(BufferedDataSourceTest, ReadCacheMiss) {
   ReadDataSourceMiss(1000, 10);
   ReadDataSourceMiss(20, 10);
   StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest, ReadHang) {
+  InitializeDataSource(kHttpUrl, net::OK, true, 25, LOADING);
+  ReadDataSourceHang(10, 10);
 }
 
 TEST_F(BufferedDataSourceTest, ReadFailed) {

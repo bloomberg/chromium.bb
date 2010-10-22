@@ -74,6 +74,8 @@ class FilterFactoryCollection;
 
 namespace webkit_glue {
 
+class MediaResourceLoaderBridgeFactory;
+class WebDataSource;
 class WebVideoRenderer;
 class WebVideoRendererFactoryFactory;
 
@@ -96,6 +98,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // Public methods called from the video renderer.
     void Repaint();
     void SetVideoRenderer(WebVideoRenderer* video_renderer);
+    void SetDataSource(WebDataSource* data_source);
 
     // Public methods called from WebMediaPlayerImpl.
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
@@ -103,6 +106,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void Detach();
     void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
     void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
+    void AbortDataSource();
 
     // Public methods called from the pipeline via callback issued by
     // WebMediaPlayerImpl.
@@ -141,6 +145,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // The render message loop where WebKit lives.
     MessageLoop* render_loop_;
     WebMediaPlayerImpl* webmediaplayer_;
+    scoped_refptr<WebDataSource> data_source_;
     scoped_refptr<WebVideoRenderer> video_renderer_;
 
     Lock lock_;
@@ -172,6 +177,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // a subclass of WebVideoRenderer.  Is deleted by WebMediaPlayerImpl.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
                      media::FilterFactoryCollection* factory,
+                     MediaResourceLoaderBridgeFactory* bridge_factory,
+                     bool use_simple_data_source,
                      WebVideoRendererFactoryFactory* video_renderer_factory);
   virtual ~WebMediaPlayerImpl();
 

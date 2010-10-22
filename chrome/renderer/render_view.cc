@@ -2572,22 +2572,6 @@ WebMediaPlayer* RenderView::createMediaPlayer(
           appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           routing_id());
 
-  // A simple data source that keeps all data in memory.
-  media::FilterFactory* simple_data_source_factory =
-      webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
-                                                   bridge_factory);
-  // A sophisticated data source that does memory caching.
-  media::FilterFactory* buffered_data_source_factory =
-      webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
-                                                     bridge_factory);
-  if (cmd_line->HasSwitch(switches::kSimpleDataSource)) {
-    factory->AddFactory(simple_data_source_factory);
-    factory->AddFactory(buffered_data_source_factory);
-  } else {
-    factory->AddFactory(buffered_data_source_factory);
-    factory->AddFactory(simple_data_source_factory);
-  }
-
   webkit_glue::WebVideoRendererFactoryFactory* factory_factory = NULL;
   if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
     factory_factory = new IPCVideoRenderer::FactoryFactory(routing_id_);
@@ -2597,7 +2581,9 @@ WebMediaPlayer* RenderView::createMediaPlayer(
         new webkit_glue::VideoRendererImpl::FactoryFactory(pts_logging);
   }
 
-  return new webkit_glue::WebMediaPlayerImpl(client, factory, factory_factory);
+  return new webkit_glue::WebMediaPlayerImpl(
+      client, factory, bridge_factory,
+      cmd_line->HasSwitch(switches::kSimpleDataSource), factory_factory);
 }
 
 WebApplicationCacheHost* RenderView::createApplicationCacheHost(

@@ -732,18 +732,9 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
           base::GetCurrentProcId(),
           appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           0);
-  // A simple data source that keeps all data in memory.
-  media::FilterFactory* simple_data_source_factory =
-      webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),
-                                                   bridge_factory);
-  // A sophisticated data source that does memory caching.
-  media::FilterFactory* buffered_data_source_factory =
-      webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
-                                                     bridge_factory);
-  factory->AddFactory(buffered_data_source_factory);
-  factory->AddFactory(simple_data_source_factory);
+
   return new webkit_glue::WebMediaPlayerImpl(
-      client, factory,
+      client, factory, bridge_factory, false,
       new webkit_glue::VideoRendererImpl::FactoryFactory(false));
 }
 

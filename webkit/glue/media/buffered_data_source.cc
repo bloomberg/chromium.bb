@@ -15,6 +15,7 @@
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webmediaplayer_impl.h"
 
 namespace {
 
@@ -542,7 +543,8 @@ bool BufferedDataSource::IsMediaFormatSupported(
 // BufferedDataSource, protected
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
-    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory)
+    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
+    webkit_glue::WebMediaPlayerImpl::Proxy* proxy)
     : total_bytes_(kPositionNotSpecified),
       loaded_(false),
       streaming_(false),
@@ -562,6 +564,8 @@ BufferedDataSource::BufferedDataSource(
       stopped_on_render_loop_(false),
       media_is_paused_(true),
       using_range_request_(true) {
+  if (proxy)
+    proxy->SetDataSource(this);
 }
 
 BufferedDataSource::~BufferedDataSource() {
@@ -623,6 +627,7 @@ void BufferedDataSource::Stop(media::FilterCallback* callback) {
     callback->Run();
     delete callback;
   }
+
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &BufferedDataSource::CleanupTask));
 }
@@ -653,6 +658,20 @@ bool BufferedDataSource::GetSize(int64* size_out) {
 
 bool BufferedDataSource::IsStreaming() {
   return streaming_;
+}
+
+void BufferedDataSource::Abort() {
+  DCHECK(MessageLoop::current() == render_loop_);
+
+  // If we are told to abort, immediately return from any pending read
+  // with an error.
+  if (read_callback_.get()) {
+    {
+      AutoLock auto_lock(lock_);
+      DoneRead_Locked(net::ERR_FAILED);
+    }
+    CleanupTask();
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -720,7 +739,10 @@ void BufferedDataSource::ReadTask(
 
 void BufferedDataSource::CleanupTask() {
   DCHECK(MessageLoop::current() == render_loop_);
-  DCHECK(!stopped_on_render_loop_);
+
+  // If we have already stopped, do nothing.
+  if (stopped_on_render_loop_)
+    return;
 
   // Stop the watch dog.
   watch_dog_timer_.Stop();
