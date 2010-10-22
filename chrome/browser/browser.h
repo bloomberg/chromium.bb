@@ -823,6 +823,9 @@ class Browser : public TabHandlerDelegate,
   // Updates commands when the content's restrictions change.
   void UpdateCommandsForContentRestrictionState();
 
+  // Updates commands for enabling developer tools.
+  void UpdateCommandsForDevTools();
+
   // Updates the printing command state.
   void UpdatePrintingState(int content_restrictions);
 
@@ -1092,6 +1095,9 @@ class Browser : public TabHandlerDelegate,
 
   // Keep track of the printing enabled pref.
   BooleanPrefMember printing_enabled_;
+
+  // Keep track of the development tools disabled pref.
+  BooleanPrefMember dev_tools_disabled_;
 
   // Keep track of when instant enabled changes.
   BooleanPrefMember instant_enabled_;

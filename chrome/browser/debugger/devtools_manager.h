@@ -85,6 +85,9 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void AttachClientHost(int client_host_cookie,
                         RenderViewHost* to_rvh);
 
+  // Closes all open developer tools windows.
+  void CloseAllClientHosts();
+
  private:
   friend class base::RefCounted<DevToolsManager>;
 

@@ -415,3 +415,16 @@ void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
   // We've disconnected from the last renderer -> revoke cookie permissions.
   ChildProcessSecurityPolicy::GetInstance()->RevokeReadRawCookies(process_id);
 }
+
+void DevToolsManager::CloseAllClientHosts() {
+  std::vector<RenderViewHost*> rhvs;
+  for (InspectedRvhToClientHostMap::iterator it =
+           inspected_rvh_to_client_host_.begin();
+       it != inspected_rvh_to_client_host_.end(); ++it) {
+    rhvs.push_back(it->first);
+  }
+  for (std::vector<RenderViewHost*>::iterator it = rhvs.begin();
+       it != rhvs.end(); ++it) {
+    UnregisterDevToolsClientHostFor(*it);
+  }
+}

@@ -56,6 +56,7 @@ class ConfigurationPolicyStore {
     kPolicyRenderInHostList,
     kPolicyJavascriptEnabled,
     kPolicySavingBrowserHistoryDisabled,
+    kPolicyDeveloperToolsDisabled,
     kPolicyChromeOsLockOnIdleSuspend,
   };
 

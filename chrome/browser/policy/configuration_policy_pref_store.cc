@@ -131,6 +131,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
       prefs::kWebKitJavascriptEnabled },
   { Value::TYPE_BOOLEAN, kPolicySavingBrowserHistoryDisabled,
       prefs::kSavingBrowserHistoryDisabled },
+  { Value::TYPE_BOOLEAN, kPolicyDeveloperToolsDisabled,
+      prefs::kDevToolsDisabled },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -233,6 +235,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
         Value::TYPE_BOOLEAN, key::kJavascriptEnabled },
     { ConfigurationPolicyStore::kPolicySavingBrowserHistoryDisabled,
         Value::TYPE_BOOLEAN, key::kSavingBrowserHistoryDisabled },
+    { ConfigurationPolicyStore::kPolicyDeveloperToolsDisabled,
+        Value::TYPE_BOOLEAN, key::kDeveloperToolsDisabled },
 
 #if defined(OS_CHROMEOS)
     { ConfigurationPolicyStore::kPolicyChromeOsLockOnIdleSuspend,

@@ -341,6 +341,7 @@ extern const char kNTPPrefVersion[];
 extern const char kNTPCustomLogoStart[];
 extern const char kNTPCustomLogoEnd[];
 
+extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];
 extern const char kSyncSessions[];

@@ -233,6 +233,8 @@ Browser::Browser(Type type, Profile* profile)
   PrefService* local_state = g_browser_process->local_state();
   if (local_state)
     printing_enabled_.Init(prefs::kPrintingEnabled, local_state, this);
+  dev_tools_disabled_.Init(prefs::kDevToolsDisabled,
+                           profile_->GetPrefs(), this);
 
   InitCommandState();
   BrowserList::AddBrowser(this);
@@ -2044,6 +2046,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
   prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
   prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
+  prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
 }
 
 // static
@@ -3358,6 +3361,10 @@ void Browser::Observe(NotificationType type,
         } else {
           CreateInstantIfNecessary();
         }
+      } else if (pref_name == prefs::kDevToolsDisabled) {
+        UpdateCommandsForDevTools();
+        if (dev_tools_disabled_.GetValue())
+          g_browser_process->devtools_manager()->CloseAllClientHosts();
       } else {
         NOTREACHED();
       }
@@ -3490,9 +3497,7 @@ void Browser::InitCommandState() {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, true);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
-  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
-  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE, true);
-  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_INSPECT, true);
+  UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER,
@@ -3660,6 +3665,16 @@ void Browser::UpdatePrintingState(int content_restrictions) {
 void Browser::UpdateReloadStopState(bool is_loading, bool force) {
   window_->UpdateReloadStopState(is_loading, force);
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
+}
+
+void Browser::UpdateCommandsForDevTools() {
+  bool dev_tools_enabled = !dev_tools_disabled_.GetValue();
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS,
+                                        dev_tools_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_CONSOLE,
+                                        dev_tools_enabled);
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_INSPECT,
+                                        dev_tools_enabled);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

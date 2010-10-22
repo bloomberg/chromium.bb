@@ -942,6 +942,8 @@ const char kNTPPrefVersion[] = "ntp.pref_version";
 const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";
 const char kNTPCustomLogoEnd[] = "ntp.alt_logo_end";
 
+const char kDevToolsDisabled[] = "devtools.disabled";
+
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";
 

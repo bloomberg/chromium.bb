@@ -60,6 +60,7 @@ const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";
 const char kRenderInChromeFrameList[] = "RenderInChromeFrameList";
 const char kRenderInHostList[] = "RenderInHostList";
 const char kChromeFrameContentTypes[] = "ChromeFrameContentTypes";
+const char kDeveloperToolsDisabled[] = "DeveloperToolsDisabled";
 
 #if defined(OS_CHROMEOS)
 // ChromeOS policy constants
