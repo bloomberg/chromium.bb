@@ -228,7 +228,7 @@ WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsNonImageMIMEType(
 WebString WorkerWebKitClientImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
-  WorkerThread::current()->Send(new ViewHostMsg_GetMimeTypeFromExtension(
+  SendSyncMessageFromAnyThread(new ViewHostMsg_GetMimeTypeFromExtension(
       webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
 }
@@ -236,7 +236,7 @@ WebString WorkerWebKitClientImpl::mimeTypeForExtension(
 WebString WorkerWebKitClientImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
-  WorkerThread::current()->Send(new ViewHostMsg_GetMimeTypeFromFile(
+  SendSyncMessageFromAnyThread(new ViewHostMsg_GetMimeTypeFromFile(
       FilePath(webkit_glue::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
@@ -245,7 +245,7 @@ WebString WorkerWebKitClientImpl::mimeTypeFromFile(
 WebString WorkerWebKitClientImpl::preferredExtensionForMIMEType(
     const WebString& mime_type) {
   FilePath::StringType file_extension;
-  WorkerThread::current()->Send(
+  SendSyncMessageFromAnyThread(
       new ViewHostMsg_GetPreferredExtensionForMimeType(UTF16ToASCII(mime_type),
           &file_extension));
   return webkit_glue::FilePathStringToWebString(file_extension);
