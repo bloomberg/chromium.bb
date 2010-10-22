@@ -2777,8 +2777,7 @@
    fun:modp_b64_encode
    fun:_ZN4base12Base64EncodeERKSsPSs
    fun:_ZN11dom_ui_util15GetImageDataUrlERK8SkBitmap
-   fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbib
-   fun:_ZN22InternetOptionsHandler*
+   ...
    fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
    fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
    fun:_ZN9OptionsUIC1EP11TabContents
