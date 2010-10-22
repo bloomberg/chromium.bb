@@ -59,6 +59,13 @@ PRUNE_DIRS = ('.svn', '.git',             # VCS metadata
               'out', 'Debug', 'Release',  # build files
               'layout_tests')             # lots of subdirs
 
+ADDITIONAL_PATHS = (
+    # The directory with the word list for Chinese and Japanese segmentation
+    # with different license terms than ICU.
+    "third_party/icu/source/data/brkitr",
+)
+
+
 # Directories where we check out directly from upstream, and therefore
 # can't provide a README.chromium.  Please prefer a README.chromium
 # wherever possible.
@@ -182,6 +189,9 @@ def FindThirdPartyDirs():
             # Don't recurse into any subdirs from here.
             dirs[:] = []
             continue
+
+    for dir in ADDITIONAL_PATHS:
+        third_party_dirs.append(dir)
 
     return third_party_dirs
 
