@@ -4,13 +4,7 @@
 
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 
-#include "app/clipboard/clipboard.h"
-#include "base/callback.h"
 #include "base/command_line.h"
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -21,14 +15,13 @@
 #include "base/worker_pool.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
-#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/device_orientation/dispatcher_host.h"
-#include "chrome/browser/download/download_file.h"
+#include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
@@ -44,20 +37,16 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/plugin_selection_policy.h"
-#endif
 #include "chrome/browser/plugin_service.h"
-#include "chrome/browser/plugin_updater.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/file_utilities_dispatcher_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/search_engines/search_provider_install_state_dispatcher_host.h"
@@ -67,35 +56,21 @@
 #include "chrome/browser/ui_thread_helpers.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
-#include "chrome/common/child_process_host.h"
-#include "chrome/common/chrome_plugin_lib.h"
-#include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
-#if defined(OS_MACOSX)
-#include "chrome/common/font_descriptor_mac.h"
-#include "chrome/common/font_loader_mac.h"
-#endif
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/worker_messages.h"
-#include "gfx/native_widget_types.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
-#include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "webkit/glue/context_menu.h"
@@ -104,6 +79,23 @@
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/plugin_selection_policy.h"
+#endif
+#if defined(OS_MACOSX)
+#include "chrome/common/font_descriptor_mac.h"
+#include "chrome/common/font_loader_mac.h"
+#endif
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
+#if defined(OS_WIN)
+#include "chrome/common/child_process_host.h"
+#endif
+#if defined(USE_TCMALLOC)
+#include "chrome/browser/browser_about_handler.h"
+#endif
 
 using net::CookieStore;
 using WebKit::WebCache;
