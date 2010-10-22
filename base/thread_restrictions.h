@@ -23,6 +23,8 @@ namespace base {
 //
 class ThreadRestrictions {
  public:
+
+#ifndef NDEBUG
   // Set whether the current thread to make IO calls.
   // Threads start out in the *allowed* state.
   static void SetIOAllowed(bool allowed);
@@ -30,17 +32,16 @@ class ThreadRestrictions {
   // Check whether the current thread is allowed to make IO calls,
   // and DCHECK if not.
   static void AssertIOAllowed();
+#else
+  // In Release builds, inline the empty definitions of these functions so
+  // that they can be compiled out.
+  static void SetIOAllowed(bool allowed) {}
+  static void AssertIOAllowed() {}
+#endif
 
  private:
   ThreadRestrictions();  // class for namespacing only
 };
-
-// In Release builds, inline the empty definitions of these functions so
-// that they can be compiled out.
-#ifdef NDEBUG
-void ThreadRestrictions::SetIOAllowed(bool allowed) {}
-void ThreadRestrictions::AssertIOAllowed() {}
-#endif
 
 }  // namespace base
 
