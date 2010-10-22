@@ -525,8 +525,8 @@ void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
     safe_parser->Start();
   } else {
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).
-    LOG(INFO) << "Failed to fetch manifest '" << url.possibly_invalid_spec() <<
-        "' response code:" << response_code;
+    VLOG(1) << "Failed to fetch manifest '" << url.possibly_invalid_spec()
+            << "' response code:" << response_code;
   }
   manifest_fetcher_.reset();
   current_manifest_fetch_.reset();
@@ -620,8 +620,8 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
     // TODO(asargent) do things like exponential backoff, handling
     // 503 Service Unavailable / Retry-After headers, etc. here.
     // (http://crbug.com/12546).
-    LOG(INFO) << "Failed to fetch extension '" <<
-        url.possibly_invalid_spec() << "' response code:" << response_code;
+    VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
+            << "' response code:" << response_code;
   }
   extension_fetcher_.reset();
   current_extension_fetch_ = ExtensionFetch();

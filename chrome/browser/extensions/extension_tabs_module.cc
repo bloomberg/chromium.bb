@@ -942,7 +942,7 @@ bool CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
                                            &temp_canvas)) {
     return false;
   }
-  LOG(INFO) << "captureVisibleTab() Got image from backing store.";
+  VLOG(1) << "captureVisibleTab() got image from backing store.";
 
   SendResultFromBitmap(
       temp_canvas.getTopPlatformDevice().accessBitmap(false));
@@ -964,7 +964,7 @@ void CaptureVisibleTabFunction::Observe(NotificationType type,
     error_ = keys::kInternalVisibleTabCaptureError;
     SendResponse(false);
   } else {
-    LOG(INFO) << "captureVisibleTab() Got image from renderer.";
+    VLOG(1) << "captureVisibleTab() got image from renderer.";
     SendResultFromBitmap(*screen_capture);
   }
 

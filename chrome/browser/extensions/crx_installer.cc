@@ -263,8 +263,8 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
-    LOG(INFO) << "This extension: " << extension_->id()
-      << " is blacklisted. Install failed.";
+    VLOG(1) << "This extension: " << extension_->id()
+            << " is blacklisted. Install failed.";
     ReportFailureFromUIThread("This extension is blacklisted.");
     return;
   }
