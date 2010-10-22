@@ -823,12 +823,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
     // If network device is already enabled/disabled, then don't do anything.
     if (enable && offline_mode_) {
-      LOG(INFO) << "Trying to enable offline mode when it's already enabled. ";
+      VLOG(1) << "Trying to enable offline mode when it's already enabled.";
       return;
     }
     if (!enable && !offline_mode_) {
-      LOG(INFO) <<
-          "Trying to disable offline mode when it's already disabled. ";
+      VLOG(1) << "Trying to disable offline mode when it's already disabled.";
       return;
     }
 
@@ -976,23 +975,22 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       CellularNetworkVector* cellular_networks,
       WifiNetworkVector* remembered_wifi_networks,
       CellularNetworkVector* remembered_cellular_networks) {
-    DLOG(INFO) << "ParseSystem:";
+    DVLOG(1) << "ParseSystem:";
     ethernet->Clear();
     for (int i = 0; i < system->service_size; i++) {
       const ServiceInfo service = *system->GetServiceInfo(i);
-      DLOG(INFO) << "  (" << service.type <<
-                    ") " << service.name <<
-                    " mode=" << service.mode <<
-                    " state=" << service.state <<
-                    " sec=" << service.security <<
-                    " req=" << service.passphrase_required <<
-                    " pass=" << service.passphrase <<
-                    " id=" << service.identity <<
-                    " certpath=" << service.cert_path <<
-                    " str=" << service.strength <<
-                    " fav=" << service.favorite <<
-                    " auto=" << service.auto_connect <<
-                    " error=" << service.error;
+      DVLOG(1) << "  (" << service.type << ") " << service.name
+               << " mode=" << service.mode
+               << " state=" << service.state
+               << " sec=" << service.security
+               << " req=" << service.passphrase_required
+               << " pass=" << service.passphrase
+               << " id=" << service.identity
+               << " certpath=" << service.cert_path
+               << " str=" << service.strength
+               << " fav=" << service.favorite
+               << " auto=" << service.auto_connect
+               << " error=" << service.error;
       // Once a connected ethernet service is found, disregard other ethernet
       // services that are also found
       if (service.type == TYPE_ETHERNET && !(ethernet->connected()))
@@ -1002,20 +1000,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       else if (service.type == TYPE_CELLULAR)
         cellular_networks->push_back(CellularNetwork(service));
     }
-    DLOG(INFO) << "Remembered networks:";
+    DVLOG(1) << "Remembered networks:";
     for (int i = 0; i < system->remembered_service_size; i++) {
       const ServiceInfo& service = *system->GetRememberedServiceInfo(i);
       // Only serices marked as auto_connect are considered remembered networks.
       // TODO(chocobo): Don't add to remembered service if currently available.
       if (service.auto_connect) {
-        DLOG(INFO) << "  (" << service.type <<
-                      ") " << service.name <<
-                      " mode=" << service.mode <<
-                      " sec=" << service.security <<
-                      " pass=" << service.passphrase <<
-                      " id=" << service.identity <<
-                      " certpath=" << service.cert_path <<
-                      " auto=" << service.auto_connect;
+        DVLOG(1) << "  (" << service.type << ") " << service.name
+                 << " mode=" << service.mode
+                 << " sec=" << service.security
+                 << " pass=" << service.passphrase
+                 << " id=" << service.identity
+                 << " certpath=" << service.cert_path
+                 << " auto=" << service.auto_connect;
         if (service.type == TYPE_WIFI)
           remembered_wifi_networks->push_back(WifiNetwork(service));
         else if (service.type == TYPE_CELLULAR)
@@ -1027,14 +1024,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   void Init() {
     // First, get the currently available networks.  This data is cached
     // on the connman side, so the call should be quick.
-    LOG(INFO) << "Getting initial CrOS network info.";
+    VLOG(1) << "Getting initial CrOS network info.";
     UpdateSystemInfo();
 
-    LOG(INFO) << "Registering for network status updates.";
+    VLOG(1) << "Registering for network status updates.";
     // Now, register to receive updates on network status.
     network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
                                                 this);
-    LOG(INFO) << "Registering for cellular data plan updates.";
+    VLOG(1) << "Registering for cellular data plan updates.";
     data_plan_monitor_ = MonitorCellularDataPlan(&DataPlanUpdateHandler, this);
   }
 

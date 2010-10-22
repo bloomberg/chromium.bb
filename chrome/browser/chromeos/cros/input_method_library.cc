@@ -495,7 +495,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
   void SetDeferImeStartup(bool defer) {
-    LOG(INFO) << "Setting DeferImeStartup to " << defer;
+    VLOG(1) << "Setting DeferImeStartup to " << defer;
     defer_ime_startup_ = defer;
   }
 

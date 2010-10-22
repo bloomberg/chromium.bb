@@ -163,7 +163,7 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
       LOG(ERROR) << error;
       return false;
     }
-    LOG(INFO) << "Adding handler for " << async_id;
+    VLOG(1) << "Adding handler for " << async_id;
     callback_map_[async_id] = d;
     return true;
   }

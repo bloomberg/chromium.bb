@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,12 +109,11 @@ class PowerLibraryImpl : public PowerLibrary {
       return;
     }
 
-    DLOG(INFO) << "Power" <<
-                  " lpo=" << status.line_power_on <<
-                  " sta=" << status.battery_state <<
-                  " per=" << status.battery_percentage <<
-                  " tte=" << status.battery_time_to_empty <<
-                  " ttf=" << status.battery_time_to_full;
+    DVLOG(1) << "Power lpo=" << status.line_power_on
+             << " sta=" << status.battery_state
+             << " per=" << status.battery_percentage
+             << " tte=" << status.battery_time_to_empty
+             << " ttf=" << status.battery_time_to_full;
     status_ = status;
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(this));
   }
