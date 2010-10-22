@@ -282,7 +282,13 @@ void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
   } else {
     GdkColor color = provider->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    gtk_util::SetLabelColor(label, &color);
+    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
+    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, &color);
+
+    // Because the prelight state is a white image that doesn't change by the
+    // theme, force the text color to black when it would be used.
+    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &gfx::kGdkBlack);
+    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &gfx::kGdkBlack);
   }
 }
 
