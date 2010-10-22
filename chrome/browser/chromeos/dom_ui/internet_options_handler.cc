@@ -294,7 +294,7 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::DisableWifiCallback));
   dom_ui_->RegisterMessageCallback("enableCellular",
       NewCallback(this, &InternetOptionsHandler::EnableCellularCallback));
-  dom_ui_->RegisterMessageCallback("disablCellular",
+  dom_ui_->RegisterMessageCallback("disableCellular",
       NewCallback(this, &InternetOptionsHandler::DisableCellularCallback));
   dom_ui_->RegisterMessageCallback("buyDataPlan",
       NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));

@@ -52,15 +52,19 @@ cr.define('options', function() {
           InternetOptions.loginFromDetails();
       };
       $('enableWifi').onclick = function(event) {
+        event.target.disabled = true;
         chrome.send('enableWifi', []);
       };
       $('disableWifi').onclick = function(event) {
+        event.target.disabled = true;
          chrome.send('disableWifi', []);
       };
       $('enableCellular').onclick = function(event) {
+        event.target.disabled = true;
          chrome.send('enableCellular', []);
       };
       $('disableCellular').onclick = function(event) {
+         event.target.disabled = true;
          chrome.send('disableCellular', []);
       };
       $('purchaseMore').onclick = function(event) {
@@ -124,19 +128,27 @@ cr.define('options', function() {
   InternetOptions.setupAttributes = function(data) {
     var buttons = $('wirelessButtons');
     if (data.wifiEnabled) {
-      buttons.setAttribute('wifiEnabled', true);
+      $('disableWifi').disabled = false;
+      $('disableWifi').classList.remove('hidden');
+      $('enableWifi').classList.add('hidden');
     } else {
-      buttons.removeAttribute('wifiEnabled');
+      $('enableWifi').disabled = false;
+      $('enableWifi').classList.remove('hidden');
+      $('disableWifi').classList.add('hidden');
     }
     if (data.cellularAvailable) {
-      buttons.setAttribute('cellularAvail', true);
       if (data.cellularEnabled) {
-        buttons.setAttribute('cellularEnabled', true);
+        $('disableCellular').disabled = false;
+        $('disableCellular').classList.remove('hidden');
+        $('enableCellular').classList.add('hidden');
       } else {
-        buttons.removeAttribute('cellularEnabled');
+        $('enableCellular').disabled = false;
+        $('enableCellular').classList.remove('hidden');
+        $('disableCellular').classList.add('hidden');
       }
     } else {
-      buttons.removeAttribute('cellularAvail');
+      $('enableCellular').classList.add('hidden');
+      $('disableCellular').classList.add('hidden');
     }
   };
 
