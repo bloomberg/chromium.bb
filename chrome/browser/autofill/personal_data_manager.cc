@@ -490,6 +490,15 @@ void PersonalDataManager::RemoveProfile(int unique_id) {
   SetProfiles(&profiles);
 }
 
+AutoFillProfile* PersonalDataManager::GetProfileById(int unique_id) {
+  for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
+       iter != web_profiles_->end(); ++iter) {
+    if ((*iter)->unique_id() == unique_id)
+      return *iter;
+  }
+  return NULL;
+}
+
 // TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
 void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   std::vector<CreditCard> credit_cards(credit_cards_.size());

@@ -236,17 +236,7 @@ void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
     return;
   }
 
-  // TODO(jhawkins): Refactor and move this into PersonalDataManager.
-  AutoFillProfile* profile = NULL;
-  for (std::vector<AutoFillProfile*>::const_iterator iter =
-           personal_data_->web_profiles().begin();
-       iter != personal_data_->web_profiles().end(); ++iter) {
-    if ((*iter)->unique_id() == unique_id) {
-      profile = *iter;
-      break;
-    }
-  }
-
+  AutoFillProfile* profile = personal_data_->GetProfileById(unique_id);
   if (!profile) {
     NOTREACHED();
     return;

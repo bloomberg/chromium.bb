@@ -109,6 +109,10 @@ class PersonalDataManager
   // Removes the profile represented by |unique_id|.
   void RemoveProfile(int unique_id);
 
+  // Returns the profile with the specified |unique_id|, or NULL if there is no
+  // profile with the specified |unique_id|.
+  AutoFillProfile* GetProfileById(int unique_id);
+
   // Adds |credit_card| to the web database.
   void AddCreditCard(const CreditCard& credit_card);
 
