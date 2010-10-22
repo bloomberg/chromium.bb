@@ -403,6 +403,9 @@ public:
         const CuePoint::TrackPosition*&) const;
 #endif
 
+    const CuePoint* GetFirst() const;
+    const CuePoint* GetLast() const;
+
     const CuePoint* GetNext(const CuePoint*) const;
 
     const BlockEntry* GetBlock(
@@ -429,7 +432,6 @@ class Cluster
 
 public:
     Segment* const m_pSegment;
-    long m_index;
 
 public:
     static Cluster* Parse(Segment*, long, long long off);
@@ -442,6 +444,7 @@ public:
     long long GetTimeCode();   //absolute, but not scaled
     long long GetTime();       //absolute, and scaled (nanosecond units)
     long long GetFirstTime();  //time (ns) of first (earliest) block
+    long long GetLastTime();   //time (ns) of last (latest) block
 
     const BlockEntry* GetFirst();
     const BlockEntry* GetLast();
@@ -456,6 +459,8 @@ protected:
     Cluster(Segment*, long, long long off);
 
 public:
+    //TODO: these should all be private, with public selector functions
+    long m_index;
     long long m_pos;
     long long m_size;
 

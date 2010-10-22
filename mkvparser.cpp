@@ -2033,6 +2033,50 @@ bool Cues::FindNext(
 #endif
 
 
+const CuePoint* Cues::GetFirst() const
+{
+    LoadCuePoint();  //init cues
+
+    const size_t count = m_count + m_preload_count;
+
+    if (count == 0)  //weird
+        return NULL;
+
+    CuePoint* const* const pp = m_cue_points;
+    assert(pp);
+
+    CuePoint* const pCP = pp[0];
+    assert(pCP);
+    assert(pCP->GetTimeCode() >= 0);
+
+    return pCP;
+}
+
+
+const CuePoint* Cues::GetLast() const
+{
+    LoadCuePoint();  //init cues
+
+    const size_t count = m_count + m_preload_count;
+
+    if (count == 0)  //weird
+        return NULL;
+
+    const size_t index = count - 1;
+
+    CuePoint* const* const pp = m_cue_points;
+    assert(pp);
+
+    CuePoint* const pCP = pp[index];
+    assert(pCP);
+
+    pCP->Load(m_pSegment->m_pReader);
+    assert(pCP->GetTimeCode() >= 0);
+
+    return pCP;
+}
+
+
 const CuePoint* Cues::GetNext(const CuePoint* pCurr) const
 {
     if (pCurr == NULL)
@@ -2827,7 +2871,7 @@ SegmentInfo::SegmentInfo(Segment* pSegment, long long start, long long size_) :
     const long long stop = start + size_;
 
     m_timecodeScale = 1000000;
-    m_duration = 0;
+    m_duration = -1;
 
     while (pos < stop)
     {
@@ -2843,8 +2887,9 @@ SegmentInfo::SegmentInfo(Segment* pSegment, long long start, long long size_) :
         else if (Match(pReader, pos, 0x1741, m_pWritingAppAsUTF8))  //[57][41]
             assert(m_pWritingAppAsUTF8);
 
-        else if (Match(pReader, pos, 0x3BA9, m_pTitleAsUTF8))        //[7B][A9]
+        else if (Match(pReader, pos, 0x3BA9, m_pTitleAsUTF8))       //[7B][A9]
             assert(m_pTitleAsUTF8);
+
         else
         {
             long len;
@@ -2898,7 +2943,9 @@ long long SegmentInfo::GetTimeCodeScale() const
 
 long long SegmentInfo::GetDuration() const
 {
-    assert(m_duration >= 0);
+    if (m_duration < 0)
+        return -1;
+
     assert(m_timecodeScale >= 1);
 
     const double dd = double(m_duration) * double(m_timecodeScale);
@@ -3898,6 +3945,19 @@ long long Cluster::GetFirstTime()
     return pBlock->GetTime(this);
 }
 
+
+long long Cluster::GetLastTime()
+{
+    const BlockEntry* const pEntry = GetLast();
+
+    if (pEntry == NULL)  //empty cluster
+        return GetTime();
+
+    const Block* const pBlock = pEntry->GetBlock();
+    assert(pBlock);
+
+    return pBlock->GetTime(this);
+}
 
 
 void Cluster::ParseBlockGroup(long long start, long long size, size_t index)
