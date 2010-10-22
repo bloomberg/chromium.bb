@@ -30,7 +30,6 @@ bool URLFetcher::g_interception_enabled = false;
 
 class URLFetcher::Core
     : public base::RefCountedThreadSafe<URLFetcher::Core>,
-      public MessageLoop::DestructionObserver,
       public URLRequest::Delegate {
  public:
   // For POST requests, set |content_type| to the MIME type of the content
@@ -53,10 +52,6 @@ class URLFetcher::Core
   // Stops any in-progress load and ensures no callback will happen.  It is
   // safe to call this multiple times.
   void Stop();
-
-  // MessageLoop::DestructionObserver implementation.  We are only registered as
-  // a DestructionObserver when |request_| exists.
-  virtual void WillDestroyCurrentMessageLoop();
 
   // URLRequest::Delegate implementation.
   virtual void OnResponseStarted(URLRequest* request);
@@ -235,13 +230,6 @@ void URLFetcher::Core::Stop() {
   }
 }
 
-void URLFetcher::Core::WillDestroyCurrentMessageLoop() {
-  CancelURLRequest();
-  // Don't bother to try and notify the delegate thread portion of this object,
-  // since if the IO thread is shutting down, everything is shutting down, and
-  // we just want to avoid leaks.
-}
-
 void URLFetcher::Core::CancelAll() {
   g_registry.Get().CancelAll();
 }
@@ -299,7 +287,6 @@ void URLFetcher::Core::StartURLRequest() {
   CHECK(request_context_getter_);
   DCHECK(!request_.get());
 
-  MessageLoop::current()->AddDestructionObserver(this);
   g_registry.Get().AddURLFetcherCore(this);
   request_.reset(new URLRequest(original_url_, this));
   int flags = request_->load_flags() | load_flags_;
@@ -392,7 +379,6 @@ void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
 void URLFetcher::Core::ReleaseRequest() {
   request_.reset();
   g_registry.Get().RemoveURLFetcherCore(this);
-  MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 void URLFetcher::set_upload_data(const std::string& upload_content_type,

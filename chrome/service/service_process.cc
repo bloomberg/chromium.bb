@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -43,9 +44,36 @@
 
 ServiceProcess* g_service_process = NULL;
 
+namespace {
+
 // Delay in millseconds after the last service is disabled before we attempt
 // a shutdown.
-static const int64 kShutdownDelay = 60000;
+const int64 kShutdownDelay = 60000;
+
+class ServiceIOThread : public base::Thread {
+ public:
+  explicit ServiceIOThread(const char* name);
+  virtual ~ServiceIOThread();
+
+ protected:
+  virtual void CleanUp();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceIOThread);
+};
+
+ServiceIOThread::ServiceIOThread(const char* name) : base::Thread(name) {}
+ServiceIOThread::~ServiceIOThread() {
+  // We cannot rely on our base class to stop the thread since we want our
+  // CleanUp function to run.
+  Stop();
+}
+
+void ServiceIOThread::CleanUp() {
+  URLFetcher::CancelAll();
+}
+
+}  // namespace
 
 ServiceProcess::ServiceProcess()
   : shutdown_event_(true, false),
@@ -62,7 +90,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
-  io_thread_.reset(new base::Thread("ServiceProcess_IO"));
+  io_thread_.reset(new ServiceIOThread("ServiceProcess_IO"));
   file_thread_.reset(new base::Thread("ServiceProcess_File"));
   if (!io_thread_->StartWithOptions(options) ||
       !file_thread_->StartWithOptions(options)) {
