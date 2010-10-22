@@ -9,6 +9,7 @@
 #include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
@@ -55,7 +56,14 @@ class ServiceProcessControl::Launcher
   void DoDetectLaunched(Task* task) {
     const uint32 kMaxLaunchDetectRetries = 10;
 
-    launched_ = CheckServiceProcessReady();
+    {
+      // We should not be doing blocking disk IO from this thread!
+      // Temporarily allowed until we fix
+      //   http://code.google.com/p/chromium/issues/detail?id=60207
+      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      launched_ = CheckServiceProcessReady();
+    }
+
     if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &Launcher::Notify, task));

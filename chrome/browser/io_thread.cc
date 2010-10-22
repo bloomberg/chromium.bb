@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
@@ -257,6 +258,13 @@ net::ProxyScriptFetcher* IOThread::CreateAndRegisterProxyScriptFetcher(
 }
 
 void IOThread::Init() {
+#if defined(OS_LINUX)
+  // TODO(evan): test and enable this on all platforms.
+  // Though this thread is called the "IO" thread, it actually just routes
+  // messages around; it shouldn't be allowed to perform any blocking disk I/O.
+  base::ThreadRestrictions::SetIOAllowed(false);
+#endif
+
   BrowserProcessSubThread::Init();
 
   DCHECK_EQ(MessageLoop::TYPE_IO, message_loop()->type());

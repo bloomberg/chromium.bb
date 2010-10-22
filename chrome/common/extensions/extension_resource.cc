@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/thread_restrictions.h"
 
 PlatformThreadId ExtensionResource::file_thread_id_ = 0;
 
@@ -45,6 +46,12 @@ const FilePath& ExtensionResource::GetFilePath() const {
 // static
 FilePath ExtensionResource::GetFilePathOnAnyThreadHack(
     const FilePath& extension_root, const FilePath& relative_path) {
+  // This function is a hack, and causes us to block the IO thread.
+  // Fixing
+  //   http://code.google.com/p/chromium/issues/detail?id=59849
+  // would also fix this.  Suppress the error for now.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   // We need to resolve the parent references in the extension_root
   // path on its own because IsParent doesn't like parent references.
   FilePath clean_extension_root(extension_root);

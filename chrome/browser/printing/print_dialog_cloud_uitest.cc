@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
+#include "base/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
@@ -32,7 +33,11 @@ class TestData {
  public:
   TestData() {}
 
-  char* GetTestData() {
+  const char* GetTestData() {
+    // Fetching this data blocks the IO thread, but we don't really care because
+    // this is a test.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     if (test_data_.empty()) {
       FilePath test_data_directory;
       PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory);
@@ -40,7 +45,7 @@ class TestData {
           test_data_directory.AppendASCII("printing/cloud_print_uitest.html");
       file_util::ReadFileToString(test_file, &test_data_);
     }
-    return &test_data_[0];
+    return test_data_.c_str();
   }
  private:
   std::string test_data_;
