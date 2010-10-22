@@ -115,3 +115,5 @@ void SaveFileResourceHandler::set_content_length(
     const std::string& content_length) {
   base::StringToInt64(content_length, &content_length_);
 }
+
+SaveFileResourceHandler::~SaveFileResourceHandler() {}

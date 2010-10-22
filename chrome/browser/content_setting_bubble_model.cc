@@ -474,6 +474,21 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
 ContentSettingBubbleModel::~ContentSettingBubbleModel() {
 }
 
+ContentSettingBubbleModel::RadioGroup::RadioGroup() : default_item(0) {}
+
+ContentSettingBubbleModel::RadioGroup::~RadioGroup() {}
+
+ContentSettingBubbleModel::DomainList::DomainList() {}
+
+ContentSettingBubbleModel::DomainList::~DomainList() {}
+
+ContentSettingBubbleModel::BubbleContent::BubbleContent()
+    : load_plugins_link_enabled(false) {
+}
+
+ContentSettingBubbleModel::BubbleContent::~BubbleContent() {}
+
+
 void ContentSettingBubbleModel::AddBlockedResource(
     const std::string& resource_identifier) {
   bubble_content_.resource_identifiers.insert(resource_identifier);

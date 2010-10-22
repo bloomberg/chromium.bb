@@ -14,6 +14,7 @@
 //   (SendFlushMessage, SendDrainMessage, etc.) to avoid having
 //   MFT_MESSAGE_TYPE in here
 #include <mfidl.h>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_comptr_win.h"

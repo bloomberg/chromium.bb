@@ -74,22 +74,7 @@ class MessagePortDispatcher : public NotificationObserver {
   // verify that the message port id exists.
   void Erase(int message_port_id);
 
-  struct MessagePort {
-    // sender and route_id are what we need to send messages to the port.
-    IPC::Message::Sender* sender;
-    int route_id;
-    // A function pointer to generate a new route id for the sender above.
-    // Owned by "sender" above, so don't delete.
-    CallbackWithReturnValue<int>::Type* next_routing_id;
-    // A globally unique id for this message port.
-    int message_port_id;
-    // The globally unique id of the entangled message port.
-    int entangled_message_port_id;
-    // If true, all messages to this message port are queued and not delivered.
-    bool queue_messages;
-    QueuedMessages queued_messages;
-  };
-
+  struct MessagePort;
   typedef std::map<int, MessagePort> MessagePorts;
   MessagePorts message_ports_;
 

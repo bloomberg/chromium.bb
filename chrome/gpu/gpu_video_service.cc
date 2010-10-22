@@ -7,10 +7,17 @@
 #include "chrome/gpu/gpu_video_decoder.h"
 #include "chrome/gpu/gpu_video_service.h"
 
+struct GpuVideoService::GpuVideoDecoderInfo {
+  scoped_refptr<GpuVideoDecoder> decoder;
+  GpuChannel* channel;
+};
+
+
 GpuVideoService::GpuVideoService() {
   // TODO(jiesun): move this time consuming stuff out of here.
   IntializeGpuVideoService();
 }
+
 GpuVideoService::~GpuVideoService() {
   // TODO(jiesun): move this time consuming stuff out of here.
   UnintializeGpuVideoService();

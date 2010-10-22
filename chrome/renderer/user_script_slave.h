@@ -27,6 +27,7 @@ using WebKit::WebScriptSource;
 class UserScriptSlave {
  public:
   UserScriptSlave();
+  ~UserScriptSlave();
 
   // Returns the unique set of extension IDs this UserScriptSlave knows about.
   void GetActiveExtensions(std::set<std::string>* extension_ids);

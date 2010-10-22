@@ -21,12 +21,13 @@ namespace cloud_print {
 typedef int PlatformJobId;
 
 struct PrinterBasicInfo {
+  PrinterBasicInfo();
+  ~PrinterBasicInfo();
+
   std::string printer_name;
   std::string printer_description;
   int printer_status;
   std::map<std::string, std::string> options;
-  PrinterBasicInfo() : printer_status(0) {
-  }
 };
 
 typedef std::vector<PrinterBasicInfo> PrinterList;
@@ -46,22 +47,10 @@ enum PrintJobStatus {
 };
 
 struct PrintJobDetails {
-  PrintJobStatus status;
-  int platform_status_flags;
-  std::string status_message;
-  int total_pages;
-  int pages_printed;
-  PrintJobDetails() : status(PRINT_JOB_STATUS_INVALID),
-                      platform_status_flags(0), total_pages(0),
-                      pages_printed(0) {
-  }
-  void Clear() {
-    status = PRINT_JOB_STATUS_INVALID;
-    platform_status_flags = 0;
-    status_message.clear();
-    total_pages = 0;
-    pages_printed = 0;
-  }
+  PrintJobDetails();
+
+  void Clear();
+
   bool operator ==(const PrintJobDetails& other) const {
     return (status == other.status) &&
            (platform_status_flags == other.platform_status_flags) &&
@@ -69,9 +58,16 @@ struct PrintJobDetails {
            (total_pages == other.total_pages) &&
            (pages_printed == other.pages_printed);
   }
+
   bool operator !=(const PrintJobDetails& other) const {
     return !(*this == other);
   }
+
+  PrintJobStatus status;
+  int platform_status_flags;
+  std::string status_message;
+  int total_pages;
+  int pages_printed;
 };
 
 // PrintSystem class will provide interface for different printing systems
@@ -96,7 +92,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual ~Delegate() {}
     };
 
-    virtual ~PrintServerWatcher() {}
+    virtual ~PrintServerWatcher();
     virtual bool StartWatching(PrintServerWatcher::Delegate* delegate) = 0;
     virtual bool StopWatching() = 0;
   };
@@ -114,7 +110,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual ~Delegate() {}
     };
 
-    virtual ~PrinterWatcher() {}
+    virtual ~PrinterWatcher();
     virtual bool StartWatching(PrinterWatcher::Delegate* delegate) = 0;
     virtual bool StopWatching() = 0;
     virtual bool GetCurrentPrinterInfo(PrinterBasicInfo* printer_info) = 0;
@@ -130,7 +126,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual void OnJobSpoolFailed() = 0;
     };
 
-    virtual ~JobSpooler() {}
+    virtual ~JobSpooler();
     // Spool job to the printer asynchronously. Caller will be notified via
     // |delegate|. Note that only one print job can be in progress at any given
     // time. Subsequent calls to Spool (before the Delegate::OnJobSpoolSucceeded
@@ -143,7 +139,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
                        JobSpooler::Delegate* delegate) = 0;
   };
 
-  virtual ~PrintSystem() {}
+  virtual ~PrintSystem();
 
   // Enumerates the list of installed local and network printers.
   virtual void EnumeratePrinters(PrinterList* printer_list) = 0;

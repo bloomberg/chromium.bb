@@ -1134,6 +1134,7 @@
         'service/cloud_print/job_status_updater.cc',
         'service/cloud_print/job_status_updater.h',
         'service/cloud_print/print_system_dummy.cc',
+        'service/cloud_print/print_system.cc',
         'service/cloud_print/print_system.h',
         'service/cloud_print/printer_job_handler.cc',
         'service/cloud_print/printer_job_handler.h',

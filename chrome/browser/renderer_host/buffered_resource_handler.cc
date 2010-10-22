@@ -149,6 +149,8 @@ bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   return real_handler_->OnReadCompleted(request_id, bytes_read);
 }
 
+BufferedResourceHandler::~BufferedResourceHandler() {}
+
 bool BufferedResourceHandler::DelayResponse() {
   std::string mime_type;
   request_->GetMimeType(&mime_type);

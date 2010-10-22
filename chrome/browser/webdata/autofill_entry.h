@@ -9,21 +9,15 @@
 #include <vector>
 #include "base/string16.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 
 class AutofillKey {
  public:
-  AutofillKey() {}
-  AutofillKey(const string16& name, const string16& value)
-      : name_(name),
-        value_(value) {}
-  AutofillKey(const char* name, const char* value)
-      : name_(UTF8ToUTF16(name)),
-        value_(UTF8ToUTF16(value)) {}
-  AutofillKey(const AutofillKey& key)
-      : name_(key.name()),
-        value_(key.value()) {}
-  virtual ~AutofillKey() {}
+  AutofillKey();
+  AutofillKey(const string16& name, const string16& value);
+  AutofillKey(const char* name, const char* value);
+  AutofillKey(const AutofillKey& key);
+  virtual ~AutofillKey();
+
   const string16& name() const { return name_; }
   const string16& value() const { return value_; }
 
@@ -38,9 +32,8 @@ class AutofillKey {
 class AutofillEntry {
  public:
   AutofillEntry(const AutofillKey& key,
-                const std::vector<base::Time>& timestamps)
-      : key_(key),
-        timestamps_(timestamps) {}
+                const std::vector<base::Time>& timestamps);
+  ~AutofillEntry();
 
   const AutofillKey& key() const { return key_; }
   const std::vector<base::Time>& timestamps() const { return timestamps_; }

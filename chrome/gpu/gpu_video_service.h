@@ -32,10 +32,7 @@ class GpuVideoService : public IPC::Channel::Listener,
                            int32 decoder_id);
 
  private:
-  struct GpuVideoDecoderInfo {
-    scoped_refptr<GpuVideoDecoder> decoder;
-    GpuChannel* channel;
-  };
+  struct GpuVideoDecoderInfo;
 
   GpuVideoService();
   virtual ~GpuVideoService();

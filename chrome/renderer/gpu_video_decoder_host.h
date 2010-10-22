@@ -45,7 +45,7 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
                       IPC::Message::Sender* ipc_sender,
                       int context_route_id,
                       int32 decoder_host_id);
-  virtual ~GpuVideoDecoderHost() {}
+  virtual ~GpuVideoDecoderHost();
 
   // IPC::Channel::Listener.
   virtual void OnChannelConnected(int32 peer_pid) {}

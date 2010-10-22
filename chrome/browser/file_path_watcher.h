@@ -33,17 +33,11 @@ class FilePathWatcher {
   };
 
   FilePathWatcher();
-  ~FilePathWatcher() {
-    impl_->Cancel();
-  }
+  ~FilePathWatcher();
 
   // Register interest in any changes on |path|. OnPathChanged will be called
   // back for each change. Returns true on success.
-  bool Watch(const FilePath& path, Delegate* delegate) WARN_UNUSED_RESULT {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    DCHECK(path.IsAbsolute());
-    return impl_->Watch(path, delegate);
-  }
+  bool Watch(const FilePath& path, Delegate* delegate) WARN_UNUSED_RESULT;
 
   // Used internally to encapsulate different members on different platforms.
   class PlatformDelegate

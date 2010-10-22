@@ -26,6 +26,7 @@ namespace browser_sync {
 class PasswordModelWorker : public browser_sync::ModelSafeWorker {
  public:
   explicit PasswordModelWorker(PasswordStore* password_store);
+  virtual ~PasswordModelWorker();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   void DoWorkAndWaitUntilDone(Callback0::Type* work);

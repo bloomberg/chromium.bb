@@ -16,6 +16,8 @@ LanguageOrderTableModel::LanguageOrderTableModel()
     : observer_(NULL) {
 }
 
+LanguageOrderTableModel::~LanguageOrderTableModel() {}
+
 void LanguageOrderTableModel::SetAcceptLanguagesString(
     const std::string& language_list) {
   std::vector<std::string> languages_vector;

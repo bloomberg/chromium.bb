@@ -21,32 +21,33 @@ class SaveFileResourceHandler : public ResourceHandler {
                           const GURL& url,
                           SaveFileManager* manager);
 
-  bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+  // ResourceHandler Implementation:
+  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
-  bool OnRequestRedirected(int request_id, const GURL& url,
-                           ResourceResponse* response, bool* defer);
+  virtual bool OnRequestRedirected(int request_id, const GURL& url,
+                                   ResourceResponse* response, bool* defer);
 
   // Sends the download creation information to the download thread.
-  bool OnResponseStarted(int request_id, ResourceResponse* response);
+  virtual bool OnResponseStarted(int request_id, ResourceResponse* response);
 
   // Pass-through implementation.
-  bool OnWillStart(int request_id, const GURL& url, bool* defer);
+  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
 
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
-  bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                  int min_size);
+  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
+                          int min_size);
 
   // Passes the buffer to the download file writer.
-  bool OnReadCompleted(int request_id, int* bytes_read);
+  virtual bool OnReadCompleted(int request_id, int* bytes_read);
 
-  bool OnResponseCompleted(int request_id,
-                           const URLRequestStatus& status,
-                           const std::string& security_info);
+  virtual bool OnResponseCompleted(int request_id,
+                                   const URLRequestStatus& status,
+                                   const std::string& security_info);
 
-  void OnRequestClosed();
+  virtual void OnRequestClosed();
 
   // If the content-length header is not present (or contains something other
   // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and
@@ -58,7 +59,7 @@ class SaveFileResourceHandler : public ResourceHandler {
   }
 
  private:
-  ~SaveFileResourceHandler() {}
+  virtual ~SaveFileResourceHandler();
 
   int save_id_;
   int render_process_id_;

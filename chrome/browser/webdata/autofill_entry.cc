@@ -4,6 +4,26 @@
 
 #include <set>
 #include "chrome/browser/webdata/autofill_entry.h"
+#include "base/utf_string_conversions.h"
+
+AutofillKey::AutofillKey() {}
+
+AutofillKey::AutofillKey(const string16& name, const string16& value)
+    : name_(name),
+      value_(value) {
+}
+
+AutofillKey::AutofillKey(const char* name, const char* value)
+    : name_(UTF8ToUTF16(name)),
+      value_(UTF8ToUTF16(value)) {
+}
+
+AutofillKey::AutofillKey(const AutofillKey& key)
+    : name_(key.name()),
+      value_(key.value()) {
+}
+
+AutofillKey::~AutofillKey() {}
 
 bool AutofillKey::operator==(const AutofillKey& key) const {
   return name_ == key.name() && value_ == key.value();
@@ -19,6 +39,14 @@ bool AutofillKey::operator<(const AutofillKey& key) const {
     return false;
   }
 }
+
+AutofillEntry::AutofillEntry(const AutofillKey& key,
+                             const std::vector<base::Time>& timestamps)
+    : key_(key),
+      timestamps_(timestamps) {
+}
+
+AutofillEntry::~AutofillEntry() {}
 
 bool AutofillEntry::operator==(const AutofillEntry& entry) const {
   if (!(key_ == entry.key()))

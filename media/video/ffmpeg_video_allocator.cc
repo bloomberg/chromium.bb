@@ -21,6 +21,8 @@ FFmpegVideoAllocator::FFmpegVideoAllocator()
       release_buffer_(NULL) {
 }
 
+FFmpegVideoAllocator::~FFmpegVideoAllocator() {}
+
 void FFmpegVideoAllocator::Initialize(AVCodecContext* codec_context,
                                       VideoFrame::Format surface_format) {
 #ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.

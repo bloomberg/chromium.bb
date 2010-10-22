@@ -237,6 +237,12 @@ void GetOptionStringsFromElement(WebFormControlElement element,
 
 }  // namespace
 
+struct FormManager::FormElement {
+  WebKit::WebFormElement form_element;
+  std::vector<WebKit::WebFormControlElement> control_elements;
+  std::vector<string16> control_values;
+};
+
 FormManager::FormManager() {
 }
 

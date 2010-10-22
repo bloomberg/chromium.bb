@@ -29,6 +29,8 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+TypedUrlModelAssociator::~TypedUrlModelAssociator() {}
+
 bool TypedUrlModelAssociator::AssociateModels() {
   VLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());

@@ -34,6 +34,10 @@ static const float kMaxRedundantPaintToScrollArea = 0.8f;
 // a paint rect can be significant.
 static const size_t kMaxPaintRects = 5;
 
+PaintAggregator::PendingUpdate::PendingUpdate() {}
+
+PaintAggregator::PendingUpdate::~PendingUpdate() {}
+
 gfx::Rect PaintAggregator::PendingUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.
   DCHECK(!(scroll_delta.x() && scroll_delta.y()));

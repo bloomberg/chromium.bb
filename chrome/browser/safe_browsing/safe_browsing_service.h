@@ -59,6 +59,9 @@ class SafeBrowsingService
   // Structure used to pass parameters between the IO and UI thread when
   // interacting with the blocking page.
   struct UnsafeResource {
+    UnsafeResource();
+    ~UnsafeResource();
+
     GURL url;
     GURL original_url;
     ResourceType::Type resource_type;
@@ -70,6 +73,9 @@ class SafeBrowsingService
 
   // Bundle of SafeBrowsing state for one URL check.
   struct SafeBrowsingCheck {
+    SafeBrowsingCheck();
+    ~SafeBrowsingCheck();
+
     GURL url;
     Client* client;
     bool need_get_hash;
@@ -77,6 +83,9 @@ class SafeBrowsingService
     UrlCheckResult result;
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
   };
 
   // Creates the safe browsing service.  Need to initialize before using.

@@ -38,6 +38,8 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
                            const GURL& url,
                            Delegate* delegate);
 
+  virtual ~SpeechRecognitionRequest();
+
   // Sends a new request with the given audio data, returns true if successful.
   // The same object can be used to send multiple requests but only after the
   // previous request has completed.

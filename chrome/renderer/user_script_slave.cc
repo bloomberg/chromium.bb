@@ -67,6 +67,8 @@ UserScriptSlave::UserScriptSlave()
                 IDR_GREASEMONKEY_API_JS);
 }
 
+UserScriptSlave::~UserScriptSlave() {}
+
 void UserScriptSlave::GetActiveExtensions(
     std::set<std::string>* extension_ids) {
   for (size_t i = 0; i < scripts_.size(); ++i) {

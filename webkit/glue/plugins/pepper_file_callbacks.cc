@@ -25,6 +25,8 @@ FileCallbacks::FileCallbacks(const base::WeakPtr<PluginModule>& module,
       file_system_(file_system) {
 }
 
+FileCallbacks::~FileCallbacks() {}
+
 void FileCallbacks::DidSucceed() {
   if (!module_.get() || !callback_.func)
     return;

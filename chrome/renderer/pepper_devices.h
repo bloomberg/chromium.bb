@@ -27,6 +27,7 @@ class SkBitmap;
 class Graphics2DDeviceContext {
  public:
   explicit Graphics2DDeviceContext(WebPluginDelegatePepper* plugin_delegate);
+  ~Graphics2DDeviceContext();
 
   NPError Initialize(gfx::Rect window_rect,
                      const NPDeviceContext2DConfig* config,
@@ -45,22 +46,7 @@ class Graphics2DDeviceContext {
   skia::PlatformCanvas* canvas() { return canvas_.get(); }
 
  private:
-  struct FlushCallbackData {
-    FlushCallbackData(NPDeviceFlushContextCallbackPtr f,
-                      NPP n,
-                      NPDeviceContext2D* c,
-                      NPUserData* u)
-        : function(f),
-          npp(n),
-          context(c),
-          user_data(u) {
-    }
-
-    NPDeviceFlushContextCallbackPtr function;
-    NPP npp;
-    NPDeviceContext2D* context;
-    NPUserData* user_data;
-  };
+  struct FlushCallbackData;
   typedef std::vector<FlushCallbackData> FlushCallbackVector;
 
   WebPluginDelegatePepper* plugin_delegate_;
@@ -97,11 +83,7 @@ class Graphics2DDeviceContext {
 class AudioDeviceContext : public AudioMessageFilter::Delegate,
                            public base::DelegateSimpleThread::Delegate {
  public:
-  explicit AudioDeviceContext()
-      : context_(NULL),
-        stream_id_(0),
-        shared_memory_size_(0) {
-  }
+  explicit AudioDeviceContext();
   virtual ~AudioDeviceContext();
 
   NPError Initialize(AudioMessageFilter* filter,

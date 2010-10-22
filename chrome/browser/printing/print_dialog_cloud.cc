@@ -152,6 +152,14 @@ void CloudPrintDataSender::CancelPrintDataFile() {
   helper_ = NULL;
 }
 
+CloudPrintDataSender::CloudPrintDataSender(CloudPrintDataSenderHelper* helper,
+                                           const string16& print_job_title)
+    : helper_(helper),
+      print_job_title_(print_job_title) {
+}
+
+CloudPrintDataSender::~CloudPrintDataSender() {}
+
 // Grab the raw PDF file contents and massage them into shape for
 // sending to the dialog contents (and up to the cloud print server)
 // by encoding it and prefixing it with the appropriate mime type.
@@ -202,6 +210,18 @@ void CloudPrintDataSender::SendPrintDataFile() {
     const_cast<CloudPrintDataSenderHelper*>(helper_)->CallJavascriptFunction(
         L"printApp._printDataUrl", *print_data_, title);
   }
+}
+
+
+CloudPrintFlowHandler::CloudPrintFlowHandler(const FilePath& path_to_pdf,
+                                             const string16& print_job_title)
+    : path_to_pdf_(path_to_pdf),
+      print_job_title_(print_job_title) {
+}
+
+CloudPrintFlowHandler::~CloudPrintFlowHandler() {
+  // This will also cancel any task in flight.
+  CancelAnyRunningTask();
 }
 
 

@@ -12,6 +12,9 @@
 #include <string>
 
 struct DxDiagNode {
+  DxDiagNode();
+  ~DxDiagNode();
+
   std::map<std::string, std::string> values;
   std::map<std::string, DxDiagNode> children;
 };

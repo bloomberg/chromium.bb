@@ -44,6 +44,8 @@ PolicyDirLoader::PolicyDirLoader(
   DCHECK(policy_.get());
 }
 
+PolicyDirLoader::~PolicyDirLoader() {}
+
 void PolicyDirLoader::Stop() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
@@ -205,6 +207,8 @@ void PolicyDirLoader::ReloadFromTask() {
 
 // PolicyDirWatcher implementation:
 
+PolicyDirWatcher::PolicyDirWatcher() {}
+
 void PolicyDirWatcher::Init(PolicyDirLoader* loader) {
   // Initialization can happen early when the file thread is not yet available.
   // So post a task to ourselves on the UI thread which will run after threading
@@ -214,6 +218,8 @@ void PolicyDirWatcher::Init(PolicyDirLoader* loader) {
                         &PolicyDirWatcher::InitWatcher,
                         scoped_refptr<PolicyDirLoader>(loader)));
 }
+
+PolicyDirWatcher::~PolicyDirWatcher() {}
 
 void PolicyDirWatcher::InitWatcher(
     const scoped_refptr<PolicyDirLoader>& loader) {

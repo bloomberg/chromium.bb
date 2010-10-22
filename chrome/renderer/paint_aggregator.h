@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "gfx/rect.h"
 
 // This class is responsible for aggregating multiple invalidation and scroll
@@ -22,9 +23,8 @@ class PaintAggregator {
   // |scroll_delta| can only specify scrolling in one direction (i.e., the x
   // and y members cannot both be non-zero).
   struct PendingUpdate {
-    gfx::Point scroll_delta;
-    gfx::Rect scroll_rect;
-    std::vector<gfx::Rect> paint_rects;
+    PendingUpdate();
+    ~PendingUpdate();
 
     // Returns the rect damaged by scrolling within |scroll_rect| by
     // |scroll_delta|.  This rect must be repainted.
@@ -32,6 +32,10 @@ class PaintAggregator {
 
     // Returns the smallest rect containing all paint rects.
     gfx::Rect GetPaintBounds() const;
+
+    gfx::Point scroll_delta;
+    gfx::Rect scroll_rect;
+    std::vector<gfx::Rect> paint_rects;
   };
 
   // There is a PendingUpdate if InvalidateRect or ScrollRect were called and

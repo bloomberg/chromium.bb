@@ -48,6 +48,9 @@ class SSLHostInfo {
   virtual void Persist() = 0;
 
   struct State {
+    State();
+    ~State();
+
     // certs is a vector of DER encoded X.509 certificates, as the server
     // returned them and in the same order.
     std::vector<std::string> certs;
@@ -59,6 +62,9 @@ class SSLHostInfo {
     // these members contain the NPN result of a connection to the server.
     SSLClientSocket::NextProtoStatus npn_status;
     std::string npn_protocol;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   // Once the data is ready, it can be read using the following members. These

@@ -57,7 +57,7 @@ class TypedUrlModelAssociator
   static syncable::ModelType model_type() { return syncable::TYPED_URLS; }
   TypedUrlModelAssociator(ProfileSyncService* sync_service,
                           history::HistoryBackend* history_backend);
-  virtual ~TypedUrlModelAssociator() { }
+  virtual ~TypedUrlModelAssociator();
 
   // PerDataTypeAssociatorInterface implementation.
   //

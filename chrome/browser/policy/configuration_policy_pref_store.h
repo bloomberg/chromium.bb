@@ -26,7 +26,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // The ConfigurationPolicyPrefStore does not take ownership of the
   // passed-in |provider|.
   explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
-  virtual ~ConfigurationPolicyPrefStore() { }
+  virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
   virtual PrefReadError ReadPrefs();

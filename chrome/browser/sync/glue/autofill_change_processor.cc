@@ -20,6 +20,17 @@
 
 namespace browser_sync {
 
+struct AutofillChangeProcessor::AutofillChangeRecord {
+  sync_api::SyncManager::ChangeRecord::Action action_;
+  int64 id_;
+  sync_pb::AutofillSpecifics autofill_;
+  AutofillChangeRecord(sync_api::SyncManager::ChangeRecord::Action action,
+                       int64 id, const sync_pb::AutofillSpecifics& autofill)
+      : action_(action),
+        id_(id),
+        autofill_(autofill) { }
+};
+
 AutofillChangeProcessor::AutofillChangeProcessor(
     AutofillModelAssociator* model_associator,
     WebDatabase* web_database,
@@ -37,6 +48,8 @@ AutofillChangeProcessor::AutofillChangeProcessor(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   StartObserving();
 }
+
+AutofillChangeProcessor::~AutofillChangeProcessor() {}
 
 void AutofillChangeProcessor::Observe(NotificationType type,
                                       const NotificationSource& source,

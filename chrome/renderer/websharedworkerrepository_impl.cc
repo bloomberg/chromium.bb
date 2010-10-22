@@ -8,6 +8,10 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/websharedworker_proxy.h"
 
+WebSharedWorkerRepositoryImpl::WebSharedWorkerRepositoryImpl() {}
+
+WebSharedWorkerRepositoryImpl::~WebSharedWorkerRepositoryImpl() {}
+
 void WebSharedWorkerRepositoryImpl::addSharedWorker(
     WebKit::WebSharedWorker* worker, DocumentID document) {
   shared_worker_parents_.insert(document);

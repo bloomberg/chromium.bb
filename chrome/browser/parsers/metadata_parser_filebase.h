@@ -21,6 +21,8 @@ class FileMetadataParser : public MetadataParser {
  public:
   explicit FileMetadataParser(const FilePath& path);
 
+  virtual ~FileMetadataParser();
+
   // Implementation of MetadataParser
   virtual bool Parse();
   virtual bool GetProperty(const std::string& key, std::string* value);
@@ -38,6 +40,8 @@ class FileMetadataParser : public MetadataParser {
 class FileMetadataPropertyIterator : public MetadataPropertyIterator {
  public:
   explicit FileMetadataPropertyIterator(PropertyMap& properties);
+
+  virtual ~FileMetadataPropertyIterator();
 
   // Implementation of MetadataPropertyIterator
   virtual bool GetNext(std::string* key, std::string* value);

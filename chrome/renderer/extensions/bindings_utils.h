@@ -67,6 +67,12 @@ const char* GetStringResource() {
 
 // Contains information about a single javascript context.
 struct ContextInfo {
+  ContextInfo(v8::Persistent<v8::Context> context,
+              const std::string& extension_id,
+              WebKit::WebFrame* parent_frame,
+              RenderView* render_view);
+  ~ContextInfo();
+
   v8::Persistent<v8::Context> context;
   std::string extension_id;  // empty if the context is not an extension
 
@@ -85,14 +91,6 @@ struct ContextInfo {
   // A count of the number of events that are listening in this context. When
   // this is zero, |context| will be a weak handle.
   int num_connected_events;
-
-  ContextInfo(v8::Persistent<v8::Context> context,
-              const std::string& extension_id,
-              WebKit::WebFrame* parent_frame,
-              RenderView* render_view)
-      : context(context), extension_id(extension_id),
-        parent_frame(parent_frame), render_view(render_view),
-        num_connected_events(0) {}
 };
 typedef std::list< linked_ptr<ContextInfo> > ContextList;
 
@@ -113,9 +111,9 @@ ContextInfo* GetInfoForCurrentContext();
 // Contains info relevant to a pending API request.
 struct PendingRequest {
  public :
-  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name)
-      : context(context), name(name) {
-  }
+  PendingRequest(v8::Persistent<v8::Context> context, const std::string& name);
+  ~PendingRequest();
+
   v8::Persistent<v8::Context> context;
   std::string name;
 };

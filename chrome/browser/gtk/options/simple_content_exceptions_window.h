@@ -23,6 +23,8 @@ class SimpleContentExceptionsWindow
                                    RemoveRowsTableModel* model,
                                    int tile_message_id);
 
+  virtual ~SimpleContentExceptionsWindow();
+
   // gtk_tree::TableAdapter::Delegate implementation:
   virtual void SetColumnValues(int row, GtkTreeIter* iter);
   virtual void OnAnyModelUpdateStart();

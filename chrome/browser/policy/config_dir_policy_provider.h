@@ -38,6 +38,8 @@ class PolicyDirLoader : public FilePathWatcher::Delegate {
                   int settle_interval_seconds,
                   int reload_interval_minutes);
 
+  virtual ~PolicyDirLoader();
+
   // Stops any pending reload tasks.
   void Stop();
 
@@ -118,7 +120,7 @@ class PolicyDirLoader : public FilePathWatcher::Delegate {
 // initializing the watcher object on the file thread.
 class PolicyDirWatcher : public base::RefCountedThreadSafe<PolicyDirWatcher> {
  public:
-  PolicyDirWatcher() {}
+  PolicyDirWatcher();
 
   // Runs initialization. This is in a separate method since we need to post a
   // task (which cannot be done from the constructor).
@@ -127,7 +129,7 @@ class PolicyDirWatcher : public base::RefCountedThreadSafe<PolicyDirWatcher> {
  private:
   // PolicyDirWatcher objects should only be deleted by RefCountedThreadSafe.
   friend class base::RefCountedThreadSafe<PolicyDirWatcher>;
-  ~PolicyDirWatcher() {}
+  virtual ~PolicyDirWatcher();
 
   // Actually sets up the watch with the FilePathWatcher code.
   void InitWatcher(const scoped_refptr<PolicyDirLoader>& loader);

@@ -96,6 +96,8 @@ SpeechRecognitionRequest::SpeechRecognitionRequest(
   DCHECK(delegate);
 }
 
+SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
+
 bool SpeechRecognitionRequest::Send(const std::string& content_type,
                                     const std::string& audio_data) {
   DCHECK(!url_fetcher_.get());

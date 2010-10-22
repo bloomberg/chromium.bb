@@ -74,6 +74,9 @@ class DatabaseDispatcherHost
   void Send(IPC::Message* message);
 
  private:
+  friend class base::RefCountedThreadSafe<DatabaseDispatcherHost>;
+  virtual ~DatabaseDispatcherHost();
+
   class PromptDelegate;
 
   void AddObserver();

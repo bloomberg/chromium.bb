@@ -52,7 +52,7 @@ class PasswordModelAssociator
   static syncable::ModelType model_type() { return syncable::PASSWORDS; }
   PasswordModelAssociator(ProfileSyncService* sync_service,
                           PasswordStore* password_store);
-  virtual ~PasswordModelAssociator() { }
+  virtual ~PasswordModelAssociator();
 
   // PerDataTypeAssociatorInterface implementation.
   //

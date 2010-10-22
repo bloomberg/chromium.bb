@@ -18,6 +18,8 @@ class LanguageOrderTableModel : public TableModel {
  public:
   LanguageOrderTableModel();
 
+  virtual ~LanguageOrderTableModel();
+
   // Set Language List.
   void SetAcceptLanguagesString(const std::string& language_list);
 

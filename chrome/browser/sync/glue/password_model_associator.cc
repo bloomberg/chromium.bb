@@ -37,6 +37,8 @@ PasswordModelAssociator::PasswordModelAssociator(
 #endif
 }
 
+PasswordModelAssociator::~PasswordModelAssociator() {}
+
 bool PasswordModelAssociator::AssociateModels() {
   DCHECK(expected_loop_ == MessageLoop::current());
   {

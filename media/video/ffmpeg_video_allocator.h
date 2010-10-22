@@ -24,7 +24,7 @@ namespace media {
 class FFmpegVideoAllocator {
  public:
   FFmpegVideoAllocator();
-  virtual ~FFmpegVideoAllocator() {}
+  virtual ~FFmpegVideoAllocator();
 
   struct RefCountedAVFrame {
     RefCountedAVFrame() : usage_count_(0) {}

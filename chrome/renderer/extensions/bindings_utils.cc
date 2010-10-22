@@ -56,6 +56,19 @@ v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
   return hidden;
 }
 
+ContextInfo::ContextInfo(v8::Persistent<v8::Context> context,
+                         const std::string& extension_id,
+                         WebKit::WebFrame* parent_frame,
+                         RenderView* render_view)
+    : context(context),
+      extension_id(extension_id),
+      parent_frame(parent_frame),
+      render_view(render_view),
+      num_connected_events(0) {
+}
+
+ContextInfo::~ContextInfo() {}
+
 ContextList& GetContexts() {
   return Singleton<SingletonData>::get()->contexts;
 }
@@ -86,6 +99,13 @@ ContextInfo* GetInfoForCurrentContext() {
   else
     return context_iter->get();
 }
+
+PendingRequest::PendingRequest(v8::Persistent<v8::Context> context,
+                               const std::string& name)
+    : context(context), name(name) {
+}
+
+PendingRequest::~PendingRequest() {}
 
 ContextList::iterator FindContext(v8::Handle<v8::Context> context) {
   ContextList& all_contexts = GetContexts();

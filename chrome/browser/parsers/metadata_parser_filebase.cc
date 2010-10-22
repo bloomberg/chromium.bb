@@ -9,9 +9,11 @@
 #include "base/utf_string_conversions.h"
 
 FileMetadataParser::FileMetadataParser(const FilePath& path)
-    : MetadataParser(path) {
-  path_ = path;
+    : MetadataParser(path),
+      path_(path) {
 }
+
+FileMetadataParser::~FileMetadataParser() {}
 
 bool FileMetadataParser::Parse() {
   std::string value;
@@ -47,6 +49,8 @@ FileMetadataPropertyIterator::FileMetadataPropertyIterator(
     PropertyMap& properties) : properties_(properties) {
   it = properties_.begin();
 }
+
+FileMetadataPropertyIterator::~FileMetadataPropertyIterator() {}
 
 bool FileMetadataPropertyIterator::GetNext(std::string* key,
                                            std::string* value) {

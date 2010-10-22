@@ -97,7 +97,7 @@ class GpuVideoDecoder
                   IPC::Message::Sender* sender,
                   base::ProcessHandle handle,
                   gpu::gles2::GLES2Decoder* decoder);
-  virtual ~GpuVideoDecoder() {}
+  virtual ~GpuVideoDecoder();
 
   // IPC::Channel::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid);
@@ -130,14 +130,7 @@ class GpuVideoDecoder
   void SetGpuVideoDevice(GpuVideoDevice* device);
 
  private:
-  struct PendingAllocation {
-    size_t n;
-    size_t width;
-    size_t height;
-    media::VideoFrame::Format format;
-    std::vector<scoped_refptr<media::VideoFrame> >* frames;
-    Task* task;
-  };
+  struct PendingAllocation;
 
   int32 decoder_host_id() { return decoder_host_id_; }
 

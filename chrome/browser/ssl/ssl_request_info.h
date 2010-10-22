@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
@@ -22,15 +23,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
                  const std::string& main_frame_origin,
                  int child_id,
                  int ssl_cert_id,
-                 int ssl_cert_status)
-      : url_(url),
-        resource_type_(resource_type),
-        frame_origin_(frame_origin),
-        main_frame_origin_(main_frame_origin),
-        child_id_(child_id),
-        ssl_cert_id_(ssl_cert_id),
-        ssl_cert_status_(ssl_cert_status) {
-  }
+                 int ssl_cert_status);
 
   const GURL& url() const { return url_; }
   ResourceType::Type resource_type() const { return resource_type_; }
@@ -43,7 +36,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
  private:
   friend class base::RefCounted<SSLRequestInfo>;
 
-  ~SSLRequestInfo() {}
+  virtual ~SSLRequestInfo();
 
   GURL url_;
   ResourceType::Type resource_type_;

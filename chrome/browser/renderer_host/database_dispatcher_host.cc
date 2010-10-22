@@ -124,6 +124,8 @@ void DatabaseDispatcherHost::Send(IPC::Message* message) {
     delete message;
 }
 
+DatabaseDispatcherHost::~DatabaseDispatcherHost() {}
+
 void DatabaseDispatcherHost::OnDatabaseOpenFile(const string16& vfs_file_name,
                                                 int desired_flags,
                                                 IPC::Message* reply_msg) {

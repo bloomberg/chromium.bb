@@ -30,6 +30,25 @@ const char kAutofillProfileNamespaceTag[] = "autofill_profile|";
 
 static const int kMaxNumAttemptsToFindUniqueLabel = 100;
 
+struct AutofillModelAssociator::DataBundle {
+  std::set<AutofillKey> current_entries;
+  std::vector<AutofillEntry> new_entries;
+  std::set<string16> current_profiles;
+  std::vector<AutoFillProfile*> updated_profiles;
+  std::vector<AutoFillProfile*> new_profiles;  // We own these pointers.
+  ~DataBundle() { STLDeleteElements(&new_profiles); }
+};
+
+AutofillModelAssociator::DoOptimisticRefreshTask::DoOptimisticRefreshTask(
+    PersonalDataManager* pdm) : pdm_(pdm) {}
+
+AutofillModelAssociator::DoOptimisticRefreshTask::~DoOptimisticRefreshTask() {}
+
+void AutofillModelAssociator::DoOptimisticRefreshTask::Run() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  pdm_->Refresh();
+}
+
 AutofillModelAssociator::AutofillModelAssociator(
     ProfileSyncService* sync_service,
     WebDatabase* web_database,
@@ -394,6 +413,17 @@ void AutofillModelAssociator::AbortAssociation() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AutoLock lock(abort_association_pending_lock_);
   abort_association_pending_ = true;
+}
+
+const std::string*
+AutofillModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
+  return NULL;
+}
+
+bool AutofillModelAssociator::InitSyncNodeFromChromeId(
+    std::string node_id,
+    sync_api::BaseNode* sync_node) {
+  return false;
 }
 
 int64 AutofillModelAssociator::GetSyncIdFromChromeId(

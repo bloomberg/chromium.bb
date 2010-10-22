@@ -20,6 +20,15 @@
 #include <d3d9.h>
 #endif
 
+struct GpuVideoDecoder::PendingAllocation {
+  size_t n;
+  size_t width;
+  size_t height;
+  media::VideoFrame::Format format;
+  std::vector<scoped_refptr<media::VideoFrame> >* frames;
+  Task* task;
+};
+
 void GpuVideoDecoder::OnChannelConnected(int32 peer_pid) {
 }
 
@@ -250,6 +259,8 @@ GpuVideoDecoder::GpuVideoDecoder(
   video_device_.reset(new FakeGlVideoDevice());
 #endif
 }
+
+GpuVideoDecoder::~GpuVideoDecoder() {}
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
   // TODO(jiesun): codec id should come from |param|.

@@ -6,8 +6,9 @@
 #define MEDIA_VIDEO_VIDEO_DECODE_ENGINE_H_
 
 #include "base/callback.h"
-#include "base/message_loop.h"
 #include "media/base/video_frame.h"
+
+class MessageLoop;
 
 namespace media {
 
@@ -27,12 +28,7 @@ static const uint32 kProfileDoNotCare = static_cast<uint32>(-1);
 static const uint32 kLevelDoNotCare = static_cast<uint32>(-1);
 
 struct VideoCodecConfig {
-  VideoCodecConfig() : codec(kCodecH264),
-                       profile(kProfileDoNotCare),
-                       level(kLevelDoNotCare),
-                       width(0),
-                       height(0),
-                       opaque_context(NULL) {}
+  VideoCodecConfig();
 
   VideoCodec codec;
 

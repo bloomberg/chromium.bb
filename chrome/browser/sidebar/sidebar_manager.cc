@@ -18,6 +18,13 @@
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 
+struct SidebarManager::SidebarStateForTab {
+  // Sidebars linked to this tab.
+  ContentIdToSidebarHostMap content_id_to_sidebar_host;
+  // Content id of the currently active (expanded and visible) sidebar.
+  std::string active_content_id;
+};
+
 // static
 SidebarManager* SidebarManager::GetInstance() {
   return g_browser_process->sidebar_manager();

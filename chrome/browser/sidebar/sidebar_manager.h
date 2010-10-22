@@ -127,25 +127,18 @@ class SidebarManager : public NotificationObserver,
 
   // This map stores sidebars linked to a particular tab. Sidebars are
   // identified by their unique content id (string).
-  typedef std::map<std::string, SidebarContainer*>
-      ContentIdToSidebarHostMap;
+  typedef std::map<std::string, SidebarContainer*> ContentIdToSidebarHostMap;
+
   // These two maps are for tracking dependencies between tabs and
   // their SidebarContainers.
   //
   // SidebarManager start listening to SidebarContainers when they are put
   // into these maps and removes them when they are closing.
-  typedef struct {
-    // Sidebars linked to this tab.
-    ContentIdToSidebarHostMap content_id_to_sidebar_host;
-    // Content id of the currently active (expanded and visible) sidebar.
-    std::string active_content_id;
-  } SidebarStateForTab;
-  typedef std::map<TabContents*, SidebarStateForTab>
-      TabToSidebarHostMap;
+  struct SidebarStateForTab;
+  typedef std::map<TabContents*, SidebarStateForTab> TabToSidebarHostMap;
   TabToSidebarHostMap tab_to_sidebar_host_;
 
-  typedef std::map<SidebarContainer*, TabContents*>
-      SidebarHostToTabMap;
+  typedef std::map<SidebarContainer*, TabContents*> SidebarHostToTabMap;
   SidebarHostToTabMap sidebar_host_to_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(SidebarManager);

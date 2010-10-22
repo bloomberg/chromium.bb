@@ -153,6 +153,8 @@ SimpleContentExceptionsWindow::SimpleContentExceptionsWindow(
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroyThunk), this);
 }
 
+SimpleContentExceptionsWindow::~SimpleContentExceptionsWindow() {}
+
 void SimpleContentExceptionsWindow::SetColumnValues(int row,
                                                     GtkTreeIter* iter) {
   std::wstring hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);

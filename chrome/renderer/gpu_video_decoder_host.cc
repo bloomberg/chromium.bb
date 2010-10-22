@@ -26,6 +26,8 @@ GpuVideoDecoderHost::GpuVideoDecoderHost(MessageRouter* router,
   memset(&config_, 0, sizeof(config_));
 }
 
+GpuVideoDecoderHost::~GpuVideoDecoderHost() {}
+
 void GpuVideoDecoderHost::OnChannelError() {
   ipc_sender_ = NULL;
 }

@@ -19,6 +19,8 @@ ExtensionData ExtensionData::FromData(
   return extension_data;
 }
 
+ExtensionData::~ExtensionData() {}
+
 const sync_pb::ExtensionSpecifics& ExtensionData::merged_data() const {
   DcheckIsExtensionSpecificsValid(merged_data_);
   return merged_data_;

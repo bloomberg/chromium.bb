@@ -16,7 +16,8 @@ class WebSharedWorker;
 
 class WebSharedWorkerRepositoryImpl : public WebKit::WebSharedWorkerRepository {
  public:
-  virtual ~WebSharedWorkerRepositoryImpl() {}
+  WebSharedWorkerRepositoryImpl();
+  virtual ~WebSharedWorkerRepositoryImpl();
 
   virtual void addSharedWorker(WebKit::WebSharedWorker*, DocumentID document);
   virtual void documentDetached(DocumentID document);

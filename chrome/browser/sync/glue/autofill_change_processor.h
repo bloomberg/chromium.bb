@@ -40,7 +40,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
                           WebDatabase* web_database,
                           PersonalDataManager* personal_data,
                           UnrecoverableErrorHandler* error_handler);
-  virtual ~AutofillChangeProcessor() {}
+  virtual ~AutofillChangeProcessor();
 
   // NotificationObserver implementation.
   // WebDataService -> sync_api model change application.
@@ -73,17 +73,6 @@ class AutofillChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
-  struct AutofillChangeRecord {
-    sync_api::SyncManager::ChangeRecord::Action action_;
-    int64 id_;
-    sync_pb::AutofillSpecifics autofill_;
-    AutofillChangeRecord(sync_api::SyncManager::ChangeRecord::Action action,
-                         int64 id, const sync_pb::AutofillSpecifics& autofill)
-        : action_(action),
-          id_(id),
-          autofill_(autofill) { }
-  };
-
   void StartObserving();
   void StopObserving();
 
@@ -170,6 +159,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
 
   // Record of changes from ApplyChangesFromSyncModel. These are then processed
   // in CommitChangesFromSyncModel.
+  struct AutofillChangeRecord;
   std::vector<AutofillChangeRecord> autofill_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillChangeProcessor);

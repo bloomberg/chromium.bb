@@ -19,6 +19,8 @@ PasswordModelWorker::PasswordModelWorker(PasswordStore* password_store)
   DCHECK(password_store);
 }
 
+PasswordModelWorker::~PasswordModelWorker() {}
+
 void PasswordModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   WaitableEvent done(false, false);
   password_store_->ScheduleTask(

@@ -44,13 +44,7 @@
 
 // Cell radio data relating to a single cell tower.
 struct CellData {
-  CellData()
-      : cell_id(kint32min),
-        location_area_code(kint32min),
-        mobile_network_code(kint32min),
-        mobile_country_code(kint32min),
-        radio_signal_strength(kint32min),
-        timing_advance(kint32min) {}
+  CellData();
   bool Matches(const CellData &other) const {
     // Ignore radio_signal_strength when matching.
     return cell_id == other.cell_id &&
@@ -70,10 +64,6 @@ struct CellData {
                               // meters.
 };
 
-static bool CellDataMatches(const CellData &data1, const CellData &data2) {
-  return data1.Matches(data2);
-}
-
 enum RadioType {
   RADIO_TYPE_UNKNOWN,
   RADIO_TYPE_GSM,
@@ -83,24 +73,11 @@ enum RadioType {
 
 // All data for the cell radio.
 struct RadioData {
-  RadioData()
-      : home_mobile_network_code(kint32min),
-        home_mobile_country_code(kint32min),
-        radio_type(RADIO_TYPE_UNKNOWN) {}
-  bool Matches(const RadioData &other) const {
-    if (cell_data.size() != other.cell_data.size()) {
-      return false;
-    }
-    if (!std::equal(cell_data.begin(), cell_data.end(), other.cell_data.begin(),
-                    CellDataMatches)) {
-      return false;
-    }
-    return device_id == other.device_id &&
-           home_mobile_network_code == other.home_mobile_network_code &&
-           home_mobile_country_code == other.home_mobile_country_code &&
-           radio_type == other.radio_type &&
-           carrier == other.carrier;
-  }
+  RadioData();
+  ~RadioData();
+
+  bool Matches(const RadioData &other) const;
+
   // Determines whether a new set of radio data differs significantly from this.
   bool DiffersSignificantly(const RadioData &other) const {
     // This is required by MockDeviceDataProviderImpl.
@@ -113,15 +90,14 @@ struct RadioData {
   int home_mobile_network_code;  // For the device's home network.
   int home_mobile_country_code;  // For the device's home network.
   RadioType radio_type;          // Mobile radio type.
-  string16 carrier;         // Carrier name.
+  string16 carrier;              // Carrier name.
 };
 
 // Wifi data relating to a single access point.
 struct AccessPointData {
-  AccessPointData()
-      : radio_signal_strength(kint32min),
-        channel(kint32min),
-        signal_to_noise(kint32min) {}
+  AccessPointData();
+  ~AccessPointData();
+
   // MAC address, formatted as per MacAddressAsString16.
   string16 mac_address;
   int radio_signal_strength;  // Measured in dBm
@@ -141,33 +117,11 @@ struct AccessPointDataLess {
 
 // All data for wifi.
 struct WifiData {
-  // Determines whether a new set of WiFi data differs significantly from this.
-  bool DiffersSignificantly(const WifiData& other) const {
-    // More than 4 or 50% of access points added or removed is significant.
-    static const size_t kMinChangedAccessPoints = 4;
-    const size_t min_ap_count =
-        std::min(access_point_data.size(), other.access_point_data.size());
-    const size_t max_ap_count =
-        std::max(access_point_data.size(), other.access_point_data.size());
-    const size_t difference_threadhold = std::min(kMinChangedAccessPoints,
-                                                  min_ap_count / 2);
-    if (max_ap_count > min_ap_count + difference_threadhold)
-      return true;
-    // Compute size of interesction of old and new sets.
-    size_t num_common = 0;
-    for (AccessPointDataSet::const_iterator iter = access_point_data.begin();
-         iter != access_point_data.end();
-         iter++) {
-      if (other.access_point_data.find(*iter) !=
-          other.access_point_data.end()) {
-        ++num_common;
-      }
-    }
-    DCHECK(num_common <= min_ap_count);
+  WifiData();
+  ~WifiData();
 
-    // Test how many have changed.
-    return max_ap_count > num_common + difference_threadhold;
-  }
+  // Determines whether a new set of WiFi data differs significantly from this.
+  bool DiffersSignificantly(const WifiData& other) const;
 
   // Store access points as a set, sorted by MAC address. This allows quick
   // comparison of sets for detecting changes and for caching.
@@ -177,7 +131,6 @@ struct WifiData {
 
 // Gateway data relating to a single router.
 struct RouterData {
-  RouterData() {}
   // MAC address, formatted as per MacAddressAsString16.
   string16 mac_address;
 };
@@ -193,24 +146,12 @@ struct RouterDataLess {
 
 // All gateway data for routers.
 struct GatewayData {
+  GatewayData();
+  ~GatewayData();
+
   // Determines whether a new set of gateway data differs significantly
   // from this.
-  bool DiffersSignificantly(const GatewayData& other) const {
-    // Any change is significant.
-    if (this->router_data.size() != other.router_data.size())
-      return true;
-    RouterDataSet::const_iterator iter1 = router_data.begin();
-    RouterDataSet::const_iterator iter2 = other.router_data.begin();
-    while (iter1 != router_data.end()) {
-      if (iter1->mac_address != iter2->mac_address) {
-        // There is a difference between the sets of routers.
-        return true;
-      }
-      ++iter1;
-      ++iter2;
-    }
-    return false;
-  }
+  bool DiffersSignificantly(const GatewayData& other) const;
 
   // Store routers as a set, sorted by MAC address. This allows quick
   // comparison of sets for detecting changes and for caching.

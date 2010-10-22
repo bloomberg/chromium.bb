@@ -28,6 +28,8 @@ class ExtensionData {
   static ExtensionData FromData(
       Source source, const sync_pb::ExtensionSpecifics& data);
 
+  ~ExtensionData();
+
   // Implicit copy constructor and assignment operator welcome.
 
   // Returns the version of the data that all sources should

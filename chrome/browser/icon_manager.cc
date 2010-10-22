@@ -10,6 +10,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
+struct IconManager::ClientRequest {
+  scoped_refptr<IconRequest> request;
+  IconGroupID group;
+  IconLoader::IconSize size;
+};
+
 IconManager::IconManager() {
 }
 

@@ -175,6 +175,8 @@ void CrossSiteResourceHandler::ResumeResponse() {
   }
 }
 
+CrossSiteResourceHandler::~CrossSiteResourceHandler() {}
+
 // Prepare to render the cross-site response in a new RenderViewHost, by
 // telling the old RenderViewHost to run its onunload handler.
 void CrossSiteResourceHandler::StartCrossSiteTransition(

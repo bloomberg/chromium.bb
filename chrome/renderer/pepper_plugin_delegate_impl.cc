@@ -495,6 +495,8 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
       id_generator_(0) {
 }
 
+PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {}
+
 void PepperPluginDelegateImpl::ViewInitiatedPaint() {
   // Notify all of our instances that we started painting. This is used for
   // internal bookkeeping only, so we know that the set can not change under

@@ -106,13 +106,9 @@ class IconManager : public IconLoader::Delegate,
   IconMap icon_cache_;
 
   typedef CancelableRequest<IconRequestCallback> IconRequest;
-  typedef struct {
-    scoped_refptr<IconRequest> request;
-    IconGroupID group;
-    IconLoader::IconSize size;
-  } ClientRequest;
 
   // Asynchronous requests that have not yet been completed.
+  struct ClientRequest;
   typedef std::map<IconLoader*, ClientRequest> ClientRequests;
   ClientRequests requests_;
 

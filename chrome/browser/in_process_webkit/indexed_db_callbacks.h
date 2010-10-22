@@ -37,14 +37,12 @@ template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
 // The code the following two classes share.
 class IndexedDBCallbacksBase : public WebKit::WebIDBCallbacks {
  public:
-  IndexedDBCallbacksBase(
-      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
-      : dispatcher_host_(dispatcher_host), response_id_(response_id) { }
+  IndexedDBCallbacksBase(IndexedDBDispatcherHost* dispatcher_host,
+                         int32 response_id);
 
-  virtual void onError(const WebKit::WebIDBDatabaseError& error) {
-    dispatcher_host_->Send(new ViewMsg_IDBCallbacksError(
-        response_id_, error.code(), error.message()));
-  }
+  virtual ~IndexedDBCallbacksBase();
+
+  virtual void onError(const WebKit::WebIDBDatabaseError& error);
 
  protected:
   IndexedDBDispatcherHost* dispatcher_host() const {
@@ -166,25 +164,15 @@ class IndexedDBTransactionCallbacks
     : public WebKit::WebIDBTransactionCallbacks {
  public:
   IndexedDBTransactionCallbacks(IndexedDBDispatcherHost* dispatcher_host,
-                                int transaction_id)
-      : dispatcher_host_(dispatcher_host),
-        transaction_id_(transaction_id) {
-  }
+                                int transaction_id);
 
-  virtual void onAbort() {
-    dispatcher_host_->Send(
-        new ViewMsg_IDBTransactionCallbacksAbort(transaction_id_));
-  }
+  virtual ~IndexedDBTransactionCallbacks();
 
-  virtual void onComplete() {
-    dispatcher_host_->Send(
-        new ViewMsg_IDBTransactionCallbacksComplete(transaction_id_));
-  }
+  virtual void onAbort();
 
-  virtual void onTimeout() {
-    dispatcher_host_->Send(
-        new ViewMsg_IDBTransactionCallbacksTimeout(transaction_id_));
-  }
+  virtual void onComplete();
+
+  virtual void onTimeout();
 
  private:
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;

@@ -28,6 +28,7 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
                 PP_CompletionCallback callback,
                 PP_FileInfo_Dev* info,
                 scoped_refptr<FileSystem> file_system);
+  virtual ~FileCallbacks();
 
   // FileSystemCallbackDispatcher implementation.
   virtual void DidSucceed();

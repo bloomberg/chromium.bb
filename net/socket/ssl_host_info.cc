@@ -9,6 +9,13 @@
 
 namespace net {
 
+SSLHostInfo::State::State()
+    : npn_valid(false),
+      npn_status(SSLClientSocket::kNextProtoUnsupported) {
+}
+
+SSLHostInfo::State::~State() {}
+
 SSLHostInfo::SSLHostInfo() {
   state_.npn_valid = false;
 }

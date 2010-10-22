@@ -15,7 +15,6 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -56,11 +55,9 @@ class AutofillModelAssociator
   // PersonalDataManager living on the UI thread that it needs to refresh.
   class DoOptimisticRefreshTask : public Task {
    public:
-    explicit DoOptimisticRefreshTask(PersonalDataManager* pdm) : pdm_(pdm) {}
-    virtual void Run() {
-      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      pdm_->Refresh();
-    }
+    explicit DoOptimisticRefreshTask(PersonalDataManager* pdm);
+    virtual ~DoOptimisticRefreshTask();
+    virtual void Run();
    private:
     scoped_refptr<PersonalDataManager> pdm_;
   };
@@ -81,15 +78,11 @@ class AutofillModelAssociator
   virtual void AbortAssociation();
 
   // Not implemented.
-  virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id) {
-    return NULL;
-  }
+  virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id);
 
   // Not implemented.
   virtual bool InitSyncNodeFromChromeId(std::string node_id,
-                                        sync_api::BaseNode* sync_node) {
-    return false;
-  }
+                                        sync_api::BaseNode* sync_node);
 
   // Returns the sync id for the given autofill name, or sync_api::kInvalidId
   // if the autofill name is not associated to any sync id.
@@ -137,14 +130,7 @@ class AutofillModelAssociator
 
   // A convenience wrapper of a bunch of state we pass around while associating
   // models, and send to the WebDatabase for persistence.
-  struct DataBundle {
-    std::set<AutofillKey> current_entries;
-    std::vector<AutofillEntry> new_entries;
-    std::set<string16> current_profiles;
-    std::vector<AutoFillProfile*> updated_profiles;
-    std::vector<AutoFillProfile*> new_profiles;  // We own these pointers.
-    ~DataBundle() { STLDeleteElements(&new_profiles); }
-  };
+  struct DataBundle;
 
   // Helper to query WebDatabase for the current autofill state.
   bool LoadAutofillData(std::vector<AutofillEntry>* entries,

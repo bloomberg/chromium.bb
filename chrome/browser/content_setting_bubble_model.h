@@ -42,6 +42,9 @@ class ContentSettingBubbleModel : public NotificationObserver {
 
   typedef std::vector<std::string> RadioItems;
   struct RadioGroup {
+    RadioGroup();
+    ~RadioGroup();
+
     GURL url;
     std::string title;
     RadioItems radio_items;
@@ -49,11 +52,17 @@ class ContentSettingBubbleModel : public NotificationObserver {
   };
 
   struct DomainList {
+    DomainList();
+    ~DomainList();
+
     std::string title;
     std::set<std::string> hosts;
   };
 
   struct BubbleContent {
+    BubbleContent();
+    ~BubbleContent();
+
     std::string title;
     PopupItems popup_items;
     RadioGroup radio_group;
@@ -64,6 +73,9 @@ class ContentSettingBubbleModel : public NotificationObserver {
     std::string info_link;
     std::string load_plugins_link_title;
     bool load_plugins_link_enabled;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(BubbleContent);
   };
 
   const BubbleContent& bubble_content() const { return bubble_content_; }

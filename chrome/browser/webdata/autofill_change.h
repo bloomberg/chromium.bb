@@ -52,23 +52,13 @@ class AutofillProfileChange : public GenericAutofillChange<string16> {
   // If t == REMOVE, |p| should be NULL. |pre_update_label| only applies to
   // UPDATE changes.
   AutofillProfileChange(Type t, string16 k, const AutoFillProfile* p,
-      const string16& pre_update_label)
-      : GenericAutofillChange<string16>(t, k), profile_(p),
-        pre_update_label_(pre_update_label) {}
+                        const string16& pre_update_label);
+  virtual ~AutofillProfileChange();
 
   const AutoFillProfile* profile() const { return profile_; }
   const string16& pre_update_label() const { return pre_update_label_; }
-  bool operator==(const AutofillProfileChange& change) const {
-    if (type() != change.type() || key() != change.key())
-      return false;
-    if (type() == REMOVE)
-      return true;
-    // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
-    // http://crbug.com/58813
-    if (*profile() != *change.profile())
-      return false;
-    return type() == ADD || pre_update_label_ == change.pre_update_label();
-  }
+  bool operator==(const AutofillProfileChange& change) const;
+
  private:
   const AutoFillProfile* profile_;  // Unowned pointer, can be NULL.
   const string16 pre_update_label_;
@@ -77,8 +67,8 @@ class AutofillProfileChange : public GenericAutofillChange<string16> {
 class AutofillCreditCardChange : public GenericAutofillChange<string16> {
  public:
   // If t == REMOVE, |card| should be NULL.
-  AutofillCreditCardChange(Type t, string16 k, const CreditCard* card)
-      : GenericAutofillChange<string16>(t, k), credit_card_(card) {}
+  AutofillCreditCardChange(Type t, string16 k, const CreditCard* card);
+  virtual ~AutofillCreditCardChange();
 
   const CreditCard* credit_card() const { return credit_card_; }
   bool operator==(const AutofillCreditCardChange& change) const {

@@ -11,14 +11,12 @@
 
 // Parameters passed when initializing a GPU channel.
 struct GPUCreateCommandBufferConfig {
-  GPUCreateCommandBufferConfig() { }
+  GPUCreateCommandBufferConfig();
 
-  GPUCreateCommandBufferConfig(
-      const std::string& _allowed_extensions,
-      const std::vector<int>& _attribs)
-      : allowed_extensions(_allowed_extensions),
-        attribs(_attribs) {
-  }
+  GPUCreateCommandBufferConfig(const std::string& _allowed_extensions,
+                               const std::vector<int>& _attribs);
+
+  ~GPUCreateCommandBufferConfig();
 
   std::string allowed_extensions;
   std::vector<int> attribs;

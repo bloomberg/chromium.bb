@@ -67,6 +67,15 @@ static uint32 SelectHardwarePacketSize(AudioParameters params) {
   return params.channels * samples * params.bits_per_sample / 8;
 }
 
+AudioRendererHost::AudioEntry::AudioEntry()
+    : render_view_id(0),
+      stream_id(0),
+      pending_buffer_request(false),
+      pending_close(false) {
+}
+
+AudioRendererHost::AudioEntry::~AudioEntry() {}
+
 ///////////////////////////////////////////////////////////////////////////////
 // AudioRendererHost implementations.
 AudioRendererHost::AudioRendererHost()
