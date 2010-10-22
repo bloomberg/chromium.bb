@@ -31,14 +31,14 @@ LibGpsLibraryWrapper* TryToOpen(const char* lib, InitMode mode) {
   }
   VLOG(1) << "Loaded " << lib;
 
-  #define DECLARE_FN_POINTER(function, required)                        \
-    LibGpsLibraryWrapper::function##_fn function;                       \
-    function = reinterpret_cast<LibGpsLibraryWrapper::function##_fn>(   \
-        dlsym(dl_handle, #function));                                   \
-    if ((required) && !function) {                                      \
-      VLOG(1) << "libgps " << #function << " error: " << dlerror();     \
-      dlclose(dl_handle);                                               \
-      return NULL;                                                      \
+  #define DECLARE_FN_POINTER(function, required)                         \
+    LibGpsLibraryWrapper::function##_fn function;                        \
+    function = reinterpret_cast<LibGpsLibraryWrapper::function##_fn>(    \
+        dlsym(dl_handle, #function));                                    \
+    if ((required) && !function) {                                       \
+      LOG(WARNING) << "libgps " << #function << " error: " << dlerror(); \
+      dlclose(dl_handle);                                                \
+      return NULL;                                                       \
     }
   DECLARE_FN_POINTER(gps_open, true);
   DECLARE_FN_POINTER(gps_close, true);

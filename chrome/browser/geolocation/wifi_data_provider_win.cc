@@ -267,10 +267,10 @@ bool WindowsWlanApi::GetAccessPointData(
     // when it's in this state. http://crbug.com/39300
     if (interface_list->InterfaceInfo[i].isState ==
         wlan_interface_state_associating) {
-      VLOG(1) << "Skipping wifi scan on adapter " << i << " ("
-              << interface_list->InterfaceInfo[i].strInterfaceDescription
-              << ") in 'associating' state. Repeated occurrences indicates a "
-                 "non-responding adapter.";
+      LOG(WARNING) << "Skipping wifi scan on adapter " << i << " ("
+                   << interface_list->InterfaceInfo[i].strInterfaceDescription
+                   << ") in 'associating' state. Repeated occurrences "
+                      "indicates a non-responding adapter.";
       continue;
     }
     GetInterfaceDataWLAN(wlan_handle,
