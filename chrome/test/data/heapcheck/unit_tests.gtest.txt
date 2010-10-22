@@ -1,2 +1,0 @@
-# Always hangs on Heapchecker; see http://crbug.com/58242
-TemplateURLFetcherTest.BasicTest
