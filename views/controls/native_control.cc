@@ -78,8 +78,8 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
       parent_->NativeControlDestroyed();
     delete this;
   }
-
  private:
+
   LRESULT OnCreate(LPCREATESTRUCT create_struct) {
     control_ = parent_->CreateNativeControl(m_hWnd);
 
@@ -87,13 +87,8 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
     WNDPROC original_handler =
         win_util::SetWindowProc(control_,
                                 &NativeControl::NativeControlWndProc);
-    BOOL set_prop_result = SetProp(control_, kHandlerKey, original_handler);
-    CHECK(set_prop_result) << "Failed to SetProp in NativeControlContainer "
-                           << win_util::FormatLastWin32Error();
-
-    set_prop_result = SetProp(control_, kNativeControlKey, parent_);
-    CHECK(set_prop_result) << "Failed to SetProp in NativeControlContainer "
-                           << win_util::FormatLastWin32Error();
+    SetProp(control_, kHandlerKey, original_handler);
+    SetProp(control_, kNativeControlKey , parent_);
 
     ::ShowWindow(control_, SW_SHOW);
     return 1;
