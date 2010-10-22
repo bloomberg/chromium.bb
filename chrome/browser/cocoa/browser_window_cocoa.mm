@@ -151,7 +151,24 @@ void BrowserWindowCocoa::UpdateTitleBar() {
   NSString* newTitle =
       base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
 
-  [window() setTitle:newTitle];
+  // Work around Cocoa bug: if a window changes title during the tracking of the
+  // Window menu it doesn't display well and the constant re-sorting of the list
+  // makes it difficult for the user to pick the desired window. Delay window
+  // title updates until the default run-loop mode.
+
+  if (pending_window_title_.get())
+    [[NSRunLoop currentRunLoop]
+        cancelPerformSelector:@selector(setTitle:)
+                       target:window()
+                     argument:pending_window_title_.get()];
+
+  pending_window_title_.reset([newTitle copy]);
+  [[NSRunLoop currentRunLoop]
+      performSelector:@selector(setTitle:)
+               target:window()
+             argument:newTitle
+                order:0
+                modes:[NSArray arrayWithObject:NSDefaultRunLoopMode]];
 }
 
 void BrowserWindowCocoa::ShelfVisibilityChanged() {

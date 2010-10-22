@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_
 #pragma once
 
+#include "base/scoped_nsobject.h"
 #include "base/task.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -134,6 +135,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
   ScopedRunnableMethodFactory<Browser> confirm_close_factory_;
+  scoped_nsobject<NSString> pending_window_title_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_
