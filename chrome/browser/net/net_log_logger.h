@@ -9,7 +9,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 
 // NetLogLogger watches the NetLog event stream, and sends all entries to
-// LOG(INFO).  This is to debug errors that prevent getting to the
+// VLOG(1).  This is to debug errors that prevent getting to the
 // about:net-internals page.
 class NetLogLogger : public ChromeNetLog::Observer {
  public:

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,8 +235,8 @@ void WebSocketExperimentTask::ReleaseHistogram() {
 }
 
 void WebSocketExperimentTask::Run() {
-  DLOG(INFO) << "Run WebSocket experiment for " << config_.url
-             << " " << GetProtocolVersionName(config_.protocol_version);
+  DVLOG(1) << "Run WebSocket experiment for " << config_.url << " "
+           << GetProtocolVersionName(config_.protocol_version);
   next_state_ = STATE_URL_FETCH;
   DoLoop(net::OK);
 }
@@ -247,8 +247,8 @@ void WebSocketExperimentTask::Cancel() {
 }
 
 void WebSocketExperimentTask::SaveResult() const {
-  DLOG(INFO) << "WebSocket experiment save result for " << config_.url
-             << " last_state=" << result_.last_state;
+  DVLOG(1) << "WebSocket experiment save result for " << config_.url
+           << " last_state=" << result_.last_state;
   UpdateHistogramEnums(config_, "LastState", result_.last_state, NUM_STATES);
   UpdateHistogramTimes(config_, "UrlFetch", result_.url_fetch,
                        base::TimeDelta::FromMilliseconds(1),
@@ -303,8 +303,8 @@ void WebSocketExperimentTask::OnURLFetchComplete(
   RevokeTimeoutTimer();
   int result = net::ERR_FAILED;
   if (next_state_ != STATE_URL_FETCH_COMPLETE) {
-    DLOG(INFO) << "unexpected state=" << next_state_
-               << " at OnURLFetchComplete for " << config_.http_url;
+    DVLOG(1) << "unexpected state=" << next_state_
+             << " at OnURLFetchComplete for " << config_.http_url;
     result = net::ERR_UNEXPECTED;
   } else if (response_code == 200 || response_code == 304) {
     result = net::OK;
@@ -321,9 +321,9 @@ void WebSocketExperimentTask::OnOpen(net::WebSocket* websocket) {
   if (next_state_ == STATE_WEBSOCKET_CONNECT_COMPLETE)
     result = net::OK;
   else
-    DLOG(INFO) << "unexpected state=" << next_state_
-               << " at OnOpen for " << config_.url
-               << " " << GetProtocolVersionName(config_.protocol_version);
+    DVLOG(1) << "unexpected state=" << next_state_
+             << " at OnOpen for " << config_.url
+             << " " << GetProtocolVersionName(config_.protocol_version);
   DoLoop(result);
 }
 
@@ -346,9 +346,9 @@ void WebSocketExperimentTask::OnMessage(
       result = net::OK;
       break;
     default:
-      DLOG(INFO) << "unexpected state=" << next_state_
-                 << " at OnMessage for " << config_.url
-                 << " " << GetProtocolVersionName(config_.protocol_version);
+      DVLOG(1) << "unexpected state=" << next_state_
+               << " at OnMessage for " << config_.url
+               << " " << GetProtocolVersionName(config_.protocol_version);
       break;
   }
   DoLoop(result);
@@ -367,9 +367,9 @@ void WebSocketExperimentTask::OnClose(
   int result = net::ERR_CONNECTION_CLOSED;
   if (last_websocket_error_ != net::OK)
     result = last_websocket_error_;
-  DLOG(INFO) << "WebSocket onclose was_clean=" << was_clean
-             << " next_state=" << next_state_
-             << " last_error=" << net::ErrorToString(result);
+  DVLOG(1) << "WebSocket onclose was_clean=" << was_clean
+           << " next_state=" << next_state_
+           << " last_error=" << net::ErrorToString(result);
   if (config_.protocol_version == net::WebSocket::DEFAULT_VERSION) {
     if (next_state_ == STATE_WEBSOCKET_CLOSE_COMPLETE && was_clean)
       result = net::OK;
@@ -383,10 +383,10 @@ void WebSocketExperimentTask::OnClose(
 
 void WebSocketExperimentTask::OnSocketError(
     const net::WebSocket* websocket, int error) {
-  DLOG(INFO) << "WebSocket socket level error=" << net::ErrorToString(error)
-             << " next_state=" << next_state_
-             << " for " << config_.url
-             << " " << GetProtocolVersionName(config_.protocol_version);
+  DVLOG(1) << "WebSocket socket level error=" << net::ErrorToString(error)
+           << " next_state=" << next_state_
+           << " for " << config_.url
+           << " " << GetProtocolVersionName(config_.protocol_version);
   last_websocket_error_ = error;
 }
 
@@ -395,9 +395,9 @@ void WebSocketExperimentTask::SetContext(Context* context) {
 }
 
 void WebSocketExperimentTask::OnTimedOut() {
-  DLOG(INFO) << "OnTimedOut next_state=" << next_state_
-             << " for " << config_.url
-             << " " << GetProtocolVersionName(config_.protocol_version);
+  DVLOG(1) << "OnTimedOut next_state=" << next_state_
+           << " for " << config_.url
+           << " " << GetProtocolVersionName(config_.protocol_version);
   RevokeTimeoutTimer();
   DoLoop(net::ERR_TIMED_OUT);
 }
@@ -644,10 +644,10 @@ void WebSocketExperimentTask::Finish(int result) {
   websocket_ = NULL;
   if (websocket)
     websocket->DetachDelegate();
-  DLOG(INFO) << "Finish WebSocket experiment for " << config_.url
-             << " " << GetProtocolVersionName(config_.protocol_version)
-             << " next_state=" << next_state_
-             << " result=" << net::ErrorToString(result);
+  DVLOG(1) << "Finish WebSocket experiment for " << config_.url
+           << " " << GetProtocolVersionName(config_.protocol_version)
+           << " next_state=" << next_state_
+           << " result=" << net::ErrorToString(result);
   callback_->Run(result);  // will release this.
 }
 

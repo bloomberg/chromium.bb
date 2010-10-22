@@ -21,6 +21,6 @@ void NetLogLogger::OnAddEntry(net::NetLog::EventType type,
                                                               params, true));
   std::string json;
   base::JSONWriter::Write(value.get(), true, &json);
-  LOG(INFO) << json;
+  VLOG(1) << json;
 }
 

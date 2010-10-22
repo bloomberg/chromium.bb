@@ -184,7 +184,7 @@ void TokenService::IssueAuthTokenForTest(const std::string& service,
 void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
                                            const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(INFO) << "Got an authorization token for " << service;
+  VLOG(1) << "Got an authorization token for " << service;
   token_map_[service] = auth_token;
   FireTokenAvailableNotification(service, auth_token);
   SaveAuthTokenToDB(service, auth_token);
@@ -237,8 +237,7 @@ void TokenService::LoadTokensIntoMemory(
         db_tokens.count(kServices[i])) {
       std::string db_token = db_tokens.find(kServices[i])->second;
       if (!db_token.empty()) {
-        LOG(INFO) << "Loading " << kServices[i] << "token from DB:"
-            << db_token;
+        VLOG(1) << "Loading " << kServices[i] << "token from DB: " << db_token;
         (*in_memory_tokens)[kServices[i]] = db_token;
         FireTokenAvailableNotification(kServices[i], db_token);
         // Failures are only for network errors.

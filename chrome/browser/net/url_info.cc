@@ -183,11 +183,9 @@ bool UrlInfo::IsStillCached() const {
 void UrlInfo::DLogResultsStats(const char* message) const {
   if (!detailed_logging_enabled)
     return;
-  DLOG(INFO) << "\t" << message <<  "\tq="
-      << queue_duration().InMilliseconds() << "ms,\tr="
-      << resolve_duration().InMilliseconds() << "ms\tp="
-      << sequence_number_
-      << "\t" << url_.spec();
+  DVLOG(1) << "\t" << message << "\tq=" << queue_duration().InMilliseconds()
+           << "ms,\tr=" << resolve_duration().InMilliseconds()
+           << "ms,\tp=" << sequence_number_ << "\t" << url_.spec();
 }
 
 //------------------------------------------------------------------------------
