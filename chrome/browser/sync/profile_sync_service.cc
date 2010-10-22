@@ -242,11 +242,10 @@ ProfileSyncService::ClearServerDataState
 
 void ProfileSyncService::GetDataTypeControllerStates(
   browser_sync::DataTypeController::StateMap* state_map) const {
-    browser_sync::DataTypeController::TypeMap::const_iterator iter
-        = data_type_controllers_.begin();
-    for ( ; iter != data_type_controllers_.end(); ++iter ) {
+    for (browser_sync::DataTypeController::TypeMap::const_iterator iter =
+         data_type_controllers_.begin(); iter != data_type_controllers_.end();
+         ++iter)
       (*state_map)[iter->first] = iter->second.get()->state();
-    }
 }
 
 void ProfileSyncService::InitSettings() {
@@ -276,15 +275,14 @@ void ProfileSyncService::InitSettings() {
       notifier_options_.xmpp_host_port.set_host(value);
       notifier_options_.xmpp_host_port.set_port(notifier::kDefaultXmppPort);
     }
-    LOG(INFO) << "Using " << notifier_options_.xmpp_host_port.ToString()
-        << " for test sync notification server.";
+    VLOG(1) << "Using " << notifier_options_.xmpp_host_port.ToString()
+            << " for test sync notification server.";
   }
 
   notifier_options_.try_ssltcp_first =
       command_line.HasSwitch(switches::kSyncUseSslTcp);
-  if (notifier_options_.try_ssltcp_first) {
-    LOG(INFO) << "Trying SSL/TCP port before XMPP port for notifications.";
-  }
+  if (notifier_options_.try_ssltcp_first)
+    VLOG(1) << "Trying SSL/TCP port before XMPP port for notifications.";
 
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
     const std::string notification_method_str(

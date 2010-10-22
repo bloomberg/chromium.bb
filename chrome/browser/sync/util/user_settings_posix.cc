@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,8 +17,8 @@ void UserSettings::SetAuthTokenForService(
     const std::string& service_name,
     const std::string& long_lived_service_token) {
 
-  LOG(INFO) << "Saving auth token " << long_lived_service_token << " for "
-      << email << "for service " << service_name;
+  VLOG(1) << "Saving auth token " << long_lived_service_token
+          << " for " << email << "for service " << service_name;
 
   std::string encrypted_service_token;
   if (!Encryptor::EncryptString(long_lived_service_token,
@@ -60,13 +60,13 @@ bool UserSettings::GetLastUserAndServiceToken(const std::string& service_name,
     }
     *username = query.column_string(0);
 
-    LOG(INFO) << "Found service token for:" << *username
-      << " @ " << service_name << " returning: " << *service_token;
+    VLOG(1) << "Found service token for:" << *username << " @ " << service_name
+            << " returning: " << *service_token;
 
     return true;
   }
 
-  LOG(INFO) << "Couldn't find service token for " << service_name;
+  VLOG(1) << "Couldn't find service token for " << service_name;
 
   return false;
 }

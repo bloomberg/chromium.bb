@@ -957,8 +957,9 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
     ++entries_done;
     int64 elapsed_ms = check_timer.Elapsed().InMilliseconds();
     if (elapsed_ms > max_ms) {
-      LOG(INFO) << "Cutting Invariant check short after " << elapsed_ms << "ms."
-        " Processed " << entries_done << "/" << handles.size() << " entries";
+      VLOG(1) << "Cutting Invariant check short after " << elapsed_ms
+              << "ms. Processed " << entries_done << "/" << handles.size()
+              << " entries";
       return;
     }
   }

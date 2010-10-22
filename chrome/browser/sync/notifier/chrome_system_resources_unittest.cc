@@ -77,7 +77,7 @@ class ChromeSystemResourcesTest : public testing::Test {
 TEST_F(ChromeSystemResourcesTest, CurrentTime) {
   invalidation::Time current_time =
       chrome_system_resources_.current_time();
-  LOG(INFO) << "current_time returned: " << current_time.ToInternalValue();
+  VLOG(1) << "current_time returned: " << current_time.ToInternalValue();
 }
 
 // Make sure Log() doesn't crash or leak.

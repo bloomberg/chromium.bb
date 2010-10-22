@@ -61,8 +61,8 @@ void ServerNotifierThread::Logout() {
 void ServerNotifierThread::SendNotification(
     const OutgoingNotificationData& data) {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  NOTREACHED() << "Shouldn't send notifications if "
-               << "ServerNotifierThread is used";
+  NOTREACHED() << "Shouldn't send notifications if ServerNotifierThread is "
+                  "used";
 }
 
 void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
@@ -70,11 +70,8 @@ void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
   // TODO(akalin): This is a hack to make new sync data types work
   // with server-issued notifications.  Remove this when it's not
   // needed anymore.
-  if (model_type == syncable::UNSPECIFIED) {
-    LOG(INFO) << "OnInvalidate: UNKNOWN";
-  } else {
-    LOG(INFO) << "OnInvalidate: " << syncable::ModelTypeToString(model_type);
-  }
+  VLOG(1) << "OnInvalidate: " << ((model_type == syncable::UNSPECIFIED) ?
+      "UNKNOWN" : syncable::ModelTypeToString(model_type));
   // TODO(akalin): Signal notification only for the invalidated types.
   // TODO(akalin): Fill this in with something meaningful.
   IncomingNotificationData notification_data;
@@ -83,7 +80,7 @@ void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
 
 void ServerNotifierThread::OnInvalidateAll() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  LOG(INFO) << "OnInvalidateAll";
+  VLOG(1) << "OnInvalidateAll";
   // TODO(akalin): Fill this in with something meaningful.
   IncomingNotificationData notification_data;
   observers_->Notify(&Observer::OnIncomingNotification, notification_data);

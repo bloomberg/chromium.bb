@@ -38,9 +38,6 @@
 #include "third_party/sqlite/sqlite3.h"
 
 using browser_sync::TestIdFactory;
-using std::cout;
-using std::endl;
-using std::string;
 
 namespace syncable {
 
@@ -90,7 +87,7 @@ TEST_F(SyncableGeneralTest, General) {
 
   int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
-  string name = "Jeff";
+  std::string name = "Jeff";
   // Test simple read operations on an empty DB.
   {
     ReadTransaction rtrans(&dir, __FILE__, __LINE__);
@@ -168,8 +165,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
   int64 written_metahandle;
   TestIdFactory factory;
   const Id id = factory.NewServerId();
-  string name = "cheesepuffs";
-  string tag = "dietcoke";
+  std::string name = "cheesepuffs";
+  std::string tag = "dietcoke";
 
   // Test creating a new meta entry.
   {
@@ -205,7 +202,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   TestIdFactory factory;
   const Id id = factory.NewServerId();
-  string tag = "dietcoke";
+  std::string tag = "dietcoke";
 
   // Test creating a deleted, unsynced, server meta entry.
   {
@@ -245,7 +242,7 @@ class TestUnsaveableDirectory : public Directory {
  public:
   class UnsaveableBackingStore : public DirectoryBackingStore {
    public:
-     UnsaveableBackingStore(const string& dir_name,
+     UnsaveableBackingStore(const std::string& dir_name,
                             const FilePath& backing_filepath)
          : DirectoryBackingStore(dir_name, backing_filepath) { }
      virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) {
@@ -253,7 +250,8 @@ class TestUnsaveableDirectory : public Directory {
      }
   };
   virtual DirectoryBackingStore* CreateBackingStore(
-      const string& dir_name, const FilePath& backing_filepath) {
+      const std::string& dir_name,
+      const FilePath& backing_filepath) {
     return new UnsaveableBackingStore(dir_name, backing_filepath);
   }
 };
@@ -335,15 +333,15 @@ class SyncableDirectoryTest : public testing::Test {
   FilePath file_path_;
 
   // Creates an empty entry and sets the ID field to the default kId.
-  void CreateEntry(const string& entryname) {
+  void CreateEntry(const std::string& entryname) {
     CreateEntry(entryname, kId);
   }
 
   // Creates an empty entry and sets the ID field to id.
-  void CreateEntry(const string& entryname, const int id) {
+  void CreateEntry(const std::string& entryname, const int id) {
     CreateEntry(entryname, TestIdFactory::FromNumber(id));
   }
-  void CreateEntry(const string& entryname, Id id) {
+  void CreateEntry(const std::string& entryname, Id id) {
     WriteTransaction wtrans(dir_.get(), UNITTEST, __FILE__, __LINE__);
     MutableEntry me(&wtrans, CREATE, wtrans.root_id(), entryname);
     ASSERT_TRUE(me.good());
@@ -351,11 +349,13 @@ class SyncableDirectoryTest : public testing::Test {
     me.Put(IS_UNSYNCED, true);
   }
 
-  void ValidateEntry(BaseTransaction* trans, int64 id, bool check_name,
-      string name, int64 base_version, int64 server_version, bool is_del);
-  void CreateAndCheck(WriteTransaction* trans, int64 parent_id, int64 id,
-      string name, string server_name, int64 version,
-      bool set_server_fields, bool is_dir, bool add_to_lru, int64 *meta_handle);
+  void ValidateEntry(BaseTransaction* trans,
+                     int64 id,
+                     bool check_name,
+                     const std::string& name,
+                     int64 base_version,
+                     int64 server_version,
+                     bool is_del);
 };
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
@@ -647,7 +647,7 @@ TEST_F(SyncableDirectoryTest, TestBasicLookupValidID) {
 }
 
 TEST_F(SyncableDirectoryTest, TestDelete) {
-  string name = "peanut butter jelly time";
+  std::string name = "peanut butter jelly time";
   WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
   MutableEntry e1(&trans, CREATE, trans.root_id(), name);
   ASSERT_TRUE(e1.good());
@@ -910,7 +910,7 @@ TEST_F(SyncableDirectoryTest, TestEntryIsInFolder) {
   int64 entry_handle;
   syncable::Id folder_id;
   syncable::Id entry_id;
-  string entry_name = "entry";
+  std::string entry_name = "entry";
 
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
@@ -942,7 +942,7 @@ TEST_F(SyncableDirectoryTest, TestEntryIsInFolder) {
 }
 
 TEST_F(SyncableDirectoryTest, TestParentIdIndexUpdate) {
-  string child_name = "child";
+  std::string child_name = "child";
 
   WriteTransaction wt(dir_.get(), UNITTEST, __FILE__, __LINE__);
   MutableEntry parent_folder(&wt, CREATE, wt.root_id(), "folder1");
@@ -970,8 +970,8 @@ TEST_F(SyncableDirectoryTest, TestParentIdIndexUpdate) {
 }
 
 TEST_F(SyncableDirectoryTest, TestNoReindexDeletedItems) {
-  string folder_name = "folder";
-  string new_name = "new_name";
+  std::string folder_name = "folder";
+  std::string new_name = "new_name";
 
   WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
   MutableEntry folder(&trans, CREATE, trans.root_id(), folder_name);
@@ -1049,7 +1049,7 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
   Id create_id;
   EntryKernel create_pre_save, update_pre_save;
   EntryKernel create_post_save, update_post_save;
-  string create_name =  "Create";
+  std::string create_name =  "Create";
 
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
@@ -1328,14 +1328,17 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
 
 }  // namespace
 
-void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
-    bool check_name, string name, int64 base_version, int64 server_version,
-    bool is_del) {
+void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans,
+                                          int64 id,
+                                          bool check_name,
+                                          const std::string& name,
+                                          int64 base_version,
+                                          int64 server_version,
+                                          bool is_del) {
   Entry e(trans, GET_BY_ID, TestIdFactory::FromNumber(id));
   ASSERT_TRUE(e.good());
-  if (check_name) {
+  if (check_name)
     ASSERT_TRUE(name == e.Get(NON_UNIQUE_NAME));
-  }
   ASSERT_TRUE(base_version == e.Get(BASE_VERSION));
   ASSERT_TRUE(server_version == e.Get(SERVER_VERSION));
   ASSERT_TRUE(is_del == e.Get(IS_DEL));
@@ -1405,7 +1408,7 @@ class ThreadBugDelegate : public PlatformThread::Delegate {
 
   // PlatformThread::Delegate methods:
   virtual void ThreadMain() {
-    const string dirname = "ThreadBug1";
+    const std::string dirname = "ThreadBug1";
     AutoLock scoped_lock(step_->mutex);
 
     while (step_->number < 3) {
@@ -1476,7 +1479,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
 
   virtual void ThreadMain() {
     const char test_bytes[] = "test data";
-    const string dirname = "DirectoryKernelStalenessBug";
+    const std::string dirname = "DirectoryKernelStalenessBug";
     AutoLock scoped_lock(step_->mutex);
     const Id jeff_id = TestIdFactory::FromNumber(100);
 
@@ -1561,14 +1564,16 @@ TEST(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
 
 class StressTransactionsDelegate : public PlatformThread::Delegate {
  public:
-  StressTransactionsDelegate(DirectoryManager* dm, string dirname,
+  StressTransactionsDelegate(DirectoryManager* dm,
+                             const std::string& dirname,
                              int thread_number)
-      : directory_manager_(dm), dirname_(dirname),
+      : directory_manager_(dm),
+        dirname_(dirname),
         thread_number_(thread_number) {}
 
  private:
   DirectoryManager* const directory_manager_;
-  string dirname_;
+  std::string dirname_;
   const int thread_number_;
 
   // PlatformThread::Delegate methods:
@@ -1576,7 +1581,7 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
     ScopedDirLookup dir(directory_manager_, dirname_);
     CHECK(dir.good());
     int entry_count = 0;
-    string path_name;
+    std::string path_name;
 
     for (int i = 0; i < 20; ++i) {
       const int rand_action = rand() % 10;
@@ -1585,8 +1590,8 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
         PlatformThread::Sleep(rand() % 10);
       } else {
-        string unique_name = StringPrintf("%d.%d", thread_number_,
-            entry_count++);
+        std::string unique_name = StringPrintf("%d.%d", thread_number_,
+                                               entry_count++);
         path_name.assign(unique_name.begin(), unique_name.end());
         WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
@@ -1606,7 +1611,7 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
 
 TEST(SyncableDirectory, StressTransactions) {
   DirectoryManager dirman(FilePath(FILE_PATH_LITERAL(".")));
-  string dirname = "stress";
+  std::string dirname = "stress";
   file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
   dirman.Open(dirname);
 
@@ -1648,8 +1653,8 @@ TEST(Syncable, ComparePathNames) {
     { 'b', 'A', 1 },
     { 'b', 'a', 1 } };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    string a(1, tests[i].a);
-    string b(1, tests[i].b);
+    std::string a(1, tests[i].a);
+    std::string b(1, tests[i].b);
     const int result = ComparePathNames(a, b);
     if (result != tests[i].expected_result) {
       ADD_FAILURE() << "ComparePathNames(" << tests[i].a << ", " << tests[i].b
