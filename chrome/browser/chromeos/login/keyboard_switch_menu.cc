@@ -43,7 +43,7 @@ void KeyboardSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   } else {
     new_pt.set_x(pt.x() - reverse_offset);
   }
-  language_menu().RunMenuAt(new_pt, views::Menu2::ALIGN_TOPLEFT);
+  input_method_menu().RunMenuAt(new_pt, views::Menu2::ALIGN_TOPLEFT);
 }
 
 std::wstring KeyboardSwitchMenu::GetCurrentKeyboardName() const {

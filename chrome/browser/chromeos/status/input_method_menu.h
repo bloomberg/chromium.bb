@@ -92,8 +92,8 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   void PrepareForMenuOpen();
 
   // Returns menu2 object for language menu.
-  views::Menu2& language_menu() {
-    return language_menu_;
+  views::Menu2& input_method_menu() {
+    return input_method_menu_;
   }
 
  private:
@@ -141,8 +141,8 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   scoped_ptr<menus::SimpleMenuModel> model_;
 
   // The language menu which pops up when the button in status area is clicked.
-  views::Menu2 language_menu_;
-  int minimum_language_menu_width_;
+  views::Menu2 input_method_menu_;
+  int minimum_input_method_menu_width_;
 
   PrefService* pref_service_;
   NotificationRegistrar registrar_;
