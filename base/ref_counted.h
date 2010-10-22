@@ -106,7 +106,7 @@ template <class T, typename Traits> class RefCountedThreadSafe;
 // count reaches 0.  Overload to delete it on a different thread etc.
 template<typename T>
 struct DefaultRefCountedThreadSafeTraits {
-  static void Destruct(T* x) {
+  static void Destruct(const T* x) {
     // Delete through RefCountedThreadSafe to make child classes only need to be
     // friend with RefCountedThreadSafe instead of this struct, which is an
     // implementation detail.
@@ -133,19 +133,19 @@ class RefCountedThreadSafe : public subtle::RefCountedThreadSafeBase {
   RefCountedThreadSafe() { }
   ~RefCountedThreadSafe() { }
 
-  void AddRef() {
+  void AddRef() const {
     subtle::RefCountedThreadSafeBase::AddRef();
   }
 
-  void Release() {
+  void Release() const {
     if (subtle::RefCountedThreadSafeBase::Release()) {
-      Traits::Destruct(static_cast<T*>(this));
+      Traits::Destruct(static_cast<const T*>(this));
     }
   }
 
  private:
   friend struct DefaultRefCountedThreadSafeTraits<T>;
-  static void DeleteInternal(T* x) { delete x; }
+  static void DeleteInternal(const T* x) { delete x; }
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafe);
 };

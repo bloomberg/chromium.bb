@@ -206,7 +206,7 @@ class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
     return context_;
   }
 
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
     if (!io_message_loop_proxy_.get()) {
       io_message_loop_proxy_ = base::MessageLoopProxy::CreateForCurrentThread();
     }
@@ -219,7 +219,7 @@ class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
   }
 
   scoped_refptr<URLRequestContext> context_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  mutable scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
   MessageLoop* io_loop_;
 };
 

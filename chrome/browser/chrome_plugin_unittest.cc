@@ -33,7 +33,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
       context_ = new TestURLRequestContext();
     return context_;
   }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
+  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 

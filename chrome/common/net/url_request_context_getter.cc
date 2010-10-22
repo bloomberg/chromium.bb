@@ -14,7 +14,7 @@ URLRequestContextGetter::URLRequestContextGetter() : is_main_(false) {}
 
 URLRequestContextGetter::~URLRequestContextGetter() {}
 
-void URLRequestContextGetter::OnDestruct() {
+void URLRequestContextGetter::OnDestruct() const {
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy =
       GetIOMessageLoopProxy();
   DCHECK(io_message_loop_proxy);

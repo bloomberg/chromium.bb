@@ -107,7 +107,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual void OnChannelError();
   virtual void OnChannelClosing();
   virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnDestruct();
+  virtual void OnDestruct() const;
 
   // ResourceDispatcherHost::Receiver methods:
   virtual bool Send(IPC::Message* message);

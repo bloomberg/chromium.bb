@@ -109,7 +109,7 @@ class BrowserThread : public base::Thread {
   template <class T>
   static bool DeleteSoon(ID identifier,
                          const tracked_objects::Location& from_here,
-                         T* object) {
+                         const T* object) {
     return PostNonNestableTask(
         identifier, from_here, new DeleteTask<T>(object));
   }
@@ -117,7 +117,7 @@ class BrowserThread : public base::Thread {
   template <class T>
   static bool ReleaseSoon(ID identifier,
                           const tracked_objects::Location& from_here,
-                          T* object) {
+                          const T* object) {
     return PostNonNestableTask(
         identifier, from_here, new ReleaseTask<T>(object));
   }
@@ -154,7 +154,7 @@ class BrowserThread : public base::Thread {
   template<ID thread>
   struct DeleteOnThread {
     template<typename T>
-    static void Destruct(T* x) {
+    static void Destruct(const T* x) {
       if (CurrentlyOn(thread)) {
         delete x;
       } else {

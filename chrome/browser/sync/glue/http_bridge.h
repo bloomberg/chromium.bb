@@ -85,7 +85,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
     // URLRequestContextGetter implementation.
     virtual URLRequestContext* GetURLRequestContext();
-    virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy();
+    virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
    private:
     ~RequestContextGetter() {}

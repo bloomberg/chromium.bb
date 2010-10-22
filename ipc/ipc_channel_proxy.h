@@ -87,11 +87,11 @@ class ChannelProxy : public Message::Sender {
     // Called when the message filter is about to be deleted.  This gives
     // derived classes the option of controlling which thread they're deleted
     // on etc.
-    virtual void OnDestruct();
+    virtual void OnDestruct() const;
   };
 
   struct MessageFilterTraits {
-    static void Destruct(MessageFilter* filter) {
+    static void Destruct(const MessageFilter* filter) {
       filter->OnDestruct();
     }
   };
