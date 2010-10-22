@@ -1980,7 +1980,6 @@ bool WebDatabase::RemoveCreditCard(const std::string& guid) {
 bool WebDatabase::RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
     base::Time delete_begin,
     base::Time delete_end) {
-  DCHECK(!delete_begin.is_null());
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
 
   time_t delete_begin_t = delete_begin.ToTimeT();

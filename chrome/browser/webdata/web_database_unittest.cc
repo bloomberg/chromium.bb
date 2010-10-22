@@ -1574,6 +1574,18 @@ TEST_F(WebDatabaseTest, RemoveAutoFillProfilesAndCreditCardsModifiedBetween) {
   ASSERT_TRUE(s_credit_cards_unbounded.Step());
   EXPECT_EQ(47, s_credit_cards_unbounded.ColumnInt64(12));
   EXPECT_FALSE(s_credit_cards_unbounded.Step());
+
+  // Remove all remaining entries.
+  db.RemoveAutoFillProfilesAndCreditCardsModifiedBetween(base::Time(),
+                                                         base::Time());
+  sql::Statement s_autofill_profiles_empty(db.db_.GetUniqueStatement(
+      "SELECT * FROM autofill_profiles"));
+  ASSERT_TRUE(s_autofill_profiles_empty);
+  EXPECT_FALSE(s_autofill_profiles_empty.Step());
+  sql::Statement s_credit_cards_empty(db.db_.GetUniqueStatement(
+      "SELECT * FROM credit_cards"));
+  ASSERT_TRUE(s_credit_cards_empty);
+  EXPECT_FALSE(s_credit_cards_empty.Step());
 }
 
 TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_NoResults) {
