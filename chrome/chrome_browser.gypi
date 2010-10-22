@@ -1106,7 +1106,6 @@
         'browser/cocoa/objc_zombie.mm',
         'browser/cocoa/page_info_bubble_controller.h',
         'browser/cocoa/page_info_bubble_controller.mm',
-        'browser/cocoa/page_info_window_mac.mm',
         'browser/cocoa/preferences_window_controller.h',
         'browser/cocoa/preferences_window_controller.mm',
         'browser/cocoa/previewable_contents_controller.h',
