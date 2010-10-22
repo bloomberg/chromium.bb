@@ -60,13 +60,23 @@
               'defines': [
                 'GL_GLEXT_PROTOTYPES',
               ],
+              'conditions': [
+                [ 'target_arch=="x64"',
+                  {
+                    'variables': { 'libdir': 'lib64' }
+                  }, {
+                    'variables': { 'libdir': 'lib' }
+                  }
+                ],
+              ],
               'ldflags': [
                 '-L<(PRODUCT_DIR)',
+                '-L<(glewdir)/<(libdir)', 
               ],
               'libraries': [
                 '-lGL',
-                '-lGLEW',
                 '-lX11',
+                '-l:libGLEW.so.a',
               ],
             },
           },
@@ -118,13 +128,23 @@
                     'defines': [
                       'GL_GLEXT_PROTOTYPES',
                     ],
+                    'conditions': [
+                      [ 'target_arch=="x64"',
+                        {
+                          'variables': { 'libdir': 'lib64' }
+                        }, {
+                          'variables': { 'libdir': 'lib' }
+                        }
+                      ],
+                    ],
                     'ldflags': [
                       '-L<(PRODUCT_DIR)',
+                      '-L<(glewdir)/<(libdir)',
                     ],
                     'libraries': [
                       '-lGL',
-                      '-lGLEW',
                       '-lX11',
+                      '-l:libGLEW.so.a',
                     ],
                   },
                 },

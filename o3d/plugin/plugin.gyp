@@ -115,7 +115,6 @@
                 # --as-needed, so we have to specify the out-of-order ones before
                 # the --as-needed flag.
                 '-lCgGL',
-                '-lGLEW',
                 '-ldl',      # Used by breakpad
                 '-lrt',
               ]
@@ -218,7 +217,7 @@
                 '$(SDKROOT)/System/Library/Frameworks/QuickTime.framework',
                 'libbreakpad.a',
                 'libbreakpad_utilities.a',
-                '../../third_party/glew/files/lib/libMacStaticGLEW.a',
+                '../../<(glewdir)/lib/libMacStaticGLEW.a',
               ],
             },
             'postbuilds': [
@@ -474,7 +473,7 @@
                       '$(SDKROOT)/System/Library/Frameworks/QuickTime.framework',
                       'libbreakpad.a',
                       'libbreakpad_utilities.a',
-                      '../../third_party/glew/files/lib/libMacStaticGLEW.a',
+                      '../../<(glewdir)/lib/libMacStaticGLEW.a',
                     ],
                   },
                 },
