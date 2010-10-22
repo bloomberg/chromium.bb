@@ -531,8 +531,9 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 ChromeURLRequestContextGetter::ChromeURLRequestContextGetter(
     Profile* profile,
     ChromeURLRequestContextFactory* factory)
-  : factory_(factory),
-    url_request_context_(NULL) {
+    : io_thread_(g_browser_process->io_thread()),
+      factory_(factory),
+      url_request_context_(NULL) {
   DCHECK(factory);
 
   // If a base profile was specified, listen for changes to the preferences.
@@ -549,6 +550,9 @@ ChromeURLRequestContextGetter::~ChromeURLRequestContextGetter() {
   // we still have a pending factory.
   DCHECK((factory_.get() && !url_request_context_.get()) ||
          (!factory_.get() && url_request_context_.get()));
+
+  if (url_request_context_)
+    io_thread_->UnregisterURLRequestContextGetter(this);
 
   // The scoped_refptr / scoped_ptr destructors take care of releasing
   // |factory_| and |url_request_context_| now.
@@ -570,9 +574,15 @@ URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
     }
 
     factory_.reset();
+    io_thread_->RegisterURLRequestContextGetter(this);
   }
 
   return url_request_context_;
+}
+
+void ChromeURLRequestContextGetter::ReleaseURLRequestContext() {
+  DCHECK(url_request_context_);
+  url_request_context_ = NULL;
 }
 
 void ChromeURLRequestContextGetter::RegisterUserPrefs(
@@ -767,9 +777,12 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
 
 #if defined(USE_NSS)
   if (is_main()) {
-    DCHECK_EQ(this, net::GetURLRequestContextForOCSP());
-    // We are releasing the URLRequestContext used by OCSP handlers.
-    net::SetURLRequestContextForOCSP(NULL);
+    URLRequestContext* ocsp_context = net::GetURLRequestContextForOCSP();
+    if (ocsp_context) {
+      DCHECK_EQ(this, ocsp_context);
+      // We are releasing the URLRequestContext used by OCSP handlers.
+      net::SetURLRequestContextForOCSP(NULL);
+    }
   }
 #endif
 

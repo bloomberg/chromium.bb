@@ -242,6 +242,10 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   virtual net::CookieStore* GetCookieStore();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
+  // Releases |url_request_context_|.  It's invalid to call
+  // GetURLRequestContext() after this point.
+  void ReleaseURLRequestContext();
+
   // Convenience overload of GetURLRequestContext() that returns a
   // ChromeURLRequestContext* rather than a URLRequestContext*.
   ChromeURLRequestContext* GetIOContext() {
@@ -308,6 +312,10 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
                                  net::CookieStore** result);
 
   PrefChangeRegistrar registrar_;
+
+  // |io_thread_| is always valid during the lifetime of |this| since |this| is
+  // deleted on the IO thread.
+  IOThread* const io_thread_;
 
   // Deferred logic for creating a ChromeURLRequestContext.
   // Access only from the IO thread.
