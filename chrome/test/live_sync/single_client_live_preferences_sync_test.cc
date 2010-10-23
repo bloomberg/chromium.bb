@@ -11,9 +11,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientLivePreferencesSyncTest, Sanity) {
       prefs::kHomePageIsNewTabPage);
   GetVerifierPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, new_value);
   GetPrefs(0)->SetBoolean(prefs::kHomePageIsNewTabPage, new_value);
-  EXPECT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
+  ASSERT_TRUE(GetClient(0)->AwaitSyncCycleCompletion(
       "Waiting for prefs change."));
 
-  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage),
+  ASSERT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage),
       GetPrefs(0)->GetBoolean(prefs::kHomePageIsNewTabPage));
 }

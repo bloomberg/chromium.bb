@@ -18,16 +18,16 @@ IN_PROC_BROWSER_TEST_F(ManyClientLivePasswordsSyncTest, Sanity) {
   AddLogin(GetVerifierPasswordStore(), form);
   AddLogin(GetPasswordStore(0), form);
 
-  EXPECT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
+  ASSERT_TRUE(GetClient(0)->AwaitGroupSyncCycleCompletion(clients()));
 
   std::vector<PasswordForm> expected;
   GetLogins(GetVerifierPasswordStore(), form, expected);
-  EXPECT_EQ(1U, expected.size());
+  ASSERT_EQ(1U, expected.size());
 
   for (int i = 0; i < num_clients(); ++i) {
     std::vector<PasswordForm> actual;
     GetLogins(GetPasswordStore(i), form, actual);
 
-    EXPECT_TRUE(ContainsSamePasswordForms(expected, actual));
+    ASSERT_TRUE(ContainsSamePasswordForms(expected, actual));
   }
 }

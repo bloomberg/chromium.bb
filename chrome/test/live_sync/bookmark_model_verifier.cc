@@ -10,96 +10,83 @@
 #include "app/tree_node_iterator.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-
-using std::string;
-using std::wstring;
 
 // static
-void BookmarkModelVerifier::ExpectBookmarkInfoMatch(
-    const BookmarkNode* expected, const BookmarkNode* actual) {
-  EXPECT_EQ(expected->GetTitle(), actual->GetTitle());
-  EXPECT_EQ(expected->is_folder(), actual->is_folder());
-  EXPECT_EQ(expected->GetURL(), actual->GetURL());
-  EXPECT_EQ(expected->GetParent()->IndexOfChild(expected),
-            actual->GetParent()->IndexOfChild(actual));
-}
-
-BookmarkModelVerifier::BookmarkModelVerifier(BookmarkModel* model)
-    : model_(model) {}
-
-BookmarkModelVerifier* BookmarkModelVerifier::Create(BookmarkModel* model) {
-  BookmarkModelVerifier* v = new BookmarkModelVerifier(model);
-  ui_test_utils::WaitForBookmarkModelToLoad(v->model_);
-  return v;
-}
-
-void BookmarkModelVerifier::ExpectMatch(BookmarkModel* actual) {
-  ExpectModelsMatch(model_, actual);
+bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
+                                       const BookmarkNode* node_b) {
+  if (node_a == NULL || node_b == NULL)
+    return node_a == node_b;
+  bool ret_val = true;
+  ret_val = ret_val && (node_a->GetTitle() == node_b->GetTitle());
+  ret_val = ret_val && (node_a->is_folder() == node_b->is_folder());
+  ret_val = ret_val && (node_a->GetURL() == node_b->GetURL());
+  ret_val = ret_val && (node_a->GetParent()->IndexOfChild(node_a) ==
+                        node_b->GetParent()->IndexOfChild(node_b));
+  return ret_val;
 }
 
 // static
-void BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
-    BookmarkModel* expected, BookmarkModel* actual, bool compare_favicon) {
-  TreeNodeIterator<const BookmarkNode> e_iterator(expected->root_node());
-  TreeNodeIterator<const BookmarkNode> a_iterator(actual->root_node());
-
-  // Pre-order traversal of each model, comparing at each step.
-  while (e_iterator.has_next()) {
-    const BookmarkNode* e_node = e_iterator.Next();
-    ASSERT_TRUE(a_iterator.has_next());
-    const BookmarkNode* a_node = a_iterator.Next();
-    ExpectBookmarkInfoMatch(e_node, a_node);
-    // Get Favicon and compare if compare_favicon flag is true.
-    if (compare_favicon) {
-      const SkBitmap& e_node_favicon = expected->GetFavIcon(e_node);
-      const SkBitmap& a_node_favicon = actual->GetFavIcon(a_node);
-      EXPECT_GT(e_node_favicon.getSize(), (size_t) 0);
-      EXPECT_EQ(e_node_favicon.getSize(), a_node_favicon.getSize());
-      EXPECT_EQ(e_node_favicon.width(), a_node_favicon.width());
-      EXPECT_EQ(e_node_favicon.height(), a_node_favicon.height());
-      SkAutoLockPixels bitmap_lock_e(e_node_favicon);
-      SkAutoLockPixels bitmap_lock_a(a_node_favicon);
-      void* e_node_pixel_addr = e_node_favicon.getPixels();
-      ASSERT_TRUE(e_node_pixel_addr);
-      void* a_node_pixel_addr = a_node_favicon.getPixels();
-      ASSERT_TRUE(a_node_pixel_addr);
-      EXPECT_EQ(memcmp(e_node_pixel_addr, a_node_pixel_addr,
-          e_node_favicon.getSize()), 0);
+bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
+                                        BookmarkModel* model_b,
+                                        bool compare_favicons) {
+  bool ret_val = true;
+  TreeNodeIterator<const BookmarkNode> iterator_a(model_a->root_node());
+  TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
+  while (iterator_a.has_next()) {
+    const BookmarkNode* node_a = iterator_a.Next();
+    EXPECT_TRUE(iterator_b.has_next());
+    const BookmarkNode* node_b = iterator_b.Next();
+    ret_val = ret_val && NodesMatch(node_a, node_b);
+    if (compare_favicons) {
+      const SkBitmap& bitmap_a = model_a->GetFavIcon(node_a);
+      const SkBitmap& bitmap_b = model_b->GetFavIcon(node_b);
+      ret_val = ret_val && FaviconsMatch(bitmap_a, bitmap_b);
     }
   }
-  ASSERT_FALSE(a_iterator.has_next());
+  ret_val = ret_val && (!iterator_b.has_next());
+  return ret_val;
 }
 
-void BookmarkModelVerifier::VerifyNoDuplicates(BookmarkModel* model) {
+bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
+                                          const SkBitmap& bitmap_b) {
+  if ((bitmap_a.getSize() == (size_t) 0) ||
+      (bitmap_a.getSize() != bitmap_b.getSize()) ||
+      (bitmap_a.width() != bitmap_b.width()) ||
+      (bitmap_a.height() != bitmap_b.height()))
+    return false;
+  SkAutoLockPixels bitmap_lock_a(bitmap_a);
+  SkAutoLockPixels bitmap_lock_b(bitmap_b);
+  void* node_pixel_addr_a = bitmap_a.getPixels();
+  EXPECT_TRUE(node_pixel_addr_a);
+  void* node_pixel_addr_b = bitmap_b.getPixels();
+  EXPECT_TRUE(node_pixel_addr_b);
+  return (memcmp(node_pixel_addr_a,
+                 node_pixel_addr_b,
+                 bitmap_a.getSize()) ==  0);
+}
+
+bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
   TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
-  // Pre-order traversal of model tree, looking for duplicate node at
-  // each step.
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    std::vector<const BookmarkNode*> nodes;
     if (node->type() != BookmarkNode::URL)
       continue;
-    // Get nodes with same URL.
+    std::vector<const BookmarkNode*> nodes;
     model->GetNodesByURL(node->GetURL(), &nodes);
     EXPECT_TRUE(nodes.size() >= 1);
-    for (std::vector<const BookmarkNode*>::const_iterator i = nodes.begin(),
-         e = nodes.end(); i != e; i++) {
-      // Skip if it's same node.
-      int64 id = node->id();
-      if (id == (*i)->id()) {
-        continue;
-      } else {
-        // Make sure title are not same.
-        EXPECT_NE(node->GetTitle(), (*i)->GetTitle());
+    for (std::vector<const BookmarkNode*>::const_iterator it = nodes.begin();
+         it != nodes.end(); ++it) {
+      if (node->id() != (*it)->id() &&
+          node->GetParent() == (*it)->GetParent() &&
+          node->GetTitle() == (*it)->GetTitle()){
+        return true;
       }
     }
-  }  // end of while
+  }
+  return false;
 }
 
 void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
@@ -114,7 +101,7 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
   }
 
   // Swing over to the other tree.
-  walker = model_->root_node();
+  walker = verifier_model_->root_node();
 
   // Climb down.
   while (!path.empty()) {
@@ -124,119 +111,100 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
     path.pop();
   }
 
-  ExpectBookmarkInfoMatch(foreign_node, walker);
+  ASSERT_TRUE(NodesMatch(foreign_node, walker));
   *result = walker;
 }
 
 const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
-    const BookmarkNode* parent, int index, const wstring& title) {
-  const BookmarkNode* v_parent = NULL;
-  FindNodeInVerifier(model, parent, &v_parent);
-  const BookmarkNode* result = model->AddGroup(parent, index,
-                                               WideToUTF16Hack(title));
+    const BookmarkNode* parent, int index, const string16& title) {
+  const BookmarkNode* result = model->AddGroup(parent, index, title);
   EXPECT_TRUE(result);
   if (!result)
     return NULL;
-  const BookmarkNode* v_node = model_->AddGroup(v_parent, index,
-                                                WideToUTF16Hack(title));
-  EXPECT_TRUE(v_node);
-  if (!v_node)
-    return NULL;
-  ExpectBookmarkInfoMatch(v_node, result);
+  if (use_verifier_model_) {
+    const BookmarkNode* v_parent = NULL;
+    FindNodeInVerifier(model, parent, &v_parent);
+    const BookmarkNode* v_node = verifier_model_->AddGroup(
+        v_parent, index, title);
+    EXPECT_TRUE(v_node);
+    if (!v_node)
+      return NULL;
+    EXPECT_TRUE(NodesMatch(v_node, result));
+  }
   return result;
 }
 
-const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
-    BookmarkModel* model, const BookmarkNode* parent, int index,
-    const wstring& title, int children_count) {
-  const BookmarkNode* bm_folder = AddGroup(model, parent, index, title);
-  EXPECT_TRUE(bm_folder);
-  if (!bm_folder)
-    return NULL;
-  for (int child_index = 0; child_index < children_count; child_index++) {
-    int random_int = base::RandInt(1, 100);
-    // To create randomness in order, 60% of time add bookmarks
-    if (random_int > 40) {
-      wstring child_bm_title(UTF16ToWideHack(bm_folder->GetTitle()));
-      child_bm_title.append(L"-ChildBM");
-      child_bm_title.append(UTF8ToWide(base::IntToString(index)));
-      string url("http://www.nofaviconurl");
-      url.append(base::IntToString(index));
-      url.append(".com");
-      const BookmarkNode* child_nofavicon_bm =
-         AddURL(model, bm_folder, child_index, child_bm_title, GURL(url));
-      EXPECT_TRUE(child_nofavicon_bm != NULL);
-    } else {
-      // Remaining % of time - Add Bookmark folders
-      wstring child_bmfolder_title(UTF16ToWideHack(bm_folder->GetTitle()));
-      child_bmfolder_title.append(L"-ChildBMFolder");
-      child_bmfolder_title.append(UTF8ToWide(base::IntToString(index)));
-      const BookmarkNode* child_bm_folder =
-          AddGroup(model, bm_folder, child_index, child_bmfolder_title);
-      EXPECT_TRUE(child_bm_folder != NULL);
-    }
-  }
-  return bm_folder;
-}
-
 const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
-    const BookmarkNode* parent, int index, const wstring& title,
-    const GURL& url) {
-  const BookmarkNode* v_parent = NULL;
-  FindNodeInVerifier(model, parent, &v_parent);
-  const BookmarkNode* result = model->AddURL(parent, index,
-                                             WideToUTF16Hack(title), url);
+                                                  const BookmarkNode* parent,
+                                                  int index,
+                                                  const string16& title,
+                                                  const GURL& url) {
+  const BookmarkNode* result = model->AddURL(parent, index, title, url);
   EXPECT_TRUE(result);
   if (!result)
     return NULL;
-  const BookmarkNode* v_node = model_->AddURL(v_parent, index,
-                                              WideToUTF16Hack(title), url);
-  EXPECT_TRUE(v_node);
-  if (!v_node)
-    return NULL;
-  ExpectBookmarkInfoMatch(v_node, result);
+  if (use_verifier_model_) {
+    const BookmarkNode* v_parent = NULL;
+    FindNodeInVerifier(model, parent, &v_parent);
+    const BookmarkNode* v_node =
+        verifier_model_->AddURL(v_parent, index, title, url);
+    EXPECT_TRUE(v_node);
+    if (!v_node)
+      return NULL;
+    EXPECT_TRUE(NodesMatch(v_node, result));
+  }
   return result;
 }
 
 void BookmarkModelVerifier::SetTitle(BookmarkModel* model,
                                      const BookmarkNode* node,
-                                     const wstring& title) {
-  const BookmarkNode* v_node = NULL;
-  FindNodeInVerifier(model, node, &v_node);
-  model->SetTitle(node, WideToUTF16Hack(title));
-  model_->SetTitle(v_node, WideToUTF16Hack(title));
+                                     const string16& title) {
+  if (use_verifier_model_) {
+    const BookmarkNode* v_node = NULL;
+    FindNodeInVerifier(model, node, &v_node);
+    verifier_model_->SetTitle(v_node, title);
+  }
+  model->SetTitle(node, title);
 }
 
-void BookmarkModelVerifier::Move(BookmarkModel* model, const BookmarkNode* node,
-                                 const BookmarkNode* new_parent, int index) {
-  const BookmarkNode* v_new_parent = NULL;
-  const BookmarkNode* v_node = NULL;
-  FindNodeInVerifier(model, new_parent, &v_new_parent);
-  FindNodeInVerifier(model, node, &v_node);
+void BookmarkModelVerifier::Move(BookmarkModel* model,
+                                 const BookmarkNode* node,
+                                 const BookmarkNode* new_parent,
+                                 int index) {
+  if (use_verifier_model_) {
+    const BookmarkNode* v_new_parent = NULL;
+    const BookmarkNode* v_node = NULL;
+    FindNodeInVerifier(model, new_parent, &v_new_parent);
+    FindNodeInVerifier(model, node, &v_node);
+    verifier_model_->Move(v_node, v_new_parent, index);
+  }
   model->Move(node, new_parent, index);
-  model_->Move(v_node, v_new_parent, index);
 }
 
 void BookmarkModelVerifier::Remove(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int index) {
-  const BookmarkNode* v_parent = NULL;
-  FindNodeInVerifier(model, parent, &v_parent);
-  ExpectBookmarkInfoMatch(parent->GetChild(index), v_parent->GetChild(index));
+  if (use_verifier_model_) {
+    const BookmarkNode* v_parent = NULL;
+    FindNodeInVerifier(model, parent, &v_parent);
+    ASSERT_TRUE(NodesMatch(parent->GetChild(index), v_parent->GetChild(index)));
+    verifier_model_->Remove(v_parent, index);
+  }
   model->Remove(parent, index);
-  model_->Remove(v_parent, index);
 }
 
 void BookmarkModelVerifier::SortChildren(BookmarkModel* model,
                                          const BookmarkNode* parent) {
-  const BookmarkNode* v_parent = NULL;
-  FindNodeInVerifier(model, parent, &v_parent);
+  if (use_verifier_model_) {
+    const BookmarkNode* v_parent = NULL;
+    FindNodeInVerifier(model, parent, &v_parent);
+    verifier_model_->SortChildren(v_parent);
+  }
   model->SortChildren(parent);
-  model_->SortChildren(v_parent);
 }
 
 void BookmarkModelVerifier::ReverseChildOrder(BookmarkModel* model,
-                                         const BookmarkNode* parent) {
+                                              const BookmarkNode* parent) {
   int child_count = parent->GetChildCount();
   if (child_count <= 0)
     return;
@@ -245,14 +213,16 @@ void BookmarkModelVerifier::ReverseChildOrder(BookmarkModel* model,
 }
 
 const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
-                                   const BookmarkNode* node,
-                                   const GURL& new_url) {
-  const BookmarkNode* v_node = NULL;
-  FindNodeInVerifier(model, node, &v_node);
-  const BookmarkNode* result = bookmark_utils::ApplyEditsWithNoGroupChange(
+                                                  const BookmarkNode* node,
+                                                  const GURL& new_url) {
+  if (use_verifier_model_) {
+    const BookmarkNode* v_node = NULL;
+    FindNodeInVerifier(model, node, &v_node);
+    bookmark_utils::ApplyEditsWithNoGroupChange(
+        verifier_model_, v_node->GetParent(),
+        BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url);
+  }
+  return bookmark_utils::ApplyEditsWithNoGroupChange(
       model, node->GetParent(), BookmarkEditor::EditDetails(node),
       node->GetTitle(), new_url);
-  bookmark_utils::ApplyEditsWithNoGroupChange(model_, v_node->GetParent(),
-      BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url);
-  return result;
 }

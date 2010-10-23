@@ -93,37 +93,41 @@ class LiveSyncTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {}
 
   // Used to get the number of sync clients used by a test.
-  int num_clients() { return num_clients_; }
+  int num_clients() WARN_UNUSED_RESULT { return num_clients_; }
 
   // Returns a pointer to a particular sync profile. Callee owns the object
   // and manages its lifetime.
-  Profile* GetProfile(int index);
+  Profile* GetProfile(int index) WARN_UNUSED_RESULT;
 
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
-  ProfileSyncServiceTestHarness* GetClient(int index);
+  ProfileSyncServiceTestHarness* GetClient(int index) WARN_UNUSED_RESULT;
 
   // Returns a reference to the collection of sync clients. Callee owns the
   // object and manages its lifetime.
-  std::vector<ProfileSyncServiceTestHarness*>& clients() {
+  std::vector<ProfileSyncServiceTestHarness*>& clients() WARN_UNUSED_RESULT {
     return clients_.get();
   }
 
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.
-  Profile* verifier();
+  Profile* verifier() WARN_UNUSED_RESULT;
 
   // Initializes sync clients and profiles but does not sync any of them.
-  virtual bool SetupClients();
+  virtual bool SetupClients() WARN_UNUSED_RESULT;
 
   // Initializes sync clients and profiles if required and syncs each of them.
-  virtual bool SetupSync();
+  virtual bool SetupSync() WARN_UNUSED_RESULT;
+
+  // Enable outgoing network connections for the given profile.
+  virtual void EnableNetwork(Profile* profile);
 
   // Disable outgoing network connections for the given profile.
   virtual void DisableNetwork(Profile* profile);
 
-  // Enable outgoing network connections for the given profile.
-  virtual void EnableNetwork(Profile* profile);
+  // Blocks until all sync clients have completed their mutual sync cycles.
+  // Returns true if a quiescent state was successfully reached.
+  bool AwaitQuiescence();
 
  protected:
   // InProcessBrowserTest override. Destroys all the sync clients and sync

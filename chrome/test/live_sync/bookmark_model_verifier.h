@@ -7,107 +7,119 @@
 #pragma once
 
 #include <string>
+
+#include "base/compiler_specific.h"
 #include "chrome/browser/profile.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class BookmarkModel;
 class BookmarkNode;
 
-// A tool to perform bookmark model operations on a model and have
-// the changes echoed in a "verifier" model that can be used as an expected
-// hierarchy to compare against.
-// Note when we refer to the "same" nodes in |model| and |model_| parameters,
-// we mean same the canonical bookmark entity, because |model_| is expected
-// to be a replica of |model|.
+// Helper class that performs operations on a bookmark model and echoes the
+// changes in a verifier model that can be used as an expected hierarchy to
+// compare against.
+// Note: When we refer to the "same" node in |model| and |verifier_model_|,
+// we mean the same canonical bookmark entity, because |verifier_model_| is
+// expected to be a replica of |model|.
 class BookmarkModelVerifier {
  public:
+  explicit BookmarkModelVerifier(BookmarkModel* model)
+      : verifier_model_(model),
+        use_verifier_model_(true) {}
+
   ~BookmarkModelVerifier() {}
 
-  // Creates a BookmarkModelVerifier using a BookmarkModel and waits until the
-  // model has loaded. Caller takes ownership.
-  static BookmarkModelVerifier* Create(BookmarkModel* model);
+  // Checks if the hierarchies in |model_a| and |model_b| are equivalent in
+  // terms of the data model. Compares favicons if |compare_favicons| is true.
+  // Returns true if they match.
+  // Note: Some peripheral fields like creation times are allowed to mismatch.
+  static bool ModelsMatch(BookmarkModel* model_a,
+                          BookmarkModel* model_b,
+                          bool compare_favicons) WARN_UNUSED_RESULT;
 
-  // Adds the same folder to |model| and |model_|.
-  // See BookmarkModel::AddGroup for details.
-  const BookmarkNode* AddGroup(BookmarkModel* model,
-                               const BookmarkNode* parent,
-                               int index,
-                               const std::wstring& title);
+  // Same as the above method, but does not check if the favicons match.
+  static bool ModelsMatch(BookmarkModel* model_a,
+                          BookmarkModel* model_b) WARN_UNUSED_RESULT {
+    return ModelsMatch(model_a, model_b, false);
+  }
 
-  // Adds the same non-empty folder to |model| and |model_|.
-  // It also adds specified number of childern (mix of bm and folder).
-  const BookmarkNode* AddNonEmptyGroup(BookmarkModel* model,
-                               const BookmarkNode* parent,
-                               int index,
-                               const std::wstring& title,
-                               int children_count);
+  // Checks if |model| contains any instances of two bookmarks with the same URL
+  // under the same parent folder. Returns true if even one instance is found.
+  static bool ContainsDuplicateBookmarks(BookmarkModel* model);
 
-  // Adds the same bookmark to |model| and |model_|.
-  // See BookmarkModel::AddURL for details.
+  // Checks if the favicon data in |bitmap_a| and |bitmap_b| are equivalent.
+  // Returns true if they match.
+  static bool FaviconsMatch(const SkBitmap& bitmap_a, const SkBitmap& bitmap_b);
+
+  // Adds the same bookmark to |model| and |verifier_model_|. See
+  // BookmarkModel::AddURL for details.
   const BookmarkNode* AddURL(BookmarkModel* model,
                              const BookmarkNode* parent,
                              int index,
-                             const std::wstring& title,
+                             const string16& title,
                              const GURL& url);
 
-  // Sets the title of the same node in |model| and |model_|.
-  // See BookmarkModel::SetTitle for details.
-  void SetTitle(BookmarkModel* model, const BookmarkNode* node,
-                const std::wstring& title);
+  // Adds the same folder to |model| and |verifier_model_|. See
+  // BookmarkModel::AddGroup for details.
+  const BookmarkNode* AddGroup(BookmarkModel* model,
+                               const BookmarkNode* parent,
+                               int index,
+                               const string16& title);
 
-  // Moves the same node to the same position in both |model| and |model_|.
-  // See BookmarkModel::Move for details.
+  // Sets the title of the same node in |model| and |verifier_model_|. See
+  // BookmarkModel::SetTitle for details.
+  void SetTitle(BookmarkModel* model,
+                const BookmarkNode* node,
+                const string16& title);
+
+  // Moves the same node to the same position in both |model| and
+  // |verifier_model_|. See BookmarkModel::Move for details.
   void Move(BookmarkModel* model,
             const BookmarkNode* node,
             const BookmarkNode* new_parent,
             int index);
 
-  // Removes the same node in |model| and |model_|.
-  // See BookmarkModel::Remove for details.
+  // Removes the same node from |model| and |verifier_model_|. See
+  // BookmarkModel::Remove for details.
   void Remove(BookmarkModel* model, const BookmarkNode* parent, int index);
 
-  // Sorts children of the same parent node in |model| and |model_|.
+  // Sorts children of the same parent node in |model| and |verifier_model_|.
   // See BookmarkModel::SortChildren for details.
   void SortChildren(BookmarkModel* model, const BookmarkNode* parent);
 
   // Reverses the order of children of the same parent node in |model|
-  // and |model_|.
+  // and |verifier_model_|.
   void ReverseChildOrder(BookmarkModel* model, const BookmarkNode* parent);
 
+  // Modifies the url contained in |node| to |new_url|.
   const BookmarkNode* SetURL(BookmarkModel* model,
-              const BookmarkNode* node,
-              const GURL& new_url);
+                             const BookmarkNode* node,
+                             const GURL& new_url);
 
-  // Asserts that the verifier model and |actual| are equivalent.
-  void ExpectMatch(BookmarkModel* actual);
-
-  // Asserts that the two hierarchies are equivalent in terms of the data model.
-  // (e.g some peripheral fields like creation times are allowed to mismatch).
-  static void ExpectModelsMatch(BookmarkModel* expected,
-                                BookmarkModel* actual) {
-    ExpectModelsMatchIncludingFavicon(expected, actual, false);
-  }
-
-  static void ExpectModelsMatchIncludingFavicon(BookmarkModel* expected,
-                                BookmarkModel* actual,
-                                bool compare_favicon);
-
-  static void VerifyNoDuplicates(BookmarkModel* model);
-
- private:
-  explicit BookmarkModelVerifier(BookmarkModel* model);
   void FindNodeInVerifier(BookmarkModel* foreign_model,
                           const BookmarkNode* foreign_node,
                           const BookmarkNode** result);
 
-  // Does a deep comparison of BookmarkNode fields between the two parameters,
-  // and asserts equality.
-  static void ExpectBookmarkInfoMatch(const BookmarkNode* expected,
-                                      const BookmarkNode* actual);
+  // Does a deep comparison of BookmarkNode fields in |model_a| and |model_b|.
+  // Returns true if they are all equal.
+  static bool NodesMatch(
+      const BookmarkNode* model_a, const BookmarkNode* model_b);
 
+  bool use_verifier_model() const { return use_verifier_model_; }
+
+  void set_use_verifier_model(bool use_verifier_model) {
+    use_verifier_model_ = use_verifier_model;
+  }
+
+ private:
   // A pointer to the BookmarkModel object within the verifier_profile_ object
   // in class LiveSyncTest. All verifications are done against this object.
-  BookmarkModel* model_;
+  BookmarkModel* verifier_model_;
+
+  // A flag that indicates whether bookmark operations should also update the
+  // verifier model or not.
+  bool use_verifier_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelVerifier);
 };

@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLivePreferencesSyncTest, Sanity) {
     GetClient(i)->AwaitGroupSyncCycleCompletion(clients());
   }
   for (int i = 1; i < num_clients(); ++i) {
-    EXPECT_TRUE(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)->
+    ASSERT_TRUE(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)->
         Equals(GetPrefs(i)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
   }
 }

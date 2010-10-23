@@ -382,6 +382,10 @@ void LiveSyncTest::DisableNetwork(Profile* profile) {
   net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 }
 
+bool LiveSyncTest::AwaitQuiescence() {
+  return ProfileSyncServiceTestHarness::AwaitQuiescence(clients());
+}
+
 void LiveSyncTest::SetProxyConfig(URLRequestContextGetter* context_getter,
                                   const net::ProxyConfig& proxy_config) {
   base::WaitableEvent done(false, false);
