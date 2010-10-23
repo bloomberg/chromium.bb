@@ -55,7 +55,6 @@ class SimpleDataSource : public media::DataSource,
   virtual void OnCompletedRequest(const URLRequestStatus& status,
                                   const std::string& security_info,
                                   const base::Time& completion_time);
-  virtual GURL GetURLForDebugging() const;
 
  private:
   // Updates |url_| and |media_format_| with the given URL.

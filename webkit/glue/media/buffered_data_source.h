@@ -123,7 +123,6 @@ class BufferedResourceLoader :
       const URLRequestStatus& status,
       const std::string& security_info,
       const base::Time& completion_time);
-  GURL GetURLForDebugging() const { return url_; }
 
  protected:
   friend class base::RefCountedThreadSafe<BufferedResourceLoader>;

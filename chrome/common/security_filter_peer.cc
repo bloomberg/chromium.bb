@@ -90,10 +90,6 @@ void SecurityFilterPeer::OnCompletedRequest(const URLRequestStatus& status,
   NOTREACHED();
 }
 
-GURL SecurityFilterPeer::GetURLForDebugging() const {
-  return original_peer_->GetURLForDebugging();
-}
-
 // static
 void ProcessResponseInfo(
     const webkit_glue::ResourceResponseInfo& info_in,

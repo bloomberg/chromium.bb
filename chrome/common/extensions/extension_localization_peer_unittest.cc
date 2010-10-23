@@ -72,7 +72,6 @@ class MockResourceLoaderBridgePeer
       const URLRequestStatus& status,
       const std::string& security_info,
       const base::Time& completion_time));
-  MOCK_CONST_METHOD0(GetURLForDebugging, GURL());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockResourceLoaderBridgePeer);
@@ -153,7 +152,6 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   // It will self-delete once it exits OnCompletedRequest.
   ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
-  EXPECT_CALL(*original_peer_, GetURLForDebugging()).Times(0);
   EXPECT_CALL(*original_peer_, OnReceivedData(_, _)).Times(0);
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
@@ -172,7 +170,6 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
 
   SetData(filter_peer, "some text");
 
-  EXPECT_CALL(*original_peer_, GetURLForDebugging()).Times(0);
   EXPECT_CALL(*sender_, Send(_));
 
   std::string data = GetData(filter_peer);
@@ -208,7 +205,6 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
 
   SetData(filter_peer, "some __MSG_text__");
 
-  EXPECT_CALL(*original_peer_, GetURLForDebugging()).Times(0);
   // We already have messages in memory, Send will be skipped.
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
@@ -240,7 +236,6 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   std::string message("some __MSG_missing_message__");
   SetData(filter_peer, message);
 
-  EXPECT_CALL(*original_peer_, GetURLForDebugging()).Times(0);
   // We already have messages in memory, Send will be skipped.
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -293,7 +293,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
       const URLRequestStatus& status,
       const std::string& security_info,
       const base::Time& completion_time);
-  virtual GURL GetURLForDebugging() const;
 
  private:
   friend class base::RefCounted<Context>;
@@ -656,10 +655,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   // to ourselves that we took on behalf of the bridge.  This may cause our
   // destruction.
   Release();
-}
-
-GURL WebURLLoaderImpl::Context::GetURLForDebugging() const {
-  return request_.url();
 }
 
 void WebURLLoaderImpl::Context::HandleDataURL() {

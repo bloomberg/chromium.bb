@@ -306,10 +306,6 @@ class ResourceLoaderBridge {
     virtual void OnCompletedRequest(const URLRequestStatus& status,
                                     const std::string& security_info,
                                     const base::Time& completion_time) = 0;
-
-    // Returns the URL of the request, which allows us to display it in
-    // debugging situations.
-    virtual GURL GetURLForDebugging() const = 0;
   };
 
   // use Create() for construction, but anybody can delete at any time,

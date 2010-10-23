@@ -69,10 +69,6 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
     complete_ = true;
   }
 
-  virtual GURL GetURLForDebugging() const {
-    return GURL();
-  }
-
   const std::string& data() const {
     return data_;
   }
@@ -291,10 +287,6 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual void OnCompletedRequest(const URLRequestStatus& status,
                                   const std::string& security_info,
                                   const base::Time& completion_time) {
-  }
-
-  virtual GURL GetURLForDebugging() const {
-    return GURL();
   }
 
  protected:

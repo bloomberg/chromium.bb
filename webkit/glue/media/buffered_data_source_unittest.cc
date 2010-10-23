@@ -79,7 +79,6 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     loader_ = new BufferedResourceLoader(&bridge_factory_, gurl_,
                                          first_position_, last_position_);
-    EXPECT_EQ(gurl_.spec(), loader_->GetURLForDebugging().spec());
   }
 
   void SetLoaderBuffer(size_t forward_capacity, size_t backward_capacity) {

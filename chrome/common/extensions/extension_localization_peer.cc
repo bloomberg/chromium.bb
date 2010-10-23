@@ -90,10 +90,6 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnCompletedRequest(status, security_info, completion_time);
 }
 
-GURL ExtensionLocalizationPeer::GetURLForDebugging() const {
-  return original_peer_->GetURLForDebugging();
-}
-
 void ExtensionLocalizationPeer::ReplaceMessages() {
   if (!message_sender_ || data_.empty())
     return;
