@@ -89,6 +89,59 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>oga</string>
+				<string>ogg</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>audio/ogg</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>HTML5 Audio (Ogg)</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>ogv</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>video/ogg</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>HTML5 Video (Ogg)</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>png</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>image/png</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>PNG image</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>PNGf</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>txt</string>
 				<string>text</string>
 			</array>
@@ -110,20 +163,16 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>png</string>
+				<string>webm</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
-				<string>image/png</string>
+				<string>video/webm</string>
 			</array>
 			<key>CFBundleTypeName</key>
-			<string>PNG image</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>PNGf</string>
-			</array>
+			<string>HTML5 Video (WebM)</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 		</dict>
@@ -152,8 +201,8 @@
 	<string>${CHROMIUM_CREATOR}</string>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
-  <key>OSAScriptingDefinition</key>
-    <string>scripting.sdef</string>
+	<key>OSAScriptingDefinition</key>
+	<string>scripting.sdef</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
