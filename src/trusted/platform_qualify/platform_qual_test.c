@@ -19,15 +19,15 @@
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
-#include "native_client/src/trusted/platform_qualify/vcpuid.h"
 
 int main() {
 
 /*
  * TODO(bradchen): need to fix vcpuid to use intrinsics rather than inline
  * assembly code. (Issue 440)
+ * Also port this to non-x86 platforms.
  */
-#if !(NACL_WINDOWS && NACL_BUILD_SUBARCH == 64)
+#if 0
   if (!CPUIDImplIsValid()) return -1;
   printf("CPUID implementation looks okay\n");
   if (NaCl_ThisCPUIsBlacklisted()) return -1;

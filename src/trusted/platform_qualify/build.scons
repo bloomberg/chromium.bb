@@ -5,6 +5,15 @@
 
 Import('env')
 
+#
+# We do not build the Platform Qualification support when we're doing a tools
+# cross compile.  This flavor of build produces tools for working with target
+# binaries (say, ARM) on the host (say, x86).  Because by definition Platform
+# Qualification must run on the target, none of this makes sense for a tools
+# cross compile.
+if env['BUILD_ARCHITECTURE'] != env['TARGET_ARCHITECTURE']:
+  Return()
+
 
 pql_inputs = [];
 
@@ -27,7 +36,7 @@ elif env.Bit('linux'):
 #
 # Architecture-specific qualification routines
 #
-if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
+if env['TARGET_ARCHITECTURE'] == 'x86':
   pql_inputs += ['arch/x86/nacl_cpuwhitelist.c']
 
   # Make sure CPUID is present and truthful
@@ -53,15 +62,12 @@ if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
   elif env['TARGET_SUBARCH'] == '32':
     pql_inputs += ['arch/x86_32/nacl_dep_qualify_arch.c']
 
-# TODO(bradchen): re-enable when issue 440 is fixed
-#  env.ComponentProgram('platform_qual_test',
-#                       'arch/x86/platform_qual_test.c')
   env.ComponentProgram('nacl_cpuwhitelist_test',
                        'arch/x86/nacl_cpuwhitelist_test.c')
 
 
 
-if env['BUILD_ARCHITECTURE'] == 'arm':
+if env['TARGET_ARCHITECTURE'] == 'arm':
   # Compile ARM primitives for checking XN functionality
   pql_inputs += ['arch/arm/nacl_dep_qualify_arch.c']
 
@@ -71,6 +77,17 @@ if env['BUILD_ARCHITECTURE'] == 'arm':
 # ----------------------------------------------------------
 env.DualLibrary('platform_qual_lib', pql_inputs)
 
+# TODO(noelallen): enable this for Windows test when signal handling is a
+# separate library.
+if not env.Bit('windows'):
+  platform_qual_test = env.ComponentProgram('platform_qual_test',
+                                            ['platform_qual_test.c'],
+                                            LIBS=['platform_qual_lib',
+                                                  '${OPTIONAL_COVERAGE_LIBS}'])
+  test_node = env.CommandTest('platform_qual_test.out',
+                              command=[platform_qual_test])
+  if env.PlatformQualificationTestsEnabled():
+    env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_platform_qual_test')
 
 # These tests use assembly which seem to make the coverage instrumentation
 # on windows unhappy. Disable them for now on coverage for windows.
