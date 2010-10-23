@@ -353,9 +353,9 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean ClientEvent(GtkWidget* widget, GdkEventClient* event,
                               RenderWidgetHostViewGtk* host_view) {
-    LOG(INFO) << "client event type: " << event->message_type
-              << " data_format: " << event->data_format
-              << " data: " << event->data.l;
+    VLOG(1) << "client event type: " << event->message_type
+            << " data_format: " << event->data_format
+            << " data: " << event->data.l;
     return true;
   }
 

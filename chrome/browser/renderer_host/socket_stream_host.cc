@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ SocketStreamHost::SocketStreamHost(
       receiver_(receiver),
       socket_id_(socket_id) {
   DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
-  LOG(INFO) << "SocketStreamHost: socket_id=" << socket_id_;
+  VLOG(1) << "SocketStreamHost: socket_id=" << socket_id_;
 }
 
 /* static */
@@ -46,15 +46,14 @@ SocketStreamHost::GetSocketStreamHost(net::SocketStream* socket) {
 }
 
 SocketStreamHost::~SocketStreamHost() {
-  LOG(INFO) << "SocketStreamHost destructed socket_id=" << socket_id_;
-  if (!receiver_->Send(new ViewMsg_SocketStream_Closed(socket_id_))) {
+  VLOG(1) << "SocketStreamHost destructed socket_id=" << socket_id_;
+  if (!receiver_->Send(new ViewMsg_SocketStream_Closed(socket_id_)))
     LOG(ERROR) << "ViewMsg_SocketStream_Closed failed.";
-  }
   socket_->DetachDelegate();
 }
 
 void SocketStreamHost::Connect(const GURL& url) {
-  LOG(INFO) << "SocketStreamHost::Connect url=" << url;
+  VLOG(1) << "SocketStreamHost::Connect url=" << url;
   socket_ = net::SocketStreamJob::CreateSocketStreamJob(url, delegate_);
   URLRequestContextGetter* context_getter = Profile::GetDefaultRequestContext();
   if (context_getter)
@@ -64,17 +63,15 @@ void SocketStreamHost::Connect(const GURL& url) {
 }
 
 bool SocketStreamHost::SendData(const std::vector<char>& data) {
-  LOG(INFO) << "SocketStreamHost::SendData";
-  if (!socket_)
-    return false;
-  return socket_->SendData(&data[0], data.size());
+  VLOG(1) << "SocketStreamHost::SendData";
+  return socket_ && socket_->SendData(&data[0], data.size());
 }
 
 void SocketStreamHost::Close() {
-  LOG(INFO) << "SocketStreamHost::Close";
+  VLOG(1) << "SocketStreamHost::Close";
   if (!socket_)
     return;
-  return socket_->Close();
+  socket_->Close();
 }
 
 bool SocketStreamHost::Connected(int max_pending_send_allowed) {

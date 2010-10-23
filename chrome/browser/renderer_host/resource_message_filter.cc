@@ -1492,7 +1492,7 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
       return;
   }
 
-  LOG(INFO) << "Dispatching keygen task to worker pool.";
+  VLOG(1) << "Dispatching keygen task to worker pool.";
   // Dispatch to worker pool, so we do not block the IO thread.
   if (!WorkerPool::PostTask(
            FROM_HERE,

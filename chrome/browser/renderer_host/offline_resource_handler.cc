@@ -68,7 +68,7 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
   if (ShouldShowOfflinePage(url)) {
     deferred_request_id_ = request_id;
     deferred_url_ = url;
-    DLOG(INFO) << "WillStart: this=" << this << ", request id=" << request_id;
+    DVLOG(1) << "WillStart: this=" << this << ", request id=" << request_id;
     AddRef();  //  Balanced with OnBlockingPageComplete
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -148,8 +148,7 @@ void OfflineResourceHandler::Resume() {
 
   DCHECK_NE(request_id, -1);
   bool defer = false;
-  DLOG(INFO) << "Resume load: this=" << this
-             << ", request id=" << request_id;
+  DVLOG(1) << "Resume load: this=" << this << ", request id=" << request_id;
   next_handler_->OnWillStart(request_id, url, &defer);
   if (!defer)
     rdh_->StartDeferredRequest(process_host_id_, request_id);

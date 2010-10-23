@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,9 +69,8 @@ void SocketStreamDispatcherHost::OnConnected(net::SocketStream* socket,
       SocketStreamHost::GetSocketStreamHost(socket);
   DCHECK(socket_stream_host);
   int socket_id = socket_stream_host->socket_id();
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnConnected socket_id="
-             << socket_id
-             << " max_pending_send_allowed=" << max_pending_send_allowed;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnConnected socket_id=" << socket_id
+           << " max_pending_send_allowed=" << max_pending_send_allowed;
   if (socket_id == chrome_common_net::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnConnected";
     return;
@@ -88,9 +87,8 @@ void SocketStreamDispatcherHost::OnSentData(net::SocketStream* socket,
       SocketStreamHost::GetSocketStreamHost(socket);
   DCHECK(socket_stream_host);
   int socket_id = socket_stream_host->socket_id();
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnSentData socket_id="
-             << socket_id
-             << " amount_sent=" << amount_sent;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnSentData socket_id=" << socket_id
+           << " amount_sent=" << amount_sent;
   if (socket_id == chrome_common_net::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnReceivedData";
     return;
@@ -107,8 +105,8 @@ void SocketStreamDispatcherHost::OnReceivedData(
       SocketStreamHost::GetSocketStreamHost(socket);
   DCHECK(socket_stream_host);
   int socket_id = socket_stream_host->socket_id();
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
-             << socket_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnReceiveData socket_id="
+           << socket_id;
   if (socket_id == chrome_common_net::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnReceivedData";
     return;
@@ -124,8 +122,7 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
       SocketStreamHost::GetSocketStreamHost(socket);
   DCHECK(socket_stream_host);
   int socket_id = socket_stream_host->socket_id();
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnClosed socket_id="
-             << socket_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnClosed socket_id=" << socket_id;
   if (socket_id == chrome_common_net::kNoSocketId) {
     LOG(ERROR) << "NoSocketId in OnClose";
     return;
@@ -135,8 +132,8 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
 
 // Message handlers called by OnMessageReceived.
 void SocketStreamDispatcherHost::OnConnect(const GURL& url, int socket_id) {
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnConnect url=" << url
-             << " socket_id=" << socket_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnConnect url=" << url
+           << " socket_id=" << socket_id;
   DCHECK_NE(chrome_common_net::kNoSocketId, socket_id);
   DCHECK(receiver_);
   if (LookupHostMap(receiver_->id(), socket_id)) {
@@ -148,13 +145,12 @@ void SocketStreamDispatcherHost::OnConnect(const GURL& url, int socket_id) {
       new SocketStreamHost(this, receiver_, socket_id);
   AddHostMap(receiver_->id(), socket_id, socket_stream_host);
   socket_stream_host->Connect(url);
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;
 }
 
 void SocketStreamDispatcherHost::OnSendData(
     int socket_id, const std::vector<char>& data) {
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnSendData socket_id="
-             << socket_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnSendData socket_id=" << socket_id;
   DCHECK(receiver_);
   SocketStreamHost* socket_stream_host =
       LookupHostMap(receiver_->id(), socket_id);
@@ -170,8 +166,7 @@ void SocketStreamDispatcherHost::OnSendData(
 }
 
 void SocketStreamDispatcherHost::OnCloseReq(int socket_id) {
-  DLOG(INFO) << "SocketStreamDispatcherHost::OnCloseReq socket_id="
-             << socket_id;
+  DVLOG(1) << "SocketStreamDispatcherHost::OnCloseReq socket_id=" << socket_id;
   DCHECK(receiver_);
   SocketStreamHost* socket_stream_host =
       LookupHostMap(receiver_->id(), socket_id);

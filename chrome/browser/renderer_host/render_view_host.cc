@@ -89,7 +89,7 @@ void FilterURL(ChildProcessSecurityPolicy* policy, int renderer_id, GURL* url) {
     // If this renderer is not permitted to request this URL, we invalidate the
     // URL.  This prevents us from storing the blocked URL and becoming confused
     // later.
-    LOG(INFO) << "Blocked URL " << url->spec();
+    VLOG(1) << "Blocked URL " << url->spec();
     *url = GURL();
   }
 }
@@ -1192,11 +1192,11 @@ void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
     int error_code,
     const GURL& url,
     bool showing_repost_interstitial) {
-  LOG(INFO) << "Failed Provisional Load: " << url.possibly_invalid_spec()
-            << ", error_code: " << error_code
-            << " is_main_frame: " << is_main_frame
-            << " showing_repost_interstitial: " << showing_repost_interstitial
-            << " frame_id: " << frame_id;
+  VLOG(1) << "Failed Provisional Load: " << url.possibly_invalid_spec()
+          << ", error_code: " << error_code
+          << " is_main_frame: " << is_main_frame
+          << " showing_repost_interstitial: " << showing_repost_interstitial
+          << " frame_id: " << frame_id;
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
             process()->id(), &validated_url);

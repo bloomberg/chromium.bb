@@ -78,15 +78,6 @@
 #include "chrome/browser/renderer_host/offline_resource_handler.h"
 #endif
 
-// Uncomment to enable logging of request traffic.
-// #define LOG_RESOURCE_DISPATCHER_REQUESTS
-
-#ifdef LOG_RESOURCE_DISPATCHER_REQUESTS
-# define RESOURCE_LOG(stuff) LOG(INFO) << stuff
-#else
-# define RESOURCE_LOG(stuff)
-#endif
-
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -143,8 +134,8 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
 
   // Check if the renderer is permitted to request the requested URL.
   if (!policy->CanRequestURL(child_id, request_data.url)) {
-    LOG(INFO) << "Denied unauthorized request for " <<
-        request_data.url.possibly_invalid_spec();
+    VLOG(1) << "Denied unauthorized request for "
+            << request_data.url.possibly_invalid_spec();
     return false;
   }
 
@@ -462,7 +453,7 @@ void ResourceDispatcherHost::BeginRequest(
   if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
       && !ChildProcessSecurityPolicy::GetInstance()->
               CanReadRawCookies(child_id)) {
-    LOG(INFO) << "Denied unathorized request for raw headers";
+    VLOG(1) << "Denied unathorized request for raw headers";
     load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
   }
 
@@ -704,8 +695,8 @@ void ResourceDispatcherHost::BeginDownload(
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicy::GetInstance()->
           CanRequestURL(child_id, url)) {
-    LOG(INFO) << "Denied unauthorized download request for " <<
-        url.possibly_invalid_spec();
+    VLOG(1) << "Denied unauthorized download request for "
+            << url.possibly_invalid_spec();
     return;
   }
 
@@ -733,8 +724,8 @@ void ResourceDispatcherHost::BeginDownload(
   }
 
   if (!URLRequest::IsHandledURL(url)) {
-    LOG(INFO) << "Download request for unsupported protocol: " <<
-        url.possibly_invalid_spec();
+    VLOG(1) << "Download request for unsupported protocol: "
+            << url.possibly_invalid_spec();
     return;
   }
 
@@ -876,7 +867,7 @@ void ResourceDispatcherHost::PauseRequest(int child_id,
   }
   info->set_pause_count(pause_count);
 
-  RESOURCE_LOG("To pause (" << pause << "): " << i->second->url().spec());
+  VLOG(1) << "To pause (" << pause << "): " << i->second->url().spec();
 
   // If we're resuming, kick the request to start reading again. Run the read
   // asynchronously to avoid recursion problems.
@@ -1006,7 +997,7 @@ void ResourceDispatcherHost::RemovePendingRequest(
 void ResourceDispatcherHost::OnReceivedRedirect(URLRequest* request,
                                                 const GURL& new_url,
                                                 bool* defer_redirect) {
-  RESOURCE_LOG("OnReceivedRedirect: " << request->url().spec());
+  VLOG(1) << "OnReceivedRedirect: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   DCHECK(request->status().is_success());
@@ -1014,8 +1005,8 @@ void ResourceDispatcherHost::OnReceivedRedirect(URLRequest* request,
   if (info->process_type() != ChildProcessInfo::PLUGIN_PROCESS &&
       !ChildProcessSecurityPolicy::GetInstance()->
           CanRequestURL(info->child_id(), new_url)) {
-    LOG(INFO) << "Denied unauthorized request for " <<
-        new_url.possibly_invalid_spec();
+    VLOG(1) << "Denied unauthorized request for "
+            << new_url.possibly_invalid_spec();
 
     // Tell the renderer that this request was disallowed.
     CancelRequestInternal(request, false);
@@ -1086,7 +1077,7 @@ void ResourceDispatcherHost::OnSSLCertificateError(
 void ResourceDispatcherHost::OnSetCookie(URLRequest* request,
                                          const std::string& cookie_line,
                                          bool blocked_by_policy) {
-  RESOURCE_LOG("OnSetCookie: " << request->url().spec());
+  VLOG(1) << "OnSetCookie: " << request->url().spec();
 
   int render_process_id, render_view_id;
   if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
@@ -1099,10 +1090,10 @@ void ResourceDispatcherHost::OnSetCookie(URLRequest* request,
 }
 
 void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
-  RESOURCE_LOG("OnResponseStarted: " << request->url().spec());
+  VLOG(1) << "OnResponseStarted: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
   if (PauseRequestIfNeeded(info)) {
-    RESOURCE_LOG("OnResponseStarted pausing: " << request->url().spec());
+    VLOG(1) << "OnResponseStarted pausing: " << request->url().spec();
     return;
   }
 
@@ -1118,7 +1109,7 @@ void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
     } else {
       // Check if the handler paused the request in their OnResponseStarted.
       if (PauseRequestIfNeeded(info)) {
-        RESOURCE_LOG("OnResponseStarted pausing2: " << request->url().spec());
+        VLOG(1) << "OnResponseStarted pausing2: " << request->url().spec();
         return;
       }
 
@@ -1176,7 +1167,7 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
 
 void ResourceDispatcherHost::CancelRequestInternal(URLRequest* request,
                                                    bool from_renderer) {
-  RESOURCE_LOG("CancelRequest: " << request->url().spec());
+  VLOG(1) << "CancelRequest: " << request->url().spec();
 
   // WebKit will send us a cancel for downloads since it no longer handles them.
   // In this case, ignore the cancel since we handle downloads in the browser.
@@ -1347,7 +1338,7 @@ void ResourceDispatcherHost::ResumeRequest(const GlobalRequestID& request_id) {
   if (!info->is_paused())
     return;
 
-  RESOURCE_LOG("Resuming: " << i->second->url().spec());
+  VLOG(1) << "Resuming: " << i->second->url().spec();
 
   info->set_is_paused(false);
 
@@ -1395,7 +1386,7 @@ bool ResourceDispatcherHost::Read(URLRequest* request, int* bytes_read) {
 void ResourceDispatcherHost::OnReadCompleted(URLRequest* request,
                                              int bytes_read) {
   DCHECK(request);
-  RESOURCE_LOG("OnReadCompleted: " << request->url().spec());
+  VLOG(1) << "OnReadCompleted: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   // OnReadCompleted can be called without Read (e.g., for chrome:// URLs).
@@ -1404,7 +1395,7 @@ void ResourceDispatcherHost::OnReadCompleted(URLRequest* request,
 
   if (PauseRequestIfNeeded(info)) {
     info->set_paused_read_bytes(bytes_read);
-    RESOURCE_LOG("OnReadCompleted pausing: " << request->url().spec());
+    VLOG(1) << "OnReadCompleted pausing: " << request->url().spec();
     return;
   }
 
@@ -1434,8 +1425,8 @@ void ResourceDispatcherHost::OnReadCompleted(URLRequest* request,
 
   if (PauseRequestIfNeeded(info)) {
     info->set_paused_read_bytes(bytes_read);
-    RESOURCE_LOG("OnReadCompleted (CompleteRead) pausing: " <<
-                 request->url().spec());
+    VLOG(1) << "OnReadCompleted (CompleteRead) pausing: "
+            << request->url().spec();
     return;
   }
 
@@ -1463,7 +1454,7 @@ bool ResourceDispatcherHost::CompleteRead(URLRequest* request,
 }
 
 void ResourceDispatcherHost::OnResponseCompleted(URLRequest* request) {
-  RESOURCE_LOG("OnResponseCompleted: " << request->url().spec());
+  VLOG(1) << "OnResponseCompleted: " << request->url().spec();
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
   // If the load for a main frame has failed, track it in a histogram,

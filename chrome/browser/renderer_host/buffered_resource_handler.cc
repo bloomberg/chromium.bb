@@ -174,7 +174,7 @@ bool BufferedResourceHandler::DelayResponse() {
     // is.  That means we need to delay sending the ResponseStarted message
     // over the IPC channel.
     sniff_content_ = true;
-    LOG(INFO) << "To buffer: " << request_->url().spec();
+    VLOG(1) << "To buffer: " << request_->url().spec();
     return true;
   }
 
