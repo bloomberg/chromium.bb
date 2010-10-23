@@ -220,9 +220,9 @@ void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
                                       UpdatedRects* rects,
                                       Task* done) {
   if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewTracedMethod(this,
-                                          &PepperView::OnPartialFrameOutput,
-                                          frame, rects, done));
+    RunTaskOnPluginThread(
+        NewTracedMethod(this, &PepperView::OnPartialFrameOutput,
+                        make_scoped_refptr(frame), rects, done));
     return;
   }
 
