@@ -58,6 +58,14 @@ ClientSocket::UseHistory::~UseHistory() {
   EmitPreconnectionHistograms();
 }
 
+void ClientSocket::UseHistory::Reset() {
+  EmitPreconnectionHistograms();
+  was_ever_connected_ = false;
+  was_used_to_convey_data_ = false;
+  // omnibox_speculation_ and subresource_speculation_ values
+  // are intentionally preserved.
+}
+
 void ClientSocket::UseHistory::EmitPreconnectionHistograms() const {
   DCHECK(!subresource_speculation_ || !omnibox_speculation_);
   // 0 ==> non-speculative, never connected.
