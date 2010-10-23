@@ -2086,6 +2086,9 @@ void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
 bool RenderView::runFileChooser(
     const WebKit::WebFileChooserParams& params,
     WebFileChooserCompletion* chooser_completion) {
+  // Do not open the file dialog in a hidden RenderView.
+  if (is_hidden())
+    return false;
   ViewHostMsg_RunFileChooser_Params ipc_params;
   if (params.directory)
     ipc_params.mode = ViewHostMsg_RunFileChooser_Params::OpenFolder;

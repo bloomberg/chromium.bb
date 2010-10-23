@@ -47,6 +47,9 @@ void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
   blocked_contents_.push_back(
       BlockedContent(tab_contents, disposition, bounds, user_gesture));
   tab_contents->set_delegate(this);
+  // Since the new tab_contents will not be showed, call WasHidden to change
+  // its status on both RenderViewHost and RenderView.
+  tab_contents->WasHidden();
   if (blocked_contents_.size() == 1)
     owner_->PopupNotificationVisibilityChanged(true);
 }
@@ -62,6 +65,8 @@ void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
       blocked_contents_.erase(i);
       i = blocked_contents_.end();
       tab_contents->set_delegate(NULL);
+      // We needn't call WasRestored to change its status because the
+      // TabContents::AddNewContents will do it.
       owner_->AddNewContents(tab_contents, content.disposition, content.bounds,
                              content.user_gesture);
       break;
