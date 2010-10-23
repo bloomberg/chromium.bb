@@ -21,8 +21,7 @@ TEST(AutoFillCreditCardSheetControllerTest, Basic) {
   scoped_nsobject<AutoFillCreditCardSheetController> controller(
       [[AutoFillCreditCardSheetController alloc]
           initWithCreditCard:credit_card
-                        mode:kAutoFillCreditCardAddMode
-                  controller:nil]);
+                        mode:kAutoFillCreditCardAddMode]);
   EXPECT_TRUE(controller.get());
 }
 

@@ -530,24 +530,7 @@ class AutoFillCreditCardEditor {
  private:
   friend class DeleteTask<AutoFillCreditCardEditor>;
 
-  // Types of columns in the address_store_.
-  enum ColumnTypes {
-    // Unique if of the CreditCard.
-    COL_ID,
-
-    // Title of the column.
-    COL_TITLE,
-
-    COL_COUNT
-  };
-
   virtual ~AutoFillCreditCardEditor() {}
-
-  // Creates the GtkListStore used to show the billing addresses.
-  GtkListStore* CreateAddressStore();
-
-  // Creates the combobox used to show the billing addresses.
-  GtkWidget* CreateAddressWidget();
 
   // Creates the combobox for choosing the month.
   GtkWidget* CreateMonthWidget();
@@ -601,13 +584,10 @@ class AutoFillCreditCardEditor {
 
   GtkWidget* dialog_;
   GtkWidget* name_;
-  GtkWidget* address_;
   GtkWidget* number_;
   GtkWidget* month_;
   GtkWidget* year_;
   GtkWidget* ok_button_;
-
-  GtkListStore* address_store_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillCreditCardEditor);
 };
@@ -631,11 +611,7 @@ AutoFillCreditCardEditor::AutoFillCreditCardEditor(
   if (credit_card) {
     SetWidgetValues(credit_card);
   } else {
-    // We're creating a new credit card. Select a default billing address (if
-    // there are any) and select January of next year.
-    PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
-    if (!data_manager->profiles().empty())
-      gtk_combo_box_set_active(GTK_COMBO_BOX(address_), 0);
+    // We're creating a new credit card. Select January of next year by default.
     gtk_combo_box_set_active(GTK_COMBO_BOX(month_), 0);
     gtk_combo_box_set_active(GTK_COMBO_BOX(year_), 1);
   }
@@ -650,54 +626,6 @@ AutoFillCreditCardEditor::AutoFillCreditCardEditor(
       IDS_AUTOFILL_DIALOG_EDIT_CCARD_HEIGHT_LINES,
       true);
   gtk_util::PresentWindow(dialog_, gtk_get_current_event_time());
-}
-
-GtkListStore* AutoFillCreditCardEditor::CreateAddressStore() {
-  GtkListStore* store =
-      gtk_list_store_new(COL_COUNT, G_TYPE_INT, G_TYPE_STRING);
-
-  GtkTreeIter iter;
-
-  PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
-  for (std::vector<AutoFillProfile*>::const_iterator i =
-           data_manager->profiles().begin();
-       i != data_manager->profiles().end(); ++i) {
-    FieldTypeSet fields;
-    (*i)->GetAvailableFieldTypes(&fields);
-    if (fields.find(ADDRESS_HOME_LINE1) == fields.end() &&
-        fields.find(ADDRESS_HOME_LINE2) == fields.end() &&
-        fields.find(ADDRESS_HOME_APT_NUM) == fields.end() &&
-        fields.find(ADDRESS_HOME_CITY) == fields.end() &&
-        fields.find(ADDRESS_HOME_STATE) == fields.end() &&
-        fields.find(ADDRESS_HOME_ZIP) == fields.end() &&
-        fields.find(ADDRESS_HOME_COUNTRY) == fields.end()) {
-      // No address information in this profile; it's useless as a billing
-      // address.
-      continue;
-    }
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(
-        store, &iter,
-        COL_ID, (*i)->unique_id(),
-        COL_TITLE, UTF16ToUTF8((*i)->PreviewSummary()).c_str(),
-        -1);
-  }
-  return store;
-}
-
-GtkWidget* AutoFillCreditCardEditor::CreateAddressWidget() {
-  address_store_ = CreateAddressStore();
-
-  GtkWidget* widget = gtk_combo_box_new_with_model(
-      GTK_TREE_MODEL(address_store_));
-  g_object_unref(address_store_);
-
-  GtkCellRenderer* cell = gtk_cell_renderer_text_new();
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), cell, TRUE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), cell,
-                                  "text", COL_TITLE, NULL);
-  return widget;
 }
 
 GtkWidget* AutoFillCreditCardEditor::CreateMonthWidget() {
@@ -723,15 +651,11 @@ GtkWidget* AutoFillCreditCardEditor::CreateYearWidget() {
 }
 
 void AutoFillCreditCardEditor::Init() {
-  TableBuilder main_table_builder(8, 2);
+  TableBuilder main_table_builder(6, 2);
 
   main_table_builder.AddWidget(
       CreateLabel(IDS_AUTOFILL_DIALOG_NAME_ON_CARD), 2);
   name_ = main_table_builder.AddWidget(gtk_entry_new(), 2);
-
-  main_table_builder.AddWidget(CreateLabel(IDS_AUTOFILL_DIALOG_BILLING_ADDRESS),
-                               2);
-  address_ = main_table_builder.AddWidget(CreateAddressWidget(), 2);
 
   main_table_builder.AddWidget(
       CreateLabel(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER), 2);
@@ -784,17 +708,6 @@ void AutoFillCreditCardEditor::RegisterForTextChanged() {
 
 void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
   SetEntryText(name_, card, CREDIT_CARD_NAME);
-
-  PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
-  for (std::vector<AutoFillProfile*>::const_iterator i =
-           data_manager->profiles().begin();
-       i != data_manager->profiles().end(); ++i) {
-    if ((*i)->unique_id() == card->billing_address_id()) {
-      int index = static_cast<int>(i - data_manager->profiles().begin());
-      gtk_combo_box_set_active(GTK_COMBO_BOX(address_), index);
-      break;
-    }
-  }
 
   gtk_entry_set_text(GTK_ENTRY(number_),
                      UTF16ToUTF8(card->ObfuscatedNumber()).c_str());
@@ -857,31 +770,7 @@ void AutoFillCreditCardEditor::ApplyEdits() {
 
 void AutoFillCreditCardEditor::SetCreditCardValuesFromWidgets(
     CreditCard* card) {
-  PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
-
   SetFormValue(name_, card, CREDIT_CARD_NAME);
-
-  card->set_billing_address_id(0);
-  int selected_address_index =
-      gtk_combo_box_get_active(GTK_COMBO_BOX(address_));
-  if (selected_address_index != -1) {
-    GtkTreeIter iter;
-    gtk_tree_model_iter_nth_child(
-        GTK_TREE_MODEL(address_store_), &iter, NULL, selected_address_index);
-    GValue value = { 0 };
-    gtk_tree_model_get_value(
-        GTK_TREE_MODEL(address_store_), &iter, COL_ID, &value);
-    int id = g_value_get_int(&value);
-    for (std::vector<AutoFillProfile*>::const_iterator i =
-             data_manager->profiles().begin();
-         i != data_manager->profiles().end(); ++i) {
-      if ((*i)->unique_id() == id) {
-        card->set_billing_address_id(id);
-        break;
-      }
-    }
-    g_value_unset(&value);
-  }
 
   if (edited_number_)
     SetFormValue(number_, card, CREDIT_CARD_NUMBER);

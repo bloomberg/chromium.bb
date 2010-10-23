@@ -21,7 +21,6 @@
 
 // Private methods for the |AutoFillCreditCardSheetController| class.
 @interface AutoFillCreditCardSheetController (PrivateMethods)
-- (void)buildBillingAddressContents;
 - (void)buildExpirationMonthContents;
 - (void)buildExpirationYearContents;
 @end
@@ -29,13 +28,11 @@
 @implementation AutoFillCreditCardSheetController
 
 @synthesize creditCardModel = creditCardModel_;
-@synthesize billingAddressContents = billingAddressContents_;
 @synthesize expirationMonthContents = expirationMonthContents_;
 @synthesize expirationYearContents = expirationYearContents_;
 
 - (id)initWithCreditCard:(const CreditCard&)creditCard
-                    mode:(AutoFillCreditCardMode)mode
-              controller:(AutoFillDialogController*)parentController {
+                    mode:(AutoFillCreditCardMode)mode {
   NSString* nibPath = [mac_util::MainAppBundle()
                           pathForResource:@"AutoFillCreditCardSheet"
                                    ofType:@"nib"];
@@ -45,9 +42,6 @@
     [self setCreditCardModel:[[[AutoFillCreditCardModel alloc]
           initWithCreditCard:creditCard] autorelease]];
 
-    // We keep track of our parent controller for model-update purposes.
-    parentController_ = parentController;
-
     mode_ = mode;
   }
   return self;
@@ -55,7 +49,6 @@
 
 - (void)dealloc {
   [creditCardModel_ release];
-  [billingAddressContents_ release];
   [expirationMonthContents_ release];
   [expirationYearContents_ release];
   [super dealloc];
@@ -63,12 +56,10 @@
 
 - (void)awakeFromNib {
   // Setup initial state of popups.
-  [self buildBillingAddressContents];
   [self buildExpirationMonthContents];
   [self buildExpirationYearContents];
 
   // Turn menu autoenable off.  We manually govern this.
-  [billingAddressPopup_ setAutoenablesItems:NO];
   [expirationMonthPopup_ setAutoenablesItems:NO];
   [expirationYearPopup_ setAutoenablesItems:NO];
 
@@ -97,53 +88,12 @@
 - (void)copyModelToCreditCard:(CreditCard*)creditCard {
   // The model copies the popup values blindly.  We need to clear the strings
   // in the case that our special menus are in effect.
-  if ([billingAddressPopup_ indexOfSelectedItem] <= 0)
-    [creditCardModel_ setBillingAddressID:0];
   if ([expirationMonthPopup_ indexOfSelectedItem] <= 0)
     [creditCardModel_ setExpirationMonth:@""];
   if ([expirationYearPopup_ indexOfSelectedItem] <= 0)
     [creditCardModel_ setExpirationYear:@""];
 
-  // The view does not set the billing address directly.  It relies on
-  // the controller to translate between popup index and the billing address
-  // ID.  Note the -1 offset.  This is due to the empty menu item in the popup.
-  if ([billingAddressPopup_ indexOfSelectedItem] > 0) {
-    [creditCardModel_ setBillingAddressID:
-        billingAddressIDs_[[billingAddressPopup_ indexOfSelectedItem]-1]];
-  }
   [creditCardModel_ copyModelToCreditCard:creditCard];
-}
-
-// Builds the |billingAddressContents_| array of strings from the list of
-// addresses returned by the |parentController_| and additional UI string.
-// Ensures that current selection is valid. If not, reset it.
-- (void)buildBillingAddressContents {
-  NSString* menuString = l10n_util::GetNSString(
-      IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS);
-
-  // Build the menu array and set it.
-  NSArray* addressStrings = nil;
-  [parentController_ addressLabels:&addressStrings
-                        addressIDs:&billingAddressIDs_];
-  NSArray* newArray = [[NSArray arrayWithObject:menuString]
-      arrayByAddingObjectsFromArray:addressStrings];
-  [self setBillingAddressContents:newArray];
-
-  // If the addresses no longer contain our billing address then reset the
-  // selection.
-  int distance = std::distance(billingAddressIDs_.begin(),
-                               std::find(billingAddressIDs_.begin(),
-                                         billingAddressIDs_.end(),
-                                         [creditCardModel_ billingAddressID]));
-  if (distance >= static_cast<int>(billingAddressIDs_.size())) {
-    [billingAddressPopup_ selectItemAtIndex:0];
-  } else {
-    [billingAddressPopup_ selectItemAtIndex:distance+1];
-  }
-
-
-  // Disable first item in menu.  "Choose existing address" is a non-item.
-  [[billingAddressPopup_ itemAtIndex:0] setEnabled:NO];
 }
 
 // Builds array of valid months.  Uses special @" " to indicate no selection.

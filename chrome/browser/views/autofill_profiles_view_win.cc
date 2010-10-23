@@ -104,7 +104,6 @@ AutoFillProfilesView::AutoFillProfilesView(
       remove_button_(NULL),
       scroll_view_(NULL),
       focus_manager_(NULL),
-      billing_model_(true),
       child_dialog_opened_(false) {
   DCHECK(preferences_);
   enable_auto_fill_.Init(prefs::kAutoFillEnabled, preferences_, this);
@@ -165,7 +164,7 @@ void AutoFillProfilesView::AddClicked(int group_type) {
     NOTREACHED();
   }
   EditableSetViewContents *edit_view = new
-      EditableSetViewContents(this, &billing_model_, true, *info);
+      EditableSetViewContents(this, true, *info);
   views::Window::CreateChromeWindow(window()->GetNativeWindow(), gfx::Rect(),
                                     edit_view);
   edit_view->window()->Show();
@@ -185,7 +184,7 @@ void AutoFillProfilesView::EditClicked() {
     it = credit_card_set_.begin() + (index - profiles_set_.size());
 
   EditableSetViewContents *edit_view = new
-      EditableSetViewContents(this, &billing_model_, false, *it);
+      EditableSetViewContents(this, false, *it);
   views::Window::CreateChromeWindow(window()->GetNativeWindow(), gfx::Rect(),
                                     edit_view);
   edit_view->window()->Show();
@@ -203,7 +202,6 @@ void AutoFillProfilesView::DeleteClicked() {
     last_view_row = table_model_->RowCount() - 1;
   if (last_view_row >= 0)
     scroll_view_->Select(scroll_view_->ViewToModel(last_view_row));
-  UpdateBillingModel();
   UpdateWidgetState();
   SaveData();
 }
@@ -238,7 +236,6 @@ void AutoFillProfilesView::EditAccepted(EditableSetInfo* data,
     else
       credit_card_set_.push_back(*data);
   }
-  UpdateBillingModel();
   UpdateWidgetState();
   SaveData();
 }
@@ -268,10 +265,6 @@ void AutoFillProfilesView::UpdateProfileLabels() {
     profiles[i] = &(profiles_set_[i].address);
   }
   AutoFillProfile::AdjustInferredLabels(&profiles);
-}
-
-void AutoFillProfilesView::UpdateBillingModel() {
-  billing_model_.SetAddressLabels(profiles_set_);
 }
 
 void AutoFillProfilesView::ChildWindowOpened() {
@@ -491,8 +484,6 @@ void AutoFillProfilesView::Init() {
   enable_auto_fill_button_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_AUTOFILL_ENABLE));
   enable_auto_fill_button_->set_listener(this);
-
-  billing_model_.SetAddressLabels(profiles_set_);
 
   table_model_.reset(new ContentListTableModel(&profiles_set_,
                                                &credit_card_set_));
@@ -732,14 +723,11 @@ AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
 // AutoFillProfilesView::EditableSetViewContents, public:
 AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
     AutoFillProfilesView* observer,
-    AddressComboBoxModel* billing_model,
     bool new_item,
     const EditableSetInfo& field_set)
     : temporary_info_(field_set),
       has_credit_card_number_been_edited_(false),
       observer_(observer),
-      billing_model_(billing_model),
-      combo_box_billing_(NULL),
       new_item_(new_item) {
   ZeroMemory(text_fields_, sizeof(text_fields_));
 }
@@ -863,7 +851,6 @@ AutoFillProfilesView::EditableSetViewContents::GetWindowTitle() const {
 }
 
 void AutoFillProfilesView::EditableSetViewContents::WindowClosing() {
-  billing_model_->ClearComboBoxes();
   observer_->ChildWindowClosed();
 }
 
@@ -876,7 +863,6 @@ bool AutoFillProfilesView::EditableSetViewContents::Cancel() {
     // Remove added item - it is last in the list.
     if (temporary_info_.is_address) {
       observer_->profiles_set_.pop_back();
-      observer_->UpdateBillingModel();
     } else {
       observer_->credit_card_set_.pop_back();
     }
@@ -946,16 +932,7 @@ bool AutoFillProfilesView::EditableSetViewContents::HandleKeystroke(
 // views::Combobox::Listener implementations:
 void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
     views::Combobox* combo_box, int prev_index, int new_index) {
-  DCHECK(billing_model_);
-  if (combo_box == combo_box_billing_) {
-    if (new_index == -1) {
-      NOTREACHED();
-    } else {
-      DCHECK(new_index < static_cast<int>(observer_->profiles_set_.size()));
-      temporary_info_.credit_card.set_billing_address_id(
-          observer_->profiles_set_[new_index].address.unique_id());
-    }
-  } else if (combo_box == combo_box_month_) {
+  if (combo_box == combo_box_month_) {
     if (new_index == -1) {
       NOTREACHED();
     } else {
@@ -1078,7 +1055,6 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
 void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
     views::GridLayout* layout) {
   DCHECK(!temporary_info_.is_address);
-  DCHECK(billing_model_);
 
   // Create combo box models.
   combo_box_model_month_.reset(new StringVectorComboboxModel);
@@ -1119,20 +1095,6 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_CC_NAME]);
-
-  // Address combo boxes.
-  combo_box_billing_ = new views::Combobox(billing_model_);
-  combo_box_billing_->set_listener(this);
-  int billing_id = temporary_info_.credit_card.billing_address_id();
-  if (billing_id)
-    combo_box_billing_->SetSelectedItem(billing_model_->GetIndex(billing_id));
-  billing_model_->UsedWithComboBox(combo_box_billing_);
-
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, double_column_fill_view_set_id_);
-  layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_BILLING_ADDRESS));
-  layout->StartRow(0, double_column_fill_view_set_id_);
-  layout->AddView(combo_box_billing_);
 
   // Layout credit card info
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -1286,78 +1248,6 @@ bool AutoFillProfilesView::EditableSetViewContents::UpdateContentsPhoneViews(
     }
   }
   return false;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::AddressComboBoxModel, public:
-AutoFillProfilesView::AddressComboBoxModel::AddressComboBoxModel(
-    bool is_billing)
-    : is_billing_(is_billing) {
-}
-
-void AutoFillProfilesView::AddressComboBoxModel::SetAddressLabels(
-    const std::vector<EditableSetInfo>& address_labels) {
-  address_labels_.clear();
-  for (size_t i = 0; i < address_labels.size(); ++i) {
-    const EditableSetInfo& item = address_labels[i];
-    DCHECK(item.is_address);
-    FieldTypeSet fields;
-    item.address.GetAvailableFieldTypes(&fields);
-    if (fields.find(ADDRESS_HOME_LINE1) == fields.end() &&
-        fields.find(ADDRESS_HOME_LINE2) == fields.end() &&
-        fields.find(ADDRESS_HOME_APT_NUM) == fields.end() &&
-        fields.find(ADDRESS_HOME_CITY) == fields.end() &&
-        fields.find(ADDRESS_HOME_STATE) == fields.end() &&
-        fields.find(ADDRESS_HOME_ZIP) == fields.end() &&
-        fields.find(ADDRESS_HOME_COUNTRY) == fields.end()) {
-      // No address information in this profile; it's useless as a billing
-      // address.
-      continue;
-    }
-    address_labels_.push_back(item);
-  }
-  NotifyChanged();
-}
-
-void AutoFillProfilesView::AddressComboBoxModel::UsedWithComboBox(
-    views::Combobox* combo_box) {
-  combo_boxes_.push_back(combo_box);
-}
-
-void AutoFillProfilesView::AddressComboBoxModel::NotifyChanged() {
-  for (std::list<views::Combobox*>::iterator it = combo_boxes_.begin();
-       it != combo_boxes_.end();
-       ++it)
-    (*it)->ModelChanged();
-}
-
-int AutoFillProfilesView::AddressComboBoxModel::GetIndex(int unique_id) {
-  int shift = is_billing_ ? 0 : 1;
-  for (size_t i = 0; i < address_labels_.size(); ++i) {
-    if (address_labels_.at(i).address.unique_id() == unique_id)
-      return i + shift;
-  }
-  return -1;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// AutoFillProfilesView::AddressComboBoxModel,  ComboboxModel methods
-int AutoFillProfilesView::AddressComboBoxModel::GetItemCount() {
-  int shift = is_billing_ ? 0 : 1;
-  return static_cast<int>(address_labels_.size()) + shift;
-}
-
-string16 AutoFillProfilesView::AddressComboBoxModel::GetItemAt(int index) {
-  int shift = is_billing_ ? 0 : 1;
-  DCHECK(index < (static_cast<int>(address_labels_.size()) + shift));
-  if (!is_billing_ && !index)
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
-  DCHECK(address_labels_.at(index - shift).is_address);
-  string16 label =
-      WideToUTF16Hack(address_labels_.at(index - shift).address.Label());
-  if (label.empty())
-    label = l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_ADDRESS);
-  return label;
 }
 
 void AutoFillProfilesView::StringVectorComboboxModel::set_cb_strings(

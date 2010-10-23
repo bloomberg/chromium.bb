@@ -142,10 +142,6 @@ void AutoFillOptionsHandler::SetCreditCardOverlayStrings(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION));
   localized_strings->SetString("nameOnCardLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));
-  localized_strings->SetString("billingAddressLabel",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_BILLING_ADDRESS));
-  localized_strings->SetString("chooseExistingAddress",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS));
   localized_strings->SetString("creditCardNumberLabel",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER));
   localized_strings->SetString("creditCardExpirationDateLabel",
@@ -306,16 +302,11 @@ void AutoFillOptionsHandler::UpdateCreditCard(const ListValue* args) {
   string16 value;
   if (args->GetString(1, &value))
     credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), value);
-  if (args->GetString(2, &value)) {
-    int id = 0;
-    base::StringToInt(value, &id);
-    credit_card.set_billing_address_id(id);
-  }
-  if (args->GetString(3, &value))
+  if (args->GetString(2, &value))
     credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER), value);
-  if (args->GetString(4, &value))
+  if (args->GetString(3, &value))
     credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), value);
-  if (args->GetString(5, &value))
+  if (args->GetString(4, &value))
     credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), value);
 
   if (unique_id == 0)
@@ -358,8 +349,6 @@ void AutoFillOptionsHandler::EditCreditCard(const ListValue* args) {
   credit_card_data->SetString(
       "nameOnCard",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
-  credit_card_data->SetInteger(
-      "billingAddress", credit_card->billing_address_id());
   credit_card_data->SetString(
       "creditCardNumber",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)));

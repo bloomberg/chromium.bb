@@ -92,10 +92,6 @@ class AutoFillProfilesView : public views::View,
   // Updates inferred labels.
   void UpdateProfileLabels();
 
-  // Updates the billing model. This is invoked any time the profile_set_
-  // changes.
-  void UpdateBillingModel();
-
   // Following two functions are called from opened child dialog to
   // disable/enable buttons.
   void ChildWindowOpened();
@@ -249,7 +245,6 @@ class AutoFillProfilesView : public views::View,
   };
 
   // Forward declaration.
-  class AddressComboBoxModel;
   class StringVectorComboboxModel;
 
   // Sub-view for editing/adding a credit card or address.
@@ -260,7 +255,6 @@ class AutoFillProfilesView : public views::View,
                                   public views::Combobox::Listener {
    public:
     EditableSetViewContents(AutoFillProfilesView* observer,
-                            AddressComboBoxModel* billing_model,
                             bool new_item,
                             const EditableSetInfo& field_set);
     virtual ~EditableSetViewContents() {}
@@ -339,8 +333,6 @@ class AutoFillProfilesView : public views::View,
     EditableSetInfo temporary_info_;
     bool has_credit_card_number_been_edited_;
     AutoFillProfilesView* observer_;
-    AddressComboBoxModel* billing_model_;
-    views::Combobox* combo_box_billing_;
     scoped_ptr<StringVectorComboboxModel> combo_box_model_month_;
     views::Combobox* combo_box_month_;
     scoped_ptr<StringVectorComboboxModel> combo_box_model_year_;
@@ -366,43 +358,6 @@ class AutoFillProfilesView : public views::View,
     static const int double_column_ccexpiration_ = 7;
 
     DISALLOW_COPY_AND_ASSIGN(EditableSetViewContents);
-  };
-
-  // Encapsulates ComboboxModel for address.
-  class AddressComboBoxModel : public ComboboxModel {
-   public:
-    explicit AddressComboBoxModel(bool is_billing);
-    virtual ~AddressComboBoxModel() {}
-
-    // Updates address_labels_ from |address_labels|.
-    void SetAddressLabels(const std::vector<EditableSetInfo>& address_labels);
-
-    // When you add a CB view that relies on this model, call this function
-    // so the CB can be notified if strings change. Can be called multiple
-    // times if several combo boxes relying on the model.
-    // Model does not own |combo_box|.
-    void UsedWithComboBox(views::Combobox *combo_box);
-
-    // Need to be called when comboboxes are destroyed.
-    void ClearComboBoxes() { combo_boxes_.clear(); }
-
-    // Call this function if one of the labels has changed
-    void NotifyChanged();
-
-    // Gets index of the item in the model or -1 if not found.
-    int GetIndex(int unique_id);
-
-    // Overridden from ComboboxModel:
-    // Public as they are used from EditableSetViewContents.
-    virtual int GetItemCount();
-    virtual string16 GetItemAt(int index);
-
-   private:
-    std::list<views::Combobox*> combo_boxes_;
-    std::vector<EditableSetInfo> address_labels_;
-    bool is_billing_;
-
-    DISALLOW_COPY_AND_ASSIGN(AddressComboBoxModel);
   };
 
   class StringVectorComboboxModel : public ComboboxModel {
@@ -467,8 +422,6 @@ class AutoFillProfilesView : public views::View,
   PrefService* preferences_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
-
-  AddressComboBoxModel billing_model_;
 
   BooleanPrefMember enable_auto_fill_;
 

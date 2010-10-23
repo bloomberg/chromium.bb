@@ -8,9 +8,6 @@ cr.define('options', function() {
   // The unique ID of the loaded credit card.
   var uniqueID;
 
-  // The unique IDs of the billing addresses.
-  var billingAddressIDs;
-
   /**
    * AutoFillEditCreditCardOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
@@ -43,7 +40,6 @@ cr.define('options', function() {
       }
 
       self.uniqueID = 0;
-      self.billingAddressIDs = new Array();
       self.clearInputFields_();
       self.connectInputEvents_();
       self.setDefaultSelectOptions_();
@@ -65,19 +61,12 @@ cr.define('options', function() {
      * @private
      */
     saveCreditCard_: function() {
-      var creditCard = new Array(6);
+      var creditCard = new Array(5);
       creditCard[0] = String(this.uniqueID);
       creditCard[1] = $('nameOnCard').value;
-      creditCard[2] = '0';
-      creditCard[3] = $('creditCardNumber').value;
-      creditCard[4] = $('expirationMonth').value;
-      creditCard[5] = $('expirationYear').value;
-
-      // Set the ID if available.
-      if (this.billingAddressIDs.length != 0) {
-        creditCard[2] =
-            String(this.billingAddressIDs[$('billingAddress').selectedIndex]);
-      }
+      creditCard[2] = $('creditCardNumber').value;
+      creditCard[3] = $('expirationMonth').value;
+      creditCard[4] = $('expirationYear').value;
 
       chrome.send('updateCreditCard', creditCard);
     },
@@ -90,9 +79,10 @@ cr.define('options', function() {
      */
     connectInputEvents_: function() {
       var self = this;
-      $('nameOnCard').oninput = $('billingAddress').onchange =
-      $('creditCardNumber').oninput = $('expirationMonth').onchange =
-      $('expirationYear').onchange = function(event) {
+      $('nameOnCard').oninput = $('creditCardNumber').oninput =
+      $('expirationMonth').onchange = $('expirationYear').onchange =
+      // TODO(isherman): What should the indentation of this line be?
+      function(event) {
         self.inputFieldChanged_();
       }
     },
@@ -108,33 +98,11 @@ cr.define('options', function() {
     },
 
     /**
-     * Clears the options from the billing address select control.
-     * @private
-     */
-    clearBillingAddressControl_: function() {
-      $('billingAddress').length = 0;
-    },
-
-    /**
-     * Sets the default billing address in the 'Billing address' select control.
-     * @private
-     */
-    setDefaultBillingAddress_: function() {
-      this.clearBillingAddressControl_();
-
-      var existingAddress =
-          new Option(localStrings.getString('chooseExistingAddress'));
-      $('billingAddress').add(existingAddress, null);
-    },
-
-    /**
-     * Sets the default values of the options in the 'Billing address' and
-     * 'Expiration date' select controls.
+     * Sets the default values of the options in the 'Expiration date' select
+     * controls.
      * @private
      */
     setDefaultSelectOptions_: function() {
-      this.setDefaultBillingAddress_();
-
       // Set the 'Expiration month' default options.
       var expirationMonth = $('expirationMonth');
       for (var i = 1; i <= 12; ++i) {
@@ -169,7 +137,6 @@ cr.define('options', function() {
      */
     clearInputFields_: function() {
       $('nameOnCard').value = '';
-      $('billingAddress').selectedIndex = 0;
       $('creditCardNumber').value = '';
       $('expirationMonth').selectedIndex = 0;
       $('expirationYear').selectedIndex = 0;
@@ -188,12 +155,6 @@ cr.define('options', function() {
       // and then loaded a credit card profile to edit in the new year, so
       // reload the select options just to be safe.
       this.setDefaultSelectOptions_();
-
-      var id = parseInt(creditCard['billingAddress']);
-      for (var i = 0; i < this.billingAddressIDs.length; ++i) {
-        if (this.billingAddressIDs[i] == id)
-          $('billingAddress').selectedIndex = i;
-      }
 
       var idx = parseInt(creditCard['expirationMonth'], 10);
       $('expirationMonth').selectedIndex = idx - 1;
@@ -218,30 +179,6 @@ cr.define('options', function() {
       this.inputFieldChanged_();
       this.uniqueID = creditCard['uniqueID'];
     },
-
-    /**
-     * Sets the 'billingAddress' select control with the address labels in
-     * |addresses|.  Also stores the unique IDs of the corresponding addresses
-     * on this object.
-     * @private
-     */
-    setBillingAddresses_: function(addresses) {
-      this.billingAddressIDs = new Array(addresses.length);
-
-      if (addresses.length == 0) {
-        this.setDefaultBillingAddress_();
-        return;
-      }
-
-      this.clearBillingAddressControl_();
-
-      for (var i = 0; i < addresses.length; ++i) {
-        var address = addresses[i];
-        var option = new Option(address['label']);
-        this.billingAddressIDs[i] = address['uniqueID'];
-        billingAddress.add(option, null);
-      }
-    },
   };
 
   AutoFillEditCreditCardOverlay.clearInputFields = function(title) {
@@ -254,10 +191,6 @@ cr.define('options', function() {
 
   AutoFillEditCreditCardOverlay.setTitle = function(title) {
     $('autoFillCreditCardTitle').textContent = title;
-  };
-
-  AutoFillEditCreditCardOverlay.setBillingAddresses = function(addresses) {
-    AutoFillEditCreditCardOverlay.getInstance().setBillingAddresses_(addresses);
   };
 
   // Export

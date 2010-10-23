@@ -325,8 +325,7 @@ class PreferenceObserver : public NotificationObserver {
   creditCardSheetController.reset(
       [[AutoFillCreditCardSheetController alloc]
           initWithCreditCard:newCreditCard
-                        mode:kAutoFillCreditCardAddMode
-                  controller:self]);
+                        mode:kAutoFillCreditCardAddMode]);
 
   // Show the sheet.
   [NSApp beginSheet:[creditCardSheetController window]
@@ -458,8 +457,7 @@ class PreferenceObserver : public NotificationObserver {
       creditCardSheetController.reset(
           [[AutoFillCreditCardSheetController alloc]
               initWithCreditCard:creditCards_[i]
-                            mode:kAutoFillCreditCardEditMode
-                      controller:self]);
+                            mode:kAutoFillCreditCardEditMode]);
 
       // Show the sheet.
       [NSApp beginSheet:[creditCardSheetController window]

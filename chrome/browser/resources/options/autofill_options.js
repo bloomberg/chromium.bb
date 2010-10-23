@@ -157,7 +157,6 @@ cr.define('options', function() {
         profileList.add(option, blankAddress);
       }
 
-      AutoFillEditCreditCardOverlay.setBillingAddresses(addresses);
       this.updateButtonState_();
     },
 

@@ -6745,9 +6745,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
           Expiration date:
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_BILLING_ADDRESS" desc="The label of the Billing address entry.">
-          Billing address:
-        </message>
       </if>
       <if expr="os != 'darwin'">
         <message name="IDS_AUTOFILL_DIALOG_LABEL" desc="The label of the Label entry.">
@@ -6798,9 +6795,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_AUTOFILL_DIALOG_EXPIRATION_DATE" desc="The label of the Expiration date entry.">
           Expiration date
         </message>
-        <message name="IDS_AUTOFILL_DIALOG_BILLING_ADDRESS" desc="The label of the Billing address entry.">
-          Billing address
-        </message>
       </if>
 
       <message name="IDS_AUTOFILL_DIALOG_FIRST_NAME" desc="The label of the First name entry.">
@@ -6811,15 +6805,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_DIALOG_LAST_NAME" desc="The label of the Last name entry.">
         Last name
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_SHIPPING_ADDRESS" desc="The label of the Shipping address entry.">
-        Shipping
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_CHOOSE_EXISTING_ADDRESS" desc="The label of the Choose existing address entry.">
-        Choose existing address
-      </message>
-      <message name="IDS_AUTOFILL_DIALOG_SAME_AS_BILLING" desc="The label of the same as billing entry.">
-        same as billing
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE" desc="The label of the Save button on the Autofill dialog.">
         Save
