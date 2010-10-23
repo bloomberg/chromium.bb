@@ -69,16 +69,20 @@ class BrowserInterface {
   // If handle is NULL, returns NULL.
   virtual ScriptableHandle* NewScriptableHandle(PortableHandle* handle) = 0;
 
-  // Filename-based version of the function below that takes a char* and size.
-  static bool MightBeElfExecutable(const nacl::string& filename,
-                                    nacl::string* error);
-
   // Returns true iff the first |size| bytes of |e_ident_bytes| appear to be
   // a valid ELF file; returns an informative error message otherwise.
   // The check for valid ELF executable is only done looking at the e_ident
   // bytes.  Fuller checking is done by the service_runtime.
   static bool MightBeElfExecutable(const char* e_ident_bytes,
                                    size_t size,
+                                   nacl::string* error);
+  // Wrappers of the above function that load the file contents given
+  // a filename, a file descriptor, or a file stream.
+  static bool MightBeElfExecutable(const nacl::string& filename,
+                                   nacl::string* error);
+  static bool MightBeElfExecutable(int posix_file_desc,
+                                   nacl::string* error);
+  static bool MightBeElfExecutable(FILE* file_stream,  // Will close the stream.
                                    nacl::string* error);
 };
 

@@ -33,22 +33,34 @@ bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
   }
 }
 
-// TODO(polina,sehr): move elf checking code to service_runtime.
 bool BrowserInterface::MightBeElfExecutable(const nacl::string& filename,
                                             nacl::string* error) {
-  FILE* fp = fopen(filename.c_str(), "rb");
-  if (fp == NULL) {
+  return MightBeElfExecutable(fopen(filename.c_str(), "rb"), error);
+}
+
+bool BrowserInterface::MightBeElfExecutable(int posix_file_desc,
+                                            nacl::string* error) {
+  // The argument is a multi-use descriptor, so it should not be closed.
+  // Make a dup to prevent that.
+  int dup_file_desc = DUP(posix_file_desc);
+  return MightBeElfExecutable(fdopen(dup_file_desc, "rb"), error);
+}
+
+// TODO(polina,sehr): move elf checking code to service_runtime.
+bool BrowserInterface::MightBeElfExecutable(FILE* file_stream,
+                                            nacl::string* error) {
+  if (file_stream == NULL) {
     *error = "Load failed: cannot open local file for reading.";
     return false;
   }
-  char buf[EI_NIDENT];
-  size_t read_amount = fread(buf, sizeof buf, 1, fp);
-  fclose(fp);
+  char read_buffer[EI_NIDENT];
+  size_t read_amount = fread(read_buffer, sizeof read_buffer, 1, file_stream);
+  fclose(file_stream);  // Also closes the file descriptor associated with it.
   if (read_amount != 1) {
     *error = "Load failed: fread should not fail.";
     return false;
   }
-  return MightBeElfExecutable(buf, sizeof buf, error);
+  return MightBeElfExecutable(read_buffer, sizeof read_buffer, error);
 }
 
 bool BrowserInterface::MightBeElfExecutable(const char* e_ident_bytes,

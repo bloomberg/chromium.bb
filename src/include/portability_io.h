@@ -44,6 +44,7 @@
 #include "io.h"
 #include "fcntl.h"
 
+#define DUP  _dup
 #define DUP2 _dup2
 #define OPEN _open
 #define FDOPEN _fdopen
@@ -66,6 +67,7 @@
 #include <fcntl.h>
 
 #define OPEN open
+#define DUP  dup
 #define DUP2 dup2
 #define FDOPEN fdopen
 #define PORTABLE_DEV_NULL  "/dev/null"

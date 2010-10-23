@@ -29,6 +29,8 @@ class DescWrapperFactory {
   DescWrapper* MakeImcSock(NaClHandle handle);
   // Create a shared memory object.
   DescWrapper* MakeShm(size_t size);
+  // Create a file descriptor object.
+  DescWrapper* MakeFileDesc(int host_os_desc, int mode);
   // Create a DescWrapper from opening a host file.
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
   // Create a DescWrapper for the designated invalid descriptor

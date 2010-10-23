@@ -35,11 +35,11 @@ class Plugin : public PortableHandle {
 
   // Load support.
   // NaCl module can be loaded given a local file name, a shared memory buffer,
-  // or a file descriptor. The functions update nacl_module_origin() and
+  // or a POSIX file descriptor. The functions update nacl_module_origin() and
   // nacl_module_url().
   bool LoadNaClModule(nacl::string full_url, nacl::string local_path);
   bool LoadNaClModule(nacl::string full_url, StreamShmBuffer* shm_buffer);
-  bool LoadNaClModule(nacl::string full_url, int posix_file_desc);
+  bool LoadNaClModule(nacl::string full_url, int file_desc);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.

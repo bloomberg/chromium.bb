@@ -39,11 +39,22 @@ class ServiceRuntime {
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 
-  //  The constructor is passed the name of the nacl_file (from the
-  //  browser cache, typically).  It spawns a sel_ldr instance and establishes
-  //  a ConnectedSocket to it.
-  bool StartFromCommandLine(const char* nacl_file);
-  bool StartFromBrowser(const char* url, nacl::DescWrapper* shm);
+  // Support for spawning sel_ldr instance and establishing a ConnectedSocket
+  // to it. The sel_ldr process can be started directly using a command line
+  // or by sending a message to the browser process (in Chrome only).
+  // The nexe can be passed:
+  // 1) via a local file (typically from browser cache, outside of a sandbox)
+  //    as command-line argument
+  // 2) as a file descriptor over RPC after sel_ldr launched
+  // 3) as shared memory descriptor over RPC after sel_ldr launched
+  // These 3 nexe options are mutually exclusive and map to the following usage:
+  // 1) StartFromCommandLine(file_path, NULL)
+  // 2) StartFromCommandLine(NACL_NO_FILE_PATH, file_desc)
+  //    StartFromBrowser(url, file_desc)
+  // 3) StartFromBrowser(url, shm_desc)
+  bool StartFromCommandLine(nacl::string nacl_file,
+                            nacl::DescWrapper* nacl_file_desc);
+  bool StartFromBrowser(nacl::string nacl_url, nacl::DescWrapper* nacl_desc);
 
   bool Kill();
   bool Log(int severity, nacl::string msg);

@@ -522,25 +522,25 @@ bool Plugin::LoadNaClModule(nacl::string full_url, StreamShmBuffer* buffer) {
                         NACL_NO_FILE_DESC);
 }
 
-bool Plugin::LoadNaClModule(nacl::string full_url, int posix_file_desc) {
+bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
   return LoadNaClModule(full_url,
                         NACL_NO_FILE_PATH,
                         static_cast<StreamShmBuffer*>(NULL),
-                        posix_file_desc);
+                        file_desc);
 }
 
 bool Plugin::LoadNaClModule(nacl::string full_url,
                             nacl::string local_path,
                             StreamShmBuffer* shm_buffer,
-                            int posix_file_desc) {
+                            int file_desc) {
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (full_url='%s')\n",
                  full_url.c_str()));
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (local_path='%s')\n",
                  local_path.c_str()));
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (shm_buffer=%p)\n",
                  reinterpret_cast<void*>(shm_buffer)));
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (posix_file_desc=%d)\n",
-                 posix_file_desc));
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (file_desc=%d)\n",
+                 file_desc));
 
   CHECK(NACL_NO_URL != full_url);
   set_nacl_module_origin(nacl::UrlToOrigin(full_url));
@@ -552,7 +552,7 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
                  "(page_origin='%s', page_origin_valid=%d)\n",
                  origin_.c_str(), origin_valid_));
   PLUGIN_PRINTF(("Plugin::LoadNaClModule "
-                 "(module_origin='%s', module_origin_valid=%d)\n",
+                 "(nacl_origin='%s', nacl_origin_valid=%d)\n",
                  nacl_module_origin_.c_str(), module_origin_valid));
 
   // If the origin of the nacl module or of the page with <embed>/<object>
@@ -579,11 +579,13 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
   nacl::string error_string;
   if (NACL_NO_FILE_PATH != local_path) {
     CHECK(NULL == shm_buffer);
-    CHECK(NACL_NO_FILE_DESC == posix_file_desc);
+    CHECK(NACL_NO_FILE_DESC == file_desc);
     might_be_elf_exe = browser_interface_->MightBeElfExecutable(
         nacl_module_path_, &error_string);
   } else if (NULL != shm_buffer) {
-    CHECK(NACL_NO_FILE_DESC == posix_file_desc);
+    CHECK(NACL_NO_FILE_DESC == file_desc);
+    // TODO(polina): add another MightBeElfExecutable that operates
+    // on shared memory buffers.
     // It suffices to read out just the 1st header chunk.
     char elf_hdr_buf[kAbiHeaderBuffer];
     ssize_t result = shm_buffer->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
@@ -591,8 +593,9 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
       might_be_elf_exe = browser_interface_->MightBeElfExecutable(
           elf_hdr_buf, sizeof elf_hdr_buf, &error_string);
     }
-  } else if (posix_file_desc > NACL_NO_FILE_DESC) {
-    NACL_UNIMPLEMENTED();
+  } else if (file_desc > NACL_NO_FILE_DESC) {
+    might_be_elf_exe =  browser_interface_->MightBeElfExecutable(
+        file_desc, &error_string);
   } else {
     NACL_NOTREACHED();
   }
@@ -621,7 +624,7 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
   bool service_runtime_started = false;
   if (NACL_NO_FILE_PATH != local_path) {
     service_runtime_started = service_runtime_->StartFromCommandLine(
-        nacl_module_path_.c_str());
+        nacl_module_path_, static_cast<nacl::DescWrapper*>(NULL));
   } else if (NULL != shm_buffer) {
     int32_t size;
     NaClDesc* shm_nacl_desc = shm_buffer->shm(&size);
@@ -630,17 +633,23 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
     if (NULL == shm_nacl_desc) {
       return false;
     }
-    nacl::DescWrapper* wrapped_shm =
+    nacl::DescWrapper* wrapped_shm_desc =
         wrapper_factory_->MakeGeneric(NaClDescRef(shm_nacl_desc));
     service_runtime_started = service_runtime_->StartFromBrowser(
-        nacl_module_url_.c_str(), wrapped_shm);
-    delete wrapped_shm;
-  } else if (posix_file_desc > NACL_NO_FILE_DESC) {
-    NACL_UNIMPLEMENTED();
+        nacl_module_url_, wrapped_shm_desc);
+    delete wrapped_shm_desc;
+  } else if (file_desc > NACL_NO_FILE_DESC) {
+    nacl::DescWrapper* wrapped_file_desc =
+        wrapper_factory_->MakeFileDesc(file_desc, O_RDONLY);
+    // TODO(polina): switch to StartFromBrowser when we fix:
+    // http://code.google.com/p/nativeclient/issues/detail?id=934
+    service_runtime_started = service_runtime_->StartFromCommandLine(
+        NACL_NO_FILE_PATH, wrapped_file_desc);
+    delete wrapped_file_desc;
   } else {
     NACL_NOTREACHED();
   }
-  PLUGIN_PRINTF(("Plugin::Load (service_runtime_started=%d)\n",
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));
 
   // Plugin takes ownership of socket_address_ from service_runtime_ and will

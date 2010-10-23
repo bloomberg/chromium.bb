@@ -5,8 +5,11 @@
  */
 
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+
+#include <fcntl.h>
 #include <string>
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
@@ -138,12 +141,13 @@ pp::Var PluginPpapi::GetInstanceObject() {
 
 bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (url='%s')\n", url.c_str()));
-  // TODO(polina): when URLLoader is supported, use that to get the
-  // the local copy of the nexe at |url|
+  // TODO(polina): when URLLoader is supported, get the file descriptor from it.
+  // For now, to simulate the planned behavior, we just get the full url, map it
+  // to a local path, then use that to open a file and get the file descriptor.
   nacl::string full_url = "";
   if (!browser_interface()->GetFullURL(
           PPInstanceToInstanceIdentifier(static_cast<pp::Instance*>(this)),
-                                         &full_url)) {
+          &full_url)) {
     PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (unknown page link)\n"));
     return false;
   }
@@ -164,7 +168,13 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
   local_path.replace(0, origin().size(), local_origin);
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (local_path='%s')\n",
                  local_path.c_str()));
-  return LoadNaClModule(full_url, local_path.c_str());
+  int file_desc = OPEN(local_path.c_str(), O_RDONLY);
+  PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (file_desc=%d)\n", file_desc));
+  if (file_desc > NACL_NO_FILE_DESC) {
+    return LoadNaClModule(full_url, file_desc);
+  } else {
+    return false;
+  }
 }
 
 

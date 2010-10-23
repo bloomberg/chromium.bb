@@ -7,6 +7,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #if defined(NACL_LINUX)
@@ -26,6 +27,9 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
+
+// TODO(polina): follow the style guide and replace "nhdp" and "ndiodp" with
+//               "host_desc" and "io_desc"
 
 namespace {
 static const size_t kSizeTMax = std::numeric_limits<size_t>::max();
@@ -342,6 +346,22 @@ int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
   delete tmp_pair[0];
   delete tmp_pair[1];
   return -1;
+}
+
+DescWrapper* DescWrapperFactory::MakeFileDesc(int host_os_desc, int mode) {
+  NaClHostDesc* host_desc = NaClHostDescPosixMake(host_os_desc, mode);
+  CHECK(host_desc != NULL);  // Otherwise Make() would have aborted.
+  NaClDescIoDesc* io_desc = NaClDescIoDescMake(host_desc);
+  CHECK(io_desc != NULL);  // Otherwise Make() would have aborted.
+  NaClDesc* desc = reinterpret_cast<struct NaClDesc*>(io_desc);
+
+  // The wrapper takes ownership of NaClDesc and hence NaClDescIoDesc,
+  // which already took ownership of NaClHostDesc.
+  DescWrapper* wrapper = MakeGeneric(desc);
+  if (wrapper == NULL) {
+    NaClDescUnref(desc);  // This will unref the underlying structs.
+  }
+  return wrapper;
 }
 
 DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
