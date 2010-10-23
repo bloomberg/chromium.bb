@@ -522,29 +522,10 @@ void BufferedResourceLoader::NotifyNetworkEvent() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, static methods
-bool BufferedDataSource::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  std::string mime_type;
-  std::string url;
-  if (media_format.GetAsString(media::MediaFormat::kMimeType, &mime_type) &&
-      media_format.GetAsString(media::MediaFormat::kURL, &url)) {
-    GURL gurl(url);
-
-    // This data source doesn't support data:// protocol, so reject it
-    // explicitly.
-    if (IsProtocolSupportedForMedia(gurl) && !IsDataProtocol(gurl))
-      return true;
-  }
-  return false;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, protected
+// BufferedDataSource
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
-    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
-    webkit_glue::WebMediaPlayerImpl::Proxy* proxy)
+    webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory)
     : total_bytes_(kPositionNotSpecified),
       loaded_(false),
       streaming_(false),
@@ -564,8 +545,6 @@ BufferedDataSource::BufferedDataSource(
       stopped_on_render_loop_(false),
       media_is_paused_(true),
       using_range_request_(true) {
-  if (proxy)
-    proxy->SetDataSource(this);
 }
 
 BufferedDataSource::~BufferedDataSource() {
@@ -616,6 +595,13 @@ void BufferedDataSource::Initialize(const std::string& url,
   // Post a task to complete the initialization task.
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &BufferedDataSource::InitializeTask));
+}
+
+bool BufferedDataSource::IsUrlSupported(const std::string& url) {
+  GURL gurl(url);
+
+  // This data source doesn't support data:// protocol so reject it.
+  return IsProtocolSupportedForMedia(gurl) && !IsDataProtocol(gurl);
 }
 
 void BufferedDataSource::Stop(media::FilterCallback* callback) {

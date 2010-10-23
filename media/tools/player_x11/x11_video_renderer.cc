@@ -67,12 +67,6 @@ X11VideoRenderer::X11VideoRenderer(Display* display, Window window,
 X11VideoRenderer::~X11VideoRenderer() {
 }
 
-// static
-bool X11VideoRenderer::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
-}
-
 void X11VideoRenderer::OnStop(media::FilterCallback* callback) {
   if (image_) {
     XDestroyImage(image_);

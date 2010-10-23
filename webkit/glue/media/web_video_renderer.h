@@ -7,6 +7,7 @@
 
 #include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"
+#include "webkit/glue/webmediaplayer_impl.h"
 
 namespace webkit_glue {
 
@@ -15,6 +16,9 @@ class WebVideoRenderer : public media::VideoRendererBase {
  public:
   WebVideoRenderer() : media::VideoRendererBase() {}
   virtual ~WebVideoRenderer() {}
+
+  // Saves the reference to WebMediaPlayerImpl::Proxy.
+  virtual void SetWebMediaPlayerImplProxy(WebMediaPlayerImpl::Proxy* proxy) = 0;
 
   // This method is called with the same rect as the Paint() method and could
   // be used by future implementations to implement an improved color space +

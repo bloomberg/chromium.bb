@@ -46,7 +46,6 @@
 #include "chrome/renderer/audio_message_filter.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_base.h"
 
@@ -56,13 +55,9 @@ class AudioRendererImpl : public media::AudioRendererBase,
                           public AudioMessageFilter::Delegate,
                           public MessageLoop::DestructionObserver {
  public:
-  // Methods called on render thread ------------------------------------------
-  // Methods called during construction.
-  static media::FilterFactory* CreateFactory(AudioMessageFilter* filter) {
-    return new media::FilterFactoryImpl1<AudioRendererImpl,
-                                         AudioMessageFilter*>(filter);
-  }
-  static bool IsMediaFormatSupported(const media::MediaFormat& format);
+  // Methods called on Render thread ------------------------------------------
+  explicit AudioRendererImpl(AudioMessageFilter* filter);
+  virtual ~AudioRendererImpl();
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
@@ -94,18 +89,11 @@ class AudioRendererImpl : public media::AudioRendererBase,
   virtual void OnReadComplete(media::Buffer* buffer_in);
 
  private:
-  friend class media::FilterFactoryImpl1<AudioRendererImpl,
-                                         AudioMessageFilter*>;
-
   // For access to constructor and IO thread methods.
   friend class AudioRendererImplTest;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, Stop);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest,
                            DestroyedMessageLoop_OnReadComplete);
-
-  explicit AudioRendererImpl(AudioMessageFilter* filter);
-  virtual ~AudioRendererImpl();
-
   // Helper methods.
   // Convert number of bytes to duration of time using information about the
   // number of channels, sample rate and sample bits.

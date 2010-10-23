@@ -12,7 +12,6 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 
@@ -24,19 +23,10 @@ namespace webkit_glue {
 class SimpleDataSource : public media::DataSource,
                          public webkit_glue::ResourceLoaderBridge::Peer {
  public:
-  static media::FilterFactory* CreateFactory(
-      MessageLoop* message_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory) {
-    return new media::FilterFactoryImpl2<
-        SimpleDataSource,
-        MessageLoop*,
-        webkit_glue::MediaResourceLoaderBridgeFactory*>(message_loop,
-                                                        bridge_factory);
-  }
-
-  // media::FilterFactoryImpl2 implementation.
-  static bool IsMediaFormatSupported(
-      const media::MediaFormat& media_format);
+  SimpleDataSource(
+      MessageLoop* render_loop,
+      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory);
+  virtual ~SimpleDataSource();
 
   // MediaFilter implementation.
   virtual void Stop(media::FilterCallback* callback);
@@ -68,15 +58,6 @@ class SimpleDataSource : public media::DataSource,
   virtual GURL GetURLForDebugging() const;
 
  private:
-  friend class media::FilterFactoryImpl2<
-      SimpleDataSource,
-      MessageLoop*,
-      webkit_glue::MediaResourceLoaderBridgeFactory*>;
-  SimpleDataSource(
-      MessageLoop* render_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory);
-  virtual ~SimpleDataSource();
-
   // Updates |url_| and |media_format_| with the given URL.
   void SetURL(const GURL& url);
 

@@ -539,15 +539,9 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
 // CreateResourceLoader() method.
 class MockBufferedDataSource : public BufferedDataSource {
  public:
-  // Static methods for creating this class.
-  static media::FilterFactory* CreateFactory(
-      MessageLoop* message_loop,
-      MediaResourceLoaderBridgeFactory* bridge_factory) {
-    return new media::FilterFactoryImpl2<
-        MockBufferedDataSource,
-        MessageLoop*,
-        MediaResourceLoaderBridgeFactory*>(message_loop,
-                                           bridge_factory);
+  MockBufferedDataSource(
+      MessageLoop* message_loop, MediaResourceLoaderBridgeFactory* factory)
+      : BufferedDataSource(message_loop, factory) {
   }
 
   virtual base::TimeDelta GetTimeoutMilliseconds() {
@@ -558,18 +552,7 @@ class MockBufferedDataSource : public BufferedDataSource {
   MOCK_METHOD2(CreateResourceLoader, BufferedResourceLoader*(
       int64 first_position, int64 last_position));
 
- protected:
-  MockBufferedDataSource(
-      MessageLoop* message_loop, MediaResourceLoaderBridgeFactory* factory)
-      : BufferedDataSource(message_loop, factory, NULL) {
-  }
-
  private:
-  friend class media::FilterFactoryImpl2<
-      MockBufferedDataSource,
-      MessageLoop*,
-      MediaResourceLoaderBridgeFactory*>;
-
   DISALLOW_COPY_AND_ASSIGN(MockBufferedDataSource);
 };
 
@@ -579,8 +562,6 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_ = MessageLoop::current();
     bridge_factory_.reset(
         new StrictMock<MockMediaResourceLoaderBridgeFactory>());
-    factory_ = MockBufferedDataSource::CreateFactory(message_loop_,
-                                                     bridge_factory_.get());
 
     // Prepare test data.
     for (size_t i = 0; i < sizeof(data_); ++i) {
@@ -619,7 +600,8 @@ class BufferedDataSourceTest : public testing::Test {
     url_format.SetAsString(media::MediaFormat::kMimeType,
                            media::mime_type::kURL);
     url_format.SetAsString(media::MediaFormat::kURL, url);
-    data_source_ = factory_->Create<MockBufferedDataSource>(url_format);
+    data_source_ = new MockBufferedDataSource(MessageLoop::current(),
+                                              bridge_factory_.get());
     CHECK(data_source_);
 
     // There is no need to provide a message loop to data source.
@@ -901,7 +883,6 @@ class BufferedDataSourceTest : public testing::Test {
       bridge_factory_;
   scoped_refptr<NiceMock<MockBufferedResourceLoader> > loader_;
   scoped_refptr<MockBufferedDataSource> data_source_;
-  scoped_refptr<media::FilterFactory> factory_;
 
   StrictMock<media::MockFilterHost> host_;
   GURL gurl_;

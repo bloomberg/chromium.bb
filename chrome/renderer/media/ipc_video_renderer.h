@@ -22,40 +22,18 @@
 
 class IPCVideoRenderer : public webkit_glue::WebVideoRenderer {
  public:
+  explicit IPCVideoRenderer(int routing_id);
+  virtual ~IPCVideoRenderer();
+
   // WebVideoRenderer implementation.
+  virtual void SetWebMediaPlayerImplProxy(
+      webkit_glue::WebMediaPlayerImpl::Proxy* proxy);
   virtual void SetRect(const gfx::Rect& rect);
   virtual void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
 
   void OnUpdateVideo();
   void OnUpdateVideoAck();
   void OnDestroyVideo();
-
-  // Static method for creating factory for this object.
-  static media::FilterFactory* CreateFactory(
-      webkit_glue::WebMediaPlayerImpl::Proxy* proxy,
-      int routing_id);
-
-  // FilterFactoryImpl2 implementation.
-  static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
-
-  // TODO(scherkus): remove this mega-hack, see http://crbug.com/28207
-  class FactoryFactory : public webkit_glue::WebVideoRendererFactoryFactory {
-   public:
-    explicit FactoryFactory(int routing_id)
-        : webkit_glue::WebVideoRendererFactoryFactory(),
-          routing_id_(routing_id) {
-    }
-
-    virtual media::FilterFactory* CreateFactory(
-        webkit_glue::WebMediaPlayerImpl::Proxy* proxy) {
-      return IPCVideoRenderer::CreateFactory(proxy, routing_id_);
-    }
-
-   private:
-    int routing_id_;
-
-    DISALLOW_COPY_AND_ASSIGN(FactoryFactory);
-  };
 
  protected:
   // VideoRendererBase implementation.
@@ -64,15 +42,6 @@ class IPCVideoRenderer : public webkit_glue::WebVideoRenderer {
   virtual void OnFrameAvailable();
 
  private:
-  // Only the filter factories can create instances.
-  friend class media::FilterFactoryImpl2<
-      IPCVideoRenderer,
-      webkit_glue::WebMediaPlayerImpl::Proxy*,
-      int>;
-  IPCVideoRenderer(webkit_glue::WebMediaPlayerImpl::Proxy* proxy,
-                   int routing_id);
-  virtual ~IPCVideoRenderer();
-
   // Send an IPC message to the browser process.  The routing ID of the message
   // is assumed to match |routing_id_|.
   void Send(IPC::Message* msg);

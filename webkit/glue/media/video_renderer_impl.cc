@@ -10,32 +10,12 @@
 
 namespace webkit_glue {
 
-VideoRendererImpl::VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy,
-                                     bool pts_logging)
-    : proxy_(proxy),
-      last_converted_frame_(NULL),
+VideoRendererImpl::VideoRendererImpl(bool pts_logging)
+    : last_converted_frame_(NULL),
       pts_logging_(pts_logging) {
-  // TODO(hclam): decide whether to do the following line in this thread or
-  // in the render thread.
-  proxy_->SetVideoRenderer(this);
 }
 
 VideoRendererImpl::~VideoRendererImpl() {}
-
-// static
-media::FilterFactory* VideoRendererImpl::CreateFactory(
-    WebMediaPlayerImpl::Proxy* proxy,
-    bool pts_logging) {
-  return new media::FilterFactoryImpl2<VideoRendererImpl,
-                                       WebMediaPlayerImpl::Proxy*,
-                                       bool>(proxy, pts_logging);
-}
-
-// static
-bool VideoRendererImpl::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
-}
 
 bool VideoRendererImpl::OnInitialize(media::VideoDecoder* decoder) {
   video_size_.SetSize(width(), height());
@@ -58,6 +38,11 @@ void VideoRendererImpl::OnStop(media::FilterCallback* callback) {
 
 void VideoRendererImpl::OnFrameAvailable() {
   proxy_->Repaint();
+}
+
+void VideoRendererImpl::SetWebMediaPlayerImplProxy(
+    WebMediaPlayerImpl::Proxy* proxy) {
+  proxy_ = proxy;
 }
 
 void VideoRendererImpl::SetRect(const gfx::Rect& rect) {

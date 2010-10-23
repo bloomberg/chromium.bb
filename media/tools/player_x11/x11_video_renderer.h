@@ -9,28 +9,16 @@
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 
 class X11VideoRenderer : public media::VideoRendererBase {
  public:
-  static media::FilterFactory* CreateFactory(Display* display,
-                                             Window window,
-                                             MessageLoop* message_loop) {
-    return new media::FilterFactoryImpl3<
-        X11VideoRenderer, Display*, Window, MessageLoop*>(display, window,
-                                                          message_loop);
-  }
-
   X11VideoRenderer(Display* display, Window window, MessageLoop* message_loop);
 
   // This method is called to paint the current video frame to the assigned
   // window.
   void Paint();
-
-  // media::FilterFactoryImpl2 Implementation.
-  static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
   static X11VideoRenderer* instance() { return instance_; }
 

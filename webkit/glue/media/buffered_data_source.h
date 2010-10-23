@@ -13,7 +13,6 @@
 #include "base/timer.h"
 #include "base/condition_variable.h"
 #include "googleurl/src/gurl.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/base/media_format.h"
 #include "media/base/pipeline.h"
@@ -216,27 +215,16 @@ class BufferedResourceLoader :
 
 class BufferedDataSource : public WebDataSource {
  public:
-  // Methods called from pipeline thread
-  // Static methods for creating this class.
-  static media::FilterFactory* CreateFactory(
-      MessageLoop* message_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
-      webkit_glue::WebMediaPlayerImpl::Proxy* proxy) {
-    return new media::FilterFactoryImpl3<
-        BufferedDataSource,
-        MessageLoop*,
-        webkit_glue::MediaResourceLoaderBridgeFactory*,
-        webkit_glue::WebMediaPlayerImpl::Proxy*>(
-        message_loop, bridge_factory, proxy);
-  }
+  BufferedDataSource(
+      MessageLoop* render_loop,
+      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory);
 
-  // media::FilterFactoryImpl2 implementation.
-  static bool IsMediaFormatSupported(
-      const media::MediaFormat& media_format);
+  virtual ~BufferedDataSource();
 
   // media::MediaFilter implementation.
   virtual void Initialize(const std::string& url,
                           media::FilterCallback* callback);
+  virtual bool IsUrlSupported(const std::string& url);
   virtual void Stop(media::FilterCallback* callback);
   virtual void SetPlaybackRate(float playback_rate);
 
@@ -256,11 +244,6 @@ class BufferedDataSource : public WebDataSource {
   virtual void Abort();
 
  protected:
-  BufferedDataSource(
-      MessageLoop* render_loop,
-      webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory,
-      webkit_glue::WebMediaPlayerImpl::Proxy* proxy);
-  virtual ~BufferedDataSource();
 
   // A factory method to create a BufferedResourceLoader based on the read
   // parameters. We can override this file to object a mock
@@ -274,12 +257,6 @@ class BufferedDataSource : public WebDataSource {
   virtual base::TimeDelta GetTimeoutMilliseconds();
 
  private:
-  friend class media::FilterFactoryImpl3<
-      BufferedDataSource,
-      MessageLoop*,
-      webkit_glue::MediaResourceLoaderBridgeFactory*,
-      webkit_glue::WebMediaPlayerImpl::Proxy*>;
-
   // Posted to perform initialization on render thread and start resource
   // loading.
   void InitializeTask();

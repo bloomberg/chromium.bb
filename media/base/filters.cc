@@ -11,6 +11,10 @@ namespace media {
 
 MediaFilter::MediaFilter() : host_(NULL), message_loop_(NULL) {}
 
+const char* MediaFilter::major_mime_type() const {
+  return "";
+}
+
 void MediaFilter::set_host(FilterHost* host) {
   DCHECK(host);
   DCHECK(!host_);
@@ -76,6 +80,50 @@ void MediaFilter::OnAudioRendererDisabled() {
 }
 
 MediaFilter::~MediaFilter() {}
+
+bool DataSource::IsUrlSupported(const std::string& url) {
+  return true;
+}
+
+FilterType DataSource::filter_type() const {
+  return FILTER_DATA_SOURCE;
+}
+
+FilterType Demuxer::filter_type() const {
+  return FILTER_DEMUXER;
+}
+
+FilterType AudioDecoder::filter_type() const {
+  return FILTER_AUDIO_DECODER;
+}
+
+const char* AudioDecoder::major_mime_type() const {
+  return mime_type::kMajorTypeAudio;
+}
+
+FilterType AudioRenderer::filter_type() const {
+  return FILTER_AUDIO_RENDERER;
+}
+
+const char* AudioRenderer::major_mime_type() const {
+  return mime_type::kMajorTypeAudio;
+}
+
+FilterType VideoDecoder::filter_type() const {
+  return FILTER_VIDEO_DECODER;
+}
+
+const char* VideoDecoder::major_mime_type() const {
+  return mime_type::kMajorTypeVideo;
+}
+
+FilterType VideoRenderer::filter_type() const {
+  return FILTER_VIDEO_RENDERER;
+}
+
+const char* VideoRenderer::major_mime_type() const {
+  return mime_type::kMajorTypeVideo;
+}
 
 DemuxerStream::~DemuxerStream() {}
 

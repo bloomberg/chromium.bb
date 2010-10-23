@@ -68,16 +68,11 @@
 
 class GURL;
 
-namespace media {
-class FilterFactoryCollection;
-}
-
 namespace webkit_glue {
 
 class MediaResourceLoaderBridgeFactory;
 class WebDataSource;
 class WebVideoRenderer;
-class WebVideoRendererFactoryFactory;
 
 class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
                            public MessageLoop::DestructionObserver {
@@ -97,8 +92,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
     // Public methods called from the video renderer.
     void Repaint();
-    void SetVideoRenderer(WebVideoRenderer* video_renderer);
-    void SetDataSource(WebDataSource* data_source);
+    void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
+    void SetDataSource(scoped_refptr<WebDataSource> data_source);
 
     // Public methods called from WebMediaPlayerImpl.
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
@@ -153,9 +148,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   };
 
   // Construct a WebMediaPlayerImpl with reference to the client, and media
-  // filter factory collection. By providing the filter factory collection
-  // the implementor can provide more specific media filters that does resource
-  // loading and rendering. |factory| should contain filter factories for:
+  // filter collection. By providing the filter collection the implementor can
+  // provide more specific media filters that does resource loading and
+  // rendering. |collection| should contain filter factories for:
   // 1. Data source
   // 2. Audio renderer
   // 3. Video renderer (optional)
@@ -170,16 +165,15 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // provided by WebKit to perform renderering. The simple data source does
   // resource loading by loading the whole resource object into memory. Null
   // audio renderer is a fake audio device that plays silence. Provider of the
-  // |factory| can override the default filters by adding extra filters to
-  // |factory| before calling this method.
+  // |collection| can override the default filters by adding extra filters to
+  // |collection| before calling this method.
   //
-  // |video_renderer_factory| is used to construct a factory that should create
-  // a subclass of WebVideoRenderer.  Is deleted by WebMediaPlayerImpl.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     media::FilterFactoryCollection* factory,
-                     MediaResourceLoaderBridgeFactory* bridge_factory,
+                     const media::MediaFilterCollection& collection,
+                     MediaResourceLoaderBridgeFactory* bridge_factory_simple,
+                     MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
                      bool use_simple_data_source,
-                     WebVideoRendererFactoryFactory* video_renderer_factory);
+                     scoped_refptr<WebVideoRenderer> web_video_renderer);
   virtual ~WebMediaPlayerImpl();
 
   virtual void load(const WebKit::WebURL& url);
@@ -285,8 +279,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // for DCHECKs so methods calls won't execute in the wrong thread.
   MessageLoop* main_loop_;
 
-  // A collection of factories for creating filters.
-  scoped_refptr<media::FilterFactoryCollection> filter_factory_;
+  // A collection of filters.
+  media::MediaFilterCollection filter_collection_;
 
   // The actual pipeline and the thread it runs on.
   scoped_refptr<media::PipelineImpl> pipeline_;
@@ -321,29 +315,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
-
-// TODO(scherkus): WebMediaPlayerImpl creates and injects its Proxy into a
-// video renderer factory, so we need to (unfortunately) have a factory of a
-// factory so we can receive the proxy pointer without violating the
-// separation of renderer code from webkit glue code.  This is part of a
-// longer-term plan to rethink our FilterFactory strategy (refer to
-// http://crbug.com/28207).
-//
-// Either that or we rethink this Proxy business as a short-term solution.
-class WebVideoRendererFactoryFactory {
- public:
-  WebVideoRendererFactoryFactory() {}
-  virtual ~WebVideoRendererFactoryFactory() {}
-
-  // Creates a FilterFactory which should be capable of creating a
-  // WebVideoRenderer subclass.
-  virtual media::FilterFactory* CreateFactory(
-      WebMediaPlayerImpl::Proxy* proxy) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebVideoRendererFactoryFactory);
-};
-
 
 }  // namespace webkit_glue
 

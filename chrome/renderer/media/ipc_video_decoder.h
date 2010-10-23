@@ -21,13 +21,8 @@ class Context;
 class IpcVideoDecoder : public media::VideoDecoder,
                         public media::VideoDecodeEngine::EventHandler {
  public:
-  explicit IpcVideoDecoder(MessageLoop* message_loop,
-                           ggl::Context* ggl_context);
+  IpcVideoDecoder(MessageLoop* message_loop, ggl::Context* ggl_context);
   virtual ~IpcVideoDecoder();
-
-  static media::FilterFactory* CreateFactory(MessageLoop* message_loop,
-                                             ggl::Context* ggl_context);
-  static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
   // MediaFilter implementation.
   virtual void Stop(media::FilterCallback* callback);

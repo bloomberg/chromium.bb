@@ -22,7 +22,6 @@
 
 #include "base/lock.h"
 #include "media/base/buffers.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_algorithm_base.h"
 
@@ -30,6 +29,9 @@ namespace media {
 
 class AudioRendererBase : public AudioRenderer {
  public:
+  AudioRendererBase();
+  virtual ~AudioRendererBase();
+
   // MediaFilter implementation.
   virtual void Play(FilterCallback* callback);
   virtual void Pause(FilterCallback* callback);
@@ -42,10 +44,6 @@ class AudioRendererBase : public AudioRenderer {
   virtual bool HasEnded();
 
  protected:
-  // Only allow a factory to create this class.
-  AudioRendererBase();
-  virtual ~AudioRendererBase();
-
   // Called by Initialize().  |media_format| is the format of the AudioDecoder.
   // Subclasses should return true if they were able to initialize, false
   // otherwise.

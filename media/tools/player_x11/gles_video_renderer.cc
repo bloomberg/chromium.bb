@@ -33,12 +33,6 @@ GlesVideoRenderer::GlesVideoRenderer(Display* display, Window window,
 GlesVideoRenderer::~GlesVideoRenderer() {
 }
 
-// static
-bool GlesVideoRenderer::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
-}
-
 void GlesVideoRenderer::OnStop(media::FilterCallback* callback) {
   if (glx_thread_message_loop()) {
     glx_thread_message_loop()->PostTask(FROM_HERE,

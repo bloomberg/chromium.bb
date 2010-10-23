@@ -7,7 +7,6 @@
 
 #include <queue>
 
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/base/media_format.h"
 #include "media/video/video_decode_context.h"
@@ -24,13 +23,10 @@ class VideoFrame;
 class OmxVideoDecoder : public VideoDecoder,
                         public VideoDecodeEngine::EventHandler {
  public:
-  static FilterFactory* CreateFactory(VideoDecodeContext* decode_context);
-  static bool IsMediaFormatSupported(const MediaFormat& media_format);
-
-  OmxVideoDecoder(VideoDecodeEngine* decode_engine,
-                  VideoDecodeContext* decode_context);
+  explicit OmxVideoDecoder(VideoDecodeContext* decode_context);
   virtual ~OmxVideoDecoder();
 
+  // MediaFilter implementations.
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);
   virtual void Flush(FilterCallback* callback);

@@ -28,19 +28,6 @@ bool IsDataProtocol(const GURL& url) {
 
 namespace webkit_glue {
 
-bool SimpleDataSource::IsMediaFormatSupported(
-  const media::MediaFormat& media_format) {
-    std::string mime_type;
-    std::string url;
-    if (media_format.GetAsString(media::MediaFormat::kMimeType, &mime_type) &&
-        media_format.GetAsString(media::MediaFormat::kURL, &url)) {
-      GURL gurl(url);
-      if (IsProtocolSupportedForMedia(gurl))
-        return true;
-    }
-    return false;
-}
-
 SimpleDataSource::SimpleDataSource(
     MessageLoop* render_loop,
     webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory)

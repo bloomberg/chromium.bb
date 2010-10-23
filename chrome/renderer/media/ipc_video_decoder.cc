@@ -188,23 +188,3 @@ void IpcVideoDecoder::ConsumeVideoFrame(
 void IpcVideoDecoder::ProduceVideoSample(scoped_refptr<media::Buffer> buffer) {
   demuxer_stream_->Read(NewCallback(this, &IpcVideoDecoder::OnReadComplete));
 }
-
-// static
-media::FilterFactory* IpcVideoDecoder::CreateFactory(
-    MessageLoop* message_loop, ggl::Context* ggl_context) {
-  return new media::FilterFactoryImpl2<
-      IpcVideoDecoder, MessageLoop*, ggl::Context*>(message_loop, ggl_context);
-}
-
-// static
-bool IpcVideoDecoder::IsMediaFormatSupported(const media::MediaFormat& format) {
-  std::string mime_type;
-  if (!format.GetAsString(media::MediaFormat::kMimeType, &mime_type) &&
-      media::mime_type::kFFmpegVideo != mime_type)
-      return false;
-
-  // TODO(jiesun): Although we current only support H264 hardware decoding,
-  // in the future, we should query GpuVideoService for capabilities.
-  int codec_id;
-  return format.GetAsInteger(media::MediaFormat::kFFmpegCodecID, &codec_id);
-}

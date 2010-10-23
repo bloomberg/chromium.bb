@@ -9,35 +9,13 @@
 #include "media/base/video_frame.h"
 #include "media/base/media_format.h"
 
-IPCVideoRenderer::IPCVideoRenderer(
-    webkit_glue::WebMediaPlayerImpl::Proxy* proxy,
-    int routing_id)
-    : proxy_(proxy),
-      created_(false),
+IPCVideoRenderer::IPCVideoRenderer(int routing_id)
+    : created_(false),
       routing_id_(routing_id),
       stopped_(false, false) {
-  // TODO(hclam): decide whether to do the following line in this thread or
-  // in the render thread.
-  proxy->SetVideoRenderer(this);
 }
 
 IPCVideoRenderer::~IPCVideoRenderer() {
-}
-
-// static
-media::FilterFactory* IPCVideoRenderer::CreateFactory(
-    webkit_glue::WebMediaPlayerImpl::Proxy* proxy,
-    int routing_id) {
-  return new media::FilterFactoryImpl2<
-      IPCVideoRenderer,
-      webkit_glue::WebMediaPlayerImpl::Proxy*,
-      int>(proxy, routing_id);
-}
-
-// static
-bool IPCVideoRenderer::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
 }
 
 bool IPCVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
@@ -62,6 +40,11 @@ void IPCVideoRenderer::OnStop(media::FilterCallback* callback) {
 void IPCVideoRenderer::OnFrameAvailable() {
   proxy_->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IPCVideoRenderer::DoUpdateVideo));
+}
+
+void IPCVideoRenderer::SetWebMediaPlayerImplProxy(
+    webkit_glue::WebMediaPlayerImpl::Proxy* proxy) {
+  proxy_ = proxy;
 }
 
 void IPCVideoRenderer::SetRect(const gfx::Rect& rect) {

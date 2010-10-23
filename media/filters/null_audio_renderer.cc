@@ -26,15 +26,6 @@ NullAudioRenderer::~NullAudioRenderer() {
   DCHECK_EQ(kNullThreadHandle, thread_);
 }
 
-// static
-bool NullAudioRenderer::IsMediaFormatSupported(
-    const MediaFormat& media_format) {
-  int channels;
-  int sample_rate;
-  int sample_bits;
-  return ParseMediaFormat(media_format, &channels, &sample_rate, &sample_bits);
-}
-
 void NullAudioRenderer::SetVolume(float volume) {
   // Do nothing.
 }

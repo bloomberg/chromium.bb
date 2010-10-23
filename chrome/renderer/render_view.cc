@@ -2539,14 +2539,13 @@ WebSharedWorker* RenderView::createSharedWorker(
 
 WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  scoped_refptr<media::FilterFactoryCollection> factory =
-      new media::FilterFactoryCollection();
+  media::MediaFilterCollection collection;
+
   // Add in any custom filter factories first.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // Add the chrome specific audio renderer.
-    factory->AddFactory(
-        AudioRendererImpl::CreateFactory(audio_message_filter()));
+    collection.push_back(new AudioRendererImpl(audio_message_filter()));
   }
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
@@ -2557,7 +2556,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     bool ret = frame->view()->graphicsContext3D()->makeContextCurrent();
     CHECK(ret) << "Failed to switch context";
 
-    factory->AddFactory(IpcVideoDecoder::CreateFactory(
+    collection.push_back(new IpcVideoDecoder(
         MessageLoop::current(), ggl::GetCurrentContext()));
   }
 
@@ -2565,7 +2564,8 @@ WebMediaPlayer* RenderView::createMediaPlayer(
       WebApplicationCacheHostImpl::FromFrame(frame);
 
   // TODO(hclam): obtain the following parameters from |client|.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
+  // Create two bridge factory for two data sources.
+  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_simple =
       new webkit_glue::MediaResourceLoaderBridgeFactory(
           GURL(frame->url()),  // referrer
           "null",  // frame origin
@@ -2574,18 +2574,32 @@ WebMediaPlayer* RenderView::createMediaPlayer(
           appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           routing_id());
 
-  webkit_glue::WebVideoRendererFactoryFactory* factory_factory = NULL;
+  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_buffered =
+      new webkit_glue::MediaResourceLoaderBridgeFactory(
+          GURL(frame->url()),  // referrer
+          "null",  // frame origin
+          "null",  // main_frame_origin
+          base::GetCurrentProcId(),
+          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
+          routing_id());
+
+  scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;
   if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
-    factory_factory = new IPCVideoRenderer::FactoryFactory(routing_id_);
+    scoped_refptr<IPCVideoRenderer> renderer =
+        new IPCVideoRenderer(routing_id_);
+    collection.push_back(renderer);
+    video_renderer = renderer;
   } else {
     bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
-    factory_factory =
-        new webkit_glue::VideoRendererImpl::FactoryFactory(pts_logging);
+    scoped_refptr<webkit_glue::VideoRendererImpl> renderer =
+        new webkit_glue::VideoRendererImpl(pts_logging);
+    collection.push_back(renderer);
+    video_renderer = renderer;
   }
 
   return new webkit_glue::WebMediaPlayerImpl(
-      client, factory, bridge_factory,
-      cmd_line->HasSwitch(switches::kSimpleDataSource), factory_factory);
+      client, collection, bridge_factory_simple, bridge_factory_buffered,
+      cmd_line->HasSwitch(switches::kSimpleDataSource),video_renderer);
 }
 
 WebApplicationCacheHost* RenderView::createApplicationCacheHost(

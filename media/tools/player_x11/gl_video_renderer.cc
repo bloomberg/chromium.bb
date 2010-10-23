@@ -24,12 +24,6 @@ GlVideoRenderer::GlVideoRenderer(Display* display, Window window,
 GlVideoRenderer::~GlVideoRenderer() {
 }
 
-// static
-bool GlVideoRenderer::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  return ParseMediaFormat(media_format, NULL, NULL, NULL, NULL);
-}
-
 void GlVideoRenderer::OnStop(media::FilterCallback* callback) {
   glXMakeCurrent(display_, 0, NULL);
   glXDestroyContext(display_, gl_context_);

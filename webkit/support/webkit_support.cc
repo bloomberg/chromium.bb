@@ -265,15 +265,22 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
 
 WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
                                           WebMediaPlayerClient* client) {
-  scoped_refptr<media::FilterFactoryCollection> factory =
-      new media::FilterFactoryCollection();
+  media::MediaFilterCollection collection;
 
   appcache::WebApplicationCacheHostImpl* appcache_host =
       appcache::WebApplicationCacheHostImpl::FromFrame(frame);
 
   // TODO(hclam): this is the same piece of code as in RenderView, maybe they
   // should be grouped together.
-  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
+  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_simple =
+      new webkit_glue::MediaResourceLoaderBridgeFactory(
+          GURL(),  // referrer
+          "null",  // frame origin
+          "null",  // main_frame_origin
+          base::GetCurrentProcId(),
+          appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
+          0);
+  webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_buffered =
       new webkit_glue::MediaResourceLoaderBridgeFactory(
           GURL(),  // referrer
           "null",  // frame origin
@@ -282,9 +289,13 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
           appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           0);
 
+  scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer =
+      new webkit_glue::VideoRendererImpl(false);
+  collection.push_back(video_renderer);
+
   return new webkit_glue::WebMediaPlayerImpl(
-      client, factory, bridge_factory, false,
-      new webkit_glue::VideoRendererImpl::FactoryFactory(false));
+      client, collection, bridge_factory_simple, bridge_factory_buffered,
+      false, video_renderer);
 }
 
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(

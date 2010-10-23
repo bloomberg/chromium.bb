@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "media/base/callback.h"
-#include "media/base/factory.h"
 #include "media/base/filter_host.h"
 #include "media/base/limits.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -16,38 +15,9 @@
 
 namespace media {
 
-// static
-FilterFactory* OmxVideoDecoder::CreateFactory(
-    VideoDecodeContext* decode_context) {
-  return new FilterFactoryImpl2<OmxVideoDecoder,
-                                VideoDecodeEngine*,
-                                VideoDecodeContext*>(
-      new OmxVideoDecodeEngine(), decode_context);
-}
-
-// static
-bool OmxVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
-  std::string mime_type;
-  if (!format.GetAsString(MediaFormat::kMimeType, &mime_type) ||
-      mime_type::kFFmpegVideo != mime_type) {
-    return false;
-  }
-
-  // TODO(ajwong): Find a good way to white-list formats that OpenMAX can
-  // handle.
-  int codec_id;
-  if (format.GetAsInteger(MediaFormat::kFFmpegCodecID, &codec_id) &&
-      codec_id == CODEC_ID_H264) {
-    return true;
-  }
-
-  return false;
-}
-
 OmxVideoDecoder::OmxVideoDecoder(
-    VideoDecodeEngine* engine,
     VideoDecodeContext* context)
-    : decode_engine_(engine),
+    : decode_engine_(new OmxVideoDecodeEngine()),
       decode_context_(context),
       width_(0), height_(0) {
   DCHECK(decode_engine_.get());

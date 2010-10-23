@@ -12,29 +12,17 @@
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"
 
 class GlesVideoRenderer : public media::VideoRendererBase {
  public:
-  static media::FilterFactory* CreateFactory(Display* display,
-                                             Window window,
-                                             MessageLoop* message_loop) {
-    return new media::FilterFactoryImpl3<
-        GlesVideoRenderer, Display*, Window, MessageLoop*>(display, window,
-                                                           message_loop);
-  }
-
   GlesVideoRenderer(Display* display, Window window, MessageLoop* message_loop);
 
   // This method is called to paint the current video frame to the assigned
   // window.
   void Paint();
-
-  // media::FilterFactoryImpl2 Implementation.
-  static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
   static GlesVideoRenderer* instance() { return instance_; }
 

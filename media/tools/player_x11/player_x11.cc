@@ -97,29 +97,26 @@ bool InitPipeline(MessageLoop* message_loop,
   }
 
   // Create our filter factories.
-  scoped_refptr<media::FilterFactoryCollection> factories =
-      new media::FilterFactoryCollection();
-  factories->AddFactory(media::FileDataSource::CreateFactory());
-  factories->AddFactory(media::FFmpegAudioDecoder::CreateFactory());
-  factories->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
+  media::MediaFilterCollection collection;
+  collection.push_back(new media::FileDataSource());
+  collection.push_back(new media::FFmpegDemuxer());
+  collection.push_back(new media::FFmpegAudioDecoder());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax)) {
-    factories->AddFactory(media::OmxVideoDecoder::CreateFactory(NULL));
+    collection.push_back(new media::OmxVideoDecoder(NULL));
   } else {
-    factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory(NULL));
+    collection.push_back(new media::FFmpegVideoDecoder(NULL));
   }
-  factories->AddFactory(Renderer::CreateFactory(g_display, g_window,
-                                                paint_message_loop));
+  collection.push_back(new Renderer(g_display, g_window, paint_message_loop));
 
-  if (enable_audio) {
-    factories->AddFactory(media::AudioRendererImpl::CreateFilterFactory());
-  } else {
-    factories->AddFactory(media::NullAudioRenderer::CreateFilterFactory());
-  }
+  if (enable_audio)
+    collection.push_back(new media::AudioRendererImpl());
+  else
+    collection.push_back(new media::NullAudioRenderer());
 
   // Creates the pipeline and start it.
   *pipeline = new media::PipelineImpl(message_loop);
-  (*pipeline)->Start(factories, filename, NULL);
+  (*pipeline)->Start(collection, filename, NULL);
 
   // Wait until the pipeline is fully initialized.
   while (true) {

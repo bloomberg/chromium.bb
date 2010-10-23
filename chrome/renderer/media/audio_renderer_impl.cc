@@ -51,14 +51,6 @@ base::TimeDelta AudioRendererImpl::ConvertToDuration(int bytes) {
   return base::TimeDelta();
 }
 
-bool AudioRendererImpl::IsMediaFormatSupported(
-    const media::MediaFormat& media_format) {
-  int channels;
-  int sample_rate;
-  int sample_bits;
-  return ParseMediaFormat(media_format, &channels, &sample_rate, &sample_bits);
-}
-
 bool AudioRendererImpl::OnInitialize(const media::MediaFormat& media_format) {
   // Parse integer values in MediaFormat.
   if (!ParseMediaFormat(media_format,

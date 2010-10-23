@@ -42,8 +42,6 @@ class SimpleDataSourceTest : public testing::Test {
     bridge_factory_.reset(
         new NiceMock<MockMediaResourceLoaderBridgeFactory>());
     bridge_.reset(new NiceMock<MockResourceLoaderBridge>());
-    factory_ = SimpleDataSource::CreateFactory(MessageLoop::current(),
-                                               bridge_factory_.get());
 
     for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
@@ -58,11 +56,8 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void InitializeDataSource(const char* url) {
-    media::MediaFormat url_format;
-    url_format.SetAsString(media::MediaFormat::kMimeType,
-                           media::mime_type::kURL);
-    url_format.SetAsString(media::MediaFormat::kURL, url);
-    data_source_ = factory_->Create<SimpleDataSource>(url_format);
+    data_source_ = new SimpleDataSource(MessageLoop::current(),
+                                        bridge_factory_.get());
     CHECK(data_source_);
 
     // There is no need to provide a message loop to data source.
@@ -167,7 +162,6 @@ class SimpleDataSourceTest : public testing::Test {
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<NiceMock<MockMediaResourceLoaderBridgeFactory> > bridge_factory_;
   scoped_ptr<NiceMock<MockResourceLoaderBridge> > bridge_;
-  scoped_refptr<media::FilterFactory> factory_;
   scoped_refptr<SimpleDataSource> data_source_;
   StrictMock<media::MockFilterHost> host_;
   StrictMock<media::MockFilterCallback> callback_;
@@ -195,11 +189,9 @@ TEST_F(SimpleDataSourceTest, InitializeFile) {
 }
 
 TEST_F(SimpleDataSourceTest, InitializeData) {
-  media::MediaFormat url_format;
-  url_format.SetAsString(media::MediaFormat::kMimeType,
-                         media::mime_type::kURL);
-  url_format.SetAsString(media::MediaFormat::kURL, kDataUrl);
-  data_source_ = factory_->Create<SimpleDataSource>(url_format);
+  data_source_ = new SimpleDataSource(MessageLoop::current(),
+                                      bridge_factory_.get());
+  EXPECT_TRUE(data_source_->IsUrlSupported(kDataUrl));
   CHECK(data_source_);
 
   // There is no need to provide a message loop to data source.
@@ -215,15 +207,6 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
   MessageLoop::current()->RunAllPending();
 
   DestroyDataSource();
-}
-
-TEST_F(SimpleDataSourceTest, InitializeInvalid) {
-  media::MediaFormat url_format;
-  url_format.SetAsString(media::MediaFormat::kMimeType,
-                         media::mime_type::kURL);
-  url_format.SetAsString(media::MediaFormat::kURL, kInvalidUrl);
-  data_source_ = factory_->Create<SimpleDataSource>(url_format);
-  EXPECT_FALSE(data_source_);
 }
 
 TEST_F(SimpleDataSourceTest, RequestFailed) {

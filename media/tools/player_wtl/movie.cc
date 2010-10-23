@@ -19,7 +19,7 @@ using media::FFmpegAudioDecoder;
 using media::FFmpegDemuxer;
 using media::FFmpegVideoDecoder;
 using media::FileDataSource;
-using media::FilterFactoryCollection;
+using media::MediaFilterCollection;
 using media::PipelineImpl;
 
 namespace media {
@@ -53,28 +53,26 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
     Close();
   }
 
-  // Create our filter factories.
-  scoped_refptr<FilterFactoryCollection> factories =
-      new FilterFactoryCollection();
-  factories->AddFactory(FileDataSource::CreateFactory());
-  factories->AddFactory(FFmpegAudioDecoder::CreateFactory());
-  factories->AddFactory(FFmpegDemuxer::CreateFilterFactory());
-  factories->AddFactory(FFmpegVideoDecoder::CreateFactory(NULL));
+  // Create filter collection.
+  MediaFilterCollection collection;
+  collection.push_back(new FileDataSource());
+  collection.push_back(new FFmpegAudioDecoder());
+  collection.push_back(new FFmpegDemuxer());
+  collection.push_back(new FFmpegVideoDecoder(NULL));
 
   if (enable_audio_) {
-    factories->AddFactory(AudioRendererImpl::CreateFilterFactory());
+    collection.push_back(new AudioRendererImpl());
   } else {
-    factories->AddFactory(media::NullAudioRenderer::CreateFilterFactory());
+    collection.push_back(new media::NullAudioRenderer());
   }
-  factories->AddFactory(
-      new media::InstanceFilterFactory<WtlVideoRenderer>(video_renderer));
+  collection.push_back(video_renderer);
 
   thread_.reset(new base::Thread("PipelineThread"));
   thread_->Start();
   pipeline_ = new PipelineImpl(thread_->message_loop());
 
   // Create and start our pipeline.
-  pipeline_->Start(factories, WideToUTF8(std::wstring(url)), NULL);
+  pipeline_->Start(collection, WideToUTF8(std::wstring(url)), NULL);
   while (true) {
     PlatformThread::Sleep(100);
     if (pipeline_->IsInitialized())
