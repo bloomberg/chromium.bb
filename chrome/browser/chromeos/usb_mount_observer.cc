@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,13 +105,13 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
         }
       }
     }
-    LOG(INFO) << "Got added mount:" << path;
+    VLOG(1) << "Got added mount: " << path;
   } else if (evt == chromeos::DISK_REMOVED ||
              evt == chromeos::DEVICE_REMOVED) {
     RemoveBrowserFromVector(path);
   } else if (evt == chromeos::DISK_CHANGED) {
     BrowserIterator iter = FindBrowserForPath(path);
-    LOG(INFO) << "Got changed mount:" << path;
+    VLOG(1) << "Got changed mount: " << path;
     if (iter == browsers_.end()) {
       // We don't currently have this one, so it must have been
       // mounted
@@ -142,10 +142,10 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
       }
     }
   } else if (evt == chromeos::DEVICE_ADDED) {
-    LOG(INFO) << "Got device added" << path;
+    VLOG(1) << "Got device added: " << path;
     OpenFileBrowse(kFilebrowseScanning, path, true);
   } else if (evt == chromeos::DEVICE_SCANNED) {
-    LOG(INFO) << "Got device scanned:" << path;
+    VLOG(1) << "Got device scanned: " << path;
   }
 }
 

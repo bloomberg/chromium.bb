@@ -35,7 +35,7 @@ bool MetricsCrosSettingsProvider::Get(const std::string& path,
 
 // static
 bool MetricsCrosSettingsProvider::SetMetricsStatus(bool enabled) {
-  LOG(INFO) << "Setting cros stats/crash metric reporting to " << enabled;
+  VLOG(1) << "Setting cros stats/crash metric reporting to " << enabled;
   if (enabled != GoogleUpdateSettings::GetCollectStatsConsent()) {
     bool new_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
 #if defined(USE_LINUX_BREAKPAD)

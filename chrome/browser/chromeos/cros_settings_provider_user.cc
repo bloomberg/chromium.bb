@@ -147,14 +147,14 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
       SignedSettingsHelper::Get()->StartStorePropertyOp(path, value, this);
       UpdateCacheBool(path.c_str(), bool_value);
 
-      LOG(INFO) << "Set cros setting " << path << "=" << value;
+      VLOG(1) << "Set cros setting " << path << "=" << value;
     }
   } else if (path == kDeviceOwner) {
     LOG(INFO) << "Setting owner is not supported. "
               << "Please use 'UpdateCachedOwner' instead.";
   } else if (path == kAccountsPrefUsers) {
-    LOG(INFO) << "Setting user whitelist is not implemented."
-              << "Please use whitelist/unwhitelist instead.";
+    VLOG(1) << "Setting user whitelist is not implemented.  Please use "
+               "whitelist/unwhitelist instead.";
   } else {
     LOG(WARNING) << "Try to set unhandled cros setting " << path;
   }
@@ -185,7 +185,7 @@ bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
 
 void UserCrosSettingsProvider::OnWhitelistCompleted(bool success,
     const std::string& email) {
-  LOG(INFO) << "Add " << email << " to whitelist, success=" << success;
+  VLOG(1) << "Add " << email << " to whitelist, success=" << success;
 
   // Reload the whitelist on settings op failure.
   if (!success)
@@ -194,7 +194,7 @@ void UserCrosSettingsProvider::OnWhitelistCompleted(bool success,
 
 void UserCrosSettingsProvider::OnUnwhitelistCompleted(bool success,
     const std::string& email) {
-  LOG(INFO) << "Remove " << email << " from whitelist, success=" << success;
+  VLOG(1) << "Remove " << email << " from whitelist, success=" << success;
 
   // Reload the whitelist on settings op failure.
   if (!success)
@@ -203,8 +203,8 @@ void UserCrosSettingsProvider::OnUnwhitelistCompleted(bool success,
 
 void UserCrosSettingsProvider::OnStorePropertyCompleted(
     bool success, const std::string& name, const std::string& value) {
-  LOG(INFO) << "Store cros setting " << name << "=" << value
-            << ", success=" << success;
+  VLOG(1) << "Store cros setting " << name << "=" << value << ", success="
+          << success;
 
   // Reload the setting if store op fails.
   if (!success)
@@ -218,7 +218,7 @@ void UserCrosSettingsProvider::OnRetrievePropertyCompleted(
     return;
   }
 
-  LOG(INFO) << "Retrieved cros setting " << name << "=" << value;
+  VLOG(1) << "Retrieved cros setting " << name << "=" << value;
 
   if (bool_settings_.count(name)) {
     UpdateCacheBool(name.c_str(), value == "true" ? true : false);

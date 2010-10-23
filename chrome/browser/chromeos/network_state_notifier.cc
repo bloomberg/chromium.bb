@@ -47,8 +47,7 @@ void NetworkStateNotifier::NetworkChanged(NetworkLibrary* cros) {
 
 void NetworkStateNotifier::UpdateNetworkState(
     NetworkStateDetails::State new_state) {
-  DLOG(INFO) << "UpdateNetworkState: new="
-             << new_state << ", old=" << state_;
+  DVLOG(1) << "UpdateNetworkState: new=" << new_state << ", old=" << state_;
   if (state_ == NetworkStateDetails::CONNECTED &&
       new_state != NetworkStateDetails::CONNECTED) {
     offline_start_time_ = Time::Now();

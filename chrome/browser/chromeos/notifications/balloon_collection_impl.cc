@@ -160,7 +160,7 @@ void BalloonCollectionImpl::Observe(NotificationType type,
   // BalloonViewImpl before IO thread gets deleted in the
   // BrowserProcessImpl's destructor.  See http://crbug.com/40810
   // for details.
-  if(app_closing)
+  if (app_closing)
     Shutdown();
 }
 
@@ -168,7 +168,7 @@ void BalloonCollectionImpl::Shutdown() {
   // We need to remove the panel first because deleting
   // views that are not owned by parent will not remove
   // themselves from the parent.
-  DLOG(INFO) << "Shutting down notification UI";
+  DVLOG(1) << "Shutting down notification UI";
   notification_ui_.reset();
   STLDeleteElements(&balloons_);
 }

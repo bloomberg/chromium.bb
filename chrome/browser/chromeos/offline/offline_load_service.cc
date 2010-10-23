@@ -62,8 +62,8 @@ bool OfflineLoadService::ShouldProceed(int process_host_id,
       process_host_id, render_view_id);
   DCHECK(tab_contents);
   bool proceed = tabs_.find(tab_contents) != tabs_.end();
-  DLOG(INFO) << "ShouldProceed:" << proceed << ", url=" << url.spec()
-             << ", tab_contents=" << tab_contents;
+  DVLOG(1) << "ShouldProceed:" << proceed << ", url=" << url.spec()
+           << ", tab_contents=" << tab_contents;
   return proceed;
 }
 
@@ -75,8 +75,8 @@ void OfflineLoadService::Proceeded(int process_host_id,
       process_host_id, render_view_id);
   DCHECK(tab_contents);
   if (tabs_.find(tab_contents) == tabs_.end()) {
-    DLOG(INFO) << "Proceeded: url=" << url.spec()
-               << ", tab_contents=" << tab_contents;
+    DVLOG(1) << "Proceeded: url=" << url.spec()
+             << ", tab_contents=" << tab_contents;
     tabs_.insert(tab_contents);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

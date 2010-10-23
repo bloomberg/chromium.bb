@@ -358,10 +358,10 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl()
     retrieve_property_op_ = SignedSettings::CreateRetrievePropertyOp(
         kSettingProxyEverywhere, this);
     if (retrieve_property_op_ && retrieve_property_op_->Execute()) {
-      LOG(INFO) << "Start retrieving proxy setting from device";
+      VLOG(1) << "Start retrieving proxy setting from device";
       use_default = false;
     } else {
-      LOG(INFO) << "Fail to retrieve proxy setting from device";
+      VLOG(1) << "Fail to retrieve proxy setting from device";
     }
   }
   if (use_default)
@@ -413,7 +413,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToPACScript(const GURL& pac_url) {
     OnUISetProxyConfig(true);
     return true;
   }
-  LOG(INFO) << "Cannot set proxy: invalid pac url";
+  VLOG(1) << "Cannot set proxy: invalid pac url";
   return false;
 }
 
@@ -427,7 +427,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
     OnUISetProxyConfig(true);
     return true;
   }
-  LOG(INFO) << "Cannot set proxy: invalid single server";
+  VLOG(1) << "Cannot set proxy: invalid single server";
   return false;
 }
 
@@ -454,7 +454,7 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
     OnUISetProxyConfig(true);
     return true;
   }
-  LOG(INFO) << "Cannot set proxy: invalid " << scheme << " server";
+  VLOG(1) << "Cannot set proxy: invalid " << scheme << " server";
   return false;
 }
 
@@ -466,8 +466,8 @@ bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(
          reference_config_.mode == ProxyConfig::MODE_PROXY_PER_SCHEME);
   if (reference_config_.mode != ProxyConfig::MODE_SINGLE_PROXY &&
       reference_config_.mode != ProxyConfig::MODE_PROXY_PER_SCHEME) {
-    LOG(INFO) << "Cannot set bypass rules for proxy mode ["
-              << reference_config_.mode << "]";
+    VLOG(1) << "Cannot set bypass rules for proxy mode ["
+             << reference_config_.mode << "]";
     return false;
   }
   reference_config_.bypass_rules = bypass_rules;
@@ -501,14 +501,14 @@ bool ProxyConfigServiceImpl::IOGetProxyConfig(net::ProxyConfig* net_config) {
 }
 
 void ProxyConfigServiceImpl::OnSettingsOpSucceeded(bool value) {
-  LOG(INFO) << "Stored proxy setting to device";
+  VLOG(1) << "Stored proxy setting to device";
   store_property_op_ = NULL;
   if (persist_to_device_pending_)
     PersistConfigToDevice();
 }
 
 void ProxyConfigServiceImpl::OnSettingsOpSucceeded(std::string value) {
-  LOG(INFO) << "Retrieved proxy setting from device, value=[" << value << "]";
+  VLOG(1) << "Retrieved proxy setting from device, value=[" << value << "]";
   if (reference_config_.Deserialize(value)) {
     OnUISetProxyConfig(false);
   } else {
@@ -534,7 +534,7 @@ void ProxyConfigServiceImpl::OnSettingsOpFailed() {
 //------------------ ProxyConfigServiceImpl: private methods -------------------
 
 void ProxyConfigServiceImpl::InitConfigToDefault(bool post_to_io_thread) {
-  LOG(INFO) << "Using default proxy config: auto-detect";
+  VLOG(1) << "Using default proxy config: auto-detect";
   reference_config_.mode = ProxyConfig::MODE_AUTO_DETECT;
   reference_config_.automatic_proxy.source = ProxyConfig::SOURCE_OWNER;
   if (post_to_io_thread && can_post_task_) {
@@ -551,14 +551,14 @@ void ProxyConfigServiceImpl::PersistConfigToDevice() {
   persist_to_device_pending_ = false;
   std::string value;
   if (!reference_config_.Serialize(&value)) {
-    LOG(INFO) << "Error serializing proxy config";
+    VLOG(1) << "Error serializing proxy config";
     return;
   }
   store_property_op_ = SignedSettings::CreateStorePropertyOp(
       kSettingProxyEverywhere, value, this);
   bool rc = store_property_op_->Execute();
-  LOG(INFO) << "Start storing proxy setting to device, value=" << value
-            << ", rc=" << rc;
+  VLOG(1) << "Start storing proxy setting to device, value=" << value << ", rc="
+          << rc;
 }
 
 void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
@@ -567,14 +567,14 @@ void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
   Task* task = NewRunnableMethod(this,
       &ProxyConfigServiceImpl::IOSetProxyConfig, reference_config_);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
-    LOG(INFO) << "Couldn't post task to IO thread to set new proxy config";
+    VLOG(1) << "Couldn't post task to IO thread to set new proxy config";
     delete task;
   }
 
   if (persist_to_device && CrosLibrary::Get()->EnsureLoaded()) {
     if (store_property_op_) {
       persist_to_device_pending_ = true;
-      LOG(INFO) << "Pending persisting proxy setting to device";
+      VLOG(1) << "Pending persisting proxy setting to device";
     } else {
       PersistConfigToDevice();
     }
@@ -592,7 +592,7 @@ void ProxyConfigServiceImpl::CheckCurrentlyOnUIThread() {
 void ProxyConfigServiceImpl::IOSetProxyConfig(const ProxyConfig& new_config) {
   // This is called on the IO thread (posted from UI thread).
   CheckCurrentlyOnIOThread();
-  LOG(INFO) << "Proxy configuration changed";
+  VLOG(1) << "Proxy configuration changed";
   has_config_ = true;
   cached_config_ = new_config;
   // Notify observers of new proxy config.

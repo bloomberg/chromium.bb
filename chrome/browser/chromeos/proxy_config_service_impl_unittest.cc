@@ -552,8 +552,8 @@ TEST_F(ProxyConfigServiceImplTest, SerializeAndDeserialize) {
       src_serializer.Serialize(*net_src_cfg.ToValue());
       JSONStringValueSerializer tgt_serializer(&tgt_output);
       tgt_serializer.Serialize(*net_tgt_cfg.ToValue());
-      LOG(INFO) << "source:\n" << src_output;
-      LOG(INFO) << "target:\n" << tgt_output;
+      VLOG(1) << "source:\n" << src_output
+              << "\ntarget:\n" << tgt_output;
     }
 #endif  // !defined(NDEBUG)
     EXPECT_TRUE(net_src_cfg.Equals(net_tgt_cfg));

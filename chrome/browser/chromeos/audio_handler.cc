@@ -58,7 +58,7 @@ void AudioHandler::AdjustVolumeByPercent(double adjust_by_percent) {
   if (!VerifyMixerConnection())
     return;
 
-  DLOG(INFO) << "Adjusting Volume by " << adjust_by_percent << " percent";
+  DVLOG(1) << "Adjusting Volume by " << adjust_by_percent << " percent";
 
   double volume = mixer_->GetVolumeDb();
   double pct = VolumeDbToPercent(volume);
@@ -90,14 +90,14 @@ void AudioHandler::SetMute(bool do_mute) {
   if (!VerifyMixerConnection())
     return;
 
-  DLOG(INFO) << "Setting Mute to " << do_mute;
+  DVLOG(1) << "Setting Mute to " << do_mute;
 
   mixer_->SetMute(do_mute);
 }
 
 void AudioHandler::OnMixerInitialized(bool success) {
   connected_ = success;
-  DLOG(INFO) << "OnMixerInitialized, success = " << success;
+  DVLOG(1) << "OnMixerInitialized, success = " << success;
 }
 
 AudioHandler::AudioHandler()
@@ -132,8 +132,8 @@ bool AudioHandler::VerifyMixerConnection() {
 
   if (reconnect_tries_ < kMaxReconnectTries) {
     reconnect_tries_++;
-    LOG(INFO) << "Re-connecting to PulseAudio attempt " << reconnect_tries_
-              << "/" << kMaxReconnectTries;
+    VLOG(1) << "Re-connecting to PulseAudio attempt " << reconnect_tries_ << "/"
+            << kMaxReconnectTries;
     mixer_.reset(new PulseAudioMixer());
     connected_ = mixer_->InitSync();
     if (connected_) {

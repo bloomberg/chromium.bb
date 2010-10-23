@@ -271,7 +271,7 @@ namespace chromeos {
 
 class BalloonContainer : public views::View {
  public:
-  BalloonContainer(int margin)
+  explicit BalloonContainer(int margin)
       : margin_(margin),
         sticky_container_(new BalloonSubContainer(margin)),
         non_sticky_container_(new BalloonSubContainer(margin)) {
@@ -700,7 +700,7 @@ void NotificationPanel::ScrollBalloonToVisible(Balloon* balloon) {
 void NotificationPanel::UpdatePanel(bool update_container_size) {
   if (update_container_size)
     UpdateContainerBounds();
-  switch(state_) {
+  switch (state_) {
     case KEEP_SIZE: {
       gfx::Rect min_bounds = GetPreferredBounds();
       gfx::Rect panel_bounds;
@@ -806,8 +806,8 @@ void NotificationPanel::OnStale(BalloonViewImpl* view) {
 
 void NotificationPanel::SetState(State new_state, const char* name) {
 #if !defined(NDEBUG)
-  DLOG(INFO) << "state transition " << ToStr(state_) << " >> "
-             << ToStr(new_state) << " in " << name;
+  DVLOG(1) << "state transition " << ToStr(state_) << " >> " << ToStr(new_state)
+           << " in " << name;
 #endif
   state_ = new_state;
 }

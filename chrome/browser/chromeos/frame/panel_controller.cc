@@ -315,7 +315,7 @@ void PanelController::OnCloseButtonPressed() {
 PanelController::TitleContentView::TitleContentView(
     PanelController* panel_controller)
         : panel_controller_(panel_controller) {
-  LOG(INFO) << "panel: c " << this;
+  VLOG(1) << "panel: c " << this;
   InitializeResources();
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
@@ -401,7 +401,7 @@ void PanelController::TitleContentView::ButtonPressed(
 }
 
 PanelController::TitleContentView::~TitleContentView() {
-  LOG(INFO) << "panel: delete " << this;
+  VLOG(1) << "panel: delete " << this;
 }
 
 }  // namespace chromeos

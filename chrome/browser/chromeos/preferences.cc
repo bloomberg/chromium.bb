@@ -404,7 +404,7 @@ void Preferences::SetLanguageConfigStringList(
 void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
                                                    const char* name,
                                                    const std::string& value) {
-  LOG(INFO) << "Setting " << name << " to '" << value << "'";
+  VLOG(1) << "Setting " << name << " to '" << value << "'";
 
   std::vector<std::string> split_values;
   if (!value.empty())
