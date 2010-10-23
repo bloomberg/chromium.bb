@@ -55,9 +55,9 @@
 
 #if defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
 // See bug http://crbug.com/60444 for details.
-define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
+#define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
 #else
-define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
+#define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
 #endif
 
 namespace {
