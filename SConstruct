@@ -496,16 +496,6 @@ if (pre_base_env['TARGET_ARCHITECTURE'] == 'arm' and
 pre_base_env.AddMethod(lambda self: ARGUMENTS.get('running_on_valgrind'),
                        'IsRunningUnderValgrind')
 
-def PlatformQualificationTestsEnabled(env):
-  if (GetEmulator(env) or
-      env.Bit('disable_hardy64_vmware_failures') or
-      env.IsRunningUnderValgrind()):
-    return False
-
-  return True
-
-pre_base_env.AddMethod(PlatformQualificationTestsEnabled)
-
 # ----------------------------------------------------------
 # PLUGIN PREREQUISITES
 # ----------------------------------------------------------
@@ -879,9 +869,9 @@ def CommandSelLdrTestNacl(env, name, command,
     sel_ldr_flags = []
 
   # Skip platform qualification checks on configurations with known issues.
-  if (GetEmulator(env) or
-      env.Bit('disable_hardy64_vmware_failures') or
-      env.IsRunningUnderValgrind()):
+  if GetEmulator(env) or \
+    env.Bit('disable_hardy64_vmware_failures') or \
+    env.IsRunningUnderValgrind():
     sel_ldr_flags += ['-Q']
 
   if env.Bit('nacl_glibc'):
