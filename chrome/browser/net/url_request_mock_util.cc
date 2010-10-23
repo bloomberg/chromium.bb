@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/path_service.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
@@ -24,6 +25,11 @@ void SetUrlRequestMocksEnabled(bool enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (enabled) {
+    // We have to look around for our helper files, but we only use
+    // this from tests, so allow these IO operations to happen
+    // anywhere.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     URLRequestFilter::GetInstance()->ClearHandlers();
 
     URLRequestFailedDnsJob::AddUrlHandler();

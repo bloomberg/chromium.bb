@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 
 #include "base/file_util.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +41,10 @@ URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(URLRequest* request) {
       return NULL;
   }
 
+  // It's ok to do a blocking disk access on this thread; this class
+  // is just used for tests.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   // Search for this request's url, ignoring any query parameters.
   GURL url = request->url();
   if (url.has_query()) {
@@ -61,6 +66,9 @@ URLRequestJob* AutoUpdateInterceptor::MaybeIntercept(URLRequest* request) {
 void AutoUpdateInterceptor::SetResponse(const std::string url,
                                         const FilePath& path) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // It's ok to do a blocking disk access on this thread; this class
+  // is just used for tests.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   GURL gurl(url);
   EXPECT_EQ("http", gurl.scheme());
   EXPECT_EQ("localhost", gurl.host());
