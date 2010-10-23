@@ -21,8 +21,10 @@ LazyInstance<ThreadLocalBoolean, LeakyLazyInstanceTraits<ThreadLocalBoolean> >
 }  // anonymous namespace
 
 // static
-void ThreadRestrictions::SetIOAllowed(bool allowed) {
+bool ThreadRestrictions::SetIOAllowed(bool allowed) {
+  bool previous_allowed = g_io_disallowed.Get().Get();
   g_io_disallowed.Get().Set(!allowed);
+  return !previous_allowed;
 }
 
 // static

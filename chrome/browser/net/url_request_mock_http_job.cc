@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -87,6 +88,10 @@ bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
 // Private const version.
 void URLRequestMockHTTPJob::GetResponseInfoConst(
     net::HttpResponseInfo* info) const {
+  // We have to load our headers from disk, but we only use this class
+  // from tests, so allow these IO operations to happen on any thread.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   FilePath header_file = FilePath(file_path_.value() + kMockHeaderFileSuffix);
   std::string raw_headers;
   if (!file_util::ReadFileToString(header_file, &raw_headers))

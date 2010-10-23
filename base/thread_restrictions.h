@@ -5,6 +5,8 @@
 #ifndef BASE_THREAD_RESTRICTIONS_H_
 #define BASE_THREAD_RESTRICTIONS_H_
 
+#include "base/basictypes.h"
+
 namespace base {
 
 // ThreadRestrictions helps protect threads that should not block from
@@ -21,21 +23,43 @@ namespace base {
 //
 // ThreadRestrictions does nothing in release builds; it is debug-only.
 //
+// Style tip: where should you put AssertIOAllowed checks?  It's best
+// if you put them as close to the disk access as possible, at the
+// lowest level.  This rule is simple to follow and helps catch all
+// callers.  For example, if your function GoDoSomeBlockingDiskCall()
+// only calls other functions in Chrome and not fopen(), you should go
+// add the AssertIOAllowed checks in the helper functions.
+
 class ThreadRestrictions {
  public:
+  // Constructing a ScopedAllowIO temporarily allows IO for the current
+  // thread.  Doing this is almost certainly always incorrect.  This object
+  // is available to temporarily work around bugs.
+  class ScopedAllowIO {
+   public:
+    ScopedAllowIO() { previous_value_ = SetIOAllowed(true); }
+    ~ScopedAllowIO() { SetIOAllowed(previous_value_); }
+   private:
+    // Whether IO is allowed when the ScopedAllowIO was constructed.
+    bool previous_value_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedAllowIO);
+  };
 
 #ifndef NDEBUG
   // Set whether the current thread to make IO calls.
   // Threads start out in the *allowed* state.
-  static void SetIOAllowed(bool allowed);
+  // Returns the previous value.
+  static bool SetIOAllowed(bool allowed);
 
   // Check whether the current thread is allowed to make IO calls,
-  // and DCHECK if not.
+  // and DCHECK if not.  See the block comment above the class for
+  // a discussion of where to add these checks.
   static void AssertIOAllowed();
 #else
   // In Release builds, inline the empty definitions of these functions so
   // that they can be compiled out.
-  static void SetIOAllowed(bool allowed) {}
+  static bool SetIOAllowed(bool allowed) { return true; }
   static void AssertIOAllowed() {}
 #endif
 
