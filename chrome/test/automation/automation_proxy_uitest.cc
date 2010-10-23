@@ -883,7 +883,8 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
   loop.RunFor(action_max_timeout_ms());
 }
 
-TEST_F(ExternalTabUITest, IncognitoMode) {
+// FLAKY: http://crbug.com/60409
+TEST_F(ExternalTabUITest, FLAKY_IncognitoMode) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
