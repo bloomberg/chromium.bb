@@ -8,3 +8,6 @@ BUG_AJWONG WIN : fast/dom/Window/window-screen-properties.html = TEXT
 
 // Remove when rolling Webkit past r69652.
 BUG53073 DEBUG : storage/change-version.html = CRASH PASS
+
+// Failure after 63609
+BUG60384 : fast/replaced/border-radius-clip.html = IMAGE TEXT
