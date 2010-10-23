@@ -12,7 +12,7 @@
 #if defined(OS_WIN)
 // This test times out on win.
 // http://crbug.com/58269
-#define MAYBE_Tabs FAILS_Tabs
+#define MAYBE_Tabs DISABLED_Tabs
 #else
 #define MAYBE_Tabs Tabs
 #endif
