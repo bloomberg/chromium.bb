@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
@@ -237,8 +238,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
   // requests them.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), profile->GetPath().Append(
-          fileapi::FileSystemPathManager::kFileSystemDirectory),
+      id(), profile->GetFileSystemHostContext()->path_manager()->base_path(),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
       base::PLATFORM_FILE_OPEN_ALWAYS |

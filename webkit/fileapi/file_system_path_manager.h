@@ -70,6 +70,10 @@ class FileSystemPathManager {
   static const char kPersistentName[];
   static const char kTemporaryName[];
 
+  const FilePath& base_path() const {
+    return base_path_;
+  }
+
  private:
   class GetFileSystemRootPathTask;
 
