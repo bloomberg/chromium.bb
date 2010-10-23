@@ -2937,3 +2937,14 @@
    fun:_Z16DispatchToMethodI18CoreOptionsHandlerMS0_FvPK9ListValueES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN12CallbackImplI18CoreOptionsHandlerMS0_FvPK9ListValueE6Tuple1IS3_EE13RunWithParamsERKS7_
 }
+{
+   bug_60381
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN11webkit_glue18BufferedDataSourceEiEPN9Callback1IT0_E4TypeEPT_MS7_FvS3_E
+   fun:_ZN11webkit_glue18BufferedDataSource12ReadInternalEv
+   fun:_ZN11webkit_glue18BufferedDataSource8ReadTaskExiPhP14CallbackRunnerI6Tuple1IjEE
+   fun:_Z16DispatchToMethodIN11webkit_glue18BufferedDataSourceEMS1_FvxiPhP14CallbackRunnerI6Tuple1IjEEExiS2_S7_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN14RunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvxiPhP14CallbackRunnerI6Tuple1IjEEE6Tuple4IxiS2_S7_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
