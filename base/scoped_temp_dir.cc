@@ -15,6 +15,9 @@ ScopedTempDir::~ScopedTempDir() {
 }
 
 bool ScopedTempDir::CreateUniqueTempDir() {
+  if (!path_.empty())
+    return false;
+
   // This "scoped_dir" prefix is only used on Windows and serves as a template
   // for the unique name.
   if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("scoped_dir"),
@@ -25,7 +28,10 @@ bool ScopedTempDir::CreateUniqueTempDir() {
 }
 
 bool ScopedTempDir::CreateUniqueTempDirUnderPath(const FilePath& base_path) {
-  // If |path| does not exist, create it.
+  if (!path_.empty())
+    return false;
+
+  // If |base_path| does not exist, create it.
   if (!file_util::CreateDirectory(base_path))
     return false;
 
@@ -33,18 +39,20 @@ bool ScopedTempDir::CreateUniqueTempDirUnderPath(const FilePath& base_path) {
   if (!file_util::CreateTemporaryDirInDir(
           base_path,
           FILE_PATH_LITERAL("scoped_dir_"),
-          &path_)) {
+          &path_))
     return false;
-  }
+
   return true;
 }
 
 bool ScopedTempDir::Set(const FilePath& path) {
-  DCHECK(path_.empty());
-  if (!file_util::DirectoryExists(path) &&
-      !file_util::CreateDirectory(path)) {
+  if (!path_.empty())
     return false;
-  }
+
+  if (!file_util::DirectoryExists(path) &&
+      !file_util::CreateDirectory(path))
+    return false;
+
   path_ = path;
   return true;
 }

@@ -11,6 +11,10 @@
 // deletion occurs during the destructor, no further error handling is possible
 // if the directory fails to be deleted.  As a result, deletion is not
 // guaranteed by this class.
+//
+// Multiple calls to the methods which establish a temporary directory
+// (CreateUniqueTempDir, CreateUniqueTempDirUnderPath, and Set) must have
+// intervening calls to Delete or Take, or the calls will fail.
 
 #include "base/file_path.h"
 

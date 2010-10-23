@@ -73,3 +73,17 @@ TEST(ScopedTempDir, UniqueTempDirUnderPath) {
   }
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
 }
+
+TEST(ScopedTempDir, MultipleInvocations) {
+  ScopedTempDir dir;
+  EXPECT_TRUE(dir.CreateUniqueTempDir());
+  EXPECT_FALSE(dir.CreateUniqueTempDir());
+  dir.Delete();
+  EXPECT_TRUE(dir.CreateUniqueTempDir());
+  EXPECT_FALSE(dir.CreateUniqueTempDir());
+  ScopedTempDir other_dir;
+  other_dir.Set(dir.Take());
+  EXPECT_TRUE(dir.CreateUniqueTempDir());
+  EXPECT_FALSE(dir.CreateUniqueTempDir());
+  EXPECT_FALSE(other_dir.CreateUniqueTempDir());
+}
