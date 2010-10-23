@@ -37,7 +37,6 @@
 #include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 
 // Notifies RenderViewHost that one or more worker objects crashed.
 class WorkerCrashTask : public Task {
@@ -185,28 +184,6 @@ bool WorkerProcessHost::Init() {
       cmd_line);
 
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFileSystem)) {
-      // Grant most file permissions to this worker.
-      // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
-      // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
-      // requests them.
-      ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-          id(),
-          request_context_->file_system_host_context()->
-              path_manager()->base_path(),
-          base::PLATFORM_FILE_OPEN |
-          base::PLATFORM_FILE_CREATE |
-          base::PLATFORM_FILE_OPEN_ALWAYS |
-          base::PLATFORM_FILE_CREATE_ALWAYS |
-          base::PLATFORM_FILE_READ |
-          base::PLATFORM_FILE_WRITE |
-          base::PLATFORM_FILE_EXCLUSIVE_READ |
-          base::PLATFORM_FILE_EXCLUSIVE_WRITE |
-          base::PLATFORM_FILE_ASYNC |
-          base::PLATFORM_FILE_TRUNCATE |
-          base::PLATFORM_FILE_WRITE_ATTRIBUTES);
-  }
 
   return true;
 }
