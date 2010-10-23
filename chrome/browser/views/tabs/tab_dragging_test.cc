@@ -18,7 +18,7 @@
 #include "net/base/net_util.h"
 #include "views/event.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
 // This test doesn't make sense on chromeos as chromeos doesn't allow dragging
 // tabs out.
 #define MAYBE_Tab2OutOfTabStrip DISABLED_Tab2OutOfTabStrip

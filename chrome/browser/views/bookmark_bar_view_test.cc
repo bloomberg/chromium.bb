@@ -53,6 +53,13 @@
 
 #endif
 
+#if defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
+// See bug http://crbug.com/60444 for details.
+define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
+#else
+define MAYBE_ScrollButtonScrolls ScrollButtonScrolls
+#endif
+
 namespace {
 
 class ViewsDelegateImpl : public views::ViewsDelegate {
@@ -849,7 +856,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
   views::MenuItemView* first_menu_;
 };
 
-VIEW_TEST(BookmarkBarViewTest9, ScrollButtonScrolls)
+VIEW_TEST(BookmarkBarViewTest9, MAYBE_ScrollButtonScrolls)
 
 // Tests up/down/left/enter key messages.
 class BookmarkBarViewTest10 : public BookmarkBarViewEventTestBase {
