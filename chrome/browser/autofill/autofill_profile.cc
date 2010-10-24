@@ -47,7 +47,8 @@ AutoFillProfile::AutoFillProfile(const std::string& guid)
 }
 
 AutoFillProfile::AutoFillProfile()
-    : unique_id_(0) {
+    : unique_id_(0),
+      guid_(guid::GenerateGUID()) {
   InitPersonalInfo(&personal_info_);
 }
 
