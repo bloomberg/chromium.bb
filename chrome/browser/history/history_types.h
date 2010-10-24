@@ -544,6 +544,20 @@ struct MostVisitedURL {
   }
 };
 
+// Used by TopSites to store the thumbnails.
+struct Images {
+  Images();
+  ~Images();
+
+  scoped_refptr<RefCountedBytes> thumbnail;
+  ThumbnailScore thumbnail_score;
+
+  // TODO(brettw): this will eventually store the favicon.
+  // scoped_refptr<RefCountedBytes> favicon;
+};
+
+typedef std::vector<MostVisitedURL> MostVisitedURLList;
+
 // Navigation -----------------------------------------------------------------
 
 // Marshalling structure for AddPage.
@@ -582,61 +596,6 @@ class HistoryAddPageArgs
   ~HistoryAddPageArgs();
 
   DISALLOW_COPY_AND_ASSIGN(HistoryAddPageArgs);
-};
-
-// TopSites -------------------------------------------------------------------
-
-typedef std::vector<MostVisitedURL> MostVisitedURLList;
-
-// Used by TopSites to store the thumbnails.
-struct Images {
-  Images();
-  ~Images();
-
-  scoped_refptr<RefCountedBytes> thumbnail;
-  ThumbnailScore thumbnail_score;
-
-  // TODO(brettw): this will eventually store the favicon.
-  // scoped_refptr<RefCountedBytes> favicon;
-};
-
-typedef std::vector<MostVisitedURL> MostVisitedURLList;
-
-struct MostVisitedURLWithRank {
-  MostVisitedURL url;
-  int rank;
-};
-
-typedef std::vector<MostVisitedURLWithRank> MostVisitedURLWithRankList;
-
-struct TopSitesDelta {
-  MostVisitedURLList deleted;
-  MostVisitedURLWithRankList added;
-  MostVisitedURLWithRankList moved;
-};
-
-typedef std::map<GURL, scoped_refptr<RefCountedBytes> > URLToThumbnailMap;
-
-// Used when migrating most visited thumbnails out of history and into topsites.
-struct ThumbnailMigration {
-  MostVisitedURLList most_visited;
-  URLToThumbnailMap url_to_thumbnail_map;
-};
-
-typedef std::map<GURL, Images> URLToImagesMap;
-
-class MostVisitedThumbnails
-    : public base::RefCountedThreadSafe<MostVisitedThumbnails> {
- public:
-  MostVisitedThumbnails();
-
-  MostVisitedURLList most_visited;
-  URLToImagesMap url_to_images_map;
-
- private:
-  friend class base::RefCountedThreadSafe<MostVisitedThumbnails>;
-
-  DISALLOW_COPY_AND_ASSIGN(MostVisitedThumbnails);
 };
 
 }  // namespace history

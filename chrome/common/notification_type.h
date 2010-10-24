@@ -649,12 +649,6 @@ class NotificationType {
     // none and the source is a Profile*.
     PROFILE_DESTROYED,
 
-    // TopSites ----------------------------------------------------------------
-
-    // Sent by TopSites when it finishes loading. The source is the profile the
-    // details the TopSites.
-    TOP_SITES_LOADED,
-
     // Thumbnails---------------------------------------------------------------
 
     // Sent by the ThumbnailGenerator whenever a render widget host

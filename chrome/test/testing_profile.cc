@@ -39,7 +39,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
-#include "chrome/test/ui_test_utils.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_unittest.h"
@@ -195,19 +194,13 @@ TestingProfile::~TestingProfile() {
       NotificationType::PROFILE_DESTROYED,
       Source<Profile>(this),
       NotificationService::NoDetails());
-  if (top_sites_.get()) {
-    top_sites_->Shutdown();
-    top_sites_ = NULL;
-    // TopSites::Shutdown schedules some tasks (from TopSitesBackend) that need
-    // to be run to properly shutdown. Run all pending tasks now. This is
-    // normally handled by browser_process shutdown.
-    if (MessageLoop::current())
-      MessageLoop::current()->RunAllPending();
-  }
   DestroyHistoryService();
   // FaviconService depends on HistoryServce so destroying it later.
   DestroyFaviconService();
   DestroyWebDataService();
+  if (top_sites_.get())
+    top_sites_->ClearProfile();
+  history::TopSites::DeleteTopSites(top_sites_);
   if (extensions_service_.get()) {
     extensions_service_->DestroyingProfile();
     extensions_service_ = NULL;
@@ -232,17 +225,6 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   }
   history_service_ = new HistoryService(this);
   history_service_->Init(GetPath(), bookmark_bar_model_.get(), no_db);
-}
-
-void TestingProfile::CreateTopSites() {
-  if (top_sites_.get()) {
-    top_sites_->Shutdown();
-    top_sites_ = NULL;
-  }
-
-  top_sites_ = new history::TopSites(this);
-  FilePath file_name = temp_dir_.path().Append(chrome::kTopSitesFilename);
-  top_sites_->Init(file_name);
 }
 
 void TestingProfile::DestroyFaviconService() {
@@ -319,12 +301,6 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   MessageLoop::current()->Run();
   bookmark_bar_model_->RemoveObserver(&observer);
   DCHECK(bookmark_bar_model_->IsLoaded());
-}
-
-void TestingProfile::BlockUntilTopSitesLoaded() {
-  if (!GetHistoryService(Profile::EXPLICIT_ACCESS))
-    GetTopSites()->HistoryLoaded();
-  ui_test_utils::WaitForNotification(NotificationType::TOP_SITES_LOADED);
 }
 
 void TestingProfile::CreateTemplateURLFetcher() {
@@ -416,7 +392,12 @@ PrefService* TestingProfile::GetPrefs() {
 }
 
 history::TopSites* TestingProfile::GetTopSites() {
-  return top_sites_.get();
+  if (!top_sites_.get()) {
+    top_sites_ = new history::TopSites(this);
+    FilePath file_name = temp_dir_.path().AppendASCII("TopSites.db");
+    top_sites_->Init(file_name);
+  }
+  return top_sites_;
 }
 
 URLRequestContextGetter* TestingProfile::GetRequestContext() {

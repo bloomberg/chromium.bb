@@ -11,12 +11,16 @@
 
 #include "app/sql/connection.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 
 class FilePath;
 class RefCountedMemory;
 class SkBitmap;
+class Images;
+
+namespace base {
+class Time;
+}
 
 namespace history {
 
@@ -31,7 +35,8 @@ class TopSitesDatabase {
 
   // Returns a list of all URLs currently in the table.
   virtual void GetPageThumbnails(MostVisitedURLList* urls,
-                                 URLToImagesMap* thumbnails) = 0;
+                                 std::map<GURL,
+                                 Images>* thumbnails) = 0;
 
   // Set a thumbnail for a URL. |url_rank| is the position of the URL
   // in the list of TopURLs, zero-based.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,15 +10,14 @@
 #include "app/sql/transaction.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/common/chrome_switches.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
 
 namespace history {
 
@@ -27,13 +26,9 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // or database without *too* many bad effects.
-static const int kCurrentVersionNumber = 20;
+static const int kCurrentVersionNumber = 19;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
-
-// Key in the meta table used to determine if we need to migrate thumbnails out
-// of history.
-static const char kNeedsThumbnailMigrationKey[] = "needs_thumbnail_migration";
 
 void ComputeDatabaseMetrics(const FilePath& history_name,
                             sql::Connection& db) {
@@ -178,16 +173,6 @@ void HistoryDatabase::Vacuum() {
   db_.Execute("VACUUM");
 }
 
-void HistoryDatabase::ThumbnailMigrationDone() {
-  meta_table_.SetValue(kNeedsThumbnailMigrationKey, 0);
-}
-
-bool HistoryDatabase::GetNeedsThumbnailMigration() {
-  int value = 0;
-  return (meta_table_.GetValue(kNeedsThumbnailMigrationKey, &value) &&
-          value != 0);
-}
-
 bool HistoryDatabase::SetSegmentID(VisitID visit_id, SegmentID segment_id) {
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "UPDATE visits SET segment_id = ? WHERE id = ?"));
@@ -304,14 +289,6 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
     meta_table_.SetVersionNumber(cur_version);
   }
 
-  if (cur_version == 19) {
-    cur_version++;
-    meta_table_.SetVersionNumber(cur_version);
-    // Set a key indicating we need to migrate thumbnails. When successfull the
-    // key is removed (ThumbnailMigrationDone).
-    meta_table_.SetValue(kNeedsThumbnailMigrationKey, 1);
-  }
-
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
   LOG_IF(WARNING, cur_version < GetCurrentVersion()) <<
@@ -344,5 +321,9 @@ void HistoryDatabase::MigrateTimeEpoch() {
   needs_version_17_migration_ = true;
 }
 #endif
+
+void HistoryDatabase::MigrationToTopSitesDone() {
+  // TODO(sky): implement me.
+}
 
 }  // namespace history

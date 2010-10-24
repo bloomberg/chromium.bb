@@ -135,8 +135,7 @@ void MostVisitedHandler::SendPagesValue() {
     bool has_blacklisted_urls = !url_blacklist_->empty();
     if (history::TopSites::IsEnabled()) {
       history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-      if (ts)
-        has_blacklisted_urls = ts->HasBlacklistedItems();
+      has_blacklisted_urls = ts->HasBlacklistedItems();
     }
     FundamentalValue first_run(IsFirstRun());
     FundamentalValue has_blacklisted_urls_value(has_blacklisted_urls);
@@ -152,11 +151,9 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   if (history::TopSites::IsEnabled()) {
     // Use TopSites.
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts) {
-      ts->GetMostVisitedURLs(
-          &topsites_consumer_,
-          NewCallback(this, &MostVisitedHandler::OnMostVisitedURLsAvailable));
-    }
+    ts->GetMostVisitedURLs(
+        &topsites_consumer_,
+        NewCallback(this, &MostVisitedHandler::OnMostVisitedURLsAvailable));
     return;
   }
 
@@ -198,8 +195,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
                               dom_ui_->GetProfile());
     if (history::TopSites::IsEnabled()) {
       history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-      if (ts)
-        ts->RemoveBlacklistedURL(GURL(url));
+      ts->RemoveBlacklistedURL(GURL(url));
       return;
     }
 
@@ -214,8 +210,7 @@ void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
 
   if (history::TopSites::IsEnabled()) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts)
-      ts->ClearBlacklistedURLs();
+    ts->ClearBlacklistedURLs();
     return;
   }
 
@@ -259,8 +254,7 @@ void MostVisitedHandler::HandleAddPinnedURL(const ListValue* args) {
 void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
   if (history::TopSites::IsEnabled()) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts)
-      ts->AddPinnedURL(page.url, index);
+    ts->AddPinnedURL(page.url, index);
     return;
   }
 
@@ -289,8 +283,7 @@ void MostVisitedHandler::HandleRemovePinnedURL(const ListValue* args) {
 void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
   if (history::TopSites::IsEnabled()) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts)
-      ts->RemovePinnedURL(url);
+    ts->RemovePinnedURL(url);
     return;
   }
 
@@ -449,7 +442,7 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
     }
 
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts && ts->IsURLPinned(url.url))
+    if (ts->IsURLPinned(url.url))
       page_value->SetBoolean("pinned", true);
     pages_value_->Append(page_value);
   }
@@ -525,8 +518,7 @@ void MostVisitedHandler::Observe(NotificationType type,
 void MostVisitedHandler::BlacklistURL(const GURL& url) {
   if (history::TopSites::IsEnabled()) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
-    if (ts)
-      ts->AddBlacklistedURL(url);
+    ts->AddBlacklistedURL(url);
     return;
   }
 

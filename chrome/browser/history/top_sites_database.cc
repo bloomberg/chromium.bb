@@ -51,7 +51,8 @@ bool TopSitesDatabaseImpl::InitThumbnailTable() {
 }
 
 void TopSitesDatabaseImpl::GetPageThumbnails(MostVisitedURLList* urls,
-                                             URLToImagesMap* thumbnails) {
+                                             std::map<GURL,
+                                             Images>* thumbnails) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT url, url_rank, title, thumbnail, redirects, "

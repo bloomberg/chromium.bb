@@ -15,13 +15,10 @@
 #include "chrome/common/notification_registrar.h"
 
 class Profile;
+class ThumbnailStore;
 
-namespace history {
-class TopSites;
-}
-
-// ThumbnailSource is the gateway between network-level chrome: requests for
-// thumbnails and the history/top-sites backend that serves these.
+// ThumbnailSource is the gateway between network-level chrome:
+// requests for thumbnails and the history backend that serves these.
 class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
  public:
   explicit DOMUIThumbnailSource(Profile* profile);
@@ -32,9 +29,7 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
                                 bool is_off_the_record,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string& path) const;
-
-  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
+  virtual std::string GetMimeType(const std::string&) const;
 
   // Called when thumbnail data is available from the history backend.
   void OnThumbnailDataAvailable(HistoryService::Handle request_handle,
@@ -47,15 +42,14 @@ class DOMUIThumbnailSource : public ChromeURLDataManager::DataSource {
   void SendDefaultThumbnail(int request_id);
 
   Profile* profile_;
-
   CancelableRequestConsumerT<int, 0> cancelable_consumer_;
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.
   scoped_refptr<RefCountedMemory> default_thumbnail_;
 
-  // TopSites. If non-null we're using TopSites.
-  scoped_refptr<history::TopSites> top_sites_;
+  // To register to be notified when the ThumbnailStore is ready.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMUIThumbnailSource);
 };

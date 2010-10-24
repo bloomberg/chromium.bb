@@ -581,9 +581,12 @@ void HistoryBackend::InitImpl(const std::string& languages) {
 
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
-  if (history::TopSites::IsEnabled() && !db_->GetNeedsThumbnailMigration()) {
+  if (history::TopSites::IsEnabled()) {
+    // TODO(sky): once we reenable top sites this needs to be fixed.
+    // if (!db_->needs_version_18_migration()) {
     // No convertion needed - use new filename right away.
-    thumbnail_name = GetFaviconsFileName();
+    // thumbnail_name = GetFaviconsFileName();
+    // }
   }
   if (thumbnail_db_->Init(thumbnail_name,
                           history_publisher_.get()) != sql::INIT_OK) {
@@ -596,9 +599,12 @@ void HistoryBackend::InitImpl(const std::string& languages) {
     thumbnail_db_.reset();
   }
 
-  if (history::TopSites::IsEnabled() && db_->GetNeedsThumbnailMigration()) {
-    VLOG(1) << "Starting TopSites migration";
-    delegate_->StartTopSitesMigration();
+  if (history::TopSites::IsEnabled()) {
+    // TODO(sky): fix when reenabling top sites migration.
+    // if (db_->needs_version_18_migration()) {
+    // VLOG(1) << "Starting TopSites migration";
+    // delegate_->StartTopSitesMigration();
+    // }
   }
 
   // Archived database.
@@ -1335,16 +1341,6 @@ void HistoryBackend::QueryMostVisitedURLs(
   }
 
   MostVisitedURLList* result = &request->value;
-  QueryMostVisitedURLsImpl(result_count, days_back, result);
-  request->ForwardResult(QueryMostVisitedURLsRequest::TupleType(
-      request->handle(), *result));
-}
-
-void HistoryBackend::QueryMostVisitedURLsImpl(int result_count,
-                                              int days_back,
-                                              MostVisitedURLList* result) {
-  if (!db_.get())
-    return;
 
   ScopedVector<PageUsageData> data;
   db_->QuerySegmentUsage(base::Time::Now() -
@@ -1358,6 +1354,9 @@ void HistoryBackend::QueryMostVisitedURLsImpl(int result_count,
     MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
     result->push_back(url);
   }
+
+  request->ForwardResult(QueryMostVisitedURLsRequest::TupleType(
+      request->handle(), *result));
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(
@@ -1514,19 +1513,6 @@ void HistoryBackend::GetPageThumbnailDirectly(
 
     UMA_HISTOGRAM_TIMES("History.GetPageThumbnail",
                         TimeTicks::Now() - beginning_time);
-  }
-}
-
-void HistoryBackend::MigrateThumbnailsDatabase() {
-  // If there is no History DB, we can't record that the migration was done.
-  // It will be recorded on the next run.
-  if (db_.get()) {
-    // If there is no thumbnail DB, we can still record a successful migration.
-    if (thumbnail_db_.get()) {
-      thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
-                                             GetFaviconsFileName());
-    }
-    db_->ThumbnailMigrationDone();
   }
 }
 
@@ -2161,6 +2147,19 @@ BookmarkService* HistoryBackend::GetBookmarkService() {
   if (bookmark_service_)
     bookmark_service_->BlockTillLoaded();
   return bookmark_service_;
+}
+
+void HistoryBackend::MigrateThumbnailsDatabase() {
+  // If there is no History DB, we can't record that the migration was done.
+  // It will be recorded on the next run.
+  if (db_.get()) {
+    // If there is no thumbnail DB, we can still record a successful migration.
+    if (thumbnail_db_.get()) {
+      thumbnail_db_->RenameAndDropThumbnails(GetThumbnailFileName(),
+                                             GetFaviconsFileName());
+    }
+    db_->MigrationToTopSitesDone();
+  }
 }
 
 }  // namespace history
