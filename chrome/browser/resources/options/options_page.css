@@ -67,6 +67,8 @@ html[dir='rtl'] #close-overlay {
   border-radius: 5px;
   padding: 15px;
   border: 1px solid #666;
+  padding-bottom: 50px;
+  position: relative;
   -webkit-box-shadow: 3px 3px 3px #666;
 }
 
