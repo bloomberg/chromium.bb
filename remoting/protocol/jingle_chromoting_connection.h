@@ -34,15 +34,20 @@ class JingleChromotingConnection : public ChromotingConnection,
   explicit JingleChromotingConnection(JingleChromotingServer* client);
 
   // ChromotingConnection interface.
-  virtual void SetStateChangeCallback(StateChangeCallback* callback) ;
+  virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
   virtual net::Socket* GetVideoChannel();
-  virtual net::Socket* GetEventsChannel();
+  virtual net::Socket* GetEventChannel();
   virtual net::Socket* GetVideoRtpChannel();
   virtual net::Socket* GetVideoRtcpChannel();
 
   virtual const std::string& jid();
   virtual MessageLoop* message_loop();
+
+  virtual const CandidateChromotocolConfig* candidate_config();
+  virtual const ChromotocolConfig* config();
+
+  virtual void set_config(const ChromotocolConfig* config);
 
   virtual void Close(Task* closed_task);
 
@@ -53,6 +58,7 @@ class JingleChromotingConnection : public ChromotingConnection,
   friend class JingleChromotingServer;
 
   // Called by JingleChromotingServer.
+  void set_candidate_config(const CandidateChromotocolConfig* candidate_config);
   void Init(cricket::Session* session);
   bool HasSession(cricket::Session* session);
   cricket::Session* ReleaseSession();
@@ -60,8 +66,9 @@ class JingleChromotingConnection : public ChromotingConnection,
   // Used for Session.SignalState sigslot.
   void OnSessionState(cricket::BaseSession* session,
                       cricket::BaseSession::State state);
+
   void OnInitiate(bool incoming);
-  void OnAccept();
+  void OnAccept(bool incoming);
   void OnTerminate();
 
   void SetState(State new_state);
@@ -81,8 +88,11 @@ class JingleChromotingConnection : public ChromotingConnection,
   // The corresponding libjingle session.
   cricket::Session* session_;
 
-  cricket::PseudoTcpChannel* events_channel_;
-  scoped_ptr<StreamSocketAdapter> events_channel_adapter_;
+  scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
+  scoped_ptr<const ChromotocolConfig> config_;
+
+  cricket::PseudoTcpChannel* event_channel_;
+  scoped_ptr<StreamSocketAdapter> event_channel_adapter_;
   cricket::PseudoTcpChannel* video_channel_;
   scoped_ptr<StreamSocketAdapter> video_channel_adapter_;
   scoped_ptr<TransportChannelSocketAdapter> video_rtp_channel_;

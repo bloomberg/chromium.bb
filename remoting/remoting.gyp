@@ -365,6 +365,8 @@
         'protocol/jingle_chromoting_connection.h',
         'protocol/jingle_chromoting_server.cc',
         'protocol/jingle_chromoting_server.h',
+        'protocol/chromotocol_config.cc',
+        'protocol/chromotocol_config.h',
         'protocol/rtp_reader.cc',
         'protocol/rtp_reader.h',
         'protocol/rtp_utils.cc',

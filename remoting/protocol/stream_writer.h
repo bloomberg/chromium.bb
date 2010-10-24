@@ -34,7 +34,7 @@ class StreamWriterBase {
   scoped_refptr<BufferedSocketWriter> buffered_writer_;
 };
 
-class EventsStreamWriter : public StreamWriterBase {
+class EventStreamWriter : public StreamWriterBase {
  public:
   // Sends the |message| or returns false if called before Init().
   // Can be called on any thread.

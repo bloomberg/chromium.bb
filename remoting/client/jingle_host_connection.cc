@@ -43,7 +43,7 @@ void JingleHostConnection::Disconnect() {
     return;
   }
 
-  events_writer_.Close();
+  event_writer_.Close();
   video_reader_.Close();
 
   if (connection_) {
@@ -73,9 +73,14 @@ void JingleHostConnection::InitConnection() {
       NewCallback(this, &JingleHostConnection::OnNewChromotocolConnection));
   chromotocol_server_ = chromotocol_server;
 
+  CandidateChromotocolConfig* candidate_config =
+      CandidateChromotocolConfig::CreateDefault();
+  // TODO(sergeyu): Set resolution in the |candidate_config| to the desired
+  // resolution.
+
   // Initialize |connection_|.
   connection_ = chromotocol_server_->Connect(
-      host_jid_,
+      host_jid_, candidate_config,
       NewCallback(this, &JingleHostConnection::OnConnectionStateChange));
 }
 
@@ -100,7 +105,7 @@ void JingleHostConnection::OnServerClosed() {
 
 void JingleHostConnection::SendEvent(const ChromotingClientMessage& msg) {
   // This drops the message if we are not connected yet.
-  events_writer_.SendMessage(msg);
+  event_writer_.SendMessage(msg);
 }
 
 // JingleClient::Callback interface.
@@ -120,10 +125,11 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
 }
 
 void JingleHostConnection::OnNewChromotocolConnection(
-    ChromotingConnection* connection, bool* accept) {
+    ChromotingConnection* connection,
+    ChromotingServer::NewConnectionResponse* response) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   // Client always rejects incoming connections.
-  *accept = false;
+  *response = ChromotingServer::DECLINE;
 }
 
 void JingleHostConnection::OnConnectionStateChange(
@@ -142,7 +148,7 @@ void JingleHostConnection::OnConnectionStateChange(
 
     case ChromotingConnection::CONNECTED:
       // Initialize reader and writer.
-      events_writer_.Init(connection_->GetEventsChannel());
+      event_writer_.Init(connection_->GetEventChannel());
       video_reader_.Init(
           connection_->GetVideoChannel(),
           NewCallback(this, &JingleHostConnection::OnVideoMessage));

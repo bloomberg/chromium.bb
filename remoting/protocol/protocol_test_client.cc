@@ -98,8 +98,9 @@ class ProtocolTestClient
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
   // callback for JingleChromotingServer interface.
-  virtual void OnNewChromotocolConnection(ChromotingConnection* connection,
-                                          bool* accept);
+  virtual void OnNewChromotocolConnection(
+      ChromotingConnection* connection,
+      ChromotingServer::NewConnectionResponse* response);
 
  private:
   typedef std::list<scoped_refptr<ProtocolTestConnection> > ConnectionsList;
@@ -138,7 +139,7 @@ void ProtocolTestConnection::DoWrite(
     return;
   }
 
-  net::Socket* channel = connection_->GetEventsChannel();
+  net::Socket* channel = connection_->GetEventChannel();
   if (channel != NULL) {
     int result = channel->Write(buf, size, &write_cb_);
     if (result < 0) {
@@ -161,7 +162,7 @@ void ProtocolTestConnection::Read() {
 void ProtocolTestConnection::DoRead() {
   read_buffer_ = new net::IOBuffer(kBufferSize);
   while (true) {
-    int result = connection_->GetEventsChannel()->Read(
+    int result = connection_->GetEventChannel()->Read(
         read_buffer_, kBufferSize, &read_cb_);
     if (result < 0) {
       if (result != net::ERR_IO_PENDING)
@@ -277,16 +278,16 @@ void ProtocolTestClient::OnStateChange(
 
     server_->Init(
         client_->GetFullJid(), client_->session_manager(),
-        NewCallback(this,
-                    &ProtocolTestClient::OnNewChromotocolConnection));
+        NewCallback(this, &ProtocolTestClient::OnNewChromotocolConnection));
     server_->set_allow_local_ips(true);
 
     if (host_jid_ != "") {
       ProtocolTestConnection* connection =
           new ProtocolTestConnection(this, client_->message_loop());
       connection->Init(server_->Connect(
-          host_jid_, NewCallback(connection,
-                                 &ProtocolTestConnection::OnStateChange)));
+          host_jid_, CandidateChromotocolConfig::CreateDefault(),
+          NewCallback(connection,
+                      &ProtocolTestConnection::OnStateChange)));
       connections_.push_back(connection);
     }
   } else if (state == JingleClient::CLOSED) {
@@ -295,8 +296,13 @@ void ProtocolTestClient::OnStateChange(
 }
 
 void ProtocolTestClient::OnNewChromotocolConnection(
-    ChromotingConnection* connection, bool* accept) {
+    ChromotingConnection* connection,
+    ChromotingServer::NewConnectionResponse* response) {
   std::cerr << "Accepting connection from " << connection->jid() << std::endl;
+
+  connection->set_config(ChromotocolConfig::CreateDefault());
+  *response = ChromotingServer::ACCEPT;
+
   ProtocolTestConnection* test_connection =
       new ProtocolTestConnection(this, client_->message_loop());
   connection->SetStateChangeCallback(
@@ -304,7 +310,6 @@ void ProtocolTestClient::OnNewChromotocolConnection(
   test_connection->Init(connection);
   AutoLock auto_lock(connections_lock_);
   connections_.push_back(test_connection);
-  *accept = true;
 }
 
 void ProtocolTestClient::OnFinishedClosing() {

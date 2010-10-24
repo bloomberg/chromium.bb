@@ -16,13 +16,31 @@ class Task;
 namespace remoting {
 
 // Generic interface for Chromoting server.
+// TODO(sergeyu): Rename to ChromotocolServer.
+// TODO(sergeyu): Add more documentation on how this interface is used.
 class ChromotingServer : public base::RefCountedThreadSafe<ChromotingServer> {
  public:
-  typedef Callback2<ChromotingConnection*, bool*>::Type NewConnectionCallback;
+  enum NewConnectionResponse {
+    ACCEPT,
+    INCOMPATIBLE,
+    DECLINE,
+  };
 
-  // Initializes connection to the host |jid|.
+  // NewConnectionCallback is called when a new connection is received. If the
+  // callback decides to accept the connection it should set the second
+  // argument to ACCEPT. Otherwise it should set it to DECLINE, or
+  // INCOMPATIBLE. INCOMPATIBLE indicates that the session has incompartible
+  // configuration, and cannot be accepted.
+  // If the callback accepts connection then it must also set configuration
+  // for the new connection using ChromotingConnection::set_config().
+  typedef Callback2<ChromotingConnection*, NewConnectionResponse*>::Type
+      NewConnectionCallback;
+
+  // Initializes connection to the host |jid|.  Ownership of the
+  // |chromotocol_config| is passed to the new connection.
   virtual scoped_refptr<ChromotingConnection> Connect(
       const std::string& jid,
+      CandidateChromotocolConfig* chromotocol_config,
       ChromotingConnection::StateChangeCallback* state_change_callback) = 0;
 
   // Close connection. |close_task| is executed after the session client

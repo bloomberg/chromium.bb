@@ -9,17 +9,17 @@
 
 namespace remoting {
 
-// EventsStreamReader class.
-EventsStreamReader::EventsStreamReader() { }
-EventsStreamReader::~EventsStreamReader() { }
+// EventStreamReader class.
+EventStreamReader::EventStreamReader() { }
+EventStreamReader::~EventStreamReader() { }
 
-void EventsStreamReader::Init(net::Socket* socket,
-                              OnMessageCallback* on_message_callback) {
+void EventStreamReader::Init(net::Socket* socket,
+                             OnMessageCallback* on_message_callback) {
   on_message_callback_.reset(on_message_callback);
   SocketReaderBase::Init(socket);
 }
 
-void EventsStreamReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
+void EventStreamReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
   ClientMessageList messages_list;
   messages_decoder_.ParseClientMessages(buffer, data_size, &messages_list);
   for (ClientMessageList::iterator it = messages_list.begin();

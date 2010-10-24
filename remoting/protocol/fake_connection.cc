@@ -70,7 +70,9 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
 }
 
 FakeChromotingConnection::FakeChromotingConnection()
-    : message_loop_(NULL),
+    : candidate_config_(CandidateChromotocolConfig::CreateDefault()),
+      config_(ChromotocolConfig::CreateDefault()),
+      message_loop_(NULL),
       jid_(kTestJid) {
 }
 
@@ -84,8 +86,8 @@ void FakeChromotingConnection::SetStateChangeCallback(
 FakeSocket* FakeChromotingConnection::GetVideoChannel() {
   return &video_channel_;
 }
-FakeSocket* FakeChromotingConnection::GetEventsChannel() {
-  return &events_channel_;
+FakeSocket* FakeChromotingConnection::GetEventChannel() {
+  return &event_channel_;
 }
 
 FakeSocket* FakeChromotingConnection::GetVideoRtpChannel() {
@@ -101,6 +103,19 @@ const std::string& FakeChromotingConnection::jid() {
 
 MessageLoop* FakeChromotingConnection::message_loop() {
   return message_loop_;
+}
+
+const CandidateChromotocolConfig* FakeChromotingConnection::candidate_config() {
+  return candidate_config_.get();
+}
+
+const ChromotocolConfig* FakeChromotingConnection::config() {
+  CHECK(config_.get());
+  return config_.get();
+}
+
+void FakeChromotingConnection::set_config(const ChromotocolConfig* config) {
+  config_.reset(config);
 }
 
 void FakeChromotingConnection::Close(Task* closed_task) {

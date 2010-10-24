@@ -81,8 +81,8 @@ ClientConnection::ClientConnection() {}
 void ClientConnection::OnConnectionStateChange(
     ChromotingConnection::State state) {
   if (state == ChromotingConnection::CONNECTED) {
-    events_reader_.Init(
-        connection_->GetEventsChannel(),
+    event_reader_.Init(
+        connection_->GetEventChannel(),
         NewCallback(this, &ClientConnection::OnMessageReceived));
     video_writer_.Init(connection_->GetVideoChannel());
   }

@@ -55,7 +55,8 @@ class JingleHostConnection : public HostConnection,
 
   // Callback for ChromotingServer.
   void OnNewChromotocolConnection(
-      ChromotingConnection* connection, bool* accept);
+      ChromotingConnection* connection,
+      ChromotingServer::NewConnectionResponse* response);
 
   // Callback for ChromotingConnection.
   void OnConnectionStateChange(ChromotingConnection::State state);
@@ -83,7 +84,7 @@ class JingleHostConnection : public HostConnection,
   scoped_refptr<ChromotingServer> chromotocol_server_;
   scoped_refptr<ChromotingConnection> connection_;
 
-  EventsStreamWriter events_writer_;
+  EventStreamWriter event_writer_;
   VideoStreamReader video_reader_;
 
   HostEventCallback* event_callback_;

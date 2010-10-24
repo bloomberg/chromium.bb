@@ -24,16 +24,22 @@ class SessionManager;
 
 namespace remoting {
 
-// ContentDescription used for chromoting sessions.
-//
-// TODO(sergeyu): Do we need host_id or some other information in the content
-// description?
+// ContentDescription used for chromoting sessions. It simply wraps
+// CandidateChromotocolConfig. CandidateChromotocolConfig doesn't inherit
+// from ContentDescription to avoid dependency on libjingle in
+// ChromotingConnection interface.
 class ChromotingContentDescription : public cricket::ContentDescription {
  public:
-  ChromotingContentDescription(const std::string& description);
-  const std::string& description() const { return description_; }
+  explicit ChromotingContentDescription(
+      const CandidateChromotocolConfig* config);
+  ~ChromotingContentDescription();
+
+  const CandidateChromotocolConfig* config() const {
+    return candidate_config_.get();
+  }
+
  private:
-  std::string description_;
+  scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
 };
 
 // This class implements SessionClient for Chromoting sessions. It acts as a
@@ -55,6 +61,7 @@ class JingleChromotingServer
   // ChromotingServer interface.
   virtual scoped_refptr<ChromotingConnection> Connect(
       const std::string& jid,
+      CandidateChromotocolConfig* chromotocol_config,
       ChromotingConnection::StateChangeCallback* state_change_callback);
   virtual void Close(Task* closed_task);
 
@@ -79,7 +86,8 @@ class JingleChromotingServer
       ChromotingConnection::StateChangeCallback* state_change_callback);
 
   // Creates outgoing session description for an incoming connection.
-  cricket::SessionDescription* CreateSessionDescription();
+  cricket::SessionDescription* CreateSessionDescription(
+      const CandidateChromotocolConfig* config);
 
   // cricket::SessionClient interface.
   virtual void OnSessionCreate(cricket::Session* session,

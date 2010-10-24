@@ -45,7 +45,8 @@ const int kUdpWriteDelayMs = 10;
 
 class MockServerCallback {
  public:
-  MOCK_METHOD2(OnNewConnection, void(ChromotingConnection*, bool*));
+  MOCK_METHOD2(OnNewConnection, void(ChromotingConnection*,
+                                     ChromotingServer::NewConnectionResponse*));
 };
 
 class MockConnectionCallback {
@@ -62,6 +63,8 @@ class JingleChromotingConnectionTest : public testing::Test {
     host_connection_->SetStateChangeCallback(
         NewCallback(&host_connection_callback_,
                     &MockConnectionCallback::OnStateChange));
+
+    connection->set_config(ChromotocolConfig::CreateDefault());
   }
 
  protected:
@@ -123,10 +126,9 @@ class JingleChromotingConnectionTest : public testing::Test {
   void InitiateConnection() {
     EXPECT_CALL(host_server_callback_, OnNewConnection(_, _))
         .WillOnce(DoAll(
-            WithArg<0>(
-                Invoke(this,
-                       &JingleChromotingConnectionTest::SetHostConnection)),
-            SetArgumentPointee<1>(true)));
+            WithArg<0>(Invoke(
+                this, &JingleChromotingConnectionTest::SetHostConnection)),
+            SetArgumentPointee<1>(ChromotingServer::ACCEPT)));
 
     base::WaitableEvent host_connected_event(false, false);
     EXPECT_CALL(host_connection_callback_,
@@ -158,6 +160,7 @@ class JingleChromotingConnectionTest : public testing::Test {
 
     client_connection_ = client_server_->Connect(
         SessionManagerPair::kHostJid,
+        CandidateChromotocolConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
                     &MockConnectionCallback::OnStateChange));
 
@@ -196,7 +199,7 @@ class JingleChromotingConnectionTest : public testing::Test {
 class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
  public:
   enum ChannelType {
-    EVENTS,
+    EVENT,
     VIDEO,
     VIDEO_RTP,
     VIDEO_RTCP,
@@ -243,8 +246,8 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   net::Socket* SelectChannel(ChromotingConnection* connection,
                              ChannelType channel) {
     switch (channel) {
-      case EVENTS:
-        return connection->GetEventsChannel();
+      case EVENT:
+        return connection->GetEventChannel();
       case VIDEO:
         return connection->GetVideoChannel();
       case VIDEO_RTP:
@@ -512,7 +515,7 @@ TEST_F(JingleChromotingConnectionTest, RejectConnection) {
 
   // Reject incoming connection.
   EXPECT_CALL(host_server_callback_, OnNewConnection(_, _))
-      .WillOnce(SetArgumentPointee<1>(false));
+      .WillOnce(SetArgumentPointee<1>(ChromotingServer::DECLINE));
 
   base::WaitableEvent done_event(false, false);
   EXPECT_CALL(client_connection_callback_,
@@ -525,6 +528,7 @@ TEST_F(JingleChromotingConnectionTest, RejectConnection) {
 
   client_connection_ = client_server_->Connect(
       SessionManagerPair::kHostJid,
+      CandidateChromotocolConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,
                   &MockConnectionCallback::OnStateChange));
 
@@ -553,14 +557,14 @@ TEST_F(JingleChromotingConnectionTest, TestVideoChannel) {
   CloseConnections();
 }
 
-// Verify that data can be transmitted over the events channel.
-TEST_F(JingleChromotingConnectionTest, TestEventsChannel) {
+// Verify that data can be transmitted over the event channel.
+TEST_F(JingleChromotingConnectionTest, TestEventChannel) {
   CreateServerPair();
   InitiateConnection();
   scoped_refptr<TCPChannelTester> tester =
       new TCPChannelTester(thread_.message_loop(), host_connection_,
                            client_connection_);
-  tester->Start(ChannelTesterBase::EVENTS);
+  tester->Start(ChannelTesterBase::EVENT);
   tester->WaitFinished();
   tester->CheckResults();
 

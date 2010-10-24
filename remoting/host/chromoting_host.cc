@@ -215,14 +215,14 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     VLOG(1) << "Host connected as " << jingle_client->GetFullJid();
 
     // Create and start |chromotocol_server_|.
-    chromotocol_server_ =
+    JingleChromotingServer* server =
         new JingleChromotingServer(context_->jingle_thread()->message_loop());
     // TODO(ajwong): Make this a command switch when we're more stable.
-    chromotocol_server_->set_allow_local_ips(true);
-    chromotocol_server_->Init(
-        jingle_client->GetFullJid(),
-        jingle_client->session_manager(),
-        NewCallback(this, &ChromotingHost::OnNewClientConnection));
+    server->set_allow_local_ips(true);
+    server->Init(jingle_client->GetFullJid(),
+                 jingle_client->session_manager(),
+                 NewCallback(this, &ChromotingHost::OnNewClientConnection));
+    chromotocol_server_ = server;
 
     // Start heartbeating.
     heartbeat_sender_->Start();
@@ -239,21 +239,40 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 }
 
 void ChromotingHost::OnNewClientConnection(
-    ChromotingConnection* connection, bool* accept) {
+    ChromotingConnection* connection,
+    ChromotingServer::NewConnectionResponse* response) {
   AutoLock auto_lock(lock_);
   // TODO(hclam): Allow multiple clients to connect to the host.
   if (client_.get() || state_ != kStarted) {
-    *accept = false;
+    *response = ChromotingServer::DECLINE;
     return;
   }
 
   // Check that the user has access to the host.
   if (!access_verifier_.VerifyPermissions(connection->jid())) {
-    *accept = false;
+    *response = ChromotingServer::DECLINE;
     return;
   }
 
-  *accept = true;
+  scoped_ptr<CandidateChromotocolConfig> local_config(
+      CandidateChromotocolConfig::CreateDefault());
+  local_config->SetInitialResolution(
+      ScreenResolution(capturer_->width(), capturer_->height()));
+  // TODO(sergeyu): Respect resolution requested by the client if supported.
+  ChromotocolConfig* config =
+      local_config->Select(connection->candidate_config(),
+                           true /* force_host_resolution */);
+
+  if (!config) {
+    LOG(WARNING) << "Rejecting connection from " << connection->jid()
+                 << " because no compartible configuration has been found.";
+    *response = ChromotingServer::INCOMPATIBLE;
+    return;
+  }
+
+  connection->set_config(config);
+
+  *response = ChromotingServer::ACCEPT;
 
   VLOG(1) << "Client connected: " << connection->jid();
 

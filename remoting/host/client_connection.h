@@ -107,7 +107,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<ChromotingConnection> connection_;
 
-  EventsStreamReader events_reader_;
+  EventStreamReader event_reader_;
   VideoStreamWriter video_writer_;
 
   // The message loop that this object runs on.

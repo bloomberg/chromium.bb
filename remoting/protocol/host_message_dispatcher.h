@@ -17,7 +17,7 @@ namespace remoting {
 
 class ChromotingClientMessage;
 class ChromotingConnection;
-class EventsStreamReader;
+class EventStreamReader;
 class HostControlMessageHandler;
 class HostEventMessageHandler;
 
@@ -25,7 +25,7 @@ class HostEventMessageHandler;
 // ChromotingConnection. It dispatches messages to the corresponding
 // handler.
 //
-// Internally it contains an EventsStreamReader that decodes data on
+// Internally it contains an EventStreamReader that decodes data on
 // communications channels into protocol buffer messages.
 // EventStreamReader is registered with ChromotingConnection given to it.
 //
@@ -54,13 +54,13 @@ class HostMessageDispatcher {
   // Message loop to dispatch the messages.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
-  // EventsStreamReader that runs on the control channel. It runs a loop
+  // EventStreamReader that runs on the control channel. It runs a loop
   // that parses data on the channel and then delegate the message to this
   // class.
-  scoped_ptr<EventsStreamReader> control_channel_reader_;
+  scoped_ptr<EventStreamReader> control_channel_reader_;
 
-  // EventsStreamReader that runs on the event channel.
-  scoped_ptr<EventsStreamReader> event_channel_reader_;
+  // EventStreamReader that runs on the event channel.
+  scoped_ptr<EventStreamReader> event_channel_reader_;
 
   // Event handlers for control channel and event channel respectively.
   // Method calls to these objects are made on the message loop given.

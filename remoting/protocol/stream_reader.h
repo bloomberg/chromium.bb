@@ -11,10 +11,10 @@
 
 namespace remoting {
 
-class EventsStreamReader : public SocketReaderBase {
+class EventStreamReader : public SocketReaderBase {
  public:
-  EventsStreamReader();
-  ~EventsStreamReader();
+  EventStreamReader();
+  ~EventStreamReader();
 
   // The OnMessageCallback is called whenever a new message is received.
   // Ownership of the message is passed the callback.
@@ -22,7 +22,7 @@ class EventsStreamReader : public SocketReaderBase {
 
   // Initialize the reader and start reading. Must be called on the thread
   // |socket| belongs to. The callback will be called when a new message is
-  // received. EventsStreamReader owns |on_message_callback|, doesn't own
+  // received. EventStreamReader owns |on_message_callback|, doesn't own
   // |socket|.
   void Init(net::Socket* socket, OnMessageCallback* on_message_callback);
 
@@ -33,7 +33,7 @@ class EventsStreamReader : public SocketReaderBase {
   MessagesDecoder messages_decoder_;
   scoped_ptr<OnMessageCallback> on_message_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventsStreamReader);
+  DISALLOW_COPY_AND_ASSIGN(EventStreamReader);
 };
 
 class VideoStreamReader : public SocketReaderBase {

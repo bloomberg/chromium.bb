@@ -34,7 +34,7 @@ void StreamWriterBase::Close() {
   buffered_writer_->Close();
 }
 
-bool EventsStreamWriter::SendMessage(
+bool EventStreamWriter::SendMessage(
     const ChromotingClientMessage& message) {
   return buffered_writer_->Write(SerializeAndFrameMessage(message));
 }
