@@ -89,19 +89,6 @@ class ChromeTests:
 
   def _DefaultCommand(self, tool, module, exe=None, valgrind_test_args=None):
     '''Generates the default command array that most tests will use.'''
-    module_dir = os.path.join(self._source_dir, module)
-
-    # We need multiple data dirs, the current script directory and a module
-    # specific one. The global suppression file lives in our directory, and the
-    # module specific suppression file lives with the module.
-    self._data_dirs = [path_utils.ScriptDir()]
-
-    if module == "chrome":
-      # unfortunately, not all modules have the same directory structure
-      self._data_dirs.append(os.path.join(module_dir, "test", "data",
-                                          "valgrind"))
-    else:
-      self._data_dirs.append(os.path.join(module_dir, "data", "valgrind"))
 
     if not self._options.build_dir:
       if common.IsWine():
@@ -119,19 +106,21 @@ class ChromeTests:
           self._options.build_dir = FindNewestDir(dirs)
 
     cmd = list(self._command_preamble)
-    for directory in self._data_dirs:
-      tool_name = tool.ToolName();
-      suppression_file = os.path.join(directory,
-          "%s/suppressions.txt" % tool_name)
-      if os.path.exists(suppression_file):
-        cmd.append("--suppressions=%s" % suppression_file)
-      # Platform specific suppression
-      for suppression_platform in common.PlatformNames():
-        suppression_file_platform = \
-            os.path.join(directory,
-                '%s/suppressions_%s.txt' % (tool_name, suppression_platform))
-        if os.path.exists(suppression_file_platform):
-          cmd.append("--suppressions=%s" % suppression_file_platform)
+
+    # Find all suppressions matching the following pattern:
+    # tools/valgrind/TOOL/suppressions[_PLATFORM].txt
+    # and list them with --suppressions= prefix.
+    script_dir = path_utils.ScriptDir()
+    tool_name = tool.ToolName();
+    suppression_file = os.path.join(script_dir, tool_name, "suppressions.txt")
+    if os.path.exists(suppression_file):
+      cmd.append("--suppressions=%s" % suppression_file)
+    # Platform-specific suppression
+    for platform in common.PlatformNames():
+      platform_suppression_file = \
+          os.path.join(script_dir, tool_name, 'suppressions_%s.txt' % platform)
+      if os.path.exists(platform_suppression_file):
+        cmd.append("--suppressions=%s" % platform_suppression_file)
 
     if self._options.valgrind_tool_flags:
       cmd += self._options.valgrind_tool_flags.split(" ")
@@ -160,34 +149,36 @@ class ChromeTests:
     and append the command-line option to cmd.
     '''
     filters = []
-    for directory in self._data_dirs:
-      gtest_filter_files = [
-          os.path.join(directory, name + ".gtest.txt"),
-          os.path.join(directory, name + ".gtest-%s.txt" % \
-              tool.ToolName())]
-      for platform_suffix in common.PlatformNames():
-        gtest_filter_files += [
-          os.path.join(directory, name + ".gtest_%s.txt" % platform_suffix),
-          os.path.join(directory, name + ".gtest-%s_%s.txt" % \
-              (tool.ToolName(), platform_suffix))]
-      for filename in gtest_filter_files:
-        if os.path.exists(filename):
-          logging.info("reading gtest filters from %s" % filename)
-          f = open(filename, 'r')
-          for line in f.readlines():
-            if line.startswith("#") or line.startswith("//") or line.isspace():
-              continue
-            line = line.rstrip()
-            test_prefixes = ["FLAKY", "FAILS"]
-            for p in test_prefixes:
-              # Strip prefixes from the test names.
-              line = line.replace(".%s_" % p, ".")
-            # Exclude the original test name.
-            filters.append(line)
-            if line[-2:] != ".*":
-              # List all possible prefixes if line doesn't end with ".*".
-              for p in test_prefixes:
-                filters.append(line.replace(".", ".%s_" % p))
+    gtest_files_dir = os.path.join(path_utils.ScriptDir(), "gtest_exclude")
+
+    gtest_filter_files = [
+        os.path.join(gtest_files_dir, name + ".gtest.txt"),
+        os.path.join(gtest_files_dir, name + ".gtest-%s.txt" % tool.ToolName())]
+    for platform_suffix in common.PlatformNames():
+      gtest_filter_files += [
+        os.path.join(gtest_files_dir, name + ".gtest_%s.txt" % platform_suffix),
+        os.path.join(gtest_files_dir, name + ".gtest-%s_%s.txt" % \
+            (tool.ToolName(), platform_suffix))]
+    for filename in gtest_filter_files:
+      if not os.path.exists(filename):
+        logging.info("gtest filter file %s not found - skipping" % filename)
+        continue
+      logging.info("Reading gtest filters from %s" % filename)
+      f = open(filename, 'r')
+      for line in f.readlines():
+        if line.startswith("#") or line.startswith("//") or line.isspace():
+          continue
+        line = line.rstrip()
+        test_prefixes = ["FLAKY", "FAILS"]
+        for p in test_prefixes:
+          # Strip prefixes from the test names.
+          line = line.replace(".%s_" % p, ".")
+        # Exclude the original test name.
+        filters.append(line)
+        if line[-2:] != ".*":
+          # List all possible prefixes if line doesn't end with ".*".
+          for p in test_prefixes:
+            filters.append(line.replace(".", ".%s_" % p))
     # Get rid of duplicates.
     filters = set(filters)
     gtest_filter = self._gtest_filter
