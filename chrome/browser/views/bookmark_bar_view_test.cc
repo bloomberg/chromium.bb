@@ -53,7 +53,7 @@
 
 #endif
 
-#if defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
+#if defined(OS_LINUX)
 // See bug http://crbug.com/60444 for details.
 #define MAYBE_ScrollButtonScrolls DISABLED_ScrollButtonScrolls
 #else
