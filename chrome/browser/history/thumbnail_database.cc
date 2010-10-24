@@ -310,7 +310,6 @@ bool ThumbnailDatabase::GetPageThumbnail(URLID id,
 
 bool ThumbnailDatabase::DeleteThumbnail(URLID id) {
   if (use_top_sites_) {
-    LOG(WARNING) << "Use TopSites instead.";
     return true;  // Not possible after migration to TopSites.
   }
 

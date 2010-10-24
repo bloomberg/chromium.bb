@@ -513,7 +513,7 @@ ProfileImpl::~ProfileImpl() {
     web_data_service_->Shutdown();
 
   if (top_sites_.get())
-    top_sites_->ClearProfile();
+    top_sites_->Shutdown();
 
   if (history_service_.get())
     history_service_->Cleanup();

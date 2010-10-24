@@ -2566,8 +2566,11 @@ void TabContents::UpdateThumbnail(const GURL& url,
                                   const ThumbnailScore& score) {
   // Tell History about this thumbnail
   if (history::TopSites::IsEnabled()) {
-    if (!profile()->IsOffTheRecord())
-      profile()->GetTopSites()->SetPageThumbnail(url, bitmap, score);
+    if (!profile()->IsOffTheRecord()) {
+      history::TopSites* ts = profile()->GetTopSites();
+      if (ts)
+        ts->SetPageThumbnail(url, bitmap, score);
+    }
   } else {
     HistoryService* hs;
     if (!profile()->IsOffTheRecord() &&

@@ -770,12 +770,19 @@ void HistoryService::OnDBLoaded() {
   NotificationService::current()->Notify(NotificationType::HISTORY_LOADED,
                                          Source<Profile>(profile_),
                                          Details<HistoryService>(this));
+  if (profile_ && history::TopSites::IsEnabled()) {
+    // TopSites may be null during testing.
+    history::TopSites* ts = profile_->GetTopSites();
+    if (ts)
+      ts->HistoryLoaded();
+  }
 }
 
 void HistoryService::StartTopSitesMigration() {
   if (history::TopSites::IsEnabled()) {
     history::TopSites* ts = profile_->GetTopSites();
-    ts->StartMigration();
+    if (ts)
+      ts->MigrateFromHistory();
   }
 }
 

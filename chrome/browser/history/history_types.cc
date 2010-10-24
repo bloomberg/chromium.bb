@@ -366,4 +366,7 @@ HistoryAddPageArgs* HistoryAddPageArgs::Clone() const {
       visit_source, did_replace_entry);
 }
 
+MostVisitedThumbnails::MostVisitedThumbnails() {
+}
+
 }  // namespace history

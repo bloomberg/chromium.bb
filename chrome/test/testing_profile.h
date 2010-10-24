@@ -56,6 +56,8 @@ class TestingProfile : public Profile {
   // for testing error conditions.
   void CreateHistoryService(bool delete_file, bool no_db);
 
+  void CreateTopSites();
+
   // Creates the BookmkarBarModel. If not invoked the bookmark bar model is
   // NULL. If |delete_file| is true, the bookmarks file is deleted first, then
   // the model is created. As TestingProfile deletes the directory containing
@@ -80,6 +82,10 @@ class TestingProfile : public Profile {
   // CreateBookmarkModel.
   void BlockUntilBookmarkModelLoaded();
 
+  // Blocks until TopSites finishes loading.
+  void BlockUntilTopSitesLoaded();
+
+  // Creates a TemplateURLModel. If not invoked the TemplateURLModel is NULL.
   // Creates a TemplateURLFetcher. If not invoked, the TemplateURLFetcher is
   // NULL.
   void CreateTemplateURLFetcher();

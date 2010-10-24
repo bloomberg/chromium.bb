@@ -10,14 +10,16 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/codec/jpeg_codec.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
     : DataSource(chrome::kChromeUIThumbnailPath, MessageLoop::current()),
       profile_(profile) {
+  if (history::TopSites::IsEnabled()) {
+    // Set TopSites now as Profile isn't thread safe.
+    top_sites_ = profile_->GetTopSites();
+  }
 }
 
 DOMUIThumbnailSource::~DOMUIThumbnailSource() {
@@ -26,12 +28,11 @@ DOMUIThumbnailSource::~DOMUIThumbnailSource() {
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
-  if (history::TopSites::IsEnabled()) {
-    history::TopSites* top_sites = profile_->GetTopSites();
-    RefCountedBytes* data = NULL;
-    if (top_sites->GetPageThumbnail(GURL(path), &data)) {
+  if (top_sites_.get()) {
+    scoped_refptr<RefCountedBytes> data;
+    if (top_sites_->GetPageThumbnail(GURL(path), &data)) {
       // We have the thumbnail.
-      SendResponse(request_id, data);
+      SendResponse(request_id, data.get());
     } else {
       SendDefaultThumbnail(request_id);
     }
@@ -58,6 +59,12 @@ std::string DOMUIThumbnailSource::GetMimeType(const std::string&) const {
   return "image/png";
 }
 
+MessageLoop* DOMUIThumbnailSource::MessageLoopForRequestPath(
+    const std::string& path) const {
+  // TopSites can be accessed from the IO thread.
+  return top_sites_.get() ? NULL : DataSource::MessageLoopForRequestPath(path);
+}
+
 void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
   // Use placeholder thumbnail.
   if (!default_thumbnail_.get()) {
@@ -71,9 +78,7 @@ void DOMUIThumbnailSource::SendDefaultThumbnail(int request_id) {
 void DOMUIThumbnailSource::OnThumbnailDataAvailable(
     HistoryService::Handle request_handle,
     scoped_refptr<RefCountedBytes> data) {
-  HistoryService* hs =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  int request_id = cancelable_consumer_.GetClientData(hs, request_handle);
+  int request_id = cancelable_consumer_.GetClientDataForCurrentRequest();
   // Forward the data along to the networking system.
   if (data.get() && !data->data.empty()) {
     SendResponse(request_id, data);
