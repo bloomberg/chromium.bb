@@ -26,6 +26,7 @@ class SearchProviderTest : public UITest {
       const IsSearchProviderTestData& data);
 
   net::TestServer test_server_;
+  bool test_server_started_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
@@ -33,7 +34,14 @@ class SearchProviderTest : public UITest {
 
 SearchProviderTest::SearchProviderTest()
     : test_server_(net::TestServer::TYPE_HTTP,
-                   FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
+                   FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
+      test_server_started_(false) {
+  // The test_server is started in the constructor (rather than the test body)
+  // so the mapping rules below can include the ephemeral port number.
+  test_server_started_ = test_server_.Start();
+  if (!test_server_started_)
+    return;
+
   // Enable the search provider additions.
   launch_arguments_.AppendSwitch(switches::kEnableSearchProviderApiV2);
 
@@ -113,7 +121,7 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
 }
 
 TEST_F(SearchProviderTest, TestIsSearchProviderInstalled) {
-  ASSERT_TRUE(test_server_.Start());
+  ASSERT_TRUE(test_server_started_);
 
   // Use the default search provider, other installed search provider, and
   // one not installed as well. (Note that yahoo isn't tested because the
