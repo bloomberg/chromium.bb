@@ -55,6 +55,13 @@
   fun:ThreadSanitizerStartThread
 }
 
+{
+  bug_60536
+  ThreadSanitizer:Race
+  fun:net::GrowableIOBuffer::*apacity
+  fun:remoting::TCPChannelTester::*
+}
+
 ############################
 # Real races in third_party
 {
