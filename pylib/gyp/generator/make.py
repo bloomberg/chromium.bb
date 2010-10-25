@@ -583,8 +583,10 @@ class MakefileWriter:
                                  'shared_library')
     if self.type in self._INSTALLABLE_TARGETS:
       self.alias = os.path.basename(self.output)
+      install_path = self._InstallableTargetInstallPath()
     else:
       self.alias = self.output
+      install_path = self.output
 
     self.WriteLn("TOOLSET := " + self.toolset)
     self.WriteLn("TARGET := " + self.target)
@@ -626,7 +628,7 @@ class MakefileWriter:
                      extra_link_deps + link_deps, extra_outputs, part_of_all)
 
     # Update global list of target outputs, used in dependency tracking.
-    target_outputs[qualified_target] = self.alias
+    target_outputs[qualified_target] = install_path
 
     # Update global list of link dependencies.
     if self.type == 'static_library':
@@ -1062,29 +1064,26 @@ class MakefileWriter:
     # 2) They get shortcuts for building (e.g. "make chrome").
     # 3) They are part of "make all".
     if self.type in self._INSTALLABLE_TARGETS:
-      if self.type in ('shared_library'):
+      if self.type == 'shared_library':
         file_desc = 'shared library'
-        # Install all shared libs into a common directory (per toolset) for
-        # convenient access with LD_LIBRARY_PATH.
-        binpath = '$(builddir)/lib.%s/%s' % (self.toolset, self.alias)
       else:
         file_desc = 'executable'
-        binpath = '$(builddir)/' + self.alias
+      install_path = self._InstallableTargetInstallPath()
       installable_deps = [self.output]
       # Point the target alias to the final binary output.
-      self.WriteMakeRule([self.target], [binpath],
+      self.WriteMakeRule([self.target], [install_path],
                          comment='Add target alias', phony = True)
-      if binpath != self.output:
-        self.WriteDoCmd([binpath], [self.output], 'copy',
+      if install_path != self.output:
+        self.WriteDoCmd([install_path], [self.output], 'copy',
                         comment = 'Copy this to the %s output path.' %
                         file_desc, part_of_all=part_of_all)
-        installable_deps.append(binpath)
+        installable_deps.append(install_path)
       if self.output != self.alias and self.alias != self.target:
         self.WriteMakeRule([self.alias], installable_deps,
                            comment = 'Short alias for building this %s.' %
                            file_desc, phony = True)
       if part_of_all:
-        self.WriteMakeRule(['all'], [binpath],
+        self.WriteMakeRule(['all'], [install_path],
                            comment = 'Add %s to "all" target.' % file_desc,
                            phony = True)
 
@@ -1213,6 +1212,15 @@ class MakefileWriter:
       # will know to Absolutify() it.
       path = os.path.join('.', path)
     return path
+
+
+  def _InstallableTargetInstallPath(self):
+    """Returns the location of the final output for an installable target."""
+    if self.type == 'shared_library':
+      # Install all shared libs into a common directory (per toolset) for
+      # convenient access with LD_LIBRARY_PATH.
+      return '$(builddir)/lib.%s/%s' % (self.toolset, self.alias)
+    return '$(builddir)/' + self.alias
 
 
 def GenerateOutput(target_list, target_dicts, data, params):

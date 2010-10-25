@@ -5,13 +5,13 @@
 # found in the LICENSE file.
 
 """
-Verifies that toolsets are correctly applied
+Verifies that .d files and all.deps are properly generated.
 """
 
 import os
 import TestGyp
 
-# Multiple toolsets are currently only supported by the make generator.
+# .d files are only used by the make build.
 test = TestGyp.TestGyp(formats=['make'])
 
 test.run_gyp('dependencies.gyp')
