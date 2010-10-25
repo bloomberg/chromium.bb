@@ -52,7 +52,9 @@ def _LocateBinDirs():
       'darwin': [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
                   os.path.join(chrome_src, 'xcodebuild', 'Release')],
       'win32':  [ os.path.join(chrome_src, 'chrome', 'Debug'),
-                  os.path.join(chrome_src, 'chrome', 'Release')],
+                  os.path.join(chrome_src, 'build', 'Debug'),
+                  os.path.join(chrome_src, 'chrome', 'Release'),
+                  os.path.join(chrome_src, 'build', 'Release')],
       'cygwin': [ os.path.join(chrome_src, 'chrome', 'Debug'),
                   os.path.join(chrome_src, 'chrome', 'Release')],
   }
