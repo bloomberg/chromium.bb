@@ -216,8 +216,11 @@ class RenderViewHost : public RenderWidgetHost {
   // Cancel a pending find operation.
   void StopFinding(FindBarController::SelectionAction selection_action);
 
-  // Change the zoom level of a page.
+  // Increment, decrement, or reset the zoom level of a page.
   void Zoom(PageZoom::Function function);
+
+  // Change the zoom level of a page to a specific value.
+  void SetZoomLevel(double zoom_level);
 
   // Change the encoding of the page.
   void SetPageEncoding(const std::string& encoding);

@@ -112,6 +112,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_TABS_TO_LINKS_PREF));
   localized_strings->SetString("fontSettingsInfo",
       l10n_util::GetStringUTF16(IDS_OPTIONS_FONTSETTINGS_INFO));
+  localized_strings->SetString("defaultZoomLevelLabel",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL));
   localized_strings->SetString("fontSettingsConfigureFontsOnlyButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTSONLY_BUTTON));
@@ -183,6 +185,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 void AdvancedOptionsHandler::Initialize() {
   DCHECK(dom_ui_);
   SetupMetricsReportingCheckbox(false);
+  SetupDefaultZoomLevel();
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
@@ -215,6 +218,7 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
+  default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
   proxy_prefs_.reset(
       PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
 
@@ -234,6 +238,8 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("resetToDefaults",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleResetToDefaults));
+  dom_ui_->RegisterMessageCallback("defaultZoomLevelAction",
+      NewCallback(this, &AdvancedOptionsHandler::HandleDefaultZoomLevel));
 #if !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
       NewCallback(this,
@@ -349,6 +355,14 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
   bool user_changed = (enabled == is_enabled);
   SetupMetricsReportingCheckbox(user_changed);
 #endif
+}
+
+void AdvancedOptionsHandler::HandleDefaultZoomLevel(const ListValue* args) {
+  UserMetricsRecordAction(UserMetricsAction("Options_ChangeDefaultZoomLevel"));
+  int zoom_level;
+  if (ExtractIntegerValue(args, &zoom_level)) {
+    default_zoom_level_.SetValue(static_cast<double>(zoom_level));
+  }
 }
 
 #if defined(OS_WIN)
@@ -471,6 +485,13 @@ void AdvancedOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
       L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled, user_has_changed);
 #endif
+}
+
+void AdvancedOptionsHandler::SetupDefaultZoomLevel() {
+  // We're only interested in integer values, so convert to int.
+  FundamentalValue value(static_cast<int>(default_zoom_level_.GetValue()));
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetDefaultZoomLevel", value);
 }
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {

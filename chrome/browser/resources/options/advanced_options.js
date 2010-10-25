@@ -56,6 +56,10 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
+      $('defaultZoomLevel').onchange = function(event) {
+        chrome.send('defaultZoomLevelAction',
+            [String(event.target.options[event.target.selectedIndex].value)]);
+      }
       $('optionsReset').onclick = function(event) {
         AlertOverlay.show(undefined,
             localStrings.getString('optionsResetMessage'),
@@ -166,6 +170,18 @@ var OptionsPage = options.OptionsPage;
     if (user_changed)
       AdvancedOptions.getInstance().showRestartRequiredAlert_();
   }
+
+  // Set the default zoom level selected item.
+  AdvancedOptions.SetDefaultZoomLevel = function(value) {
+    var selectCtl = $('defaultZoomLevel');
+    for (var i = 0; i < selectCtl.options.length; i++) {
+      if (selectCtl.options[i].value == value) {
+        selectCtl.selectedIndex = i;
+        return;
+      }
+    }
+    selectCtl.selectedIndex = 4;  // 100%
+  };
 
   // Set the download path.
   AdvancedOptions.SetDownloadLocationPath = function(path) {

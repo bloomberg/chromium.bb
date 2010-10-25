@@ -202,6 +202,7 @@ extern const char kContentSettingsPatterns[];
 extern const char kBlockThirdPartyCookies[];
 extern const char kBlockNonsandboxedPlugins[];
 extern const char kClearSiteDataOnExit[];
+extern const char kDefaultZoomLevel[];
 extern const char kPerHostZoomLevels[];
 extern const char kAutoFillEnabled[];
 extern const char kAutoFillAuxiliaryProfilesEnabled[];

@@ -756,6 +756,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetContentSettingsForLoadingURL,
                         OnSetContentSettingsForLoadingURL)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
@@ -4188,6 +4189,17 @@ void RenderView::OnZoom(PageZoom::Function function) {
     }
   }
 
+  webview()->setZoomLevel(false, zoom_level);
+  zoomLevelChanged();
+}
+
+void RenderView::OnSetZoomLevel(double zoom_level) {
+  // Don't set zoom level for full-page plugin since they don't use the same
+  // zoom settings.
+  if (webview()->mainFrame()->document().isPluginDocument())
+    return;
+
+  webview()->hidePopups();
   webview()->setZoomLevel(false, zoom_level);
   zoomLevelChanged();
 }

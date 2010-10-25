@@ -707,6 +707,9 @@ class TabContents : public PageNavigator,
   // the page title and we know we want to update history.
   void UpdateHistoryPageTitle(const NavigationEntry& entry);
 
+  // Gets the zoom level for this tab.
+  double GetZoomLevel() const;
+
   // Gets the zoom percent for this tab.
   int GetZoomPercent(bool* enable_increment, bool* enable_decrement);
 
@@ -801,6 +804,9 @@ class TabContents : public PageNavigator,
 
   // Send webkit specific settings to the renderer.
   void UpdateWebPreferences();
+
+  // Instruct the renderer to update the zoom level.
+  void UpdateZoomLevel();
 
   // If our controller was restored and the page id is > than the site
   // instance's page id, the site instances page id is updated as well as the

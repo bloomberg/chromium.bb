@@ -27,6 +27,7 @@ using testing::Property;
 class HostZoomMapTest : public testing::Test {
  public:
   static const double kZoomLevel;
+  static const double kDefaultZoomLevel;
   HostZoomMapTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         prefs_(profile_.GetPrefs()),
@@ -54,6 +55,7 @@ class HostZoomMapTest : public testing::Test {
   NotificationObserverMock pref_observer_;
 };
 const double HostZoomMapTest::kZoomLevel = 4;
+const double HostZoomMapTest::kDefaultZoomLevel = -2;
 
 TEST_F(HostZoomMapTest, LoadNoPrefs) {
   scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
@@ -120,3 +122,11 @@ TEST_F(HostZoomMapTest, NoHost) {
   EXPECT_EQ(kZoomLevel, map->GetZoomLevel(file_url1_));
   EXPECT_EQ(0, map->GetZoomLevel(file_url2_));
 }
+
+TEST_F(HostZoomMapTest, ChangeDefaultZoomLevel) {
+  FundamentalValue zoom_level(kDefaultZoomLevel);
+  prefs_->Set(prefs::kDefaultZoomLevel, zoom_level);
+  scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
+  EXPECT_EQ(kDefaultZoomLevel, map->GetZoomLevel(url_));
+}
+

@@ -29,6 +29,8 @@ HostZoomMap::HostZoomMap(Profile* profile)
     : profile_(profile),
       updating_preferences_(false) {
   Load();
+  default_zoom_level_ =
+      profile_->GetPrefs()->GetReal(prefs::kDefaultZoomLevel);
   registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
                  Source<Profile>(profile));
   // Don't observe pref changes (e.g. from sync) in Incognito; once we create
@@ -37,6 +39,7 @@ HostZoomMap::HostZoomMap(Profile* profile)
   if (!profile_->IsOffTheRecord()) {
     pref_change_registrar_.Init(profile_->GetPrefs());
     pref_change_registrar_.Add(prefs::kPerHostZoomLevels, this);
+    pref_change_registrar_.Add(prefs::kDefaultZoomLevel, this);
   }
 
   registrar_.Add(
@@ -94,7 +97,7 @@ double HostZoomMap::GetZoomLevel(const GURL& url) const {
   std::string host(net::GetHostOrSpecFromURL(url));
   AutoLock auto_lock(lock_);
   HostZoomLevels::const_iterator i(host_zoom_levels_.find(host));
-  return (i == host_zoom_levels_.end()) ? 0 : i->second;
+  return (i == host_zoom_levels_.end()) ? default_zoom_level_ : i->second;
 }
 
 void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
@@ -106,7 +109,7 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
 
   {
     AutoLock auto_lock(lock_);
-    if (level == 0)
+    if (level == default_zoom_level_)
       host_zoom_levels_.erase(host);
     else
       host_zoom_levels_[host] = level;
@@ -126,7 +129,7 @@ void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
     ScopedPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
     DictionaryValue* host_zoom_dictionary =
         profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
-    if (level == 0) {
+    if (level == default_zoom_level_) {
       host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
@@ -240,6 +243,10 @@ void HostZoomMap::Observe(
         std::string* name = Details<std::string>(details).ptr();
         if (prefs::kPerHostZoomLevels == *name)
           Load();
+        else if (prefs::kDefaultZoomLevel == *name) {
+          default_zoom_level_ =
+              profile_->GetPrefs()->GetReal(prefs::kDefaultZoomLevel);
+        }
       }
       break;
     }

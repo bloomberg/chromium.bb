@@ -870,6 +870,7 @@ class RenderView : public RenderWidget,
 #if defined(OS_MACOSX)
   void OnSetWindowVisibility(bool visible);
 #endif
+  void OnSetZoomLevel(double zoom_level);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnShouldClose();
   void OnStop();

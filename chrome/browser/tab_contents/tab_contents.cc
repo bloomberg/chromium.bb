@@ -167,6 +167,7 @@ const int kJavascriptMessageExpectedDelay = 1000;
 // The list of prefs we want to observe.
 const char* kPrefsToObserve[] = {
   prefs::kAlternateErrorPagesEnabled,
+  prefs::kDefaultZoomLevel,
   prefs::kWebKitJavaEnabled,
   prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitLoadsImagesAutomatically,
@@ -1465,12 +1466,10 @@ void TabContents::UpdateHistoryPageTitle(const NavigationEntry& entry) {
     hs->SetPageTitle(entry.virtual_url(), entry.title());
 }
 
-int TabContents::GetZoomPercent(bool* enable_increment,
-                                bool* enable_decrement) {
-  *enable_decrement = *enable_increment = false;
+double TabContents::GetZoomLevel() const {
   HostZoomMap* zoom_map = profile()->GetHostZoomMap();
   if (!zoom_map)
-    return 100;
+    return 0;
 
   double zoom_level;
   if (temporary_zoom_settings_) {
@@ -1479,9 +1478,14 @@ int TabContents::GetZoomPercent(bool* enable_increment,
   } else {
     zoom_level = zoom_map->GetZoomLevel(GetURL());
   }
+  return zoom_level;
+}
 
+int TabContents::GetZoomPercent(bool* enable_increment,
+                                bool* enable_decrement) {
+  *enable_decrement = *enable_increment = false;
   int percent = static_cast<int>(
-      WebKit::WebView::zoomLevelToZoomFactor(zoom_level) * 100);
+      WebKit::WebView::zoomLevelToZoomFactor(GetZoomLevel()) * 100);
   *enable_decrement = percent > minimum_zoom_percent_;
   *enable_increment = percent < maximum_zoom_percent_;
   return percent;
@@ -1757,6 +1761,10 @@ void TabContents::UpdateAlternateErrorPageURL() {
 
 void TabContents::UpdateWebPreferences() {
   render_view_host()->UpdateWebPreferences(GetWebkitPrefs());
+}
+
+void TabContents::UpdateZoomLevel() {
+  render_view_host()->SetZoomLevel(GetZoomLevel());
 }
 
 void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
@@ -3081,6 +3089,8 @@ void TabContents::Observe(NotificationType type,
       } else if ((*pref_name_in == prefs::kDefaultCharset) ||
                  StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
+      } else if (*pref_name_in == prefs::kDefaultZoomLevel) {
+        UpdateZoomLevel();
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
       }

@@ -433,6 +433,10 @@ void RenderViewHost::Zoom(PageZoom::Function function) {
   Send(new ViewMsg_Zoom(routing_id(), function));
 }
 
+void RenderViewHost::SetZoomLevel(double zoom_level) {
+  Send(new ViewMsg_SetZoomLevel(routing_id(), zoom_level));
+}
+
 void RenderViewHost::SetPageEncoding(const std::string& encoding_name) {
   Send(new ViewMsg_SetPageEncoding(routing_id(), encoding_name));
 }

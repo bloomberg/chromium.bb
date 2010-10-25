@@ -407,6 +407,12 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
                       PageZoom::Function /* function */)
 
+  // Set the zoom level for the current main frame.  If the level actually
+  // changes, a ViewHostMsg_DidZoomURL message will be sent back to the browser
+  // telling it what url got zoomed and what its current zoom level is.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetZoomLevel,
+                      double /* zoom_level */)
+
   // Set the zoom level for a particular url that the renderer is in the
   // process of loading.  This will be stored, to be used if the load commits
   // and ignored otherwise.
