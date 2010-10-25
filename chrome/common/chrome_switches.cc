@@ -1056,6 +1056,9 @@ const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
 // Set the maximum SPDY sessions per domain.
 const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";
 
+// Set the maximum concurrent streams over a SPDY session.
+const char kMaxSpdyConcurrentStreams[]      = "max-spdy-concurrent-streams";
+
 // Grant unlimited quota to store files to this process.
 // Used for testing Pepper's FileRef/FileIO/FileSystem implementations.
 // DO NOT USE FOR OTHER PURPOSES.

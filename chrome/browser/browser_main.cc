@@ -93,6 +93,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -357,6 +358,14 @@ void BrowserMainParts::SpdyFieldTrial() {
     } else {
       CHECK(!is_spdy_trial);
     }
+  }
+  if (parsed_command_line().HasSwitch(switches::kMaxSpdyConcurrentStreams)) {
+    int value = 0;
+    base::StringToInt(parsed_command_line().GetSwitchValueASCII(
+            switches::kMaxSpdyConcurrentStreams),
+        &value);
+    if (value > 0)
+      net::SpdySession::set_max_concurrent_streams(value);
   }
 }
 
