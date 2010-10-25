@@ -742,6 +742,12 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     return false;
   }
 
+  if (id == IDC_SAVE_PAGE &&
+      (source_tab_contents_->content_restrictions() &
+          CONTENT_RESTRICTION_SAVE)) {
+    return false;
+  }
+
   // Allow Spell Check language items on sub menu for text area context menu.
   if ((id >= IDC_SPELLCHECK_LANGUAGES_FIRST) &&
       (id < IDC_SPELLCHECK_LANGUAGES_LAST)) {
