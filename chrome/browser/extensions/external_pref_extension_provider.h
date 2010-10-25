@@ -30,8 +30,11 @@ class ExternalPrefExtensionProvider : public ExternalExtensionProvider {
   virtual void VisitRegisteredExtension(
       Visitor* visitor, const std::set<std::string>& ids_to_ignore) const;
 
-  virtual Version* RegisteredVersion(const std::string& id,
-                                     Extension::Location* location) const;
+  virtual bool HasExtension(const std::string& id) const;
+
+  virtual bool GetExtensionDetails(const std::string& id,
+                                   Extension::Location* location,
+                                   scoped_ptr<Version>* version) const;
  protected:
   scoped_ptr<DictionaryValue> prefs_;
 

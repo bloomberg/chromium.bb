@@ -10,6 +10,8 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 
+namespace {
+
 // The Registry hive where to look for external extensions.
 const HKEY kRegRoot = HKEY_LOCAL_MACHINE;
 
@@ -21,6 +23,16 @@ const wchar_t kRegistryExtensionPath[] = L"path";
 
 // Registry value of that key that defines the current version of the .crx file.
 const wchar_t kRegistryExtensionVersion[] = L"version";
+
+bool OpenKeyById(const std::string& id, base::win::RegKey *key) {
+  std::wstring key_path = ASCIIToWide(kRegistryExtensions);
+  key_path.append(L"\\");
+  key_path.append(ASCIIToWide(id));
+
+  return key->Open(kRegRoot, key_path.c_str(), KEY_READ);
+}
+
+}  // namespace
 
 ExternalRegistryExtensionProvider::ExternalRegistryExtensionProvider() {
 }
@@ -75,22 +87,29 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
   }
 }
 
-Version* ExternalRegistryExtensionProvider::RegisteredVersion(
-    const std::string& id,
-    Extension::Location* location) const  {
-  base::win::RegKey key;
-  std::wstring key_path = ASCIIToWide(kRegistryExtensions);
-  key_path.append(L"\\");
-  key_path.append(ASCIIToWide(id));
 
-  if (!key.Open(kRegRoot, key_path.c_str(), KEY_READ))
-    return NULL;
+bool ExternalRegistryExtensionProvider::HasExtension(
+    const std::string& id) const {
+  base::win::RegKey key;
+  return OpenKeyById(id, &key);
+}
+
+bool ExternalRegistryExtensionProvider::GetExtensionDetails(
+    const std::string& id,
+    Extension::Location* location,
+    scoped_ptr<Version>* version) const  {
+  base::win::RegKey key;
+  if (!OpenKeyById(id, &key))
+    return false;
 
   std::wstring extension_version;
   if (!key.ReadValue(kRegistryExtensionVersion, &extension_version))
-    return NULL;
+    return false;
+
+  if (version)
+    version->reset(Version::GetVersionFromString(extension_version));
 
   if (location)
     *location = Extension::EXTERNAL_REGISTRY;
-  return Version::GetVersionFromString(extension_version);
+  return true;
 }
