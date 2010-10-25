@@ -519,7 +519,7 @@
             {
               'destination': '<(PRODUCT_DIR)/extensions',
               'files': [
-                'browser/extensions/default_extensions/chromeos/external_extensions.json'
+                '>!@(ls browser/extensions/default_extensions/chromeos/cache/*)'
               ]
             }
           ],
