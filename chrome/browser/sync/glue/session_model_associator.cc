@@ -248,7 +248,7 @@ void SessionModelAssociator::InitializeCurrentMachineTag() {
   // See issue 59672
   current_machine_tag_ = "session_sync";
   current_machine_tag_.append(dir->cache_guid());
-  LOG(INFO) << "Creating machine tag: " << current_machine_tag_;
+  VLOG(1) << "Creating machine tag: " << current_machine_tag_;
 }
 
 // See PopulateSessionSpecificsTab for use.  May add functionality that includes

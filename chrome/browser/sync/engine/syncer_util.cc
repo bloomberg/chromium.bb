@@ -70,7 +70,7 @@ using std::vector;
 int SyncerUtil::GetUnsyncedEntries(syncable::BaseTransaction* trans,
                                    vector<int64> *handles) {
   trans->directory()->GetUnsyncedMetaHandles(trans, handles);
-  LOG_IF(INFO, handles->size() > 0)
+  VLOG_IF(1, handles->size() > 0)
       << "Have " << handles->size() << " unsynced items.";
   return handles->size();
 }

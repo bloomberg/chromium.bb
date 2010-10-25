@@ -390,7 +390,7 @@ void ProfileSyncService::CreateBackend() {
 void ProfileSyncService::StartUp() {
   // Don't start up multiple times.
   if (backend_.get()) {
-    LOG(INFO) << "Skipping bringing up backend host.";
+    VLOG(1) << "Skipping bringing up backend host.";
     return;
   }
 
