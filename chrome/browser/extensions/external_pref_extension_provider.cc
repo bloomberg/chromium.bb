@@ -121,39 +121,19 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
   }
 }
 
-bool ExternalPrefExtensionProvider::HasExtension(const std::string& id) const {
-  return prefs_->HasKey(id);
-}
-
-bool ExternalPrefExtensionProvider::GetExtensionDetails(
-    const std::string& id, Extension::Location* location,
-    scoped_ptr<Version>* version) const {
+Version* ExternalPrefExtensionProvider::RegisteredVersion(
+    const std::string& id, Extension::Location* location) const {
   DictionaryValue* extension = NULL;
   if (!prefs_->GetDictionary(id, &extension))
-    return false;
+    return NULL;
 
-  Extension::Location loc;
-  if (extension->HasKey(kExternalUpdateUrl)) {
-    loc = Extension::EXTERNAL_PREF_DOWNLOAD;
-
-  } else if (extension->HasKey(kExternalCrx)) {
-    loc = Extension::EXTERNAL_PREF;
-
-    std::string external_version;
-    if (!extension->GetString(kExternalVersion, &external_version))
-      return false;
-
-    if (version)
-      version->reset(Version::GetVersionFromString(external_version));
-
-  } else {
-    NOTREACHED();  // Chrome should not allow prefs to get into this state.
-  }
+  std::string external_version;
+  if (!extension->GetString(kExternalVersion, &external_version))
+    return NULL;
 
   if (location)
-    *location = loc;
-
-  return true;
+    *location = Extension::EXTERNAL_PREF;
+  return Version::GetVersionFromString(external_version);
 }
 
 void ExternalPrefExtensionProvider::SetPreferences(

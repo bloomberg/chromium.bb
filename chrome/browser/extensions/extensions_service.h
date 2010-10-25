@@ -314,8 +314,9 @@ class ExtensionsService
   void ClearProvidersForTesting();
 
   // Sets an ExternalExtensionProvider for the service to use during testing.
-  // Takes ownership of |test_provider|.
-  void AddProviderForTesting(ExternalExtensionProvider* test_provider);
+  // |location| specifies what type of provider should be added.
+  void SetProviderForTesting(Extension::Location location,
+                             ExternalExtensionProvider* test_provider);
 
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();

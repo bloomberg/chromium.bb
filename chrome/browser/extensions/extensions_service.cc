@@ -185,14 +185,16 @@ class ExtensionsServiceBackend
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so, tell the frontend to uninstall it.
   void CheckExternalUninstall(scoped_refptr<ExtensionsService> frontend,
-                              const std::string& id);
+                              const std::string& id,
+                              Extension::Location location);
 
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();
 
-  // Adds an ExternalExtensionProvider for the service to use during testing.
-  // Takes ownership of |test_provider|.
-  void AddProviderForTesting(ExternalExtensionProvider* test_provider);
+  // Sets an ExternalExtensionProvider for the service to use during testing.
+  // |location| specifies what type of provider should be added.
+  void SetProviderForTesting(Extension::Location location,
+                             ExternalExtensionProvider* test_provider);
 
   // ExternalExtensionProvider::Visitor implementation.
   virtual void OnExternalExtensionFileFound(const std::string& id,
@@ -231,6 +233,16 @@ class ExtensionsServiceBackend
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error);
 
+  // Lookup an external extension by |id| by going through all registered
+  // external extension providers until we find a provider that contains an
+  // extension that matches. If |version| is not NULL, the extension version
+  // will be returned (caller is responsible for deleting that pointer).
+  // |location| can also be null, if not needed. Returns true if extension is
+  // found, false otherwise.
+  bool LookupExternalExtension(const std::string& id,
+                               Version** version,
+                               Extension::Location* location);
+
   // This is a naked pointer which is set by each entry point.
   // The entry point is responsible for ensuring lifetime.
   ExtensionsService* frontend_;
@@ -241,12 +253,12 @@ class ExtensionsServiceBackend
   // Whether errors result in noisy alerts.
   bool alert_on_error_;
 
-  // A collection of external extension providers.  Each provider reads
-  // a source of external extension information.  Examples include the
-  // windows registry and external_extensions.json.
-  typedef std::vector<linked_ptr<ExternalExtensionProvider> >
-      ProviderCollection;
-  ProviderCollection external_extension_providers_;
+  // A map from external extension type to the external extension provider
+  // for that type.  Because a single provider may handle more than one
+  // external extension type, more than one key may map to the same object.
+  typedef std::map<Extension::Location,
+                   linked_ptr<ExternalExtensionProvider> > ProviderMap;
+  ProviderMap external_extension_providers_;
 
   // Set to true by OnExternalExtensionUpdateUrlFound() when an external
   // extension URL is found.  Used in CheckForExternalUpdates() to see
@@ -269,13 +281,17 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
   // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
   // pref data in the ctor and that is called on the UI thread. Would be better
   // to re-read data each time we list external extensions, anyway.
-  external_extension_providers_.push_back(
+  external_extension_providers_[Extension::EXTERNAL_PREF] =
       linked_ptr<ExternalExtensionProvider>(
-          new ExternalPrefExtensionProvider()));
+          new ExternalPrefExtensionProvider());
+  // EXTERNAL_PREF_DOWNLOAD and EXTERNAL_PREF extensions are handled by the
+  // same object.
+  external_extension_providers_[Extension::EXTERNAL_PREF_DOWNLOAD] =
+      external_extension_providers_[Extension::EXTERNAL_PREF];
 #if defined(OS_WIN)
-  external_extension_providers_.push_back(
+  external_extension_providers_[Extension::EXTERNAL_REGISTRY] =
       linked_ptr<ExternalExtensionProvider>(
-          new ExternalRegistryExtensionProvider()));
+          new ExternalRegistryExtensionProvider());
 #endif
 }
 
@@ -322,6 +338,22 @@ void ExtensionsServiceBackend::ReportExtensionLoadError(
           error, NotificationType::EXTENSION_INSTALL_ERROR, alert_on_error_));
 }
 
+bool ExtensionsServiceBackend::LookupExternalExtension(
+    const std::string& id, Version** version, Extension::Location* location) {
+  scoped_ptr<Version> extension_version;
+  for (ProviderMap::const_iterator i = external_extension_providers_.begin();
+       i != external_extension_providers_.end(); ++i) {
+    const ExternalExtensionProvider* provider = i->second.get();
+    extension_version.reset(provider->RegisteredVersion(id, location));
+    if (extension_version.get()) {
+      if (version)
+        *version = extension_version.release();
+      return true;
+    }
+  }
+  return false;
+}
+
 // Some extensions will autoupdate themselves externally from Chrome.  These
 // are typically part of some larger client application package.  To support
 // these, the extension will register its location in the the preferences file
@@ -342,10 +374,10 @@ void ExtensionsServiceBackend::CheckForExternalUpdates(
 
   // Ask each external extension provider to give us a call back for each
   // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
-  ProviderCollection::const_iterator i;
-  for (i = external_extension_providers_.begin();
+
+  for (ProviderMap::const_iterator i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
-    ExternalExtensionProvider* provider = i->get();
+    ExternalExtensionProvider* provider = i->second.get();
     provider->VisitRegisteredExtension(this, ids_to_ignore);
   }
 
@@ -358,14 +390,20 @@ void ExtensionsServiceBackend::CheckForExternalUpdates(
 }
 
 void ExtensionsServiceBackend::CheckExternalUninstall(
-    scoped_refptr<ExtensionsService> frontend, const std::string& id) {
+    scoped_refptr<ExtensionsService> frontend, const std::string& id,
+    Extension::Location location) {
   // Check if the providers know about this extension.
-  ProviderCollection::const_iterator i;
-  for (i = external_extension_providers_.begin();
-       i != external_extension_providers_.end(); ++i) {
-    if (i->get()->HasExtension(id))
-      return;  // Yup, known extension, don't uninstall.
+  ProviderMap::const_iterator i = external_extension_providers_.find(location);
+  if (i == external_extension_providers_.end()) {
+    NOTREACHED() << "CheckExternalUninstall called for non-external extension "
+                 << location;
+    return;
   }
+
+  scoped_ptr<Version> version;
+  version.reset(i->second->RegisteredVersion(id, NULL));
+  if (version.get())
+    return;  // Yup, known extension, don't uninstall.
 
   // This is an external extension that we don't have registered.  Uninstall.
   BrowserThread::PostTask(
@@ -378,11 +416,12 @@ void ExtensionsServiceBackend::ClearProvidersForTesting() {
   external_extension_providers_.clear();
 }
 
-void ExtensionsServiceBackend::AddProviderForTesting(
+void ExtensionsServiceBackend::SetProviderForTesting(
+    Extension::Location location,
     ExternalExtensionProvider* test_provider) {
   DCHECK(test_provider);
-  external_extension_providers_.push_back(
-      linked_ptr<ExternalExtensionProvider>(test_provider));
+  external_extension_providers_[location] =
+      linked_ptr<ExternalExtensionProvider>(test_provider);
 }
 
 void ExtensionsServiceBackend::OnExternalExtensionFileFound(
@@ -1069,7 +1108,8 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
             backend_.get(),
             &ExtensionsServiceBackend::CheckExternalUninstall,
             scoped_refptr<ExtensionsService>(this),
-            info.extension_id));
+            info.extension_id,
+            info.extension_location));
   }
 }
 
@@ -1709,13 +1749,13 @@ void ExtensionsService::ClearProvidersForTesting() {
           backend_.get(), &ExtensionsServiceBackend::ClearProvidersForTesting));
 }
 
-void ExtensionsService::AddProviderForTesting(
-    ExternalExtensionProvider* test_provider) {
+void ExtensionsService::SetProviderForTesting(
+    Extension::Location location, ExternalExtensionProvider* test_provider) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          backend_.get(), &ExtensionsServiceBackend::AddProviderForTesting,
-          test_provider));
+          backend_.get(), &ExtensionsServiceBackend::SetProviderForTesting,
+          location, test_provider));
 }
 
 void ExtensionsService::OnExternalExtensionFileFound(
