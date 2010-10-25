@@ -312,12 +312,13 @@ RendererType DetermineRendererTypeFromMetaData(
   }
 
   if (info) {
-    char buffer[32] = "x-ua-compatible";
+    char buffer[512] = "x-ua-compatible";
     DWORD len = sizeof(buffer);
     DWORD flags = 0;
     HRESULT hr = info->QueryInfo(HTTP_QUERY_CUSTOM, buffer, &len, &flags, NULL);
+
     if (hr == S_OK && len > 0) {
-      if (StrStrIA(buffer, "chrome=1")) {
+      if (CheckXUaCompatibleDirective(buffer, GetIEMajorVersion())) {
         return RENDERER_TYPE_CHROME_RESPONSE_HEADER;
       }
     }
@@ -345,9 +346,12 @@ RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
   // browsers may handle this properly, we don't and will stop scanning
   // for the XUACompat content value if we encounter one.
   std::wstring xua_compat_content;
-  UtilGetXUACompatContentValue(html_contents, &xua_compat_content);
-  if (StrStrI(xua_compat_content.c_str(), kChromeContentPrefix)) {
-    renderer_type = RENDERER_TYPE_CHROME_HTTP_EQUIV;
+  if (SUCCEEDED(UtilGetXUACompatContentValue(html_contents,
+                                             &xua_compat_content))) {
+    if (CheckXUaCompatibleDirective(WideToASCII(xua_compat_content),
+                                    GetIEMajorVersion())) {
+      renderer_type = RENDERER_TYPE_CHROME_HTTP_EQUIV;
+    }
   }
 
   return renderer_type;

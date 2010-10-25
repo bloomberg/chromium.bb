@@ -5,12 +5,12 @@
 #ifndef CHROME_FRAME_UTILS_H_
 #define CHROME_FRAME_UTILS_H_
 
-#include <shdeprecated.h>
-#include <urlmon.h>
+#include <OAidl.h>
+#include <windows.h>
 #include <wininet.h>
 
-#include <atlbase.h>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/lock.h"
@@ -21,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 
 class FilePath;
+interface IBrowserService;
 
 // utils.h : Various utility functions and classes
 
@@ -213,7 +214,14 @@ bool IsChrome(RendererType renderer_type);
 // To get the IE version when Chrome Frame is hosted in IE.  Make sure that
 // the hosting browser is IE before calling this function, otherwise NON_IE
 // will be returned.
+//
+// Versions newer than the newest supported version are reported as the newest
+// supported version.
 IEVersion GetIEVersion();
+
+// Returns the actual major version of the IE in which the current process is
+// hosted. Returns 0 if the current process is not IE or any other error occurs.
+uint32 GetIEMajorVersion();
 
 FilePath GetIETemporaryFilesFolder();
 
@@ -221,10 +229,10 @@ FilePath GetIETemporaryFilesFolder();
 // to the disk (as happens with the regular GetFileVersionInfo API).
 //
 // @param module A handle to the module for which to retrieve the version info.
-// @param high On successful return holds the most significant part of the
-// file version.  Must be non-null.
-// @param low On successful return holds the least significant part of the
-// file version.  May be NULL.
+// @param high On successful return holds the most significant part of the file
+// version.  Must be non-null.
+// @param low On successful return holds the least significant part of the file
+// version.  May be NULL.
 // @returns true if the version info was successfully retrieved.
 bool GetModuleVersion(HMODULE module, uint32* high, uint32* low);
 
@@ -595,5 +603,29 @@ void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout);
 // The names of the values are not returned.
 void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
                         std::vector<std::wstring>* values);
+
+// Interprets the value of an X-UA-Compatible header (or <meta> tag equivalent)
+// and indicates whether the header value contains a Chrome Frame directive
+// matching a given host browser version.
+//
+// The header is a series of name-value pairs, with the names being HTTP tokens
+// and the values being either tokens or quoted-strings. Names and values are
+// joined by '=' and pairs are delimited by ';'. LWS may be used liberally
+// before and between names, values, '=', and ';'. See RFC 2616 for definitions
+// of token, quoted-string, and LWS. See Microsoft's documentation of the
+// X-UA-COMPATIBLE header here:
+// http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx
+//
+// At most one 'Chrome=<FILTER>' entry is expected in the header value. The
+// first valid instance is used. The value of "<FILTER>" (possibly after
+// unquoting) is interpreted as follows:
+//
+// "1"   - Always active
+// "IE7" - Active for IE major version 7 or lower
+//
+// For example:
+// X-UA-Compatible: IE=8; Chrome=IE6
+bool CheckXUaCompatibleDirective(const std::string& directive,
+                                 int ie_major_version);
 
 #endif  // CHROME_FRAME_UTILS_H_

@@ -7,13 +7,13 @@
 #include <htiframe.h>
 #include <mshtml.h>
 #include <shlobj.h>
-#include <wininet.h>
 
 #include <atlsecurity.h>
 
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -411,37 +411,51 @@ BrowserType GetBrowserType() {
   return browser_type;
 }
 
-IEVersion GetIEVersion() {
-  static IEVersion ie_version = IE_INVALID;
+uint32 GetIEMajorVersion() {
+  static uint32 ie_major_version = UINT_MAX;
 
-  if (ie_version == IE_INVALID) {
+  if (ie_major_version == UINT_MAX) {
     wchar_t exe_path[MAX_PATH];
     HMODULE mod = GetModuleHandle(NULL);
     GetModuleFileName(mod, exe_path, arraysize(exe_path) - 1);
     std::wstring exe_name(file_util::GetFilenameFromPath(exe_path));
     if (!LowerCaseEqualsASCII(exe_name, kIEImageName)) {
-      ie_version = NON_IE;
+      ie_major_version = 0;
     } else {
       uint32 high = 0;
       uint32 low  = 0;
       if (GetModuleVersion(mod, &high, &low)) {
-        switch (HIWORD(high)) {
-          case 6:
-            ie_version = IE_6;
-            break;
-          case 7:
-            ie_version = IE_7;
-            break;
-          case 8:
-            ie_version = IE_8;
-            break;
-          default:
-            ie_version = HIWORD(high) >= 9 ? IE_9 : IE_UNSUPPORTED;
-            break;
-        }
+        ie_major_version = HIWORD(high);
       } else {
-        NOTREACHED() << "Can't get IE version";
+        ie_major_version = 0;
       }
+    }
+  }
+
+  return ie_major_version;
+}
+
+IEVersion GetIEVersion() {
+  static IEVersion ie_version = IE_INVALID;
+
+  if (ie_version == IE_INVALID) {
+    uint32 major_version = GetIEMajorVersion();
+    switch (major_version) {
+      case 0:
+        ie_version = NON_IE;
+        break;
+      case 6:
+        ie_version = IE_6;
+        break;
+      case 7:
+        ie_version = IE_7;
+        break;
+      case 8:
+        ie_version = IE_8;
+        break;
+      default:
+        ie_version = major_version >= 9 ? IE_9 : IE_UNSUPPORTED;
+        break;
     }
   }
 
@@ -1519,6 +1533,46 @@ void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout) {
   }
 }
 
+bool CheckXUaCompatibleDirective(const std::string& directive,
+                                 int ie_major_version) {
+  net::HttpUtil::NameValuePairsIterator name_value_pairs(directive.begin(),
+                                                         directive.end(),
+                                                         ';');
+
+  // Loop through the values until a valid 'Chrome=<FILTER>' entry is found
+  while (name_value_pairs.GetNext()) {
+    if (!LowerCaseEqualsASCII(name_value_pairs.name_begin(),
+                             name_value_pairs.name_end(),
+                             "chrome")) {
+      continue;
+    }
+    std::string::const_iterator filter_begin = name_value_pairs.value_begin();
+    std::string::const_iterator filter_end = name_value_pairs.value_end();
+
+    size_t filter_length = filter_end - filter_begin;
+
+    if (filter_length == 1 && *filter_begin == '1') {
+      return true;
+    }
+
+    if (filter_length < 3 ||
+        !LowerCaseEqualsASCII(filter_begin, filter_begin + 2, "ie") ||
+        !isdigit(*(filter_begin + 2))) {  // ensure no leading +/-
+      continue;
+    }
+
+    int header_ie_version = 0;
+    if (!base::StringToInt(filter_begin + 2, filter_end, &header_ie_version) ||
+        header_ie_version == 0) {  // ensure it's not a sequence of 0's
+      continue;
+    }
+
+    // The first valid directive we find wins, whether it matches or not
+    return ie_major_version <= header_ie_version;
+  }
+  return false;
+}
+
 void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
                         std::vector<std::wstring>* values) {
   DCHECK(values);
@@ -1528,4 +1582,3 @@ void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
     ++url_list;
   }
 }
-

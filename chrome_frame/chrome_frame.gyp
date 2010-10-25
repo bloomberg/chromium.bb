@@ -254,6 +254,7 @@
         'test/chrome_frame_automation_mock.cc',
         'test/chrome_frame_automation_mock.h',
         'test/delete_chrome_history_test.cc',
+        'test/header_test.cc',
         'test/http_server.cc',
         'test/http_server.h',
         'test/ie_event_sink.cc',

@@ -356,3 +356,62 @@ TEST(UtilTests, RendererTypeForUrlTest) {
   config_key.WriteValue(kEnableGCFRendererByDefault, saved_default_renderer);
 }
 
+TEST(UtilTests, XUaCompatibleDirectiveTest) {
+  int all_versions[] = {0, 1, 2, 5, 6, 7, 8, 9, 10, 11, 99, 100, 101, 1000};
+
+  struct Cases {
+    const char* header_value;
+    int max_version;
+  } test_cases[] = {
+    // Negative cases
+    { "", -1 },
+    { "chrome=", -1 },
+    { "chrome", -1 },
+    { "chrome=X", -1 },
+    { "chrome=IE", -1 },
+    { "chrome=IE-7", -1 },
+    { "chrome=IE+7", -1 },
+    { "chrome=IE 7", -1 },
+    { "chrome=IE7.0", -1 },
+    { "chrome=FF7", -1 },
+    { "chrome=IE7+", -1 },
+    { "chrome=IE99999999999999999999", -1 },
+    { "chrome=IE0", -1 },
+    // Always on
+    { "chrome=1", INT_MAX },
+    // Basic positive cases
+    { "chrome=IE1", 1 },
+    { "CHROME=IE6", 6 },
+    { "Chrome=IE10", 10 },
+    { "ChRoMe=IE100", 100 },
+    // Positive formatting variations
+    { "  chrome=IE6  ", 6 },
+    { "  chrome=IE6;  ", 6 },
+    { "  chrome=IE6; IE=8 ", 6 },
+    { "  IE=8;chrome=IE6;", 6 },
+    { "  IE=8;chrome=IE6;", 6 },
+    { "  IE=8 ; chrome = IE6 ;", 6 },
+    // Ignore unrecognized values
+    { "  IE=8 ; chrome = IE7.1; chrome = IE6;", 6 },
+    // First valid wins
+    { "  IE=8 ; chrome = IE6; chrome = IE8;", 6 }
+  };
+
+  for (int case_index = 0; case_index < arraysize(test_cases); ++case_index) {
+    const Cases& test = test_cases[case_index];
+
+    // Check that all versions <= max_version are matched
+    for (size_t version_index = 0;
+         version_index < arraysize(all_versions);
+         ++version_index) {
+      bool expect_match = (all_versions[version_index] <= test.max_version);
+
+      ASSERT_EQ(expect_match,
+                CheckXUaCompatibleDirective(test.header_value,
+                                            all_versions[version_index]))
+          << "Expect '" << test.header_value << "' to "
+          << (expect_match ? "match" : "not match") << " IE major version "
+          << all_versions[version_index];
+    }
+  }
+}
