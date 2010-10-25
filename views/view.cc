@@ -114,8 +114,13 @@ int View::GetX(PositionMirroringSettings settings) const {
 }
 
 void View::SetBounds(const gfx::Rect& bounds) {
-  if (bounds == bounds_)
+  if (bounds == bounds_) {
+    if (needs_layout_) {
+      needs_layout_ = false;
+      Layout();
+    }
     return;
+  }
 
   gfx::Rect prev = bounds_;
   bounds_ = bounds;
@@ -227,8 +232,8 @@ void View::Layout() {
 }
 
 void View::InvalidateLayout() {
-  if (needs_layout_)
-    return;
+  // Always invalidate up. This is needed to handle the case of us already being
+  // valid, but not our parent.
   needs_layout_ = true;
   if (parent_)
     parent_->InvalidateLayout();
