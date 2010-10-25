@@ -80,6 +80,10 @@ class ClientSocket : public Socket {
     UseHistory();
     ~UseHistory();
 
+    // Resets the state of UseHistory and emits histograms for the
+    // current state.
+    void Reset();
+
     void set_was_ever_connected();
     void set_was_used_to_convey_data();
 
