@@ -33,7 +33,7 @@ class UserImageScreen: public ViewScreen<UserImageView>,
   virtual void OnInitializeFailure();
   virtual void OnStartCapturingSuccess();
   virtual void OnStartCapturingFailure();
-  virtual void OnCaptureSuccess(const SkBitmap& frame);
+  virtual void OnCaptureSuccess();
   virtual void OnCaptureFailure();
 
   // UserImageView::Delegate implementation:
@@ -46,11 +46,17 @@ class UserImageScreen: public ViewScreen<UserImageView>,
                        const NotificationDetails& details);
 
  private:
+  // Capturing timer callback that updates image from camera.
+  void OnCaptureTimer();
+
   // Object that handles video capturing.
   scoped_refptr<Camera> camera_;
 
-  // Indicates if camera is initialized.
-  bool camera_initialized_;
+  // Counts how many times in a row capture failed.
+  int capture_failure_counter_;
+
+  // Counts how many times camera initialization failed.
+  int camera_init_failure_counter_;
 
   NotificationRegistrar registrar_;
 

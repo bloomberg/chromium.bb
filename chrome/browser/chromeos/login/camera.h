@@ -9,11 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/lock.h"
 #include "base/ref_counted.h"
-#include "base/timer.h"
+#include "base/thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
-class SkBitmap;
-
+class Task;
 namespace base {
 class TimeDelta;
 }  // namespace base
@@ -22,8 +23,8 @@ namespace chromeos {
 
 // Class that wraps interaction with video capturing device. Returns
 // frames captured with specified intervals of time via delegate interface.
-// All communication with camera driver is performed on IO thread.
-// Delegate's callback are called on UI thread.
+// All communication with camera driver is performed on a separate camera
+// thread. Delegate's callback are called on UI thread.
 class Camera : public base::RefCountedThreadSafe<Camera> {
  public:
   class Delegate {
@@ -39,9 +40,11 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
     virtual void OnStartCapturingSuccess() = 0;
     virtual void OnStartCapturingFailure() = 0;
 
-    // Called if video frame was captured successfully.
-    virtual void OnCaptureSuccess(const SkBitmap& frame) = 0;
-    // Called if capturing the current frame failed.
+    // Notifies the delegate that new frame was captured.
+    // The frame can be obtained via GetFrame() method.
+    virtual void OnCaptureSuccess() = 0;
+
+    // Notifies the delegate that we failed to capture the next frame.
     virtual void OnCaptureFailure() = 0;
   };
 
@@ -50,20 +53,19 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // determines if the returned video image is mirrored horizontally.
   Camera(Delegate* delegate, bool mirrored);
 
-  // Initializes camera device on IO thread. Corresponding delegate's callback
-  // is called on UI thread to notify about success or failure. Does nothing if
-  // camera is successfully initialized already. Sets the desired width and
-  // height of the frame to receive from camera.
+  // Initializes camera device on camera thread. Corresponding delegate's
+  // callback is called on UI thread to notify about success or failure. Does
+  // nothing if camera is successfully initialized already. Sets the desired
+  // width and height of the frame to receive from camera.
   void Initialize(int desired_width, int desired_height);
 
-  // Uninitializes the camera on IO thread. Can be called anytime, any number
-  // of times.
+  // Uninitializes the camera on camera thread. Can be called anytime, any
+  // number of times.
   void Uninitialize();
 
-  // Starts capturing video frames with specified interval, in ms. Calls the
-  // corresponding method of delegate to report about success or failure. If
-  // succeeded, subsequent call doesn't do anything.
-  void StartCapturing(int64 rate);
+  // Starts capturing video frames on camera thread. Frames can be retrieved
+  // by calling GetFrame method.
+  void StartCapturing();
 
   // Stops capturing video frames. Can be called anytime, any number of
   // times.
@@ -72,6 +74,9 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // Setter for delegate: allows to set it to NULL when delegate is about to
   // be destroyed.
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
+  // Returns the last successful frame in the member passed.
+  void GetFrame(SkBitmap* frame);
 
  private:
   // Destructor is private so only its base class can delete Camera objects.
@@ -89,9 +94,9 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // Unmaps video buffers stored in |buffers_|.
   void UnmapVideoBuffers();
 
-  // Task for IO thread that queries camera about the next frame and sends it to
-  // |delegate_| via its method or reports failure. Schedules the next task
-  // for itself if capturing still takes place.
+  // Task for camera thread that queries camera about the next frame and
+  // saves it to |frame_image| buffer for UI thread to pick up. Schedules the
+  // next task for itself if capturing still takes place.
   void OnCapture();
 
   // Reads a frame from the video device. If retry is needed, returns false.
@@ -102,10 +107,10 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // size and notifies the delegate that the image is ready.
   void ProcessImage(void* data);
 
-  // Actual routines that run on IO thread and call delegate's callbacks. See
-  // the corresponding methods without Do prefix for details.
+  // Actual routines that run on camera thread and call delegate's callbacks.
+  // See the corresponding methods without Do prefix for details.
   void DoInitialize(int desired_width, int desired_height);
-  void DoStartCapturing(int64 rate);
+  void DoStartCapturing();
 
   // Helper method that reports failure to the delegate via method
   // corresponding to the current state of the object.
@@ -116,12 +121,19 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   void OnInitializeFailure();
   void OnStartCapturingSuccess();
   void OnStartCapturingFailure();
-  void OnCaptureSuccess(const SkBitmap& frame);
+  void OnCaptureSuccess();
   void OnCaptureFailure();
 
-  // IO thread routines that implement the corresponding public methods.
+  // Camera thread routines that implement the corresponding public methods.
   void DoUninitialize();
   void DoStopCapturing();
+
+  // Returns true if the code is executed on camera thread right now, false
+  // otherwise.
+  bool IsOnCameraThread() const;
+
+  // Posts task to camera thread.
+  void PostCameraTask(Task* task);
 
   // Defines a buffer in memory where one frame from the camera is stored.
   struct VideoBuffer {
@@ -133,7 +145,10 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // Delegate is accessed only on UI thread.
   Delegate* delegate_;
 
-  // All the members below are accessed only on IO thread.
+  // Thread where all work with the device is going on.
+  base::Thread camera_thread_;
+
+  // All the members below are accessed only on camera thread.
   // Name of the device file, i.e. "/dev/video0".
   std::string device_name_;
 
@@ -145,9 +160,6 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
 
   // Indicates if capturing has been started.
   bool is_capturing_;
-
-  // Rate at which camera device should be queried about new image, in ms.
-  int64 capturing_rate_;
 
   // Desired size of the frame to get from camera. If it doesn't match
   // camera's supported resolution, higher resolution is selected (if
@@ -164,6 +176,15 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // If set to true, the returned image will be reflected from the Y axis to
   // mimic mirror behavior.
   bool mirrored_;
+
+  // Image where camera frames are stored for UI thread to pick up.
+  SkBitmap frame_image_;
+
+  // Lock that guards references to |frame_image_|.
+  static Lock image_lock_;
+
+  // Lock that guards references to |camera_thread_|.
+  static Lock thread_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Camera);
 };

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 
+#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "grit/theme_resources.h"
 
 namespace chromeos {
 
@@ -22,16 +24,20 @@ namespace {
 const int kFrameWidth = 480;
 const int kFrameHeight = 480;
 
-// Frame rate in milliseconds for video capturing.
-// We want 25 FPS.
-const int64 kFrameRate = 40;
+// Maximum number of capture failures we ignore before we try to initialize
+// the camera again.
+const int kMaxCaptureFailureCounter = 5;
+
+// Maximum number of camera initialization retries.
+const int kMaxCameraInitFailureCounter = 3;
 
 }  // namespace
 
 UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
     : ViewScreen<UserImageView>(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(camera_(new Camera(this, true))),
-      camera_initialized_(false) {
+      capture_failure_counter_(0),
+      camera_init_failure_counter_(0) {
   registrar_.Add(
       this,
       NotificationType::SCREEN_LOCK_STATE_CHANGED,
@@ -45,12 +51,10 @@ UserImageScreen::~UserImageScreen() {
 }
 
 void UserImageScreen::Refresh() {
-  if (camera_.get() && camera_initialized_)
-    camera_->StartCapturing(kFrameRate);
 }
 
 void UserImageScreen::Hide() {
-  if (camera_.get() && camera_initialized_)
+  if (camera_.get())
     camera_->StopCapturing();
   ViewScreen<UserImageView>::Hide();
 }
@@ -60,36 +64,50 @@ UserImageView* UserImageScreen::AllocateView() {
 }
 
 void UserImageScreen::OnInitializeSuccess() {
-  camera_initialized_ = true;
   if (camera_.get())
-    camera_->StartCapturing(kFrameRate);
+    camera_->StartCapturing();
 }
 
 void UserImageScreen::OnInitializeFailure() {
-  if (view())
-    view()->ShowCameraError();
-  camera_initialized_ = false;
+  ++camera_init_failure_counter_;
+  if (camera_init_failure_counter_ > kMaxCameraInitFailureCounter) {
+    if (view())
+      view()->ShowCameraError();
+    return;
+  }
+  // Retry initializing the camera.
+  if (camera_.get()) {
+    camera_->Uninitialize();
+    camera_->Initialize(kFrameWidth, kFrameHeight);
+  }
 }
 
 void UserImageScreen::OnStartCapturingSuccess() {
 }
 
 void UserImageScreen::OnStartCapturingFailure() {
-  if (view())
-    view()->ShowCameraError();
+  // Try to reinitialize camera.
+  OnInitializeFailure();
 }
 
-void UserImageScreen::OnCaptureSuccess(const SkBitmap& frame) {
-  if (view())
-    view()->UpdateVideoFrame(frame);
+void UserImageScreen::OnCaptureSuccess() {
+  capture_failure_counter_ = 0;
+  camera_init_failure_counter_ = 0;
+  if (view() && camera_.get()) {
+    SkBitmap frame;
+    camera_->GetFrame(&frame);
+    if (!frame.isNull())
+      view()->UpdateVideoFrame(frame);
+  }
 }
 
 void UserImageScreen::OnCaptureFailure() {
-  // If camera failed to provide a picture we don't want to show broken
-  // camera image since it may lead to flicker if capturing fails and then
-  // works again.
-  // TODO(avayvod): Find a better way to handle such cases.
-  VLOG(1) << "Capturing image failed.";
+  ++capture_failure_counter_;
+  if (capture_failure_counter_ < kMaxCaptureFailureCounter)
+    return;
+
+  capture_failure_counter_ = 0;
+  OnInitializeFailure();
 }
 
 void UserImageScreen::OnOK(const SkBitmap& image) {
@@ -129,9 +147,9 @@ void UserImageScreen::Observe(NotificationType type,
 
   bool is_screen_locked = *Details<bool>(details).ptr();
   if (is_screen_locked)
-    camera_->StopCapturing();
+    camera_->Uninitialize();
   else
-    camera_->StartCapturing(kFrameRate);
+    camera_->Initialize(kFrameWidth, kFrameHeight);
 }
 
 }  // namespace chromeos
