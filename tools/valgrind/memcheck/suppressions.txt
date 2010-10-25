@@ -1586,6 +1586,22 @@
    fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
 }
 {
+   bug_31800
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7WebCore28createFontCustomPlatformDataEPNS_12SharedBufferE
+   fun:_ZN7WebCore10CachedFont20ensureCustomFontDataEv
+   fun:_ZN7WebCore17CSSFontFaceSource11getFontDataERKNS_15FontDescriptionEbbPNS_15CSSFontSelectorE
+   fun:_ZN7WebCore11CSSFontFace11getFontDataERKNS_15FontDescriptionEbb
+   fun:_ZN7WebCore20CSSSegmentedFontFace11getFontDataERKNS_15FontDescriptionE
+   fun:_ZN7WebCore15CSSFontSelector11getFontDataERKNS_15FontDescriptionERKN3WTF12AtomicStringE
+   fun:_ZN7WebCore9FontCache11getFontDataERKNS_4FontERiPNS_12FontSelectorE
+   fun:_ZNK7WebCore16FontFallbackList10fontDataAtEPKNS_4FontEj
+   fun:_ZNK7WebCore16FontFallbackList15primaryFontDataEPKNS_4FontE
+   fun:_ZN7WebCore16FontFallbackList21primarySimpleFontDataEPKNS_4FontE
+   fun:_ZNK7WebCore4Font11primaryFontEv
+}
+{
    bug_31985
    Memcheck:Leak
    fun:_Znw*
