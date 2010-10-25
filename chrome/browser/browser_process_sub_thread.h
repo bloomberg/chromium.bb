@@ -27,7 +27,7 @@ class BrowserProcessSubThread : public BrowserThread {
 
  protected:
   virtual void Init();
-  virtual void CleanUpAfterMessageLoopDestruction();
+  virtual void CleanUp();
 
  private:
   // Each specialized thread has its own notification service.
