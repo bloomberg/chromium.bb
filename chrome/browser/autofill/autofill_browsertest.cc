@@ -59,13 +59,7 @@ class AutoFillTest : public InProcessBrowserTest {
 };
 
 // Test that basic form fill is working.
-// FAILS on windows: http://crbug.com/57962
-#if defined(OS_WIN)
-#define MAYBE_BasicFormFill DISABLED_BasicFormFill
-#else
-#define MAYBE_BasicFormFill BasicFormFill
-#endif
-IN_PROC_BROWSER_TEST_F(AutoFillTest, MAYBE_BasicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutoFillTest, BasicFormFill) {
   SetUpProfile();
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -73,7 +67,9 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, MAYBE_BasicFormFill) {
       browser(), GURL("data:text/html;charset=utf-8,"
                       "<form action=\"http://www.google.com/\" method=\"POST\">"
                       "<label for=\"firstname\">First name:</label>"
-                      " <input type=\"text\" id=\"firstname\" /><br />"
+                      " <input type=\"text\" id=\"firstname\""
+                      "        onFocus=\"domAutomationController.send(true)\""
+                      " /><br />"
                       "<label for=\"lastname\">Last name:</label>"
                       " <input type=\"text\" id=\"lastname\" /><br />"
                       "<label for=\"address1\">Address line 1:</label>"
@@ -107,8 +103,11 @@ IN_PROC_BROWSER_TEST_F(AutoFillTest, MAYBE_BasicFormFill) {
 
   RenderViewHost* render_view_host =
       browser()->GetSelectedTabContents()->render_view_host();
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      render_view_host, L"", L"document.getElementById('firstname').focus();"));
+  bool result;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      render_view_host, L"", L"document.getElementById('firstname').focus();",
+      &result));
+  ASSERT_TRUE(result);
 
   // Start filling the first name field with "M" and wait for the popup to be
   // shown.
