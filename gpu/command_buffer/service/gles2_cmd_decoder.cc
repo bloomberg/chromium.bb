@@ -1768,7 +1768,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
       return false;
 
     if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
-        (feature_info_->feature_flags().chromium_framebuffer_multisample ||
+        (context_->HasExtension("GL_EXT_framebuffer_multisample") ||
          context_->HasExtension("GL_ANGLE_framebuffer_multisample"))) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
       GLint max_sample_count;
