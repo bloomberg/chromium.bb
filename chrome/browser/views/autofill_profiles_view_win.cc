@@ -258,15 +258,6 @@ void AutoFillProfilesView::UpdateWidgetState() {
                              autofill_enabled);
 }
 
-void AutoFillProfilesView::UpdateProfileLabels() {
-  std::vector<AutoFillProfile*> profiles;
-  profiles.resize(profiles_set_.size());
-  for (size_t i = 0; i < profiles_set_.size(); ++i) {
-    profiles[i] = &(profiles_set_[i].address);
-  }
-  AutoFillProfile::AdjustInferredLabels(&profiles);
-}
-
 void AutoFillProfilesView::ChildWindowOpened() {
   child_dialog_opened_ = true;
   UpdateWidgetState();
@@ -446,7 +437,6 @@ void AutoFillProfilesView::OnPersonalDataChanged() {
        ++address_it) {
     profiles_set_.push_back(EditableSetInfo(*address_it));
   }
-  UpdateProfileLabels();
 
   credit_card_set_.clear();
   for (std::vector<CreditCard*>::const_iterator cc_it =
@@ -563,7 +553,6 @@ void AutoFillProfilesView::GetData() {
       profiles_set_.push_back(EditableSetInfo(*address_it));
     }
   }
-  UpdateProfileLabels();
 
   if (!imported_data_present) {
     credit_card_set_.reserve(personal_data_manager_->credit_cards().size());
@@ -1313,7 +1302,7 @@ std::wstring AutoFillProfilesView::ContentListTableModel::GetText(
     int row, int column_id) {
   DCHECK(row < static_cast<int>(profiles_->size() + credit_cards_->size()));
   if (row < static_cast<int>(profiles_->size())) {
-    return profiles_->at(row).address.PreviewSummary();
+    return profiles_->at(row).address.Label();
   } else {
     row -= profiles_->size();
     return credit_cards_->at(row).credit_card.PreviewSummary();

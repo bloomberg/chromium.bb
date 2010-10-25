@@ -87,6 +87,10 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
+    std::vector<AutoFillProfile*> profile_pointers(web_profiles_.size());
+    std::copy(web_profiles_.begin(), web_profiles_.end(),
+              profile_pointers.begin());
+    AutoFillProfile::AdjustInferredLabels(&profile_pointers);
     FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataLoaded());
   }
 }

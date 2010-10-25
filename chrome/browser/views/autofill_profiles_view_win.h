@@ -89,9 +89,6 @@ class AutoFillProfilesView : public views::View,
   // Updates state of the buttons.
   void UpdateWidgetState();
 
-  // Updates inferred labels.
-  void UpdateProfileLabels();
-
   // Following two functions are called from opened child dialog to
   // disable/enable buttons.
   void ChildWindowOpened();

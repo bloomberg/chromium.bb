@@ -501,8 +501,11 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 
   profile0.set_unique_id(update[0].unique_id());
   profile1.set_unique_id(update[1].unique_id());
-  profile0.set_label(update[0].Label());
-  profile1.set_label(update[1].Label());
+  // Labels depend on other profiles in the list - update labels manually/
+  std::vector<AutoFillProfile *> profile_pointers;
+  profile_pointers.push_back(&profile0);
+  profile_pointers.push_back(&profile1);
+  AutoFillProfile::AdjustInferredLabels(&profile_pointers);
 
   // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
@@ -520,6 +523,10 @@ TEST_F(PersonalDataManagerTest, Refresh) {
       "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
+
+  // Adjust all labels.
+  profile_pointers.push_back(profile2.get());
+  AutoFillProfile::AdjustInferredLabels(&profile_pointers);
 
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   ASSERT_TRUE(wds);

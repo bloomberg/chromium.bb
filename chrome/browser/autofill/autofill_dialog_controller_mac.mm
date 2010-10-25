@@ -32,20 +32,6 @@ namespace {
 // dialog.
 typedef std::map<Profile*, AutoFillDialogController*> ProfileControllerMap;
 
-// Update profile labels passed as |input|.  When profile data changes as a
-// result of adding new profiles, edititing existing profiles, or deleting a
-// profile, then the list of profiles need to have their derived labels
-// recomputed.
-void UpdateProfileLabels(std::vector<AutoFillProfile>* input) {
-  DCHECK(input);
-  std::vector<AutoFillProfile*> profiles;
-  profiles.resize(input->size());
-  for (size_t i = 0; i < input->size(); ++i) {
-    profiles[i] = &(*input)[i];
-  }
-  AutoFillProfile::AdjustInferredLabels(&profiles);
-}
-
 }  // namespace
 
 // Delegate protocol that needs to be in place for the AutoFillTableView's
@@ -839,7 +825,6 @@ class PreferenceObserver : public NotificationObserver {
        iter != creditCards.end(); ++iter)
     creditCards_.push_back(**iter);
 
-  UpdateProfileLabels(&profiles_);
   [tableView_ reloadData];
 }
 

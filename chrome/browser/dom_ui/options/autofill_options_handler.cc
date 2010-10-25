@@ -157,7 +157,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
            personal_data_->profiles().begin();
        i != personal_data_->profiles().end(); ++i) {
     DictionaryValue* address = new DictionaryValue();
-    address->SetString("label", (*i)->PreviewSummary());
+    address->SetString("label", (*i)->Label());
     address->SetInteger("uniqueID", (*i)->unique_id());
     addresses.Append(address);
   }
