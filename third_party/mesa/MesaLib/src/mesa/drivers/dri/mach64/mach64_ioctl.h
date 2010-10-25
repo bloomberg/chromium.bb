@@ -32,6 +32,9 @@
 #ifndef __MACH64_IOCTL_H__
 #define __MACH64_IOCTL_H__
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "mach64_dri.h"
 #include "mach64_reg.h"
 #include "mach64_lock.h"
@@ -78,7 +81,7 @@ extern void mach64FireBlitLocked( mach64ContextPtr mmesa, void *buffer,
 				  GLint offset, GLint pitch, GLint format,
 				  GLint x, GLint y, GLint width, GLint height );
 
-extern void mach64CopyBuffer( __DRIdrawablePrivate *dPriv );
+extern void mach64CopyBuffer( __DRIdrawable *dPriv );
 #if ENABLE_PERF_BOXES
 extern void mach64PerformanceCounters( mach64ContextPtr mmesa );
 extern void mach64PerformanceBoxesLocked( mach64ContextPtr mmesa );

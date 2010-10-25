@@ -27,16 +27,12 @@
 #define S_MASKING_H
 
 
-#include "swrast.h"
+#include "main/mtypes.h"
+#include "s_span.h"
 
 
 extern void
 _swrast_mask_rgba_span(GLcontext *ctx, struct gl_renderbuffer *rb,
-                       SWspan *span);
-
-
-extern void
-_swrast_mask_ci_span(GLcontext *ctx, struct gl_renderbuffer *rb,
-                     SWspan *span);
+                       SWspan *span, GLuint buf);
 
 #endif

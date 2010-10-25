@@ -83,14 +83,14 @@ extern GLfloat _mesa_ubyte_to_float_color_tab[256];
 
 
 /** Convert GLuint in [0,4294967295] to GLfloat in [0.0,1.0] */
-#define UINT_TO_FLOAT(U)    ((GLfloat) (U) * (1.0F / 4294967295.0))
+#define UINT_TO_FLOAT(U)    ((GLfloat) ((U) * (1.0F / 4294967295.0)))
 
 /** Convert GLfloat in [0.0,1.0] to GLuint in [0,4294967295] */
 #define FLOAT_TO_UINT(X)    ((GLuint) ((X) * 4294967295.0))
 
 
 /** Convert GLint in [-2147483648,2147483647] to GLfloat in [-1.0,1.0] */
-#define INT_TO_FLOAT(I)     ((2.0F * (I) + 1.0F) * (1.0F/4294967294.0))
+#define INT_TO_FLOAT(I)     ((GLfloat) ((2.0F * (I) + 1.0F) * (1.0F/4294967294.0)))
 
 /** Convert GLfloat in [-1.0,1.0] to GLint in [-2147483648,2147483647] */
 /* causes overflow:
@@ -126,6 +126,44 @@ extern GLfloat _mesa_ubyte_to_float_color_tab[256];
         us = ( (GLushort) IROUND( CLAMP((f), 0.0F, 1.0F) * 65535.0F) )
 #define CLAMPED_FLOAT_TO_USHORT(us, f)  \
         us = ( (GLushort) IROUND( (f) * 65535.0F) )
+
+#define UNCLAMPED_FLOAT_TO_SHORT(s, f)  \
+        s = ( (GLshort) IROUND( CLAMP((f), -1.0F, 1.0F) * 32767.0F) )
+
+/***
+ *** UNCLAMPED_FLOAT_TO_UBYTE: clamp float to [0,1] and map to ubyte in [0,255]
+ *** CLAMPED_FLOAT_TO_UBYTE: map float known to be in [0,1] to ubyte in [0,255]
+ ***/
+#if defined(USE_IEEE) && !defined(DEBUG)
+#define IEEE_0996 0x3f7f0000	/* 0.996 or so */
+/* This function/macro is sensitive to precision.  Test very carefully
+ * if you change it!
+ */
+#define UNCLAMPED_FLOAT_TO_UBYTE(UB, F)					\
+        do {								\
+           fi_type __tmp;						\
+           __tmp.f = (F);						\
+           if (__tmp.i < 0)						\
+              UB = (GLubyte) 0;						\
+           else if (__tmp.i >= IEEE_0996)				\
+              UB = (GLubyte) 255;					\
+           else {							\
+              __tmp.f = __tmp.f * (255.0F/256.0F) + 32768.0F;		\
+              UB = (GLubyte) __tmp.i;					\
+           }								\
+        } while (0)
+#define CLAMPED_FLOAT_TO_UBYTE(UB, F)					\
+        do {								\
+           fi_type __tmp;						\
+           __tmp.f = (F) * (255.0F/256.0F) + 32768.0F;			\
+           UB = (GLubyte) __tmp.i;					\
+        } while (0)
+#else
+#define UNCLAMPED_FLOAT_TO_UBYTE(ub, f) \
+	ub = ((GLubyte) IROUND(CLAMP((f), 0.0F, 1.0F) * 255.0F))
+#define CLAMPED_FLOAT_TO_UBYTE(ub, f) \
+	ub = ((GLubyte) IROUND((f) * 255.0F))
+#endif
 
 /*@}*/
 
@@ -202,17 +240,12 @@ do {                                \
 #endif
 
 /**
- * Copy a 4-element float vector (avoid using FPU registers)
- * XXX Could use two 64-bit moves on 64-bit systems
+ * Copy a 4-element float vector
+ * memcpy seems to be most efficient
  */
 #define COPY_4FV( DST, SRC )                  \
 do {                                          \
-   const GLuint *_s = (const GLuint *) (SRC); \
-   GLuint *_d = (GLuint *) (DST);             \
-   _d[0] = _s[0];                             \
-   _d[1] = _s[1];                             \
-   _d[2] = _s[2];                             \
-   _d[3] = _s[3];                             \
+   memcpy(DST, SRC, sizeof(GLfloat) * 4);     \
 } while (0)
 
 /** Copy \p SZ elements into a 4-element vector */
@@ -630,12 +663,6 @@ do {                                    \
 
 /** Clamp X to [MIN,MAX] */
 #define CLAMP( X, MIN, MAX )  ( (X)<(MIN) ? (MIN) : ((X)>(MAX) ? (MAX) : (X)) )
-
-/** Assign X to CLAMP(X, MIN, MAX) */
-#define CLAMP_SELF(x, mn, mx)  \
-   ( (x)<(mn) ? ((x) = (mn)) : ((x)>(mx) ? ((x)=(mx)) : (x)) )
-
-
 
 /** Minimum of two values: */
 #define MIN2( A, B )   ( (A)<(B) ? (A) : (B) )

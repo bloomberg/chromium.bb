@@ -28,13 +28,13 @@
 
 #include "glheader.h"
 #include "imports.h"
-#include "shader/program.h"
-#include "shader/prog_parameter.h"
-#include "shader/prog_cache.h"
-#include "shader/prog_instruction.h"
-#include "shader/prog_print.h"
-#include "shader/prog_statevars.h"
-#include "shader/programopt.h"
+#include "program/program.h"
+#include "program/prog_parameter.h"
+#include "program/prog_cache.h"
+#include "program/prog_instruction.h"
+#include "program/prog_print.h"
+#include "program/prog_statevars.h"
+#include "program/programopt.h"
 #include "texenvprogram.h"
 
 
@@ -98,6 +98,7 @@ struct state_key {
    GLuint fog_enabled:1;
    GLuint fog_mode:2;          /**< FOG_x */
    GLuint inputs_available:12;
+   GLuint num_draw_buffers:4;
 
    /* NOTE: This array of structs must be last! (see "keySize" below) */
    struct {
@@ -112,6 +113,8 @@ struct state_key {
 
       GLuint NumArgsA:3;  /**< up to MAX_COMBINER_TERMS */
       GLuint ModeA:5;     /**< MODE_x */
+
+      GLuint texture_cyl_wrap:1; /**< For gallium test/debug only */
 
       struct mode_opt OptRGB[MAX_COMBINER_TERMS];
       struct mode_opt OptA[MAX_COMBINER_TERMS];
@@ -464,6 +467,10 @@ static GLuint make_state_key( GLcontext *ctx,  struct state_key *key )
          key->unit[i].OptRGB[1].Operand = OPR_SRC_COLOR;
          key->unit[i].OptRGB[1].Source = texUnit->BumpTarget - GL_TEXTURE0 + SRC_TEXTURE0;
        }
+
+      /* this is a back-door for enabling cylindrical texture wrap mode */
+      if (texObj->Priority == 0.125)
+         key->unit[i].texture_cyl_wrap = 1;
    }
 
    /* _NEW_LIGHT | _NEW_FOG */
@@ -478,6 +485,9 @@ static GLuint make_state_key( GLcontext *ctx,  struct state_key *key )
       key->fog_mode = translate_fog_mode(ctx->Fog.Mode);
       inputs_referenced |= FRAG_BIT_FOGC; /* maybe */
    }
+
+   /* _NEW_BUFFERS */
+   key->num_draw_buffers = ctx->DrawBuffer->_NumColorDrawBuffers;
 
    key->inputs_available = (inputs_available & inputs_referenced);
 
@@ -606,7 +616,7 @@ static struct ureg get_temp( struct texenv_fragment_program *p )
 
    if (!bit) {
       _mesa_problem(NULL, "%s: out of temporaries\n", __FILE__);
-      _mesa_exit(1);
+      exit(1);
    }
 
    if ((GLuint) bit > p->program->Base.NumTemporaries)
@@ -634,7 +644,7 @@ static struct ureg get_tex_temp( struct texenv_fragment_program *p )
 
    if (!bit) {
       _mesa_problem(NULL, "%s: out of temporaries\n", __FILE__);
-      _mesa_exit(1);
+      exit(1);
    }
 
    if ((GLuint) bit > p->program->Base.NumTemporaries)
@@ -897,7 +907,7 @@ static struct ureg get_zero( struct texenv_fragment_program *p )
 
 static void program_error( struct texenv_fragment_program *p, const char *msg )
 {
-   _mesa_problem(NULL, msg);
+   _mesa_problem(NULL, "%s", msg);
    p->error = 1;
 }
 
@@ -1040,8 +1050,6 @@ static struct ureg emit_combine( struct texenv_fragment_program *p,
 
    assert(nr <= MAX_COMBINER_TERMS);
 
-   tmp = undef; /* silence warning (bug 5318) */
-
    for (i = 0; i < nr; i++)
       src[i] = emit_combine_source( p, mask, unit, opt[i].Source, opt[i].Operand );
 
@@ -1091,7 +1099,7 @@ static struct ureg emit_combine( struct texenv_fragment_program *p,
       emit_arith( p, OPCODE_MAD, tmp0, WRITEMASK_XYZW, 0, 
 		  two, src[0], neg1);
 
-      if (_mesa_memcmp(&src[0], &src[1], sizeof(struct ureg)) == 0)
+      if (memcmp(&src[0], &src[1], sizeof(struct ureg)) == 0)
 	 tmp1 = tmp0;
       else
 	 emit_arith( p, OPCODE_MAD, tmp1, WRITEMASK_XYZW, 0, 
@@ -1195,11 +1203,14 @@ emit_texenv(struct texenv_fragment_program *p, GLuint unit)
    else
       alpha_saturate = GL_FALSE;
 
-   /* If this is the very last calculation, emit direct to output reg:
+   /* If this is the very last calculation (and various other conditions
+    * are met), emit directly to the color output register.  Otherwise,
+    * emit to a temporary register.
     */
    if (key->separate_specular ||
        unit != p->last_tex_stage ||
        alpha_shift ||
+       key->num_draw_buffers != 1 ||
        rgb_shift)
       dest = get_temp( p );
    else
@@ -1304,6 +1315,12 @@ static void load_texture( struct texenv_fragment_program *p, GLuint unit )
       }
       else
 	 p->src_texture[unit] = get_zero(p);
+
+      if (p->state->unit[unit].texture_cyl_wrap) {
+         /* set flag which is checked by Mesa->Gallium program translation */
+         p->program->Base.InputFlags[0] |= PROG_PARAM_BIT_CYL_WRAP;
+      }
+
    }
 }
 
@@ -1405,8 +1422,9 @@ create_new_program(GLcontext *ctx, struct state_key *key,
    struct texenv_fragment_program p;
    GLuint unit;
    struct ureg cf, out;
+   int i;
 
-   _mesa_memset(&p, 0, sizeof(p));
+   memset(&p, 0, sizeof(p));
    p.state = key;
    p.program = program;
 
@@ -1426,7 +1444,13 @@ create_new_program(GLcontext *ctx, struct state_key *key,
    p.program->Base.NumAddressRegs = 0;
    p.program->Base.Parameters = _mesa_new_parameter_list();
    p.program->Base.InputsRead = 0x0;
-   p.program->Base.OutputsWritten = 1 << FRAG_RESULT_COLOR;
+
+   if (key->num_draw_buffers == 1)
+      p.program->Base.OutputsWritten = 1 << FRAG_RESULT_COLOR;
+   else {
+      for (i = 0; i < key->num_draw_buffers; i++)
+	 p.program->Base.OutputsWritten |= (1 << (FRAG_RESULT_DATA0 + i));
+   }
 
    for (unit = 0; unit < ctx->Const.MaxTextureUnits; unit++) {
       p.src_texture[unit] = undef;
@@ -1475,22 +1499,28 @@ create_new_program(GLcontext *ctx, struct state_key *key,
    }
 
    cf = get_source( &p, SRC_PREVIOUS, 0 );
-   out = make_ureg( PROGRAM_OUTPUT, FRAG_RESULT_COLOR );
 
-   if (key->separate_specular) {
-      /* Emit specular add.
-       */
-      struct ureg s = register_input(&p, FRAG_ATTRIB_COL1);
-      emit_arith( &p, OPCODE_ADD, out, WRITEMASK_XYZ, 0, cf, s, undef );
-      emit_arith( &p, OPCODE_MOV, out, WRITEMASK_W, 0, cf, undef, undef );
-   }
-   else if (_mesa_memcmp(&cf, &out, sizeof(cf)) != 0) {
-      /* Will wind up in here if no texture enabled or a couple of
-       * other scenarios (GL_REPLACE for instance).
-       */
-      emit_arith( &p, OPCODE_MOV, out, WRITEMASK_XYZW, 0, cf, undef, undef );
-   }
+   for (i = 0; i < key->num_draw_buffers; i++) {
+      if (key->num_draw_buffers == 1)
+	 out = make_ureg( PROGRAM_OUTPUT, FRAG_RESULT_COLOR );
+      else {
+	 out = make_ureg( PROGRAM_OUTPUT, FRAG_RESULT_DATA0 + i );
+      }
 
+      if (key->separate_specular) {
+	 /* Emit specular add.
+	  */
+	 struct ureg s = register_input(&p, FRAG_ATTRIB_COL1);
+	 emit_arith( &p, OPCODE_ADD, out, WRITEMASK_XYZ, 0, cf, s, undef );
+	 emit_arith( &p, OPCODE_MOV, out, WRITEMASK_W, 0, cf, undef, undef );
+      }
+      else if (memcmp(&cf, &out, sizeof(cf)) != 0) {
+	 /* Will wind up in here if no texture enabled or a couple of
+	  * other scenarios (GL_REPLACE for instance).
+	  */
+	 emit_arith( &p, OPCODE_MOV, out, WRITEMASK_XYZW, 0, cf, undef, undef );
+      }
+   }
    /* Finish up:
     */
    emit_arith( &p, OPCODE_END, undef, WRITEMASK_XYZW, 0, undef, undef, undef);
@@ -1537,13 +1567,20 @@ create_new_program(GLcontext *ctx, struct state_key *key,
    /* Notify driver the fragment program has (actually) changed.
     */
    if (ctx->Driver.ProgramStringNotify) {
-      ctx->Driver.ProgramStringNotify( ctx, GL_FRAGMENT_PROGRAM_ARB, 
-                                       &p.program->Base );
+      GLboolean ok = ctx->Driver.ProgramStringNotify(ctx,
+                                                     GL_FRAGMENT_PROGRAM_ARB, 
+                                                     &p.program->Base);
+      /* Driver should be able to handle any texenv programs as long as
+       * the driver correctly reported max number of texture units correctly,
+       * etc.
+       */
+      ASSERT(ok);
+      (void) ok; /* silence unused var warning */
    }
 
    if (DISASSEM) {
       _mesa_print_program(&p.program->Base);
-      _mesa_printf("\n");
+      printf("\n");
    }
 }
 

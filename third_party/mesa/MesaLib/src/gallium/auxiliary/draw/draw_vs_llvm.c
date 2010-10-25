@@ -1,6 +1,6 @@
 /**************************************************************************
  *
- * Copyright 2007 Tungsten Graphics, Inc., Cedar Park, Texas.
+ * Copyright 2010 VMware, Inc.
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,144 +18,110 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
- * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * IN NO EVENT SHALL VMWARE AND/OR ITS SUPPLIERS BE LIABLE FOR
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 
- /*
-  * Authors:
-  *   Zack Rusin
-  *   Keith Whitwell <keith@tungstengraphics.com>
-  *   Brian Paul
-  */
-
+#include "util/u_math.h"
 #include "util/u_memory.h"
 #include "pipe/p_shader_tokens.h"
+#include "pipe/p_screen.h"
+
 #include "draw_private.h"
 #include "draw_context.h"
 #include "draw_vs.h"
+#include "draw_llvm.h"
 
 #include "tgsi/tgsi_parse.h"
-
-#ifdef MESA_LLVM
-
-#include "gallivm/gallivm.h"
-
-struct draw_llvm_vertex_shader {
-   struct draw_vertex_shader base;
-   struct gallivm_prog *llvm_prog;
-   struct tgsi_exec_machine *machine;
-};
-
+#include "tgsi/tgsi_scan.h"
 
 static void
-vs_llvm_prepare( struct draw_vertex_shader *base,
-		 struct draw_context *draw )
+vs_llvm_prepare(struct draw_vertex_shader *shader,
+                struct draw_context *draw)
 {
+   /*struct llvm_vertex_shader *evs = llvm_vertex_shader(shader);*/
+}
+
+static void
+vs_llvm_run_linear( struct draw_vertex_shader *shader,
+		    const float (*input)[4],
+		    float (*output)[4],
+                    const void *constants[PIPE_MAX_CONSTANT_BUFFERS],
+                    const unsigned constants_size[PIPE_MAX_CONSTANT_BUFFERS],
+		    unsigned count,
+		    unsigned input_stride,
+		    unsigned output_stride )
+{
+   /* we should never get here since the entire pipeline is
+    * generated in draw_pt_fetch_shade_pipeline_llvm.c */
+   debug_assert(0);
 }
 
 
-
-
 static void
-vs_llvm_run_linear( struct draw_vertex_shader *base,
-		   const float (*input)[4],
-		   float (*output)[4],
-		   const float (*constants)[4],
-		   unsigned count,
-		   unsigned input_stride,
-		   unsigned output_stride )
+vs_llvm_delete( struct draw_vertex_shader *dvs )
 {
-   struct draw_llvm_vertex_shader *shader =
-      (struct draw_llvm_vertex_shader *)base;
+   struct llvm_vertex_shader *shader = llvm_vertex_shader(dvs);
+   struct pipe_fence_handle *fence = NULL;
+   struct draw_llvm_variant_list_item *li;
+   struct pipe_context *pipe = dvs->draw->pipe;
 
-   gallivm_cpu_vs_exec(shader->llvm_prog, shader->machine,
-                       input, base->info.num_inputs, output, base->info.num_outputs,
-                       constants, count, input_stride, output_stride);
-}
-
-
-
-static void
-vs_llvm_delete( struct draw_vertex_shader *base )
-{
-   struct draw_llvm_vertex_shader *shader =
-      (struct draw_llvm_vertex_shader *)base;
-
-   /* Do something to free compiled shader:
+   /*
+    * XXX: This might be not neccessary at all.
     */
+   pipe->flush(pipe, 0, &fence);
+   if (fence) {
+      pipe->screen->fence_finish(pipe->screen, fence, 0);
+      pipe->screen->fence_reference(pipe->screen, &fence, NULL);
+   }
 
-   FREE( (void*) shader->base.state.tokens );
-   FREE( shader );
+
+   li = first_elem(&shader->variants);
+   while(!at_end(&shader->variants, li)) {
+      struct draw_llvm_variant_list_item *next = next_elem(li);
+      draw_llvm_destroy_variant(li->base);
+      li = next;
+   }
+
+   assert(shader->variants_cached == 0);
+   FREE((void*) dvs->state.tokens);
+   FREE( dvs );
 }
-
-
 
 
 struct draw_vertex_shader *
 draw_create_vs_llvm(struct draw_context *draw,
-		    const struct pipe_shader_state *templ)
+		    const struct pipe_shader_state *state)
 {
-   struct draw_llvm_vertex_shader *vs;
+   struct llvm_vertex_shader *vs = CALLOC_STRUCT( llvm_vertex_shader );
 
-   vs = CALLOC_STRUCT( draw_llvm_vertex_shader );
    if (vs == NULL)
       return NULL;
 
    /* we make a private copy of the tokens */
-   vs->base.state.tokens = tgsi_dup_tokens(templ->tokens);
+   vs->base.state.tokens = tgsi_dup_tokens(state->tokens);
    if (!vs->base.state.tokens) {
       FREE(vs);
       return NULL;
    }
 
-   tgsi_scan_shader(vs->base.state.tokens, &vs->base.info);
+   tgsi_scan_shader(state->tokens, &vs->base.info);
+
+   vs->variant_key_size = 
+      draw_llvm_variant_key_size(
+	 vs->base.info.file_max[TGSI_FILE_INPUT]+1,
+	 vs->base.info.file_max[TGSI_FILE_SAMPLER]+1);
 
    vs->base.draw = draw;
    vs->base.prepare = vs_llvm_prepare;
-   vs->base.create_varient = draw_vs_varient_generic;
    vs->base.run_linear = vs_llvm_run_linear;
    vs->base.delete = vs_llvm_delete;
-   vs->machine = draw->vs.machine;
+   vs->base.create_varient = draw_vs_create_varient_generic;
 
-   {
-      struct gallivm_ir *ir = gallivm_ir_new(GALLIVM_VS);
-      gallivm_ir_set_layout(ir, GALLIVM_SOA);
-      gallivm_ir_set_components(ir, 4);
-      gallivm_ir_fill_from_tgsi(ir, vs->base.state.tokens);
-      vs->llvm_prog = gallivm_ir_compile(ir);
-      gallivm_ir_delete(ir);
-   }
-
-   draw->vs.engine = gallivm_global_cpu_engine();
-
-   /* XXX: Why are there two versions of this?  Shouldn't creating the
-    *      engine be a separate operation to compiling a shader?
-    */
-   if (!draw->vs.engine) {
-      draw->vs.engine = gallivm_cpu_engine_create(vs->llvm_prog);
-   }
-   else {
-      gallivm_cpu_jit_compile(draw->vs.engine, vs->llvm_prog);
-   }
+   make_empty_list(&vs->variants);
 
    return &vs->base;
 }
-
-
-
-
-
-#else
-
-struct draw_vertex_shader *
-draw_create_vs_llvm(struct draw_context *draw,
-                          const struct pipe_shader_state *shader)
-{
-   return NULL;
-}
-
-#endif

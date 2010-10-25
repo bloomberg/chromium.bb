@@ -38,7 +38,7 @@
 
 #include "pipe/p_compiler.h"
 #include "util/u_debug.h"
-#include "pipe/p_thread.h"
+#include "os/os_thread.h"
 #include "pipe/p_defines.h"
 #include "util/u_memory.h"
 #include "util/u_double_list.h"
@@ -227,9 +227,12 @@ pb_slab_buffer_destroy(struct pb_buffer *_buf)
 
 static void *
 pb_slab_buffer_map(struct pb_buffer *_buf, 
-                   unsigned flags)
+                   unsigned flags,
+                   void *flush_ctx)
 {
    struct pb_slab_buffer *buf = pb_slab_buffer(_buf);
+
+   /* XXX: it will be necessary to remap here to propagate flush_ctx */
 
    ++buf->mapCount;
    return (void *) ((uint8_t *) buf->slab->virtual + buf->start);
@@ -315,8 +318,8 @@ pb_slab_create(struct pb_slab_manager *mgr)
    /* Note down the slab virtual address. All mappings are accessed directly 
     * through this address so it is required that the buffer is pinned. */
    slab->virtual = pb_map(slab->bo, 
-                          PIPE_BUFFER_USAGE_CPU_READ |
-                          PIPE_BUFFER_USAGE_CPU_WRITE);
+                          PB_USAGE_CPU_READ |
+                          PB_USAGE_CPU_WRITE, NULL);
    if(!slab->virtual) {
       ret = PIPE_ERROR_OUT_OF_MEMORY;
       goto out_err1;
@@ -483,11 +486,15 @@ pb_slab_range_manager_create_buffer(struct pb_manager *_mgr,
 {
    struct pb_slab_range_manager *mgr = pb_slab_range_manager(_mgr);
    pb_size bufSize;
+   pb_size reqSize = size;
    unsigned i;
+
+   if(desc->alignment > reqSize)
+	   reqSize = desc->alignment;
 
    bufSize = mgr->minBufSize;
    for (i = 0; i < mgr->numBuckets; ++i) {
-      if(bufSize >= size)
+      if(bufSize >= reqSize)
 	 return mgr->buckets[i]->create_buffer(mgr->buckets[i], size, desc);
       bufSize *= 2;
    }

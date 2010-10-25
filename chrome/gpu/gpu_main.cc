@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/app_switches.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
@@ -66,7 +67,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;
 #elif defined(GPU_USE_GLX)
-  gfx::InitializeGLBindings(gfx::kGLImplementationDesktopGL);
+  if (!command_line.HasSwitch(switches::kUseGL)) {
+    gfx::InitializeGLBindings(gfx::kGLImplementationDesktopGL);
+  }
 #endif
 
   GpuProcess gpu_process;

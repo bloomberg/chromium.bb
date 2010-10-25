@@ -31,13 +31,11 @@
 
 #include "p_config.h"
 
-#ifndef XFree86Server
 #include <stdlib.h>
 #include <string.h>
-#else
-#include "xf86_ansic.h"
-#include "xf86_libc.h"
-#endif
+#include <stddef.h>
+#include <stdarg.h>
+#include <limits.h>
 
 
 #if defined(_WIN32) && !defined(__WIN32__)
@@ -52,58 +50,29 @@
 #endif /* _MSC_VER */
 
 
-#if defined(_MSC_VER)
-
-typedef __int8             int8_t;
-typedef unsigned __int8    uint8_t;
-typedef __int16            int16_t;
-typedef unsigned __int16   uint16_t;
-#ifndef __eglplatform_h_
-typedef __int32            int32_t;
-#endif
-typedef unsigned __int32   uint32_t;
-typedef __int64            int64_t;
-typedef unsigned __int64   uint64_t;
-
-#if defined(_WIN64)
-typedef __int64            intptr_t;
-typedef unsigned __int64   uintptr_t;
-#else
-typedef __int32            intptr_t;
-typedef unsigned __int32   uintptr_t;
-#endif
-
-#define INT64_C(__val) __val##i64
-#define UINT64_C(__val) __val##ui64
-
-#ifndef __cplusplus
-#define false   0
-#define true    1
-#define bool    _Bool
-typedef int     _Bool;
-#define __bool_true_false_are_defined   1
-#endif /* !__cplusplus */
-
-#else
+/*
+ * Alternative stdint.h and stdbool.h headers are supplied in include/c99 for
+ * systems that lack it.
+ */
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS 1
 #endif
 #include <stdint.h>
 #include <stdbool.h>
+
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 
-#ifndef __HAIKU__
+#if !defined(__HAIKU__) && !defined(__USE_MISC)
 typedef unsigned int       uint;
 typedef unsigned short     ushort;
 #endif
 typedef unsigned char      ubyte;
 
-#if 0
-#define boolean bool
-#else
 typedef unsigned char boolean;
-#endif
 #ifndef TRUE
 #define TRUE  true
 #endif
@@ -111,6 +80,13 @@ typedef unsigned char boolean;
 #define FALSE false
 #endif
 
+#ifndef va_copy
+#ifdef __va_copy
+#define va_copy(dest, src) __va_copy((dest), (src))
+#else
+#define va_copy(dest, src) (dest) = (src)
+#endif
+#endif
 
 /* Function inlining */
 #ifndef INLINE
@@ -135,17 +111,43 @@ typedef unsigned char boolean;
 #  endif
 #endif
 
+/* Forced function inlining */
+#ifndef ALWAYS_INLINE
+#  ifdef __GNUC__
+#    define ALWAYS_INLINE inline __attribute__((always_inline))
+#  elif defined(_MSC_VER)
+#    define ALWAYS_INLINE __forceinline
+#  else
+#    define ALWAYS_INLINE INLINE
+#  endif
+#endif
+
+/* Function visibility */
+#ifndef PUBLIC
+#  if defined(__GNUC__) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
+#    define PUBLIC __attribute__((visibility("default")))
+#  elif defined(_MSC_VER)
+#    define PUBLIC __declspec(dllexport)
+#  else
+#    define PUBLIC
+#  endif
+#endif
+
+
 /* The __FUNCTION__ gcc variable is generally only used for debugging.
  * If we're not using gcc, define __FUNCTION__ as a cpp symbol here.
  */
 #ifndef __FUNCTION__
-# if (!defined(__GNUC__) || (__GNUC__ < 2))
+# if !defined(__GNUC__)
 #  if (__STDC_VERSION__ >= 199901L) /* C99 */ || \
     (defined(__SUNPRO_C) && defined(__C99FEATURES__))
 #   define __FUNCTION__ __func__
 #  else
 #   define __FUNCTION__ "<unknown>"
 #  endif
+# endif
+# if defined(_MSC_VER) && _MSC_VER < 1300
+#  define __FUNCTION__ "<unknown>"
 # endif
 #endif
 
@@ -163,23 +165,112 @@ typedef unsigned char boolean;
 
 
 #if defined(__GNUC__)
-#define ALIGN16_DECL(TYPE, NAME, SIZE)  TYPE NAME##___aligned[SIZE] __attribute__(( aligned( 16 ) ))
-#define ALIGN16_ASSIGN(NAME) NAME##___aligned
-#define ALIGN16_ATTRIB  __attribute__(( aligned( 16 ) ))
-#define ALIGN8_ATTRIB  __attribute__(( aligned( 8 ) ))
-#if __GNUC__ > 4 || (__GNUC__ == 4 &&__GNUC_MINOR__>1)
-#define ALIGN_STACK __attribute__((force_align_arg_pointer))
+#define PIPE_DEPRECATED  __attribute__((__deprecated__))
 #else
-#define ALIGN_STACK
-#endif
-#else
-#define ALIGN16_DECL(TYPE, NAME, SIZE)  TYPE NAME##___unaligned[SIZE + 1]
-#define ALIGN16_ASSIGN(NAME) align16(NAME##___unaligned)
-#define ALIGN16_ATTRIB
-#define ALIGN8_ATTRIB
-#define ALIGN_STACK
+#define PIPE_DEPRECATED
 #endif
 
+
+
+/* Macros for data alignment. */
+#if defined(__GNUC__) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
+
+/* See http://gcc.gnu.org/onlinedocs/gcc-4.4.2/gcc/Type-Attributes.html */
+#define PIPE_ALIGN_TYPE(_alignment, _type) _type __attribute__((aligned(_alignment)))
+
+/* See http://gcc.gnu.org/onlinedocs/gcc-4.4.2/gcc/Variable-Attributes.html */
+#define PIPE_ALIGN_VAR(_alignment) __attribute__((aligned(_alignment)))
+
+#if (__GNUC__ > 4 || (__GNUC__ == 4 &&__GNUC_MINOR__>1)) && !defined(PIPE_ARCH_X86_64)
+#define PIPE_ALIGN_STACK __attribute__((force_align_arg_pointer))
+#else
+#define PIPE_ALIGN_STACK
+#endif
+
+#elif defined(_MSC_VER)
+
+/* See http://msdn.microsoft.com/en-us/library/83ythb65.aspx */
+#define PIPE_ALIGN_TYPE(_alignment, _type) __declspec(align(_alignment)) _type
+#define PIPE_ALIGN_VAR(_alignment) __declspec(align(_alignment))
+
+#define PIPE_ALIGN_STACK
+
+#elif defined(SWIG)
+
+#define PIPE_ALIGN_TYPE(_alignment, _type) _type
+#define PIPE_ALIGN_VAR(_alignment)
+
+#define PIPE_ALIGN_STACK
+
+#else
+
+#error "Unsupported compiler"
+
+#endif
+
+
+#if defined(__GNUC__)
+
+#define PIPE_READ_WRITE_BARRIER() __asm__("":::"memory")
+
+#elif defined(_MSC_VER)
+
+void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
+#define PIPE_READ_WRITE_BARRIER() _ReadWriteBarrier()
+
+#else
+
+#warning "Unsupported compiler"
+#define PIPE_READ_WRITE_BARRIER() /* */
+
+#endif
+
+
+/* You should use these macros to mark if blocks where the if condition
+ * is either likely to be true, or unlikely to be true.
+ *
+ * This will inform human readers of this fact, and will also inform
+ * the compiler, who will in turn inform the CPU.
+ *
+ * CPUs often start executing code inside the if or the else blocks
+ * without knowing whether the condition is true or not, and will have
+ * to throw the work away if they find out later they executed the
+ * wrong part of the if.
+ *
+ * If these macros are used, the CPU is more likely to correctly predict
+ * the right path, and will avoid speculatively executing the wrong branch,
+ * thus not throwing away work, resulting in better performance.
+ *
+ * In light of this, it is also a good idea to mark as "likely" a path
+ * which is not necessarily always more likely, but that will benefit much
+ * more from performance improvements since it is already much faster than
+ * the other path, or viceversa with "unlikely".
+ *
+ * Example usage:
+ * if(unlikely(do_we_need_a_software_fallback()))
+ *    do_software_fallback();
+ * else
+ *    render_with_gpu();
+ *
+ * The macros follow the Linux kernel convention, and more examples can
+ * be found there.
+ *
+ * Note that profile guided optimization can offer better results, but
+ * needs an appropriate coverage suite and does not inform human readers.
+ */
+#ifdef __GNUC__
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#else
+#define likely(x) !!(x)
+#define unlikely(x) !!(x)
+#endif
+
+
+#if defined(__cplusplus)
+}
+#endif
 
 
 #endif /* P_COMPILER_H */

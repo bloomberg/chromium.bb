@@ -29,8 +29,6 @@
 #include "util/u_math.h"
 #include "draw/draw_context.h"
 #include "draw/draw_private.h"
-#include "draw/draw_vbuf.h"
-#include "draw/draw_vertex.h"
 #include "draw/draw_pt.h"
 #include "translate/translate.h"
 #include "translate/translate_cache.h"
@@ -42,10 +40,10 @@ struct pt_fetch {
    struct translate *translate;
 
    unsigned vertex_size;
-   boolean need_edgeflags;
 
    struct translate_cache *cache;
 };
+
 
 /* Perform the fetch from API vertex elements & vertex buffers, to a
  * contiguous set of float[4] attributes as required for the
@@ -58,52 +56,54 @@ struct pt_fetch {
  */
 void draw_pt_fetch_prepare( struct pt_fetch *fetch,
                             unsigned vs_input_count,
-			    unsigned vertex_size )
+                            unsigned vertex_size,
+                            unsigned instance_id_index )
 {
    struct draw_context *draw = fetch->draw;
    unsigned nr_inputs;
-   unsigned i, nr = 0;
+   unsigned i, nr = 0, ei = 0;
    unsigned dst_offset = 0;
+   unsigned num_extra_inputs = 0;
    struct translate_key key;
 
    fetch->vertex_size = vertex_size;
 
-   /* Always emit/leave space for a vertex header.
-    *
-    * It's worth considering whether the vertex headers should contain
-    * a pointer to the 'data', rather than having it inline.
-    * Something to look at after we've fully switched over to the pt
-    * paths.
+   /* Leave the clipmask/edgeflags/pad/vertex_id untouched
     */
-   {
-      /* Need to set header->vertex_id = 0xffff somehow.
-       */
-      key.element[nr].input_format = PIPE_FORMAT_R32_FLOAT;
-      key.element[nr].input_buffer = draw->pt.nr_vertex_buffers;
-      key.element[nr].input_offset = 0;
-      key.element[nr].output_format = PIPE_FORMAT_R32_FLOAT;
-      key.element[nr].output_offset = dst_offset;
-      dst_offset += 1 * sizeof(float);
-      nr++;
+   dst_offset += 1 * sizeof(float);
+   /* Just leave the clip[] array untouched.
+    */
+   dst_offset += 4 * sizeof(float);
 
-
-      /* Just leave the clip[] array untouched.
-       */
-      dst_offset += 4 * sizeof(float);
+   if (instance_id_index != ~0) {
+      num_extra_inputs++;
    }
-      
-   assert( draw->pt.nr_vertex_elements >= vs_input_count );
 
-   nr_inputs = MIN2( vs_input_count, draw->pt.nr_vertex_elements );
+   assert(draw->pt.nr_vertex_elements + num_extra_inputs >= vs_input_count);
+
+   nr_inputs = MIN2(vs_input_count, draw->pt.nr_vertex_elements + num_extra_inputs);
 
    for (i = 0; i < nr_inputs; i++) {
-      key.element[nr].input_format = draw->pt.vertex_element[i].src_format;
-      key.element[nr].input_buffer = draw->pt.vertex_element[i].vertex_buffer_index;
-      key.element[nr].input_offset = draw->pt.vertex_element[i].src_offset;
-      key.element[nr].output_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
-      key.element[nr].output_offset = dst_offset;
+      if (i == instance_id_index) {
+         key.element[nr].type = TRANSLATE_ELEMENT_INSTANCE_ID;
+         key.element[nr].input_format = PIPE_FORMAT_R32_USCALED;
+         key.element[nr].output_format = PIPE_FORMAT_R32_USCALED;
+         key.element[nr].output_offset = dst_offset;
 
-      dst_offset += 4 * sizeof(float);
+         dst_offset += sizeof(uint);
+      } else {
+         key.element[nr].type = TRANSLATE_ELEMENT_NORMAL;
+         key.element[nr].input_format = draw->pt.vertex_element[ei].src_format;
+         key.element[nr].input_buffer = draw->pt.vertex_element[ei].vertex_buffer_index;
+         key.element[nr].input_offset = draw->pt.vertex_element[ei].src_offset;
+         key.element[nr].instance_divisor = draw->pt.vertex_element[ei].instance_divisor;
+         key.element[nr].output_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
+         key.element[nr].output_offset = dst_offset;
+
+         ei++;
+         dst_offset += 4 * sizeof(float);
+      }
+
       nr++;
    }
 
@@ -112,25 +112,13 @@ void draw_pt_fetch_prepare( struct pt_fetch *fetch,
    key.nr_elements = nr;
    key.output_stride = vertex_size;
 
-
    if (!fetch->translate ||
        translate_key_compare(&fetch->translate->key, &key) != 0)
    {
       translate_key_sanitize(&key);
       fetch->translate = translate_cache_find(fetch->cache, &key);
-
-      {
-         static struct vertex_header vh = { 0, 1, 0, UNDEFINED_VERTEX_ID, { .0f, .0f, .0f, .0f } };
-	 fetch->translate->set_buffer(fetch->translate,
-				      draw->pt.nr_vertex_buffers,
-				      &vh,
-				      0);
-      }
    }
 
-   fetch->need_edgeflags = ((draw->rasterizer->fill_cw != PIPE_POLYGON_MODE_FILL ||
-                             draw->rasterizer->fill_ccw != PIPE_POLYGON_MODE_FILL) &&
-                            draw->pt.user.edgeflag);
 }
 
 
@@ -150,25 +138,16 @@ void draw_pt_fetch_run( struct pt_fetch *fetch,
 			    i, 
 			    ((char *)draw->pt.user.vbuffer[i] + 
 			     draw->pt.vertex_buffer[i].buffer_offset),
-			    draw->pt.vertex_buffer[i].stride );
+			    draw->pt.vertex_buffer[i].stride,
+			    draw->pt.vertex_buffer[i].max_index);
    }
 
    translate->run_elts( translate,
 			elts, 
 			count,
+                        draw->instance_id,
 			verts );
 
-   /* Edgeflags are hard to fit into a translate program, populate
-    * them separately if required.  In the setup above they are
-    * defaulted to one, so only need this if there is reason to change
-    * that default:
-    */
-   if (fetch->need_edgeflags) {
-      for (i = 0; i < count; i++) {
-         struct vertex_header *vh = (struct vertex_header *)(verts + i * fetch->vertex_size);
-         vh->edgeflag = draw_pt_get_edgeflag( draw, elts[i] );
-      }
-   }
 }
 
 
@@ -186,25 +165,15 @@ void draw_pt_fetch_run_linear( struct pt_fetch *fetch,
 			    i,
 			    ((char *)draw->pt.user.vbuffer[i] +
 			     draw->pt.vertex_buffer[i].buffer_offset),
-			    draw->pt.vertex_buffer[i].stride );
+			    draw->pt.vertex_buffer[i].stride,
+			    draw->pt.vertex_buffer[i].max_index);
    }
 
    translate->run( translate,
                    start,
                    count,
+                   draw->instance_id,
                    verts );
-
-   /* Edgeflags are hard to fit into a translate program, populate
-    * them separately if required.  In the setup above they are
-    * defaulted to one, so only need this if there is reason to change
-    * that default:
-    */
-   if (fetch->need_edgeflags) {
-      for (i = 0; i < count; i++) {
-         struct vertex_header *vh = (struct vertex_header *)(verts + i * fetch->vertex_size);
-         vh->edgeflag = draw_pt_get_edgeflag( draw, start + i );
-      }
-   }
 }
 
 

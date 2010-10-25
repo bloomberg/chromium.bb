@@ -33,51 +33,61 @@
 
 #include "util/u_memory.h"
 #include "util/u_math.h"
-#include "util/u_debug_dump.h"
+#include "util/u_dump.h"
+#include "draw/draw_context.h"
 #include "lp_screen.h"
 #include "lp_context.h"
 #include "lp_state.h"
 
 
-void *
+static void *
 llvmpipe_create_blend_state(struct pipe_context *pipe,
                             const struct pipe_blend_state *blend)
 {
    return mem_dup(blend, sizeof(*blend));
 }
 
-void llvmpipe_bind_blend_state( struct pipe_context *pipe,
-                                void *blend )
+
+static void
+llvmpipe_bind_blend_state(struct pipe_context *pipe, void *blend)
 {
    struct llvmpipe_context *llvmpipe = llvmpipe_context(pipe);
+
+   if (llvmpipe->blend == blend)
+      return;
+
+   draw_flush(llvmpipe->draw);
 
    llvmpipe->blend = blend;
 
    llvmpipe->dirty |= LP_NEW_BLEND;
 }
 
-void llvmpipe_delete_blend_state(struct pipe_context *pipe,
-                                 void *blend)
+
+static void
+llvmpipe_delete_blend_state(struct pipe_context *pipe, void *blend)
 {
    FREE( blend );
 }
 
 
-void llvmpipe_set_blend_color( struct pipe_context *pipe,
-			     const struct pipe_blend_color *blend_color )
+static void
+llvmpipe_set_blend_color(struct pipe_context *pipe,
+                         const struct pipe_blend_color *blend_color)
 {
    struct llvmpipe_context *llvmpipe = llvmpipe_context(pipe);
-   unsigned i, j;
+
+   if(!blend_color)
+      return;
+
+   if(memcmp(&llvmpipe->blend_color, blend_color, sizeof *blend_color) == 0)
+      return;
+
+   draw_flush(llvmpipe->draw);
 
    memcpy(&llvmpipe->blend_color, blend_color, sizeof *blend_color);
 
-   if(!llvmpipe->jit_context.blend_color)
-      llvmpipe->jit_context.blend_color = align_malloc(4 * 16, 16);
-   for (i = 0; i < 4; ++i) {
-      uint8_t c = float_to_ubyte(blend_color->color[i]);
-      for (j = 0; j < 16; ++j)
-         llvmpipe->jit_context.blend_color[i*16 + j] = c;
-   }
+   llvmpipe->dirty |= LP_NEW_BLEND_COLOR;
 }
 
 
@@ -86,29 +96,77 @@ void llvmpipe_set_blend_color( struct pipe_context *pipe,
  */
 
 
-void *
+static void *
 llvmpipe_create_depth_stencil_state(struct pipe_context *pipe,
 				    const struct pipe_depth_stencil_alpha_state *depth_stencil)
 {
    return mem_dup(depth_stencil, sizeof(*depth_stencil));
 }
 
-void
+
+static void
 llvmpipe_bind_depth_stencil_state(struct pipe_context *pipe,
                                   void *depth_stencil)
 {
    struct llvmpipe_context *llvmpipe = llvmpipe_context(pipe);
 
-   llvmpipe->depth_stencil = (const struct pipe_depth_stencil_alpha_state *)depth_stencil;
+   if (llvmpipe->depth_stencil == depth_stencil)
+      return;
 
-   if(llvmpipe->depth_stencil)
-      llvmpipe->jit_context.alpha_ref_value = llvmpipe->depth_stencil->alpha.ref_value;
+   draw_flush(llvmpipe->draw);
+
+   llvmpipe->depth_stencil = depth_stencil;
 
    llvmpipe->dirty |= LP_NEW_DEPTH_STENCIL_ALPHA;
 }
 
-void
+
+static void
 llvmpipe_delete_depth_stencil_state(struct pipe_context *pipe, void *depth)
 {
    FREE( depth );
+}
+
+
+static void
+llvmpipe_set_stencil_ref(struct pipe_context *pipe,
+                         const struct pipe_stencil_ref *stencil_ref)
+{
+   struct llvmpipe_context *llvmpipe = llvmpipe_context(pipe);
+
+   if(!stencil_ref)
+      return;
+
+   if(memcmp(&llvmpipe->stencil_ref, stencil_ref, sizeof *stencil_ref) == 0)
+      return;
+
+   draw_flush(llvmpipe->draw);
+
+   memcpy(&llvmpipe->stencil_ref, stencil_ref, sizeof *stencil_ref);
+
+   /* not sure. want new flag? */
+   llvmpipe->dirty |= LP_NEW_DEPTH_STENCIL_ALPHA;
+}
+
+static void
+llvmpipe_set_sample_mask(struct pipe_context *pipe,
+                         unsigned sample_mask)
+{
+}
+
+void
+llvmpipe_init_blend_funcs(struct llvmpipe_context *llvmpipe)
+{
+   llvmpipe->pipe.create_blend_state = llvmpipe_create_blend_state;
+   llvmpipe->pipe.bind_blend_state   = llvmpipe_bind_blend_state;
+   llvmpipe->pipe.delete_blend_state = llvmpipe_delete_blend_state;
+
+   llvmpipe->pipe.create_depth_stencil_alpha_state = llvmpipe_create_depth_stencil_state;
+   llvmpipe->pipe.bind_depth_stencil_alpha_state   = llvmpipe_bind_depth_stencil_state;
+   llvmpipe->pipe.delete_depth_stencil_alpha_state = llvmpipe_delete_depth_stencil_state;
+
+   llvmpipe->pipe.set_blend_color = llvmpipe_set_blend_color;
+
+   llvmpipe->pipe.set_stencil_ref = llvmpipe_set_stencil_ref;
+   llvmpipe->pipe.set_sample_mask = llvmpipe_set_sample_mask;
 }

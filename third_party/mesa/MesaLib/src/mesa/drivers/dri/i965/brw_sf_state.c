@@ -35,7 +35,6 @@
 #include "brw_state.h"
 #include "brw_defines.h"
 #include "main/macros.h"
-#include "intel_fbo.h"
 
 static void upload_sf_vp(struct brw_context *brw)
 {
@@ -70,14 +69,27 @@ static void upload_sf_vp(struct brw_context *brw)
     * for DrawBuffer->_[XY]{min,max}
     */
 
-   /* The scissor only needs to handle the intersection of drawable and
-    * scissor rect.  Clipping to the boundaries of static shared buffers
-    * for front/back/depth is covered by looping over cliprects in brw_draw.c.
+   /* The scissor only needs to handle the intersection of drawable
+    * and scissor rect, since there are no longer cliprects for shared
+    * buffers with DRI2.
     *
     * Note that the hardware's coordinates are inclusive, while Mesa's min is
     * inclusive but max is exclusive.
     */
-   if (render_to_fbo) {
+
+   if (ctx->DrawBuffer->_Xmin == ctx->DrawBuffer->_Xmax ||
+       ctx->DrawBuffer->_Ymin == ctx->DrawBuffer->_Ymax) {
+      /* If the scissor was out of bounds and got clamped to 0
+       * width/height at the bounds, the subtraction of 1 from
+       * maximums could produce a negative number and thus not clip
+       * anything.  Instead, just provide a min > max scissor inside
+       * the bounds, which produces the expected no rendering.
+       */
+      sfv.scissor.xmin = 1;
+      sfv.scissor.xmax = 0;
+      sfv.scissor.ymin = 1;
+      sfv.scissor.ymax = 0;
+   } else if (render_to_fbo) {
       /* texmemory: Y=0=bottom */
       sfv.scissor.xmin = ctx->DrawBuffer->_Xmin;
       sfv.scissor.xmax = ctx->DrawBuffer->_Xmax - 1;
@@ -92,9 +104,8 @@ static void upload_sf_vp(struct brw_context *brw)
       sfv.scissor.ymax = ctx->DrawBuffer->Height - ctx->DrawBuffer->_Ymin - 1;
    }
 
-   dri_bo_unreference(brw->sf.vp_bo);
-   brw->sf.vp_bo = brw_cache_data(&brw->cache, BRW_SF_VP, &sfv, sizeof(sfv),
-				  NULL, 0);
+   drm_intel_bo_unreference(brw->sf.vp_bo);
+   brw->sf.vp_bo = brw_cache_data(&brw->cache, BRW_SF_VP, &sfv, sizeof(sfv));
 }
 
 const struct brw_tracked_state brw_sf_vp = {
@@ -119,7 +130,7 @@ struct brw_sf_unit_key {
    unsigned scissor:1;
    unsigned line_smooth:1;
    unsigned point_sprite:1;
-   unsigned point_attenuated:1;
+   unsigned use_vs_point_size:1;
    unsigned render_to_fbo:1;
    float line_width;
    float point_size;
@@ -153,7 +164,8 @@ sf_unit_populate_key(struct brw_context *brw, struct brw_sf_unit_key *key)
 
    key->point_sprite = ctx->Point.PointSprite;
    key->point_size = CLAMP(ctx->Point.Size, ctx->Point.MinSize, ctx->Point.MaxSize);
-   key->point_attenuated = ctx->Point._Attenuated;
+   key->use_vs_point_size = (ctx->VertexProgram.PointSizeEnabled ||
+			     ctx->Point._Attenuated);
 
    /* _NEW_LIGHT */
    key->pv_first = (ctx->Light.ProvokingVertex == GL_FIRST_VERTEX_CONVENTION);
@@ -161,12 +173,13 @@ sf_unit_populate_key(struct brw_context *brw, struct brw_sf_unit_key *key)
    key->render_to_fbo = brw->intel.ctx.DrawBuffer->Name != 0;
 }
 
-static dri_bo *
+static drm_intel_bo *
 sf_unit_create_from_key(struct brw_context *brw, struct brw_sf_unit_key *key,
-			dri_bo **reloc_bufs)
+			drm_intel_bo **reloc_bufs)
 {
+   struct intel_context *intel = &brw->intel;
    struct brw_sf_unit_state sf;
-   dri_bo *bo;
+   drm_intel_bo *bo;
    int chipset_max_threads;
    memset(&sf, 0, sizeof(sf));
 
@@ -177,7 +190,7 @@ sf_unit_create_from_key(struct brw_context *brw, struct brw_sf_unit_key *key,
 
    sf.thread3.dispatch_grf_start_reg = 3;
 
-   if (BRW_IS_IGDNG(brw))
+   if (intel->gen == 5)
        sf.thread3.urb_entry_read_offset = 3;
    else
        sf.thread3.urb_entry_read_offset = 1;
@@ -187,10 +200,10 @@ sf_unit_create_from_key(struct brw_context *brw, struct brw_sf_unit_key *key,
    sf.thread4.nr_urb_entries = key->nr_urb_entries;
    sf.thread4.urb_entry_allocation_size = key->sfsize - 1;
 
-   /* Each SF thread produces 1 PUE, and there can be up to 24(Pre-IGDNG) or 
-    * 48(IGDNG) threads 
+   /* Each SF thread produces 1 PUE, and there can be up to 24 (Pre-Ironlake) or
+    * 48 (Ironlake) threads.
     */
-   if (BRW_IS_IGDNG(brw))
+   if (intel->gen == 5)
       chipset_max_threads = 48;
    else
       chipset_max_threads = 24;
@@ -284,7 +297,7 @@ sf_unit_create_from_key(struct brw_context *brw, struct brw_sf_unit_key *key,
    /* _NEW_POINT */
    sf.sf7.sprite_point = key->point_sprite;
    sf.sf7.point_size = CLAMP(rint(key->point_size), 1, 255) * (1<<3);
-   sf.sf7.use_point_size_state = !key->point_attenuated;
+   sf.sf7.use_point_size_state = !key->use_vs_point_size;
    sf.sf7.aa_line_distance_mode = 0;
 
    /* might be BRW_NEW_PRIMITIVE if we have to adjust pv for polygons:
@@ -308,25 +321,21 @@ sf_unit_create_from_key(struct brw_context *brw, struct brw_sf_unit_key *key,
    bo = brw_upload_cache(&brw->cache, BRW_SF_UNIT,
 			 key, sizeof(*key),
 			 reloc_bufs, 2,
-			 &sf, sizeof(sf),
-			 NULL, NULL);
+			 &sf, sizeof(sf));
 
    /* STATE_PREFETCH command description describes this state as being
     * something loaded through the GPE (L2 ISC), so it's INSTRUCTION domain.
     */
    /* Emit SF program relocation */
-   dri_bo_emit_reloc(bo,
-		     I915_GEM_DOMAIN_INSTRUCTION, 0,
-		     sf.thread0.grf_reg_count << 1,
-		     offsetof(struct brw_sf_unit_state, thread0),
-		     brw->sf.prog_bo);
+   drm_intel_bo_emit_reloc(bo, offsetof(struct brw_sf_unit_state, thread0),
+			   brw->sf.prog_bo, sf.thread0.grf_reg_count << 1,
+			   I915_GEM_DOMAIN_INSTRUCTION, 0);
 
    /* Emit SF viewport relocation */
-   dri_bo_emit_reloc(bo,
-		     I915_GEM_DOMAIN_INSTRUCTION, 0,
-		     sf.sf5.front_winding | (sf.sf5.viewport_transform << 1),
-		     offsetof(struct brw_sf_unit_state, sf5),
-		     brw->sf.vp_bo);
+   drm_intel_bo_emit_reloc(bo, offsetof(struct brw_sf_unit_state, sf5),
+			   brw->sf.vp_bo, (sf.sf5.front_winding |
+					   (sf.sf5.viewport_transform << 1)),
+			   I915_GEM_DOMAIN_INSTRUCTION, 0);
 
    return bo;
 }
@@ -334,14 +343,14 @@ sf_unit_create_from_key(struct brw_context *brw, struct brw_sf_unit_key *key,
 static void upload_sf_unit( struct brw_context *brw )
 {
    struct brw_sf_unit_key key;
-   dri_bo *reloc_bufs[2];
+   drm_intel_bo *reloc_bufs[2];
 
    sf_unit_populate_key(brw, &key);
 
    reloc_bufs[0] = brw->sf.prog_bo;
    reloc_bufs[1] = brw->sf.vp_bo;
 
-   dri_bo_unreference(brw->sf.state_bo);
+   drm_intel_bo_unreference(brw->sf.state_bo);
    brw->sf.state_bo = brw_search_cache(&brw->cache, BRW_SF_UNIT,
 				       &key, sizeof(key),
 				       reloc_bufs, 2,

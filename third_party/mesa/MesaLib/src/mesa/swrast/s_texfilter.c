@@ -445,7 +445,7 @@ clamp_rect_coord_linear(GLenum wrapMode, GLfloat coord, GLint max,
    switch (wrapMode) {
    case GL_CLAMP:
       /* Not exactly what the spec says, but it matches NVIDIA output */
-      fcol = CLAMP(coord - 0.5F, 0.0, max-1);
+      fcol = CLAMP(coord - 0.5F, 0.0F, max - 1);
       i0 = IFLOOR(fcol);
       i1 = i0 + 1;
       break;
@@ -475,15 +475,28 @@ clamp_rect_coord_linear(GLenum wrapMode, GLfloat coord, GLint max,
 
 
 /**
+ * Compute slice/image to use for 1D or 2D array texture.
+ */
+static INLINE GLint
+tex_array_slice(GLfloat coord, GLsizei size)
+{
+   GLint slice = IFLOOR(coord + 0.5f);
+   slice = CLAMP(slice, 0, size - 1);
+   return slice;
+}
+
+
+/**
  * Compute nearest integer texcoords for given texobj and coordinate.
+ * NOTE: only used for depth texture sampling.
  */
 static INLINE void
 nearest_texcoord(const struct gl_texture_object *texObj,
+                 GLuint level,
                  const GLfloat texcoord[4],
                  GLint *i, GLint *j, GLint *k)
 {
-   const GLint baseLevel = texObj->BaseLevel;
-   const struct gl_texture_image *img = texObj->Image[0][baseLevel];
+   const struct gl_texture_image *img = texObj->Image[0][level];
    const GLint width = img->Width;
    const GLint height = img->Height;
    const GLint depth = img->Depth;
@@ -506,13 +519,13 @@ nearest_texcoord(const struct gl_texture_object *texObj,
       break;
    case GL_TEXTURE_1D_ARRAY_EXT:
       *i = nearest_texel_location(texObj->WrapS, img, width, texcoord[0]);
-      *j = clamp_rect_coord_nearest(texObj->WrapT, texcoord[1], height);
+      *j = tex_array_slice(texcoord[1], height);
       *k = 0;
       break;
    case GL_TEXTURE_2D_ARRAY_EXT:
       *i = nearest_texel_location(texObj->WrapS, img, width, texcoord[0]);
       *j = nearest_texel_location(texObj->WrapT, img, height, texcoord[1]);
-      *k = clamp_rect_coord_nearest(texObj->WrapR, texcoord[2], depth);
+      *k = tex_array_slice(texcoord[2], depth);
       break;
    default:
       *i = *j = *k = 0;
@@ -522,15 +535,16 @@ nearest_texcoord(const struct gl_texture_object *texObj,
 
 /**
  * Compute linear integer texcoords for given texobj and coordinate.
+ * NOTE: only used for depth texture sampling.
  */
 static INLINE void
 linear_texcoord(const struct gl_texture_object *texObj,
+                GLuint level,
                 const GLfloat texcoord[4],
                 GLint *i0, GLint *i1, GLint *j0, GLint *j1, GLint *slice,
                 GLfloat *wi, GLfloat *wj)
 {
-   const GLint baseLevel = texObj->BaseLevel;
-   const struct gl_texture_image *img = texObj->Image[0][baseLevel];
+   const struct gl_texture_image *img = texObj->Image[0][level];
    const GLint width = img->Width;
    const GLint height = img->Height;
    const GLint depth = img->Depth;
@@ -556,7 +570,7 @@ linear_texcoord(const struct gl_texture_object *texObj,
    case GL_TEXTURE_1D_ARRAY_EXT:
       linear_texel_locations(texObj->WrapS, img, width,
                              texcoord[0], i0, i1, wi);
-      *j0 = clamp_rect_coord_nearest(texObj->WrapT, texcoord[1], height);
+      *j0 = tex_array_slice(texcoord[1], height);
       *j1 = *j0;
       *slice = 0;
       break;
@@ -566,7 +580,7 @@ linear_texcoord(const struct gl_texture_object *texObj,
                              texcoord[0], i0, i1, wi);
       linear_texel_locations(texObj->WrapT, img, height,
                              texcoord[1], j0, j1, wj);
-      *slice = clamp_rect_coord_nearest(texObj->WrapR, texcoord[2], depth);
+      *slice = tex_array_slice(texcoord[2], depth);
       break;
 
    default:
@@ -747,28 +761,28 @@ get_border_color(const struct gl_texture_object *tObj,
 {
    switch (img->_BaseFormat) {
    case GL_RGB:
-      rgba[0] = tObj->BorderColor[0];
-      rgba[1] = tObj->BorderColor[1];
-      rgba[2] = tObj->BorderColor[2];
+      rgba[0] = tObj->BorderColor.f[0];
+      rgba[1] = tObj->BorderColor.f[1];
+      rgba[2] = tObj->BorderColor.f[2];
       rgba[3] = 1.0F;
       break;
    case GL_ALPHA:
       rgba[0] = rgba[1] = rgba[2] = 0.0;
-      rgba[3] = tObj->BorderColor[3];
+      rgba[3] = tObj->BorderColor.f[3];
       break;
    case GL_LUMINANCE:
-      rgba[0] = rgba[1] = rgba[2] = tObj->BorderColor[0];
+      rgba[0] = rgba[1] = rgba[2] = tObj->BorderColor.f[0];
       rgba[3] = 1.0;
       break;
    case GL_LUMINANCE_ALPHA:
-      rgba[0] = rgba[1] = rgba[2] = tObj->BorderColor[0];
-      rgba[3] = tObj->BorderColor[3];
+      rgba[0] = rgba[1] = rgba[2] = tObj->BorderColor.f[0];
+      rgba[3] = tObj->BorderColor.f[3];
       break;
    case GL_INTENSITY:
-      rgba[0] = rgba[1] = rgba[2] = rgba[3] = tObj->BorderColor[0];
+      rgba[0] = rgba[1] = rgba[2] = rgba[3] = tObj->BorderColor.f[0];
       break;
    default:
-      COPY_4V(rgba, tObj->BorderColor);
+      COPY_4V(rgba, tObj->BorderColor.f);
    }
 }
 
@@ -2269,7 +2283,6 @@ sample_lambda_rect(GLcontext *ctx,
 }
 
 
-
 /**********************************************************************/
 /*                2D Texture Array Sampling Functions                 */
 /**********************************************************************/
@@ -2293,7 +2306,7 @@ sample_2d_array_nearest(GLcontext *ctx,
 
    i = nearest_texel_location(tObj->WrapS, img, width, texcoord[0]);
    j = nearest_texel_location(tObj->WrapT, img, height, texcoord[1]);
-   array = clamp_rect_coord_nearest(tObj->WrapR, texcoord[2], depth);
+   array = tex_array_slice(texcoord[2], depth);
 
    if (i < 0 || i >= (GLint) img->Width ||
        j < 0 || j >= (GLint) img->Height ||
@@ -2328,10 +2341,10 @@ sample_2d_array_linear(GLcontext *ctx,
 
    linear_texel_locations(tObj->WrapS, img, width,  texcoord[0], &i0, &i1, &a);
    linear_texel_locations(tObj->WrapT, img, height, texcoord[1], &j0, &j1, &b);
-   array = clamp_rect_coord_nearest(tObj->WrapR, texcoord[2], depth);
+   array = tex_array_slice(texcoord[2], depth);
 
    if (array < 0 || array >= depth) {
-      COPY_4V(rgba, tObj->BorderColor);
+      COPY_4V(rgba, tObj->BorderColor.f);
    }
    else {
       if (img->Border) {
@@ -2601,7 +2614,7 @@ sample_1d_array_nearest(GLcontext *ctx,
    (void) ctx;
 
    i = nearest_texel_location(tObj->WrapS, img, width, texcoord[0]);
-   array = clamp_rect_coord_nearest(tObj->WrapT, texcoord[1], height);
+   array = tex_array_slice(texcoord[1], height);
 
    if (i < 0 || i >= (GLint) img->Width ||
        array < 0 || array >= (GLint) img->Height) {
@@ -2633,7 +2646,7 @@ sample_1d_array_linear(GLcontext *ctx,
    GLfloat t0[4], t1[4];
 
    linear_texel_locations(tObj->WrapS, img, width, texcoord[0], &i0, &i1, &a);
-   array = clamp_rect_coord_nearest(tObj->WrapT, texcoord[1], height);
+   array = tex_array_slice(texcoord[1], height);
 
    if (img->Border) {
       i0 += img->Border;
@@ -2952,7 +2965,26 @@ shadow_compare4(GLenum function, GLfloat coord,
 
 
 /**
- * Sample a shadow/depth texture.
+ * Choose the mipmap level to use when sampling from a depth texture.
+ */
+static int
+choose_depth_texture_level(const struct gl_texture_object *tObj, GLfloat lambda)
+{
+   GLint level;
+
+   lambda = CLAMP(lambda, tObj->MinLod, tObj->MaxLod);
+
+   level = (GLint) lambda;
+
+   level = CLAMP(level, tObj->BaseLevel, tObj->_MaxLevel);
+
+   return level;
+}
+
+
+/**
+ * Sample a shadow/depth texture.  This function is incomplete.  It doesn't
+ * check for minification vs. magnification, etc.
  */
 static void
 sample_depth_texture( GLcontext *ctx,
@@ -2960,8 +2992,8 @@ sample_depth_texture( GLcontext *ctx,
                       const GLfloat texcoords[][4], const GLfloat lambda[],
                       GLfloat texel[][4] )
 {
-   const GLint baseLevel = tObj->BaseLevel;
-   const struct gl_texture_image *img = tObj->Image[0][baseLevel];
+   const GLint level = choose_depth_texture_level(tObj, lambda[0]);
+   const struct gl_texture_image *img = tObj->Image[0][level];
    const GLint width = img->Width;
    const GLint height = img->Height;
    const GLint depth = img->Depth;
@@ -2970,8 +3002,6 @@ sample_depth_texture( GLcontext *ctx,
    GLfloat ambient;
    GLenum function;
    GLfloat result;
-
-   (void) lambda;
 
    ASSERT(img->_BaseFormat == GL_DEPTH_COMPONENT ||
           img->_BaseFormat == GL_DEPTH_STENCIL_EXT);
@@ -2995,14 +3025,14 @@ sample_depth_texture( GLcontext *ctx,
          GLfloat depthSample;
          GLint col, row, slice;
 
-         nearest_texcoord(tObj, texcoords[i], &col, &row, &slice);
+         nearest_texcoord(tObj, level, texcoords[i], &col, &row, &slice);
 
          if (col >= 0 && row >= 0 && col < width && row < height && 
              slice >= 0 && slice < depth) {
             img->FetchTexelf(img, col, row, slice, &depthSample);
          }
          else {
-            depthSample = tObj->BorderColor[0];
+            depthSample = tObj->BorderColor.f[0];
          }
 
          result = shadow_compare(function, texcoords[i][compare_coord],
@@ -3033,7 +3063,7 @@ sample_depth_texture( GLcontext *ctx,
          GLfloat wi, wj;
          GLuint useBorderTexel;
 
-         linear_texcoord(tObj, texcoords[i], &i0, &i1, &j0, &j1, &slice,
+         linear_texcoord(tObj, level, texcoords[i], &i0, &i1, &j0, &j1, &slice,
                          &wi, &wj);
 
          useBorderTexel = 0;
@@ -3053,21 +3083,21 @@ sample_depth_texture( GLcontext *ctx,
          }
 
          if (slice < 0 || slice >= (GLint) depth) {
-            depth00 = tObj->BorderColor[0];
-            depth01 = tObj->BorderColor[0];
-            depth10 = tObj->BorderColor[0];
-            depth11 = tObj->BorderColor[0];
+            depth00 = tObj->BorderColor.f[0];
+            depth01 = tObj->BorderColor.f[0];
+            depth10 = tObj->BorderColor.f[0];
+            depth11 = tObj->BorderColor.f[0];
          }
          else {
             /* get four depth samples from the texture */
             if (useBorderTexel & (I0BIT | J0BIT)) {
-               depth00 = tObj->BorderColor[0];
+               depth00 = tObj->BorderColor.f[0];
             }
             else {
                img->FetchTexelf(img, i0, j0, slice, &depth00);
             }
             if (useBorderTexel & (I1BIT | J0BIT)) {
-               depth10 = tObj->BorderColor[0];
+               depth10 = tObj->BorderColor.f[0];
             }
             else {
                img->FetchTexelf(img, i1, j0, slice, &depth10);
@@ -3075,13 +3105,13 @@ sample_depth_texture( GLcontext *ctx,
 
             if (tObj->Target != GL_TEXTURE_1D_ARRAY_EXT) {
                if (useBorderTexel & (I0BIT | J1BIT)) {
-                  depth01 = tObj->BorderColor[0];
+                  depth01 = tObj->BorderColor.f[0];
                }
                else {
                   img->FetchTexelf(img, i0, j1, slice, &depth01);
                }
                if (useBorderTexel & (I1BIT | J1BIT)) {
-                  depth11 = tObj->BorderColor[0];
+                  depth11 = tObj->BorderColor.f[0];
                }
                else {
                   img->FetchTexelf(img, i1, j1, slice, &depth11);

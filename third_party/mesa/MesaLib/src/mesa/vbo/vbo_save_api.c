@@ -78,9 +78,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "main/api_validate.h"
 #include "main/api_arrayelt.h"
 #include "main/vtxfmt.h"
-#include "glapi/dispatch.h"
+#include "main/dispatch.h"
 
 #include "vbo_context.h"
+
+
+#if FEATURE_dlist
 
 
 #ifdef ERROR
@@ -118,23 +121,23 @@ static GLuint _save_copy_vertices( GLcontext *ctx,
    case GL_LINES:
       ovf = nr&1;
       for (i = 0 ; i < ovf ; i++)
-	 _mesa_memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
+	 memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
       return i;
    case GL_TRIANGLES:
       ovf = nr%3;
       for (i = 0 ; i < ovf ; i++)
-	 _mesa_memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
+	 memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
       return i;
    case GL_QUADS:
       ovf = nr&3;
       for (i = 0 ; i < ovf ; i++)
-	 _mesa_memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
+	 memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
       return i;
    case GL_LINE_STRIP:
       if (nr == 0) 
 	 return 0;
       else {
-	 _mesa_memcpy( dst, src+(nr-1)*sz, sz*sizeof(GLfloat) );
+	 memcpy( dst, src+(nr-1)*sz, sz*sizeof(GLfloat) );
 	 return 1;
       }
    case GL_LINE_LOOP:
@@ -143,11 +146,11 @@ static GLuint _save_copy_vertices( GLcontext *ctx,
       if (nr == 0) 
 	 return 0;
       else if (nr == 1) {
-	 _mesa_memcpy( dst, src+0, sz*sizeof(GLfloat) );
+	 memcpy( dst, src+0, sz*sizeof(GLfloat) );
 	 return 1;
       } else {
-	 _mesa_memcpy( dst, src+0, sz*sizeof(GLfloat) );
-	 _mesa_memcpy( dst+sz, src+(nr-1)*sz, sz*sizeof(GLfloat) );
+	 memcpy( dst, src+0, sz*sizeof(GLfloat) );
+	 memcpy( dst+sz, src+(nr-1)*sz, sz*sizeof(GLfloat) );
 	 return 2;
       }
    case GL_TRIANGLE_STRIP:
@@ -158,7 +161,7 @@ static GLuint _save_copy_vertices( GLcontext *ctx,
       default: ovf = 2 + (nr&1); break;
       }
       for (i = 0 ; i < ovf ; i++)
-	 _mesa_memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
+	 memcpy( dst+i*sz, src+(nr-ovf+i)*sz, sz*sizeof(GLfloat) );
       return i;
    default:
       assert(0);
@@ -277,7 +280,7 @@ static void _save_compile_vertex_list( GLcontext *ctx )
 
    /* Duplicate our template, increment refcounts to the storage structs:
     */
-   _mesa_memcpy(node->attrsz, save->attrsz, sizeof(node->attrsz)); 
+   memcpy(node->attrsz, save->attrsz, sizeof(node->attrsz));
    node->vertex_size = save->vertex_size;
    node->buffer_offset = (save->buffer - save->vertex_store->buffer) * sizeof(GLfloat); 
    node->count = save->vert_count;
@@ -418,6 +421,7 @@ static void _save_wrap_buffers( GLcontext *ctx )
    save->prim[0].pad = 0;
    save->prim[0].start = 0;
    save->prim[0].count = 0;
+   save->prim[0].num_instances = 1;
    save->prim_count = 1;
 }
 
@@ -441,7 +445,7 @@ static void _save_wrap_filled_vertex( GLcontext *ctx )
    assert(save->max_vert - save->vert_count > save->copied.nr);
 
    for (i = 0 ; i < save->copied.nr ; i++) {
-      _mesa_memcpy( save->buffer_ptr, data, save->vertex_size * sizeof(GLfloat));
+      memcpy( save->buffer_ptr, data, save->vertex_size * sizeof(GLfloat));
       data += save->vertex_size;
       save->buffer_ptr += save->vertex_size;
       save->vert_count++;
@@ -773,6 +777,7 @@ GLboolean vbo_save_NotifyBegin( GLcontext *ctx, GLenum mode )
    save->prim[i].pad = 0;
    save->prim[i].start = save->vert_count;
    save->prim[i].count = 0;   
+   save->prim[i].num_instances = 1;   
 
    _mesa_install_save_vtxfmt( ctx, &save->vtxfmt );      
    ctx->Driver.SaveNeedFlush = 1;
@@ -1185,10 +1190,10 @@ static void vbo_print_vertex_list( GLcontext *ctx, void *data )
    GLuint i;
    (void) ctx;
 
-   _mesa_printf("VBO-VERTEX-LIST, %u vertices %d primitives, %d vertsize\n",
-		node->count,
-		node->prim_count,
-		node->vertex_size);
+   printf("VBO-VERTEX-LIST, %u vertices %d primitives, %d vertsize\n",
+	  node->count,
+	  node->prim_count,
+	  node->vertex_size);
 
    for (i = 0 ; i < node->prim_count ; i++) {
       struct _mesa_prim *prim = &node->prim[i];
@@ -1261,3 +1266,5 @@ void vbo_save_api_init( struct vbo_save_context *save )
    _mesa_install_save_vtxfmt( ctx, &ctx->ListState.ListVtxfmt );
 }
 
+
+#endif /* FEATURE_dlist */

@@ -32,7 +32,7 @@
 #define GET_H
 
 
-#include "mtypes.h"
+#include "glheader.h"
 
 
 extern void GLAPIENTRY
@@ -51,10 +51,25 @@ extern void GLAPIENTRY
 _mesa_GetInteger64v( GLenum pname, GLint64 *params );
 
 extern void GLAPIENTRY
+_mesa_GetFixedv(GLenum pname, GLfixed *params);
+
+extern void GLAPIENTRY
+_mesa_GetBooleanIndexedv( GLenum pname, GLuint index, GLboolean *params );
+
+extern void GLAPIENTRY
+_mesa_GetIntegerIndexedv( GLenum pname, GLuint index, GLint *params );
+
+extern void GLAPIENTRY
+_mesa_GetInteger64Indexedv( GLenum pname, GLuint index, GLint64 *params );
+
+extern void GLAPIENTRY
 _mesa_GetPointerv( GLenum pname, GLvoid **params );
 
 extern const GLubyte * GLAPIENTRY
 _mesa_GetString( GLenum name );
+
+extern const GLubyte * GLAPIENTRY
+_mesa_GetStringi(GLenum name, GLuint index);
 
 extern GLenum GLAPIENTRY
 _mesa_GetError( void );

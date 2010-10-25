@@ -33,162 +33,130 @@
 
 #include "pipe/p_defines.h"
 #include "pipe/p_context.h"
-#include "pipe/internal/p_winsys_screen.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 #include "util/u_prim.h"
 
 #include "sp_context.h"
+#include "sp_query.h"
 #include "sp_state.h"
+#include "sp_texture.h"
 
 #include "draw/draw_context.h"
 
 
 
-static void
-softpipe_map_constant_buffers(struct softpipe_context *sp)
-{
-   struct pipe_winsys *ws = sp->pipe.winsys;
-   uint i, size;
-
-   for (i = 0; i < PIPE_SHADER_TYPES; i++) {
-      if (sp->constants[i].buffer && sp->constants[i].buffer->size)
-         sp->mapped_constants[i] = ws->buffer_map(ws, sp->constants[i].buffer,
-                                                  PIPE_BUFFER_USAGE_CPU_READ);
-   }
-
-   if (sp->constants[PIPE_SHADER_VERTEX].buffer)
-      size = sp->constants[PIPE_SHADER_VERTEX].buffer->size;
-   else
-      size = 0;
-
-   draw_set_mapped_constant_buffer(sp->draw,
-                                   sp->mapped_constants[PIPE_SHADER_VERTEX],
-                                   size);
-}
 
 
-static void
-softpipe_unmap_constant_buffers(struct softpipe_context *sp)
-{
-   struct pipe_winsys *ws = sp->pipe.winsys;
-   uint i;
-
-   /* really need to flush all prims since the vert/frag shaders const buffers
-    * are going away now.
-    */
-   draw_flush(sp->draw);
-
-   draw_set_mapped_constant_buffer(sp->draw, NULL, 0);
-
-   for (i = 0; i < 2; i++) {
-      if (sp->constants[i].buffer && sp->constants[i].buffer->size)
-         ws->buffer_unmap(ws, sp->constants[i].buffer);
-      sp->mapped_constants[i] = NULL;
-   }
-}
-
-
-boolean
-softpipe_draw_arrays(struct pipe_context *pipe, unsigned mode,
-                     unsigned start, unsigned count)
-{
-   return softpipe_draw_elements(pipe, NULL, 0, mode, start, count);
-}
-
-
-/**
- * Draw vertex arrays, with optional indexing.
- * Basically, map the vertex buffers (and drawing surfaces), then hand off
- * the drawing to the 'draw' module.
- */
-boolean
-softpipe_draw_range_elements(struct pipe_context *pipe,
-                             struct pipe_buffer *indexBuffer,
-                             unsigned indexSize,
-                             unsigned min_index,
-                             unsigned max_index,
-                             unsigned mode, unsigned start, unsigned count)
+void
+softpipe_draw_stream_output(struct pipe_context *pipe, unsigned mode)
 {
    struct softpipe_context *sp = softpipe_context(pipe);
    struct draw_context *draw = sp->draw;
-   unsigned i;
+   const unsigned start = 0;
+   const unsigned count = sp->so_target.so_count[0];
+   void *buf = sp->so_target.buffer[0]->data;
+   int offset = sp->so_target.offset[0];
+
+   if (!softpipe_check_render_cond(sp) ||
+       sp->so_target.num_buffers != 1)
+      return;
 
    sp->reduced_api_prim = u_reduced_prim(mode);
 
-   if (sp->dirty)
-      softpipe_update_derived( sp );
+   if (sp->dirty) {
+      softpipe_update_derived(sp);
+   }
 
    softpipe_map_transfers(sp);
-   softpipe_map_constant_buffers(sp);
 
-   /*
-    * Map vertex buffers
-    */
-   for (i = 0; i < sp->num_vertex_buffers; i++) {
-      void *buf
-         = pipe_buffer_map(pipe->screen,
-                                    sp->vertex_buffer[i].buffer,
-                                    PIPE_BUFFER_USAGE_CPU_READ);
-      draw_set_mapped_vertex_buffer(draw, i, buf);
-   }
+   /* Map so buffers */
+   if (offset < 0) /* we were appending so start from beginning */
+      offset = 0;
+   buf = (void*)((int32_t*)buf + offset);
+   draw_set_mapped_vertex_buffer(draw, 0, buf);
 
-   /* Map index buffer, if present */
-   if (indexBuffer) {
-      void *mapped_indexes
-         = pipe_buffer_map(pipe->screen, indexBuffer,
-                                    PIPE_BUFFER_USAGE_CPU_READ);
-      draw_set_mapped_element_buffer_range(draw, indexSize,
-                                           min_index,
-                                           max_index,
-                                           mapped_indexes);
-   }
-   else {
-      /* no index/element buffer */
-      draw_set_mapped_element_buffer_range(draw, 0, start,
-                                           start + count - 1, NULL);
-   }
+   draw_set_mapped_index_buffer(draw, NULL);
 
    /* draw! */
    draw_arrays(draw, mode, start, count);
 
-   /*
-    * unmap vertex/index buffers - will cause draw module to flush
-    */
-   for (i = 0; i < sp->num_vertex_buffers; i++) {
-      draw_set_mapped_vertex_buffer(draw, i, NULL);
-      pipe_buffer_unmap(pipe->screen, sp->vertex_buffer[i].buffer);
-   }
-   if (indexBuffer) {
-      draw_set_mapped_element_buffer(draw, 0, NULL);
-      pipe_buffer_unmap(pipe->screen, indexBuffer);
-   }
+   /* unmap vertex/index buffers - will cause draw module to flush */
+   draw_set_mapped_vertex_buffer(draw, 0, NULL);
 
+   /*
+    * TODO: Flush only when a user vertex/index buffer is present
+    * (or even better, modify draw module to do this
+    * internally when this condition is seen?)
+    */
+   draw_flush(draw);
 
    /* Note: leave drawing surfaces mapped */
-   softpipe_unmap_constant_buffers(sp);
-
    sp->dirty_render_cache = TRUE;
-   
-   return TRUE;
 }
 
 
-boolean
-softpipe_draw_elements(struct pipe_context *pipe,
-                       struct pipe_buffer *indexBuffer,
-                       unsigned indexSize,
-                       unsigned mode, unsigned start, unsigned count)
-{
-   return softpipe_draw_range_elements( pipe, indexBuffer,
-                                        indexSize,
-                                        0, 0xffffffff,
-                                        mode, start, count );
-}
-
-
+/**
+ * This function handles drawing indexed and non-indexed prims,
+ * instanced and non-instanced drawing, with or without min/max element
+ * indexes.
+ * All the other drawing functions are expressed in terms of this
+ * function.
+ *
+ * For non-indexed prims, indexBuffer should be NULL.
+ * For non-instanced drawing, instanceCount should be 1.
+ * When the min/max element indexes aren't known, minIndex should be 0
+ * and maxIndex should be ~0.
+ */
 void
-softpipe_set_edgeflags(struct pipe_context *pipe, const unsigned *edgeflags)
+softpipe_draw_vbo(struct pipe_context *pipe,
+                  const struct pipe_draw_info *info)
 {
    struct softpipe_context *sp = softpipe_context(pipe);
-   draw_set_edgeflags(sp->draw, edgeflags);
+   struct draw_context *draw = sp->draw;
+   void *mapped_indices = NULL;
+   unsigned i;
+
+   if (!softpipe_check_render_cond(sp))
+      return;
+
+   sp->reduced_api_prim = u_reduced_prim(info->mode);
+
+   if (sp->dirty) {
+      softpipe_update_derived(sp);
+   }
+
+   softpipe_map_transfers(sp);
+
+   /* Map vertex buffers */
+   for (i = 0; i < sp->num_vertex_buffers; i++) {
+      void *buf = softpipe_resource(sp->vertex_buffer[i].buffer)->data;
+      draw_set_mapped_vertex_buffer(draw, i, buf);
+   }
+
+   /* Map index buffer, if present */
+   if (info->indexed && sp->index_buffer.buffer)
+      mapped_indices = softpipe_resource(sp->index_buffer.buffer)->data;
+
+   draw_set_mapped_index_buffer(draw, mapped_indices);
+
+   /* draw! */
+   draw_vbo(draw, info);
+
+   /* unmap vertex/index buffers - will cause draw module to flush */
+   for (i = 0; i < sp->num_vertex_buffers; i++) {
+      draw_set_mapped_vertex_buffer(draw, i, NULL);
+   }
+   if (mapped_indices) {
+      draw_set_mapped_index_buffer(draw, NULL);
+   }
+
+   /*
+    * TODO: Flush only when a user vertex/index buffer is present
+    * (or even better, modify draw module to do this
+    * internally when this condition is seen?)
+    */
+   draw_flush(draw);
+
+   /* Note: leave drawing surfaces mapped */
+   sp->dirty_render_cache = TRUE;
 }

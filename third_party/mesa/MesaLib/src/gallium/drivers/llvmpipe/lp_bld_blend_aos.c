@@ -44,14 +44,16 @@
 
 
 #include "pipe/p_state.h"
+#include "util/u_debug.h"
 
-#include "lp_bld_type.h"
-#include "lp_bld_const.h"
-#include "lp_bld_arit.h"
-#include "lp_bld_logic.h"
-#include "lp_bld_swizzle.h"
+#include "gallivm/lp_bld_type.h"
+#include "gallivm/lp_bld_const.h"
+#include "gallivm/lp_bld_arit.h"
+#include "gallivm/lp_bld_logic.h"
+#include "gallivm/lp_bld_swizzle.h"
+#include "gallivm/lp_bld_debug.h"
+
 #include "lp_bld_blend.h"
-#include "lp_bld_debug.h"
 
 
 /**
@@ -142,7 +144,7 @@ lp_build_blend_factor_unswizzled(struct lp_build_blend_aos_context *bld,
 
 enum lp_build_blend_swizzle {
    LP_BUILD_BLEND_SWIZZLE_RGBA = 0,
-   LP_BUILD_BLEND_SWIZZLE_AAAA = 1,
+   LP_BUILD_BLEND_SWIZZLE_AAAA = 1
 };
 
 
@@ -188,30 +190,26 @@ lp_build_blend_swizzle(struct lp_build_blend_aos_context *bld,
                        enum lp_build_blend_swizzle rgb_swizzle,
                        unsigned alpha_swizzle)
 {
-   if(rgb == alpha) {
-      if(rgb_swizzle == LP_BUILD_BLEND_SWIZZLE_RGBA)
-         return rgb;
-      if(rgb_swizzle == LP_BUILD_BLEND_SWIZZLE_AAAA)
-         return lp_build_broadcast_aos(&bld->base, rgb, alpha_swizzle);
+   LLVMValueRef swizzled_rgb;
+
+   switch (rgb_swizzle) {
+   case LP_BUILD_BLEND_SWIZZLE_RGBA:
+      swizzled_rgb = rgb;
+      break;
+   case LP_BUILD_BLEND_SWIZZLE_AAAA:
+      swizzled_rgb = lp_build_swizzle_scalar_aos(&bld->base, rgb, alpha_swizzle);
+      break;
+   default:
+      assert(0);
+      swizzled_rgb = bld->base.undef;
    }
-   else {
-      if(rgb_swizzle == LP_BUILD_BLEND_SWIZZLE_RGBA) {
-         boolean cond[4] = {0, 0, 0, 0};
-         cond[alpha_swizzle] = 1;
-         return lp_build_select_aos(&bld->base, alpha, rgb, cond);
-      }
-      if(rgb_swizzle == LP_BUILD_BLEND_SWIZZLE_AAAA) {
-         unsigned char swizzle[4];
-         swizzle[0] = alpha_swizzle;
-         swizzle[1] = alpha_swizzle;
-         swizzle[2] = alpha_swizzle;
-         swizzle[3] = alpha_swizzle;
-         swizzle[alpha_swizzle] += 4;
-         return lp_build_swizzle2_aos(&bld->base, rgb, alpha, swizzle);
-      }
+
+   if (rgb != alpha) {
+      swizzled_rgb = lp_build_select_aos(&bld->base, 1 << alpha_swizzle,
+                                         alpha, swizzled_rgb);
    }
-   assert(0);
-   return bld->base.undef;
+
+   return swizzled_rgb;
 }
 
 
@@ -241,6 +239,9 @@ lp_build_blend_factor(struct lp_build_blend_aos_context *bld,
 }
 
 
+/**
+ * Is (a OP b) == (b OP a)?
+ */
 boolean
 lp_build_blend_func_commutative(unsigned func)
 {
@@ -284,7 +285,6 @@ lp_build_blend_func(struct lp_build_context *bld,
    switch (func) {
    case PIPE_BLEND_ADD:
       return lp_build_add(bld, term1, term2);
-      break;
    case PIPE_BLEND_SUBTRACT:
       return lp_build_sub(bld, term1, term2);
    case PIPE_BLEND_REVERSE_SUBTRACT:
@@ -304,6 +304,7 @@ LLVMValueRef
 lp_build_blend_aos(LLVMBuilderRef builder,
                    const struct pipe_blend_state *blend,
                    struct lp_type type,
+                   unsigned rt,
                    LLVMValueRef src,
                    LLVMValueRef dst,
                    LLVMValueRef const_,
@@ -313,10 +314,10 @@ lp_build_blend_aos(LLVMBuilderRef builder,
    LLVMValueRef src_term;
    LLVMValueRef dst_term;
 
-   /* FIXME */
-   assert(blend->colormask == 0xf);
+   /* FIXME: color masking not implemented yet */
+   assert(blend->rt[rt].colormask == 0xf);
 
-   if(!blend->blend_enable)
+   if(!blend->rt[rt].blend_enable)
       return src;
 
    /* It makes no sense to blend unless values are normalized */
@@ -333,14 +334,16 @@ lp_build_blend_aos(LLVMBuilderRef builder,
     * combinations it is possible to reorder the operations and therefore saving
     * some instructions. */
 
-   src_term = lp_build_blend_factor(&bld, src, blend->rgb_src_factor, blend->alpha_src_factor, alpha_swizzle);
-   dst_term = lp_build_blend_factor(&bld, dst, blend->rgb_dst_factor, blend->alpha_dst_factor, alpha_swizzle);
+   src_term = lp_build_blend_factor(&bld, src, blend->rt[rt].rgb_src_factor,
+                                    blend->rt[rt].alpha_src_factor, alpha_swizzle);
+   dst_term = lp_build_blend_factor(&bld, dst, blend->rt[rt].rgb_dst_factor,
+                                    blend->rt[rt].alpha_dst_factor, alpha_swizzle);
 
    lp_build_name(src_term, "src_term");
    lp_build_name(dst_term, "dst_term");
 
-   if(blend->rgb_func == blend->alpha_func) {
-      return lp_build_blend_func(&bld.base, blend->rgb_func, src_term, dst_term);
+   if(blend->rt[rt].rgb_func == blend->rt[rt].alpha_func) {
+      return lp_build_blend_func(&bld.base, blend->rt[rt].rgb_func, src_term, dst_term);
    }
    else {
       /* Seperate RGB / A functions */
@@ -348,8 +351,8 @@ lp_build_blend_aos(LLVMBuilderRef builder,
       LLVMValueRef rgb;
       LLVMValueRef alpha;
 
-      rgb   = lp_build_blend_func(&bld.base, blend->rgb_func,   src_term, dst_term);
-      alpha = lp_build_blend_func(&bld.base, blend->alpha_func, src_term, dst_term);
+      rgb   = lp_build_blend_func(&bld.base, blend->rt[rt].rgb_func,   src_term, dst_term);
+      alpha = lp_build_blend_func(&bld.base, blend->rt[rt].alpha_func, src_term, dst_term);
 
       return lp_build_blend_swizzle(&bld, rgb, alpha, LP_BUILD_BLEND_SWIZZLE_RGBA, alpha_swizzle);
    }

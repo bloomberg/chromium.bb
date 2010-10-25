@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2009 VMware, Inc.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,11 +10,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -22,29 +22,47 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  **************************************************************************/
 
 #include "main/glheader.h"
 #include "st_context.h"
-#include "st_public.h"
 #include "st_cb_viewport.h"
 
-#include "pipe/p_context.h"
-#include "pipe/p_inlines.h"
 #include "pipe/p_state.h"
 #include "pipe/p_defines.h"
-#include "pipe/internal/p_winsys_screen.h"
+#include "util/u_atomic.h"
 
+/**
+ * Cast wrapper to convert a GLframebuffer to an st_framebuffer.
+ * Return NULL if the GLframebuffer is a user-created framebuffer.
+ * We'll only return non-null for window system framebuffers.
+ * Note that this function may fail.
+ */
+static INLINE struct st_framebuffer *
+st_ws_framebuffer(GLframebuffer *fb)
+{
+   /* FBO cannot be casted.  See st_new_framebuffer */
+   return (struct st_framebuffer *) ((fb && !fb->Name) ? fb : NULL);
+}
 
 static void st_viewport(GLcontext * ctx, GLint x, GLint y,
                         GLsizei width, GLsizei height)
 {
    struct st_context *st = ctx->st;
+   struct st_framebuffer *stdraw;
+   struct st_framebuffer *stread;
 
-   if (st->pipe->winsys && st->pipe->winsys->update_buffer)
-      st->pipe->winsys->update_buffer( st->pipe->winsys,
-                                       st->pipe->priv );
+   if (!st->invalidate_on_gl_viewport)
+      return;
+
+   stdraw = st_ws_framebuffer(st->ctx->DrawBuffer);
+   stread = st_ws_framebuffer(st->ctx->ReadBuffer);
+
+   if (stdraw)
+      p_atomic_set(&stdraw->revalidate, TRUE);
+   if (stread && stread != stdraw)
+      p_atomic_set(&stread->revalidate, TRUE);
 }
 
 void st_init_viewport_functions(struct dd_function_table *functions)

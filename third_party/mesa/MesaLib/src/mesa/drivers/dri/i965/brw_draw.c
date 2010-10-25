@@ -39,10 +39,8 @@
 #include "brw_defines.h"
 #include "brw_context.h"
 #include "brw_state.h"
-#include "brw_fallback.h"
 
 #include "intel_batchbuffer.h"
-#include "intel_buffer_objects.h"
 
 #define FILE_DEBUG_FLAG DEBUG_BATCH
 
@@ -79,32 +77,41 @@ static const GLenum reduced_prim[GL_POLYGON+1] = {
  * programs be immune to the active primitive (ie. cope with all
  * possibilities).  That may not be realistic however.
  */
-static GLuint brw_set_prim(struct brw_context *brw, GLenum prim)
+static GLuint brw_set_prim(struct brw_context *brw,
+			   const struct _mesa_prim *prim)
 {
    GLcontext *ctx = &brw->intel.ctx;
+   GLenum mode = prim->mode;
 
    if (INTEL_DEBUG & DEBUG_PRIMS)
-      _mesa_printf("PRIM: %s\n", _mesa_lookup_enum_by_nr(prim));
-   
+      printf("PRIM: %s\n", _mesa_lookup_enum_by_nr(prim->mode));
+
    /* Slight optimization to avoid the GS program when not needed:
     */
-   if (prim == GL_QUAD_STRIP &&
+   if (mode == GL_QUAD_STRIP &&
        ctx->Light.ShadeModel != GL_FLAT &&
        ctx->Polygon.FrontMode == GL_FILL &&
        ctx->Polygon.BackMode == GL_FILL)
-      prim = GL_TRIANGLE_STRIP;
+      mode = GL_TRIANGLE_STRIP;
 
-   if (prim != brw->primitive) {
-      brw->primitive = prim;
+   if (prim->mode == GL_QUADS && prim->count == 4 &&
+       ctx->Light.ShadeModel != GL_FLAT &&
+       ctx->Polygon.FrontMode == GL_FILL &&
+       ctx->Polygon.BackMode == GL_FILL) {
+      mode = GL_TRIANGLE_FAN;
+   }
+
+   if (mode != brw->primitive) {
+      brw->primitive = mode;
       brw->state.dirty.brw |= BRW_NEW_PRIMITIVE;
 
-      if (reduced_prim[prim] != brw->intel.reduced_primitive) {
-	 brw->intel.reduced_primitive = reduced_prim[prim];
+      if (reduced_prim[mode] != brw->intel.reduced_primitive) {
+	 brw->intel.reduced_primitive = reduced_prim[mode];
 	 brw->state.dirty.brw |= BRW_NEW_REDUCED_PRIMITIVE;
       }
    }
 
-   return prim_to_hw_prim[prim];
+   return prim_to_hw_prim[mode];
 }
 
 
@@ -127,7 +134,7 @@ static void brw_emit_prim(struct brw_context *brw,
    struct intel_context *intel = &brw->intel;
 
    if (INTEL_DEBUG & DEBUG_PRIMS)
-      _mesa_printf("PRIM: %s %d %d\n", _mesa_lookup_enum_by_nr(prim->mode), 
+      printf("PRIM: %s %d %d\n", _mesa_lookup_enum_by_nr(prim->mode), 
 		   prim->start, prim->count);
 
    prim_packet.header.opcode = CMD_3D_PRIM;
@@ -144,9 +151,6 @@ static void brw_emit_prim(struct brw_context *brw,
    prim_packet.start_instance_location = 0;
    prim_packet.base_vert_location = prim->basevertex;
 
-   /* Can't wrap here, since we rely on the validated state. */
-   brw->no_batch_wrap = GL_TRUE;
-
    /* If we're set to always flush, do it before and after the primitive emit.
     * We want to catch both missed flushes that hurt instruction/state cache
     * and missed flushes of the render cache as it heads to other parts of
@@ -157,13 +161,11 @@ static void brw_emit_prim(struct brw_context *brw,
    }
    if (prim_packet.verts_per_instance) {
       intel_batchbuffer_data( brw->intel.batch, &prim_packet,
-			      sizeof(prim_packet), LOOP_CLIPRECTS);
+			      sizeof(prim_packet));
    }
    if (intel->always_flush_cache) {
       intel_batchbuffer_emit_mi_flush(intel->batch);
    }
-
-   brw->no_batch_wrap = GL_FALSE;
 }
 
 static void brw_merge_inputs( struct brw_context *brw,
@@ -173,7 +175,7 @@ static void brw_merge_inputs( struct brw_context *brw,
    GLuint i;
 
    for (i = 0; i < VERT_ATTRIB_MAX; i++)
-      dri_bo_unreference(brw->vb.inputs[i].bo);
+      drm_intel_bo_unreference(brw->vb.inputs[i].bo);
 
    memset(&brw->vb.inputs, 0, sizeof(brw->vb.inputs));
    memset(&brw->vb.info, 0, sizeof(brw->vb.info));
@@ -201,6 +203,13 @@ static GLboolean check_fallbacks( struct brw_context *brw,
 {
    GLcontext *ctx = &brw->intel.ctx;
    GLuint i;
+
+   /* XXX FIXME */
+   if (brw->intel.gen >= 6) {
+       for (i = 0; i < nr_prims; i++)
+	   if (prim[i].mode == GL_LINE_LOOP)
+	       return GL_TRUE;
+   }
 
    /* If we don't require strict OpenGL conformance, never 
     * use fallbacks.  If we're forcing fallbacks, always
@@ -339,12 +348,7 @@ static GLboolean brw_try_draw_prims( GLcontext *ctx,
     * so can't access it earlier.
     */
 
-   LOCK_HARDWARE(intel);
-
-   if (!intel->constant_cliprect && intel->driDrawable->numClipRects == 0) {
-      UNLOCK_HARDWARE(intel);
-      return GL_TRUE;
-   }
+   intel_prepare_render(intel);
 
    for (i = 0; i < nr_prims; i++) {
       uint32_t hw_prim;
@@ -356,10 +360,9 @@ static GLboolean brw_try_draw_prims( GLcontext *ctx,
        * an upper bound of how much we might emit in a single
        * brw_try_draw_prims().
        */
-      intel_batchbuffer_require_space(intel->batch, intel->batch->size / 4,
-				      LOOP_CLIPRECTS);
+      intel_batchbuffer_require_space(intel->batch, intel->batch->size / 4);
 
-      hw_prim = brw_set_prim(brw, prim[i].mode);
+      hw_prim = brw_set_prim(brw, &prim[i]);
 
       if (first_time || (brw->state.dirty.brw & BRW_NEW_PRIMITIVE)) {
 	 first_time = GL_FALSE;
@@ -393,10 +396,13 @@ static GLboolean brw_try_draw_prims( GLcontext *ctx,
 	    }
 	 }
 
+	 intel->no_batch_wrap = GL_TRUE;
 	 brw_upload_state(brw);
       }
 
       brw_emit_prim(brw, &prim[i], hw_prim);
+
+      intel->no_batch_wrap = GL_FALSE;
 
       retval = GL_TRUE;
    }
@@ -404,7 +410,6 @@ static GLboolean brw_try_draw_prims( GLcontext *ctx,
    if (intel->always_flush_batch)
       intel_batchbuffer_flush(intel->batch);
  out:
-   UNLOCK_HARDWARE(intel);
 
    brw_state_cache_check_size(brw);
 
@@ -475,15 +480,15 @@ void brw_draw_destroy( struct brw_context *brw )
    int i;
 
    if (brw->vb.upload.bo != NULL) {
-      dri_bo_unreference(brw->vb.upload.bo);
+      drm_intel_bo_unreference(brw->vb.upload.bo);
       brw->vb.upload.bo = NULL;
    }
 
    for (i = 0; i < VERT_ATTRIB_MAX; i++) {
-      dri_bo_unreference(brw->vb.inputs[i].bo);
+      drm_intel_bo_unreference(brw->vb.inputs[i].bo);
       brw->vb.inputs[i].bo = NULL;
    }
 
-   dri_bo_unreference(brw->ib.bo);
+   drm_intel_bo_unreference(brw->ib.bo);
    brw->ib.bo = NULL;
 }

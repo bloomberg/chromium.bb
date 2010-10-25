@@ -1,12 +1,12 @@
 # linux-cell  (non-debug build)
 
-include $(TOP)/configs/default
+include $(TOP)/configs/linux
 
 CONFIG_NAME = linux-cell
 
 
 # Omiting other gallium drivers:
-GALLIUM_DRIVERS_DIRS = cell softpipe trace
+GALLIUM_DRIVERS_DIRS = cell softpipe trace rbug identity
 
 
 # Compiler and flags
@@ -25,15 +25,20 @@ OPT_FLAGS = -O3
 SDK = /opt/cell/sdk/usr
 
 
-CFLAGS = $(OPT_FLAGS) -Wall -Winline -Wmissing-prototypes \
-	-fPIC -m32 -std=c99 -mabi=altivec -maltivec \
-	-I. -I$(SDK)/include \
-	-DGALLIUM_CELL -DUSE_XSHM -D_BSD_SOURCE -D_SVID_SOURCE
 
-CXXFLAGS = $(CFLAGS)
+COMMON_C_CPP_FLAGS = $(OPT_FLAGS) -Wall -Winline \
+	-fPIC -m32 -mabi=altivec -maltivec \
+	-I. -I$(SDK)/include \
+	-DGALLIUM_CELL $(DEFINES)
+
+CFLAGS = $(COMMON_C_CPP_FLAGS) -Wmissing-prototypes -std=c99
+
+CXXFLAGS = $(COMMON_C_CPP_FLAGS)
+
 
 # Omitting glw here:
-SRC_DIRS = gallium mesa gallium/winsys glu glut/glx glew
+SRC_DIRS = glsl mapi/glapi mapi/vgapi mesa \
+	gallium gallium/winsys gallium/targets glu glut/glx
 
 # Build no traditional Mesa drivers:
 DRIVER_DIRS =

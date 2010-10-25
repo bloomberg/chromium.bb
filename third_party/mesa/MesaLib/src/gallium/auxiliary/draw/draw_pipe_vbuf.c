@@ -137,8 +137,8 @@ emit_vertex( struct vbuf_stage *vbuf,
        */
       /* Note: we really do want data[0] here, not data[pos]: 
        */
-      vbuf->translate->set_buffer(vbuf->translate, 0, vertex->data[0], 0);
-      vbuf->translate->run(vbuf->translate, 0, 1, vbuf->vertex_ptr);
+      vbuf->translate->set_buffer(vbuf->translate, 0, vertex->data[0], 0, ~0);
+      vbuf->translate->run(vbuf->translate, 0, 1, 0, vbuf->vertex_ptr);
 
       if (0) draw_dump_emitted_vertex(vbuf->vinfo, (uint8_t *)vbuf->vertex_ptr);
       
@@ -159,19 +159,8 @@ vbuf_tri( struct draw_stage *stage,
 
    check_space( vbuf, 3 );
 
-   if (vbuf->stage.draw->rasterizer->flatshade_first) {
-      /* Put provoking vertex in position expected by the driver.
-       * Emit last provoking vertex in first pos.
-       * Swap verts 0 & 1 to preserve polygon winding.
-       */
-      vbuf->indices[vbuf->nr_indices++] = emit_vertex( vbuf, prim->v[2] );
-      vbuf->indices[vbuf->nr_indices++] = emit_vertex( vbuf, prim->v[0] );
-      vbuf->indices[vbuf->nr_indices++] = emit_vertex( vbuf, prim->v[1] );
-   }
-   else {
-      for (i = 0; i < 3; i++) {
-         vbuf->indices[vbuf->nr_indices++] = emit_vertex( vbuf, prim->v[i] );
-      }
+   for (i = 0; i < 3; i++) {
+      vbuf->indices[vbuf->nr_indices++] = emit_vertex( vbuf, prim->v[i] );
    }
 }
 
@@ -235,46 +224,25 @@ vbuf_start_prim( struct vbuf_stage *vbuf, uint prim )
    for (i = 0; i < vbuf->vinfo->num_attribs; i++) {
       unsigned emit_sz = 0;
       unsigned src_buffer = 0;
-      unsigned output_format;
+      enum pipe_format output_format;
       unsigned src_offset = (vbuf->vinfo->attrib[i].src_index * 4 * sizeof(float) );
 
-      switch (vbuf->vinfo->attrib[i].emit) {
-      case EMIT_4F:
-	 output_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
-	 emit_sz = 4 * sizeof(float);
-	 break;
-      case EMIT_3F:
-	 output_format = PIPE_FORMAT_R32G32B32_FLOAT;
-	 emit_sz = 3 * sizeof(float);
-	 break;
-      case EMIT_2F:
-	 output_format = PIPE_FORMAT_R32G32_FLOAT;
-	 emit_sz = 2 * sizeof(float);
-	 break;
-      case EMIT_1F:
-	 output_format = PIPE_FORMAT_R32_FLOAT;
-	 emit_sz = 1 * sizeof(float);
-	 break;
-      case EMIT_1F_PSIZE:
-	 output_format = PIPE_FORMAT_R32_FLOAT;
-	 emit_sz = 1 * sizeof(float);
+      output_format = draw_translate_vinfo_format(vbuf->vinfo->attrib[i].emit);
+      emit_sz = draw_translate_vinfo_size(vbuf->vinfo->attrib[i].emit);
+
+      /* doesn't handle EMIT_OMIT */
+      assert(emit_sz != 0);
+
+      if (vbuf->vinfo->attrib[i].emit == EMIT_1F_PSIZE) {
 	 src_buffer = 1;
 	 src_offset = 0;
-	 break;
-      case EMIT_4UB:
-	 output_format = PIPE_FORMAT_B8G8R8A8_UNORM;
-	 emit_sz = 4 * sizeof(ubyte);
-         break;
-      default:
-	 assert(0);
-	 output_format = PIPE_FORMAT_NONE;
-	 emit_sz = 0;
-	 break;
       }
-      
+
+      hw_key.element[i].type = TRANSLATE_ELEMENT_NORMAL;
       hw_key.element[i].input_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
       hw_key.element[i].input_buffer = src_buffer;
       hw_key.element[i].input_offset = src_offset;
+      hw_key.element[i].instance_divisor = 0;
       hw_key.element[i].output_format = output_format;
       hw_key.element[i].output_offset = dst_offset;
 
@@ -292,7 +260,7 @@ vbuf_start_prim( struct vbuf_stage *vbuf, uint prim )
       translate_key_sanitize(&hw_key);
       vbuf->translate = translate_cache_find(vbuf->cache, &hw_key);
 
-      vbuf->translate->set_buffer(vbuf->translate, 1, &vbuf->point_size, 0);
+      vbuf->translate->set_buffer(vbuf->translate, 1, &vbuf->point_size, 0, ~0);
    }
 
    vbuf->point_size = vbuf->stage.draw->rasterizer->point_size;
@@ -356,9 +324,9 @@ vbuf_flush_vertices( struct vbuf_stage *vbuf )
 
       if (vbuf->nr_indices) 
       {
-         vbuf->render->draw(vbuf->render, 
-                            vbuf->indices, 
-                            vbuf->nr_indices );
+         vbuf->render->draw_elements(vbuf->render, 
+                                     vbuf->indices, 
+                                     vbuf->nr_indices );
    
          vbuf->nr_indices = 0;
       }
@@ -384,9 +352,6 @@ vbuf_alloc_vertices( struct vbuf_stage *vbuf )
    
    /* Allocate a new vertex buffer */
    vbuf->max_vertices = vbuf->render->max_vertex_buffer_bytes / vbuf->vertex_size;
-
-   /* even number */
-   vbuf->max_vertices = vbuf->max_vertices & ~1;
 
    if(vbuf->max_vertices >= UNDEFINED_VERTEX_ID)
       vbuf->max_vertices = UNDEFINED_VERTEX_ID - 1;

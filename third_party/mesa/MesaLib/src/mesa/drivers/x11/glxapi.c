@@ -50,6 +50,37 @@ struct display_dispatch {
    struct display_dispatch *Next;
 };
 
+
+/**
+ * When GLX_INDIRECT_RENDERING is defined, some symbols are missing in
+ * libglapi.a.  We need to define them here.
+ */
+#ifdef GLX_INDIRECT_RENDERING
+
+#include "glapi/glapitable.h"
+#include "glapi/glapidispatch.h"
+
+#define KEYWORD1 PUBLIC
+
+#if defined(USE_MGL_NAMESPACE)
+#define NAME(func)  mgl##func
+#else
+#define NAME(func)  gl##func
+#endif
+
+#define DISPATCH(FUNC, ARGS, MESSAGE)		\
+   CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+
+#define RETURN_DISPATCH(FUNC, ARGS, MESSAGE) 	\
+   return CALL_ ## FUNC(GET_DISPATCH(), ARGS);
+
+/* skip normal ones */
+#define _GLAPI_SKIP_NORMAL_ENTRY_POINTS
+#include "glapi/glapitemp.h"
+
+#endif /* GLX_INDIRECT_RENDERING */
+
+
 static struct display_dispatch *DispatchList = NULL;
 
 
@@ -1080,34 +1111,9 @@ glXGetAGPOffsetMESA( const GLvoid *pointer )
 }
 
 
-/*** GLX_MESA_allocate_memory */
-
-void *
-glXAllocateMemoryMESA(Display *dpy, int scrn, size_t size,
-                      float readfreq, float writefreq, float priority)
-{
-   /* dummy */
-   return NULL;
-}
-
-void
-glXFreeMemoryMESA(Display *dpy, int scrn, void *pointer)
-{
-   /* dummy */
-}
-
-
-GLuint
-glXGetMemoryOffsetMESA(Display *dpy, int scrn, const void *pointer)
-{
-   /* dummy */
-   return 0;
-}
-
-
 /*** GLX_EXT_texture_from_pixmap */
 
-void
+void PUBLIC
 glXBindTexImageEXT(Display *dpy, GLXDrawable drawable, int buffer,
                    const int *attrib_list)
 {
@@ -1117,7 +1123,7 @@ glXBindTexImageEXT(Display *dpy, GLXDrawable drawable, int buffer,
       t->BindTexImageEXT(dpy, drawable, buffer, attrib_list);
 }
 
-void
+void PUBLIC
 glXReleaseTexImageEXT(Display *dpy, GLXDrawable drawable, int buffer)
 {
    struct _glxapi_table *t;
@@ -1172,6 +1178,9 @@ _glxapi_get_extensions(void)
 #endif
 #ifdef GLX_EXT_texture_from_pixmap
       "GLX_EXT_texture_from_pixmap",
+#endif
+#ifdef GLX_INTEL_swap_event
+      "GLX_INTEL_swap_event",
 #endif
       NULL
    };
@@ -1353,11 +1362,6 @@ static struct name_address_pair GLX_functions[] = {
    /*** GLX_MESA_agp_offset ***/
    { "glXGetAGPOffsetMESA", (__GLXextFuncPtr) glXGetAGPOffsetMESA },
 
-   /*** GLX_MESA_allocate_memory ***/
-   { "glXAllocateMemoryMESA", (__GLXextFuncPtr) glXAllocateMemoryMESA },
-   { "glXFreeMemoryMESA", (__GLXextFuncPtr) glXFreeMemoryMESA },
-   { "glXGetMemoryOffsetMESA", (__GLXextFuncPtr) glXGetMemoryOffsetMESA },
-
    /*** GLX_EXT_texture_from_pixmap ***/
    { "glXBindTexImageEXT", (__GLXextFuncPtr) glXBindTexImageEXT },
    { "glXReleaseTexImageEXT", (__GLXextFuncPtr) glXReleaseTexImageEXT },
@@ -1392,7 +1396,7 @@ _glxapi_get_proc_address(const char *funcName)
  * This function does not get dispatched through the dispatch table
  * since it's really a "meta" function.
  */
-__GLXextFuncPtr
+__GLXextFuncPtr PUBLIC
 glXGetProcAddressARB(const GLubyte *procName)
 {
    __GLXextFuncPtr f;
@@ -1408,7 +1412,8 @@ glXGetProcAddressARB(const GLubyte *procName)
 
 
 /* GLX 1.4 */
-void (*glXGetProcAddress(const GLubyte *procName))()
+void PUBLIC
+(*glXGetProcAddress(const GLubyte *procName))()
 {
    return glXGetProcAddressARB(procName);
 }

@@ -92,7 +92,14 @@ struct radeon_renderbuffer
 
 	GLuint pf_pending;  /**< sequence number of pending flip */
 	GLuint vbl_pending;   /**< vblank sequence number of pending flip */
-	__DRIdrawablePrivate *dPriv;
+	__DRIdrawable *dPriv;
+
+	/* r6xx+ tiling */
+	GLuint tile_config;
+	GLint group_bytes;
+	GLint num_channels;
+	GLint num_banks;
+	GLint r7xx_bank_op;
 };
 
 struct radeon_framebuffer
@@ -237,6 +244,8 @@ struct radeon_tex_obj {
 	GLuint SQ_TEX_RESOURCE5;
 	GLuint SQ_TEX_RESOURCE6;
 
+    GLuint SQ_TEX_RESOURCE7;
+
 	GLuint SQ_TEX_SAMPLER0;
 	GLuint SQ_TEX_SAMPLER1;
 	GLuint SQ_TEX_SAMPLER2;
@@ -328,6 +337,7 @@ struct radeon_swtcl_info {
 	GLuint vertex_attr_count;
 
 	GLuint emit_prediction;
+        struct radeon_bo *bo;
 };
 
 #define RADEON_MAX_AOS_ARRAYS		16
@@ -380,8 +390,8 @@ struct radeon_store {
 };
 
 struct radeon_dri_mirror {
-	__DRIcontextPrivate *context;	/* DRI context */
-	__DRIscreenPrivate *screen;	/* DRI screen */
+	__DRIcontext *context;	/* DRI context */
+	__DRIscreen *screen;	/* DRI screen */
 
 	drm_context_t hwContext;
 	drm_hw_lock_t *hwLock;
@@ -517,17 +527,39 @@ struct radeon_context {
 	   void (*free_context)(GLcontext *ctx);
 	   void (*emit_query_finish)(radeonContextPtr radeon);
 	   void (*update_scissor)(GLcontext *ctx);
+	   unsigned (*check_blit)(gl_format mesa_format);
+	   unsigned (*blit)(GLcontext *ctx,
+                        struct radeon_bo *src_bo,
+                        intptr_t src_offset,
+                        gl_format src_mesaformat,
+                        unsigned src_pitch,
+                        unsigned src_width,
+                        unsigned src_height,
+                        unsigned src_x_offset,
+                        unsigned src_y_offset,
+                        struct radeon_bo *dst_bo,
+                        intptr_t dst_offset,
+                        gl_format dst_mesaformat,
+                        unsigned dst_pitch,
+                        unsigned dst_width,
+                        unsigned dst_height,
+                        unsigned dst_x_offset,
+                        unsigned dst_y_offset,
+                        unsigned reg_width,
+                        unsigned reg_height,
+                        unsigned flip_y);
+	   unsigned (*is_format_renderable)(gl_format mesa_format);
    } vtbl;
 };
 
 #define RADEON_CONTEXT(glctx) ((radeonContextPtr)(ctx->DriverCtx))
 
-static inline __DRIdrawablePrivate* radeon_get_drawable(radeonContextPtr radeon)
+static inline __DRIdrawable* radeon_get_drawable(radeonContextPtr radeon)
 {
 	return radeon->dri.context->driDrawablePriv;
 }
 
-static inline __DRIdrawablePrivate* radeon_get_readable(radeonContextPtr radeon)
+static inline __DRIdrawable* radeon_get_readable(radeonContextPtr radeon)
 {
 	return radeon->dri.context->driReadablePriv;
 }
@@ -580,15 +612,17 @@ static INLINE uint32_t radeonPackFloat24(float f)
 GLboolean radeonInitContext(radeonContextPtr radeon,
 			    struct dd_function_table* functions,
 			    const __GLcontextModes * glVisual,
-			    __DRIcontextPrivate * driContextPriv,
+			    __DRIcontext * driContextPriv,
 			    void *sharedContextPrivate);
 
 void radeonCleanupContext(radeonContextPtr radeon);
-GLboolean radeonUnbindContext(__DRIcontextPrivate * driContextPriv);
-void radeon_update_renderbuffers(__DRIcontext *context, __DRIdrawable *drawable);
-GLboolean radeonMakeCurrent(__DRIcontextPrivate * driContextPriv,
-			    __DRIdrawablePrivate * driDrawPriv,
-			    __DRIdrawablePrivate * driReadPriv);
-extern void radeonDestroyContext(__DRIcontextPrivate * driContextPriv);
+GLboolean radeonUnbindContext(__DRIcontext * driContextPriv);
+void radeon_update_renderbuffers(__DRIcontext *context, __DRIdrawable *drawable,
+				 GLboolean front_only);
+GLboolean radeonMakeCurrent(__DRIcontext * driContextPriv,
+			    __DRIdrawable * driDrawPriv,
+			    __DRIdrawable * driReadPriv);
+extern void radeonDestroyContext(__DRIcontext * driContextPriv);
+void radeon_prepare_render(radeonContextPtr radeon);
 
 #endif

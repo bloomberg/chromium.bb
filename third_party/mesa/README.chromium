@@ -1,5 +1,5 @@
 Name: MesaLib
-Current version: 7.7
+Current version: 7.9
 URL: http://www.mesa3d.org/
 License File: MesaLib/docs/COPYING
 
@@ -16,16 +16,22 @@ The license is in MesaLib/docs/license.html.
 Modifications made with initial commit:
 - Added the file README.chromium (this file)
 
-Later modifications:
+Later modifications (see chromium.patch):
 - Added OSMesaGetProcAddress to MesaLib/src/mesa/drivers/osmesa/osmesa.def
 
-- Added #pragma optimize('', off) to MesaLib\src\mesa\swrast\s_textcombine.c
+- Added #pragma optimize('', off) to MesaLib\src\mesa\swrast\s_texcombine.c
 
 - Deleted MesaLib/include/EGL/ - it was conflicting with angle
+  - Also deleted MesaLib/include/GLES2/ and MesaLib/include/KHR/ for
+    similar reasons
+  - Deleted MesaLib/include/GLES/ and MesaLib/include/VG/ because they
+    were unneeded
 
 - Changed these typedefs in glext.h to be the same as khrplatform.h
     typedef signed long int GLintptr;
     typedef signed long int GLsizeiptr;
+    typedef signed long int GLintptrARB;
+    typedef signed long int GLsizeiptrARB;
 
 - Commented out this in gl.h:
 #if (defined(__BEOS__) && defined(__POWERPC__)) || defined(__QUICKDRAW__)
@@ -39,3 +45,23 @@ Later modifications:
 
 - Commented out this in gl.h:
 #    define GLAPI __declspec(dllimport)
+
+- Added src/glsl/safe_strcmp.[ch] to handle NULL pointers portably.
+  Changed several files in src/glsl/ to use this new entry point.
+
+- Added src/mesa/drivers/osmesa/empty.cpp to fix linkage of osmesa.so
+  on Mac OS X.
+
+- Changed glcpp-parse.[cy], glcpp.h, ir_function_inlining.cpp, and
+  ir_validate.cpp to avoid including inttypes.h on Windows.
+
+- Changed glapi_nop.c to generate custom OpenGL entry points rather
+  than simply installing NoOpGeneric, because with __stdcall calling
+  convention it is illegal to have a mismatch in the number of
+  arguments passed from caller to callee.
+
+- Guarded #define PUBLIC in compiler.h to avoid warnings about macro
+  redefinitions.
+
+- Changed querymatrix.c to understand availability of fpclassify on
+  Linux.

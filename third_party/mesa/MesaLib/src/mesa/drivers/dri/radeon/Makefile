@@ -8,14 +8,13 @@ CFLAGS += $(RADEON_CFLAGS)
 
 LIBNAME = radeon_dri.so
 
-MINIGLX_SOURCES = server/radeon_dri.c 
-
 ifeq ($(RADEON_LDFLAGS),)
 CS_SOURCES = radeon_cs_space_drm.c radeon_bo.c radeon_cs.c
 endif
 
 RADEON_COMMON_SOURCES = \
 	radeon_bo_legacy.c \
+	radeon_buffer_objects.c \
 	radeon_common_context.c \
 	radeon_common.c \
 	radeon_cs_legacy.c \
@@ -24,9 +23,13 @@ RADEON_COMMON_SOURCES = \
 	radeon_fbo.c \
 	radeon_lock.c \
 	radeon_mipmap_tree.c \
+	radeon_pixel_read.c \
 	radeon_queryobj.c \
 	radeon_span.c \
-	radeon_texture.c
+	radeon_texture.c \
+	radeon_tex_copy.c \
+	radeon_tex_getimage.c \
+	radeon_tile.c
 
 DRIVER_SOURCES = \
 	radeon_context.c \
@@ -40,6 +43,7 @@ DRIVER_SOURCES = \
 	radeon_swtcl.c \
 	radeon_maos.c \
 	radeon_sanity.c \
+	radeon_blit.c \
 	$(RADEON_COMMON_SOURCES)
 
 C_SOURCES = \
@@ -47,7 +51,7 @@ C_SOURCES = \
 	$(DRIVER_SOURCES) \
 	$(CS_SOURCES)
 
-DRIVER_DEFINES = -DRADEON_R100 -Wall
+DRIVER_DEFINES = -DRADEON_R100
 
 DRI_LIB_DEPS += $(RADEON_LDFLAGS)
 

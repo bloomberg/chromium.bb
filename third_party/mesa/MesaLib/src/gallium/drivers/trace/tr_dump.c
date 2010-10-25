@@ -40,24 +40,25 @@
 
 #include "pipe/p_config.h"
 
-#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_BSD) || defined(PIPE_OS_SOLARIS)
+#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_BSD) || defined(PIPE_OS_SOLARIS) || defined(PIPE_OS_APPLE)
 #include <stdlib.h>
 #endif
 
 #include "pipe/p_compiler.h"
-#include "pipe/p_thread.h"
+#include "os/os_thread.h"
+#include "os/os_stream.h"
 #include "util/u_debug.h"
 #include "util/u_memory.h"
 #include "util/u_string.h"
-#include "util/u_stream.h"
+#include "util/u_math.h"
+#include "util/u_format.h"
 
 #include "tr_dump.h"
 #include "tr_screen.h"
 #include "tr_texture.h"
-#include "tr_buffer.h"
 
 
-static struct util_stream *stream = NULL;
+static struct os_stream *stream = NULL;
 static unsigned refcount = 0;
 static pipe_mutex call_mutex;
 static long unsigned call_no = 0;
@@ -69,7 +70,7 @@ static INLINE void
 trace_dump_write(const char *buf, size_t size)
 {
    if(stream)
-      util_stream_write(stream, buf, size);
+      os_stream_write(stream, buf, size);
 }
 
 
@@ -220,7 +221,7 @@ trace_dump_trace_close(void)
 {
    if(stream) {
       trace_dump_writes("</trace>\n");
-      util_stream_close(stream);
+      os_stream_close(stream);
       stream = NULL;
       refcount = 0;
       call_no = 0;
@@ -250,7 +251,7 @@ boolean trace_dump_trace_begin()
 
    if(!stream) {
 
-      stream = util_stream_create(filename, 0);
+      stream = os_file_stream_create(filename);
       if(!stream)
          return FALSE;
 
@@ -258,7 +259,7 @@ boolean trace_dump_trace_begin()
       trace_dump_writes("<?xml-stylesheet type='text/xsl' href='trace.xsl'?>\n");
       trace_dump_writes("<trace version='0.1'>\n");
 
-#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_BSD) || defined(PIPE_OS_SOLARIS)
+#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_BSD) || defined(PIPE_OS_SOLARIS) || defined(PIPE_OS_APPLE)
       /* Linux applications rarely cleanup GL / Gallium resources so catch
        * application exit here */
       atexit(trace_dump_trace_close);
@@ -367,7 +368,7 @@ void trace_dump_call_end_locked(void)
    trace_dump_indent(1);
    trace_dump_tag_end("call");
    trace_dump_newline();
-   util_stream_flush(stream);
+   os_stream_flush(stream);
 }
 
 void trace_dump_call_begin(const char *klass, const char *method)
@@ -469,6 +470,25 @@ void trace_dump_bytes(const void *data,
       trace_dump_write(hex, 2);
    }
    trace_dump_writes("</bytes>");
+}
+
+void trace_dump_box_bytes(const void *data,
+			  enum pipe_format format,
+			  const struct pipe_box *box,
+			  unsigned stride,
+			  unsigned slice_stride)
+{
+   size_t size;
+
+   if (slice_stride)
+      size = box->depth * slice_stride;
+   else if (stride)
+      size = util_format_get_nblocksy(format, box->height) * stride;
+   else {
+      size = util_format_get_nblocksx(format, box->width) * util_format_get_blocksize(format);
+   }
+
+   trace_dump_bytes(data, size);
 }
 
 void trace_dump_string(const char *str)
@@ -574,27 +594,15 @@ void trace_dump_ptr(const void *value)
       trace_dump_null();
 }
 
-void trace_dump_buffer_ptr(struct pipe_buffer *_buffer)
+
+void trace_dump_resource_ptr(struct pipe_resource *_resource)
 {
    if (!dumping)
       return;
 
-   if (_buffer) {
-      struct trace_buffer *tr_buf = trace_buffer(_buffer);
-      trace_dump_ptr(tr_buf->buffer);
-   } else {
-      trace_dump_null();
-   }
-}
-
-void trace_dump_texture_ptr(struct pipe_texture *_texture)
-{
-   if (!dumping)
-      return;
-
-   if (_texture) {
-      struct trace_texture *tr_tex = trace_texture(_texture);
-      trace_dump_ptr(tr_tex->texture);
+   if (_resource) {
+      struct trace_resource *tr_resource = trace_resource(_resource);
+      trace_dump_ptr(tr_resource->resource);
    } else {
       trace_dump_null();
    }

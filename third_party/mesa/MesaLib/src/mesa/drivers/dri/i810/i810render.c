@@ -37,6 +37,8 @@
 #include "main/imports.h"
 #include "main/mtypes.h"
 
+#include "math/m_xform.h"
+
 #include "tnl/t_context.h"
 
 #include "i810screen.h"
@@ -44,7 +46,6 @@
 
 #include "i810context.h"
 #include "i810tris.h"
-#include "i810state.h"
 #include "i810vb.h"
 #include "i810ioctl.h"
 

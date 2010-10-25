@@ -85,6 +85,12 @@ void brw_set_saturate( struct brw_compile *p, GLuint value )
    p->current->header.saturate = value;
 }
 
+void brw_set_acc_write_control(struct brw_compile *p, GLuint value)
+{
+   if (p->brw->intel.gen >= 6)
+      p->current->header.acc_wr_control = value;
+}
+
 void brw_push_insn_state( struct brw_compile *p )
 {
    assert(p->current != &p->stack[BRW_EU_MAX_INSN_STACK-1]);
@@ -237,7 +243,7 @@ brw_resolve_cals(struct brw_compile *c)
         struct brw_glsl_call *call, *next;
         for (call = c->first_call; call; call = next) {
 	    next = call->next;
-	    _mesa_free(call);
+	    free(call);
 	}
 	c->first_call = NULL;
     }
@@ -247,7 +253,7 @@ brw_resolve_cals(struct brw_compile *c)
         struct brw_glsl_label *label, *next;
 	for (label = c->first_label; label; label = next) {
 	    next = label->next;
-	    _mesa_free(label);
+	    free(label);
 	}
 	c->first_label = NULL;
     }

@@ -13,6 +13,7 @@ DRIVER_SOURCES = \
 	intel_context.c \
 	intel_decode.c \
 	intel_extensions.c \
+	intel_extensions_es2.c \
 	intel_fbo.c \
 	intel_mipmap_tree.c \
 	intel_regions.c \
@@ -24,7 +25,6 @@ DRIVER_SOURCES = \
 	intel_pixel_draw.c \
 	intel_pixel_read.c \
 	intel_state.c \
-	intel_swapbuffers.c \
 	intel_syncobj.c \
 	intel_tex.c \
 	intel_tex_copy.c \
@@ -55,11 +55,13 @@ DRIVER_SOURCES = \
 	brw_gs_emit.c \
 	brw_gs_state.c \
 	brw_misc_state.c \
+	brw_optimize.c \
 	brw_program.c \
 	brw_queryobj.c \
 	brw_sf.c \
 	brw_sf_emit.c \
 	brw_sf_state.c \
+	brw_state.c \
 	brw_state_batch.c \
 	brw_state_cache.c \
 	brw_state_dump.c \
@@ -85,18 +87,34 @@ DRIVER_SOURCES = \
 	brw_wm_pass2.c \
 	brw_wm_sampler_state.c \
 	brw_wm_state.c \
-	brw_wm_surface_state.c 
+	brw_wm_surface_state.c \
+	gen6_cc.c \
+	gen6_clip_state.c \
+	gen6_depthstencil.c \
+	gen6_gs_state.c \
+	gen6_sampler_state.c \
+	gen6_scissor_state.c \
+	gen6_sf_state.c \
+	gen6_urb.c \
+	gen6_viewport_state.c \
+	gen6_vs_state.c \
+	gen6_wm_state.c
 
 C_SOURCES = \
 	$(COMMON_SOURCES) \
-	$(MINIGLX_SOURCES) \
 	$(DRIVER_SOURCES)
+
+CXX_SOURCES = \
+	brw_fs.cpp \
+	brw_fs_channel_expressions.cpp \
+	brw_fs_vector_splitting.cpp
 
 ASM_SOURCES = 
 
-DRIVER_DEFINES = -I../intel -I../intel/server
+DRIVER_DEFINES = -I../intel
 
-DRI_LIB_DEPS += -ldrm_intel
+INCLUDES += $(INTEL_CFLAGS)
+DRI_LIB_DEPS += $(INTEL_LIBS)
 
 include ../Makefile.template
 

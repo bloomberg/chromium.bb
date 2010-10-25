@@ -38,23 +38,20 @@
 
 #include "r300_fragprog_common.h"
 
-#include "shader/program.h"
-#include "shader/prog_parameter.h"
-#include "shader/prog_print.h"
+#include "program/prog_print.h"
 
 #include "compiler/radeon_compiler.h"
 
 #include "radeon_mesa_to_rc.h"
-#include "r300_state.h"
 
 
-static GLuint build_dtm(GLuint depthmode)
+static GLuint build_dts(GLuint depthmode)
 {
 	switch(depthmode) {
 	default:
-	case GL_LUMINANCE: return 0;
-	case GL_INTENSITY: return 1;
-	case GL_ALPHA: return 2;
+	case GL_LUMINANCE: return RC_SWIZZLE_XYZZ;
+	case GL_INTENSITY: return RC_SWIZZLE_XYZW;
+	case GL_ALPHA: return RC_SWIZZLE_WWWW;
 	}
 }
 
@@ -74,13 +71,13 @@ static void build_state(
 {
 	int unit;
 
-	_mesa_bzero(state, sizeof(*state));
+	memset(state, 0, sizeof(*state));
 
 	for(unit = 0; unit < 16; ++unit) {
 		if (fp->Base.ShadowSamplers & (1 << unit)) {
 			struct gl_texture_object* tex = r300->radeon.glCtx->Texture.Unit[unit]._Current;
 
-			state->unit[unit].depth_texture_mode = build_dtm(tex->DepthMode);
+			state->unit[unit].depth_texture_swizzle = build_dts(tex->DepthMode);
 			state->unit[unit].texture_compare_func = build_func(tex->CompareFunc);
 		}
 	}
@@ -120,7 +117,7 @@ static void insert_WPOS_trailer(struct r300_fragment_program_compiler *compiler,
 		return;
 	}
 
-	rc_transform_fragment_wpos(&compiler->Base, FRAG_ATTRIB_WPOS, fp->wpos_attr);
+	rc_transform_fragment_wpos(&compiler->Base, FRAG_ATTRIB_WPOS, fp->wpos_attr, GL_FALSE);
 }
 
 /**
@@ -216,19 +213,27 @@ static void translate_fragment_program(GLcontext *ctx, struct r300_fragment_prog
 	r300ContextPtr r300 = R300_CONTEXT(ctx);
 	struct r300_fragment_program_compiler compiler;
 
+        memset(&compiler, 0, sizeof(compiler));
 	rc_init(&compiler.Base);
 	compiler.Base.Debug = (RADEON_DEBUG & RADEON_PIXEL) ? GL_TRUE : GL_FALSE;
 
 	compiler.code = &fp->code;
 	compiler.state = fp->state;
-	compiler.is_r500 = (r300->radeon.radeonScreen->chip_family >= CHIP_FAMILY_RV515) ? GL_TRUE : GL_FALSE;
+	compiler.enable_shadow_ambient = GL_TRUE;
+	compiler.Base.is_r500 = (r300->radeon.radeonScreen->chip_family >= CHIP_FAMILY_RV515) ? GL_TRUE : GL_FALSE;
+	compiler.Base.disable_optimizations = 0;
+	compiler.Base.has_half_swizzles = 1;
+	compiler.Base.max_temp_regs = (compiler.Base.is_r500) ? 128 : 32;
+	compiler.Base.max_constants = compiler.Base.is_r500 ? 256 : 32;
+	compiler.Base.max_alu_insts = compiler.Base.is_r500 ? 512 : 64;
 	compiler.OutputDepth = FRAG_RESULT_DEPTH;
-	compiler.OutputColor = FRAG_RESULT_COLOR;
+	memset(compiler.OutputColor, 0, 4 * sizeof(unsigned));
+	compiler.OutputColor[0] = FRAG_RESULT_COLOR;
 	compiler.AllocateHwInputs = &allocate_hw_inputs;
 
 	if (compiler.Base.Debug) {
 		fflush(stderr);
-		_mesa_printf("Fragment Program: Initial program:\n");
+		printf("Fragment Program: Initial program:\n");
 		_mesa_print_program(&cont->Base.Base);
 		fflush(stderr);
 	}
@@ -241,7 +246,7 @@ static void translate_fragment_program(GLcontext *ctx, struct r300_fragment_prog
 
 	r3xx_compile_fragment_program(&compiler);
 
-	if (compiler.is_r500) {
+	if (compiler.Base.is_r500) {
 		/* We need to support the non-KMS DRM interface, which
 		 * artificially limits the number of instructions and
 		 * constants which are available to us.
@@ -256,6 +261,19 @@ static void translate_fragment_program(GLcontext *ctx, struct r300_fragment_prog
 	fp->error = compiler.Base.Error;
 
 	fp->InputsRead = compiler.Base.Program.InputsRead;
+
+	/* Clear the fog/wpos_attr if code accessing these
+	 * attributes has been removed during compilation
+	 */
+	if (fp->fog_attr != FRAG_ATTRIB_MAX) {
+		if (!(fp->InputsRead & (1 << fp->fog_attr)))
+			fp->fog_attr = FRAG_ATTRIB_MAX;
+	}
+
+	if (fp->wpos_attr != FRAG_ATTRIB_MAX) {
+		if (!(fp->InputsRead & (1 << fp->wpos_attr)))
+			fp->wpos_attr = FRAG_ATTRIB_MAX;
+	}
 
 	rc_destroy(&compiler.Base);
 }
@@ -272,13 +290,13 @@ struct r300_fragment_program *r300SelectAndTranslateFragmentShader(GLcontext *ct
 
 	fp = fp_list->progs;
 	while (fp) {
-		if (_mesa_memcmp(&fp->state, &state, sizeof(state)) == 0) {
+		if (memcmp(&fp->state, &state, sizeof(state)) == 0) {
 			return r300->selected_fp = fp;
 		}
 		fp = fp->next;
 	}
 
-	fp = _mesa_calloc(sizeof(struct r300_fragment_program));
+	fp = calloc(1, sizeof(struct r300_fragment_program));
 
 	fp->state = state;
 

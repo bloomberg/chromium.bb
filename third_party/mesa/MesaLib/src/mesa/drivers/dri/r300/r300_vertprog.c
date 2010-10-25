@@ -31,13 +31,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "main/glheader.h"
 #include "main/macros.h"
 #include "main/enums.h"
-#include "shader/program.h"
-#include "shader/programopt.h"
-#include "shader/prog_instruction.h"
-#include "shader/prog_optimize.h"
-#include "shader/prog_parameter.h"
-#include "shader/prog_print.h"
-#include "shader/prog_statevars.h"
+#include "program/program.h"
+#include "program/programopt.h"
+#include "program/prog_instruction.h"
+#include "program/prog_parameter.h"
+#include "program/prog_print.h"
+#include "program/prog_statevars.h"
 #include "tnl/tnl.h"
 
 #include "compiler/radeon_compiler.h"
@@ -80,6 +79,7 @@ static int r300VertexProgUpdateParams(GLcontext * ctx, struct r300_vertex_progra
 			break;
 		}
 
+		assert(src);
 		dst[4*i] = src[0];
 		dst[4*i + 1] = src[1];
 		dst[4*i + 2] = src[2];
@@ -234,16 +234,23 @@ static struct r300_vertex_program *build_program(GLcontext *ctx,
 	struct r300_vertex_program *vp;
 	struct r300_vertex_program_compiler compiler;
 
-	vp = _mesa_calloc(sizeof(*vp));
-	vp->Base = (struct gl_vertex_program *) _mesa_clone_program(ctx, &mesa_vp->Base);
-	_mesa_memcpy(&vp->key, wanted_key, sizeof(vp->key));
+	vp = calloc(1, sizeof(*vp));
+	vp->Base = _mesa_clone_vertex_program(ctx, mesa_vp);
+	memcpy(&vp->key, wanted_key, sizeof(vp->key));
 
+        memset(&compiler, 0, sizeof(compiler));
 	rc_init(&compiler.Base);
 	compiler.Base.Debug = (RADEON_DEBUG & RADEON_VERTS) ? GL_TRUE : GL_FALSE;
 
 	compiler.code = &vp->code;
 	compiler.RequiredOutputs = compute_required_outputs(vp->Base, vp->key.FpReads);
 	compiler.SetHwInputOutput = &t_inputs_outputs;
+	compiler.Base.is_r500 = R300_CONTEXT(ctx)->radeon.radeonScreen->chip_family >= CHIP_FAMILY_RV515;
+	compiler.Base.disable_optimizations = 0;
+	compiler.Base.has_half_swizzles = 0;
+	compiler.Base.max_temp_regs = 32;
+	compiler.Base.max_constants = 256;
+	compiler.Base.max_alu_insts = compiler.Base.is_r500 ? 1024 : 256;
 
 	if (compiler.Base.Debug) {
 		fprintf(stderr, "Initial vertex program:\n");
@@ -263,15 +270,25 @@ static struct r300_vertex_program *build_program(GLcontext *ctx,
 	rc_move_output(&compiler.Base, VERT_RESULT_PSIZ, VERT_RESULT_PSIZ, WRITEMASK_X);
 
 	if (vp->key.WPosAttr != FRAG_ATTRIB_MAX) {
-		rc_copy_output(&compiler.Base,
-			VERT_RESULT_HPOS,
-			vp->key.WPosAttr - FRAG_ATTRIB_TEX0 + VERT_RESULT_TEX0);
+		unsigned int vp_wpos_attr = vp->key.WPosAttr - FRAG_ATTRIB_TEX0 + VERT_RESULT_TEX0;
+
+		/* Set empty writemask for instructions writing to vp_wpos_attr
+		 * before moving the wpos attr there.
+		 * Such instructions will be removed by DCE.
+		 */
+		rc_move_output(&compiler.Base, vp_wpos_attr, vp->key.WPosAttr, 0);
+		rc_copy_output(&compiler.Base, VERT_RESULT_HPOS, vp_wpos_attr);
 	}
 
 	if (vp->key.FogAttr != FRAG_ATTRIB_MAX) {
-		rc_move_output(&compiler.Base,
-			VERT_RESULT_FOGC,
-			vp->key.FogAttr - FRAG_ATTRIB_TEX0 + VERT_RESULT_TEX0, WRITEMASK_X);
+		unsigned int vp_fog_attr = vp->key.FogAttr - FRAG_ATTRIB_TEX0 + VERT_RESULT_TEX0;
+
+		/* Set empty writemask for instructions writing to vp_fog_attr
+		 * before moving the fog attr there.
+		 * Such instructions will be removed by DCE.
+		 */
+		rc_move_output(&compiler.Base, vp_fog_attr, vp->key.FogAttr, 0);
+		rc_move_output(&compiler.Base, VERT_RESULT_FOGC, vp_fog_attr, WRITEMASK_X);
 	}
 
 	r3xx_compile_vertex_program(&compiler);
@@ -312,13 +329,13 @@ struct r300_vertex_program * r300SelectAndTranslateVertexShader(GLcontext *ctx)
 		r300SelectAndTranslateFragmentShader(ctx);
 	}
 
+	assert(r300->selected_fp);
 	wanted_key.FpReads = r300->selected_fp->InputsRead;
 	wanted_key.FogAttr = r300->selected_fp->fog_attr;
 	wanted_key.WPosAttr = r300->selected_fp->wpos_attr;
 
 	for (vp = vpc->progs; vp; vp = vp->next) {
-		if (_mesa_memcmp(&vp->key, &wanted_key, sizeof(wanted_key))
-		    == 0) {
+		if (memcmp(&vp->key, &wanted_key, sizeof(wanted_key)) == 0) {
 			return r300->selected_vp = vp;
 		}
 	}
@@ -342,8 +359,6 @@ static void r300EmitVertexProgram(r300ContextPtr r300, int dest, struct r300_ver
 
 	assert((code->length > 0) && (code->length % 4 == 0));
 
-	R300_STATECHANGE( r300, vap_flush );
-
 	switch ((dest >> 8) & 0xf) {
 		case 0:
 			R300_STATECHANGE(r300, vpi);
@@ -365,7 +380,7 @@ static void r300EmitVertexProgram(r300ContextPtr r300, int dest, struct r300_ver
 			break;
 		default:
 			fprintf(stderr, "%s:%s don't know how to handle dest %04x\n", __FILE__, __FUNCTION__, dest);
-			_mesa_exit(-1);
+			exit(-1);
 	}
 }
 
@@ -381,10 +396,14 @@ void r300SetupVertexProgram(r300ContextPtr rmesa)
 	((drm_r300_cmd_header_t *) rmesa->hw.vpi.cmd)->vpu.count = 0;
 	((drm_r300_cmd_header_t *) rmesa->hw.vps.cmd)->vpu.count = 0;
 
-	R300_STATECHANGE(rmesa, vap_flush);
+	R300_STATECHANGE(rmesa, vap_cntl);
 	R300_STATECHANGE(rmesa, vpp);
 	param_count = r300VertexProgUpdateParams(ctx, prog, (float *)&rmesa->hw.vpp.cmd[R300_VPP_PARAM_0]);
-	bump_vpu_count(rmesa->hw.vpp.cmd, param_count);
+	if (!rmesa->radeon.radeonScreen->kernel_mm && param_count > 255 * 4) {
+		WARN_ONCE("Too many VP params, expect rendering errors\n");
+	}
+	/* Prevent the overflow (vpu.count is u8) */
+	bump_vpu_count(rmesa->hw.vpp.cmd, MIN2(255 * 4, param_count));
 	param_count /= 4;
 
 	r300EmitVertexProgram(rmesa, R300_PVS_CODE_START, &(prog->code));
@@ -397,6 +416,6 @@ void r300SetupVertexProgram(r300ContextPtr rmesa)
 	rmesa->hw.pvs.cmd[R300_PVS_CNTL_1] = (0 << R300_PVS_FIRST_INST_SHIFT) | (inst_count << R300_PVS_XYZW_VALID_INST_SHIFT) |
 				(inst_count << R300_PVS_LAST_INST_SHIFT);
 
-	rmesa->hw.pvs.cmd[R300_PVS_CNTL_2] = (0 << R300_PVS_CONST_BASE_OFFSET_SHIFT) | (param_count << R300_PVS_MAX_CONST_ADDR_SHIFT);
+	rmesa->hw.pvs.cmd[R300_PVS_CNTL_2] = (0 << R300_PVS_CONST_BASE_OFFSET_SHIFT) | ((param_count - 1) << R300_PVS_MAX_CONST_ADDR_SHIFT);
 	rmesa->hw.pvs.cmd[R300_PVS_CNTL_3] = (inst_count << R300_PVS_LAST_VTX_SRC_INST_SHIFT);
 }

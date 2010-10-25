@@ -28,7 +28,7 @@
 
 
 #include "pipe/p_screen.h"
-#include "pipe/p_thread.h"
+#include "os/os_thread.h"
 
 #include "util/u_double_list.h"
 
@@ -60,20 +60,11 @@ struct svga_screen
       boolean no_sampler_view;
    } debug;
 
-   /* The screen needs its own context */
-   struct svga_winsys_context *swc;
-   struct SVGACmdMemory *fifo;
-
    unsigned texture_timestamp;
    pipe_mutex tex_mutex; 
-   pipe_mutex swc_mutex; /* Protects the use of swc and dirty_buffers */
-   
-   /** 
-    * List of buffers with cached GMR. Ordered from the most recently used to
-    * the least recently used 
-    */
-   struct list_head cached_buffers;
-   
+
+   pipe_mutex swc_mutex; /* Used for buffer uploads */
+
    struct svga_host_surface_cache cache;
 };
 
@@ -88,8 +79,5 @@ svga_screen(struct pipe_screen *pscreen)
 struct svga_screen *
 svga_screen(struct pipe_screen *screen);
 #endif
-
-void svga_screen_flush( struct svga_screen *svga_screen, 
-                        struct pipe_fence_handle **pfence );
 
 #endif /* SVGA_SCREEN_H */

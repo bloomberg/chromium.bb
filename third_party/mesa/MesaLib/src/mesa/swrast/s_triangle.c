@@ -35,7 +35,7 @@
 #include "main/imports.h"
 #include "main/macros.h"
 #include "main/texformat.h"
-#include "shader/prog_instruction.h"
+#include "program/prog_instruction.h"
 
 #include "s_aatriangle.h"
 #include "s_context.h"
@@ -66,18 +66,6 @@ _swrast_culltriangle( GLcontext *ctx,
 
    return GL_TRUE;
 }
-
-
-
-/*
- * Render a smooth or flat-shaded color index triangle.
- */
-#define NAME ci_triangle
-#define INTERP_Z 1
-#define INTERP_ATTRIBS 1  /* just for fog */
-#define INTERP_INDEX 1
-#define RENDER_SPAN( span )  _swrast_write_index_span(ctx, &span);
-#include "s_tritemp.h"
 
 
 
@@ -1007,7 +995,6 @@ void
 _swrast_choose_triangle( GLcontext *ctx )
 {
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
-   const GLboolean rgbmode = ctx->Visual.rgbMode;
 
    if (ctx->Polygon.CullFlag &&
        ctx->Polygon.CullFaceMode == GL_FRONT_AND_BACK) {
@@ -1029,21 +1016,13 @@ _swrast_choose_triangle( GLcontext *ctx )
           ctx->Depth.Mask == GL_FALSE &&
           ctx->Depth.Func == GL_LESS &&
           !ctx->Stencil._Enabled) {
-         if ((rgbmode &&
-              ctx->Color.ColorMask[0] == 0 &&
-              ctx->Color.ColorMask[1] == 0 &&
-              ctx->Color.ColorMask[2] == 0 &&
-              ctx->Color.ColorMask[3] == 0)
-             ||
-             (!rgbmode && ctx->Color.IndexMask == 0)) {
+         if (ctx->Color.ColorMask[0][0] == 0 &&
+	     ctx->Color.ColorMask[0][1] == 0 &&
+	     ctx->Color.ColorMask[0][2] == 0 &&
+	     ctx->Color.ColorMask[0][3] == 0) {
             USE(occlusion_zless_triangle);
             return;
          }
-      }
-
-      if (!rgbmode) {
-         USE(ci_triangle);
-         return;
       }
 
       /*

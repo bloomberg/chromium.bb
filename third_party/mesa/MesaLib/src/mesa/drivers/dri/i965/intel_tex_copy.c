@@ -36,7 +36,6 @@
 
 #include "intel_screen.h"
 #include "intel_context.h"
-#include "intel_batchbuffer.h"
 #include "intel_buffers.h"
 #include "intel_mipmap_tree.h"
 #include "intel_regions.h"
@@ -75,6 +74,14 @@ get_teximage_source(struct intel_context *intel, GLenum internalFormat)
       return NULL;
    case GL_RGBA:
    case GL_RGBA8:
+      irb = intel_renderbuffer(intel->ctx.ReadBuffer->_ColorReadBuffer);
+      /* We're required to set alpha to 1.0 in this case, but we can't
+       * do that with the blitter, so fall back.  We could use the 3D
+       * engine or do two passes with the blitter, but it doesn't seem
+       * worth it for this case. */
+      if (irb->Base._BaseFormat == GL_RGB)
+	 return NULL;
+      return irb->region;
    case GL_RGB:
    case GL_RGB8:
       return intel_readbuf_region(intel);
@@ -95,7 +102,7 @@ do_copy_texsubimage(struct intel_context *intel,
    GLcontext *ctx = &intel->ctx;
    const struct intel_region *src = get_teximage_source(intel, internalFormat);
 
-   if (!intelImage->mt || !src) {
+   if (!intelImage->mt || !src || !src->buffer) {
       if (INTEL_DEBUG & DEBUG_FALLBACKS)
 	 fprintf(stderr, "%s fail %p %p (0x%08x)\n",
 		 __FUNCTION__, intelImage->mt, src, internalFormat);
@@ -109,14 +116,12 @@ do_copy_texsubimage(struct intel_context *intel,
       return GL_FALSE;
    }
 
-   //   intelFlush(ctx);
-   LOCK_HARDWARE(intel);
+   /* intel_flush(ctx); */
+   intel_prepare_render(intel);
    {
       drm_intel_bo *dst_bo = intel_region_buffer(intel,
 						 intelImage->mt->region,
 						 INTEL_WRITE_PART);
-      const GLint orig_x = x;
-      const GLint orig_y = y;
       GLuint image_x, image_y;
       GLshort src_pitch;
 
@@ -126,29 +131,15 @@ do_copy_texsubimage(struct intel_context *intel,
 				     intelImage->face,
 				     0,
 				     &image_x, &image_y);
-      /* Update dst for clipped src.  Need to also clip the source rect. */
-      dstx += x - orig_x;
-      dsty += y - orig_y;
 
-      /* Can't blit to tiled buffers with non-tile-aligned offset. */
+      /* The blitter can't handle Y-tiled buffers. */
       if (intelImage->mt->region->tiling == I915_TILING_Y) {
-	 UNLOCK_HARDWARE(intel);
 	 return GL_FALSE;
       }
 
       if (ctx->ReadBuffer->Name == 0) {
-	 /* reading from a window, adjust x, y */
-	 const __DRIdrawablePrivate *dPriv = intel->driReadDrawable;
-	 y = dPriv->y + (dPriv->h - (y + height));
-	 x += dPriv->x;
-
-	 /* Invert the data coming from the source rectangle due to GL
-	  * and hardware disagreeing on where y=0 is.
-	  *
-	  * It appears that our offsets and pitches get mangled
-	  * appropriately by the hardware, and we don't need to adjust them
-	  * on our own.
-	  */
+	 /* Flip vertical orientation for system framebuffers */
+	 y = ctx->ReadBuffer->Height - (y + height);
 	 src_pitch = -src->pitch;
       } else {
 	 /* reading from a FBO, y is already oriented the way we like */
@@ -160,21 +151,19 @@ do_copy_texsubimage(struct intel_context *intel,
 			     intelImage->mt->cpp,
 			     src_pitch,
 			     src->buffer,
-			     src->draw_offset,
+			     0,
 			     src->tiling,
-			     intelImage->mt->pitch,
+			     intelImage->mt->region->pitch,
 			     dst_bo,
 			     0,
 			     intelImage->mt->region->tiling,
-			     x, y, image_x + dstx, image_y + dsty,
+			     src->draw_x + x, src->draw_y + y,
+			     image_x + dstx, image_y + dsty,
 			     width, height,
 			     GL_COPY)) {
-	 UNLOCK_HARDWARE(intel);
 	 return GL_FALSE;
       }
    }
-
-   UNLOCK_HARDWARE(intel);
 
    return GL_TRUE;
 }

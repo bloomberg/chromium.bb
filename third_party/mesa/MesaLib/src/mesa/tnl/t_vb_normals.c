@@ -28,7 +28,6 @@
 
 #include "main/glheader.h"
 #include "main/colormac.h"
-#include "main/context.h"
 #include "main/macros.h"
 #include "main/imports.h"
 #include "main/mtypes.h"
@@ -79,7 +78,6 @@ run_normal_stage(GLcontext *ctx, struct tnl_pipeline_stage *stage)
    }
 
    VB->AttribPtr[_TNL_ATTRIB_NORMAL] = &store->normal;
-   VB->NormalPtr = &store->normal;
 
    VB->NormalLengthPtr = NULL;	/* no longer valid */
    return GL_TRUE;
@@ -153,7 +151,7 @@ alloc_normal_data(GLcontext *ctx, struct tnl_pipeline_stage *stage)
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    struct normal_stage_data *store;
 
-   stage->privatePtr = _mesa_malloc(sizeof(*store));
+   stage->privatePtr = malloc(sizeof(*store));
    store = NORMAL_STAGE_DATA(stage);
    if (!store)
       return GL_FALSE;
@@ -172,7 +170,7 @@ free_normal_data(struct tnl_pipeline_stage *stage)
    struct normal_stage_data *store = NORMAL_STAGE_DATA(stage);
    if (store) {
       _mesa_vector4f_free( &store->normal );
-      _mesa_free( store );
+      free( store );
       stage->privatePtr = NULL;
    }
 }

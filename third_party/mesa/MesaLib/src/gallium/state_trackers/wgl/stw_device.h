@@ -30,7 +30,7 @@
 
 
 #include "pipe/p_compiler.h"
-#include "pipe/p_thread.h"
+#include "os/os_thread.h"
 #include "util/u_handle_table.h"
 #include "stw_icd.h"
 #include "stw_pixelformat.h"
@@ -40,6 +40,8 @@
 
 
 struct pipe_screen;
+struct st_api;
+struct st_manager;
 struct stw_framebuffer;
 
 struct stw_device
@@ -48,9 +50,8 @@ struct stw_device
    
    struct pipe_screen *screen;
    
-#ifdef DEBUG
-   boolean trace_running;
-#endif
+   struct st_api *stapi;
+   struct st_manager *smapi;
 
    LUID AdapterLuid;
 

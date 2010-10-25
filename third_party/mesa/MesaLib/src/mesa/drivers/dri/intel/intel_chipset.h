@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright © 2007 Intel Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -71,6 +71,14 @@
 #define PCI_CHIP_ILD_G                  0x0042
 #define PCI_CHIP_ILM_G                  0x0046
 
+#define PCI_CHIP_SANDYBRIDGE_GT1	0x0102	/* Desktop */
+#define PCI_CHIP_SANDYBRIDGE_GT2	0x0112
+#define PCI_CHIP_SANDYBRIDGE_GT2_PLUS	0x0122
+#define PCI_CHIP_SANDYBRIDGE_M_GT1	0x0106	/* Mobile */
+#define PCI_CHIP_SANDYBRIDGE_M_GT2	0x0116
+#define PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS	0x0126
+#define PCI_CHIP_SANDYBRIDGE_S		0x010A	/* Server */
+
 #define IS_MOBILE(devid)	(devid == PCI_CHIP_I855_GM || \
 				 devid == PCI_CHIP_I915_GM || \
 				 devid == PCI_CHIP_I945_GM || \
@@ -91,7 +99,7 @@
 
 #define IS_ILD(devid)           (devid == PCI_CHIP_ILD_G)
 #define IS_ILM(devid)           (devid == PCI_CHIP_ILM_G)
-#define IS_IGDNG(devid)           (IS_ILD(devid) || IS_ILM(devid))
+#define IS_GEN5(devid)          (IS_ILD(devid) || IS_ILM(devid))
 
 #define IS_915(devid)		(devid == PCI_CHIP_I915_G || \
 				 devid == PCI_CHIP_E7221_G || \
@@ -104,14 +112,29 @@
 				 devid == PCI_CHIP_Q33_G || \
 				 devid == PCI_CHIP_Q35_G || IS_IGD(devid))
 
-#define IS_965(devid)		(devid == PCI_CHIP_I965_G || \
+#define IS_GEN4(devid)		(devid == PCI_CHIP_I965_G || \
 				 devid == PCI_CHIP_I965_Q || \
 				 devid == PCI_CHIP_I965_G_1 || \
 				 devid == PCI_CHIP_I965_GM || \
 				 devid == PCI_CHIP_I965_GME || \
 				 devid == PCI_CHIP_I946_GZ || \
+				 IS_G4X(devid))
+
+/* Compat macro for intel_decode.c */
+#define IS_IRONLAKE(devid)	IS_GEN5(devid)
+
+#define IS_GEN6(devid)		(devid == PCI_CHIP_SANDYBRIDGE_GT1 || \
+				 devid == PCI_CHIP_SANDYBRIDGE_GT2 || \
+				 devid == PCI_CHIP_SANDYBRIDGE_GT2_PLUS	|| \
+				 devid == PCI_CHIP_SANDYBRIDGE_M_GT1 || \
+				 devid == PCI_CHIP_SANDYBRIDGE_M_GT2 || \
+				 devid == PCI_CHIP_SANDYBRIDGE_M_GT2_PLUS || \
+				 devid == PCI_CHIP_SANDYBRIDGE_S)
+
+#define IS_965(devid)		(IS_GEN4(devid) || \
 				 IS_G4X(devid) || \
-				 IS_IGDNG(devid))
+				 IS_GEN5(devid) || \
+				 IS_GEN6(devid))
 
 #define IS_9XX(devid)		(IS_915(devid) || \
 				 IS_945(devid) || \

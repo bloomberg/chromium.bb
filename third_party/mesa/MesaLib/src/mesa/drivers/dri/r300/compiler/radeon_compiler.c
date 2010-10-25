@@ -229,15 +229,20 @@ void rc_copy_output(struct radeon_compiler * c, unsigned output, unsigned dup_ou
 /**
  * Introduce standard code fragment to deal with fragment.position.
  */
-void rc_transform_fragment_wpos(struct radeon_compiler * c, unsigned wpos, unsigned new_input)
+void rc_transform_fragment_wpos(struct radeon_compiler * c, unsigned wpos, unsigned new_input,
+                                int full_vtransform)
 {
 	unsigned tempregi = rc_find_free_temporary(c);
+	struct rc_instruction * inst_rcp;
+	struct rc_instruction * inst_mul;
+	struct rc_instruction * inst_mad;
+	struct rc_instruction * inst;
 
 	c->Program.InputsRead &= ~(1 << wpos);
 	c->Program.InputsRead |= 1 << new_input;
 
 	/* perspective divide */
-	struct rc_instruction * inst_rcp = rc_insert_new_instruction(c, &c->Program.Instructions);
+	inst_rcp = rc_insert_new_instruction(c, &c->Program.Instructions);
 	inst_rcp->U.I.Opcode = RC_OPCODE_RCP;
 
 	inst_rcp->U.I.DstReg.File = RC_FILE_TEMPORARY;
@@ -248,7 +253,7 @@ void rc_transform_fragment_wpos(struct radeon_compiler * c, unsigned wpos, unsig
 	inst_rcp->U.I.SrcReg[0].Index = new_input;
 	inst_rcp->U.I.SrcReg[0].Swizzle = RC_SWIZZLE_WWWW;
 
-	struct rc_instruction * inst_mul = rc_insert_new_instruction(c, inst_rcp);
+	inst_mul = rc_insert_new_instruction(c, inst_rcp);
 	inst_mul->U.I.Opcode = RC_OPCODE_MUL;
 
 	inst_mul->U.I.DstReg.File = RC_FILE_TEMPORARY;
@@ -263,7 +268,7 @@ void rc_transform_fragment_wpos(struct radeon_compiler * c, unsigned wpos, unsig
 	inst_mul->U.I.SrcReg[1].Swizzle = RC_SWIZZLE_WWWW;
 
 	/* viewport transformation */
-	struct rc_instruction * inst_mad = rc_insert_new_instruction(c, inst_mul);
+	inst_mad = rc_insert_new_instruction(c, inst_mul);
 	inst_mad->U.I.Opcode = RC_OPCODE_MAD;
 
 	inst_mad->U.I.DstReg.File = RC_FILE_TEMPORARY;
@@ -272,17 +277,22 @@ void rc_transform_fragment_wpos(struct radeon_compiler * c, unsigned wpos, unsig
 
 	inst_mad->U.I.SrcReg[0].File = RC_FILE_TEMPORARY;
 	inst_mad->U.I.SrcReg[0].Index = tempregi;
-	inst_mad->U.I.SrcReg[0].Swizzle = RC_MAKE_SWIZZLE(RC_SWIZZLE_X, RC_SWIZZLE_Y, RC_SWIZZLE_Z, RC_SWIZZLE_ZERO);
+	inst_mad->U.I.SrcReg[0].Swizzle = RC_SWIZZLE_XYZ0;
 
 	inst_mad->U.I.SrcReg[1].File = RC_FILE_CONSTANT;
-	inst_mad->U.I.SrcReg[1].Index = rc_constants_add_state(&c->Program.Constants, RC_STATE_R300_WINDOW_DIMENSION, 0);
-	inst_mad->U.I.SrcReg[1].Swizzle = RC_MAKE_SWIZZLE(RC_SWIZZLE_X, RC_SWIZZLE_Y, RC_SWIZZLE_Z, RC_SWIZZLE_ZERO);
+	inst_mad->U.I.SrcReg[1].Swizzle = RC_SWIZZLE_XYZ0;
 
 	inst_mad->U.I.SrcReg[2].File = RC_FILE_CONSTANT;
-	inst_mad->U.I.SrcReg[2].Index = inst_mad->U.I.SrcReg[1].Index;
-	inst_mad->U.I.SrcReg[2].Swizzle = RC_MAKE_SWIZZLE(RC_SWIZZLE_X, RC_SWIZZLE_Y, RC_SWIZZLE_Z, RC_SWIZZLE_ZERO);
+	inst_mad->U.I.SrcReg[2].Swizzle = RC_SWIZZLE_XYZ0;
 
-	struct rc_instruction * inst;
+	if (full_vtransform) {
+		inst_mad->U.I.SrcReg[1].Index = rc_constants_add_state(&c->Program.Constants, RC_STATE_R300_VIEWPORT_SCALE, 0);
+		inst_mad->U.I.SrcReg[2].Index = rc_constants_add_state(&c->Program.Constants, RC_STATE_R300_VIEWPORT_OFFSET, 0);
+	} else {
+		inst_mad->U.I.SrcReg[1].Index =
+		inst_mad->U.I.SrcReg[2].Index = rc_constants_add_state(&c->Program.Constants, RC_STATE_R300_WINDOW_DIMENSION, 0);
+	}
+
 	for (inst = inst_mad->Next; inst != &c->Program.Instructions; inst = inst->Next) {
 		const struct rc_opcode_info * opcode = rc_get_opcode_info(inst->U.I.Opcode);
 		unsigned i;
@@ -297,3 +307,79 @@ void rc_transform_fragment_wpos(struct radeon_compiler * c, unsigned wpos, unsig
 	}
 }
 
+
+/**
+ * The FACE input in hardware contains 1 if it's a back face, 0 otherwise.
+ * Gallium and OpenGL define it the other way around.
+ *
+ * So let's just negate FACE at the beginning of the shader and rewrite the rest
+ * of the shader to read from the newly allocated temporary.
+ */
+void rc_transform_fragment_face(struct radeon_compiler *c, unsigned face)
+{
+	unsigned tempregi = rc_find_free_temporary(c);
+	struct rc_instruction *inst_add;
+	struct rc_instruction *inst;
+
+	/* perspective divide */
+	inst_add = rc_insert_new_instruction(c, &c->Program.Instructions);
+	inst_add->U.I.Opcode = RC_OPCODE_ADD;
+
+	inst_add->U.I.DstReg.File = RC_FILE_TEMPORARY;
+	inst_add->U.I.DstReg.Index = tempregi;
+	inst_add->U.I.DstReg.WriteMask = RC_MASK_X;
+
+	inst_add->U.I.SrcReg[0].File = RC_FILE_NONE;
+	inst_add->U.I.SrcReg[0].Swizzle = RC_SWIZZLE_1111;
+
+	inst_add->U.I.SrcReg[1].File = RC_FILE_INPUT;
+	inst_add->U.I.SrcReg[1].Index = face;
+	inst_add->U.I.SrcReg[1].Swizzle = RC_SWIZZLE_XXXX;
+	inst_add->U.I.SrcReg[1].Negate = RC_MASK_XYZW;
+
+	for (inst = inst_add->Next; inst != &c->Program.Instructions; inst = inst->Next) {
+		const struct rc_opcode_info * opcode = rc_get_opcode_info(inst->U.I.Opcode);
+		unsigned i;
+
+		for(i = 0; i < opcode->NumSrcRegs; i++) {
+			if (inst->U.I.SrcReg[i].File == RC_FILE_INPUT &&
+			    inst->U.I.SrcReg[i].Index == face) {
+				inst->U.I.SrcReg[i].File = RC_FILE_TEMPORARY;
+				inst->U.I.SrcReg[i].Index = tempregi;
+			}
+		}
+	}
+}
+
+/* Executes a list of compiler passes given in the parameter 'list'. */
+void rc_run_compiler(struct radeon_compiler *c, struct radeon_compiler_pass *list,
+		     const char *shader_name)
+{
+	if (c->Debug) {
+		fprintf(stderr, "%s: before compilation\n", shader_name);
+		rc_print_program(&c->Program);
+	}
+
+	for (unsigned i = 0; list[i].name; i++) {
+		if (list[i].predicate) {
+			list[i].run(c, list[i].user);
+
+			if (c->Error)
+				return;
+
+			if (c->Debug && list[i].dump) {
+				fprintf(stderr, "%s: after '%s'\n", shader_name, list[i].name);
+				rc_print_program(&c->Program);
+			}
+		}
+	}
+}
+
+void rc_validate_final_shader(struct radeon_compiler *c, void *user)
+{
+	/* Check the number of constants. */
+	if (c->Program.Constants.Count > c->max_constants) {
+		rc_error(c, "Too many constants. Max: 256, Got: %i\n",
+			 c->Program.Constants.Count);
+	}
+}

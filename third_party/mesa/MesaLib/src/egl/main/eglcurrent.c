@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "eglcurrent.h"
-#include "eglcontext.h"
 #include "egllog.h"
 #include "eglmutex.h"
+#include "eglcurrent.h"
 #include "eglglobals.h"
 
 
@@ -227,7 +226,18 @@ _eglIsCurrentThreadDummy(void)
 
 
 /**
- * Return the currently bound context, or NULL.
+ * Return the currently bound context of the given API, or NULL.
+ */
+PUBLIC _EGLContext *
+_eglGetAPIContext(EGLenum api)
+{
+   _EGLThreadInfo *t = _eglGetCurrentThread();
+   return t->CurrentContexts[_eglConvertApiToIndex(api)];
+}
+
+
+/**
+ * Return the currently bound context of the current API, or NULL.
  */
 _EGLContext *
 _eglGetCurrentContext(void)
@@ -238,56 +248,20 @@ _eglGetCurrentContext(void)
 
 
 /**
- * Return the display of the currently bound context, or NULL.
- */
-_EGLDisplay *
-_eglGetCurrentDisplay(void)
-{
-   _EGLThreadInfo *t = _eglGetCurrentThread();
-   _EGLContext *ctx = t->CurrentContexts[t->CurrentAPIIndex];
-   if (ctx)
-      return ctx->Display;
-   else
-      return NULL;
-}
-
-
-/**
- * Return the read or write surface of the currently bound context, or NULL.
- */
-_EGLSurface *
-_eglGetCurrentSurface(EGLint readdraw)
-{
-   _EGLThreadInfo *t = _eglGetCurrentThread();
-   _EGLContext *ctx = t->CurrentContexts[t->CurrentAPIIndex];
-   if (ctx) {
-      switch (readdraw) {
-      case EGL_DRAW:
-         return ctx->DrawSurface;
-      case EGL_READ:
-         return ctx->ReadSurface;
-      default:
-         return NULL;
-      }
-   }
-   return NULL;
-}
-
-
-/**
- * Record EGL error code.
+ * Record EGL error code and return EGL_FALSE.
  */
 EGLBoolean
 _eglError(EGLint errCode, const char *msg)
 {
    _EGLThreadInfo *t = _eglGetCurrentThread();
-   const char *s;
 
    if (t == &dummy_thread)
       return EGL_FALSE;
 
-   if (t->LastError == EGL_SUCCESS) {
-      t->LastError = errCode;
+   t->LastError = errCode;
+
+   if (errCode != EGL_SUCCESS) {
+      const char *s;
 
       switch (errCode) {
       case EGL_BAD_ACCESS:
@@ -326,12 +300,14 @@ _eglError(EGLint errCode, const char *msg)
       case EGL_BAD_SURFACE:
          s = "EGL_BAD_SURFACE";
          break;
+#ifdef EGL_MESA_screen_surface
       case EGL_BAD_SCREEN_MESA:
          s = "EGL_BAD_SCREEN_MESA";
          break;
       case EGL_BAD_MODE_MESA:
          s = "EGL_BAD_MODE_MESA";
          break;
+#endif
       default:
          s = "other";
       }

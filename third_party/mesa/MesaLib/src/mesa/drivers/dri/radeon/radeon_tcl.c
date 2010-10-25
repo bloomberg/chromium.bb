@@ -46,7 +46,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_context.h"
 #include "radeon_state.h"
 #include "radeon_ioctl.h"
-#include "radeon_tex.h"
 #include "radeon_tcl.h"
 #include "radeon_swtcl.h"
 #include "radeon_maos.h"
@@ -253,6 +252,8 @@ void radeonTclPrimitive( GLcontext *ctx,
    GLuint se_cntl;
    GLuint newprim = hw_prim | RADEON_CP_VC_CNTL_TCL_ENABLE;
 
+   radeon_prepare_render(&rmesa->radeon);
+
    if (newprim != rmesa->tcl.hw_primitive ||
        !discrete_prim[hw_prim&0xf]) {
       RADEON_NEWPRIM( rmesa );
@@ -412,6 +413,7 @@ static GLuint radeonEnsureEmitSize( GLcontext * ctx , GLuint inputs )
 	space_required += vbuf;
       else
 	space_required += index + elts;
+      space_required += VB->Primitive[i].count * 3;
       space_required += AOS_BUFSZ(nr_aos);
     }
     space_required += SCISSOR_BUFSZ;

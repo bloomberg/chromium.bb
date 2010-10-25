@@ -41,17 +41,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "main/mipmap.h"
 #include "main/simple_list.h"
 #include "main/texstore.h"
-#include "main/teximage.h"
 #include "main/texobj.h"
 
 #include "texmem.h"
 
 #include "r600_context.h"
-#include "r700_state.h"
 #include "radeon_mipmap_tree.h"
 #include "r600_tex.h"
-
-#include "xmlpool.h"
 
 
 static unsigned int translate_wrap_mode(GLenum wrapmode)
@@ -305,7 +301,7 @@ static void r600TexParameter(GLcontext * ctx, GLenum target,
 		break;
 
 	case GL_TEXTURE_BORDER_COLOR:
-		r600SetTexBorderColor(t, texObj->BorderColor);
+		r600SetTexBorderColor(t, texObj->BorderColor.f);
 		break;
 
 	case GL_TEXTURE_BASE_LEVEL:
@@ -391,12 +387,60 @@ static struct gl_texture_object *r600NewTextureObject(GLcontext * ctx,
 	r600SetTexDefaultState(t);
 	r600UpdateTexWrap(t);
 	r600SetTexFilter(t, t->base.MinFilter, t->base.MagFilter, t->base.MaxAnisotropy);
-	r600SetTexBorderColor(t, t->base.BorderColor);
+	r600SetTexBorderColor(t, t->base.BorderColor.f);
 
 	return &t->base;
 }
 
-void r600InitTextureFuncs(struct dd_function_table *functions)
+unsigned r600IsFormatRenderable(gl_format mesa_format)
+{
+	switch (mesa_format) {
+	case MESA_FORMAT_RGBA8888:
+	case MESA_FORMAT_SIGNED_RGBA8888:
+	case MESA_FORMAT_RGBA8888_REV:
+	case MESA_FORMAT_SIGNED_RGBA8888_REV:
+	case MESA_FORMAT_ARGB8888:
+	case MESA_FORMAT_XRGB8888:
+	case MESA_FORMAT_ARGB8888_REV:
+	case MESA_FORMAT_XRGB8888_REV:
+	case MESA_FORMAT_RGB565:
+	case MESA_FORMAT_RGB565_REV:
+	case MESA_FORMAT_ARGB4444:
+	case MESA_FORMAT_ARGB4444_REV:
+	case MESA_FORMAT_ARGB1555:
+	case MESA_FORMAT_ARGB1555_REV:
+	case MESA_FORMAT_AL88:
+	case MESA_FORMAT_AL88_REV:
+	case MESA_FORMAT_RGB332:
+	case MESA_FORMAT_A8:
+	case MESA_FORMAT_I8:
+	case MESA_FORMAT_CI8:
+	case MESA_FORMAT_L8:
+	case MESA_FORMAT_RGBA_FLOAT32:
+	case MESA_FORMAT_RGBA_FLOAT16:
+	case MESA_FORMAT_ALPHA_FLOAT32:
+	case MESA_FORMAT_ALPHA_FLOAT16:
+	case MESA_FORMAT_LUMINANCE_FLOAT32:
+	case MESA_FORMAT_LUMINANCE_FLOAT16:
+	case MESA_FORMAT_LUMINANCE_ALPHA_FLOAT32:
+	case MESA_FORMAT_LUMINANCE_ALPHA_FLOAT16:
+	case MESA_FORMAT_INTENSITY_FLOAT32: /* X, X, X, X */
+	case MESA_FORMAT_INTENSITY_FLOAT16: /* X, X, X, X */
+	case MESA_FORMAT_X8_Z24:
+	case MESA_FORMAT_S8_Z24:
+	case MESA_FORMAT_Z24_S8:
+	case MESA_FORMAT_Z16:
+	case MESA_FORMAT_Z32:
+	case MESA_FORMAT_SARGB8:
+	case MESA_FORMAT_SLA8:
+	case MESA_FORMAT_SL8:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+void r600InitTextureFuncs(radeonContextPtr radeon, struct dd_function_table *functions)
 {
 	/* Note: we only plug in the functions we implement in the driver
 	 * since _mesa_init_driver_functions() was already called.
@@ -423,6 +467,11 @@ void r600InitTextureFuncs(struct dd_function_table *functions)
 
 	functions->CompressedTexImage2D = radeonCompressedTexImage2D;
 	functions->CompressedTexSubImage2D = radeonCompressedTexSubImage2D;
+
+	if (radeon->radeonScreen->kernel_mm) {
+		functions->CopyTexImage2D = radeonCopyTexImage2D;
+		functions->CopyTexSubImage2D = radeonCopyTexSubImage2D;
+	}
 
 	functions->GenerateMipmap = radeonGenerateMipmap;
 

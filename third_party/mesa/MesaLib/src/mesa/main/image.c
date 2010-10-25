@@ -32,11 +32,10 @@
 
 #include "glheader.h"
 #include "colormac.h"
-#include "context.h"
+#include "enums.h"
 #include "image.h"
 #include "imports.h"
 #include "macros.h"
-#include "pixel.h"
 
 
 /**
@@ -274,17 +273,25 @@ _mesa_components_in_format( GLenum format )
       case GL_STENCIL_INDEX:
       case GL_DEPTH_COMPONENT:
       case GL_RED:
+      case GL_RED_INTEGER_EXT:
       case GL_GREEN:
+      case GL_GREEN_INTEGER_EXT:
       case GL_BLUE:
+      case GL_BLUE_INTEGER_EXT:
       case GL_ALPHA:
+      case GL_ALPHA_INTEGER_EXT:
       case GL_LUMINANCE:
+      case GL_LUMINANCE_INTEGER_EXT:
       case GL_INTENSITY:
          return 1;
       case GL_LUMINANCE_ALPHA:
+      case GL_LUMINANCE_ALPHA_INTEGER_EXT:
 	 return 2;
       case GL_RGB:
+      case GL_RGB_INTEGER_EXT:
 	 return 3;
       case GL_RGBA:
+      case GL_RGBA_INTEGER_EXT:
 	 return 4;
       case GL_BGR:
 	 return 3;
@@ -523,6 +530,28 @@ _mesa_is_legal_format_and_type( GLcontext *ctx, GLenum format, GLenum type )
             default:
                return GL_FALSE;
          }
+      case GL_RED_INTEGER_EXT:
+      case GL_GREEN_INTEGER_EXT:
+      case GL_BLUE_INTEGER_EXT:
+      case GL_ALPHA_INTEGER_EXT:
+      case GL_RGB_INTEGER_EXT:
+      case GL_RGBA_INTEGER_EXT:
+      case GL_BGR_INTEGER_EXT:
+      case GL_BGRA_INTEGER_EXT:
+      case GL_LUMINANCE_INTEGER_EXT:
+      case GL_LUMINANCE_ALPHA_INTEGER_EXT:
+         switch (type) {
+            case GL_BYTE:
+            case GL_UNSIGNED_BYTE:
+            case GL_SHORT:
+            case GL_UNSIGNED_SHORT:
+            case GL_INT:
+            case GL_UNSIGNED_INT:
+               return ctx->Extensions.EXT_texture_integer;
+            default:
+               return GL_FALSE;
+         }
+
       default:
          ; /* fall-through */
    }
@@ -734,6 +763,32 @@ _mesa_is_depthstencil_format(GLenum format)
    }
 }
 
+
+/**
+ * Test if the given image format is a depth or stencil format.
+ */
+GLboolean
+_mesa_is_depth_or_stencil_format(GLenum format)
+{
+   switch (format) {
+      case GL_DEPTH_COMPONENT:
+      case GL_DEPTH_COMPONENT16:
+      case GL_DEPTH_COMPONENT24:
+      case GL_DEPTH_COMPONENT32:
+      case GL_STENCIL_INDEX:
+      case GL_STENCIL_INDEX1_EXT:
+      case GL_STENCIL_INDEX4_EXT:
+      case GL_STENCIL_INDEX8_EXT:
+      case GL_STENCIL_INDEX16_EXT:
+      case GL_DEPTH_STENCIL_EXT:
+      case GL_DEPTH24_STENCIL8_EXT:
+         return GL_TRUE;
+      default:
+         return GL_FALSE;
+   }
+}
+
+
 /**
  * Test if the given image format is a dudv format.
  */
@@ -746,6 +801,64 @@ _mesa_is_dudv_format(GLenum format)
          return GL_TRUE;
       default:
          return GL_FALSE;
+   }
+}
+
+
+/**
+ * Test if the given format is an integer (non-normalized) format.
+ */
+GLboolean
+_mesa_is_integer_format(GLenum format)
+{
+   switch (format) {
+   case GL_RED_INTEGER_EXT:
+   case GL_GREEN_INTEGER_EXT:
+   case GL_BLUE_INTEGER_EXT:
+   case GL_ALPHA_INTEGER_EXT:
+   case GL_RGB_INTEGER_EXT:
+   case GL_RGBA_INTEGER_EXT:
+   case GL_BGR_INTEGER_EXT:
+   case GL_BGRA_INTEGER_EXT:
+   case GL_LUMINANCE_INTEGER_EXT:
+   case GL_LUMINANCE_ALPHA_INTEGER_EXT:
+      return GL_TRUE;
+   default:
+      return GL_FALSE;
+   }
+}
+
+
+/**
+ * Test if an image format is a supported compressed format.
+ * \param format the internal format token provided by the user.
+ * \return GL_TRUE if compressed, GL_FALSE if uncompressed
+ */
+GLboolean
+_mesa_is_compressed_format(GLcontext *ctx, GLenum format)
+{
+   switch (format) {
+   case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+   case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+   case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+   case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+      return ctx->Extensions.EXT_texture_compression_s3tc;
+   case GL_RGB_S3TC:
+   case GL_RGB4_S3TC:
+   case GL_RGBA_S3TC:
+   case GL_RGBA4_S3TC:
+      return ctx->Extensions.S3_s3tc;
+   case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+   case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
+   case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
+   case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
+      return ctx->Extensions.EXT_texture_sRGB
+         && ctx->Extensions.EXT_texture_compression_s3tc;
+   case GL_COMPRESSED_RGB_FXT1_3DFX:
+   case GL_COMPRESSED_RGBA_FXT1_3DFX:
+      return ctx->Extensions.TDFX_texture_compression_FXT1;
+   default:
+      return GL_FALSE;
    }
 }
 
@@ -1038,7 +1151,7 @@ _mesa_unpack_polygon_stipple( const GLubyte *pattern, GLuint dest[32],
                  | (p[3]      );
          p += 4;
       }
-      _mesa_free(ptrn);
+      free(ptrn);
    }
 }
 
@@ -1083,7 +1196,7 @@ _mesa_unpack_bitmap( GLint width, GLint height, const GLubyte *pixels,
 
    /* Alloc dest storage */
    bytes = ((width + 7) / 8 * height);
-   buffer = (GLubyte *) _mesa_malloc( bytes );
+   buffer = (GLubyte *) malloc( bytes );
    if (!buffer)
       return NULL;
 
@@ -1094,12 +1207,12 @@ _mesa_unpack_bitmap( GLint width, GLint height, const GLubyte *pixels,
          _mesa_image_address2d(packing, pixels, width, height,
                                GL_COLOR_INDEX, GL_BITMAP, row, 0);
       if (!src) {
-         _mesa_free(buffer);
+         free(buffer);
          return NULL;
       }
 
       if ((packing->SkipPixels & 7) == 0) {
-         _mesa_memcpy( dst, src, width_in_bytes );
+         memcpy( dst, src, width_in_bytes );
          if (packing->LsbFirst) {
             flip_bytes( dst, width_in_bytes );
          }
@@ -1191,7 +1304,7 @@ _mesa_pack_bitmap( GLint width, GLint height, const GLubyte *source,
          return;
 
       if ((packing->SkipPixels & 7) == 0) {
-         _mesa_memcpy( dst, src, width_in_bytes );
+         memcpy( dst, src, width_in_bytes );
          if (packing->LsbFirst) {
             flip_bytes( dst, width_in_bytes );
          }
@@ -3215,6 +3328,8 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
    GLint redIndex, greenIndex, blueIndex, alphaIndex;
    GLint stride;
    GLint rComp, bComp, gComp, aComp;
+   GLboolean intFormat;
+   GLfloat rs = 1.0f, gs = 1.0f, bs = 1.0f, as = 1.0f; /* scale factors */
 
    ASSERT(srcFormat == GL_RED ||
           srcFormat == GL_GREEN ||
@@ -3228,7 +3343,18 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
           srcFormat == GL_RGBA ||
           srcFormat == GL_BGRA ||
           srcFormat == GL_ABGR_EXT ||
-          srcFormat == GL_DUDV_ATI);
+          srcFormat == GL_DU8DV8_ATI ||
+          srcFormat == GL_DUDV_ATI ||
+          srcFormat == GL_RED_INTEGER_EXT ||
+          srcFormat == GL_GREEN_INTEGER_EXT ||
+          srcFormat == GL_BLUE_INTEGER_EXT ||
+          srcFormat == GL_ALPHA_INTEGER_EXT ||
+          srcFormat == GL_RGB_INTEGER_EXT ||
+          srcFormat == GL_RGBA_INTEGER_EXT ||
+          srcFormat == GL_BGR_INTEGER_EXT ||
+          srcFormat == GL_BGRA_INTEGER_EXT ||
+          srcFormat == GL_LUMINANCE_INTEGER_EXT ||
+          srcFormat == GL_LUMINANCE_ALPHA_INTEGER_EXT);
 
    ASSERT(srcType == GL_UNSIGNED_BYTE ||
           srcType == GL_BYTE ||
@@ -3255,31 +3381,37 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
 
    switch (srcFormat) {
       case GL_RED:
+      case GL_RED_INTEGER_EXT:
          redIndex = 0;
          greenIndex = blueIndex = alphaIndex = -1;
          stride = 1;
          break;
       case GL_GREEN:
+      case GL_GREEN_INTEGER_EXT:
          greenIndex = 0;
          redIndex = blueIndex = alphaIndex = -1;
          stride = 1;
          break;
       case GL_BLUE:
+      case GL_BLUE_INTEGER_EXT:
          blueIndex = 0;
          redIndex = greenIndex = alphaIndex = -1;
          stride = 1;
          break;
       case GL_ALPHA:
+      case GL_ALPHA_INTEGER_EXT:
          redIndex = greenIndex = blueIndex = -1;
          alphaIndex = 0;
          stride = 1;
          break;
       case GL_LUMINANCE:
+      case GL_LUMINANCE_INTEGER_EXT:
          redIndex = greenIndex = blueIndex = 0;
          alphaIndex = -1;
          stride = 1;
          break;
       case GL_LUMINANCE_ALPHA:
+      case GL_LUMINANCE_ALPHA_INTEGER_EXT:
          redIndex = greenIndex = blueIndex = 0;
          alphaIndex = 1;
          stride = 2;
@@ -3289,6 +3421,7 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          stride = 1;
          break;
       case GL_RGB:
+      case GL_RGB_INTEGER:
          redIndex = 0;
          greenIndex = 1;
          blueIndex = 2;
@@ -3311,6 +3444,7 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          stride = 3;
          break;
       case GL_RGBA:
+      case GL_RGBA_INTEGER:
          redIndex = 0;
          greenIndex = 1;
          blueIndex = 2;
@@ -3343,6 +3477,7 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          aComp = 0;
          stride = 4;
          break;
+      case GL_DU8DV8_ATI:
       case GL_DUDV_ATI:
          redIndex = 0;
          greenIndex = 1;
@@ -3351,16 +3486,25 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          stride = 2;
          break;
       default:
-         _mesa_problem(NULL, "bad srcFormat in extract float data");
+         _mesa_problem(NULL, "bad srcFormat %s in extract float data",
+                       _mesa_lookup_enum_by_nr(srcFormat));
          return;
    }
 
+   intFormat = _mesa_is_integer_format(srcFormat);
 
-#define PROCESS(INDEX, CHANNEL, DEFAULT, TYPE, CONVERSION)		\
+#define PROCESS(INDEX, CHANNEL, DEFAULT, DEFAULT_INT, TYPE, CONVERSION) \
    if ((INDEX) < 0) {							\
       GLuint i;								\
-      for (i = 0; i < n; i++) {						\
-         rgba[i][CHANNEL] = DEFAULT;					\
+      if (intFormat) {							\
+         for (i = 0; i < n; i++) {					\
+            rgba[i][CHANNEL] = DEFAULT_INT;				\
+         }								\
+      }									\
+      else {								\
+         for (i = 0; i < n; i++) {					\
+            rgba[i][CHANNEL] = DEFAULT;					\
+         }								\
       }									\
    }									\
    else if (swapBytes) {						\
@@ -3374,77 +3518,93 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          else if (sizeof(TYPE) == 4) {					\
             SWAP4BYTE(value);						\
          }								\
-         rgba[i][CHANNEL] = (GLfloat) CONVERSION(value);		\
+         if (intFormat)							\
+            rgba[i][CHANNEL] = (GLfloat) value;				\
+         else								\
+            rgba[i][CHANNEL] = (GLfloat) CONVERSION(value);		\
          s += stride;							\
       }									\
    }									\
    else {								\
       const TYPE *s = (const TYPE *) src;				\
       GLuint i;								\
-      for (i = 0; i < n; i++) {						\
-         rgba[i][CHANNEL] = (GLfloat) CONVERSION(s[INDEX]);		\
-         s += stride;							\
+      if (intFormat) {							\
+         for (i = 0; i < n; i++) {					\
+            rgba[i][CHANNEL] = (GLfloat) s[INDEX];			\
+            s += stride;						\
+         }								\
+      }									\
+      else {								\
+         for (i = 0; i < n; i++) {					\
+            rgba[i][CHANNEL] = (GLfloat) CONVERSION(s[INDEX]);		\
+            s += stride;						\
+         }								\
       }									\
    }
 
    switch (srcType) {
       case GL_UNSIGNED_BYTE:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLubyte, UBYTE_TO_FLOAT);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLubyte, UBYTE_TO_FLOAT);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLubyte, UBYTE_TO_FLOAT);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLubyte, UBYTE_TO_FLOAT);
+         PROCESS(redIndex,   RCOMP, 0.0F,   0, GLubyte, UBYTE_TO_FLOAT);
+         PROCESS(greenIndex, GCOMP, 0.0F,   0, GLubyte, UBYTE_TO_FLOAT);
+         PROCESS(blueIndex,  BCOMP, 0.0F,   0, GLubyte, UBYTE_TO_FLOAT);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 255, GLubyte, UBYTE_TO_FLOAT);
          break;
       case GL_BYTE:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLbyte, BYTE_TO_FLOAT);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLbyte, BYTE_TO_FLOAT);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLbyte, BYTE_TO_FLOAT);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLbyte, BYTE_TO_FLOAT);
+         PROCESS(redIndex,   RCOMP, 0.0F,   0, GLbyte, BYTE_TO_FLOAT);
+         PROCESS(greenIndex, GCOMP, 0.0F,   0, GLbyte, BYTE_TO_FLOAT);
+         PROCESS(blueIndex,  BCOMP, 0.0F,   0, GLbyte, BYTE_TO_FLOAT);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 127, GLbyte, BYTE_TO_FLOAT);
          break;
       case GL_UNSIGNED_SHORT:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLushort, USHORT_TO_FLOAT);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLushort, USHORT_TO_FLOAT);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLushort, USHORT_TO_FLOAT);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLushort, USHORT_TO_FLOAT);
+         PROCESS(redIndex,   RCOMP, 0.0F,      0, GLushort, USHORT_TO_FLOAT);
+         PROCESS(greenIndex, GCOMP, 0.0F,      0, GLushort, USHORT_TO_FLOAT);
+         PROCESS(blueIndex,  BCOMP, 0.0F,      0, GLushort, USHORT_TO_FLOAT);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 0xffff, GLushort, USHORT_TO_FLOAT);
          break;
       case GL_SHORT:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLshort, SHORT_TO_FLOAT);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLshort, SHORT_TO_FLOAT);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLshort, SHORT_TO_FLOAT);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLshort, SHORT_TO_FLOAT);
+         PROCESS(redIndex,   RCOMP, 0.0F,     0, GLshort, SHORT_TO_FLOAT);
+         PROCESS(greenIndex, GCOMP, 0.0F,     0, GLshort, SHORT_TO_FLOAT);
+         PROCESS(blueIndex,  BCOMP, 0.0F,     0, GLshort, SHORT_TO_FLOAT);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 32767, GLshort, SHORT_TO_FLOAT);
          break;
       case GL_UNSIGNED_INT:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLuint, UINT_TO_FLOAT);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLuint, UINT_TO_FLOAT);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLuint, UINT_TO_FLOAT);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLuint, UINT_TO_FLOAT);
+         PROCESS(redIndex,   RCOMP, 0.0F,          0, GLuint, UINT_TO_FLOAT);
+         PROCESS(greenIndex, GCOMP, 0.0F,          0, GLuint, UINT_TO_FLOAT);
+         PROCESS(blueIndex,  BCOMP, 0.0F,          0, GLuint, UINT_TO_FLOAT);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 0xffffffff, GLuint, UINT_TO_FLOAT);
          break;
       case GL_INT:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLint, INT_TO_FLOAT);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLint, INT_TO_FLOAT);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLint, INT_TO_FLOAT);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLint, INT_TO_FLOAT);
+         PROCESS(redIndex,   RCOMP, 0.0F,          0, GLint, INT_TO_FLOAT);
+         PROCESS(greenIndex, GCOMP, 0.0F,          0, GLint, INT_TO_FLOAT);
+         PROCESS(blueIndex,  BCOMP, 0.0F,          0, GLint, INT_TO_FLOAT);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 2147483647, GLint, INT_TO_FLOAT);
          break;
       case GL_FLOAT:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLfloat, (GLfloat));
-         PROCESS(greenIndex, GCOMP, 0.0F, GLfloat, (GLfloat));
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLfloat, (GLfloat));
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLfloat, (GLfloat));
+         PROCESS(redIndex,   RCOMP, 0.0F, 0.0F, GLfloat, (GLfloat));
+         PROCESS(greenIndex, GCOMP, 0.0F, 0.0F, GLfloat, (GLfloat));
+         PROCESS(blueIndex,  BCOMP, 0.0F, 0.0F, GLfloat, (GLfloat));
+         PROCESS(alphaIndex, ACOMP, 1.0F, 1.0F, GLfloat, (GLfloat));
          break;
       case GL_HALF_FLOAT_ARB:
-         PROCESS(redIndex,   RCOMP, 0.0F, GLhalfARB, _mesa_half_to_float);
-         PROCESS(greenIndex, GCOMP, 0.0F, GLhalfARB, _mesa_half_to_float);
-         PROCESS(blueIndex,  BCOMP, 0.0F, GLhalfARB, _mesa_half_to_float);
-         PROCESS(alphaIndex, ACOMP, 1.0F, GLhalfARB, _mesa_half_to_float);
+         PROCESS(redIndex,   RCOMP, 0.0F, 0.0F, GLhalfARB, _mesa_half_to_float);
+         PROCESS(greenIndex, GCOMP, 0.0F, 0.0F, GLhalfARB, _mesa_half_to_float);
+         PROCESS(blueIndex,  BCOMP, 0.0F, 0.0F, GLhalfARB, _mesa_half_to_float);
+         PROCESS(alphaIndex, ACOMP, 1.0F, 1.0F, GLhalfARB, _mesa_half_to_float);
          break;
       case GL_UNSIGNED_BYTE_3_3_2:
          {
             const GLubyte *ubsrc = (const GLubyte *) src;
             GLuint i;
+            if (!intFormat) {
+               rs = 1.0F / 7.0F;
+               gs = 1.0F / 7.0F;
+               bs = 1.0F / 3.0F;
+            }
             for (i = 0; i < n; i ++) {
                GLubyte p = ubsrc[i];
-               rgba[i][rComp] = ((p >> 5)      ) * (1.0F / 7.0F);
-               rgba[i][gComp] = ((p >> 2) & 0x7) * (1.0F / 7.0F);
-               rgba[i][bComp] = ((p     ) & 0x3) * (1.0F / 3.0F);
+               rgba[i][rComp] = ((p >> 5)      ) * rs;
+               rgba[i][gComp] = ((p >> 2) & 0x7) * gs;
+               rgba[i][bComp] = ((p     ) & 0x3) * bs;
                rgba[i][aComp] = 1.0F;
             }
          }
@@ -3453,25 +3613,35 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          {
             const GLubyte *ubsrc = (const GLubyte *) src;
             GLuint i;
+            if (!intFormat) {
+               rs = 1.0F / 7.0F;
+               gs = 1.0F / 7.0F;
+               bs = 1.0F / 3.0F;
+            }
             for (i = 0; i < n; i ++) {
                GLubyte p = ubsrc[i];
-               rgba[i][rComp] = ((p     ) & 0x7) * (1.0F / 7.0F);
-               rgba[i][gComp] = ((p >> 3) & 0x7) * (1.0F / 7.0F);
-               rgba[i][bComp] = ((p >> 6)      ) * (1.0F / 3.0F);
+               rgba[i][rComp] = ((p     ) & 0x7) * rs;
+               rgba[i][gComp] = ((p >> 3) & 0x7) * gs;
+               rgba[i][bComp] = ((p >> 6)      ) * bs;
                rgba[i][aComp] = 1.0F;
             }
          }
          break;
       case GL_UNSIGNED_SHORT_5_6_5:
+         if (!intFormat) {
+            rs = 1.0F / 31.0F;
+            gs = 1.0F / 63.0F;
+            bs = 1.0F / 31.0F;
+         }
          if (swapBytes) {
             const GLushort *ussrc = (const GLushort *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
                SWAP2BYTE(p);
-               rgba[i][rComp] = ((p >> 11)       ) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  5) & 0x3f) * (1.0F / 63.0F);
-               rgba[i][bComp] = ((p      ) & 0x1f) * (1.0F / 31.0F);
+               rgba[i][rComp] = ((p >> 11)       ) * rs;
+               rgba[i][gComp] = ((p >>  5) & 0x3f) * gs;
+               rgba[i][bComp] = ((p      ) & 0x1f) * bs;
                rgba[i][aComp] = 1.0F;
             }
          }
@@ -3480,23 +3650,28 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
-               rgba[i][rComp] = ((p >> 11)       ) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  5) & 0x3f) * (1.0F / 63.0F);
-               rgba[i][bComp] = ((p      ) & 0x1f) * (1.0F / 31.0F);
+               rgba[i][rComp] = ((p >> 11)       ) * rs;
+               rgba[i][gComp] = ((p >>  5) & 0x3f) * gs;
+               rgba[i][bComp] = ((p      ) & 0x1f) * bs;
                rgba[i][aComp] = 1.0F;
             }
          }
          break;
       case GL_UNSIGNED_SHORT_5_6_5_REV:
+         if (!intFormat) {
+            rs = 1.0F / 31.0F;
+            gs = 1.0F / 63.0F;
+            bs = 1.0F / 31.0F;
+         }
          if (swapBytes) {
             const GLushort *ussrc = (const GLushort *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
                SWAP2BYTE(p);
-               rgba[i][rComp] = ((p      ) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  5) & 0x3f) * (1.0F / 63.0F);
-               rgba[i][bComp] = ((p >> 11)       ) * (1.0F / 31.0F);
+               rgba[i][rComp] = ((p      ) & 0x1f) * rs;
+               rgba[i][gComp] = ((p >>  5) & 0x3f) * gs;
+               rgba[i][bComp] = ((p >> 11)       ) * bs;
                rgba[i][aComp] = 1.0F;
             }
          }
@@ -3505,24 +3680,27 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
-               rgba[i][rComp] = ((p      ) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  5) & 0x3f) * (1.0F / 63.0F);
-               rgba[i][bComp] = ((p >> 11)       ) * (1.0F / 31.0F);
+               rgba[i][rComp] = ((p      ) & 0x1f) * rs;
+               rgba[i][gComp] = ((p >>  5) & 0x3f) * gs;
+               rgba[i][bComp] = ((p >> 11)       ) * bs;
                rgba[i][aComp] = 1.0F;
             }
          }
          break;
       case GL_UNSIGNED_SHORT_4_4_4_4:
+         if (!intFormat) {
+            rs = gs = bs = as = 1.0F / 15.0F;
+         }
          if (swapBytes) {
             const GLushort *ussrc = (const GLushort *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
                SWAP2BYTE(p);
-               rgba[i][rComp] = ((p >> 12)      ) * (1.0F / 15.0F);
-               rgba[i][gComp] = ((p >>  8) & 0xf) * (1.0F / 15.0F);
-               rgba[i][bComp] = ((p >>  4) & 0xf) * (1.0F / 15.0F);
-               rgba[i][aComp] = ((p      ) & 0xf) * (1.0F / 15.0F);
+               rgba[i][rComp] = ((p >> 12)      ) * rs;
+               rgba[i][gComp] = ((p >>  8) & 0xf) * gs;
+               rgba[i][bComp] = ((p >>  4) & 0xf) * bs;
+               rgba[i][aComp] = ((p      ) & 0xf) * as;
             }
          }
          else {
@@ -3530,24 +3708,27 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
-               rgba[i][rComp] = ((p >> 12)      ) * (1.0F / 15.0F);
-               rgba[i][gComp] = ((p >>  8) & 0xf) * (1.0F / 15.0F);
-               rgba[i][bComp] = ((p >>  4) & 0xf) * (1.0F / 15.0F);
-               rgba[i][aComp] = ((p      ) & 0xf) * (1.0F / 15.0F);
+               rgba[i][rComp] = ((p >> 12)      ) * rs;
+               rgba[i][gComp] = ((p >>  8) & 0xf) * gs;
+               rgba[i][bComp] = ((p >>  4) & 0xf) * bs;
+               rgba[i][aComp] = ((p      ) & 0xf) * as;
             }
          }
          break;
       case GL_UNSIGNED_SHORT_4_4_4_4_REV:
+         if (!intFormat) {
+            rs = gs = bs = as = 1.0F / 15.0F;
+         }
          if (swapBytes) {
             const GLushort *ussrc = (const GLushort *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
                SWAP2BYTE(p);
-               rgba[i][rComp] = ((p      ) & 0xf) * (1.0F / 15.0F);
-               rgba[i][gComp] = ((p >>  4) & 0xf) * (1.0F / 15.0F);
-               rgba[i][bComp] = ((p >>  8) & 0xf) * (1.0F / 15.0F);
-               rgba[i][aComp] = ((p >> 12)      ) * (1.0F / 15.0F);
+               rgba[i][rComp] = ((p      ) & 0xf) * rs;
+               rgba[i][gComp] = ((p >>  4) & 0xf) * gs;
+               rgba[i][bComp] = ((p >>  8) & 0xf) * bs;
+               rgba[i][aComp] = ((p >> 12)      ) * as;
             }
          }
          else {
@@ -3555,24 +3736,27 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
-               rgba[i][rComp] = ((p      ) & 0xf) * (1.0F / 15.0F);
-               rgba[i][gComp] = ((p >>  4) & 0xf) * (1.0F / 15.0F);
-               rgba[i][bComp] = ((p >>  8) & 0xf) * (1.0F / 15.0F);
-               rgba[i][aComp] = ((p >> 12)      ) * (1.0F / 15.0F);
+               rgba[i][rComp] = ((p      ) & 0xf) * rs;
+               rgba[i][gComp] = ((p >>  4) & 0xf) * gs;
+               rgba[i][bComp] = ((p >>  8) & 0xf) * bs;
+               rgba[i][aComp] = ((p >> 12)      ) * as;
             }
          }
          break;
       case GL_UNSIGNED_SHORT_5_5_5_1:
+         if (!intFormat) {
+            rs = gs = bs = 1.0F / 31.0F;
+         }
          if (swapBytes) {
             const GLushort *ussrc = (const GLushort *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
                SWAP2BYTE(p);
-               rgba[i][rComp] = ((p >> 11)       ) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  6) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][bComp] = ((p >>  1) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][aComp] = ((p      ) & 0x1)  * (1.0F /  1.0F);
+               rgba[i][rComp] = ((p >> 11)       ) * rs;
+               rgba[i][gComp] = ((p >>  6) & 0x1f) * gs;
+               rgba[i][bComp] = ((p >>  1) & 0x1f) * bs;
+               rgba[i][aComp] = ((p      ) & 0x1)  * as;
             }
          }
          else {
@@ -3580,24 +3764,27 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
-               rgba[i][rComp] = ((p >> 11)       ) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  6) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][bComp] = ((p >>  1) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][aComp] = ((p      ) & 0x1)  * (1.0F /  1.0F);
+               rgba[i][rComp] = ((p >> 11)       ) * rs;
+               rgba[i][gComp] = ((p >>  6) & 0x1f) * gs;
+               rgba[i][bComp] = ((p >>  1) & 0x1f) * bs;
+               rgba[i][aComp] = ((p      ) & 0x1)  * as;
             }
          }
          break;
       case GL_UNSIGNED_SHORT_1_5_5_5_REV:
+         if (!intFormat) {
+            rs = gs = bs = 1.0F / 31.0F;
+         }
          if (swapBytes) {
             const GLushort *ussrc = (const GLushort *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
                SWAP2BYTE(p);
-               rgba[i][rComp] = ((p      ) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  5) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][bComp] = ((p >> 10) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][aComp] = ((p >> 15)       ) * (1.0F /  1.0F);
+               rgba[i][rComp] = ((p      ) & 0x1f) * rs;
+               rgba[i][gComp] = ((p >>  5) & 0x1f) * gs;
+               rgba[i][bComp] = ((p >> 10) & 0x1f) * bs;
+               rgba[i][aComp] = ((p >> 15)       ) * as;
             }
          }
          else {
@@ -3605,10 +3792,10 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLushort p = ussrc[i];
-               rgba[i][rComp] = ((p      ) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][gComp] = ((p >>  5) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][bComp] = ((p >> 10) & 0x1f) * (1.0F / 31.0F);
-               rgba[i][aComp] = ((p >> 15)       ) * (1.0F /  1.0F);
+               rgba[i][rComp] = ((p      ) & 0x1f) * rs;
+               rgba[i][gComp] = ((p >>  5) & 0x1f) * gs;
+               rgba[i][bComp] = ((p >> 10) & 0x1f) * bs;
+               rgba[i][aComp] = ((p >> 15)       ) * as;
             }
          }
          break;
@@ -3616,23 +3803,45 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          if (swapBytes) {
             const GLuint *uisrc = (const GLuint *) src;
             GLuint i;
-            for (i = 0; i < n; i ++) {
-               GLuint p = uisrc[i];
-               rgba[i][rComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
-               rgba[i][gComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
-               rgba[i][bComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
-               rgba[i][aComp] = UBYTE_TO_FLOAT((p >> 24)       );
+            if (intFormat) {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = (GLfloat) ((p      ) & 0xff);
+                  rgba[i][gComp] = (GLfloat) ((p >>  8) & 0xff);
+                  rgba[i][bComp] = (GLfloat) ((p >> 16) & 0xff);
+                  rgba[i][aComp] = (GLfloat) ((p >> 24)       );
+               }
+            }
+            else {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
+                  rgba[i][gComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
+                  rgba[i][bComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
+                  rgba[i][aComp] = UBYTE_TO_FLOAT((p >> 24)       );
+               }
             }
          }
          else {
             const GLuint *uisrc = (const GLuint *) src;
             GLuint i;
-            for (i = 0; i < n; i ++) {
-               GLuint p = uisrc[i];
-               rgba[i][rComp] = UBYTE_TO_FLOAT((p >> 24)       );
-               rgba[i][gComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
-               rgba[i][bComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
-               rgba[i][aComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
+            if (intFormat) {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = (GLfloat) ((p >> 24)       );
+                  rgba[i][gComp] = (GLfloat) ((p >> 16) & 0xff);
+                  rgba[i][bComp] = (GLfloat) ((p >>  8) & 0xff);
+                  rgba[i][aComp] = (GLfloat) ((p      ) & 0xff);
+               }
+            }
+            else {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = UBYTE_TO_FLOAT((p >> 24)       );
+                  rgba[i][gComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
+                  rgba[i][bComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
+                  rgba[i][aComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
+               }
             }
          }
          break;
@@ -3640,37 +3849,65 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
          if (swapBytes) {
             const GLuint *uisrc = (const GLuint *) src;
             GLuint i;
-            for (i = 0; i < n; i ++) {
-               GLuint p = uisrc[i];
-               rgba[i][rComp] = UBYTE_TO_FLOAT((p >> 24)       );
-               rgba[i][gComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
-               rgba[i][bComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
-               rgba[i][aComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
+            if (intFormat) {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = (GLfloat) ((p >> 24)       );
+                  rgba[i][gComp] = (GLfloat) ((p >> 16) & 0xff);
+                  rgba[i][bComp] = (GLfloat) ((p >>  8) & 0xff);
+                  rgba[i][aComp] = (GLfloat) ((p      ) & 0xff);
+               }
+            }
+            else {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = UBYTE_TO_FLOAT((p >> 24)       );
+                  rgba[i][gComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
+                  rgba[i][bComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
+                  rgba[i][aComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
+               }
             }
          }
          else {
             const GLuint *uisrc = (const GLuint *) src;
             GLuint i;
-            for (i = 0; i < n; i ++) {
-               GLuint p = uisrc[i];
-               rgba[i][rComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
-               rgba[i][gComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
-               rgba[i][bComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
-               rgba[i][aComp] = UBYTE_TO_FLOAT((p >> 24)       );
+            if (intFormat) {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = (GLfloat) ((p      ) & 0xff);
+                  rgba[i][gComp] = (GLfloat) ((p >>  8) & 0xff);
+                  rgba[i][bComp] = (GLfloat) ((p >> 16) & 0xff);
+                  rgba[i][aComp] = (GLfloat) ((p >> 24)       );
+               }
+            }
+            else {
+               for (i = 0; i < n; i ++) {
+                  GLuint p = uisrc[i];
+                  rgba[i][rComp] = UBYTE_TO_FLOAT((p      ) & 0xff);
+                  rgba[i][gComp] = UBYTE_TO_FLOAT((p >>  8) & 0xff);
+                  rgba[i][bComp] = UBYTE_TO_FLOAT((p >> 16) & 0xff);
+                  rgba[i][aComp] = UBYTE_TO_FLOAT((p >> 24)       );
+               }
             }
          }
          break;
       case GL_UNSIGNED_INT_10_10_10_2:
+         if (!intFormat) {
+            rs = 1.0F / 1023.0F;
+            gs = 1.0F / 1023.0F;
+            bs = 1.0F / 1023.0F;
+            as = 1.0F / 3.0F;
+         }
          if (swapBytes) {
             const GLuint *uisrc = (const GLuint *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLuint p = uisrc[i];
                SWAP4BYTE(p);
-               rgba[i][rComp] = ((p >> 22)        ) * (1.0F / 1023.0F);
-               rgba[i][gComp] = ((p >> 12) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][bComp] = ((p >>  2) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][aComp] = ((p      ) & 0x3  ) * (1.0F /    3.0F);
+               rgba[i][rComp] = ((p >> 22)        ) * rs;
+               rgba[i][gComp] = ((p >> 12) & 0x3ff) * gs;
+               rgba[i][bComp] = ((p >>  2) & 0x3ff) * bs;
+               rgba[i][aComp] = ((p      ) & 0x3  ) * as;
             }
          }
          else {
@@ -3678,24 +3915,30 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLuint p = uisrc[i];
-               rgba[i][rComp] = ((p >> 22)        ) * (1.0F / 1023.0F);
-               rgba[i][gComp] = ((p >> 12) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][bComp] = ((p >>  2) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][aComp] = ((p      ) & 0x3  ) * (1.0F /    3.0F);
+               rgba[i][rComp] = ((p >> 22)        ) * rs;
+               rgba[i][gComp] = ((p >> 12) & 0x3ff) * gs;
+               rgba[i][bComp] = ((p >>  2) & 0x3ff) * bs;
+               rgba[i][aComp] = ((p      ) & 0x3  ) * as;
             }
          }
          break;
       case GL_UNSIGNED_INT_2_10_10_10_REV:
+         if (!intFormat) {
+            rs = 1.0F / 1023.0F;
+            gs = 1.0F / 1023.0F;
+            bs = 1.0F / 1023.0F;
+            as = 1.0F / 3.0F;
+         }
          if (swapBytes) {
             const GLuint *uisrc = (const GLuint *) src;
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLuint p = uisrc[i];
                SWAP4BYTE(p);
-               rgba[i][rComp] = ((p      ) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][gComp] = ((p >> 10) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][bComp] = ((p >> 20) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][aComp] = ((p >> 30)        ) * (1.0F /    3.0F);
+               rgba[i][rComp] = ((p      ) & 0x3ff) * rs;
+               rgba[i][gComp] = ((p >> 10) & 0x3ff) * gs;
+               rgba[i][bComp] = ((p >> 20) & 0x3ff) * bs;
+               rgba[i][aComp] = ((p >> 30)        ) * as;
             }
          }
          else {
@@ -3703,10 +3946,10 @@ extract_float_rgba(GLuint n, GLfloat rgba[][4],
             GLuint i;
             for (i = 0; i < n; i ++) {
                GLuint p = uisrc[i];
-               rgba[i][rComp] = ((p      ) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][gComp] = ((p >> 10) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][bComp] = ((p >> 20) & 0x3ff) * (1.0F / 1023.0F);
-               rgba[i][aComp] = ((p >> 30)        ) * (1.0F /    3.0F);
+               rgba[i][rComp] = ((p      ) & 0x3ff) * rs;
+               rgba[i][gComp] = ((p >> 10) & 0x3ff) * gs;
+               rgba[i][bComp] = ((p >> 20) & 0x3ff) * bs;
+               rgba[i][aComp] = ((p >> 30)        ) * as;
             }
          }
          break;
@@ -3791,7 +4034,7 @@ _mesa_unpack_color_span_chan( GLcontext *ctx,
       if (srcType == CHAN_TYPE) {
          if (dstFormat == GL_RGBA) {
             if (srcFormat == GL_RGBA) {
-               _mesa_memcpy( dest, source, n * 4 * sizeof(GLchan) );
+               memcpy( dest, source, n * 4 * sizeof(GLchan) );
                return;
             }
             else if (srcFormat == GL_RGB) {
@@ -3811,7 +4054,7 @@ _mesa_unpack_color_span_chan( GLcontext *ctx,
          }
          else if (dstFormat == GL_RGB) {
             if (srcFormat == GL_RGB) {
-               _mesa_memcpy( dest, source, n * 3 * sizeof(GLchan) );
+               memcpy( dest, source, n * 3 * sizeof(GLchan) );
                return;
             }
             else if (srcFormat == GL_RGBA) {
@@ -3831,7 +4074,7 @@ _mesa_unpack_color_span_chan( GLcontext *ctx,
          else if (dstFormat == srcFormat) {
             GLint comps = _mesa_components_in_format(srcFormat);
             assert(comps > 0);
-            _mesa_memcpy( dest, source, n * comps * sizeof(GLchan) );
+            memcpy( dest, source, n * comps * sizeof(GLchan) );
             return;
          }
       }
@@ -4098,6 +4341,16 @@ _mesa_unpack_color_span_float( GLcontext *ctx,
           srcFormat == GL_RGBA ||
           srcFormat == GL_BGRA ||
           srcFormat == GL_ABGR_EXT ||
+          srcFormat == GL_RED_INTEGER_EXT ||
+          srcFormat == GL_GREEN_INTEGER_EXT ||
+          srcFormat == GL_BLUE_INTEGER_EXT ||
+          srcFormat == GL_ALPHA_INTEGER_EXT ||
+          srcFormat == GL_RGB_INTEGER_EXT ||
+          srcFormat == GL_RGBA_INTEGER_EXT ||
+          srcFormat == GL_BGR_INTEGER_EXT ||
+          srcFormat == GL_BGRA_INTEGER_EXT ||
+          srcFormat == GL_LUMINANCE_INTEGER_EXT ||
+          srcFormat == GL_LUMINANCE_ALPHA_INTEGER_EXT ||
           srcFormat == GL_COLOR_INDEX);
 
    ASSERT(srcType == GL_BITMAP ||
@@ -4378,11 +4631,11 @@ _mesa_unpack_index_span( const GLcontext *ctx, GLuint n,
     */
    if (transferOps == 0 && srcType == GL_UNSIGNED_BYTE
        && dstType == GL_UNSIGNED_BYTE) {
-      _mesa_memcpy(dest, source, n * sizeof(GLubyte));
+      memcpy(dest, source, n * sizeof(GLubyte));
    }
    else if (transferOps == 0 && srcType == GL_UNSIGNED_INT
             && dstType == GL_UNSIGNED_INT && !srcPacking->SwapBytes) {
-      _mesa_memcpy(dest, source, n * sizeof(GLuint));
+      memcpy(dest, source, n * sizeof(GLuint));
    }
    else {
       /*
@@ -4418,7 +4671,7 @@ _mesa_unpack_index_span( const GLcontext *ctx, GLuint n,
             }
             break;
          case GL_UNSIGNED_INT:
-            _mesa_memcpy(dest, indexes, n * sizeof(GLuint));
+            memcpy(dest, indexes, n * sizeof(GLuint));
             break;
          default:
             _mesa_problem(ctx, "bad dstType in _mesa_unpack_index_span");
@@ -4441,7 +4694,7 @@ _mesa_pack_index_span( const GLcontext *ctx, GLuint n,
 
    if (transferOps & (IMAGE_MAP_COLOR_BIT | IMAGE_SHIFT_OFFSET_BIT)) {
       /* make a copy of input */
-      _mesa_memcpy(indexes, source, n * sizeof(GLuint));
+      memcpy(indexes, source, n * sizeof(GLuint));
       _mesa_apply_ci_transfer_ops(ctx, transferOps, n, indexes);
       source = indexes;
    }
@@ -4589,14 +4842,14 @@ _mesa_unpack_stencil_span( const GLcontext *ctx, GLuint n,
        !ctx->Pixel.MapStencilFlag &&
        srcType == GL_UNSIGNED_BYTE &&
        dstType == GL_UNSIGNED_BYTE) {
-      _mesa_memcpy(dest, source, n * sizeof(GLubyte));
+      memcpy(dest, source, n * sizeof(GLubyte));
    }
    else if (transferOps == 0 &&
             !ctx->Pixel.MapStencilFlag &&
             srcType == GL_UNSIGNED_INT &&
             dstType == GL_UNSIGNED_INT &&
             !srcPacking->SwapBytes) {
-      _mesa_memcpy(dest, source, n * sizeof(GLuint));
+      memcpy(dest, source, n * sizeof(GLuint));
    }
    else {
       /*
@@ -4643,7 +4896,7 @@ _mesa_unpack_stencil_span( const GLcontext *ctx, GLuint n,
             }
             break;
          case GL_UNSIGNED_INT:
-            _mesa_memcpy(dest, indexes, n * sizeof(GLuint));
+            memcpy(dest, indexes, n * sizeof(GLuint));
             break;
          default:
             _mesa_problem(ctx, "bad dstType in _mesa_unpack_stencil_span");
@@ -4664,7 +4917,7 @@ _mesa_pack_stencil_span( const GLcontext *ctx, GLuint n,
    if (ctx->Pixel.IndexShift || ctx->Pixel.IndexOffset ||
        ctx->Pixel.MapStencilFlag) {
       /* make a copy of input */
-      _mesa_memcpy(stencil, source, n * sizeof(GLstencil));
+      memcpy(stencil, source, n * sizeof(GLstencil));
       _mesa_apply_stencil_transfer_ops(ctx, n, stencil);
       source = stencil;
    }
@@ -4672,7 +4925,7 @@ _mesa_pack_stencil_span( const GLcontext *ctx, GLuint n,
    switch (dstType) {
    case GL_UNSIGNED_BYTE:
       if (sizeof(GLstencil) == 1) {
-         _mesa_memcpy( dest, source, n );
+         memcpy( dest, source, n );
       }
       else {
          GLubyte *dst = (GLubyte *) dest;
@@ -5036,7 +5289,7 @@ _mesa_pack_depth_span( const GLcontext *ctx, GLuint n, GLvoid *dest,
    ASSERT(n <= MAX_WIDTH);
 
    if (ctx->Pixel.DepthScale != 1.0 || ctx->Pixel.DepthBias != 0.0) {
-      _mesa_memcpy(depthCopy, depthSpan, n * sizeof(GLfloat));
+      memcpy(depthCopy, depthSpan, n * sizeof(GLfloat));
       _mesa_scale_and_bias_depth(ctx, n, depthCopy);
       depthSpan = depthCopy;
    }
@@ -5155,7 +5408,7 @@ _mesa_pack_depth_stencil_span(const GLcontext *ctx, GLuint n, GLuint *dest,
    ASSERT(n <= MAX_WIDTH);
 
    if (ctx->Pixel.DepthScale != 1.0 || ctx->Pixel.DepthBias != 0.0) {
-      _mesa_memcpy(depthCopy, depthVals, n * sizeof(GLfloat));
+      memcpy(depthCopy, depthVals, n * sizeof(GLfloat));
       _mesa_scale_and_bias_depth(ctx, n, depthCopy);
       depthVals = depthCopy;
    }
@@ -5163,7 +5416,7 @@ _mesa_pack_depth_stencil_span(const GLcontext *ctx, GLuint n, GLuint *dest,
    if (ctx->Pixel.IndexShift ||
        ctx->Pixel.IndexOffset ||
        ctx->Pixel.MapStencilFlag) {
-      _mesa_memcpy(stencilCopy, stencilVals, n * sizeof(GLstencil));
+      memcpy(stencilCopy, stencilVals, n * sizeof(GLstencil));
       _mesa_apply_stencil_transfer_ops(ctx, n, stencilCopy);
       stencilVals = stencilCopy;
    }
@@ -5229,7 +5482,7 @@ _mesa_unpack_image( GLuint dimensions,
 
    {
       GLubyte *destBuffer
-         = (GLubyte *) _mesa_malloc(bytesPerRow * height * depth);
+         = (GLubyte *) malloc(bytesPerRow * height * depth);
       GLubyte *dst;
       GLint img, row;
       if (!destBuffer)
@@ -5300,7 +5553,7 @@ _mesa_unpack_image( GLuint dimensions,
                }
             }
             else {
-               _mesa_memcpy(dst, src, bytesPerRow);
+               memcpy(dst, src, bytesPerRow);
             }
 
             /* byte flipping/swapping */
@@ -5353,7 +5606,7 @@ _mesa_convert_colors(GLenum srcType, const GLvoid *src,
             }
          }
          if (useTemp)
-            _mesa_memcpy(dst, tempBuffer, count * 4 * sizeof(GLushort));
+            memcpy(dst, tempBuffer, count * 4 * sizeof(GLushort));
       }
       else {
          const GLubyte (*src1)[4] = (const GLubyte (*)[4]) src;
@@ -5369,7 +5622,7 @@ _mesa_convert_colors(GLenum srcType, const GLvoid *src,
             }
          }
          if (useTemp)
-            _mesa_memcpy(dst, tempBuffer, count * 4 * sizeof(GLfloat));
+            memcpy(dst, tempBuffer, count * 4 * sizeof(GLfloat));
       }
       break;
    case GL_UNSIGNED_SHORT:
@@ -5386,7 +5639,7 @@ _mesa_convert_colors(GLenum srcType, const GLvoid *src,
             }
          }
          if (useTemp)
-            _mesa_memcpy(dst, tempBuffer, count * 4 * sizeof(GLubyte));
+            memcpy(dst, tempBuffer, count * 4 * sizeof(GLubyte));
       }
       else {
          const GLushort (*src2)[4] = (const GLushort (*)[4]) src;
@@ -5402,7 +5655,7 @@ _mesa_convert_colors(GLenum srcType, const GLvoid *src,
             }
          }
          if (useTemp)
-            _mesa_memcpy(dst, tempBuffer, count * 4 * sizeof(GLfloat));
+            memcpy(dst, tempBuffer, count * 4 * sizeof(GLfloat));
       }
       break;
    case GL_FLOAT:
@@ -5419,7 +5672,7 @@ _mesa_convert_colors(GLenum srcType, const GLvoid *src,
             }
          }
          if (useTemp)
-            _mesa_memcpy(dst, tempBuffer, count * 4 * sizeof(GLubyte));
+            memcpy(dst, tempBuffer, count * 4 * sizeof(GLubyte));
       }
       else {
          const GLfloat (*src4)[4] = (const GLfloat (*)[4]) src;
@@ -5435,7 +5688,7 @@ _mesa_convert_colors(GLenum srcType, const GLvoid *src,
             }
          }
          if (useTemp)
-            _mesa_memcpy(dst, tempBuffer, count * 4 * sizeof(GLushort));
+            memcpy(dst, tempBuffer, count * 4 * sizeof(GLushort));
       }
       break;
    default:
@@ -5659,7 +5912,7 @@ clip_right_or_top(GLint *srcX0, GLint *srcX1,
       /* chop off [t, 1] part */
       ASSERT(t >= 0.0 && t <= 1.0);
       *dstX1 = maxValue;
-      bias = (*srcX0 < *srcX1) ? 0.5 : -0.5;
+      bias = (*srcX0 < *srcX1) ? 0.5F : -0.5F;
       *srcX1 = *srcX0 + (GLint) (t * (*srcX1 - *srcX0) + bias);
    }
    else if (*dstX0 > maxValue) {
@@ -5669,7 +5922,7 @@ clip_right_or_top(GLint *srcX0, GLint *srcX1,
       /* chop off [t, 1] part */
       ASSERT(t >= 0.0 && t <= 1.0);
       *dstX0 = maxValue;
-      bias = (*srcX0 < *srcX1) ? -0.5 : 0.5;
+      bias = (*srcX0 < *srcX1) ? -0.5F : 0.5F;
       *srcX0 = *srcX1 + (GLint) (t * (*srcX0 - *srcX1) + bias);
    }
 }
@@ -5692,7 +5945,7 @@ clip_left_or_bottom(GLint *srcX0, GLint *srcX1,
       /* chop off [0, t] part */
       ASSERT(t >= 0.0 && t <= 1.0);
       *dstX0 = minValue;
-      bias = (*srcX0 < *srcX1) ? 0.5 : -0.5; /* flipped??? */
+      bias = (*srcX0 < *srcX1) ? 0.5F : -0.5F; /* flipped??? */
       *srcX0 = *srcX0 + (GLint) (t * (*srcX1 - *srcX0) + bias);
    }
    else if (*dstX1 < minValue) {
@@ -5702,7 +5955,7 @@ clip_left_or_bottom(GLint *srcX0, GLint *srcX1,
       /* chop off [0, t] part */
       ASSERT(t >= 0.0 && t <= 1.0);
       *dstX1 = minValue;
-      bias = (*srcX0 < *srcX1) ? 0.5 : -0.5;
+      bias = (*srcX0 < *srcX1) ? 0.5F : -0.5F;
       *srcX1 = *srcX1 + (GLint) (t * (*srcX0 - *srcX1) + bias);
    }
 }

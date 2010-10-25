@@ -40,11 +40,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "main/context.h"
 #include "main/simple_list.h"
 #include "main/imports.h"
-#include "main/matrix.h"
 #include "main/extensions.h"
-#include "main/state.h"
 #include "main/bufferobj.h"
 #include "main/texobj.h"
+#include "main/points.h"
 
 #include "swrast/swrast.h"
 #include "swrast_setup/swrast_setup.h"
@@ -52,7 +51,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "tnl/tnl.h"
 #include "tnl/t_pipeline.h"
-#include "tnl/t_vp_build.h"
 
 #include "drivers/common/driverfuncs.h"
 
@@ -62,19 +60,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_buffer_objects.h"
 #include "radeon_span.h"
 #include "r600_cmdbuf.h"
-#include "r600_emit.h"
 #include "radeon_bocs_wrapper.h"
 #include "radeon_queryobj.h"
+#include "r600_blit.h"
 
 #include "r700_state.h"
 #include "r700_ioctl.h"
 
+#include "evergreen_context.h"
+#include "evergreen_state.h"
+#include "evergreen_tex.h"
+#include "evergreen_ioctl.h"
+#include "evergreen_oglprog.h"
 
-#include "vblank.h"
 #include "utils.h"
-#include "xmlpool.h"		/* for symbolic values of enum-type options */
+
+#define R600_ENABLE_GLSL_TEST 1
 
 #define need_GL_VERSION_2_0
+#define need_GL_VERSION_2_1
+#define need_GL_ARB_draw_elements_base_vertex
 #define need_GL_ARB_occlusion_query
 #define need_GL_ARB_point_parameters
 #define need_GL_ARB_vertex_program
@@ -97,6 +102,7 @@ static const struct dri_extension card_extensions[] = {
   {"GL_ARB_depth_clamp",                NULL},
   {"GL_ARB_depth_texture",		NULL},
   {"GL_ARB_fragment_program",		NULL},
+  {"GL_ARB_fragment_program_shadow",	NULL},
   {"GL_ARB_occlusion_query",            GL_ARB_occlusion_query_functions},
   {"GL_ARB_multitexture",		NULL},
   {"GL_ARB_point_parameters",		GL_ARB_point_parameters_functions},
@@ -109,6 +115,7 @@ static const struct dri_extension card_extensions[] = {
   {"GL_ARB_texture_env_crossbar",	NULL},
   {"GL_ARB_texture_env_dot3",		NULL},
   {"GL_ARB_texture_mirrored_repeat",	NULL},
+  {"GL_ARB_texture_non_power_of_two",   NULL},
   {"GL_ARB_vertex_program",		GL_ARB_vertex_program_functions},
   {"GL_EXT_blend_equation_separate",	GL_EXT_blend_equation_separate_functions},
   {"GL_EXT_blend_func_separate",	GL_EXT_blend_func_separate_functions},
@@ -140,6 +147,8 @@ static const struct dri_extension card_extensions[] = {
   {"GL_NV_blend_square",		NULL},
   {"GL_NV_vertex_program",		GL_NV_vertex_program_functions},
   {"GL_SGIS_generate_mipmap",		NULL},
+  {"GL_ARB_pixel_buffer_object",        NULL},
+  {"GL_ARB_draw_elements_base_vertex",	GL_ARB_draw_elements_base_vertex_functions },
   {NULL,				NULL}
   /* *INDENT-ON* */
 };
@@ -155,7 +164,12 @@ static const struct dri_extension mm_extensions[] = {
  * functions added by GL_ATI_separate_stencil.
  */
 static const struct dri_extension gl_20_extension[] = {
+#ifdef R600_ENABLE_GLSL_TEST
+    {"GL_ARB_shading_language_100",			GL_VERSION_2_0_functions },
+#else
   {"GL_VERSION_2_0",			GL_VERSION_2_0_functions },
+#endif /* R600_ENABLE_GLSL_TEST */
+  {NULL, NULL}
 };
 
 static const struct tnl_pipeline_stage *r600_pipeline[] = {
@@ -213,7 +227,7 @@ static void r600_emit_query_finish(radeonContextPtr radeon)
 
 	BEGIN_BATCH_NO_AUTOSTATE(4 + 2);
 	R600_OUT_BATCH(CP_PACKET3(R600_IT_EVENT_WRITE, 2));
-	R600_OUT_BATCH(ZPASS_DONE);
+	R600_OUT_BATCH(R600_EVENT_TYPE(ZPASS_DONE) | R600_EVENT_INDEX(1));
 	R600_OUT_BATCH(query->curr_offset + 8); /* hw writes qwords */
 	R600_OUT_BATCH(0x00000000);
 	R600_OUT_BATCH_RELOC(VGT_EVENT_INITIATOR, query->bo, 0, 0, RADEON_GEM_DOMAIN_GTT, 0);
@@ -231,19 +245,40 @@ static void r600_init_vtbl(radeonContextPtr radeon)
 	radeon->vtbl.pre_emit_atoms = r600_vtbl_pre_emit_atoms;
 	radeon->vtbl.fallback = r600_fallback;
 	radeon->vtbl.emit_query_finish = r600_emit_query_finish;
+	radeon->vtbl.check_blit = r600_check_blit;
+	radeon->vtbl.blit = r600_blit;
+	radeon->vtbl.is_format_renderable = r600IsFormatRenderable;
 }
 
 static void r600InitConstValues(GLcontext *ctx, radeonScreenPtr screen)
 {
-	context_t *r600 = R700_CONTEXT(ctx);
+    context_t         *context = R700_CONTEXT(ctx);
+    R700_CHIP_CONTEXT *r700    = (R700_CHIP_CONTEXT*)(&context->hw);
 
-	ctx->Const.MaxTextureImageUnits =
-	    driQueryOptioni(&r600->radeon.optionCache, "texture_image_units");
-	ctx->Const.MaxTextureCoordUnits =
-	    driQueryOptioni(&r600->radeon.optionCache, "texture_coord_units");
+    if(  (context->radeon.radeonScreen->chip_family >= CHIP_FAMILY_CEDAR)
+       &&(context->radeon.radeonScreen->chip_family <= CHIP_FAMILY_HEMLOCK) )
+    {
+        r700->bShaderUseMemConstant = GL_TRUE;
+    }
+    else
+    {
+        r700->bShaderUseMemConstant = GL_FALSE;
+    }
+
+        ctx->Const.GLSLVersion = 120;
+
+	ctx->Const.MaxTextureImageUnits = 16;
+	/* 8 per clause on r6xx, 16 on r7xx
+	 * but I think mesa only supports 8 at the moment
+	 */
+	ctx->Const.MaxTextureCoordUnits = 8;
 	ctx->Const.MaxTextureUnits =
 	    MIN2(ctx->Const.MaxTextureImageUnits,
 		 ctx->Const.MaxTextureCoordUnits);
+	ctx->Const.MaxCombinedTextureImageUnits =
+		ctx->Const.MaxVertexTextureImageUnits +
+		ctx->Const.MaxTextureImageUnits;
+
 	ctx->Const.MaxTextureMaxAnisotropy = 16.0;
 	ctx->Const.MaxTextureLodBias = 16.0;
 
@@ -261,6 +296,8 @@ static void r600InitConstValues(GLcontext *ctx, radeonScreenPtr screen)
 	ctx->Const.MaxLineWidthAA = 0xffff / 8.0;
 
 	ctx->Const.MaxDrawBuffers = 1; /* hw supports 8 */
+	ctx->Const.MaxColorAttachments = 1;
+	ctx->Const.MaxRenderbufferSize = 4096;
 
 	/* 256 for reg-based consts, inline consts also supported */
 	ctx->Const.VertexProgram.MaxInstructions = 8192; /* in theory no limit */
@@ -275,9 +312,8 @@ static void r600InitConstValues(GLcontext *ctx, radeonScreenPtr screen)
 	ctx->Const.FragmentProgram.MaxNativeAttribs = 32;
 	ctx->Const.FragmentProgram.MaxNativeParameters = 256;
 	ctx->Const.FragmentProgram.MaxNativeAluInstructions = 8192;
-	/* 8 per clause on r6xx, 16 on rv670/r7xx */
-	if ((screen->chip_family == CHIP_FAMILY_RV670) ||
-	    (screen->chip_family >= CHIP_FAMILY_RV770))
+	/* 8 per clause on r6xx, 16 on r7xx */
+	if (screen->chip_family >= CHIP_FAMILY_RV770)
 		ctx->Const.FragmentProgram.MaxNativeTexInstructions = 16;
 	else
 		ctx->Const.FragmentProgram.MaxNativeTexInstructions = 8;
@@ -303,10 +339,22 @@ static void r600ParseOptions(context_t *r600, radeonScreenPtr screen)
 static void r600InitGLExtensions(GLcontext *ctx)
 {
 	context_t *r600 = R700_CONTEXT(ctx);
+#ifdef R600_ENABLE_GLSL_TEST
+	unsigned i;
+#endif
 
 	driInitExtensions(ctx, card_extensions, GL_TRUE);
 	if (r600->radeon.radeonScreen->kernel_mm)
 	  driInitExtensions(ctx, mm_extensions, GL_FALSE);
+
+#ifdef R600_ENABLE_GLSL_TEST
+    driInitExtensions(ctx, gl_20_extension, GL_TRUE);
+    _mesa_enable_2_0_extensions(ctx);
+    
+	/* glsl compiler has problem if this is not GL_TRUE */
+	for (i = 0; i <= MESA_SHADER_FRAGMENT; i++)
+		ctx->ShaderCompilerOptions[i].EmitCondCodes = GL_TRUE;
+#endif /* R600_ENABLE_GLSL_TEST */
 
 	if (driQueryOptionb
 	    (&r600->radeon.optionCache, "disable_stencil_two_side"))
@@ -322,18 +370,22 @@ static void r600InitGLExtensions(GLcontext *ctx)
 		_mesa_enable_extension(ctx, "GL_EXT_texture_compression_s3tc");
 	}
 
-	/* XXX: RV740 only seems to report results from half of its DBs */
-	if (r600->radeon.radeonScreen->chip_family == CHIP_FAMILY_RV740)
-		_mesa_disable_extension(ctx, "GL_ARB_occlusion_query");
+	/* RV740 had a broken pipe config prior to drm 1.32 */
+	if (!r600->radeon.radeonScreen->kernel_mm) {
+		if ((r600->radeon.dri.drmMinor < 32) &&
+		    (r600->radeon.radeonScreen->chip_family == CHIP_FAMILY_RV740))
+			_mesa_disable_extension(ctx, "GL_ARB_occlusion_query");
+	}
 }
 
 /* Create the device specific rendering context.
  */
-GLboolean r600CreateContext(const __GLcontextModes * glVisual,
-			    __DRIcontextPrivate * driContextPriv,
+GLboolean r600CreateContext(gl_api api,
+			    const __GLcontextModes * glVisual,
+			    __DRIcontext * driContextPriv,
 			    void *sharedContextPrivate)
 {
-	__DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
+	__DRIscreen *sPriv = driContextPriv->driScreenPriv;
 	radeonScreenPtr screen = (radeonScreenPtr) (sPriv->private);
 	struct dd_function_table functions;
 	context_t *r600;
@@ -353,18 +405,45 @@ GLboolean r600CreateContext(const __GLcontextModes * glVisual,
 	r600ParseOptions(r600, screen);
 
 	r600->radeon.radeonScreen = screen;
-	r600_init_vtbl(&r600->radeon);
 
+    if(screen->chip_family >= CHIP_FAMILY_CEDAR)
+    {
+	    evergreen_init_vtbl(&r600->radeon);
+    }
+    else
+    {
+        r600_init_vtbl(&r600->radeon);
+    }
+    
 	/* Init default driver functions then plug in our R600-specific functions
 	 * (the texture functions are especially important)
 	 */
 	_mesa_init_driver_functions(&functions);
 
-	r700InitStateFuncs(&functions);
-	r600InitTextureFuncs(&functions);
-	r700InitShaderFuncs(&functions);
+    if(screen->chip_family >= CHIP_FAMILY_CEDAR)
+    {
+        evergreenCreateChip(r600);
+        evergreenInitStateFuncs(&r600->radeon, &functions);
+	    evergreenInitTextureFuncs(&r600->radeon, &functions);
+	    evergreenInitShaderFuncs(&functions);
+    }
+    else
+    {
+	    r700InitStateFuncs(&r600->radeon, &functions);
+	    r600InitTextureFuncs(&r600->radeon, &functions);
+	    r700InitShaderFuncs(&functions);
+    }
+    
 	radeonInitQueryObjFunctions(&functions);
-	r700InitIoctlFuncs(&functions);
+
+    if(screen->chip_family >= CHIP_FAMILY_CEDAR)
+    {
+        evergreenInitIoctlFuncs(&functions);
+    }
+    else
+    {
+	    r700InitIoctlFuncs(&functions);
+    }
 	radeonInitBufferObjectFuncs(&functions);
 
 	if (!radeonInitContext(&r600->radeon, &functions,
@@ -381,6 +460,9 @@ GLboolean r600CreateContext(const __GLcontextModes * glVisual,
 	ctx->FragmentProgram._MaintainTexEnvProgram = GL_TRUE;
 
 	r600InitConstValues(ctx, screen);
+
+	/* reinit, it depends on consts above */
+	_mesa_init_point(ctx);
 
 	_mesa_set_mvp_with_dp4( ctx, GL_TRUE );
 
@@ -407,16 +489,46 @@ GLboolean r600CreateContext(const __GLcontextModes * glVisual,
 
 	radeon_init_debug();
 
-	r700InitDraw(ctx);
+    if(screen->chip_family >= CHIP_FAMILY_CEDAR)
+    {
+        evergreenInitDraw(ctx);
+    }
+    else
+    {
+	    r700InitDraw(ctx);
+    }
 
 	radeon_fbo_init(&r600->radeon);
    	radeonInitSpanFuncs( ctx );
 	r600InitCmdBuf(r600);
-	r700InitState(r600->radeon.glCtx);
+
+    if(screen->chip_family >= CHIP_FAMILY_CEDAR)
+    {
+        evergreenInitState(r600->radeon.glCtx);
+    }
+    else
+    {
+	    r700InitState(r600->radeon.glCtx);
+    }
 
 	r600InitGLExtensions(ctx);
 
 	return GL_TRUE;
+}
+
+void r600DestroyContext(__DRIcontext *driContextPriv )
+{
+    void      *pChip;
+    context_t *context = (context_t *) driContextPriv->driverPrivate;
+
+    assert(context);
+
+    pChip = context->pChip;
+
+    /* destroy context first, free pChip, in case there are things flush to asic. */
+    radeonDestroyContext(driContextPriv);
+
+    FREE(pChip);
 }
 
 

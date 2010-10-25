@@ -23,7 +23,7 @@
  *
  **********************************************************/
 
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 #include "pipe/p_defines.h"
 
 #include "svga_context.h"
@@ -82,7 +82,7 @@ static int emit_consts( struct svga_context *svga,
                         int offset,
                         int unit )
 {
-   struct pipe_screen *screen = svga->pipe.screen;
+   struct pipe_transfer *transfer = NULL;
    unsigned count;
    const float (*data)[4] = NULL;
    unsigned i;
@@ -91,11 +91,12 @@ static int emit_consts( struct svga_context *svga,
    if (svga->curr.cb[unit] == NULL)
       goto done;
 
-   count = svga->curr.cb[unit]->size / (4 * sizeof(float));
+   count = svga->curr.cb[unit]->width0 / (4 * sizeof(float));
 
-   data = (const float (*)[4])pipe_buffer_map(screen,
+   data = (const float (*)[4])pipe_buffer_map(&svga->pipe,
                                               svga->curr.cb[unit],
-                                              PIPE_BUFFER_USAGE_CPU_READ);
+                                              PIPE_TRANSFER_READ,
+					      &transfer);
    if (data == NULL) {
       ret = PIPE_ERROR_OUT_OF_MEMORY;
       goto done;
@@ -109,7 +110,7 @@ static int emit_consts( struct svga_context *svga,
 
 done:
    if (data)
-      pipe_buffer_unmap(screen, svga->curr.cb[unit]);
+      pipe_buffer_unmap(&svga->pipe, svga->curr.cb[unit], transfer);
 
    return ret;
 }
@@ -137,11 +138,11 @@ static int emit_fs_consts( struct svga_context *svga,
 
       for (i = 0; i < key->num_textures; i++) {
          if (key->tex[i].unnormalized) {
-            struct pipe_texture *tex = svga->curr.texture[i];
+            struct pipe_resource *tex = svga->curr.sampler_views[i]->texture;
             float data[4];
 
-            data[0] = 1.0 / (float)tex->width[0];
-            data[1] = 1.0 / (float)tex->height[0];
+            data[0] = 1.0 / (float)tex->width0;
+            data[1] = 1.0 / (float)tex->height0;
             data[2] = 1.0;
             data[3] = 1.0;
 

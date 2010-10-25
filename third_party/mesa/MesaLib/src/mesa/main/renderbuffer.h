@@ -26,6 +26,11 @@
 #ifndef RENDERBUFFER_H
 #define RENDERBUFFER_H
 
+#include "glheader.h"
+#include "mtypes.h"
+
+struct gl_framebuffer;
+struct gl_renderbuffer;
 
 extern void
 _mesa_init_renderbuffer(struct gl_renderbuffer *rb, GLuint name);
@@ -51,12 +56,6 @@ _mesa_add_color_renderbuffers(GLcontext *ctx, struct gl_framebuffer *fb,
                               GLuint rgbBits, GLuint alphaBits,
                               GLboolean frontLeft, GLboolean backLeft,
                               GLboolean frontRight, GLboolean backRight);
-
-extern GLboolean
-_mesa_add_color_index_renderbuffers(GLcontext *ctx, struct gl_framebuffer *fb,
-                                    GLuint indexBits,
-                                    GLboolean frontLeft, GLboolean backLeft,
-                                    GLboolean frontRight, GLboolean backRight);
 
 extern GLboolean
 _mesa_add_alpha_renderbuffers(GLcontext *ctx, struct gl_framebuffer *fb,

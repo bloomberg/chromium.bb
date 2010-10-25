@@ -37,10 +37,10 @@
  */
 
 
-#include "lp_bld_type.h"
-#include "lp_bld_arit.h"
+#include "gallivm/lp_bld_init.h"
+#include "gallivm/lp_bld_type.h"
+#include "gallivm/lp_bld_debug.h"
 #include "lp_bld_blend.h"
-#include "lp_bld_debug.h"
 #include "lp_test.h"
 
 
@@ -52,6 +52,19 @@ enum vector_mode
 
 
 typedef void (*blend_test_ptr_t)(const void *src, const void *dst, const void *con, void *res);
+
+/** cast wrapper */
+static blend_test_ptr_t
+voidptr_to_blend_test_ptr_t(void *p)
+{
+   union {
+      void *v;
+      blend_test_ptr_t f;
+   } u;
+   u.v = p;
+   return u.f;
+}
+
 
 
 void
@@ -104,18 +117,18 @@ write_tsv_row(FILE *fp,
 
    fprintf(fp,
            "%s\t%s\t%s\t",
-           blend->rgb_func != blend->alpha_func ? "true" : "false",
-           blend->rgb_src_factor != blend->alpha_src_factor ? "true" : "false",
-           blend->rgb_dst_factor != blend->alpha_dst_factor ? "true" : "false");
+           blend->rt[0].rgb_func != blend->rt[0].alpha_func ? "true" : "false",
+           blend->rt[0].rgb_src_factor != blend->rt[0].alpha_src_factor ? "true" : "false",
+           blend->rt[0].rgb_dst_factor != blend->rt[0].alpha_dst_factor ? "true" : "false");
 
    fprintf(fp,
            "%s\t%s\t%s\t%s\t%s\t%s\n",
-           debug_dump_blend_func(blend->rgb_func, TRUE),
-           debug_dump_blend_factor(blend->rgb_src_factor, TRUE),
-           debug_dump_blend_factor(blend->rgb_dst_factor, TRUE),
-           debug_dump_blend_func(blend->alpha_func, TRUE),
-           debug_dump_blend_factor(blend->alpha_src_factor, TRUE),
-           debug_dump_blend_factor(blend->alpha_dst_factor, TRUE));
+           util_dump_blend_func(blend->rt[0].rgb_func, TRUE),
+           util_dump_blend_factor(blend->rt[0].rgb_src_factor, TRUE),
+           util_dump_blend_factor(blend->rt[0].rgb_dst_factor, TRUE),
+           util_dump_blend_func(blend->rt[0].alpha_func, TRUE),
+           util_dump_blend_factor(blend->rt[0].alpha_src_factor, TRUE),
+           util_dump_blend_factor(blend->rt[0].alpha_dst_factor, TRUE));
 
    fflush(fp);
 }
@@ -137,12 +150,12 @@ dump_blend_type(FILE *fp,
 
    fprintf(fp,
            " %s=%s %s=%s %s=%s %s=%s %s=%s %s=%s",
-           "rgb_func",         debug_dump_blend_func(blend->rgb_func, TRUE),
-           "rgb_src_factor",   debug_dump_blend_factor(blend->rgb_src_factor, TRUE),
-           "rgb_dst_factor",   debug_dump_blend_factor(blend->rgb_dst_factor, TRUE),
-           "alpha_func",       debug_dump_blend_func(blend->alpha_func, TRUE),
-           "alpha_src_factor", debug_dump_blend_factor(blend->alpha_src_factor, TRUE),
-           "alpha_dst_factor", debug_dump_blend_factor(blend->alpha_dst_factor, TRUE));
+           "rgb_func",         util_dump_blend_func(blend->rt[0].rgb_func, TRUE),
+           "rgb_src_factor",   util_dump_blend_factor(blend->rt[0].rgb_src_factor, TRUE),
+           "rgb_dst_factor",   util_dump_blend_factor(blend->rt[0].rgb_dst_factor, TRUE),
+           "alpha_func",       util_dump_blend_func(blend->rt[0].alpha_func, TRUE),
+           "alpha_src_factor", util_dump_blend_factor(blend->rt[0].alpha_src_factor, TRUE),
+           "alpha_dst_factor", util_dump_blend_factor(blend->rt[0].alpha_dst_factor, TRUE));
 
    fprintf(fp, " ...\n");
    fflush(fp);
@@ -155,7 +168,6 @@ add_blend_test(LLVMModuleRef module,
                enum vector_mode mode,
                struct lp_type type)
 {
-   LLVMTypeRef ret_type;
    LLVMTypeRef vec_type;
    LLVMTypeRef args[4];
    LLVMValueRef func;
@@ -165,8 +177,8 @@ add_blend_test(LLVMModuleRef module,
    LLVMValueRef res_ptr;
    LLVMBasicBlockRef block;
    LLVMBuilderRef builder;
+   const unsigned rt = 0;
 
-   ret_type = LLVMInt64Type();
    vec_type = lp_build_vec_type(type);
 
    args[3] = args[2] = args[1] = args[0] = LLVMPointerType(vec_type, 0);
@@ -191,7 +203,7 @@ add_blend_test(LLVMModuleRef module,
       dst = LLVMBuildLoad(builder, dst_ptr, "dst");
       con = LLVMBuildLoad(builder, const_ptr, "const");
 
-      res = lp_build_blend_aos(builder, blend, type, src, dst, con, 3);
+      res = lp_build_blend_aos(builder, blend, type, rt, src, dst, con, 3);
 
       lp_build_name(res, "res");
 
@@ -215,7 +227,7 @@ add_blend_test(LLVMModuleRef module,
          lp_build_name(dst[i], "dst.%c", "rgba"[i]);
       }
 
-      lp_build_blend_soa(builder, blend, type, src, dst, con, res);
+      lp_build_blend_soa(builder, blend, type, rt, src, dst, con, res);
 
       for(i = 0; i < 4; ++i) {
          LLVMValueRef index = LLVMConstInt(LLVMInt32Type(), i, 0);
@@ -401,13 +413,15 @@ compute_blend_ref(const struct pipe_blend_state *blend,
    double src_term[4];
    double dst_term[4];
 
-   compute_blend_ref_term(blend->rgb_src_factor, blend->alpha_src_factor, src, src, dst, con, src_term);
-   compute_blend_ref_term(blend->rgb_dst_factor, blend->alpha_dst_factor, dst, src, dst, con, dst_term);
+   compute_blend_ref_term(blend->rt[0].rgb_src_factor, blend->rt[0].alpha_src_factor,
+                          src, src, dst, con, src_term);
+   compute_blend_ref_term(blend->rt[0].rgb_dst_factor, blend->rt[0].alpha_dst_factor,
+                          dst, src, dst, con, dst_term);
 
    /*
     * Combine RGB terms
     */
-   switch (blend->rgb_func) {
+   switch (blend->rt[0].rgb_func) {
    case PIPE_BLEND_ADD:
       ADD_SAT(res[0], src_term[0], dst_term[0]); /* R */
       ADD_SAT(res[1], src_term[1], dst_term[1]); /* G */
@@ -440,7 +454,7 @@ compute_blend_ref(const struct pipe_blend_state *blend,
    /*
     * Combine A terms
     */
-   switch (blend->alpha_func) {
+   switch (blend->rt[0].alpha_func) {
    case PIPE_BLEND_ADD:
       ADD_SAT(res[3], src_term[3], dst_term[3]); /* A */
       break;
@@ -462,7 +476,7 @@ compute_blend_ref(const struct pipe_blend_state *blend,
 }
 
 
-ALIGN_STACK
+PIPE_ALIGN_STACK
 static boolean
 test_one(unsigned verbose,
          FILE *fp,
@@ -472,8 +486,7 @@ test_one(unsigned verbose,
 {
    LLVMModuleRef module = NULL;
    LLVMValueRef func = NULL;
-   LLVMExecutionEngineRef engine = NULL;
-   LLVMModuleProviderRef provider = NULL;
+   LLVMExecutionEngineRef engine = lp_build_engine;
    LLVMPassManagerRef pass = NULL;
    char *error = NULL;
    blend_test_ptr_t blend_test_ptr;
@@ -482,6 +495,7 @@ test_one(unsigned verbose,
    int64_t cycles[LP_TEST_NUM_SAMPLES];
    double cycles_avg = 0.0;
    unsigned i, j;
+   void *code;
 
    if(verbose >= 1)
       dump_blend_type(stdout, blend, mode, type);
@@ -495,15 +509,6 @@ test_one(unsigned verbose,
       abort();
    }
    LLVMDisposeMessage(error);
-
-   provider = LLVMCreateModuleProviderForExistingModule(module);
-   if (LLVMCreateJITCompiler(&engine, provider, 1, &error)) {
-      if(verbose < 1)
-         dump_blend_type(stderr, blend, mode, type);
-      fprintf(stderr, "%s\n", error);
-      LLVMDisposeMessage(error);
-      abort();
-   }
 
 #if 0
    pass = LLVMCreatePassManager();
@@ -523,19 +528,20 @@ test_one(unsigned verbose,
    if(verbose >= 2)
       LLVMDumpModule(module);
 
-   blend_test_ptr = (blend_test_ptr_t)LLVMGetPointerToGlobal(engine, func);
+   code = LLVMGetPointerToGlobal(engine, func);
+   blend_test_ptr = voidptr_to_blend_test_ptr_t(code);
 
    if(verbose >= 2)
-      lp_disassemble(blend_test_ptr);
+      lp_disassemble(code);
 
    success = TRUE;
    for(i = 0; i < n && success; ++i) {
       if(mode == AoS) {
-         ALIGN16_ATTRIB uint8_t src[LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t dst[LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t con[LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t res[LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t ref[LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t src[LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t dst[LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t con[LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t res[LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t ref[LP_NATIVE_VECTOR_WIDTH/8];
          int64_t start_counter = 0;
          int64_t end_counter = 0;
 
@@ -596,11 +602,11 @@ test_one(unsigned verbose,
 
       if(mode == SoA) {
          const unsigned stride = type.length*type.width/8;
-         ALIGN16_ATTRIB uint8_t src[4*LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t dst[4*LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t con[4*LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t res[4*LP_NATIVE_VECTOR_WIDTH/8];
-         ALIGN16_ATTRIB uint8_t ref[4*LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t src[4*LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t dst[4*LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t con[4*LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t res[4*LP_NATIVE_VECTOR_WIDTH/8];
+         PIPE_ALIGN_VAR(16) uint8_t ref[4*LP_NATIVE_VECTOR_WIDTH/8];
          int64_t start_counter = 0;
          int64_t end_counter = 0;
          boolean mismatch;
@@ -720,7 +726,6 @@ test_one(unsigned verbose,
 
    LLVMFreeMachineCodeForFunction(engine, func);
 
-   LLVMDisposeExecutionEngine(engine);
    if(pass)
       LLVMDisposePassManager(pass);
 
@@ -790,7 +795,7 @@ test_all(unsigned verbose, FILE *fp)
    struct pipe_blend_state blend;
    enum vector_mode mode;
    const struct lp_type *type;
-   bool success = TRUE;
+   boolean success = TRUE;
 
    for(rgb_func = blend_funcs; rgb_func < &blend_funcs[num_funcs]; ++rgb_func) {
       for(alpha_func = blend_funcs; alpha_func < &blend_funcs[num_funcs]; ++alpha_func) {
@@ -806,14 +811,14 @@ test_all(unsigned verbose, FILE *fp)
                               continue;
 
                            memset(&blend, 0, sizeof blend);
-                           blend.blend_enable      = 1;
-                           blend.rgb_func          = *rgb_func;
-                           blend.rgb_src_factor    = *rgb_src_factor;
-                           blend.rgb_dst_factor    = *rgb_dst_factor;
-                           blend.alpha_func        = *alpha_func;
-                           blend.alpha_src_factor  = *alpha_src_factor;
-                           blend.alpha_dst_factor  = *alpha_dst_factor;
-                           blend.colormask         = PIPE_MASK_RGBA;
+                           blend.rt[0].blend_enable      = 1;
+                           blend.rt[0].rgb_func          = *rgb_func;
+                           blend.rt[0].rgb_src_factor    = *rgb_src_factor;
+                           blend.rt[0].rgb_dst_factor    = *rgb_dst_factor;
+                           blend.rt[0].alpha_func        = *alpha_func;
+                           blend.rt[0].alpha_src_factor  = *alpha_src_factor;
+                           blend.rt[0].alpha_dst_factor  = *alpha_dst_factor;
+                           blend.rt[0].colormask         = PIPE_MASK_RGBA;
 
                            if(!test_one(verbose, fp, &blend, mode, *type))
                              success = FALSE;
@@ -844,7 +849,7 @@ test_some(unsigned verbose, FILE *fp, unsigned long n)
    enum vector_mode mode;
    const struct lp_type *type;
    unsigned long i;
-   bool success = TRUE;
+   boolean success = TRUE;
 
    for(i = 0; i < n; ++i) {
       rgb_func = &blend_funcs[rand() % num_funcs];
@@ -865,18 +870,26 @@ test_some(unsigned verbose, FILE *fp, unsigned long n)
       type = &blend_types[rand() % num_types];
 
       memset(&blend, 0, sizeof blend);
-      blend.blend_enable      = 1;
-      blend.rgb_func          = *rgb_func;
-      blend.rgb_src_factor    = *rgb_src_factor;
-      blend.rgb_dst_factor    = *rgb_dst_factor;
-      blend.alpha_func        = *alpha_func;
-      blend.alpha_src_factor  = *alpha_src_factor;
-      blend.alpha_dst_factor  = *alpha_dst_factor;
-      blend.colormask         = PIPE_MASK_RGBA;
+      blend.rt[0].blend_enable      = 1;
+      blend.rt[0].rgb_func          = *rgb_func;
+      blend.rt[0].rgb_src_factor    = *rgb_src_factor;
+      blend.rt[0].rgb_dst_factor    = *rgb_dst_factor;
+      blend.rt[0].alpha_func        = *alpha_func;
+      blend.rt[0].alpha_src_factor  = *alpha_src_factor;
+      blend.rt[0].alpha_dst_factor  = *alpha_dst_factor;
+      blend.rt[0].colormask         = PIPE_MASK_RGBA;
 
       if(!test_one(verbose, fp, &blend, mode, *type))
         success = FALSE;
    }
 
    return success;
+}
+
+
+boolean
+test_single(unsigned verbose, FILE *fp)
+{
+   printf("no test_single()");
+   return TRUE;
 }

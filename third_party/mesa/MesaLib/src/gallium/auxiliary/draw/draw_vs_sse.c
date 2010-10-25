@@ -83,7 +83,8 @@ static void
 vs_sse_run_linear( struct draw_vertex_shader *base,
 		   const float (*input)[4],
 		   float (*output)[4],
-		   const float (*constants)[4],
+                  const void *constants[PIPE_MAX_CONSTANT_BUFFERS],
+		  const unsigned const_size[PIPE_MAX_CONSTANT_BUFFERS],
 		   unsigned count,
 		   unsigned input_stride,
 		   unsigned output_stride )
@@ -112,7 +113,7 @@ vs_sse_run_linear( struct draw_vertex_shader *base,
       /* run compiled shader
        */
       shader->func(machine,
-		   constants,
+                   (const float (*)[4])constants[0],
 		   shader->base.immediates,
                    input,
                    base->info.num_inputs,
@@ -165,9 +166,9 @@ draw_create_vs_sse(struct draw_context *draw,
 
    vs->base.draw = draw;
    if (1)
-      vs->base.create_varient = draw_vs_varient_aos_sse;
+      vs->base.create_varient = draw_vs_create_varient_aos_sse;
    else
-      vs->base.create_varient = draw_vs_varient_generic;
+      vs->base.create_varient = draw_vs_create_varient_generic;
    vs->base.prepare = vs_sse_prepare;
    vs->base.run_linear = vs_sse_run_linear;
    vs->base.delete = vs_sse_delete;

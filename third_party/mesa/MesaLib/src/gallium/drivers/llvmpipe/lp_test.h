@@ -41,7 +41,7 @@
 #include <stdio.h>
 #include <float.h>
 
-#include <llvm-c/Core.h>
+#include "gallivm/lp_bld.h"
 #include <llvm-c/Analysis.h>
 #include <llvm-c/ExecutionEngine.h>
 #include <llvm-c/Target.h>
@@ -51,9 +51,9 @@
 #include "pipe/p_state.h"
 #include "util/u_format.h"
 #include "util/u_math.h"
-#include "util/u_debug_dump.h"
+#include "util/u_dump.h"
 
-#include "lp_bld_type.h"
+#include "gallivm/lp_bld_type.h"
 
 
 #define LP_TEST_NUM_SAMPLES 32
@@ -66,6 +66,8 @@ write_tsv_header(FILE *fp);
 boolean
 test_some(unsigned verbose, FILE *fp, unsigned long n);
 
+boolean
+test_single(unsigned verbose, FILE *fp);
 
 boolean
 test_all(unsigned verbose, FILE *fp);

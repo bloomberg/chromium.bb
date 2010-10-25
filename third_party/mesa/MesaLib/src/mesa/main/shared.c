@@ -32,18 +32,15 @@
 #include "imports.h"
 #include "mtypes.h"
 #include "hash.h"
-#include "arrayobj.h"
+#if FEATURE_ATI_fragment_shader
+#include "atifragshader.h"
+#endif
 #include "bufferobj.h"
 #include "shared.h"
-#include "shader/program.h"
-#include "shader/shader_api.h"
+#include "program/program.h"
 #include "dlist.h"
-#if FEATURE_ATI_fragment_shader
-#include "shader/atifragshader.h"
-#endif
-#if FEATURE_ARB_sync
+#include "shaderobj.h"
 #include "syncobj.h"
-#endif
 
 /**
  * Allocate and initialize a shared context state structure.
@@ -93,12 +90,8 @@ _mesa_alloc_shared_state(GLcontext *ctx)
    shared->BufferObjects = _mesa_NewHashTable();
 #endif
 
-   /* Allocate the default buffer object and set refcount so high that
-    * it never gets deleted.
-    * XXX with recent/improved refcounting this may not longer be needed.
-    */
+   /* Allocate the default buffer object */
    shared->NullBufferObj = ctx->Driver.NewBufferObject(ctx, 0, 0);
-   shared->NullBufferObj->RefCount = 1000 * 1000 * 1000;
 
    /* Create default texture objects */
    for (i = 0; i < NUM_TEXTURE_TARGETS; i++) {
@@ -127,9 +120,7 @@ _mesa_alloc_shared_state(GLcontext *ctx)
    shared->RenderBuffers = _mesa_NewHashTable();
 #endif
 
-#if FEATURE_ARB_sync
    make_empty_list(& shared->SyncObjects);
-#endif
 
    return shared;
 }
@@ -202,7 +193,7 @@ delete_bufferobj_cb(GLuint id, void *data, void *userData)
       ctx->Driver.UnmapBuffer(ctx, 0, bufObj);
       bufObj->Pointer = NULL;
    }
-   ctx->Driver.DeleteBuffer(ctx, bufObj);
+   _mesa_reference_buffer_object(ctx, &bufObj, NULL);
 }
 
 
@@ -232,12 +223,12 @@ delete_shader_cb(GLuint id, void *data, void *userData)
    GLcontext *ctx = (GLcontext *) userData;
    struct gl_shader *sh = (struct gl_shader *) data;
    if (sh->Type == GL_FRAGMENT_SHADER || sh->Type == GL_VERTEX_SHADER) {
-      _mesa_free_shader(ctx, sh);
+      ctx->Driver.DeleteShader(ctx, sh);
    }
    else {
       struct gl_shader_program *shProg = (struct gl_shader_program *) data;
       ASSERT(shProg->Type == GL_SHADER_PROGRAM_MESA);
-      _mesa_free_shader_program(ctx, shProg);
+      ctx->Driver.DeleteShaderProgram(ctx, shProg);
    }
 }
 
@@ -288,10 +279,14 @@ delete_renderbuffer_cb(GLuint id, void *data, void *userData)
  *
  * \sa alloc_shared_state().
  */
-void
-_mesa_free_shared_state(GLcontext *ctx, struct gl_shared_state *shared)
+static void
+free_shared_state(GLcontext *ctx, struct gl_shared_state *shared)
 {
    GLuint i;
+
+   /* Free the dummy/fallback texture object */
+   if (shared->FallbackTex)
+      ctx->Driver.DeleteTexture(ctx, shared->FallbackTex);
 
    /*
     * Free display lists
@@ -335,10 +330,9 @@ _mesa_free_shared_state(GLcontext *ctx, struct gl_shared_state *shared)
 #endif
 
 #if FEATURE_ARB_vertex_buffer_object
-   ctx->Driver.DeleteBuffer(ctx, shared->NullBufferObj);
+   _mesa_reference_buffer_object(ctx, &shared->NullBufferObj, NULL);
 #endif
 
-#if FEATURE_ARB_sync
    {
       struct simple_node *node;
       struct simple_node *temp;
@@ -347,7 +341,6 @@ _mesa_free_shared_state(GLcontext *ctx, struct gl_shared_state *shared)
 	 _mesa_unref_sync_object(ctx, (struct gl_sync_object *) node);
       }
    }
-#endif
 
    /*
     * Free texture objects (after FBOs since some textures might have
@@ -366,5 +359,32 @@ _mesa_free_shared_state(GLcontext *ctx, struct gl_shared_state *shared)
    _glthread_DESTROY_MUTEX(shared->Mutex);
    _glthread_DESTROY_MUTEX(shared->TexMutex);
 
-   _mesa_free(shared);
+   free(shared);
+}
+
+
+/**
+ * Decrement shared state object reference count and potentially free it
+ * and all children structures.
+ *
+ * \param ctx GL context.
+ * \param shared shared state pointer.
+ *
+ * \sa free_shared_state().
+ */
+void
+_mesa_release_shared_state(GLcontext *ctx, struct gl_shared_state *shared)
+{
+   GLint RefCount;
+
+   _glthread_LOCK_MUTEX(shared->Mutex);
+   RefCount = --shared->RefCount;
+   _glthread_UNLOCK_MUTEX(shared->Mutex);
+
+   assert(RefCount >= 0);
+
+   if (RefCount == 0) {
+      /* free shared state */
+      free_shared_state( ctx, shared );
+   }
 }

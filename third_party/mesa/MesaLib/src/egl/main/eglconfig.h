@@ -8,19 +8,30 @@
 
 #define _EGL_CONFIG_FIRST_ATTRIB EGL_BUFFER_SIZE
 #define _EGL_CONFIG_LAST_ATTRIB EGL_CONFORMANT
-#define _EGL_CONFIG_NUM_ATTRIBS \
+#define _EGL_CONFIG_NUM_CONTIGUOUS_ATTRIBS \
    (_EGL_CONFIG_LAST_ATTRIB - _EGL_CONFIG_FIRST_ATTRIB + 1)
 
-#define _EGL_CONFIG_STORAGE_SIZE _EGL_CONFIG_NUM_ATTRIBS
+/* Attributes outside the contiguous block:
+ *
+ *   EGL_Y_INVERTED_NOK
+ */
+#define _EGL_CONFIG_FIRST_EXTRA_ATTRIB _EGL_CONFIG_NUM_CONTIGUOUS_ATTRIBS
+#define _EGL_CONFIG_NUM_EXTRA_ATTRIBS 1
+
+#define _EGL_CONFIG_NUM_ATTRIBS \
+   _EGL_CONFIG_NUM_CONTIGUOUS_ATTRIBS + _EGL_CONFIG_NUM_EXTRA_ATTRIBS
 
 
 struct _egl_config
 {
    _EGLDisplay *Display;
-   EGLint Storage[_EGL_CONFIG_STORAGE_SIZE];
+   EGLint Storage[_EGL_CONFIG_NUM_ATTRIBS];
 };
 
 
+/**
+ * Macros for source level compatibility.
+ */
 #define SET_CONFIG_ATTRIB(CONF, ATTR, VAL) _eglSetConfigKey(CONF, ATTR, VAL)
 #define GET_CONFIG_ATTRIB(CONF, ATTR) _eglGetConfigKey(CONF, ATTR)
 
@@ -34,10 +45,15 @@ _eglIndexConfig(const _EGLConfig *conf, EGLint key)
 {
    (void) conf;
    if (key >= _EGL_CONFIG_FIRST_ATTRIB &&
-       key < _EGL_CONFIG_FIRST_ATTRIB + _EGL_CONFIG_NUM_ATTRIBS)
+       key < _EGL_CONFIG_FIRST_ATTRIB + _EGL_CONFIG_NUM_CONTIGUOUS_ATTRIBS)
       return key - _EGL_CONFIG_FIRST_ATTRIB;
-   else
+   
+   switch (key) {
+   case EGL_Y_INVERTED_NOK:
+      return _EGL_CONFIG_FIRST_EXTRA_ATTRIB;
+   default:
       return -1;
+   }
 }
 
 
@@ -55,6 +71,10 @@ _eglResetConfigKeys(_EGLConfig *conf, EGLint val)
 
 /**
  * Update a config for a given key.
+ *
+ * Note that a valid key is not necessarily a valid attribute.  There are gaps
+ * in the attribute enums.  The separation is to catch application errors.
+ * Drivers should never set a key that is an invalid attribute.
  */
 static INLINE void
 _eglSetConfigKey(_EGLConfig *conf, EGLint key, EGLint val)
@@ -77,47 +97,16 @@ _eglGetConfigKey(const _EGLConfig *conf, EGLint key)
 }
 
 
-/**
- * Set a given attribute.
- *
- * Because _eglGetConfigAttrib is already used as a fallback driver
- * function, this function is not considered to have a good name.
- * SET_CONFIG_ATTRIB is preferred over this function.
- */
-static INLINE void
-_eglSetConfigAttrib(_EGLConfig *conf, EGLint attr, EGLint val)
-{
-   SET_CONFIG_ATTRIB(conf, attr, val);
-}
+PUBLIC void
+_eglInitConfig(_EGLConfig *config, _EGLDisplay *dpy, EGLint id);
 
 
-extern void
-_eglInitConfig(_EGLConfig *config, EGLint id);
-
-
-extern EGLConfig
+PUBLIC EGLConfig
 _eglAddConfig(_EGLDisplay *dpy, _EGLConfig *conf);
-
-
-#ifndef _EGL_SKIP_HANDLE_CHECK
 
 
 extern EGLBoolean
 _eglCheckConfigHandle(EGLConfig config, _EGLDisplay *dpy);
-
-
-#else
-
-
-static INLINE EGLBoolean
-_eglCheckConfigHandle(EGLConfig config, _EGLDisplay *dpy)
-{
-   _EGLConfig *conf = (_EGLConfig *) config;
-   return (dpy && conf && conf->Display == dpy);
-}
-
-
-#endif /* _EGL_SKIP_HANDLE_CHECK */
 
 
 /**
@@ -128,7 +117,7 @@ static INLINE _EGLConfig *
 _eglLookupConfig(EGLConfig config, _EGLDisplay *dpy)
 {
    _EGLConfig *conf = (_EGLConfig *) config;
-   if (!_eglCheckConfigHandle(config, dpy))
+   if (!dpy || !_eglCheckConfigHandle(config, dpy))
       conf = NULL;
    return conf;
 }
@@ -144,24 +133,24 @@ _eglGetConfigHandle(_EGLConfig *conf)
 }
 
 
-extern EGLBoolean
+PUBLIC EGLBoolean
 _eglValidateConfig(const _EGLConfig *conf, EGLBoolean for_matching);
 
 
-extern EGLBoolean
+PUBLIC EGLBoolean
 _eglMatchConfig(const _EGLConfig *conf, const _EGLConfig *criteria);
 
 
-extern EGLBoolean
+PUBLIC EGLBoolean
 _eglParseConfigAttribList(_EGLConfig *conf, const EGLint *attrib_list);
 
 
-extern EGLint
+PUBLIC EGLint
 _eglCompareConfigs(const _EGLConfig *conf1, const _EGLConfig *conf2,
                    const _EGLConfig *criteria, EGLBoolean compare_id);
 
 
-extern void
+PUBLIC void
 _eglSortConfigs(const _EGLConfig **configs, EGLint count,
                 EGLint (*compare)(const _EGLConfig *, const _EGLConfig *,
                                   void *),

@@ -1,9 +1,8 @@
 #ifndef EGLGLOBALS_INCLUDED
 #define EGLGLOBALS_INCLUDED
 
+
 #include "egltypedefs.h"
-#include "egldisplay.h"
-#include "eglcurrent.h"
 #include "eglmutex.h"
 
 
@@ -16,11 +15,6 @@ struct _egl_global
 
    /* the list of all displays */
    _EGLDisplay *DisplayList;
-
-   EGLScreenMESA FreeScreenHandle;
-
-   EGLint NumDrivers;
-   _EGLDriver *Drivers[10];
 
    EGLint NumAtExitCalls;
    void (*AtExitCalls[10])(void);

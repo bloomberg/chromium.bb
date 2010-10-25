@@ -22,10 +22,10 @@
 
 #include "draw/draw_context.h"
 #include "pipe/p_defines.h"
-#include "pipe/internal/p_winsys_screen.h"
 
 #include "nv50_context.h"
 #include "nv50_screen.h"
+#include "nv50_resource.h"
 
 static void
 nv50_flush(struct pipe_context *pipe, unsigned flags,
@@ -33,6 +33,11 @@ nv50_flush(struct pipe_context *pipe, unsigned flags,
 {
 	struct nv50_context *nv50 = nv50_context(pipe);
 	struct nouveau_channel *chan = nv50->screen->base.channel;
+
+	if (flags & PIPE_FLUSH_TEXTURE_CACHE) {
+		BEGIN_RING(chan, nv50->screen->tesla, 0x1338, 1);
+		OUT_RING  (chan, 0x20);
+	}
 
 	if (flags & PIPE_FLUSH_FRAME)
 		FIRE_RING(chan);
@@ -42,19 +47,25 @@ static void
 nv50_destroy(struct pipe_context *pipe)
 {
 	struct nv50_context *nv50 = nv50_context(pipe);
+	int i;
+
+	for (i = 0; i < 64; i++) {
+		if (!nv50->state.hw[i])
+			continue;
+		so_ref(NULL, &nv50->state.hw[i]);
+	}
 
 	draw_destroy(nv50->draw);
+
+	if (nv50->screen->cur_ctx == nv50)
+		nv50->screen->cur_ctx = NULL;
+
 	FREE(nv50);
 }
 
 
-static void
-nv50_set_edgeflags(struct pipe_context *pipe, const unsigned *bitfield)
-{
-}
-
 struct pipe_context *
-nv50_create(struct pipe_screen *pscreen, unsigned pctx_id)
+nv50_create(struct pipe_screen *pscreen, void *priv)
 {
 	struct pipe_winsys *pipe_winsys = pscreen->winsys;
 	struct nv50_screen *screen = nv50_screen(pscreen);
@@ -64,31 +75,26 @@ nv50_create(struct pipe_screen *pscreen, unsigned pctx_id)
 	if (!nv50)
 		return NULL;
 	nv50->screen = screen;
-	nv50->pctx_id = pctx_id;
 
 	nv50->pipe.winsys = pipe_winsys;
 	nv50->pipe.screen = pscreen;
+	nv50->pipe.priv = priv;
 
 	nv50->pipe.destroy = nv50_destroy;
 
-	nv50->pipe.set_edgeflags = nv50_set_edgeflags;
-	nv50->pipe.draw_arrays = nv50_draw_arrays;
-	nv50->pipe.draw_elements = nv50_draw_elements;
+	nv50->pipe.draw_vbo = nv50_draw_vbo;
 	nv50->pipe.clear = nv50_clear;
 
 	nv50->pipe.flush = nv50_flush;
 
-	nv50->pipe.is_texture_referenced = nouveau_is_texture_referenced;
-	nv50->pipe.is_buffer_referenced = nouveau_is_buffer_referenced;
-
 	screen->base.channel->user_private = nv50;
-	screen->base.channel->flush_notify = nv50_state_flush_notify;
 
 	nv50_init_surface_functions(nv50);
 	nv50_init_state_functions(nv50);
 	nv50_init_query_functions(nv50);
+	nv50_init_resource_functions(&nv50->pipe);
 
-	nv50->draw = draw_create();
+	nv50->draw = draw_create(&nv50->pipe);
 	assert(nv50->draw);
 	draw_set_rasterize_stage(nv50->draw, nv50_draw_render_stage(nv50));
 

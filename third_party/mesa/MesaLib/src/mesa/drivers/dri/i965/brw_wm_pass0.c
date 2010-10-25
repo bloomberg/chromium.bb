@@ -32,7 +32,7 @@
 
 #include "brw_context.h"
 #include "brw_wm.h"
-#include "shader/prog_parameter.h"
+#include "program/prog_parameter.h"
 
 
 
@@ -105,7 +105,7 @@ static const struct brw_wm_ref *get_param_ref( struct brw_wm_compile *c,
    GLuint i = c->prog_data.nr_params++;
    
    if (i >= BRW_WM_MAX_PARAM) {
-      _mesa_printf("%s: out of params\n", __FUNCTION__);
+      printf("%s: out of params\n", __FUNCTION__);
       c->prog_data.error = 1;
       return NULL;
    }
@@ -154,7 +154,7 @@ static const struct brw_wm_ref *get_const_ref( struct brw_wm_compile *c,
       return c->constref[i].ref;
    }
    else {
-      _mesa_printf("%s: out of constrefs\n", __FUNCTION__);
+      printf("%s: out of constrefs\n", __FUNCTION__);
       c->prog_data.error = 1;
       return NULL;
    }
@@ -379,7 +379,7 @@ static void pass0_init_payload( struct brw_wm_compile *c )
    GLuint i;
 
    for (i = 0; i < 4; i++) {
-      GLuint j = i >= c->key.nr_depth_regs ? 0 : i;
+      GLuint j = i >= (c->key.nr_payload_regs + 1) / 2 ? 0 : i;
       pass0_set_fpreg_value( c, PROGRAM_PAYLOAD, PAYLOAD_DEPTH, i, 
 			     &c->payload.depth[j] );
    }

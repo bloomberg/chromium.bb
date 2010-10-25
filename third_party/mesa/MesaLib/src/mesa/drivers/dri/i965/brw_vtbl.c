@@ -44,14 +44,13 @@
 #include "brw_state.h"
 #include "brw_draw.h"
 #include "brw_state.h"
-#include "brw_fallback.h"
 #include "brw_vs.h"
 #include "brw_wm.h"
 
 static void
-dri_bo_release(dri_bo **bo)
+dri_bo_release(drm_intel_bo **bo)
 {
-   dri_bo_unreference(*bo);
+   drm_intel_bo_unreference(*bo);
    *bo = NULL;
 }
 
@@ -68,11 +67,11 @@ static void brw_destroy_context( struct intel_context *intel )
    brw_draw_destroy( brw );
    brw_clear_validated_bos(brw);
    if (brw->wm.compile_data) {
-      _mesa_free(brw->wm.compile_data->instruction);
-      _mesa_free(brw->wm.compile_data->vreg);
-      _mesa_free(brw->wm.compile_data->refs);
-      _mesa_free(brw->wm.compile_data->prog_instructions);
-      _mesa_free(brw->wm.compile_data);
+      free(brw->wm.compile_data->instruction);
+      free(brw->wm.compile_data->vreg);
+      free(brw->wm.compile_data->refs);
+      free(brw->wm.compile_data->prog_instructions);
+      free(brw->wm.compile_data);
    }
 
    for (i = 0; i < brw->state.nr_color_regions; i++)
@@ -84,6 +83,7 @@ static void brw_destroy_context( struct intel_context *intel )
    dri_bo_release(&brw->vs.prog_bo);
    dri_bo_release(&brw->vs.state_bo);
    dri_bo_release(&brw->vs.bind_bo);
+   dri_bo_release(&brw->vs.const_bo);
    dri_bo_release(&brw->gs.prog_bo);
    dri_bo_release(&brw->gs.state_bo);
    dri_bo_release(&brw->clip.prog_bo);
@@ -100,9 +100,17 @@ static void brw_destroy_context( struct intel_context *intel )
    dri_bo_release(&brw->wm.sampler_bo);
    dri_bo_release(&brw->wm.prog_bo);
    dri_bo_release(&brw->wm.state_bo);
+   dri_bo_release(&brw->wm.const_bo);
+   dri_bo_release(&brw->wm.push_const_bo);
    dri_bo_release(&brw->cc.prog_bo);
    dri_bo_release(&brw->cc.state_bo);
    dri_bo_release(&brw->cc.vp_bo);
+   dri_bo_release(&brw->cc.blend_state_bo);
+   dri_bo_release(&brw->cc.depth_stencil_state_bo);
+   dri_bo_release(&brw->cc.color_calc_state_bo);
+
+   free(brw->curbe.last_buf);
+   free(brw->curbe.next_buf);
 }
 
 
@@ -140,6 +148,12 @@ static void brw_finish_batch(struct intel_context *intel)
 {
    struct brw_context *brw = brw_context(&intel->ctx);
    brw_emit_query_end(brw);
+
+   if (brw->curbe.curbe_bo) {
+      drm_intel_gem_bo_unmap_gtt(brw->curbe.curbe_bo);
+      drm_intel_bo_unreference(brw->curbe.curbe_bo);
+      brw->curbe.curbe_bo = NULL;
+   }
 }
 
 
@@ -149,11 +163,6 @@ static void brw_finish_batch(struct intel_context *intel)
 static void brw_new_batch( struct intel_context *intel )
 {
    struct brw_context *brw = brw_context(&intel->ctx);
-
-   /* Check that we didn't just wrap our batchbuffer at a bad time. */
-   assert(!brw->no_batch_wrap);
-
-   brw->curbe.need_new_bo = GL_TRUE;
 
    /* Mark all context state as needing to be re-emitted.
     * This is probably not as severe as on 915, since almost all of our state
@@ -169,16 +178,10 @@ static void brw_new_batch( struct intel_context *intel )
     * a new buffer next time.
     */
    if (brw->vb.upload.bo != NULL) {
-      dri_bo_unreference(brw->vb.upload.bo);
+      drm_intel_bo_unreference(brw->vb.upload.bo);
       brw->vb.upload.bo = NULL;
       brw->vb.upload.offset = 0;
    }
-}
-
-
-static void brw_note_fence( struct intel_context *intel, GLuint fence )
-{
-   brw_context(&intel->ctx)->state.dirty.brw |= BRW_NEW_FENCE;
 }
 
 static void brw_invalidate_state( struct intel_context *intel, GLuint new_state )
@@ -196,7 +199,6 @@ void brwInitVtbl( struct brw_context *brw )
    brw->intel.vtbl.update_texture_state = 0;
 
    brw->intel.vtbl.invalidate_state = brw_invalidate_state;
-   brw->intel.vtbl.note_fence = brw_note_fence;
    brw->intel.vtbl.new_batch = brw_new_batch;
    brw->intel.vtbl.finish_batch = brw_finish_batch;
    brw->intel.vtbl.destroy = brw_destroy_context;

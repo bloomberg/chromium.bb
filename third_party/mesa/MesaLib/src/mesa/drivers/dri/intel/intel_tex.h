@@ -31,8 +31,6 @@
 #include "main/mtypes.h"
 #include "main/formats.h"
 #include "intel_context.h"
-#include "texmem.h"
-
 
 void intelInitTextureFuncs(struct dd_function_table *functions);
 
@@ -45,8 +43,6 @@ void intelInitTextureCopyImageFuncs(struct dd_function_table *functions);
 gl_format intelChooseTextureFormat(GLcontext *ctx, GLint internalFormat,
                                    GLenum format, GLenum type);
 
-void intelSetTexOffset(__DRIcontext *pDRICtx, GLint texname,
-		       unsigned long long offset, GLint depth, GLuint pitch);
 void intelSetTexBuffer(__DRIcontext *pDRICtx,
 		       GLint target, __DRIdrawable *pDraw);
 void intelSetTexBuffer2(__DRIcontext *pDRICtx,

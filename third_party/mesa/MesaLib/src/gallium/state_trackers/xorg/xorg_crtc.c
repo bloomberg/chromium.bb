@@ -39,6 +39,7 @@
 #include <xf86.h>
 #include <xf86i2c.h>
 #include <xf86Crtc.h>
+#include <cursorstr.h>
 #include "xorg_tracker.h"
 #include "xf86Modes.h"
 
@@ -49,7 +50,8 @@
 #include <X11/extensions/dpms.h>
 #endif
 
-#include "pipe/p_inlines.h"
+#include "state_tracker/drm_driver.h"
+#include "util/u_inlines.h"
 #include "util/u_rect.h"
 
 #ifdef HAVE_LIBKMS
@@ -61,7 +63,7 @@ struct crtc_private
     drmModeCrtcPtr drm_crtc;
 
     /* hwcursor */
-    struct pipe_texture *cursor_tex;
+    struct pipe_resource *cursor_tex;
     struct kms_bo *cursor_bo;
 
     unsigned cursor_handle;
@@ -70,6 +72,8 @@ struct crtc_private
 static void
 crtc_dpms(xf86CrtcPtr crtc, int mode)
 {
+    /* ScrnInfoPtr pScrn = crtc->scrn; */
+
     switch (mode) {
     case DPMSModeOn:
     case DPMSModeStandby:
@@ -87,11 +91,11 @@ crtc_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
     xf86CrtcConfigPtr config = XF86_CRTC_CONFIG_PTR(crtc->scrn);
     modesettingPtr ms = modesettingPTR(crtc->scrn);
     xf86OutputPtr output = NULL;
-    drmModeConnectorPtr drm_connector;
     struct crtc_private *crtcp = crtc->driver_private;
     drmModeCrtcPtr drm_crtc = crtcp->drm_crtc;
     drmModeModeInfo drm_mode;
     int i, ret;
+    unsigned int connector_id;
 
     for (i = 0; i < config->num_output; output = NULL, i++) {
 	output = config->output[i];
@@ -103,7 +107,7 @@ crtc_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
     if (!output)
 	return FALSE;
 
-    drm_connector = output->driver_private;
+    connector_id = xorg_output_get_id(output);
 
     drm_mode.clock = mode->Clock;
     drm_mode.hdisplay = mode->HDisplay;
@@ -120,10 +124,11 @@ crtc_set_mode_major(xf86CrtcPtr crtc, DisplayModePtr mode,
     drm_mode.vrefresh = mode->VRefresh;
     if (!mode->name)
 	xf86SetModeDefaultName(mode);
-    strncpy(drm_mode.name, mode->name, DRM_DISPLAY_MODE_LEN);
+    strncpy(drm_mode.name, mode->name, DRM_DISPLAY_MODE_LEN - 1);
+    drm_mode.name[DRM_DISPLAY_MODE_LEN - 1] = '\0';
 
     ret = drmModeSetCrtc(ms->fd, drm_crtc->crtc_id, ms->fb_id, x, y,
-			 &drm_connector->connector_id, 1, &drm_mode);
+			 &connector_id, 1, &drm_mode);
 
     if (ret)
 	return FALSE;
@@ -143,22 +148,30 @@ crtc_gamma_set(xf86CrtcPtr crtc, CARD16 * red, CARD16 * green, CARD16 * blue,
     /* XXX: hockup */
 }
 
+#if 0 /* Implement and enable to enable rotation and reflection. */
 static void *
 crtc_shadow_allocate(xf86CrtcPtr crtc, int width, int height)
 {
+    /* ScrnInfoPtr pScrn = crtc->scrn; */
+
     return NULL;
 }
 
 static PixmapPtr
 crtc_shadow_create(xf86CrtcPtr crtc, void *data, int width, int height)
 {
+    /* ScrnInfoPtr pScrn = crtc->scrn; */
+
     return NULL;
 }
 
 static void
 crtc_shadow_destroy(xf86CrtcPtr crtc, PixmapPtr rotate_pixmap, void *data)
 {
+    /* ScrnInfoPtr pScrn = crtc->scrn; */
 }
+
+#endif
 
 /*
  * Cursor functions
@@ -188,39 +201,39 @@ crtc_load_cursor_argb_ga3d(xf86CrtcPtr crtc, CARD32 * image)
     struct pipe_transfer *transfer;
 
     if (!crtcp->cursor_tex) {
-	struct pipe_texture templat;
-	unsigned pitch;
+	struct pipe_resource templat;
+	struct winsys_handle whandle;
 
 	memset(&templat, 0, sizeof(templat));
-	templat.tex_usage |= PIPE_TEXTURE_USAGE_RENDER_TARGET;
-	templat.tex_usage |= PIPE_TEXTURE_USAGE_PRIMARY;
+	templat.bind |= PIPE_BIND_RENDER_TARGET;
+	templat.bind |= PIPE_BIND_SCANOUT;
 	templat.target = PIPE_TEXTURE_2D;
 	templat.last_level = 0;
-	templat.depth[0] = 1;
-	templat.format = PIPE_FORMAT_A8R8G8B8_UNORM;
-	templat.width[0] = 64;
-	templat.height[0] = 64;
-	pf_get_block(templat.format, &templat.block);
+	templat.depth0 = 1;
+	templat.format = PIPE_FORMAT_B8G8R8A8_UNORM;
+	templat.width0 = 64;
+	templat.height0 = 64;
 
-	crtcp->cursor_tex = ms->screen->texture_create(ms->screen,
+	memset(&whandle, 0, sizeof(whandle));
+	whandle.type = DRM_API_HANDLE_TYPE_KMS;
+
+	crtcp->cursor_tex = ms->screen->resource_create(ms->screen,
 						       &templat);
-	ms->api->local_handle_from_texture(ms->api,
-					   ms->screen,
-					   crtcp->cursor_tex,
-					   &pitch,
-					   &crtcp->cursor_handle);
+	ms->screen->resource_get_handle(ms->screen, crtcp->cursor_tex, &whandle);
+
+	crtcp->cursor_handle = whandle.handle;
     }
 
-    transfer = ms->screen->get_tex_transfer(ms->screen, crtcp->cursor_tex,
-					    0, 0, 0,
-					    PIPE_TRANSFER_WRITE,
-					    0, 0, 64, 64);
-    ptr = ms->screen->transfer_map(ms->screen, transfer);
-    util_copy_rect(ptr, &crtcp->cursor_tex->block,
+    transfer = pipe_get_transfer(ms->ctx, crtcp->cursor_tex,
+                                         0, 0, 0,
+                                         PIPE_TRANSFER_WRITE,
+                                         0, 0, 64, 64);
+    ptr = ms->ctx->transfer_map(ms->ctx, transfer);
+    util_copy_rect(ptr, crtcp->cursor_tex->format,
 		   transfer->stride, 0, 0,
 		   64, 64, (void*)image, 64 * 4, 0, 0);
-    ms->screen->transfer_unmap(ms->screen, transfer);
-    ms->screen->tex_transfer_destroy(transfer);
+    ms->ctx->transfer_unmap(ms->ctx, transfer);
+    ms->ctx->transfer_destroy(ms->ctx, transfer);
 }
 
 #if HAVE_LIBKMS
@@ -235,7 +248,11 @@ crtc_load_cursor_argb_kms(xf86CrtcPtr crtc, CARD32 * image)
 	unsigned attr[8];
 
 	attr[0] = KMS_BO_TYPE;
+#ifdef KMS_BO_TYPE_CURSOR_64X64_A8R8G8B8
+	attr[1] = KMS_BO_TYPE_CURSOR_64X64_A8R8G8B8;
+#else
 	attr[1] = KMS_BO_TYPE_CURSOR;
+#endif
 	attr[2] = KMS_WIDTH;
 	attr[3] = 64;
 	attr[4] = KMS_HEIGHT;
@@ -264,7 +281,21 @@ err_bo_destroy:
 static void
 crtc_load_cursor_argb(xf86CrtcPtr crtc, CARD32 * image)
 {
+    xf86CrtcConfigPtr config = XF86_CRTC_CONFIG_PTR(crtc->scrn);
     modesettingPtr ms = modesettingPTR(crtc->scrn);
+
+    /* Older X servers have cursor reference counting bugs leading to use of
+     * freed memory and consequently random crashes. Should be fixed as of
+     * xserver 1.8, but this workaround shouldn't hurt anyway.
+     */
+    if (config->cursor)
+       config->cursor->refcnt++;
+
+    if (ms->cursor)
+       FreeCursor(ms->cursor, None);
+
+    ms->cursor = config->cursor;
+
     if (ms->screen)
 	crtc_load_cursor_argb_ga3d(crtc, image);
 #ifdef HAVE_LIBKMS
@@ -302,7 +333,7 @@ xorg_crtc_cursor_destroy(xf86CrtcPtr crtc)
     struct crtc_private *crtcp = crtc->driver_private;
 
     if (crtcp->cursor_tex)
-	pipe_texture_reference(&crtcp->cursor_tex, NULL);
+	pipe_resource_reference(&crtcp->cursor_tex, NULL);
 #ifdef HAVE_LIBKMS
     if (crtcp->cursor_bo)
 	kms_bo_destroy(&crtcp->cursor_bo);
@@ -336,9 +367,9 @@ static const xf86CrtcFuncsRec crtc_funcs = {
     .hide_cursor = crtc_hide_cursor,
     .load_cursor_argb = crtc_load_cursor_argb,
 
-    .shadow_create = crtc_shadow_create,
-    .shadow_allocate = crtc_shadow_allocate,
-    .shadow_destroy = crtc_shadow_destroy,
+    .shadow_create = NULL,
+    .shadow_allocate = NULL,
+    .shadow_destroy = NULL,
 
     .gamma_set = crtc_gamma_set,
     .destroy = crtc_destroy,

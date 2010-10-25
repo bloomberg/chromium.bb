@@ -29,8 +29,8 @@
 #define LP_TILE_SOA_H
 
 #include "pipe/p_compiler.h"
-#include "tgsi/tgsi_exec.h" // for NUM_CHANNELS
-
+#include "tgsi/tgsi_exec.h" /* for NUM_CHANNELS */
+#include "lp_limits.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,41 +40,53 @@ extern "C" {
 struct pipe_transfer;
 
 
-/**
- * Cache tile size (width and height). This needs to be a power of two.
- */
-#define TILE_SIZE 64
-
-
-#define TILE_VECTOR_HEIGHT 2
-#define TILE_VECTOR_WIDTH 8
+#define TILE_VECTOR_HEIGHT 4
+#define TILE_VECTOR_WIDTH 4
 
 extern const unsigned char
 tile_offset[TILE_VECTOR_HEIGHT][TILE_VECTOR_WIDTH];
 
-#define TILE_C_STRIDE (TILE_VECTOR_HEIGHT*TILE_VECTOR_WIDTH)
-#define TILE_X_STRIDE (NUM_CHANNELS*TILE_C_STRIDE)
-#define TILE_Y_STRIDE (TILE_VECTOR_HEIGHT*TILE_SIZE*NUM_CHANNELS)
+#define TILE_C_STRIDE (TILE_VECTOR_HEIGHT * TILE_VECTOR_WIDTH) //16
+#define TILE_X_STRIDE (NUM_CHANNELS * TILE_C_STRIDE) //64
+#define TILE_Y_STRIDE (TILE_VECTOR_HEIGHT * TILE_SIZE * NUM_CHANNELS) //1024
 
-#define TILE_PIXEL(_p, _x, _y, _c) \
-   ((_p)[((_y)/TILE_VECTOR_HEIGHT)*TILE_Y_STRIDE + \
-         ((_x)/TILE_VECTOR_WIDTH)*TILE_X_STRIDE + \
-         (_c)*TILE_C_STRIDE + \
-         tile_offset[(_y) % TILE_VECTOR_HEIGHT][(_x) % TILE_VECTOR_WIDTH]])
+
+#ifdef DEBUG
+extern unsigned lp_tile_unswizzle_count;
+extern unsigned lp_tile_swizzle_count;
+#endif
+
+
+/**
+ * Return offset of the given pixel (and color channel) from the start
+ * of a tile, in bytes.
+ */
+static INLINE unsigned
+tile_pixel_offset(unsigned x, unsigned y, unsigned c)
+{
+   unsigned ix = (x / TILE_VECTOR_WIDTH) * TILE_X_STRIDE;
+   unsigned iy = (y / TILE_VECTOR_HEIGHT) * TILE_Y_STRIDE;
+   unsigned offset = iy + ix + c * TILE_C_STRIDE +
+      tile_offset[y % TILE_VECTOR_HEIGHT][x % TILE_VECTOR_WIDTH];
+   return offset;
+}
+
+
+#define TILE_PIXEL(_p, _x, _y, _c)   ((_p)[tile_pixel_offset(_x, _y, _c)])
 
 
 void
-lp_tile_read_4ub(enum pipe_format format,
+lp_tile_swizzle_4ub(enum pipe_format format,
                  uint8_t *dst,
                  const void *src, unsigned src_stride,
-                 unsigned x, unsigned y, unsigned w, unsigned h);
+                 unsigned x, unsigned y);
 
 
 void
-lp_tile_write_4ub(enum pipe_format format,
+lp_tile_unswizzle_4ub(enum pipe_format format,
                   const uint8_t *src,
                   void *dst, unsigned dst_stride,
-                  unsigned x, unsigned y, unsigned w, unsigned h);
+                  unsigned x, unsigned y);
 
 
 

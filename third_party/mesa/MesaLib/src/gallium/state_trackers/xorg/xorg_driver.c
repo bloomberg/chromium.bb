@@ -45,13 +45,13 @@
 #include "miscstruct.h"
 #include "dixstruct.h"
 #include "xf86xv.h"
-#include <X11/extensions/Xv.h>
 #ifndef XSERVER_LIBPCIACCESS
 #error "libpciaccess needed"
 #endif
 
 #include <pciaccess.h>
 
+#include "state_tracker/drm_driver.h"
 #include "pipe/p_context.h"
 #include "xorg_tracker.h"
 #include "xorg_winsys.h"
@@ -79,11 +79,19 @@ typedef enum
 {
     OPTION_SW_CURSOR,
     OPTION_2D_ACCEL,
+    OPTION_DEBUG_FALLBACK,
+    OPTION_THROTTLE_SWAP,
+    OPTION_THROTTLE_DIRTY,
+    OPTION_3D_ACCEL
 } drv_option_enums;
 
 static const OptionInfoRec drv_options[] = {
     {OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE},
     {OPTION_2D_ACCEL, "2DAccel", OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_DEBUG_FALLBACK, "DebugFallback", OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_THROTTLE_SWAP, "SwapThrottling", OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_THROTTLE_DIRTY, "DirtyThrottling", OPTV_BOOLEAN, {0}, FALSE},
+    {OPTION_3D_ACCEL, "3DAccel", OPTV_BOOLEAN, {0}, FALSE},
     {-1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -111,6 +119,28 @@ xorg_tracker_set_functions(ScrnInfoPtr scrn)
     scrn->ValidMode = drv_valid_mode;
 }
 
+Bool
+xorg_tracker_have_modesetting(ScrnInfoPtr pScrn, struct pci_device *device)
+{
+    char *BusID = xalloc(64);
+    sprintf(BusID, "pci:%04x:%02x:%02x.%d",
+	    device->domain, device->bus,
+	    device->dev, device->func);
+
+    if (drmCheckModesettingSupported(BusID)) {
+	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 0,
+		       "Drm modesetting not supported %s\n", BusID);
+	xfree(BusID);
+	return FALSE;
+    }
+
+    xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 0,
+		   "Drm modesetting supported on %s\n", BusID);
+
+    xfree(BusID);
+    return TRUE;
+}
+
 
 /*
  * Internal function definitions
@@ -118,8 +148,6 @@ xorg_tracker_set_functions(ScrnInfoPtr scrn)
 
 static Bool drv_init_front_buffer_functions(ScrnInfoPtr pScrn);
 static Bool drv_close_screen(int scrnIndex, ScreenPtr pScreen);
-static Bool drv_save_hw_state(ScrnInfoPtr pScrn);
-static Bool drv_restore_hw_state(ScrnInfoPtr pScrn);
 
 
 /*
@@ -132,7 +160,7 @@ drv_get_rec(ScrnInfoPtr pScrn)
     if (pScrn->driverPrivate)
 	return TRUE;
 
-    pScrn->driverPrivate = xnfcalloc(sizeof(modesettingRec), 1);
+    pScrn->driverPrivate = xnfcalloc(1, sizeof(modesettingRec));
 
     return TRUE;
 }
@@ -160,32 +188,77 @@ drv_probe_ddc(ScrnInfoPtr pScrn, int index)
 static Bool
 drv_crtc_resize(ScrnInfoPtr pScrn, int width, int height)
 {
+    xf86CrtcConfigPtr xf86_config = XF86_CRTC_CONFIG_PTR(pScrn);
     modesettingPtr ms = modesettingPTR(pScrn);
-    PixmapPtr rootPixmap;
+    CustomizerPtr cust = ms->cust;
     ScreenPtr pScreen = pScrn->pScreen;
+    int old_width, old_height;
+    PixmapPtr rootPixmap;
+    int i;
 
     if (width == pScrn->virtualX && height == pScrn->virtualY)
 	return TRUE;
 
+    if (cust && cust->winsys_check_fb_size &&
+	!cust->winsys_check_fb_size(cust, width*pScrn->bitsPerPixel / 8,
+				    height)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Requested framebuffer size %dx%dx%d will not fit "
+		   "in display memory.\n",
+		   width, height, pScrn->bitsPerPixel);
+	return FALSE;
+    }
+
+    old_width = pScrn->virtualX;
+    old_height = pScrn->virtualY;
     pScrn->virtualX = width;
     pScrn->virtualY = height;
 
-    /*
-     * Remove the old framebuffer & texture.
-     */
-    drmModeRmFB(ms->fd, ms->fb_id);
-    if (!ms->destroy_front_buffer(pScrn))
-	FatalError("failed to destroy front buffer\n");
+    /* ms->create_front_buffer will remove the old front buffer */
 
     rootPixmap = pScreen->GetScreenPixmap(pScreen);
     if (!pScreen->ModifyPixmapHeader(rootPixmap, width, height, -1, -1, -1, NULL))
+	goto error_modify;
+
+    pScrn->displayWidth = rootPixmap->devKind / (rootPixmap->drawable.bitsPerPixel / 8);
+
+    if (!ms->create_front_buffer(pScrn) || !ms->bind_front_buffer(pScrn))
+	goto error_create;
+
+    /*
+     * create && bind will turn off all crtc(s) in the kernel so we need to
+     * re-enable all the crtcs again. For real HW we might want to do this
+     * before destroying the old framebuffer.
+     */
+    for (i = 0; i < xf86_config->num_crtc; i++) {
+	xf86CrtcPtr crtc = xf86_config->crtc[i];
+
+	if (!crtc->enabled)
+	    continue;
+
+	crtc->funcs->set_mode_major(crtc, &crtc->mode, crtc->rotation, crtc->x, crtc->y);
+    }
+
+    return TRUE;
+
+    /*
+     * This is the error recovery path.
+     */
+error_create:
+    if (!pScreen->ModifyPixmapHeader(rootPixmap, old_width, old_height, -1, -1, -1, NULL))
+	FatalError("failed to resize rootPixmap error path\n");
+
+    pScrn->displayWidth = rootPixmap->devKind / (rootPixmap->drawable.bitsPerPixel / 8);
+
+error_modify:
+    pScrn->virtualX = old_width;
+    pScrn->virtualY = old_height;
+
+    if (ms->create_front_buffer(pScrn) && ms->bind_front_buffer(pScrn))
 	return FALSE;
 
-    /* HW dependent - FIXME */
-    pScrn->displayWidth = pScrn->virtualX;
-
-    /* now create new frontbuffer */
-    return ms->create_front_buffer(pScrn) && ms->bind_front_buffer(pScrn);
+    FatalError("failed to setup old framebuffer\n");
+    return FALSE;
 }
 
 static const xf86CrtcConfigFuncsRec crtc_config_funcs = {
@@ -207,10 +280,15 @@ drv_init_drm(ScrnInfoPtr pScrn)
 		ms->PciInfo->dev, ms->PciInfo->func
 	    );
 
-	ms->fd = drmOpen(NULL, BusID);
 
-	if (ms->fd < 0)
-	    return FALSE;
+	ms->fd = drmOpen(driver_descriptor.driver_name, BusID);
+	ms->isMaster = TRUE;
+	xfree(BusID);
+
+	if (ms->fd >= 0)
+	    return TRUE;
+
+	return FALSE;
     }
 
     return TRUE;
@@ -220,22 +298,21 @@ static Bool
 drv_init_resource_management(ScrnInfoPtr pScrn)
 {
     modesettingPtr ms = modesettingPTR(pScrn);
+    /*
+    ScreenPtr pScreen = pScrn->pScreen;
+    PixmapPtr rootPixmap = pScreen->GetScreenPixmap(pScreen);
+    Bool fbAccessDisabled;
+    CARD8 *fbstart;
+     */
 
     if (ms->screen || ms->kms)
 	return TRUE;
 
-    ms->api = drm_api_create();
-    if (ms->api) {
-	ms->screen = ms->api->create_screen(ms->api, ms->fd, NULL);
+    if (!ms->no3D)
+	ms->screen = driver_descriptor.create_screen(ms->fd);
 
-	if (ms->screen)
-	    return TRUE;
-
-	if (ms->api->destroy)
-	    ms->api->destroy(ms->api);
-
-	ms->api = NULL;
-    }
+    if (ms->screen)
+	return TRUE;
 
 #ifdef HAVE_LIBKMS
     if (!kms_create(ms->fd, &ms->kms))
@@ -245,25 +322,20 @@ drv_init_resource_management(ScrnInfoPtr pScrn)
     return FALSE;
 }
 
-static Bool
-drv_close_resource_management(ScrnInfoPtr pScrn)
+static void
+drv_cleanup_fences(ScrnInfoPtr pScrn)
 {
     modesettingPtr ms = modesettingPTR(pScrn);
+    int i;
 
-    if (ms->screen)
-	ms->screen->destroy(ms->screen);
-    ms->screen = NULL;
+    assert(ms->screen);
 
-    if (ms->api && ms->api->destroy)
-	ms->api->destroy(ms->api);
-    ms->api = NULL;
-
-#ifdef HAVE_LIBKMS
-    if (ms->kms)
-	kms_destroy(&ms->kms);
-#endif
-
-    return TRUE;
+    for (i = 0; i < XORG_NR_FENCES; i++) {
+	if (ms->fence[i]) {
+	    ms->screen->fence_finish(ms->screen, ms->fence[i], 0);
+	    ms->screen->fence_reference(ms->screen, &ms->fence[i], NULL);
+	}
+    }
 }
 
 static Bool
@@ -274,7 +346,8 @@ drv_pre_init(ScrnInfoPtr pScrn, int flags)
     rgb defaultWeight = { 0, 0, 0 };
     EntityInfoPtr pEnt;
     EntPtr msEnt = NULL;
-    int max_width, max_height;
+    CustomizerPtr cust;
+    Bool use3D;
 
     if (pScrn->numEntities != 1)
 	return FALSE;
@@ -286,13 +359,16 @@ drv_pre_init(ScrnInfoPtr pScrn, int flags)
 	return TRUE;
     }
 
+    cust = (CustomizerPtr) pScrn->driverPrivate;
+    pScrn->driverPrivate = NULL;
+
     /* Allocate driverPrivate */
     if (!drv_get_rec(pScrn))
 	return FALSE;
 
     ms = modesettingPTR(pScrn);
-    ms->SaveGeneration = -1;
     ms->pEnt = pEnt;
+    ms->cust = cust;
 
     pScrn->displayWidth = 640;	       /* default it */
 
@@ -323,9 +399,21 @@ drv_pre_init(ScrnInfoPtr pScrn, int flags)
     }
 
     ms->fd = -1;
-    ms->api = NULL;
     if (!drv_init_drm(pScrn))
 	return FALSE;
+
+    use3D = cust ? !cust->no_3d : TRUE;
+    ms->from_3D = xf86GetOptValBool(ms->Options, OPTION_3D_ACCEL,
+				    &use3D) ?
+	X_CONFIG : X_PROBED;
+
+    ms->no3D = !use3D;
+
+    if (!drv_init_resource_management(pScrn)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not init "
+					       "Gallium3D or libKMS.");
+	return FALSE;
+    }
 
     pScrn->monitor = pScrn->confScreen->monitor;
     pScrn->progClock = TRUE;
@@ -365,26 +453,51 @@ drv_pre_init(ScrnInfoPtr pScrn, int flags)
     xf86CrtcConfigInit(pScrn, &crtc_config_funcs);
     xf86_config = XF86_CRTC_CONFIG_PTR(pScrn);
 
-    max_width = 8192;
-    max_height = 8192;
-    xf86CrtcSetSizeRange(pScrn, 320, 200, max_width, max_height);
+    /* get max width and height */
+    {
+	drmModeResPtr res;
+	int max_width, max_height;
+
+	res = drmModeGetResources(ms->fd);
+	max_width = res->max_width;
+	max_height = res->max_height;
+
+	if (ms->screen) {
+	    int max;
+
+	    max = ms->screen->get_param(ms->screen,
+					PIPE_CAP_MAX_TEXTURE_2D_LEVELS);
+	    max = 1 << (max - 1);
+	    max_width = max < max_width ? max : max_width;
+	    max_height = max < max_height ? max : max_height;
+	}
+
+	xf86CrtcSetSizeRange(pScrn, res->min_width,
+			     res->min_height, max_width, max_height);
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		   "Min width %d, Max Width %d.\n",
+		   res->min_width, max_width);
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		   "Min height %d, Max Height %d.\n",
+		   res->min_height, max_height);
+	drmModeFreeResources(res);
+    }
+
 
     if (xf86ReturnOptValBool(ms->Options, OPTION_SW_CURSOR, FALSE)) {
 	ms->SWCursor = TRUE;
     }
 
-    drv_save_hw_state(pScrn);
-
     xorg_crtc_init(pScrn);
     xorg_output_init(pScrn);
 
+    if (cust && cust->winsys_pre_init && !cust->winsys_pre_init(cust, ms->fd))
+	return FALSE;
+
     if (!xf86InitialConfiguration(pScrn, TRUE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes.\n");
-	drv_restore_hw_state(pScrn);
 	return FALSE;
     }
-
-    drv_restore_hw_state(pScrn);
 
     /*
      * If the driver can do gamma correction, it should call xf86SetGamma() here.
@@ -423,22 +536,6 @@ drv_pre_init(ScrnInfoPtr pScrn, int flags)
     return TRUE;
 }
 
-static Bool
-drv_save_hw_state(ScrnInfoPtr pScrn)
-{
-    /*xf86CrtcConfigPtr xf86_config = XF86_CRTC_CONFIG_PTR(pScrn);*/
-
-    return TRUE;
-}
-
-static Bool
-drv_restore_hw_state(ScrnInfoPtr pScrn)
-{
-    /*xf86CrtcConfigPtr config = XF86_CRTC_CONFIG_PTR(pScrn);*/
-
-    return TRUE;
-}
-
 static void drv_block_handler(int i, pointer blockData, pointer pTimeout,
                               pointer pReadmask)
 {
@@ -452,23 +549,29 @@ static void drv_block_handler(int i, pointer blockData, pointer pTimeout,
     if (ms->ctx) {
        int j;
 
-       ms->ctx->flush(ms->ctx, PIPE_FLUSH_RENDER_CACHE, &ms->fence[XORG_NR_FENCES-1]);
+       ms->ctx->flush(ms->ctx, PIPE_FLUSH_RENDER_CACHE,
+		      ms->dirtyThrottling ?
+		      &ms->fence[XORG_NR_FENCES-1] :
+		      NULL);
        
-       if (ms->fence[0])
-          ms->ctx->screen->fence_finish(ms->ctx->screen, ms->fence[0], 0);
+       if (ms->dirtyThrottling) {
+	   if (ms->fence[0])
+	       ms->ctx->screen->fence_finish(ms->ctx->screen,
+					     ms->fence[0], 0);
   
-       /* The amount of rendering generated by a block handler can be
-        * quite small.  Let us get a fair way ahead of hardware before
-        * throttling.
-        */
-       for (j = 0; j < XORG_NR_FENCES; j++)
-          ms->screen->fence_reference(ms->screen,
-                                      &ms->fence[j],
-                                      ms->fence[j+1]);
+	   /* The amount of rendering generated by a block handler can be
+	    * quite small.  Let us get a fair way ahead of hardware before
+	    * throttling.
+	    */
+	   for (j = 0; j < XORG_NR_FENCES - 1; j++)
+	       ms->screen->fence_reference(ms->screen,
+					   &ms->fence[j],
+					   ms->fence[j+1]);
 
-       ms->screen->fence_reference(ms->screen,
-                                   &ms->fence[XORG_NR_FENCES-1],
-                                   NULL);
+	   ms->screen->fence_reference(ms->screen,
+				       &ms->fence[XORG_NR_FENCES-1],
+				       NULL);
+       }
     }
         
 
@@ -545,21 +648,39 @@ drv_create_screen_resources(ScreenPtr pScreen)
 }
 
 static Bool
+drv_set_master(ScrnInfoPtr pScrn)
+{
+    modesettingPtr ms = modesettingPTR(pScrn);
+
+    if (!ms->isMaster && drmSetMaster(ms->fd) != 0) {
+	if (errno == EINVAL) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "drmSetMaster failed: 2.6.29 or newer kernel required for "
+		       "multi-server DRI\n");
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "drmSetMaster failed: %s\n", strerror(errno));
+	}
+	return FALSE;
+    }
+
+    ms->isMaster = TRUE;
+    return TRUE;
+}
+
+
+static Bool
 drv_screen_init(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     modesettingPtr ms = modesettingPTR(pScrn);
     VisualPtr visual;
+    CustomizerPtr cust = ms->cust;
+    MessageType from_st;
+    MessageType from_dt;
 
-    if (!drv_init_drm(pScrn)) {
-	FatalError("Could not init DRM");
+    if (!drv_set_master(pScrn))
 	return FALSE;
-    }
-
-    if (!drv_init_resource_management(pScrn)) {
-	FatalError("Could not init resource management (!pipe_screen && !libkms)");
-	return FALSE;
-    }
 
     if (!drv_init_front_buffer_functions(pScrn)) {
 	FatalError("Could not init front buffer manager");
@@ -614,16 +735,52 @@ drv_screen_init(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    ms->accelerate_2d = xf86ReturnOptValBool(ms->Options, OPTION_2D_ACCEL, FALSE);
+    ms->debug_fallback = xf86ReturnOptValBool(ms->Options, OPTION_DEBUG_FALLBACK, ms->accelerate_2d);
+
+    if (cust && cust->winsys_screen_init)
+	cust->winsys_screen_init(cust);
+
+    ms->swapThrottling = cust ?  cust->swap_throttling : TRUE;
+    from_st = xf86GetOptValBool(ms->Options, OPTION_THROTTLE_SWAP,
+				&ms->swapThrottling) ?
+	X_CONFIG : X_DEFAULT;
+
+    ms->dirtyThrottling = cust ?  cust->dirty_throttling : TRUE;
+    from_dt = xf86GetOptValBool(ms->Options, OPTION_THROTTLE_DIRTY,
+				&ms->dirtyThrottling) ?
+	X_CONFIG : X_DEFAULT;
+
     if (ms->screen) {
-	ms->exa = xorg_exa_init(pScrn, xf86ReturnOptValBool(ms->Options,
-							    OPTION_2D_ACCEL, TRUE));
-	ms->debug_fallback = debug_get_bool_option("XORG_DEBUG_FALLBACK", TRUE);
+	ms->exa = xorg_exa_init(pScrn, ms->accelerate_2d);
 
 	xorg_xv_init(pScreen);
 #ifdef DRI2
 	xorg_dri2_init(pScreen);
 #endif
     }
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "##################################\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "# Usefull debugging info follows #\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "##################################\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %s backend\n",
+	       ms->screen ? "Gallium3D" : "libkms");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "2D Acceleration is %s\n",
+	       ms->screen && ms->accelerate_2d ? "enabled" : "disabled");
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Fallback debugging is %s\n",
+	       ms->debug_fallback ? "enabled" : "disabled");
+#ifdef DRI2
+    xf86DrvMsg(pScrn->scrnIndex, ms->from_3D, "3D Acceleration is %s\n",
+	       ms->screen ? "enabled" : "disabled");
+#else
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "3D Acceleration is disabled\n");
+#endif
+    xf86DrvMsg(pScrn->scrnIndex, from_st, "Swap Throttling is %s.\n",
+	       ms->swapThrottling ? "enabled" : "disabled");
+    xf86DrvMsg(pScrn->scrnIndex, from_dt, "Dirty Throttling is %s.\n",
+	       ms->dirtyThrottling ? "enabled" : "disabled");
+
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "##################################\n");
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
@@ -654,9 +811,6 @@ drv_screen_init(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     if (serverGeneration == 1)
 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
-
-    if (ms->winsys_screen_init)
-	ms->winsys_screen_init(pScrn);
 
     return drv_enter_vt(scrnIndex, 1);
 }
@@ -689,10 +843,11 @@ drv_leave_vt(int scrnIndex, int flags)
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     modesettingPtr ms = modesettingPTR(pScrn);
     xf86CrtcConfigPtr config = XF86_CRTC_CONFIG_PTR(pScrn);
+    CustomizerPtr cust = ms->cust;
     int o;
 
-    if (ms->winsys_leave_vt)
-	ms->winsys_leave_vt(pScrn);
+    if (cust && cust->winsys_leave_vt)
+	cust->winsys_leave_vt(cust);
 
     for (o = 0; o < config->num_crtc; o++) {
 	xf86CrtcPtr crtc = config->crtc[o];
@@ -708,13 +863,17 @@ drv_leave_vt(int scrnIndex, int flags)
     }
 
     drmModeRmFB(ms->fd, ms->fb_id);
+    ms->fb_id = -1;
 
-    drv_restore_hw_state(pScrn);
+    /* idle hardware */
+    if (!ms->kms)
+	drv_cleanup_fences(pScrn);
 
     if (drmDropMaster(ms->fd))
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "drmDropMaster failed: %s\n", strerror(errno));
 
+    ms->isMaster = FALSE;
     pScrn->vtSema = FALSE;
 }
 
@@ -726,26 +885,10 @@ drv_enter_vt(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     modesettingPtr ms = modesettingPTR(pScrn);
+    CustomizerPtr cust = ms->cust;
 
-    if (drmSetMaster(ms->fd)) {
-	if (errno == EINVAL) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		       "drmSetMaster failed: 2.6.29 or newer kernel required for "
-		       "multi-server DRI\n");
-	} else {
-	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		       "drmSetMaster failed: %s\n", strerror(errno));
-	}
-    }
-
-    /*
-     * Only save state once per server generation since that's what most
-     * drivers do.  Could change this to save state at each VT enter.
-     */
-    if (ms->SaveGeneration != serverGeneration) {
-	ms->SaveGeneration = serverGeneration;
-	drv_save_hw_state(pScrn);
-    }
+    if (!drv_set_master(pScrn))
+	return FALSE;
 
     if (!ms->create_front_buffer(pScrn))
 	return FALSE;
@@ -756,8 +899,8 @@ drv_enter_vt(int scrnIndex, int flags)
     if (!xf86SetDesiredModes(pScrn))
 	return FALSE;
 
-    if (ms->winsys_enter_vt)
-	ms->winsys_enter_vt(pScrn);
+    if (cust && cust->winsys_enter_vt)
+	cust->winsys_enter_vt(cust);
 
     return TRUE;
 }
@@ -775,13 +918,15 @@ drv_close_screen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     modesettingPtr ms = modesettingPTR(pScrn);
+    CustomizerPtr cust = ms->cust;
 
-    if (pScrn->vtSema) {
-	drv_leave_vt(scrnIndex, 0);
+    if (ms->cursor) {
+       FreeCursor(ms->cursor, None);
+       ms->cursor = NULL;
     }
 
-    if (ms->winsys_screen_close)
-	ms->winsys_screen_close(pScrn);
+    if (cust && cust->winsys_screen_close)
+	cust->winsys_screen_close(cust);
 
 #ifdef DRI2
     if (ms->screen)
@@ -806,13 +951,14 @@ drv_close_screen(int scrnIndex, ScreenPtr pScreen)
 	xorg_exa_close(pScrn);
     ms->exa = NULL;
 
-    drv_close_resource_management(pScrn);
-
-    drmClose(ms->fd);
-    ms->fd = -1;
+    /* calls drop master make sure we don't talk to 3D HW after that */
+    if (pScrn->vtSema) {
+	drv_leave_vt(scrnIndex, 0);
+    }
 
     pScrn->vtSema = FALSE;
     pScreen->CloseScreen = ms->CloseScreen;
+
     return (*pScreen->CloseScreen) (scrnIndex, pScreen);
 }
 
@@ -831,7 +977,16 @@ static Bool
 drv_destroy_front_buffer_ga3d(ScrnInfoPtr pScrn)
 {
     modesettingPtr ms = modesettingPTR(pScrn);
-    pipe_texture_reference(&ms->root_texture, NULL);
+
+    if (!ms->root_texture)
+	return TRUE;
+
+    if (ms->fb_id != -1) {
+	drmModeRmFB(ms->fd, ms->fb_id);
+	ms->fb_id = -1;
+    }
+
+    pipe_resource_reference(&ms->root_texture, NULL);
     return TRUE;
 }
 
@@ -839,8 +994,9 @@ static Bool
 drv_create_front_buffer_ga3d(ScrnInfoPtr pScrn)
 {
     modesettingPtr ms = modesettingPTR(pScrn);
-    unsigned handle, stride;
-    struct pipe_texture *tex;
+    struct pipe_resource *tex;
+    struct winsys_handle whandle;
+    unsigned fb_id;
     int ret;
 
     ms->noEvict = TRUE;
@@ -851,10 +1007,10 @@ drv_create_front_buffer_ga3d(ScrnInfoPtr pScrn)
     if (!tex)
 	return FALSE;
 
-    if (!ms->api->local_handle_from_texture(ms->api, ms->screen,
-					    tex,
-					    &stride,
-					    &handle))
+    memset(&whandle, 0, sizeof(whandle));
+    whandle.type = DRM_API_HANDLE_TYPE_KMS;
+
+    if (!ms->screen->resource_get_handle(ms->screen, tex, &whandle))
 	goto err_destroy;
 
     ret = drmModeAddFB(ms->fd,
@@ -862,26 +1018,30 @@ drv_create_front_buffer_ga3d(ScrnInfoPtr pScrn)
 		       pScrn->virtualY,
 		       pScrn->depth,
 		       pScrn->bitsPerPixel,
-		       stride,
-		       handle,
-		       &ms->fb_id);
+		       whandle.stride,
+		       whandle.handle,
+		       &fb_id);
     if (ret) {
-	debug_printf("%s: failed to create framebuffer (%i, %s)",
+	debug_printf("%s: failed to create framebuffer (%i, %s)\n",
 		     __func__, ret, strerror(-ret));
 	goto err_destroy;
     }
+
+    if (!drv_destroy_front_buffer_ga3d(pScrn))
+	FatalError("%s: failed to take down old framebuffer\n", __func__);
 
     pScrn->frameX0 = 0;
     pScrn->frameY0 = 0;
     drv_adjust_frame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
-    pipe_texture_reference(&ms->root_texture, tex);
-    pipe_texture_reference(&tex, NULL);
+    pipe_resource_reference(&ms->root_texture, tex);
+    pipe_resource_reference(&tex, NULL);
+    ms->fb_id = fb_id;
 
     return TRUE;
 
 err_destroy:
-    pipe_texture_reference(&tex, NULL);
+    pipe_resource_reference(&tex, NULL);
     return FALSE;
 }
 
@@ -891,7 +1051,7 @@ drv_bind_front_buffer_ga3d(ScrnInfoPtr pScrn)
     modesettingPtr ms = modesettingPTR(pScrn);
     ScreenPtr pScreen = pScrn->pScreen;
     PixmapPtr rootPixmap = pScreen->GetScreenPixmap(pScreen);
-    struct pipe_texture *check;
+    struct pipe_resource *check;
 
     xorg_exa_set_displayed_usage(rootPixmap);
     xorg_exa_set_shared_usage(rootPixmap);
@@ -903,7 +1063,7 @@ drv_bind_front_buffer_ga3d(ScrnInfoPtr pScrn)
     if (ms->root_texture != check)
 	FatalError("Created new root texture\n");
 
-    pipe_texture_reference(&check, NULL);
+    pipe_resource_reference(&check, NULL);
     return TRUE;
 }
 
@@ -915,8 +1075,19 @@ drv_destroy_front_buffer_kms(ScrnInfoPtr pScrn)
     ScreenPtr pScreen = pScrn->pScreen;
     PixmapPtr rootPixmap = pScreen->GetScreenPixmap(pScreen);
 
+    /* XXX Do something with the rootPixmap.
+     * This currently works fine but if we are getting crashes in
+     * the fb functions after VT switches maybe look more into it.
+     */
+    (void)rootPixmap;
+
     if (!ms->root_bo)
 	return TRUE;
+
+    if (ms->fb_id != -1) {
+	drmModeRmFB(ms->fd, ms->fb_id);
+	ms->fb_id = -1;
+    }
 
     kms_bo_unmap(ms->root_bo);
     kms_bo_destroy(&ms->root_bo);
@@ -930,10 +1101,15 @@ drv_create_front_buffer_kms(ScrnInfoPtr pScrn)
     unsigned handle, stride;
     struct kms_bo *bo;
     unsigned attr[8];
+    unsigned fb_id;
     int ret;
 
     attr[0] = KMS_BO_TYPE;
+#ifdef KMS_BO_TYPE_SCANOUT_X8R8G8B8
+    attr[1] = KMS_BO_TYPE_SCANOUT_X8R8G8B8;
+#else
     attr[1] = KMS_BO_TYPE_SCANOUT;
+#endif
     attr[2] = KMS_WIDTH;
     attr[3] = pScrn->virtualX;
     attr[4] = KMS_HEIGHT;
@@ -956,17 +1132,21 @@ drv_create_front_buffer_kms(ScrnInfoPtr pScrn)
 		       pScrn->bitsPerPixel,
 		       stride,
 		       handle,
-		       &ms->fb_id);
+		       &fb_id);
     if (ret) {
 	debug_printf("%s: failed to create framebuffer (%i, %s)",
 		     __func__, ret, strerror(-ret));
 	goto err_destroy;
     }
 
+    if (!drv_destroy_front_buffer_kms(pScrn))
+	FatalError("%s: could not takedown old bo", __func__);
+
     pScrn->frameX0 = 0;
     pScrn->frameY0 = 0;
     drv_adjust_frame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     ms->root_bo = bo;
+    ms->fb_id = fb_id;
 
     return TRUE;
 
@@ -991,12 +1171,22 @@ drv_bind_front_buffer_kms(ScrnInfoPtr pScrn)
 	goto err_destroy;
 
     pScreen->ModifyPixmapHeader(rootPixmap,
-				pScreen->width,
-				pScreen->height,
+				pScrn->virtualX,
+				pScrn->virtualY,
 				pScreen->rootDepth,
 				pScrn->bitsPerPixel,
 				stride,
 				ptr);
+
+    /* This a hack to work around EnableDisableFBAccess setting the pointer
+     * the real fix would be to replace pScrn->EnableDisableFBAccess hook
+     * and set the rootPixmap->devPrivate.ptr to something valid before that.
+     *
+     * But in its infinit visdome something uses either this some times before
+     * that, so our hook doesn't get called before the crash happens.
+     */
+    pScrn->pixmapPrivate.ptr = ptr;
+
     return TRUE;
 
 err_destroy:
@@ -1022,6 +1212,16 @@ static Bool drv_init_front_buffer_functions(ScrnInfoPtr pScrn)
 	return FALSE;
 
     return TRUE;
+}
+
+CustomizerPtr xorg_customizer(ScrnInfoPtr pScrn)
+{
+    return modesettingPTR(pScrn)->cust;
+}
+
+Bool xorg_has_gallium(ScrnInfoPtr pScrn)
+{
+    return modesettingPTR(pScrn)->screen != NULL;
 }
 
 /* vim: set sw=4 ts=8 sts=4: */

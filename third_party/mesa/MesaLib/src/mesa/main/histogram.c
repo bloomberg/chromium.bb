@@ -29,7 +29,8 @@
 #include "context.h"
 #include "image.h"
 #include "histogram.h"
-#include "glapi/dispatch.h"
+#include "macros.h"
+#include "main/dispatch.h"
 
 
 #if FEATURE_histogram

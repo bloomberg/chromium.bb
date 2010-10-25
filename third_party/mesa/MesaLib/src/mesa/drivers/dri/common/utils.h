@@ -69,6 +69,9 @@ struct __DRIutilversionRec2 {
     int    patch;        /**< Patch-level. */
 };
 
+extern void
+__driUtilMessage(const char *f, ...);
+
 extern unsigned driParseDebugString( const char * debug,
     const struct dri_debug_control * control );
 
@@ -104,7 +107,8 @@ driCreateConfigs(GLenum fb_format, GLenum fb_type,
 		 const uint8_t * depth_bits, const uint8_t * stencil_bits,
 		 unsigned num_depth_stencil_bits,
 		 const GLenum * db_modes, unsigned num_db_modes,
-    		 const uint8_t * msaa_samples, unsigned num_msaa_modes);
+		 const uint8_t * msaa_samples, unsigned num_msaa_modes,
+		 GLboolean enable_accum);
 
 __DRIconfig **driConcatConfigs(__DRIconfig **a,
 			       __DRIconfig **b);

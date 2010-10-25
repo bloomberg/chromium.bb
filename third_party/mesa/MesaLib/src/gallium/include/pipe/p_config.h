@@ -53,6 +53,7 @@
 
 #if defined(__GNUC__)
 #define PIPE_CC_GCC
+#define PIPE_CC_GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
 #endif
 
 /*
@@ -91,6 +92,11 @@
 #else
 #define PIPE_ARCH_SSE
 #endif
+#if defined(PIPE_CC_GCC) && !defined(__SSSE3__)
+/* #warning SSE3 support requires -msse3 compiler options */
+#else
+#define PIPE_ARCH_SSSE3
+#endif
 #endif
 
 #if defined(__PPC__)
@@ -114,8 +120,10 @@
 #endif
 
 
+#if !defined(PIPE_OS_EMBEDDED)
+
 /*
- * Operating system family.
+ * Auto-detect the operating system family.
  * 
  * See subsystem below for a more fine-grained distinction.
  */
@@ -143,6 +151,11 @@
 #define PIPE_OS_UNIX
 #endif
 
+#if defined(__GNU__)
+#define PIPE_OS_HURD
+#define PIPE_OS_UNIX
+#endif
+
 #if defined(__sun)
 #define PIPE_OS_SOLARIS
 #define PIPE_OS_UNIX
@@ -162,8 +175,13 @@
 #define PIPE_OS_UNIX
 #endif
 
+#if defined(__CYGWIN__)
+#define PIPE_OS_CYGWIN
+#define PIPE_OS_UNIX
+#endif
+
 /*
- * Subsystem.
+ * Try to auto-detect the subsystem.
  * 
  * NOTE: There is no way to auto-detect most of these.
  */
@@ -189,6 +207,8 @@
 #endif /* !_WIN32_WCE */
 #endif
 #endif /* PIPE_OS_WINDOWS */
+
+#endif /* !PIPE_OS_EMBEDDED */
 
 
 #endif /* P_CONFIG_H_ */

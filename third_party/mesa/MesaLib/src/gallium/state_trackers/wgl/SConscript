@@ -7,14 +7,16 @@ if env['platform'] in ['windows']:
     env = env.Clone()
      
     env.Append(CPPPATH = [
+    	'#src/mapi',
     	'#src/mesa',
     	'.',
     ])
      
-    env.Append(CPPDEFINES = [
+    env.AppendUnique(CPPDEFINES = [
         '_GDI32_', # prevent wgl* being declared __declspec(dllimport)
         'BUILD_GL32', # declare gl* as __declspec(dllexport) in Mesa headers 
         'WIN32_THREADS', # use Win32 thread API
+        'WIN32_LEAN_AND_MEAN', # http://msdn2.microsoft.com/en-us/library/6dwk3a1z.aspx
     ])
      
     sources = [
@@ -27,6 +29,7 @@ if env['platform'] in ['windows']:
         'stw_framebuffer.c',
         'stw_getprocaddress.c',
         'stw_pixelformat.c',
+        'stw_st.c',
         'stw_tls.c',
         'stw_wgl.c',
     ]

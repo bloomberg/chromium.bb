@@ -62,7 +62,8 @@ struct svga_shader_emitter
 
    int imm_start;
 
-   int nr_hw_const;
+   int nr_hw_float_const;
+   int nr_hw_int_const;
    int nr_hw_temp;
    
    int insn_offset;
@@ -78,6 +79,8 @@ struct svga_shader_emitter
    int internal_frontface_idx;
 
    int ps30_input_count;
+
+   int dynamic_branching_level;
 
    boolean in_main_func;
 
@@ -136,6 +139,7 @@ static INLINE boolean emit_dst( struct svga_shader_emitter *emit,
                          SVGA3dShaderDestToken dest )
 {
    assert(dest.reserved0);
+   assert(dest.mask);
    return svga_shader_emit_dword( emit, dest.value );
 }
 
@@ -199,6 +203,23 @@ static INLINE boolean emit_op3( struct svga_shader_emitter *emit,
 }
 
 
+static INLINE boolean emit_op4( struct svga_shader_emitter *emit,
+                                SVGA3dShaderInstToken inst,
+                                SVGA3dShaderDestToken dest,
+                                struct src_register src0,
+                                struct src_register src1,
+                                struct src_register src2,
+                                struct src_register src3)
+{
+   return (emit_instruction( emit, inst ) &&
+           emit_dst( emit, dest ) &&
+           emit_src( emit, src0 ) &&
+           emit_src( emit, src1 ) &&
+           emit_src( emit, src2 ) &&
+           emit_src( emit, src3 ));
+}
+
+
 #define TRANSLATE_SWIZZLE(x,y,z,w)  ((x) | ((y) << 2) | ((z) << 4) | ((w) << 6))
 #define SWIZZLE_XYZW  \
  TRANSLATE_SWIZZLE(TGSI_SWIZZLE_X,TGSI_SWIZZLE_Y,TGSI_SWIZZLE_Z,TGSI_SWIZZLE_W)
@@ -248,6 +269,7 @@ static INLINE SVGA3dShaderDestToken
 writemask( SVGA3dShaderDestToken dest,
            unsigned mask )
 {
+   assert(dest.mask & mask);
    dest.mask &= mask;
    return dest;
 }
@@ -332,6 +354,7 @@ static INLINE ubyte svga_tgsi_sampler_type( struct svga_shader_emitter *emit,
    case PIPE_TEXTURE_1D:
       return SVGA3DSAMP_2D;
    case PIPE_TEXTURE_2D:
+   case PIPE_TEXTURE_RECT:
       return SVGA3DSAMP_2D;
    case PIPE_TEXTURE_3D:
       return SVGA3DSAMP_VOLUME;

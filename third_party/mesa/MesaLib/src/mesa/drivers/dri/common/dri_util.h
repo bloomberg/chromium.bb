@@ -51,7 +51,9 @@
 #include <drm.h>
 #include <drm_sarea.h>
 #include <xf86drm.h>
+#include "xmlconfig.h"
 #include "main/glheader.h"
+#include "main/mtypes.h"
 #include "GL/internal/glcore.h"
 #include "GL/internal/dri_interface.h"
 
@@ -59,21 +61,17 @@
 
 typedef struct __DRIswapInfoRec        __DRIswapInfo;
 
-/* Typedefs to avoid rewriting the world. */
-typedef struct __DRIscreenRec	__DRIscreenPrivate;
-typedef struct __DRIdrawableRec	__DRIdrawablePrivate;
-typedef struct __DRIcontextRec	__DRIcontextPrivate;
-
 /**
  * Extensions.
  */
 extern const __DRIlegacyExtension driLegacyExtension;
 extern const __DRIcoreExtension driCoreExtension;
+extern const __DRIdri2Extension driDRI2Extension;
 extern const __DRIextension driReadDrawableExtension;
 extern const __DRIcopySubBufferExtension driCopySubBufferExtension;
 extern const __DRIswapControlExtension driSwapControlExtension;
-extern const __DRIframeTrackingExtension driFrameTrackingExtension;
 extern const __DRImediaStreamCounterExtension driMediaStreamCounterExtension;
+extern const __DRI2configQueryExtension dri2ConfigQueryExtension;
 
 /**
  * Used by DRI_VALIDATE_DRAWABLE_INFO
@@ -150,8 +148,9 @@ struct __DriverAPIRec {
     /**
      * Context creation callback
      */	    	    
-    GLboolean (*CreateContext)(const __GLcontextModes *glVis,
-                               __DRIcontext *driContextPriv,
+    GLboolean (*CreateContext)(gl_api api,
+			       const __GLcontextModes *glVis,
+			       __DRIcontext *driContextPriv,
                                void *sharedContextPrivate);
 
     /**
@@ -299,7 +298,8 @@ struct __DRIdrawableRec {
     unsigned int index;
 
     /**
-     * Pointer to the "drawable has changed ID" stamp in the SAREA.
+     * Pointer to the "drawable has changed ID" stamp in the SAREA (or
+     * to dri2.stamp if DRI2 is being used).
      */
     unsigned int *pStamp;
 
@@ -380,6 +380,11 @@ struct __DRIdrawableRec {
      * GLX_MESA_swap_control.
      */
     unsigned int swap_interval;
+
+    struct {
+	unsigned int stamp;
+	drm_clip_rect_t clipRect;
+    } dri2;
 };
 
 /**
@@ -397,11 +402,6 @@ struct __DRIcontextRec {
     void *driverPrivate;
 
     /**
-     * Pointer back to the \c __DRIcontext that contains this structure.
-     */
-    __DRIcontext *pctx;
-
-    /**
      * Pointer to drawable currently bound to this context for drawing.
      */
     __DRIdrawable *driDrawablePriv;
@@ -415,6 +415,16 @@ struct __DRIcontextRec {
      * Pointer to screen on which this context was created.
      */
     __DRIscreen *driScreenPriv;
+
+    /**
+     * The loaders's private context data.  This structure is opaque.
+     */
+    void *loaderPrivate;
+
+    struct {
+	int draw_stamp;
+	int read_stamp;
+    } dri2;
 };
 
 /**
@@ -499,28 +509,15 @@ struct __DRIscreenRec {
     /*@}*/
 
     /**
-     * Dummy context to which drawables are bound when not bound to any
-     * other context. 
-     *
-     * A dummy hHWContext is created for this context, and is used by the GL
-     * core when a hardware lock is required but the drawable is not currently
-     * bound (e.g., potentially during a SwapBuffers request).  The dummy
-     * context is created when the first "real" context is created on this
-     * screen.
-     */
-    __DRIcontext dummyContextPriv;
-
-    /**
      * Device-dependent private information (not stored in the SAREA).
      * 
      * This pointer is never touched by the DRI layer.
      */
+#ifdef __cplusplus
+    void *priv;
+#else
     void *private;
-
-    /**
-     * Pointer back to the \c __DRIscreen that contains this structure.
-     */
-    __DRIscreen *psc;
+#endif
 
     /* Extensions provided by the loader. */
     const __DRIgetDrawableInfoExtension *getDrawableInfo;
@@ -532,15 +529,18 @@ struct __DRIscreenRec {
 	 * fields will not be valid or initializaed in that case. */
 	int enabled;
 	__DRIdri2LoaderExtension *loader;
+	__DRIimageLookupExtension *image;
+	__DRIuseInvalidateExtension *useInvalidate;
     } dri2;
 
     /* The lock actually in use, old sarea or DRI2 */
     drmLock *lock;
+
+    driOptionCache optionInfo;
+    driOptionCache optionCache;
+   unsigned int api_mask;
+   void *loaderPrivate;
 };
-
-extern void
-__driUtilMessage(const char *f, ...);
-
 
 extern void
 __driUtilUpdateDrawableInfo(__DRIdrawable *pdp);
@@ -551,5 +551,8 @@ driCalculateSwapUsage( __DRIdrawable *dPriv,
 
 extern GLint
 driIntersectArea( drm_clip_rect_t rect1, drm_clip_rect_t rect2 );
+
+extern void
+dri2InvalidateDrawable(__DRIdrawable *drawable);
 
 #endif /* _DRI_UTIL_H_ */

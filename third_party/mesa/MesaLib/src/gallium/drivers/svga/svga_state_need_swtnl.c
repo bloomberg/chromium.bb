@@ -23,7 +23,7 @@
  *
  **********************************************************/
 
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 #include "pipe/p_state.h"
 
 
@@ -52,14 +52,10 @@ svga_translate_vertex_format(enum pipe_format format)
    case PIPE_FORMAT_R16G16B16A16_SNORM:   return SVGA3D_DECLTYPE_SHORT4N;
    case PIPE_FORMAT_R16G16_UNORM:         return SVGA3D_DECLTYPE_USHORT2N;
    case PIPE_FORMAT_R16G16B16A16_UNORM:   return SVGA3D_DECLTYPE_USHORT4N;
-
-   /* These formats don't exist yet:
-    * 
-   case PIPE_FORMAT_R10G10B10_USCALED:    return SVGA3D_DECLTYPE_UDEC3;
-   case PIPE_FORMAT_R10G10B10_SNORM:      return SVGA3D_DECLTYPE_DEC3N;
+   case PIPE_FORMAT_R10G10B10X2_USCALED:  return SVGA3D_DECLTYPE_UDEC3;
+   case PIPE_FORMAT_R10G10B10X2_SNORM:    return SVGA3D_DECLTYPE_DEC3N;
    case PIPE_FORMAT_R16G16_FLOAT:         return SVGA3D_DECLTYPE_FLOAT16_2;
    case PIPE_FORMAT_R16G16B16A16_FLOAT:   return SVGA3D_DECLTYPE_FLOAT16_4;
-   */
 
    default:
       /* There are many formats without hardware support.  This case
@@ -76,8 +72,13 @@ static int update_need_swvfetch( struct svga_context *svga,
    unsigned i;
    boolean need_swvfetch = FALSE;
 
-   for (i = 0; i < svga->curr.num_vertex_elements; i++) {
-      svga->state.sw.ve_format[i] = svga_translate_vertex_format(svga->curr.ve[i].src_format);
+   if (!svga->curr.velems) {
+      /* No vertex elements bound. */
+      return 0;
+   }
+
+   for (i = 0; i < svga->curr.velems->count; i++) {
+      svga->state.sw.ve_format[i] = svga_translate_vertex_format(svga->curr.velems->velem[i].src_format);
       if (svga->state.sw.ve_format[i] == SVGA3D_DECLTYPE_MAX) {
          need_swvfetch = TRUE;
          break;
@@ -108,6 +109,7 @@ static int update_need_pipeline( struct svga_context *svga,
 {
    
    boolean need_pipeline = FALSE;
+   struct svga_vertex_shader *vs = svga->curr.vs;
 
    /* SVGA_NEW_RAST, SVGA_NEW_REDUCED_PRIMITIVE
     */
@@ -119,19 +121,16 @@ static int update_need_pipeline( struct svga_context *svga,
       need_pipeline = TRUE;
    }
 
-   /* SVGA_NEW_EDGEFLAGS
+   /* EDGEFLAGS
     */
-   if (svga->curr.rast->hw_unfilled != PIPE_POLYGON_MODE_FILL &&
-       svga->curr.reduced_prim == PIPE_PRIM_TRIANGLES && 
-       svga->curr.edgeflags != NULL) {
+    if (vs->base.info.writes_edgeflag) {
       SVGA_DBG(DEBUG_SWTNL, "%s: edgeflags\n", __FUNCTION__);
       need_pipeline = TRUE;
    }
 
    /* SVGA_NEW_CLIP 
     */
-   if (!svga->curr.rast->templ.bypass_vs_clip_and_viewport &&
-       svga->curr.clip.nr) {
+   if (svga->curr.clip.nr) {
       SVGA_DBG(DEBUG_SWTNL, "%s: userclip\n", __FUNCTION__);
       need_pipeline = TRUE;
    }
@@ -150,6 +149,7 @@ struct svga_tracked_state svga_update_need_pipeline =
    "need pipeline",
    (SVGA_NEW_RAST |
     SVGA_NEW_CLIP |
+    SVGA_NEW_VS |
     SVGA_NEW_REDUCED_PRIMITIVE),
    update_need_pipeline
 };

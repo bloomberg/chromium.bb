@@ -31,6 +31,9 @@
 
 #include "main/mtypes.h"
 
+#include "pipe/p_compiler.h"
+
+struct ureg_program;
 
 #if defined __cplusplus
 extern "C" {
@@ -39,22 +42,22 @@ extern "C" {
 struct tgsi_token;
 struct gl_program;
 
-const struct tgsi_token *
+enum pipe_error
 st_translate_mesa_program(
    GLcontext *ctx,
    uint procType,
+   struct ureg_program *ureg,
    const struct gl_program *program,
    GLuint numInputs,
    const GLuint inputMapping[],
    const ubyte inputSemanticName[],
    const ubyte inputSemanticIndex[],
    const GLuint interpMode[],
-   const GLbitfield inputFlags[],
    GLuint numOutputs,
    const GLuint outputMapping[],
    const ubyte outputSemanticName[],
    const ubyte outputSemanticIndex[],
-   const GLbitfield outputFlags[] );
+   boolean passthrough_edgeflags );
 
 void
 st_free_tokens(const struct tgsi_token *tokens);

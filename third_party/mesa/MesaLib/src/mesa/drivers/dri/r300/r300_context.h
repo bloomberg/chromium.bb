@@ -43,7 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_common.h"
 
 #include "main/mtypes.h"
-#include "shader/prog_instruction.h"
+#include "program/prog_instruction.h"
 #include "compiler/radeon_code.h"
 
 struct r300_context;
@@ -355,7 +355,6 @@ struct r300_hw_state {
 	struct radeon_state_atom zb_hiz_offset;	/* (4F44) */
 	struct radeon_state_atom zb_hiz_pitch;	/* (4F54) */
 
-	struct radeon_state_atom vap_flush;
 	struct radeon_state_atom vpi;	/* vp instructions */
 	struct radeon_state_atom vpp;	/* vp parameters */
 	struct radeon_state_atom vps;	/* vertex point size (?) */
@@ -533,14 +532,20 @@ struct r300_context {
 
 	uint32_t fallback;
 
+	struct {
+		struct r300_vertex_program_code vp_code;
+		struct rX00_fragment_program_code fp_code;
+	} blit;
+
 	DECLARE_RENDERINPUTS(render_inputs_bitset);
 };
 
 #define R300_CONTEXT(ctx)		((r300ContextPtr)(ctx->DriverCtx))
 
-extern void r300DestroyContext(__DRIcontextPrivate * driContextPriv);
-extern GLboolean r300CreateContext(const __GLcontextModes * glVisual,
-				   __DRIcontextPrivate * driContextPriv,
+extern void r300DestroyContext(__DRIcontext * driContextPriv);
+extern GLboolean r300CreateContext(gl_api api,
+				   const __GLcontextModes * glVisual,
+				   __DRIcontext * driContextPriv,
 				   void *sharedContextPrivate);
 
 extern void r300InitShaderFuncs(struct dd_function_table *functions);

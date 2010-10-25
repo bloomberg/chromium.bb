@@ -46,7 +46,7 @@
 static void compile_sf_prog( struct brw_context *brw,
 			     struct brw_sf_prog_key *key )
 {
-   GLcontext *ctx = &brw->intel.ctx;
+   struct intel_context *intel = &brw->intel;
    struct brw_sf_compile c;
    const GLuint *program;
    GLuint program_size;
@@ -69,20 +69,14 @@ static void compile_sf_prog( struct brw_context *brw,
 
    /* Construct map from attribute number to position in the vertex.
     */
-   for (i = idx = 0; i < VERT_RESULT_MAX; i++) 
+   for (i = idx = 0; i < VERT_RESULT_MAX; i++) {
       if (c.key.attrs & BITFIELD64_BIT(i)) {
 	 c.attr_to_idx[i] = idx;
 	 c.idx_to_attr[idx] = i;
-	 if (i >= VERT_RESULT_TEX0 && i <= VERT_RESULT_TEX7) {
-            c.point_attrs[i].CoordReplace = 
-               ctx->Point.CoordReplace[i - VERT_RESULT_TEX0];
-	 }
-         else {
-            c.point_attrs[i].CoordReplace = GL_FALSE;
-         }
 	 idx++;
       }
-   
+   }
+
    /* Which primitive?  Or all three? 
     */
    switch (key->primitive) {
@@ -114,15 +108,24 @@ static void compile_sf_prog( struct brw_context *brw,
     */
    program = brw_get_program(&c.func, &program_size);
 
+   if (INTEL_DEBUG & DEBUG_SF) {
+      printf("sf:\n");
+      for (i = 0; i < program_size / sizeof(struct brw_instruction); i++)
+	 brw_disasm(stdout, &((struct brw_instruction *)program)[i],
+		    intel->gen);
+      printf("\n");
+   }
+
    /* Upload
     */
-   dri_bo_unreference(brw->sf.prog_bo);
-   brw->sf.prog_bo = brw_upload_cache( &brw->cache, BRW_SF_PROG,
-				       &c.key, sizeof(c.key),
-				       NULL, 0,
-				       program, program_size,
-				       &c.prog_data,
-				       &brw->sf.prog_data );
+   drm_intel_bo_unreference(brw->sf.prog_bo);
+   brw->sf.prog_bo = brw_upload_cache_with_auxdata(&brw->cache, BRW_SF_PROG,
+						   &c.key, sizeof(c.key),
+						   NULL, 0,
+						   program, program_size,
+						   &c.prog_data,
+						   sizeof(c.prog_data),
+						   &brw->sf.prog_data);
 }
 
 /* Calculate interpolants for triangle and line rasterization.
@@ -160,7 +163,16 @@ static void upload_sf_prog(struct brw_context *brw)
       break;
    }
 
+   /* _NEW_POINT */
    key.do_point_sprite = ctx->Point.PointSprite;
+   if (key.do_point_sprite) {
+      int i;
+
+      for (i = 0; i < 8; i++) {
+	 if (ctx->Point.CoordReplace[i])
+	    key.point_sprite_coord_replace |= (1 << i);
+      }
+   }
    key.sprite_origin_lower_left = (ctx->Point.SpriteOrigin == GL_LOWER_LEFT);
    /* _NEW_LIGHT */
    key.do_flat_shading = (ctx->Light.ShadeModel == GL_FLAT);
@@ -179,7 +191,7 @@ static void upload_sf_prog(struct brw_context *brw)
       key.frontface_ccw = (ctx->Polygon.FrontFace == GL_CCW) ^ (ctx->DrawBuffer->Name != 0);
    }
 
-   dri_bo_unreference(brw->sf.prog_bo);
+   drm_intel_bo_unreference(brw->sf.prog_bo);
    brw->sf.prog_bo = brw_search_cache(&brw->cache, BRW_SF_PROG,
 				      &key, sizeof(key),
 				      NULL, 0,

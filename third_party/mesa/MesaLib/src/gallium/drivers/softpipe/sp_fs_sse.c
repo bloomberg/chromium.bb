@@ -135,7 +135,7 @@ fs_sse_run( const struct sp_fragment_shader *base,
    tgsi_set_exec_mask(machine, 1, 1, 1, 1);
 
    shader->func( machine,
-		 machine->Consts,
+                 (const float (*)[4])machine->Consts[0],
                  (const float (*)[4])shader->immediates,
 		 machine->InterpCoefs
 		 /*, &machine->QuadPos*/
@@ -156,8 +156,13 @@ fs_sse_run( const struct sp_fragment_shader *base,
          case TGSI_SEMANTIC_COLOR:
             {
                uint cbuf = sem_index[i];
+
+               assert(sizeof(quad->output.color[cbuf]) ==
+                      sizeof(machine->Outputs[i]));
+
+               /* copy float[4][4] result */
                memcpy(quad->output.color[cbuf],
-                      &machine->Outputs[i].xyzw[0].f[0],
+                      &machine->Outputs[i],
                       sizeof(quad->output.color[0]) );
             }
             break;

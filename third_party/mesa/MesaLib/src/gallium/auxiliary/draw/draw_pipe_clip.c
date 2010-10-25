@@ -55,7 +55,7 @@
 
 
 
-struct clipper {
+struct clip_stage {
    struct draw_stage stage;      /**< base class */
 
    /* Basically duplicate some of the flatshading logic here:
@@ -68,11 +68,10 @@ struct clipper {
 };
 
 
-/* This is a bit confusing:
- */
-static INLINE struct clipper *clipper_stage( struct draw_stage *stage )
+/** Cast wrapper */
+static INLINE struct clip_stage *clip_stage( struct draw_stage *stage )
 {
-   return (struct clipper *)stage;
+   return (struct clip_stage *)stage;
 }
 
 
@@ -81,22 +80,27 @@ static INLINE struct clipper *clipper_stage( struct draw_stage *stage )
 
 /* All attributes are float[4], so this is easy:
  */
-static void interp_attr( float *fdst,
+static void interp_attr( float dst[4],
 			 float t,
-			 const float *fin,
-			 const float *fout )
+			 const float in[4],
+			 const float out[4] )
 {  
-   fdst[0] = LINTERP( t, fout[0], fin[0] );
-   fdst[1] = LINTERP( t, fout[1], fin[1] );
-   fdst[2] = LINTERP( t, fout[2], fin[2] );
-   fdst[3] = LINTERP( t, fout[3], fin[3] );
+   dst[0] = LINTERP( t, out[0], in[0] );
+   dst[1] = LINTERP( t, out[1], in[1] );
+   dst[2] = LINTERP( t, out[2], in[2] );
+   dst[3] = LINTERP( t, out[3], in[3] );
 }
 
+
+/**
+ * Copy front/back, primary/secondary colors from src vertex to dst vertex.
+ * Used when flat shading.
+ */
 static void copy_colors( struct draw_stage *stage,
 			 struct vertex_header *dst,
 			 const struct vertex_header *src )
 {
-   const struct clipper *clipper = clipper_stage(stage);
+   const struct clip_stage *clipper = clip_stage(stage);
    uint i;
    for (i = 0; i < clipper->num_color_attribs; i++) {
       const uint attr = clipper->color_attribs[i];
@@ -108,32 +112,29 @@ static void copy_colors( struct draw_stage *stage,
 
 /* Interpolate between two vertices to produce a third.  
  */
-static void interp( const struct clipper *clip,
+static void interp( const struct clip_stage *clip,
 		    struct vertex_header *dst,
 		    float t,
 		    const struct vertex_header *out, 
 		    const struct vertex_header *in )
 {
-   const unsigned nr_attrs = clip->stage.draw->vs.num_vs_outputs;
-   const unsigned pos_attr = clip->stage.draw->vs.position_output;
+   const unsigned nr_attrs = draw_current_shader_outputs(clip->stage.draw);
+   const unsigned pos_attr = draw_current_shader_position_output(clip->stage.draw);
    unsigned j;
 
    /* Vertex header.
     */
-   {
-      dst->clipmask = 0;
-      dst->edgeflag = 0;        /* will get overwritten later */
-      dst->pad = 0;
-      dst->vertex_id = UNDEFINED_VERTEX_ID;
-   }
+   dst->clipmask = 0;
+   dst->edgeflag = 0;        /* will get overwritten later */
+   dst->pad = 0;
+   dst->vertex_id = UNDEFINED_VERTEX_ID;
 
-   /* Clip coordinates:  interpolate normally
+   /* Interpolate the clip-space coords.
     */
-   {
-      interp_attr(dst->clip, t, in->clip, out->clip);
-   }
+   interp_attr(dst->clip, t, in->clip, out->clip);
 
-   /* Do the projective divide and insert window coordinates:
+   /* Do the projective divide and viewport transformation to get
+    * new window coordinates:
     */
    {
       const float *pos = dst->clip;
@@ -156,6 +157,10 @@ static void interp( const struct clipper *clip,
 }
 
 
+/**
+ * Emit a post-clip polygon to the next pipeline stage.  The polygon
+ * will be convex and the provoking vertex will always be vertex[0].
+ */
 static void emit_poly( struct draw_stage *stage,
 		       struct vertex_header **inlist,
 		       unsigned n,
@@ -163,10 +168,18 @@ static void emit_poly( struct draw_stage *stage,
 {
    struct prim_header header;
    unsigned i;
+   ushort edge_first, edge_middle, edge_last;
 
-   const ushort edge_first  = DRAW_PIPE_EDGE_FLAG_2;
-   const ushort edge_middle = DRAW_PIPE_EDGE_FLAG_0;
-   const ushort edge_last   = DRAW_PIPE_EDGE_FLAG_1;
+   if (stage->draw->rasterizer->flatshade_first) {
+      edge_first  = DRAW_PIPE_EDGE_FLAG_0;
+      edge_middle = DRAW_PIPE_EDGE_FLAG_1;
+      edge_last   = DRAW_PIPE_EDGE_FLAG_2;
+   }
+   else {
+      edge_first  = DRAW_PIPE_EDGE_FLAG_2;
+      edge_middle = DRAW_PIPE_EDGE_FLAG_0;
+      edge_last   = DRAW_PIPE_EDGE_FLAG_1;
+   }
 
    /* later stages may need the determinant, but only the sign matters */
    header.det = origPrim->det;
@@ -174,17 +187,26 @@ static void emit_poly( struct draw_stage *stage,
    header.pad = 0;
 
    for (i = 2; i < n; i++, header.flags = edge_middle) {
-      header.v[0] = inlist[i-1];
-      header.v[1] = inlist[i];
-      header.v[2] = inlist[0];	/* keep in v[2] for flatshading */
+      /* order the triangle verts to respect the provoking vertex mode */
+      if (stage->draw->rasterizer->flatshade_first) {
+         header.v[0] = inlist[0];  /* the provoking vertex */
+         header.v[1] = inlist[i-1];
+         header.v[2] = inlist[i];
+      }
+      else {
+         header.v[0] = inlist[i-1];
+         header.v[1] = inlist[i];
+         header.v[2] = inlist[0];  /* the provoking vertex */
+      }
 
       if (i == n-1)
-        header.flags |= edge_last;
+         header.flags |= edge_last;
 
       if (0) {
          const struct draw_vertex_shader *vs = stage->draw->vs.vertex_shader;
          uint j, k;
-         debug_printf("Clipped tri:\n");
+         debug_printf("Clipped tri: (flat-shade-first = %d)\n",
+                      stage->draw->rasterizer->flatshade_first);
          for (j = 0; j < 3; j++) {
             for (k = 0; k < vs->info.num_outputs; k++) {
                debug_printf("  Vert %d: Attr %d:  %f %f %f %f\n", j, k,
@@ -200,13 +222,14 @@ static void emit_poly( struct draw_stage *stage,
    }
 }
 
+
 static INLINE float
 dot4(const float *a, const float *b)
 {
-   return (a[0]*b[0] +
-           a[1]*b[1] +
-           a[2]*b[2] +
-           a[3]*b[3]);
+   return (a[0] * b[0] +
+           a[1] * b[1] +
+           a[2] * b[2] +
+           a[3] * b[3]);
 }
 
 
@@ -217,7 +240,7 @@ do_clip_tri( struct draw_stage *stage,
 	     struct prim_header *header,
 	     unsigned clipmask )
 {
-   struct clipper *clipper = clipper_stage( stage );
+   struct clip_stage *clipper = clip_stage( stage );
    struct vertex_header *a[MAX_CLIPPED_VERTICES];
    struct vertex_header *b[MAX_CLIPPED_VERTICES];
    struct vertex_header **inlist = a;
@@ -239,6 +262,9 @@ do_clip_tri( struct draw_stage *stage,
 
       clipmask &= ~(1<<plane_idx);
 
+      assert(n < MAX_CLIPPED_VERTICES);
+      if (n >= MAX_CLIPPED_VERTICES)
+         return;
       inlist[n] = inlist[0]; /* prevent rotation of vertices */
 
       for (i = 1; i <= n; i++) {
@@ -247,11 +273,23 @@ do_clip_tri( struct draw_stage *stage,
 	 float dp = dot4( vert->clip, plane );
 
 	 if (!IS_NEGATIVE(dp_prev)) {
+            assert(outcount < MAX_CLIPPED_VERTICES);
+            if (outcount >= MAX_CLIPPED_VERTICES)
+               return;
 	    outlist[outcount++] = vert_prev;
 	 }
 
 	 if (DIFFERENT_SIGNS(dp, dp_prev)) {
-	    struct vertex_header *new_vert = clipper->stage.tmp[tmpnr++];
+	    struct vertex_header *new_vert;
+
+            assert(tmpnr < MAX_CLIPPED_VERTICES + 1);
+            if (tmpnr >= MAX_CLIPPED_VERTICES + 1)
+               return;
+            new_vert = clipper->stage.tmp[tmpnr++];
+
+            assert(outcount < MAX_CLIPPED_VERTICES);
+            if (outcount >= MAX_CLIPPED_VERTICES)
+               return;
 	    outlist[outcount++] = new_vert;
 
 	    if (IS_NEGATIVE(dp)) {
@@ -280,6 +318,7 @@ do_clip_tri( struct draw_stage *stage,
 	 dp_prev = dp;
       }
 
+      /* swap in/out lists */
       {
 	 struct vertex_header **tmp = inlist;
 	 inlist = outlist;
@@ -288,22 +327,34 @@ do_clip_tri( struct draw_stage *stage,
       }
    }
 
-   /* If flat-shading, copy color to new provoking vertex.
+   /* If flat-shading, copy provoking vertex color to polygon vertex[0]
     */
-   if (clipper->flat && inlist[0] != header->v[2]) {
-      if (1) {
-	 inlist[0] = dup_vert(stage, inlist[0], tmpnr++);
+   if (n >= 3) {
+      if (clipper->flat) {
+         if (stage->draw->rasterizer->flatshade_first) {
+            if (inlist[0] != header->v[0]) {
+               assert(tmpnr < MAX_CLIPPED_VERTICES + 1);
+               if (tmpnr >= MAX_CLIPPED_VERTICES + 1)
+                  return;
+               inlist[0] = dup_vert(stage, inlist[0], tmpnr++);
+               copy_colors(stage, inlist[0], header->v[0]);
+            }
+         }
+         else {
+            if (inlist[0] != header->v[2]) {
+               assert(tmpnr < MAX_CLIPPED_VERTICES + 1);
+               if (tmpnr >= MAX_CLIPPED_VERTICES + 1)
+                  return;
+               inlist[0] = dup_vert(stage, inlist[0], tmpnr++);
+               copy_colors(stage, inlist[0], header->v[2]);
+            }
+         }
       }
-
-      copy_colors(stage, inlist[0], header->v[2]);
-   }
-
-
-
-   /* Emit the polygon as triangles to the setup stage:
-    */
-   if (n >= 3)
+      
+      /* Emit the polygon as triangles to the setup stage:
+       */
       emit_poly( stage, inlist, n, header );
+   }
 }
 
 
@@ -314,7 +365,7 @@ do_clip_line( struct draw_stage *stage,
 	      struct prim_header *header,
 	      unsigned clipmask )
 {
-   const struct clipper *clipper = clipper_stage( stage );
+   const struct clip_stage *clipper = clip_stage( stage );
    struct vertex_header *v0 = header->v[0];
    struct vertex_header *v1 = header->v[1];
    const float *pos0 = v0->clip;
@@ -416,13 +467,14 @@ clip_tri( struct draw_stage *stage,
    }
 }
 
+
 /* Update state.  Could further delay this until we hit the first
  * primitive that really requires clipping.
  */
 static void 
 clip_init_state( struct draw_stage *stage )
 {
-   struct clipper *clipper = clipper_stage( stage );
+   struct clip_stage *clipper = clip_stage( stage );
 
    clipper->flat = stage->draw->rasterizer->flatshade ? TRUE : FALSE;
 
@@ -488,11 +540,8 @@ static void clip_destroy( struct draw_stage *stage )
  */
 struct draw_stage *draw_clip_stage( struct draw_context *draw )
 {
-   struct clipper *clipper = CALLOC_STRUCT(clipper);
+   struct clip_stage *clipper = CALLOC_STRUCT(clip_stage);
    if (clipper == NULL)
-      goto fail;
-
-   if (!draw_alloc_temp_verts( &clipper->stage, MAX_CLIPPED_VERTICES+1 ))
       goto fail;
 
    clipper->stage.draw = draw;
@@ -505,6 +554,9 @@ struct draw_stage *draw_clip_stage( struct draw_context *draw )
    clipper->stage.destroy = clip_destroy;
 
    clipper->plane = draw->plane;
+
+   if (!draw_alloc_temp_verts( &clipper->stage, MAX_CLIPPED_VERTICES+1 ))
+      goto fail;
 
    return &clipper->stage;
 

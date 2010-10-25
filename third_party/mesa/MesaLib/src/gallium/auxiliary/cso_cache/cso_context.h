@@ -84,14 +84,30 @@ enum pipe_error cso_single_sampler( struct cso_context *cso,
 
 void cso_single_sampler_done( struct cso_context *cso );
 
+enum pipe_error cso_set_vertex_samplers(struct cso_context *cso,
+                                        unsigned count,
+                                        const struct pipe_sampler_state **states);
+
+void
+cso_save_vertex_samplers(struct cso_context *cso);
+
+void
+cso_restore_vertex_samplers(struct cso_context *cso);
+
+enum pipe_error
+cso_single_vertex_sampler(struct cso_context *cso,
+                          unsigned nr,
+                          const struct pipe_sampler_state *states);
+
+void
+cso_single_vertex_sampler_done(struct cso_context *cso);
 
 
-enum pipe_error cso_set_sampler_textures( struct cso_context *cso,
-                                          uint count,
-                                          struct pipe_texture **textures );
-void cso_save_sampler_textures( struct cso_context *cso );
-void cso_restore_sampler_textures( struct cso_context *cso );
-
+enum pipe_error cso_set_vertex_elements(struct cso_context *ctx,
+                                        unsigned count,
+                                        const struct pipe_vertex_element *states);
+void cso_save_vertex_elements(struct cso_context *ctx);
+void cso_restore_vertex_elements(struct cso_context *ctx);
 
 
 /* These aren't really sensible -- most of the time the api provides
@@ -121,6 +137,12 @@ void cso_save_vertex_shader(struct cso_context *cso);
 void cso_restore_vertex_shader(struct cso_context *cso);
 
 
+enum pipe_error cso_set_geometry_shader_handle(struct cso_context *ctx,
+                                               void *handle);
+void cso_delete_geometry_shader(struct cso_context *ctx, void *handle);
+void cso_save_geometry_shader(struct cso_context *cso);
+void cso_restore_geometry_shader(struct cso_context *cso);
+
 
 enum pipe_error cso_set_framebuffer(struct cso_context *cso,
                                     const struct pipe_framebuffer_state *fb);
@@ -136,6 +158,55 @@ void cso_restore_viewport(struct cso_context *cso);
 
 enum pipe_error cso_set_blend_color(struct cso_context *cso,
                                     const struct pipe_blend_color *bc);
+
+enum pipe_error cso_set_sample_mask(struct cso_context *cso,
+                                    unsigned stencil_mask);
+
+enum pipe_error cso_set_stencil_ref(struct cso_context *cso,
+                                    const struct pipe_stencil_ref *sr);
+void cso_save_stencil_ref(struct cso_context *cso);
+void cso_restore_stencil_ref(struct cso_context *cso);
+
+
+/* clip state */
+
+void
+cso_set_clip(struct cso_context *cso,
+             const struct pipe_clip_state *clip);
+
+void
+cso_save_clip(struct cso_context *cso);
+
+void
+cso_restore_clip(struct cso_context *cso);
+
+
+/* fragment sampler view state */
+
+void
+cso_set_fragment_sampler_views(struct cso_context *cso,
+                               uint count,
+                               struct pipe_sampler_view **views);
+
+void
+cso_save_fragment_sampler_views(struct cso_context *cso);
+
+void
+cso_restore_fragment_sampler_views(struct cso_context *cso);
+
+
+/* vertex sampler view state */
+
+void
+cso_set_vertex_sampler_views(struct cso_context *cso,
+                             uint count,
+                             struct pipe_sampler_view **views);
+
+void
+cso_save_vertex_sampler_views(struct cso_context *cso);
+
+void
+cso_restore_vertex_sampler_views(struct cso_context *cso);
 
 
 #ifdef	__cplusplus

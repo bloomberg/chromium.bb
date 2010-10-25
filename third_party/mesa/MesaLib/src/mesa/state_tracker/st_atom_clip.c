@@ -35,6 +35,8 @@
 #include "pipe/p_context.h"
 #include "st_atom.h"
 
+#include "cso_cache/cso_context.h"
+
 
 /* Second state atom for user clip planes:
  */
@@ -53,10 +55,12 @@ static void update_clip( struct st_context *st )
 	 clip.nr++;
       }
    }
+
+   clip.depth_clamp = st->ctx->Transform.DepthClamp != GL_FALSE;
       
    if (memcmp(&clip, &st->state.clip, sizeof(clip)) != 0) {
       st->state.clip = clip;
-      st->pipe->set_clip_state(st->pipe, &clip);
+      cso_set_clip(st->cso_context, &clip);
    }
 }
 

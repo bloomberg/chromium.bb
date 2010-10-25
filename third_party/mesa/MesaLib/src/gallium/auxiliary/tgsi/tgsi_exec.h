@@ -2,6 +2,7 @@
  * 
  * Copyright 2007-2008 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
+ * Copyright 2009-2010 VMware, Inc.  All rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -35,10 +36,10 @@
 extern "C" {
 #endif
 
-#define MAX_LABELS (4 * 1024)  /**< basically, max instructions */
 
 #define NUM_CHANNELS 4  /* R,G,B,A */
 #define QUAD_SIZE    4  /* 4 pixel/quad */
+
 
 /**
   * Registers may be treated as float, signed int or unsigned int.
@@ -69,6 +70,11 @@ struct tgsi_interp_coef
    float dady[NUM_CHANNELS];
 };
 
+enum tgsi_sampler_control {
+   tgsi_sampler_lod_bias,
+   tgsi_sampler_lod_explicit
+};
+
 /**
  * Information for sampling textures, which must be implemented
  * by code outside the TGSI executor.
@@ -80,22 +86,14 @@ struct tgsi_sampler
                        const float s[QUAD_SIZE],
                        const float t[QUAD_SIZE],
                        const float p[QUAD_SIZE],
-                       float lodbias,
+                       const float c0[QUAD_SIZE],
+                       enum tgsi_sampler_control control,
                        float rgba[NUM_CHANNELS][QUAD_SIZE]);
 };
 
-/**
- * For branching/calling subroutines.
- */
-struct tgsi_exec_labels
-{
-   unsigned labels[MAX_LABELS][2];
-   unsigned count;
-};
-
-
 #define TGSI_EXEC_NUM_TEMPS       128
 #define TGSI_EXEC_NUM_IMMEDIATES  256
+#define TGSI_EXEC_NUM_TEMP_ARRAYS 8
 
 /*
  * Locations of various utility registers (_I = Index, _C = Channel)
@@ -177,9 +175,11 @@ struct tgsi_exec_labels
 
 
 
-#define TGSI_EXEC_MAX_COND_NESTING  32
-#define TGSI_EXEC_MAX_LOOP_NESTING  32
-#define TGSI_EXEC_MAX_CALL_NESTING  32
+#define TGSI_EXEC_MAX_NESTING  32
+#define TGSI_EXEC_MAX_COND_NESTING  TGSI_EXEC_MAX_NESTING
+#define TGSI_EXEC_MAX_LOOP_NESTING  TGSI_EXEC_MAX_NESTING
+#define TGSI_EXEC_MAX_SWITCH_NESTING TGSI_EXEC_MAX_NESTING
+#define TGSI_EXEC_MAX_CALL_NESTING  TGSI_EXEC_MAX_NESTING
 
 /* The maximum number of input attributes per vertex. For 2D
  * input register files, this is the stride between two 1D
@@ -191,6 +191,14 @@ struct tgsi_exec_labels
  */
 #define TGSI_EXEC_MAX_CONST_BUFFER  4096
 
+/* The maximum number of vertices per primitive */
+#define TGSI_MAX_PRIM_VERTICES 6
+
+/* The maximum number of primitives to be generated */
+#define TGSI_MAX_PRIMITIVES 64
+
+/* The maximum total number of vertices */
+#define TGSI_MAX_TOTAL_VERTICES (TGSI_MAX_PRIM_VERTICES * TGSI_MAX_PRIMITIVES * PIPE_MAX_ATTRIBS)
 
 /** function call/activation record */
 struct tgsi_call_record
@@ -198,8 +206,27 @@ struct tgsi_call_record
    uint CondStackTop;
    uint LoopStackTop;
    uint ContStackTop;
+   int SwitchStackTop;
+   int BreakStackTop;
    uint ReturnAddr;
 };
+
+
+/* Switch-case block state. */
+struct tgsi_switch_record {
+   uint mask;                          /**< execution mask */
+   union tgsi_exec_channel selector;   /**< a value case statements are compared to */
+   uint defaultMask;                   /**< non-execute mask for default case */
+};
+
+
+enum tgsi_break_type {
+   TGSI_EXEC_BREAK_INSIDE_LOOP,
+   TGSI_EXEC_BREAK_INSIDE_SWITCH
+};
+
+
+#define TGSI_EXEC_MAX_BREAK_STACK (TGSI_EXEC_MAX_LOOP_NESTING + TGSI_EXEC_MAX_SWITCH_NESTING)
 
 
 /**
@@ -211,27 +238,37 @@ struct tgsi_exec_machine
     */
    struct tgsi_exec_vector       Temps[TGSI_EXEC_NUM_TEMPS +
                                        TGSI_EXEC_NUM_TEMP_EXTRAS];
+   struct tgsi_exec_vector       TempArray[TGSI_EXEC_NUM_TEMP_ARRAYS][TGSI_EXEC_NUM_TEMPS];
 
    float                         Imms[TGSI_EXEC_NUM_IMMEDIATES][4];
 
-   struct tgsi_exec_vector       Inputs[PIPE_MAX_ATTRIBS];
-   struct tgsi_exec_vector       Outputs[PIPE_MAX_ATTRIBS];
+   float                         ImmArray[TGSI_EXEC_NUM_IMMEDIATES][4];
+
+   struct tgsi_exec_vector       Inputs[TGSI_MAX_PRIM_VERTICES * PIPE_MAX_ATTRIBS];
+   struct tgsi_exec_vector       Outputs[TGSI_MAX_TOTAL_VERTICES];
 
    struct tgsi_exec_vector       *Addrs;
+   struct tgsi_exec_vector       *Predicates;
 
    struct tgsi_sampler           **Samplers;
 
    unsigned                      ImmLimit;
-   const float                   (*Consts)[4];
+
+   const void *Consts[PIPE_MAX_CONSTANT_BUFFERS];
+   unsigned ConstsSize[PIPE_MAX_CONSTANT_BUFFERS];
+
    const struct tgsi_token       *Tokens;   /**< Declarations, instructions */
    unsigned                      Processor; /**< TGSI_PROCESSOR_x */
 
    /* GEOMETRY processor only. */
    unsigned                      *Primitives;
+   unsigned                       NumOutputs;
+   unsigned                       MaxGeometryShaderOutputs;
 
    /* FRAGMENT processor only. */
    const struct tgsi_interp_coef *InterpCoefs;
    struct tgsi_exec_vector       QuadPos;
+   float                         Face;    /**< +1 if front facing, -1 if back facing */
 
    /* Conditional execution masks */
    uint CondMask;  /**< For IF/ELSE/ENDIF */
@@ -239,6 +276,12 @@ struct tgsi_exec_machine
    uint ContMask;  /**< For loop CONT statements */
    uint FuncMask;  /**< For function calls */
    uint ExecMask;  /**< = CondMask & LoopMask */
+
+   /* Current switch-case state. */
+   struct tgsi_switch_record Switch;
+
+   /* Current break type. */
+   enum tgsi_break_type BreakType;
 
    /** Condition mask stack (for nested conditionals) */
    uint CondStack[TGSI_EXEC_MAX_COND_NESTING];
@@ -252,13 +295,16 @@ struct tgsi_exec_machine
    uint LoopLabelStack[TGSI_EXEC_MAX_LOOP_NESTING];
    int LoopLabelStackTop;
 
-   /** Loop counter stack (x = count, y = current, z = step) */
-   struct tgsi_exec_vector LoopCounterStack[TGSI_EXEC_MAX_LOOP_NESTING];
-   int LoopCounterStackTop;
-   
    /** Loop continue mask stack (see comments in tgsi_exec.c) */
    uint ContStack[TGSI_EXEC_MAX_LOOP_NESTING];
    int ContStackTop;
+
+   /** Switch case stack */
+   struct tgsi_switch_record SwitchStack[TGSI_EXEC_MAX_SWITCH_NESTING];
+   int SwitchStackTop;
+
+   enum tgsi_break_type BreakStack[TGSI_EXEC_MAX_BREAK_STACK];
+   int BreakStackTop;
 
    /** Function execution mask stack (for executing subroutine code) */
    uint FuncStack[TGSI_EXEC_MAX_CALL_NESTING];
@@ -274,7 +320,6 @@ struct tgsi_exec_machine
    struct tgsi_full_declaration *Declarations;
    uint NumDeclarations;
 
-   struct tgsi_exec_labels Labels;
 };
 
 struct tgsi_exec_machine *
@@ -324,6 +369,43 @@ tgsi_set_exec_mask(struct tgsi_exec_machine *mach,
    mask[3] = ch3 ? ~0 : 0;
 }
 
+
+extern void
+tgsi_exec_set_constant_buffers(struct tgsi_exec_machine *mach,
+                               unsigned num_bufs,
+                               const void **bufs,
+                               const unsigned *buf_sizes);
+
+
+static INLINE int
+tgsi_exec_get_shader_param(enum pipe_shader_cap param)
+{
+   switch(param) {
+   case PIPE_SHADER_CAP_MAX_INSTRUCTIONS:
+   case PIPE_SHADER_CAP_MAX_ALU_INSTRUCTIONS:
+   case PIPE_SHADER_CAP_MAX_TEX_INSTRUCTIONS:
+   case PIPE_SHADER_CAP_MAX_TEX_INDIRECTIONS:
+      return INT_MAX;
+   case PIPE_SHADER_CAP_MAX_CONTROL_FLOW_DEPTH:
+      return TGSI_EXEC_MAX_NESTING;
+   case PIPE_SHADER_CAP_MAX_INPUTS:
+      return TGSI_EXEC_MAX_INPUT_ATTRIBS;
+   case PIPE_SHADER_CAP_MAX_CONSTS:
+      return TGSI_EXEC_MAX_CONST_BUFFER;
+   case PIPE_SHADER_CAP_MAX_CONST_BUFFERS:
+      return PIPE_MAX_CONSTANT_BUFFERS;
+   case PIPE_SHADER_CAP_MAX_TEMPS:
+      return TGSI_EXEC_NUM_TEMPS;
+   case PIPE_SHADER_CAP_MAX_ADDRS:
+      return TGSI_EXEC_NUM_ADDRS;
+   case PIPE_SHADER_CAP_MAX_PREDS:
+      return TGSI_EXEC_NUM_PREDS;
+   case PIPE_SHADER_CAP_TGSI_CONT_SUPPORTED:
+      return 1;
+   default:
+      return 0;
+   }
+}
 
 #if defined __cplusplus
 } /* extern "C" */

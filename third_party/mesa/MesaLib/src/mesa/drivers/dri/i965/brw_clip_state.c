@@ -32,7 +32,6 @@
 #include "brw_context.h"
 #include "brw_state.h"
 #include "brw_defines.h"
-#include "main/macros.h"
 
 struct brw_clip_unit_key {
    unsigned int total_grf;
@@ -70,12 +69,13 @@ clip_unit_populate_key(struct brw_context *brw, struct brw_clip_unit_key *key)
    key->depth_clamp = ctx->Transform.DepthClamp;
 }
 
-static dri_bo *
+static drm_intel_bo *
 clip_unit_create_from_key(struct brw_context *brw,
 			  struct brw_clip_unit_key *key)
 {
+   struct intel_context *intel = &brw->intel;
    struct brw_clip_unit_state clip;
-   dri_bo *bo;
+   drm_intel_bo *bo;
 
    memset(&clip, 0, sizeof(clip));
 
@@ -102,10 +102,10 @@ clip_unit_create_from_key(struct brw_context *brw,
        */
       assert(key->nr_urb_entries % 2 == 0);
       
-      /* Although up to 16 concurrent Clip threads are allowed on IGDNG, 
+      /* Although up to 16 concurrent Clip threads are allowed on Ironlake,
        * only 2 threads can output VUEs at a time.
        */
-      if (BRW_IS_IGDNG(brw))
+      if (intel->gen == 5)
          clip.thread4.max_threads = 16 - 1;        
       else
          clip.thread4.max_threads = 2 - 1;
@@ -130,7 +130,7 @@ clip_unit_create_from_key(struct brw_context *brw,
    clip.clip5.api_mode = BRW_CLIP_API_OGL;
    clip.clip5.clip_mode = key->clip_mode;
 
-   if (BRW_IS_G4X(brw))
+   if (intel->is_g4x)
       clip.clip5.negative_w_clip_test = 1;
 
    clip.clip6.clipper_viewport_state_ptr = 0;
@@ -142,17 +142,13 @@ clip_unit_create_from_key(struct brw_context *brw,
    bo = brw_upload_cache(&brw->cache, BRW_CLIP_UNIT,
 			 key, sizeof(*key),
 			 &brw->clip.prog_bo, 1,
-			 &clip, sizeof(clip),
-			 NULL, NULL);
+			 &clip, sizeof(clip));
 
    /* Emit clip program relocation */
    assert(brw->clip.prog_bo);
-   dri_bo_emit_reloc(bo,
-		     I915_GEM_DOMAIN_INSTRUCTION,
-		     0,
-		     clip.thread0.grf_reg_count << 1,
-		     offsetof(struct brw_clip_unit_state, thread0),
-		     brw->clip.prog_bo);
+   drm_intel_bo_emit_reloc(bo, offsetof(struct brw_clip_unit_state, thread0),
+			   brw->clip.prog_bo, clip.thread0.grf_reg_count << 1,
+			   I915_GEM_DOMAIN_INSTRUCTION, 0);
 
    return bo;
 }
@@ -163,7 +159,7 @@ static void upload_clip_unit( struct brw_context *brw )
 
    clip_unit_populate_key(brw, &key);
 
-   dri_bo_unreference(brw->clip.state_bo);
+   drm_intel_bo_unreference(brw->clip.state_bo);
    brw->clip.state_bo = brw_search_cache(&brw->cache, BRW_CLIP_UNIT,
 					 &key, sizeof(key),
 					 &brw->clip.prog_bo, 1,

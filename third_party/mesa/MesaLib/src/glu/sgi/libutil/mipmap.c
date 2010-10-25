@@ -36,7 +36,6 @@
 #include <string.h>
 #include <limits.h>		/* UINT_MAX */
 #include <math.h>
-#include "gluint.h"
 
 typedef union {
     unsigned char ub[4];
@@ -5553,7 +5552,7 @@ static void shove233rev(const GLfloat shoveComponents[],
 static void extract565(int isSwap,
 		       const void *packedPixel, GLfloat extractComponents[])
 {
-   GLushort ushort= *(const GLushort *)packedPixel;
+   GLushort ushort;
 
    if (isSwap) {
      ushort= __GLU_SWAP_2_BYTES(packedPixel);
@@ -5594,7 +5593,7 @@ static void shove565(const GLfloat shoveComponents[],
 static void extract565rev(int isSwap,
 			  const void *packedPixel, GLfloat extractComponents[])
 {
-   GLushort ushort= *(const GLushort *)packedPixel;
+   GLushort ushort;
 
    if (isSwap) {
      ushort= __GLU_SWAP_2_BYTES(packedPixel);

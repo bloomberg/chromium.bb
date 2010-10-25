@@ -33,11 +33,12 @@
 #include "main/macros.h"
 #include "main/mtypes.h"
 
+#include "math/m_xform.h"
+
 #include "tnl/t_context.h"
 
 #include "via_context.h"
 #include "via_tris.h"
-#include "via_state.h"
 #include "via_ioctl.h"
 
 /*

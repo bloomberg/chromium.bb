@@ -28,6 +28,9 @@
 /* Authors:  Keith Whitwell <keith@tungstengraphics.com>
  */
 
+#include "util/u_inlines.h"
+#include "util/u_memory.h"
+
 #include "fo_context.h"
 
 
@@ -51,7 +54,7 @@ static void *
 failover_create_blend_state( struct pipe_context *pipe,
                              const struct pipe_blend_state *blend )
 {
-   struct fo_state *state = malloc(sizeof(struct fo_state));
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
    struct failover_context *failover = failover_context(pipe);
 
    state->sw_state = failover->sw->create_blend_state(failover->sw, blend);
@@ -83,12 +86,12 @@ failover_delete_blend_state( struct pipe_context *pipe,
    failover->hw->delete_blend_state(failover->hw, state->hw_state);
    state->sw_state = 0;
    state->hw_state = 0;
-   free(state);
+   FREE(state);
 }
 
 static void
 failover_set_blend_color( struct pipe_context *pipe,
-			  const struct pipe_blend_color *blend_color )
+                          const struct pipe_blend_color *blend_color )
 {
    struct failover_context *failover = failover_context(pipe);
 
@@ -98,9 +101,21 @@ failover_set_blend_color( struct pipe_context *pipe,
    failover->hw->set_blend_color( failover->hw, blend_color );
 }
 
+static void
+failover_set_stencil_ref( struct pipe_context *pipe,
+                          const struct pipe_stencil_ref *stencil_ref )
+{
+   struct failover_context *failover = failover_context(pipe);
+
+   failover->stencil_ref = *stencil_ref;
+   failover->dirty |= FO_NEW_STENCIL_REF;
+   failover->sw->set_stencil_ref( failover->sw, stencil_ref );
+   failover->hw->set_stencil_ref( failover->hw, stencil_ref );
+}
+
 static void 
 failover_set_clip_state( struct pipe_context *pipe,
-			 const struct pipe_clip_state *clip )
+                         const struct pipe_clip_state *clip )
 {
    struct failover_context *failover = failover_context(pipe);
 
@@ -110,12 +125,25 @@ failover_set_clip_state( struct pipe_context *pipe,
    failover->hw->set_clip_state( failover->hw, clip );
 }
 
+static void
+failover_set_sample_mask(struct pipe_context *pipe,
+                         unsigned sample_mask)
+{
+   struct failover_context *failover = failover_context(pipe);
+
+   failover->sample_mask = sample_mask;
+   failover->dirty |= FO_NEW_SAMPLE_MASK;
+   failover->sw->set_sample_mask( failover->sw, sample_mask );
+   failover->hw->set_sample_mask( failover->hw, sample_mask );
+
+}
+
 
 static void *
 failover_create_depth_stencil_state(struct pipe_context *pipe,
                               const struct pipe_depth_stencil_alpha_state *templ)
 {
-   struct fo_state *state = malloc(sizeof(struct fo_state));
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
    struct failover_context *failover = failover_context(pipe);
 
    state->sw_state = failover->sw->create_depth_stencil_alpha_state(failover->sw, templ);
@@ -147,7 +175,7 @@ failover_delete_depth_stencil_state(struct pipe_context *pipe,
    failover->hw->delete_depth_stencil_alpha_state(failover->hw, state->hw_state);
    state->sw_state = 0;
    state->hw_state = 0;
-   free(state);
+   FREE(state);
 }
 
 static void
@@ -167,7 +195,7 @@ static void *
 failover_create_fs_state(struct pipe_context *pipe,
                          const struct pipe_shader_state *templ)
 {
-   struct fo_state *state = malloc(sizeof(struct fo_state));
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
    struct failover_context *failover = failover_context(pipe);
 
    state->sw_state = failover->sw->create_fs_state(failover->sw, templ);
@@ -198,14 +226,14 @@ failover_delete_fs_state(struct pipe_context *pipe,
    failover->hw->delete_fs_state(failover->hw, state->hw_state);
    state->sw_state = 0;
    state->hw_state = 0;
-   free(state);
+   FREE(state);
 }
 
 static void *
 failover_create_vs_state(struct pipe_context *pipe,
                          const struct pipe_shader_state *templ)
 {
-   struct fo_state *state = malloc(sizeof(struct fo_state));
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
    struct failover_context *failover = failover_context(pipe);
 
    state->sw_state = failover->sw->create_vs_state(failover->sw, templ);
@@ -238,12 +266,55 @@ failover_delete_vs_state(struct pipe_context *pipe,
    failover->hw->delete_vs_state(failover->hw, state->hw_state);
    state->sw_state = 0;
    state->hw_state = 0;
-   free(state);
+   FREE(state);
+}
+
+
+
+static void *
+failover_create_vertex_elements_state( struct pipe_context *pipe,
+                                       unsigned count,
+                                       const struct pipe_vertex_element *velems )
+{
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
+   struct failover_context *failover = failover_context(pipe);
+
+   state->sw_state = failover->sw->create_vertex_elements_state(failover->sw, count, velems);
+   state->hw_state = failover->hw->create_vertex_elements_state(failover->hw, count, velems);
+
+   return state;
+}
+
+static void
+failover_bind_vertex_elements_state(struct pipe_context *pipe,
+                                    void *velems )
+{
+   struct failover_context *failover = failover_context(pipe);
+   struct fo_state *state = (struct fo_state*)velems;
+
+   failover->vertex_elements = state;
+   failover->dirty |= FO_NEW_VERTEX_ELEMENT;
+   failover->sw->bind_vertex_elements_state( failover->sw, velems );
+   failover->hw->bind_vertex_elements_state( failover->hw, velems );
+}
+
+static void
+failover_delete_vertex_elements_state( struct pipe_context *pipe,
+                                       void *velems )
+{
+   struct fo_state *state = (struct fo_state*)velems;
+   struct failover_context *failover = failover_context(pipe);
+
+   failover->sw->delete_vertex_elements_state(failover->sw, state->sw_state);
+   failover->hw->delete_vertex_elements_state(failover->hw, state->hw_state);
+   state->sw_state = 0;
+   state->hw_state = 0;
+   FREE(state);
 }
 
 static void 
 failover_set_polygon_stipple( struct pipe_context *pipe,
-			      const struct pipe_poly_stipple *stipple )
+                              const struct pipe_poly_stipple *stipple )
 {
    struct failover_context *failover = failover_context(pipe);
 
@@ -258,7 +329,7 @@ static void *
 failover_create_rasterizer_state(struct pipe_context *pipe,
                                  const struct pipe_rasterizer_state *templ)
 {
-   struct fo_state *state = malloc(sizeof(struct fo_state));
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
    struct failover_context *failover = failover_context(pipe);
 
    state->sw_state = failover->sw->create_rasterizer_state(failover->sw, templ);
@@ -291,7 +362,7 @@ failover_delete_rasterizer_state(struct pipe_context *pipe,
    failover->hw->delete_rasterizer_state(failover->hw, state->hw_state);
    state->sw_state = 0;
    state->hw_state = 0;
-   free(state);
+   FREE(state);
 }
 
 
@@ -312,7 +383,7 @@ static void *
 failover_create_sampler_state(struct pipe_context *pipe,
                               const struct pipe_sampler_state *templ)
 {
-   struct fo_state *state = malloc(sizeof(struct fo_state));
+   struct fo_state *state = MALLOC(sizeof(struct fo_state));
    struct failover_context *failover = failover_context(pipe);
 
    state->sw_state = failover->sw->create_sampler_state(failover->sw, templ);
@@ -322,8 +393,9 @@ failover_create_sampler_state(struct pipe_context *pipe,
 }
 
 static void
-failover_bind_sampler_states(struct pipe_context *pipe,
-                             unsigned num, void **sampler)
+failover_bind_fragment_sampler_states(struct pipe_context *pipe,
+                                      unsigned num,
+                                      void **sampler)
 {
    struct failover_context *failover = failover_context(pipe);
    struct fo_state *state = (struct fo_state*)sampler;
@@ -339,10 +411,40 @@ failover_bind_sampler_states(struct pipe_context *pipe,
    }
    failover->dirty |= FO_NEW_SAMPLER;
    failover->num_samplers = num;
-   failover->sw->bind_sampler_states(failover->sw, num,
-                                     failover->sw_sampler_state);
-   failover->hw->bind_sampler_states(failover->hw, num,
-                                     failover->hw_sampler_state);
+   failover->sw->bind_fragment_sampler_states(failover->sw, num,
+                                              failover->sw_sampler_state);
+   failover->hw->bind_fragment_sampler_states(failover->hw, num,
+                                              failover->hw_sampler_state);
+}
+
+static void
+failover_bind_vertex_sampler_states(struct pipe_context *pipe,
+                                    unsigned num_samplers,
+                                    void **samplers)
+{
+   struct failover_context *failover = failover_context(pipe);
+   struct fo_state *state = (struct fo_state*)samplers;
+   uint i;
+
+   assert(num_samplers <= PIPE_MAX_VERTEX_SAMPLERS);
+
+   /* Check for no-op */
+   if (num_samplers == failover->num_vertex_samplers &&
+       !memcmp(failover->vertex_samplers, samplers, num_samplers * sizeof(void *))) {
+      return;
+   }
+   for (i = 0; i < PIPE_MAX_VERTEX_SAMPLERS; i++) {
+      failover->sw_vertex_sampler_state[i] = i < num_samplers ? state[i].sw_state : NULL;
+      failover->hw_vertex_sampler_state[i] = i < num_samplers ? state[i].hw_state : NULL;
+   }
+   failover->dirty |= FO_NEW_SAMPLER;
+   failover->num_vertex_samplers = num_samplers;
+   failover->sw->bind_vertex_sampler_states(failover->sw,
+                                            num_samplers,
+                                            failover->sw_vertex_sampler_state);
+   failover->hw->bind_vertex_sampler_states(failover->hw,
+                                            num_samplers,
+                                            failover->hw_vertex_sampler_state);
 }
 
 static void
@@ -355,34 +457,100 @@ failover_delete_sampler_state(struct pipe_context *pipe, void *sampler)
    failover->hw->delete_sampler_state(failover->hw, state->hw_state);
    state->sw_state = 0;
    state->hw_state = 0;
-   free(state);
+   FREE(state);
 }
 
 
+static struct pipe_sampler_view *
+failover_create_sampler_view(struct pipe_context *pipe,
+                             struct pipe_resource *texture,
+                             const struct pipe_sampler_view *templ)
+{
+   struct fo_sampler_view *view = MALLOC(sizeof(struct fo_sampler_view));
+   struct failover_context *failover = failover_context(pipe);
+
+   view->sw = failover->sw->create_sampler_view(failover->sw, texture, templ);
+   view->hw = failover->hw->create_sampler_view(failover->hw, texture, templ);
+
+   view->base = *templ;
+   view->base.reference.count = 1;
+   view->base.texture = NULL;
+   pipe_resource_reference(&view->base.texture, texture);
+   view->base.context = pipe;
+
+   return &view->base;
+}
+
 static void
-failover_set_sampler_textures(struct pipe_context *pipe,
-                              unsigned num,
-                              struct pipe_texture **texture)
+failover_sampler_view_destroy(struct pipe_context *pipe,
+                              struct pipe_sampler_view *view)
+{
+   struct fo_sampler_view *fo_view = (struct fo_sampler_view *)view;
+   struct failover_context *failover = failover_context(pipe);
+
+   failover->sw->sampler_view_destroy(failover->sw, fo_view->sw);
+   failover->hw->sampler_view_destroy(failover->hw, fo_view->hw);
+
+   pipe_resource_reference(&fo_view->base.texture, NULL);
+   FREE(fo_view);
+}
+
+static void
+failover_set_fragment_sampler_views(struct pipe_context *pipe,
+                                    unsigned num,
+                                    struct pipe_sampler_view **views)
 {
    struct failover_context *failover = failover_context(pipe);
+   struct pipe_sampler_view *hw_views[PIPE_MAX_SAMPLERS];
    uint i;
 
    assert(num <= PIPE_MAX_SAMPLERS);
 
    /* Check for no-op */
-   if (num == failover->num_textures &&
-       !memcmp(failover->texture, texture, num * sizeof(struct pipe_texture *)))
+   if (num == failover->num_fragment_sampler_views &&
+       !memcmp(failover->fragment_sampler_views, views, num * sizeof(struct pipe_sampler_view *)))
       return;
-   for (i = 0; i < num; i++)
-      pipe_texture_reference((struct pipe_texture **) &failover->texture[i],
-                             texture[i]);
-   for (i = num; i < failover->num_textures; i++)
-      pipe_texture_reference((struct pipe_texture **) &failover->texture[i],
-                             NULL);
-   failover->dirty |= FO_NEW_TEXTURE;
-   failover->num_textures = num;
-   failover->sw->set_sampler_textures( failover->sw, num, texture );
-   failover->hw->set_sampler_textures( failover->hw, num, texture );
+   for (i = 0; i < num; i++) {
+      struct fo_sampler_view *fo_view = (struct fo_sampler_view *)views[i];
+
+      pipe_sampler_view_reference((struct pipe_sampler_view **)&failover->fragment_sampler_views[i], views[i]);
+      hw_views[i] = fo_view->hw;
+   }
+   for (i = num; i < failover->num_fragment_sampler_views; i++)
+      pipe_sampler_view_reference((struct pipe_sampler_view **)&failover->fragment_sampler_views[i], NULL);
+   failover->dirty |= FO_NEW_SAMPLER_VIEW;
+   failover->num_fragment_sampler_views = num;
+   failover->hw->set_fragment_sampler_views(failover->hw, num, hw_views);
+}
+
+
+static void
+failover_set_vertex_sampler_views(struct pipe_context *pipe,
+                                  unsigned num,
+                                  struct pipe_sampler_view **views)
+{
+   struct failover_context *failover = failover_context(pipe);
+   struct pipe_sampler_view *hw_views[PIPE_MAX_VERTEX_SAMPLERS];
+   uint i;
+
+   assert(num <= PIPE_MAX_VERTEX_SAMPLERS);
+
+   /* Check for no-op */
+   if (num == failover->num_vertex_sampler_views &&
+       !memcmp(failover->vertex_sampler_views, views, num * sizeof(struct pipe_sampler_view *))) {
+      return;
+   }
+   for (i = 0; i < num; i++) {
+      struct fo_sampler_view *fo_view = (struct fo_sampler_view *)views[i];
+
+      pipe_sampler_view_reference((struct pipe_sampler_view **)&failover->vertex_sampler_views[i], views[i]);
+      hw_views[i] = fo_view->hw;
+   }
+   for (i = num; i < failover->num_vertex_sampler_views; i++)
+      pipe_sampler_view_reference((struct pipe_sampler_view **)&failover->vertex_sampler_views[i], NULL);
+   failover->dirty |= FO_NEW_SAMPLER_VIEW;
+   failover->num_vertex_sampler_views = num;
+   failover->hw->set_vertex_sampler_views(failover->hw, num, hw_views);
 }
 
 
@@ -416,33 +584,34 @@ failover_set_vertex_buffers(struct pipe_context *pipe,
 
 
 static void
-failover_set_vertex_elements(struct pipe_context *pipe,
-                             unsigned count,
-                             const struct pipe_vertex_element *vertex_elements)
+failover_set_index_buffer(struct pipe_context *pipe,
+                          const struct pipe_index_buffer *ib)
 {
    struct failover_context *failover = failover_context(pipe);
 
-   memcpy(failover->vertex_elements, vertex_elements,
-          count * sizeof(vertex_elements[0]));
+   if (ib)
+      memcpy(&failover->index_buffer, ib, sizeof(failover->index_buffer));
+   else
+      memset(&failover->index_buffer, 0, sizeof(failover->index_buffer));
 
-   failover->dirty |= FO_NEW_VERTEX_ELEMENT;
-   failover->num_vertex_elements = count;
-   failover->sw->set_vertex_elements( failover->sw, count, vertex_elements );
-   failover->hw->set_vertex_elements( failover->hw, count, vertex_elements );
+   failover->dirty |= FO_NEW_INDEX_BUFFER;
+   failover->sw->set_index_buffer( failover->sw, ib );
+   failover->hw->set_index_buffer( failover->hw, ib );
 }
+
 
 void
 failover_set_constant_buffer(struct pipe_context *pipe,
                              uint shader, uint index,
-                             const struct pipe_constant_buffer *buf)
+                             struct pipe_resource *res)
 {
    struct failover_context *failover = failover_context(pipe);
 
    assert(shader < PIPE_SHADER_TYPES);
    assert(index == 0);
 
-   failover->sw->set_constant_buffer(failover->sw, shader, index, buf);
-   failover->hw->set_constant_buffer(failover->hw, shader, index, buf);
+   failover->sw->set_constant_buffer(failover->sw, shader, index, res);
+   failover->hw->set_constant_buffer(failover->hw, shader, index, res);
 }
 
 
@@ -453,7 +622,8 @@ failover_init_state_functions( struct failover_context *failover )
    failover->pipe.bind_blend_state   = failover_bind_blend_state;
    failover->pipe.delete_blend_state = failover_delete_blend_state;
    failover->pipe.create_sampler_state = failover_create_sampler_state;
-   failover->pipe.bind_sampler_states  = failover_bind_sampler_states;
+   failover->pipe.bind_fragment_sampler_states  = failover_bind_fragment_sampler_states;
+   failover->pipe.bind_vertex_sampler_states  = failover_bind_vertex_sampler_states;
    failover->pipe.delete_sampler_state = failover_delete_sampler_state;
    failover->pipe.create_depth_stencil_alpha_state = failover_create_depth_stencil_state;
    failover->pipe.bind_depth_stencil_alpha_state   = failover_bind_depth_stencil_state;
@@ -467,15 +637,23 @@ failover_init_state_functions( struct failover_context *failover )
    failover->pipe.create_vs_state = failover_create_vs_state;
    failover->pipe.bind_vs_state   = failover_bind_vs_state;
    failover->pipe.delete_vs_state = failover_delete_vs_state;
+   failover->pipe.create_vertex_elements_state = failover_create_vertex_elements_state;
+   failover->pipe.bind_vertex_elements_state = failover_bind_vertex_elements_state;
+   failover->pipe.delete_vertex_elements_state = failover_delete_vertex_elements_state;
 
    failover->pipe.set_blend_color = failover_set_blend_color;
+   failover->pipe.set_stencil_ref = failover_set_stencil_ref;
    failover->pipe.set_clip_state = failover_set_clip_state;
+   failover->pipe.set_sample_mask = failover_set_sample_mask;
    failover->pipe.set_framebuffer_state = failover_set_framebuffer_state;
    failover->pipe.set_polygon_stipple = failover_set_polygon_stipple;
    failover->pipe.set_scissor_state = failover_set_scissor_state;
-   failover->pipe.set_sampler_textures = failover_set_sampler_textures;
+   failover->pipe.set_fragment_sampler_views = failover_set_fragment_sampler_views;
+   failover->pipe.set_vertex_sampler_views = failover_set_vertex_sampler_views;
    failover->pipe.set_viewport_state = failover_set_viewport_state;
    failover->pipe.set_vertex_buffers = failover_set_vertex_buffers;
-   failover->pipe.set_vertex_elements = failover_set_vertex_elements;
+   failover->pipe.set_index_buffer = failover_set_index_buffer;
    failover->pipe.set_constant_buffer = failover_set_constant_buffer;
+   failover->pipe.create_sampler_view = failover_create_sampler_view;
+   failover->pipe.sampler_view_destroy = failover_sampler_view_destroy;
 }

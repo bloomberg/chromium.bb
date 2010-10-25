@@ -12,9 +12,7 @@
    typedef unsigned __int8    uint8_t;
    typedef __int16            int16_t;
    typedef unsigned __int16   uint16_t;
-#  ifndef __eglplatform_h_
-     typedef __int32            int32_t;
-#  endif
+   typedef __int32            int32_t;
    typedef unsigned __int32   uint32_t;
    typedef __int64            int64_t;
    typedef unsigned __int64   uint64_t;
@@ -60,5 +58,37 @@
 #  define INLINE
 #endif
 
+
+/**
+ * Function visibility
+ */
+#ifndef PUBLIC
+#  if defined(__GNUC__) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590))
+#    define PUBLIC __attribute__((visibility("default")))
+#  elif defined(_MSC_VER)
+#    define PUBLIC __declspec(dllexport)
+#  else
+#    define PUBLIC
+#  endif
+#endif
+
+/**
+ * The __FUNCTION__ gcc variable is generally only used for debugging.
+ * If we're not using gcc, define __FUNCTION__ as a cpp symbol here.
+ * Don't define it if using a newer Windows compiler.
+ */
+#ifndef __FUNCTION__
+# if defined(__VMS)
+#  define __FUNCTION__ "VMS$NL:"
+# elif (!defined __GNUC__) && (!defined __xlC__) && \
+      (!defined(_MSC_VER) || _MSC_VER < 1300)
+#  if (__STDC_VERSION__ >= 199901L) /* C99 */ || \
+    (defined(__SUNPRO_C) && defined(__C99FEATURES__))
+#   define __FUNCTION__ __func__
+#  else
+#   define __FUNCTION__ "<unknown>"
+#  endif
+# endif
+#endif
 
 #endif /* EGLCOMPILER_INCLUDED */

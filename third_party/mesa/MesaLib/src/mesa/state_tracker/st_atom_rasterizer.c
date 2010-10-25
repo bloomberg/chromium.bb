@@ -53,21 +53,6 @@ static GLuint translate_fill( GLenum mode )
    }
 }
 
-static GLboolean get_offset_flag( GLuint fill_mode, 
-				  const struct gl_polygon_attrib *p )
-{
-   switch (fill_mode) {
-   case PIPE_POLYGON_MODE_POINT:
-      return p->OffsetPoint;
-   case PIPE_POLYGON_MODE_LINE:
-      return p->OffsetLine;
-   case PIPE_POLYGON_MODE_FILL:
-      return p->OffsetFill;
-   default:
-      assert(0);
-      return 0;
-   }
-}
 
 
 static void update_raster_state( struct st_context *st )
@@ -82,10 +67,7 @@ static void update_raster_state( struct st_context *st )
    /* _NEW_POLYGON, _NEW_BUFFERS
     */
    {
-      if (ctx->Polygon.FrontFace == GL_CCW)
-         raster->front_winding = PIPE_WINDING_CCW;
-      else
-         raster->front_winding = PIPE_WINDING_CW;
+      raster->front_ccw = (ctx->Polygon.FrontFace == GL_CCW);
 
       /* XXX
        * I think the intention here is that user-created framebuffer objects
@@ -94,7 +76,7 @@ static void update_raster_state( struct st_context *st )
        * But this is an implementation/driver-specific artifact - remove...
        */
       if (ctx->DrawBuffer && ctx->DrawBuffer->Name != 0)
-         raster->front_winding ^= PIPE_WINDING_BOTH;
+         raster->front_ccw ^= 1;
    }
 
    /* _NEW_LIGHT
@@ -131,40 +113,36 @@ static void update_raster_state( struct st_context *st )
    /* _NEW_POLYGON
     */
    if (ctx->Polygon.CullFlag) {
-      if (ctx->Polygon.CullFaceMode == GL_FRONT_AND_BACK) {
-	 raster->cull_mode = PIPE_WINDING_BOTH;
+      switch (ctx->Polygon.CullFaceMode) {
+      case GL_FRONT:
+	 raster->cull_face = PIPE_FACE_FRONT;
+         break;
+      case GL_BACK:
+	 raster->cull_face = PIPE_FACE_BACK;
+         break;
+      case GL_FRONT_AND_BACK:
+	 raster->cull_face = PIPE_FACE_FRONT_AND_BACK;
+         break;
       }
-      else if (ctx->Polygon.CullFaceMode == GL_FRONT) {
-	 raster->cull_mode = raster->front_winding;
-      }
-      else {
-	 raster->cull_mode = raster->front_winding ^ PIPE_WINDING_BOTH;
-      }
+   }
+   else {
+      raster->cull_face = PIPE_FACE_NONE;
    }
 
    /* _NEW_POLYGON
     */
    {
-      GLuint fill_front = translate_fill( ctx->Polygon.FrontMode );
-      GLuint fill_back = translate_fill( ctx->Polygon.BackMode );
-      
-      if (raster->front_winding == PIPE_WINDING_CW) {
-	 raster->fill_cw = fill_front;
-	 raster->fill_ccw = fill_back;
-      }
-      else {
-	 raster->fill_cw = fill_back;
-	 raster->fill_ccw = fill_front;
-      }
+      raster->fill_front = translate_fill( ctx->Polygon.FrontMode );
+      raster->fill_back = translate_fill( ctx->Polygon.BackMode );
 
       /* Simplify when culling is active:
        */
-      if (raster->cull_mode & PIPE_WINDING_CW) {
-	 raster->fill_cw = raster->fill_ccw;
+      if (raster->cull_face & PIPE_FACE_FRONT) {
+	 raster->fill_front = raster->fill_back;
       }
       
-      if (raster->cull_mode & PIPE_WINDING_CCW) {
-	 raster->fill_ccw = raster->fill_cw;
+      if (raster->cull_face & PIPE_FACE_BACK) {
+	 raster->fill_back = raster->fill_front;
       }
    }
 
@@ -172,8 +150,14 @@ static void update_raster_state( struct st_context *st )
     */
    if (ctx->Polygon.OffsetUnits != 0.0 ||
        ctx->Polygon.OffsetFactor != 0.0) {
-      raster->offset_cw = get_offset_flag( raster->fill_cw, &ctx->Polygon );
-      raster->offset_ccw = get_offset_flag( raster->fill_ccw, &ctx->Polygon );
+      raster->offset_point = ctx->Polygon.OffsetPoint;
+      raster->offset_line = ctx->Polygon.OffsetLine;
+      raster->offset_tri = ctx->Polygon.OffsetFill;
+   }
+
+   if (ctx->Polygon.OffsetPoint ||
+       ctx->Polygon.OffsetLine ||
+       ctx->Polygon.OffsetFill) {
       raster->offset_units = ctx->Polygon.OffsetUnits;
       raster->offset_scale = ctx->Polygon.OffsetFactor;
    }
@@ -183,34 +167,33 @@ static void update_raster_state( struct st_context *st )
 
    if (ctx->Polygon.StippleFlag)
       raster->poly_stipple_enable = 1;
-     
+
    /* _NEW_POINT
     */
    raster->point_size = ctx->Point.Size;
 
-   raster->point_size_min = 0;    /* temporary, will go away */
-   raster->point_size_max = 1000; /* temporary, will go away */
+   if (!ctx->Point.PointSprite && ctx->Point.SmoothFlag)
+      raster->point_smooth = 1;
 
-   raster->point_smooth = ctx->Point.SmoothFlag;
-   raster->point_sprite = ctx->Point.PointSprite;
-   for (i = 0; i < MAX_TEXTURE_COORD_UNITS; i++) {
-      if (ctx->Point.CoordReplace[i]) {
-         if ((ctx->Point.SpriteOrigin == GL_UPPER_LEFT) ^
-             (st_fb_orientation(ctx->DrawBuffer) == Y_0_BOTTOM))
-            raster->sprite_coord_mode[i] = PIPE_SPRITE_COORD_UPPER_LEFT;
-         else 
-            raster->sprite_coord_mode[i] = PIPE_SPRITE_COORD_LOWER_LEFT;
+   if (ctx->Point.PointSprite) {
+      if ((ctx->Point.SpriteOrigin == GL_UPPER_LEFT) ^
+          (st_fb_orientation(ctx->DrawBuffer) == Y_0_BOTTOM))
+         raster->sprite_coord_mode = PIPE_SPRITE_COORD_UPPER_LEFT;
+      else 
+         raster->sprite_coord_mode = PIPE_SPRITE_COORD_LOWER_LEFT;
+      for (i = 0; i < MAX_TEXTURE_COORD_UNITS; i++) {
+         if (ctx->Point.CoordReplace[i]) {
+            raster->sprite_coord_enable |= 1 << i;
+         }
       }
-      else {
-         raster->sprite_coord_mode[i] = PIPE_SPRITE_COORD_NONE;
-      }
+      raster->point_quad_rasterization = 1;
    }
 
    /* ST_NEW_VERTEX_PROGRAM
     */
    if (vertProg) {
       if (vertProg->Base.Id == 0) {
-         if (vertProg->Base.OutputsWritten & (1 << VERT_RESULT_PSIZ)) {
+         if (vertProg->Base.OutputsWritten & BITFIELD64_BIT(VERT_RESULT_PSIZ)) {
             /* generated program which emits point size */
             raster->point_size_per_vertex = TRUE;
          }

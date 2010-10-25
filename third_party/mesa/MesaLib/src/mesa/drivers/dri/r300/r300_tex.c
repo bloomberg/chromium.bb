@@ -41,18 +41,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "main/mipmap.h"
 #include "main/simple_list.h"
 #include "main/texstore.h"
-#include "main/teximage.h"
 #include "main/texobj.h"
 
 #include "texmem.h"
 
 #include "r300_context.h"
-#include "r300_state.h"
-#include "r300_ioctl.h"
 #include "radeon_mipmap_tree.h"
 #include "r300_tex.h"
-
-#include "xmlpool.h"
 
 
 static unsigned int translate_wrap_mode(GLenum wrapmode)
@@ -216,7 +211,7 @@ static void r300TexParameter(GLcontext * ctx, GLenum target,
 		break;
 
 	case GL_TEXTURE_BORDER_COLOR:
-		r300SetTexBorderColor(t, texObj->BorderColor);
+		r300SetTexBorderColor(t, texObj->BorderColor.f);
 		break;
 
 	case GL_TEXTURE_BASE_LEVEL:
@@ -308,12 +303,51 @@ static struct gl_texture_object *r300NewTextureObject(GLcontext * ctx,
 	/* Initialize hardware state */
 	r300UpdateTexWrap(t);
 	r300SetTexFilter(t, t->base.MinFilter, t->base.MagFilter, t->base.MaxAnisotropy);
-	r300SetTexBorderColor(t, t->base.BorderColor);
+	r300SetTexBorderColor(t, t->base.BorderColor.f);
 
 	return &t->base;
 }
 
-void r300InitTextureFuncs(struct dd_function_table *functions)
+unsigned r300IsFormatRenderable(gl_format mesa_format)
+{
+	switch (mesa_format)
+	{
+		case MESA_FORMAT_RGB565:
+		case MESA_FORMAT_RGBA5551:
+		case MESA_FORMAT_RGBA8888:
+		case MESA_FORMAT_RGB565_REV:
+		case MESA_FORMAT_RGBA8888_REV:
+		case MESA_FORMAT_ARGB4444:
+		case MESA_FORMAT_ARGB1555:
+		case MESA_FORMAT_XRGB8888:
+		case MESA_FORMAT_ARGB8888:
+		case MESA_FORMAT_ARGB4444_REV:
+		case MESA_FORMAT_ARGB1555_REV:
+		case MESA_FORMAT_XRGB8888_REV:
+		case MESA_FORMAT_ARGB8888_REV:
+		case MESA_FORMAT_SRGBA8:
+		case MESA_FORMAT_SARGB8:
+		case MESA_FORMAT_SL8:
+		case MESA_FORMAT_A8:
+		case MESA_FORMAT_L8:
+		case MESA_FORMAT_I8:
+		case MESA_FORMAT_Z16:
+			return 1;
+		default:
+			return 0;
+	}
+}
+
+unsigned r500IsFormatRenderable(gl_format mesa_format)
+{
+	if (mesa_format == MESA_FORMAT_S8_Z24) {
+		return 1;
+	} else {
+		return r300IsFormatRenderable(mesa_format);
+	}
+}
+
+void r300InitTextureFuncs(radeonContextPtr radeon, struct dd_function_table *functions)
 {
 	/* Note: we only plug in the functions we implement in the driver
 	 * since _mesa_init_driver_functions() was already called.
@@ -340,6 +374,11 @@ void r300InitTextureFuncs(struct dd_function_table *functions)
 
 	functions->CompressedTexImage2D = radeonCompressedTexImage2D;
 	functions->CompressedTexSubImage2D = radeonCompressedTexSubImage2D;
+
+	if (radeon->radeonScreen->kernel_mm) {
+		functions->CopyTexImage2D = radeonCopyTexImage2D;
+		functions->CopyTexSubImage2D = radeonCopyTexSubImage2D;
+	}
 
 	functions->GenerateMipmap = radeonGenerateMipmap;
 

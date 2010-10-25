@@ -27,88 +27,48 @@
 #include "glheader.h"
 #include "context.h"
 #include "get.h"
-#include "version.h"
 #include "enums.h"
 #include "extensions.h"
 
 
 /**
- * Examine enabled GL extensions to determine GL version.
- * \return version string
+ * Return the string for a glGetString(GL_SHADING_LANGUAGE_VERSION) query.
  */
-static const char *
-compute_version(const GLcontext *ctx)
+static const GLubyte *
+shading_language_version(GLcontext *ctx)
 {
-   static const char *version_1_2 = "1.2 Mesa " MESA_VERSION_STRING;
-   static const char *version_1_3 = "1.3 Mesa " MESA_VERSION_STRING;
-   static const char *version_1_4 = "1.4 Mesa " MESA_VERSION_STRING;
-   static const char *version_1_5 = "1.5 Mesa " MESA_VERSION_STRING;
-   static const char *version_2_0 = "2.0 Mesa " MESA_VERSION_STRING;
-   static const char *version_2_1 = "2.1 Mesa " MESA_VERSION_STRING;
+   switch (ctx->API) {
+   case API_OPENGL:
+      if (!ctx->Extensions.ARB_shader_objects) {
+         _mesa_error(ctx, GL_INVALID_ENUM, "glGetString");
+         return (const GLubyte *) 0;
+      }
 
-   const GLboolean ver_1_3 = (ctx->Extensions.ARB_multisample &&
-                              ctx->Extensions.ARB_multitexture &&
-                              ctx->Extensions.ARB_texture_border_clamp &&
-                              ctx->Extensions.ARB_texture_compression &&
-                              ctx->Extensions.ARB_texture_cube_map &&
-                              ctx->Extensions.EXT_texture_env_add &&
-                              ctx->Extensions.ARB_texture_env_combine &&
-                              ctx->Extensions.ARB_texture_env_dot3);
-   const GLboolean ver_1_4 = (ver_1_3 &&
-                              ctx->Extensions.ARB_depth_texture &&
-                              ctx->Extensions.ARB_shadow &&
-                              ctx->Extensions.ARB_texture_env_crossbar &&
-                              ctx->Extensions.ARB_texture_mirrored_repeat &&
-                              ctx->Extensions.ARB_window_pos &&
-                              ctx->Extensions.EXT_blend_color &&
-                              ctx->Extensions.EXT_blend_func_separate &&
-                              ctx->Extensions.EXT_blend_minmax &&
-                              ctx->Extensions.EXT_blend_subtract &&
-                              ctx->Extensions.EXT_fog_coord &&
-                              ctx->Extensions.EXT_multi_draw_arrays &&
-                              ctx->Extensions.EXT_point_parameters &&
-                              ctx->Extensions.EXT_secondary_color &&
-                              ctx->Extensions.EXT_stencil_wrap &&
-                              ctx->Extensions.EXT_texture_lod_bias &&
-                              ctx->Extensions.SGIS_generate_mipmap);
-   const GLboolean ver_1_5 = (ver_1_4 &&
-                              ctx->Extensions.ARB_occlusion_query &&
-                              ctx->Extensions.ARB_vertex_buffer_object &&
-                              ctx->Extensions.EXT_shadow_funcs);
-   const GLboolean ver_2_0 = (ver_1_5 &&
-                              ctx->Extensions.ARB_draw_buffers &&
-                              ctx->Extensions.ARB_point_sprite &&
-                              ctx->Extensions.ARB_shader_objects &&
-                              ctx->Extensions.ARB_vertex_shader &&
-                              ctx->Extensions.ARB_fragment_shader &&
-                              ctx->Extensions.ARB_texture_non_power_of_two &&
-                              ctx->Extensions.EXT_blend_equation_separate &&
+      switch (ctx->Const.GLSLVersion) {
+      case 110:
+         return (const GLubyte *) "1.10";
+      case 120:
+         return (const GLubyte *) "1.20";
+      case 130:
+         return (const GLubyte *) "1.30";
+      default:
+         _mesa_problem(ctx,
+                       "Invalid GLSL version in shading_language_version()");
+         return (const GLubyte *) 0;
+      }
+      break;
 
-			      /* Technically, 2.0 requires the functionality
-			       * of the EXT version.  Enable 2.0 if either
-			       * extension is available, and assume that a
-			       * driver that only exposes the ATI extension
-			       * will fallback to software when necessary.
-			       */
-			      (ctx->Extensions.EXT_stencil_two_side
-			       || ctx->Extensions.ATI_separate_stencil));
-   const GLboolean ver_2_1 = (ver_2_0 &&
-                              ctx->Extensions.ARB_shading_language_120 &&
-                              ctx->Extensions.EXT_pixel_buffer_object &&
-                              ctx->Extensions.EXT_texture_sRGB);
-   if (ver_2_1)
-      return version_2_1;
-   if (ver_2_0)
-      return version_2_0;
-   if (ver_1_5)
-      return version_1_5;
-   if (ver_1_4)
-      return version_1_4;
-   if (ver_1_3)
-      return version_1_3;
-   return version_1_2;
+   case API_OPENGLES2:
+      return (const GLubyte *) "OpenGL ES GLSL ES 1.0.16";
+
+   case API_OPENGLES:
+      /* fall-through */
+
+   default:
+      _mesa_problem(ctx, "Unexpected API value in shading_language_version()");
+      return (const GLubyte *) 0;
+   }
 }
-
 
 
 /**
@@ -149,18 +109,12 @@ _mesa_GetString( GLenum name )
       case GL_RENDERER:
          return (const GLubyte *) renderer;
       case GL_VERSION:
-         return (const GLubyte *) compute_version(ctx);
+         return (const GLubyte *) ctx->VersionString;
       case GL_EXTENSIONS:
-         if (!ctx->Extensions.String)
-            ctx->Extensions.String = _mesa_make_extension_string(ctx);
          return (const GLubyte *) ctx->Extensions.String;
-#if FEATURE_ARB_shading_language_100
-      case GL_SHADING_LANGUAGE_VERSION_ARB:
-         if (ctx->Extensions.ARB_shading_language_120)
-            return (const GLubyte *) "1.20";
-         else if (ctx->Extensions.ARB_shading_language_100)
-            return (const GLubyte *) "1.10";
-         goto error;
+#if FEATURE_ARB_shading_language_100 || FEATURE_ES2
+      case GL_SHADING_LANGUAGE_VERSION:
+	 return shading_language_version(ctx);
 #endif
 #if FEATURE_NV_fragment_program || FEATURE_ARB_fragment_program || \
     FEATURE_NV_vertex_program || FEATURE_ARB_vertex_program
@@ -173,14 +127,39 @@ _mesa_GetString( GLenum name )
          }
          /* FALL-THROUGH */
 #endif
-#if FEATURE_ARB_shading_language_100
-      error:
-#endif
       default:
          _mesa_error( ctx, GL_INVALID_ENUM, "glGetString" );
          return (const GLubyte *) 0;
    }
 }
+
+
+/**
+ * GL3
+ */
+const GLubyte * GLAPIENTRY
+_mesa_GetStringi(GLenum name, GLuint index)
+{
+   GET_CURRENT_CONTEXT(ctx);
+
+   if (!ctx)
+      return NULL;
+
+   ASSERT_OUTSIDE_BEGIN_END_WITH_RETVAL(ctx, NULL);
+
+   switch (name) {
+   case GL_EXTENSIONS:
+      if (index >= _mesa_get_extension_count(ctx)) {
+         _mesa_error(ctx, GL_INVALID_VALUE, "glGetStringi(index=%u)", index);
+         return (const GLubyte *) 0;
+      }
+      return _mesa_get_enabled_extension(ctx, index);
+   default:
+      _mesa_error( ctx, GL_INVALID_ENUM, "glGetString" );
+      return (const GLubyte *) 0;
+   }
+}
+
 
 
 /**
@@ -206,10 +185,6 @@ _mesa_GetPointerv( GLenum pname, GLvoid **params )
 
    if (MESA_VERBOSE & VERBOSE_API)
       _mesa_debug(ctx, "glGetPointerv %s\n", _mesa_lookup_enum_by_nr(pname));
-
-   if (ctx->Driver.GetPointerv
-       && (*ctx->Driver.GetPointerv)(ctx, pname, params))
-      return;
 
    switch (pname) {
       case GL_VERTEX_ARRAY_POINTER:
@@ -242,6 +217,11 @@ _mesa_GetPointerv( GLenum pname, GLvoid **params )
       case GL_SELECTION_BUFFER_POINTER:
          *params = ctx->Select.Buffer;
          break;
+#if FEATURE_point_size_array
+      case GL_POINT_SIZE_ARRAY_POINTER_OES:
+         *params = (GLvoid *) ctx->Array.ArrayObj->PointSize.Ptr;
+         break;
+#endif
       default:
          _mesa_error( ctx, GL_INVALID_ENUM, "glGetPointerv" );
          return;

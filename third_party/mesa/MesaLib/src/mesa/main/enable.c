@@ -32,7 +32,6 @@
 #include "context.h"
 #include "enable.h"
 #include "light.h"
-#include "macros.h"
 #include "simple_list.h"
 #include "mtypes.h"
 #include "enums.h"
@@ -43,9 +42,7 @@
 
 #define CHECK_EXTENSION(EXTNAME, CAP)					\
    if (!ctx->Extensions.EXTNAME) {					\
-      _mesa_error(ctx, GL_INVALID_ENUM, "gl%sClientState(0x%x)",	\
-                  state ? "Enable" : "Disable", CAP);			\
-      return;								\
+      goto invalid_enum_error;						\
    }
 
 
@@ -128,9 +125,7 @@ client_state(GLcontext *ctx, GLenum cap, GLboolean state)
 #endif /* FEATURE_NV_vertex_program */
 
       default:
-         _mesa_error( ctx, GL_INVALID_ENUM,
-                      "glEnable/DisableClientState(0x%x)", cap);
-         return;
+         goto invalid_enum_error;
    }
 
    if (*var == state)
@@ -151,6 +146,12 @@ client_state(GLcontext *ctx, GLenum cap, GLboolean state)
    if (ctx->Driver.Enable) {
       ctx->Driver.Enable( ctx, cap, state );
    }
+
+   return;
+
+invalid_enum_error:
+   _mesa_error(ctx, GL_INVALID_ENUM, "gl%sClientState(0x%x)",
+               state ? "Enable" : "Disable", cap);
 }
 
 
@@ -189,16 +190,12 @@ _mesa_DisableClientState( GLenum cap )
 #undef CHECK_EXTENSION
 #define CHECK_EXTENSION(EXTNAME, CAP)					\
    if (!ctx->Extensions.EXTNAME) {					\
-      _mesa_error(ctx, GL_INVALID_ENUM, "gl%s(0x%x)",			\
-                  state ? "Enable" : "Disable", CAP);			\
-      return;								\
+      goto invalid_enum_error;						\
    }
 
 #define CHECK_EXTENSION2(EXT1, EXT2, CAP)				\
    if (!ctx->Extensions.EXT1 && !ctx->Extensions.EXT2) {		\
-      _mesa_error(ctx, GL_INVALID_ENUM, "gl%s(0x%x)",			\
-                  state ? "Enable" : "Disable", CAP);			\
-      return;								\
+      goto invalid_enum_error;						\
    }
 
 
@@ -278,10 +275,13 @@ _mesa_set_enable(GLcontext *ctx, GLenum cap, GLboolean state)
          ctx->Eval.AutoNormal = state;
          break;
       case GL_BLEND:
-         if (ctx->Color.BlendEnabled == state)
-            return;
-         FLUSH_VERTICES(ctx, _NEW_COLOR);
-         ctx->Color.BlendEnabled = state;
+         {
+            GLbitfield newEnabled = state * ((1 << ctx->Const.MaxDrawBuffers) - 1);
+            if (newEnabled != ctx->Color.BlendEnabled) {
+               FLUSH_VERTICES(ctx, _NEW_COLOR);
+               ctx->Color.BlendEnabled = newEnabled;
+            }
+         }
          break;
 #if FEATURE_userclip
       case GL_CLIP_PLANE0:
@@ -682,6 +682,25 @@ _mesa_set_enable(GLcontext *ctx, GLenum cap, GLboolean state)
          }
          break;
 
+#if FEATURE_ES1
+      case GL_TEXTURE_GEN_STR_OES:
+	 /* disable S, T, and R at the same time */
+	 {
+            struct gl_texture_unit *texUnit = get_texcoord_unit(ctx);
+            if (texUnit) {
+               GLuint newenabled =
+		  texUnit->TexGenEnabled & ~STR_BITS;
+               if (state)
+                  newenabled |= STR_BITS;
+               if (texUnit->TexGenEnabled == newenabled)
+                  return;
+               FLUSH_VERTICES(ctx, _NEW_TEXTURE);
+               texUnit->TexGenEnabled = newenabled;
+            }
+         }
+         break;
+#endif
+
       /*
        * CLIENT STATE!!!
        */
@@ -980,15 +999,40 @@ _mesa_set_enable(GLcontext *ctx, GLenum cap, GLboolean state)
 	 ctx->Texture.CubeMapSeamless = state;
 	 break;
 
+#if FEATURE_EXT_transform_feedback
+      case GL_RASTERIZER_DISCARD:
+	 CHECK_EXTENSION(EXT_transform_feedback, cap);
+         if (ctx->TransformFeedback.RasterDiscard != state) {
+            ctx->TransformFeedback.RasterDiscard = state;
+            FLUSH_VERTICES(ctx, _NEW_TRANSFORM);
+         }
+         break;
+#endif
+
+      /* GL 3.1 primitive restart */
+      case GL_PRIMITIVE_RESTART:
+	 if (ctx->VersionMajor * 10 + ctx->VersionMinor < 31) {
+            goto invalid_enum_error;
+         }
+         if (ctx->Array.PrimitiveRestart != state) {
+            FLUSH_VERTICES(ctx, _NEW_TRANSFORM);
+            ctx->Array.PrimitiveRestart = state;
+         }
+         break;
+
       default:
-         _mesa_error(ctx, GL_INVALID_ENUM,
-                     "%s(0x%x)", state ? "glEnable" : "glDisable", cap);
-         return;
+         goto invalid_enum_error;
    }
 
    if (ctx->Driver.Enable) {
       ctx->Driver.Enable( ctx, cap, state );
    }
+
+   return;
+
+invalid_enum_error:
+   _mesa_error(ctx, GL_INVALID_ENUM, "gl%s(0x%x)",
+               state ? "Enable" : "Disable", cap);
 }
 
 
@@ -1020,18 +1064,94 @@ _mesa_Disable( GLenum cap )
 }
 
 
+
+/**
+ * Enable/disable an indexed state var.
+ */
+void
+_mesa_set_enablei(GLcontext *ctx, GLenum cap, GLuint index, GLboolean state)
+{
+   ASSERT(state == 0 || state == 1);
+   switch (cap) {
+   case GL_BLEND:
+      if (!ctx->Extensions.EXT_draw_buffers2) {
+         goto invalid_enum_error;
+      }
+      if (index >= ctx->Const.MaxDrawBuffers) {
+         _mesa_error(ctx, GL_INVALID_VALUE, "%s(index=%u)",
+                     state ? "glEnableIndexed" : "glDisableIndexed", index);
+         return;
+      }
+      if (((ctx->Color.BlendEnabled >> index) & 1) != state) {
+         FLUSH_VERTICES(ctx, _NEW_COLOR);
+         if (state)
+            ctx->Color.BlendEnabled |= (1 << index);
+         else
+            ctx->Color.BlendEnabled &= ~(1 << index);
+      }
+      break;
+   default:
+      goto invalid_enum_error;
+   }
+   return;
+
+invalid_enum_error:
+    _mesa_error(ctx, GL_INVALID_ENUM, "%s(cap=%s)",
+                state ? "glEnablei" : "glDisablei",
+                _mesa_lookup_enum_by_nr(cap));
+}
+
+
+void GLAPIENTRY
+_mesa_DisableIndexed( GLenum cap, GLuint index )
+{
+   GET_CURRENT_CONTEXT(ctx);
+   ASSERT_OUTSIDE_BEGIN_END(ctx);
+   _mesa_set_enablei(ctx, cap, index, GL_FALSE);
+}
+
+
+void GLAPIENTRY
+_mesa_EnableIndexed( GLenum cap, GLuint index )
+{
+   GET_CURRENT_CONTEXT(ctx);
+   ASSERT_OUTSIDE_BEGIN_END(ctx);
+   _mesa_set_enablei(ctx, cap, index, GL_TRUE);
+}
+
+
+GLboolean GLAPIENTRY
+_mesa_IsEnabledIndexed( GLenum cap, GLuint index )
+{
+   GET_CURRENT_CONTEXT(ctx);
+   switch (cap) {
+   case GL_BLEND:
+      if (index >= ctx->Const.MaxDrawBuffers) {
+         _mesa_error(ctx, GL_INVALID_VALUE, "glIsEnabledIndexed(index=%u)",
+                     index);
+         return GL_FALSE;
+      }
+      return (ctx->Color.BlendEnabled >> index) & 1;
+   default:
+      _mesa_error(ctx, GL_INVALID_ENUM, "glIsEnabledIndexed(cap=%s)",
+                  _mesa_lookup_enum_by_nr(cap));
+      return GL_FALSE;
+   }
+}
+
+
+
+
 #undef CHECK_EXTENSION
 #define CHECK_EXTENSION(EXTNAME)			\
    if (!ctx->Extensions.EXTNAME) {			\
-      _mesa_error(ctx, GL_INVALID_ENUM, "glIsEnabled");	\
-      return GL_FALSE;					\
+      goto invalid_enum_error;				\
    }
 
 #undef CHECK_EXTENSION2
 #define CHECK_EXTENSION2(EXT1, EXT2)				\
    if (!ctx->Extensions.EXT1 && !ctx->Extensions.EXT2) {	\
-      _mesa_error(ctx, GL_INVALID_ENUM, "glIsEnabled");		\
-      return GL_FALSE;						\
+      goto invalid_enum_error;					\
    }
 
 
@@ -1066,7 +1186,7 @@ _mesa_IsEnabled( GLenum cap )
       case GL_AUTO_NORMAL:
 	 return ctx->Eval.AutoNormal;
       case GL_BLEND:
-         return ctx->Color.BlendEnabled;
+         return ctx->Color.BlendEnabled & 1;  /* return state for buffer[0] */
       case GL_CLIP_PLANE0:
       case GL_CLIP_PLANE1:
       case GL_CLIP_PLANE2:
@@ -1200,6 +1320,15 @@ _mesa_IsEnabled( GLenum cap )
             }
          }
          return GL_FALSE;
+#if FEATURE_ES1
+      case GL_TEXTURE_GEN_STR_OES:
+	 {
+            const struct gl_texture_unit *texUnit = get_texcoord_unit(ctx);
+            if (texUnit) {
+		    return (texUnit->TexGenEnabled & STR_BITS) == STR_BITS ? GL_TRUE : GL_FALSE;
+            }
+         }
+#endif
 
       /*
        * CLIENT STATE!!!
@@ -1413,8 +1542,26 @@ _mesa_IsEnabled( GLenum cap )
 	 CHECK_EXTENSION(ARB_seamless_cube_map);
 	 return ctx->Texture.CubeMapSeamless;
 
+#if FEATURE_EXT_transform_feedback
+      case GL_RASTERIZER_DISCARD:
+	 CHECK_EXTENSION(EXT_transform_feedback);
+         return ctx->TransformFeedback.RasterDiscard;
+#endif
+
+      /* GL 3.1 primitive restart */
+      case GL_PRIMITIVE_RESTART:
+	 if (ctx->VersionMajor * 10 + ctx->VersionMinor < 31) {
+            goto invalid_enum_error;
+         }
+         return ctx->Array.PrimitiveRestart;
+
       default:
-         _mesa_error(ctx, GL_INVALID_ENUM, "glIsEnabled(0x%x)", (int) cap);
-	 return GL_FALSE;
+         goto invalid_enum_error;
    }
+
+   return GL_FALSE;
+
+invalid_enum_error:
+   _mesa_error(ctx, GL_INVALID_ENUM, "glIsEnabled(0x%x)", (int) cap);
+   return GL_FALSE;
 }

@@ -32,6 +32,8 @@
 #define DRAW_VS_AOS_H
 
 #include "pipe/p_config.h"
+#include "tgsi/tgsi_exec.h"
+#include "draw_vs.h"
 
 #ifdef PIPE_ARCH_X86
 
@@ -122,7 +124,7 @@ struct aos_machine {
    ushort fpucntl;              /* one of FPU_* above */
 
    const float (*immediates)[4];     /* points to shader data */
-   const float (*constants)[4];      /* points to draw data */
+   const void *constants[PIPE_MAX_CONSTANT_BUFFERS]; /* points to draw data */
 
    const struct aos_buffer *buffer; /* points to ? */
 };

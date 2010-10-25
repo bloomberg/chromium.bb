@@ -36,7 +36,7 @@
 struct gl_pixelstore_attrib;
 struct gl_display_list;
 
-#if FEATURE_ARB_vertex_buffer_object
+/* GL_ARB_vertex_buffer_object */
 /* Modifies GL_MAP_UNSYNCHRONIZED_BIT to allow driver to fail (return
  * NULL) if buffer is unavailable for immediate mapping.
  *
@@ -49,7 +49,6 @@ struct gl_display_list;
  * respect the contents of already referenced data.
  */
 #define MESA_MAP_NOWAIT_BIT       0x0040
-#endif
 
 
 /**
@@ -182,7 +181,7 @@ struct dd_function_table {
     * 
     * This is called by the \c _mesa_store_tex[sub]image[123]d() fallback
     * functions.  The driver should examine \p internalFormat and return a
-    * pointer to an appropriate gl_texture_format.
+    * gl_format value.
     */
    GLuint (*ChooseTextureFormat)( GLcontext *ctx, GLint internalFormat,
                                      GLenum srcFormat, GLenum srcType );
@@ -538,11 +537,6 @@ struct dd_function_table {
                                    struct gl_texture_object *t );
 
    /**
-    * Called by glActiveTextureARB() to set current texture unit.
-    */
-   void (*ActiveTexture)( GLcontext *ctx, GLuint texUnitNumber );
-
-   /**
     * Called when the texture's color lookup table is changed.
     * 
     * If \p tObj is NULL then the shared texture palette
@@ -586,9 +580,13 @@ struct dd_function_table {
    struct gl_program * (*NewProgram)(GLcontext *ctx, GLenum target, GLuint id);
    /** Delete a program */
    void (*DeleteProgram)(GLcontext *ctx, struct gl_program *prog);   
-   /** Notify driver that a program string has been specified. */
-   void (*ProgramStringNotify)(GLcontext *ctx, GLenum target, 
-			       struct gl_program *prog);
+   /**
+    * Notify driver that a program string (and GPU code) has been specified
+    * or modified.  Return GL_TRUE or GL_FALSE to indicate if the program is
+    * supported by the driver.
+    */
+   GLboolean (*ProgramStringNotify)(GLcontext *ctx, GLenum target, 
+                                    struct gl_program *prog);
 
    /** Query if program can be loaded onto hardware */
    GLboolean (*IsProgramNative)(GLcontext *ctx, GLenum target, 
@@ -596,6 +594,27 @@ struct dd_function_table {
    
    /*@}*/
 
+   /**
+    * \name GLSL shader/program functions.
+    */
+   /*@{*/
+   /**
+    * Called when a shader is compiled.
+    *
+    * Note that not all shader objects get ShaderCompile called on
+    * them.  Notably, the shaders containing builtin functions do not
+    * have CompileShader() called, so if lowering passes are done they
+    * need to also be performed in LinkShader().
+    */
+   GLboolean (*CompileShader)(GLcontext *ctx, struct gl_shader *shader);
+   /**
+    * Called when a shader program is linked.
+    *
+    * This gives drivers an opportunity to clone the IR and make their
+    * own transformations on it for the purposes of code generation.
+    */
+   GLboolean (*LinkShader)(GLcontext *ctx, struct gl_shader_program *shader);
+   /*@}*/
 
    /**
     * \name State-changing functions.
@@ -621,8 +640,6 @@ struct dd_function_table {
    void (*ClearColor)(GLcontext *ctx, const GLfloat color[4]);
    /** Specify the clear value for the depth buffer */
    void (*ClearDepth)(GLcontext *ctx, GLclampd d);
-   /** Specify the clear value for the color index buffers */
-   void (*ClearIndex)(GLcontext *ctx, GLuint index);
    /** Specify the clear value for the stencil buffer */
    void (*ClearStencil)(GLcontext *ctx, GLint s);
    /** Specify a plane against which all geometry is clipped */
@@ -630,6 +647,8 @@ struct dd_function_table {
    /** Enable and disable writing of frame buffer color components */
    void (*ColorMask)(GLcontext *ctx, GLboolean rmask, GLboolean gmask,
                      GLboolean bmask, GLboolean amask );
+   void (*ColorMaskIndexed)(GLcontext *ctx, GLuint buf, GLboolean rmask,
+                            GLboolean gmask, GLboolean bmask, GLboolean amask);
    /** Cause a material color to track the current color */
    void (*ColorMaterial)(GLcontext *ctx, GLenum face, GLenum mode);
    /** Specify whether front- or back-facing facets can be culled */
@@ -652,8 +671,6 @@ struct dd_function_table {
    void (*Fogfv)(GLcontext *ctx, GLenum pname, const GLfloat *params);
    /** Specify implementation-specific hints */
    void (*Hint)(GLcontext *ctx, GLenum target, GLenum mode);
-   /** Control the writing of individual bits in the color index buffers */
-   void (*IndexMask)(GLcontext *ctx, GLuint mask);
    /** Set light source parameters.
     * Note: for GL_POSITION and GL_SPOT_DIRECTION, params will have already
     * been transformed to eye-space.
@@ -709,31 +726,9 @@ struct dd_function_table {
    /*@}*/
 
 
-   /** 
-    * \name State-query functions
-    *
-    * Return GL_TRUE if query was completed, GL_FALSE otherwise.
-    */
-   /*@{*/
-   /** Return the value or values of a selected parameter */
-   GLboolean (*GetBooleanv)(GLcontext *ctx, GLenum pname, GLboolean *result);
-   /** Return the value or values of a selected parameter */
-   GLboolean (*GetDoublev)(GLcontext *ctx, GLenum pname, GLdouble *result);
-   /** Return the value or values of a selected parameter */
-   GLboolean (*GetFloatv)(GLcontext *ctx, GLenum pname, GLfloat *result);
-   /** Return the value or values of a selected parameter */
-   GLboolean (*GetIntegerv)(GLcontext *ctx, GLenum pname, GLint *result);
-   /** Return the value or values of a selected parameter */
-   GLboolean (*GetInteger64v)(GLcontext *ctx, GLenum pname, GLint64 *result);
-   /** Return the value or values of a selected parameter */
-   GLboolean (*GetPointerv)(GLcontext *ctx, GLenum pname, GLvoid **result);
-   /*@}*/
-   
-
    /**
     * \name Vertex/pixel buffer object functions
     */
-#if FEATURE_ARB_vertex_buffer_object
    /*@{*/
    void (*BindBuffer)( GLcontext *ctx, GLenum target,
 		       struct gl_buffer_object *obj );
@@ -766,28 +761,42 @@ struct dd_function_table {
 
    /* May return NULL if MESA_MAP_NOWAIT_BIT is set in access:
     */
-   void * (*MapBufferRange)( GLcontext *ctx, GLenum target,
-                             GLintptr offset, GLsizeiptr length, GLbitfield access,
+   void * (*MapBufferRange)( GLcontext *ctx, GLenum target, GLintptr offset,
+                             GLsizeiptr length, GLbitfield access,
                              struct gl_buffer_object *obj);
 
-   void (*FlushMappedBufferRange) (GLcontext *ctx, GLenum target, 
-                                   GLintptr offset, GLsizeiptr length,
-                                   struct gl_buffer_object *obj);
+   void (*FlushMappedBufferRange)(GLcontext *ctx, GLenum target, 
+                                  GLintptr offset, GLsizeiptr length,
+                                  struct gl_buffer_object *obj);
 
    GLboolean (*UnmapBuffer)( GLcontext *ctx, GLenum target,
 			     struct gl_buffer_object *obj );
    /*@}*/
-#endif
 
    /**
-    * \name Functions for GL_EXT_framebuffer_object
+    * \name Functions for GL_APPLE_object_purgeable
     */
-#if FEATURE_EXT_framebuffer_object
+   /*@{*/
+   /* variations on ObjectPurgeable */
+   GLenum (*BufferObjectPurgeable)( GLcontext *ctx, struct gl_buffer_object *obj, GLenum option );
+   GLenum (*RenderObjectPurgeable)( GLcontext *ctx, struct gl_renderbuffer *obj, GLenum option );
+   GLenum (*TextureObjectPurgeable)( GLcontext *ctx, struct gl_texture_object *obj, GLenum option );
+
+   /* variations on ObjectUnpurgeable */
+   GLenum (*BufferObjectUnpurgeable)( GLcontext *ctx, struct gl_buffer_object *obj, GLenum option );
+   GLenum (*RenderObjectUnpurgeable)( GLcontext *ctx, struct gl_renderbuffer *obj, GLenum option );
+   GLenum (*TextureObjectUnpurgeable)( GLcontext *ctx, struct gl_texture_object *obj, GLenum option );
+   /*@}*/
+
+   /**
+    * \name Functions for GL_EXT_framebuffer_{object,blit}.
+    */
    /*@{*/
    struct gl_framebuffer * (*NewFramebuffer)(GLcontext *ctx, GLuint name);
    struct gl_renderbuffer * (*NewRenderbuffer)(GLcontext *ctx, GLuint name);
    void (*BindFramebuffer)(GLcontext *ctx, GLenum target,
-                           struct gl_framebuffer *fb, struct gl_framebuffer *fbread);
+                           struct gl_framebuffer *drawFb,
+                           struct gl_framebuffer *readFb);
    void (*FramebufferRenderbuffer)(GLcontext *ctx, 
                                    struct gl_framebuffer *fb,
                                    GLenum attachment,
@@ -800,13 +809,10 @@ struct dd_function_table {
    void (*ValidateFramebuffer)(GLcontext *ctx,
                                struct gl_framebuffer *fb);
    /*@}*/
-#endif
-#if FEATURE_EXT_framebuffer_blit
    void (*BlitFramebuffer)(GLcontext *ctx,
                            GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
                            GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
                            GLbitfield mask, GLenum filter);
-#endif
 
    /**
     * \name Query objects
@@ -834,54 +840,12 @@ struct dd_function_table {
     * \name GLSL-related functions (ARB extensions and OpenGL 2.x)
     */
    /*@{*/
-   void (*AttachShader)(GLcontext *ctx, GLuint program, GLuint shader);
-   void (*BindAttribLocation)(GLcontext *ctx, GLuint program, GLuint index,
-                              const GLcharARB *name);
-   void (*CompileShader)(GLcontext *ctx, GLuint shader);
-   GLuint (*CreateShader)(GLcontext *ctx, GLenum type);
-   GLuint (*CreateProgram)(GLcontext *ctx);
-   void (*DeleteProgram2)(GLcontext *ctx, GLuint program);
-   void (*DeleteShader)(GLcontext *ctx, GLuint shader);
-   void (*DetachShader)(GLcontext *ctx, GLuint program, GLuint shader);
-   void (*GetActiveAttrib)(GLcontext *ctx, GLuint program, GLuint index,
-                           GLsizei maxLength, GLsizei * length, GLint * size,
-                           GLenum * type, GLcharARB * name);
-   void (*GetActiveUniform)(GLcontext *ctx, GLuint program, GLuint index,
-                            GLsizei maxLength, GLsizei *length, GLint *size,
-                            GLenum *type, GLcharARB *name);
-   void (*GetAttachedShaders)(GLcontext *ctx, GLuint program, GLsizei maxCount,
-                              GLsizei *count, GLuint *obj);
-   GLint (*GetAttribLocation)(GLcontext *ctx, GLuint program,
-                              const GLcharARB *name);
-   GLuint (*GetHandle)(GLcontext *ctx, GLenum pname);
-   void (*GetProgramiv)(GLcontext *ctx, GLuint program,
-                        GLenum pname, GLint *params);
-   void (*GetProgramInfoLog)(GLcontext *ctx, GLuint program, GLsizei bufSize,
-                             GLsizei *length, GLchar *infoLog);
-   void (*GetShaderiv)(GLcontext *ctx, GLuint shader,
-                       GLenum pname, GLint *params);
-   void (*GetShaderInfoLog)(GLcontext *ctx, GLuint shader, GLsizei bufSize,
-                            GLsizei *length, GLchar *infoLog);
-   void (*GetShaderSource)(GLcontext *ctx, GLuint shader, GLsizei maxLength,
-                           GLsizei *length, GLcharARB *sourceOut);
-   void (*GetUniformfv)(GLcontext *ctx, GLuint program, GLint location,
-                        GLfloat *params);
-   void (*GetUniformiv)(GLcontext *ctx, GLuint program, GLint location,
-                        GLint *params);
-   GLint (*GetUniformLocation)(GLcontext *ctx, GLuint program,
-                               const GLcharARB *name);
-   GLboolean (*IsProgram)(GLcontext *ctx, GLuint name);
-   GLboolean (*IsShader)(GLcontext *ctx, GLuint name);
-   void (*LinkProgram)(GLcontext *ctx, GLuint program);
-   void (*ShaderSource)(GLcontext *ctx, GLuint shader, const GLchar *source);
-   void (*Uniform)(GLcontext *ctx, GLint location, GLsizei count,
-                   const GLvoid *values, GLenum type);
-   void (*UniformMatrix)(GLcontext *ctx, GLint cols, GLint rows,
-                         GLint location, GLsizei count,
-                         GLboolean transpose, const GLfloat *values);
-   void (*UseProgram)(GLcontext *ctx, GLuint program);
-   void (*ValidateProgram)(GLcontext *ctx, GLuint program);
-   /* XXX many more to come */
+   struct gl_shader *(*NewShader)(GLcontext *ctx, GLuint name, GLenum type);
+   void (*DeleteShader)(GLcontext *ctx, struct gl_shader *shader);
+   struct gl_shader_program *(*NewShaderProgram)(GLcontext *ctx, GLuint name);
+   void (*DeleteShaderProgram)(GLcontext *ctx,
+                               struct gl_shader_program *shProg);
+   void (*UseProgram)(GLcontext *ctx, struct gl_shader_program *shProg);
    /*@}*/
 
 
@@ -1003,7 +967,6 @@ struct dd_function_table {
    void (*EndCallList)( GLcontext *ctx );
 
 
-#if FEATURE_ARB_sync
    /**
     * \name GL_ARB_sync interfaces
     */
@@ -1017,7 +980,48 @@ struct dd_function_table {
    void (*ServerWaitSync)(GLcontext *, struct gl_sync_object *,
 			  GLbitfield, GLuint64);
    /*@}*/
-#endif
+
+   /** GL_NV_conditional_render */
+   void (*BeginConditionalRender)(GLcontext *ctx, struct gl_query_object *q,
+                                  GLenum mode);
+   void (*EndConditionalRender)(GLcontext *ctx, struct gl_query_object *q);
+
+   /**
+    * \name GL_OES_draw_texture interface
+    */
+   /*@{*/
+   void (*DrawTex)(GLcontext *ctx, GLfloat x, GLfloat y, GLfloat z,
+                   GLfloat width, GLfloat height);
+   /*@}*/
+
+   /**
+    * \name GL_OES_EGL_image interface
+    */
+   void (*EGLImageTargetTexture2D)(GLcontext *ctx, GLenum target,
+				   struct gl_texture_object *texObj,
+				   struct gl_texture_image *texImage,
+				   GLeglImageOES image_handle);
+   void (*EGLImageTargetRenderbufferStorage)(GLcontext *ctx,
+					     struct gl_renderbuffer *rb,
+					     void *image_handle);
+
+   /**
+    * \name GL_EXT_transform_feedback interface
+    */
+   struct gl_transform_feedback_object *
+        (*NewTransformFeedback)(GLcontext *ctx, GLuint name);
+   void (*DeleteTransformFeedback)(GLcontext *ctx,
+                                   struct gl_transform_feedback_object *obj);
+   void (*BeginTransformFeedback)(GLcontext *ctx, GLenum mode,
+                                  struct gl_transform_feedback_object *obj);
+   void (*EndTransformFeedback)(GLcontext *ctx,
+                                struct gl_transform_feedback_object *obj);
+   void (*PauseTransformFeedback)(GLcontext *ctx,
+                                  struct gl_transform_feedback_object *obj);
+   void (*ResumeTransformFeedback)(GLcontext *ctx,
+                                   struct gl_transform_feedback_object *obj);
+   void (*DrawTransformFeedback)(GLcontext *ctx, GLenum mode,
+                                 struct gl_transform_feedback_object *obj);
 };
 
 
@@ -1031,7 +1035,7 @@ struct dd_function_table {
  * These are the initial values to be installed into dispatch by
  * mesa.  If the T&L driver wants to modify the dispatch table
  * while installed, it must do so itself.  It would be possible for
- * the vertexformat to install it's own initial values for these
+ * the vertexformat to install its own initial values for these
  * functions, but this way there is an obvious list of what is
  * expected of the driver.
  *
@@ -1044,23 +1048,23 @@ typedef struct {
     * \name Vertex
     */
    /*@{*/
-   void (GLAPIENTRYP ArrayElement)( GLint ); /* NOTE */
+   void (GLAPIENTRYP ArrayElement)( GLint );
    void (GLAPIENTRYP Color3f)( GLfloat, GLfloat, GLfloat );
    void (GLAPIENTRYP Color3fv)( const GLfloat * );
    void (GLAPIENTRYP Color4f)( GLfloat, GLfloat, GLfloat, GLfloat );
    void (GLAPIENTRYP Color4fv)( const GLfloat * );
    void (GLAPIENTRYP EdgeFlag)( GLboolean );
-   void (GLAPIENTRYP EvalCoord1f)( GLfloat );          /* NOTE */
-   void (GLAPIENTRYP EvalCoord1fv)( const GLfloat * ); /* NOTE */
-   void (GLAPIENTRYP EvalCoord2f)( GLfloat, GLfloat ); /* NOTE */
-   void (GLAPIENTRYP EvalCoord2fv)( const GLfloat * ); /* NOTE */
-   void (GLAPIENTRYP EvalPoint1)( GLint );             /* NOTE */
-   void (GLAPIENTRYP EvalPoint2)( GLint, GLint );      /* NOTE */
+   void (GLAPIENTRYP EvalCoord1f)( GLfloat );
+   void (GLAPIENTRYP EvalCoord1fv)( const GLfloat * );
+   void (GLAPIENTRYP EvalCoord2f)( GLfloat, GLfloat );
+   void (GLAPIENTRYP EvalCoord2fv)( const GLfloat * );
+   void (GLAPIENTRYP EvalPoint1)( GLint );
+   void (GLAPIENTRYP EvalPoint2)( GLint, GLint );
    void (GLAPIENTRYP FogCoordfEXT)( GLfloat );
    void (GLAPIENTRYP FogCoordfvEXT)( const GLfloat * );
    void (GLAPIENTRYP Indexf)( GLfloat );
    void (GLAPIENTRYP Indexfv)( const GLfloat * );
-   void (GLAPIENTRYP Materialfv)( GLenum face, GLenum pname, const GLfloat * ); /* NOTE */
+   void (GLAPIENTRYP Materialfv)( GLenum face, GLenum pname, const GLfloat * );
    void (GLAPIENTRYP MultiTexCoord1fARB)( GLenum, GLfloat );
    void (GLAPIENTRYP MultiTexCoord1fvARB)( GLenum, const GLfloat * );
    void (GLAPIENTRYP MultiTexCoord2fARB)( GLenum, GLfloat, GLfloat );
@@ -1087,8 +1091,8 @@ typedef struct {
    void (GLAPIENTRYP Vertex3fv)( const GLfloat * );
    void (GLAPIENTRYP Vertex4f)( GLfloat, GLfloat, GLfloat, GLfloat );
    void (GLAPIENTRYP Vertex4fv)( const GLfloat * );
-   void (GLAPIENTRYP CallList)( GLuint );	/* NOTE */
-   void (GLAPIENTRYP CallLists)( GLsizei, GLenum, const GLvoid * );	/* NOTE */
+   void (GLAPIENTRYP CallList)( GLuint );
+   void (GLAPIENTRYP CallLists)( GLsizei, GLenum, const GLvoid * );
    void (GLAPIENTRYP Begin)( GLenum );
    void (GLAPIENTRYP End)( void );
    /* GL_NV_vertex_program */
@@ -1100,7 +1104,7 @@ typedef struct {
    void (GLAPIENTRYP VertexAttrib3fvNV)( GLuint index, const GLfloat *v );
    void (GLAPIENTRYP VertexAttrib4fNV)( GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w );
    void (GLAPIENTRYP VertexAttrib4fvNV)( GLuint index, const GLfloat *v );
-#if FEATURE_ARB_vertex_program
+   /* GL_ARB_vertex_program */
    void (GLAPIENTRYP VertexAttrib1fARB)( GLuint index, GLfloat x );
    void (GLAPIENTRYP VertexAttrib1fvARB)( GLuint index, const GLfloat *v );
    void (GLAPIENTRYP VertexAttrib2fARB)( GLuint index, GLfloat x, GLfloat y );
@@ -1109,11 +1113,8 @@ typedef struct {
    void (GLAPIENTRYP VertexAttrib3fvARB)( GLuint index, const GLfloat *v );
    void (GLAPIENTRYP VertexAttrib4fARB)( GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w );
    void (GLAPIENTRYP VertexAttrib4fvARB)( GLuint index, const GLfloat *v );
-#endif
    /*@}*/
 
-   /*
-    */
    void (GLAPIENTRYP Rectf)( GLfloat, GLfloat, GLfloat, GLfloat );
 
    /**
@@ -1145,6 +1146,11 @@ typedef struct {
 						   const GLvoid **indices,
 						   GLsizei primcount,
 						   const GLint *basevertex);
+   void (GLAPIENTRYP DrawArraysInstanced)(GLenum mode, GLint first,
+                                          GLsizei count, GLsizei primcount);
+   void (GLAPIENTRYP DrawElementsInstanced)(GLenum mode, GLsizei count,
+                                            GLenum type, const GLvoid *indices,
+                                            GLsizei primcount);
    /*@}*/
 
    /**

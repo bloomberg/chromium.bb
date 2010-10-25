@@ -35,7 +35,7 @@
 #include "path_utils.h"
 #include "polygon.h"
 
-#include "math.h"
+#include "util/u_math.h"
 
 #ifndef M_2PI
 #define M_2PI 6.28318530717958647692528676655900576
@@ -476,7 +476,7 @@ static enum intersection_type line_intersect(const VGfloat *l1,
                                              const VGfloat *l2,
                                              float *intersection_point)
 {
-   VGfloat isect[2];
+   VGfloat isect[2] = { 0 };
    enum intersection_type type;
    VGboolean dx_zero, ldx_zero;
 
@@ -649,7 +649,7 @@ static void create_joins(struct stroker *stroker,
       VGfloat prev_line[] = {stroker->back2_x, stroker->back2_y,
                              stroker->back1_x, stroker->back1_y};
 
-      VGfloat isect[2];
+      VGfloat isect[2] = { 0 };
       enum intersection_type type = line_intersect(prev_line, next_line, isect);
 
       if (join == SquareJoin) {
@@ -870,7 +870,7 @@ static VGboolean vg_stroke_outline(struct stroke_iterator *it,
                                 VGboolean cap_first,
                                 VGfloat *start_tangent)
 {
-   const int MAX_OFFSET = 16;
+#define MAX_OFFSET 16
    struct bezier offset_curves[MAX_OFFSET];
    VGPathCommand first_element;
    VGfloat start[2], prev[2];
@@ -1017,6 +1017,7 @@ static VGboolean vg_stroke_outline(struct stroke_iterator *it,
 #endif
       return VG_FALSE;
    }
+#undef MAX_OFFSET
 }
 
 static void stroker_process_subpath(struct stroker *stroker)

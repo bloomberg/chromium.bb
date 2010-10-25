@@ -29,7 +29,8 @@
 #define SPU_EXEC_H
 
 #include "pipe/p_compiler.h"
-#include "tgsi/tgsi_exec.h"
+
+#include "spu_tgsi_exec.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -75,7 +76,7 @@ struct softpipe_tile_cache;  /**< Opaque to TGSI */
 struct spu_sampler
 {
    const struct pipe_sampler_state *state;
-   struct pipe_texture *texture;
+   struct pipe_resource *texture;
    /** Get samples for four fragments in a quad */
    void (*get_samples)(struct spu_sampler *sampler,
                        const float s[QUAD_SIZE],
@@ -98,9 +99,9 @@ struct spu_exec_machine
     * 4  internal temporaries
     * 1  address
     */
+   PIPE_ALIGN_VAR(16)
    struct spu_exec_vector       Temps[TGSI_EXEC_NUM_TEMPS 
-                                      + TGSI_EXEC_NUM_TEMP_EXTRAS + 1]
-       ALIGN16_ATTRIB;
+                                      + TGSI_EXEC_NUM_TEMP_EXTRAS + 1];
 
    struct spu_exec_vector       *Addrs;
 

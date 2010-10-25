@@ -36,13 +36,12 @@
 #include "main/arrayobj.h"
 #include "main/bufferobj.h"
 
-#include "st_inlines.h"
 #include "st_context.h"
 #include "st_cb_bufferobjects.h"
 
 #include "pipe/p_context.h"
 #include "pipe/p_defines.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 
 
 /**
@@ -75,10 +74,13 @@ st_bufferobj_free(GLcontext *ctx, struct gl_buffer_object *obj)
 {
    struct st_buffer_object *st_obj = st_buffer_object(obj);
 
-   if (st_obj->buffer) 
-      pipe_buffer_reference(&st_obj->buffer, NULL);
+   assert(obj->RefCount == 0);
+   assert(st_obj->transfer == NULL);
 
-   _mesa_free(st_obj);
+   if (st_obj->buffer) 
+      pipe_resource_reference(&st_obj->buffer, NULL);
+
+   free(st_obj);
 }
 
 
@@ -103,8 +105,26 @@ st_bufferobj_subdata(GLcontext *ctx,
    ASSERT(size >= 0);
    ASSERT(offset + size <= obj->Size);
 
-   st_cond_flush_pipe_buffer_write(st_context(ctx), st_obj->buffer,
-				   offset, size, data);
+   if (!size)
+      return;
+
+   /*
+    * According to ARB_vertex_buffer_object specification, if data is null,
+    * then the contents of the buffer object's data store is undefined. We just
+    * ignore, and leave it unchanged.
+    */
+   if (!data)
+      return;
+
+   /* Now that transfers are per-context, we don't have to figure out
+    * flushing here.  Usually drivers won't need to flush in this case
+    * even if the buffer is currently referenced by hardware - they
+    * just queue the upload as dma rather than mapping the underlying
+    * buffer directly.
+    */
+   pipe_buffer_write(st_context(ctx)->pipe,
+		     st_obj->buffer,
+		     offset, size, data);
 }
 
 
@@ -125,8 +145,11 @@ st_bufferobj_get_subdata(GLcontext *ctx,
    ASSERT(size >= 0);
    ASSERT(offset + size <= obj->Size);
 
-   st_cond_flush_pipe_buffer_read(st_context(ctx), st_obj->buffer,
-				  offset, size, data);
+   if (!size)
+      return;
+
+   pipe_buffer_read(st_context(ctx)->pipe, st_obj->buffer,
+                    offset, size, data);
 }
 
 
@@ -156,29 +179,33 @@ st_bufferobj_data(GLcontext *ctx,
    switch(target) {
    case GL_PIXEL_PACK_BUFFER_ARB:
    case GL_PIXEL_UNPACK_BUFFER_ARB:
-      buffer_usage = PIPE_BUFFER_USAGE_PIXEL;
+      buffer_usage = PIPE_BIND_RENDER_TARGET;
       break;
    case GL_ARRAY_BUFFER_ARB:
-      buffer_usage = PIPE_BUFFER_USAGE_VERTEX;
+      buffer_usage = PIPE_BIND_VERTEX_BUFFER;
       break;
    case GL_ELEMENT_ARRAY_BUFFER_ARB:
-      buffer_usage = PIPE_BUFFER_USAGE_INDEX;
+      buffer_usage = PIPE_BIND_INDEX_BUFFER;
       break;
    default:
       buffer_usage = 0;
    }
 
-   pipe_buffer_reference( &st_obj->buffer, NULL );
+   pipe_resource_reference( &st_obj->buffer, NULL );
 
-   st_obj->buffer = pipe_buffer_create( pipe->screen, 32, buffer_usage, size );
+   if (size != 0) {
+      st_obj->buffer = pipe_buffer_create(pipe->screen, buffer_usage, size);
 
-   if (!st_obj->buffer) {
-      return GL_FALSE;
+      if (!st_obj->buffer) {
+         return GL_FALSE;
+      }
+
+      if (data)
+         pipe_buffer_write(st_context(ctx)->pipe, st_obj->buffer, 0,
+				       size, data);
+      return GL_TRUE;
    }
 
-   if (data)
-      st_no_flush_pipe_buffer_write(st_context(ctx), st_obj->buffer, 0,
-				    size, data);
    return GL_TRUE;
 }
 
@@ -195,27 +222,35 @@ st_bufferobj_map(GLcontext *ctx, GLenum target, GLenum access,
 
    switch (access) {
    case GL_WRITE_ONLY:
-      flags = PIPE_BUFFER_USAGE_CPU_WRITE;
+      flags = PIPE_TRANSFER_WRITE;
       break;
    case GL_READ_ONLY:
-      flags = PIPE_BUFFER_USAGE_CPU_READ;
+      flags = PIPE_TRANSFER_READ;
       break;
    case GL_READ_WRITE:
-      /* fall-through */
    default:
-      flags = PIPE_BUFFER_USAGE_CPU_READ | PIPE_BUFFER_USAGE_CPU_WRITE;
+      flags = PIPE_TRANSFER_READ_WRITE;
       break;      
    }
 
-   obj->Pointer = st_cond_flush_pipe_buffer_map(st_context(ctx),
-						st_obj->buffer,
-						flags);
+   obj->Pointer = pipe_buffer_map(st_context(ctx)->pipe,
+                                  st_obj->buffer,
+                                  flags,
+                                  &st_obj->transfer);
+
    if (obj->Pointer) {
       obj->Offset = 0;
       obj->Length = obj->Size;
    }
    return obj->Pointer;
 }
+
+
+/**
+ * Dummy data whose's pointer is used for zero length ranges.
+ */
+static long
+st_bufferobj_zero_length_range = 0;
 
 
 /**
@@ -228,39 +263,55 @@ st_bufferobj_map_range(GLcontext *ctx, GLenum target,
 {
    struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_buffer_object *st_obj = st_buffer_object(obj);
-   uint flags = 0x0;
+   enum pipe_transfer_usage flags = 0x0;
 
    if (access & GL_MAP_WRITE_BIT)
-      flags |= PIPE_BUFFER_USAGE_CPU_WRITE;
+      flags |= PIPE_TRANSFER_WRITE;
 
    if (access & GL_MAP_READ_BIT)
-      flags |= PIPE_BUFFER_USAGE_CPU_READ;
+      flags |= PIPE_TRANSFER_READ;
 
    if (access & GL_MAP_FLUSH_EXPLICIT_BIT)
-      flags |= PIPE_BUFFER_USAGE_FLUSH_EXPLICIT;
+      flags |= PIPE_TRANSFER_FLUSH_EXPLICIT;
    
    if (access & GL_MAP_UNSYNCHRONIZED_BIT)
-      flags |= PIPE_BUFFER_USAGE_UNSYNCHRONIZED;
+      flags |= PIPE_TRANSFER_UNSYNCHRONIZED;
 
    /* ... other flags ...
     */
 
    if (access & MESA_MAP_NOWAIT_BIT)
-      flags |= PIPE_BUFFER_USAGE_DONTBLOCK;
+      flags |= PIPE_TRANSFER_DONTBLOCK;
 
    assert(offset >= 0);
    assert(length >= 0);
    assert(offset < obj->Size);
    assert(offset + length <= obj->Size);
 
-   obj->Pointer = pipe_buffer_map_range(pipe->screen, st_obj->buffer, offset, length, flags);
+   /*
+    * We go out of way here to hide the degenerate yet valid case of zero
+    * length range from the pipe driver.
+    */
+   if (!length) {
+      obj->Pointer = &st_bufferobj_zero_length_range;
+   }
+   else {
+      obj->Pointer = pipe_buffer_map_range(pipe, 
+                                           st_obj->buffer,
+                                           offset, length,
+                                           flags,
+                                           &st_obj->transfer);
+      if (obj->Pointer) {
+         obj->Pointer = (ubyte *) obj->Pointer + offset;
+      }
+   }
+   
    if (obj->Pointer) {
-      obj->Pointer = (ubyte *) obj->Pointer + offset;
       obj->Offset = offset;
       obj->Length = length;
       obj->AccessFlags = access;
    }
-   
+
    return obj->Pointer;
 }
 
@@ -277,8 +328,12 @@ st_bufferobj_flush_mapped_range(GLcontext *ctx, GLenum target,
    assert(offset >= 0);
    assert(length >= 0);
    assert(offset + length <= obj->Length);
+   assert(obj->Pointer);
    
-   pipe_buffer_flush_mapped_range(pipe->screen, st_obj->buffer, 
+   if (!length)
+      return;
+
+   pipe_buffer_flush_mapped_range(pipe, st_obj->transfer, 
                                   obj->Offset + offset, length);
 }
 
@@ -292,7 +347,10 @@ st_bufferobj_unmap(GLcontext *ctx, GLenum target, struct gl_buffer_object *obj)
    struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_buffer_object *st_obj = st_buffer_object(obj);
 
-   pipe_buffer_unmap(pipe->screen, st_obj->buffer);
+   if (obj->Length)
+      pipe_buffer_unmap(pipe, st_obj->buffer, st_obj->transfer);
+
+   st_obj->transfer = NULL;
    obj->Pointer = NULL;
    obj->Offset = 0;
    obj->Length = 0;
@@ -313,27 +371,47 @@ st_copy_buffer_subdata(GLcontext *ctx,
    struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_buffer_object *srcObj = st_buffer_object(src);
    struct st_buffer_object *dstObj = st_buffer_object(dst);
+   struct pipe_transfer *src_transfer;
+   struct pipe_transfer *dst_transfer;
    ubyte *srcPtr, *dstPtr;
+
+   if(!size)
+      return;
 
    /* buffer should not already be mapped */
    assert(!src->Pointer);
    assert(!dst->Pointer);
 
-   srcPtr = (ubyte *) pipe_buffer_map_range(pipe->screen,
+   srcPtr = (ubyte *) pipe_buffer_map_range(pipe,
                                             srcObj->buffer,
                                             readOffset, size,
-                                            PIPE_BUFFER_USAGE_CPU_READ);
+                                            PIPE_TRANSFER_READ,
+					    &src_transfer);
 
-   dstPtr = (ubyte *) pipe_buffer_map_range(pipe->screen,
+   dstPtr = (ubyte *) pipe_buffer_map_range(pipe,
                                             dstObj->buffer,
                                             writeOffset, size,
-                                            PIPE_BUFFER_USAGE_CPU_WRITE);
+                                            PIPE_TRANSFER_WRITE,
+					    &dst_transfer);
 
    if (srcPtr && dstPtr)
-      _mesa_memcpy(dstPtr + writeOffset, srcPtr + readOffset, size);
+      memcpy(dstPtr + writeOffset, srcPtr + readOffset, size);
 
-   pipe_buffer_unmap(pipe->screen, srcObj->buffer);
-   pipe_buffer_unmap(pipe->screen, dstObj->buffer);
+   pipe_buffer_unmap(pipe, srcObj->buffer, src_transfer);
+   pipe_buffer_unmap(pipe, dstObj->buffer, dst_transfer);
+}
+
+
+/* TODO: if buffer wasn't created with appropriate usage flags, need
+ * to recreate it now and copy contents -- or possibly create a
+ * gallium entrypoint to extend the usage flags and let the driver
+ * decide if a copy is necessary.
+ */
+void
+st_bufferobj_validate_usage(struct st_context *st,
+			    struct st_buffer_object *obj,
+			    unsigned usage)
+{
 }
 
 

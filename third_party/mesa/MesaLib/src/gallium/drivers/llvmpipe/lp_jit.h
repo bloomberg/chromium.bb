@@ -36,12 +36,12 @@
 #define LP_JIT_H
 
 
-#include "lp_bld_struct.h"
+#include "gallivm/lp_bld_struct.h"
 
 #include "pipe/p_state.h"
+#include "lp_texture.h"
 
 
-struct tgsi_sampler;
 struct llvmpipe_screen;
 
 
@@ -49,16 +49,23 @@ struct lp_jit_texture
 {
    uint32_t width;
    uint32_t height;
-   uint32_t stride;
-   const void *data;
+   uint32_t depth;
+   uint32_t last_level;
+   uint32_t row_stride[LP_MAX_TEXTURE_LEVELS];
+   uint32_t img_stride[LP_MAX_TEXTURE_LEVELS];
+   const void *data[LP_MAX_TEXTURE_LEVELS];
 };
 
 
 enum {
    LP_JIT_TEXTURE_WIDTH = 0,
    LP_JIT_TEXTURE_HEIGHT,
-   LP_JIT_TEXTURE_STRIDE,
-   LP_JIT_TEXTURE_DATA
+   LP_JIT_TEXTURE_DEPTH,
+   LP_JIT_TEXTURE_LAST_LEVEL,
+   LP_JIT_TEXTURE_ROW_STRIDE,
+   LP_JIT_TEXTURE_IMG_STRIDE,
+   LP_JIT_TEXTURE_DATA,
+   LP_JIT_TEXTURE_NUM_FIELDS  /* number of fields above */
 };
 
 
@@ -78,9 +85,9 @@ struct lp_jit_context
 {
    const float *constants;
 
-   struct tgsi_sampler **samplers;
-
    float alpha_ref_value;
+
+   uint32_t stencil_ref_front, stencil_ref_back;
 
    /* FIXME: store (also?) in floats */
    uint8_t *blend_color;
@@ -89,39 +96,53 @@ struct lp_jit_context
 };
 
 
-#define lp_jit_context_constants(_builder, _ptr) \
-   lp_build_struct_get(_builder, _ptr, 0, "constants")
+/**
+ * These enum values must match the position of the fields in the
+ * lp_jit_context struct above.
+ */
+enum {
+   LP_JIT_CTX_CONSTANTS = 0,
+   LP_JIT_CTX_ALPHA_REF,
+   LP_JIT_CTX_STENCIL_REF_FRONT,
+   LP_JIT_CTX_STENCIL_REF_BACK,
+   LP_JIT_CTX_BLEND_COLOR,
+   LP_JIT_CTX_TEXTURES,
+   LP_JIT_CTX_COUNT
+};
 
-#define lp_jit_context_samplers(_builder, _ptr) \
-   lp_build_struct_get(_builder, _ptr, 1, "samplers")
+
+#define lp_jit_context_constants(_builder, _ptr) \
+   lp_build_struct_get(_builder, _ptr, LP_JIT_CTX_CONSTANTS, "constants")
 
 #define lp_jit_context_alpha_ref_value(_builder, _ptr) \
-   lp_build_struct_get(_builder, _ptr, 2, "alpha_ref_value")
+   lp_build_struct_get(_builder, _ptr, LP_JIT_CTX_ALPHA_REF, "alpha_ref_value")
+
+#define lp_jit_context_stencil_ref_front_value(_builder, _ptr) \
+   lp_build_struct_get(_builder, _ptr, LP_JIT_CTX_STENCIL_REF_FRONT, "stencil_ref_front")
+
+#define lp_jit_context_stencil_ref_back_value(_builder, _ptr) \
+   lp_build_struct_get(_builder, _ptr, LP_JIT_CTX_STENCIL_REF_BACK, "stencil_ref_back")
 
 #define lp_jit_context_blend_color(_builder, _ptr) \
-   lp_build_struct_get(_builder, _ptr, 3, "blend_color")
-
-#define LP_JIT_CONTEXT_TEXTURES_INDEX 4
+   lp_build_struct_get(_builder, _ptr, LP_JIT_CTX_BLEND_COLOR, "blend_color")
 
 #define lp_jit_context_textures(_builder, _ptr) \
-   lp_build_struct_get_ptr(_builder, _ptr, LP_JIT_CONTEXT_TEXTURES_INDEX, "textures")
+   lp_build_struct_get_ptr(_builder, _ptr, LP_JIT_CTX_TEXTURES, "textures")
+
 
 
 typedef void
-(*lp_jit_frag_func)(struct lp_jit_context *context,
+(*lp_jit_frag_func)(const struct lp_jit_context *context,
                     uint32_t x,
                     uint32_t y,
+                    float facing,
                     const void *a0,
                     const void *dadx,
                     const void *dady,
-                    uint32_t *mask,
-                    void *color,
-                    void *depth);
-
-void PIPE_CDECL
-lp_fetch_texel_soa( struct tgsi_sampler **samplers,
-                    uint32_t unit,
-                    float *store );
+                    uint8_t **color,
+                    void *depth,
+                    uint32_t mask,
+                    uint32_t *counter);
 
 
 void

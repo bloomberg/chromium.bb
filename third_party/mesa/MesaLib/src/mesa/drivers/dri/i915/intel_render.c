@@ -37,6 +37,8 @@
 #include "main/mtypes.h"
 #include "main/enums.h"
 
+#include "math/m_xform.h"
+
 #include "tnl/t_context.h"
 #include "tnl/t_vertex.h"
 #include "tnl/t_pipeline.h"
@@ -117,7 +119,7 @@ intelDmaPrimitive(struct intel_context *intel, GLenum prim)
    intel_set_prim(intel, hw_prim[prim]);
 }
 
-static inline GLuint intel_get_vb_max(struct intel_context *intel)
+static INLINE GLuint intel_get_vb_max(struct intel_context *intel)
 {
    GLuint ret;
 
@@ -129,7 +131,7 @@ static inline GLuint intel_get_vb_max(struct intel_context *intel)
    return ret;
 }
 
-static inline GLuint intel_get_current_max(struct intel_context *intel)
+static INLINE GLuint intel_get_current_max(struct intel_context *intel)
 {
 
    if (intel->intelScreen->no_vbo)

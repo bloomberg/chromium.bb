@@ -36,19 +36,19 @@
 #include "main/imports.h"
 #include "main/image.h"
 #include "main/macros.h"
-#include "shader/program.h"
-#include "shader/prog_instruction.h"
-#include "shader/prog_parameter.h"
-#include "shader/prog_print.h"
+#include "program/program.h"
+#include "program/prog_cache.h"
+#include "program/prog_instruction.h"
+#include "program/prog_parameter.h"
+#include "program/prog_print.h"
 
 #include "st_context.h"
 #include "st_format.h"
-#include "st_program.h"
 #include "st_texture.h"
-#include "st_inlines.h"
 
 #include "pipe/p_screen.h"
 #include "pipe/p_context.h"
+#include "util/u_inlines.h"
 #include "util/u_pack_color.h"
 
 
@@ -113,21 +113,22 @@ make_state_key(GLcontext *ctx,  struct state_key *key)
 }
 
 
-static struct pipe_texture *
+static struct pipe_resource *
 create_color_map_texture(GLcontext *ctx)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
-   struct pipe_texture *pt;
+   struct st_context *st = st_context(ctx);
+   struct pipe_context *pipe = st->pipe;
+   struct pipe_resource *pt;
    enum pipe_format format;
    const uint texSize = 256; /* simple, and usually perfect */
 
    /* find an RGBA texture format */
    format = st_choose_format(pipe->screen, GL_RGBA,
-                             PIPE_TEXTURE_2D, PIPE_TEXTURE_USAGE_SAMPLER);
+                             PIPE_TEXTURE_2D, 0, PIPE_BIND_SAMPLER_VIEW);
 
    /* create texture for color map/table */
-   pt = st_texture_create(ctx->st, PIPE_TEXTURE_2D, format, 0,
-                          texSize, texSize, 1, PIPE_TEXTURE_USAGE_SAMPLER);
+   pt = st_texture_create(st, PIPE_TEXTURE_2D, format, 0,
+                          texSize, texSize, 1, PIPE_BIND_SAMPLER_VIEW);
    return pt;
 }
 
@@ -136,23 +137,23 @@ create_color_map_texture(GLcontext *ctx)
  * Update the pixelmap texture with the contents of the R/G/B/A pixel maps.
  */
 static void
-load_color_map_texture(GLcontext *ctx, struct pipe_texture *pt)
+load_color_map_texture(GLcontext *ctx, struct pipe_resource *pt)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
-   struct pipe_screen *screen = pipe->screen;
+   struct st_context *st = st_context(ctx);
+   struct pipe_context *pipe = st->pipe;
    struct pipe_transfer *transfer;
    const GLuint rSize = ctx->PixelMaps.RtoR.Size;
    const GLuint gSize = ctx->PixelMaps.GtoG.Size;
    const GLuint bSize = ctx->PixelMaps.BtoB.Size;
    const GLuint aSize = ctx->PixelMaps.AtoA.Size;
-   const uint texSize = pt->width[0];
+   const uint texSize = pt->width0;
    uint *dest;
    uint i, j;
 
-   transfer = st_cond_flush_get_tex_transfer(st_context(ctx),
+   transfer = pipe_get_transfer(st_context(ctx)->pipe,
 					     pt, 0, 0, 0, PIPE_TRANSFER_WRITE,
 					     0, 0, texSize, texSize);
-   dest = (uint *) screen->transfer_map(screen, transfer);
+   dest = (uint *) pipe_transfer_map(pipe, transfer);
 
    /* Pack four 1D maps into a 2D texture:
     * R map is placed horizontally, indexed by S, in channel 0
@@ -162,17 +163,19 @@ load_color_map_texture(GLcontext *ctx, struct pipe_texture *pt)
     */
    for (i = 0; i < texSize; i++) {
       for (j = 0; j < texSize; j++) {
+         union util_color uc;
          int k = (i * texSize + j);
          ubyte r = ctx->PixelMaps.RtoR.Map8[j * rSize / texSize];
          ubyte g = ctx->PixelMaps.GtoG.Map8[i * gSize / texSize];
          ubyte b = ctx->PixelMaps.BtoB.Map8[j * bSize / texSize];
          ubyte a = ctx->PixelMaps.AtoA.Map8[i * aSize / texSize];
-         util_pack_color_ub(r, g, b, a, pt->format, dest + k);
+         util_pack_color_ub(r, g, b, a, pt->format, &uc);
+         *(dest + k) = uc.ui;
       }
    }
 
-   screen->transfer_unmap(screen, transfer);
-   screen->tex_transfer_destroy(transfer);
+   pipe_transfer_unmap(pipe, transfer);
+   pipe->transfer_destroy(pipe, transfer);
 }
 
 
@@ -185,7 +188,7 @@ load_color_map_texture(GLcontext *ctx, struct pipe_texture *pt)
 static struct gl_fragment_program *
 get_pixel_transfer_program(GLcontext *ctx, const struct state_key *key)
 {
-   struct st_context *st = ctx->st;
+   struct st_context *st = st_context(ctx);
    struct prog_instruction inst[MAX_INST];
    struct gl_program_parameter_list *params;
    struct gl_fragment_program *fp;
@@ -256,6 +259,9 @@ get_pixel_transfer_program(GLcontext *ctx, const struct state_key *key)
       /* create the colormap/texture now if not already done */
       if (!st->pixel_xfer.pixelmap_texture) {
          st->pixel_xfer.pixelmap_texture = create_color_map_texture(ctx);
+         st->pixel_xfer.pixelmap_sampler_view =
+            st_create_texture_sampler_view(st->pipe,
+                                           st->pixel_xfer.pixelmap_texture);
       }
 
       /* with a little effort, we can do four pixel map look-ups with

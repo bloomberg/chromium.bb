@@ -31,11 +31,6 @@
 #include "stw_winsys.h"
 #include "stw_ext_gallium.h"
 
-#ifdef DEBUG
-#include "trace/tr_screen.h"
-#include "trace/tr_context.h"
-#endif
-
 
 struct pipe_screen * APIENTRY
 wglGetGalliumScreenMESA(void)
@@ -48,32 +43,8 @@ wglGetGalliumScreenMESA(void)
 struct pipe_context * APIENTRY
 wglCreateGalliumContextMESA(void)
 {
-   struct pipe_screen *screen = NULL;
-   struct pipe_context *pipe = NULL;
-
    if(!stw_dev)
       return NULL;
 
-   screen = stw_dev->screen;
-
-#ifdef DEBUG
-   /* Unwrap screen */
-   if(stw_dev->trace_running)
-      screen = trace_screen(screen)->screen;
-#endif
-
-   pipe = stw_dev->stw_winsys->create_context( screen );
-   if (pipe == NULL)
-      goto no_pipe;
-
-#ifdef DEBUG
-   /* Wrap context */
-   if(stw_dev->trace_running)
-      pipe = trace_context_create(stw_dev->screen, pipe);
-#endif
-
-   return pipe;
-
-no_pipe:
-   return NULL;
+   return stw_dev->screen->context_create( stw_dev->screen, NULL );
 }

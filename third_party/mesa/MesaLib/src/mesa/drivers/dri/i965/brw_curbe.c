@@ -35,9 +35,9 @@
 #include "main/context.h"
 #include "main/macros.h"
 #include "main/enums.h"
-#include "shader/prog_parameter.h"
-#include "shader/prog_print.h"
-#include "shader/prog_statevars.h"
+#include "program/prog_parameter.h"
+#include "program/prog_print.h"
+#include "program/prog_statevars.h"
 #include "intel_batchbuffer.h"
 #include "intel_regions.h"
 #include "brw_context.h"
@@ -114,13 +114,13 @@ static void calculate_curbe_offsets( struct brw_context *brw )
       brw->curbe.total_size = reg;
 
       if (0)
-	 _mesa_printf("curbe wm %d+%d clip %d+%d vs %d+%d\n",
-		      brw->curbe.wm_start,
-		      brw->curbe.wm_size,
-		      brw->curbe.clip_start,
-		      brw->curbe.clip_size,
-		      brw->curbe.vs_start,
-		      brw->curbe.vs_size );
+	 printf("curbe wm %d+%d clip %d+%d vs %d+%d\n",
+		brw->curbe.wm_start,
+		brw->curbe.wm_size,
+		brw->curbe.clip_start,
+		brw->curbe.clip_size,
+		brw->curbe.vs_start,
+		brw->curbe.vs_size );
 
       brw->state.dirty.brw |= BRW_NEW_CURBE_OFFSETS;
    }
@@ -182,29 +182,21 @@ static void prepare_constant_buffer(struct brw_context *brw)
    GLcontext *ctx = &brw->intel.ctx;
    const struct brw_vertex_program *vp =
       brw_vertex_program_const(brw->vertex_program);
-   const struct brw_fragment_program *fp =
-      brw_fragment_program_const(brw->fragment_program);
    const GLuint sz = brw->curbe.total_size;
    const GLuint bufsz = sz * 16 * sizeof(GLfloat);
    GLfloat *buf;
    GLuint i;
 
    if (sz == 0) {
-      if (brw->curbe.last_buf) {
-	 free(brw->curbe.last_buf);
-	 brw->curbe.last_buf = NULL;
-	 brw->curbe.last_bufsz  = 0;
-      }
+      brw->curbe.last_bufsz  = 0;
       return;
    }
 
-   buf = (GLfloat *) _mesa_calloc(bufsz);
+   buf = brw->curbe.next_buf;
 
    /* fragment shader constants */
    if (brw->curbe.wm_size) {
       GLuint offset = brw->curbe.wm_start * 16;
-
-      _mesa_load_state_parameters(ctx, fp->program.Base.Parameters); 
 
       /* copy float constants */
       for (i = 0; i < brw->wm.prog_data->nr_params; i++) 
@@ -248,55 +240,55 @@ static void prepare_constant_buffer(struct brw_context *brw)
       GLuint offset = brw->curbe.vs_start * 16;
       GLuint nr = brw->vs.prog_data->nr_params / 4;
 
-      if (brw->vertex_program->IsNVProgram)
-	 _mesa_load_tracked_matrices(ctx);
-
-      /* Updates the ParamaterValues[i] pointers for all parameters of the
-       * basic type of PROGRAM_STATE_VAR.
-       */
-      _mesa_load_state_parameters(ctx, vp->program.Base.Parameters); 
-
-      /* XXX just use a memcpy here */
-      for (i = 0; i < nr; i++) {
-         const GLfloat *value = vp->program.Base.Parameters->ParameterValues[i];
-	 buf[offset + i * 4 + 0] = value[0];
-	 buf[offset + i * 4 + 1] = value[1];
-	 buf[offset + i * 4 + 2] = value[2];
-	 buf[offset + i * 4 + 3] = value[3];
+      if (vp->use_const_buffer) {
+	 /* Load the subset of push constants that will get used when
+	  * we also have a pull constant buffer.
+	  */
+	 for (i = 0; i < vp->program.Base.Parameters->NumParameters; i++) {
+	    if (brw->vs.constant_map[i] != -1) {
+	       assert(brw->vs.constant_map[i] <= nr);
+	       memcpy(buf + offset + brw->vs.constant_map[i] * 4,
+		      vp->program.Base.Parameters->ParameterValues[i],
+		      4 * sizeof(float));
+	    }
+	 }
+      } else {
+	 for (i = 0; i < nr; i++) {
+	    memcpy(buf + offset + i * 4,
+		   vp->program.Base.Parameters->ParameterValues[i],
+		   4 * sizeof(float));
+	 }
       }
    }
 
    if (0) {
       for (i = 0; i < sz*16; i+=4) 
-	 _mesa_printf("curbe %d.%d: %f %f %f %f\n", i/8, i&4,
-		      buf[i+0], buf[i+1], buf[i+2], buf[i+3]);
+	 printf("curbe %d.%d: %f %f %f %f\n", i/8, i&4,
+		buf[i+0], buf[i+1], buf[i+2], buf[i+3]);
 
-      _mesa_printf("last_buf %p buf %p sz %d/%d cmp %d\n",
-		   brw->curbe.last_buf, buf,
-		   bufsz, brw->curbe.last_bufsz,
-		   brw->curbe.last_buf ? memcmp(buf, brw->curbe.last_buf, bufsz) : -1);
+      printf("last_buf %p buf %p sz %d/%d cmp %d\n",
+	     brw->curbe.last_buf, buf,
+	     bufsz, brw->curbe.last_bufsz,
+	     brw->curbe.last_buf ? memcmp(buf, brw->curbe.last_buf, bufsz) : -1);
    }
 
    if (brw->curbe.curbe_bo != NULL &&
-       brw->curbe.last_buf &&
        bufsz == brw->curbe.last_bufsz &&
        memcmp(buf, brw->curbe.last_buf, bufsz) == 0) {
       /* constants have not changed */
-      _mesa_free(buf);
-   } 
-   else {
-      /* constants have changed */
-      if (brw->curbe.last_buf)
-	 _mesa_free(brw->curbe.last_buf);
-
-      brw->curbe.last_buf = buf;
+   } else {
+      /* Update the record of what our last set of constants was.  We
+       * don't just flip the pointers because we don't fill in the
+       * data in the padding between the entries.
+       */
+      memcpy(brw->curbe.last_buf, buf, bufsz);
       brw->curbe.last_bufsz = bufsz;
 
       if (brw->curbe.curbe_bo != NULL &&
-	  (brw->curbe.need_new_bo ||
-	   brw->curbe.curbe_next_offset + bufsz > brw->curbe.curbe_bo->size))
+	  brw->curbe.curbe_next_offset + bufsz > brw->curbe.curbe_bo->size)
       {
-	 dri_bo_unreference(brw->curbe.curbe_bo);
+	 drm_intel_gem_bo_unmap_gtt(brw->curbe.curbe_bo);
+	 drm_intel_bo_unreference(brw->curbe.curbe_bo);
 	 brw->curbe.curbe_bo = NULL;
       }
 
@@ -304,9 +296,11 @@ static void prepare_constant_buffer(struct brw_context *brw)
 	 /* Allocate a single page for CURBE entries for this batchbuffer.
 	  * They're generally around 64b.
 	  */
-	 brw->curbe.curbe_bo = dri_bo_alloc(brw->intel.bufmgr, "CURBE",
-					    4096, 1 << 6);
+	 brw->curbe.curbe_bo = drm_intel_bo_alloc(brw->intel.bufmgr, "CURBE",
+						  4096, 1 << 6);
 	 brw->curbe.curbe_next_offset = 0;
+	 drm_intel_gem_bo_map_gtt(brw->curbe.curbe_bo);
+	 assert(bufsz < 4096);
       }
 
       brw->curbe.curbe_offset = brw->curbe.curbe_next_offset;
@@ -315,7 +309,9 @@ static void prepare_constant_buffer(struct brw_context *brw)
 
       /* Copy data to the buffer:
        */
-      dri_bo_subdata(brw->curbe.curbe_bo, brw->curbe.curbe_offset, bufsz, buf);
+      memcpy(brw->curbe.curbe_bo->virtual + brw->curbe.curbe_offset,
+	     buf,
+	     bufsz);
    }
 
    brw_add_validated_bo(brw, brw->curbe.curbe_bo);
@@ -340,7 +336,7 @@ static void emit_constant_buffer(struct brw_context *brw)
    struct intel_context *intel = &brw->intel;
    GLuint sz = brw->curbe.total_size;
 
-   BEGIN_BATCH(2, IGNORE_CLIPRECTS);
+   BEGIN_BATCH(2);
    if (sz == 0) {
       OUT_BATCH((CMD_CONST_BUFFER << 16) | (2 - 2));
       OUT_BATCH(0);

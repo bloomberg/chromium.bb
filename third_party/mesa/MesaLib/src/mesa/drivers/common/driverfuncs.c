@@ -26,32 +26,25 @@
 #include "main/glheader.h"
 #include "main/imports.h"
 #include "main/arrayobj.h"
-#include "main/buffers.h"
 #include "main/context.h"
 #include "main/framebuffer.h"
 #include "main/mipmap.h"
 #include "main/queryobj.h"
 #include "main/renderbuffer.h"
+#include "main/shaderobj.h"
 #include "main/texcompress.h"
 #include "main/texformat.h"
 #include "main/texgetimage.h"
 #include "main/teximage.h"
 #include "main/texobj.h"
 #include "main/texstore.h"
-#if FEATURE_ARB_vertex_buffer_object
 #include "main/bufferobj.h"
-#endif
-#if FEATURE_EXT_framebuffer_object
 #include "main/fbobject.h"
 #include "main/texrender.h"
-#endif
-#if FEATURE_ARB_sync
 #include "main/syncobj.h"
-#endif
+#include "main/transformfeedback.h"
 
-#include "shader/program.h"
-#include "shader/prog_execute.h"
-#include "shader/shader_api.h"
+#include "program/program.h"
 #include "tnl/tnl.h"
 #include "swrast/swrast.h"
 
@@ -72,7 +65,7 @@
 void
 _mesa_init_driver_functions(struct dd_function_table *driver)
 {
-   _mesa_bzero(driver, sizeof(*driver));
+   memset(driver, 0, sizeof(*driver));
 
    driver->GetString = NULL;  /* REQUIRED! */
    driver->UpdateState = NULL;  /* REQUIRED! */
@@ -122,9 +115,8 @@ _mesa_init_driver_functions(struct dd_function_table *driver)
    driver->FreeTexImageData = _mesa_free_texture_image_data; 
    driver->MapTexture = NULL;
    driver->UnmapTexture = NULL;
-   driver->TextureMemCpy = _mesa_memcpy; 
+   driver->TextureMemCpy = memcpy;
    driver->IsTextureResident = NULL;
-   driver->ActiveTexture = NULL;
    driver->UpdateTexturePalette = NULL;
 
    /* imaging */
@@ -145,7 +137,6 @@ _mesa_init_driver_functions(struct dd_function_table *driver)
    driver->BlendFuncSeparate = NULL;
    driver->ClearColor = NULL;
    driver->ClearDepth = NULL;
-   driver->ClearIndex = NULL;
    driver->ClearStencil = NULL;
    driver->ClipPlane = NULL;
    driver->ColorMask = NULL;
@@ -160,7 +151,6 @@ _mesa_init_driver_functions(struct dd_function_table *driver)
    driver->Enable = NULL;
    driver->Fogfv = NULL;
    driver->Hint = NULL;
-   driver->IndexMask = NULL;
    driver->Lightfv = NULL;
    driver->LightModelfv = NULL;
    driver->LineStipple = NULL;
@@ -183,40 +173,30 @@ _mesa_init_driver_functions(struct dd_function_table *driver)
    driver->TexParameter = NULL;
    driver->Viewport = NULL;
 
-   /* state queries */
-   driver->GetBooleanv = NULL;
-   driver->GetDoublev = NULL;
-   driver->GetFloatv = NULL;
-   driver->GetIntegerv = NULL;
-   driver->GetInteger64v = NULL;
-   driver->GetPointerv = NULL;
-   
    /* buffer objects */
    _mesa_init_buffer_object_functions(driver);
 
    /* query objects */
    _mesa_init_query_object_functions(driver);
 
-#if FEATURE_ARB_sync
    _mesa_init_sync_object_functions(driver);
-#endif
 
-#if FEATURE_EXT_framebuffer_object
    driver->NewFramebuffer = _mesa_new_framebuffer;
    driver->NewRenderbuffer = _mesa_new_soft_renderbuffer;
    driver->RenderTexture = _mesa_render_texture;
    driver->FinishRenderTexture = _mesa_finish_render_texture;
    driver->FramebufferRenderbuffer = _mesa_framebuffer_renderbuffer;
-#endif
 
-#if FEATURE_EXT_framebuffer_blit
    driver->BlitFramebuffer = _swrast_BlitFramebuffer;
-#endif
 
    /* APPLE_vertex_array_object */
    driver->NewArrayObject = _mesa_new_array_object;
    driver->DeleteArrayObject = _mesa_delete_array_object;
    driver->BindArrayObject = NULL;
+
+   _mesa_init_shader_object_functions(driver);
+
+   _mesa_init_transform_feedback_functions(driver);
 
    /* T&L stuff */
    driver->NeedValidate = GL_FALSE;
@@ -237,10 +217,6 @@ _mesa_init_driver_functions(struct dd_function_table *driver)
    driver->EndList = NULL;
    driver->BeginCallList = NULL;
    driver->EndCallList = NULL;
-
-
-   /* XXX temporary here */
-   _mesa_init_glsl_driver_functions(driver);
 }
 
 
@@ -265,11 +241,23 @@ _mesa_init_driver_state(GLcontext *ctx)
                                  ctx->Color.BlendDstRGB,
                                  ctx->Color.BlendSrcA, ctx->Color.BlendDstA);
 
-   ctx->Driver.ColorMask(ctx,
-                         ctx->Color.ColorMask[RCOMP],
-                         ctx->Color.ColorMask[GCOMP],
-                         ctx->Color.ColorMask[BCOMP],
-                         ctx->Color.ColorMask[ACOMP]);
+   if (ctx->Driver.ColorMaskIndexed) {
+      GLuint i;
+      for (i = 0; i < ctx->Const.MaxDrawBuffers; i++) {
+         ctx->Driver.ColorMaskIndexed(ctx, i,
+                                      ctx->Color.ColorMask[0][RCOMP],
+                                      ctx->Color.ColorMask[0][GCOMP],
+                                      ctx->Color.ColorMask[0][BCOMP],
+                                      ctx->Color.ColorMask[0][ACOMP]);
+      }
+   }
+   else {
+      ctx->Driver.ColorMask(ctx,
+                            ctx->Color.ColorMask[0][RCOMP],
+                            ctx->Color.ColorMask[0][GCOMP],
+                            ctx->Color.ColorMask[0][BCOMP],
+                            ctx->Color.ColorMask[0][ACOMP]);
+   }
 
    ctx->Driver.CullFace(ctx, ctx->Polygon.CullFaceMode);
    ctx->Driver.DepthFunc(ctx, ctx->Depth.Func);

@@ -34,8 +34,8 @@
 #include "st_atom.h"
 #include "st_cb_bitmap.h"
 #include "st_program.h"
+#include "st_manager.h"
 
-       
 
 /**
  * This is used to initialize st->atoms[].
@@ -46,7 +46,9 @@ static const struct st_tracked_state *atoms[] =
    &st_update_clip,
 
    &st_finalize_textures,
-   &st_update_shader,
+   &st_update_fp,
+   &st_update_gp,
+   &st_update_vp,
 
    &st_update_rasterizer,
    &st_update_polygon_stipple,
@@ -56,7 +58,9 @@ static const struct st_tracked_state *atoms[] =
    &st_update_sampler,
    &st_update_texture,
    &st_update_framebuffer,
+   &st_update_msaa,
    &st_update_vs_constants,
+   &st_update_gs_constants,
    &st_update_fs_constants,
    &st_update_pixel_transfer
 };
@@ -113,6 +117,8 @@ static void check_program_state( struct st_context *st )
    if (ctx->FragmentProgram._Current != &st->fp->Base)
       st->dirty.st |= ST_NEW_FRAGMENT_PROGRAM;
 
+   if (ctx->GeometryProgram._Current != &st->gp->Base)
+      st->dirty.st |= ST_NEW_GEOMETRY_PROGRAM;
 }
 
 
@@ -134,10 +140,12 @@ void st_validate_state( struct st_context *st )
 
    check_program_state( st );
 
+   st_manager_validate_framebuffers(st);
+
    if (state->st == 0)
       return;
 
-   /*_mesa_printf("%s %x/%x\n", __FUNCTION__, state->mesa, state->st);*/
+   /*printf("%s %x/%x\n", __FUNCTION__, state->mesa, state->st);*/
 
    if (1) {
       /* Debug version which enforces various sanity checks on the
@@ -152,17 +160,17 @@ void st_validate_state( struct st_context *st )
 	 const struct st_tracked_state *atom = atoms[i];
 	 struct st_state_flags generated;
 	 
-	 /*_mesa_printf("atom %s %x/%x\n", atom->name, atom->dirty.mesa, atom->dirty.st);*/
+	 /*printf("atom %s %x/%x\n", atom->name, atom->dirty.mesa, atom->dirty.st);*/
 
 	 if (!(atom->dirty.mesa || atom->dirty.st) ||
 	     !atom->update) {
-	    _mesa_printf("malformed atom %s\n", atom->name);
+	    printf("malformed atom %s\n", atom->name);
 	    assert(0);
 	 }
 
 	 if (check_state(state, &atom->dirty)) {
 	    atoms[i]->update( st );
-	    /*_mesa_printf("after: %x\n", atom->dirty.mesa);*/
+	    /*printf("after: %x\n", atom->dirty.mesa);*/
 	 }
 
 	 accumulate_state(&examined, &atom->dirty);
@@ -175,7 +183,7 @@ void st_validate_state( struct st_context *st )
 	 assert(!check_state(&examined, &generated));
 	 prev = *state;
       }
-      /*_mesa_printf("\n");*/
+      /*printf("\n");*/
 
    }
    else {

@@ -31,72 +31,107 @@
 
 
 #include "pipe/p_defines.h"
+#include "pipe/p_screen.h"
+#include "util/u_string.h"
 #include "draw/draw_context.h"
 #include "lp_flush.h"
 #include "lp_context.h"
-#include "lp_surface.h"
-#include "lp_state.h"
-#include "lp_tile_cache.h"
-#include "lp_tex_cache.h"
-#include "lp_winsys.h"
+#include "lp_setup.h"
 
 
+/**
+ * \param flags  bitmask of PIPE_FLUSH_x flags
+ * \param fence  if non-null, returns pointer to a fence which can be waited on
+ */
 void
 llvmpipe_flush( struct pipe_context *pipe,
-		unsigned flags,
-                struct pipe_fence_handle **fence )
+                unsigned flags,
+                struct pipe_fence_handle **fence,
+                const char *reason)
 {
    struct llvmpipe_context *llvmpipe = llvmpipe_context(pipe);
-   uint i;
 
    draw_flush(llvmpipe->draw);
 
-   if (flags & PIPE_FLUSH_SWAPBUFFERS) {
-      /* If this is a swapbuffers, just flush color buffers.
-       *
-       * The zbuffer changes are not discarded, but held in the cache
-       * in the hope that a later clear will wipe them out.
-       */
-      for (i = 0; i < llvmpipe->framebuffer.nr_cbufs; i++)
-         if (llvmpipe->cbuf_cache[i]) {
-            lp_tile_cache_map_transfers(llvmpipe->cbuf_cache[i]);
-            lp_flush_tile_cache(llvmpipe->cbuf_cache[i]);
-         }
-
-      /* Need this call for hardware buffers before swapbuffers.
-       *
-       * there should probably be another/different flush-type function
-       * that's called before swapbuffers because we don't always want
-       * to unmap surfaces when flushing.
-       */
-      llvmpipe_unmap_transfers(llvmpipe);
-   }
-   else if (flags & PIPE_FLUSH_RENDER_CACHE) {
-      for (i = 0; i < llvmpipe->framebuffer.nr_cbufs; i++)
-         if (llvmpipe->cbuf_cache[i]) {
-            lp_tile_cache_map_transfers(llvmpipe->cbuf_cache[i]);
-            lp_flush_tile_cache(llvmpipe->cbuf_cache[i]);
-         }
-
-      /* FIXME: untile zsbuf! */
-     
-      llvmpipe->dirty_render_cache = FALSE;
-   }
+   /* ask the setup module to flush */
+   lp_setup_flush(llvmpipe->setup, flags, fence, reason);
 
    /* Enable to dump BMPs of the color/depth buffers each frame */
-#if 0
-   if(flags & PIPE_FLUSH_FRAME) {
-      static unsigned frame_no = 1;
-      static char filename[256];
-      util_snprintf(filename, sizeof(filename), "cbuf_%u.bmp", frame_no);
-      debug_dump_surface_bmp(filename, llvmpipe->framebuffer.cbufs[0]);
-      util_snprintf(filename, sizeof(filename), "zsbuf_%u.bmp", frame_no);
-      debug_dump_surface_bmp(filename, llvmpipe->framebuffer.zsbuf);
-      ++frame_no;
+   if (0) {
+      if (flags & PIPE_FLUSH_FRAME) {
+         static unsigned frame_no = 1;
+         char filename[256];
+         unsigned i;
+
+         for (i = 0; i < llvmpipe->framebuffer.nr_cbufs; i++) {
+            util_snprintf(filename, sizeof(filename), "cbuf%u_%u", i, frame_no);
+            debug_dump_surface_bmp(&llvmpipe->pipe, filename, llvmpipe->framebuffer.cbufs[0]);
+         }
+
+         if (0) {
+            util_snprintf(filename, sizeof(filename), "zsbuf_%u", frame_no);
+            debug_dump_surface_bmp(&llvmpipe->pipe, filename, llvmpipe->framebuffer.zsbuf);
+         }
+
+         ++frame_no;
+      }
    }
-#endif
-   
-   if (fence)
-      *fence = NULL;
 }
 
+void
+llvmpipe_finish( struct pipe_context *pipe,
+                 const char *reason )
+{
+   struct pipe_fence_handle *fence = NULL;
+   llvmpipe_flush(pipe, 0, &fence, reason);
+   if (fence) {
+      pipe->screen->fence_finish(pipe->screen, fence, 0);
+      pipe->screen->fence_reference(pipe->screen, &fence, NULL);
+   }
+}
+
+/**
+ * Flush context if necessary.
+ *
+ * Returns FALSE if it would have block, but do_not_block was set, TRUE
+ * otherwise.
+ *
+ * TODO: move this logic to an auxiliary library?
+ */
+boolean
+llvmpipe_flush_resource(struct pipe_context *pipe,
+                        struct pipe_resource *resource,
+                        unsigned face,
+                        unsigned level,
+                        unsigned flush_flags,
+                        boolean read_only,
+                        boolean cpu_access,
+                        boolean do_not_block,
+                        const char *reason)
+{
+   unsigned referenced;
+
+   referenced = pipe->is_resource_referenced(pipe, resource, face, level);
+
+   if ((referenced & PIPE_REFERENCED_FOR_WRITE) ||
+       ((referenced & PIPE_REFERENCED_FOR_READ) && !read_only)) {
+
+      if (cpu_access) {
+         /*
+          * Flush and wait.
+          */
+         if (do_not_block)
+            return FALSE;
+
+         llvmpipe_finish(pipe, reason);
+      } else {
+         /*
+          * Just flush.
+          */
+
+         llvmpipe_flush(pipe, flush_flags, NULL, reason);
+      }
+   }
+
+   return TRUE;
+}

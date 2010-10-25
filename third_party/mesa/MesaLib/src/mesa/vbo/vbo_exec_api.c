@@ -41,7 +41,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "main/light.h"
 #include "main/api_arrayelt.h"
 #include "main/api_noop.h"
-#include "glapi/dispatch.h"
+#include "main/dispatch.h"
 
 #include "vbo_context.h"
 
@@ -126,8 +126,8 @@ void vbo_exec_vtx_wrap( struct vbo_exec_context *exec )
    assert(exec->vtx.max_vert - exec->vtx.vert_count > exec->vtx.copied.nr);
 
    for (i = 0 ; i < exec->vtx.copied.nr ; i++) {
-      _mesa_memcpy( exec->vtx.buffer_ptr, data, 
-		    exec->vtx.vertex_size * sizeof(GLfloat));
+      memcpy( exec->vtx.buffer_ptr, data, 
+	      exec->vtx.vertex_size * sizeof(GLfloat));
       exec->vtx.buffer_ptr += exec->vtx.vertex_size;
       data += exec->vtx.vertex_size;
       exec->vtx.vert_count++;
@@ -414,13 +414,13 @@ static void GLAPIENTRY vbo_exec_EvalCoord1f( GLfloat u )
    }
 
 
-   _mesa_memcpy( exec->vtx.copied.buffer, exec->vtx.vertex, 
-                 exec->vtx.vertex_size * sizeof(GLfloat));
+   memcpy( exec->vtx.copied.buffer, exec->vtx.vertex, 
+           exec->vtx.vertex_size * sizeof(GLfloat));
 
    vbo_exec_do_EvalCoord1f( exec, u );
 
-   _mesa_memcpy( exec->vtx.vertex, exec->vtx.copied.buffer,
-                 exec->vtx.vertex_size * sizeof(GLfloat));
+   memcpy( exec->vtx.vertex, exec->vtx.copied.buffer,
+           exec->vtx.vertex_size * sizeof(GLfloat));
 }
 
 static void GLAPIENTRY vbo_exec_EvalCoord2f( GLfloat u, GLfloat v )
@@ -444,13 +444,13 @@ static void GLAPIENTRY vbo_exec_EvalCoord2f( GLfloat u, GLfloat v )
 	    vbo_exec_fixup_vertex( ctx, VBO_ATTRIB_NORMAL, 3 );
    }
 
-   _mesa_memcpy( exec->vtx.copied.buffer, exec->vtx.vertex, 
-                 exec->vtx.vertex_size * sizeof(GLfloat));
+   memcpy( exec->vtx.copied.buffer, exec->vtx.vertex, 
+           exec->vtx.vertex_size * sizeof(GLfloat));
 
    vbo_exec_do_EvalCoord2f( exec, u, v );
 
-   _mesa_memcpy( exec->vtx.vertex, exec->vtx.copied.buffer, 
-                 exec->vtx.vertex_size * sizeof(GLfloat));
+   memcpy( exec->vtx.vertex, exec->vtx.copied.buffer, 
+           exec->vtx.vertex_size * sizeof(GLfloat));
 }
 
 static void GLAPIENTRY vbo_exec_EvalCoord1fv( const GLfloat *u )
@@ -531,6 +531,7 @@ static void GLAPIENTRY vbo_exec_Begin( GLenum mode )
       exec->vtx.prim[i].pad = 0;
       exec->vtx.prim[i].start = exec->vtx.vert_count;
       exec->vtx.prim[i].count = 0;
+      exec->vtx.prim[i].num_instances = 1;
 
       ctx->Driver.CurrentExecPrimitive = mode;
    }
@@ -759,6 +760,7 @@ void vbo_use_buffer_objects(GLcontext *ctx)
    }
 
    /* Allocate a real buffer object now */
+   _mesa_reference_buffer_object(ctx, &exec->vtx.bufferobj, NULL);
    exec->vtx.bufferobj = ctx->Driver.NewBufferObject(ctx, bufName, target);
    ctx->Driver.BufferData(ctx, target, size, NULL, usage, exec->vtx.bufferobj);
 }
@@ -780,7 +782,7 @@ void vbo_exec_vtx_init( struct vbo_exec_context *exec )
                                  ctx->Shared->NullBufferObj);
 
    ASSERT(!exec->vtx.buffer_map);
-   exec->vtx.buffer_map = (GLfloat *)ALIGN_MALLOC(VBO_VERT_BUFFER_SIZE, 64);
+   exec->vtx.buffer_map = (GLfloat *)_mesa_align_malloc(VBO_VERT_BUFFER_SIZE, 64);
    exec->vtx.buffer_ptr = exec->vtx.buffer_map;
 
    vbo_exec_vtxfmt_init( exec );
@@ -803,8 +805,19 @@ void vbo_exec_vtx_init( struct vbo_exec_context *exec )
    
    {
       struct gl_client_array *arrays = exec->vtx.arrays;
+      unsigned i;
+
       memcpy(arrays,      vbo->legacy_currval,  16 * sizeof(arrays[0]));
       memcpy(arrays + 16, vbo->generic_currval, 16 * sizeof(arrays[0]));
+
+      for (i = 0; i < 16; ++i) {
+         arrays[i     ].BufferObj = NULL;
+         arrays[i + 16].BufferObj = NULL;
+         _mesa_reference_buffer_object(ctx, &arrays[i     ].BufferObj,
+                                       vbo->legacy_currval[i].BufferObj);
+         _mesa_reference_buffer_object(ctx, &arrays[i + 16].BufferObj,
+                                       vbo->generic_currval[i].BufferObj);
+      }
    }
 
    exec->vtx.vertex_size = 0;
@@ -823,7 +836,7 @@ void vbo_exec_vtx_destroy( struct vbo_exec_context *exec )
       ASSERT(exec->vtx.bufferobj->Name == 0 ||
              exec->vtx.bufferobj->Name == IMM_BUFFER_NAME);
       if (exec->vtx.bufferobj->Name == 0) {
-         ALIGN_FREE(exec->vtx.buffer_map);
+         _mesa_align_free(exec->vtx.buffer_map);
          exec->vtx.buffer_map = NULL;
          exec->vtx.buffer_ptr = NULL;
       }
@@ -837,15 +850,18 @@ void vbo_exec_vtx_destroy( struct vbo_exec_context *exec )
                                     NULL);
    }
 
-   /* Free the vertex buffer:
+   /* Free the vertex buffer.  Unmap first if needed.
     */
+   if (_mesa_bufferobj_mapped(exec->vtx.bufferobj)) {
+      ctx->Driver.UnmapBuffer(ctx, GL_ARRAY_BUFFER, exec->vtx.bufferobj);
+   }
    _mesa_reference_buffer_object(ctx, &exec->vtx.bufferobj, NULL);
 }
 
 void vbo_exec_BeginVertices( GLcontext *ctx )
 {
    struct vbo_exec_context *exec = &vbo_context(ctx)->exec;
-   if (0) _mesa_printf("%s\n", __FUNCTION__);
+   if (0) printf("%s\n", __FUNCTION__);
    vbo_exec_vtx_map( exec );
 
    assert((exec->ctx->Driver.NeedFlush & FLUSH_UPDATE_CURRENT) == 0);
@@ -880,10 +896,10 @@ void vbo_exec_FlushVertices( GLcontext *ctx, GLuint flags )
    assert(exec->flush_call_depth == 1);
 #endif
 
-   if (0) _mesa_printf("%s\n", __FUNCTION__);
+   if (0) printf("%s\n", __FUNCTION__);
 
    if (exec->ctx->Driver.CurrentExecPrimitive != PRIM_OUTSIDE_BEGIN_END) {
-      if (0) _mesa_printf("%s - inside begin/end\n", __FUNCTION__);
+      if (0) printf("%s - inside begin/end\n", __FUNCTION__);
 #ifdef DEBUG
       exec->flush_call_depth--;
       assert(exec->flush_call_depth == 0);
@@ -942,6 +958,7 @@ _vbo_MultiTexCoord4f(GLenum target, GLfloat s, GLfloat t, GLfloat r, GLfloat q)
    vbo_MultiTexCoord4f(target, s, t, r, q);
 }
 
+
 void GLAPIENTRY
 _vbo_Materialfv(GLenum face, GLenum pname, const GLfloat *params)
 {
@@ -950,7 +967,66 @@ _vbo_Materialfv(GLenum face, GLenum pname, const GLfloat *params)
 
 
 void GLAPIENTRY
+_vbo_Materialf(GLenum face, GLenum pname, GLfloat param)
+{
+   GLfloat p[4];
+   p[0] = param;
+   p[1] = p[2] = p[3] = 0.0F;
+   vbo_Materialfv(face, pname, p);
+}
+
+
+void GLAPIENTRY
 _vbo_VertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
    vbo_VertexAttrib4fARB(index, x, y, z, w);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib1f(GLuint indx, GLfloat x)
+{
+   vbo_VertexAttrib1fARB(indx, x);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib1fv(GLuint indx, const GLfloat* values)
+{
+   vbo_VertexAttrib1fvARB(indx, values);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib2f(GLuint indx, GLfloat x, GLfloat y)
+{
+   vbo_VertexAttrib2fARB(indx, x, y);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib2fv(GLuint indx, const GLfloat* values)
+{
+   vbo_VertexAttrib2fvARB(indx, values);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z)
+{
+   vbo_VertexAttrib3fARB(indx, x, y, z);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib3fv(GLuint indx, const GLfloat* values)
+{
+   vbo_VertexAttrib3fvARB(indx, values);
+}
+
+
+void GLAPIENTRY
+_vbo_VertexAttrib4fv(GLuint indx, const GLfloat* values)
+{
+   vbo_VertexAttrib4fvARB(indx, values);
 }

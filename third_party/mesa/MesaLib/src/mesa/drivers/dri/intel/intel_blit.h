@@ -30,7 +30,7 @@
 
 #include "intel_context.h"
 
-extern void intelCopyBuffer(const __DRIdrawablePrivate * dpriv,
+extern void intelCopyBuffer(const __DRIdrawable * dpriv,
                             const drm_clip_rect_t * rect);
 
 extern void intelClearWithBlit(GLcontext * ctx, GLbitfield mask);
@@ -39,11 +39,11 @@ GLboolean
 intelEmitCopyBlit(struct intel_context *intel,
                               GLuint cpp,
                               GLshort src_pitch,
-                              dri_bo *src_buffer,
+                              drm_intel_bo *src_buffer,
                               GLuint src_offset,
 			      uint32_t src_tiling,
                               GLshort dst_pitch,
-                              dri_bo *dst_buffer,
+                              drm_intel_bo *dst_buffer,
                               GLuint dst_offset,
 			      uint32_t dst_tiling,
                               GLshort srcx, GLshort srcy,
@@ -57,7 +57,7 @@ intelEmitImmediateColorExpandBlit(struct intel_context *intel,
 				  GLubyte *src_bits, GLuint src_size,
 				  GLuint fg_color,
 				  GLshort dst_pitch,
-				  dri_bo *dst_buffer,
+				  drm_intel_bo *dst_buffer,
 				  GLuint dst_offset,
 				  uint32_t dst_tiling,
 				  GLshort x, GLshort y,

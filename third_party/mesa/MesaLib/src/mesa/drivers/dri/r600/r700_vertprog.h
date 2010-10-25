@@ -39,6 +39,7 @@ typedef struct ArrayDesc //TEMP
 	GLint size;   //number of data element
 	GLenum type;  //data element type
 	GLsizei stride;
+	GLenum format; //GL_RGBA or GL_BGRA
 } ArrayDesc;
 
 struct r700_vertex_program 
@@ -54,6 +55,9 @@ struct r700_vertex_program
     GLboolean loaded;
 
     void * shaderbo;
+
+	GLuint K0used;
+    void * constbo0;
 
     ArrayDesc              aos_desc[VERT_ATTRIB_MAX];
 };
@@ -95,6 +99,8 @@ extern void r700SetVertexFormat(GLcontext *ctx, const struct gl_client_array *ar
 extern GLboolean r700SetupVertexProgram(GLcontext * ctx);
 
 extern void *    r700GetActiveVpShaderBo(GLcontext * ctx);
+
+extern void * r700GetActiveVpShaderConstBo(GLcontext * ctx);
 
 extern int getTypeSize(GLenum type);
 

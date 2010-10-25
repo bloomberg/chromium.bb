@@ -23,102 +23,58 @@
 #ifndef R300_TEXTURE_H
 #define R300_TEXTURE_H
 
-#include "pipe/p_video_state.h"
+#include "pipe/p_compiler.h"
+#include "pipe/p_format.h"
 
-#include "r300_reg.h"
-
+struct pipe_screen;
+struct pipe_resource;
+struct winsys_handle;
+struct r300_texture_format_state;
+struct r300_texture_desc;
 struct r300_texture;
+struct r300_screen;
 
-void r300_init_screen_texture_functions(struct pipe_screen* screen);
+unsigned r300_get_swizzle_combined(const unsigned char *swizzle_format,
+                                   const unsigned char *swizzle_view);
 
-unsigned r300_texture_get_stride(struct r300_texture* tex, unsigned level);
+uint32_t r300_translate_texformat(enum pipe_format format,
+                                  const unsigned char *swizzle_view,
+                                  boolean is_r500);
 
-unsigned r300_texture_get_offset(struct r300_texture* tex, unsigned level,
-                                 unsigned zslice, unsigned face);
+uint32_t r500_tx_format_msb_bit(enum pipe_format format);
 
-/* Note the signature of R300_EASY_TX_FORMAT(A, R, G, B, FORMAT)... */
-static INLINE uint32_t r300_translate_texformat(enum pipe_format format)
-{
-    switch (format) {
-        /* X8 */
-        case PIPE_FORMAT_I8_UNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, X, X8);
-        case PIPE_FORMAT_L8_UNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, ONE, X8);
-        /* X16 */
-        case PIPE_FORMAT_R16_UNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, X, X16);
-        case PIPE_FORMAT_R16_SNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, X, X16) |
-                R300_TX_FORMAT_SIGNED;
-        case PIPE_FORMAT_Z16_UNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, X, X16);
-        /* Y8X8 */
-        case PIPE_FORMAT_A8L8_UNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, Y, Y8X8);
-        /* W8Z8Y8X8 */
-        case PIPE_FORMAT_A8R8G8B8_UNORM:
-            return R300_EASY_TX_FORMAT(X, Y, Z, W, W8Z8Y8X8);
-        case PIPE_FORMAT_R8G8B8A8_UNORM:
-            return R300_EASY_TX_FORMAT(Y, Z, W, X, W8Z8Y8X8);
-        case PIPE_FORMAT_X8R8G8B8_UNORM:
-            return R300_EASY_TX_FORMAT(X, Y, Z, ONE, W8Z8Y8X8);
-        case PIPE_FORMAT_R8G8B8X8_UNORM:
-            return R300_EASY_TX_FORMAT(Y, Z, ONE, X, W8Z8Y8X8);
-        case PIPE_FORMAT_A8R8G8B8_SRGB:
-            return R300_EASY_TX_FORMAT(X, Y, Z, W, W8Z8Y8X8) |
-                R300_TX_FORMAT_GAMMA;
-        case PIPE_FORMAT_R8G8B8A8_SRGB:
-            return R300_EASY_TX_FORMAT(Y, Z, W, X, W8Z8Y8X8) |
-                R300_TX_FORMAT_GAMMA;
-        /* DXT1 */
-        case PIPE_FORMAT_DXT1_RGB:
-            return R300_EASY_TX_FORMAT(X, Y, Z, ONE, DXT1);
-        case PIPE_FORMAT_DXT1_RGBA:
-            return R300_EASY_TX_FORMAT(X, Y, Z, W, DXT1);
-        /* DXT3 */
-        case PIPE_FORMAT_DXT3_RGBA:
-            return R300_EASY_TX_FORMAT(X, Y, Z, W, DXT3);
-        /* DXT5 */
-        case PIPE_FORMAT_DXT5_RGBA:
-            return R300_EASY_TX_FORMAT(Y, Z, W, X, DXT5);
-        /* YVYU422 */
-        case PIPE_FORMAT_YCBCR:
-            return R300_EASY_TX_FORMAT(X, Y, Z, ONE, YVYU422) |
-                R300_TX_FORMAT_YUV_TO_RGB;
-        /* W24_FP */
-        case PIPE_FORMAT_Z24S8_UNORM:
-        case PIPE_FORMAT_Z24X8_UNORM:
-            return R300_EASY_TX_FORMAT(X, X, X, X, W24_FP);
+void r300_texture_reinterpret_format(struct pipe_screen *screen,
+                                     struct pipe_resource *tex,
+                                     enum pipe_format new_format);
 
-        default:
-            debug_printf("r300: Implementation error: "
-                "Got unsupported texture format %s in %s\n",
-                pf_name(format), __FUNCTION__);
-            assert(0);
-            break;
-    }
-    return 0;
-}
+boolean r300_is_colorbuffer_format_supported(enum pipe_format format);
 
-struct r300_video_surface
-{
-    struct pipe_video_surface   base;
-    struct pipe_texture         *tex;
-};
+boolean r300_is_zs_format_supported(enum pipe_format format);
 
-static INLINE struct r300_video_surface *
-r300_video_surface(struct pipe_video_surface *pvs)
-{
-    return (struct r300_video_surface *)pvs;
-}
+boolean r300_is_sampler_format_supported(enum pipe_format format);
 
-#ifndef R300_WINSYS_H
+void r300_texture_setup_format_state(struct r300_screen *screen,
+                                     struct r300_texture_desc *desc,
+                                     unsigned level,
+                                     struct r300_texture_format_state *out);
 
-boolean r300_get_texture_buffer(struct pipe_texture* texture,
-                                struct pipe_buffer** buffer,
-                                unsigned* stride);
+struct pipe_resource*
+r300_texture_from_handle(struct pipe_screen* screen,
+			 const struct pipe_resource* base,
+			 struct winsys_handle *whandle);
 
-#endif /* R300_WINSYS_H */
+struct pipe_resource*
+r300_texture_create(struct pipe_screen* screen,
+		    const struct pipe_resource* templ);
+
+
+struct pipe_surface* r300_get_tex_surface(struct pipe_screen* screen,
+					  struct pipe_resource* texture,
+					  unsigned face,
+					  unsigned level,
+					  unsigned zslice,
+					  unsigned flags);
+
+void r300_tex_surface_destroy(struct pipe_surface* s);
 
 #endif /* R300_TEXTURE_H */

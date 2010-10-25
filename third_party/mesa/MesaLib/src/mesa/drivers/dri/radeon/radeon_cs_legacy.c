@@ -180,9 +180,8 @@ static int cs_begin(struct radeon_cs_int *cs,
 
     if (cs->cdw + ndw > cs->ndw) {
         uint32_t tmp, *ptr;
-	int num = (ndw > 0x3FF) ? ndw : 0x3FF;
 
-        tmp = (cs->cdw + 1 + num) & (~num);
+        tmp = (cs->cdw + ndw + 0x3ff) & (~0x3ff);
         ptr = (uint32_t*)realloc(cs->packets, 4 * tmp);
         if (ptr == NULL) {
             return -ENOMEM;
@@ -327,7 +326,7 @@ static int cs_emit(struct radeon_cs_int *cs)
         (!IS_R600_CLASS(csm->ctx->radeonScreen))) { /* +r6/r7 : No irq for r6/r7 yet. */
 	drm_radeon_irq_emit_t emit_cmd;
 	emit_cmd.irq_seq = (int*)&csm->pending_age;
-	r = drmCommandWrite(cs->csm->fd, DRM_RADEON_IRQ_EMIT, &emit_cmd, sizeof(emit_cmd));
+	r = drmCommandWriteRead(cs->csm->fd, DRM_RADEON_IRQ_EMIT, &emit_cmd, sizeof(emit_cmd));
 	if (r) {
 		return r;
 	}

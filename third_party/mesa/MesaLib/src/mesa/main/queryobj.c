@@ -29,7 +29,7 @@
 #include "imports.h"
 #include "queryobj.h"
 #include "mtypes.h"
-#include "glapi/dispatch.h"
+#include "main/dispatch.h"
 
 
 #if FEATURE_queryobj
@@ -114,17 +114,8 @@ _mesa_check_query(GLcontext *ctx, struct gl_query_object *q)
 static void
 _mesa_delete_query(GLcontext *ctx, struct gl_query_object *q)
 {
-   _mesa_free(q);
+   free(q);
 }
-
-
-static struct gl_query_object *
-lookup_query_object(GLcontext *ctx, GLuint id)
-{
-   return (struct gl_query_object *)
-      _mesa_HashLookup(ctx->Query.QueryObjects, id);
-}
-
 
 
 void
@@ -136,6 +127,42 @@ _mesa_init_query_object_functions(struct dd_function_table *driver)
    driver->EndQuery = _mesa_end_query;
    driver->WaitQuery = _mesa_wait_query;
    driver->CheckQuery = _mesa_check_query;
+}
+
+
+/**
+ * Return pointer to the query object binding point for the given target.
+ * \return NULL if invalid target, else the address of binding point
+ */
+static struct gl_query_object **
+get_query_binding_point(GLcontext *ctx, GLenum target)
+{
+   switch (target) {
+   case GL_SAMPLES_PASSED_ARB:
+      if (ctx->Extensions.ARB_occlusion_query)
+         return &ctx->Query.CurrentOcclusionObject;
+      else
+         return NULL;
+   case GL_TIME_ELAPSED_EXT:
+      if (ctx->Extensions.EXT_timer_query)
+         return &ctx->Query.CurrentTimerObject;
+      else
+         return NULL;
+#if FEATURE_EXT_transform_feedback
+   case GL_PRIMITIVES_GENERATED:
+      if (ctx->Extensions.EXT_transform_feedback)
+         return &ctx->Query.PrimitivesGenerated;
+      else
+         return NULL;
+   case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+      if (ctx->Extensions.EXT_transform_feedback)
+         return &ctx->Query.PrimitivesWritten;
+      else
+         return NULL;
+#endif
+   default:
+      return NULL;
+   }
 }
 
 
@@ -196,7 +223,7 @@ _mesa_DeleteQueriesARB(GLsizei n, const GLuint *ids)
 
    for (i = 0; i < n; i++) {
       if (ids[i] > 0) {
-         struct gl_query_object *q = lookup_query_object(ctx, ids[i]);
+         struct gl_query_object *q = _mesa_lookup_query_object(ctx, ids[i]);
          if (q) {
             ASSERT(!q->Active); /* should be caught earlier */
             _mesa_HashRemove(ctx->Query.QueryObjects, ids[i]);
@@ -213,7 +240,7 @@ _mesa_IsQueryARB(GLuint id)
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_WITH_RETVAL(ctx, GL_FALSE);
 
-   if (id && lookup_query_object(ctx, id))
+   if (id && _mesa_lookup_query_object(ctx, id))
       return GL_TRUE;
    else
       return GL_FALSE;
@@ -223,36 +250,16 @@ _mesa_IsQueryARB(GLuint id)
 static void GLAPIENTRY
 _mesa_BeginQueryARB(GLenum target, GLuint id)
 {
-   struct gl_query_object *q;
+   struct gl_query_object *q, **bindpt;
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
    FLUSH_VERTICES(ctx, _NEW_DEPTH);
 
-   switch (target) {
-      case GL_SAMPLES_PASSED_ARB:
-         if (!ctx->Extensions.ARB_occlusion_query) {
-            _mesa_error(ctx, GL_INVALID_ENUM, "glBeginQueryARB(target)");
-            return;
-         }
-         if (ctx->Query.CurrentOcclusionObject) {
-            _mesa_error(ctx, GL_INVALID_OPERATION, "glBeginQueryARB");
-            return;
-         }
-         break;
-      case GL_TIME_ELAPSED_EXT:
-         if (!ctx->Extensions.EXT_timer_query) {
-            _mesa_error(ctx, GL_INVALID_ENUM, "glBeginQueryARB(target)");
-            return;
-         }
-         if (ctx->Query.CurrentTimerObject) {
-            _mesa_error(ctx, GL_INVALID_OPERATION, "glBeginQueryARB");
-            return;
-         }
-         break;
-      default:
-         _mesa_error(ctx, GL_INVALID_ENUM, "glBeginQueryARB(target)");
-         return;
+   bindpt = get_query_binding_point(ctx, target);
+   if (!bindpt) {
+      _mesa_error(ctx, GL_INVALID_ENUM, "glBeginQueryARB(target)");
+      return;
    }
 
    if (id == 0) {
@@ -260,7 +267,7 @@ _mesa_BeginQueryARB(GLenum target, GLuint id)
       return;
    }
 
-   q = lookup_query_object(ctx, id);
+   q = _mesa_lookup_query_object(ctx, id);
    if (!q) {
       /* create new object */
       q = ctx->Driver.NewQueryObject(ctx, id);
@@ -284,12 +291,8 @@ _mesa_BeginQueryARB(GLenum target, GLuint id)
    q->Result = 0;
    q->Ready = GL_FALSE;
 
-   if (target == GL_SAMPLES_PASSED_ARB) {
-      ctx->Query.CurrentOcclusionObject = q;
-   }
-   else if (target == GL_TIME_ELAPSED_EXT) {
-      ctx->Query.CurrentTimerObject = q;
-   }
+   /* XXX should probably refcount query objects */
+   *bindpt = q;
 
    ctx->Driver.BeginQuery(ctx, q);
 }
@@ -298,33 +301,21 @@ _mesa_BeginQueryARB(GLenum target, GLuint id)
 static void GLAPIENTRY
 _mesa_EndQueryARB(GLenum target)
 {
-   struct gl_query_object *q;
+   struct gl_query_object *q, **bindpt;
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
    FLUSH_VERTICES(ctx, _NEW_DEPTH);
 
-   switch (target) {
-      case GL_SAMPLES_PASSED_ARB:
-         if (!ctx->Extensions.ARB_occlusion_query) {
-            _mesa_error(ctx, GL_INVALID_ENUM, "glEndQueryARB(target)");
-            return;
-         }
-         q = ctx->Query.CurrentOcclusionObject;
-         ctx->Query.CurrentOcclusionObject = NULL;
-         break;
-      case GL_TIME_ELAPSED_EXT:
-         if (!ctx->Extensions.EXT_timer_query) {
-            _mesa_error(ctx, GL_INVALID_ENUM, "glEndQueryARB(target)");
-            return;
-         }
-         q = ctx->Query.CurrentTimerObject;
-         ctx->Query.CurrentTimerObject = NULL;
-         break;
-      default:
-         _mesa_error(ctx, GL_INVALID_ENUM, "glEndQueryARB(target)");
-         return;
+   bindpt = get_query_binding_point(ctx, target);
+   if (!bindpt) {
+      _mesa_error(ctx, GL_INVALID_ENUM, "glEndQueryARB(target)");
+      return;
    }
+
+   /* XXX should probably refcount query objects */
+   q = *bindpt;
+   *bindpt = NULL;
 
    if (!q || !q->Active) {
       _mesa_error(ctx, GL_INVALID_OPERATION,
@@ -340,29 +331,17 @@ _mesa_EndQueryARB(GLenum target)
 void GLAPIENTRY
 _mesa_GetQueryivARB(GLenum target, GLenum pname, GLint *params)
 {
-   struct gl_query_object *q;
+   struct gl_query_object *q, **bindpt;
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
-   switch (target) {
-      case GL_SAMPLES_PASSED_ARB:
-         if (!ctx->Extensions.ARB_occlusion_query) {
-            _mesa_error(ctx, GL_INVALID_ENUM, "glEndQueryARB(target)");
-            return;
-         }
-         q = ctx->Query.CurrentOcclusionObject;
-         break;
-      case GL_TIME_ELAPSED_EXT:
-         if (!ctx->Extensions.EXT_timer_query) {
-            _mesa_error(ctx, GL_INVALID_ENUM, "glEndQueryARB(target)");
-            return;
-         }
-         q = ctx->Query.CurrentTimerObject;
-         break;
-      default:
-         _mesa_error(ctx, GL_INVALID_ENUM, "glGetQueryivARB(target)");
-         return;
+   bindpt = get_query_binding_point(ctx, target);
+   if (!bindpt) {
+      _mesa_error(ctx, GL_INVALID_ENUM, "glGetQueryARB(target)");
+      return;
    }
+
+   q = *bindpt;
 
    switch (pname) {
       case GL_QUERY_COUNTER_BITS_ARB:
@@ -386,7 +365,7 @@ _mesa_GetQueryObjectivARB(GLuint id, GLenum pname, GLint *params)
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
    if (id)
-      q = lookup_query_object(ctx, id);
+      q = _mesa_lookup_query_object(ctx, id);
 
    if (!q || q->Active) {
       _mesa_error(ctx, GL_INVALID_OPERATION,
@@ -426,7 +405,7 @@ _mesa_GetQueryObjectuivARB(GLuint id, GLenum pname, GLuint *params)
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
    if (id)
-      q = lookup_query_object(ctx, id);
+      q = _mesa_lookup_query_object(ctx, id);
 
    if (!q || q->Active) {
       _mesa_error(ctx, GL_INVALID_OPERATION,
@@ -469,7 +448,7 @@ _mesa_GetQueryObjecti64vEXT(GLuint id, GLenum pname, GLint64EXT *params)
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
    if (id)
-      q = lookup_query_object(ctx, id);
+      q = _mesa_lookup_query_object(ctx, id);
 
    if (!q || q->Active) {
       _mesa_error(ctx, GL_INVALID_OPERATION,
@@ -506,7 +485,7 @@ _mesa_GetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64EXT *params)
    ASSERT_OUTSIDE_BEGIN_END(ctx);
 
    if (id)
-      q = lookup_query_object(ctx, id);
+      q = _mesa_lookup_query_object(ctx, id);
 
    if (!q || q->Active) {
       _mesa_error(ctx, GL_INVALID_OPERATION,

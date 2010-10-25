@@ -191,7 +191,7 @@ static boolean load_input( struct aos_compilation *cp,
    case PIPE_FORMAT_R32G32B32A32_FLOAT:
       emit_load_R32G32B32A32(cp, dataXMM, src);
       break;
-   case PIPE_FORMAT_B8G8R8A8_UNORM:
+   case PIPE_FORMAT_A8R8G8B8_UNORM:
       emit_load_R8G8B8A8_UNORM(cp, dataXMM, src);
       emit_swizzle(cp, dataXMM, dataXMM, SHUF(Z,Y,X,W));
       break;
@@ -401,13 +401,11 @@ static boolean emit_output( struct aos_compilation *cp,
       emit_store_R32G32B32A32(cp, ptr, dataXMM);
       break;
    case EMIT_4UB:
-      if (1) {
-         emit_swizzle(cp, dataXMM, dataXMM, SHUF(Z,Y,X,W));
-         emit_store_R8G8B8A8_UNORM(cp, ptr, dataXMM);
-      }
-      else {
-         emit_store_R8G8B8A8_UNORM(cp, ptr, dataXMM);
-      }
+      emit_store_R8G8B8A8_UNORM(cp, ptr, dataXMM);
+      break;
+   case EMIT_4UB_BGRA:
+      emit_swizzle(cp, dataXMM, dataXMM, SHUF(Z,Y,X,W));
+      emit_store_R8G8B8A8_UNORM(cp, ptr, dataXMM);
       break;
    default:
       AOS_ERROR(cp, "unhandled output format");

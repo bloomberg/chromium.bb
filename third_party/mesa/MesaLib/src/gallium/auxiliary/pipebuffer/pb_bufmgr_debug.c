@@ -35,7 +35,7 @@
 
 #include "pipe/p_compiler.h"
 #include "util/u_debug.h"
-#include "pipe/p_thread.h"
+#include "os/os_thread.h"
 #include "util/u_math.h"
 #include "util/u_memory.h"
 #include "util/u_double_list.h"
@@ -158,7 +158,7 @@ pb_debug_buffer_fill(struct pb_debug_buffer *buf)
 {
    uint8_t *map;
    
-   map = pb_map(buf->buffer, PIPE_BUFFER_USAGE_CPU_WRITE);
+   map = pb_map(buf->buffer, PB_USAGE_CPU_WRITE, NULL);
    assert(map);
    if(map) {
       fill_random_pattern(map, buf->underflow_size);
@@ -179,7 +179,9 @@ pb_debug_buffer_check(struct pb_debug_buffer *buf)
 {
    uint8_t *map;
    
-   map = pb_map(buf->buffer, PIPE_BUFFER_USAGE_CPU_READ);
+   map = pb_map(buf->buffer,
+                PB_USAGE_CPU_READ |
+                PB_USAGE_UNSYNCHRONIZED, NULL);
    assert(map);
    if(map) {
       boolean underflow, overflow;
@@ -245,14 +247,14 @@ pb_debug_buffer_destroy(struct pb_buffer *_buf)
 
 static void *
 pb_debug_buffer_map(struct pb_buffer *_buf, 
-                    unsigned flags)
+                    unsigned flags, void *flush_ctx)
 {
    struct pb_debug_buffer *buf = pb_debug_buffer(_buf);
    void *map;
    
    pb_debug_buffer_check(buf);
 
-   map = pb_map(buf->buffer, flags);
+   map = pb_map(buf->buffer, flags, flush_ctx);
    if(!map)
       return NULL;
    
@@ -349,7 +351,7 @@ pb_debug_manager_dump(struct pb_debug_manager *mgr)
    while(curr != &mgr->list) {
       buf = LIST_ENTRY(struct pb_debug_buffer, curr, head);
 
-      debug_printf("buffer = %p\n", buf);
+      debug_printf("buffer = %p\n", (void *) buf);
       debug_printf("    .size = 0x%x\n", buf->base.base.size);
       debug_backtrace_dump(buf->create_backtrace, PB_DEBUG_CREATE_BACKTRACE);
       
@@ -371,14 +373,17 @@ pb_debug_manager_create_buffer(struct pb_manager *_mgr,
    struct pb_desc real_desc;
    pb_size real_size;
    
+   assert(size);
+   assert(desc->alignment);
+
    buf = CALLOC_STRUCT(pb_debug_buffer);
    if(!buf)
       return NULL;
    
    real_size = mgr->underflow_size + size + mgr->overflow_size;
    real_desc = *desc;
-   real_desc.usage |= PIPE_BUFFER_USAGE_CPU_WRITE;
-   real_desc.usage |= PIPE_BUFFER_USAGE_CPU_READ;
+   real_desc.usage |= PB_USAGE_CPU_WRITE;
+   real_desc.usage |= PB_USAGE_CPU_READ;
 
    buf->buffer = mgr->provider->create_buffer(mgr->provider, 
                                               real_size, 

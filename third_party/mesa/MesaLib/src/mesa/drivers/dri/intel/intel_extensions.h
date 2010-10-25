@@ -32,5 +32,8 @@
 extern void
 intelInitExtensions(GLcontext *ctx);
 
+extern void
+intelInitExtensionsES2(GLcontext *ctx);
+
 
 #endif

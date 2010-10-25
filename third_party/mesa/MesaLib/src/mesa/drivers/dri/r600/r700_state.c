@@ -26,7 +26,6 @@
 
 #include "main/glheader.h"
 #include "main/mtypes.h"
-#include "main/state.h"
 #include "main/imports.h"
 #include "main/enums.h"
 #include "main/macros.h"
@@ -36,15 +35,14 @@
 
 #include "tnl/tnl.h"
 #include "tnl/t_pipeline.h"
-#include "tnl/t_vp_build.h"
 #include "swrast/swrast.h"
 #include "swrast_setup/swrast_setup.h"
 #include "main/api_arrayelt.h"
-#include "main/state.h"
 #include "main/framebuffer.h"
+#include "drivers/common/meta.h"
 
-#include "shader/prog_parameter.h"
-#include "shader/prog_statevars.h"
+#include "program/prog_parameter.h"
+#include "program/prog_statevars.h"
 #include "vbo/vbo.h"
 
 #include "r600_context.h"
@@ -59,6 +57,7 @@ static void r700SetClipPlaneState(GLcontext * ctx, GLenum cap, GLboolean state);
 static void r700UpdatePolygonMode(GLcontext * ctx);
 static void r700SetPolygonOffsetState(GLcontext * ctx, GLboolean state);
 static void r700SetStencilState(GLcontext * ctx, GLboolean state);
+static void r700UpdateWindow(GLcontext * ctx, int id);
 
 void r700UpdateShaders(GLcontext * ctx)
 {
@@ -67,7 +66,7 @@ void r700UpdateShaders(GLcontext * ctx)
     /* should only happenen once, just after context is created */
     /* TODO: shouldn't we fallback to sw here? */
     if (!ctx->FragmentProgram._Current) {
-	    _mesa_fprintf(stderr, "No ctx->FragmentProgram._Current!!\n");
+	    fprintf(stderr, "No ctx->FragmentProgram._Current!!\n");
 	    return;
     }
 
@@ -85,7 +84,7 @@ void r700UpdateViewportOffset(GLcontext * ctx) //------------------
 {
 	context_t *context = R700_CONTEXT(ctx);
 	R700_CHIP_CONTEXT *r700 = (R700_CHIP_CONTEXT*)(&context->hw);
-	__DRIdrawablePrivate *dPriv = radeon_get_drawable(&context->radeon);
+	__DRIdrawable *dPriv = radeon_get_drawable(&context->radeon);
 	GLfloat xoffset = (GLfloat) dPriv->x;
 	GLfloat yoffset = (GLfloat) dPriv->y + dPriv->h;
 	const GLfloat *v = ctx->Viewport._WindowMap.m;
@@ -254,12 +253,15 @@ void r700UpdateShaderStates(GLcontext * ctx)
 
 static void r700SetDepthState(GLcontext * ctx)
 {
+	struct radeon_renderbuffer *rrb;
 	context_t *context = R700_CONTEXT(ctx);
 	R700_CHIP_CONTEXT *r700 = (R700_CHIP_CONTEXT*)(&context->hw);
 
 	R600_STATECHANGE(context, db);
 
-    if (ctx->Depth.Test)
+	rrb = radeon_get_depthbuffer(&context->radeon);
+
+    if (ctx->Depth.Test && rrb && rrb->bo)
     {
         SETbit(r700->DB_DEPTH_CONTROL.u32All, Z_ENABLE_bit);
         if (ctx->Depth.Mask)
@@ -616,7 +618,7 @@ static GLuint translate_logicop(GLenum logicop)
 	case GL_XOR:
 		return 0x66;
 	case GL_EQUIV:
-		return 0xaa;
+		return 0x99;
 	case GL_AND_REVERSE:
 		return 0x44;
 	case GL_AND_INVERTED:
@@ -780,6 +782,9 @@ static void r700Enable(GLcontext * ctx, GLenum cap, GLboolean state) //---------
 	case GL_LINE_STIPPLE:
 		r700UpdateLineStipple(ctx);
 		break;
+	case GL_DEPTH_CLAMP:
+		r700UpdateWindow(ctx, 0);
+		break;
 	default:
 		break;
 	}
@@ -910,10 +915,12 @@ static void r700PointParameter(GLcontext * ctx, GLenum pname, const GLfloat * pa
 	case GL_POINT_SIZE_MIN:
 		SETfield(r700->PA_SU_POINT_MINMAX.u32All, (int)(ctx->Point.MinSize * 8.0),
 			 MIN_SIZE_shift, MIN_SIZE_mask);
+		r700PointSize(ctx, ctx->Point.Size);
 		break;
 	case GL_POINT_SIZE_MAX:
 		SETfield(r700->PA_SU_POINT_MINMAX.u32All, (int)(ctx->Point.MaxSize * 8.0),
 			 MAX_SIZE_shift, MAX_SIZE_mask);
+		r700PointSize(ctx, ctx->Point.Size);
 		break;
 	case GL_POINT_DISTANCE_ATTENUATION:
 		break;
@@ -1071,7 +1078,7 @@ static void r700UpdateWindow(GLcontext * ctx, int id) //--------------------
 {
 	context_t *context = R700_CONTEXT(ctx);
 	R700_CHIP_CONTEXT *r700 = (R700_CHIP_CONTEXT*)(&context->hw);
-	__DRIdrawablePrivate *dPriv = radeon_get_drawable(&context->radeon);
+	__DRIdrawable *dPriv = radeon_get_drawable(&context->radeon);
 	GLfloat xoffset = dPriv ? (GLfloat) dPriv->x : 0;
 	GLfloat yoffset = dPriv ? (GLfloat) dPriv->y + dPriv->h : 0;
 	const GLfloat *v = ctx->Viewport._WindowMap.m;
@@ -1573,12 +1580,21 @@ static void r700InitSQConfig(GLcontext * ctx)
 	    CLEARbit(r700->sq_config.SQ_CONFIG.u32All, VC_ENABLE_bit);
     else
 	    SETbit(r700->sq_config.SQ_CONFIG.u32All, VC_ENABLE_bit);
-    SETbit(r700->sq_config.SQ_CONFIG.u32All, DX9_CONSTS_bit);
+
+    if(GL_TRUE == r700->bShaderUseMemConstant)
+    {
+        CLEARbit(r700->sq_config.SQ_CONFIG.u32All, DX9_CONSTS_bit);
+    }
+    else
+    {
+        SETbit(r700->sq_config.SQ_CONFIG.u32All, DX9_CONSTS_bit);
+    }
+
     SETbit(r700->sq_config.SQ_CONFIG.u32All, ALU_INST_PREFER_VECTOR_bit);
     SETfield(r700->sq_config.SQ_CONFIG.u32All, ps_prio, PS_PRIO_shift, PS_PRIO_mask);
-    SETfield(r700->sq_config.SQ_CONFIG.u32All, ps_prio, VS_PRIO_shift, VS_PRIO_mask);
-    SETfield(r700->sq_config.SQ_CONFIG.u32All, ps_prio, GS_PRIO_shift, GS_PRIO_mask);
-    SETfield(r700->sq_config.SQ_CONFIG.u32All, ps_prio, ES_PRIO_shift, ES_PRIO_mask);
+    SETfield(r700->sq_config.SQ_CONFIG.u32All, vs_prio, VS_PRIO_shift, VS_PRIO_mask);
+    SETfield(r700->sq_config.SQ_CONFIG.u32All, gs_prio, GS_PRIO_shift, GS_PRIO_mask);
+    SETfield(r700->sq_config.SQ_CONFIG.u32All, es_prio, ES_PRIO_shift, ES_PRIO_mask);
 
     r700->sq_config.SQ_GPR_RESOURCE_MGMT_1.u32All = 0;
     SETfield(r700->sq_config.SQ_GPR_RESOURCE_MGMT_1.u32All, num_ps_gprs, NUM_PS_GPRS_shift, NUM_PS_GPRS_mask);
@@ -1624,8 +1640,6 @@ void r700InitState(GLcontext * ctx) //-------------------
     context_t *context = R700_CONTEXT(ctx);
     R700_CHIP_CONTEXT *r700 = (R700_CHIP_CONTEXT*)(&context->hw);
     int id = 0;
-
-    radeon_firevertices(&context->radeon);
 
     r700->TA_CNTL_AUX.u32All = 0;
     SETfield(r700->TA_CNTL_AUX.u32All, 28, TD_FIFO_CREDIT_shift, TD_FIFO_CREDIT_mask);
@@ -1684,8 +1698,9 @@ void r700InitState(GLcontext * ctx) //-------------------
 	    SETbit(r700->PA_SC_MODE_CNTL.u32All, FORCE_EOV_CNTDWN_ENABLE_bit);
     }
 
-    /* Do scale XY and Z by 1/W0. */
-    r700->bEnablePerspective = GL_TRUE;
+    /* Do scale XY and Z by 1/W0. */   
+    r700->bEnablePerspective = GL_TRUE;    
+
     CLEARbit(r700->PA_CL_VTE_CNTL.u32All, VTX_XY_FMT_bit);
     CLEARbit(r700->PA_CL_VTE_CNTL.u32All, VTX_Z_FMT_bit);
     SETbit(r700->PA_CL_VTE_CNTL.u32All, VTX_W0_FMT_bit);
@@ -1724,10 +1739,10 @@ void r700InitState(GLcontext * ctx) //-------------------
     r700InitSQConfig(ctx);
 
     r700ColorMask(ctx,
-		  ctx->Color.ColorMask[RCOMP],
-		  ctx->Color.ColorMask[GCOMP],
-		  ctx->Color.ColorMask[BCOMP],
-		  ctx->Color.ColorMask[ACOMP]);
+		  ctx->Color.ColorMask[0][RCOMP],
+		  ctx->Color.ColorMask[0][GCOMP],
+		  ctx->Color.ColorMask[0][BCOMP],
+		  ctx->Color.ColorMask[0][ACOMP]);
 
     r700Enable(ctx, GL_DEPTH_TEST, ctx->Depth.Test);
     r700DepthMask(ctx, ctx->Depth.Mask);
@@ -1815,7 +1830,7 @@ void r700InitState(GLcontext * ctx) //-------------------
 
 }
 
-void r700InitStateFuncs(struct dd_function_table *functions) //-----------------
+void r700InitStateFuncs(radeonContextPtr radeon, struct dd_function_table *functions)
 {
 	functions->UpdateState = r700InvalidateState;
 	functions->AlphaFunc = r700AlphaFunc;
@@ -1856,8 +1871,12 @@ void r700InitStateFuncs(struct dd_function_table *functions) //-----------------
 
 	functions->Scissor = radeonScissor;
 
-	functions->DrawBuffer		= radeonDrawBuffer;
-	functions->ReadBuffer		= radeonReadBuffer;
+	functions->DrawBuffer = radeonDrawBuffer;
+	functions->ReadBuffer = radeonReadBuffer;
 
+	functions->CopyPixels = _mesa_meta_CopyPixels;
+	functions->DrawPixels = _mesa_meta_DrawPixels;
+	if (radeon->radeonScreen->kernel_mm)
+		functions->ReadPixels = radeonReadPixels;
 }
 

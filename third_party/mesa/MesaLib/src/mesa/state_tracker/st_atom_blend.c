@@ -152,14 +152,54 @@ translate_logicop(GLenum logicop)
    }
 }
 
+/**
+ * Figure out if colormasks are different per rt.
+ */
+static GLboolean
+colormask_per_rt(GLcontext *ctx)
+{
+   /* a bit suboptimal have to compare lots of values */
+   unsigned i;
+   for (i = 1; i < ctx->Const.MaxDrawBuffers; i++) {
+      if (memcmp(ctx->Color.ColorMask[0], ctx->Color.ColorMask[i], 4)) {
+         return GL_TRUE;
+      }
+   }
+   return GL_FALSE;
+}
+
+/**
+ * Figure out if blend enables are different per rt.
+ */
+static GLboolean
+blend_per_rt(GLcontext *ctx)
+{
+   if (ctx->Color.BlendEnabled &&
+      (ctx->Color.BlendEnabled != ((1 << ctx->Const.MaxDrawBuffers) - 1))) {
+      return GL_TRUE;
+   }
+   return GL_FALSE;
+}
 
 static void 
 update_blend( struct st_context *st )
 {
    struct pipe_blend_state *blend = &st->state.blend;
+   unsigned num_state = 1;
+   unsigned i;
 
    memset(blend, 0, sizeof(*blend));
 
+   if (blend_per_rt(st->ctx) || colormask_per_rt(st->ctx)) {
+      num_state = st->ctx->Const.MaxDrawBuffers;
+      blend->independent_blend_enable = 1;
+   }
+   /* Note it is impossible to correctly deal with EXT_blend_logic_op and
+      EXT_draw_buffers2/EXT_blend_equation_separate at the same time.
+      These combinations would require support for per-rt logicop enables
+      and separate alpha/rgb logicop/blend support respectively. Neither
+      possible in gallium nor most hardware. Assume these combinations
+      don't happen. */
    if (st->ctx->Color.ColorLogicOpEnabled ||
        (st->ctx->Color.BlendEnabled &&
         st->ctx->Color.BlendEquationRGB == GL_LOGIC_OP)) {
@@ -169,30 +209,33 @@ update_blend( struct st_context *st )
    }
    else if (st->ctx->Color.BlendEnabled) {
       /* blending enabled */
-      blend->blend_enable = 1;
+      for (i = 0; i < num_state; i++) {
 
-      blend->rgb_func = translate_blend(st->ctx->Color.BlendEquationRGB);
-      if (st->ctx->Color.BlendEquationRGB == GL_MIN ||
-          st->ctx->Color.BlendEquationRGB == GL_MAX) {
-         /* Min/max are special */
-         blend->rgb_src_factor = PIPE_BLENDFACTOR_ONE;
-         blend->rgb_dst_factor = PIPE_BLENDFACTOR_ONE;
-      }
-      else {
-         blend->rgb_src_factor = translate_blend(st->ctx->Color.BlendSrcRGB);
-         blend->rgb_dst_factor = translate_blend(st->ctx->Color.BlendDstRGB);
-      }
+         blend->rt[i].blend_enable = (st->ctx->Color.BlendEnabled >> i) & 0x1;
 
-      blend->alpha_func = translate_blend(st->ctx->Color.BlendEquationA);
-      if (st->ctx->Color.BlendEquationA == GL_MIN ||
-          st->ctx->Color.BlendEquationA == GL_MAX) {
-         /* Min/max are special */
-         blend->alpha_src_factor = PIPE_BLENDFACTOR_ONE;
-         blend->alpha_dst_factor = PIPE_BLENDFACTOR_ONE;
-      }
-      else {
-         blend->alpha_src_factor = translate_blend(st->ctx->Color.BlendSrcA);
-         blend->alpha_dst_factor = translate_blend(st->ctx->Color.BlendDstA);
+         blend->rt[i].rgb_func = translate_blend(st->ctx->Color.BlendEquationRGB);
+         if (st->ctx->Color.BlendEquationRGB == GL_MIN ||
+             st->ctx->Color.BlendEquationRGB == GL_MAX) {
+            /* Min/max are special */
+            blend->rt[i].rgb_src_factor = PIPE_BLENDFACTOR_ONE;
+            blend->rt[i].rgb_dst_factor = PIPE_BLENDFACTOR_ONE;
+         }
+         else {
+            blend->rt[i].rgb_src_factor = translate_blend(st->ctx->Color.BlendSrcRGB);
+            blend->rt[i].rgb_dst_factor = translate_blend(st->ctx->Color.BlendDstRGB);
+         }
+
+         blend->rt[i].alpha_func = translate_blend(st->ctx->Color.BlendEquationA);
+         if (st->ctx->Color.BlendEquationA == GL_MIN ||
+             st->ctx->Color.BlendEquationA == GL_MAX) {
+            /* Min/max are special */
+            blend->rt[i].alpha_src_factor = PIPE_BLENDFACTOR_ONE;
+            blend->rt[i].alpha_dst_factor = PIPE_BLENDFACTOR_ONE;
+         }
+         else {
+            blend->rt[i].alpha_src_factor = translate_blend(st->ctx->Color.BlendSrcA);
+            blend->rt[i].alpha_dst_factor = translate_blend(st->ctx->Color.BlendDstA);
+         }
       }
    }
    else {
@@ -200,17 +243,28 @@ update_blend( struct st_context *st )
    }
 
    /* Colormask - maybe reverse these bits? */
-   if (st->ctx->Color.ColorMask[0])
-      blend->colormask |= PIPE_MASK_R;
-   if (st->ctx->Color.ColorMask[1])
-      blend->colormask |= PIPE_MASK_G;
-   if (st->ctx->Color.ColorMask[2])
-      blend->colormask |= PIPE_MASK_B;
-   if (st->ctx->Color.ColorMask[3])
-      blend->colormask |= PIPE_MASK_A;
+   for (i = 0; i < num_state; i++) {
+      if (st->ctx->Color.ColorMask[i][0])
+         blend->rt[i].colormask |= PIPE_MASK_R;
+      if (st->ctx->Color.ColorMask[i][1])
+         blend->rt[i].colormask |= PIPE_MASK_G;
+      if (st->ctx->Color.ColorMask[i][2])
+         blend->rt[i].colormask |= PIPE_MASK_B;
+      if (st->ctx->Color.ColorMask[i][3])
+         blend->rt[i].colormask |= PIPE_MASK_A;
+   }
 
    if (st->ctx->Color.DitherFlag)
       blend->dither = 1;
+
+   if (st->ctx->Multisample.Enabled) {
+      /* unlike in gallium/d3d10 these operations are only performed
+         if msaa is enabled */
+      if (st->ctx->Multisample.SampleAlphaToCoverage)
+         blend->alpha_to_coverage = 1;
+      if (st->ctx->Multisample.SampleAlphaToOne)
+         blend->alpha_to_one = 1;
+   }
 
    cso_set_blend(st->cso_context, blend);
 
@@ -225,7 +279,7 @@ update_blend( struct st_context *st )
 const struct st_tracked_state st_update_blend = {
    "st_update_blend",					/* name */
    {							/* dirty */
-      (_NEW_COLOR),  /* XXX _NEW_BLEND someday? */	/* mesa */
+      (_NEW_COLOR | _NEW_MULTISAMPLE),  /* XXX _NEW_BLEND someday? */	/* mesa */
       0,						/* st */
    },
    update_blend,					/* update */

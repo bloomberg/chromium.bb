@@ -38,9 +38,9 @@
 #include "tgsi/tgsi_scan.h"
 
 
-struct intel_winsys;
-struct intel_buffer;
-struct intel_batchbuffer;
+struct i915_winsys;
+struct i915_winsys_buffer;
+struct i915_winsys_batchbuffer;
 
 
 #define I915_TEX_UNITS 8
@@ -148,7 +148,7 @@ struct i915_state
 
    /** Describes the current hardware vertex layout */
    struct vertex_info vertex_info;
-   
+
    unsigned id;			/* track lost context events */
 };
 
@@ -167,7 +167,7 @@ struct i915_depth_stencil_state {
 };
 
 struct i915_rasterizer_state {
-   int light_twoside : 1;
+   unsigned light_twoside : 1;
    unsigned st;
    enum interp_mode color_interp;
 
@@ -187,38 +187,17 @@ struct i915_sampler_state {
    unsigned maxlod;
 };
 
-struct i915_texture {
-   struct pipe_texture base;
-
-   /* Derived from the above:
-    */
-   unsigned stride;
-   unsigned depth_stride;          /* per-image on i945? */
-   unsigned total_nblocksy;
-
-   unsigned sw_tiled; /**< tiled with software flags */
-   unsigned hw_tiled; /**< tiled with hardware fences */
-
-   unsigned nr_images[PIPE_MAX_TEXTURE_LEVELS];
-
-   /* Explicitly store the offset of each image for each cube face or
-    * depth value.  Pretty much have to accept that hardware formats
-    * are going to be so diverse that there is no unified way to
-    * compute the offsets of depth/cube images within a mipmap level,
-    * so have to store them as a lookup table:
-    */
-   unsigned *image_offset[PIPE_MAX_TEXTURE_LEVELS];   /**< array [depth] of offsets */
-
-   /* The data is held here:
-    */
-   struct intel_buffer *buffer;
+struct i915_velems_state {
+   unsigned count;
+   struct pipe_vertex_element velem[PIPE_MAX_ATTRIBS];
 };
+
 
 struct i915_context
 {
    struct pipe_context base;
 
-   struct intel_winsys *iws;
+   struct i915_winsys *iws;
 
    struct draw_context *draw;
 
@@ -232,33 +211,33 @@ struct i915_context
    struct i915_fragment_shader *fs;
 
    struct pipe_blend_color blend_color;
+   struct pipe_stencil_ref stencil_ref;
    struct pipe_clip_state clip;
-   struct pipe_constant_buffer constants[PIPE_SHADER_TYPES];
+   /* XXX unneded */
+   struct pipe_resource *constants[PIPE_SHADER_TYPES];
    struct pipe_framebuffer_state framebuffer;
    struct pipe_poly_stipple poly_stipple;
    struct pipe_scissor_state scissor;
-   struct i915_texture *texture[PIPE_MAX_SAMPLERS];
+   struct pipe_sampler_view *fragment_sampler_views[PIPE_MAX_SAMPLERS];
    struct pipe_viewport_state viewport;
    struct pipe_vertex_buffer vertex_buffer[PIPE_MAX_ATTRIBS];
+   struct pipe_index_buffer index_buffer;
 
    unsigned dirty;
 
    unsigned num_samplers;
-   unsigned num_textures;
-   unsigned num_vertex_elements;
+   unsigned num_fragment_sampler_views;
    unsigned num_vertex_buffers;
 
-   struct intel_batchbuffer *batch;
+   struct i915_winsys_batchbuffer *batch;
 
    /** Vertex buffer */
-   struct intel_buffer *vbo;
+   struct i915_winsys_buffer *vbo;
    size_t vbo_offset;
    unsigned vbo_flushed;
 
    struct i915_state current;
    unsigned hardware_dirty;
-   
-   unsigned debug;
 };
 
 /* A flag for each state_tracker state object:
@@ -274,7 +253,7 @@ struct i915_context
 #define I915_NEW_ALPHA_TEST    0x100
 #define I915_NEW_DEPTH_STENCIL 0x200
 #define I915_NEW_SAMPLER       0x400
-#define I915_NEW_TEXTURE       0x800
+#define I915_NEW_SAMPLER_VIEW  0x800
 #define I915_NEW_CONSTANTS     0x1000
 #define I915_NEW_VBO           0x2000
 #define I915_NEW_VS            0x4000
@@ -324,15 +303,18 @@ void i915_clear( struct pipe_context *pipe, unsigned buffers, const float *rgba,
 
 
 /***********************************************************************
- * i915_surface.c: 
+ * 
  */
-void i915_init_surface_functions( struct i915_context *i915 );
-
 void i915_init_state_functions( struct i915_context *i915 );
 void i915_init_flush_functions( struct i915_context *i915 );
 void i915_init_string_functions( struct i915_context *i915 );
 
 
+/************************************************************************
+ * i915_context.c
+ */
+struct pipe_context *i915_create_context(struct pipe_screen *screen,
+					 void *priv);
 
 
 /***********************************************************************
@@ -344,7 +326,6 @@ i915_context( struct pipe_context *pipe )
 {
    return (struct i915_context *)pipe;
 }
-
 
 
 #endif

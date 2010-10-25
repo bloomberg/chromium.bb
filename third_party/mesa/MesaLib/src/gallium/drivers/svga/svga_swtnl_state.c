@@ -25,9 +25,8 @@
 
 #include "draw/draw_context.h"
 #include "draw/draw_vbuf.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 #include "pipe/p_state.h"
-#include "util/u_memory.h"
 
 #include "svga_context.h"
 #include "svga_swtnl.h"
@@ -100,8 +99,8 @@ static int update_swtnl_draw( struct svga_context *svga,
 
    if (dirty & SVGA_NEW_VELEMENT)
       draw_set_vertex_elements(svga->swtnl.draw, 
-                               svga->curr.num_vertex_elements, 
-                               svga->curr.ve );
+                               svga->curr.velems->count, 
+                               svga->curr.velems->velem );
 
    if (dirty & SVGA_NEW_CLIP)
       draw_set_clip_state(svga->swtnl.draw, 
@@ -114,15 +113,12 @@ static int update_swtnl_draw( struct svga_context *svga,
 
    if (dirty & SVGA_NEW_RAST)
       draw_set_rasterizer_state(svga->swtnl.draw,
-                                &svga->curr.rast->templ);
+                                &svga->curr.rast->templ,
+                                (void *) svga->curr.rast);
 
    if (dirty & SVGA_NEW_FRAME_BUFFER)
       draw_set_mrd(svga->swtnl.draw, 
                    svga->curr.depthscale);
-
-   if (dirty & SVGA_NEW_EDGEFLAGS)
-      draw_set_edgeflags( svga->swtnl.draw, 
-                          svga->curr.edgeflags );
 
    return 0;
 }
@@ -138,8 +134,7 @@ struct svga_tracked_state svga_update_swtnl_draw =
     SVGA_NEW_VIEWPORT |
     SVGA_NEW_RAST |
     SVGA_NEW_FRAME_BUFFER |
-    SVGA_NEW_REDUCED_PRIMITIVE |
-    SVGA_NEW_EDGEFLAGS),
+    SVGA_NEW_REDUCED_PRIMITIVE),
    update_swtnl_draw
 };
 
@@ -161,7 +156,7 @@ int svga_swtnl_update_vdecl( struct svga_context *svga )
    memset(vdecl, 0, sizeof(vdecl));
 
    /* always add position */
-   src = draw_find_vs_output(draw, TGSI_SEMANTIC_POSITION, 0);
+   src = draw_find_shader_output(draw, TGSI_SEMANTIC_POSITION, 0);
    draw_emit_vertex_attr(vinfo, EMIT_4F, INTERP_LINEAR, src);
    vinfo->attrib[0].emit = EMIT_4F;
    vdecl[0].array.offset = offset;
@@ -174,7 +169,7 @@ int svga_swtnl_update_vdecl( struct svga_context *svga )
    for (i = 0; i < fs->base.info.num_inputs; i++) {
       unsigned name = fs->base.info.input_semantic_name[i];
       unsigned index = fs->base.info.input_semantic_index[i];
-      src = draw_find_vs_output(draw, name, index);
+      src = draw_find_shader_output(draw, name, index);
       vdecl[nr_decls].array.offset = offset;
       vdecl[nr_decls].identity.usageIndex = fs->base.info.input_semantic_index[i];
 

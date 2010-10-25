@@ -42,7 +42,6 @@
 #include "tnl/t_vp_build.h"
 #include "tnl/t_context.h"
 #include "tnl/t_vertex.h"
-#include "tnl/t_pipeline.h"
 #include "vbo/vbo_context.h"
 
 #include "r600_context.h"
@@ -116,8 +115,6 @@ void r700Start3D(context_t *context)
     END_BATCH();
 
     COMMIT_BATCH();
-
-    r700WaitForIdleClean(context);
 }
 
 GLboolean r700SyncSurf(context_t *context,
@@ -247,7 +244,8 @@ static int r700NumVerts(int num_verts, int prim)
 	return num_verts - verts_off;
 }
 
-static void r700RunRenderPrimitive(GLcontext * ctx, int start, int end, int prim)
+static void r700RunRenderPrimitive(GLcontext * ctx, int start, int end,
+				   int prim, GLint basevertex)
 {
     context_t *context = R700_CONTEXT(ctx);
     BATCH_LOCALS(&context->radeon);
@@ -285,6 +283,7 @@ static void r700RunRenderPrimitive(GLcontext * ctx, int start, int end, int prim
     total_emit =   3  /* VGT_PRIMITIVE_TYPE */
 	         + 2  /* VGT_INDEX_TYPE */
 	         + 2  /* NUM_INSTANCES */
+		 + 4  /* VTX_BASE_VTX_LOC + VTX_START_INST_LOC */
 	         + 5 + 2; /* DRAW_INDEX */
 
     BEGIN_BATCH_NO_AUTOSTATE(total_emit);
@@ -297,6 +296,11 @@ static void r700RunRenderPrimitive(GLcontext * ctx, int start, int end, int prim
     // num instances
     R600_OUT_BATCH(CP_PACKET3(R600_IT_NUM_INSTANCES, 0));
     R600_OUT_BATCH(1);
+    /* offset */
+    R600_OUT_BATCH(CP_PACKET3(R600_IT_SET_CTL_CONST, 2));
+    R600_OUT_BATCH(mmSQ_VTX_BASE_VTX_LOC - ASIC_CTL_CONST_BASE_INDEX);
+    R600_OUT_BATCH(basevertex); //VTX_BASE_VTX_LOC
+    R600_OUT_BATCH(0);          //VTX_START_INST_LOC
     // draw packet
     R600_OUT_BATCH(CP_PACKET3(R600_IT_DRAW_INDEX, 3));
     R600_OUT_BATCH(context->ind_buf.bo_offset);
@@ -367,6 +371,7 @@ static void r700RunRenderPrimitiveImmediate(GLcontext * ctx, int start, int end,
     total_emit +=   3 /* VGT_PRIMITIVE_TYPE */
 	          + 2 /* VGT_INDEX_TYPE */
 	          + 2 /* NUM_INSTANCES */
+		  + 4 /* VTX_BASE_VTX_LOC + VTX_START_INST_LOC */
 	          + 3; /* DRAW */
 
     BEGIN_BATCH_NO_AUTOSTATE(total_emit);
@@ -379,6 +384,11 @@ static void r700RunRenderPrimitiveImmediate(GLcontext * ctx, int start, int end,
     // num instances
     R600_OUT_BATCH(CP_PACKET3(R600_IT_NUM_INSTANCES, 0));
     R600_OUT_BATCH(1);
+    /* offset */
+    R600_OUT_BATCH(CP_PACKET3(R600_IT_SET_CTL_CONST, 2));
+    R600_OUT_BATCH(mmSQ_VTX_BASE_VTX_LOC - ASIC_CTL_CONST_BASE_INDEX);
+    R600_OUT_BATCH(0); //VTX_BASE_VTX_LOC
+    R600_OUT_BATCH(0); //VTX_START_INST_LOC
     // draw packet
     if(start == 0)
     {
@@ -422,7 +432,7 @@ static void r700RunRenderPrimitiveImmediate(GLcontext * ctx, int start, int end,
 }
 
 /* start 3d, idle, cb/db flush */
-#define PRE_EMIT_STATE_BUFSZ 10 + 5 + 14
+#define PRE_EMIT_STATE_BUFSZ 5 + 5 + 14
 
 static GLuint r700PredictRenderSize(GLcontext* ctx,
 				    const struct _mesa_prim *prim,
@@ -436,16 +446,16 @@ static GLuint r700PredictRenderSize(GLcontext* ctx,
 
     dwords = PRE_EMIT_STATE_BUFSZ;
     if (ib)
-	    dwords += nr_prims * 14;
+	    dwords += nr_prims * 18;
     else {
 	    for (i = 0; i < nr_prims; ++i)
 	    {
 		    if (prim[i].start == 0)
-			    dwords += 10;
+			    dwords += 14;
 		    else if (prim[i].count > 0xffff)
-			    dwords += prim[i].count + 10;
+			    dwords += prim[i].count + 14;
 		    else
-			    dwords += ((prim[i].count + 1) / 2) + 10;
+			    dwords += ((prim[i].count + 1) / 2) + 14;
 	    }
     }
 
@@ -526,6 +536,9 @@ static void r700ConvertAttrib(GLcontext *ctx, int count,
 
     radeonAllocDmaRegion(&context->radeon, &attr->bo, &attr->bo_offset, 
                          sizeof(GLfloat) * input->Size * count, 32);
+
+    radeon_bo_map(attr->bo, 1);
+
     dst_ptr = (GLfloat *)ADD_POINTERS(attr->bo->ptr, attr->bo_offset);
 
     assert(src_ptr != NULL);
@@ -559,6 +572,8 @@ static void r700ConvertAttrib(GLcontext *ctx, int count,
             break;
     }
 
+    radeon_bo_unmap(attr->bo);
+
     if (mapped_named_bo) 
     {
         ctx->Driver.UnmapBuffer(ctx, GL_ARRAY_BUFFER, input->BufferObj);
@@ -577,6 +592,8 @@ static void r700AlignDataToDword(GLcontext *ctx,
 
     radeonAllocDmaRegion(&context->radeon, &attr->bo, &attr->bo_offset, size, 32);
 
+    radeon_bo_map(attr->bo, 1);
+
     if (!input->BufferObj->Pointer) 
     {
         ctx->Driver.MapBuffer(ctx, GL_ARRAY_BUFFER, GL_READ_ONLY_ARB, input->BufferObj);
@@ -590,12 +607,13 @@ static void r700AlignDataToDword(GLcontext *ctx,
 
         for (i = 0; i < count; ++i) 
         {
-            _mesa_memcpy(dst_ptr, src_ptr, input->StrideB);
+            memcpy(dst_ptr, src_ptr, input->StrideB);
             src_ptr += input->StrideB;
             dst_ptr += dst_stride;
         }
     }
 
+    radeon_bo_unmap(attr->bo);
     if (mapped_named_bo) 
     {
         ctx->Driver.UnmapBuffer(ctx, GL_ARRAY_BUFFER, input->BufferObj);
@@ -620,31 +638,23 @@ static void r700SetupStreams(GLcontext *ctx, const struct gl_client_array *input
 
         stride = (input[i]->StrideB == 0) ? getTypeSize(input[i]->Type) * input[i]->Size : input[i]->StrideB;
 
-        if (input[i]->Type == GL_DOUBLE || input[i]->Type == GL_UNSIGNED_INT || input[i]->Type == GL_INT ||
+        if (input[i]->Type == GL_DOUBLE || input[i]->Type == GL_UNSIGNED_INT || input[i]->Type == GL_INT
 #if MESA_BIG_ENDIAN
-            getTypeSize(input[i]->Type) != 4 || 
+            || getTypeSize(input[i]->Type) != 4
 #endif
-            stride < 4) 
+            ) 
         {
+            assert(count);
             r700ConvertAttrib(ctx, count, input[i], &context->stream_desc[index]);
         } 
         else 
         {
             if (input[i]->BufferObj->Name) 
             {
-                if (stride % 4 != 0) 
-                {
-                    assert(((intptr_t) input[i]->Ptr) % input[i]->StrideB == 0);
-                    r700AlignDataToDword(ctx, input[i], count, &context->stream_desc[index]);
-                    context->stream_desc[index].is_named_bo = GL_FALSE;
-                } 
-                else 
-                {
-                    context->stream_desc[index].stride = input[i]->StrideB;
-                    context->stream_desc[index].bo_offset = (intptr_t) input[i]->Ptr;
-                    context->stream_desc[index].bo = get_radeon_buffer_object(input[i]->BufferObj)->bo;
-                    context->stream_desc[index].is_named_bo = GL_TRUE;
-                }
+                context->stream_desc[index].stride = input[i]->StrideB;
+                context->stream_desc[index].bo_offset = (intptr_t) input[i]->Ptr;
+                context->stream_desc[index].bo = get_radeon_buffer_object(input[i]->BufferObj)->bo;
+                context->stream_desc[index].is_named_bo = GL_TRUE;
             } 
             else 
             {
@@ -664,14 +674,18 @@ static void r700SetupStreams(GLcontext *ctx, const struct gl_client_array *input
 
                 radeonAllocDmaRegion(&context->radeon, &context->stream_desc[index].bo, 
                                      &context->stream_desc[index].bo_offset, size, 32);
+
+                radeon_bo_map(context->stream_desc[index].bo, 1);
                 assert(context->stream_desc[index].bo->ptr != NULL);
+
+
                 dst = (uint32_t *)ADD_POINTERS(context->stream_desc[index].bo->ptr, 
                                                context->stream_desc[index].bo_offset);
 
                 switch (context->stream_desc[index].dwords) 
                 {
                 case 1:                     
-                    radeonEmitVec4(dst, input[i]->Ptr, input[i]->StrideB, local_count);                         
+                    radeonEmitVec4(dst, input[i]->Ptr, input[i]->StrideB, local_count);
                     break;
                 case 2: 
                     radeonEmitVec8(dst, input[i]->Ptr, input[i]->StrideB, local_count); 
@@ -686,6 +700,7 @@ static void r700SetupStreams(GLcontext *ctx, const struct gl_client_array *input
                     assert(0); 
                     break;
                 }
+		radeon_bo_unmap(context->stream_desc[index].bo);
             }
         }
 
@@ -757,6 +772,7 @@ static void r700FixupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
 	radeonAllocDmaRegion(&context->radeon, &context->ind_buf.bo,
 			     &context->ind_buf.bo_offset, size, 4);
 
+	radeon_bo_map(context->ind_buf.bo, 1);
 	assert(context->ind_buf.bo->ptr != NULL);
 	out = (GLuint *)ADD_POINTERS(context->ind_buf.bo->ptr, context->ind_buf.bo_offset);
 
@@ -770,6 +786,7 @@ static void r700FixupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
             *out++ = in[i];
         }
 
+	radeon_bo_unmap(context->ind_buf.bo);
 #if MESA_BIG_ENDIAN
     }
     else
@@ -780,6 +797,7 @@ static void r700FixupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
 	radeonAllocDmaRegion(&context->radeon, &context->ind_buf.bo,
 			     &context->ind_buf.bo_offset, size, 4);
 
+	radeon_bo_map(context->ind_buf.bo, 1);
 	assert(context->ind_buf.bo->ptr != NULL);
 	out = (GLuint *)ADD_POINTERS(context->ind_buf.bo->ptr, context->ind_buf.bo_offset);
 
@@ -792,6 +810,7 @@ static void r700FixupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
         {
             *out++ = in[i];
         }
+	radeon_bo_unmap(context->ind_buf.bo);
 #endif
     }
 
@@ -815,11 +834,10 @@ static void r700SetupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
 
 #if MESA_BIG_ENDIAN
     if (mesa_ind_buf->type == GL_UNSIGNED_INT)
-    {
 #else
     if (mesa_ind_buf->type != GL_UNSIGNED_BYTE)
-    {
 #endif
+    {
         const GLvoid *src_ptr;
         GLvoid *dst_ptr;
         GLboolean mapped_named_bo = GL_FALSE;
@@ -837,11 +855,13 @@ static void r700SetupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
 
 	radeonAllocDmaRegion(&context->radeon, &context->ind_buf.bo,
 			     &context->ind_buf.bo_offset, size, 4);
+	radeon_bo_map(context->ind_buf.bo, 1);
 	assert(context->ind_buf.bo->ptr != NULL);
 	dst_ptr = ADD_POINTERS(context->ind_buf.bo->ptr, context->ind_buf.bo_offset);
 
-        _mesa_memcpy(dst_ptr, src_ptr, size);
+        memcpy(dst_ptr, src_ptr, size);
 
+	radeon_bo_unmap(context->ind_buf.bo);
         context->ind_buf.is_32bit = (mesa_ind_buf->type == GL_UNSIGNED_INT);
         context->ind_buf.count = mesa_ind_buf->count;
 
@@ -854,6 +874,14 @@ static void r700SetupIndexBuffer(GLcontext *ctx, const struct _mesa_index_buffer
     {
 	    r700FixupIndexBuffer(ctx, mesa_ind_buf);
     }
+}
+
+static GLboolean check_fallbacks(GLcontext *ctx)
+{
+	if (ctx->RenderMode != GL_RENDER)
+		return GL_TRUE;
+
+	return GL_FALSE;
 }
 
 static GLboolean r700TryDrawPrims(GLcontext *ctx,
@@ -871,6 +899,9 @@ static GLboolean r700TryDrawPrims(GLcontext *ctx,
 
     if (ctx->NewState)
         _mesa_update_state( ctx );
+
+    if (check_fallbacks(ctx))
+	    return GL_FALSE;
 
     _tnl_UpdateFixedFunctionProgram(ctx);
     r700SetVertexFormat(ctx, arrays, max_index + 1);
@@ -906,7 +937,8 @@ static GLboolean r700TryDrawPrims(GLcontext *ctx,
 		    r700RunRenderPrimitive(ctx,
 					   prim[i].start,
 					   prim[i].start + prim[i].count,
-					   prim[i].mode);
+					   prim[i].mode,
+					   prim[i].basevertex);
 	    else
 		    r700RunRenderPrimitiveImmediate(ctx,
 						    prim[i].start,
@@ -916,6 +948,7 @@ static GLboolean r700TryDrawPrims(GLcontext *ctx,
     radeon_debug_remove_indent();
 
     /* Flush render op cached for last several quads. */
+    /* XXX drm should handle this in fence submit */
     r700WaitForIdleClean(context);
 
     rrb = radeon_get_colorbuffer(&context->radeon);
@@ -950,24 +983,32 @@ static void r700DrawPrims(GLcontext *ctx,
 {
 	GLboolean retval = GL_FALSE;
 
+	context_t *context = R700_CONTEXT(ctx);
+	radeonContextPtr radeon = &context->radeon;
+	radeon_prepare_render(radeon);
+
 	/* This check should get folded into just the places that
 	 * min/max index are really needed.
 	 */
-	if (!index_bounds_valid) {
-		vbo_get_minmax_index(ctx, prim, ib, &min_index, &max_index);
-	}
 
-	if (min_index) {
+	if (!vbo_all_varyings_in_vbos(arrays)) {
+	    if (!index_bounds_valid)
+		vbo_get_minmax_index(ctx, prim, ib, &min_index, &max_index);
+	    /* do we want to rebase, minimizes the 
+	     * amount of data to upload? */
+	    if (min_index) {
 		vbo_rebase_prims( ctx, arrays, prim, nr_prims, ib, min_index, max_index, r700DrawPrims );
 		return;
+	    }
 	}
-
 	/* Make an attempt at drawing */
 	retval = r700TryDrawPrims(ctx, arrays, prim, nr_prims, ib, min_index, max_index);
 
 	/* If failed run tnl pipeline - it should take care of fallbacks */
-	if (!retval)
+	if (!retval) {
+		_swsetup_Wakeup(ctx);
 		_tnl_draw_prims(ctx, arrays, prim, nr_prims, ib, min_index, max_index);
+	}
 }
 
 void r700InitDraw(GLcontext *ctx)

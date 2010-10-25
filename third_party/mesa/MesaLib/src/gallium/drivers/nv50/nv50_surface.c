@@ -24,24 +24,74 @@
 #include <stdint.h>
 #include "nouveau/nouveau_pushbuf.h"
 #include "nv50_context.h"
+#include "nv50_resource.h"
 #include "pipe/p_defines.h"
-#include "pipe/internal/p_winsys_screen.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
+#include "util/u_pack_color.h"
 
-#include "util/u_tile.h"
+#include "util/u_format.h"
+
+/* return TRUE for formats that can be converted among each other by NV50_2D */
+static INLINE boolean
+nv50_2d_format_faithful(enum pipe_format format)
+{
+	switch (format) {
+	case PIPE_FORMAT_B8G8R8A8_UNORM:
+	case PIPE_FORMAT_B8G8R8X8_UNORM:
+	case PIPE_FORMAT_B8G8R8A8_SRGB:
+	case PIPE_FORMAT_B8G8R8X8_SRGB:
+	case PIPE_FORMAT_B5G6R5_UNORM:
+	case PIPE_FORMAT_B5G5R5A1_UNORM:
+	case PIPE_FORMAT_B10G10R10A2_UNORM:
+	case PIPE_FORMAT_R8_UNORM:
+	case PIPE_FORMAT_R32G32B32A32_FLOAT:
+	case PIPE_FORMAT_R32G32B32_FLOAT:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
 
 static INLINE int
 nv50_format(enum pipe_format format)
 {
 	switch (format) {
-	case PIPE_FORMAT_A8R8G8B8_UNORM:
+	case PIPE_FORMAT_B8G8R8A8_UNORM:
 		return NV50_2D_DST_FORMAT_A8R8G8B8_UNORM;
-	case PIPE_FORMAT_X8R8G8B8_UNORM:
+	case PIPE_FORMAT_B8G8R8X8_UNORM:
 		return NV50_2D_DST_FORMAT_X8R8G8B8_UNORM;
-	case PIPE_FORMAT_R5G6B5_UNORM:
+	case PIPE_FORMAT_B8G8R8A8_SRGB:
+		return NV50_2D_DST_FORMAT_A8R8G8B8_SRGB;
+	case PIPE_FORMAT_B8G8R8X8_SRGB:
+		return NV50_2D_DST_FORMAT_X8R8G8B8_SRGB;
+	case PIPE_FORMAT_B5G6R5_UNORM:
 		return NV50_2D_DST_FORMAT_R5G6B5_UNORM;
+	case PIPE_FORMAT_B5G5R5A1_UNORM:
+		return NV50_2D_DST_FORMAT_A1R5G5B5_UNORM;
+	case PIPE_FORMAT_B10G10R10A2_UNORM:
+		return NV50_2D_DST_FORMAT_A2R10G10B10_UNORM;
 	case PIPE_FORMAT_A8_UNORM:
+	case PIPE_FORMAT_I8_UNORM:
+	case PIPE_FORMAT_L8_UNORM:
+	case PIPE_FORMAT_R8_UNORM:
 		return NV50_2D_DST_FORMAT_R8_UNORM;
+	case PIPE_FORMAT_R32G32B32A32_FLOAT:
+		return NV50_2D_DST_FORMAT_R32G32B32A32_FLOAT;
+	case PIPE_FORMAT_R32G32B32_FLOAT:
+		return NV50_2D_DST_FORMAT_R32G32B32X32_FLOAT;
+	case PIPE_FORMAT_Z32_FLOAT:
+		return NV50_2D_DST_FORMAT_R32_FLOAT;
+
+	/* only because we require src format == dst format: */
+	case PIPE_FORMAT_R16G16_SNORM:
+	case PIPE_FORMAT_R16G16_UNORM:
+	case PIPE_FORMAT_S8_USCALED_Z24_UNORM:
+	case PIPE_FORMAT_Z24_UNORM_S8_USCALED:
+		return NV50_2D_DST_FORMAT_A8R8G8B8_UNORM;
+	case PIPE_FORMAT_L8A8_UNORM:
+	case PIPE_FORMAT_B4G4R4A4_UNORM:
+		return NV50_2D_DST_FORMAT_R16_UNORM;
+
 	default:
 		return -1;
 	}
@@ -58,8 +108,11 @@ nv50_surface_set(struct nv50_screen *screen, struct pipe_surface *ps, int dst)
  	int flags = NOUVEAU_BO_VRAM | (dst ? NOUVEAU_BO_WR : NOUVEAU_BO_RD);
 
  	format = nv50_format(ps->format);
- 	if (format < 0)
+	if (format < 0) {
+		NOUVEAU_ERR("invalid/unsupported surface format: %s\n",
+			    util_format_name(ps->format));
  		return 1;
+	}
 
  	if (!bo->tile_flags) {
  		BEGIN_RING(chan, eng2d, mthd, 2);
@@ -107,7 +160,9 @@ nv50_surface_do_copy(struct nv50_screen *screen, struct pipe_surface *dst,
 	struct nouveau_grobj *eng2d = screen->eng2d;
 	int ret;
 
-	WAIT_RING (chan, 32);
+	ret = MARK_RING(chan, 2*16 + 32, 4);
+	if (ret)
+		return ret;
 
 	ret = nv50_surface_set(screen, dst, 1);
 	if (ret)
@@ -140,56 +195,77 @@ nv50_surface_do_copy(struct nv50_screen *screen, struct pipe_surface *dst,
 
 static void
 nv50_surface_copy(struct pipe_context *pipe,
-		  struct pipe_surface *dest, unsigned destx, unsigned desty,
-		  struct pipe_surface *src, unsigned srcx, unsigned srcy,
+		  struct pipe_resource *dest, struct pipe_subresource subdst,
+		  unsigned destx, unsigned desty, unsigned destz,
+		  struct pipe_resource *src, struct pipe_subresource subsrc,
+		  unsigned srcx, unsigned srcy, unsigned srcz,
 		  unsigned width, unsigned height)
 {
 	struct nv50_context *nv50 = nv50_context(pipe);
 	struct nv50_screen *screen = nv50->screen;
+	struct pipe_surface *ps_dst, *ps_src;
 
-	assert(src->format == dest->format);
+	assert((src->format == dest->format) ||
+	       (nv50_2d_format_faithful(src->format) &&
+		nv50_2d_format_faithful(dest->format)));
 
-	nv50_surface_do_copy(screen, dest, destx, desty, src, srcx,
-				     srcy, width, height);
+	ps_src = nv50_miptree_surface_new(pipe->screen, src, subsrc.face,
+					  subsrc.level, srcz, 0 /* bind flags */);
+	ps_dst = nv50_miptree_surface_new(pipe->screen, dest, subdst.face,
+					  subdst.level, destz, 0 /* bindflags */);
+
+	nv50_surface_do_copy(screen, ps_dst, destx, desty, ps_src, srcx,
+			     srcy, width, height);
+
+	nv50_miptree_surface_del(ps_src);
+	nv50_miptree_surface_del(ps_dst);
 }
 
+/* XXX this should probably look more along the lines of nv50_clear */
 static void
-nv50_surface_fill(struct pipe_context *pipe, struct pipe_surface *dest,
-		  unsigned destx, unsigned desty, unsigned width,
-		  unsigned height, unsigned value)
+nv50_clear_render_target(struct pipe_context *pipe,
+			 struct pipe_surface *dst,
+			 const float *rgba,
+			 unsigned dstx, unsigned dsty,
+			 unsigned width, unsigned height)
 {
 	struct nv50_context *nv50 = nv50_context(pipe);
 	struct nv50_screen *screen = nv50->screen;
 	struct nouveau_channel *chan = screen->eng2d->channel;
 	struct nouveau_grobj *eng2d = screen->eng2d;
 	int format, ret;
+	union util_color uc;
+	util_pack_color(rgba, dst->format, &uc);
 
-	format = nv50_format(dest->format);
+	format = nv50_format(dst->format);
 	if (format < 0)
 		return;
 
-	WAIT_RING (chan, 32);
-
-	ret = nv50_surface_set(screen, dest, 1);
+	ret = MARK_RING (chan, 16 + 32, 2);
 	if (ret)
 		return;
 
-	BEGIN_RING(chan, eng2d, 0x0580, 3);
-	OUT_RING  (chan, 4);
+	ret = nv50_surface_set(screen, dst, 1);
+	if (ret)
+		return;
+
+	BEGIN_RING(chan, eng2d, NV50_2D_DRAW_SHAPE, 3);
+	OUT_RING  (chan, NV50_2D_DRAW_SHAPE_RECTANGLES);
 	OUT_RING  (chan, format);
-	OUT_RING  (chan, value);
-	BEGIN_RING(chan, eng2d, NV50_2D_RECT_X1, 4);
-	OUT_RING  (chan, destx);
-	OUT_RING  (chan, desty);
+	OUT_RING  (chan, uc.ui);
+	BEGIN_RING(chan, eng2d, NV50_2D_DRAW_POINT32_X(0), 4);
+	OUT_RING  (chan, dstx);
+	OUT_RING  (chan, dsty);
 	OUT_RING  (chan, width);
 	OUT_RING  (chan, height);
+
 }
 
 void
 nv50_init_surface_functions(struct nv50_context *nv50)
 {
-	nv50->pipe.surface_copy = nv50_surface_copy;
-	nv50->pipe.surface_fill = nv50_surface_fill;
+	nv50->pipe.resource_copy_region = nv50_surface_copy;
+	nv50->pipe.clear_render_target = nv50_clear_render_target;
 }
 
 

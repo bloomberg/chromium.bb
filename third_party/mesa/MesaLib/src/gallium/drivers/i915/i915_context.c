@@ -28,14 +28,13 @@
 #include "i915_context.h"
 #include "i915_state.h"
 #include "i915_screen.h"
+#include "i915_surface.h"
 #include "i915_batch.h"
-#include "i915_texture.h"
-#include "i915_reg.h"
+#include "i915_resource.h"
 
 #include "draw/draw_context.h"
 #include "pipe/p_defines.h"
-#include "pipe/internal/p_winsys_screen.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 #include "util/u_memory.h"
 #include "pipe/p_screen.h"
 
@@ -45,16 +44,12 @@
  */
 
 
-static boolean
-i915_draw_range_elements(struct pipe_context *pipe,
-                         struct pipe_buffer *indexBuffer,
-                         unsigned indexSize,
-                         unsigned min_index,
-                         unsigned max_index,
-                         unsigned prim, unsigned start, unsigned count)
+static void
+i915_draw_vbo(struct pipe_context *pipe, const struct pipe_draw_info *info)
 {
    struct i915_context *i915 = i915_context(pipe);
    struct draw_context *draw = i915->draw;
+   void *mapped_indices = NULL;
    unsigned i;
 
    if (i915->dirty)
@@ -64,27 +59,18 @@ i915_draw_range_elements(struct pipe_context *pipe,
     * Map vertex buffers
     */
    for (i = 0; i < i915->num_vertex_buffers; i++) {
-      void *buf = pipe_buffer_map(pipe->screen, i915->vertex_buffer[i].buffer,
-                                  PIPE_BUFFER_USAGE_CPU_READ);
+      void *buf = i915_buffer(i915->vertex_buffer[i].buffer)->data;
       draw_set_mapped_vertex_buffer(draw, i, buf);
    }
 
    /*
     * Map index buffer, if present
     */
-   if (indexBuffer) {
-      void *mapped_indexes = pipe_buffer_map(pipe->screen, indexBuffer,
-                                             PIPE_BUFFER_USAGE_CPU_READ);
-      draw_set_mapped_element_buffer_range(draw, indexSize,
-                                           min_index,
-                                           max_index,
-                                           mapped_indexes);
-   } else {
-      draw_set_mapped_element_buffer(draw, 0, NULL);
-   }
+   if (info->indexed && i915->index_buffer.buffer)
+      mapped_indices = i915_buffer(i915->index_buffer.buffer)->data;
+   draw_set_mapped_index_buffer(draw, mapped_indices);
 
-
-   draw_set_mapped_constant_buffer(draw,
+   draw_set_mapped_constant_buffer(draw, PIPE_SHADER_VERTEX, 0,
                                    i915->current.constants[PIPE_SHADER_VERTEX],
                                    (i915->current.num_user_constants[PIPE_SHADER_VERTEX] * 
                                       4 * sizeof(float)));
@@ -92,74 +78,17 @@ i915_draw_range_elements(struct pipe_context *pipe,
    /*
     * Do the drawing
     */
-   draw_arrays(i915->draw, prim, start, count);
+   draw_vbo(i915->draw, info);
 
    /*
     * unmap vertex/index buffers
     */
    for (i = 0; i < i915->num_vertex_buffers; i++) {
-      pipe_buffer_unmap(pipe->screen, i915->vertex_buffer[i].buffer);
       draw_set_mapped_vertex_buffer(draw, i, NULL);
    }
 
-   if (indexBuffer) {
-      pipe_buffer_unmap(pipe->screen, indexBuffer);
-      draw_set_mapped_element_buffer_range(draw, 0, start, start + count - 1, NULL);
-   }
-
-   return TRUE;
-}
-
-static boolean
-i915_draw_elements(struct pipe_context *pipe,
-                   struct pipe_buffer *indexBuffer,
-                   unsigned indexSize,
-                   unsigned prim, unsigned start, unsigned count)
-{
-   return i915_draw_range_elements(pipe, indexBuffer,
-                                   indexSize,
-                                   0, 0xffffffff,
-                                   prim, start, count);
-}
-
-static boolean
-i915_draw_arrays(struct pipe_context *pipe,
-                 unsigned prim, unsigned start, unsigned count)
-{
-   return i915_draw_elements(pipe, NULL, 0, prim, start, count);
-}
-
-
-/*
- * Is referenced functions
- */
-
-
-static unsigned int
-i915_is_texture_referenced(struct pipe_context *pipe,
-                           struct pipe_texture *texture,
-                           unsigned face, unsigned level)
-{
-   /**
-    * FIXME: Return the corrent result. We can't alays return referenced
-    *        since it causes a double flush within the vbo module.
-    */
-#if 0
-   return PIPE_REFERENCED_FOR_READ | PIPE_REFERENCED_FOR_WRITE;
-#else
-   return 0;
-#endif
-}
-
-static unsigned int
-i915_is_buffer_referenced(struct pipe_context *pipe,
-                          struct pipe_buffer *buf)
-{
-   /*
-    * Since we never expose hardware buffers to the state tracker
-    * they can never be referenced, so this isn't a lie
-    */
-   return 0;
+   if (mapped_indices)
+      draw_set_mapped_index_buffer(draw, NULL);
 }
 
 
@@ -188,7 +117,7 @@ static void i915_destroy(struct pipe_context *pipe)
 }
 
 struct pipe_context *
-i915_create_context(struct pipe_screen *screen)
+i915_create_context(struct pipe_screen *screen, void *priv)
 {
    struct i915_context *i915;
 
@@ -199,22 +128,18 @@ i915_create_context(struct pipe_screen *screen)
    i915->iws = i915_screen(screen)->iws;
    i915->base.winsys = NULL;
    i915->base.screen = screen;
+   i915->base.priv = priv;
 
    i915->base.destroy = i915_destroy;
 
    i915->base.clear = i915_clear;
 
-   i915->base.draw_arrays = i915_draw_arrays;
-   i915->base.draw_elements = i915_draw_elements;
-   i915->base.draw_range_elements = i915_draw_range_elements;
-
-   i915->base.is_texture_referenced = i915_is_texture_referenced;
-   i915->base.is_buffer_referenced = i915_is_buffer_referenced;
+   i915->base.draw_vbo = i915_draw_vbo;
 
    /*
     * Create drawing context and plug our rendering stage into it.
     */
-   i915->draw = draw_create();
+   i915->draw = draw_create(&i915->base);
    assert(i915->draw);
    if (!debug_get_bool_option("I915_NO_VBUF", FALSE)) {
       draw_set_rasterize_stage(i915->draw, i915_draw_vbuf_stage(i915));
@@ -225,6 +150,7 @@ i915_create_context(struct pipe_screen *screen)
    i915_init_surface_functions(i915);
    i915_init_state_functions(i915);
    i915_init_flush_functions(i915);
+   i915_init_resource_functions(i915);
 
    draw_install_aaline_stage(i915->draw, &i915->base);
    draw_install_aapoint_stage(i915->draw, &i915->base);

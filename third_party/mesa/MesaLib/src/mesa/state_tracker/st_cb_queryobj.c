@@ -41,25 +41,9 @@
 #include "pipe/p_defines.h"
 #include "st_context.h"
 #include "st_cb_queryobj.h"
-#include "st_public.h"
 
 
-struct st_query_object
-{
-   struct gl_query_object base;
-   struct pipe_query *pq;
-};
-
-
-/**
- * Cast wrapper
- */
-static struct st_query_object *
-st_query_object(struct gl_query_object *q)
-{
-   return (struct st_query_object *) q;
-}
-
+#if FEATURE_queryobj
 
 static struct gl_query_object *
 st_NewQueryObject(GLcontext *ctx, GLuint id)
@@ -69,6 +53,7 @@ st_NewQueryObject(GLcontext *ctx, GLuint id)
       stq->base.Id = id;
       stq->base.Ready = GL_TRUE;
       stq->pq = NULL;
+      stq->type = PIPE_QUERY_TYPES; /* an invalid value */
       return &stq->base;
    }
    return NULL;
@@ -79,7 +64,7 @@ st_NewQueryObject(GLcontext *ctx, GLuint id)
 static void
 st_DeleteQuery(GLcontext *ctx, struct gl_query_object *q)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
+   struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_query_object *stq = st_query_object(q);
 
    if (stq->pq) {
@@ -87,25 +72,49 @@ st_DeleteQuery(GLcontext *ctx, struct gl_query_object *q)
       stq->pq = NULL;
    }
 
-   _mesa_free(stq);
+   free(stq);
 }
 
 
 static void
 st_BeginQuery(GLcontext *ctx, struct gl_query_object *q)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
+   struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_query_object *stq = st_query_object(q);
+   unsigned type;
 
+   /* convert GL query type to Gallium query type */
    switch (q->Target) {
    case GL_SAMPLES_PASSED_ARB:
-      if (!stq->pq)
-	 stq->pq = pipe->create_query( pipe, PIPE_QUERY_OCCLUSION_COUNTER );
+      type = PIPE_QUERY_OCCLUSION_COUNTER;
+      break;
+   case GL_PRIMITIVES_GENERATED:
+      type = PIPE_QUERY_PRIMITIVES_GENERATED;
+      break;
+   case GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN:
+      type = PIPE_QUERY_PRIMITIVES_EMITTED;
+      break;
+   case GL_TIME_ELAPSED_EXT:
+      type = PIPE_QUERY_TIME_ELAPSED;
       break;
    default:
-      assert(0);
+      assert(0 && "unexpected query target in st_BeginQuery()");
       return;
    }
+
+   if (stq->pq && stq->type != type) {
+      /* free old query of different type */
+      pipe->destroy_query(pipe, stq->pq);
+      stq->pq = NULL;
+      stq->type = PIPE_QUERY_TYPES; /* an invalid value */
+   }
+
+   if (!stq->pq) {
+      stq->pq = pipe->create_query(pipe, type);
+      stq->type = type;
+   }
+
+   assert(stq->type == type);
 
    pipe->begin_query(pipe, stq->pq);
 }
@@ -114,7 +123,7 @@ st_BeginQuery(GLcontext *ctx, struct gl_query_object *q)
 static void
 st_EndQuery(GLcontext *ctx, struct gl_query_object *q)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
+   struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_query_object *stq = st_query_object(q);
 
    pipe->end_query(pipe, stq->pq);
@@ -124,7 +133,7 @@ st_EndQuery(GLcontext *ctx, struct gl_query_object *q)
 static void
 st_WaitQuery(GLcontext *ctx, struct gl_query_object *q)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
+   struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_query_object *stq = st_query_object(q);
 
    /* this function should only be called if we don't have a ready result */
@@ -146,15 +155,10 @@ st_WaitQuery(GLcontext *ctx, struct gl_query_object *q)
 static void
 st_CheckQuery(GLcontext *ctx, struct gl_query_object *q)
 {
-   struct pipe_context *pipe = ctx->st->pipe;
+   struct pipe_context *pipe = st_context(ctx)->pipe;
    struct st_query_object *stq = st_query_object(q);
-
-   if (!q->Ready) {
-      q->Ready = pipe->get_query_result(pipe, 
-					stq->pq,
-					FALSE,
-					&q->Result);
-   }
+   assert(!q->Ready);   /* we should not get called if Ready is TRUE */
+   q->Ready = pipe->get_query_result(pipe, stq->pq, FALSE, &q->Result);
 }
 
 
@@ -169,3 +173,5 @@ void st_init_query_functions(struct dd_function_table *functions)
    functions->WaitQuery = st_WaitQuery;
    functions->CheckQuery = st_CheckQuery;
 }
+
+#endif /* FEATURE_queryobj */

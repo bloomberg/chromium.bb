@@ -186,9 +186,9 @@ struct r128_context {
 
    /* Mirrors of some DRI state
     */
-   __DRIcontextPrivate	*driContext;	/* DRI context */
-   __DRIscreenPrivate	*driScreen;	/* DRI screen */
-   __DRIdrawablePrivate	*driDrawable;	/* DRI drawable bound to this ctx */
+   __DRIcontext	*driContext;	/* DRI context */
+   __DRIscreen	*driScreen;	/* DRI screen */
+   __DRIdrawable	*driDrawable;	/* DRI drawable bound to this ctx */
 
    unsigned int lastStamp;	        /* mirror driDrawable->lastStamp */
 
@@ -224,17 +224,18 @@ struct r128_context {
 		(rmesa->r128Screen->chipset == R128_CARD_TYPE_R128_MOBILITY)
 
 
-extern GLboolean r128CreateContext( const __GLcontextModes *glVisual,
-				    __DRIcontextPrivate *driContextPriv,
+extern GLboolean r128CreateContext( gl_api api,
+				    const __GLcontextModes *glVisual,
+				    __DRIcontext *driContextPriv,
                                     void *sharedContextPrivate );
 
-extern void r128DestroyContext( __DRIcontextPrivate * );
+extern void r128DestroyContext( __DRIcontext * );
 
-extern GLboolean r128MakeCurrent( __DRIcontextPrivate *driContextPriv,
-                                  __DRIdrawablePrivate *driDrawPriv,
-                                  __DRIdrawablePrivate *driReadPriv );
+extern GLboolean r128MakeCurrent( __DRIcontext *driContextPriv,
+                                  __DRIdrawable *driDrawPriv,
+                                  __DRIdrawable *driReadPriv );
 
-extern GLboolean r128UnbindContext( __DRIcontextPrivate *driContextPriv );
+extern GLboolean r128UnbindContext( __DRIcontext *driContextPriv );
 
 /* ================================================================
  * Debugging:

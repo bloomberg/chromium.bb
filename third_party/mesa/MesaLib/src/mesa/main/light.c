@@ -162,7 +162,7 @@ _mesa_light(GLcontext *ctx, GLuint lnum, GLenum pname, const GLfloat *params)
          return;
       FLUSH_VERTICES(ctx, _NEW_LIGHT);
       light->SpotCutoff = params[0];
-      light->_CosCutoffNeg = (GLfloat) (_mesa_cos(light->SpotCutoff * DEG2RAD));
+      light->_CosCutoffNeg = (GLfloat) (cos(light->SpotCutoff * DEG2RAD));
       if (light->_CosCutoffNeg < 0)
          light->_CosCutoff = 0;
       else
@@ -599,7 +599,7 @@ _mesa_material_bitmask( GLcontext *ctx, GLenum face, GLenum pname,
          bitmask |= MAT_BIT_FRONT_INDEXES  | MAT_BIT_BACK_INDEXES;
          break;
       default:
-         _mesa_error( ctx, GL_INVALID_ENUM, where );
+         _mesa_error( ctx, GL_INVALID_ENUM, "%s", where );
          return 0;
    }
 
@@ -610,12 +610,12 @@ _mesa_material_bitmask( GLcontext *ctx, GLenum face, GLenum pname,
       bitmask &= BACK_MATERIAL_BITS;
    }
    else if (face != GL_FRONT_AND_BACK) {
-      _mesa_error( ctx, GL_INVALID_ENUM, where );
+      _mesa_error( ctx, GL_INVALID_ENUM, "%s", where );
       return 0;
    }
 
    if (bitmask & ~legal) {
-      _mesa_error( ctx, GL_INVALID_ENUM, where );
+      _mesa_error( ctx, GL_INVALID_ENUM, "%s", where );
       return 0;
    }
 
@@ -950,7 +950,7 @@ validate_spot_exp_table( struct gl_light *l )
 
    for (i = EXP_TABLE_SIZE - 1; i > 0 ;i--) {
       if (clamp == 0) {
-	 tmp = _mesa_pow(i / (GLdouble) (EXP_TABLE_SIZE - 1), exponent);
+	 tmp = pow(i / (GLdouble) (EXP_TABLE_SIZE - 1), exponent);
 	 if (tmp < FLT_MIN * 100.0) {
 	    tmp = 0.0;
 	    clamp = 1;
@@ -1012,7 +1012,7 @@ validate_shine_table( GLcontext *ctx, GLuint side, GLfloat shininess )
             GLdouble t, x = j / (GLfloat) (SHINE_TABLE_SIZE - 1);
             if (x < 0.005) /* underflow check */
                x = 0.005;
-            t = _mesa_pow(x, shininess);
+            t = pow(x, shininess);
 	    if (t > 1e-20)
 	       m[j] = (GLfloat) t;
 	    else
@@ -1093,31 +1093,22 @@ _mesa_update_lighting( GLcontext *ctx )
     * FLUSH_UPDATE_CURRENT, as when any outstanding material changes
     * are flushed, they will update the derived state at that time.
     */
-   if (ctx->Visual.rgbMode) {
-      if (ctx->Light.Model.TwoSide)
-	 _mesa_update_material( ctx, 
-				MAT_BIT_FRONT_EMISSION |
-				MAT_BIT_FRONT_AMBIENT |
-				MAT_BIT_FRONT_DIFFUSE | 
-				MAT_BIT_FRONT_SPECULAR |
-				MAT_BIT_BACK_EMISSION |
-				MAT_BIT_BACK_AMBIENT |
-				MAT_BIT_BACK_DIFFUSE | 
-				MAT_BIT_BACK_SPECULAR);
-      else
-	 _mesa_update_material( ctx, 
-				MAT_BIT_FRONT_EMISSION |
-				MAT_BIT_FRONT_AMBIENT |
-				MAT_BIT_FRONT_DIFFUSE | 
-				MAT_BIT_FRONT_SPECULAR);
-   }
-   else {
-      static const GLfloat ci[3] = { .30F, .59F, .11F };
-      foreach(light, &ctx->Light.EnabledList) {
-	 light->_dli = DOT3(ci, light->Diffuse);
-	 light->_sli = DOT3(ci, light->Specular);
-      }
-   }
+   if (ctx->Light.Model.TwoSide)
+      _mesa_update_material(ctx,
+			    MAT_BIT_FRONT_EMISSION |
+			    MAT_BIT_FRONT_AMBIENT |
+			    MAT_BIT_FRONT_DIFFUSE |
+			    MAT_BIT_FRONT_SPECULAR |
+			    MAT_BIT_BACK_EMISSION |
+			    MAT_BIT_BACK_AMBIENT |
+			    MAT_BIT_BACK_DIFFUSE |
+			    MAT_BIT_BACK_SPECULAR);
+   else
+      _mesa_update_material(ctx,
+			    MAT_BIT_FRONT_EMISSION |
+			    MAT_BIT_FRONT_AMBIENT |
+			    MAT_BIT_FRONT_DIFFUSE |
+			    MAT_BIT_FRONT_SPECULAR);
 }
 
 
@@ -1433,7 +1424,7 @@ _mesa_free_lighting_data( GLcontext *ctx )
 
    /* Free lighting shininess exponentiation table */
    foreach_s( s, tmps, ctx->_ShineTabList ) {
-      _mesa_free( s );
+      free( s );
    }
-   _mesa_free( ctx->_ShineTabList );
+   free( ctx->_ShineTabList );
 }

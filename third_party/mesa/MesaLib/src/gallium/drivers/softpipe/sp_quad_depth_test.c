@@ -1,6 +1,7 @@
 /**************************************************************************
  * 
  * Copyright 2007 Tungsten Graphics, Inc., Cedar Park, Texas.
+ * Copyright 2010 VMware, Inc.
  * All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,7 +19,7 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
- * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * IN NO EVENT SHALL THE AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -26,15 +27,15 @@
  **************************************************************************/
 
 /**
- * \brief  Quad depth testing
+ * \brief  Quad depth / stencil testing
  */
 
 #include "pipe/p_defines.h"
+#include "util/u_format.h"
 #include "util/u_memory.h"
 #include "tgsi/tgsi_scan.h"
 #include "sp_context.h"
 #include "sp_quad.h"
-#include "sp_surface.h"
 #include "sp_quad_pipe.h"
 #include "sp_tile_cache.h"
 #include "sp_state.h"           /* for sp_fragment_shader */
@@ -73,17 +74,17 @@ get_depth_stencil_values( struct depth_data *data,
          data->bzzzz[j] = tile->data.depth32[y][x];
       }
       break;
-   case PIPE_FORMAT_X8Z24_UNORM:
-   case PIPE_FORMAT_S8Z24_UNORM:
+   case PIPE_FORMAT_Z24X8_UNORM:
+   case PIPE_FORMAT_Z24_UNORM_S8_USCALED:
       for (j = 0; j < QUAD_SIZE; j++) {
          int x = quad->input.x0 % TILE_SIZE + (j & 1);
          int y = quad->input.y0 % TILE_SIZE + (j >> 1);
          data->bzzzz[j] = tile->data.depth32[y][x] & 0xffffff;
          data->stencilVals[j] = tile->data.depth32[y][x] >> 24;
       }
-   break;
-   case PIPE_FORMAT_Z24X8_UNORM:
-   case PIPE_FORMAT_Z24S8_UNORM:
+      break;
+   case PIPE_FORMAT_X8Z24_UNORM:
+   case PIPE_FORMAT_S8_USCALED_Z24_UNORM:
       for (j = 0; j < QUAD_SIZE; j++) {
          int x = quad->input.x0 % TILE_SIZE + (j & 1);
          int y = quad->input.y0 % TILE_SIZE + (j >> 1);
@@ -91,12 +92,22 @@ get_depth_stencil_values( struct depth_data *data,
          data->stencilVals[j] = tile->data.depth32[y][x] & 0xff;
       }
       break;
+   case PIPE_FORMAT_S8_USCALED:
+      for (j = 0; j < QUAD_SIZE; j++) {
+         int x = quad->input.x0 % TILE_SIZE + (j & 1);
+         int y = quad->input.y0 % TILE_SIZE + (j >> 1);
+         data->bzzzz[j] = 0;
+         data->stencilVals[j] = tile->data.stencil8[y][x];
+      }
+      break;
    default:
       assert(0);
    }
 }
 
-/* If the shader has not been run, interpolate the depth values
+
+/**
+ * If the shader has not been run, interpolate the depth values
  * ourselves.
  */
 static void
@@ -115,6 +126,9 @@ interpolate_quad_depth( struct quad_header *quad )
 }
 
 
+/**
+ * Compute the depth_data::qzzzz[] values from the float fragment Z values.
+ */
 static void
 convert_quad_depth( struct depth_data *data, 
                     const struct quad_header *quad )
@@ -146,8 +160,8 @@ convert_quad_depth( struct depth_data *data,
          }
       }
       break;
-   case PIPE_FORMAT_X8Z24_UNORM:
-   case PIPE_FORMAT_S8Z24_UNORM:
+   case PIPE_FORMAT_Z24X8_UNORM:
+   case PIPE_FORMAT_Z24_UNORM_S8_USCALED:
       {
          float scale = (float) ((1 << 24) - 1);
 
@@ -156,8 +170,8 @@ convert_quad_depth( struct depth_data *data,
          }
       }
       break;
-   case PIPE_FORMAT_Z24X8_UNORM:
-   case PIPE_FORMAT_Z24S8_UNORM:
+   case PIPE_FORMAT_X8Z24_UNORM:
+   case PIPE_FORMAT_S8_USCALED_Z24_UNORM:
       {
          float scale = (float) ((1 << 24) - 1);
 
@@ -173,6 +187,9 @@ convert_quad_depth( struct depth_data *data,
 
 
 
+/**
+ * Write data->bzzzz[] values and data->stencilVals into the Z/stencil buffer.
+ */
 static void
 write_depth_stencil_values( struct depth_data *data,
                             struct quad_header *quad )
@@ -189,7 +206,7 @@ write_depth_stencil_values( struct depth_data *data,
          tile->data.depth16[y][x] = (ushort) data->bzzzz[j];
       }
       break;
-   case PIPE_FORMAT_X8Z24_UNORM:
+   case PIPE_FORMAT_Z24X8_UNORM:
    case PIPE_FORMAT_Z32_UNORM:
       for (j = 0; j < QUAD_SIZE; j++) {
          int x = quad->input.x0 % TILE_SIZE + (j & 1);
@@ -197,32 +214,39 @@ write_depth_stencil_values( struct depth_data *data,
          tile->data.depth32[y][x] = data->bzzzz[j];
       }
       break;
-   case PIPE_FORMAT_S8Z24_UNORM:
+   case PIPE_FORMAT_Z24_UNORM_S8_USCALED:
       for (j = 0; j < QUAD_SIZE; j++) {
          int x = quad->input.x0 % TILE_SIZE + (j & 1);
          int y = quad->input.y0 % TILE_SIZE + (j >> 1);
          tile->data.depth32[y][x] = (data->stencilVals[j] << 24) | data->bzzzz[j];
       }
       break;
-   case PIPE_FORMAT_Z24S8_UNORM:
+   case PIPE_FORMAT_S8_USCALED_Z24_UNORM:
       for (j = 0; j < QUAD_SIZE; j++) {
          int x = quad->input.x0 % TILE_SIZE + (j & 1);
          int y = quad->input.y0 % TILE_SIZE + (j >> 1);
          tile->data.depth32[y][x] = (data->bzzzz[j] << 8) | data->stencilVals[j];
       }
       break;
-   case PIPE_FORMAT_Z24X8_UNORM:
+   case PIPE_FORMAT_X8Z24_UNORM:
       for (j = 0; j < QUAD_SIZE; j++) {
          int x = quad->input.x0 % TILE_SIZE + (j & 1);
          int y = quad->input.y0 % TILE_SIZE + (j >> 1);
          tile->data.depth32[y][x] = data->bzzzz[j] << 8;
       }
       break;
+   case PIPE_FORMAT_S8_USCALED:
+      for (j = 0; j < QUAD_SIZE; j++) {
+         int x = quad->input.x0 % TILE_SIZE + (j & 1);
+         int y = quad->input.y0 % TILE_SIZE + (j >> 1);
+         tile->data.stencil8[y][x] = data->stencilVals[j];
+      }
+      break;
+
    default:
       assert(0);
    }
 }
-
 
 
 
@@ -408,12 +432,11 @@ apply_stencil_op(struct depth_data *data,
 
    
 
-/*
+/**
  * To increase efficiency, we should probably have multiple versions
  * of this function that are specifically for Z16, Z32 and FP Z buffers.
  * Try to effectively do that with codegen...
  */
-
 static boolean
 depth_test_quad(struct quad_stage *qs, 
                 struct depth_data *data,
@@ -513,16 +536,18 @@ depth_stencil_test_quad(struct quad_stage *qs,
       face = 0;
    }
 
+   /* 0 = front-face, 1 = back-face */
+   assert(face == 0 || face == 1);
+
    /* choose front or back face function, operator, etc */
    /* XXX we could do these initializations once per primitive */
    func    = softpipe->depth_stencil->stencil[face].func;
    failOp  = softpipe->depth_stencil->stencil[face].fail_op;
    zFailOp = softpipe->depth_stencil->stencil[face].zfail_op;
    zPassOp = softpipe->depth_stencil->stencil[face].zpass_op;
-   ref     = softpipe->depth_stencil->stencil[face].ref_value;
+   ref     = softpipe->stencil_ref.ref_value[face];
    wrtMask = softpipe->depth_stencil->stencil[face].writemask;
    valMask = softpipe->depth_stencil->stencil[face].valuemask;
-
 
    /* do the stencil test first */
    {
@@ -563,7 +588,7 @@ depth_stencil_test_quad(struct quad_stage *qs,
 
 
 #define ALPHATEST( FUNC, COMP )                                         \
-   static int                                                          \
+   static int                                                           \
    alpha_test_quads_##FUNC( struct quad_stage *qs,                      \
                            struct quad_header *quads[],                 \
                            unsigned nr )                                \
@@ -629,6 +654,7 @@ alpha_test_quads(struct quad_stage *qs,
    }
 }
 
+
 static unsigned mask_count[16] = 
 {
    0,                           /* 0x0 */
@@ -651,6 +677,9 @@ static unsigned mask_count[16] =
 
 
 
+/**
+ * General depth/stencil test function.  Used when there's no fast-path.
+ */
 static void
 depth_test_quads_fallback(struct quad_stage *qs, 
                           struct quad_header *quads[],
@@ -666,9 +695,8 @@ depth_test_quads_fallback(struct quad_stage *qs,
       nr = alpha_test_quads(qs, quads, nr);
    }
 
-   if (qs->softpipe->framebuffer.zsbuf && 
-       (qs->softpipe->depth_stencil->depth.enabled ||
-        qs->softpipe->depth_stencil->stencil[0].enabled)) {
+   if (qs->softpipe->depth_stencil->depth.enabled ||
+       qs->softpipe->depth_stencil->stencil[0].enabled) {
 
       data.ps = qs->softpipe->framebuffer.zsbuf;
       data.format = data.ps->format;
@@ -698,7 +726,6 @@ depth_test_quads_fallback(struct quad_stage *qs,
                write_depth_stencil_values(&data, quads[i]);
          }
 
-
          quads[pass++] = quads[i];
       }
 
@@ -714,154 +741,38 @@ depth_test_quads_fallback(struct quad_stage *qs,
       qs->next->run(qs->next, quads, nr);
 }
 
-/* XXX: this function assumes setup function actually emits linear
- * spans of quads.  It seems a lot more natural to do (early)
- * depth-testing on spans rather than quads.
+
+/**
+ * Special-case Z testing for 16-bit Zbuffer and Z buffer writes enabled.
  */
-static void
-depth_interp_z16_less_write(struct quad_stage *qs, 
-                            struct quad_header *quads[],
-                            unsigned nr)
-{
-   unsigned i, pass = 0;
-   const unsigned ix = quads[0]->input.x0;
-   const unsigned iy = quads[0]->input.y0;
-   const float fx = (float) ix;
-   const float fy = (float) iy;
-   const float dzdx = quads[0]->posCoef->dadx[2];
-   const float dzdy = quads[0]->posCoef->dady[2];
-   const float z0 = quads[0]->posCoef->a0[2] + dzdx * fx + dzdy * fy;
-   struct softpipe_cached_tile *tile;
-   ushort (*depth16)[TILE_SIZE];
-   ushort idepth[4], depth_step;
-   const float scale = 65535.0;
 
-   idepth[0] = (ushort)((z0) * scale);
-   idepth[1] = (ushort)((z0 + dzdx) * scale);
-   idepth[2] = (ushort)((z0 + dzdy) * scale);
-   idepth[3] = (ushort)((z0 + dzdx + dzdy) * scale);
+#define NAME depth_interp_z16_less_write
+#define OPERATOR <
+#include "sp_quad_depth_test_tmp.h"
 
-   depth_step = (ushort)(dzdx * 2 * scale);
+#define NAME depth_interp_z16_equal_write
+#define OPERATOR ==
+#include "sp_quad_depth_test_tmp.h"
 
-   tile = sp_get_cached_tile(qs->softpipe->zsbuf_cache, ix, iy);
+#define NAME depth_interp_z16_lequal_write
+#define OPERATOR <=
+#include "sp_quad_depth_test_tmp.h"
 
-   depth16 = (ushort (*)[TILE_SIZE])
-      &tile->data.depth16[iy % TILE_SIZE][ix % TILE_SIZE];
+#define NAME depth_interp_z16_greater_write
+#define OPERATOR >
+#include "sp_quad_depth_test_tmp.h"
 
-   for (i = 0; i < nr; i++) {
-      unsigned outmask = quads[i]->inout.mask;
-      unsigned mask = 0;
-      
-      if ((outmask & 1) && idepth[0] < depth16[0][0]) {
-         depth16[0][0] = idepth[0];
-         mask |= (1 << 0);
-      }
+#define NAME depth_interp_z16_notequal_write
+#define OPERATOR !=
+#include "sp_quad_depth_test_tmp.h"
 
-      if ((outmask & 2) && idepth[1] < depth16[0][1]) {
-         depth16[0][1] = idepth[1];
-         mask |= (1 << 1);
-      }
+#define NAME depth_interp_z16_gequal_write
+#define OPERATOR >=
+#include "sp_quad_depth_test_tmp.h"
 
-      if ((outmask & 4) && idepth[2] < depth16[1][0]) {
-         depth16[1][0] = idepth[2];
-         mask |= (1 << 2);
-      }
-
-      if ((outmask & 8) && idepth[3] < depth16[1][1]) {
-         depth16[1][1] = idepth[3];
-         mask |= (1 << 3);
-      }
-
-      idepth[0] += depth_step;
-      idepth[1] += depth_step;
-      idepth[2] += depth_step;
-      idepth[3] += depth_step;
-
-      depth16 = (ushort (*)[TILE_SIZE]) &depth16[0][2];
-
-      quads[i]->inout.mask = mask;
-      if (quads[i]->inout.mask)
-         quads[pass++] = quads[i];
-   }
-
-   if (pass)
-      qs->next->run(qs->next, quads, pass);
-
-}
-
-
-static void
-depth_interp_z16_lequal_write(struct quad_stage *qs, 
-                            struct quad_header *quads[],
-                            unsigned nr)
-{
-   unsigned i, pass = 0;
-   const unsigned ix = quads[0]->input.x0;
-   const unsigned iy = quads[0]->input.y0;
-   const float fx = (float) ix;
-   const float fy = (float) iy;
-   const float dzdx = quads[0]->posCoef->dadx[2];
-   const float dzdy = quads[0]->posCoef->dady[2];
-   const float z0 = quads[0]->posCoef->a0[2] + dzdx * fx + dzdy * fy;
-   struct softpipe_cached_tile *tile;
-   ushort (*depth16)[TILE_SIZE];
-   ushort idepth[4], depth_step;
-   const float scale = 65535.0;
-
-   idepth[0] = (ushort)((z0) * scale);
-   idepth[1] = (ushort)((z0 + dzdx) * scale);
-   idepth[2] = (ushort)((z0 + dzdy) * scale);
-   idepth[3] = (ushort)((z0 + dzdx + dzdy) * scale);
-
-   depth_step = (ushort)(dzdx * 2 * scale);
-
-   tile = sp_get_cached_tile(qs->softpipe->zsbuf_cache, ix, iy);
-
-   depth16 = (ushort (*)[TILE_SIZE])
-      &tile->data.depth16[iy % TILE_SIZE][ix % TILE_SIZE];
-
-   for (i = 0; i < nr; i++) {
-      unsigned outmask = quads[i]->inout.mask;
-      unsigned mask = 0;
-      
-      if ((outmask & 1) && idepth[0] <= depth16[0][0]) {
-         depth16[0][0] = idepth[0];
-         mask |= (1 << 0);
-      }
-
-      if ((outmask & 2) && idepth[1] <= depth16[0][1]) {
-         depth16[0][1] = idepth[1];
-         mask |= (1 << 1);
-      }
-
-      if ((outmask & 4) && idepth[2] <= depth16[1][0]) {
-         depth16[1][0] = idepth[2];
-         mask |= (1 << 2);
-      }
-
-      if ((outmask & 8) && idepth[3] <= depth16[1][1]) {
-         depth16[1][1] = idepth[3];
-         mask |= (1 << 3);
-      }
-
-      idepth[0] += depth_step;
-      idepth[1] += depth_step;
-      idepth[2] += depth_step;
-      idepth[3] += depth_step;
-
-      depth16 = (ushort (*)[TILE_SIZE]) &depth16[0][2];
-
-      quads[i]->inout.mask = mask;
-      if (quads[i]->inout.mask)
-         quads[pass++] = quads[i];
-   }
-
-   if (pass)
-      qs->next->run(qs->next, quads, pass);
-
-}
-
-
+#define NAME depth_interp_z16_always_write
+#define ALWAYS 1
+#include "sp_quad_depth_test_tmp.h"
 
 
 
@@ -884,8 +795,7 @@ choose_depth_test(struct quad_stage *qs,
 
    boolean alpha = qs->softpipe->depth_stencil->alpha.enabled;
 
-   boolean depth = (qs->softpipe->framebuffer.zsbuf && 
-                    qs->softpipe->depth_stencil->depth.enabled);
+   boolean depth = qs->softpipe->depth_stencil->depth.enabled;
 
    unsigned depthfunc = qs->softpipe->depth_stencil->depth.func;
 
@@ -895,7 +805,10 @@ choose_depth_test(struct quad_stage *qs,
 
    boolean occlusion = qs->softpipe->active_query_count;
 
+   /* default */
+   qs->run = depth_test_quads_fallback;
 
+   /* look for special cases */
    if (!alpha &&
        !depth &&
        !stencil) {
@@ -908,57 +821,62 @@ choose_depth_test(struct quad_stage *qs,
             !occlusion &&
             !stencil) 
    {
-      switch (depthfunc) {
-      case PIPE_FUNC_LESS:
-         switch (qs->softpipe->framebuffer.zsbuf->format) {
-         case PIPE_FORMAT_Z16_UNORM:
+      if (qs->softpipe->framebuffer.zsbuf->format == PIPE_FORMAT_Z16_UNORM) {
+         switch (depthfunc) {
+         case PIPE_FUNC_NEVER:
+            qs->run = depth_test_quads_fallback;
+            break;
+         case PIPE_FUNC_LESS:
             qs->run = depth_interp_z16_less_write;
             break;
-         default:
-            qs->run = depth_test_quads_fallback;
+         case PIPE_FUNC_EQUAL:
+            qs->run = depth_interp_z16_equal_write;
             break;
-         }
-         break;
-      case PIPE_FUNC_LEQUAL:
-         switch (qs->softpipe->framebuffer.zsbuf->format) {
-         case PIPE_FORMAT_Z16_UNORM:
+         case PIPE_FUNC_LEQUAL:
             qs->run = depth_interp_z16_lequal_write;
             break;
+         case PIPE_FUNC_GREATER:
+            qs->run = depth_interp_z16_greater_write;
+            break;
+         case PIPE_FUNC_NOTEQUAL:
+            qs->run = depth_interp_z16_notequal_write;
+            break;
+         case PIPE_FUNC_GEQUAL:
+            qs->run = depth_interp_z16_gequal_write;
+            break;
+         case PIPE_FUNC_ALWAYS:
+            qs->run = depth_interp_z16_always_write;
+            break;
          default:
             qs->run = depth_test_quads_fallback;
             break;
          }
-         break;
-      default:
-         qs->run = depth_test_quads_fallback;
       }
    }
-   else {
-      qs->run = depth_test_quads_fallback;
-   }
 
-
+   /* next quad/fragment stage */
    qs->run( qs, quads, nr );
 }
 
 
 
-
-
-static void depth_test_begin(struct quad_stage *qs)
+static void
+depth_test_begin(struct quad_stage *qs)
 {
    qs->run = choose_depth_test;
    qs->next->begin(qs->next);
 }
 
 
-static void depth_test_destroy(struct quad_stage *qs)
+static void
+depth_test_destroy(struct quad_stage *qs)
 {
    FREE( qs );
 }
 
 
-struct quad_stage *sp_quad_depth_test_stage( struct softpipe_context *softpipe )
+struct quad_stage *
+sp_quad_depth_test_stage(struct softpipe_context *softpipe)
 {
    struct quad_stage *stage = CALLOC_STRUCT(quad_stage);
 

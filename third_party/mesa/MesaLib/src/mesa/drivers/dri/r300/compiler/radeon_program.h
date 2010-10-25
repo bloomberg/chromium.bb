@@ -39,7 +39,7 @@
 struct radeon_compiler;
 
 struct rc_src_register {
-	rc_register_file File:3;
+	unsigned int File:4;
 
 	/** Negative values may be used for relative addressing. */
 	signed int Index:(RC_REGISTER_INDEX_BITS+1);
@@ -55,13 +55,18 @@ struct rc_src_register {
 };
 
 struct rc_dst_register {
-	rc_register_file File:3;
+	unsigned int File:3;
 
 	/** Negative values may be used for relative addressing. */
 	signed int Index:(RC_REGISTER_INDEX_BITS+1);
 	unsigned int RelAddr:1;
 
 	unsigned int WriteMask:4;
+};
+
+struct rc_presub_instruction {
+	rc_presubtract_op Opcode;
+	struct rc_src_register SrcReg[2];
 };
 
 /**
@@ -79,20 +84,20 @@ struct rc_sub_instruction {
 	/**
 	 * Opcode of this instruction, according to \ref rc_opcode enums.
 	 */
-	rc_opcode Opcode:8;
+	unsigned int Opcode:8;
 
 	/**
 	 * Saturate each value of the result to the range [0,1] or [-1,1],
 	 * according to \ref rc_saturate_mode enums.
 	 */
-	rc_saturate_mode SaturateMode:2;
+	unsigned int SaturateMode:2;
 
 	/**
 	 * Writing to the special register RC_SPECIAL_ALU_RESULT
 	 */
 	/*@{*/
-	rc_write_aluresult WriteALUResult:2;
-	rc_compare_func ALUResultCompare:3;
+	unsigned int WriteALUResult:2;
+	unsigned int ALUResultCompare:3;
 	/*@}*/
 
 	/**
@@ -103,11 +108,15 @@ struct rc_sub_instruction {
 	unsigned int TexSrcUnit:5;
 
 	/** Source texture target, one of the \ref rc_texture_target enums */
-	rc_texture_target TexSrcTarget:3;
+	unsigned int TexSrcTarget:3;
 
 	/** True if tex instruction should do shadow comparison */
 	unsigned int TexShadow:1;
 	/*@}*/
+
+	/** This holds information about the presubtract operation used by
+	 * this instruction. */
+	struct rc_presub_instruction PreSub;
 };
 
 typedef enum {
@@ -149,11 +158,6 @@ struct rc_program {
 
 	struct rc_constant_list Constants;
 };
-
-enum {
-	OPCODE_REPL_ALPHA = MAX_RC_OPCODE /**< used in paired instructions */
-};
-
 
 static inline rc_swizzle get_swz(unsigned int swz, rc_swizzle idx)
 {
@@ -197,7 +201,7 @@ static inline void reset_srcreg(struct rc_src_register* reg)
 
 
 /**
- * A transformation that can be passed to \ref radeonLocalTransform.
+ * A transformation that can be passed to \ref rc_local_transform.
  *
  * The function will be called once for each instruction.
  * It has to either emit the appropriate transformed code for the instruction
@@ -214,10 +218,9 @@ struct radeon_program_transformation {
 	void *userData;
 };
 
-void radeonLocalTransform(
+void rc_local_transform(
 	struct radeon_compiler *c,
-	int num_transformations,
-	struct radeon_program_transformation* transformations);
+	void *user);
 
 unsigned int rc_find_free_temporary(struct radeon_compiler * c);
 

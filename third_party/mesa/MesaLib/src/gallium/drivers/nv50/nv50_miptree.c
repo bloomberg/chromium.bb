@@ -22,9 +22,12 @@
 
 #include "pipe/p_state.h"
 #include "pipe/p_defines.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
+#include "util/u_format.h"
 
 #include "nv50_context.h"
+#include "nv50_resource.h"
+#include "nv50_transfer.h"
 
 /* The restrictions in tile mode selection probably aren't necessary. */
 static INLINE uint32_t
@@ -55,18 +58,90 @@ get_tile_mode(unsigned ny, unsigned d)
 	return tile_mode | 0x10;
 }
 
-static struct pipe_texture *
-nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_texture *tmp)
+static INLINE unsigned
+get_zslice_offset(unsigned tile_mode, unsigned z, unsigned pitch, unsigned nb_h)
+{
+	unsigned tile_h = get_tile_height(tile_mode);
+	unsigned tile_d = get_tile_depth(tile_mode);
+
+	/* pitch_2d == to next slice within this volume-tile */
+	/* pitch_3d == size (in bytes) of a volume-tile */
+	unsigned pitch_2d = tile_h * 64;
+	unsigned pitch_3d = tile_d * align(nb_h, tile_h) * pitch;
+
+	return (z % tile_d) * pitch_2d + (z / tile_d) * pitch_3d;
+}
+
+
+
+
+static void
+nv50_miptree_destroy(struct pipe_screen *pscreen,
+		     struct pipe_resource *pt)
+{
+	struct nv50_miptree *mt = nv50_miptree(pt);
+	unsigned l;
+
+	for (l = 0; l <= pt->last_level; ++l)
+		FREE(mt->level[l].image_offset);
+
+	nouveau_screen_bo_release(pscreen, mt->base.bo);
+	FREE(mt);
+}
+
+static boolean
+nv50_miptree_get_handle(struct pipe_screen *pscreen,
+			struct pipe_resource *pt,
+			struct winsys_handle *whandle)
+{
+	struct nv50_miptree *mt = nv50_miptree(pt);
+	unsigned stride;
+
+
+	if (!mt || !mt->base.bo)
+		return FALSE;
+
+	stride = util_format_get_stride(mt->base.base.format,
+					mt->base.base.width0);
+
+	return nouveau_screen_bo_get_handle(pscreen,
+					    mt->base.bo,
+					    stride,
+					    whandle);
+}
+
+
+const struct u_resource_vtbl nv50_miptree_vtbl =
+{
+   nv50_miptree_get_handle,	      /* get_handle */
+   nv50_miptree_destroy,	      /* resource_destroy */
+   NULL,			      /* is_resource_referenced */
+   nv50_miptree_transfer_new,	      /* get_transfer */
+   nv50_miptree_transfer_del,     /* transfer_destroy */
+   nv50_miptree_transfer_map,	      /* transfer_map */
+   u_default_transfer_flush_region,   /* transfer_flush_region */
+   nv50_miptree_transfer_unmap,	      /* transfer_unmap */
+   u_default_transfer_inline_write    /* transfer_inline_write */
+};
+
+
+
+struct pipe_resource *
+nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_resource *tmp)
 {
 	struct nouveau_device *dev = nouveau_screen(pscreen)->device;
 	struct nv50_miptree *mt = CALLOC_STRUCT(nv50_miptree);
-	struct pipe_texture *pt = &mt->base.base;
-	unsigned width = tmp->width[0], height = tmp->height[0];
-	unsigned depth = tmp->depth[0], image_alignment;
+	struct pipe_resource *pt = &mt->base.base;
+	unsigned width = tmp->width0, height = tmp->height0;
+	unsigned depth = tmp->depth0, image_alignment;
 	uint32_t tile_flags;
 	int ret, i, l;
 
+	if (!mt)
+		return NULL;
+
 	*pt = *tmp;
+	mt->base.vtbl = &nv50_miptree_vtbl;
 	pipe_reference_init(&pt->reference, 1);
 	pt->screen = pscreen;
 
@@ -74,15 +149,26 @@ nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_texture *tmp)
 	case PIPE_FORMAT_Z32_FLOAT:
 		tile_flags = 0x4800;
 		break;
-	case PIPE_FORMAT_Z24S8_UNORM:
+	case PIPE_FORMAT_S8_USCALED_Z24_UNORM:
 		tile_flags = 0x1800;
 		break;
-	case PIPE_FORMAT_X8Z24_UNORM:
-	case PIPE_FORMAT_S8Z24_UNORM:
+	case PIPE_FORMAT_Z16_UNORM:
+		tile_flags = 0x6c00;
+		break;
+	case PIPE_FORMAT_Z24X8_UNORM:
+	case PIPE_FORMAT_Z24_UNORM_S8_USCALED:
 		tile_flags = 0x2800;
 		break;
+	case PIPE_FORMAT_R32G32B32A32_FLOAT:
+	case PIPE_FORMAT_R32G32B32_FLOAT:
+		tile_flags = 0x7400;
+		break;
 	default:
-		tile_flags = 0x7000;
+		if ((pt->bind & PIPE_BIND_SCANOUT) &&
+		    util_format_get_blocksizebits(pt->format) == 32)
+			tile_flags = 0x7a00;
+		else
+			tile_flags = 0x7000;
 		break;
 	}
 
@@ -91,20 +177,15 @@ nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_texture *tmp)
 
 	for (l = 0; l <= pt->last_level; l++) {
 		struct nv50_miptree_level *lvl = &mt->level[l];
-
-		pt->width[l] = width;
-		pt->height[l] = height;
-		pt->depth[l] = depth;
-		pt->nblocksx[l] = pf_get_nblocksx(&pt->block, width);
-		pt->nblocksy[l] = pf_get_nblocksy(&pt->block, height);
+		unsigned nblocksy = util_format_get_nblocksy(pt->format, height);
 
 		lvl->image_offset = CALLOC(mt->image_nr, sizeof(int));
-		lvl->pitch = align(pt->nblocksx[l] * pt->block.size, 64);
-		lvl->tile_mode = get_tile_mode(pt->nblocksy[l], depth);
+		lvl->pitch = align(util_format_get_stride(pt->format, width), 64);
+		lvl->tile_mode = get_tile_mode(nblocksy, depth);
 
-		width = MAX2(1, width >> 1);
-		height = MAX2(1, height >> 1);
-		depth = MAX2(1, depth >> 1);
+		width = u_minify(width, 1);
+		height = u_minify(height, 1);
+		depth = u_minify(depth, 1);
 	}
 
 	image_alignment  = get_tile_height(mt->level[0].tile_mode) * 64;
@@ -121,8 +202,8 @@ nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_texture *tmp)
 			unsigned tile_d = get_tile_depth(lvl->tile_mode);
 
 			size  = lvl->pitch;
-			size *= align(pt->nblocksy[l], tile_h);
-			size *= align(pt->depth[l], tile_d);
+			size *= align(util_format_get_nblocksy(pt->format, u_minify(pt->height0, l)), tile_h);
+			size *= align(u_minify(pt->depth0, l), tile_d);
 
 			lvl->image_offset[i] = mt->total_size;
 
@@ -135,6 +216,8 @@ nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_texture *tmp)
 				  mt->level[0].tile_mode, tile_flags,
 				  &mt->base.bo);
 	if (ret) {
+		for (l = 0; l <= pt->last_level; ++l)
+			FREE(mt->level[l].image_offset);
 		FREE(mt);
 		return NULL;
 	}
@@ -142,68 +225,73 @@ nv50_miptree_create(struct pipe_screen *pscreen, const struct pipe_texture *tmp)
 	return pt;
 }
 
-static struct pipe_texture *
-nv50_miptree_blanket(struct pipe_screen *pscreen, const struct pipe_texture *pt,
-		     const unsigned *stride, struct pipe_buffer *pb)
+
+struct pipe_resource *
+nv50_miptree_from_handle(struct pipe_screen *pscreen,
+			 const struct pipe_resource *template,
+			 struct winsys_handle *whandle)
 {
-	struct nouveau_bo *bo = nouveau_bo(pb);
 	struct nv50_miptree *mt;
+	unsigned stride;
 
 	/* Only supports 2D, non-mipmapped textures for the moment */
-	if (pt->target != PIPE_TEXTURE_2D || pt->last_level != 0 ||
-	    pt->depth[0] != 1)
+	if ((template->target != PIPE_TEXTURE_2D &&
+	      template->target != PIPE_TEXTURE_RECT) ||
+	    template->last_level != 0 ||
+	    template->depth0 != 1)
 		return NULL;
 
 	mt = CALLOC_STRUCT(nv50_miptree);
 	if (!mt)
 		return NULL;
 
-	mt->base.base = *pt;
+	mt->base.bo = nouveau_screen_bo_from_handle(pscreen, whandle, &stride);
+	if (mt->base.bo == NULL) {
+		FREE(mt);
+		return NULL;
+	}
+
+
+	mt->base.base = *template;
+	mt->base.vtbl = &nv50_miptree_vtbl;
 	pipe_reference_init(&mt->base.base.reference, 1);
 	mt->base.base.screen = pscreen;
 	mt->image_nr = 1;
-	mt->level[0].pitch = *stride;
+	mt->level[0].pitch = stride;
 	mt->level[0].image_offset = CALLOC(1, sizeof(unsigned));
-	mt->level[0].tile_mode = bo->tile_mode;
+	mt->level[0].tile_mode = mt->base.bo->tile_mode;
 
-	nouveau_bo_ref(bo, &mt->base.bo);
+	/* XXX: Need to adjust bo refcount??
+	 */
+	/* nouveau_bo_ref(bo, &mt->base.bo); */
 	return &mt->base.base;
 }
 
-static void
-nv50_miptree_destroy(struct pipe_texture *pt)
-{
-	struct nv50_miptree *mt = nv50_miptree(pt);
 
-	nouveau_bo_ref(NULL, &mt->base.bo);
-	FREE(mt);
-}
 
-static struct pipe_surface *
-nv50_miptree_surface_new(struct pipe_screen *pscreen, struct pipe_texture *pt,
+/* Surface functions
+ */
+
+struct pipe_surface *
+nv50_miptree_surface_new(struct pipe_screen *pscreen, struct pipe_resource *pt,
 			 unsigned face, unsigned level, unsigned zslice,
 			 unsigned flags)
 {
 	struct nv50_miptree *mt = nv50_miptree(pt);
 	struct nv50_miptree_level *lvl = &mt->level[level];
 	struct pipe_surface *ps;
-	int img;
+	unsigned img = 0;
 
 	if (pt->target == PIPE_TEXTURE_CUBE)
 		img = face;
-	else
-	if (pt->target == PIPE_TEXTURE_3D)
-		img = zslice;
-	else
-		img = 0;
 
 	ps = CALLOC_STRUCT(pipe_surface);
 	if (!ps)
 		return NULL;
-	pipe_texture_reference(&ps->texture, pt);
+	pipe_resource_reference(&ps->texture, pt);
 	ps->format = pt->format;
-	ps->width = pt->width[level];
-	ps->height = pt->height[level];
+	ps->width = u_minify(pt->width0, level);
+	ps->height = u_minify(pt->height0, level);
 	ps->usage = flags;
 	pipe_reference_init(&ps->reference, 1);
 	ps->face = face;
@@ -211,25 +299,20 @@ nv50_miptree_surface_new(struct pipe_screen *pscreen, struct pipe_texture *pt,
 	ps->zslice = zslice;
 	ps->offset = lvl->image_offset[img];
 
+	if (pt->target == PIPE_TEXTURE_3D) {
+		unsigned nb_h = util_format_get_nblocksy(pt->format, ps->height);
+		ps->offset += get_zslice_offset(lvl->tile_mode, zslice,
+						lvl->pitch, nb_h);
+	}
+
 	return ps;
 }
 
-static void
+void
 nv50_miptree_surface_del(struct pipe_surface *ps)
 {
 	struct nv50_surface *s = nv50_surface(ps);
 
-	pipe_texture_reference(&ps->texture, NULL);
+	pipe_resource_reference(&ps->texture, NULL);
 	FREE(s);
 }
-
-void
-nv50_screen_init_miptree_functions(struct pipe_screen *pscreen)
-{
-	pscreen->texture_create = nv50_miptree_create;
-	pscreen->texture_blanket = nv50_miptree_blanket;
-	pscreen->texture_destroy = nv50_miptree_destroy;
-	pscreen->get_tex_surface = nv50_miptree_surface_new;
-	pscreen->tex_surface_destroy = nv50_miptree_surface_del;
-}
-

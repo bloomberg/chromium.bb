@@ -28,13 +28,11 @@
 
 #include "main/api_arrayelt.h"
 #include "main/glheader.h"
-#include "main/imports.h"
-#include "main/context.h"
-#include "main/macros.h"
 #include "main/mtypes.h"
 #include "main/vtxfmt.h"
-
 #include "vbo_context.h"
+
+
 
 void vbo_exec_init( GLcontext *ctx )
 {
@@ -77,7 +75,9 @@ void vbo_exec_destroy( GLcontext *ctx )
    vbo_exec_array_destroy( exec );
 }
 
-/* Really want to install these callbacks to a central facility to be
+
+/**
+ * Really want to install these callbacks to a central facility to be
  * invoked according to the state flags.  That will have to wait for a
  * mesa rework:
  */ 
@@ -90,8 +90,3 @@ void vbo_exec_invalidate_state( GLcontext *ctx, GLuint new_state )
 
    _ae_invalidate_state(ctx, new_state);
 }
-
-
-
-
-

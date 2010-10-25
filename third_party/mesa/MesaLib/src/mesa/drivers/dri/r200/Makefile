@@ -7,18 +7,13 @@ CFLAGS += $(RADEON_CFLAGS)
 
 LIBNAME = r200_dri.so
 
-MINIGLX_SOURCES = server/radeon_dri.c 
-
-ifeq ($(USING_EGL), 1)
-EGL_SOURCES = server/radeon_egl.c
-endif
-
 ifeq ($(RADEON_LDFLAGS),)
 CS_SOURCES = radeon_cs_space_drm.c radeon_bo.c radeon_cs.c
 endif
 
 RADEON_COMMON_SOURCES = \
 	radeon_bo_legacy.c \
+	radeon_buffer_objects.c \
 	radeon_common_context.c \
 	radeon_common.c \
 	radeon_cs_legacy.c \
@@ -27,17 +22,19 @@ RADEON_COMMON_SOURCES = \
 	radeon_fbo.c \
 	radeon_lock.c \
 	radeon_mipmap_tree.c \
+	radeon_pixel_read.c \
 	radeon_queryobj.c \
 	radeon_span.c \
-	radeon_texture.c
-
+	radeon_texture.c \
+	radeon_tex_copy.c \
+	radeon_tex_getimage.c \
+	radeon_tile.c
 
 DRIVER_SOURCES = r200_context.c \
 		 r200_ioctl.c \
 		 r200_state.c \
 		 r200_state_init.c \
 		 r200_cmdbuf.c \
-		 r200_pixel.c \
 		 r200_tex.c \
 		 r200_texstate.c \
 		 r200_tcl.c \
@@ -46,6 +43,7 @@ DRIVER_SOURCES = r200_context.c \
 		 r200_sanity.c \
 		 r200_fragshader.c \
 		 r200_vertprog.c \
+		 r200_blit.c \
 		 radeon_screen.c \
 		 $(EGL_SOURCES) \
 		 $(RADEON_COMMON_SOURCES) \
@@ -55,7 +53,7 @@ C_SOURCES = $(COMMON_SOURCES) $(DRIVER_SOURCES)
 
 X86_SOURCES = 
 
-DRIVER_DEFINES = -DRADEON_R200 -Wall
+DRIVER_DEFINES = -DRADEON_R200
 
 DRI_LIB_DEPS += $(RADEON_LDFLAGS)
 

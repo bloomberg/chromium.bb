@@ -59,6 +59,8 @@
 #include "imports.h"
 #include "context.h"
 #include "macros.h"
+#include "get.h"
+#include "dispatch.h"
 
 #if FEATURE_ARB_sync
 #include "syncobj.h"
@@ -78,7 +80,7 @@ static void
 _mesa_delete_sync_object(GLcontext *ctx, struct gl_sync_object *syncObj)
 {
    (void) ctx;
-   _mesa_free(syncObj);
+   free(syncObj);
 }
 
 
@@ -133,6 +135,19 @@ _mesa_init_sync_object_functions(struct dd_function_table *driver)
     */
    driver->ClientWaitSync = _mesa_wait_sync;
    driver->ServerWaitSync = _mesa_wait_sync;
+}
+
+
+void
+_mesa_init_sync_dispatch(struct _glapi_table *disp)
+{
+   SET_IsSync(disp, _mesa_IsSync);
+   SET_DeleteSync(disp, _mesa_DeleteSync);
+   SET_FenceSync(disp, _mesa_FenceSync);
+   SET_ClientWaitSync(disp, _mesa_ClientWaitSync);
+   SET_WaitSync(disp, _mesa_WaitSync);
+   SET_GetInteger64v(disp, _mesa_GetInteger64v);
+   SET_GetSynciv(disp, _mesa_GetSynciv);
 }
 
 
@@ -398,7 +413,7 @@ _mesa_GetSynciv(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei *length,
    if (size > 0) {
       const GLsizei copy_count = MIN2(size, bufSize);
 
-      _mesa_memcpy(values, v, sizeof(GLint) * copy_count);
+      memcpy(values, v, sizeof(GLint) * copy_count);
    }
 
    if (length != NULL) {

@@ -49,12 +49,6 @@
 #include "fbobject.h"
 #include "renderbuffer.h"
 
-#include "rbadaptors.h"
-
-
-/* 32-bit color index format.  Not a public format. */
-#define COLOR_INDEX32 0x424243
-
 
 /*
  * Routines for get/put values in common buffer formats follow.
@@ -87,7 +81,7 @@ get_row_ubyte(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
 {
    const GLubyte *src = (const GLubyte *) rb->Data + y * rb->Width + x;
    ASSERT(rb->DataType == GL_UNSIGNED_BYTE);
-   _mesa_memcpy(values, src, count * sizeof(GLubyte));
+   memcpy(values, src, count * sizeof(GLubyte));
 }
 
 
@@ -121,7 +115,7 @@ put_row_ubyte(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
       }
    }
    else {
-      _mesa_memcpy(dst, values, count * sizeof(GLubyte));
+      memcpy(dst, values, count * sizeof(GLubyte));
    }
 }
 
@@ -207,7 +201,7 @@ get_row_ushort(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
 {
    const void *src = rb->GetPointer(ctx, rb, x, y);
    ASSERT(rb->DataType == GL_UNSIGNED_SHORT);
-   _mesa_memcpy(values, src, count * sizeof(GLushort));
+   memcpy(values, src, count * sizeof(GLushort));
 }
 
 
@@ -241,7 +235,7 @@ put_row_ushort(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
       }
    }
    else {
-      _mesa_memcpy(dst, src, count * sizeof(GLushort));
+      memcpy(dst, src, count * sizeof(GLushort));
    }
 }
 
@@ -337,7 +331,7 @@ get_row_uint(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
    const void *src = rb->GetPointer(ctx, rb, x, y);
    ASSERT(rb->DataType == GL_UNSIGNED_INT ||
           rb->DataType == GL_UNSIGNED_INT_24_8_EXT);
-   _mesa_memcpy(values, src, count * sizeof(GLuint));
+   memcpy(values, src, count * sizeof(GLuint));
 }
 
 
@@ -373,7 +367,7 @@ put_row_uint(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
       }
    }
    else {
-      _mesa_memcpy(dst, src, count * sizeof(GLuint));
+      memcpy(dst, src, count * sizeof(GLuint));
    }
 }
 
@@ -548,7 +542,7 @@ put_mono_row_ubyte3(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
    ASSERT(rb->DataType == GL_UNSIGNED_BYTE);
    if (!mask && val0 == val1 && val1 == val2) {
       /* optimized case */
-      _mesa_memset(dst, val0, 3 * count);
+      memset(dst, val0, 3 * count);
    }
    else {
       GLuint i;
@@ -631,7 +625,7 @@ get_row_ubyte4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
    const GLubyte *src = (const GLubyte *) rb->Data + 4 * (y * rb->Width + x);
    ASSERT(rb->DataType == GL_UNSIGNED_BYTE);
    ASSERT(rb->Format == MESA_FORMAT_RGBA8888);
-   _mesa_memcpy(values, src, 4 * count * sizeof(GLubyte));
+   memcpy(values, src, 4 * count * sizeof(GLubyte));
 }
 
 
@@ -669,7 +663,7 @@ put_row_ubyte4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
       }
    }
    else {
-      _mesa_memcpy(dst, src, 4 * count * sizeof(GLubyte));
+      memcpy(dst, src, 4 * count * sizeof(GLubyte));
    }
 }
 
@@ -706,7 +700,7 @@ put_mono_row_ubyte4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
    ASSERT(rb->Format == MESA_FORMAT_RGBA8888);
    if (!mask && val == 0) {
       /* common case */
-      _mesa_bzero(dst, count * 4 * sizeof(GLubyte));
+      memset(dst, 0, count * 4 * sizeof(GLubyte));
    }
    else {
       /* general case */
@@ -788,7 +782,7 @@ get_row_ushort4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
 {
    const GLshort *src = (const GLshort *) rb->Data + 4 * (y * rb->Width + x);
    ASSERT(rb->DataType == GL_UNSIGNED_SHORT || rb->DataType == GL_SHORT);
-   _mesa_memcpy(values, src, 4 * count * sizeof(GLshort));
+   memcpy(values, src, 4 * count * sizeof(GLshort));
 }
 
 
@@ -826,7 +820,7 @@ put_row_ushort4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
       }
    }
    else {
-      _mesa_memcpy(dst, src, 4 * count * sizeof(GLushort));
+      memcpy(dst, src, 4 * count * sizeof(GLushort));
    }
 }
 
@@ -851,7 +845,7 @@ put_row_rgb_ushort4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
       }
    }
    else {
-      _mesa_memcpy(dst, src, 4 * count * sizeof(GLushort));
+      memcpy(dst, src, 4 * count * sizeof(GLushort));
    }
 }
 
@@ -868,7 +862,7 @@ put_mono_row_ushort4(GLcontext *ctx, struct gl_renderbuffer *rb, GLuint count,
    ASSERT(rb->DataType == GL_UNSIGNED_SHORT || rb->DataType == GL_SHORT);
    if (!mask && val0 == 0 && val1 == 0 && val2 == 0 && val3 == 0) {
       /* common case for clearing accum buffer */
-      _mesa_bzero(dst, count * 4 * sizeof(GLushort));
+      memset(dst, 0, count * 4 * sizeof(GLushort));
    }
    else {
       GLuint i;
@@ -992,6 +986,7 @@ _mesa_soft_renderbuffer_storage(GLcontext *ctx, struct gl_renderbuffer *rb,
       pixelSize = 4 * sizeof(GLubyte);
       break;
    case GL_RGBA16:
+   case GL_RGBA16_SNORM:
       /* for accum buffer */
       rb->Format = MESA_FORMAT_SIGNED_RGBA_16;
       rb->DataType = GL_SHORT;
@@ -1091,21 +1086,6 @@ _mesa_soft_renderbuffer_storage(GLcontext *ctx, struct gl_renderbuffer *rb,
       rb->PutMonoValues = put_mono_values_uint;
       pixelSize = sizeof(GLuint);
       break;
-   case GL_COLOR_INDEX8_EXT:
-   case GL_COLOR_INDEX16_EXT:
-   case COLOR_INDEX32:
-      rb->Format = MESA_FORMAT_CI8;
-      rb->DataType = GL_UNSIGNED_BYTE;
-      rb->GetPointer = get_pointer_ubyte;
-      rb->GetRow = get_row_ubyte;
-      rb->GetValues = get_values_ubyte;
-      rb->PutRow = put_row_ubyte;
-      rb->PutRowRGB = NULL;
-      rb->PutMonoRow = put_mono_row_ubyte;
-      rb->PutValues = put_values_ubyte;
-      rb->PutMonoValues = put_mono_values_ubyte;
-      pixelSize = sizeof(GLubyte);
-      break;
    default:
       _mesa_problem(ctx, "Bad internalFormat in _mesa_soft_renderbuffer_storage");
       return GL_FALSE;
@@ -1122,7 +1102,7 @@ _mesa_soft_renderbuffer_storage(GLcontext *ctx, struct gl_renderbuffer *rb,
 
    /* free old buffer storage */
    if (rb->Data) {
-      _mesa_free(rb->Data);
+      free(rb->Data);
       rb->Data = NULL;
    }
 
@@ -1142,7 +1122,8 @@ _mesa_soft_renderbuffer_storage(GLcontext *ctx, struct gl_renderbuffer *rb,
 
    rb->Width = width;
    rb->Height = height;
-   rb->_BaseFormat = _mesa_base_fbo_format(ctx, rb->InternalFormat);
+   rb->_BaseFormat = _mesa_base_fbo_format(ctx, internalFormat);
+   ASSERT(rb->_BaseFormat);
 
    return GL_TRUE;
 }
@@ -1179,10 +1160,10 @@ alloc_storage_alpha8(GLcontext *ctx, struct gl_renderbuffer *arb,
 
    /* next, resize my alpha buffer */
    if (arb->Data) {
-      _mesa_free(arb->Data);
+      free(arb->Data);
    }
 
-   arb->Data = _mesa_malloc(width * height * sizeof(GLubyte));
+   arb->Data = malloc(width * height * sizeof(GLubyte));
    if (arb->Data == NULL) {
       arb->Width = 0;
       arb->Height = 0;
@@ -1204,13 +1185,13 @@ static void
 delete_renderbuffer_alpha8(struct gl_renderbuffer *arb)
 {
    if (arb->Data) {
-      _mesa_free(arb->Data);
+      free(arb->Data);
    }
    ASSERT(arb->Wrapped);
    ASSERT(arb != arb->Wrapped);
    arb->Wrapped->Delete(arb->Wrapped);
    arb->Wrapped = NULL;
-   _mesa_free(arb);
+   free(arb);
 }
 
 
@@ -1319,7 +1300,7 @@ put_mono_row_alpha8(GLcontext *ctx, struct gl_renderbuffer *arb, GLuint count,
       }
    }
    else {
-      _mesa_memset(dst, val, count);
+      memset(dst, val, count);
    }
 }
 
@@ -1374,7 +1355,7 @@ copy_buffer_alpha8(struct gl_renderbuffer* dst, struct gl_renderbuffer* src)
    ASSERT(dst->Width == src->Width);
    ASSERT(dst->Height == src->Height);
 
-   _mesa_memcpy(dst->Data, src->Data, dst->Width * dst->Height * sizeof(GLubyte));
+   memcpy(dst->Data, src->Data, dst->Width * dst->Height * sizeof(GLubyte));
 }
 
 
@@ -1460,9 +1441,9 @@ void
 _mesa_delete_renderbuffer(struct gl_renderbuffer *rb)
 {
    if (rb->Data) {
-      _mesa_free(rb->Data);
+      free(rb->Data);
    }
-   _mesa_free(rb);
+   free(rb);
 }
 
 
@@ -1542,62 +1523,6 @@ _mesa_add_color_renderbuffers(GLcontext *ctx, struct gl_framebuffer *fb,
          rb->Format = MESA_FORMAT_NONE; /*XXX RGBA16;*/
       }
       rb->InternalFormat = GL_RGBA;
-
-      rb->AllocStorage = _mesa_soft_renderbuffer_storage;
-      _mesa_add_renderbuffer(fb, b, rb);
-   }
-
-   return GL_TRUE;
-}
-
-
-/**
- * Add software-based color index renderbuffers to the given framebuffer.
- * This is a helper routine for device drivers when creating a
- * window system framebuffer (not a user-created render/framebuffer).
- * Once this function is called, you can basically forget about this
- * renderbuffer; core Mesa will handle all the buffer management and
- * rendering!
- */
-GLboolean
-_mesa_add_color_index_renderbuffers(GLcontext *ctx, struct gl_framebuffer *fb,
-                                    GLuint indexBits,
-                                    GLboolean frontLeft, GLboolean backLeft,
-                                    GLboolean frontRight, GLboolean backRight)
-{
-   GLuint b;
-
-   if (indexBits > 8) {
-      _mesa_problem(ctx,
-                "Unsupported bit depth in _mesa_add_color_index_renderbuffers");
-      return GL_FALSE;
-   }
-
-   assert(MAX_COLOR_ATTACHMENTS >= 4);
-
-   for (b = BUFFER_FRONT_LEFT; b <= BUFFER_BACK_RIGHT; b++) {
-      struct gl_renderbuffer *rb;
-
-      if (b == BUFFER_FRONT_LEFT && !frontLeft)
-         continue;
-      else if (b == BUFFER_BACK_LEFT && !backLeft)
-         continue;
-      else if (b == BUFFER_FRONT_RIGHT && !frontRight)
-         continue;
-      else if (b == BUFFER_BACK_RIGHT && !backRight)
-         continue;
-
-      assert(fb->Attachment[b].Renderbuffer == NULL);
-
-      rb = _mesa_new_renderbuffer(ctx, 0);
-      if (!rb) {
-         _mesa_error(ctx, GL_OUT_OF_MEMORY, "Allocating color buffer");
-         return GL_FALSE;
-      }
-
-      assert(indexBits <= 8);
-      rb->Format = MESA_FORMAT_CI8;
-      rb->InternalFormat = GL_COLOR_INDEX;
 
       rb->AllocStorage = _mesa_soft_renderbuffer_storage;
       _mesa_add_renderbuffer(fb, b, rb);
@@ -1832,7 +1757,7 @@ _mesa_add_accum_renderbuffer(GLcontext *ctx, struct gl_framebuffer *fb,
    }
 
    rb->Format = MESA_FORMAT_SIGNED_RGBA_16;
-   rb->InternalFormat = GL_RGBA16;
+   rb->InternalFormat = GL_RGBA16_SNORM;
    rb->AllocStorage = _mesa_soft_renderbuffer_storage;
    _mesa_add_renderbuffer(fb, BUFFER_ACCUM, rb);
 
@@ -1906,21 +1831,13 @@ _mesa_add_soft_renderbuffers(struct gl_framebuffer *fb,
    GLboolean backRight = fb->Visual.stereoMode && fb->Visual.doubleBufferMode;
 
    if (color) {
-      if (fb->Visual.rgbMode) {
-         assert(fb->Visual.redBits == fb->Visual.greenBits);
-         assert(fb->Visual.redBits == fb->Visual.blueBits);
-         _mesa_add_color_renderbuffers(NULL, fb,
-                                       fb->Visual.redBits,
-                                       fb->Visual.alphaBits,
-                                       frontLeft, backLeft,
-                                       frontRight, backRight);
-      }
-      else {
-         _mesa_add_color_index_renderbuffers(NULL, fb,
-                                             fb->Visual.indexBits,
-                                             frontLeft, backLeft,
-                                             frontRight, backRight);
-      }
+      assert(fb->Visual.redBits == fb->Visual.greenBits);
+      assert(fb->Visual.redBits == fb->Visual.blueBits);
+      _mesa_add_color_renderbuffers(NULL, fb,
+				    fb->Visual.redBits,
+				    fb->Visual.alphaBits,
+				    frontLeft, backLeft,
+				    frontRight, backRight);
    }
 
    if (depth) {
@@ -1934,7 +1851,6 @@ _mesa_add_soft_renderbuffers(struct gl_framebuffer *fb,
    }
 
    if (accum) {
-      assert(fb->Visual.rgbMode);
       assert(fb->Visual.accumRedBits > 0);
       assert(fb->Visual.accumGreenBits > 0);
       assert(fb->Visual.accumBlueBits > 0);
@@ -1946,14 +1862,12 @@ _mesa_add_soft_renderbuffers(struct gl_framebuffer *fb,
    }
 
    if (aux) {
-      assert(fb->Visual.rgbMode);
       assert(fb->Visual.numAuxBuffers > 0);
       _mesa_add_aux_renderbuffers(NULL, fb, fb->Visual.redBits,
                                   fb->Visual.numAuxBuffers);
    }
 
    if (alpha) {
-      assert(fb->Visual.rgbMode);
       assert(fb->Visual.alphaBits > 0);
       _mesa_add_alpha_renderbuffers(NULL, fb, fb->Visual.alphaBits,
                                     frontLeft, backLeft,
@@ -1975,8 +1889,6 @@ void
 _mesa_add_renderbuffer(struct gl_framebuffer *fb,
                        GLuint bufferName, struct gl_renderbuffer *rb)
 {
-   GLenum baseFormat;
-
    assert(fb);
    assert(rb);
    assert(bufferName < BUFFER_COUNT);
@@ -1995,26 +1907,6 @@ _mesa_add_renderbuffer(struct gl_framebuffer *fb,
    }
    else {
       assert(!rb->Name);
-   }
-
-   /* If Mesa's compiled with deep color channels (16 or 32 bits / channel)
-    * and the device driver is expecting 8-bit values (GLubyte), we can
-    * use a "renderbuffer adaptor/wrapper" to do the necessary conversions.
-    */
-   baseFormat = _mesa_get_format_base_format(rb->Format);
-   if (baseFormat == GL_RGBA) {
-      if (CHAN_BITS == 16 && rb->DataType == GL_UNSIGNED_BYTE) {
-         GET_CURRENT_CONTEXT(ctx);
-         rb = _mesa_new_renderbuffer_16wrap8(ctx, rb);
-      }
-      else if (CHAN_BITS == 32 && rb->DataType == GL_UNSIGNED_BYTE) {
-         GET_CURRENT_CONTEXT(ctx);
-         rb = _mesa_new_renderbuffer_32wrap8(ctx, rb);
-      }
-      else if (CHAN_BITS == 32 && rb->DataType == GL_UNSIGNED_SHORT) {
-         GET_CURRENT_CONTEXT(ctx);
-         rb = _mesa_new_renderbuffer_32wrap16(ctx, rb);
-      }
    }
 
    fb->Attachment[bufferName].Type = GL_RENDERBUFFER_EXT;

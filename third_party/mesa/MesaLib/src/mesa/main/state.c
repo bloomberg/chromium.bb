@@ -41,14 +41,13 @@
 #include "light.h"
 #include "matrix.h"
 #include "pixel.h"
-#include "shader/program.h"
-#include "shader/prog_parameter.h"
+#include "program/program.h"
+#include "program/prog_parameter.h"
 #include "state.h"
 #include "stencil.h"
 #include "texenvprogram.h"
 #include "texobj.h"
 #include "texstate.h"
-#include "viewport.h"
 
 
 static void
@@ -83,12 +82,6 @@ compute_max_element(struct gl_client_array *array)
       } else {
 	 array->_MaxElement = 0;
       }
-      /* Compute the max element we can access in the VBO without going
-       * out of bounds.
-       */
-      array->_MaxElement = ((GLsizeiptrARB) array->BufferObj->Size
-                            - (GLsizeiptrARB) array->Ptr + array->StrideB
-                            - array->_ElementSize) / array->StrideB;
    }
    else {
       /* user-space array, no idea how big it is */
@@ -257,6 +250,7 @@ update_program(GLcontext *ctx)
    const struct gl_shader_program *shProg = ctx->Shader.CurrentProgram;
    const struct gl_vertex_program *prevVP = ctx->VertexProgram._Current;
    const struct gl_fragment_program *prevFP = ctx->FragmentProgram._Current;
+   const struct gl_geometry_program *prevGP = ctx->GeometryProgram._Current;
    GLbitfield new_state = 0x0;
 
    /*
@@ -298,6 +292,15 @@ update_program(GLcontext *ctx)
       _mesa_reference_fragprog(ctx, &ctx->FragmentProgram._Current, NULL);
    }
 
+   if (shProg && shProg->LinkStatus && shProg->GeometryProgram) {
+      /* Use shader programs */
+      _mesa_reference_geomprog(ctx, &ctx->GeometryProgram._Current,
+                               shProg->GeometryProgram);
+   } else {
+      /* no fragment program */
+      _mesa_reference_geomprog(ctx, &ctx->GeometryProgram._Current, NULL);
+   }
+
    /* Examine vertex program after fragment program as
     * _mesa_get_fixed_func_vertex_program() needs to know active
     * fragprog inputs.
@@ -334,7 +337,15 @@ update_program(GLcontext *ctx)
                           (struct gl_program *) ctx->FragmentProgram._Current);
       }
    }
-   
+
+   if (ctx->GeometryProgram._Current != prevGP) {
+      new_state |= _NEW_PROGRAM;
+      if (ctx->Driver.BindProgram) {
+         ctx->Driver.BindProgram(ctx, MESA_GEOMETRY_PROGRAM,
+                            (struct gl_program *) ctx->GeometryProgram._Current);
+      }
+   }
+
    if (ctx->VertexProgram._Current != prevVP) {
       new_state |= _NEW_PROGRAM;
       if (ctx->Driver.BindProgram) {
@@ -359,6 +370,16 @@ update_program_constants(GLcontext *ctx)
       const struct gl_program_parameter_list *params =
          ctx->FragmentProgram._Current->Base.Parameters;
       if (params && params->StateFlags & ctx->NewState) {
+         new_state |= _NEW_PROGRAM_CONSTANTS;
+      }
+   }
+
+   if (ctx->GeometryProgram._Current) {
+      const struct gl_program_parameter_list *params =
+         ctx->GeometryProgram._Current->Base.Parameters;
+      /*FIXME: StateFlags is always 0 because we have unnamed constant
+       *       not state changes */
+      if (params /*&& params->StateFlags & ctx->NewState*/) {
          new_state |= _NEW_PROGRAM_CONSTANTS;
       }
    }
@@ -544,7 +565,7 @@ _mesa_update_state_locked( GLcontext *ctx )
 
    /* Determine which state flags effect vertex/fragment program state */
    if (ctx->FragmentProgram._MaintainTexEnvProgram) {
-      prog_flags |= (_NEW_TEXTURE | _NEW_FOG |
+      prog_flags |= (_NEW_BUFFERS | _NEW_TEXTURE | _NEW_FOG |
 		     _NEW_ARRAY | _NEW_LIGHT | _NEW_POINT | _NEW_RENDERMODE |
 		     _NEW_PROGRAM);
    }
@@ -589,9 +610,6 @@ _mesa_update_state_locked( GLcontext *ctx )
    if (new_state & _DD_NEW_SEPARATE_SPECULAR)
       update_separate_specular( ctx );
 
-   if (new_state & (_NEW_ARRAY | _NEW_PROGRAM | _NEW_BUFFER_OBJECT))
-      update_arrays( ctx );
-
    if (new_state & (_NEW_BUFFERS | _NEW_VIEWPORT))
       update_viewport_matrix(ctx);
 
@@ -627,6 +645,8 @@ _mesa_update_state_locked( GLcontext *ctx )
       new_prog_state |= update_program( ctx );
    }
 
+   if (new_state & (_NEW_ARRAY | _NEW_PROGRAM | _NEW_BUFFER_OBJECT))
+      update_arrays( ctx );
 
  out:
    new_prog_state |= update_program_constants(ctx);
@@ -689,7 +709,7 @@ _mesa_set_varying_vp_inputs( GLcontext *ctx,
    if (ctx->varying_vp_inputs != varying_inputs) {
       ctx->varying_vp_inputs = varying_inputs;
       ctx->NewState |= _NEW_ARRAY;
-      /*_mesa_printf("%s %x\n", __FUNCTION__, varying_inputs);*/
+      /*printf("%s %x\n", __FUNCTION__, varying_inputs);*/
    }
 }
 

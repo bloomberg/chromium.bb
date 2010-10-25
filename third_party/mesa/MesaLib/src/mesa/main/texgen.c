@@ -37,7 +37,7 @@
 #include "main/texgen.h"
 #include "main/texstate.h"
 #include "math/m_matrix.h"
-#include "glapi/dispatch.h"
+#include "main/dispatch.h"
 
 
 #if FEATURE_texgen
@@ -192,6 +192,38 @@ _mesa_TexGend(GLenum coord, GLenum pname, GLdouble param )
    _mesa_TexGenfv( coord, pname, p );
 }
 
+#if FEATURE_ES1
+
+void GLAPIENTRY
+_es_GetTexGenfv(GLenum coord, GLenum pname, GLfloat *params)
+{
+   ASSERT(coord == GL_TEXTURE_GEN_STR_OES);
+   _mesa_GetTexGenfv(GL_S, pname, params);
+}
+
+
+void GLAPIENTRY
+_es_TexGenf(GLenum coord, GLenum pname, GLfloat param)
+{
+   ASSERT(coord == GL_TEXTURE_GEN_STR_OES);
+   /* set S, T, and R at the same time */
+   _mesa_TexGenf(GL_S, pname, param);
+   _mesa_TexGenf(GL_T, pname, param);
+   _mesa_TexGenf(GL_R, pname, param);
+}
+
+
+void GLAPIENTRY
+_es_TexGenfv(GLenum coord, GLenum pname, const GLfloat *params)
+{
+   ASSERT(coord == GL_TEXTURE_GEN_STR_OES);
+   /* set S, T, and R at the same time */
+   _mesa_TexGenfv(GL_S, pname, params);
+   _mesa_TexGenfv(GL_T, pname, params);
+   _mesa_TexGenfv(GL_R, pname, params);
+}
+
+#endif
 
 static void GLAPIENTRY
 _mesa_TexGendv(GLenum coord, GLenum pname, const GLdouble *params )
@@ -210,7 +242,7 @@ _mesa_TexGendv(GLenum coord, GLenum pname, const GLdouble *params )
 }
 
 
-static void GLAPIENTRY
+void GLAPIENTRY
 _mesa_TexGenf( GLenum coord, GLenum pname, GLfloat param )
 {
    GLfloat p[4];
@@ -269,7 +301,7 @@ _mesa_GetTexGendv( GLenum coord, GLenum pname, GLdouble *params )
 
 
 
-static void GLAPIENTRY
+void GLAPIENTRY
 _mesa_GetTexGenfv( GLenum coord, GLenum pname, GLfloat *params )
 {
    struct gl_texture_unit *texUnit;

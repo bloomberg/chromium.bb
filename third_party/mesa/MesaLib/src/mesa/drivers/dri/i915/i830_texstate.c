@@ -27,6 +27,7 @@
 
 #include "main/mtypes.h"
 #include "main/enums.h"
+#include "main/colormac.h"
 
 #include "intel_mipmap_tree.h"
 #include "intel_tex.h"
@@ -121,17 +122,18 @@ i830_update_tex_unit(struct intel_context *intel, GLuint unit, GLuint ss3)
    GLuint *state = i830->state.Tex[unit], format, pitch;
    GLint lodbias;
    GLubyte border[4];
+   GLuint dst_x, dst_y;
 
    memset(state, 0, sizeof(state));
 
    /*We need to refcount these. */
 
    if (i830->state.tex_buffer[unit] != NULL) {
-       dri_bo_unreference(i830->state.tex_buffer[unit]);
+       drm_intel_bo_unreference(i830->state.tex_buffer[unit]);
        i830->state.tex_buffer[unit] = NULL;
    }
 
-   if (!intelObj->imageOverride && !intel_finalize_mipmap_tree(intel, unit))
+   if (!intel_finalize_mipmap_tree(intel, unit))
       return GL_FALSE;
 
    /* Get first image here, since intelObj->firstLevel will get set in
@@ -139,42 +141,20 @@ i830_update_tex_unit(struct intel_context *intel, GLuint unit, GLuint ss3)
     */
    firstImage = tObj->Image[0][intelObj->firstLevel];
 
-   if (intelObj->imageOverride) {
-      i830->state.tex_buffer[unit] = NULL;
-      i830->state.tex_offset[unit] = intelObj->textureOffset;
+   intel_miptree_get_image_offset(intelObj->mt, intelObj->firstLevel, 0, 0,
+				  &dst_x, &dst_y);
 
-      switch (intelObj->depthOverride) {
-      case 32:
-	 format = MAPSURF_32BIT | MT_32BIT_ARGB8888;
-	 break;
-      case 24:
-      default:
-	 format = MAPSURF_32BIT | MT_32BIT_XRGB8888;
-	 break;
-      case 16:
-	 format = MAPSURF_16BIT | MT_16BIT_RGB565;
-	 break;
-      }
+   drm_intel_bo_reference(intelObj->mt->region->buffer);
+   i830->state.tex_buffer[unit] = intelObj->mt->region->buffer;
+   pitch = intelObj->mt->region->pitch * intelObj->mt->cpp;
 
-      pitch = intelObj->pitchOverride;
-   } else {
-      GLuint dst_x, dst_y;
+   /* XXX: This calculation is probably broken for tiled images with
+    * a non-page-aligned offset.
+    */
+   i830->state.tex_offset[unit] = dst_x * intelObj->mt->cpp + dst_y * pitch;
 
-      intel_miptree_get_image_offset(intelObj->mt, intelObj->firstLevel, 0, 0,
-				     &dst_x, &dst_y);
-
-      dri_bo_reference(intelObj->mt->region->buffer);
-      i830->state.tex_buffer[unit] = intelObj->mt->region->buffer;
-      /* XXX: This calculation is probably broken for tiled images with
-       * a non-page-aligned offset.
-       */
-      i830->state.tex_offset[unit] = (dst_x + dst_y * intelObj->mt->pitch) *
-	 intelObj->mt->cpp;
-
-      format = translate_texture_format(firstImage->TexFormat,
-					firstImage->InternalFormat);
-      pitch = intelObj->mt->pitch * intelObj->mt->cpp;
-   }
+   format = translate_texture_format(firstImage->TexFormat,
+				     firstImage->InternalFormat);
 
    state[I830_TEXREG_TM0LI] = (_3DSTATE_LOAD_STATE_IMMEDIATE_2 |
                                (LOAD_TEXTURE_MAP0 << unit) | 4);
@@ -303,16 +283,15 @@ i830_update_tex_unit(struct intel_context *intel, GLuint unit, GLuint ss3)
    }
 
    /* convert border color from float to ubyte */
-   CLAMPED_FLOAT_TO_UBYTE(border[0], tObj->BorderColor[0]);
-   CLAMPED_FLOAT_TO_UBYTE(border[1], tObj->BorderColor[1]);
-   CLAMPED_FLOAT_TO_UBYTE(border[2], tObj->BorderColor[2]);
-   CLAMPED_FLOAT_TO_UBYTE(border[3], tObj->BorderColor[3]);
+   CLAMPED_FLOAT_TO_UBYTE(border[0], tObj->BorderColor.f[0]);
+   CLAMPED_FLOAT_TO_UBYTE(border[1], tObj->BorderColor.f[1]);
+   CLAMPED_FLOAT_TO_UBYTE(border[2], tObj->BorderColor.f[2]);
+   CLAMPED_FLOAT_TO_UBYTE(border[3], tObj->BorderColor.f[3]);
 
-   state[I830_TEXREG_TM0S4] = INTEL_PACKCOLOR8888(border[0],
-                                                  border[1],
-                                                  border[2],
-                                                  border[3]);
-
+   state[I830_TEXREG_TM0S4] = PACK_COLOR_8888(border[3],
+					      border[0],
+					      border[1],
+					      border[2]);
 
    I830_ACTIVESTATE(i830, I830_UPLOAD_TEX(unit), GL_TRUE);
    /* memcmp was already disabled, but definitely won't work as the
@@ -348,7 +327,7 @@ i830UpdateTextureState(struct intel_context *intel)
             I830_ACTIVESTATE(i830, I830_UPLOAD_TEX(i), GL_FALSE);
 
 	 if (i830->state.tex_buffer[i] != NULL) {
-	    dri_bo_unreference(i830->state.tex_buffer[i]);
+	    drm_intel_bo_unreference(i830->state.tex_buffer[i]);
 	    i830->state.tex_buffer[i] = NULL;
 	 }
          break;

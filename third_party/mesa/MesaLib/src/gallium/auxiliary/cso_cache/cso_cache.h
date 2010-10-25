@@ -53,6 +53,7 @@
   * - rasterizer (old setup)
   * - sampler
   * - vertex shader
+  * - vertex elements
   *
   * Things that are not constant state objects include:
   * - blend_color
@@ -90,7 +91,8 @@ enum cso_cache_type {
    CSO_DEPTH_STENCIL_ALPHA,
    CSO_RASTERIZER,
    CSO_FRAGMENT_SHADER,
-   CSO_VERTEX_SHADER
+   CSO_VERTEX_SHADER,
+   CSO_VELEMENTS
 };
 
 typedef void (*cso_state_callback)(void *ctx, void *obj);
@@ -144,6 +146,18 @@ struct cso_sampler {
    struct pipe_context *context;
 };
 
+struct cso_velems_state {
+   unsigned count;
+   struct pipe_vertex_element velems[PIPE_MAX_ATTRIBS];
+};
+
+struct cso_velements {
+   struct cso_velems_state state;
+   void *data;
+   cso_state_callback delete_state;
+   struct pipe_context *context;
+};
+
 unsigned cso_construct_key(void *item, int item_size);
 
 struct cso_cache *cso_cache_create(void);
@@ -160,7 +174,7 @@ struct cso_hash_iter cso_find_state(struct cso_cache *sc,
                                     unsigned hash_key, enum cso_cache_type type);
 struct cso_hash_iter cso_find_state_template(struct cso_cache *sc,
                                              unsigned hash_key, enum cso_cache_type type,
-                                             void *templ);
+                                             void *templ, unsigned size);
 void cso_for_each_state(struct cso_cache *sc, enum cso_cache_type type,
                         cso_state_callback func, void *user_data);
 void * cso_take_state(struct cso_cache *sc, unsigned hash_key,

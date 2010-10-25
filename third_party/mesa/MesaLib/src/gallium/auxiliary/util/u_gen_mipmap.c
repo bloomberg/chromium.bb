@@ -37,14 +37,17 @@
 #include "pipe/p_context.h"
 #include "util/u_debug.h"
 #include "pipe/p_defines.h"
-#include "pipe/p_inlines.h"
+#include "util/u_inlines.h"
 #include "pipe/p_shader_tokens.h"
 #include "pipe/p_state.h"
 
+#include "util/u_format.h"
 #include "util/u_memory.h"
 #include "util/u_draw_quad.h"
 #include "util/u_gen_mipmap.h"
 #include "util/u_simple_shaders.h"
+#include "util/u_math.h"
+#include "util/u_texture.h"
 
 #include "cso_cache/cso_context.h"
 
@@ -58,11 +61,13 @@ struct gen_mipmap_state
    struct pipe_depth_stencil_alpha_state depthstencil;
    struct pipe_rasterizer_state rasterizer;
    struct pipe_sampler_state sampler;
+   struct pipe_clip_state clip;
+   struct pipe_vertex_element velem[2];
 
    void *vs;
-   void *fs;
+   void *fs2d, *fsCube;
 
-   struct pipe_buffer *vbuf;  /**< quad vertices */
+   struct pipe_resource *vbuf;  /**< quad vertices */
    unsigned vbuf_slot;
 
    float vertices[4][2][4];   /**< vertex/texcoords for quad */
@@ -919,29 +924,30 @@ format_to_type_comps(enum pipe_format pformat,
 {
    /* XXX I think this could be implemented in terms of the pf_*() functions */
    switch (pformat) {
-   case PIPE_FORMAT_A8R8G8B8_UNORM:
-   case PIPE_FORMAT_X8R8G8B8_UNORM:
    case PIPE_FORMAT_B8G8R8A8_UNORM:
    case PIPE_FORMAT_B8G8R8X8_UNORM:
-   case PIPE_FORMAT_R8G8B8A8_SRGB:
-   case PIPE_FORMAT_R8G8B8X8_SRGB:
-   case PIPE_FORMAT_A8R8G8B8_SRGB:
-   case PIPE_FORMAT_X8R8G8B8_SRGB:
+   case PIPE_FORMAT_A8R8G8B8_UNORM:
+   case PIPE_FORMAT_X8R8G8B8_UNORM:
+   case PIPE_FORMAT_A8B8G8R8_SRGB:
+   case PIPE_FORMAT_X8B8G8R8_SRGB:
    case PIPE_FORMAT_B8G8R8A8_SRGB:
    case PIPE_FORMAT_B8G8R8X8_SRGB:
+   case PIPE_FORMAT_A8R8G8B8_SRGB:
+   case PIPE_FORMAT_X8R8G8B8_SRGB:
    case PIPE_FORMAT_R8G8B8_SRGB:
       *datatype = DTYPE_UBYTE;
       *comps = 4;
       return;
-   case PIPE_FORMAT_A1R5G5B5_UNORM:
+   case PIPE_FORMAT_B5G5R5X1_UNORM:
+   case PIPE_FORMAT_B5G5R5A1_UNORM:
       *datatype = DTYPE_USHORT_1_5_5_5_REV;
       *comps = 4;
       return;
-   case PIPE_FORMAT_A4R4G4B4_UNORM:
+   case PIPE_FORMAT_B4G4R4A4_UNORM:
       *datatype = DTYPE_USHORT_4_4_4_4;
       *comps = 4;
       return;
-   case PIPE_FORMAT_R5G6B5_UNORM:
+   case PIPE_FORMAT_B5G6R5_UNORM:
       *datatype = DTYPE_USHORT_5_6_5;
       *comps = 3;
       return;
@@ -952,8 +958,8 @@ format_to_type_comps(enum pipe_format pformat,
       *datatype = DTYPE_UBYTE;
       *comps = 1;
       return;
-   case PIPE_FORMAT_A8L8_UNORM:
-   case PIPE_FORMAT_A8L8_SRGB:
+   case PIPE_FORMAT_L8A8_UNORM:
+   case PIPE_FORMAT_L8A8_SRGB:
       *datatype = DTYPE_UBYTE;
       *comps = 2;
       return;
@@ -995,7 +1001,7 @@ reduce_2d(enum pipe_format pformat,
 {
    enum dtype datatype;
    uint comps;
-   const int bpt = pf_get_size(pformat);
+   const int bpt = util_format_get_blocksize(pformat);
    const ubyte *srcA, *srcB;
    ubyte *dst;
    int row;
@@ -1034,7 +1040,7 @@ reduce_3d(enum pipe_format pformat,
           int dstWidth, int dstHeight, int dstDepth,
           int dstRowStride, ubyte *dstPtr)
 {
-   const int bpt = pf_get_size(pformat);
+   const int bpt = util_format_get_blocksize(pformat);
    const int border = 0;
    int img, row;
    int bytesPerSrcImage, bytesPerDstImage;
@@ -1066,7 +1072,7 @@ reduce_3d(enum pipe_format pformat,
     */
 
    /*
-   _mesa_printf("mip3d %d x %d x %d  ->  %d x %d x %d\n",
+   printf("mip3d %d x %d x %d  ->  %d x %d x %d\n",
           srcWidth, srcHeight, srcDepth, dstWidth, dstHeight, dstDepth);
    */
 
@@ -1110,11 +1116,10 @@ reduce_3d(enum pipe_format pformat,
 
 static void
 make_1d_mipmap(struct gen_mipmap_state *ctx,
-               struct pipe_texture *pt,
+               struct pipe_resource *pt,
                uint face, uint baseLevel, uint lastLevel)
 {
    struct pipe_context *pipe = ctx->pipe;
-   struct pipe_screen *screen = pipe->screen;
    const uint zslice = 0;
    uint dstLevel;
 
@@ -1123,79 +1128,78 @@ make_1d_mipmap(struct gen_mipmap_state *ctx,
       struct pipe_transfer *srcTrans, *dstTrans;
       void *srcMap, *dstMap;
       
-      srcTrans = screen->get_tex_transfer(screen, pt, face, srcLevel, zslice,
+      srcTrans = pipe_get_transfer(pipe, pt, face, srcLevel, zslice,
                                           PIPE_TRANSFER_READ, 0, 0,
-                                          pt->width[srcLevel],
-                                          pt->height[srcLevel]);
-      dstTrans = screen->get_tex_transfer(screen, pt, face, dstLevel, zslice,
+                                          u_minify(pt->width0, srcLevel),
+                                          u_minify(pt->height0, srcLevel));
+      dstTrans = pipe_get_transfer(pipe, pt, face, dstLevel, zslice,
                                           PIPE_TRANSFER_WRITE, 0, 0,
-                                          pt->width[dstLevel],
-                                          pt->height[dstLevel]);
+                                          u_minify(pt->width0, dstLevel),
+                                          u_minify(pt->height0, dstLevel));
 
-      srcMap = (ubyte *) screen->transfer_map(screen, srcTrans);
-      dstMap = (ubyte *) screen->transfer_map(screen, dstTrans);
+      srcMap = (ubyte *) pipe->transfer_map(pipe, srcTrans);
+      dstMap = (ubyte *) pipe->transfer_map(pipe, dstTrans);
 
       reduce_1d(pt->format,
-                srcTrans->width, srcMap,
-                dstTrans->width, dstMap);
+                srcTrans->box.width, srcMap,
+                dstTrans->box.width, dstMap);
 
-      screen->transfer_unmap(screen, srcTrans);
-      screen->transfer_unmap(screen, dstTrans);
+      pipe->transfer_unmap(pipe, srcTrans);
+      pipe->transfer_unmap(pipe, dstTrans);
 
-      screen->tex_transfer_destroy(srcTrans);
-      screen->tex_transfer_destroy(dstTrans);
+      pipe->transfer_destroy(pipe, srcTrans);
+      pipe->transfer_destroy(pipe, dstTrans);
    }
 }
 
 
 static void
 make_2d_mipmap(struct gen_mipmap_state *ctx,
-               struct pipe_texture *pt,
+               struct pipe_resource *pt,
                uint face, uint baseLevel, uint lastLevel)
 {
    struct pipe_context *pipe = ctx->pipe;
-   struct pipe_screen *screen = pipe->screen;
    const uint zslice = 0;
    uint dstLevel;
    
-   assert(pt->block.width == 1);
-   assert(pt->block.height == 1);
+   assert(util_format_get_blockwidth(pt->format) == 1);
+   assert(util_format_get_blockheight(pt->format) == 1);
 
    for (dstLevel = baseLevel + 1; dstLevel <= lastLevel; dstLevel++) {
       const uint srcLevel = dstLevel - 1;
       struct pipe_transfer *srcTrans, *dstTrans;
       ubyte *srcMap, *dstMap;
       
-      srcTrans = screen->get_tex_transfer(screen, pt, face, srcLevel, zslice,
-                                          PIPE_TRANSFER_READ, 0, 0,
-                                          pt->width[srcLevel],
-                                          pt->height[srcLevel]);
-      dstTrans = screen->get_tex_transfer(screen, pt, face, dstLevel, zslice,
-                                          PIPE_TRANSFER_WRITE, 0, 0,
-                                          pt->width[dstLevel],
-                                          pt->height[dstLevel]);
+      srcTrans = pipe_get_transfer(pipe, pt, face, srcLevel, zslice,
+				   PIPE_TRANSFER_READ, 0, 0,
+				   u_minify(pt->width0, srcLevel),
+				   u_minify(pt->height0, srcLevel));
+      dstTrans = pipe_get_transfer(pipe, pt, face, dstLevel, zslice,
+				   PIPE_TRANSFER_WRITE, 0, 0,
+				   u_minify(pt->width0, dstLevel),
+				   u_minify(pt->height0, dstLevel));
 
-      srcMap = (ubyte *) screen->transfer_map(screen, srcTrans);
-      dstMap = (ubyte *) screen->transfer_map(screen, dstTrans);
+      srcMap = (ubyte *) pipe->transfer_map(pipe, srcTrans);
+      dstMap = (ubyte *) pipe->transfer_map(pipe, dstTrans);
 
       reduce_2d(pt->format,
-                srcTrans->width, srcTrans->height,
+                srcTrans->box.width, srcTrans->box.height,
                 srcTrans->stride, srcMap,
-                dstTrans->width, dstTrans->height,
+                dstTrans->box.width, dstTrans->box.height,
                 dstTrans->stride, dstMap);
 
-      screen->transfer_unmap(screen, srcTrans);
-      screen->transfer_unmap(screen, dstTrans);
+      pipe->transfer_unmap(pipe, srcTrans);
+      pipe->transfer_unmap(pipe, dstTrans);
 
-      screen->tex_transfer_destroy(srcTrans);
-      screen->tex_transfer_destroy(dstTrans);
+      pipe->transfer_destroy(pipe, srcTrans);
+      pipe->transfer_destroy(pipe, dstTrans);
    }
 }
 
 
 static void
 make_3d_mipmap(struct gen_mipmap_state *ctx,
-               struct pipe_texture *pt,
+               struct pipe_resource *pt,
                uint face, uint baseLevel, uint lastLevel)
 {
 #if 0
@@ -1203,25 +1207,25 @@ make_3d_mipmap(struct gen_mipmap_state *ctx,
    struct pipe_screen *screen = pipe->screen;
    uint dstLevel, zslice = 0;
 
-   assert(pt->block.width == 1);
-   assert(pt->block.height == 1);
+   assert(util_format_get_blockwidth(pt->format) == 1);
+   assert(util_format_get_blockheight(pt->format) == 1);
 
    for (dstLevel = baseLevel + 1; dstLevel <= lastLevel; dstLevel++) {
       const uint srcLevel = dstLevel - 1;
       struct pipe_transfer *srcTrans, *dstTrans;
       ubyte *srcMap, *dstMap;
       
-      srcTrans = screen->get_tex_transfer(screen, pt, face, srcLevel, zslice,
+      srcTrans = pipe->get_transfer(pipe, pt, face, srcLevel, zslice,
                                           PIPE_TRANSFER_READ, 0, 0,
-                                          pt->width[srcLevel],
-                                          pt->height[srcLevel]);
-      dstTrans = screen->get_tex_transfer(screen, pt, face, dstLevel, zslice,
+                                          u_minify(pt->width0, srcLevel),
+                                          u_minify(pt->height0, srcLevel));
+      dstTrans = pipe->get_transfer(pipe, pt, face, dstLevel, zslice,
                                           PIPE_TRANSFER_WRITE, 0, 0,
-                                          pt->width[dstLevel],
-                                          pt->height[dstLevel]);
+                                          u_minify(pt->width0, dstLevel),
+                                          u_minify(pt->height0, dstLevel));
 
-      srcMap = (ubyte *) screen->transfer_map(screen, srcTrans);
-      dstMap = (ubyte *) screen->transfer_map(screen, dstTrans);
+      srcMap = (ubyte *) pipe->transfer_map(pipe, srcTrans);
+      dstMap = (ubyte *) pipe->transfer_map(pipe, dstTrans);
 
       reduce_3d(pt->format,
                 srcTrans->width, srcTrans->height,
@@ -1229,11 +1233,11 @@ make_3d_mipmap(struct gen_mipmap_state *ctx,
                 dstTrans->width, dstTrans->height,
                 dstTrans->stride, dstMap);
 
-      screen->transfer_unmap(screen, srcTrans);
-      screen->transfer_unmap(screen, dstTrans);
+      pipe->transfer_unmap(pipe, srcTrans);
+      pipe->transfer_unmap(pipe, dstTrans);
 
-      screen->tex_transfer_destroy(srcTrans);
-      screen->tex_transfer_destroy(dstTrans);
+      pipe->transfer_destroy(pipe, srcTrans);
+      pipe->transfer_destroy(pipe, dstTrans);
    }
 #else
    (void) reduce_3d;
@@ -1243,7 +1247,7 @@ make_3d_mipmap(struct gen_mipmap_state *ctx,
 
 static void
 fallback_gen_mipmap(struct gen_mipmap_state *ctx,
-                    struct pipe_texture *pt,
+                    struct pipe_resource *pt,
                     uint face, uint baseLevel, uint lastLevel)
 {
    switch (pt->target) {
@@ -1251,6 +1255,7 @@ fallback_gen_mipmap(struct gen_mipmap_state *ctx,
       make_1d_mipmap(ctx, pt, face, baseLevel, lastLevel);
       break;
    case PIPE_TEXTURE_2D:
+   case PIPE_TEXTURE_RECT:
    case PIPE_TEXTURE_CUBE:
       make_2d_mipmap(ctx, pt, face, baseLevel, lastLevel);
       break;
@@ -1284,16 +1289,14 @@ util_create_gen_mipmap(struct pipe_context *pipe,
 
    /* disabled blending/masking */
    memset(&ctx->blend, 0, sizeof(ctx->blend));
-   ctx->blend.colormask = PIPE_MASK_RGBA;
+   ctx->blend.rt[0].colormask = PIPE_MASK_RGBA;
 
    /* no-op depth/stencil/alpha */
    memset(&ctx->depthstencil, 0, sizeof(ctx->depthstencil));
 
    /* rasterizer */
    memset(&ctx->rasterizer, 0, sizeof(ctx->rasterizer));
-   ctx->rasterizer.front_winding = PIPE_WINDING_CW;
-   ctx->rasterizer.cull_mode = PIPE_WINDING_NONE;
-   ctx->rasterizer.bypass_vs_clip_and_viewport = 1;
+   ctx->rasterizer.cull_face = PIPE_FACE_NONE;
    ctx->rasterizer.gl_rasterization_rules = 1;
 
    /* sampler state */
@@ -1303,6 +1306,15 @@ util_create_gen_mipmap(struct pipe_context *pipe,
    ctx->sampler.wrap_r = PIPE_TEX_WRAP_CLAMP_TO_EDGE;
    ctx->sampler.min_mip_filter = PIPE_TEX_MIPFILTER_NEAREST;
    ctx->sampler.normalized_coords = 1;
+
+   /* vertex elements state */
+   memset(&ctx->velem[0], 0, sizeof(ctx->velem[0]) * 2);
+   for (i = 0; i < 2; i++) {
+      ctx->velem[i].src_offset = i * 4 * sizeof(float);
+      ctx->velem[i].instance_divisor = 0;
+      ctx->velem[i].vertex_buffer_index = 0;
+      ctx->velem[i].src_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
+   }
 
    /* vertex shader - still needed to specify mapping from fragment
     * shader input semantics to vertex elements 
@@ -1316,7 +1328,10 @@ util_create_gen_mipmap(struct pipe_context *pipe,
    }
 
    /* fragment shader */
-   ctx->fs = util_make_fragment_tex_shader(pipe);
+   ctx->fs2d = util_make_fragment_tex_shader(pipe, TGSI_TEXTURE_2D,
+                                             TGSI_INTERPOLATE_LINEAR);
+   ctx->fsCube = util_make_fragment_tex_shader(pipe, TGSI_TEXTURE_CUBE,
+                                               TGSI_INTERPOLATE_LINEAR);
 
    /* vertex data that doesn't change */
    for (i = 0; i < 4; i++) {
@@ -1345,8 +1360,7 @@ get_next_slot(struct gen_mipmap_state *ctx)
 
    if (!ctx->vbuf) {
       ctx->vbuf = pipe_buffer_create(ctx->pipe->screen,
-                                     32,
-                                     PIPE_BUFFER_USAGE_VERTEX,
+                                     PIPE_BIND_VERTEX_BUFFER,
                                      max_slots * sizeof ctx->vertices);
    }
    
@@ -1357,84 +1371,34 @@ get_next_slot(struct gen_mipmap_state *ctx)
 static unsigned
 set_vertex_data(struct gen_mipmap_state *ctx,
                 enum pipe_texture_target tex_target,
-                uint face, float width, float height)
+                uint face)
 {
    unsigned offset;
 
    /* vert[0].position */
-   ctx->vertices[0][0][0] = 0.0f; /*x*/
-   ctx->vertices[0][0][1] = 0.0f; /*y*/
+   ctx->vertices[0][0][0] = -1.0f; /*x*/
+   ctx->vertices[0][0][1] = -1.0f; /*y*/
 
    /* vert[1].position */
-   ctx->vertices[1][0][0] = width;
-   ctx->vertices[1][0][1] = 0.0f;
+   ctx->vertices[1][0][0] = 1.0f;
+   ctx->vertices[1][0][1] = -1.0f;
 
    /* vert[2].position */
-   ctx->vertices[2][0][0] = width;
-   ctx->vertices[2][0][1] = height;
+   ctx->vertices[2][0][0] = 1.0f;
+   ctx->vertices[2][0][1] = 1.0f;
 
    /* vert[3].position */
-   ctx->vertices[3][0][0] = 0.0f;
-   ctx->vertices[3][0][1] = height;
+   ctx->vertices[3][0][0] = -1.0f;
+   ctx->vertices[3][0][1] = 1.0f;
 
    /* Setup vertex texcoords.  This is a little tricky for cube maps. */
    if (tex_target == PIPE_TEXTURE_CUBE) {
       static const float st[4][2] = {
          {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}
       };
-      float rx, ry, rz;
-      uint i;
 
-      /* loop over quad verts */
-      for (i = 0; i < 4; i++) {
-         /* Compute sc = +/-scale and tc = +/-scale.
-          * Not +/-1 to avoid cube face selection ambiguity near the edges,
-          * though that can still sometimes happen with this scale factor...
-          */
-         const float scale = 0.9999f;
-         const float sc = (2.0f * st[i][0] - 1.0f) * scale;
-         const float tc = (2.0f * st[i][1] - 1.0f) * scale;
-
-         switch (face) {
-         case PIPE_TEX_FACE_POS_X:
-            rx = 1.0f;
-            ry = -tc;
-            rz = -sc;
-            break;
-         case PIPE_TEX_FACE_NEG_X:
-            rx = -1.0f;
-            ry = -tc;
-            rz = sc;
-            break;
-         case PIPE_TEX_FACE_POS_Y:
-            rx = sc;
-            ry = 1.0f;
-            rz = tc;
-            break;
-         case PIPE_TEX_FACE_NEG_Y:
-            rx = sc;
-            ry = -1.0f;
-            rz = -tc;
-            break;
-         case PIPE_TEX_FACE_POS_Z:
-            rx = sc;
-            ry = -tc;
-            rz = 1.0f;
-            break;
-         case PIPE_TEX_FACE_NEG_Z:
-            rx = -sc;
-            ry = -tc;
-            rz = -1.0f;
-            break;
-         default:
-            rx = ry = rz = 0.0f;
-            assert(0);
-         }
-
-         ctx->vertices[i][1][0] = rx; /*s*/
-         ctx->vertices[i][1][1] = ry; /*t*/
-         ctx->vertices[i][1][2] = rz; /*r*/
-      }
+      util_map_texcoords2d_onto_cubemap(face, &st[0][0], 2,
+                                        &ctx->vertices[0][1][0], 8);
    }
    else {
       /* 1D/2D */
@@ -1457,8 +1421,8 @@ set_vertex_data(struct gen_mipmap_state *ctx,
 
    offset = get_next_slot( ctx );
 
-   pipe_buffer_write(ctx->pipe->screen, ctx->vbuf,
-                     offset, sizeof(ctx->vertices), ctx->vertices);
+   pipe_buffer_write_nooverlap(ctx->pipe, ctx->vbuf,
+                               offset, sizeof(ctx->vertices), ctx->vertices);
 
    return offset;
 }
@@ -1474,9 +1438,10 @@ util_destroy_gen_mipmap(struct gen_mipmap_state *ctx)
    struct pipe_context *pipe = ctx->pipe;
 
    pipe->delete_vs_state(pipe, ctx->vs);
-   pipe->delete_fs_state(pipe, ctx->fs);
+   pipe->delete_fs_state(pipe, ctx->fs2d);
+   pipe->delete_fs_state(pipe, ctx->fsCube);
 
-   pipe_buffer_reference(&ctx->vbuf, NULL);
+   pipe_resource_reference(&ctx->vbuf, NULL);
 
    FREE(ctx);
 }
@@ -1488,7 +1453,7 @@ util_destroy_gen_mipmap(struct gen_mipmap_state *ctx)
  */
 void util_gen_mipmap_flush( struct gen_mipmap_state *ctx )
 {
-   pipe_buffer_reference(&ctx->vbuf, NULL);
+   pipe_resource_reference(&ctx->vbuf, NULL);
    ctx->vbuf_slot = 0;
 } 
 
@@ -1497,7 +1462,7 @@ void util_gen_mipmap_flush( struct gen_mipmap_state *ctx )
  * Generate mipmap images.  It's assumed all needed texture memory is
  * already allocated.
  *
- * \param pt  the texture to generate mipmap levels for
+ * \param psv  the sampler view to the texture to generate mipmap levels for
  * \param face  which cube face to generate mipmaps for (0 for non-cube maps)
  * \param baseLevel  the first mipmap level to use as a src
  * \param lastLevel  the last mipmap level to generate
@@ -1506,12 +1471,14 @@ void util_gen_mipmap_flush( struct gen_mipmap_state *ctx )
  */
 void
 util_gen_mipmap(struct gen_mipmap_state *ctx,
-                struct pipe_texture *pt,
+                struct pipe_sampler_view *psv,
                 uint face, uint baseLevel, uint lastLevel, uint filter)
 {
    struct pipe_context *pipe = ctx->pipe;
    struct pipe_screen *screen = pipe->screen;
    struct pipe_framebuffer_state fb;
+   struct pipe_resource *pt = psv->texture;
+   void *fs = (pt->target == PIPE_TEXTURE_CUBE) ? ctx->fsCube : ctx->fs2d;
    uint dstLevel;
    uint zslice = 0;
    uint offset;
@@ -1528,8 +1495,8 @@ util_gen_mipmap(struct gen_mipmap_state *ctx,
           filter == PIPE_TEX_FILTER_NEAREST);
 
    /* check if we can render in the texture's format */
-   if (!screen->is_format_supported(screen, pt->format, PIPE_TEXTURE_2D,
-                                    PIPE_TEXTURE_USAGE_RENDER_TARGET, 0)) {
+   if (!screen->is_format_supported(screen, psv->format, PIPE_TEXTURE_2D,
+                                    pt->nr_samples, PIPE_BIND_RENDER_TARGET, 0)) {
       fallback_gen_mipmap(ctx, pt, face, baseLevel, lastLevel);
       return;
    }
@@ -1539,17 +1506,22 @@ util_gen_mipmap(struct gen_mipmap_state *ctx,
    cso_save_depth_stencil_alpha(ctx->cso);
    cso_save_rasterizer(ctx->cso);
    cso_save_samplers(ctx->cso);
-   cso_save_sampler_textures(ctx->cso);
+   cso_save_fragment_sampler_views(ctx->cso);
    cso_save_framebuffer(ctx->cso);
    cso_save_fragment_shader(ctx->cso);
    cso_save_vertex_shader(ctx->cso);
+   cso_save_viewport(ctx->cso);
+   cso_save_clip(ctx->cso);
+   cso_save_vertex_elements(ctx->cso);
 
    /* bind our state */
    cso_set_blend(ctx->cso, &ctx->blend);
    cso_set_depth_stencil_alpha(ctx->cso, &ctx->depthstencil);
    cso_set_rasterizer(ctx->cso, &ctx->rasterizer);
+   cso_set_clip(ctx->cso, &ctx->clip);
+   cso_set_vertex_elements(ctx->cso, 2, ctx->velem);
 
-   cso_set_fragment_shader_handle(ctx->cso, ctx->fs);
+   cso_set_fragment_shader_handle(ctx->cso, fs);
    cso_set_vertex_shader_handle(ctx->cso, ctx->vs);
 
    /* init framebuffer state */
@@ -1566,18 +1538,30 @@ util_gen_mipmap(struct gen_mipmap_state *ctx,
     */
    for (dstLevel = baseLevel + 1; dstLevel <= lastLevel; dstLevel++) {
       const uint srcLevel = dstLevel - 1;
+      struct pipe_viewport_state vp;
 
       struct pipe_surface *surf = 
          screen->get_tex_surface(screen, pt, face, dstLevel, zslice,
-                                 PIPE_BUFFER_USAGE_GPU_WRITE);
+                                 PIPE_BIND_RENDER_TARGET);
 
       /*
        * Setup framebuffer / dest surface
        */
       fb.cbufs[0] = surf;
-      fb.width = pt->width[dstLevel];
-      fb.height = pt->height[dstLevel];
+      fb.width = u_minify(pt->width0, dstLevel);
+      fb.height = u_minify(pt->height0, dstLevel);
       cso_set_framebuffer(ctx->cso, &fb);
+
+      /* viewport */
+      vp.scale[0] = 0.5f * fb.width;
+      vp.scale[1] = 0.5f * fb.height;
+      vp.scale[2] = 1.0f;
+      vp.scale[3] = 1.0f;
+      vp.translate[0] = 0.5f * fb.width;
+      vp.translate[1] = 0.5f * fb.height;
+      vp.translate[2] = 0.0f;
+      vp.translate[3] = 0.0f;
+      cso_set_viewport(ctx->cso, &vp);
 
       /*
        * Setup sampler state
@@ -1591,14 +1575,12 @@ util_gen_mipmap(struct gen_mipmap_state *ctx,
       cso_single_sampler(ctx->cso, 0, &ctx->sampler);
       cso_single_sampler_done(ctx->cso);
 
-      cso_set_sampler_textures(ctx->cso, 1, &pt);
+      cso_set_fragment_sampler_views(ctx->cso, 1, &psv);
 
-      /* quad coords in window coords (bypassing vs, clip and viewport) */
+      /* quad coords in clip coords */
       offset = set_vertex_data(ctx,
                                pt->target,
-                               face,
-                               (float) pt->width[dstLevel],
-                               (float) pt->height[dstLevel]);
+                               face);
 
       util_draw_vertex_buffer(ctx->pipe, 
                               ctx->vbuf,
@@ -1618,8 +1600,11 @@ util_gen_mipmap(struct gen_mipmap_state *ctx,
    cso_restore_depth_stencil_alpha(ctx->cso);
    cso_restore_rasterizer(ctx->cso);
    cso_restore_samplers(ctx->cso);
-   cso_restore_sampler_textures(ctx->cso);
+   cso_restore_fragment_sampler_views(ctx->cso);
    cso_restore_framebuffer(ctx->cso);
    cso_restore_fragment_shader(ctx->cso);
    cso_restore_vertex_shader(ctx->cso);
+   cso_restore_viewport(ctx->cso);
+   cso_restore_clip(ctx->cso);
+   cso_restore_vertex_elements(ctx->cso);
 }

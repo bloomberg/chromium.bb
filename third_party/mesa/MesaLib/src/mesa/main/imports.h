@@ -50,31 +50,15 @@ extern "C" {
 /*@{*/
 
 /** Allocate \p BYTES bytes */
-#define MALLOC(BYTES)      _mesa_malloc(BYTES)
+#define MALLOC(BYTES)      malloc(BYTES)
 /** Allocate and zero \p BYTES bytes */
-#define CALLOC(BYTES)      _mesa_calloc(BYTES)
+#define CALLOC(BYTES)      calloc(1, BYTES)
 /** Allocate a structure of type \p T */
-#define MALLOC_STRUCT(T)   (struct T *) _mesa_malloc(sizeof(struct T))
+#define MALLOC_STRUCT(T)   (struct T *) malloc(sizeof(struct T))
 /** Allocate and zero a structure of type \p T */
-#define CALLOC_STRUCT(T)   (struct T *) _mesa_calloc(sizeof(struct T))
+#define CALLOC_STRUCT(T)   (struct T *) calloc(1, sizeof(struct T))
 /** Free memory */
-#define FREE(PTR)          _mesa_free(PTR)
-
-/** Allocate \p BYTES aligned at \p N bytes */
-#define ALIGN_MALLOC(BYTES, N)     _mesa_align_malloc(BYTES, N)
-/** Allocate and zero \p BYTES bytes aligned at \p N bytes */
-#define ALIGN_CALLOC(BYTES, N)     _mesa_align_calloc(BYTES, N)
-/** Allocate a structure of type \p T aligned at \p N bytes */
-#define ALIGN_MALLOC_STRUCT(T, N)  (struct T *) _mesa_align_malloc(sizeof(struct T), N)
-/** Allocate and zero a structure of type \p T aligned at \p N bytes */
-#define ALIGN_CALLOC_STRUCT(T, N)  (struct T *) _mesa_align_calloc(sizeof(struct T), N)
-/** Free aligned memory */
-#define ALIGN_FREE(PTR)            _mesa_align_free(PTR)
-
-/** Copy \p BYTES bytes from \p SRC into \p DST */
-#define MEMCPY( DST, SRC, BYTES)   _mesa_memcpy(DST, SRC, BYTES)
-/** Set \p N bytes in \p DST to \p VAL */
-#define MEMSET( DST, VAL, N )      _mesa_memset(DST, VAL, N)
+#define FREE(PTR)          free(PTR)
 
 /*@}*/
 
@@ -131,6 +115,42 @@ typedef union { GLfloat f; GLint i; } fi_type;
 #define INV_SQRTF(X) (1.0F / SQRTF(X))  /* this is faster on a P4 */
 #endif
 
+
+/**
+ * \name Work-arounds for platforms that lack C99 math functions
+ */
+/*@{*/
+#if (!defined(_XOPEN_SOURCE) || (_XOPEN_SOURCE < 600)) && !defined(_ISOC99_SOURCE) \
+   && (!defined(__STDC_VERSION__) || (__STDC_VERSION__ < 199901L)) \
+   && (!defined(_MSC_VER) || (_MSC_VER < 1400))
+#define acosf(f) ((float) acos(f))
+#define asinf(f) ((float) asin(f))
+#define atan2f(x,y) ((float) atan2(x,y))
+#define atanf(f) ((float) atan(f))
+#define cielf(f) ((float) ciel(f))
+#define cosf(f) ((float) cos(f))
+#define coshf(f) ((float) cosh(f))
+#define expf(f) ((float) exp(f))
+#define exp2f(f) ((float) exp2(f))
+#define floorf(f) ((float) floor(f))
+#define logf(f) ((float) log(f))
+#define log2f(f) ((float) log2(f))
+#define powf(x,y) ((float) pow(x,y))
+#define sinf(f) ((float) sin(f))
+#define sinhf(f) ((float) sinh(f))
+#define sqrtf(f) ((float) sqrt(f))
+#define tanf(f) ((float) tan(f))
+#define tanhf(f) ((float) tanh(f))
+#endif
+
+#if defined(_MSC_VER)
+static INLINE float truncf(float x) { return x < 0.0f ? ceilf(x) : floorf(x); }
+static INLINE float exp2f(float x) { return powf(2.0f, x); }
+static INLINE float log2f(float x) { return logf(x) * 1.442695041f; }
+static INLINE int isblank(int ch) { return ch == ' ' || ch == '\t'; }
+#define strtoll(p, e, b) _strtoi64(p, e, b)
+#endif
+/*@}*/
 
 /***
  *** LOG2: Log base 2 of float
@@ -256,9 +276,7 @@ static INLINE int GET_FLOAT_BITS( float x )
 /***
  *** IROUND: return (as an integer) float rounded to nearest integer
  ***/
-#if defined(USE_X86_ASM) && defined(__GNUC__) && defined(__i386__) && \
-			(!(defined(__BEOS__) || defined(__HAIKU__))  || \
-			(__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)))
+#if defined(USE_X86_ASM) && defined(__GNUC__) && defined(__i386__)
 static INLINE int iround(float f)
 {
    int r;
@@ -405,41 +423,61 @@ _mesa_is_pow_two(int x)
    return !(x & (x - 1));
 }
 
-
-/***
- *** UNCLAMPED_FLOAT_TO_UBYTE: clamp float to [0,1] and map to ubyte in [0,255]
- *** CLAMPED_FLOAT_TO_UBYTE: map float known to be in [0,1] to ubyte in [0,255]
- ***/
-#if defined(USE_IEEE) && !defined(DEBUG)
-#define IEEE_0996 0x3f7f0000	/* 0.996 or so */
-/* This function/macro is sensitive to precision.  Test very carefully
- * if you change it!
+/**
+ * Round given integer to next higer power of two
+ * If X is zero result is undefined.
+ *
+ * Source for the fallback implementation is
+ * Sean Eron Anderson's webpage "Bit Twiddling Hacks"
+ * http://graphics.stanford.edu/~seander/bithacks.html
+ *
+ * When using builtin function have to do some work
+ * for case when passed values 1 to prevent hiting
+ * undefined result from __builtin_clz. Undefined
+ * results would be different depending on optimization
+ * level used for build.
  */
-#define UNCLAMPED_FLOAT_TO_UBYTE(UB, F)					\
-        do {								\
-           fi_type __tmp;						\
-           __tmp.f = (F);						\
-           if (__tmp.i < 0)						\
-              UB = (GLubyte) 0;						\
-           else if (__tmp.i >= IEEE_0996)				\
-              UB = (GLubyte) 255;					\
-           else {							\
-              __tmp.f = __tmp.f * (255.0F/256.0F) + 32768.0F;		\
-              UB = (GLubyte) __tmp.i;					\
-           }								\
-        } while (0)
-#define CLAMPED_FLOAT_TO_UBYTE(UB, F)					\
-        do {								\
-           fi_type __tmp;						\
-           __tmp.f = (F) * (255.0F/256.0F) + 32768.0F;			\
-           UB = (GLubyte) __tmp.i;					\
-        } while (0)
+static INLINE int32_t
+_mesa_next_pow_two_32(uint32_t x)
+{
+#if defined(__GNUC__) && \
+	((__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || __GNUC__ >= 4)
+	uint32_t y = (x != 1);
+	return (1 + y) << ((__builtin_clz(x - y) ^ 31) );
 #else
-#define UNCLAMPED_FLOAT_TO_UBYTE(ub, f) \
-	ub = ((GLubyte) IROUND(CLAMP((f), 0.0F, 1.0F) * 255.0F))
-#define CLAMPED_FLOAT_TO_UBYTE(ub, f) \
-	ub = ((GLubyte) IROUND((f) * 255.0F))
+	x--;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	x++;
+	return x;
 #endif
+}
+
+static INLINE int64_t
+_mesa_next_pow_two_64(uint64_t x)
+{
+#if defined(__GNUC__) && \
+	((__GNUC__ == 3 && __GNUC_MINOR__ >= 4) || __GNUC__ >= 4)
+	uint64_t y = (x != 1);
+	if (sizeof(x) == sizeof(long))
+		return (1 + y) << ((__builtin_clzl(x - y) ^ 63));
+	else
+		return (1 + y) << ((__builtin_clzll(x - y) ^ 63));
+#else
+	x--;
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	x |= x >> 32;
+	x++;
+	return x;
+#endif
+}
 
 
 /**
@@ -457,15 +495,6 @@ _mesa_little_endian(void)
 /**********************************************************************
  * Functions
  */
-
-extern void *
-_mesa_malloc( size_t bytes );
-
-extern void *
-_mesa_calloc( size_t bytes );
-
-extern void
-_mesa_free( void *ptr );
 
 extern void *
 _mesa_align_malloc( size_t bytes, unsigned long alignment );
@@ -489,35 +518,8 @@ _mesa_exec_free( void *addr );
 extern void *
 _mesa_realloc( void *oldBuffer, size_t oldSize, size_t newSize );
 
-extern void *
-_mesa_memcpy( void *dest, const void *src, size_t n );
-
-extern void
-_mesa_memset( void *dst, int val, size_t n );
-
 extern void
 _mesa_memset16( unsigned short *dst, unsigned short val, size_t n );
-
-extern void
-_mesa_bzero( void *dst, size_t n );
-
-extern int
-_mesa_memcmp( const void *s1, const void *s2, size_t n );
-
-extern double
-_mesa_sin(double a);
-
-extern float
-_mesa_sinf(float a);
-
-extern double
-_mesa_cos(double a);
-
-extern float
-_mesa_asinf(float x);
-
-extern float
-_mesa_atanf(float x);
 
 extern double
 _mesa_sqrtd(double x);
@@ -530,9 +532,6 @@ _mesa_inv_sqrtf(float x);
 
 extern void
 _mesa_init_sqrt_table(void);
-
-extern double
-_mesa_pow(double x, double y);
 
 extern int
 _mesa_ffs(int32_t i);
@@ -558,68 +557,33 @@ extern char *
 _mesa_getenv( const char *var );
 
 extern char *
-_mesa_strstr( const char *haystack, const char *needle );
-
-extern char *
-_mesa_strncat( char *dest, const char *src, size_t n );
-
-extern char *
-_mesa_strcpy( char *dest, const char *src );
-
-extern char *
-_mesa_strncpy( char *dest, const char *src, size_t n );
-
-extern size_t
-_mesa_strlen( const char *s );
-
-extern int
-_mesa_strcmp( const char *s1, const char *s2 );
-
-extern int
-_mesa_strncmp( const char *s1, const char *s2, size_t n );
-
-extern char *
 _mesa_strdup( const char *s );
 
-extern int
-_mesa_atoi( const char *s );
-
-extern double
-_mesa_strtod( const char *s, char **end );
+extern float
+_mesa_strtof( const char *s, char **end );
 
 extern unsigned int
 _mesa_str_checksum(const char *str);
 
 extern int
-_mesa_sprintf( char *str, const char *fmt, ... );
-
-extern int
-_mesa_snprintf( char *str, size_t size, const char *fmt, ... );
+_mesa_snprintf( char *str, size_t size, const char *fmt, ... ) PRINTFLIKE(3, 4);
 
 extern void
-_mesa_printf( const char *fmtString, ... );
+_mesa_warning( __GLcontext *gc, const char *fmtString, ... ) PRINTFLIKE(2, 3);
 
 extern void
-_mesa_fprintf( FILE *f, const char *fmtString, ... );
-
-extern int 
-_mesa_vsprintf( char *str, const char *fmt, va_list args );
-
+_mesa_problem( const __GLcontext *ctx, const char *fmtString, ... ) PRINTFLIKE(2, 3);
 
 extern void
-_mesa_warning( __GLcontext *gc, const char *fmtString, ... );
+_mesa_error( __GLcontext *ctx, GLenum error, const char *fmtString, ... ) PRINTFLIKE(3, 4);
 
 extern void
-_mesa_problem( const __GLcontext *ctx, const char *fmtString, ... );
+_mesa_debug( const __GLcontext *ctx, const char *fmtString, ... ) PRINTFLIKE(2, 3);
 
-extern void
-_mesa_error( __GLcontext *ctx, GLenum error, const char *fmtString, ... );
 
-extern void
-_mesa_debug( const __GLcontext *ctx, const char *fmtString, ... );
-
-extern void 
-_mesa_exit( int status );
+#if defined(_MSC_VER) && !defined(snprintf)
+#define snprintf _snprintf
+#endif
 
 
 #ifdef __cplusplus

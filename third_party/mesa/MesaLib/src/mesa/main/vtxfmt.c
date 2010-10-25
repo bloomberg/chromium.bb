@@ -28,11 +28,9 @@
 
 #include "glheader.h"
 #include "api_arrayelt.h"
-#include "api_loopback.h"
 #include "context.h"
 #include "imports.h"
 #include "mtypes.h"
-#include "state.h"
 #include "vtxfmt.h"
 #include "eval.h"
 #include "dlist.h"
@@ -142,6 +140,8 @@ install_vtxfmt( struct _glapi_table *tab, const GLvertexformat *vfmt )
    SET_DrawElementsBaseVertex(tab, vfmt->DrawElementsBaseVertex);
    SET_DrawRangeElementsBaseVertex(tab, vfmt->DrawRangeElementsBaseVertex);
    SET_MultiDrawElementsBaseVertex(tab, vfmt->MultiDrawElementsBaseVertex);
+   SET_DrawArraysInstanced(tab, vfmt->DrawArraysInstanced);
+   SET_DrawElementsInstanced(tab, vfmt->DrawElementsInstanced);
 
    /* GL_NV_vertex_program */
    SET_VertexAttrib1fNV(tab, vfmt->VertexAttrib1fNV);

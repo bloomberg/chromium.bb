@@ -27,15 +27,11 @@
 
 #include "i830_context.h"
 #include "main/imports.h"
-#include "texmem.h"
-#include "intel_tex.h"
 #include "tnl/tnl.h"
 #include "tnl/t_vertex.h"
 #include "tnl/t_context.h"
 #include "tnl/t_pipeline.h"
-#include "utils.h"
 #include "intel_span.h"
-#include "intel_pixel.h"
 #include "intel_tris.h"
 
 /***************************************
@@ -53,7 +49,7 @@ extern const struct tnl_pipeline_stage *intel_pipeline[];
 
 GLboolean
 i830CreateContext(const __GLcontextModes * mesaVis,
-                  __DRIcontextPrivate * driContextPriv,
+                  __DRIcontext * driContextPriv,
                   void *sharedContextPrivate)
 {
    struct dd_function_table functions;
@@ -66,7 +62,7 @@ i830CreateContext(const __GLcontextModes * mesaVis,
    i830InitVtbl(i830);
    i830InitDriverFunctions(&functions);
 
-   if (!intelInitContext(intel, mesaVis, driContextPriv,
+   if (!intelInitContext(intel, __DRI_API_OPENGL, mesaVis, driContextPriv,
                          sharedContextPrivate, &functions)) {
       FREE(i830);
       return GL_FALSE;
@@ -108,7 +104,6 @@ i830CreateContext(const __GLcontextModes * mesaVis,
    intel->verts = TNL_CONTEXT(ctx)->clipspace.vertex_buf;
 
    i830InitState(i830);
-   i830InitMetaFuncs(i830);
 
    _tnl_allow_vertex_fog(ctx, 1);
    _tnl_allow_pixel_fog(ctx, 0);

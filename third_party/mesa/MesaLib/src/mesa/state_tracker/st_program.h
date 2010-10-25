@@ -35,13 +35,9 @@
 #define ST_PROGRAM_H
 
 #include "main/mtypes.h"
-#include "shader/program.h"
-#include "pipe/p_shader_tokens.h"
-
-
-struct cso_fragment_shader;
-struct cso_vertex_shader;
-struct translated_vertex_program;
+#include "program/program.h"
+#include "pipe/p_state.h"
+#include "st_context.h"
 
 
 /**
@@ -52,28 +48,50 @@ struct st_fragment_program
    struct gl_fragment_program Base;
    GLuint serialNo;
 
-   GLuint input_to_slot[FRAG_ATTRIB_MAX];  /**< Maps FRAG_ATTRIB_x to slot */
-   GLuint num_input_slots;
-
-   /** map FP input back to VP output */
-   GLuint input_map[PIPE_MAX_SHADER_INPUTS];
-
-   ubyte input_semantic_name[PIPE_MAX_SHADER_INPUTS];
-   ubyte input_semantic_index[PIPE_MAX_SHADER_INPUTS];
-
-   struct pipe_shader_state state;
+   struct pipe_shader_state tgsi;
    void *driver_shader;
-
-   GLuint param_state;
-
-   /** List of vertex programs which have been translated such that their
-    * outputs match this fragment program's inputs.
-    */
-   struct translated_vertex_program *vertex_programs;
 
    /** Program prefixed with glBitmap prologue */
    struct st_fragment_program *bitmap_program;
    uint bitmap_sampler;
+};
+
+
+
+struct st_vp_varient_key
+{
+   boolean passthrough_edgeflags;
+};
+
+
+/**
+ * This represents a vertex program, especially translated to match
+ * the inputs of a particular fragment shader.
+ */
+struct st_vp_varient
+{
+   /* Parameters which generated this translated version of a vertex
+    * shader:
+    */
+   struct st_vp_varient_key key;
+
+   /**
+    * TGSI tokens (to later generate a 'draw' module shader for
+    * selection/feedback/rasterpos)
+    */
+   struct pipe_shader_state tgsi;
+
+   /** Driver's compiled shader */
+   void *driver_shader;
+
+   /** For using our private draw module (glRasterPos) */
+   struct draw_vertex_shader *draw_shader;
+
+   /** Next in linked list */
+   struct st_vp_varient *next;  
+
+   /** similar to that in st_vertex_program, but with information about edgeflags too */
+   GLuint num_inputs;
 };
 
 
@@ -83,24 +101,52 @@ struct st_fragment_program
 struct st_vertex_program
 {
    struct gl_vertex_program Base;  /**< The Mesa vertex program */
-   GLuint serialNo;
+   GLuint serialNo, lastSerialNo;
 
    /** maps a Mesa VERT_ATTRIB_x to a packed TGSI input index */
    GLuint input_to_index[VERT_ATTRIB_MAX];
    /** maps a TGSI input index back to a Mesa VERT_ATTRIB_x */
    GLuint index_to_input[PIPE_MAX_SHADER_INPUTS];
+   GLuint num_inputs;
+
+   /** Maps VERT_RESULT_x to slot */
+   GLuint result_to_output[VERT_RESULT_MAX];
+   ubyte output_semantic_name[VERT_RESULT_MAX];
+   ubyte output_semantic_index[VERT_RESULT_MAX];
+   GLuint num_outputs;
+
+   /** List of translated varients of this vertex program.
+    */
+   struct st_vp_varient *varients;
+};
+
+/**
+ * Derived from Mesa gl_geometry_program:
+ */
+struct st_geometry_program
+{
+   struct gl_geometry_program Base;  /**< The Mesa geometry program */
+   GLuint serialNo;
+
+   /** map GP input back to VP output */
+   GLuint input_map[PIPE_MAX_SHADER_INPUTS];
+
+   /** maps a Mesa GEOM_ATTRIB_x to a packed TGSI input index */
+   GLuint input_to_index[GEOM_ATTRIB_MAX];
+   /** maps a TGSI input index back to a Mesa GEOM_ATTRIB_x */
+   GLuint index_to_input[PIPE_MAX_SHADER_INPUTS];
 
    GLuint num_inputs;
 
-   struct pipe_shader_state state;
+   GLuint input_to_slot[GEOM_ATTRIB_MAX];  /**< Maps GEOM_ATTRIB_x to slot */
+   GLuint num_input_slots;
+
+   ubyte input_semantic_name[PIPE_MAX_SHADER_INPUTS];
+   ubyte input_semantic_index[PIPE_MAX_SHADER_INPUTS];
+
+   struct pipe_shader_state tgsi;
    void *driver_shader;
-
-   /** For using our private draw module (glRasterPos) */
-   struct draw_vertex_shader *draw_shader;
-
-   GLuint param_state;
 };
-
 
 static INLINE struct st_fragment_program *
 st_fragment_program( struct gl_fragment_program *fp )
@@ -115,11 +161,26 @@ st_vertex_program( struct gl_vertex_program *vp )
    return (struct st_vertex_program *)vp;
 }
 
+static INLINE struct st_geometry_program *
+st_geometry_program( struct gl_geometry_program *vp )
+{
+   return (struct st_geometry_program *)vp;
+}
 
 static INLINE void
 st_reference_vertprog(struct st_context *st,
                       struct st_vertex_program **ptr,
                       struct st_vertex_program *prog)
+{
+   _mesa_reference_program(st->ctx,
+                           (struct gl_program **) ptr,
+                           (struct gl_program *) prog);
+}
+
+static INLINE void
+st_reference_geomprog(struct st_context *st,
+                      struct st_geometry_program **ptr,
+                      struct st_geometry_program *prog)
 {
    _mesa_reference_program(st->ctx,
                            (struct gl_program **) ptr,
@@ -139,17 +200,27 @@ st_reference_fragprog(struct st_context *st,
 
 extern void
 st_translate_fragment_program(struct st_context *st,
-                              struct st_fragment_program *fp,
-                              const GLuint inputMapping[]);
-
+                              struct st_fragment_program *fp);
 
 extern void
-st_translate_vertex_program(struct st_context *st,
-                            struct st_vertex_program *vp,
-                            const GLuint vert_output_to_slot[],
-                            const ubyte *fs_input_semantic_name,
-                            const ubyte *fs_input_semantic_index);
+st_translate_geometry_program(struct st_context *st,
+                              struct st_geometry_program *stgp);
 
+/* Called after program string change, discard all previous
+ * compilation results.
+ */
+extern void
+st_prepare_vertex_program(struct st_context *st,
+                          struct st_vertex_program *stvp);
+
+extern struct st_vp_varient *
+st_translate_vertex_program(struct st_context *st,
+                            struct st_vertex_program *stvp,
+                            const struct st_vp_varient_key *key);
+
+void
+st_vp_release_varients( struct st_context *st,
+                        struct st_vertex_program *stvp );
 
 extern void
 st_print_shaders(GLcontext *ctx);

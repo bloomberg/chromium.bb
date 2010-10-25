@@ -400,7 +400,7 @@
 #  define READ_RGBA( rgba, _x, _y )				        \
      do {								\
         GLuint p = GET_VALUE(_x, _y);					\
-        *((uint32_t *) rgba) = (t << 8) | 0xff;				\
+        *((uint32_t *) rgba) = (p << 8) | 0xff;				\
      } while (0)
 # else
 #  define READ_RGBA( rgba, _x, _y )				        \
@@ -412,6 +412,38 @@
 	rgba[3] = 0xff;							\
      } while (0)
 # endif
+
+#elif (SPANTMP_PIXEL_FMT == GL_ALPHA) && (SPANTMP_PIXEL_TYPE == GL_UNSIGNED_BYTE)
+
+/**
+ ** GL_ALPHA, GL_UNSIGNED_BYTE
+ **/
+
+#ifndef GET_VALUE
+#ifndef GET_PTR
+#define GET_PTR(_x, _y) (     buf + (_x) + (_y) * pitch)
+#endif
+
+#define GET_VALUE(_x, _y) *(volatile GLubyte *)(GET_PTR(_x, _y))
+#define PUT_VALUE(_x, _y, _v) *(volatile GLubyte *)(GET_PTR(_x, _y)) = (_v)
+#endif /* GET_VALUE */
+
+# define INIT_MONO_PIXEL(p, color)                       \
+     p = color[3]
+
+# define WRITE_RGBA(_x, _y, r, g, b, a)                                 \
+   PUT_VALUE(_x, _y, a | (r & 0 /* quiet warnings */))
+
+#define WRITE_PIXEL(_x, _y, p) PUT_VALUE(_x, _y, p)
+
+#define READ_RGBA( rgba, _x, _y )				        \
+     do {								\
+        GLubyte p = GET_VALUE(_x, _y);					\
+	rgba[0] = 0;							\
+	rgba[1] = 0;							\
+	rgba[2] = 0;							\
+	rgba[3] = p;							\
+     } while (0)
 
 #else
 #error SPANTMP_PIXEL_FMT must be set to a valid value!
@@ -805,7 +837,6 @@ static void TAG(ReadRGBAPixels)( GLcontext *ctx,
    HW_READ_LOCK()
       {
          GLubyte (*rgba)[4] = (GLubyte (*)[4]) values;
-         GLubyte *mask = NULL; /* remove someday */
 	 GLint i;
 	 LOCAL_VARS;
 
@@ -813,23 +844,11 @@ static void TAG(ReadRGBAPixels)( GLcontext *ctx,
 
 	 HW_READ_CLIPLOOP()
 	    {
-	       if (mask)
-	       {
-		  for (i=0;i<n;i++)
-		     if (mask[i]) {
-			int fy = Y_FLIP( y[i] );
-			if (CLIPPIXEL( x[i], fy ))
-			   READ_RGBA( rgba[i], x[i], fy );
-		     }
-	       }
-	       else
-	       {
-		  for (i=0;i<n;i++) {
-		     int fy = Y_FLIP( y[i] );
-		     if (CLIPPIXEL( x[i], fy ))
-			READ_RGBA( rgba[i], x[i], fy );
-		  }
-	       }
+               for (i=0;i<n;i++) {
+                  int fy = Y_FLIP( y[i] );
+                     if (CLIPPIXEL( x[i], fy ))
+                        READ_RGBA( rgba[i], x[i], fy );
+               }
 	    }
 	 HW_ENDCLIPLOOP();
       }

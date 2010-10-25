@@ -46,7 +46,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r200_context.h"
 #include "r200_state.h"
 #include "r200_ioctl.h"
-#include "r200_tex.h"
 #include "r200_tcl.h"
 #include "r200_swtcl.h"
 #include "r200_maos.h"
@@ -265,6 +264,8 @@ void r200TclPrimitive( GLcontext *ctx,
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
    GLuint newprim = hw_prim | R200_VF_TCL_OUTPUT_VTX_ENABLE;
 
+   radeon_prepare_render(&rmesa->radeon);
+
    if (newprim != rmesa->tcl.hw_primitive ||
        !discrete_prim[hw_prim&0xf]) {
       /* need to disable perspective-correct texturing for point sprites */
@@ -405,8 +406,9 @@ static GLuint r200EnsureEmitSize( GLcontext * ctx , GLubyte* vimap_rev )
          rendering code may decide convert to elts.
 	 In that case we have to make pessimistic prediction.
 	 and use larger of 2 paths. */
-      const GLuint elts = ELTS_BUFSZ(nr_aos);
-      const GLuint index = INDEX_BUFSZ;
+      const GLuint elt_count =(VB->Primitive[i].count/GET_MAX_HW_ELTS() + 1);
+      const GLuint elts = ELTS_BUFSZ(nr_aos) * elt_count;
+      const GLuint index = INDEX_BUFSZ * elt_count;
       const GLuint vbuf = VBUF_BUFSZ;
       if ( (!VB->Elts && VB->Primitive[i].count >= MAX_CONVERSION_SIZE)
 	  || vbuf > index + elts)
@@ -688,25 +690,34 @@ static char *getFallbackString(GLuint bit)
 
 void r200TclFallback( GLcontext *ctx, GLuint bit, GLboolean mode )
 {
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLuint oldfallback = rmesa->radeon.TclFallback;
+	r200ContextPtr rmesa = R200_CONTEXT(ctx);
+	GLuint oldfallback = rmesa->radeon.TclFallback;
 
-   if (mode) {
-      rmesa->radeon.TclFallback |= bit;
-      if (oldfallback == 0) {
-	 if (R200_DEBUG & RADEON_FALLBACKS)
-	    fprintf(stderr, "R200 begin tcl fallback %s\n",
-		    getFallbackString( bit ));
-	 transition_to_swtnl( ctx );
-      }
-   }
-   else {
-      rmesa->radeon.TclFallback &= ~bit;
-      if (oldfallback == bit) {
-	 if (R200_DEBUG & RADEON_FALLBACKS)
-	    fprintf(stderr, "R200 end tcl fallback %s\n",
-		    getFallbackString( bit ));
-	 transition_to_hwtnl( ctx );
-      }
-   }
+	if (mode) {
+		if (oldfallback == 0) {
+			/* We have to flush before transition */
+			if ( rmesa->radeon.dma.flush )
+				rmesa->radeon.dma.flush( rmesa->radeon.glCtx );
+
+			if (R200_DEBUG & RADEON_FALLBACKS)
+				fprintf(stderr, "R200 begin tcl fallback %s\n",
+						getFallbackString( bit ));
+			rmesa->radeon.TclFallback |= bit;
+			transition_to_swtnl( ctx );
+		} else
+			rmesa->radeon.TclFallback |= bit;
+	} else {
+		if (oldfallback == bit) {
+			/* We have to flush before transition */
+			if ( rmesa->radeon.dma.flush )
+				rmesa->radeon.dma.flush( rmesa->radeon.glCtx );
+
+			if (R200_DEBUG & RADEON_FALLBACKS)
+				fprintf(stderr, "R200 end tcl fallback %s\n",
+						getFallbackString( bit ));
+			rmesa->radeon.TclFallback &= ~bit;
+			transition_to_hwtnl( ctx );
+		} else
+			rmesa->radeon.TclFallback &= ~bit;
+	}
 }

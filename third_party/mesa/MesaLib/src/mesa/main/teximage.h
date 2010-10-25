@@ -73,6 +73,14 @@ _mesa_init_teximage_fields(GLcontext *ctx, GLenum target,
 
 
 extern void
+_mesa_choose_texture_format(GLcontext *ctx,
+                            struct gl_texture_object *texObj,
+                            struct gl_texture_image *texImage,
+                            GLenum target, GLint level,
+                            GLenum internalFormat, GLenum format, GLenum type);
+
+
+extern void
 _mesa_clear_texture_image(GLcontext *ctx, struct gl_texture_image *texImage);
 
 
@@ -165,6 +173,8 @@ _mesa_TexImage3DEXT( GLenum target, GLint level, GLenum internalformat,
                      GLint border, GLenum format, GLenum type,
                      const GLvoid *pixels );
 
+extern void GLAPIENTRY
+_mesa_EGLImageTargetTexture2DOES( GLenum target, GLeglImageOES image );
 
 extern void GLAPIENTRY
 _mesa_TexSubImage1D( GLenum target, GLint level, GLint xoffset,

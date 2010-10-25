@@ -32,16 +32,16 @@
 #include "draw/draw_vertex.h"
 #include "i915_context.h"
 #include "i915_state.h"
+#include "i915_debug.h"
 #include "i915_reg.h"
-#include "i915_fpc.h"
 
 
 
-/**
+/***********************************************************************
  * Determine the hardware vertex layout.
  * Depends on vertex/fragment shader state.
  */
-static void calculate_vertex_layout( struct i915_context *i915 )
+static void calculate_vertex_layout(struct i915_context *i915)
 {
    const struct i915_fragment_shader *fs = i915->fs;
    const enum interp_mode colorInterp = i915->rasterizer->color_interp;
@@ -84,7 +84,7 @@ static void calculate_vertex_layout( struct i915_context *i915 )
 
    
    /* pos */
-   src = draw_find_vs_output(i915->draw, TGSI_SEMANTIC_POSITION, 0);
+   src = draw_find_shader_output(i915->draw, TGSI_SEMANTIC_POSITION, 0);
    if (needW) {
       draw_emit_vertex_attr(&vinfo, EMIT_4F, INTERP_LINEAR, src);
       vinfo.hwfmt[0] |= S4_VFMT_XYZW;
@@ -101,21 +101,21 @@ static void calculate_vertex_layout( struct i915_context *i915 )
 
    /* primary color */
    if (colors[0]) {
-      src = draw_find_vs_output(i915->draw, TGSI_SEMANTIC_COLOR, 0);
-      draw_emit_vertex_attr(&vinfo, EMIT_4UB, colorInterp, src);
+      src = draw_find_shader_output(i915->draw, TGSI_SEMANTIC_COLOR, 0);
+      draw_emit_vertex_attr(&vinfo, EMIT_4UB_BGRA, colorInterp, src);
       vinfo.hwfmt[0] |= S4_VFMT_COLOR;
    }
 
    /* secondary color */
    if (colors[1]) {
-      src = draw_find_vs_output(i915->draw, TGSI_SEMANTIC_COLOR, 1);
-      draw_emit_vertex_attr(&vinfo, EMIT_4UB, colorInterp, src);
+      src = draw_find_shader_output(i915->draw, TGSI_SEMANTIC_COLOR, 1);
+      draw_emit_vertex_attr(&vinfo, EMIT_4UB_BGRA, colorInterp, src);
       vinfo.hwfmt[0] |= S4_VFMT_SPEC_FOG;
    }
 
    /* fog coord, not fog blend factor */
    if (fog) {
-      src = draw_find_vs_output(i915->draw, TGSI_SEMANTIC_FOG, 0);
+      src = draw_find_shader_output(i915->draw, TGSI_SEMANTIC_FOG, 0);
       draw_emit_vertex_attr(&vinfo, EMIT_1F, INTERP_PERSPECTIVE, src);
       vinfo.hwfmt[0] |= S4_VFMT_FOG_PARAM;
    }
@@ -125,7 +125,7 @@ static void calculate_vertex_layout( struct i915_context *i915 )
       uint hwtc;
       if (texCoords[i]) {
          hwtc = TEXCOORDFMT_4D;
-         src = draw_find_vs_output(i915->draw, TGSI_SEMANTIC_GENERIC, i);
+         src = draw_find_shader_output(i915->draw, TGSI_SEMANTIC_GENERIC, i);
          draw_emit_vertex_attr(&vinfo, EMIT_4F, INTERP_PERSPECTIVE, src);
       }
       else {
@@ -147,37 +147,38 @@ static void calculate_vertex_layout( struct i915_context *i915 )
    }
 }
 
+struct i915_tracked_state i915_update_vertex_layout = {
+   "vertex_layout",
+   calculate_vertex_layout,
+   I915_NEW_RASTERIZER | I915_NEW_FS | I915_NEW_VS
+};
 
 
 
-/* Hopefully this will remain quite simple, otherwise need to pull in
- * something like the state tracker mechanism.
+/***********************************************************************
  */
-void i915_update_derived( struct i915_context *i915 )
+static struct i915_tracked_state *atoms[] = {
+   &i915_update_vertex_layout,
+   &i915_hw_samplers,
+   &i915_hw_sampler_views,
+   &i915_hw_immediate,
+   &i915_hw_dynamic,
+   &i915_hw_fs,
+   &i915_hw_framebuffer,
+   &i915_hw_constants,
+   NULL,
+};
+
+void i915_update_derived(struct i915_context *i915)
 {
-   if (i915->dirty & (I915_NEW_RASTERIZER | I915_NEW_FS | I915_NEW_VS))
-      calculate_vertex_layout( i915 );
+   int i;
 
-   if (i915->dirty & (I915_NEW_SAMPLER | I915_NEW_TEXTURE))
-      i915_update_samplers(i915);
+   if (I915_DBG_ON(DBG_ATOMS))
+      i915_dump_dirty(i915, __FUNCTION__);
 
-   if (i915->dirty & I915_NEW_TEXTURE)
-      i915_update_textures(i915);
-
-   if (i915->dirty)
-      i915_update_immediate( i915 );
-
-   if (i915->dirty)
-      i915_update_dynamic( i915 );
-
-   if (i915->dirty & I915_NEW_FS) {
-      i915->hardware_dirty |= I915_HW_PROGRAM; /* XXX right? */
-   }
-
-   /* HW emit currently references framebuffer state directly:
-    */
-   if (i915->dirty & I915_NEW_FRAMEBUFFER)
-      i915->hardware_dirty |= I915_HW_STATIC;
+   for (i = 0; atoms[i]; i++)
+      if (atoms[i]->dirty & i915->dirty)
+         atoms[i]->update(i915);
 
    i915->dirty = 0;
 }

@@ -37,10 +37,10 @@
 #include "convolve.h"
 #include "context.h"
 #include "image.h"
+#include "macros.h"
 #include "mtypes.h"
-#include "pixel.h"
 #include "state.h"
-#include "glapi/dispatch.h"
+#include "main/dispatch.h"
 
 
 #if FEATURE_convolve

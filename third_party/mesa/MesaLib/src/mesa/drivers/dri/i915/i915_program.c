@@ -245,7 +245,7 @@ GLuint i915_emit_texld( struct i915_fragment_program *p,
    }
    else {
       assert(GET_UREG_TYPE(dest) != REG_TYPE_CONST);
-      assert(dest = UREG(GET_UREG_TYPE(dest), GET_UREG_NR(dest)));
+      assert(dest == UREG(GET_UREG_TYPE(dest), GET_UREG_NR(dest)));
       /* Can't use unsaved temps for coords, as the phase boundary would result
        * in the contents becoming undefined.
        */
@@ -494,17 +494,25 @@ i915_fini_program(struct i915_fragment_program *p)
    GLuint program_size = p->csr - p->program;
    GLuint decl_size = p->decl - p->declarations;
 
-   if (p->nr_tex_indirect > I915_MAX_TEX_INDIRECT)
-      i915_program_error(p, "Exceeded max nr indirect texture lookups");
+   if (p->nr_tex_indirect > I915_MAX_TEX_INDIRECT) {
+      i915_program_error(p, "Exceeded max nr indirect texture lookups "
+			 "(%d out of %d)",
+			 p->nr_tex_indirect, I915_MAX_TEX_INDIRECT);
+   }
 
-   if (p->nr_tex_insn > I915_MAX_TEX_INSN)
-      i915_program_error(p, "Exceeded max TEX instructions");
+   if (p->nr_tex_insn > I915_MAX_TEX_INSN) {
+      i915_program_error(p, "Exceeded max TEX instructions (%d out of %d)",
+			 p->nr_tex_insn, I915_MAX_TEX_INSN);
+   }
 
    if (p->nr_alu_insn > I915_MAX_ALU_INSN)
-      i915_program_error(p, "Exceeded max ALU instructions");
+      i915_program_error(p, "Exceeded max ALU instructions (%d out of %d)",
+			 p->nr_alu_insn, I915_MAX_ALU_INSN);
 
-   if (p->nr_decl_insn > I915_MAX_DECL_INSN)
-      i915_program_error(p, "Exceeded max DECL instructions");
+   if (p->nr_decl_insn > I915_MAX_DECL_INSN) {
+      i915_program_error(p, "Exceeded max DECL instructions (%d out of %d)",
+			 p->nr_decl_insn, I915_MAX_DECL_INSN);
+   }
 
    if (p->error) {
       p->FragProg.Base.NumNativeInstructions = 0;

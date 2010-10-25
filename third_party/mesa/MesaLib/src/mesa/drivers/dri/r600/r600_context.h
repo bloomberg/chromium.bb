@@ -53,6 +53,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r700_oglprog.h"
 #include "r700_vertprog.h"
 
+#include "evergreen_chip.h"
+
 struct r600_context;
 typedef struct r600_context context_t;
 
@@ -62,6 +64,10 @@ typedef struct r600_context context_t;
 #define TAG(x) r600##x
 #include "tnl_dd/t_dd_vertex.h"
 #undef TAG
+
+#define FORCE_CF_TEX_BARRIER    1
+
+/* #define GENERATE_SHADER_FOR_2D  1 */
 
 #define R600_FALLBACK_NONE 0
 #define R600_FALLBACK_TCL 1
@@ -103,11 +109,30 @@ struct r600_hw_state {
 	struct radeon_state_atom tx_brdr_clr;
 };
 
+struct evergreen_hw_state {
+    struct radeon_state_atom one_time_init;
+    struct radeon_state_atom init;
+	struct radeon_state_atom pa;
+	struct radeon_state_atom vgt;
+	struct radeon_state_atom tp;
+	struct radeon_state_atom sq;
+    struct radeon_state_atom vs;
+	struct radeon_state_atom spi;
+	struct radeon_state_atom sx;
+    struct radeon_state_atom tx;
+	struct radeon_state_atom db;
+	struct radeon_state_atom cb;
+    struct radeon_state_atom vtx;
+	struct radeon_state_atom cp;	
+    struct radeon_state_atom timestamp;
+};
+
 typedef struct StreamDesc
 {
 	GLint   size;   //number of data element
 	GLenum  type;  //data element type
 	GLsizei stride;
+	GLenum  format; // GL_RGBA,GLBGRA 
 
 	struct radeon_bo *bo;
 	GLint  bo_offset;
@@ -140,6 +165,9 @@ struct r600_context {
 
 	struct r600_hw_state atoms;
 
+    struct evergreen_hw_state evergreen_atoms;
+    void * pChip;
+
 	struct r700_vertex_program *selected_vp;
 
 	/* Vertex buffers
@@ -147,14 +175,30 @@ struct r600_context {
 	GLint      nNumActiveAos;
 	StreamDesc stream_desc[VERT_ATTRIB_MAX];
     struct r700_index_buffer ind_buf;
+	struct radeon_bo *blit_bo;
+	GLboolean blit_bo_loaded;
+
+    /* Shader const buffer */
+    struct radeon_bo * vp_Constbo;
+    int                vp_bo_offset;
+    struct radeon_bo * fp_Constbo;
+    int                fp_bo_offset;
 };
+
+#define EVERGREEN_CONTEXT(ctx)		((context_t *)(ctx->DriverCtx))
 
 #define R700_CONTEXT(ctx)		((context_t *)(ctx->DriverCtx))
 #define GL_CONTEXT(context)     ((GLcontext *)(context->radeon.glCtx))
 
-extern GLboolean r600CreateContext(const __GLcontextModes * glVisual,
-				   __DRIcontextPrivate * driContextPriv,
+#define GET_EVERGREEN_CHIP(context) ((EVERGREEN_CHIP_CONTEXT*)(context->pChip))
+
+extern GLboolean r600CreateContext(gl_api api,
+				   const __GLcontextModes * glVisual,
+				   __DRIcontext * driContextPriv,
 				   void *sharedContextPrivate);
+
+extern void r600DestroyContext(__DRIcontext *driContextPriv );
+extern void evergreenCreateChip(context_t *context);
 
 #define R700_CONTEXT_STATES(context) ((R700_CHIP_CONTEXT *)(&context->hw))
 
@@ -171,15 +215,27 @@ do {							\
 	r600->radeon.hw.is_dirty = GL_TRUE;			\
 } while(0)
 
+#define EVERGREEN_STATECHANGE(r600, ATOM)       \
+do {                                            \
+	R600_NEWPRIM(r600);                         \
+	r600->evergreen_atoms.ATOM.dirty = GL_TRUE;	\
+	r600->radeon.hw.is_dirty = GL_TRUE;         \
+} while(0)
+
 extern GLboolean r700SyncSurf(context_t *context,
 			      struct radeon_bo *pbo,
 			      uint32_t read_domain,
 			      uint32_t write_domain,
 			      uint32_t sync_type);
 
+extern void r700WaitForIdleClean(context_t *context);
+
 extern void r700Start3D(context_t *context);
 extern void r600InitAtoms(context_t *context);
 extern void r700InitDraw(GLcontext *ctx);
+
+extern void evergreenInitAtoms(context_t *context);
+extern void evergreenInitDraw(GLcontext *ctx);
 
 #define RADEON_D_CAPTURE 0
 #define RADEON_D_PLAYBACK 1

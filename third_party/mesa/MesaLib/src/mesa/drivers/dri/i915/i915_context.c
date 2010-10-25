@@ -28,7 +28,6 @@
 #include "i915_context.h"
 #include "main/imports.h"
 #include "main/macros.h"
-#include "intel_tex.h"
 #include "intel_tris.h"
 #include "tnl/t_context.h"
 #include "tnl/t_pipeline.h"
@@ -38,15 +37,11 @@
 #include "swrast_setup/swrast_setup.h"
 #include "tnl/tnl.h"
 
-#include "utils.h"
 #include "i915_reg.h"
 #include "i915_program.h"
 
-#include "intel_regions.h"
-#include "intel_batchbuffer.h"
 #include "intel_tris.h"
 #include "intel_span.h"
-#include "intel_pixel.h"
 
 /***************************************
  * Mesa's Driver Functions
@@ -99,8 +94,9 @@ i915InitDriverFunctions(struct dd_function_table *functions)
 extern const struct tnl_pipeline_stage *intel_pipeline[];
 
 GLboolean
-i915CreateContext(const __GLcontextModes * mesaVis,
-                  __DRIcontextPrivate * driContextPriv,
+i915CreateContext(int api,
+		  const __GLcontextModes * mesaVis,
+                  __DRIcontext * driContextPriv,
                   void *sharedContextPrivate)
 {
    struct dd_function_table functions;
@@ -113,14 +109,13 @@ i915CreateContext(const __GLcontextModes * mesaVis,
       return GL_FALSE;
 
    if (0)
-      _mesa_printf("\ntexmem-0-3 branch\n\n");
+      printf("\ntexmem-0-3 branch\n\n");
 
    i915InitVtbl(i915);
-   i915InitMetaFuncs(i915);
 
    i915InitDriverFunctions(&functions);
 
-   if (!intelInitContext(intel, mesaVis, driContextPriv,
+   if (!intelInitContext(intel, api, mesaVis, driContextPriv,
                          sharedContextPrivate, &functions)) {
       FREE(i915);
       return GL_FALSE;
@@ -143,6 +138,9 @@ i915CreateContext(const __GLcontextModes * mesaVis,
    ctx->Const.MaxTextureImageUnits = I915_TEX_UNITS;
    ctx->Const.MaxTextureCoordUnits = I915_TEX_UNITS;
    ctx->Const.MaxVarying = I915_TEX_UNITS;
+   ctx->Const.MaxCombinedTextureImageUnits =
+      ctx->Const.MaxVertexTextureImageUnits +
+      ctx->Const.MaxTextureImageUnits;
 
    /* Advertise the full hardware capabilities.  The new memory
     * manager should cope much better with overload situations:
@@ -175,6 +173,13 @@ i915CreateContext(const __GLcontextModes * mesaVis,
 	   ctx->Const.FragmentProgram.MaxEnvParams);
 
    ctx->FragmentProgram._MaintainTexEnvProgram = GL_TRUE;
+
+   /* FINISHME: Are there other options that should be enabled for software
+    * FINISHME: vertex shaders?
+    */
+   ctx->ShaderCompilerOptions[MESA_SHADER_VERTEX].EmitCondCodes = GL_TRUE;
+   ctx->ShaderCompilerOptions[MESA_SHADER_FRAGMENT].EmitNoIfs = GL_TRUE;
+   ctx->ShaderCompilerOptions[MESA_SHADER_FRAGMENT].EmitNoNoise = GL_TRUE;
 
    ctx->Const.MaxDrawBuffers = 1;
 
