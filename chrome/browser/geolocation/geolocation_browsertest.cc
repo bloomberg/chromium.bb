@@ -516,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
 
 // See http://crbug.com/56033
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
-                       FLAKY_CancelPermissionForFrame) {
+                       DISABLED_CancelPermissionForFrame) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LOG(WARNING) << "frames loaded";
