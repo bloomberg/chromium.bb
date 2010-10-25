@@ -729,6 +729,15 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
   return succeeded;
 }
 
+bool TabProxy::LoadBlockedPlugins() {
+  if (!is_valid())
+    return false;
+
+  bool succeeded = false;
+  sender_->Send(new AutomationMsg_LoadBlockedPlugins(0, handle_, &succeeded));
+  return succeeded;
+}
+
 #if defined(OS_WIN)
 void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
                           int top, int width, int height, int flags,

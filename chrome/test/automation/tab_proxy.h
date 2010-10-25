@@ -375,6 +375,9 @@ class TabProxy : public AutomationResourceProxy,
   // Uses the specified encoding to override encoding of the page in the tab.
   bool OverrideEncoding(const std::string& encoding) WARN_UNUSED_RESULT;
 
+  // Loads all blocked plug-ins on the page.
+  bool LoadBlockedPlugins() WARN_UNUSED_RESULT;
+
 #if defined(OS_WIN)
   // Resizes the tab window.
   // The parent_window parameter allows a parent to be specified for the window

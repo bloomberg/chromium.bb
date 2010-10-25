@@ -395,3 +395,22 @@ TEST_F(NPAPIVisiblePluginTester, PluginConvertPointTest) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 #endif
+
+TEST_F(NPAPIVisiblePluginTester, ClickToPlay) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                CONTENT_SETTING_BLOCK));
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+               FilePath(FILE_PATH_LITERAL("npapi/click_to_play.html"))));
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+
+  scoped_refptr<TabProxy> tab(browser->GetTab(0));
+  ASSERT_TRUE(tab.get());
+
+  ASSERT_TRUE(tab->LoadBlockedPlugins());
+
+  WaitForFinish("setup", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, action_max_timeout_ms());
+}

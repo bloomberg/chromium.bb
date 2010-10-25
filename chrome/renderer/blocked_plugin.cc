@@ -94,9 +94,9 @@ void BlockedPlugin::LoadPlugin() {
                                         plugin_params_);
   if (new_plugin && new_plugin->initialize(container)) {
     container->setPlugin(new_plugin);
-    plugin_->ReplayReceivedData(new_plugin);
     container->invalidate();
     container->reportGeometry();
+    plugin_->ReplayReceivedData(new_plugin);
     plugin_->destroy();
     render_view_->Send(
         new ViewHostMsg_BlockedPluginLoaded(render_view_->routing_id()));

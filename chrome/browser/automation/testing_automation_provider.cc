@@ -419,6 +419,7 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
                         ShutdownSessionService)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetContentSetting, SetContentSetting)
+    IPC_MESSAGE_HANDLER(AutomationMsg_LoadBlockedPlugins, LoadBlockedPlugins)
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
@@ -4048,6 +4049,21 @@ void TestingAutomationProvider::SetContentSetting(
       map->SetContentSetting(HostContentSettingsMap::Pattern(host),
                              content_type, "", setting);
     }
+    *success = true;
+  }
+}
+
+void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
+                                                   bool* success) {
+  *success = false;
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
+    if (!nav)
+      return;
+    TabContents* contents = nav->tab_contents();
+    if (!contents)
+      return;
+    contents->render_view_host()->LoadBlockedPlugins();
     *success = true;
   }
 }
