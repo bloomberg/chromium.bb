@@ -5,6 +5,7 @@
 #include "webkit/glue/plugins/pepper_file_ref.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_file_callbacks.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
@@ -312,7 +313,19 @@ FilePath FileRef::GetSystemPath() const {
   if (GetFileSystemType() == PP_FILESYSTEMTYPE_EXTERNAL)
     return system_path_;
 
-  return file_system_->root_path().AppendASCII(virtual_path_);
+  // Since |virtual_path_| starts with a '/', it is considered an absolute path
+  // on POSIX systems. We need to remove the '/' before calling Append() or we
+  // will run into a DCHECK.
+  FilePath virtual_file_path(
+#if defined(OS_WIN)
+      UTF8ToWide(virtual_path_.substr(1))
+#elif defined(OS_POSIX)
+      virtual_path_.substr(1)
+#else
+#error "Unsupported platform."
+#endif
+  );
+  return file_system_->root_path().Append(virtual_file_path);
 }
 
 }  // namespace pepper
