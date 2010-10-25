@@ -52,6 +52,12 @@ shm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
 		(struct wlsc_shm_buffer *) buffer_base;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
+
+	/* Unbind any EGLImage texture that may be bound, so we don't
+	 * overwrite it.*/
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+		     0, 0, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		     buffer->base.width, buffer->base.height, 0,
 		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);

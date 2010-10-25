@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#include "../config.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,13 +35,17 @@
 #include <glib-object.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <xf86drm.h>
+#include <sys/mman.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
 #define GL_GLEXT_PROTOTYPES 1
 #include <GL/gl.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+
+#ifdef HAVE_CAIRO_GL
 #include <cairo-gl.h>
+#endif
 
 #include <X11/extensions/XKBcommon.h>
 
@@ -56,6 +62,7 @@ struct display {
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_drm *drm;
+	struct wl_shm *shm;
 	struct wl_output *output;
 	struct rectangle screen_allocation;
 	int authenticated;
@@ -89,6 +96,7 @@ struct window {
 	struct input *grab_device;
 	struct input *keyboard_device;
 	uint32_t name;
+	enum window_buffer_type buffer_type;
 
 	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
@@ -148,33 +156,110 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_close_path(cr);
 }
 
-static int
-texture_from_png(const char *filename, int width, int height)
+static const cairo_user_data_key_t surface_data_key;
+struct surface_data {
+	struct wl_buffer *buffer;
+};
+
+#ifdef HAVE_CAIRO_GL
+
+struct drm_surface_data {
+	struct surface_data data;
+	EGLImageKHR image;
+	GLuint texture;
+	EGLDisplay dpy;
+};
+
+static void
+drm_surface_data_destroy(void *p)
 {
+	struct drm_surface_data *data = p;
+
+	glDeleteTextures(1, &data->texture);
+	eglDestroyImageKHR(data->dpy, data->image);
+	wl_buffer_destroy(data->data.buffer);
+}
+
+cairo_surface_t *
+display_create_drm_surface(struct display *display,
+			   struct rectangle *rectangle)
+{
+	struct drm_surface_data *data;
+	EGLDisplay dpy = display->dpy;
+	cairo_surface_t *surface;
+	struct wl_visual *visual;
+	struct wl_buffer *buffer;
+	EGLint name, stride;
+
+	EGLint image_attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
+		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
+		EGL_NONE
+	};
+
+	data = malloc(sizeof *data);
+	if (data == NULL)
+		return NULL;
+
+	image_attribs[1] = rectangle->width;
+	image_attribs[3] = rectangle->height;
+	data->image = eglCreateDRMImageMESA(dpy, image_attribs);
+	glGenTextures(1, &data->texture);
+	data->dpy = dpy;
+	glBindTexture(GL_TEXTURE_2D, data->texture);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
+
+	eglExportDRMImageMESA(display->dpy, data->image, &name, NULL, &stride);
+
+	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	data->data.buffer =
+		wl_drm_create_buffer(display->drm, name, rectangle->width,
+				     rectangle->height, stride, visual);
+
+	surface = cairo_gl_surface_create_for_texture(display->device,
+						      CAIRO_CONTENT_COLOR_ALPHA,
+						      data->texture,
+						      rectangle->width,
+						      rectangle->height);
+
+	cairo_surface_set_user_data (surface, &surface_data_key,
+				     data, drm_surface_data_destroy);
+
+	return surface;
+}
+
+cairo_surface_t *
+display_create_drm_surface_from_file(struct display *display,
+				     const char *filename,
+				     struct rectangle *rect)
+{
+	cairo_surface_t *surface;
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
 	int stride, i;
 	unsigned char *pixels, *p, *end;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
-						   width, height,
+						   rect->width, rect->height,
 						   FALSE, &error);
 	if (error != NULL)
-		return -1;
+		return NULL;
 
 	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
 	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
 		gdk_pixbuf_unref(pixbuf);
-		return -1;
+		return NULL;
 	}
 
 
 	stride = gdk_pixbuf_get_rowstride(pixbuf);
 	pixels = gdk_pixbuf_get_pixels(pixbuf);
 
-	for (i = 0; i < height; i++) {
+	for (i = 0; i < rect->height; i++) {
 		p = pixels + i * stride;
-		end = p + width * 4;
+		end = p + rect->width * 4;
 		while (p < end) {
 			unsigned int t;
 
@@ -189,12 +274,181 @@ texture_from_png(const char *filename, int width, int height)
 		}
 	}
 
+	surface = display_create_drm_surface(display, rect);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		     rect->width, rect->height,
+		     0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	gdk_pixbuf_unref(pixbuf);
 
-	return 0;
+	return surface;
+}
+
+#endif
+
+struct wl_buffer *
+display_get_buffer_for_surface(struct display *display,
+			       cairo_surface_t *surface)
+{
+	struct surface_data *data;
+
+	data = cairo_surface_get_user_data (surface, &surface_data_key);
+
+	return data->buffer;
+}
+
+struct shm_surface_data {
+	struct surface_data data;
+	void *map;
+	size_t length;
+};
+
+void
+shm_surface_data_destroy(void *p)
+{
+	struct shm_surface_data *data = p;
+
+	wl_buffer_destroy(data->data.buffer);
+	munmap(data->map, data->length);
+}
+
+cairo_surface_t *
+display_create_shm_surface(struct display *display,
+			   struct rectangle *rectangle)
+{
+	struct shm_surface_data *data;
+	cairo_surface_t *surface;
+	struct wl_visual *visual;
+	int stride, alloc, fd;
+	char filename[] = "/tmp/wayland-shm-XXXXXX";
+
+	data = malloc(sizeof *data);
+	if (data == NULL)
+		return NULL;
+
+	stride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
+						rectangle->width);
+	data->length = stride * rectangle->height;
+	fd = mkstemp(filename);
+	if (fd < 0) {
+		fprintf(stderr, "open %s failed: %m", filename);
+		return NULL;
+	}
+	if (ftruncate(fd, data->length) < 0) {
+		fprintf(stderr, "ftruncate failed: %m");
+		close(fd);
+		return NULL;
+	}
+
+	data->map = mmap(NULL, data->length,
+			 PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	unlink(filename);
+
+	if (data->map == MAP_FAILED) {
+		fprintf(stderr, "mmap failed: %m");
+		close(fd);
+		return NULL;
+	}
+
+	surface = cairo_image_surface_create_for_data (data->map,
+						       CAIRO_FORMAT_ARGB32,
+						       rectangle->width,
+						       rectangle->height,
+						       stride);
+
+	cairo_surface_set_user_data (surface, &surface_data_key,
+				     data, shm_surface_data_destroy);
+
+	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	data->data.buffer = wl_shm_create_buffer(display->shm,
+						 fd,
+						 rectangle->width,
+						 rectangle->height,
+						 stride, visual);
+
+	close(fd);
+
+	return surface;
+}
+
+cairo_surface_t *
+display_create_shm_surface_from_file(struct display *display,
+				     const char *filename,
+				     struct rectangle *rect)
+{
+	cairo_surface_t *surface;
+	GdkPixbuf *pixbuf;
+	GError *error = NULL;
+	int stride, i;
+	unsigned char *pixels, *p, *end, *dest_data;
+	int dest_stride;
+	uint32_t *d;
+
+	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
+						   rect->width, rect->height,
+						   FALSE, &error);
+	if (error != NULL)
+		return NULL;
+
+	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
+	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
+		gdk_pixbuf_unref(pixbuf);
+		return NULL;
+	}
+
+	stride = gdk_pixbuf_get_rowstride(pixbuf);
+	pixels = gdk_pixbuf_get_pixels(pixbuf);
+
+	surface = display_create_shm_surface(display, rect);
+	dest_data = cairo_image_surface_get_data (surface);
+	dest_stride = cairo_image_surface_get_stride (surface);
+
+	for (i = 0; i < rect->height; i++) {
+		d = (uint32_t *) (dest_data + i * dest_stride);
+		p = pixels + i * stride;
+		end = p + rect->width * 4;
+		while (p < end) {
+			unsigned int t;
+			unsigned char a, r, g, b;
+
+#define MULT(_d,c,a,t) \
+	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
+
+			a = p[3];
+			MULT(r, p[0], a, t);
+			MULT(g, p[1], a, t);
+			MULT(b, p[2], a, t);
+			p += 4;
+			*d++ = (a << 24) | (r << 16) | (g << 8) | b;
+		}
+	}
+
+	gdk_pixbuf_unref(pixbuf);
+
+	return surface;
+}
+
+cairo_surface_t *
+display_create_surface(struct display *display,
+		       struct rectangle *rectangle)
+{
+#ifdef HAVE_CAIRO_GL
+	display_create_drm_surface(display, rectangle);
+#else
+	display_create_shm_surface(display, rectangle);
+#endif
+}
+
+cairo_surface_t *
+display_create_surface_from_file(struct display *display,
+				 const char *filename,
+				 struct rectangle *rectangle)
+{
+#ifdef HAVE_CAIRO_GL
+	display_create_drm_surface_from_file(display, filename, rectangle);
+#else
+	display_create_shm_surface_from_file(display, filename, rectangle);
+#endif
 }
 
 static const struct {
@@ -229,94 +483,11 @@ create_pointer_surfaces(struct display *display)
 	rect.height = height;
 	for (i = 0; i < count; i++) {
 		display->pointer_surfaces[i] =
-			display_create_surface(display, &rect);
-		texture_from_png(pointer_images[i].filename, width, height);
+			display_create_surface_from_file(display,
+							 pointer_images[i].filename,
+							 &rect);
 	}
 
-}
-
-static const cairo_user_data_key_t surface_data_key;
-struct surface_data {
-	EGLImageKHR image;
-	GLuint texture;
-	EGLDisplay dpy;
-	struct wl_buffer *buffer;
-};
-
-static void
-surface_data_destroy(void *p)
-{
-	struct surface_data *data = p;
-
-	glDeleteTextures(1, &data->texture);
-	eglDestroyImageKHR(data->dpy, data->image);
-	if (data->buffer)
-		wl_buffer_destroy(data->buffer);
-}
-
-cairo_surface_t *
-display_create_surface(struct display *display,
-		       struct rectangle *rectangle)
-{
-	struct surface_data *data;
-	EGLDisplay dpy = display->dpy;
-	cairo_surface_t *surface;
-
-	EGLint image_attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
-
-	data = malloc(sizeof *data);
-	image_attribs[1] = rectangle->width;
-	image_attribs[3] = rectangle->height;
-	data->image = eglCreateDRMImageMESA(dpy, image_attribs);
-	glGenTextures(1, &data->texture);
-	data->dpy = dpy;
-	glBindTexture(GL_TEXTURE_2D, data->texture);
-	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
-	data->buffer = NULL;
-
-	surface = cairo_gl_surface_create_for_texture(display->device,
-						      CAIRO_CONTENT_COLOR_ALPHA,
-						      data->texture,
-						      rectangle->width,
-						      rectangle->height);
-
-	cairo_surface_set_user_data (surface, &surface_data_key,
-				     data, surface_data_destroy);
-
-	return surface;
-}
-
-struct wl_buffer *
-display_get_buffer_for_surface(struct display *display,
-			       cairo_surface_t *surface)
-{
-	struct surface_data *data;
-	struct wl_visual *visual;
-	struct wl_buffer *buffer;
-	EGLint name, stride;
-	int width, height;
-
-	data = cairo_surface_get_user_data (surface, &surface_data_key);
-	if (data->buffer)
-		return data->buffer;
-
-	width = cairo_gl_surface_get_width (surface);
-	height = cairo_gl_surface_get_height (surface);
-
-	eglExportDRMImageMESA(display->dpy, data->image, &name, NULL, &stride);
-
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
-	buffer = wl_drm_create_buffer(display->drm,
-				      name, width, height, stride, visual);
-	data->buffer = buffer;
-
-	return buffer;
 }
 
 cairo_surface_t *
@@ -383,6 +554,23 @@ window_flush(struct window *window)
 }
 
 static void
+window_create_surface(struct window *window, struct rectangle *allocation)
+{
+	switch (window->buffer_type) {
+#ifdef HAVE_CAIRO_GL
+	case WINDOW_BUFFER_TYPE_DRM:
+		window->cairo_surface =
+			display_create_surface(window->display, allocation);
+		break;
+#endif
+	case WINDOW_BUFFER_TYPE_SHM:
+		window->cairo_surface =
+			display_create_shm_surface(window->display, allocation);
+		break;
+	}
+}
+
+static void
 window_draw_decorations(struct window *window)
 {
 	cairo_t *cr;
@@ -391,8 +579,8 @@ window_draw_decorations(struct window *window)
 	cairo_surface_t *frame;
 	int width, height, shadow_dx = 3, shadow_dy = 3;
 
-	window->cairo_surface =
-		display_create_surface(window->display, &window->allocation);
+	window_create_surface(window, &window->allocation);
+
 	width = window->allocation.width;
 	height = window->allocation.height;
 
@@ -447,8 +635,7 @@ display_flush_cairo_device(struct display *display)
 static void
 window_draw_fullscreen(struct window *window)
 {
-	window->cairo_surface =
-		display_create_surface(window->display, &window->allocation);
+	window_create_surface(window, &window->allocation);
 }
 
 void
@@ -985,6 +1172,13 @@ window_move(struct window *window, int32_t x, int32_t y)
 		       window->allocation.height);
 }
 
+void
+window_damage(struct window *window, int32_t x, int32_t y,
+	      int32_t width, int32_t height)
+{
+	wl_surface_damage(window->surface, x, y, width, height);
+}
+
 struct window *
 window_create(struct display *display, const char *title,
 	      int32_t x, int32_t y, int32_t width, int32_t height)
@@ -1007,10 +1201,22 @@ window_create(struct display *display, const char *title,
 	window->margin = 16;
 	window->decoration = 1;
 
+#ifdef HAVE_CAIRO_GL
+	window->buffer_type = WINDOW_BUFFER_TYPE_DRM;
+#else
+	window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
+#endif
+
 	wl_surface_set_user_data(window->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
 
 	return window;
+}
+
+void
+window_set_buffer_type(struct window *window, enum window_buffer_type type)
+{
+	window->buffer_type = type;
 }
 
 static void
@@ -1091,6 +1297,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "drm") == 0) {
 		d->drm = wl_drm_create(display, id);
 		wl_drm_add_listener(d->drm, &drm_listener, d);
+	} else if (strcmp(interface, "shm") == 0) {
+		d->shm = wl_shm_create(display, id);
 	} else if (strcmp(interface, "drag_offer") == 0) {
 		offer = wl_drag_offer_create(display, id);
 		d->drag_offer_handler(offer, d);

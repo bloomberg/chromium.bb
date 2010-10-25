@@ -138,6 +138,10 @@ window_schedule_redraw(struct window *window);
 void
 window_move(struct window *window, int32_t x, int32_t y);
 
+void
+window_damage(struct window *window, int32_t x, int32_t y,
+	      int32_t width, int32_t height);
+
 cairo_surface_t *
 window_get_surface(struct window *window);
 
@@ -148,6 +152,14 @@ window_copy_surface(struct window *window,
 
 void
 window_flush(struct window *window);
+
+enum window_buffer_type {
+	WINDOW_BUFFER_TYPE_DRM,
+	WINDOW_BUFFER_TYPE_SHM,
+};
+
+void
+window_set_buffer_type(struct window *window, enum window_buffer_type type);
 
 void
 window_set_fullscreen(struct window *window, int fullscreen);
