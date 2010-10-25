@@ -18,12 +18,6 @@
 
 class GURL;
 
-#ifdef SB_LOGGING_ENABLED
-#define SB_DLOG(severity) DLOG_IF(INFO, 1)
-#else
-#define SB_DLOG(severity) DLOG_IF(INFO, 0)
-#endif
-
 class SBEntry;
 
 // A truncated hash's type.

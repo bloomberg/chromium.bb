@@ -1,7 +1,6 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
@@ -635,7 +634,7 @@ SafeBrowsingService::UrlCheckResult SafeBrowsingService::GetResultFromListname(
     return URL_MALWARE;
   }
 
-  SB_DLOG(INFO) << "Unknown safe browsing list " << list_name;
+  DVLOG(1) << "Unknown safe browsing list " << list_name;
   return URL_SAFE;
 }
 
@@ -824,9 +823,9 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
   if (!enabled_)
     return;
 
-  DLOG(INFO) << "ReportSafeBrowsingHit: " << malicious_url << " " << page_url
-             << " " << referrer_url << " " << is_subresource
-             << " " << threat_type;
+  DVLOG(1) << "ReportSafeBrowsingHit: " << malicious_url << " " << page_url
+           << " " << referrer_url << " " << is_subresource << " "
+           << threat_type;
   protocol_manager_->ReportSafeBrowsingHit(malicious_url, page_url,
                                            referrer_url, is_subresource,
                                            threat_type);

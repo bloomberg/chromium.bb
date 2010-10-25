@@ -74,8 +74,8 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
   double fp_rate = found_count * 100.0 / count;
   CHECK(fp_rate < 5.0);
 
-  SB_DLOG(INFO) << "For safe browsing bloom filter of size " << count <<
-      ", the FP rate was " << fp_rate << " %";
+  VLOG(1) << "For safe browsing bloom filter of size " << count
+          << ", the FP rate was " << fp_rate << " %";
 }
 
 // Test that we can read and write the bloom filter file.

@@ -285,7 +285,7 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
     const int chunk_number = atoi(cmd_parts[1].c_str());
     const int hash_len = atoi(cmd_parts[2].c_str());
     if (hash_len != sizeof(SBPrefix) && hash_len != sizeof(SBFullHash)) {
-      SB_DLOG(INFO) << "ParseChunk got unknown hashlen " << hash_len;
+      VLOG(1) << "ParseChunk got unknown hashlen " << hash_len;
       return false;
     }
 

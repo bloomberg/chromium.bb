@@ -1051,14 +1051,14 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_SqliteCorruptionHandling) {
 
     // Start an update.  The insert will fail due to corruption.
     EXPECT_TRUE(database_->UpdateStarted(&lists));
-    LOG(INFO) << "Expect failed check on: sqlite error 11";
+    VLOG(1) << "Expect failed check on: sqlite error 11";
     database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
     // Database file still exists until the corruption handler has run.
     EXPECT_TRUE(file_util::PathExists(database_filename_));
 
     // Flush through the corruption-handler task.
-    LOG(INFO) << "Expect failed check on: SafeBrowsing database reset";
+    VLOG(1) << "Expect failed check on: SafeBrowsing database reset";
     MessageLoop::current()->RunAllPending();
   }
 
@@ -1143,7 +1143,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
     EXPECT_TRUE(file_util::PathExists(database_filename_));
 
     // Flush through the corruption-handler task.
-    LOG(INFO) << "Expect failed check on: SafeBrowsing database reset";
+    VLOG(1) << "Expect failed check on: SafeBrowsing database reset";
     MessageLoop::current()->RunAllPending();
   }
 
