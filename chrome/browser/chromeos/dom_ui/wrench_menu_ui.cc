@@ -24,6 +24,30 @@
 #include "grit/generated_resources.h"
 #include "views/controls/menu/menu_2.h"
 
+namespace {
+
+class WrenchMenuSourceDelegate : public chromeos::MenuSourceDelegate {
+ public:
+  virtual void AddCustomConfigValues(DictionaryValue* config) const {
+    // Resources that are necessary to build wrench menu.
+    config->SetInteger("IDC_CUT", IDC_CUT);
+    config->SetInteger("IDC_COPY", IDC_COPY);
+    config->SetInteger("IDC_PASTE", IDC_PASTE);
+    config->SetInteger("IDC_ZOOM_MINUS", IDC_ZOOM_MINUS);
+    config->SetInteger("IDC_ZOOM_PLUS", IDC_ZOOM_PLUS);
+    config->SetInteger("IDC_FULLSCREEN", IDC_FULLSCREEN);
+
+    config->SetString("IDS_EDIT2", WideToUTF8(l10n_util::GetString(IDS_EDIT2)));
+    config->SetString("IDS_ZOOM_MENU2",
+                      WideToUTF8(l10n_util::GetString(IDS_ZOOM_MENU2)));
+    config->SetString("IDS_CUT", WideToUTF8(l10n_util::GetString(IDS_CUT)));
+    config->SetString("IDS_COPY", WideToUTF8(l10n_util::GetString(IDS_COPY)));
+    config->SetString("IDS_PASTE", WideToUTF8(l10n_util::GetString(IDS_PASTE)));
+  }
+};
+
+}  // namespace
+
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +60,7 @@ WrenchMenuUI::WrenchMenuUI(TabContents* contents)
     : chromeos::MenuUI(
         contents,
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            CreateMenuUIHTMLSource(*this,
+            CreateMenuUIHTMLSource(new WrenchMenuSourceDelegate(),
                                    chrome::kChromeUIWrenchMenu,
                                    "WrenchMenu"  /* class name */,
                                    IDR_WRENCH_MENU_JS,
@@ -48,23 +72,6 @@ WrenchMenuUI::WrenchMenuUI(TabContents* contents)
 void WrenchMenuUI::ModelUpdated(const menus::MenuModel* new_model) {
   MenuUI::ModelUpdated(new_model);
   UpdateZoomControls();
-}
-
-void WrenchMenuUI::AddCustomConfigValues(DictionaryValue* config) const {
-  // Resources that are necessary to build wrench menu.
-  config->SetInteger("IDC_CUT", IDC_CUT);
-  config->SetInteger("IDC_COPY", IDC_COPY);
-  config->SetInteger("IDC_PASTE", IDC_PASTE);
-  config->SetInteger("IDC_ZOOM_MINUS", IDC_ZOOM_MINUS);
-  config->SetInteger("IDC_ZOOM_PLUS", IDC_ZOOM_PLUS);
-  config->SetInteger("IDC_FULLSCREEN", IDC_FULLSCREEN);
-
-  config->SetString("IDS_EDIT2", WideToUTF8(l10n_util::GetString(IDS_EDIT2)));
-  config->SetString("IDS_ZOOM_MENU2",
-                    WideToUTF8(l10n_util::GetString(IDS_ZOOM_MENU2)));
-  config->SetString("IDS_CUT", WideToUTF8(l10n_util::GetString(IDS_CUT)));
-  config->SetString("IDS_COPY", WideToUTF8(l10n_util::GetString(IDS_COPY)));
-  config->SetString("IDS_PASTE", WideToUTF8(l10n_util::GetString(IDS_PASTE)));
 }
 
 void WrenchMenuUI::Observe(NotificationType type,

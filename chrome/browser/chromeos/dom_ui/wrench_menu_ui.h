@@ -31,7 +31,6 @@ class WrenchMenuUI : public MenuUI,
 
   // MenuUI overrides:
   virtual void ModelUpdated(const menus::MenuModel* new_model);
-  virtual void AddCustomConfigValues(DictionaryValue* config) const;
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,

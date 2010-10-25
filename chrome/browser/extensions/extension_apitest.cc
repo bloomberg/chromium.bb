@@ -13,10 +13,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/views/domui_menu_widget.h"
-#endif
-
 namespace {
 
 const char kTestServerPort[] = "testServer.port";
@@ -122,13 +118,6 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url) {
 bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
                                             const std::string& page_url,
                                             bool enable_incognito) {
-#if defined(OS_CHROMEOS)
-  // ChromeOS uses DOMUI for menu and creates a stand-by renderer to
-  // improve 1st time response. This can confuse this test as the test
-  // uses AllSources to listen to notifications, thus disabling the warmup
-  // process for ExtensionAPITests.
-  chromeos::DOMUIMenuWidget::DisableWarmUp();
-#endif
   ResultCatcher catcher;
   DCHECK(!std::string(extension_name).empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";

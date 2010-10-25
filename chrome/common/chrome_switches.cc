@@ -1181,9 +1181,6 @@ const char kForceStubLibcros[]        = "force-stub-libcros";
 // Disables DOMUI menu and use gtk menu instead.
 const char kDisableDOMUIMenu[]              = "disable-domui-menu";
 
-#ifndef NDEBUG
-extern const char kDOMUIMenuUrl[]           = "domui-menu-url";
-#endif
 #endif
 
 #if defined(OS_LINUX)

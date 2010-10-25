@@ -103,137 +103,6 @@ class InsetsLayout : public views::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(InsetsLayout);
 };
 
-const int kDOMViewWarmUpDelayMs = 1000 * 5;
-
-// A delayed task to initialize a cache. This is
-// create when a profile is switched.
-// (incognito, oobe/login has different profile).
-class WarmUpTask : public Task {
- public:
-  WarmUpTask() {}
-  virtual ~WarmUpTask() {}
-
-  virtual void Run();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WarmUpTask);
-};
-
-// DOMViewCache holds single cache instance of DOMView.
-class DOMViewCache : NotificationObserver {
- public:
-  DOMViewCache()
-      : current_profile_(NULL),
-        cache_(NULL),
-        warmup_enabled_(true) {
-    registrar_.Add(this, NotificationType::APP_TERMINATING,
-                   NotificationService::AllSources());
-  }
-  virtual ~DOMViewCache() {}
-
-  // Returns a DOMView for given profile. If there is
-  // matching cache,
-  DOMView* Get(Profile* profile) {
-    if (cache_ &&
-        cache_->tab_contents()->profile() == profile) {
-      DOMView* c = cache_;
-      cache_ = NULL;
-      CheckClassInvariant();
-      return c;
-    }
-    DOMView* dom_view = new DOMView();
-    dom_view->Init(profile, NULL);
-    CheckClassInvariant();
-    return dom_view;
-  }
-
-  // Release a dom_view. A dom view is reused if its profile matches
-  // the current profile, or gets deleted otherwise.
-  void Release(DOMView* dom_view) {
-    if (cache_ == NULL &&
-        current_profile_ == dom_view->tab_contents()->profile()) {
-      cache_ = dom_view;
-    } else {
-      delete dom_view;
-    }
-    CheckClassInvariant();
-  }
-
-  // (Re)Initiailzes the cache with profile.
-  // If the current profile does not match the new profile,
-  // it deletes the existing cache (if any) and creates new one.
-  void Init(Profile* profile) {
-    if (current_profile_ != profile) {
-      delete cache_;
-      cache_ = NULL;
-      current_profile_ = profile;
-      BrowserThread::PostDelayedTask(BrowserThread::UI,
-                                     FROM_HERE,
-                                     new WarmUpTask(),
-                                     kDOMViewWarmUpDelayMs);
-    }
-    CheckClassInvariant();
-  }
-
-  // Create a cache if one does not exist yet.
-  void WarmUp() {
-    // skip if domui is created in delay, or
-    // chromeos is shutting down.
-    if (cache_ || !current_profile_ || !warmup_enabled_) {
-      CheckClassInvariant();
-      return;
-    }
-    cache_ = new DOMView();
-    cache_->Init(current_profile_, NULL);
-    /**
-     * Tentative workaround for the failing tests that expects
-     * page loads.
-    cache_->LoadURL(
-        GURL(StringPrintf("chrome://%s", chrome::kChromeUIMenu)));
-     */
-    CheckClassInvariant();
-  }
-
-  // Deletes cached DOMView instance if any.
-  void Shutdown() {
-    delete cache_;
-    cache_ = NULL;
-    // Reset current_profile_ as well so that a domview that
-    // is currently in use will be deleted in Release as well.
-    current_profile_ = NULL;
-  }
-
-  // Enable/disable warmup. This has to be called
-  // before WarmUp method is invoked.
-  void set_warmup_enabled(bool enabled) {
-    warmup_enabled_ = enabled;
-  }
-
- private:
-  // NotificationObserver impelmentation:
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details) {
-    DCHECK_EQ(NotificationType::APP_TERMINATING, type.value);
-    Shutdown();
-  }
-
-  // Tests the class invariant condition.
-  void CheckClassInvariant() {
-    DCHECK(!cache_ ||
-           cache_->tab_contents()->profile() == current_profile_);
-  }
-
-  Profile* current_profile_;
-  DOMView* cache_;
-  NotificationRegistrar registrar_;
-  bool warmup_enabled_;
-};
-
-void WarmUpTask::Run() {
-  Singleton<DOMViewCache>::get()->WarmUp();
-}
-
 // A gtk widget key used to test if a given WidgetGtk instance is
 // DOMUIMenuWidgetKey.
 const char* kDOMUIMenuWidgetKey = "__DOMUI_MENU_WIDGET__";
@@ -266,8 +135,6 @@ DOMUIMenuWidget::DOMUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
   // TODO(oshima): Disabling transparent until we migrate bookmark
   // menus to DOMUI.  See crosbug.com/7718.
   // MakeTransparent();
-
-  Singleton<DOMViewCache>::get()->Init(domui_menu->GetProfile());
 }
 
 DOMUIMenuWidget::~DOMUIMenuWidget() {
@@ -291,7 +158,7 @@ void DOMUIMenuWidget::Hide() {
 void DOMUIMenuWidget::Close() {
   if (dom_view_ != NULL) {
     dom_view_->GetParent()->RemoveChildView(dom_view_);
-    Singleton<DOMViewCache>::get()->Release(dom_view_);
+    delete dom_view_;
     dom_view_ = NULL;
   }
 
@@ -392,7 +259,10 @@ void DOMUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
   DCHECK(domui_menu_);
   menu_locator_.reset(locator);
   if (!dom_view_) {
-    dom_view_ = Singleton<DOMViewCache>::get()->Get(domui_menu_->GetProfile());
+    // TODO(oshima): Replace DOMView with direct use of RVH for beta.
+    // DOMView should be refactored to use RVH directly, but
+    // it'll require a lot of change and will take time.
+    dom_view_ = new DOMView();
     dom_view_->Init(domui_menu_->GetProfile(), NULL);
     // TODO(oshima): remove extra view to draw rounded corner.
     views::View* container = new views::View();
@@ -458,10 +328,6 @@ void DOMUIMenuWidget::ClearGrabWidget() {
   GtkWidget* grab_widget;
   while ((grab_widget = gtk_grab_get_current()))
     gtk_grab_remove(grab_widget);
-}
-
-void DOMUIMenuWidget::DisableWarmUp() {
-  Singleton<DOMViewCache>::get()->set_warmup_enabled(false);
 }
 
 }   // namespace chromeos

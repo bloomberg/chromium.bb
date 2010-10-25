@@ -23,6 +23,22 @@
 
 namespace {
 
+class NetworkMenuSourceDelegate : public chromeos::MenuSourceDelegate {
+ public:
+  virtual void AddLocalizedStrings(DictionaryValue* localized_strings) const {
+    DCHECK(localized_strings);
+
+    localized_strings->SetString("reconnect", l10n_util::GetStringUTF16(
+        IDS_NETWORK_RECONNECT_TITLE));
+    localized_strings->SetString("remeber_this_network",
+        l10n_util::GetStringUTF16(IDS_NETWORK_REMEMBER_THIS_NETWORK_TITLE));
+    localized_strings->SetString("ssid_prompt",
+        l10n_util::GetStringUTF16(IDS_NETWORK_SSID_HINT));
+    localized_strings->SetString("pass_prompt",
+        l10n_util::GetStringUTF16(IDS_NETWORK_PASSWORD_HINT));
+  }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MenuHandler
@@ -91,7 +107,7 @@ NetworkMenuUI::NetworkMenuUI(TabContents* contents)
     : chromeos::MenuUI(
         contents,
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            CreateMenuUIHTMLSource(*this,
+            CreateMenuUIHTMLSource(new NetworkMenuSourceDelegate(),
                                    chrome::kChromeUINetworkMenu,
                                    "NetworkMenu",
                                    IDR_NETWORK_MENU_JS,
@@ -107,23 +123,6 @@ NetworkMenuUI::NetworkMenuUI(TabContents* contents)
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(theme)));
-}
-
-void NetworkMenuUI::AddCustomConfigValues(DictionaryValue* config) const {
-}
-
-void NetworkMenuUI::AddLocalizedStrings(
-    DictionaryValue* localized_strings) const {
-  DCHECK(localized_strings);
-
-  localized_strings->SetString("reconnect", l10n_util::GetStringUTF16(
-      IDS_NETWORK_RECONNECT_TITLE));
-  localized_strings->SetString("remeber_this_network",
-      l10n_util::GetStringUTF16(IDS_NETWORK_REMEMBER_THIS_NETWORK_TITLE));
-  localized_strings->SetString("ssid_prompt",
-      l10n_util::GetStringUTF16(IDS_NETWORK_SSID_HINT));
-  localized_strings->SetString("pass_prompt",
-      l10n_util::GetStringUTF16(IDS_NETWORK_PASSWORD_HINT));
 }
 
 bool NetworkMenuUI::ModelAction(const menus::MenuModel* model,

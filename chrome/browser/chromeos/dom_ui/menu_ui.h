@@ -21,6 +21,20 @@ namespace chromeos {
 
 class DOMUIMenuControl;
 
+// MenuSourceDelegate class allows subclass to injects specific values
+// to menu javascript code.
+class MenuSourceDelegate {
+ public:
+  virtual ~MenuSourceDelegate() {}
+  // Subclass can add extra parameters or replaces default configuration.
+  virtual void AddCustomConfigValues(DictionaryValue* config) const {};
+
+  // Subclass can add their values to |localized_strings| and those values
+  // are used by JS template builder and could be accessed via JS class
+  // LocalStrings.
+  virtual void AddLocalizedStrings(DictionaryValue* localized_strings) const {}
+};
+
 class MenuUI : public DOMUI {
  public:
   explicit MenuUI(TabContents* contents);
@@ -36,21 +50,11 @@ class MenuUI : public DOMUI {
                                           int* max_icon_width,
                                           bool* has_accel) const;
 
-  // Subclass can add extra parameters or replaces default configuration.
-  virtual void AddCustomConfigValues(DictionaryValue* config) const {};
-
-  // Subclass can add their values to |localized_strings| and those values
-  // are used by JS template builder and could be accessed via JS class
-  // LocalStrings.
-  virtual void AddLocalizedStrings(DictionaryValue* localized_strings) const {};
-
   // A utility function which creates a concrete html file from
   // template file |menu_resource_id| and |menu_css_id| for given |menu_class|.
   // The resource_name is the host part of DOMUI's url.
-  // Caution: This calls MenuUI::GetProfile() when creating the data source,
-  // thus, it has to be initialized.
   static ChromeURLDataManager::DataSource* CreateMenuUIHTMLSource(
-      const MenuUI& menu_ui,
+      const MenuSourceDelegate* delegate,
       const std::string& source_name,
       const std::string& menu_class,
       int menu_source_res_id,

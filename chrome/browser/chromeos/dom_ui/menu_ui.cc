@@ -26,7 +26,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
@@ -125,7 +124,7 @@ const std::string& GetImageDataUrlForRadio(bool on) {
  * same source/css files.
  */
 std::string GetMenuUIHTMLSourceFromString(
-    const chromeos::MenuUI& menu_ui,
+    const chromeos::MenuSourceDelegate* delegate,
     const base::StringPiece& menu_template,
     const std::string& menu_class,
     int menu_source_id,
@@ -170,7 +169,8 @@ std::string GetMenuUIHTMLSourceFromString(
   SET_INTEGER_PROPERTY(scroll_arrow_height);
   SET_INTEGER_PROPERTY(label_to_accelerator_padding);
 
-  menu_ui.AddCustomConfigValues(&value_config);
+  if (delegate)
+    delegate->AddCustomConfigValues(&value_config);
 
   std::string json_config;
   base::JSONWriter::Write(&value_config, false, &json_config);
@@ -196,16 +196,15 @@ std::string GetMenuUIHTMLSourceFromString(
         ResourceBundle::GetSharedInstance().GetRawDataResource(menu_css_id));
     strings.SetString("menu_css", menu_css.as_string());
   }
-
-  menu_ui.AddLocalizedStrings(&strings);
+  if (delegate)
+    delegate->AddLocalizedStrings(&strings);
 
   return jstemplate_builder::GetI18nTemplateHtml(menu_template, &strings);
 }
 
-class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
-                         public URLFetcher::Delegate {
+class MenuUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
-  MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
+  MenuUIHTMLSource(const chromeos::MenuSourceDelegate* delegate,
                    const std::string& source_name,
                    const std::string& menu_class,
                    int menu_source_id,
@@ -220,19 +219,11 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
     return "text/html";
   }
 
-  // URLFetcher::Delegate implements:
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
-
  private:
   virtual ~MenuUIHTMLSource() {}
 
   // The menu ui the source is created for.
-  const chromeos::MenuUI& menu_ui_;
+  scoped_ptr<const chromeos::MenuSourceDelegate> delegate_;
 
   // The name of JS Menu class to use.
   const std::string menu_class_;
@@ -243,9 +234,6 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
   // The resource id of the CSS file of the menu subclass.
   int menu_css_id_;
 
-#ifndef NDEBUG
-  int request_id_;
-#endif
   DISALLOW_COPY_AND_ASSIGN(MenuUIHTMLSource);
 };
 
@@ -317,45 +305,30 @@ class MenuHandler : public chromeos::MenuHandlerBase,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuUIHTMLSource::MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
+MenuUIHTMLSource::MenuUIHTMLSource(const chromeos::MenuSourceDelegate* delegate,
                                    const std::string& source_name,
                                    const std::string& menu_class,
                                    int menu_source_id,
                                    int menu_css_id)
     : DataSource(source_name, MessageLoop::current()),
-      menu_ui_(menu_ui),
+      delegate_(delegate),
       menu_class_(menu_class),
       menu_source_id_(menu_source_id),
       menu_css_id_(menu_css_id)
-#ifndef NDEBUG
-    , request_id_(-1)
-#endif
 {
-  // Important !
-  // Don't call any method on menu_ui. MenuUI object is not yet initialized
 }
 
 void MenuUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_off_the_record,
                                         int request_id) {
-#ifndef NDEBUG
-  std::string url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kDOMUIMenuUrl);
-  if (!url.empty()) {
-    request_id_ = request_id;
-    URLFetcher* fetcher = new URLFetcher(GURL(url), URLFetcher::GET, this);
-    fetcher->set_request_context(menu_ui_.GetProfile()->GetRequestContext());
-    fetcher->Start();
-    return;
-  }
-#endif
   static const base::StringPiece menu_template(
       ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_MENU_HTML));
 
   // The resource string should be pure code and should not contain
   // i18n string.
   const std::string menu_html = GetMenuUIHTMLSourceFromString(
-      menu_ui_, menu_template, menu_class_, menu_source_id_, menu_css_id_);
+      delegate_.get(), menu_template, menu_class_,
+      menu_source_id_, menu_css_id_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -365,30 +338,6 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
             html_bytes->data.begin());
   SendResponse(request_id, html_bytes);
 }
-
-void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
-                                          const GURL& url,
-                                          const URLRequestStatus& status,
-                                          int response_code,
-                                          const ResponseCookies& cookies,
-                                          const std::string& data) {
-#ifndef NDEBUG
-  // This should not be called in release build.
-  const std::string menu_html = GetMenuUIHTMLSourceFromString(
-      menu_ui_, data, menu_class_, menu_source_id_, menu_css_id_);
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-
-  // TODO(oshima): Eliminate boilerplate code. See http://crbug.com/57583 .
-  html_bytes->data.resize(menu_html.size());
-  std::copy(menu_html.begin(), menu_html.end(),
-            html_bytes->data.begin());
-  SendResponse(request_id_, html_bytes);
-
-  delete source;
-#endif
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -639,9 +588,6 @@ void MenuUI::ModelUpdated(const menus::MenuModel* model) {
         break;
       default:
         // TODO(oshima): We don't support BUTTOM_ITEM for now.
-        // I haven't decided how to implement zoom/cut&paste
-        // stuff, but may do somethign similar to what linux_views
-        // does.
         NOTREACHED();
         continue;
     }
@@ -689,12 +635,12 @@ DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
 
 // static
 ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
-    const MenuUI& menu_ui,
+    const MenuSourceDelegate* delegate,
     const std::string& source_name,
     const std::string& menu_class,
     int menu_source_id,
     int menu_css_id) {
-  return new MenuUIHTMLSource(menu_ui,
+  return new MenuUIHTMLSource(delegate,
                               source_name,
                               menu_class,
                               menu_source_id,
@@ -708,7 +654,7 @@ bool MenuUI::IsEnabled() {
 }
 
 ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
-  return CreateMenuUIHTMLSource(*this,
+  return CreateMenuUIHTMLSource(NULL,
                                 chrome::kChromeUIMenu,
                                 "Menu" /* class name */,
                                 kNoExtraResource,

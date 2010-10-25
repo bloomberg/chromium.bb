@@ -35,8 +35,6 @@ class NetworkMenuUI : public MenuUI {
                                           const char* type,
                                           int* max_icon_width,
                                           bool* has_accel) const;
-  virtual void AddCustomConfigValues(DictionaryValue* config) const;
-  virtual void AddLocalizedStrings(DictionaryValue* localized_strings) const;
 
   // A convenient factory method to create Menu2 for the network menu.
   static views::Menu2* CreateMenu2(menus::MenuModel* model);
