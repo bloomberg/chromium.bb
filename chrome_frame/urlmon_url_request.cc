@@ -847,17 +847,18 @@ void UrlmonUrlRequest::TerminateTransaction() {
     // to ensure that the transaction stays around if Chrome decides to issue
     // a download request when it finishes inspecting the headers received in
     // OnResponse. However this causes the urlmon transaction object to leak.
-    // To workaround this we issue a dummy BindToObject call which should fail
-    // and clean up the transaction. We overwrite the __PrecreatedObject object
-    // param which ensures that urlmon does not end up instantiating mshtml
-    ScopedComPtr<IStream> dummy_stream;
-    CreateStreamOnHGlobal(NULL, TRUE, dummy_stream.Receive());
-    DCHECK(dummy_stream);
-    bind_context_->RegisterObjectParam(L"__PrecreatedObject",
-                                       dummy_stream);
-    ScopedComPtr<IUnknown> dummy;
-    moniker_->BindToObject(bind_context_, NULL, IID_IUnknown,
-                           reinterpret_cast<void**>(dummy.Receive()));
+    // To workaround this we save away the IInternetProtocol interface which is
+    // implemented by the urlmon CTransaction object in our BindContextInfo
+    // instance which is maintained per bind context. Invoking Terminate
+    // on this with the special flags 0x2000000 cleanly releases the
+    // transaction.
+    static const int kUrlmonTerminateTransactionFlags = 0x2000000;
+    ScopedComPtr<BindContextInfo> info;
+    BindContextInfo::FromBindContext(bind_context_, info.Receive());
+    DCHECK(info);
+    if (info && info->protocol()) {
+      info->protocol()->Terminate(kUrlmonTerminateTransactionFlags);
+    }
   }
   bind_context_.Release();
 }
