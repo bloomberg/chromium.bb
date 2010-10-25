@@ -49,5 +49,40 @@ std::string ProcessIDN(const std::string& input) {
                                    input16, output16);
 }
 
+std::string ProcessRawBytesWithSeparators(const unsigned char* data,
+                                          size_t data_length,
+                                          char hex_separator,
+                                          char line_separator) {
+  static const char kHexChars[] = "0123456789ABCDEF";
+
+  // Each input byte creates two output hex characters + a space or newline,
+  // except for the last byte.
+  std::string ret;
+  size_t kMin = 0U;
+  ret.reserve(std::max(kMin, data_length * 3 - 1));
+
+  for (size_t i = 0; i < data_length; ++i) {
+    unsigned char b = data[i];
+    ret.push_back(kHexChars[(b >> 4) & 0xf]);
+    ret.push_back(kHexChars[b & 0xf]);
+    if (i + 1 < data_length) {
+      if ((i + 1) % 16 == 0)
+        ret.push_back(line_separator);
+      else
+        ret.push_back(hex_separator);
+    }
+  }
+  return ret;
+}
+
+std::string ProcessRawBytes(const unsigned char* data, size_t data_length) {
+  return ProcessRawBytesWithSeparators(data, data_length, ' ', '\n');
+}
+
+std::string ProcessRawBits(const unsigned char* data, size_t data_length) {
+  return ProcessRawBytesWithSeparators(data, (data_length + 7) / 8, ' ', '\n');
+}
+
+
 }  // x509_certificate_model
 

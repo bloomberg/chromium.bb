@@ -65,12 +65,6 @@ extern SECOidTag ms_ntds_replication;
 
 void RegisterDynamicOids();
 
-// Format a SECItem as a space separated string, with 16 bytes on each line.
-std::string ProcessRawBytes(SECItem* data);
-
-// For fields which have the length specified in bits, rather than bytes.
-std::string ProcessRawBits(SECItem* data);
-
 std::string DumpOidString(SECItem* oid);
 std::string GetOIDText(SECItem* oid);
 

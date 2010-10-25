@@ -42,7 +42,6 @@ std::string Stringize(char* nss_text, const std::string& alternative_text) {
 // algorithm, but given the limited uses, not worth fixing.)
 std::string HashCert(CERTCertificate* cert, HASH_HashType algorithm, int len) {
   unsigned char fingerprint[HASH_LENGTH_MAX];
-  SECItem fingerprint_item;
 
   DCHECK(NULL != cert->derCert.data);
   DCHECK_NE(0U, cert->derCert.len);
@@ -51,9 +50,7 @@ std::string HashCert(CERTCertificate* cert, HASH_HashType algorithm, int len) {
   SECStatus rv = HASH_HashBuf(algorithm, fingerprint, cert->derCert.data,
                               cert->derCert.len);
   DCHECK_EQ(rv, SECSuccess);
-  fingerprint_item.data = fingerprint;
-  fingerprint_item.len = len;
-  return psm::ProcessRawBytes(&fingerprint_item);
+  return x509_certificate_model::ProcessRawBytes(fingerprint, len);
 }
 
 std::string ProcessSecAlgorithmInternal(SECAlgorithmID* algorithm_id) {
@@ -293,6 +290,7 @@ void DestroyCertChain(X509Certificate::OSCertHandles* cert_handles) {
   for (X509Certificate::OSCertHandles::iterator i(cert_handles->begin());
        i != cert_handles->end(); ++i)
     CERT_DestroyCertificate(*i);
+  cert_handles->clear();
 }
 
 string GetDerString(X509Certificate::OSCertHandle cert_handle) {
@@ -372,7 +370,8 @@ string ProcessSubjectPublicKeyInfo(X509Certificate::OSCertHandle cert_handle) {
 }
 
 string ProcessRawBitsSignatureWrap(X509Certificate::OSCertHandle cert_handle) {
-  return psm::ProcessRawBits(&cert_handle->signatureWrap.signature);
+  return ProcessRawBits(cert_handle->signatureWrap.signature.data,
+                        cert_handle->signatureWrap.signature.len);
 }
 
 void RegisterDynamicOids() {
