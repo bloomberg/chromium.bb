@@ -6,7 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "base/task.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -88,20 +90,33 @@ const CGFloat kTextXPosition = kTextXPositionNoImage + kImageSize +
 const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     kFramePadding * 2);
 
-
 // Bridge that listens for change notifications from the model.
 class PageInfoModelBubbleBridge : public PageInfoModel::PageInfoModelObserver {
  public:
-  PageInfoModelBubbleBridge() : controller_(nil) {}
+  PageInfoModelBubbleBridge()
+      : controller_(nil),
+        ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+  }
 
   // PageInfoModelObserver implementation.
   virtual void ModelChanged() {
+    // Check to see if a layout has already been scheduled.
+    if (!task_factory_.empty())
+      return;
+
     // Delay performing layout by a second so that all the animations from
     // InfoBubbleWindow and origin updates from BaseBubbleController finish, so
     // that we don't all race trying to change the frame's origin.
-    [controller_ performSelector:@selector(performLayout)
-                      withObject:nil
-                      afterDelay:1.0];
+    //
+    // Using ScopedRunnableMethodFactory is superior here to |-performSelector:|
+    // because it will not retain its target; if the child outlives its parent,
+    // zombies get left behind (http://crbug.com/59619). This will also cancel
+    // the scheduled Tasks if the controller (and thus this bridge) get
+    // destroyed before the message can be delivered.
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        task_factory_.NewRunnableMethod(
+            &PageInfoModelBubbleBridge::PerformLayout),
+        1000 /* milliseconds */);
   }
 
   // Sets the controller.
@@ -110,7 +125,14 @@ class PageInfoModelBubbleBridge : public PageInfoModel::PageInfoModelObserver {
   }
 
  private:
+  void PerformLayout() {
+    [controller_ performLayout];
+  }
+
   PageInfoBubbleController* controller_;  // weak
+
+  // Factory that vends RunnableMethod tasks for scheduling layout.
+  ScopedRunnableMethodFactory<PageInfoModelBubbleBridge> task_factory_;
 };
 
 }  // namespace
