@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/update_view.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 
 namespace {
 
@@ -78,6 +79,8 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       view()->SetProgress(kBeforeFinalizingProgress);
       break;
     case UPDATE_STATUS_UPDATED_NEED_REBOOT:
+      // Make sure that first OOBE stage won't be shown after reboot.
+      WizardController::MarkOobeCompleted();
       view()->SetProgress(kProgressComplete);
       view()->ShowCurtain(false);
       CrosLibrary::Get()->GetUpdateLibrary()->RebootAfterUpdate();
