@@ -4,15 +4,11 @@
 
 #include "chrome/service/cloud_print/print_system.h"
 
-#include <windows.h>
 #include <objidl.h>
-#include <ocidl.h>
-#include <olectl.h>
 #include <prntvpt.h>
 #include <winspool.h>
 
-#include "base/lock.h"
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/object_watcher.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
@@ -22,11 +18,13 @@
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
 #include "gfx/rect.h"
+#include "printing/backend/print_backend.h"
+#include "printing/backend/print_backend_consts.h"
+#include "printing/backend/win_helper.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
 
 #pragma comment(lib, "prntvpt.lib")
-#pragma comment(lib, "rpcrt4.lib")
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;
@@ -55,11 +53,6 @@ class DevMode {
   DISALLOW_COPY_AND_ASSIGN(DevMode);
 };
 
-bool InitXPSModule() {
-  HMODULE prntvpt_module = LoadLibrary(L"prntvpt.dll");
-  return (NULL != prntvpt_module);
-}
-
 inline HRESULT GetLastErrorHR() {
   LONG error = GetLastError();
   return HRESULT_FROM_WIN32(error);
@@ -79,19 +72,6 @@ HRESULT StreamFromPrintTicket(const std::string& print_ticket,
   ULARGE_INTEGER new_pos = {0};
   (*stream)->Seek(pos, STREAM_SEEK_SET, &new_pos);
   return S_OK;
-}
-
-HRESULT StreamOnHGlobalToString(IStream* stream, std::string* out) {
-  DCHECK(stream);
-  DCHECK(out);
-  HGLOBAL hdata = NULL;
-  HRESULT hr = GetHGlobalFromStream(stream, &hdata);
-  if (SUCCEEDED(hr)) {
-    DCHECK(hdata);
-    ScopedHGlobal<char> locked_data(hdata);
-    out->assign(locked_data.release(), locked_data.Size());
-  }
-  return hr;
 }
 
 HRESULT PrintTicketToDevMode(const std::string& printer_name,
@@ -209,7 +189,7 @@ class PrintSystemWatcherWin
     watcher_.StartWatching(printer_change_, this);
   }
 
-  bool GetCurrentPrinterInfo(PrinterBasicInfo* printer_info) {
+  bool GetCurrentPrinterInfo(printing::PrinterBasicInfo* printer_info) {
     DCHECK(printer_info);
     if (!printer_)
       return false;
@@ -256,10 +236,10 @@ typedef PrintSystemWatcherWin::Delegate PrintSystemWatcherWinDelegate;
 
 class PrintSystemWin : public PrintSystem {
  public:
-  virtual void EnumeratePrinters(PrinterList* printer_list);
+  PrintSystemWin();
 
-  virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
-                                         PrinterCapsAndDefaults* printer_info);
+  // PrintSystem implementation.
+  virtual printing::PrintBackend* GetPrintBackend();
 
   virtual bool ValidatePrintTicket(const std::string& printer_name,
                                    const std::string& print_ticket_data);
@@ -267,8 +247,6 @@ class PrintSystemWin : public PrintSystem {
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
                              PrintJobDetails *job_details);
-
-  virtual bool IsValidPrinter(const std::string& printer_name);
 
   class PrintServerWatcherWin
     : public PrintSystem::PrintServerWatcher,
@@ -323,7 +301,8 @@ class PrintSystemWin : public PrintSystem {
       delegate_ = NULL;
       return ret;
     }
-    virtual bool GetCurrentPrinterInfo(PrinterBasicInfo* printer_info) {
+    virtual bool GetCurrentPrinterInfo(
+        printing::PrinterBasicInfo* printer_info) {
       return watcher_.GetCurrentPrinterInfo(printer_info);
     }
 
@@ -390,7 +369,7 @@ class PrintSystemWin : public PrintSystem {
           return false;
         }
 
-        if (!InitXPSModule()) {
+        if (!printing::InitXPSModule()) {
           // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
           return false;
         }
@@ -527,115 +506,29 @@ class PrintSystemWin : public PrintSystem {
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name);
   virtual PrintSystem::JobSpooler* CreateJobSpooler();
+
+ private:
+  void Init();
+
+  scoped_refptr<printing::PrintBackend> print_backend_;
 };
 
-void PrintSystemWin::EnumeratePrinters(PrinterList* printer_list) {
-  DCHECK(printer_list);
-  DWORD bytes_needed = 0;
-  DWORD count_returned = 0;
-  BOOL ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
-                          NULL, 0, &bytes_needed, &count_returned);
-  if (0 != bytes_needed) {
-    scoped_ptr<BYTE> printer_info_buffer(new BYTE[bytes_needed]);
-    ret = EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS, NULL, 2,
-                       printer_info_buffer.get(), bytes_needed, &bytes_needed,
-                       &count_returned);
-    DCHECK(ret);
-    PRINTER_INFO_2* printer_info =
-        reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
-    for (DWORD index = 0; index < count_returned; index++) {
-      PrinterBasicInfo info;
-      info.printer_name = WideToUTF8(printer_info[index].pPrinterName);
-      if (printer_info[index].pComment)
-        info.printer_description = WideToUTF8(printer_info[index].pComment);
-      info.printer_status = printer_info[index].Status;
-      if (printer_info[index].pLocation)
-        info.options[kLocationTagName] =
-            WideToUTF8(printer_info[index].pLocation);
-      if (printer_info[index].pDriverName)
-        info.options[kDriverNameTagName] =
-            WideToUTF8(printer_info[index].pDriverName);
-      printer_list->push_back(info);
-    }
-  }
+PrintSystemWin::PrintSystemWin() {
+  Init();
 }
 
-bool PrintSystemWin::GetPrinterCapsAndDefaults(
-    const std::string& printer_name,
-    PrinterCapsAndDefaults* printer_info) {
-  if (!InitXPSModule()) {
-    // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
-    return false;
-  }
-  if (!IsValidPrinter(printer_name)) {
-    return false;
-  }
-  DCHECK(printer_info);
-  HPTPROVIDER provider = NULL;
-  std::wstring printer_name_wide = UTF8ToWide(printer_name);
-  HRESULT hr = PTOpenProvider(printer_name_wide.c_str(), 1, &provider);
-  DCHECK(SUCCEEDED(hr));
-  if (provider) {
-    ScopedComPtr<IStream> print_capabilities_stream;
-    hr = CreateStreamOnHGlobal(NULL, TRUE,
-                               print_capabilities_stream.Receive());
-    DCHECK(SUCCEEDED(hr));
-    if (print_capabilities_stream) {
-      ScopedBstr error;
-      hr = PTGetPrintCapabilities(provider, NULL, print_capabilities_stream,
-                                  error.Receive());
-      DCHECK(SUCCEEDED(hr));
-      if (FAILED(hr)) {
-        return false;
-      }
-      hr = StreamOnHGlobalToString(print_capabilities_stream.get(),
-                                   &printer_info->printer_capabilities);
-      DCHECK(SUCCEEDED(hr));
-      printer_info->caps_mime_type = "text/xml";
-    }
-    // TODO(sanjeevr): Add ScopedPrinterHandle
-    HANDLE printer_handle = NULL;
-    OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()), &printer_handle,
-                NULL);
-    DCHECK(printer_handle);
-    if (printer_handle) {
-      DWORD devmode_size = DocumentProperties(
-          NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
-          NULL, NULL, 0);
-      DCHECK(0 != devmode_size);
-      scoped_ptr<BYTE> devmode_out_buffer(new BYTE[devmode_size]);
-      DEVMODE* devmode_out =
-          reinterpret_cast<DEVMODE*>(devmode_out_buffer.get());
-      DocumentProperties(
-          NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
-          devmode_out, NULL, DM_OUT_BUFFER);
-      ScopedComPtr<IStream> printer_defaults_stream;
-      hr = CreateStreamOnHGlobal(NULL, TRUE,
-                                 printer_defaults_stream.Receive());
-      DCHECK(SUCCEEDED(hr));
-      if (printer_defaults_stream) {
-        hr = PTConvertDevModeToPrintTicket(provider, devmode_size,
-                                           devmode_out, kPTJobScope,
-                                           printer_defaults_stream);
-        DCHECK(SUCCEEDED(hr));
-        if (SUCCEEDED(hr)) {
-          hr = StreamOnHGlobalToString(printer_defaults_stream.get(),
-                                       &printer_info->printer_defaults);
-          DCHECK(SUCCEEDED(hr));
-          printer_info->defaults_mime_type = "text/xml";
-        }
-      }
-      ClosePrinter(printer_handle);
-    }
-    PTCloseProvider(provider);
-  }
-  return true;
+void PrintSystemWin::Init() {
+  print_backend_ = printing::PrintBackend::CreateInstance(NULL);
+}
+
+printing::PrintBackend* PrintSystemWin::GetPrintBackend() {
+  return print_backend_;
 }
 
 bool PrintSystemWin::ValidatePrintTicket(
     const std::string& printer_name,
     const std::string& print_ticket_data) {
-  if (!InitXPSModule()) {
+  if (!printing::InitXPSModule()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
   }
@@ -712,19 +605,6 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
   return ret;
 }
 
-bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
-  std::wstring printer_name_wide = UTF8ToWide(printer_name);
-  HANDLE printer_handle = NULL;
-  OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()), &printer_handle,
-              NULL);
-  bool ret = false;
-  if (printer_handle) {
-    ret = true;
-    ClosePrinter(printer_handle);
-  }
-  return ret;
-}
-
 PrintSystem::PrintServerWatcher*
 PrintSystemWin::CreatePrintServerWatcher() {
   return new PrintServerWatcherWin();
@@ -760,4 +640,3 @@ scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
 }
 
 }  // namespace cloud_print
-

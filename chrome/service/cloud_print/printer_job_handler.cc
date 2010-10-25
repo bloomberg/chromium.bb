@@ -18,7 +18,7 @@
 #include "net/http/http_response_headers.h"
 
 PrinterJobHandler::PrinterJobHandler(
-    const cloud_print::PrinterBasicInfo& printer_info,
+    const printing::PrinterBasicInfo& printer_info,
     const PrinterInfoFromCloud& printer_info_cloud,
     const std::string& auth_token,
     const GURL& cloud_print_server_url,
@@ -45,7 +45,8 @@ PrinterJobHandler::PrinterJobHandler(
 }
 
 bool PrinterJobHandler::Initialize() {
-  if (print_system_->IsValidPrinter(printer_info_.printer_name)) {
+  if (print_system_->GetPrintBackend()->IsValidPrinter(
+      printer_info_.printer_name)) {
     printer_watcher_ = print_system_->CreatePrinterWatcher(
         printer_info_.printer_name);
     printer_watcher_->StartWatching(this);
@@ -136,14 +137,14 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
           << printer_info_cloud_.printer_id;
   // We need to update the parts of the printer info that have changed
   // (could be printer name, description, status or capabilities).
-  cloud_print::PrinterBasicInfo printer_info;
+  printing::PrinterBasicInfo printer_info;
   printer_watcher_->GetCurrentPrinterInfo(&printer_info);
-  cloud_print::PrinterCapsAndDefaults printer_caps;
+  printing::PrinterCapsAndDefaults printer_caps;
   std::string post_data;
   std::string mime_boundary;
   CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
-  if (print_system_->GetPrinterCapsAndDefaults(printer_info.printer_name,
-                                               &printer_caps)) {
+  if (print_system_->GetPrintBackend()->GetPrinterCapsAndDefaults(
+      printer_info.printer_name, &printer_caps)) {
     std::string caps_hash = MD5String(printer_caps.printer_capabilities);
     if (caps_hash != printer_info_cloud_.caps_hash) {
       // Hashes don't match, we need to upload new capabilities (the defaults
@@ -679,4 +680,3 @@ void PrinterJobHandler::OnJobSpoolFailed() {
                                                 &PrinterJobHandler::JobFailed,
                                                 PRINT_FAILED));
 }
-

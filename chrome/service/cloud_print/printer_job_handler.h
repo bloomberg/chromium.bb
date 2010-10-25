@@ -14,10 +14,10 @@
 #include "base/message_loop_proxy.h"
 #include "base/thread.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
-#include "chrome/service/cloud_print/print_system.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
+#include "printing/backend/print_backend.h"
 
 // A class that handles cloud print jobs for a particular printer. This class
 // imlements a state machine that transitions from Start to various states. The
@@ -104,7 +104,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   };
 
   // Begin public interface
-  PrinterJobHandler(const cloud_print::PrinterBasicInfo& printer_info,
+  PrinterJobHandler(const printing::PrinterBasicInfo& printer_info,
                     const PrinterInfoFromCloud& printer_info_from_server,
                     const std::string& auth_token,
                     const GURL& cloud_print_server_url,
@@ -232,7 +232,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   scoped_ptr<URLFetcher> request_;
   scoped_refptr<cloud_print::PrintSystem> print_system_;
-  cloud_print::PrinterBasicInfo printer_info_;
+  printing::PrinterBasicInfo printer_info_;
   PrinterInfoFromCloud printer_info_cloud_;
   std::string auth_token_;
   GURL cloud_print_server_url_;
@@ -280,4 +280,3 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 typedef PrinterJobHandler::Delegate PrinterJobHandlerDelegate;
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_PRINTER_JOB_HANDLER_H_
-

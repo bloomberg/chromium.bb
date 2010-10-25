@@ -46,7 +46,7 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
 
   // Notification methods from the backend. Called on UI thread.
   virtual void OnPrinterListAvailable(
-      const cloud_print::PrinterList& printer_list);
+      const printing::PrinterList& printer_list);
   virtual void OnAuthenticated(const std::string& cloud_print_token,
                                const std::string& cloud_print_xmpp_token,
                                const std::string& email);
@@ -72,4 +72,3 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
 };
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_H_
-

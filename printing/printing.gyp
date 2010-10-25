@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,6 +24,11 @@
         '..',
       ],
       'sources': [
+        'backend/print_backend.cc',
+        'backend/print_backend.h',
+        'backend/print_backend_consts.cc',
+        'backend/print_backend_consts.h',
+        'backend/print_backend_dummy.cc',
         'emf_win.cc',
         'emf_win.h',
         'image.cc',
@@ -40,29 +45,29 @@
         'page_range.h',
         'page_setup.cc',
         'page_setup.h',
-        'pdf_metafile_mac.h',
         'pdf_metafile_mac.cc',
-        'pdf_ps_metafile_cairo.h',
+        'pdf_metafile_mac.h',
         'pdf_ps_metafile_cairo.cc',
-        'print_settings.cc',
-        'print_settings.h',
-        'printed_document.cc',
+        'pdf_ps_metafile_cairo.h',
         'printed_document_cairo.cc',
+        'printed_document.cc',
+        'printed_document.h',
         'printed_document_mac.cc',
         'printed_document_posix.cc',
         'printed_document_win.cc',
-        'printed_document.h',
         'printed_page.cc',
         'printed_page.h',
         'printed_pages_source.h',
-        'printing_context.h',
-        'printing_context.cc',
-        'printing_context_cairo.h',
         'printing_context_cairo.cc',
+        'printing_context_cairo.h',
+        'printing_context.cc',
+        'printing_context.h',
         'printing_context_mac.h',
         'printing_context_mac.mm',
-        'printing_context_win.h',
         'printing_context_win.cc',
+        'printing_context_win.h',
+        'print_settings.cc',
+        'print_settings.h',
         'units.cc',
         'units.h',
       ],
@@ -86,6 +91,36 @@
             '../build/linux/system.gyp:freetype2',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
+          ],
+        }],
+        ['OS=="win"', {
+          'defines': [
+            # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
+            # of the print backend and enables a custom implementation instead.
+            'PRINT_BACKEND_AVAILABLE',
+          ],
+          'sources': [
+            'backend/win_helper.cc',
+            'backend/win_helper.h',
+            'backend/print_backend_win.cc',
+          ],
+        }],
+        ['use_cups==1', {
+          'link_settings': {
+            'libraries': [
+              '-lcups',
+              '-lgcrypt',
+            ],
+          },
+          'defines': [
+            # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
+            # of the print backend and enables a custom implementation instead.
+            'PRINT_BACKEND_AVAILABLE',
+          ],
+          'sources': [
+            'backend/cups_helper.cc',
+            'backend/cups_helper.h',
+            'backend/print_backend_cups.cc',
           ],
         }],
       ],

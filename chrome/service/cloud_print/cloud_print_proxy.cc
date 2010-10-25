@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process.h"
 
 // This method is invoked on the IO thread to launch the browser process to
@@ -133,7 +134,7 @@ void CloudPrintProxy::Shutdown() {
 
 // Notification methods from the backend. Called on UI thread.
 void CloudPrintProxy::OnPrinterListAvailable(
-    const cloud_print::PrinterList& printer_list) {
+    const printing::PrinterList& printer_list) {
   DCHECK(CalledOnValidThread());
   // We could potentially show UI here allowing the user to select which
   // printers to register. For now, we just register all.
@@ -163,4 +164,3 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   g_service_process->io_thread()->message_loop_proxy()->PostTask(
       FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
 }
-

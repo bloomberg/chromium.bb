@@ -15,29 +15,15 @@
 class DictionaryValue;
 class FilePath;
 
+namespace printing {
+class PrintBackend;
+struct PrinterBasicInfo;
+}
+
 // This is the interface for platform-specific code for cloud print
 namespace cloud_print {
 
 typedef int PlatformJobId;
-
-struct PrinterBasicInfo {
-  PrinterBasicInfo();
-  ~PrinterBasicInfo();
-
-  std::string printer_name;
-  std::string printer_description;
-  int printer_status;
-  std::map<std::string, std::string> options;
-};
-
-typedef std::vector<PrinterBasicInfo> PrinterList;
-
-struct PrinterCapsAndDefaults {
-  std::string printer_capabilities;
-  std::string caps_mime_type;
-  std::string printer_defaults;
-  std::string defaults_mime_type;
-};
 
 enum PrintJobStatus {
   PRINT_JOB_STATUS_INVALID,
@@ -75,7 +61,7 @@ struct PrintJobDetails {
 // obtain available printing system.
 // Please note, that PrintSystem is not platform specific, but rather
 // print system specific. For example, CUPS is available on both Linux and Mac,
-// but not avaialble on ChromeOS, etc. This design allows us to add more
+// but not available on ChromeOS, etc. This design allows us to add more
 // functionality on some platforms, while reusing core (CUPS) functions.
 class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
  public:
@@ -113,7 +99,8 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
     virtual ~PrinterWatcher();
     virtual bool StartWatching(PrinterWatcher::Delegate* delegate) = 0;
     virtual bool StopWatching() = 0;
-    virtual bool GetCurrentPrinterInfo(PrinterBasicInfo* printer_info) = 0;
+    virtual bool GetCurrentPrinterInfo(
+        printing::PrinterBasicInfo* printer_info) = 0;
   };
 
   class JobSpooler : public base::RefCountedThreadSafe<JobSpooler> {
@@ -141,12 +128,8 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
 
   virtual ~PrintSystem();
 
-  // Enumerates the list of installed local and network printers.
-  virtual void EnumeratePrinters(PrinterList* printer_list) = 0;
-
-  // Gets the capabilities and defaults for a specific printer.
-  virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
-                                     PrinterCapsAndDefaults* printer_info) = 0;
+  // Get the printing backend.
+  virtual printing::PrintBackend* GetPrintBackend() = 0;
 
   // Returns true if ticket is valid.
   virtual bool ValidatePrintTicket(const std::string& printer_name,
@@ -156,9 +139,6 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
                              PrintJobDetails *job_details) = 0;
-
-  // Returns true if printer_name points to a valid printer.
-  virtual bool IsValidPrinter(const std::string& printer_name) = 0;
 
   // Factory methods to create corresponding watcher. Callee is responsible
   // for deleting objects. Return NULL if failed.

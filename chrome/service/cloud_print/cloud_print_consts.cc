@@ -28,8 +28,6 @@ const char kPrinterCapsHashValue[] = "capsHash";
 const char kPrinterTagsValue[] = "tags";
 const char kProxyTagPrefix[] = "__cp__";
 const char kTagsHashTagName[] = "__cp__tagshash";
-const char kLocationTagName[] = "location";
-const char kDriverNameTagName[] = "drivername";
 
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";

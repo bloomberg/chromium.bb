@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/thread.h"
-#include "chrome/service/cloud_print/print_system.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
+#include "printing/backend/print_backend.h"
 
 class CloudPrintProxyService;
 class DictionaryValue;
@@ -27,7 +27,7 @@ class CloudPrintProxyFrontend {
 
   // There is a list of printers available that can be registered.
   virtual void OnPrinterListAvailable(
-      const cloud_print::PrinterList& printer_list) = 0;
+      const printing::PrinterList& printer_list) = 0;
   // We successfully authenticated with the cloud print server. This callback
   // allows the frontend to persist the tokens.
   virtual void OnAuthenticated(const std::string& cloud_print_token,
@@ -59,7 +59,7 @@ class CloudPrintProxyBackend {
                            const std::string email,
                            const std::string& proxy_id);
   void Shutdown();
-  void RegisterPrinters(const cloud_print::PrinterList& printer_list);
+  void RegisterPrinters(const printing::PrinterList& printer_list);
 
  private:
   // The real guts of SyncBackendHost, to keep the public client API clean.
@@ -82,4 +82,3 @@ class CloudPrintProxyBackend {
 };
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_PROXY_BACKEND_H_
-

@@ -6,10 +6,6 @@
 
 namespace cloud_print {
 
-PrinterBasicInfo::PrinterBasicInfo() : printer_status(0) {}
-
-PrinterBasicInfo::~PrinterBasicInfo() {}
-
 PrintJobDetails::PrintJobDetails()
     : status(PRINT_JOB_STATUS_INVALID),
       platform_status_flags(0),

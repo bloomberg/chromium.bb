@@ -30,8 +30,6 @@ extern const char kPrinterCapsHashValue[];
 extern const char kPrinterTagsValue[];
 extern const char kProxyTagPrefix[];
 extern const char kTagsHashTagName[];
-extern const char kLocationTagName[];
-extern const char kDriverNameTagName[];
 extern const char kDefaultCloudPrintServerUrl[];
 extern const char kGaiaUrl[];
 extern const char kCloudPrintGaiaServiceId[];
