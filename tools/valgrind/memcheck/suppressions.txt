@@ -1130,6 +1130,124 @@
    fun:sqlite3_prepare
 }
 {
+   bug_19775_g
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3ParserAlloc
+   fun:sqlite3RunParser
+   fun:sqlite3Prepare
+   fun:sqlite3LockAndPrepare
+   fun:sqlite3_prepare_v2
+}
+{
+   bug_60556a
+   Memcheck:Addr4
+   fun:pcache1Fetch
+   fun:sqlite3PcacheFetch
+   fun:sqlite3PagerAcquire2
+   fun:sqlite3PagerAcquire
+   fun:btreeGetPage
+   fun:getAndInitPage
+   fun:moveToRoot
+   fun:sqlite3BtreeFirst
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase15InitLoginsTableEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
+   bug_60556b
+   Memcheck:Addr1
+   fun:pager_wait_on_lock
+   fun:pager_write_pagelist
+   fun:sqlite3PagerCommitPhaseOne
+   fun:sqlite3BtreeCommitPhaseOne
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement3RunEv
+   fun:_ZN3sql10Connection17CommitTransactionEv
+   fun:_ZN3sql11Transaction6CommitEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
+   bug_60556c
+   Memcheck:Addr4
+   fun:pager_write_pagelist
+   fun:sqlite3PagerCommitPhaseOne
+   fun:sqlite3BtreeCommitPhaseOne
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement3RunEv
+   fun:_ZN3sql10Connection17CommitTransactionEv
+   fun:_ZN3sql11Transaction6CommitEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
+   bug_60556d
+   Memcheck:Addr4
+   ...
+   fun:sqlite3PcacheDirtyList
+   fun:sqlite3PagerCommitPhaseOne
+   fun:sqlite3BtreeCommitPhaseOne
+   fun:vdbeCommit
+   fun:sqlite3VdbeHalt
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:_ZN3sql9Statement3RunEv
+   fun:_ZN3sql10Connection17CommitTransactionEv
+   fun:_ZN3sql11Transaction6CommitEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
+   bug_60556e
+   Memcheck:Addr4
+   fun:pcacheRemoveFromDirtyList
+   fun:sqlite3PcacheRelease
+   fun:sqlite3PagerUnref
+   ...
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase15InitLoginsTableEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
+   bug_60556f
+   Memcheck:Addr4
+   fun:pcacheAddToDirtyList
+   ...
+   fun:btreeCreateTable
+   fun:sqlite3BtreeCreateTable
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase15InitLoginsTableEv
+   fun:_ZN11WebDatabase4InitERK8FilePath
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
    bug_20581
    Memcheck:Leak
    ...
@@ -2938,7 +3056,7 @@
    fun:_ZN12CallbackImplI18CoreOptionsHandlerMS0_FvPK9ListValueE6Tuple1IS3_EE13RunWithParamsERKS7_
 }
 {
-   bug_60381
+   bug_60381a
    Memcheck:Leak
    fun:_Znw*
    fun:_Z11NewCallbackIN11webkit_glue18BufferedDataSourceEiEPN9Callback1IT0_E4TypeEPT_MS7_FvS3_E
@@ -2948,3 +3066,15 @@
    fun:_ZN14RunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvxiPhP14CallbackRunnerI6Tuple1IjEEE6Tuple4IxiS2_S7_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_60381b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackIN11webkit_glue18BufferedDataSourceEiEPN9Callback1IT0_E4TypeEPT_MS7_FvS3_E
+   fun:_ZN11webkit_glue18BufferedDataSource12ReadInternalEv
+   fun:_ZN11webkit_glue18BufferedDataSource8ReadTaskExiPhP14CallbackRunnerI6Tuple1ImEE
+   fun:_Z16DispatchToMethodIN11webkit_glue18BufferedDataSourceEMS1_FvxiPhP14CallbackRunnerI6Tuple1ImEEExiS2_S7_EvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
+   fun:_ZN14RunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvxiPhP14CallbackRunnerI6Tuple1ImEEE6Tuple4IxiS2_S7_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+
