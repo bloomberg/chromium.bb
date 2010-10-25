@@ -370,10 +370,15 @@ GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
   if (!default_path.empty()) {
-    // If the file doesn't exist, this will just switch to the correct
-    // directory. That's good enough.
-    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
-                                  default_path.value().c_str());
+    if (file_util::DirectoryExists(default_path)) {
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                          default_path.value().c_str());
+    } else {
+      // If the file doesn't exist, this will just switch to the correct
+      // directory. That's good enough.
+      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+                                    default_path.value().c_str());
+    }
   } else if (!last_opened_path_->empty()) {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
                                         last_opened_path_->value().c_str());
@@ -400,10 +405,15 @@ GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
   if (!default_path.empty()) {
-    // If the file doesn't exist, this will just switch to the correct
-    // directory. That's good enough.
-    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
-                                  default_path.value().c_str());
+    if (file_util::DirectoryExists(default_path)) {
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                          default_path.value().c_str());
+    } else {
+      // If the file doesn't exist, this will just switch to the correct
+      // directory. That's good enough.
+      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+                                    default_path.value().c_str());
+    }
   } else if (!last_opened_path_->empty()) {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
                                         last_opened_path_->value().c_str());
