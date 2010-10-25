@@ -47,7 +47,27 @@ def PatchGlob(name):
   return patches
 
 
+def ParseKeyValueFile(filename):
+  fh = open(filename, "r")
+  data = {}
+  for line in fh:
+    line = line.strip()
+    if line.startswith("#") or line == "":
+      # Ignore comments and empty lines.
+      pass
+    elif "=" in line:
+      key, value = line.split("=", 1)
+      if key in data:
+        raise Exception("Duplicate key in file: %r" % line)
+      data[key] = value
+    else:
+      raise Exception("Unrecognised line: %r" % line)
+  fh.close()
+  return data
+
+
 def GetSources():
+  revisions = ParseKeyValueFile(os.path.join(nacl_dir, "tools/REVISIONS"))
   return {
     "gmp": dirtree.TarballTree(FindFile("gmp-4.3.1.tar.bz2")),
     "mpfr": dirtree.TarballTree(FindFile("mpfr-2.4.1.tar.bz2")),
@@ -67,10 +87,10 @@ def GetSources():
     # http://code.google.com/p/nativeclient/issues/detail?id=671
     "linux_headers": dirtree.GitTree(
         "http://git.chromium.org/git/linux-headers-for-nacl.git",
-        commit_id="0014b8d2e052dd3bf4cdc4be999d17e123c50dc2"),
+        commit_id=revisions["LINUX_HEADERS_FOR_NACL_COMMIT"]),
     "glibc": dirtree.GitTree(
         "http://git.chromium.org/git/nacl-glibc.git",
-        commit_id="4b3bc00bcd7e9c0f4d814cbaf9717740d3c3c63b"),
+        commit_id=revisions["NACL_GLIBC_COMMIT"]),
     }
 
 
