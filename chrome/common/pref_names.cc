@@ -900,6 +900,12 @@ const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
 // Google controlled.
 const char kExtensionInstallDenyList[] = "extensions.install.denylist";
 
+// A dictionary containing extensions that Chrome will silently install
+// at startup time. Its format and semantis are the same as
+// external_extensions.json. This preference is meant to be controlled
+// by the administrator.
+const char kExtensionInstallForceList[] = "extensions.install.forcelist";
+
 // Time of the last, and next scheduled, extensions auto-update checks.
 const char kLastExtensionsUpdateCheck[] = "extensions.autoupdate.last_check";
 const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";

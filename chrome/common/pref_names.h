@@ -327,6 +327,8 @@ extern const char kNextExtensionsUpdateCheck[];
 extern const char kExtensionInstallAllowList[];
 extern const char kExtensionInstallDenyList[];
 
+extern const char kExtensionInstallForceList[];
+
 extern const char kExtensionBlacklistUpdateVersion[];
 
 extern const char kExtensionSidebarWidth[];

@@ -50,6 +50,7 @@ const char kApplicationLocaleValue[] = "ApplicationLocaleValue";
 const char kSyncDisabled[] = "SyncDisabled";
 const char kExtensionInstallAllowList[] = "ExtensionInstallWhitelist";
 const char kExtensionInstallDenyList[] = "ExtensionInstallBlacklist";
+const char kExtensionInstallForceList[] = "ExtensionInstallForcelist";
 const char kShowHomeButton[] = "ShowHomeButton";
 const char kPrintingEnabled[] = "PrintingEnabled";
 const char kJavascriptEnabled[] = "JavascriptEnabled";

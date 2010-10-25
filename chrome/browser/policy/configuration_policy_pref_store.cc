@@ -227,6 +227,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
         Value::TYPE_LIST, key::kExtensionInstallAllowList },
     { ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
         Value::TYPE_LIST, key::kExtensionInstallDenyList },
+    { ConfigurationPolicyStore::kPolicyExtensionInstallForceList,
+        Value::TYPE_LIST, key::kExtensionInstallForceList },
     { ConfigurationPolicyStore::kPolicyShowHomeButton,
         Value::TYPE_BOOLEAN, key::kShowHomeButton },
     { ConfigurationPolicyStore::kPolicyPrintingEnabled,
