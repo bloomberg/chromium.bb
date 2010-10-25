@@ -878,7 +878,6 @@ TabContents* TabStripModel::GetContentsAt(int index) const {
 
 void TabStripModel::ChangeSelectedContentsFrom(
     TabContents* old_contents, int to_index, bool user_gesture) {
-  DCHECK(ContainsIndex(to_index));
   TabContents* new_contents = GetContentsAt(to_index);
   if (old_contents == new_contents)
     return;

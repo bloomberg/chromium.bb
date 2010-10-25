@@ -317,6 +317,12 @@ void BrowserListener::ShowSnapshots() {
 }
 
 void BrowserListener::SelectTab(int index, uint32 timestamp) {
+  // Ignore requests to switch to non-existent tabs (the window manager gets
+  // notified asynchronously about the number of tabs in each window, so there's
+  // no guarantee that the messages that it sends us will make sense).
+  if (index < 0 || index >= browser_->tab_count())
+    return;
+
   uint32 old_value = select_tab_timestamp_;
   select_tab_timestamp_ = timestamp;
   browser_->SelectTabContentsAt(index, true);
