@@ -4,7 +4,7 @@ vars = {
   "googlecode_url": "http://%s.googlecode.com/svn",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
-  "webkit_revision": "70466",
+  "webkit_revision": "70481",
   "skia_revision": "607",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "40423",
