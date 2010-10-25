@@ -213,6 +213,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
     // See http://crbug.com/50105 for background.
     EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReader8GroupName));
     EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReader9GroupName));
+    UpdatePreferences(profile);
   }
 }
 
