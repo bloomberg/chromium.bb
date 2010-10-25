@@ -245,11 +245,15 @@
               <a href="#H2-1">Field details</a>
               <ol>
                 <li>
+                  <a href="#default_locale">default_locale</a>
+                </li><li>
                   <a href="#description">description</a>
+                </li><li>
+                  <a href="#homepage_url">homepage_url</a>
                 </li><li>
                   <a href="#icons">icons</a>
                 </li><li>
-                  <a href="#default_locale">default_locale</a>
+                  <a href="#incognito">incognito</a>
                 </li><li>
                   <a href="#key">key</a>
                 </li><li>
@@ -260,8 +264,6 @@
                   <a href="#permissions">permissions</a>
                 </li><li>
                   <a href="#version">version</a>
-                </li><li>
-                  <a href="#incognito">incognito</a>
                 </li>
               </ol>
             </li>
@@ -350,13 +352,14 @@ are <b>name</b> and <b>version</b>.
   "<a href="background_pages.html">background_page</a>": "<em>aFile</em>.html",
   "<a href="override.html">chrome_url_overrides</a>": {...},
   "<a href="content_scripts.html">content_scripts</a>": [...],
+  "<a href="#homepage_url">homepage_url</a>": "http://path/to/homepage",
+  "<a href="#incognito">incognito</a>": "<em>split</em> or <em>spanning</em>",
   "<a href="#key">key</a>": "<em>publicKey</em>",
   "<a href="#minimum_chrome_version">minimum_chrome_version</a>": "<em>versionString</em>",
   "<a href="options.html">options_page</a>": "<em>aFile</em>.html",
   "<a href="#permissions">permissions</a>": [...],
   "<a href="npapi.html">plugins</a>": [...],
   "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml"
-  "<a href="#incognito">incognito</a>": "<em>split</em> or <em>spanning</em>",
 }
 </pre>
 
@@ -368,6 +371,19 @@ This section covers fields that aren't described in another page.
 For a complete list of fields,
 with links to where they're described in detail,
 see the <a href="#overview">Field summary</a>.
+</p>
+
+<h3 id="default_locale">default_locale</h3>
+
+<p>
+Specifies the subdirectory of <code>_locales</code>
+that contains the default strings for this extension.
+This field is <b>required</b> in extensions
+that have a <code>_locales</code> directory;
+it <b>must be absent</b> in extensions
+that have no <code>_locales</code> directory.
+For details, see
+<a href="i18n.html">Internationalization</a>.
 </p>
 
 <h3 id="description">description</h3>
@@ -384,6 +400,15 @@ You can specify locale-specific strings for this field;
 see <a href="i18n.html">Internationalization</a> for details.
 </p>
 
+<h3 id="homepage_url">homepage_url</h3>
+
+<p>
+The URL of the homepage for this extension. The extensions management page (chrome://extensions)
+will contain a link to this URL.  This field is particularly useful if you
+<a href="hosting.html">host the extension on your own site</a>. If you distribute your
+extension using the <a href="http://chrome.google.com/extensions">gallery</a>,
+the homepage URL defaults to the extension's own gallery page.
+</p>
 
 <h3 id="icons">icons</h3>
 
@@ -428,8 +453,6 @@ extension developers are using the documented sizes. If you use other sizes,
 your icon may look bad in future versions of the browser.
 </p>
 
-
-
 <p>
 If you submit your extension to the
 <a href="https://chrome.google.com/extensions">gallery</a>,
@@ -441,17 +464,34 @@ see the
 <a href="http://www.google.com/support/chrome/bin/answer.py?answer=113909">gallery help</a>.
 </p>
 
-<h3 id="default_locale">default_locale</h3>
+<h3 id="incognito">incognito</h3>
 
 <p>
-Specifies the subdirectory of <code>_locales</code>
-that contains the default strings for this extension.
-This field is <b>required</b> in extensions
-that have a <code>_locales</code> directory;
-it <b>must be absent</b> in extensions
-that have no <code>_locales</code> directory.
-For details, see
-<a href="i18n.html">Internationalization</a>.
+Either <em>split</em> or <em>spanning</em>, to specify how this extension will
+behave if allowed to run in incognito.
+</p>
+
+<p>
+<em>spanning</em> is the default for extensions, and means that the extension
+will run in a single shared process.  Any events or messages from an incognito
+tab will be sent to the shared process, with an <em>incognito</em> flag
+indicating where it came from.
+</p>
+
+<p>
+<em>split</em> is the default for apps, and it means that all app pages in
+an incognito window will run in their own incognito process. If the app or extension contains a background page, that will also run in the incognito process.
+This incognito process runs along side the regular process, but has a separate
+memory-only cookie store. Each process sees events and messages only from its
+own context (e.g. the incognito process will only see incognito tab updates).
+The processes are unable to communicate with each other.
+</p>
+
+<p>
+As a rule of thumb, if your extension or app needs to load a tab in an incognito browser, use
+<em>split</em> incognito behavior. If your extension or app needs to be logged
+into a remote server or persist settings locally, use <em>spanning</em>
+incognito behavior.
 </p>
 
 <h3 id="key">key</h3>
@@ -678,36 +718,6 @@ For example, 1.1.9.9999 is newer than 1.1.
 <p>
 For more information, see
 <a href="autoupdate.html">Autoupdating</a>.
-</p>
-
-<h3 id="incognito">incognito</h3>
-
-<p>
-Either <em>split</em> or <em>spanning</em>, to specify how this extension will
-behave if allowed to run in incognito.
-</p>
-
-<p>
-<em>spanning</em> is the default for extensions, and means that the extension
-will run in a single shared process.  Any events or messages from an incognito
-tab will be sent to the shared process, with an <em>incognito</em> flag
-indicating where it came from.
-</p>
-
-<p>
-<em>split</em> is the default for apps, and it means that all app pages in
-an incognito window will run in their own incognito process. If the app or extension contains a background page, that will also run in the incognito process.
-This incognito process runs along side the regular process, but has a separate
-memory-only cookie store. Each process sees events and messages only from its
-own context (e.g. the incognito process will only see incognito tab updates).
-The processes are unable to communicate with each other.
-</p>
-
-<p>
-As a rule of thumb, if your extension or app needs to load a tab in an incognito browser, use
-<em>split</em> incognito behavior. If your extension or app needs to be logged
-into a remote server or persist settings locally, use <em>spanning</em>
-incognito behavior.
 </p>
 
 <!-- [PENDING: Possibly: point to the gallery and make a big deal of the fact that autoupdating is free if you use the gallery.] -->

@@ -840,7 +840,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->Set("views", views);
   extension_data->SetBoolean("hasPopupAction",
       extension->browser_action() || extension->page_action());
-  extension_data->SetString("galleryUrl", extension->GalleryUrl().spec());
+  extension_data->SetString("homepageUrl", extension->GetHomepageURL().spec());
 
   return extension_data;
 }

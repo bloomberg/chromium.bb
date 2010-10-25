@@ -217,6 +217,10 @@ class Extension {
     // The sites this extension has permission to talk to (using XHR, etc).
     URLPatternList host_permissions;
 
+    // The homepage for this extension. Useful if it is not hosted by Google and
+    // therefore does not have a Gallery URL.
+    GURL homepage_url;
+
     // URL for fetching an update manifest
     GURL update_url;
 
@@ -554,9 +558,10 @@ class Extension {
     return static_data_->icons;
   }
 
-  // Returns the Google Gallery URL for this extension, if one exists. For
+  // Returns the Homepage URL for this extension. If homepage_url was not
+  // specified in the manifest, this returns the Google Gallery URL. For
   // third-party extensions, this returns a blank GURL.
-  GURL GalleryUrl() const;
+  GURL GetHomepageURL() const;
 
   // Theme-related.
   DictionaryValue* GetThemeImages() const {

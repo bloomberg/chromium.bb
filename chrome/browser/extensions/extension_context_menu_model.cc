@@ -80,11 +80,9 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
   if (command_id == CONFIGURE) {
     return extension->options_url().spec().length() > 0;
   } else if (command_id == NAME) {
-    // The NAME links to the gallery page, which only makes sense if Google is
-    // hosting the extension. For other 3rd party extensions we don't have a
-    // homepage url, so we just disable this menu item on those cases, at least
-    // for now.
-    return extension->GalleryUrl().is_valid();
+    // The NAME links to the Homepage URL. If the extension doesn't have a
+    // homepage, we just disable this menu item.
+    return extension->GetHomepageURL().is_valid();
   } else if (command_id == INSPECT_POPUP) {
     TabContents* contents = browser_->GetSelectedTabContents();
     if (!contents)
@@ -107,7 +105,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
 
   switch (command_id) {
     case NAME: {
-      browser_->OpenURL(extension->GalleryUrl(), GURL(),
+      browser_->OpenURL(extension->GetHomepageURL(), GURL(),
                         NEW_FOREGROUND_TAB, PageTransition::LINK);
       break;
     }

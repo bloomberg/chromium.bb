@@ -24,6 +24,7 @@ namespace extension_manifest_keys {
   extern const char* kDescription;
   extern const char* kDevToolsPage;
   extern const char* kExcludeGlobs;
+  extern const char* kHomepageURL;
   extern const char* kIcons;
   extern const char* kIncognito;
   extern const char* kIncludeGlobs;
@@ -108,6 +109,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidDevToolsPage;
   extern const char* kInvalidGlob;
   extern const char* kInvalidGlobList;
+  extern const char* kInvalidHomepageURL;
   extern const char* kInvalidIconPath;
   extern const char* kInvalidIcons;
   extern const char* kInvalidIncognitoBehavior;

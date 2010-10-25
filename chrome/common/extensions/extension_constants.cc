@@ -19,6 +19,7 @@ const char* kDefaultLocale = "default_locale";
 const char* kDescription = "description";
 const char* kDevToolsPage = "devtools_page";
 const char* kExcludeGlobs = "exclude_globs";
+const char* kHomepageURL = "homepage_url";
 const char* kIcons = "icons";
 const char* kIncognito = "incognito";
 const char* kIncludeGlobs = "include_globs";
@@ -124,6 +125,8 @@ const char* kInvalidGlob =
     "Invalid value for 'content_scripts[*].*[*]'.";
 const char* kInvalidGlobList =
     "Invalid value for 'content_scripts[*].*'.";
+const char* kInvalidHomepageURL =
+    "Invalid value for homepage url: '[*]'.";
 const char* kInvalidIconPath =
     "Invalid value for 'icons[\"*\"]'.";
 const char* kInvalidIcons =

@@ -14,5 +14,5 @@
   "content_scripts": [],
   "views": [],
   "hasPopupAction": false,
-  "galleryUrl": ""
+  "homepageUrl": ""
 }

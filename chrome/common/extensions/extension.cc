@@ -1263,6 +1263,22 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
   }
 
+  // Initialize homepage url (if present).
+  if (source.HasKey(keys::kHomepageURL)) {
+    std::string tmp;
+    if (!source.GetString(keys::kHomepageURL, &tmp)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidHomepageURL, "");
+      return false;
+    }
+    mutable_static_data_->homepage_url = GURL(tmp);
+    if (!mutable_static_data_->homepage_url.is_valid()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidHomepageURL, tmp);
+      return false;
+    }
+  }
+
   // Initialize update url (if present).
   if (source.HasKey(keys::kUpdateURL)) {
     std::string tmp;
@@ -1854,15 +1870,18 @@ std::string Extension::ChromeStoreLaunchURL() {
   return gallery_prefix;
 }
 
-GURL Extension::GalleryUrl() const {
-  if (!update_url().DomainIs("google.com"))
+GURL Extension::GetHomepageURL() const {
+  if (static_data_->homepage_url.is_valid())
+    return static_data_->homepage_url;
+
+  if (update_url()!= GURL(extension_urls::kGalleryUpdateHttpsUrl) &&
+      update_url()!= GURL(extension_urls::kGalleryUpdateHttpUrl))
     return GURL();
 
   // TODO(erikkay): This may not be entirely correct with the webstore.
   // I think it will have a mixture of /extensions/detail and /webstore/detail
   // URLs.  Perhaps they'll handle this nicely with redirects?
   GURL url(ChromeStoreLaunchURL() + std::string("/detail/") + id());
-
   return url;
 }
 

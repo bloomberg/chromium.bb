@@ -338,3 +338,26 @@ TEST_F(ExtensionManifestTest, DisallowMultipleUISurfaces) {
   LoadAndExpectError("multiple_ui_surfaces_2.json", errors::kOneUISurfaceOnly);
   LoadAndExpectError("multiple_ui_surfaces_3.json", errors::kOneUISurfaceOnly);
 }
+
+TEST_F(ExtensionManifestTest, ParseHomepageURLs) {
+  LoadAndExpectSuccess("homepage_valid.json");
+  LoadAndExpectError("homepage_empty.json",
+                     extension_manifest_errors::kInvalidHomepageURL);
+  LoadAndExpectError("homepage_invalid.json",
+                     extension_manifest_errors::kInvalidHomepageURL);
+}
+
+TEST_F(ExtensionManifestTest, GetHomepageURL) {
+  scoped_ptr<Extension> extension(LoadAndExpectSuccess("homepage_valid.json"));
+  EXPECT_EQ(GURL("http://foo.com#bar"), extension->GetHomepageURL());
+
+  // The Google Gallery URL ends with the id, which depends on the path, which
+  // can be different in testing, so we just check the part before id.
+  extension.reset(LoadAndExpectSuccess("homepage_google_hosted.json"));
+  EXPECT_TRUE(StartsWithASCII(extension->GetHomepageURL().spec(),
+                              "https://chrome.google.com/extensions/detail/",
+                              false));
+
+  extension.reset(LoadAndExpectSuccess("homepage_externally_hosted.json"));
+  EXPECT_EQ(GURL(), extension->GetHomepageURL());
+}
