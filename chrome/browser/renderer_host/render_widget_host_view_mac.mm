@@ -1488,6 +1488,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       return;
   }
 
+  const NSUInteger kCtrlCmdKeyMask = NSControlKeyMask | NSCommandKeyMask;
   // Only send a corresponding key press event if there is no marked text.
   if (!hasMarkedText_) {
     if (!textInserted && textToBeInserted_.length() == 1) {
@@ -1499,7 +1500,9 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       event.skip_in_browser = true;
       widgetHost->ForwardKeyboardEvent(event);
     } else if ((!textInserted || delayEventUntilAfterImeCompostion) &&
-               editCommands_.empty() && [[theEvent characters] length] > 0) {
+               [[theEvent characters] length] > 0 &&
+               (([theEvent modifierFlags] & kCtrlCmdKeyMask) ||
+                (hasEditCommands_ && editCommands_.empty()))) {
       // We don't get insertText: calls if ctrl or cmd is down, or the key event
       // generates an insert command. So synthesize a keypress event for these
       // cases, unless the key event generated any other command.
