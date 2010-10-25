@@ -138,7 +138,7 @@ void SaveFileManager::SaveURL(const GURL& url,
                           referrer,
                           render_process_host_id,
                           render_view_id,
-                          request_context_getter));
+                          make_scoped_refptr(request_context_getter)));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -250,7 +250,6 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
             this, &SaveFileManager::OnUpdateSaveProgress, save_file->save_id(),
             save_file->bytes_so_far(), write_success));
   }
-  data->Release();
 }
 
 // The IO thread will call this when saving is completed or it got error when

@@ -80,8 +80,8 @@ bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   DCHECK(read_buffer_);
   // We are passing ownership of this buffer to the save file manager.
-  net::IOBuffer* buffer = NULL;
-  read_buffer_.swap(&buffer);
+  scoped_refptr<net::IOBuffer> buffer;
+  read_buffer_.swap(buffer);
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(save_manager_,

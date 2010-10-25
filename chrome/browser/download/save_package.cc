@@ -1025,8 +1025,7 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
 
   if (!data.empty()) {
     // Prepare buffer for saving HTML data.
-    net::IOBuffer* new_data = new net::IOBuffer(data.size());
-    new_data->AddRef();  // We'll pass the buffer to SaveFileManager.
+    scoped_refptr<net::IOBuffer> new_data(new net::IOBuffer(data.size()));
     memcpy(new_data->data(), data.data(), data.size());
 
     // Call write file functionality in file thread.
