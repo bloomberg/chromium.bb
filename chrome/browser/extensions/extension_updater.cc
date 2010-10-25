@@ -232,9 +232,7 @@ void ManifestFetchesBuilder::AddExtensionData(
     PendingExtensionInfo::ExpectedCrxType crx_type,
     GURL update_url) {
 
-  // Only internal and external extensions can be autoupdated.
-  if (location != Extension::INTERNAL &&
-      !Extension::IsExternalLocation(location)) {
+  if (!Extension::IsAutoUpdateableLocation(location)) {
     return;
   }
 

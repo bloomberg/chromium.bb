@@ -49,8 +49,12 @@ class Extension {
     COMPONENT,          // An integral component of Chrome itself, which
                         // happens to be implemented as an extension. We don't
                         // show these in the management UI.
-    EXTERNAL_PREF_DOWNLOAD  // A crx file from an external directory (via
+    EXTERNAL_PREF_DOWNLOAD, // A crx file from an external directory (via
                             // prefs), installed from an update URL.
+    EXTERNAL_POLICY_DOWNLOAD, // A crx file from an external directory (via
+                              // admin policies), installed from an update URL.
+
+    NUM_LOCATIONS
   };
 
   enum State {
@@ -367,7 +371,15 @@ class Extension {
   static inline bool IsExternalLocation(Location location) {
     return location == Extension::EXTERNAL_PREF ||
            location == Extension::EXTERNAL_REGISTRY ||
-           location == Extension::EXTERNAL_PREF_DOWNLOAD;
+           location == Extension::EXTERNAL_PREF_DOWNLOAD ||
+           location == Extension::EXTERNAL_POLICY_DOWNLOAD;
+  }
+
+  // Whether extensions with |location| are auto-updatable or not.
+  static inline bool IsAutoUpdateableLocation(Location location) {
+    // Only internal and external extensions can be autoupdated.
+    return location == Extension::INTERNAL ||
+           IsExternalLocation(location);
   }
 
   // See HistogramType definition above.
