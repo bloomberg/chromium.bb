@@ -125,15 +125,6 @@ void CreateWithJoin(ThreadFunction func, void *state) {
 }
 
 
-/* creates, but does not wait for thread to exit */
-void CreateWithoutJoin() {
-  pthread_t thread_id;
-  int p = pthread_create(&thread_id, NULL, FastThread, NULL);
-  EXPECT_EQ(0, p);
-  /* intentionally no pthread_join() */
-}
-
-
 /* creates as detached thread, cannot join */
 void CreateDetached() {
   int p;
@@ -431,7 +422,16 @@ void* TsdThread(void *state) {
   int rv;
   rv = pthread_setspecific(tsd_key, state);
   EXPECT_EQ(0, rv);
-  pthread_exit((void*) 5);
+
+#ifndef __GLIBC__
+  /* This works around a bug in nacl-newlib's libpthread.  The TSD
+     destructor only gets run by explicit pthread_exit() calls, and
+     not by returning from the thread function.
+     See http://code.google.com/p/nativeclient/issues/detail?id=1085
+     TODO(mseaborn): This would be easy to fix. */
+  pthread_exit(NULL);
+#endif
+
   return 0;
 }
 
@@ -458,6 +458,28 @@ void TestTSD() {
 
   TEST_FUNCTION_END;
 }
+
+
+void *PthreadExitThread(void *unused) {
+  pthread_exit((void *) 1234);
+  /* Should not reach here. */
+  abort();
+  return NULL;
+}
+
+void TestPthreadExit() {
+  pthread_t tid;
+  int err;
+  void *result;
+
+  TEST_FUNCTION_START;
+  err = pthread_create_check_eagain(&tid, NULL, PthreadExitThread, NULL);
+  EXPECT_EQ(err, 0);
+  pthread_join(tid, &result);
+  EXPECT_EQ(result, (void *) 1234);
+  TEST_FUNCTION_END;
+}
+
 
 void* MallocThread(void *userdata) {
   void* ptr = 0;
@@ -705,6 +727,7 @@ int main(int argc, char *argv[]) {
   TestRecursiveMutex();
   TestErrorCheckingMutex();
   TestTSD();
+  TestPthreadExit();
   TestMalloc();
   TestRealloc();
 
