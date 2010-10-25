@@ -57,7 +57,8 @@ function onLoaded() {
                                 'proxyEffectiveSettings',
                                 'proxyReloadSettings',
                                 'badProxiesTableBody',
-                                'clearBadProxies');
+                                'clearBadProxies',
+                                'proxyResolverLog');
 
   // Create a view which will display information on the host resolver.
   var dnsView = new DnsView('dnsTabContent',

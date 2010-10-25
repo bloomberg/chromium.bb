@@ -7,6 +7,7 @@
  *
  *   - Shows the current proxy settings.
  *   - Has a button to reload these settings.
+ *   - Shows the log entries for the most recent INIT_PROXY_RESOLVER source
  *   - Shows the list of proxy hostnames that are cached as "bad".
  *   - Has a button to clear the cached bad proxies.
  *
@@ -17,13 +18,18 @@ function ProxyView(mainBoxId,
                    effectiveSettingsDivId,
                    reloadSettingsButtonId,
                    badProxiesTbodyId,
-                   clearBadProxiesButtonId) {
+                   clearBadProxiesButtonId,
+                   proxyResolverLogPreId) {
   DivView.call(this, mainBoxId);
+
+  this.latestProxySourceEntries_ = null;
+  this.latestProxySourceId_ = 0;
 
   // Hook up the UI components.
   this.originalSettingsDiv_ = document.getElementById(originalSettingsDivId);
   this.effectiveSettingsDiv_ =
       document.getElementById(effectiveSettingsDivId);
+  this.proxyResolverLogPre_ = document.getElementById(proxyResolverLogPreId);
   this.badProxiesTbody_ = document.getElementById(badProxiesTbodyId);
 
   var reloadSettingsButton = document.getElementById(reloadSettingsButtonId);
@@ -36,6 +42,7 @@ function ProxyView(mainBoxId,
   // Register to receive proxy information as it changes.
   g_browser.addProxySettingsObserver(this);
   g_browser.addBadProxiesObserver(this);
+  g_browser.addLogObserver(this);
 }
 
 inherits(ProxyView, DivView);
@@ -68,4 +75,42 @@ ProxyView.prototype.onBadProxiesChanged = function(badProxies) {
     addTextNode(nameCell, entry.proxy_uri);
     addTextNode(badUntilCell, badUntilDate.toLocaleString());
   }
+};
+
+ProxyView.prototype.onLogEntryAdded = function(logEntry) {
+  if (logEntry.source.type != LogSourceType.INIT_PROXY_RESOLVER ||
+      this.latestProxySourceId_ > logEntry.source.id) {
+    return;
+  }
+
+  if (logEntry.source.id > this.latestProxySourceId_) {
+    this.latestProxySourceId_ = logEntry.source.id;
+    this.latestProxySourceEntries_ = [];
+  }
+
+  this.latestProxySourceEntries_.push(logEntry);
+  this.proxyResolverLogPre_.innerHTML = '';
+  addTextNode(this.proxyResolverLogPre_,
+              PrintSourceEntriesAsText(this.latestProxySourceEntries_, false));
+};
+
+/**
+ * Clears the display of and log entries for the last proxy lookup.
+ */
+ProxyView.prototype.clearLog_ = function() {
+  this.latestProxySourceEntries_ = [];
+  // Prevents display of partial logs.
+  ++this.latestProxySourceId_;
+
+  this.proxyResolverLogPre_.innerHTML = '';
+  addTextNode(this.proxyResolverLogPre_, 'Deleted.');
+};
+
+ProxyView.prototype.onLogEntriesDeleted = function(sourceIds) {
+  if (sourceIds.indexOf(this.latestProxySourceId_) != -1)
+    this.clearLog_();
+};
+
+ProxyView.prototype.onAllLogEntriesDeleted = function() {
+  this.clearLog_();
 };
