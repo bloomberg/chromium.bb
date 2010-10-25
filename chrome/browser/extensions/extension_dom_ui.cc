@@ -123,7 +123,8 @@ const char ExtensionDOMUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
 ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, GURL url)
-    : DOMUI(tab_contents) {
+    : DOMUI(tab_contents),
+      url_(url) {
   ExtensionsService* service = tab_contents->profile()->GetExtensionsService();
   Extension* extension = service->GetExtensionByURL(url);
   if (!extension)
@@ -150,12 +151,10 @@ ExtensionDOMUI::~ExtensionDOMUI() {}
 
 void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
     RenderViewHost* render_view_host) {
-  // Use the NavigationController to get the URL rather than the TabContents
-  // since this is the real underlying URL (see HandleChromeURLOverride).
-  NavigationController& controller = tab_contents()->controller();
-  const GURL& url = controller.GetActiveEntry()->url();
+  // TODO(jcivelli): http://crbug.com/60608 we should get the URL out of the
+  //                 active entry of the navigation controller.
   extension_function_dispatcher_.reset(
-      ExtensionFunctionDispatcher::Create(render_view_host, this, url));
+      ExtensionFunctionDispatcher::Create(render_view_host, this, url_));
   DCHECK(extension_function_dispatcher_.get());
 }
 

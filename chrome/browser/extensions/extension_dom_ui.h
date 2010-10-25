@@ -99,6 +99,9 @@ class ExtensionDOMUI
   // the other extension APIs?
   scoped_ptr<ExtensionBookmarkManagerEventRouter>
       extension_bookmark_manager_event_router_;
+
+  // The URL this DOMUI was created for.
+  GURL url_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_
