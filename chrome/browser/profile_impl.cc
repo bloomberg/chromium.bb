@@ -23,6 +23,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
@@ -1247,6 +1248,13 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService(
   if (!sync_service_.get())
     InitSyncService(cros_user);
   return sync_service_.get();
+}
+
+BrowserSignin* ProfileImpl::GetBrowserSignin() {
+  if (!browser_signin_.get()) {
+    browser_signin_.reset(new BrowserSignin(this));
+  }
+  return browser_signin_.get();
 }
 
 CloudPrintProxyService* ProfileImpl::GetCloudPrintProxyService() {

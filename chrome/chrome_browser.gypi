@@ -327,6 +327,8 @@
         'browser/browser_process_impl.h',
         'browser/browser_process_sub_thread.cc',
         'browser/browser_process_sub_thread.h',
+        'browser/browser_signin.cc',
+        'browser/browser_signin.h',
         'browser/browser_shutdown.cc',
         'browser/browser_shutdown.h',
         'browser/browser_thread.cc',

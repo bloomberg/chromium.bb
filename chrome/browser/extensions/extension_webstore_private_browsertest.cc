@@ -4,6 +4,7 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
@@ -26,43 +27,65 @@ const char kTestUrlHostname[] = "www.example.com";
 // A fake version of ProfileSyncService used for testing.
 class FakeProfileSyncService : public ProfileSyncService {
  public:
-  // The |username_after_login| parameter determines what this fake
-  // ProfileSyncService will set the username to when ShowLoginDialog is called.
-  FakeProfileSyncService(const std::string& initial_username,
-                         const std::string& username_after_login) :
-      username_(ASCIIToUTF16(initial_username)),
-      username_after_login_(username_after_login),
-      observer_(NULL) {}
-
-  virtual ~FakeProfileSyncService() {
-    EXPECT_TRUE(observer_ == NULL);
+  FakeProfileSyncService()
+      : setup_(false) {
   }
+  virtual ~FakeProfileSyncService() {}
 
   // Overrides of virtual methods in ProfileSyncService.
-  virtual string16 GetAuthenticatedUsername() const {
-    return username_;
+  virtual bool HasSyncSetupCompleted() const {
+    return setup_;
   }
-  virtual void ShowLoginDialog(gfx::NativeWindow) {
-    EXPECT_TRUE(observer_ != NULL);
-    username_ = ASCIIToUTF16(username_after_login_);
-    observer_->OnStateChanged();
+  virtual void ChangePreferredDataTypes(const syncable::ModelTypeSet& types) {
+    types_ = types;
   }
-  virtual bool SetupInProgress() const {
-    return false;
+  virtual void GetPreferredDataTypes(syncable::ModelTypeSet* types) const {
+    *types = types_;
   }
-  virtual void AddObserver(ProfileSyncServiceObserver* observer) {
-    EXPECT_TRUE(observer_ == NULL);
-    observer_ = observer;
-  }
-  virtual void RemoveObserver(ProfileSyncServiceObserver* observer) {
-    EXPECT_TRUE(observer == observer_);
-    observer_ = NULL;
+  virtual void SetSyncSetupCompleted() {
+    setup_ = true;
   }
 
  private:
-  string16 username_;
+  bool setup_;
+  syncable::ModelTypeSet types_;
+};
+
+class FakeBrowserSignin : public BrowserSignin {
+ public:
+  // The |username_after_login| parameter determines what this fake
+  // BrowserSignin will set the username to when ShowLoginDialog is called.
+  FakeBrowserSignin(bool should_succeed,
+                    const std::string& initial_username,
+                    const std::string& username_after_login)
+      : BrowserSignin(NULL),
+        should_succeed_(should_succeed),
+        username_(initial_username),
+        username_after_login_(username_after_login) {
+  }
+  virtual ~FakeBrowserSignin() {}
+
+  virtual std::string GetSignedInUsername() const {
+    return username_;
+  }
+
+  virtual void RequestSignin(TabContents* tab_contents,
+                             const string16& message,
+                             SigninDelegate* delegate) {
+    if (should_succeed_) {
+      // Simulate valid login.
+      username_ = username_after_login_;
+      delegate->OnLoginSuccess();
+    } else {
+      delegate->OnLoginFailure(GoogleServiceAuthError(
+        GoogleServiceAuthError::REQUEST_CANCELED));
+    }
+  }
+
+ private:
+  bool should_succeed_;
+  std::string username_;
   std::string username_after_login_;
-  ProfileSyncServiceObserver* observer_;
 };
 
 class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
@@ -92,13 +115,19 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
 
   void RunLoginTest(const std::string& relative_path,
                     const std::string& initial_login,
+                    bool login_succeeds,
                     const std::string& login_result) {
-    FakeProfileSyncService sync_service(initial_login, login_result);
+    FakeProfileSyncService sync_service;
+    FakeBrowserSignin signin(login_succeeds, initial_login, login_result);
     WebstorePrivateApi::SetTestingProfileSyncService(&sync_service);
+    WebstorePrivateApi::SetTestingBrowserSignin(&signin);
+
     ExtensionTestMessageListener listener("success", false);
     GURL url = GetUrl(relative_path);
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+    WebstorePrivateApi::SetTestingBrowserSignin(NULL);
     WebstorePrivateApi::SetTestingProfileSyncService(NULL);
   }
 
@@ -110,10 +139,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBrowserTest, BrowserLogin) {
   host_resolver()->AddRule(kTestUrlHostname, "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  RunLoginTest("browser_login/expect_nonempty.html", "foo@bar.com", "");
-  RunLoginTest("browser_login/prompt_no_preferred.html", "", "");
-  RunLoginTest("browser_login/prompt_preferred.html", "", "foo@bar.com");
+  RunLoginTest("browser_login/expect_nonempty.html",
+               "foo@bar.com", false, "");
+
+  RunLoginTest("browser_login/prompt_no_preferred.html", "", true, "");
+
+  RunLoginTest("browser_login/prompt_preferred.html", "", true, "foo@bar.com");
+
   RunLoginTest("browser_login/prompt_already_logged_in_error.html",
-               "foo@bar.com",
-               "foo@bar.com");
+               "foo@bar.com", false, "foo@bar.com");
+
+  RunLoginTest("browser_login/prompt_login_fails.html",
+               "", false, "foo@bar.com");
 }

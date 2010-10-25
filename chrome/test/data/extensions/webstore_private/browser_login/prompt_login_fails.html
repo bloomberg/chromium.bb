@@ -1,0 +1,7 @@
+<script>
+chrome.webstorePrivate.promptBrowserLogin("", function(result) {
+  if (!result) {
+    chrome.test.sendMessage("success");
+  }
+});
+</script>

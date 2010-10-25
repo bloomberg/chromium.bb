@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBSTORE_PRIVATE_API_H_
 #pragma once
 
+#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 class ProfileSyncService;
 
@@ -16,6 +17,10 @@ class WebstorePrivateApi {
   // Allows you to set the ProfileSyncService the function will use for
   // testing purposes.
   static void SetTestingProfileSyncService(ProfileSyncService* service);
+
+  // Allows you to set the BrowserSignin the function will use for
+  // testing purposes.
+  static void SetTestingBrowserSignin(BrowserSignin* signin);
 };
 
 class InstallFunction : public SyncExtensionFunction {
@@ -44,14 +49,19 @@ class SetStoreLoginFunction : public SyncExtensionFunction {
 };
 
 class PromptBrowserLoginFunction : public AsyncExtensionFunction,
-                                   public ProfileSyncServiceObserver {
+                                   public BrowserSignin::SigninDelegate {
  public:
-  // Implements ProfileSyncServiceObserver interface.
-  virtual void OnStateChanged();
+  // Implements BrowserSignin::SigninDelegate interface.
+  virtual void OnLoginSuccess();
+  virtual void OnLoginFailure(const GoogleServiceAuthError& error);
 
  protected:
   virtual ~PromptBrowserLoginFunction();
   virtual bool RunImpl();
+
+ private:
+  // Creates the message for signing in.
+  virtual string16 GetLoginMessage();
 
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.promptBrowserLogin");
 };

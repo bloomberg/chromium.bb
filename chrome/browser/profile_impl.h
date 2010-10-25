@@ -119,6 +119,7 @@ class ProfileImpl : public Profile,
   void InitCloudPrintProxyService();
   virtual ChromeBlobStorageContext* GetBlobStorageContext();
   virtual ExtensionInfoMap* GetExtensionInfoMap();
+  virtual BrowserSignin* GetBrowserSignin();
 
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
@@ -218,6 +219,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_ptr<PinnedTabService> pinned_tab_service_;
   scoped_refptr<FileSystemHostContext> file_system_host_context_;
+  scoped_ptr<BrowserSignin> browser_signin_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

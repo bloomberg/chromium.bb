@@ -38,6 +38,7 @@ class AutocompleteClassifier;
 class BackgroundContentsService;
 class BackgroundModeManager;
 class BookmarkModel;
+class BrowserSignin;
 class BrowserThemeProvider;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
@@ -285,6 +286,9 @@ class Profile {
 
   // Returns the HTML5 FileSystemHostContext assigned to this profile.
   virtual FileSystemHostContext* GetFileSystemHostContext() = 0;
+
+  // Returns the BrowserSignin object assigned to this profile.
+  virtual BrowserSignin* GetBrowserSignin() = 0;
 
   // Init our themes system.
   virtual void InitThemes() = 0;

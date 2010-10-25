@@ -453,6 +453,10 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
+  virtual BrowserSignin* GetBrowserSignin() {
+    return profile_->GetBrowserSignin();
+  }
+
   virtual CloudPrintProxyService* GetCloudPrintProxyService() {
     return NULL;
   }

@@ -85,6 +85,9 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
   if (url.SchemeIs(chrome::kGearsScheme))
     return &NewDOMUI<HtmlDialogUI>;
 
+  if (url.host() == chrome::kChromeUIDialogHost)
+    return &NewDOMUI<ConstrainedHtmlUI>;
+
   ExtensionsService* service = profile->GetExtensionsService();
   if (service && service->ExtensionBindingsAllowed(url))
     return &NewDOMUI<ExtensionDOMUI>;

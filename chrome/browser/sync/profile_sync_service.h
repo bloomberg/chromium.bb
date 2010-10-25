@@ -172,7 +172,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Whether sync is enabled by user or not.
   virtual bool HasSyncSetupCompleted() const;
-  void SetSyncSetupCompleted();
+  virtual void SetSyncSetupCompleted();
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized();

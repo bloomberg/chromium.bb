@@ -22,9 +22,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
     TokenServiceTestHarness::SetUp();
     manager_.reset(new SigninManager());
     google_login_success_.ListenFor(NotificationType::GOOGLE_SIGNIN_SUCCESSFUL,
-      Source<SigninManager>(manager_.get()));
+                                    Source<Profile>(profile_.get()));
     google_login_failure_.ListenFor(NotificationType::GOOGLE_SIGNIN_FAILED,
-      Source<SigninManager>(manager_.get()));
+                                    Source<Profile>(profile_.get()));
 
     URLFetcher::set_factory(&factory_);
   }

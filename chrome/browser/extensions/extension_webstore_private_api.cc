@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +17,8 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -26,6 +29,7 @@ const char kLoginKey[] = "login";
 const char kTokenKey[] = "token";
 
 ProfileSyncService* test_sync_service = NULL;
+BrowserSignin* test_signin = NULL;
 
 // Returns either the test sync service, or the real one from |profile|.
 ProfileSyncService* GetSyncService(Profile* profile) {
@@ -33,6 +37,13 @@ ProfileSyncService* GetSyncService(Profile* profile) {
     return test_sync_service;
   else
     return profile->GetProfileSyncService();
+}
+
+BrowserSignin* GetBrowserSignin(Profile* profile) {
+  if (test_signin)
+    return test_signin;
+  else
+    return profile->GetBrowserSignin();
 }
 
 bool IsWebStoreURL(Profile* profile, const GURL& url) {
@@ -48,6 +59,11 @@ bool IsWebStoreURL(Profile* profile, const GURL& url) {
 void WebstorePrivateApi::SetTestingProfileSyncService(
     ProfileSyncService* service) {
   test_sync_service = service;
+}
+
+// static
+void WebstorePrivateApi::SetTestingBrowserSignin(BrowserSignin* signin) {
+  test_signin = signin;
 }
 
 // static
@@ -92,12 +108,10 @@ bool InstallFunction::RunImpl() {
 bool GetBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
-  string16 username = GetSyncService(profile_)->GetAuthenticatedUsername();
+  std::string username = GetBrowserSignin(profile_)->GetSignedInUsername();
   DictionaryValue* dictionary = new DictionaryValue();
-
   dictionary->SetString(kLoginKey, username);
   // TODO(asargent) - send the browser login token here too if available.
-
   result_.reset(dictionary);
   return true;
 }
@@ -127,50 +141,85 @@ bool SetStoreLoginFunction::RunImpl() {
   return true;
 }
 
-PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {}
+PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {
+}
 
 bool PromptBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
 
+  // Login can currently only be invoked tab-modal.  Since this is
+  // coming from the webstore, we should always have a tab, but check
+  // just in case.
+  TabContents* tab = dispatcher()->delegate()->associated_tab_contents();
+  if (!tab)
+    return false;
+
+  std::string username = GetBrowserSignin(profile_)->GetSignedInUsername();
   std::string preferred_email;
-  ProfileSyncService* sync_service = GetSyncService(profile_);
   if (args_->GetSize() > 0) {
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &preferred_email));
-    if (!sync_service->GetAuthenticatedUsername().empty()) {
+    if (!username.empty()) {
       error_ = kAlreadyLoggedInError;
       return false;
     }
   }
 
   // We return the result asynchronously, so we addref to keep ourself alive.
-  // Matched with a Release in OnStateChanged().
+  // Matched with a Release in OnLoginSuccess() and OnLoginFailure().
   AddRef();
 
-  sync_service->AddObserver(this);
-  // TODO(mirandac/estade) - make use of |preferred_email| to pre-populate the
-  // browser login dialog if it was set to non-empty above.
-  sync_service->ShowLoginDialog(NULL);
+  // TODO(johnnyg): Hook up preferred_email.
+  GetBrowserSignin(profile_)->RequestSignin(tab, GetLoginMessage(), this);
 
-  // The response will be sent asynchronously in OnStateChanged().
+  // The response will be sent asynchronously in OnLoginSuccess/OnLoginFailure.
   return true;
 }
 
-void PromptBrowserLoginFunction::OnStateChanged() {
-  ProfileSyncService* sync_service = GetSyncService(profile_);
-  // If the setup is finished, we'll report back what happened.
-  if (!sync_service->SetupInProgress()) {
-    sync_service->RemoveObserver(this);
-    DictionaryValue* dictionary = new DictionaryValue();
+string16 PromptBrowserLoginFunction::GetLoginMessage() {
+  using l10n_util::GetStringUTF16;
+  using l10n_util::GetStringFUTF16;
 
-    // TODO(asargent) - send the browser login token here too if available.
-    string16 username = sync_service->GetAuthenticatedUsername();
-    dictionary->SetString(kLoginKey, username);
+  // TODO(johnnyg): This would be cleaner as an HTML template.
+  // http://crbug.com/60216
+  string16 message;
+  message = ASCIIToUTF16("<p>")
+      + GetStringUTF16(IDS_WEB_STORE_LOGIN_INTRODUCTION_1)
+      + ASCIIToUTF16("</p>");
+  message = message + ASCIIToUTF16("<p>")
+      + GetStringFUTF16(IDS_WEB_STORE_LOGIN_INTRODUCTION_2,
+                        GetStringUTF16(IDS_PRODUCT_NAME))
+      + ASCIIToUTF16("</p>");
+  return message;
+}
 
-    result_.reset(dictionary);
-    SendResponse(true);
+void PromptBrowserLoginFunction::OnLoginSuccess() {
+  // TODO(asargent) - send the browser login token here too if available.
+  DictionaryValue* dictionary = new DictionaryValue();
+  std::string username = GetBrowserSignin(profile_)->GetSignedInUsername();
+  dictionary->SetString(kLoginKey, username);
 
-    // Matches the AddRef in RunImpl().
-    Release();
-  }
+  result_.reset(dictionary);
+  SendResponse(true);
+
+  // Ensure that apps are synced.
+  // - If the user has already setup sync, we add Apps to the current types.
+  // - If not, we create a new set which is just Apps.
+  ProfileSyncService* service = GetSyncService(profile_);
+  syncable::ModelTypeSet types;
+  if (service->HasSyncSetupCompleted())
+    service->GetPreferredDataTypes(&types);
+  types.insert(syncable::APPS);
+  service->ChangePreferredDataTypes(types);
+  service->SetSyncSetupCompleted();
+
+  // Matches the AddRef in RunImpl().
+  Release();
+}
+
+void PromptBrowserLoginFunction::OnLoginFailure(
+    const GoogleServiceAuthError& error) {
+  SendResponse(false);
+  // Matches the AddRef in RunImpl().
+  Release();
 }

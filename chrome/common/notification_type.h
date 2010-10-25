@@ -1123,13 +1123,12 @@ class NotificationType {
     TOKEN_UPDATED,
 
     // Sent when a user signs into Google services such as sync.
-    // The source is the SigninManager instance. The details are a
-    // GoogleServiceSignin object.
+    // The source is the Profile. The details are a GoogleServiceSignin object.
     GOOGLE_SIGNIN_SUCCESSFUL,
 
     // Sent when a user fails to sign into Google services such as sync.
-    // The source is the SigninManager instance. The details are a
-    // GoogleServiceAuthError object.
+    // The source is the Profile. The details are a GoogleServiceAuthError
+    // object.
     GOOGLE_SIGNIN_FAILED,
 
     // AutoFill Notifications --------------------------------------------------
