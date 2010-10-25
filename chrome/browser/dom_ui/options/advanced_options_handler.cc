@@ -42,6 +42,11 @@
 #endif
 
 AdvancedOptionsHandler::AdvancedOptionsHandler() {
+#if !defined(OS_CHROMEOS)
+  cloud_print_proxy_ui_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCloudPrintProxy);
+#endif
 }
 
 AdvancedOptionsHandler::~AdvancedOptionsHandler() {
@@ -147,10 +152,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 #if !defined(OS_CHROMEOS)
   // Add the cloud print proxy management ui section if it's been runtime
   // enabled.
-  bool cloud_print_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableCloudPrintProxy);
   localized_strings->SetString("enable-cloud-print-proxy",
-                               cloud_print_enabled ? "true" : "false");
+      cloud_print_proxy_ui_enabled_ ? "true" : "false");
   localized_strings->SetString("advancedSectionTitleCloudPrint",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT));
@@ -193,8 +196,10 @@ void AdvancedOptionsHandler::Initialize() {
   SetupSSLConfigSettings();
 #endif
 #if !defined(OS_CHROMEOS)
-  SetupCloudPrintProxySection();
-  RefreshCloudPrintStatusFromService();
+  if (cloud_print_proxy_ui_enabled_) {
+    SetupCloudPrintProxySection();
+    RefreshCloudPrintStatusFromService();
+  }
 #endif
   banner_handler_.reset(
       new OptionsManagedBannerHandler(dom_ui_,
@@ -251,18 +256,20 @@ void AdvancedOptionsHandler::RegisterMessages() {
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
 #endif
 #if !defined(OS_CHROMEOS)
-  dom_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::ShowCloudPrintSetupDialog));
-  dom_ui_->RegisterMessageCallback("disableCloudPrintProxy",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleDisableCloudPrintProxy));
-  dom_ui_->RegisterMessageCallback("showCloudPrintManagePage",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::ShowCloudPrintManagePage));
-  dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::ShowNetworkProxySettings));
+  if (!cloud_print_proxy_ui_enabled_) {
+    dom_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
+        NewCallback(this,
+                    &AdvancedOptionsHandler::ShowCloudPrintSetupDialog));
+    dom_ui_->RegisterMessageCallback("disableCloudPrintProxy",
+        NewCallback(this,
+                    &AdvancedOptionsHandler::HandleDisableCloudPrintProxy));
+    dom_ui_->RegisterMessageCallback("showCloudPrintManagePage",
+        NewCallback(this,
+                    &AdvancedOptionsHandler::ShowCloudPrintManagePage));
+    dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
+        NewCallback(this,
+                    &AdvancedOptionsHandler::ShowNetworkProxySettings));
+  }
 #endif
 
 #if defined(OS_WIN)
@@ -298,7 +305,8 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
       SetupProxySettingsSection();
     } else if (*pref_name == prefs::kCloudPrintEmail) {
 #if !defined(OS_CHROMEOS)
-      SetupCloudPrintProxySection();
+      if (cloud_print_proxy_ui_enabled_)
+        SetupCloudPrintProxySection();
 #endif
     }
   }
@@ -325,7 +333,8 @@ void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
 
 void AdvancedOptionsHandler::OnDialogClosed() {
 #if !defined(OS_CHROMEOS)
-  SetupCloudPrintProxySection();
+  if (cloud_print_proxy_ui_enabled_)
+    SetupCloudPrintProxySection();
 #endif
 }
 

@@ -142,6 +142,7 @@ class AdvancedOptionsHandler
 #if !defined(OS_CHROMEOS)
   BooleanPrefMember enable_metrics_recording_;
   StringPrefMember cloud_print_proxy_email_;
+  bool cloud_print_proxy_ui_enabled_;
 #endif
 
   FilePathPrefMember default_download_location_;

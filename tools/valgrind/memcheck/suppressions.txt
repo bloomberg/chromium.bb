@@ -3015,31 +3015,6 @@
    fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
    fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
 }
-
-{
-   bug_60008_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodIN21ServiceProcessControl8LauncherEMS1_FvP4TaskES3_EP14CancelableTaskPT_T0_RKT1_
-   fun:_ZN21ServiceProcessControl8Launcher5DoRunEP4Task
-   fun:_Z16DispatchToMethodIN21ServiceProcessControl8LauncherEMS1_FvP4TaskES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN21ServiceProcessControl8LauncherEMS1_FvP4TaskE6Tuple1IS3_EE3RunEv
-}
-{
-   bug_60008_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodI21ServiceProcessControlMS0_FvvEEP14CancelableTaskPT_T0_
-   fun:_ZN21ServiceProcessControl6LaunchEP4TaskS1_
-   fun:_ZN22CloudPrintProxyService17InvokeServiceTaskEP4Task
-   fun:_ZN22CloudPrintProxyService24RefreshStatusFromServiceEv
-   fun:_ZN22AdvancedOptionsHandler34RefreshCloudPrintStatusFromServiceEv
-   fun:_ZN22AdvancedOptionsHandler10InitializeEv
-   fun:_ZN9OptionsUI18InitializeHandlersEv
-   fun:_ZN18CoreOptionsHandler16HandleInitializeEPK9ListValue
-   fun:_Z16DispatchToMethodI18CoreOptionsHandlerMS0_FvPK9ListValueES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN12CallbackImplI18CoreOptionsHandlerMS0_FvPK9ListValueE6Tuple1IS3_EE13RunWithParamsERKS7_
-}
 {
    bug_60381a
    Memcheck:Leak

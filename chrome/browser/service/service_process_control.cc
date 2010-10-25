@@ -39,21 +39,24 @@ class ServiceProcessControl::Launcher
   void Run(Task* task) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+    notify_task_.reset(task);
     BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-                           NewRunnableMethod(this, &Launcher::DoRun, task));
+                           NewRunnableMethod(this, &Launcher::DoRun));
   }
 
   bool launched() const { return launched_; }
 
  private:
-  void DoRun(Task* task) {
+  void DoRun() {
+    DCHECK(notify_task_.get());
     base::LaunchApp(*cmd_line_.get(), false, true, NULL);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &Launcher::DoDetectLaunched, task));
+        NewRunnableMethod(this, &Launcher::DoDetectLaunched));
   }
 
-  void DoDetectLaunched(Task* task) {
+  void DoDetectLaunched() {
+    DCHECK(notify_task_.get());
     const uint32 kMaxLaunchDetectRetries = 10;
 
     {
@@ -66,7 +69,7 @@ class ServiceProcessControl::Launcher
 
     if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &Launcher::Notify, task));
+          NewRunnableMethod(this, &Launcher::Notify));
       return;
     }
     retry_count_++;
@@ -74,17 +77,19 @@ class ServiceProcessControl::Launcher
     const int kDetectLaunchRetry = 2000;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        NewRunnableMethod(this, &Launcher::DoDetectLaunched, task),
+        NewRunnableMethod(this, &Launcher::DoDetectLaunched),
         kDetectLaunchRetry);
   }
 
-  void Notify(Task* task) {
-    task->Run();
-    delete task;
+  void Notify() {
+    DCHECK(notify_task_.get());
+    notify_task_->Run();
+    notify_task_.reset();
   }
 
   ServiceProcessControl* process_;
   scoped_ptr<CommandLine> cmd_line_;
+  scoped_ptr<Task> notify_task_;
   bool launched_;
   uint32 retry_count_;
 };
