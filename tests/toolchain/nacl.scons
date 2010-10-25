@@ -107,7 +107,7 @@ if  eh_env2['TARGET_FULLARCH'] != 'arm':
 
 # NOTE: PNaCl does not even compile yet, o.w.
 #       it seems reasonable to tie this the previous test
-if not ARGUMENTS.get('bitcode'):
+if not ARGUMENTS.get('bitcode') and not eh_env2.IsRunningUnderValgrind():
   nexe = eh_env2.ComponentProgram('stack_frame.nexe', 'stack_frame.cc')
   node = eh_env2.CommandSelLdrTestNacl('stack_frame.out',
                                        command=[nexe],
