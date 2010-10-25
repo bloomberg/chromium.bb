@@ -1,10 +1,10 @@
 <html><body>
 <script>
-  window.setTimeout(function() {
+  function loadF() {
     var iframe = document.createElement('iframe');
     iframe.src = "f.html";
     var div = document.getElementById('f');
     div.appendChild(iframe);
-  }, 500);
+  }
 </script>
-<iframe src="e.html"></iframe><div id="f"></div></body></html>
+<iframe src="e.html" onload="loadF()"></iframe><div id="f"></div></body></html>

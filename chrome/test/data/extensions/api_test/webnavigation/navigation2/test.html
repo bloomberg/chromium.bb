@@ -1,0 +1,188 @@
+<script>
+var expectedEventData;
+var capturedEventData;
+var nextFrameId;
+var frameIds;
+
+function expect(data) {
+  expectedEventData = data;
+  capturedEventData = [];
+  nextFrameId = 1;
+  frameIds = {};
+}
+
+function checkExpectations() {
+  if (capturedEventData.length < expectedEventData.length) {
+    return;
+  }
+  chrome.test.assertEq(JSON.stringify(expectedEventData),
+      JSON.stringify(capturedEventData));
+  chrome.test.succeed();
+}
+
+function captureEvent(name, details) {
+  // normalize details.
+  details.timeStamp = 0;
+  if (details.frameId != 0) {
+    if (frameIds[details.frameId] === undefined) {
+      frameIds[details.frameId] = nextFrameId++;
+    }
+    details.frameId = frameIds[details.frameId];
+  }
+  capturedEventData.push([name, details]);
+  checkExpectations();
+}
+
+chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+  function(details) {
+    captureEvent("onBeforeNavigate", details);
+});
+
+chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
+  captureEvent("onCommitted", details);
+});
+
+chrome.experimental.webNavigation.onErrorOccurred.addListener(
+  function(details) {
+    captureEvent("onErrorOccurred", details);
+});
+
+var getURL = chrome.extension.getURL;
+chrome.tabs.getSelected(null, function(tab) {
+  var tabId = tab.id;
+
+  chrome.test.runTests([
+    /* Navigates to a non-existant page. */
+    function nonExistant() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('nonexistant.html') }],
+        [ "onErrorOccurred",
+          { error: "net::ERR_FILE_NOT_FOUND",
+            frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('nonexistant.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: "chrome://chromewebdata/"}],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('nonexistant.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('nonexistant.html') });
+    },
+
+    /* An page that tries to load an non-existant iframe. */
+    function nonExistantIframe() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/d.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('iframeFail/d.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onErrorOccurred",
+          { error: "net::ERR_FILE_NOT_FOUND",
+            frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: "chrome://chromewebdata/"}],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframeFail/c.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('iframeFail/d.html') });
+    },
+
+    /* An iframe navigates to a non-existant page. */
+    function nonExistantIframeNavigation() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('iframeFail/a.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/b.html') }],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframeFail/b.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onErrorOccurred",
+          { error: "net::ERR_FILE_NOT_FOUND",
+            frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: "chrome://chromewebdata/"}],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "manual_subframe",
+            url: getURL('iframeFail/c.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('iframeFail/a.html') });
+    },
+  ]);
+});
+</script>

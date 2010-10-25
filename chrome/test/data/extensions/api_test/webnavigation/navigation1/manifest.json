@@ -1,7 +1,7 @@
 {
-  "name": "navigation",
+  "name": "navigation1",
   "version": "1.0",
-  "description": "Tests the webNavigation API events.",
+  "description": "Tests the webNavigation API events (part 1).",
   "permissions": ["experimental", "tabs"],
   "background_page": "test.html"
 }
