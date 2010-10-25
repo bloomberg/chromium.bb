@@ -484,7 +484,7 @@ const char kPluginsPluginsBlacklist[] = "plugins.plugins_blacklist";
 
 // When first shipped, the pdf plugin will be disabled by default.  When we
 // enable it by default, we'll want to do so only once.
-const char kPluginsEnabledInternalPDF[] = "plugins.enabled_internal_pdf2";
+const char kPluginsEnabledInternalPDF[] = "plugins.enabled_internal_pdf3";
 
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
