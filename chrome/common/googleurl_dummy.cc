@@ -2,18 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "googleurl/src/gurl.h"
-
-GURL::GURL() {}
-
-GURL::~GURL() {}
-
-namespace url_parse {
-
-Parsed::Parsed() {}
-
-}  // namespace url_parse
-
 namespace url_util {
 
 // A dummy version of the url_util function called by url_constants.cc for all
