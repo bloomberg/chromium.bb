@@ -888,10 +888,10 @@ function browseFileResult(info, results) {
        var dest = currentSavedPath + '/' + path[2];
        var dirId = $('list/dir/' + currentSavedPath);
        if (dirId) {
-         
+
          var element = $(dest);
          if (!element) {
-           // TODO(dhg): We probably should do some checking for 
+           // TODO(dhg): We probably should do some checking for
            // existance.
            element = createNewFakeItem(path[2], dest, false, true);
          }
@@ -1134,10 +1134,6 @@ function pauseToggleDownload(id) {
   chrome.send('pauseToggleDownload', ['' + id]);
 }
 
-function downloadsList(results) {
-  downloadUpdated(results);
-}
-
 function allowDownload(id, path) {
   var element = $(path);
   element.removeAttribute('dangerous');
@@ -1213,7 +1209,7 @@ function removeDownload(element, dirId) {
   }
 }
 
-function downloadUpdated(results) {
+function downloadsList(results) {
   var removeDownloads = [];
   removeDownloads.pushUnique = function (element) {
   if (this.indexOf(element) === -1) {
@@ -1234,94 +1230,115 @@ function downloadUpdated(results) {
     }
   }
 
-  for (var x = 0; x < results.length; x++) {
-    var element = $(results[x].file_path);
-    // extracted and dirId should be computed outside this loop.
-    var extracted = getPathAndFilenameForPath(results[x].file_path);
-    var dirId = $('list/dir/' + extracted[1]);
-    if (!element && results[x].state != 'CANCELLED') {
-       if (dirId) {
-        element = createNewItem(results[x].file_name, results[x].file_path, false);
-        if (dirId.firstChild) {
-          dirId.insertBefore(element, dirId.firstChild);
-        } else {
-          dirId.appendChild(element);
-        }
-        element.scrollIntoView();
-      }
-    }
-    if (element) {
-      if (results[x].state == 'CANCELLED') {
-        element.parentNode.removeChild(element);
-        continue;
-      }
-      if (results[x].percent < 100 || results[x].state == 'DANGEROUS') {
-        var progressDiv = null;
-        for (var y = 0; y < element.children.length; y++) {
-           if (element.children[y].className == 'downloadstatus') {
-             progressDiv = element.children[y];
-             break;
-           }
-        }
-        if (progressDiv == null) {
-          downloadList.push(element);
-          element.className = 'filebrowserow downloading';
-          fixTitleForItem(element, results[x]);
-          var progressDiv = document.createElement('div');
-          progressDiv.className = 'downloadstatus';
-          element.appendChild(progressDiv);
-          var pauseDiv = document.createElement('div');
-          pauseDiv.onclick = partial(pauseToggleDownload, results[x].id);
-          pauseDiv.className = 'downloadpause';
-          if (results[x].state == "DANGEROUS") {
-            element.setAttribute('dangerous', 'true');
-            pauseDiv.onClick = undefined;
-            var prompt = document.createElement('div');
-            prompt.textContent = localStrings.getString('allowdownload');
-            prompt.className = 'prompt';
-            pauseDiv.appendChild(prompt);
-            var yes = document.createElement('div');
-            yes.className = 'link';
-            yes.textContent = localStrings.getString('confirmyes');
-            yes.onclick = partial(allowDownload,
-                                  results[x].id, 
-                                  results[x].file_path);
-            var no = document.createElement('div');
-            no.onclick = partial(cancelDownload,
-                                 results[x].id,
-                                 results[x].file_path);
-            no.textContent = localStrings.getString('confirmcancel');
-            no.className = 'link';
-            pauseDiv.onclick = undefined;
-            pauseDiv.appendChild(yes);
-            pauseDiv.appendChild(no);
-            progressDiv.textContent = '';
-          }
-          pauseDiv.id = 'downloaditem' + results[x].id;
-          element.appendChild(pauseDiv);
-        }
-        var pauseDiv = $('downloaditem' + results[x].id);
-        if (pauseDiv &&
-            results[x].state == "PAUSED" &&
-            pauseDiv.textContent != kResumeDownload) {
-          pauseDiv.textContent = kResumeDownload;
-        } else if (pauseDiv &&
-                   results[x].state == "IN_PROGRESS" &&
-                   pauseDiv.textContent != kPauseDownload) {
-          pauseDiv.textContent = kPauseDownload;
-        }
-        if (results[x].percent < 100 &&
-            results[x].state != 'DANGEROUS') {
-          progressDiv.textContent = results[x].progress_status_text;
-        }
+  for (var i = 0; i< results.length; ++i) {
+    downloadUpdated(results[i]);
+  }
 
-      } else if (downloadList.indexOf(element) !== -1) {
-        removeDownloads.pushUnique(element);
+  for (var x = 0; x < removeDownloads.length; x++) {
+    var element = removeDownloads[x];
+    var extracted = getPathAndFilenameForPath(element.id);
+    var dirId = $('list/dir/' + extracted[1]);
+    removeDownload(element, dirId);
+  }
+}
+
+function downloadUpdated(result) {
+  var element = $(result.file_path);
+  var extracted = getPathAndFilenameForPath(result.file_path);
+  var dirId = $('list/dir/' + extracted[1]);
+  if (!element && result.state != 'CANCELLED') {
+     if (dirId) {
+      element = createNewItem(result.file_name, result.file_path, false);
+      if (dirId.firstChild) {
+        dirId.insertBefore(element, dirId.firstChild);
+      } else {
+        dirId.appendChild(element);
       }
+      element.scrollIntoView();
     }
   }
-  for (x = 0; x < removeDownloads.length; x++) {
-    removeDownload(removeDownloads[x], dirId);
+  if (element) {
+    if (result.state == 'CANCELLED') {
+      element.parentNode.removeChild(element);
+      continue;
+    }
+    if (result.percent < 100 || result.state == 'DANGEROUS') {
+      var progressDiv = null;
+      for (var y = 0; y < element.children.length; y++) {
+         if (element.children[y].className == 'downloadstatus') {
+           progressDiv = element.children[y];
+         }
+      }
+      if (progressDiv == null) {
+        downloadList.push(element);
+        element.className = 'filebrowserow downloading';
+        fixTitleForItem(element, result);
+        var progressDiv = document.createElement('div');
+        progressDiv.className = 'downloadstatus';
+        element.appendChild(progressDiv);
+        var pauseDiv = document.createElement('div');
+        pauseDiv.onclick = partial(pauseToggleDownload, result.id);
+        pauseDiv.className = 'downloadpause';
+        if (result.state == "DANGEROUS") {
+          element.setAttribute('dangerous', 'true');
+          pauseDiv.onClick = undefined;
+          var prompt = document.createElement('div');
+          prompt.textContent = localStrings.getString('allowdownload');
+          prompt.className = 'prompt';
+          pauseDiv.appendChild(prompt);
+          var yes = document.createElement('div');
+          yes.className = 'link';
+          yes.textContent = localStrings.getString('confirmyes');
+          yes.onclick = partial(allowDownload,
+                                result.id,
+                                result.file_path);
+          var no = document.createElement('div');
+          no.onclick = partial(cancelDownload,
+                               result.id,
+                               result.file_path);
+          no.textContent = localStrings.getString('confirmcancel');
+          no.className = 'link';
+          pauseDiv.onclick = undefined;
+          pauseDiv.appendChild(yes);
+          pauseDiv.appendChild(no);
+          progressDiv.textContent = '';
+        }
+        pauseDiv.id = 'downloaditem' + result.id;
+        element.appendChild(pauseDiv);
+      }
+      var pauseDiv = $('downloaditem' + result.id);
+      if (pauseDiv &&
+          result.state == "PAUSED" &&
+          pauseDiv.textContent != kResumeDownload) {
+        pauseDiv.textContent = kResumeDownload;
+      } else if (pauseDiv &&
+                 result.state == "IN_PROGRESS" &&
+                 pauseDiv.textContent != kPauseDownload) {
+        pauseDiv.textContent = kPauseDownload;
+      }
+      if (result.percent < 100 &&
+          result.state != 'DANGEROUS') {
+        progressDiv.textContent = result.progress_status_text;
+      }
+
+    } else {
+      removeDownloadIfDone(element, dirId);
+    }
+  }
+}
+
+function removeDownloadIfDone(element, dirId) {
+  var len = downloadList.length;
+  while (len--) {
+    if (element.title === downloadList[len].title) {
+      if (element.id !== downloadList[len].id) {
+        // Dangerous download.
+        removeDownload(downloadList[len], dirId);
+      } else {
+        removeDownload(downloadList[len]);
+      }
+      break;
+    }
   }
 }
 
@@ -1636,7 +1653,7 @@ function createNewFakeItem(title, path, isDirectory, hasspinner) {
 function createNewItem(title, path, isDirectory) {
   var element = document.createElement('li');
   element.setAttribute('draggable', 'true');
-  
+
   element.addEventListener('dragstart', function (e) {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('Text', this.id);

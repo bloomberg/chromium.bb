@@ -997,9 +997,9 @@ void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
     return;
   const int id = static_cast<int>(it - active_download_items_.begin());
 
-  ListValue results_value;
-  results_value.Append(download_util::CreateDownloadItemValue(download, id));
-  dom_ui_->CallJavascriptFunction(L"downloadUpdated", results_value);
+  scoped_ptr<DictionaryValue> download_item(
+      download_util::CreateDownloadItemValue(download, id));
+  dom_ui_->CallJavascriptFunction(L"downloadUpdated", *download_item.get());
 }
 
 void FilebrowseHandler::ClearDownloadItems() {
