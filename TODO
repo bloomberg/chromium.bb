@@ -8,7 +8,10 @@ Core wayland protocol
 
  - The message format has to include information about number of fds
    in the message so we can skip a message correctly.  Or we should
-   just give up on trying to recover from unknown messages.
+   just give up on trying to recover from unknown messages.  We need
+   to make sure you never get a message from an interface you don't
+   know about (using per-client id space and subscribe) or include
+   information on number of fds, so marshalling logic can skip.
 
  - generate pointer_focus (and drag focus) on raise/lower, move
    windows, all kinds of changes in surface stacking.

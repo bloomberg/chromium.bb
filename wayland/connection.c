@@ -58,7 +58,6 @@ struct wl_closure {
 struct wl_connection {
 	struct wl_buffer in, out;
 	struct wl_buffer fds_in, fds_out;
-	int fds_in_tail;
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
@@ -190,7 +189,6 @@ void
 wl_connection_consume(struct wl_connection *connection, size_t size)
 {
 	connection->in.tail += size;
-	connection->fds_in.tail = connection->fds_in_tail;
 }
 
 static void
