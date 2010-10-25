@@ -66,6 +66,7 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
           if (!version.get()) {
             LOG(ERROR) << "Invalid version value " << extension_version
                        << " for key " << key_path;
+            ++iterator;
             continue;
           }
 
