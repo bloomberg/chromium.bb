@@ -35,7 +35,6 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
 #include "net/proxy/proxy_script_fetcher_impl.h"
-#include "net/url_request/url_request_context.h"
 
 namespace {
 
@@ -357,10 +356,6 @@ void IOThread::CleanUp() {
   globals_ = NULL;
 
   BrowserProcessSubThread::CleanUp();
-
-  // URLRequest instances must NOT outlive the IO thread.
-  base::LeakTracker<URLRequest>::CheckForLeaks();
-  base::LeakTracker<URLRequestContext>::CheckForLeaks();
 }
 
 void IOThread::CleanUpAfterMessageLoopDestruction() {
@@ -373,6 +368,13 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
   // This will delete the |notification_service_|.  Make sure it's done after
   // anything else can reference it.
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
+
+  // URLRequest instances must NOT outlive the IO thread.
+  //
+  // To allow for URLRequests to be deleted from
+  // MessageLoop::DestructionObserver this check has to happen after CleanUp
+  // (which runs before DestructionObservers).
+  base::LeakTracker<URLRequest>::CheckForLeaks();
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
