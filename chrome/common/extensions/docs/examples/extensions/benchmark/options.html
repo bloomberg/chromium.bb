@@ -5,6 +5,13 @@
   <script src="jst/jsevalcontext.js" type="text/javascript"></script>
   <script src="jst/jstemplate.js" type="text/javascript"></script>
   <script src="jst/jstemplate_example.js" type="text/javascript"></script>
+  <script src="jquery/jquery-1.4.2.min.js" type="text/javascript"></script>
+  <script src="jquery/jquery-ui-1.8.4.custom.min.js" type="text/javascript"></script>
+  <script src="jquery/jquery.flot.js" type="text/javascript"></script>
+  <script src="jquery/jquery.flot.dashes.js" type="text/javascript"></script>
+  <script src="jquery/jquery.flot.navigate.js" type="text/javascript"></script>
+  <script src="jquery/jquery.flot.valuelabels.js" type="text/javascript"></script>
+  <script src="jquery/jquery.client.js" type="text/javascript"></script>
 
 <style>
 body {
@@ -87,6 +94,34 @@ table.list th {
   white-space: nowrap;
 }
 
+.file_input_div
+{
+  position: relative;
+  width: 140px;
+  height: 26px;
+  overflow: hidden;
+}
+
+.file_input_button
+{
+  width: 140px;
+  position: absolute;
+  top: 0px;
+}
+
+.file_input_hidden
+{
+  font-size: 25px;
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  opacity: 0;
+
+  filter: alpha(opacity=0);
+  -ms-filter: "alpha(opacity=0)";
+  -khtml-opacity: 0;
+  -moz-opacity: 0;
+}
 </style>
 
 <script>
@@ -222,6 +257,292 @@ function restoreTable() {
     document.getElementById("expand").value = FULL_VIEW;
   }
 }
+
+// A class to store the data to plot.
+function PData() {
+  this.xAxis = "Iteration(s)";
+  this.yAxis = "";
+  this.A = []; // Two data sets for comparison.
+  this.B = [];
+  this.avgA = [];  // Avg value is plotted as a line.
+  this.avgB = [];
+  this.maxA = 0;
+  this.maxB = 0;
+  this.countA = 0; // Size of the data sets.
+  this.countB = 0;
+
+  this.setYAxis = function (str) {
+    this.yAxis = str;
+  }
+
+  this.setAvg = function (arr, cha) {
+    if (cha == 'A') {
+      var avgA = Array.avg(arr);
+      for (var i = 1; i <= this.countA; i++) {
+        this.avgA.push([i, avgA]);
+      }       
+    } else if (cha == 'B') {
+      var avgB = Array.avg(arr);
+      for (var i = 1; i <= this.countB; i++) {
+        this.avgB.push([i, avgB]);
+      } 
+    }
+  }
+  
+  this.setMax = function (arr, cha) {
+    if (cha == 'A') {
+      this.maxA = Array.max(arr);
+    } else if (cha == 'B') {
+      this.maxB = Array.max(arr);
+    }
+  }
+   
+  // Add an entry to the array.
+  this.addArr = function (val, cha) {
+    if (cha == 'A') {
+      this.countA++;
+      this.A.push([this.countA, val]); 
+    } else if (cha == 'B') {
+      this.countB++;
+      this.B.push([this.countB, val]);
+    }
+  }
+  
+  // Plot the graph at the specified place.
+  this.plot = function (placeholder) {
+    $.plot(placeholder,
+      [// Line A 
+       {
+         data: this.A,
+         label: "A's " + this.yAxis + " in " + this.countA + " " + this.xAxis,
+         points: {
+           show: true
+         },
+         lines: {
+           show: true
+         }
+       },
+       
+       // Line B
+       { 
+         data: this.B,
+         label: "B's " + this.yAxis + " in " + this.countB + " " + this.xAxis,
+         points: {
+           show: true
+         },
+         lines: {
+           show: true
+         }
+       },
+       
+       // Line avgA
+       { 
+         data: this.avgA,
+         label: "A's avg " + this.yAxis,
+         dashes: {
+           show: true
+         }
+       },
+       
+       // Line avgB 
+       {
+         data: this.avgB,
+         label: "B's avg " + this.yAxis,
+         dashes: {
+           show: true
+         }
+       }],
+       
+       // Axis and legend setup.
+       { xaxis: { 
+           max: this.countA > this.countB ? this.countA : this.countB,
+           tickSize: 1,
+           tickDecimals: 0
+         },
+         yaxis: {
+           // Leave some space for legend.
+           max: this.maxA > this.maxB ? this.maxA * 1.5 : this.maxB * 1.5 
+         },
+         legend: {
+           backgroundOpacity: 0
+         }
+       });
+  }
+}
+
+// Compare the selected metric of the two selected data sets.
+function compare() {
+  var checkboxArr = document.getElementsByName("checkboxArr");
+  var radioArr = document.getElementsByName("radioArr");
+ 
+  if (checkAmount(checkboxArr) != 2) {
+    alert("please select two rows to compare");
+    return;
+  }
+ 
+  var rowIndexArr = getSelectedIndex(checkboxArr);
+  var colIndexArr = getSelectedIndex(radioArr);
+  // To this point, it is for sure that rowIndexArr has two elements 
+  // while colIndexArr has one.
+  var selectedRowA = rowIndexArr[0];
+  var selectedRowB = rowIndexArr[1];
+  var selectedCol = colIndexArr[0];
+
+  var extension = chrome.extension.getBackgroundPage();
+  var data = extension.results.data;
+  var selectedA = getSelectedResults(data,selectedRowA,selectedCol);
+  var selectedB = getSelectedResults(data,selectedRowB,selectedCol);
+  var yAxis = getMetricName(selectedCol);
+ 
+  // Indicate A and B on selected rows.
+  checkboxArr[selectedRowA].parentElement.firstChild.data = "A";
+  checkboxArr[selectedRowB].parentElement.firstChild.data = "B";
+ 
+  plot(selectedA, selectedB, yAxis);
+}
+
+// Show the comparison graph.
+function plot(A, B, axis) {
+  var plotData = new PData();
+  
+  plotData.setYAxis(axis);
+  for (var i = 0; i < A.length; i++) {
+    plotData.addArr(A[i],'A');
+  }
+  for (var i = 0; i < B.length; i++) {
+    plotData.addArr(B[i],'B');
+  }
+  plotData.setAvg(A,'A');
+  plotData.setAvg(B,'B');
+  plotData.setMax(A,'A');
+  plotData.setMax(B,'B');
+
+  var placeholder = document.getElementById("placeholder");
+  placeholder.style.display = "";  
+  plotData.plot(placeholder);
+}
+
+var METRIC = {"STARTLOAD": 0, "COMMITLOAD": 1, "DOCLOAD": 2, "PAINT": 3,
+               "TOTAL": 4, "REQUESTS": 5, "CONNECTS": 6, "READKB": 7,
+               "WRITEKB": 8, "READKBPS": 9, "WRITEKBPS": 10};
+
+// Retrieve the metric name from index.
+function getMetricName (index) {
+  switch (index) {
+    case METRIC.STARTLOAD:
+      return "Start Load Time";
+    case METRIC.COMMITLOAD:
+      return "Commit Load Time";
+    case METRIC.DOCLOAD:
+      return "Doc Load Time";
+    case METRIC.PAINT:
+      return "Paint Time";
+    case METRIC.TOTAL:
+      return "Total Load Time";
+    case METRIC.REQUESTS: 
+      return "# Requests";
+    case METRIC.CONNECTS: 
+      return "# Connects";
+    case METRIC.READKB:
+      return "Read KB";
+    case METRIC.WRITEKB:
+      return "Write KB";
+    case METRIC.READKBPS:
+      return "Read KBps";
+    case METRIC.WRITEKBPS:
+      return "Write KBps";
+    default:
+      return ""; 
+  }
+}
+
+// Get the results with a specific row (data set) and column (metric). 
+function getSelectedResults(arr, rowIndex, colIndex) {
+  switch (colIndex) {
+    case METRIC.STARTLOAD:
+      return arr[rowIndex].startLoadResults;
+    case METRIC.COMMITLOAD:
+      return arr[rowIndex].commitLoadResults;
+    case METRIC.DOCLOAD:
+      return arr[rowIndex].docLoadResults;
+    case METRIC.PAINT:
+      return arr[rowIndex].paintResults;
+    case METRIC.TOTAL:
+      return arr[rowIndex].totalResults;
+    case METRIC.REQUESTS:
+      return arr[rowIndex].requests;
+    case METRIC.CONNECTS:
+      return arr[rowIndex].connects;
+    case METRIC.READKB:
+      return arr[rowIndex].KbytesRead;
+    case METRIC.WRITEKB:
+      return arr[rowIndex].KbytesWritten;
+    case METRIC.READKBPS:
+      return arr[rowIndex].readbpsResults;
+    case METRIC.WRITEKBPS:
+      return arr[rowIndex].writebpsResults;
+    default:
+      return undefined;
+  }
+}
+
+// Ensure only two data sets (rows) are selected. 
+function checkAmount(arr) {
+  var amount = 0;
+  for (var i = 0; i < arr.length; i++) { 
+    if (arr[i].checked) {
+      amount++;
+    }
+  }
+  return amount;
+}
+
+// Get the index of selected row or column.
+function getSelectedIndex(arr) {
+  var selectedArr = new Array();
+  for (var i = 0; i < arr.length; i++) {
+    if(arr[i].checked) {
+      selectedArr.push(i);
+    }
+  }
+  return selectedArr;
+}
+
+// Repaint or hide the chart.
+function updateChart(caller) {
+  var placeholder = document.getElementById("placeholder");
+  if (caller.type == "radio") {
+    // Other radio button is clicked.
+    if (placeholder.style.display == "") {
+      compare();
+    }
+  } else {
+    // Other checkbox or clearing results is clicked.
+    if (placeholder.style.display == "") {
+      placeholder.style.display = "none";
+    }
+  }
+}
+
+// Clear indicators besides checkbox.
+function clearIndicator () {
+  var checkboxArr = document.getElementsByName("checkboxArr");
+  for (var i = 0; i < checkboxArr.length; i++) {
+    checkboxArr[i].parentElement.firstChild.data = "";
+  }
+}
+
+// Enable/disable button according to checkbox change.
+function checkSelected () {
+  var checkboxArr = document.getElementsByName("checkboxArr"); 
+  if (checkAmount(checkboxArr) !=0) {
+    document.getElementById("compare").disabled = false;
+  } else {
+    document.getElementById("compare").disabled = true;
+  }
+}
+
+
 // Object to summarize everything
 var totals = {};
 
@@ -230,7 +551,8 @@ function computeDisplayResults(data) {
   var count = data.data.length;
   for (var i = 0; i < count; i++) {
     var obj = data.data[i];
-    var resultList = obj.totalResults;
+    obj.displayTime = setDisplayTime(obj.timestamp);
+    var resultList = obj.totalResults; 
     obj.mean = Array.avg(resultList);
     obj.stddev = Array.stddev(resultList);
     obj.stderr = obj.stddev / Math.sqrt(obj.iterations);
@@ -239,18 +561,18 @@ function computeDisplayResults(data) {
     obj.cilow = obj.mean - ci;
     obj.min = Array.min(resultList);
     obj.max = Array.max(resultList);
-    obj.readbps = obj.bytesRead * 8 / obj.totalTime;
-    obj.writebps = obj.bytesWritten * 8 / obj.totalTime;
-    obj.readKB = obj.bytesRead / 1024;
-    obj.writeKB = obj.bytesWritten / 1024;
+    obj.readbps = Array.avg(obj.readbpsResults);
+    obj.writebps = Array.avg(obj.writebpsResults);
+    obj.readKB = Array.avg(obj.KbytesRead);
+    obj.writeKB = Array.avg(obj.KbytesWritten);
     obj.paintMean = Array.avg(obj.paintResults);
     obj.startLoadMean = Array.avg(obj.startLoadResults);
     obj.commitLoadMean = Array.avg(obj.commitLoadResults);
     obj.docLoadMean = Array.avg(obj.docLoadResults);
 
-    obj.displayRequests = obj.requests;
-    obj.displayConnects = obj.connects;
-    obj.displaySpdySessions = obj.spdySessions;
+    obj.displayRequests = Array.avg(obj.requests);
+    obj.displayConnects = Array.avg(obj.connects);
+    obj.displaySpdySessions = Array.avg(obj.spdySessions);
     
     obj.displayDomNum = obj.domNum;
     obj.displayMaxDepth = obj.maxDepth;
@@ -258,6 +580,23 @@ function computeDisplayResults(data) {
     obj.displayAvgDepth = obj.avgDepth;
     }
   return count;
+}
+
+// Convert timestamp to readable string.
+function setDisplayTime(ts) {
+  var year = ts.getFullYear();
+  var mon = ts.getMonth()+1;
+  var date = ts.getDate();
+  var hrs = ts.getHours();
+  var mins = ts.getMinutes();
+  var secs = ts.getSeconds();
+  
+  mon = ( mon < 10 ? "0" : "" ) + mon;
+  date = ( date < 10 ? "0" : "" ) + date;
+  mins = ( mins < 10 ? "0" : "" ) + mins;
+  secs = ( secs < 10 ? "0" : "" ) + secs;
+  
+  return (year + "/" + mon + "/" + date + " " + hrs + ":" + mins + ":" + secs);
 }
 
 // Subtract the results from two data sets.
@@ -453,6 +792,7 @@ function clearResults() {
   extension.results.data = new Array();
   document.getElementById("json").value = "";
   document.getElementById("baseline").value = "";
+  updateChart(this);
   jsinit();
 }
 
@@ -482,9 +822,10 @@ Clear Cache?<input id="clearcache" type="checkbox">
 Enable Spdy?<input id="enablespdy" type="checkbox">
 <br>
 <span>URLs to load</span> <input type="text" id="testurl" size="100">
-<br>
-Load URLs from file<input type="file" id="files" name="files[]" multiple />
-<br>
+<div class="file_input_div">
+<input class="file_input_button" type="button" value="Load URLs From File" />
+<input class="file_input_hidden" type="file" id="files" name="files[]" multiple />
+</div>
 <form onsubmit="config();run()" style="display:inline">
 <input type="submit" value="Run">
 </form>
@@ -497,7 +838,9 @@ Load URLs from file<input type="file" id="files" name="files[]" multiple />
 
 <table id="t" class="list" width="100%">
   <tr>
+  <th width=35></th>
   <th width=150>url</th>
+  <th width=80 style="display:none">timestamp</th>
   <th width=50>iterations</th>
   <th width=50 >via spdy</th>
   <th width=50 style="display:none">start load mean</th>
@@ -526,7 +869,9 @@ Load URLs from file<input type="file" id="files" name="files[]" multiple />
   </tr>
 
   <tr id="t.total" jsselect="totals">
+  <td class="avg" jseval="1"></td>
   <td class="url">TOTALS <span jscontent="url"></span></td>
+  <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" style="display:none"><span jseval="val = startLoadMean.toFixed(1)" jscontent="val"></span></td>
@@ -548,7 +893,9 @@ Load URLs from file<input type="file" id="files" name="files[]" multiple />
   </tr>
 
   <tr jsselect="data">
+  <td align=right> <input type="checkbox" name="checkboxArr" onclick="updateChart(this);clearIndicator();checkSelected()"></td>
   <td class="url" jseval="$width = getWidth($this.mean, this); url.length > 40 ? $suburl = url.substring(0,27) + '...' + url.substring(url.length-10, url.length) : $suburl=url"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="$suburl"></a></div></td>
+  <td class="avg" style="display:none" jseval="val = displayTime" jscontent="val"></td>
   <td class="avg" jseval="val = iterations" jscontent="val"></td>
   <td class="avg" jseval="val = viaSpdy" jscontent="val"></td>
   <td class="avg" style="display:none" jseval="val = startLoadMean.toFixed(1)" jscontent="val"></td>
@@ -562,9 +909,9 @@ Load URLs from file<input type="file" id="files" name="files[]" multiple />
   <td class="avg" style="display:none" jseval="val = cihigh.toFixed(1)" jscontent="val"></td>
   <td class="avg" style="display:none" jseval="val = min.toFixed(1)" jscontent="val"></td>
   <td class="avg" style="display:none" jseval="val = max.toFixed(1)" jscontent="val"></td>
-  <td class="avg" style="display:none" jseval="val = displayRequests" jscontent="val"></td>
-  <td class="avg" style="display:none" jseval="val = displayConnects" jscontent="val"></td>
-  <td class="avg" style="display:none" jseval="val = displaySpdySessions" jscontent="val"></td>
+  <td class="avg" style="display:none" jseval="val = displayRequests.toFixed(1)" jscontent="val"></td>
+  <td class="avg" style="display:none" jseval="val = displayConnects.toFixed(1)" jscontent="val"></td>
+  <td class="avg" style="display:none" jseval="val = displaySpdySessions.toFixed(1)" jscontent="val"></td>
   <td class="avg" style="display:none" jseval="val = readKB.toFixed(1)" jscontent="val"></td>
   <td class="avg" style="display:none" jseval="val = writeKB.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = readbps.toFixed(1)" jscontent="val"></td>
@@ -578,12 +925,43 @@ Load URLs from file<input type="file" id="files" name="files[]" multiple />
   <tr jsdisplay="data.length == 0">
   <td colspan=11>No tests have been run yet.</td>
   </tr>
+  <tr jsdisplay="data.length > 1">
+  <td width=25 jseval="1"></td>
+  <td class="url" jseval="1"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" style="display:none"><input name="radioArr" type="radio" onclick="updateChart(this)"> </td>
+  <td class="avg" style="display:none"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg"><input name="radioArr" type="radio" onclick="updateChart(this)" checked></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" style="display:none"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg" style="display:none"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg" style="display:none" jseval="1"></td>
+  <td class="avg" style="display:none"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg" style="display:none"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  <td class="avg"><input name="radioArr" type="radio" onclick="updateChart(this)"></td>
+  </tr>
+  <tr jsdisplay="data.length > 1">
+  <td> <input id="compare" type="button" value="Compare" disabled="true" onclick="compare()"></td>
+  </tr>
 </table>
 <hr>
+<center>
+<div id="placeholder" style="width:430px;height:230px;display:none">graph place</div>
+</center>
 <span onclick="toggle('json')">JSON data</span><br>
-<textarea style="display: none" type=text id=json rows=10 cols=50></textarea><p>
+<textarea style="display:none" type=text id=json rows=10 cols=50></textarea><p>
 
 <span onclick="toggle('baseline')">COMPARE to</span><br>
-<textarea style="display: none" type=text id=baseline rows=10 cols=50
+<textarea style="display:none" type=text id=baseline rows=10 cols=50
 onchange="jsinit()"></textarea><p>
 </body>

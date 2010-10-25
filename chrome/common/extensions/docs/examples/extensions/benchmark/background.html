@@ -163,19 +163,22 @@ function Benchmark() {
 
     current_ = {};
     current_.url = url;
+    current_.timestamp = new Date();
     current_.viaSpdy = false;
     current_.startLoadResults = new Array();  // times to start
     current_.commitLoadResults = new Array();  // times to commit
     current_.docLoadResults = new Array();  // times to docload
     current_.paintResults = new Array();    // times to paint
     current_.totalResults = new Array();    // times to complete load
-    current_.bytesRead = 0;
-    current_.bytesWritten = 0;
+    current_.KbytesRead = new Array();
+    current_.KbytesWritten = new Array();
+    current_.readbpsResults = new Array();
+    current_.writebpsResults = new Array(); 
     current_.totalTime = 0;
     current_.iterations = 0;
-    current_.requests = 0;
-    current_.connects = 0;
-    current_.spdySessions = 0;
+    current_.requests = new Array();
+    current_.connects = new Array();
+    current_.spdySessions = new Array();
     current_.domNum = 0;
     current_.maxDepth = 0;
     current_.minDepth = 0;
@@ -297,6 +300,43 @@ function Benchmark() {
 
   // Called when a page finishes loading.
   this.pageFinished = function(load_times, domNum, depths) {
+   
+     // Make sure the content can be fetched via spdy if it is enabled.
+    if (window.enableSpdy && !load_times.wasFetchedViaSpdy) {
+      alert("Can not fetch current url via spdy.\n" +
+            "Ending current test.");
+      me_.finish();
+      // Move on to next benchmarked pages.
+      if (benchmarks.length > 0) {
+        if (window.clearConnections) {
+          chrome.benchmarking.closeConnections();
+        }
+        setTimeout(me_.runPage, 100);
+      }
+      return;
+    }
+
+    // If last fetch was via spdy, current fetch should use spdy too. Same
+    // for vise versa.
+    if (current_.iterations > 0 &&
+        current_.viaSpdy != load_times.wasFetchedViaSpdy) {
+      alert("Error: viaSpdy for current fetch is different from last fetch!\n" +
+            "Ending current test.");
+      // Current data set is invalid: remove from the result array.
+      var currIndex;
+      currIndex = window.results.data.indexOf(current_, 0);
+      window.results.data.splice(currIndex, 1);
+      me_.displayResults();
+      me_.finish();
+      if (benchmarks.length > 0) {
+        if (window.clearConnections) {
+          chrome.benchmarking.closeConnections();
+        }
+        setTimeout(me_.runPage, 100);
+      }
+      return;
+    }
+ 
     var requested = load_times.requestTime;
     var started = load_times.startLoadTime;
     var startLoadTime =
@@ -326,22 +366,6 @@ function Benchmark() {
     totalTime_ += totalTime;
     count_++;
 
-    // Make sure the content can be fetched via spdy if it is enabled.
-    if (window.enableSpdy && !load_times.wasFetchedViaSpdy) {
-      alert("Can not fetch current url via spdy.\n" +
-            "Ending current test.");
-      runCount_ = 1;
-    }
-
-    // If last fetch was via spdy, current fetch should use spdy too. Same
-    // for vise versa.
-    if (current_.iterations > 0 &&
-        current_.viaSpdy != load_times.wasFetchedViaSpdy) {
-      alert("Error: viaSpdy for current fetch is different from last fetch!\n" +
-            "Ending current test.");
-      runCount_ = 1;
-    }
-
     // Get the index of current benchmarked page in the result array.
     var currIndex;
     currIndex = window.results.data.indexOf(current_, 0);
@@ -354,16 +378,20 @@ function Benchmark() {
     current_.docLoadResults.push(docLoadTime);
     current_.paintResults.push(paintTime);
     current_.totalResults.push(totalTime);
-    current_.bytesRead += chrome.benchmarking.counter(kTCPReadBytes) -
-                          initialReadBytes_;
-    current_.bytesWritten += chrome.benchmarking.counter(kTCPWriteBytes) -
-                             initialWriteBytes_;
-    current_.requests += chrome.benchmarking.counter(kRequestCount) -
-                         initialRequestCount_;
-    current_.connects += chrome.benchmarking.counter(kConnectCount) -
-                         initialConnectCount_;
-    current_.spdySessions += chrome.benchmarking.counter(kSpdySessionCount) -
-                         initialSpdySessionCount_;
+    var bytesRead = chrome.benchmarking.counter(kTCPReadBytes) -
+                                              initialReadBytes_;
+    var bytesWrite = chrome.benchmarking.counter(kTCPWriteBytes) - 
+                                               initialWriteBytes_;
+    current_.KbytesRead.push(bytesRead / 1024);
+    current_.KbytesWritten.push(bytesWrite / 1024);
+    current_.readbpsResults.push(bytesRead * 8 / totalTime);
+    current_.writebpsResults.push(bytesWrite * 8 / totalTime);
+    current_.requests.push(chrome.benchmarking.counter(kRequestCount) -
+                         initialRequestCount_);
+    current_.connects.push(chrome.benchmarking.counter(kConnectCount) -
+                         initialConnectCount_);
+    current_.spdySessions.push(chrome.benchmarking.counter(kSpdySessionCount) -
+                         initialSpdySessionCount_);
     current_.totalTime += totalTime;
     current_.domNum = domNum;
     current_.maxDepth = depths[0];
@@ -374,7 +402,7 @@ function Benchmark() {
     if (currIndex == -1) {
       window.results.data.push(current_);
     } else {
-      window.results.data[currIndex]=current_;
+      window.results.data[currIndex] = current_;
     }
 
     if (--runCount_ == 0) {
@@ -386,7 +414,6 @@ function Benchmark() {
       if (window.clearConnections) {
         chrome.benchmarking.closeConnections();
       }
-
       setTimeout(me_.runPage, 100);
     }
 
