@@ -68,8 +68,8 @@ static URLRequestJob* InspectorHook(URLRequest* request,
   return new URLRequestAboutJob(request);
 }
 
-// Flaky per http://crbug.com/60050.
-IN_PROC_BROWSER_TEST_F(AccountScreenTest, FLAKY_TestSchemeInspector) {
+// Sometimes times out: http://crbug.com/60050.
+IN_PROC_BROWSER_TEST_F(AccountScreenTest, DISABLED_TestSchemeInspector) {
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kCrosScheme);
   URLRequestFilter::GetInstance()->AddHostnameHandler(chrome::kCrosScheme,
