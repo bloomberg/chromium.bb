@@ -582,18 +582,9 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
   stack_ptr = NaClSysToUserStackAddr(nap, sys_stack_ptr);
 
   if (0 != ((stack_ptr + sizeof(nacl_reg_t)) & NACL_STACK_ALIGN_MASK)) {
-    NaClLog(LOG_WARNING,
-            ("NaClCreateAdditionalThread:  user thread library"
-             " did not provide properly aligned user stack pointer\n"));
-    NaClLog(LOG_WARNING,
-            "NaClCreateAdditionalThread:  orig stack ptr: 0x%"NACL_PRIxPTR"\n",
-            stack_ptr);
-
-    stack_ptr &= ~NACL_STACK_ALIGN_MASK;
-    stack_ptr -= sizeof(nacl_reg_t);  /* pretend return addr */
-
-    NaClLog(LOG_WARNING,
-            "NaClCreateAdditionalThread: fixed stack ptr: 0x%"NACL_PRIxPTR"\n",
+    NaClLog(3,
+            ("NaClCreateAdditionalThread:  user thread library provided "
+             "an unaligned user stack pointer: 0x%"NACL_PRIxPTR"\n"),
             stack_ptr);
   }
 
