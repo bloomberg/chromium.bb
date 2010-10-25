@@ -108,7 +108,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   void ForceReopenWindow();
 
-  DevToolsClientHost* FindOnwerDevToolsClientHost(RenderViewHost* client_rvh);
+  DevToolsClientHost* FindOwnerDevToolsClientHost(RenderViewHost* client_rvh);
 
   void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
                             bool force_open,

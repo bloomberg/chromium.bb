@@ -74,7 +74,7 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
 void DevToolsManager::ForwardToDevToolsAgent(
     RenderViewHost* client_rvh,
     const IPC::Message& message) {
-  DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
+  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
   if (client_host)
     ForwardToDevToolsAgent(client_host, message);
 }
@@ -105,7 +105,7 @@ void DevToolsManager::ForwardToDevToolsClient(RenderViewHost* inspected_rvh,
 }
 
 void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
-  DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
+  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
   if (!client_host)
     return;
 
@@ -115,7 +115,7 @@ void DevToolsManager::ActivateWindow(RenderViewHost* client_rvh) {
 }
 
 void DevToolsManager::CloseWindow(RenderViewHost* client_rvh) {
-  DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
+  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
   if (client_host) {
     RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
     DCHECK(inspected_rvh);
@@ -303,7 +303,7 @@ void DevToolsManager::ForceReopenWindow() {
   }
 }
 
-DevToolsClientHost* DevToolsManager::FindOnwerDevToolsClientHost(
+DevToolsClientHost* DevToolsManager::FindOwnerDevToolsClientHost(
     RenderViewHost* client_rvh) {
   for (InspectedRvhToClientHostMap::iterator it =
            inspected_rvh_to_client_host_.begin();
@@ -319,7 +319,7 @@ DevToolsClientHost* DevToolsManager::FindOnwerDevToolsClientHost(
 }
 
 void DevToolsManager::ReopenWindow(RenderViewHost* client_rvh, bool docked) {
-  DevToolsClientHost* client_host = FindOnwerDevToolsClientHost(client_rvh);
+  DevToolsClientHost* client_host = FindOwnerDevToolsClientHost(client_rvh);
   if (!client_host)
     return;
   RenderViewHost* inspected_rvh = GetInspectedRenderViewHost(client_host);
