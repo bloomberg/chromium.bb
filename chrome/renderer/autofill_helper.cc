@@ -178,11 +178,8 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
     // User selected an Autocomplete entry, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
 
-    // Set the suggested value to update input element value immediately in UI.
-    // The |setValue| call has update delayed until element loses focus.
     string16 substring = value;
     substring = substring.substr(0, element.maxLength());
-    element.setSuggestedValue(substring);
     element.setValue(substring);
 
     WebFrame* webframe = node.document().frame();
