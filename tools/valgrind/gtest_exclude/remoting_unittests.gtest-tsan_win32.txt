@@ -1,5 +1,6 @@
 # Fail under TSan, see http://crbug.com/57832
 JingleChromotingConnectionTest.TestVideoChannel
-JingleChromotingConnectionTest.TestEventsChannel
 JingleChromotingConnectionTest.TestVideoRtpChannel
 
+# Fails under TSan, see http://crbug.com/60536
+JingleChromotingConnectionTest.TestEventChannel
