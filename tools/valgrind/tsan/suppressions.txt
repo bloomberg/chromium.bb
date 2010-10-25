@@ -58,7 +58,7 @@
 {
   bug_60536
   ThreadSanitizer:Race
-  fun:net::GrowableIOBuffer::*apacity
+  fun:*net::GrowableIOBuffer*
   fun:remoting::TCPChannelTester::*
 }
 
