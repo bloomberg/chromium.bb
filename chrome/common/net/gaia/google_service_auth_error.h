@@ -71,6 +71,10 @@ class GoogleServiceAuthError {
     // The requestor of the authentication step cancelled the request
     // prior to completion.
     REQUEST_CANCELED = 9,
+
+    // The user has provided a HOSTED account, when this service requires
+    // a GOOGLE account.
+    HOSTED_NOT_ALLOWED = 10,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.

@@ -138,17 +138,6 @@ bool GoogleAuthenticator::AuthenticateToLogin(
                              profile->GetRequestContext()));
   // Will be used for retries.
   PrepareClientLoginAttempt(password, login_token, login_captcha);
-  // If this is the first time this user has tried to login, and she has
-  // a HOSTED account, we want to encourage opting in to namespace unification.
-  // Thus, we first need to detect whether this is a HOSTED account or not.
-  // Only way to do that is to _try_ authing as a HOSTED account.  That said,
-  // we don't want to put ALL users through two authentication attempts.
-  // So, we detect if this is a first-time login, and then try to auth
-  // as a pure GOOGLE account.  If that fails, we'll try again with HOSTED.
-  // If this user has logged in before, just accept either.
-  hosted_policy_ = (!user_manager_->IsKnownUser(username) ?
-                    GaiaAuthenticator2::HostedAccountsNotAllowed :
-                    GaiaAuthenticator2::HostedAccountsAllowed);
   TryClientLogin();
   return true;
 }
@@ -198,16 +187,27 @@ void GoogleAuthenticator::OnClientLoginSuccess(
   VLOG(1) << "Online login successful!";
   ClearClientLoginAttempt();
 
-  GaiaAuthConsumer::ClientLoginResult new_creds(credentials);
-  new_creds.is_hosted =
-      (hosted_policy_ == GaiaAuthenticator2::HostedAccountsAllowed &&
-       !user_manager_->IsKnownUser(username_));
-
+  if (hosted_policy_ == GaiaAuthenticator2::HostedAccountsAllowed) {
+    // We don't allow HOSTED accounts to log in.  Call OnLoginFailure()
+    // with an appropriate LoginFailure.
+    LoginFailure failure_details =
+        LoginFailure::FromNetworkAuthFailure(
+            GoogleServiceAuthError(
+                GoogleServiceAuthError::HOSTED_NOT_ALLOWED));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &GoogleAuthenticator::OnLoginFailure,
+                          failure_details));
+    VLOG(1) << "Rejecting valid HOSTED account.";
+    hosted_policy_ = GaiaAuthenticator2::HostedAccountsNotAllowed;
+    return;
+  }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::OnLoginSuccess,
-                        new_creds, false));
+                        credentials, false));
 }
 
 void GoogleAuthenticator::OnClientLoginFailure(
@@ -224,6 +224,7 @@ void GoogleAuthenticator::OnClientLoginFailure(
   }
 
   if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS &&
+      !user_manager_->IsKnownUser(username_) &&
       hosted_policy_ != GaiaAuthenticator2::HostedAccountsAllowed) {
     // if this was a first-time login, then we may have failed because the
     // account is HOSTED.  Try again, but allowing HOSTED accounts.
@@ -282,7 +283,6 @@ void GoogleAuthenticator::OnLoginSuccess(
                                                          ascii_hash_.c_str(),
                                                          &mount_error))) {
     BootTimesLoader::Get()->AddLoginTimeMarker("CryptohomeMounted", true);
-    VLOG_IF(1, credentials.is_hosted) << "Authenticating hosted account";
     consumer_->OnLoginSuccess(username_, credentials, request_pending);
   } else if (!unlock_ &&
              mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {
