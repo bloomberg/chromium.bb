@@ -134,17 +134,8 @@ cr.define('cr', function() {
       var incognito = kind == LinkKind.INCOGNITO;
       if (kind == LinkKind.WINDOW || incognito) {
         chrome.windows.create({
-          url: urls[0],
+          url: urls,
           incognito: incognito
-        }, function(window) {
-          urls.forEach(function(url, i) {
-            if (i > 0)
-              chrome.tabs.create({
-                url: url,
-                windowId: window.id,
-                selected: false
-              });
-          });
         });
       } else if (kind == LinkKind.FOREGROUND_TAB ||
                  kind == LinkKind.BACKGROUND_TAB) {
