@@ -44,6 +44,7 @@
 #include "third_party/ppapi/c/ppb_graphics_2d.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
 #include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/c/ppb_var.h"
 #include "third_party/ppapi/c/ppp.h"
 #include "third_party/ppapi/c/ppp_instance.h"
 #include "webkit/glue/plugins/pepper_audio.h"
@@ -199,6 +200,8 @@ const void* GetInterface(const char* name) {
     return &core_interface;
   if (strcmp(name, PPB_VAR_DEPRECATED_INTERFACE) == 0)
     return Var::GetDeprecatedInterface();
+  if (strcmp(name, PPB_VAR_INTERFACE) == 0)
+    return Var::GetInterface();
   if (strcmp(name, PPB_INSTANCE_INTERFACE) == 0)
     return PluginInstance::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
