@@ -135,13 +135,13 @@ class FastSourceLineResolver::Module: public SourceLineResolverBase::Module {
   // returned CFIFrameInfo object.
   virtual CFIFrameInfo *FindCFIFrameInfo(const StackFrame *frame) const;
 
+  // Number of serialized map components of Module.
+  static const int kNumberMaps_ = 5 + WindowsFrameInfo::STACK_INFO_LAST;
+
  private:
   friend class FastSourceLineResolver;
   friend class ModuleComparer;
   typedef StaticMap<int, char> FileMap;
-
-  // Number of serialized map components of Module.
-  static const int kNumberMaps_ = 5 + WindowsFrameInfo::STACK_INFO_LAST;
 
   string name_;
   StaticMap<int, char> files_;
