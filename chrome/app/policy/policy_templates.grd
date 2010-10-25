@@ -242,6 +242,15 @@ templates and will be translated for each locale. -->
 
     </message>
 
+    <message name="IDS_POLICY_DEVELOPERTOOLSDISABLED_CAPTION" desc="Caption of the 'developer tools disabled' policy.">
+      Disable Developer Tools
+    </message>
+    <message name="IDS_POLICY_DEVELOPERTOOLSDISABLED_DESC" desc="Description of the 'developer tools disabled' policy.">
+      Disables the Developer Tools and the JavaScript console.
+
+      If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
+    </message>
+
     <message name="IDS_POLICY_SAFEBROWSINGENABLED_CAPTION" desc="Caption of the 'safe browsing' policy.">
       Enable Safe Browsing
     </message>
