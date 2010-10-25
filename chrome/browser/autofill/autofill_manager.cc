@@ -160,7 +160,7 @@ void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
 }
 
 bool AutoFillManager::GetAutoFillSuggestions(int query_id,
-                                             bool form_autofilled,
+                                             bool field_autofilled,
                                              const FormField& field) {
   if (!IsAutoFillEnabled())
     return false;
@@ -232,17 +232,19 @@ bool AutoFillManager::GetAutoFillSuggestions(int query_id,
     return false;
 
   // If the form is auto-filled and the renderer is querying for suggestions,
-  // then the user is editing the value of a field.  In this case, don't display
-  // labels, as that information is redundant. In addition, remove duplicate
-  // values.
-  if (form_autofilled) {
+  // then the user is editing the value of a field.  In this case, mimick
+  // autocomplete.  In particular, don't display labels, as that information is
+  // redundant. In addition, remove duplicate values.
+  if (field_autofilled) {
     RemoveDuplicateElements(&values, &unique_ids);
     labels.resize(values.size());
     icons.resize(values.size());
+    unique_ids.resize(values.size());
 
     for (size_t i = 0; i < labels.size(); ++i) {
       labels[i] = string16();
       icons[i] = string16();
+      unique_ids[i] = 0;
     }
   }
 

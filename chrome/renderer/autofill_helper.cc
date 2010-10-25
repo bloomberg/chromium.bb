@@ -30,6 +30,19 @@ namespace {
 // (so to avoid sending long strings through IPC).
 const size_t kMaximumTextSizeForAutoFill = 1000;
 
+
+// |node| must correspond to a form field.
+// Returns true if |node| is auto-filled.
+bool NodeIsAutoFilled(const WebKit::WebNode& node) {
+  const WebFormControlElement& element =
+      reinterpret_cast<const WebFormControlElement&>(node);
+  DCHECK(element.formControlType() == WebString::fromUTF8("text"));
+
+  WebInputElement input_element =
+      const_cast<WebFormControlElement&>(element).to<WebInputElement>();
+  return input_element.isAutofilled();
+}
+
 }  // namespace
 
 AutoFillHelper::AutoFillHelper(RenderView* render_view)
@@ -55,9 +68,9 @@ void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node) {
   // data in FormManager.
   field.set_label(FormManager::LabelForElement(element));
 
-  bool form_autofilled = form_manager_.FormWithNodeIsAutoFilled(node);
+  bool field_autofilled = NodeIsAutoFilled(node);
   render_view_->Send(new ViewHostMsg_QueryFormFieldAutoFill(
-      render_view_->routing_id(), autofill_query_id_, form_autofilled, field));
+      render_view_->routing_id(), autofill_query_id_, field_autofilled, field));
 }
 
 void AutoFillHelper::RemoveAutocompleteSuggestion(
@@ -171,10 +184,8 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
   } else if (suggestions_clear_index_ != -1 &&
              index == static_cast<unsigned>(suggestions_clear_index_)) {
     // User selected 'Clear form'.
-    // The form has been auto-filled, so give the user the chance to clear the
-    // form.
     form_manager_.ClearFormWithNode(node);
-  } else if (form_manager_.FormWithNodeIsAutoFilled(node) || !unique_id) {
+  } else if (!unique_id) {
     // User selected an Autocomplete entry, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
 
