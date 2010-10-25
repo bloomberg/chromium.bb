@@ -340,7 +340,7 @@ TEST_F(ExtensionManifestTest, DisallowMultipleUISurfaces) {
 }
 
 TEST_F(ExtensionManifestTest, ParseHomepageURLs) {
-  LoadAndExpectSuccess("homepage_valid.json");
+  scoped_ptr<Extension> extension(LoadAndExpectSuccess("homepage_valid.json"));
   LoadAndExpectError("homepage_empty.json",
                      extension_manifest_errors::kInvalidHomepageURL);
   LoadAndExpectError("homepage_invalid.json",
