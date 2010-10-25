@@ -308,7 +308,7 @@ if not ppapi_env.Bit('chrome'):
                                               common_inputs + ppapi_inputs,
                                               no_import_lib=True)
     # we need this to build the plugin, so register it here
-    ppapi_unittest_lib = str(ppapi_plugin[0])
+    ppapi_unittest_lib = ppapi_plugin[0]
     ppapi_env.AddPluginPrerequisite([ppapi_plugin[0]])
   else:  # mac
     # This builds with
@@ -358,9 +358,9 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
                                     unittest_sources,
                                     no_import_lib=True)
   node = env.CommandTest('ppapi_plugin_unittest.out',
-                         command=[unittest,
-                         ppapi_unittest_lib,
-                         env['BUILD_ISA_NAME']])
+                         command=[unittest[0],
+                                  ppapi_unittest_lib,
+                                  env['BUILD_ISA_NAME']])
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_ppapi_plugin_unittest')
 
 
