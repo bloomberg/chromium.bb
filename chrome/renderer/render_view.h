@@ -843,6 +843,7 @@ class RenderView : public RenderWidget,
 #endif
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();
+  void OnPrintPreview();
   void OnRedo();
   void OnReloadFrame();
   void OnReplace(const string16& text);
@@ -1020,7 +1021,7 @@ class RenderView : public RenderWidget,
                                    const WebKit::WebURLError& error,
                                    bool replace);
 
-  void Print(WebKit::WebFrame* frame, bool script_initiated);
+  void Print(WebKit::WebFrame* frame, bool script_initiated, bool is_preview);
 
   // Returns whether the page associated with |document| is a candidate for
   // translation.  Some pages can explictly specify (via a meta-tag) that they

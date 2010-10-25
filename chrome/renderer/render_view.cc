@@ -844,6 +844,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
+    IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -897,9 +898,9 @@ void RenderView::OnPrintPages() {
     // If the user has selected text in the currently focused frame we print
     // only that frame (this makes print selection work for multiple frames).
     if (webview()->focusedFrame()->hasSelection())
-      Print(webview()->focusedFrame(), false);
+      Print(webview()->focusedFrame(), false, false);
     else
-      Print(webview()->mainFrame(), false);
+      Print(webview()->mainFrame(), false, false);
   }
 }
 
@@ -909,6 +910,18 @@ void RenderView::OnPrintingDone(int document_cookie, bool success) {
   DCHECK(print_helper_.get());
   if (print_helper_.get() != NULL) {
     print_helper_->DidFinishPrinting(success);
+  }
+}
+
+void RenderView::OnPrintPreview() {
+  DCHECK(webview());
+  if (webview()) {
+    // If the user has selected text in the currently focused frame we print
+    // only that frame (this makes print selection work for multiple frames).
+    if (webview()->focusedFrame()->hasSelection())
+      Print(webview()->focusedFrame(), false, true);
+    else
+      Print(webview()->focusedFrame(), false, true);
   }
 }
 
@@ -1853,7 +1866,12 @@ void RenderView::didAddMessageToConsole(
 
 void RenderView::printPage(WebFrame* frame) {
   DCHECK(frame);
-  Print(frame, true);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrintPreview)) {
+    Print(frame, true, true);
+  } else {
+    Print(frame, true, false);
+  }
 }
 
 WebKit::WebNotificationPresenter* RenderView::notificationPresenter() {
@@ -5709,12 +5727,14 @@ void RenderView::postAccessibilityNotification(
   }
 }
 
-void RenderView::Print(WebFrame* frame, bool script_initiated) {
+void RenderView::Print(WebFrame* frame,
+                       bool script_initiated,
+                       bool is_preview) {
   DCHECK(frame);
   if (print_helper_.get() == NULL) {
     print_helper_.reset(new PrintWebViewHelper(this));
   }
-  print_helper_->Print(frame, script_initiated);
+  print_helper_->Print(frame, script_initiated, is_preview);
 }
 
 void RenderView::OnSetEditCommandsForNextKeyEvent(

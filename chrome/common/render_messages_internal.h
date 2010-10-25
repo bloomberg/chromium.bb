@@ -165,6 +165,24 @@ IPC_BEGIN_MESSAGES(View)
                       int /* document_cookie */,
                       bool /* success */)
 
+  // Tells the render view to switch the CSS to print media type, renders every
+  // requested pages for print preview.
+  IPC_MESSAGE_ROUTED0(ViewMsg_PrintPreview)
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // Sends back to the browser the rendered "printed page" for preview that was
+  // requested by a ViewMsg_PrintPage message or from scripted printing. The
+  // memory handle in this message is already valid in the browser process.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_PageReadyForPreview,
+                      ViewHostMsg_DidPrintPage_Params /* page content */)
+#else
+  // Sends back to the browser the rendered "printed page" for preview that was
+  // requested by a ViewMsg_PrintPage message or from scripted printing. The
+  // memory handle in this message is already valid in the browser process.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_PagesReadyForPreview,
+                      int /* fd in browser */)
+#endif
+
   // Tells the renderer to dump as much memory as it can, perhaps because we
   // have memory pressure or the renderer is (or will be) paged out.  This
   // should only result in purging objects we can recalculate, e.g. caches or

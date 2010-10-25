@@ -163,6 +163,10 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
       routing_id(),
       page_params.metafile_data_handle,
       &page_params.metafile_data_handle))) {
-    Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+    if (is_preview_) {
+      Send(new ViewHostMsg_PageReadyForPreview(routing_id(), page_params));
+    } else {
+      Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+    }
   }
 }

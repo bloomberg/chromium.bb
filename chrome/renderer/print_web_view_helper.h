@@ -78,7 +78,7 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
-  void Print(WebKit::WebFrame* frame, bool script_initiated);
+  void Print(WebKit::WebFrame* frame, bool script_initiated, bool is_preview);
 
   // Is there a background print in progress?
   bool IsPrinting() {
@@ -89,8 +89,7 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   void DidFinishPrinting(bool success);
 
  protected:
-  bool CopyAndPrint(const ViewMsg_PrintPages_Params& params,
-                    WebKit::WebFrame* web_frame);
+  bool CopyAndPrint(WebKit::WebFrame* web_frame);
 
   // Prints the page listed in |params|.
 #if defined(USE_X11)
@@ -132,11 +131,27 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   void UpdatePrintableSizeInPrintParameters(WebKit::WebFrame* frame,
                                             ViewMsg_Print_Params* params);
 
+  // Initialize print page settings with default settings.
+  bool InitPrintSettings(WebKit::WebFrame* frame);
+
+  // Get the default printer settings.
+  bool GetDefaultPrintSettings(WebKit::WebFrame* frame,
+                               ViewMsg_Print_Params* params);
+
+  // Get final print settings from the user.
+  bool GetPrintSettingsFromUser(WebKit::WebFrame* frame,
+                                int expected_pages_count,
+                                bool use_browser_overlays);
+
+  // Render the frame for printing.
+  bool RenderPagesForPrint(WebKit::WebFrame* frame);
+
   RenderView* render_view_;
   WebKit::WebView* print_web_view_;
   scoped_ptr<ViewMsg_PrintPages_Params> print_pages_params_;
   base::Time last_cancelled_script_print_;
   int user_cancelled_scripted_print_count_;
+  bool is_preview_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelper);

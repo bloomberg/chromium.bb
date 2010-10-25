@@ -101,6 +101,10 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     NOTREACHED() << "Browser allocation request message failed";
   }
 
-  Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+  if (is_preview_) {
+    Send(new ViewHostMsg_PageReadyForPreview(routing_id(), page_params));
+  } else {
+    Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
+  }
 }
 

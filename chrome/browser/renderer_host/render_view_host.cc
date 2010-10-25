@@ -386,6 +386,10 @@ bool RenderViewHost::PrintPages() {
   return Send(new ViewMsg_PrintPages(routing_id()));
 }
 
+bool RenderViewHost::PrintPreview() {
+  return Send(new ViewMsg_PrintPreview(routing_id()));
+}
+
 void RenderViewHost::PrintingDone(int document_cookie, bool success) {
   Send(new ViewMsg_PrintingDone(routing_id(), document_cookie, success));
 }
@@ -894,6 +898,13 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
                         OnUpdateContentRestrictions)
+#if defined(OS_MACOSX) || defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageReadyForPreview,
+                        OnPageReadyForPreview)
+#else
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
+                        OnPagesReadyForPreview)
+#endif
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -2143,3 +2154,22 @@ void RenderViewHost::OnScriptEvalResponse(int id, bool result) {
 void RenderViewHost::OnUpdateContentRestrictions(int restrictions) {
   delegate_->UpdateContentRestrictions(restrictions);
 }
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+void RenderViewHost::OnPageReadyForPreview(
+    const ViewHostMsg_DidPrintPage_Params& params) {
+  // TODO(kmadhusu): Function definition needs to be changed.
+  // 'params' contains the metafile handle for preview.
+
+  // Send the printingDone msg for now.
+  Send(new ViewMsg_PrintingDone(routing_id(), -1, true));
+}
+#else
+void RenderViewHost::OnPagesReadyForPreview(int fd_in_browser) {
+  // TODO(kmadhusu): Function definition needs to be changed.
+  // fd_in_browser should be the file descriptor of the metafile.
+
+  // Send the printingDone msg for now.
+  Send(new ViewMsg_PrintingDone(routing_id(), -1, true));
+}
+#endif

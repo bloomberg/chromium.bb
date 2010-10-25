@@ -202,6 +202,9 @@ class RenderViewHost : public RenderWidgetHost {
   // behalf.
   bool PrintPages();
 
+  // Asks the renderer to render pages for print preview.
+  bool PrintPreview();
+
   // Notify renderer of success/failure of print job.
   void PrintingDone(int document_cookie, bool success);
 
@@ -703,6 +706,11 @@ class RenderViewHost : public RenderWidgetHost {
                               const SkBitmap& thumbnail);
   void OnScriptEvalResponse(int id, bool result);
   void OnUpdateContentRestrictions(int restrictions);
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  void OnPageReadyForPreview(const ViewHostMsg_DidPrintPage_Params& params);
+#else
+  void OnPagesReadyForPreview(int fd_in_browser);
+#endif
 
  private:
   friend class TestRenderViewHost;
