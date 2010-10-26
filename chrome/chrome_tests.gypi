@@ -3011,6 +3011,24 @@
                   '-lpython<(python_ver)',
                 ],
               },
+              'actions': [
+              {
+                # _pyautolib.so gets created in lib.target dir.
+                # Create a symlink from the product dir.
+                'action_name': 'create_symlink',
+                'inputs': [
+                ],
+                'outputs': [
+                  '<(PRODUCT_DIR)/_pyautolib.so',
+                ],
+                'action': [ 'ln',
+                            '-sf',
+                            '<(PRODUCT_DIR)/lib.target/_pyautolib.so',
+                            '<@(_outputs)',
+                ],
+                'message': 'Creating symlink: '
+                           '<(PRODUCT_DIR)/lib.target/_pyautolib.so',
+              }],  # actions
             }],
             ['OS=="mac"', {
               # See the comment in this section of the unit_tests target for an
