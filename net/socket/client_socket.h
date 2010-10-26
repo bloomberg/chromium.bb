@@ -69,6 +69,10 @@ class ClientSocket : public Socket {
   // this call to the transport socket.
   virtual bool WasEverUsed() const = 0;
 
+  // Returns true if the underlying transport socket is using TCP FastOpen.
+  // TCP FastOpen is an experiment with sending data in the TCP SYN packet.
+  virtual bool UsingTCPFastOpen() const = 0;
+
  protected:
   // The following class is only used to gather statistics about the history of
   // a socket.  It is only instantiated and used in basic sockets, such as

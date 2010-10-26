@@ -247,6 +247,11 @@ bool TransportSocket::WasEverUsed() const {
   return was_used_to_convey_data_;
 }
 
+bool TransportSocket::UsingTCPFastOpen() const {
+  NOTREACHED();
+  return false;
+}
+
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
                           net::CompletionCallback* callback) {
   DCHECK(buf);

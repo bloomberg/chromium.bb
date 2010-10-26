@@ -93,6 +93,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 
@@ -195,6 +196,9 @@ void BrowserMainParts::EarlyInitialization() {
     net::SSLConfigService::AllowMITMProxies();
   if (parsed_command_line().HasSwitch(switches::kEnableSnapStart))
     net::SSLConfigService::EnableSnapStart();
+
+  if (parsed_command_line().HasSwitch(switches::kEnableTcpFastOpen))
+    net::set_tcp_fastopen_enabled(true);
 
   PostEarlyInitialization();
 }

@@ -501,6 +501,10 @@ const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
 // Enable tabbed options, ie: dom-ui version of options window.
 const char kEnableTabbedOptions[]           = "enable-tabbed-options";
 
+// Enable use of experimental TCP sockets API for sending data in the
+// SYN packet.
+const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
+
 // Enables TopSites.
 const char kEnableTopSites[]                = "enable-top-sites";
 

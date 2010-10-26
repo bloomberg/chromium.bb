@@ -46,6 +46,7 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   virtual void SetSubresourceSpeculation();
   virtual void SetOmniboxSpeculation();
   virtual bool WasEverUsed() const;
+  virtual bool UsingTCPFastOpen() const;
 
   // net::Socket implementation
 

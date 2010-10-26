@@ -328,4 +328,8 @@ bool FakeSSLClientSocket::WasEverUsed() const {
   return transport_socket_->WasEverUsed();
 }
 
+bool FakeSSLClientSocket::UsingTCPFastOpen() const {
+  return transport_socket_->UsingTCPFastOpen();
+}
+
 }  // namespace notifier

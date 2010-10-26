@@ -155,6 +155,8 @@ extern const char kEnableSyncPreferences[];
 extern const char kEnableSyncSessions[];
 extern const char kEnableSyncTypedUrls[];
 extern const char kEnableTabbedOptions[];
+extern const char kEnableTcpFastOpen[];
+
 extern const char kEnableTopSites[];
 extern const char kEnableTouch[];
 extern const char kEnableVerticalTabs[];

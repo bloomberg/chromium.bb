@@ -60,6 +60,7 @@ class FakeSSLClientSocket : public net::ClientSocket {
   virtual void SetSubresourceSpeculation();
   virtual void SetOmniboxSpeculation();
   virtual bool WasEverUsed() const;
+  virtual bool UsingTCPFastOpen() const;
 
  private:
   enum HandshakeState {
