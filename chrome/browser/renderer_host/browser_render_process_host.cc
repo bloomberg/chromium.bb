@@ -607,6 +607,9 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableExperimentalWebGL,
     switches::kDisableGLSLTranslator,
     switches::kInProcessWebGL,
+    // This flag needs to be propagated to the renderer process for
+    // --in-process-webgl.
+    switches::kUseGL,
     switches::kDisableAcceleratedCompositing,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
