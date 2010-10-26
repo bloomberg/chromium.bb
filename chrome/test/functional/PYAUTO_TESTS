@@ -32,6 +32,8 @@
     'crash_reporter',
     'downloads',
     'find_in_page',
+    # Turkish I problem. crbug.com/60638
+    '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
     'execute_javascript',
     'history',
     'imports',
@@ -50,9 +52,7 @@
     # This test fails due to crbug.com/35485
     '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
     # This test fails due to crbug.com/50706
-    '-translate.TranslateTest.testToggleTranslateOption'
-    # Turkish I problem. crbug.com/60638
-    '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
+    '-translate.TranslateTest.testToggleTranslateOption',
   ],
 
   'win': [
