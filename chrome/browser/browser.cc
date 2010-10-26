@@ -2397,6 +2397,7 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
                              PageTransition::TYPED);
   params.add_types =
       foreground ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE;
+  params.index = index;
   TabContents* contents = AddTabWithURL(&params);
   contents->set_new_tab_start_time(new_tab_start_time);
   return contents;
