@@ -56,6 +56,58 @@ class FindMatchTests(pyauto.PyUITest):
     self.assertNotEqual(capital_i_with_dot, capital_i)
     self.assertNotEqual(dotted, capital_i_with_dot)
 
+  def testSearchInTextAreas(self):
+    """Verify search for text within various forms and text areas."""
+    urls = []
+    urls.append(self.GetFileURLForPath(
+        os.path.join(self.DataDir(), 'find_in_page', 'textintextarea.html')))
+    urls.append(self.GetFileURLForPath(
+        os.path.join(self.DataDir(), 'find_in_page', 'smalltextarea.html')))
+    urls.append(self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'find_in_page', 'populatedform.html')))
+    for url in urls:
+      self.NavigateToURL(url)
+      self.assertEqual(1, self.FindInPage('cat')['match_count'])
+      self.assertEqual(0, self.FindInPage('bat')['match_count'])
+
+  def testSearchWithinSpecialURL(self):
+    """Verify search for text within special URLs such as chrome:history.
+       chrome://history, chrome://downloads, pyAuto Data directory
+    """
+    self.NavigateToURL(self.GetFileURLForPath(self.DataDir()))
+    # search in Data directory
+    self.assertEqual(1,
+        self.FindInPage('downloads', tab_index=0)['match_count'])
+    # search in History page
+    self.AppendTab(pyauto.GURL('chrome://history'))
+    self.assertEqual(1, self.FindInPage('data', tab_index=1)['match_count'])
+    # search in Downloads page
+    self._DownloadZipFile()
+    self.AppendTab(pyauto.GURL('chrome://downloads'))
+    self.assertEqual(2,
+        self.FindInPage('a_zip_file.zip', tab_index=2)['match_count'])
+    self._RemoveZipFile()
+
+  def _DownloadZipFile(self):
+    """Download a zip file."""
+    zip_file = 'a_zip_file.zip'
+    download_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    file_path = os.path.join(download_dir, zip_file)
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(), zip_file)
+    # Check if zip file already exists. If so then delete it.
+    if os.path.exists(downloaded_pkg):
+      self._RemoveZipFile()
+    self.DownloadAndWaitForStart(file_url)
+    # Wait for the download to finish
+    self.WaitForAllDownloadsToComplete()
+
+  def _RemoveZipFile(self):
+    """Delete a_zip_file.zip from the download directory."""
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    os.remove(downloaded_pkg)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
