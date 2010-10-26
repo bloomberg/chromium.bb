@@ -145,6 +145,10 @@ void NaClLogLock(void) {
 
 void NaClLogUnlock(void) {
   if (abort_on_unlock) {
+    /*
+     * include an easy-to-recognize output for the fuzzer to recognize
+     */
+    NaClLog_mu(LOG_ERROR, "LOG_FATAL abort exit\n");
 #ifdef __COVERITY__
     abort();  /* help coverity figure out that this is the default behavior */
 #else
