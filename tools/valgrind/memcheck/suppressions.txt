@@ -3150,3 +3150,32 @@
    fun:_ZN7WebCore17GraphicsContext3D10drawArraysEmll
    fun:_ZN7WebCore21WebGLRenderingContext10drawArraysEmllRi
 }
+{
+   bug_60670a
+   Memcheck:Addr4
+   fun:swizzle_copy
+   fun:_mesa_swizzle_ubyte_image
+   fun:_mesa_texstore_rgba8888
+   fun:_mesa_texstore
+   fun:_mesa_store_teximage2d
+   fun:_mesa_TexImage2D
+   fun:glTexImage2D
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl10texImage2DEjjjjjjjjPKv
+   fun:_ZN7WebCore25GraphicsContext3DInternal10texImage2DEjjjjjjjjPv
+   fun:_ZN7WebCore17GraphicsContext3D10texImage2DEjjjjjjjjPv
+}
+{
+   bug_60670b
+   Memcheck:Addr2
+   fun:extract_float_rgba
+   fun:_mesa_unpack_color_span_chan
+   fun:_mesa_make_temp_chan_image
+   fun:_mesa_texstore_rgba8888
+   fun:_mesa_texstore
+   fun:_mesa_store_teximage2d
+   fun:_mesa_TexImage2D
+   fun:glTexImage2D
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl10texImage2DEjjjjjjjjPKv
+   fun:_ZN7WebCore25GraphicsContext3DInternal10texImage2DEjjjjjjjjPv
+   fun:_ZN7WebCore17GraphicsContext3D10texImage2DEjjjjjjjjPv
+}
