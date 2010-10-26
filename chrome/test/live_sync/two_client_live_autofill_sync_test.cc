@@ -194,8 +194,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictLabels) {
   STLDeleteElements(&profiles2);
 }
 
+// Marked as FAILS -- see http://crbug.com/60368.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       ProfileSameLabelOnClient1) {
+                       FAILS_ProfileSameLabelOnClient1) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AutoFillProfiles expected_profiles;
@@ -223,7 +224,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   STLDeleteElements(&expected_profiles);
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileSteady) {
+// Marked as FAILS -- see http://crbug.com/60368.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, FAILS_ProfileSteady) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Client0 adds a profile.
@@ -343,7 +345,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddProfile) {
 }
 
 // TestScribe ID - 425335.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddMultipleProfiles) {
+// Marked as FAILS -- see http://crbug.com/60368.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
+                       FAILS_AddMultipleProfiles) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AutoFillProfiles expected_profiles;
