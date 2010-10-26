@@ -553,21 +553,35 @@ window_flush(struct window *window)
 	       window_attach_surface(window);
 }
 
-static void
-window_create_surface(struct window *window, struct rectangle *allocation)
+void
+window_set_surface(struct window *window, cairo_surface_t *surface)
 {
+	if (window->cairo_surface != NULL)
+		cairo_surface_destroy(window->cairo_surface);
+
+	window->cairo_surface = cairo_surface_reference(surface);
+}
+
+void
+window_create_surface(struct window *window)
+{
+	cairo_surface_t *surface;
+
 	switch (window->buffer_type) {
 #ifdef HAVE_CAIRO_GL
 	case WINDOW_BUFFER_TYPE_DRM:
-		window->cairo_surface =
-			display_create_surface(window->display, allocation);
+		surface = display_create_surface(window->display,
+						 &window->allocation);
 		break;
 #endif
 	case WINDOW_BUFFER_TYPE_SHM:
-		window->cairo_surface =
-			display_create_shm_surface(window->display, allocation);
+		surface = display_create_shm_surface(window->display,
+						     &window->allocation);
 		break;
 	}
+
+	window_set_surface(window, surface);
+	cairo_surface_destroy(surface);
 }
 
 static void
@@ -579,7 +593,7 @@ window_draw_decorations(struct window *window)
 	cairo_surface_t *frame;
 	int width, height, shadow_dx = 3, shadow_dy = 3;
 
-	window_create_surface(window, &window->allocation);
+	window_create_surface(window);
 
 	width = window->allocation.width;
 	height = window->allocation.height;
@@ -632,20 +646,11 @@ display_flush_cairo_device(struct display *display)
 	cairo_device_flush (display->device);
 }
 
-static void
-window_draw_fullscreen(struct window *window)
-{
-	window_create_surface(window, &window->allocation);
-}
-
 void
 window_draw(struct window *window)
 {
-	if (window->cairo_surface != NULL)
-		cairo_surface_destroy(window->cairo_surface);
-
 	if (window->fullscreen || !window->decoration)
-		window_draw_fullscreen(window);
+		window_create_surface(window);
 	else
 		window_draw_decorations(window);
 }
@@ -653,7 +658,7 @@ window_draw(struct window *window)
 cairo_surface_t *
 window_get_surface(struct window *window)
 {
-	return window->cairo_surface;
+	return cairo_surface_reference(window->cairo_surface);
 }
 
 enum window_location {
@@ -1444,11 +1449,13 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
+#ifdef HAVE_CAIRO_GL
 	d->device = cairo_egl_device_create(d->dpy, d->ctx);
 	if (d->device == NULL) {
 		fprintf(stderr, "failed to get cairo drm device\n");
 		return NULL;
 	}
+#endif
 
 	create_pointer_surfaces(d);
 

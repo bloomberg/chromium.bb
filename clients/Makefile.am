@@ -1,4 +1,4 @@
-noinst_PROGRAMS = gears flower screenshot terminal image view dnd
+noinst_PROGRAMS = gears flower screenshot terminal image view dnd smoke
 noinst_LTLIBRARIES = libtoytoolkit.la
 
 INCLUDES = -I$(top_srcdir)/wayland $(CLIENT_CFLAGS) $(POPPLER_CFLAGS)
@@ -17,6 +17,7 @@ libtoytoolkit_la_SOURCES =			\
 	cairo-util.h
 
 flower_SOURCES = flower.c
+smoke_SOURCES = smoke.c
 gears_SOURCES = gears.c
 screenshot_SOURCES = screenshot.c screenshooter-protocol.c
 terminal_SOURCES = terminal.c

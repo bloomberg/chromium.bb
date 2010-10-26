@@ -153,6 +153,9 @@ window_copy_surface(struct window *window,
 void
 window_flush(struct window *window);
 
+void
+window_create_surface(struct window *window);
+
 enum window_buffer_type {
 	WINDOW_BUFFER_TYPE_DRM,
 	WINDOW_BUFFER_TYPE_SHM,

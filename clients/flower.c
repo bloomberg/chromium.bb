@@ -147,6 +147,7 @@ int main(int argc, char *argv[])
 
 	draw_stuff(s, flower.width, flower.height);
 	cairo_surface_flush(s);
+	cairo_surface_destroy(s);
 	window_flush(flower.window);
 
 	window_set_user_data(flower.window, &flower);

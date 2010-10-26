@@ -166,6 +166,7 @@ dnd_draw(struct dnd *dnd)
 					       CAIRO_CONTENT_COLOR_ALPHA,
 					       rectangle.width,
 					       rectangle.height);
+	cairo_surface_destroy(wsurface);
 
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
