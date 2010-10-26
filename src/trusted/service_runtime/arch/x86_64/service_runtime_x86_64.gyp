@@ -50,21 +50,6 @@
         'tramp_64.S',
       ],
       'conditions': [
-        ['OS=="mac"', {
-          'sources' : [
-            '../../osx/nacl_signal_64.c',
-          ] },
-        ],
-        ['OS=="linux"', {
-          'sources' : [
-            '../../linux/nacl_signal_64.c',
-          ] },
-        ],
-        ['OS=="win"', {
-          'sources' : [
-            '../../win/nacl_signal_64.c',
-          ] },
-        ],
         [ 'library=="shared_library"', {
             'asflags': [
               '-fPIC',
