@@ -59,6 +59,10 @@
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -2096,6 +2100,13 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["FillAutoFillProfile"] =
       &TestingAutomationProvider::FillAutoFillProfile;
 
+  handler_map["GetActiveNotifications"] =
+      &TestingAutomationProvider::GetActiveNotifications;
+  handler_map["CloseNotification"] =
+      &TestingAutomationProvider::CloseNotification;
+  handler_map["WaitForNotificationCount"] =
+      &TestingAutomationProvider::WaitForNotificationCount;
+
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(browser, dict_value, reply_message);
   } else {
@@ -3969,6 +3980,83 @@ std::map<AutoFillFieldType, std::wstring>
   credit_card_type_to_string[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
       L"CREDIT_CARD_EXP_4_DIGIT_YEAR";
   return credit_card_type_to_string;
+}
+
+// Refer to GetActiveNotifications() in chrome/test/pyautolib/pyauto.py for
+// sample json input/output.
+void TestingAutomationProvider::GetActiveNotifications(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
+  const BalloonCollection::Balloons& balloons =
+      manager->balloon_collection()->GetActiveBalloons();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  ListValue* list = new ListValue;
+  return_value->Set("notifications", list);
+  BalloonCollection::Balloons::const_iterator iter;
+  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
+    const Notification& notification = (*iter)->notification();
+    DictionaryValue* balloon = new DictionaryValue;
+    balloon->SetString("content_url", notification.content_url().spec());
+    balloon->SetString("origin_url", notification.origin_url().spec());
+    balloon->SetString("display_source", notification.display_source());
+    list->Append(balloon);
+  }
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+// Refer to CloseNotification() in chrome/test/pyautolib/pyauto.py for
+// sample json input.
+// Returns empty json message.
+void TestingAutomationProvider::CloseNotification(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int index;
+  if (!args->GetInteger("index", &index)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "'index' missing or invalid.");
+    return;
+  }
+  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
+  BalloonCollection* collection = manager->balloon_collection();
+  const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
+  int balloon_count = static_cast<int>(balloons.size());
+  if (index < 0 || index >= balloon_count) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("No notification at index %d", index));
+    return;
+  }
+  // This will delete itself when finished.
+  new OnNotificationBalloonCountObserver(
+      this, reply_message, collection, balloon_count - 1);
+  manager->Cancel(balloons[index]->notification());
+}
+
+// Refer to WaitForNotificationCount() in chrome/test/pyautolib/pyauto.py for
+// sample json input.
+// Returns empty json message.
+void TestingAutomationProvider::WaitForNotificationCount(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int count;
+  if (!args->GetInteger("count", &count)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "'count' missing or invalid.");
+    return;
+  }
+  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
+  BalloonCollection* collection = manager->balloon_collection();
+  const BalloonCollection::Balloons& balloons = collection->GetActiveBalloons();
+  if (static_cast<int>(balloons.size()) == count) {
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    return;
+  }
+  // This will delete itself when finished.
+  new OnNotificationBalloonCountObserver(
+      this, reply_message, collection, count);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

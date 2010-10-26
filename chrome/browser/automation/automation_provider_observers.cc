@@ -4,7 +4,10 @@
 
 #include "chrome/browser/automation/automation_provider_observers.h"
 
+#include <deque>
+
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -23,6 +26,8 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
+#include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -1346,3 +1351,22 @@ void AutocompleteEditFocusedObserver::Observe(
   delete this;
 }
 
+OnNotificationBalloonCountObserver::OnNotificationBalloonCountObserver(
+    AutomationProvider* provider,
+    IPC::Message* reply_message,
+    BalloonCollection* collection,
+    int count)
+    : reply_(provider, reply_message),
+      collection_(collection),
+      count_(count) {
+  collection->set_on_collection_changed_callback(NewCallback(
+      this, &OnNotificationBalloonCountObserver::OnBalloonCollectionChanged));
+}
+
+void OnNotificationBalloonCountObserver::OnBalloonCollectionChanged() {
+  if (static_cast<int>(collection_->GetActiveBalloons().size()) == count_) {
+    collection_->set_on_collection_changed_callback(NULL);
+    reply_.SendSuccess(NULL);
+    delete this;
+  }
+}

@@ -39,6 +39,7 @@
     'imports',
     'infobars',
     'navigation',
+    'notifications',
     'omnibox',
     'passwords',
     'plugins',

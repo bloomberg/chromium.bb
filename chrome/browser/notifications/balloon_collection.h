@@ -10,6 +10,9 @@
 
 #include <deque>
 
+#include "base/callback.h"
+#include "base/scoped_ptr.h"
+
 class Balloon;
 class Notification;
 class Profile;
@@ -68,9 +71,17 @@ class BalloonCollection {
     space_change_listener_ = listener;
   }
 
+  void set_on_collection_changed_callback(Callback0::Type* callback) {
+    on_collection_changed_callback_.reset(callback);
+  }
+
  protected:
   // Non-owned pointer to an object listening for space changes.
   BalloonSpaceChangeListener* space_change_listener_;
+
+  // For use only with testing. This callback is invoked when a balloon
+  // is added or removed from the collection.
+  scoped_ptr<Callback0::Type> on_collection_changed_callback_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_COLLECTION_H_

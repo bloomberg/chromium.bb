@@ -637,6 +637,24 @@ class TestingAutomationProvider : public AutomationProvider,
   static std::map<AutoFillFieldType, std::wstring>
       GetCreditCardFieldToStringMap();
 
+  // Get a list of active HTML5 notifications.
+  // Uses the JSON interface for input/output.
+  void GetActiveNotifications(Browser* browser,
+                              DictionaryValue* args,
+                              IPC::Message* reply_message);
+
+  // Close an active HTML5 notification.
+  // Uses the JSON interface for input/output.
+  void CloseNotification(Browser* browser,
+                         DictionaryValue* args,
+                         IPC::Message* reply_message);
+
+  // Waits for the number of active HTML5 notifications to reach a given count.
+  // Uses the JSON interface for input/output.
+  void WaitForNotificationCount(Browser* browser,
+                                DictionaryValue* args,
+                                IPC::Message* reply_message);
+
   void WaitForTabCountToBecome(int browser_handle,
                                int target_tab_count,
                                IPC::Message* reply_message);

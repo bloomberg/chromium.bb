@@ -1,0 +1,98 @@
+<html>
+<!--notification_tester.html
+Script with javascript functions for creating and canceling notifications.
+Also can be used to request permission for notifications.
+-->
+<script>
+
+// Array of all notifications this page has created.
+var g_notifications = [];
+// Whether the site has requested and been granted permission.
+var g_permissionGranted = false;
+
+// Creates a notification with a iconUrl, title, text, and replaceId.
+// Returns an id for the notification, which can be used to cancel it with
+// |cancelNotification|. If two notifications are created with the same
+// replaceId, the second one should replace the first.
+function createNotification(iconUrl, title, text, replaceId) {
+  try {
+    var note = webkitNotifications.createNotification(iconUrl,
+                                                      title,
+                                                      text);
+  } catch (exception)  {
+    sendResultToTest(-1);
+    return;
+  }
+  sendResultToTest(createNotificationHelper(note, replaceId));
+}
+
+// Creates an HTML notification with a given content url.
+// Returns an id for the notification, which can be used to cancel it with
+// |cancelNotification|. If two notifications are created with the same
+// replaceId, the second one should replace the first. If the notification
+// cannot be created, this returns -1.
+function createHTMLNotification(contentUrl, replaceId) {
+  try {
+    var note = webkitNotifications.createHTMLNotification(contentUrl);
+  } catch (exception)  {
+    sendResultToTest(-1);
+    return;
+  }
+  sendResultToTest(createNotificationHelper(note, replaceId));
+}
+
+// Cancels a notification with the given id. Returns 1 on success.
+function cancelNotification(id) {
+  if (id < 0 || id > g_notifications.length) {
+    var errorMsg = "Attempted to cancel notification with invalid ID.\n" +
+        "ID: " + id + "\n# of notifications: " + g_notifications.length;
+    window.domAutomationController.send(errorMsg);
+    alert(errorMsg);
+  }
+  g_notifications[id].cancel();
+  sendResultToTest(1);
+}
+
+// Requests permission for this origin to create notifications.
+function requestPermission() {
+  window.webkitNotifications.requestPermission(onPermissionGranted);
+  sendResultToTest(1);
+}
+
+// Waits for the permission to create notifications to be granted.
+function waitForPermissionGranted() {
+  if (g_permissionGranted) {
+    sendResultToTest(1);
+  } else {
+    setTimeout(waitForPermissionGranted, 50);
+  }
+}
+
+// Callback for requesting notification privileges.
+function onPermissionGranted() {
+  g_permissionGranted = true;
+}
+
+// Helper function that shows the notification and adds it to
+// |g_notifications|.
+function createNotificationHelper(note, replaceId) {
+  note.show();
+  // |push| returns the length of the array after the add.
+  return g_notifications.push(note) - 1;
+}
+
+// Sends a result back to the main test logic.
+function sendResultToTest(result) {
+  // Convert the result to a string.
+  var stringResult = "" + result;
+  if (typeof stringResult != "string")
+    stringResult = JSON.stringify(result);
+  window.domAutomationController.send(stringResult);
+}
+
+</script>
+
+<body>
+This page is used for testing HTML5 notifications.
+</body>
+</html>

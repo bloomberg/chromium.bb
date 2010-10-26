@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/download/download_item.h"
@@ -27,6 +28,7 @@
 
 class AutocompleteEditModel;
 class AutomationProvider;
+class BalloonCollection;
 class Browser;
 class Extension;
 class ExtensionProcessManager;
@@ -887,5 +889,25 @@ class AutocompleteEditFocusedObserver : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
 };
+
+// Allows the automation provider to wait for a given number of
+// notification balloons.
+class OnNotificationBalloonCountObserver {
+ public:
+  OnNotificationBalloonCountObserver(AutomationProvider* provider,
+                                     IPC::Message* reply_message,
+                                     BalloonCollection* collection,
+                                     int count);
+
+  void OnBalloonCollectionChanged();
+
+ private:
+  AutomationJSONReply reply_;
+  BalloonCollection* collection_;
+  int count_;
+
+  DISALLOW_COPY_AND_ASSIGN(OnNotificationBalloonCountObserver);
+};
+
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

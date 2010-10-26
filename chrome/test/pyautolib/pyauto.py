@@ -188,6 +188,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       return 'file://' + quoted_path
 
   @staticmethod
+  def GetFileURLForDataPath(relative_path):
+    """Get file:// url for the given path relative to the chrome test data dir.
+
+    Also quotes the url using urllib.quote().
+    """
+    return PyUITest.GetFileURLForPath(
+        os.path.join(PyUITest.DataDir(), relative_path))
+
+  @staticmethod
   def IsMac():
     """Are we on Mac?"""
     return 'darwin' == sys.platform
@@ -1496,6 +1505,60 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'command': 'GetThemeInfo',
     }
     return self._GetResultFromJSONRequest(cmd_dict)
+
+  def GetActiveNotifications(self):
+    """Gets a list of the currently active/shown HTML5 notifications.
+
+    Returns:
+      a list containing info about each active notification, with the
+      first item in the list being the notification on the bottom of the
+      notification stack. The 'content_url' key can refer to a URL or a data
+      URI.
+
+    SAMPLE:
+    [ { u'content_url': u'data:text/html;charset=utf-8,%3C!DOCTYPE%l%3E%0Atm...'
+        u'display_source': 'www.corp.google.com',
+        u'origin_url': 'http://www.corp.google.com/'},
+      { u'content_url': 'http://www.gmail.com/special_notification.html',
+        u'display_source': 'www.gmail.com',
+        u'origin_url': 'http://www.gmail.com/'}]
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'GetActiveNotifications',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['notifications']
+
+  def CloseNotification(self, index):
+    """Closes the active HTML5 notification at the given index.
+
+    Args:
+      index: the index of the notification to close. 0 refers to the
+             notification on the bottom of the notification stack.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'CloseNotification',
+      'index': index,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
+  def WaitForNotificationCount(self, count):
+    """Waits for the number of active HTML5 notifications to reach the given
+    count.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'WaitForNotificationCount',
+      'count': count,
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
 
   def FindInPage(self, search_string, forward=True,
                  match_case=False, find_next=False,

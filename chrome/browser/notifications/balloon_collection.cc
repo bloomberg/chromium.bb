@@ -68,6 +68,10 @@ void BalloonCollectionImpl::Add(const Notification& notification,
   // There may be no listener in a unit test.
   if (space_change_listener_)
     space_change_listener_->OnBalloonSpaceChanged();
+
+  // This is used only for testing.
+  if (on_collection_changed_callback_.get())
+    on_collection_changed_callback_->Run();
 }
 
 bool BalloonCollectionImpl::Remove(const Notification& notification) {
@@ -148,6 +152,10 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // There may be no listener in a unit test.
   if (space_change_listener_)
     space_change_listener_->OnBalloonSpaceChanged();
+
+  // This is used only for testing.
+  if (on_collection_changed_callback_.get())
+    on_collection_changed_callback_->Run();
 }
 
 void BalloonCollectionImpl::PositionBalloonsInternal(bool reposition) {
