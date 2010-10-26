@@ -14,4 +14,4 @@
 ; *** The contents of chrome/common/common.sb are implicitly included here. ***
 
 ; Enable full access to given directory if needed.
-;ENABLE_DIRECTORY_ACCESS (allow file-read* file-write* (regex #"DIR_TO_ALLOW_ACCESS"))
+;ENABLE_DIRECTORY_ACCESS

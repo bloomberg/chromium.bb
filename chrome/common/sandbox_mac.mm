@@ -242,6 +242,78 @@ void SandboxWarmup() {
   }
 }
 
+// Build the Sandbox command necessary to allow access to a named directory
+// indicated by |allowed_dir|.
+// returns a string containing the sandbox profile commands necesary to allow
+// access to that directory or nil if an error occured.
+NSString* BuildAllowDirectoryAccessSandboxString(const FilePath& allowed_dir) {
+  // A whitelist is used to determine which directories can be statted
+  // This means that in the case of an /a/b/c/d/ directory, we may be able to
+  // stat the leaf directory, but not it's parent.
+  // The extension code in Chrome calls realpath() which fails if it can't call
+  // stat() on one of the parent directories in the path.
+  // The solution to this is to allow statting the parent directories themselves
+  // but not their contents.  We need to add a separate rule for each parent
+  // directory.
+
+  // The sandbox only understands "real" paths.  This resolving step is
+  // needed so the caller doesn't need to worry about things like /var
+  // being a link to /private/var (like in the paths CreateNewTempDirectory()
+  // returns).
+  FilePath allowed_dir_canonical(allowed_dir);
+  GetCanonicalSandboxPath(&allowed_dir_canonical);
+
+  // Collect a list of all parent directories.
+  FilePath last_path = allowed_dir_canonical;
+  std::vector<FilePath> subpaths;
+  for (FilePath path = allowed_dir_canonical.DirName();
+       path.value() != last_path.value();
+       path = path.DirName()) {
+    subpaths.push_back(path);
+    last_path = path;
+  }
+
+  // Iterate through all parents and allow stat() on them explicitly.
+  NSString* sandbox_command = @"(allow file-read-metadata ";
+  for (std::vector<FilePath>::reverse_iterator i = subpaths.rbegin();
+       i != subpaths.rend();
+       ++i) {
+    std::string subdir_escaped;
+    if (!QuotePlainString(i->value(), &subdir_escaped)) {
+      LOG(FATAL) << "String quoting failed " << i->value();
+      return nil;
+    }
+
+    NSString* subdir_escaped_ns =
+        base::SysUTF8ToNSString(subdir_escaped.c_str());
+    sandbox_command =
+        [sandbox_command stringByAppendingFormat:@"(literal \"%@\")",
+            subdir_escaped_ns];
+  }
+
+  // Finally append the leaf directory.  Unlike it's parents (for which only
+  // stat() should be allowed), the leaf directory needs full access.
+  sandbox_command =
+      [sandbox_command
+          stringByAppendingString:@") (allow file-read* file-write* "];
+
+  std::string allowed_dir_escaped;
+  if (!QuoteStringForRegex(allowed_dir_canonical.value(),
+                           &allowed_dir_escaped)) {
+    LOG(FATAL) << "Regex string quoting failed "
+               << allowed_dir_canonical.value();
+    return nil;
+  }
+
+  NSString* allowed_dir_canonical_ns =
+      base::SysUTF8ToNSString(allowed_dir_escaped.c_str());
+  sandbox_command =
+      [sandbox_command stringByAppendingFormat:@"(regex #\"%@\") )",
+          allowed_dir_canonical_ns];
+
+  return sandbox_command;
+}
+
 // Turns on the OS X sandbox for this process.
 bool EnableSandbox(SandboxProcessType sandbox_type,
                    const FilePath& allowed_dir) {
@@ -341,28 +413,14 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
   }
 
   if (!allowed_dir.empty()) {
-    // The sandbox only understands "real" paths.  This resolving step is
-    // needed so the caller doesn't need to worry about things like /var
-    // being a link to /private/var (like in the paths CreateNewTempDirectory()
-    // returns).
-    FilePath allowed_dir_canonical(allowed_dir);
-    GetCanonicalSandboxPath(&allowed_dir_canonical);
+    NSString* allowed_dir_sandbox_command =
+        BuildAllowDirectoryAccessSandboxString(allowed_dir);
 
-    std::string allowed_dir_escaped;
-    if (!QuoteStringForRegex(allowed_dir_canonical.value(),
-                             &allowed_dir_escaped)) {
-      LOG(FATAL) << "Regex string quoting failed " << allowed_dir.value();
-      return false;
+    if (allowed_dir_sandbox_command) {  // May be nil if function fails.
+      sandbox_data = [sandbox_data
+          stringByReplacingOccurrencesOfString:@";ENABLE_DIRECTORY_ACCESS"
+                                    withString:allowed_dir_sandbox_command];
     }
-    NSString* allowed_dir_escaped_ns = base::SysUTF8ToNSString(
-        allowed_dir_escaped.c_str());
-    sandbox_data = [sandbox_data
-        stringByReplacingOccurrencesOfString:@";ENABLE_DIRECTORY_ACCESS"
-                                  withString:@""];
-    sandbox_data = [sandbox_data
-        stringByReplacingOccurrencesOfString:@"DIR_TO_ALLOW_ACCESS"
-                                  withString:allowed_dir_escaped_ns];
-
   }
 
   if (snow_leopard_or_higher) {

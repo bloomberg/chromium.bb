@@ -24,12 +24,14 @@ namespace sandbox {
 
 bool QuotePlainString(const std::string& str_utf8, std::string* dst);
 bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst);
+NSString* BuildAllowDirectoryAccessSandboxString(const FilePath& allowed_dir);
 
 }  // namespace sandbox
 
 namespace {
 
 static const char* kSandboxAccessPathKey = "sandbox_dir";
+static const char* kDeniedSuffix = "_denied";
 
 class MacDirAccessSandboxTest : public base::MultiProcessTest {
  public:
@@ -143,8 +145,9 @@ class ScopedDirectoryDelete {
 
 typedef scoped_ptr_malloc<FilePath, ScopedDirectoryDelete> ScopedDirectory;
 
-// Crashy, http://crbug.com/56765.
-TEST_F(MacDirAccessSandboxTest, DISABLED_SandboxAccess) {
+TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
+  using file_util::CreateDirectory;
+
   FilePath tmp_dir;
   ASSERT_TRUE(file_util::CreateNewTempDirectory("", &tmp_dir));
   // This step is important on OS X since the sandbox only understands "real"
@@ -162,8 +165,18 @@ TEST_F(MacDirAccessSandboxTest, DISABLED_SandboxAccess) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(sandbox_dir_cases); ++i) {
     const char* sandbox_dir_name = sandbox_dir_cases[i];
     FilePath sandbox_dir = tmp_dir.Append(sandbox_dir_name);
-    ASSERT_TRUE(file_util::CreateDirectory(sandbox_dir));
+    ASSERT_TRUE(CreateDirectory(sandbox_dir));
     ScopedDirectory cleanup_sandbox(&sandbox_dir);
+
+    // Create a sibling directory of the sandbox dir, whose name has sandbox dir
+    // as a substring but to which access is denied.
+    std::string sibling_sandbox_dir_name_denied =
+        std::string(sandbox_dir_cases[i]) + kDeniedSuffix;
+    FilePath sibling_sandbox_dir = tmp_dir.Append(
+                                      sibling_sandbox_dir_name_denied.c_str());
+    ASSERT_TRUE(CreateDirectory(sibling_sandbox_dir));
+    ScopedDirectory cleanup_sandbox_sibling(&sibling_sandbox_dir);
+
     EXPECT_TRUE(CheckSandbox(sandbox_dir.value()));
   }
 }
@@ -173,14 +186,13 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
   if (!sandbox_allowed_dir)
     return -1;
 
-  // Build up a sandbox profile that only allows access to DIR_TO_ALLOW_ACCESS.
+  // Build up a sandbox profile that only allows access to a single directory.
   NSString *sandbox_profile =
       @"(version 1)" \
       "(deny default)" \
       "(allow signal (target self))" \
       "(allow sysctl-read)" \
-      "(allow file-read-metadata)" \
-      "(allow file-read* file-write* (regex #\"DIR_TO_ALLOW_ACCESS\"))";
+      ";ENABLE_DIRECTORY_ACCESS";
 
   std::string allowed_dir(sandbox_allowed_dir);
   std::string allowed_dir_escaped;
@@ -188,11 +200,12 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
     LOG(ERROR) << "Regex string quoting failed " << allowed_dir;
     return -1;
   }
-  NSString* allowed_dir_escaped_ns = base::SysUTF8ToNSString(
-        allowed_dir_escaped.c_str());
+  NSString* allow_dir_sandbox_code =
+      sandbox::BuildAllowDirectoryAccessSandboxString(
+          FilePath(sandbox_allowed_dir));
   sandbox_profile = [sandbox_profile
-      stringByReplacingOccurrencesOfString:@"DIR_TO_ALLOW_ACCESS"
-                                withString:allowed_dir_escaped_ns];
+      stringByReplacingOccurrencesOfString:@";ENABLE_DIRECTORY_ACCESS"
+                                withString:allow_dir_sandbox_code];
   // Enable Sandbox.
   char* error_buff = NULL;
   int error = sandbox_init([sandbox_profile UTF8String], 0, &error_buff);
@@ -223,14 +236,52 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
   // Try to write a file who's name has the same prefix as the directory we
   // allow access to.
   FilePath basename = allowed_dir_path.BaseName();
+  FilePath allowed_parent_dir = allowed_dir_path.DirName();
   std::string tricky_filename = basename.value() + "123";
-  FilePath denied_file2 =  allowed_dir_path.DirName().Append(tricky_filename);
+  FilePath denied_file2 =  allowed_parent_dir.Append(tricky_filename);
 
   if (open(allowed_file.value().c_str(), O_WRONLY | O_CREAT) <= 0) {
     PLOG(ERROR) << "Sandbox overly restrictive: failed to write ("
                 << allowed_file.value()
                 << ")";
     return -1;
+  }
+
+  // Test that we deny access to a sibling of the sandboxed directory whose
+  // name has the sandboxed directory name as a substring. e.g. if the sandbox
+  // directory is /foo/baz then test /foo/baz_denied.
+  {
+    struct stat tmp_stat_info;
+    std::string denied_sibling =
+        std::string(sandbox_allowed_dir) + kDeniedSuffix;
+    if (stat(denied_sibling.c_str(), &tmp_stat_info) > 0) {
+      PLOG(ERROR) << "Sandbox breach: was able to stat ("
+                  << denied_sibling.c_str()
+                  << ")";
+      return -1;
+    }
+  }
+
+  // Test that we can stat parent directories of the "allowed" directory.
+  {
+    struct stat tmp_stat_info;
+    if (stat(allowed_parent_dir.value().c_str(), &tmp_stat_info) != 0) {
+      PLOG(ERROR) << "Sandbox overly restrictive: unable to stat ("
+                  << allowed_parent_dir.value()
+                  << ")";
+      return -1;
+    }
+  }
+
+  // Test that we can't stat files outside the "allowed" directory.
+  {
+    struct stat tmp_stat_info;
+    if (stat(denied_file1.value().c_str(), &tmp_stat_info) > 0) {
+      PLOG(ERROR) << "Sandbox breach: was able to stat ("
+                  << denied_file1.value()
+                  << ")";
+      return -1;
+    }
   }
 
   if (open(denied_file1.value().c_str(), O_WRONLY | O_CREAT) > 0) {
