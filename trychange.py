@@ -336,7 +336,7 @@ def _SendChangeHTTP(options):
   try:
     connection = urllib.urlopen(url, urllib.urlencode(values), proxies=proxies)
   except IOError, e:
-    logging.warning(str(e))
+    logging.info(str(e))
     if (values.get('bot') and len(e.args) > 2 and
         e.args[2] == 'got a bad status line'):
       raise NoTryServerAccess('%s is unaccessible. Bad --bot argument?' % url)
@@ -444,7 +444,7 @@ def GuessVCS(options, path):
     if e.returncode != errno.ENOENT and e.returncode != 128:
       # ENOENT == 2 = they don't have git installed.
       # 128 = git error code when not in a repo.
-      logging.warn('Unexpected error code: %s' % e.returncode)
+      logging.warning('Unexpected error code: %s' % e.returncode)
       raise
   raise NoTryServerAccess("Could not guess version control system. "
                           "Are you in a working copy directory?")
