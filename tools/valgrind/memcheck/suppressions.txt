@@ -3077,3 +3077,26 @@
    ...
    fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
 }
+{
+   bug_60656
+   Memcheck:Overlap
+   fun:strcpy
+   fun:lFloatConst
+   fun:byte_scan
+   fun:yylex_CPP
+   fun:_Z8yy_inputPci
+   fun:_Z18yy_get_next_bufferv
+   fun:_Z5yylexP7YYSTYPEPv
+   fun:_Z7yyparsePv
+   fun:_Z14PaParseStringsPKPKcPKiiR13TParseContext
+   fun:_ZN9TCompiler7compileEPKPKcii
+   fun:ShCompile
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl25angleValidateShaderSourceERNS0_17ShaderSourceEntryE
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl13compileShaderEj
+   fun:_ZN7WebCore25GraphicsContext3DInternal13compileShaderEi
+   fun:_ZN7WebCore17GraphicsContext3D13compileShaderEi
+   fun:_ZN7WebCore21WebGLRenderingContext13compileShaderEPNS_11WebGLShaderERi
+   fun:_ZN7WebCore29WebGLRenderingContextInternal21compileShaderCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal19HandleApiCallHelperILb0EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_03DBA2A116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
+}
+
