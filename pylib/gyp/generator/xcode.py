@@ -151,15 +151,35 @@ class XcodeProject(object):
     xccl.SetBuildSetting(_shared_intermediate_var,
                          '$(SYMROOT)/DerivedSources/$(CONFIGURATION)')
 
-    # Set user-specified project-wide build settings.  This is intended to be
-    # used very sparingly.  Really, almost everything should go into
-    # target-specific build settings sections.  The project-wide settings are
-    # only intended to be used in cases where Xcode attempts to resolve
-    # variable references in a project context as opposed to a target context,
-    # such as when resolving sourceTree references while building up the tree
-    # tree view for UI display.
+    # Set user-specified project-wide build settings and config files.  This
+    # is intended to be used very sparingly.  Really, almost everything should
+    # go into target-specific build settings sections.  The project-wide
+    # settings are only intended to be used in cases where Xcode attempts to
+    # resolve variable references in a project context as opposed to a target
+    # context, such as when resolving sourceTree references while building up
+    # the tree tree view for UI display.
+    # Any values set globally are applied to all configurations, then any
+    # per-configuration values are applied.
     for xck, xcv in self.build_file_dict.get('xcode_settings', {}).iteritems():
       xccl.SetBuildSetting(xck, xcv)
+    if 'xcode_config_file' in self.build_file_dict:
+      config_ref = self.project.AddOrGetFileInRootGroup(
+          self.build_file_dict['xcode_config_file'])
+      xccl.SetBaseConfiguration(config_ref)
+    build_file_configurations = self.build_file_dict.get('configurations', {})
+    if build_file_configurations:
+      for config_name in configurations:
+        build_file_configuration_named = \
+            build_file_configurations.get(config_name, {})
+        if build_file_configuration_named:
+          xcc = xccl.ConfigurationNamed(config_name)
+          for xck, xcv in build_file_configuration_named.get('xcode_settings',
+                                                             {}).iteritems():
+            xcc.SetBuildSetting(xck, xcv)
+          if 'xcode_config_file' in build_file_configuration_named:
+            config_ref = self.project.AddOrGetFileInRootGroup(
+                build_file_configurations[config_name]['xcode_config_file'])
+            xcc.SetBaseConfiguration(config_ref)
 
     # Sort the targets based on how they appeared in the input.
     # TODO(mark): Like a lot of other things here, this assumes internal
