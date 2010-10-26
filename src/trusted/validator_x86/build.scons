@@ -213,7 +213,7 @@ if test_env['TARGET_SUBARCH'] == '32':
 
     node = test_env.CommandTest(
         'ncdecode_tests.out',
-        [ncdecode_tests[0]],
+        [ncdecode_tests],
         )
 
     test_env.AddNodeToTestSuite(node, ['small_tests'])
@@ -247,7 +247,7 @@ if test_env['TARGET_SUBARCH'] == '32':
 
   node = test_env.CommandTest(
       'ncval_tests.out',
-      [ncval_tests[0]],
+      [ncval_tests],
       )
 
   test_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
@@ -262,7 +262,7 @@ if test_env['TARGET_SUBARCH'] == '32':
 
   node = test_env.CommandTest(
       'nacl_cpuid_test.out',
-      [nacl_cpuid[0]])
+      [nacl_cpuid])
 
   test_env.AddNodeToTestSuite(node, ['large_tests'])
 
@@ -326,7 +326,7 @@ ncdis_input_golden = test_env.File(TESTDATA_DIR + 'ncdis_test.input')
 
 ncdis_test = test_env.CommandTest(
     NCDIS_TEST_NAME + '.out',
-    [ncdis[0] , '--use_iter=false', '--self_document', '--commands=-'],
+    [ncdis , '--use_iter=false', '--self_document', '--commands=-'],
     stdin=ncdis_input_golden,
     stdout_golden=ncdis_input_golden)
 
@@ -341,7 +341,7 @@ ncdis_iter_input_golden = test_env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
 
 ncdis_iter_test = test_env.CommandTest(
     NCDIS_ITER_TEST_NAME + '.out',
-    [ncdis[0] , '--use_iter', '--self_document', '--commands=-'],
+    [ncdis , '--use_iter', '--self_document', '--commands=-'],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_input_golden)
 
@@ -356,7 +356,7 @@ ncdis_iter_internal_golden = test_env.File(TESTDATA_DIR +
 
 ncdis_internal_test = test_env.CommandTest(
     NCDIS_ITER_TEST_NAME + "_int.out",
-    [ncdis[0], "--use_iter", "--internal", "--commands=-"],
+    [ncdis, "--use_iter", "--internal", "--commands=-"],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_internal_golden)
 
@@ -396,7 +396,7 @@ if env['TARGET_SUBARCH'] == '32':
   for base in __GoldenBases(ext):
     node = test_env.CommandTest(
         __OutTestFile(test, base, ext),
-        [ncval[0], '-t', __BaseTestFile(base, ext)],
+        [ncval, '-t', __BaseTestFile(base, ext)],
         )
     __AddTest(test, base, ext, node, ['large_tests'])
 
@@ -416,7 +416,7 @@ def __AddNcDisTests(use_iter):
   for base in __GoldenBases(ext):
     node_dis = test_env.CommandTest(
         __OutTestFile(test, base, ext),
-        [ncdis[0]] + options,
+        [ncdis] + options,
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
     __AddTest(test, base, ext, node_dis,
@@ -435,7 +435,7 @@ def __AddNcvalSfiTests(test_readwrite):
     else:
       ext = 'val'
     for base in __GoldenBases(ext):
-      command = [ncval[0], '--use_iter', '--hex_text=-', '--max_errors=1000']
+      command = [ncval, '--use_iter', '--hex_text=-', '--max_errors=1000']
       if test_readwrite:
         command.append('--readwrite_sfi')
       else:
@@ -456,7 +456,7 @@ def __AddNcvalSegmentTests():
     test = 'ncval32_hex'
     ext = 'nval'
     for base in __GoldenBases(ext):
-      command = [ncval[0],
+      command = [ncval,
                  '--use_iter=false',
                  '--hex_text=-',
                  '--max_errors=1000']
@@ -484,7 +484,7 @@ def __AddNcValStuboutTests(use_sfi):
       ext = 'snval'
       options.append('--use_iter=false')
     for base in __GoldenBases(ext):
-      command = [ncval[0]] + options
+      command = [ncval] + options
       node_stubout = test_env.CommandTest(
           __OutTestFile(test, base, ext),
           command,
@@ -501,7 +501,7 @@ def __AddModeledInstsTest():
   test = 'test'
   base = 'modeled_insts'
   ext = 'txt'
-  command = [ncdecode_tablegen[0],
+  command = [ncdecode_tablegen,
              '-m%s' % (env['TARGET_SUBARCH']),
              '-documentation']
   model = test_env.CommandTest(
@@ -523,7 +523,7 @@ def __AddNegMaxErrors():
     ext = 'nval'
     node_val = test_env.CommandTest(
         __OutTestFile(test, base, ext),
-        [ncval[0], '--use_iter=false', '--max_errors=-1', '--hex_text=-'],
+        [ncval, '--use_iter=false', '--max_errors=-1', '--hex_text=-'],
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
     __AddTest(test, base, ext, node_val,

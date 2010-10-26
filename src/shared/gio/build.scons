@@ -84,7 +84,7 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
   temppath = tempfile.NamedTemporaryFile(prefix="gio", suffix=".tmp").name
   node = gtest_env.CommandTest(
       'gio_test_output.xml.out',
-      command=[gio_test_exe[0], # [0] to omit misc bits for argv[]...
+      command=[gio_test_exe,
                '--gtest_output=xml:${TARGET}',
                '-t', temppath,
      # Note: to regenerate the premade_text/binary_file, use "make_premade.py"

@@ -292,8 +292,8 @@ def ComponentLibrary(self, lib_name, *args, **kwargs):
     env['PROGRAM_BASENAME'] = lib_name
     env.Defer(ComponentProgramDeferred)
 
-  # Return the library outputs
-  return lib_outputs
+  # Return the library
+  return lib_outputs[0]
 
 #------------------------------------------------------------------------------
 
@@ -475,8 +475,8 @@ def ComponentProgram(self, prog_name, *args, **kwargs):
   # Set up deferred call to replicate resources
   env.Defer(ComponentProgramDeferred)
 
-  # Return the output nodes
-  return out_nodes
+  # Return the executable
+  return out_nodes[0]
 
 #------------------------------------------------------------------------------
 

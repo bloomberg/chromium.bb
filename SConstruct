@@ -989,6 +989,12 @@ def CommandTest(env, name, command, size='small',
   # extract deps from command and rewrite
   for n, c in enumerate(command):
     if type(c) != str:
+      if len(Flatten(c)) != 1:
+        # Do not allow this, because it would cause "deps" to get out
+        # of sync with the indexes in "command".
+        # See http://code.google.com/p/nativeclient/issues/detail?id=1086
+        raise AssertionError('Argument to CommandTest() actually contains '
+                             'multiple arguments: %r' % c)
       deps.append(c)
       command[n] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
 

@@ -68,7 +68,7 @@ sel_ldr = trusted_env.File(
 log_file = env.File('fake_browser_log_file.out').abspath
 if not trusted_env.get('COVERAGE_ENABLED') or not trusted_env.Bit('windows'):
   node = env.CommandTest('fake_browser_test.out',
-                         [fake_browser[0], plugin,
+                         [fake_browser, plugin,
                           'srpc_hw.nexe', srpc_hello_world_prog,
                           'npapi_hw.nexe', npapi_hello_world_prog,
                           'async_message_test.nexe', async_message_prog,

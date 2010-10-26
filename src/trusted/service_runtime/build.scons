@@ -334,7 +334,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
                                                       + DEBUG_LIBS)
 
   # we need this to build the plugin, so register it here
-  env.AddPluginPrerequisite(SEL_LDR_NODE[0])
+  env.AddPluginPrerequisite(SEL_LDR_NODE)
 
   # NOTE: we do not have segments on ARM
   if env['BUILD_ARCHITECTURE'] == 'x86':
@@ -447,9 +447,7 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
   # TODO(robertm): This test emits lots of messages to stderr
   node = sdl_env.CommandTest (
       "mmap_test.out",
-      # NOTE: the "[0]" subscript make this work on windows
-      # TODO: maybe move this magic into CommandTest()
-      command=[mmap_test_exe[0],
+      command=[mmap_test_exe,
                env.File(arch_testdata_dir + '/hello_world.nexe')],
       # TODO(mseaborn): Extend this test to cover the case where the
       # dynamic code segment is present.

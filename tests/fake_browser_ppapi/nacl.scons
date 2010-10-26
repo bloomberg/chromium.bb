@@ -73,7 +73,7 @@ sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 log_file = env.File('fake_browser_ppapi.out').abspath
 
 node = env.CommandTest('fake_browser_ppapi.out',
-                       [fake_browser[0],
+                       [fake_browser,
                         plugin,
                         'http://localhost:5103/basic_object.html',
                         '"id=nacl_module;src=ppapi_basic_object.nexe"',
