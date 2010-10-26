@@ -18,22 +18,4 @@ class RegKey : public base::win::RegKey {
   ~RegKey() { base::win::RegKey::~RegKey(); }
 };
 
-class RegistryValueIterator : public base::win::RegistryValueIterator {
- public:
-  RegistryValueIterator(HKEY root_key, const wchar_t* folder_key)
-      : base::win::RegistryValueIterator(root_key, folder_key) {}
-  ~RegistryValueIterator() {
-    base::win::RegistryValueIterator::~RegistryValueIterator();
-  }
-};
-
-class RegistryKeyIterator : public base::win::RegistryKeyIterator {
- public:
-  RegistryKeyIterator(HKEY root_key, const wchar_t* folder_key)
-      : base::win::RegistryKeyIterator(root_key, folder_key) {}
-  ~RegistryKeyIterator() {
-    base::win::RegistryKeyIterator::~RegistryKeyIterator();
-  }
-};
-
 #endif  // BASE_REGISTRY_H_
