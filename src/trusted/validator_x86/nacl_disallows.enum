@@ -31,3 +31,6 @@ NaClRepDisallowed
 
 # Flag defining that instruction has REPNE prefix but isn't allowed.
 NaClRepneDisallowed
+
+# Flag defining that instruction has 66 prefix (data 16) flag but isn't allowed.
+NaClData16Disallowed

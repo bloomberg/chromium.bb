@@ -94,6 +94,9 @@ OpcodeAllowsRep
 # Defines that the opcode can be prefixed with a REPNE prefix.
 OpcodeAllowsRepne
 
+# Defines that the opcode can be prefixed with a DATA16 prefix.
+OpcodeAllowsData16
+
 # Opcode only applies if running in 32-bit mode.
 Opcode32Only
 

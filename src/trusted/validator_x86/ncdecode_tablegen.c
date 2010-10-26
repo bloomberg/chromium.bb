@@ -1029,6 +1029,8 @@ void NaClDefOp(
   }
   /* If one of the M_Operands, make sure that the ModRm mod field isn't 0x3,
    * so that we don't return registers.
+   * If one specifies an operand that implies the use of a ModRm byte, add
+   * the corresponding flag.
    */
   switch (kind) {
     case M_Operand:
@@ -1040,11 +1042,11 @@ void NaClDefOp(
     case Mpw_Operand:
     case Mpv_Operand:
     case Mpo_Operand:
-      NaClAddIFlags(NACL_IFLAG(ModRmModIsnt0x3));
+      NaClAddIFlags(NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(ModRmModIsnt0x3));
       break;
     case Mmx_N_Operand:
       kind = Mmx_E_Operand;
-      NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
+      NaClAddIFlags(NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(ModRmModIs0x3));
       /* Automatically fall to the next case. */
     case E_Operand:
     case Eb_Operand:
@@ -1064,10 +1066,7 @@ void NaClDefOp(
     case Xmm_Eo_Operand:
     case Xmm_G_Operand:
     case Xmm_Go_Operand:
-      if (NACL_EMPTY_IFLAGS ==
-          (current_inst->flags & NACL_IFLAG(OpcodeInModRm))) {
-        NaClAddIFlags(NACL_IFLAG(OpcodeUsesModRm));
-      }
+      NaClAddIFlags(NACL_IFLAG(OpcodeUsesModRm));
       break;
     default:
       break;
@@ -1151,10 +1150,6 @@ static Bool NaClIFlagsMatchesRunMode(NaClIFlags flags) {
 static void NaClApplySanityChecksToInst() {
   const NaClIFlags operand_sizes = NaClOperandSizes(current_inst);
   if (!apply_sanity_checks) return;
-  if ((current_inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
-      (current_inst->flags & NACL_IFLAG(OpcodeUsesModRm))) {
-    NaClFatalInst("OpcodeInModRm automatically implies OpcodeUsesModRm");
-  }
   if ((current_inst->flags & NACL_IFLAG(Opcode32Only)) &&
       (current_inst->flags & NACL_IFLAG(Opcode64Only))) {
     NaClFatalInst("Can't be both Opcode32Only and Opcode64Only");
@@ -1388,6 +1383,11 @@ void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
  */
 static void NaClAddRepPrefixFlagsIfApplicable() {
   switch (current_opcode_prefix) {
+    case Prefix660F:
+    case Prefix660F38:
+    case Prefix660F3A:
+      current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16);
+      break;
     case PrefixF20F:
     case PrefixF20F38:
       current_inst->flags |= NACL_IFLAG(OpcodeAllowsRepne);
@@ -1452,7 +1452,7 @@ static void NaClDefInstInternal(
   current_inst = &(current_inst_mrm->inst);
   NaClDefBytes(opcode);
   current_inst->insttype = insttype;
-  current_inst->flags = flags;
+  current_inst->flags = NACL_EMPTY_IFLAGS;
   current_inst->name = name;
   current_inst->operands_desc = NULL;
   current_inst->next_rule = NULL;
@@ -1464,6 +1464,8 @@ static void NaClDefInstInternal(
   }
   /* Now reset number of operands to zero. */
   current_inst->num_operands = 0;
+
+  NaClAddIFlags(flags);
 
   NaClAddRepPrefixFlagsIfApplicable();
 
@@ -1596,6 +1598,16 @@ static void NaClRecheckIFlags() {
   if (!NaClIFlagsMatchesRunMode(current_inst->flags)) {
     NaClRemoveCurrentInstMrmFromInstTable();
     NaClRemoveCurrentInstMrmFromInstMrmTable();
+  }
+  /* If the instruction has an opcode in modrm, then it uses modrm. */
+  if (NACL_EMPTY_IFLAGS != (current_inst->flags & NACL_IFLAG(OpcodeInModRm))) {
+    current_inst->flags |= NACL_IFLAG(OpcodeUsesModRm);
+  }
+  /* If the instruction allows a two byte value, add DATA16 flag. */
+  if (NACL_EMPTY_IFLAGS != (current_inst->flags &
+                            (NACL_IFLAG(OperandSize_w) |
+                             NACL_IFLAG(OpcodeHasImmed_z)))) {
+    current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16);
   }
   NaClApplySanityChecksToInst();
 }

@@ -56,6 +56,10 @@ static const char* NaClReasonWhyDisallowed(NaClDisallowsFlag flag) {
       return
           "Use of REPNE (F2) prefix for instruction not allowed by "
           "Native Client";
+    case NaClData16Disallowed:
+      return
+          "Use of DATA16 (66) prefix for instruction not allowed by "
+          "Native Client";
     default:
       return NULL;
   }
@@ -140,6 +144,15 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
     *disallows_flags |= NACL_DISALLOWS_FLAG(NaClRepneDisallowed);
     DEBUG(NaClLog(LOG_INFO, "%s\n",
                   NaClGetReasonWhyDisallowed(NaClRepneDisallowed)));
+  }
+
+  /* Only allow Data16 (66) prefix if flag specifies it is allowed. */
+  if ((inst_state->prefix_mask & kPrefixDATA16) &&
+      (NACL_EMPTY_IFLAGS == (inst->flags & NACL_IFLAG(OpcodeAllowsData16)))) {
+    *is_legal = FALSE;
+    *disallows_flags |= NACL_DISALLOWS_FLAG(NaClData16Disallowed);
+    DEBUG(NaClLog(LOG_INFO, "%s\n",
+                  NaClGetReasonWhyDisallowed(NaClData16Disallowed)));
   }
 
   /* Don't allow more than one REX prefix. */

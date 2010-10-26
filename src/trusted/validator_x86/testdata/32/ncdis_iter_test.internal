@@ -27,7 +27,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 00000000: 01 c0                                        add %eax, %eax
-  01                          386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
+  01                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v
     Add $Ev, $Gv
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -38,7 +38,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 00000000: 03 18                                        add %ebx, %ds:[%eax]
-  03                          386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
+  03                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v
     Add $Gv, $Ev
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -55,7 +55,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 00000000: 03 1d 20 00 00 00                            add %ebx, 0x20
-  03                          386 OpcodeUsesModRm OpcodeLockable OperandSize_w OperandSize_v
+  03                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v
     Add $Gv, $Ev
       G_Operand               OpUse OpSet OpDest
       E_Operand               OpUse
@@ -104,7 +104,7 @@ NaClExpVector[0] = {
 NaClExpVector[0] = {
 };
 00000000: 8d 76 00                                     lea %esi, %ds:[%esi]
-  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
+  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Lea $Gv, $M
       G_Operand               OpSet
       M_Operand               OpAddress
@@ -121,7 +121,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprSize8 | ExprSignedHex },
 };
 00000000: 8d 74 26 00                                  lea %esi, %ds:[%esi+%esp*1]
-  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
+  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Lea $Gv, $M
       G_Operand               OpSet
       M_Operand               OpAddress
@@ -138,7 +138,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprSize8 | ExprSignedHex },
 };
 00000000: 8d b6 00 00 00 00                            lea %esi, %ds:[%esi]
-  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
+  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Lea $Gv, $M
       G_Operand               OpSet
       M_Operand               OpAddress
@@ -155,7 +155,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 00000000: 8d b4 26 00 00 00 00                         lea %esi, %ds:[%esi+%esp*1]
-  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
+  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Lea $Gv, $M
       G_Operand               OpSet
       M_Operand               OpAddress
@@ -172,7 +172,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 00000000: 89 f6                                        mov %esi, %esi
-  89                          386 OpcodeUsesModRm OperandSize_w OperandSize_v
+  89                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Mov $Ev, $Gv
       E_Operand               OpSet OpDest
       G_Operand               OpUse
@@ -183,7 +183,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
 };
 00000000: 8d bc 27 00 00 00 00                         lea %edi, %ds:[%edi+%esp*1]
-  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OperandSize_w OperandSize_v
+  8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Lea $Gv, $M
       G_Operand               OpSet
       M_Operand               OpAddress
@@ -321,7 +321,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 00000000: 0f ac c1 10                                  shrd %ecx, %eax, 0x10
-  0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
+  0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v
     Shrd $E, $G, $I
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -335,7 +335,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x10, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 00000000: 0f ad 45 bc                                  shrd %ss:[%ebp-0x44], %eax, %cl
-  0f ad                       386 OpcodeUsesModRm OperandSize_w OperandSize_v
+  0f ad                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
     Shrd $E, $G, %CL
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse

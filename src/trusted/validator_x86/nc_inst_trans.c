@@ -1175,6 +1175,22 @@ static NaClExp* NaClAppendMemOffsetNode(NaClInstState* state) {
   return root;
 }
 
+/* Returns the segment register prefix node, or NULL if no such node is
+ * added.
+ */
+static NaClExp* NaClAppendSegmentAddressNode(NaClInstState* state,
+                                             NaClOpKind reg_default) {
+  NaClExp* root = NULL;
+  NaClOpKind seg_reg = NaClGetSegmentPrefixReg(state, reg_default);
+  if (seg_reg != RegUnknown) {
+    NaClExp* n;
+    root = NaClAppendSegmentAddress(state);
+    n = NaClAppendReg(seg_reg, &state->nodes);
+    n->flags |= NACL_EFLAG(ExprUsed);
+  }
+  return root;
+}
+
 /* Append the immediate value of the given instruction as the displacement
  * of a memory offset.
  */
@@ -1183,8 +1199,12 @@ static NaClExp* NaClAppendMemoryOffsetImmed(NaClInstState* state) {
   uint64_t value;
   NaClExp* root;
   DEBUG(NaClLog(LOG_INFO, "append memory offset immediate\n"));
-  root = NaClAppendMemOffsetNode(state);
-
+  root = NaClAppendSegmentAddressNode(state, RegUnknown);
+  if (root == NULL) {
+    root = NaClAppendMemOffsetNode(state);
+  } else {
+    NaClAppendMemOffsetNode(state);
+  }
   NaClAppendReg(RegUnknown, &state->nodes);
   NaClAppendReg(RegUnknown, &state->nodes);
   NaClAppendConst(1, NACL_EFLAG(ExprSize8), &state->nodes);
@@ -1239,6 +1259,7 @@ static NaClExp* NaClAppendMemoryOffset(NaClInstState* state,
                                        uint8_t scale,
                                        NaClDisplacement* displacement) {
   NaClExp* root = NULL;
+  NaClOpKind seg_reg_default;
   NaClExp* n;
 
   DEBUG(NaClLog(LOG_INFO,
@@ -1249,28 +1270,17 @@ static NaClExp* NaClAppendMemoryOffset(NaClInstState* state,
                 scale,
                 displacement->value,
                 displacement->flags));
-  if (NACL_TARGET_SUBARCH == 64) {
-    if (state->prefix_mask & (kPrefixSEGFS | kPrefixSEGGS)) {
-      NaClOpKind seg_reg = NaClGetSegmentPrefixReg(state, RegUnknown);
-      if (seg_reg != RegUnknown) {
-        root = NaClAppendSegmentAddress(state);
-        n = NaClAppendReg(seg_reg, &state->nodes);
-        n->flags |= NACL_EFLAG(ExprUsed);
-      }
-    }
-    if (root == NULL) {
-      root = NaClAppendMemOffsetNode(state);
-    } else {
-      NaClAppendMemOffsetNode(state);
-    }
+
+  if (32 == NACL_TARGET_SUBARCH) {
+    seg_reg_default = ((base == RegBP || base == RegEBP)
+                       ? RegSS : NaClGetDsSegmentReg(state));
   } else {
-    /* Need to add segmentation base. */
-    root = NaClAppendSegmentAddress(state);
-    n = NaClAppendReg(((base == RegBP || base == RegEBP)
-                        ? RegSS
-                        : NaClGetDsSegmentReg(state)),
-                       &state->nodes);
-    n->flags |= NACL_EFLAG(ExprUsed);
+    seg_reg_default = RegUnknown;
+  }
+  root = NaClAppendSegmentAddressNode(state, seg_reg_default);
+  if (NULL == root) {
+    root = NaClAppendMemOffsetNode(state);
+  } else {
     NaClAppendMemOffsetNode(state);
   }
   n = NaClAppendReg(base, &state->nodes);

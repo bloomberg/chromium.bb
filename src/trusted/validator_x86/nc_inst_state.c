@@ -391,8 +391,7 @@ static Bool NaClConsumeAndCheckAddressSize(NaClInstState* state) {
 static Bool NaClInstRequiresModRm(NaClInstState* state) {
   return
       (NACL_EMPTY_IFLAGS !=
-       (state->inst->flags &
-        (NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeInModRm))));
+       (state->inst->flags & NACL_IFLAG(OpcodeUsesModRm)));
 }
 
 /* Consume the Mod/Rm byte of the instruction, if applicable.

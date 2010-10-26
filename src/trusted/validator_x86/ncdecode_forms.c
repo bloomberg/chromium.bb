@@ -363,6 +363,7 @@ void DEF_OPERAND(dsGz)() {
 
 void DEF_OPERAND(E__)() {
   NaClDefOp(E_Operand, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OpcodeAllowsData16));
 }
 
 void DEF_OPERAND(Eb_)() {
@@ -444,6 +445,7 @@ void DEF_OPERAND(Gw_)() {
 
 void DEF_OPERAND(I__)() {
   NaClDefOp(I_Operand, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OpcodeAllowsData16));
 }
 
 void DEF_OPERAND(Ib_)() {
@@ -527,6 +529,7 @@ void DEF_OPERAND(Jzw)() {
 
 void DEF_OPERAND(M__)() {
   NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OpcodeAllowsData16));
 }
 
 void DEF_OPERAND(Ma_)() {
