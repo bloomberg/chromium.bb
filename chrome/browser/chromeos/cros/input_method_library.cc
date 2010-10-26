@@ -124,8 +124,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       if (input_method_id != chromeos::GetHardwareKeyboardLayoutName()) {
         StartInputMethodProcesses();
       }
-      chromeos::ChangeInputMethod(
-          input_method_status_connection_, input_method_id.c_str());
+      ChangeInputMethodInternal(input_method_id);
     }
   }
 
@@ -139,7 +138,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
   bool InputMethodIsActivated(const std::string& input_method_id) {
     scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
-        CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
+        GetActiveInputMethods());
     for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
       if (active_input_method_descriptors->at(i).id == input_method_id) {
         return true;
@@ -206,6 +205,39 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     }
   }
 
+  // Changes the current input method to |input_method_id|. If the id is not in
+  // the preload_engine list, this function changes the current method to the
+  // first preloaded engine. Returns true if the current engine is switched to
+  // |input_method_id| or the first one.
+  bool ChangeInputMethodInternal(const std::string& input_method_id) {
+    DCHECK(EnsureLoadedAndStarted());
+    std::string input_method_id_to_switch = input_method_id;
+
+    if (!InputMethodIsActivated(input_method_id)) {
+      // This path might be taken if prefs::kLanguageCurrentInputMethod (NOT
+      // synced with cloud) and kLanguagePreloadEngines (synced with cloud) are
+      // mismatched. e.g. the former is 'xkb:us::eng' and the latter (on the
+      // sync server) is 'xkb:jp::jpn,mozc'.
+      scoped_ptr<InputMethodDescriptors> input_methods(GetActiveInputMethods());
+      DCHECK(!input_methods->empty());
+      if (!input_methods->empty()) {
+        input_method_id_to_switch = input_methods->at(0).id;
+        LOG(INFO) << "Can't change the current input method to "
+                  << input_method_id << " since the engine is not preloaded. "
+                  << "Switch to " << input_method_id_to_switch << " instead.";
+      }
+    }
+
+    if (chromeos::ChangeInputMethod(input_method_status_connection_,
+                                    input_method_id_to_switch.c_str())) {
+      return true;
+    }
+
+    // Not reached.
+    LOG(ERROR) << "Can't switch input method to " << input_method_id_to_switch;
+    return false;
+  }
+
   // Flushes the input method config data. The config data is queued up in
   // |pending_config_requests_| until the config backend (ibus-memconf)
   // starts. Since there is no good way to get notified when the config
@@ -213,7 +245,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // config data to the config backend.
   void FlushImeConfig() {
     bool active_input_methods_are_changed = false;
-    bool completed = false;
     if (EnsureLoadedAndStarted()) {
       InputMethodConfigRequests::iterator iter =
           pending_config_requests_.begin();
@@ -241,19 +272,14 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         // yet been added to preload_engines.  As such, the call is deferred
         // until after all config values have been sent to the IME process.
         if (should_change_input_method_) {
-          if (chromeos::ChangeInputMethod(input_method_status_connection_,
-                                          current_input_method_id_.c_str())) {
-            should_change_input_method_ = false;
-            completed = true;
-            active_input_methods_are_changed = true;
-          }
-        } else {
-          completed = true;
+          ChangeInputMethodInternal(current_input_method_id_);
+          should_change_input_method_ = false;
+          active_input_methods_are_changed = true;
         }
       }
     }
 
-    if (completed) {
+    if (pending_config_requests_.empty()) {
       timer_.Stop();  // no-op if it's not running.
     } else {
       // Flush is not completed. Start a timer if it's not yet running.
