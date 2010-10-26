@@ -47,6 +47,13 @@ bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
       type == menus::MenuModel::TYPE_RADIO;
 }
 
+// A callback to gtk_container_foreach to remove all children.
+// See |NativeMenuGtk::ResetMenu| for the usage.
+void RemoveChildWidget(GtkWidget* widget, gpointer data) {
+  GtkWidget* parent = gtk_widget_get_parent(widget);
+  gtk_container_remove(GTK_CONTAINER(parent), widget);
+}
+
 }  // namespace
 
 namespace views {
@@ -371,15 +378,15 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
 }
 
 void NativeMenuGtk::ResetMenu() {
-  if (menu_) {
-    g_signal_handler_disconnect(menu_, destroy_handler_id_);
-    gtk_widget_destroy(menu_);
+  if (!menu_) {
+    menu_ = gtk_menu_new();
+    g_object_set_data(
+        G_OBJECT(GTK_MENU(menu_)->toplevel), kNativeMenuGtkString, this);
+    destroy_handler_id_ = g_signal_connect(
+        menu_, "destroy", G_CALLBACK(NativeMenuGtk::MenuDestroyed), host_menu_);
+  } else {
+    gtk_container_foreach(GTK_CONTAINER(menu_), RemoveChildWidget, NULL);
   }
-  menu_ = gtk_menu_new();
-  g_object_set_data(
-      G_OBJECT(GTK_MENU(menu_)->toplevel), kNativeMenuGtkString, this);
-  destroy_handler_id_ = g_signal_connect(
-      menu_, "destroy", G_CALLBACK(NativeMenuGtk::MenuDestroyed), host_menu_);
 }
 
 void NativeMenuGtk::UpdateMenuItemState(GtkWidget* menu_item) {
