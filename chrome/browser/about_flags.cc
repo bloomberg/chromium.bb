@@ -22,31 +22,7 @@ namespace about_flags {
 
 namespace {
 
-enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 , kOsCrOS = 1 << 3 };
-
-unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS;
-
-struct Experiment {
-  // The internal name of the experiment. This is never shown to the user.
-  // It _is_ however stored in the prefs file, so you shouldn't change the
-  // name of existing flags.
-  const char* internal_name;
-
-  // String id of the message containing the experiment's name.
-  int visible_name_id;
-
-  // String id of the message containing the experiment's description.
-  int visible_description_id;
-
-  // The platforms the experiment is available on
-  // Needs to be more than a compile-time #ifdef because of profile sync.
-  unsigned supported_platforms;  // bitmask
-
-  // The commandline parameter that's added when this lab is active. This is
-  // different from |internal_name| so that the commandline flag can be
-  // renamed without breaking the prefs file.
-  const char* command_line;
-};
+const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
 const Experiment kExperiments[] = {
   {
@@ -176,6 +152,9 @@ const Experiment kExperiments[] = {
   }
 };
 
+const Experiment* experiments = kExperiments;
+size_t num_experiments = arraysize(kExperiments);
+
 // Stores and encapsulates the little state that about:flags has.
 class FlagsState {
  public:
@@ -183,7 +162,7 @@ class FlagsState {
   void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
   bool IsRestartNeededToCommitChanges();
   void SetExperimentEnabled(
-    PrefService* prefs, const std::string& internal_name, bool enable);
+      PrefService* prefs, const std::string& internal_name, bool enable);
   void RemoveFlagsSwitches(
       std::map<std::string, CommandLine::StringType>* switch_list);
   void reset();
@@ -241,8 +220,8 @@ void SetEnabledFlags(
 // and removed.
 void SanitizeList(PrefService* prefs) {
   std::set<std::string> known_experiments;
-  for (size_t i = 0; i < arraysize(kExperiments); ++i)
-    known_experiments.insert(kExperiments[i].internal_name);
+  for (size_t i = 0; i < num_experiments; ++i)
+    known_experiments.insert(experiments[i].internal_name);
 
   std::set<std::string> enabled_experiments;
   GetEnabledFlags(prefs, &enabled_experiments);
@@ -262,18 +241,29 @@ void GetSanitizedEnabledFlags(
   GetEnabledFlags(prefs, result);
 }
 
-int GetCurrentPlatform() {
-#if defined(OS_MACOSX)
-  return kOsMac;
-#elif defined(OS_WIN)
-  return kOsWin;
-#elif defined(OS_CHROMEOS)  // Needs to be before the OS_LINUX check.
-  return kOsCrOS;
-#elif defined(OS_LINUX)
-  return kOsLinux;
-#else
-#error Unknown platform
-#endif
+// Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
+// enabled on the current platform.
+void GetSanitizedEnabledFlagsForCurrentPlatform(
+    PrefService* prefs, std::set<std::string>* result) {
+  GetSanitizedEnabledFlags(prefs, result);
+
+  // Filter out any experiments that aren't enabled on the current platform.  We
+  // don't remove these from prefs else syncing to a platform with a different
+  // set of experiments would be lossy.
+  std::set<std::string> platform_experiments;
+  int current_platform = GetCurrentPlatform();
+  for (size_t i = 0; i < num_experiments; ++i) {
+    if (experiments[i].supported_platforms & current_platform)
+      platform_experiments.insert(experiments[i].internal_name);
+  }
+
+  std::set<std::string> new_enabled_experiments;
+  std::set_intersection(
+      platform_experiments.begin(), platform_experiments.end(),
+      result->begin(), result->end(),
+      std::inserter(new_enabled_experiments, new_enabled_experiments.begin()));
+
+  result->swap(new_enabled_experiments);
 }
 
 }  // namespace
@@ -289,8 +279,8 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
   int current_platform = GetCurrentPlatform();
 
   ListValue* experiments_data = new ListValue();
-  for (size_t i = 0; i < arraysize(kExperiments); ++i) {
-    const Experiment& experiment = kExperiments[i];
+  for (size_t i = 0; i < num_experiments; ++i) {
+    const Experiment& experiment = experiments[i];
     if (!(experiment.supported_platforms & current_platform))
       continue;
 
@@ -323,6 +313,20 @@ void RemoveFlagsSwitches(
   FlagsState::instance()->RemoveFlagsSwitches(switch_list);
 }
 
+int GetCurrentPlatform() {
+#if defined(OS_MACOSX)
+  return kOsMac;
+#elif defined(OS_WIN)
+  return kOsWin;
+#elif defined(OS_CHROMEOS)  // Needs to be before the OS_LINUX check.
+  return kOsCrOS;
+#elif defined(OS_LINUX)
+  return kOsLinux;
+#else
+#error Unknown platform
+#endif
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // FlagsState implementation.
 
@@ -334,11 +338,11 @@ void FlagsState::ConvertFlagsToSwitches(
     return;
 
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledFlags(prefs, &enabled_experiments);
+  GetSanitizedEnabledFlagsForCurrentPlatform(prefs, &enabled_experiments);
 
-  std::map<std::string, const Experiment*> experiments;
-  for (size_t i = 0; i < arraysize(kExperiments); ++i)
-    experiments[kExperiments[i].internal_name] = &kExperiments[i];
+  std::map<std::string, const Experiment*> experiment_map;
+  for (size_t i = 0; i < num_experiments; ++i)
+    experiment_map[experiments[i].internal_name] = &experiments[i];
 
   command_line->AppendSwitch(switches::kFlagSwitchesBegin);
   flags_switches_.insert(switches::kFlagSwitchesBegin);
@@ -347,9 +351,9 @@ void FlagsState::ConvertFlagsToSwitches(
        ++it) {
     const std::string& experiment_name = *it;
     std::map<std::string, const Experiment*>::iterator experiment =
-        experiments.find(experiment_name);
-    DCHECK(experiment != experiments.end());
-    if (experiment == experiments.end())
+        experiment_map.find(experiment_name);
+    DCHECK(experiment != experiment_map.end());
+    if (experiment == experiment_map.end())
       continue;
 
     command_line->AppendSwitch(experiment->second->command_line);
@@ -398,6 +402,17 @@ namespace testing {
 void ClearState() {
   FlagsState::instance()->reset();
 }
+
+void SetExperiments(const Experiment* e, size_t count) {
+  if (!e) {
+    experiments = kExperiments;
+    num_experiments = arraysize(kExperiments);
+  } else {
+    experiments = e;
+    num_experiments = count;
+  }
+}
+
 }  // namespace testing
 
 }  // namespace about_flags
