@@ -2729,6 +2729,23 @@ class XCProjectFile(XCObject):
     'rootObject':     [0, PBXProject, 1, 1],
   })
 
+  def SetXcodeVersion(self, version):
+    version_to_object_version = {
+      '2.4': 45,
+      '3.0': 45,
+      '3.1': 45,
+      '3.2': 46,
+    }
+    if not version in version_to_object_version:
+      supported_str = ', '.join(sorted(version_to_object_version.keys()))
+      raise Exception(
+          'Unsupported Xcode version %s (supported: %s)' %
+          ( version, supported_str ) )
+    compatibility_version = 'Xcode %s' % version
+    self._properties['rootObject'].SetProperty('compatibilityVersion',
+                                               compatibility_version)
+    self.SetProperty('objectVersion', version_to_object_version[version]);
+
   def ComputeIDs(self, recursive=True, overwrite=True, hash=None):
     # Although XCProjectFile is implemented here as an XCObject, it's not a
     # proper object in the Xcode sense, and it certainly doesn't have its own

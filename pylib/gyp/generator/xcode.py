@@ -583,6 +583,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   parallel_builds = generator_flags.get('xcode_parallel_builds', True)
   serialize_all_tests = \
       generator_flags.get('xcode_serialize_all_test_runs', True)
+  project_version = generator_flags.get('xcode_project_version', None)
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
     (build_file_root, build_file_ext) = os.path.splitext(build_file)
@@ -598,6 +599,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if parallel_builds:
       pbxp.SetProperty('attributes',
                        {'BuildIndependentTargetsInParallel': 'YES'})
+    if project_version:
+      xcp.project_file.SetXcodeVersion(project_version)
 
     main_group = pbxp.GetProperty('mainGroup')
     build_group = gyp.xcodeproj_file.PBXGroup({'name': 'Build'})
