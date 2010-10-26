@@ -43,7 +43,8 @@ cr.define('options', function() {
         self.updateButtonState_();
       };
       $('profileList').addEventListener('dblclick', function(event) {
-        self.editProfile_();
+        if ($('autoFillEnabled').checked)
+          self.editProfile_();
       });
       $('addAddressButton').onclick = function(event) {
         self.showAddAddressOverlay_();
