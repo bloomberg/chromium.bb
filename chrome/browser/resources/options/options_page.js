@@ -68,11 +68,25 @@ cr.define('options', function() {
     }
   };
 
+  /**
+   * Clears overlays (i.e. hide all overlays).
+   */
   OptionsPage.clearOverlays = function() {
      for (var name in OptionsPage.registeredOverlayPages_) {
        var page = OptionsPage.registeredOverlayPages_[name];
        page.visible = false;
      }
+  };
+
+  /**
+   * Clears overlays if the key event is ESC.
+   * @param {Event} e Key event.
+   * @private
+   */
+  OptionsPage.clearOverlaysOnEsc_ = function(e) {
+    if (e.keyCode == 27) { // Esc
+      OptionsPage.clearOverlays();
+    }
   };
 
   /**
@@ -208,6 +222,8 @@ cr.define('options', function() {
         if (this.isOverlay) {
           var overlay = $('overlay');
           overlay.classList.remove('hidden');
+          document.addEventListener('keydown',
+                                    OptionsPage.clearOverlaysOnEsc_);
         } else {
           var banner = $('managed-prefs-banner');
           banner.style.display = this.managed ? 'block' : 'none';
@@ -225,6 +241,8 @@ cr.define('options', function() {
         if (this.isOverlay) {
           var overlay = $('overlay');
           overlay.classList.add('hidden');
+          document.removeEventListener('keydown',
+                                       OptionsPage.clearOverlaysOnEsc_);
         }
         this.pageDiv.style.display = 'none';
         if (this.tab) {
