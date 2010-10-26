@@ -99,29 +99,14 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
  private:
   // Returns a list of values from the stored profiles that match |type| and the
   // value of |field| and returns the labels of the matching profiles. |labels|
-  // is filled with the Profile label and possibly the last four digits of a
-  // corresponding credit card: 'Home; *1258' - Home is the Profile label and
-  // 1258 is the last four digits of the credit card. If |include_cc_labels| is
-  // true, check for billing fields and append CC digits to the labels;
-  // otherwise, regular profiles are returned for billing address fields.
+  // is filled with the Profile label.
   void GetProfileSuggestions(FormStructure* form,
                              const webkit_glue::FormField& field,
                              AutoFillType type,
-                             bool include_cc_labels,
                              std::vector<string16>* values,
                              std::vector<string16>* labels,
                              std::vector<string16>* icons,
                              std::vector<int>* unique_ids);
-
-  // Same as GetProfileSuggestions, but the list of stored profiles is limited
-  // to the linked billing addresses from the list of credit cards.
-  void GetBillingProfileSuggestions(FormStructure* form,
-                                    const webkit_glue::FormField& field,
-                                    AutoFillType type,
-                                    std::vector<string16>* values,
-                                    std::vector<string16>* labels,
-                                    std::vector<string16>* icons,
-                                    std::vector<int>* unique_ids);
 
   // Returns a list of values from the stored credit cards that match |type| and
   // the value of |field| and returns the labels of the matching credit cards.
@@ -132,14 +117,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                 std::vector<string16>* labels,
                                 std::vector<string16>* icons,
                                 std::vector<int>* unique_ids);
-
-  // Set |field| argument's value based on |type| and contents of the
-  // |credit_card|.  The |type| field is expected to have main group type of
-  // ADDRESS_BILLING.  The address information is retrieved from the billing
-  // profile associated with the |credit_card|, if there is one set.
-  void FillBillingFormField(const CreditCard* credit_card,
-                            AutoFillType type,
-                            webkit_glue::FormField* field);
 
   // Set |field| argument's value based on |type| and contents of the
   // |credit_card|.
@@ -202,8 +179,8 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   friend class TestAutoFillManager;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillNonBillingFormSemicolon);
-  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillBillFormSemicolon);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressAndCreditCardForm);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

@@ -45,7 +45,6 @@ class CreditCard : public FormGroup {
   string16 LastFourDigits() const;
 
   const string16& type() const { return type_; }
-  int billing_address_id() const { return billing_address_id_; }
 
   int unique_id() const { return unique_id_; }
   void set_unique_id(int id) { unique_id_ = id; }
@@ -53,11 +52,6 @@ class CreditCard : public FormGroup {
   // The guid is the primary identifier for |CreditCard| objects.
   const std::string guid() const { return guid_; }
   void set_guid(const std::string& guid) { guid_ = guid; }
-
-  // The caller should verify that the corresponding AutoFillProfile exists.
-  void set_billing_address_id(int address_id) {
-    billing_address_id_ = address_id;
-  }
 
   // For use in STL containers.
   void operator=(const CreditCard&);
@@ -146,10 +140,6 @@ class CreditCard : public FormGroup {
 
   // This is the display name of the card set by the user, e.g., Amazon Visa.
   string16 label_;
-
-  // The billing address. This is the unique ID of the AutoFillProfile that
-  // contains the corresponding billing address.
-  int billing_address_id_;
 
   // The unique ID of this credit card.
   int unique_id_;

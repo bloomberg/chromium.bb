@@ -131,7 +131,6 @@ CreditCard::CreditCard(const string16& label,
     : expiration_month_(0),
       expiration_year_(0),
       label_(label),
-      billing_address_id_(0),
       unique_id_(unique_id),
       guid_(guid::GenerateGUID()) {
 }
@@ -139,7 +138,6 @@ CreditCard::CreditCard(const string16& label,
 CreditCard::CreditCard(const std::string& guid)
     : expiration_month_(0),
       expiration_year_(0),
-      billing_address_id_(0),
       unique_id_(0),
       guid_(guid) {
 }
@@ -147,7 +145,6 @@ CreditCard::CreditCard(const std::string& guid)
 CreditCard::CreditCard()
     : expiration_month_(0),
       expiration_year_(0),
-      billing_address_id_(0),
       unique_id_(0),
       guid_(guid::GenerateGUID()) {
 }
@@ -383,7 +380,6 @@ void CreditCard::operator=(const CreditCard& source) {
   expiration_month_ = source.expiration_month_;
   expiration_year_ = source.expiration_year_;
   label_ = source.label_;
-  billing_address_id_ = source.billing_address_id_;
   unique_id_ = source.unique_id_;
   guid_ = source.guid_;
 }
@@ -398,9 +394,7 @@ bool CreditCard::operator==(const CreditCard& creditcard) const {
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
 
-  if (label_ != creditcard.label_ ||
-      unique_id_ != creditcard.unique_id_ ||
-      billing_address_id_ != creditcard.billing_address_id_) {
+  if ((label_ != creditcard.label_) || (unique_id_ != creditcard.unique_id_)) {
     return false;
   }
 
@@ -446,7 +440,7 @@ bool CreditCard::IsCreditCardNumber(const string16& text) {
 bool CreditCard::IsEmpty() const {
   FieldTypeSet types;
   GetAvailableFieldTypes(&types);
-  return types.empty() && billing_address_id_ == 0;
+  return types.empty();
 }
 
 
@@ -623,8 +617,6 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard) {
       << creditcard.unique_id()
       << " "
       << creditcard.guid()
-      << " "
-      << creditcard.billing_address_id()
       << " "
       << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))
       << " "

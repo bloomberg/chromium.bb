@@ -187,15 +187,15 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
 TEST_F(PersonalDataManagerTest, SetCreditCards) {
   CreditCard creditcard0(string16(), 0);
   autofill_test::SetCreditCardInfo(&creditcard0, "Corporate",
-      "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
+      "John Dillinger", "423456789012" /* Visa */, "01", "2010");
 
   CreditCard creditcard1(string16(), 0);
   autofill_test::SetCreditCardInfo(&creditcard1, "Personal",
-      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", 2);
+      "Bonnie Parker", "518765432109" /* Mastercard */, "12", "2012");
 
   CreditCard creditcard2(string16(), 0);
   autofill_test::SetCreditCardInfo(&creditcard2, "Savings",
-      "Clyde Barrow", "American Express", "777666888555", "04", "2015", 3);
+      "Clyde Barrow", "347666888555" /* American Express */, "04", "2015");
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -283,11 +283,11 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
 
   CreditCard creditcard0(string16(), 0);
   autofill_test::SetCreditCardInfo(&creditcard0, "Corporate",
-      "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
+      "John Dillinger", "423456789012" /* Visa */, "01", "2010");
 
   CreditCard creditcard1(string16(), 0);
   autofill_test::SetCreditCardInfo(&creditcard1, "Personal",
-      "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", 2);
+      "Bonnie Parker", "518765432109" /* Mastercard */, "12", "2012");
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -437,8 +437,7 @@ TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
 
 TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
   CreditCard creditcard0(string16(), 0);
-  autofill_test::SetCreditCardInfo(&creditcard0,
-      "", "", "", "", "", "", 0);
+  autofill_test::SetCreditCardInfo(&creditcard0, "", "", "", "", "");
 
   // This will verify that the web database has been loaded and the notification
   // sent out.

@@ -365,7 +365,8 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString16(6, LimitDataSize(text));
   text.clear();
   s->BindString16(7, LimitDataSize(text));
-  s->BindInt(8, credit_card.billing_address_id());
+  // We don't store the billing address id anymore.
+  s->BindInt(8, 0);
   // We don't store the shipping address anymore.
   text.clear();
   s->BindString16(9, LimitDataSize(text));
@@ -408,7 +409,7 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
 
   string16 credit_card_verification_code = s.ColumnString16(7);
   // We don't store the CVV anymore.
-  credit_card->set_billing_address_id(s.ColumnInt(8));
+  // We don't store the billing address anymore.
   // We don't store the shipping address anymore.
   // Column 10 is processed above.
   // We don't store the encrypted CVV anymore.

@@ -38,9 +38,8 @@ void SetProfileInfo(AutoFillProfile* profile,
 // tests.  |SetCreditCardInfo| provides a quick way to populate a credit card
 // with c-strings.
 void SetCreditCardInfo(CreditCard* credit_card,
-    const char* label, const char* name_on_card, const char* type,
-    const char* card_number, const char* expiration_month,
-    const char* expiration_year, int billing_address_id);
+    const char* label, const char* name_on_card, const char* card_number,
+    const char* expiration_month, const char* expiration_year);
 
 // TODO(isherman): We should do this automatically for all tests, not manually
 // on a per-test basis: http://crbug.com/57221

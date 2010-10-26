@@ -1394,7 +1394,6 @@ TEST_F(WebDatabaseTest, CreditCard) {
                           ASCIIToUTF16("04"));
   work_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                           ASCIIToUTF16("2013"));
-  work_creditcard.set_billing_address_id(1);
 
   Time pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddCreditCard(work_creditcard));
@@ -1425,7 +1424,6 @@ TEST_F(WebDatabaseTest, CreditCard) {
                             ASCIIToUTF16("06"));
   target_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                             ASCIIToUTF16("2012"));
-  target_creditcard.set_billing_address_id(1);
 
   pre_creation_time = Time::Now();
   EXPECT_TRUE(db.AddCreditCard(target_creditcard));
@@ -1478,7 +1476,6 @@ TEST_F(WebDatabaseTest, CreditCard) {
                           ASCIIToUTF16("07"));
   guid_creditcard.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
                           ASCIIToUTF16("2013"));
-  guid_creditcard.set_billing_address_id(1);
 
   EXPECT_TRUE(db.AddCreditCard(guid_creditcard));
   ASSERT_TRUE(db.GetCreditCardForGUID(guid_creditcard.guid(),

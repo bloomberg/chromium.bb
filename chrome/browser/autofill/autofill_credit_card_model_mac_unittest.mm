@@ -27,7 +27,7 @@ TEST(AutoFillCreditCardModelTest, Basic) {
 TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
   CreditCard credit_card(string16(), 0);
   autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
-      "John Dillinger", "Visa", "123456789012", "01", "2010", 0);
+      "John Dillinger", "123456789012", "01", "2010");
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
   EXPECT_TRUE(model.get());
@@ -41,7 +41,7 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
 TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   CreditCard credit_card(string16(), 0);
   autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
-      "John Dillinger", "Visa", "123456789012", "01", "2010", 0);
+      "John Dillinger", "123456789012", "01", "2010");
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
   EXPECT_TRUE(model.get());

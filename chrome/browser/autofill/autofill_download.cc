@@ -238,8 +238,8 @@ void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
       }
     }
 
-    VLOG(1) << "AutoFillDownloadManager: " << type_of_request
-            << " request has failed with response" << response_code;
+    LOG(WARNING) << "AutoFillDownloadManager: " << type_of_request
+                 << " request has failed with response" << response_code;
     if (observer_) {
       observer_->OnHeuristicsRequestError(it->second.form_signatures[0],
                                           it->second.request_type,
