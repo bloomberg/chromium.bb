@@ -55,12 +55,19 @@ cr.define('options', function() {
             ['Options_ManageSearchEngines']);
       };
 
+      var homepageField = $('homepageURL');
       $('homepageUseNTPButton').onchange =
           this.handleHomepageUseNTPButtonChange_.bind(this);
       $('homepageUseURLButton').onchange =
           this.handleHomepageUseURLButtonChange_.bind(this);
-      $('homepageURL').onchange =
-          this.handleHomepageURLChange_.bind(this)
+      homepageField.onchange =
+          this.handleHomepageURLChange_.bind(this);
+
+      // Ensure that changes are committed when closing the page.
+      window.addEventListener('unload', function() {
+          if (document.activeElement == homepageField)
+            homepageField.blur();
+          });
 
       if (!cr.isChromeOS) {
         $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
