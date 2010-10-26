@@ -195,6 +195,10 @@ bool SyncerProtoUtil::PostClientToServerMessage(
   }
 
   switch (response->error_code()) {
+    case ClientToServerResponse::UNKNOWN:
+      LOG(WARNING) << "Sync protocol out-of-date. The server is using a more "
+                   << "recent version.";
+      return false;
     case ClientToServerResponse::SUCCESS:
       LogResponseProfilingData(*response);
       return true;
@@ -203,11 +207,14 @@ bool SyncerProtoUtil::PostClientToServerMessage(
       session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
           base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
       return false;
+    case ClientToServerResponse::TRANSIENT_ERROR:
+      return false;
     case ClientToServerResponse::USER_NOT_ACTIVATED:
     case ClientToServerResponse::AUTH_INVALID:
     case ClientToServerResponse::ACCESS_DENIED:
       // WARNING: PostAndProcessHeaders contains a hack for this case.
       LOG(WARNING) << "SyncerProtoUtil: Authentication expired.";
+      // TODO(sync): Was this meant to be a fall-through?
     default:
       NOTREACHED();
       return false;

@@ -363,7 +363,7 @@ message ClearUserDataResponse {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 24];
+  optional int32 protocol_version = 2 [default = 25];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
@@ -512,21 +512,34 @@ message ClientToServerResponse {
 
   enum ErrorType {
     SUCCESS            = 0;
-    ACCESS_DENIED      = 1; // Returned when the user doesn't have access to
-                            // store (instead of HTTP 401).
-    NOT_MY_BIRTHDAY    = 2; // Returned when the server and client disagree on
-                            // the store birthday.
-    THROTTLED          = 3; // Returned when the store has exceeded the allowed
-                            // bandwidth utilization.
-    AUTH_EXPIRED       = 4; // Auth token or cookie has expired.
-    USER_NOT_ACTIVATED = 5; // User doesn't have the Chrome bit set on that
-                            // Google Account.
-    AUTH_INVALID       = 6; // Auth token or cookie is otherwise invalid.
-    CLEAR_PENDING      = 7; // A clear of the user data is pending (e.g.
-                            // initiated by privacy request).  Client should
-                            // come back later.
+    ACCESS_DENIED      = 1;   // Returned when the user doesn't have access to
+                              // store (instead of HTTP 401).
+    NOT_MY_BIRTHDAY    = 2;   // Returned when the server and client disagree on
+                              // the store birthday.
+    THROTTLED          = 3;   // Returned when the store has exceeded the
+                              // allowed bandwidth utilization.
+    AUTH_EXPIRED       = 4;   // Auth token or cookie has expired.
+    USER_NOT_ACTIVATED = 5;   // User doesn't have the Chrome bit set on that
+                              // Google Account.
+    AUTH_INVALID       = 6;   // Auth token or cookie is otherwise invalid.
+    CLEAR_PENDING      = 7;   // A clear of the user data is pending (e.g.
+                              // initiated by privacy request).  Client should
+                              // come back later.
+    TRANSIENT_ERROR    = 8;   // A transient error occured (eg. backend
+                              // timeout). Client should try again later.
+    UNKNOWN            = 100; // Unknown value. This should never be explicitly
+                              // used; it is the default value when an
+                              // out-of-date client parses a value it doesn't
+                              // recognize.
   }
-  optional ErrorType error_code = 4 [default = SUCCESS];
+  // Up until protocol_version 24, the default was SUCCESS which made it
+  // impossible to add new enum values since older clients would parse any
+  // out-of-range value as SUCCESS. Starting with 25, unless explicitly set,
+  // the error_code will be UNKNOWN so that clients know when they're
+  // out-of-date. Note also that when using protocol_version < 25,
+  // TRANSIENT_ERROR is not supported. Instead, the server sends back a HTTP
+  // 400 error code.
+  optional ErrorType error_code = 4 [default = UNKNOWN];
   optional string error_message = 5;
 
   // Opaque store ID; if it changes, the contents of the client's cache
