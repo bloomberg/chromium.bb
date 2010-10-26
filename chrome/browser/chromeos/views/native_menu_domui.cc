@@ -22,6 +22,10 @@
 #include "views/controls/menu/native_menu_gtk.h"
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 
+#if defined(TOUCH_UI)
+#include "views/focus/accelerator_handler.h"
+#endif
+
 namespace {
 
 using chromeos::NativeMenuDOMUI;
@@ -243,6 +247,12 @@ bool NativeMenuDOMUI::Dispatch(GdkEvent* event) {
   gtk_main_do_event(event);
   return true;
 }
+
+#if defined(TOUCH_UI)
+bool NativeMenuDOMUI::Dispatch(XEvent* xevent) {
+  return views::DispatchXEvent(xevent);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuDOMUI, MenuControl implementation:

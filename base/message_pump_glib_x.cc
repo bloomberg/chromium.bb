@@ -7,6 +7,8 @@
 #include <gdk/gdkx.h>
 #include <X11/Xlib.h>
 
+#include "base/message_pump_glib_x_dispatch.h"
+
 namespace {
 
 gboolean PlaceholderDispatch(GSource* source,
@@ -41,14 +43,16 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
     if (capture_x_events_[xev.type]) {
       XNextEvent(display, &xev);
 
-      DLOG(INFO) << "nom noming event";
+      bool processed = static_cast<MessagePumpGlibXDispatcher*>
+          (GetDispatcher())->Dispatch(&xev);
 
-      // TODO(sad): Create a GdkEvent from |xev| and pass it on to
-      // EventDispatcherX. The ultimate goal is to create a views::Event from
-      // |xev| and send it to a rootview. When done, the preceding DLOG will be
-      // removed.
+      if (!processed) {
+        DLOG(WARNING) << "Event (" << xev.type << ") not handled.";
+      }
     } else {
-      // TODO(sad): A couple of extra events can still sneak in during this
+      // TODO(sad): A couple of extra events can still sneak in during this.
+      // Those should be sent back to the X queue from the dispatcher
+      // EventDispatcherX.
       g_main_context_iteration(context, FALSE);
     }
   }
@@ -81,6 +85,15 @@ void MessagePumpGlibX::InitializeEventsToCapture(void) {
 
   capture_x_events_[KeyRelease] = true;
   capture_gdk_events_[GDK_KEY_RELEASE] = true;
+
+  capture_x_events_[ButtonPress] = true;
+  capture_gdk_events_[GDK_BUTTON_PRESS] = true;
+
+  capture_x_events_[ButtonRelease] = true;
+  capture_gdk_events_[GDK_BUTTON_RELEASE] = true;
+
+  capture_x_events_[MotionNotify] = true;
+  capture_gdk_events_[GDK_MOTION_NOTIFY] = true;
 }
 
 void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
@@ -94,7 +107,7 @@ void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
       // TODO(sad): An X event is caught by the GDK handler. Put it back in the
       // X queue so that we catch it in the next iteration. When done, the
       // following DLOG statement will be removed.
-      DLOG(INFO) <<  "GDK ruined it!!";
+      DLOG(WARNING) << "GDK received an event it shouldn't have";
     }
   }
 

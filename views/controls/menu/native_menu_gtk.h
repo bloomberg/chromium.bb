@@ -51,6 +51,9 @@ class NativeMenuGtk : public MenuWrapper,
 
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
+#if defined(TOUCH_UI)
+  virtual bool Dispatch(XEvent* xevent);
+#endif
 
  private:
   CHROMEGTK_CALLBACK_0(NativeMenuGtk, void, OnMenuHidden);

@@ -192,6 +192,10 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   virtual bool Dispatch(GdkEvent* event);
 #endif
 
+#if defined(TOUCH_UI)
+  virtual bool Dispatch(XEvent* xevent);
+#endif
+
   // Key processing. The return value of this is returned from Dispatch.
   // In other words, if this returns false (which happens if escape was
   // pressed, or a matching mnemonic was found) the message loop returns.

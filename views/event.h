@@ -13,6 +13,9 @@
 #if defined(OS_LINUX)
 typedef struct _GdkEventKey GdkEventKey;
 #endif
+#if defined(TOUCH_UI)
+typedef union _XEvent XEvent;
+#endif
 
 class OSExchangeData;
 
@@ -222,6 +225,11 @@ class MouseEvent : public LocatedEvent {
   // from 'from' coordinate system to 'to' coordinate system
   MouseEvent(const MouseEvent& model, View* from, View* to);
 
+#if defined(TOUCH_UI)
+  // Create a mouse event from an X mouse event.
+  explicit MouseEvent(XEvent* xevent);
+#endif
+
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
     return (GetFlags() & EF_LEFT_BUTTON_DOWN) &&
@@ -316,6 +324,11 @@ class KeyEvent : public Event {
            int message_flags);
 #if defined(OS_LINUX)
   explicit KeyEvent(GdkEventKey* event);
+#endif
+
+#if defined(TOUCH_UI)
+  // Create a key event from an X key event.
+  explicit KeyEvent(XEvent* xevent);
 #endif
 
   // This returns a VKEY_ value as defined in app/keyboard_codes.h which is

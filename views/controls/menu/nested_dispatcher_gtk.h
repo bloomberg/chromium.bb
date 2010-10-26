@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_MENU_NESTED_DISPATCHER_GTK_H_
-#define VIEWS_CONTROLS_MENU_NATIVE_DISPATCHER_GTK_H_
+#define VIEWS_CONTROLS_MENU_NESTED_DISPATCHER_GTK_H_
 #pragma once
 
 #include "base/message_loop.h"
+
+#if defined(TOUCH_UI)
+typedef union _XEvent XEvent;
+#endif
 
 namespace views {
 
@@ -35,6 +39,10 @@ class NestedDispatcherGtk : public MessageLoopForUI::Dispatcher {
 
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
+
+#if defined(TOUCH_UI)
+  virtual bool Dispatch(XEvent* xevent);
+#endif
 
   // Creator of the nested loop.
   MessageLoopForUI::Dispatcher* creator_;

@@ -25,6 +25,10 @@
 #include "app/keyboard_code_conversion_gtk.h"
 #endif
 
+#if defined(TOUCH_UI)
+#include "views/focus/accelerator_handler.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -848,12 +852,19 @@ bool MenuController::Dispatch(GdkEvent* event) {
       break;
   }
 
-  // We don not want Gtk to handle keyboard events, otherwise if they get
+  // We don't want Gtk to handle keyboard events, otherwise if they get
   // handled by Gtk, unexpected behavior may occur. For example Tab key
   // may cause unexpected focus traversing.
   gtk_main_do_event(event);
   return exit_type_ == EXIT_NONE;
 }
+
+#if defined(TOUCH_UI)
+bool MenuController::Dispatch(XEvent* xev) {
+  return DispatchXEvent(xev);
+}
+#endif
+
 #endif
 
 bool MenuController::OnKeyDown(int key_code

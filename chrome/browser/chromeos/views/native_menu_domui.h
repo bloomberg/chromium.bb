@@ -27,6 +27,10 @@ namespace views {
 class NestedDispatcherGtk;
 }  // namespace views;
 
+#if defined(TOUCH_UI)
+typedef union _XEvent XEvent;
+#endif
+
 namespace chromeos {
 
 class MenuLocator;
@@ -59,6 +63,9 @@ class NativeMenuDOMUI : public views::MenuWrapper,
 
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
+#if defined(TOUCH_UI)
+  virtual bool Dispatch(XEvent* xevent);
+#endif
 
   // Overriden from DOMUIMenuControl;
   virtual menus::MenuModel* GetMenuModel() { return model_; }

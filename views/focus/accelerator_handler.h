@@ -18,6 +18,12 @@
 
 namespace views {
 
+#if defined(TOUCH_UI)
+// Dispatch an XEvent to the RootView. Return true if the event was dispatched
+// and handled, false otherwise.
+bool DispatchXEvent(XEvent* xevent);
+#endif
+
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
 class AcceleratorHandler : public MessageLoopForUI::Dispatcher {
@@ -29,6 +35,9 @@ class AcceleratorHandler : public MessageLoopForUI::Dispatcher {
   virtual bool Dispatch(const MSG& msg);
 #else
   virtual bool Dispatch(GdkEvent* event);
+#if defined(TOUCH_UI)
+  virtual bool Dispatch(XEvent* xev);
+#endif
 #endif
 
  private:
