@@ -565,33 +565,43 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
                                                contents,
                                                initial_pos);
     browser->window()->Show();
-  } else {
-    Browser* browser = BrowserList::FindBrowserWithType(
+    return;
+  }
+
+  // If the tab contents isn't a popup, it's a normal tab. We need to find a
+  // home for it. This is typically a Browser, but it can also be some other
+  // TabContentsDelegate in the case of ChromeFrame.
+
+  // First, if the creating extension view was associated with a tab contents,
+  // use that tab content's delegate. We must be careful here that the
+  // associated tab contents has the same profile as the new tab contents. In
+  // the case of extensions in 'spanning' incognito mode, they can mismatch.
+  // We don't want to end up putting a normal tab into an incognito window, or
+  // vice versa.
+  TabContents* associated_contents = associated_tab_contents();
+  if (associated_contents &&
+      associated_contents->profile() == contents->profile()) {
+    associated_contents->AddNewContents(contents, disposition, initial_pos,
+                                        user_gesture);
+    return;
+  }
+
+  // If there's no associated tab contents, or it doesn't have a matching
+  // profile, try finding an open window. Again, we must make sure to find a
+  // window with the correct profile.
+  Browser* browser = BrowserList::FindBrowserWithType(
         contents->profile(),
         Browser::TYPE_NORMAL,
         false);  // Match incognito exactly.
-    if (!browser) {
-      // If no browser is associated with the created TabContents, then the
-      // created TabContents may be an intermediate struct used during topmost
-      // url navigation from within an experimental extension popup view.
-      //
-      // If the ExtensionHost has an associated TabContents, then register the
-      // new contents with this contents.  This will allow top-level link
-      // navigation within the new contents to function just as navigation
-      // within the current host.
-      TabContents* associated_contents = associated_tab_contents();
-      if (associated_contents) {
-        associated_contents->AddNewContents(contents, disposition, initial_pos,
-                                            user_gesture);
-      } else {
-        browser = Browser::Create(contents->profile());
-        browser->window()->Show();
-      }
-    }
 
-    if (browser)
-      browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  // If there's no Browser open with the right profile, create a new one.
+  if (!browser) {
+    browser = Browser::Create(contents->profile());
+    browser->window()->Show();
   }
+
+  if (browser)
+    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
 void ExtensionHost::ShowCreatedWidget(int route_id,
