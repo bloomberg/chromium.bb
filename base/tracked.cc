@@ -65,6 +65,10 @@ void Location::WriteFunctionName(std::string* output) const {
 Tracked::Tracked() {}
 Tracked::~Tracked() {}
 void Tracked::SetBirthPlace(const Location& from_here) {}
+const Location Tracked::GetBirthPlace() const {
+  static Location kNone("NoFunctionName", "NeedToSetBirthPlace", -1);
+  return kNone;
+}
 bool Tracked::MissingBirthplace() const { return false; }
 void Tracked::ResetBirthTime() {}
 
@@ -94,6 +98,10 @@ void Tracked::SetBirthPlace(const Location& from_here) {
   if (!current_thread_data)
     return;  // Shutdown started, and this thread wasn't registered.
   tracked_births_ = current_thread_data->TallyABirth(from_here);
+}
+
+const Location Tracked::GetBirthPlace() const {
+  return tracked_births_->location();
 }
 
 void Tracked::ResetBirthTime() {

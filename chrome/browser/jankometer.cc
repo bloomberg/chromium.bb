@@ -206,13 +206,13 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
     helper_.EndProcessingTimers();
   }
 
-  virtual void WillProcessTask(base::TimeTicks birth_time) {
+  virtual void WillProcessTask(const Task* task) {
     base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - birth_time;
+    const base::TimeDelta queueing_time = now - task->tracked_birth_time();
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessTask() {
+  virtual void DidProcessTask(const Task* task) {
     helper_.EndProcessingTimers();
   }
 
@@ -250,13 +250,13 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     MessageLoopForUI::current()->RemoveObserver(this);
   }
 
-  virtual void WillProcessTask(base::TimeTicks birth_time) {
+  virtual void WillProcessTask(const Task* task) {
     base::TimeTicks now = base::TimeTicks::Now();
-    const base::TimeDelta queueing_time = now - birth_time;
+    const base::TimeDelta queueing_time = now - task->tracked_birth_time();
     helper_.StartProcessingTimers(queueing_time);
   }
 
-  virtual void DidProcessTask() {
+  virtual void DidProcessTask(const Task* task) {
     helper_.EndProcessingTimers();
   }
 

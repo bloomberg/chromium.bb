@@ -94,6 +94,7 @@ class Tracked {
 
   // Used to record the FROM_HERE location of a caller.
   void SetBirthPlace(const Location& from_here);
+  const Location GetBirthPlace() const;
 
   // When a task sits around a long time, such as in a timer, or object watcher,
   // this method should be called when the task becomes active, and its
