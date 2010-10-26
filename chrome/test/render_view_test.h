@@ -48,6 +48,12 @@ class RenderViewTest : public testing::Test {
   // is a NULL-terminated UTF-8 string.
   void ExecuteJavaScript(const char* js);
 
+  // Executes the given JavaScript and sets the int value it evaluates to in
+  // |result|.
+  // Returns true if the JavaScript was evaluated correctly to an int value,
+  // false otherwise.
+  bool ExecuteJavaScriptAndReturnIntValue(const string16& script, int* result);
+
   // Loads the given HTML into the main frame as a data: URL.
   void LoadHTML(const char* html);
 

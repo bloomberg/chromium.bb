@@ -34,7 +34,6 @@ class VideoLayer;
 class WebCursor;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_AccessibilityNotification_Params;
-struct WebMenuItem;
 
 namespace webkit_glue {
 struct WebAccessibility;
@@ -183,14 +182,6 @@ class RenderWidgetHostView {
   // manually becomes first responder when it receives a mouse down event.  If
   // |flag| is false, the view participates in the key-view chain as normal.
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
-
-  // Display a native control popup menu for WebKit.
-  virtual void ShowPopupWithItems(gfx::Rect bounds,
-                                  int item_height,
-                                  double item_font_size,
-                                  int selected_item,
-                                  const std::vector<WebMenuItem>& items,
-                                  bool right_aligned) = 0;
 
   // Get the view's position on the screen.
   virtual gfx::Rect GetWindowRect() = 0;

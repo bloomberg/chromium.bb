@@ -36,6 +36,7 @@
 #if defined(OS_MACOSX)
 #include "base/eintr_wrapper.h"
 #include "chrome/app/breakpad_mac.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -227,6 +228,9 @@ int RendererMain(const MainFunctionParams& parameters) {
       startup_timer(chrome::Counters::renderer_main());
 
 #if defined(OS_MACOSX)
+  // On Mac, the select popups are rendered by the browser.
+  WebKit::WebView::setUseExternalPopupMenus(true);
+
   // As long as we use Cocoa in the renderer (for the forseeable future as of
   // now; see http://crbug.com/13890 for info) we need to have a UI loop.
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);

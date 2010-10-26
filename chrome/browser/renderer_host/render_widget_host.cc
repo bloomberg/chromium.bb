@@ -164,7 +164,6 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GpuRenderingActivated,
                         OnMsgGpuRenderingActivated)
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
@@ -977,16 +976,6 @@ void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
 }
 
 #if defined(OS_MACOSX)
-
-void RenderWidgetHost::OnMsgShowPopup(
-    const ViewHostMsg_ShowPopup_Params& params) {
-  view_->ShowPopupWithItems(params.bounds,
-                            params.item_height,
-                            params.item_font_size,
-                            params.selected_item,
-                            params.popup_items,
-                            params.right_aligned);
-}
 
 void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,
                                           WebScreenInfo* results) {

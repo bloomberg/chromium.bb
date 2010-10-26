@@ -343,6 +343,16 @@ void TabContentsViewWin::ShowContextMenu(const ContextMenuParams& params) {
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
+void TabContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
+                                       int item_height,
+                                       double item_font_size,
+                                       int selected_item,
+                                       const std::vector<WebMenuItem>& items,
+                                       bool right_aligned) {
+  // External popup menus are only used on Mac.
+  NOTREACHED();
+}
+
 void TabContentsViewWin::OnHScroll(int scroll_type, short position,
                                    HWND scrollbar) {
   ScrollCommon(WM_HSCROLL, scroll_type, position, scrollbar);

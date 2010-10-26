@@ -496,6 +496,12 @@ class RenderViewHost : public RenderWidgetHost {
   // in render_messages.h.
   void EnablePreferredSizeChangedMode(int flags);
 
+#if defined(OS_MACOSX)
+  // Select popup menu related methods (for external popup menus).
+  void DidSelectPopupMenuItem(int selected_index);
+  void DidCancelPopupMenu();
+#endif
+
 #if defined(UNIT_TEST)
   // These functions shouldn't be necessary outside of testing.
 
@@ -710,6 +716,10 @@ class RenderViewHost : public RenderWidgetHost {
   void OnPageReadyForPreview(const ViewHostMsg_DidPrintPage_Params& params);
 #else
   void OnPagesReadyForPreview(int fd_in_browser);
+#endif
+
+#if defined(OS_MACOSX)
+  void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
 #endif
 
  private:

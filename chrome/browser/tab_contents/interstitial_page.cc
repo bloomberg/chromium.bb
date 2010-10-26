@@ -104,6 +104,12 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
                                  const gfx::Rect& initial_pos);
   virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params);
+  virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<WebMenuItem>& items,
+                             bool right_aligned);
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
                              const SkBitmap& image,
@@ -615,6 +621,15 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::ShowContextMenu(
     const ContextMenuParams& params) {
 }
 
+void InterstitialPage::InterstitialPageRVHViewDelegate::ShowPopupMenu(
+    const gfx::Rect& bounds,
+    int item_height,
+    double item_font_size,
+    int selected_item,
+    const std::vector<WebMenuItem>& items,
+    bool right_aligned) {
+}
+
 void InterstitialPage::InterstitialPageRVHViewDelegate::StartDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask allowed_operations,
@@ -699,8 +714,9 @@ int InterstitialPage::GetBrowserWindowID() const {
 }
 
 void InterstitialPage::UpdateInspectorSetting(const std::string& key,
-                                         const std::string& value) {
-  RenderViewHostDelegateHelper::UpdateInspectorSetting(tab_->profile(), key, value);
+                                              const std::string& value) {
+  RenderViewHostDelegateHelper::UpdateInspectorSetting(
+      tab_->profile(), key, value);
 }
 
 void InterstitialPage::ClearInspectorSettings() {

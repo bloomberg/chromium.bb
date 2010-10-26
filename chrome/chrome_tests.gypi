@@ -2127,6 +2127,9 @@
           'dependencies+++': [
             '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
+          'sources': [
+            'renderer/external_popup_menu_unittest.cc',
+          ],
         }, { # else: OS != "mac"
           'sources!': [
             'browser/extensions/browser_action_test_util_mac.mm',

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -90,6 +91,12 @@ class BackgroundContents : public RenderViewHostDelegate,
                                  const gfx::Rect& initial_pos);
   virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params) {}
+  virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<WebMenuItem>& items,
+                             bool right_aligned) {}
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_operations,
                              const SkBitmap& image,

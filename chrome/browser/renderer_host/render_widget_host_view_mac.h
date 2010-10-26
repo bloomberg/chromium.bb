@@ -21,7 +21,6 @@
 #include "chrome/common/edit_command.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webmenuitem.h"
 
 @class AcceleratedPluginView;
 class RenderWidgetHostViewMac;
@@ -209,12 +208,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag);
-  virtual void ShowPopupWithItems(gfx::Rect bounds,
-                                  int item_height,
-                                  double item_font_size,
-                                  int selected_item,
-                                  const std::vector<WebMenuItem>& items,
-                                  bool right_aligned);
   virtual gfx::Rect GetWindowRect();
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
@@ -264,8 +257,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetVisuallyDeemphasized(bool deemphasized);
 
   void KillSelf();
-
-  void set_parent_view(NSView* parent_view) { parent_view_ = parent_view; }
 
   void SetTextInputActive(bool active);
 
@@ -328,11 +319,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   bool IsVoiceOverRunning();
 
   // The associated view. This is weak and is inserted into the view hierarchy
-  // to own this RenderWidgetHostViewMac object unless is_popup_menu_ is true.
-  // In that case, cocoa_view_ is never inserted into the view hierarchy, so
-  // the RenderWidgetHostViewMac will treat it as a strong reference and will
-  // release it when told to destroy (for example, because a pop-up menu has
-  // closed).
+  // to own this RenderWidgetHostViewMac object.
   RenderWidgetHostViewCocoa* cocoa_view_;
 
   // The cursor for the page. This is passed up from the renderer.
@@ -344,18 +331,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // true if the View is not visible.
   bool is_hidden_;
 
-  // True if the widget is a native popup menu.  The renderer code calls this
-  // an "external popup."
-  bool is_popup_menu_;
-
   // The text to be shown in the tooltip, supplied by the renderer.
   std::wstring tooltip_text_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   ScopedRunnableMethodFactory<RenderWidgetHostViewMac> shutdown_factory_;
-
-  // Used for positioning a popup menu.
-  NSView* parent_view_;
 
   // selected text on the renderer.
   std::string selected_text_;

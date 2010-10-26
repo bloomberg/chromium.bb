@@ -25,6 +25,7 @@ class NavigationController;
 class SiteInstance;
 class TestingProfile;
 class TestTabContents;
+struct WebMenuItem;
 struct ViewHostMsg_FrameNavigate_Params;
 
 // Utility function to initialize ViewHostMsg_NavigateParams_Params

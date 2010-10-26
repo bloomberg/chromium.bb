@@ -50,6 +50,7 @@ struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct WebDropData;
+struct WebMenuItem;
 class WebKeyboardEvent;
 struct WebPreferences;
 
@@ -145,6 +146,16 @@ class RenderViewHostDelegate {
     // A context menu should be shown, to be built using the context information
     // provided in the supplied params.
     virtual void ShowContextMenu(const ContextMenuParams& params) = 0;
+
+    // Shows a popup menu with the specified items.
+    // This method should call RenderViewHost::DidSelectPopupMenuItemAt() or
+    // RenderViewHost::DidCancelPopupMenu() ased on the user action.
+    virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                               int item_height,
+                               double item_font_size,
+                               int selected_item,
+                               const std::vector<WebMenuItem>& items,
+                               bool right_aligned) = 0;
 
     // The user started dragging content of the specified type within the
     // RenderView. Contextual information about the dragged content is supplied

@@ -1113,6 +1113,10 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_SetPhishingModel,
                        IPC::PlatformFileForTransit /* model_file */)
 
+  // External popup menus.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
+                      int /* selected index, -1 means no selection */)
+
 IPC_END_MESSAGES(View)
 
 

@@ -494,7 +494,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgGpuRenderingActivated(bool activated);
 
 #if defined(OS_MACOSX)
-  void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
   void OnMsgGetScreenInfo(gfx::NativeViewId view,
                           WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);

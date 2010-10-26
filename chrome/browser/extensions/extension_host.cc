@@ -34,6 +34,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -619,6 +620,22 @@ void ExtensionHost::ShowCreatedWidgetInternal(
 
 void ExtensionHost::ShowContextMenu(const ContextMenuParams& params) {
   // TODO(erikkay) Show a default context menu.
+}
+
+void ExtensionHost::ShowPopupMenu(const gfx::Rect& bounds,
+                                  int item_height,
+                                  double item_font_size,
+                                  int selected_item,
+                                  const std::vector<WebMenuItem>& items,
+                                  bool right_aligned) {
+#if defined(OS_MACOSX)
+  PopupMenuHelper popup_menu_helper(render_view_host());
+  popup_menu_helper.ShowPopupMenu(bounds, item_height, item_font_size,
+                                  selected_item, items, right_aligned);
+#else
+  // Only on Mac are select popup menus external.
+  NOTREACHED();
+#endif
 }
 
 void ExtensionHost::StartDragging(const WebDropData& drop_data,

@@ -898,6 +898,9 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateContentRestrictions,
                         OnUpdateContentRestrictions)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
+#endif
 #if defined(OS_MACOSX) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageReadyForPreview,
                         OnPageReadyForPreview)
@@ -2024,6 +2027,16 @@ void RenderViewHost::EnablePreferredSizeChangedMode(int flags) {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
 }
 
+#if defined(OS_MACOSX)
+void RenderViewHost::DidSelectPopupMenuItem(int selected_index) {
+  Send(new ViewMsg_SelectPopupMenuItem(routing_id(), selected_index));
+}
+
+void RenderViewHost::DidCancelPopupMenu() {
+  Send(new ViewMsg_SelectPopupMenuItem(routing_id(), -1));
+}
+#endif
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {
@@ -2154,6 +2167,21 @@ void RenderViewHost::OnScriptEvalResponse(int id, bool result) {
 void RenderViewHost::OnUpdateContentRestrictions(int restrictions) {
   delegate_->UpdateContentRestrictions(restrictions);
 }
+
+#if defined(OS_MACOSX)
+void RenderViewHost::OnMsgShowPopup(
+    const ViewHostMsg_ShowPopup_Params& params) {
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view) {
+    view->ShowPopupMenu(params.bounds,
+                        params.item_height,
+                        params.item_font_size,
+                        params.selected_item,
+                        params.popup_items,
+                        params.right_aligned);
+  }
+}
+#endif
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 void RenderViewHost::OnPageReadyForPreview(

@@ -41,7 +41,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/glue/webmenurunner_mac.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 
 using WebKit::WebInputEvent;
@@ -438,9 +437,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       text_input_type_(WebKit::WebTextInputTypeNone),
       is_loading_(false),
       is_hidden_(false),
-      is_popup_menu_(false),
-      shutdown_factory_(this),
-      parent_view_(NULL) {
+      shutdown_factory_(this) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
   // Since we autorelease it, our caller must put |native_view()| into the view
   // hierarchy right after calling us.
@@ -732,36 +729,22 @@ void RenderWidgetHostViewMac::Destroy() {
   // time Destroy() was called. On the Mac we have to destroy all the popups
   // ourselves.
 
-  if (!is_popup_menu_) {
-    // Depth-first destroy all popups. Use ShutdownHost() to enforce
-    // deepest-first ordering.
-    for (NSView* subview in [cocoa_view_ subviews]) {
-      if ([subview isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
-        [static_cast<RenderWidgetHostViewCocoa*>(subview)
-            renderWidgetHostViewMac]->ShutdownHost();
-      } else if ([subview isKindOfClass:[AcceleratedPluginView class]]) {
-        [static_cast<AcceleratedPluginView*>(subview)
-            onRenderWidgetHostViewGone];
-      }
+  // Depth-first destroy all popups. Use ShutdownHost() to enforce
+  // deepest-first ordering.
+  for (NSView* subview in [cocoa_view_ subviews]) {
+    if ([subview isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
+      [static_cast<RenderWidgetHostViewCocoa*>(subview)
+          renderWidgetHostViewMac]->ShutdownHost();
+    } else if ([subview isKindOfClass:[AcceleratedPluginView class]]) {
+      [static_cast<AcceleratedPluginView*>(subview)
+          onRenderWidgetHostViewGone];
     }
-
-    // We've been told to destroy.
-    [cocoa_view_ retain];
-    [cocoa_view_ removeFromSuperview];
-    [cocoa_view_ autorelease];
-  } else {
-    // From the renderer's perspective, the pop-up menu is represented by a
-    // RenderWidget. The actual Mac implementation uses a native pop-up menu
-    // and doesn't actually make use of the RenderWidgetHostViewCocoa that
-    // was allocated to own it in its constructor.  When the pop-up menu goes
-    // away, free the RenderWidgetHostViewCocoa. Its deallocation will result
-    // in this object's destruction.
-
-    DCHECK([[cocoa_view_ subviews] count] == 0);
-    DCHECK([cocoa_view_ superview] == nil);
-
-    [cocoa_view_ autorelease];
   }
+
+  // We've been told to destroy.
+  [cocoa_view_ retain];
+  [cocoa_view_ removeFromSuperview];
+  [cocoa_view_ autorelease];
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
@@ -813,78 +796,6 @@ VideoLayer* RenderWidgetHostViewMac::AllocVideoLayer(
 // Sets whether or not to accept first responder status.
 void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
   [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];
-}
-
-// Display a popup menu for WebKit using Cocoa widgets.
-void RenderWidgetHostViewMac::ShowPopupWithItems(
-    gfx::Rect bounds,
-    int item_height,
-    double item_font_size,
-    int selected_item,
-    const std::vector<WebMenuItem>& items,
-    bool right_aligned) {
-  is_popup_menu_ = true;
-
-  // Retain the Cocoa view for the duration of the pop-up so that it can't
-  // be dealloced if my Destroy() method is called while the pop-up's up
-  // (which would in turn delete me, causing a crash once the -runMenuInView
-  // call returns. That's what was happening in <http://crbug.com/33250>).
-  scoped_nsobject<RenderWidgetHostViewCocoa> retainedCocoaView
-      ([cocoa_view_ retain]);
-
-  NSRect view_rect = [cocoa_view_ bounds];
-  NSRect parent_rect = [parent_view_ bounds];
-  int y_offset = bounds.y() + bounds.height();
-  NSRect position = NSMakeRect(bounds.x(), parent_rect.size.height - y_offset,
-                               bounds.width(), bounds.height());
-
-  // Display the menu.
-  scoped_nsobject<WebMenuRunner> menu_runner;
-  menu_runner.reset([[WebMenuRunner alloc] initWithItems:items
-                                                fontSize:item_font_size
-                                            rightAligned:right_aligned]);
-
-  {
-    // Make sure events can be pumped while the menu is up.
-    MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-
-    // One of the events that could be pumped is |window.close()|.
-    // User-initiated event-tracking loops protect against this by
-    // setting flags in -[CrApplication sendEvent:], but since
-    // web-content menus are initiated by IPC message the setup has to
-    // be done manually.
-    chrome_application_mac::ScopedSendingEvent sendingEventScoper;
-
-    // Now run a SYNCHRONOUS NESTED EVENT LOOP until the pop-up is finished.
-    [menu_runner runMenuInView:parent_view_
-                    withBounds:position
-                  initialIndex:selected_item];
-  }
-
-  if (!render_widget_host_) {
-    // Bad news -- my Destroy() was called while I was off running the menu.
-    // Return ASAP, and the release of retainedCocoaView will dealloc my NSView,
-    // which will delete me (whew).
-    return;
-  }
-
-  int window_num = [[parent_view_ window] windowNumber];
-  NSEvent* event =
-      webkit_glue::EventWithMenuAction([menu_runner menuItemWasChosen],
-                                       window_num, item_height,
-                                       [menu_runner indexOfSelectedItem],
-                                       position, view_rect);
-
-  if ([menu_runner menuItemWasChosen]) {
-    // Simulate a menu selection event.
-    const WebMouseEvent& mouse_event =
-        WebInputEventFactory::mouseEvent(event, cocoa_view_);
-    render_widget_host_->ForwardMouseEvent(mouse_event);
-  } else {
-    // Simulate a menu dismiss event.
-    NativeWebKeyboardEvent keyboard_event(event);
-    render_widget_host_->ForwardKeyboardEvent(keyboard_event);
-  }
 }
 
 void RenderWidgetHostViewMac::KillSelf() {

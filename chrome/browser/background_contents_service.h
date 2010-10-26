@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class BackgroundContents;
 class CommandLine;
 class PrefService;
 class Profile;

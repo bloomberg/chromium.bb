@@ -60,6 +60,7 @@
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
+#include "chrome/renderer/external_popup_menu.h"
 #include "chrome/renderer/geolocation_dispatcher_old.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/localized_error.h"
@@ -200,6 +201,8 @@ using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
+using WebKit::WebExternalPopupMenu;
+using WebKit::WebExternalPopupMenuClient;
 using WebKit::WebFileChooserCompletion;
 using WebKit::WebFileSystem;
 using WebKit::WebFileSystemCallbacks;
@@ -844,6 +847,9 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
+#endif
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
 
     // Have the super handle all other messages.
@@ -1830,6 +1836,15 @@ WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
                                               WebKit::WebPopupTypeSelect);
   widget->ConfigureAsExternalPopupMenu(info);
   return widget->webwidget();
+}
+
+WebExternalPopupMenu* RenderView::createExternalPopupMenu(
+    const WebPopupMenuInfo& popup_menu_info,
+    WebExternalPopupMenuClient* popup_menu_client) {
+  DCHECK(!external_popup_menu_.get());
+  external_popup_menu_.reset(
+      new ExternalPopupMenu(this, popup_menu_info, popup_menu_client));
+  return external_popup_menu_.get();
 }
 
 WebWidget* RenderView::createFullscreenWindow(WebKit::WebPopupType popup_type) {
@@ -6078,3 +6093,10 @@ void RenderView::OnAsyncFileOpened(base::PlatformFileError error_code,
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit),
       message_id);
 }
+
+#if defined(OS_MACOSX)
+void RenderView::OnSelectPopupMenuItem(int selected_index) {
+  external_popup_menu_->DidSelectItem(selected_index);
+  external_popup_menu_.reset();
+}
+#endif

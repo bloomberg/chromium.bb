@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include <string>
+#include <vector>
 
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/base_view.h"
@@ -76,6 +77,12 @@ class TabContentsViewMac : public TabContentsView,
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);
+  virtual void ShowPopupMenu(const gfx::Rect& bounds,
+                             int item_height,
+                             double item_font_size,
+                             int selected_item,
+                             const std::vector<WebMenuItem>& items,
+                             bool right_aligned);
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_operations,
                              const SkBitmap& image,

@@ -2833,6 +2833,8 @@
         'browser/tab_contents/navigation_entry.cc',
         'browser/tab_contents/navigation_entry.h',
         'browser/tab_contents/page_navigator.h',
+        'browser/tab_contents/popup_menu_helper_mac.mm',
+        'browser/tab_contents/popup_menu_helper_mac.h',
         'browser/tab_contents/provisional_load_details.cc',
         'browser/tab_contents/provisional_load_details.h',
         'browser/tab_contents/render_view_context_menu.cc',

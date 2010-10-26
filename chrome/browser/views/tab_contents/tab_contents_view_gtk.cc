@@ -393,6 +393,16 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
+void TabContentsViewGtk::ShowPopupMenu(const gfx::Rect& bounds,
+                                       int item_height,
+                                       double item_font_size,
+                                       int selected_item,
+                                       const std::vector<WebMenuItem>& items,
+                                       bool right_aligned) {
+  // External popup menus are only used on Mac.
+  NOTREACHED();
+}
+
 gboolean TabContentsViewGtk::OnButtonPress(GtkWidget* widget,
                                            GdkEventButton* event) {
   last_mouse_down_ = *event;

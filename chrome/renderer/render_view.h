@@ -28,6 +28,7 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
+#include "chrome/renderer/external_popup_menu.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
@@ -351,6 +352,9 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
       const WebKit::WebPopupMenuInfo& info);
+  virtual WebKit::WebExternalPopupMenu* createExternalPopupMenu(
+      const WebKit::WebPopupMenuInfo& popup_menu_info,
+      WebKit::WebExternalPopupMenuClient* popup_menu_client);
   virtual WebKit::WebWidget* createFullscreenWindow(
       WebKit::WebPopupType popup_type);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
@@ -630,8 +634,12 @@ class RenderView : public RenderWidget,
 
  private:
   // For unit tests.
-  friend class RenderViewTest;
+  friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
+  friend class RenderViewTest;
+
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, ImeComposition);
@@ -890,6 +898,7 @@ class RenderView : public RenderWidget,
 #if defined(OS_MACOSX)
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
                             const gfx::Rect& view_frame);
+  void OnSelectPopupMenuItem(int selected_index);
 #endif
   void OnZoom(PageZoom::Function function);
 
@@ -1375,6 +1384,9 @@ class RenderView : public RenderWidget,
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;
+
+  // The external popup for the currently showing select popup.
+  scoped_ptr<ExternalPopupMenu> external_popup_menu_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above
