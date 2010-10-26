@@ -34,6 +34,7 @@ SimpleDataSource::SimpleDataSource(
     : render_loop_(render_loop),
       bridge_factory_(bridge_factory),
       size_(-1),
+      single_origin_(true),
       state_(UNINITIALIZED) {
   DCHECK(render_loop);
 }
@@ -112,7 +113,9 @@ bool SimpleDataSource::OnReceivedRedirect(
     const webkit_glue::ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
-  SetURL(new_url);
+  DCHECK(MessageLoop::current() == render_loop_);
+  single_origin_ = url_.GetOrigin() == new_url.GetOrigin();
+
   // TODO(wtc): should we return a new first party for cookies URL?
   *has_new_first_party_for_cookies = false;
   return true;
@@ -121,16 +124,19 @@ bool SimpleDataSource::OnReceivedRedirect(
 void SimpleDataSource::OnReceivedResponse(
     const webkit_glue::ResourceResponseInfo& info,
     bool content_filtered) {
+  DCHECK(MessageLoop::current() == render_loop_);
   size_ = info.content_length;
 }
 
 void SimpleDataSource::OnReceivedData(const char* data, int len) {
+  DCHECK(MessageLoop::current() == render_loop_);
   data_.append(data, len);
 }
 
 void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
                                           const std::string& security_info,
                                           const base::Time& completion_time) {
+  DCHECK(MessageLoop::current() == render_loop_);
   AutoLock auto_lock(lock_);
   // It's possible this gets called after Stop(), in which case |host_| is no
   // longer valid.
@@ -151,6 +157,16 @@ void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
   DoneInitialization_Locked(status.is_success());
 }
 
+bool SimpleDataSource::HasSingleOrigin() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  return single_origin_;
+}
+
+void SimpleDataSource::Abort() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  NOTIMPLEMENTED();
+}
+
 void SimpleDataSource::SetURL(const GURL& url) {
   url_ = url;
   media_format_.Clear();
@@ -160,8 +176,8 @@ void SimpleDataSource::SetURL(const GURL& url) {
 }
 
 void SimpleDataSource::StartTask() {
-  AutoLock auto_lock(lock_);
   DCHECK(MessageLoop::current() == render_loop_);
+  AutoLock auto_lock(lock_);
 
   // We may have stopped.
   if (state_ == STOPPED)
@@ -186,6 +202,7 @@ void SimpleDataSource::StartTask() {
 }
 
 void SimpleDataSource::CancelTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
   AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, STOPPED);
 

@@ -14,13 +14,14 @@
 #include "base/scoped_ptr.h"
 #include "media/base/filters.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
+#include "webkit/glue/media/web_data_source.h"
 
 class MessageLoop;
 class WebMediaPlayerDelegateImpl;
 
 namespace webkit_glue {
 
-class SimpleDataSource : public media::DataSource,
+class SimpleDataSource : public WebDataSource,
                          public webkit_glue::ResourceLoaderBridge::Peer {
  public:
   SimpleDataSource(
@@ -56,6 +57,10 @@ class SimpleDataSource : public media::DataSource,
                                   const std::string& security_info,
                                   const base::Time& completion_time);
 
+  // webkit_glue::WebDataSource implementation.
+  virtual bool HasSingleOrigin();
+  virtual void Abort();
+
  private:
   // Updates |url_| and |media_format_| with the given URL.
   void SetURL(const GURL& url);
@@ -82,6 +87,7 @@ class SimpleDataSource : public media::DataSource,
   GURL url_;
   std::string data_;
   int64 size_;
+  bool single_origin_;
 
   // Simple state tracking variable.
   enum State {

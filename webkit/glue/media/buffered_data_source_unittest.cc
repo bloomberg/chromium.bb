@@ -27,6 +27,7 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::NiceMock;
@@ -525,6 +526,7 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
   MOCK_METHOD0(instance_size, int64());
   MOCK_METHOD0(partial_response, bool());
   MOCK_METHOD0(network_activity, bool());
+  MOCK_METHOD0(url, const GURL&());
   MOCK_METHOD0(GetBufferedFirstBytePosition, int64());
   MOCK_METHOD0(GetBufferedLastBytePosition, int64());
 
@@ -622,6 +624,8 @@ class BufferedDataSourceTest : public testing::Test {
       // to be created.
       if (partial_response && (error == net::ERR_INVALID_RESPONSE)) {
         // Verify that the initial loader is stopped.
+        EXPECT_CALL(*loader_, url())
+            .WillRepeatedly(ReturnRef(gurl_));
         EXPECT_CALL(*loader_, Stop());
 
         // Replace loader_ with a new instance.
@@ -642,10 +646,12 @@ class BufferedDataSourceTest : public testing::Test {
         .WillByDefault(DeleteArg<3>());
 
     StrictMock<media::MockFilterCallback> callback;
-    EXPECT_CALL(*loader_, instance_size())
-        .WillRepeatedly(Return(instance_size));
-    EXPECT_CALL(*loader_, partial_response())
-        .WillRepeatedly(Return(partial_response));
+    ON_CALL(*loader_, instance_size())
+        .WillByDefault(Return(instance_size));
+    ON_CALL(*loader_, partial_response())
+        .WillByDefault(Return(partial_response));
+    ON_CALL(*loader_, url())
+        .WillByDefault(ReturnRef(gurl_));
     if (initialized_ok) {
       // Expected loaded or not.
       EXPECT_CALL(host_, SetLoaded(loaded));

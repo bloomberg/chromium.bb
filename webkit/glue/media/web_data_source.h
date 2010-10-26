@@ -16,6 +16,11 @@ class WebDataSource : public media::DataSource {
   WebDataSource();
   virtual ~WebDataSource();
 
+  // Returns true if the media resource has a single origin, false otherwise.
+  //
+  // Method called on the render thread.
+  virtual bool HasSingleOrigin() = 0;
+
   // This method is used to unblock any read calls that would cause the
   // media pipeline to stall.
   //

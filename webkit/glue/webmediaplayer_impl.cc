@@ -88,14 +88,14 @@ void WebMediaPlayerImpl::Proxy::Repaint() {
   }
 }
 
-void WebMediaPlayerImpl::Proxy::SetDataSource(
-    scoped_refptr<WebDataSource> data_source) {
-  data_source_ = data_source;
-}
-
 void WebMediaPlayerImpl::Proxy::SetVideoRenderer(
     scoped_refptr<WebVideoRenderer> video_renderer) {
   video_renderer_ = video_renderer;
+}
+
+void WebMediaPlayerImpl::Proxy::SetDataSource(
+    scoped_refptr<WebDataSource> data_source) {
+  data_source_ = data_source;
 }
 
 void WebMediaPlayerImpl::Proxy::Paint(skia::PlatformCanvas* canvas,
@@ -111,6 +111,14 @@ void WebMediaPlayerImpl::Proxy::SetSize(const gfx::Rect& rect) {
   if (video_renderer_) {
     video_renderer_->SetRect(rect);
   }
+}
+
+bool WebMediaPlayerImpl::Proxy::HasSingleOrigin() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (data_source_) {
+    return data_source_->HasSingleOrigin();
+  }
+  return true;
 }
 
 void WebMediaPlayerImpl::Proxy::AbortDataSource() {
@@ -597,9 +605,8 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 }
 
 bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
-  // TODO(scherkus): we'll need to do something smarter here if/when we start to
-  // support formats that contain references to external resources (i.e., MP4s
-  // containing links to other MP4s).  See http://crbug.com/25432
+  if (proxy_)
+    return proxy_->HasSingleOrigin();
   return true;
 }
 

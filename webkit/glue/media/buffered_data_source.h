@@ -106,6 +106,9 @@ class BufferedResourceLoader :
   // Returns true if network is currently active.
   virtual bool network_activity() { return !completed_ && !deferred_; }
 
+  // Returns resulting URL.
+  virtual const GURL& url() { return url_; }
+
   /////////////////////////////////////////////////////////////////////////////
   // webkit_glue::ResourceLoaderBridge::Peer implementations.
   virtual void OnUploadProgress(uint64 position, uint64 size) {}
@@ -240,6 +243,7 @@ class BufferedDataSource : public WebDataSource {
   }
 
   // webkit_glue::WebDataSource implementation.
+  virtual bool HasSingleOrigin();
   virtual void Abort();
 
  protected:
@@ -333,6 +337,9 @@ class BufferedDataSource : public WebDataSource {
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.
   bool streaming_;
+
+  // True if the media resource has a single origin.
+  bool single_origin_;
 
   // A factory object to produce ResourceLoaderBridge.
   scoped_ptr<webkit_glue::MediaResourceLoaderBridgeFactory> bridge_factory_;
