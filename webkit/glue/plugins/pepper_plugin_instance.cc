@@ -238,6 +238,15 @@ void ZoomChanged(PP_Instance instance_id, double factor) {
   if (!instance)
     return;
   double zoom_level = WebView::zoomFactorToZoomLevel(factor);
+  // The conversino from zoom level to factor, and back, can introduce rounding
+  // errors.  i.e. WebKit originally tells us 3.0, but by the time we tell the
+  // plugin and it tells us back, the level becomes 3.000000000004.  Need to
+  // round or else otherwise if the user zooms out, it will go to 3.0 instead of
+  // 2.0.
+  int rounded =
+      static_cast<int>(zoom_level + (zoom_level > 0 ? 0.001 : -0.001));
+  if (abs(rounded - zoom_level) < 0.001)
+    zoom_level = rounded;
   instance->container()->zoomLevelChanged(zoom_level);
 }
 
