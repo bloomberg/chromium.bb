@@ -1,4 +1,5 @@
 # These tests fail under Dr. Memory; see http://crbug.com/57832
+JingleChromotingConnectionTest.TestControlChannel
 JingleChromotingConnectionTest.TestVideoChannel
 JingleChromotingConnectionTest.TestVideoRtpChannel
 

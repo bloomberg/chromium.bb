@@ -30,7 +30,7 @@ class ClientConnectionTest : public testing::Test {
     viewer_ = new ClientConnection(&message_loop_, &handler_);
     viewer_->Init(connection_);
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
-    connection_->get_state_change_callback()->Run(
+    connection_->state_change_callback()->Run(
         ChromotingConnection::CONNECTED);
     message_loop_.RunAllPending();
   }
@@ -62,11 +62,11 @@ TEST_F(ClientConnectionTest, SendUpdateStream) {
 
 TEST_F(ClientConnectionTest, StateChange) {
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get()));
-  connection_->get_state_change_callback()->Run(ChromotingConnection::CLOSED);
+  connection_->state_change_callback()->Run(ChromotingConnection::CLOSED);
   message_loop_.RunAllPending();
 
   EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get()));
-  connection_->get_state_change_callback()->Run(ChromotingConnection::FAILED);
+  connection_->state_change_callback()->Run(ChromotingConnection::FAILED);
   message_loop_.RunAllPending();
 }
 

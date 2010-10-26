@@ -57,7 +57,7 @@ class FakeChromotingConnection : public ChromotingConnection {
   FakeChromotingConnection();
   virtual ~FakeChromotingConnection();
 
-  StateChangeCallback* get_state_change_callback() { return callback_.get(); }
+  StateChangeCallback* state_change_callback() { return callback_.get(); }
 
   void set_message_loop(MessageLoop* message_loop) {
     message_loop_ = message_loop;
@@ -67,8 +67,9 @@ class FakeChromotingConnection : public ChromotingConnection {
 
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
-  virtual FakeSocket* GetVideoChannel();
+  virtual FakeSocket* GetControlChannel();
   virtual FakeSocket* GetEventChannel();
+  virtual FakeSocket* GetVideoChannel();
 
   virtual FakeSocket* GetVideoRtpChannel();
   virtual FakeSocket* GetVideoRtcpChannel();
@@ -87,8 +88,9 @@ class FakeChromotingConnection : public ChromotingConnection {
   scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
   scoped_ptr<const ChromotocolConfig> config_;
   MessageLoop* message_loop_;
-  FakeSocket video_channel_;
+  FakeSocket control_channel_;
   FakeSocket event_channel_;
+  FakeSocket video_channel_;
   FakeSocket video_rtp_channel_;
   FakeSocket video_rtcp_channel_;
   std::string jid_;

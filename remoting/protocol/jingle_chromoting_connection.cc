@@ -21,11 +21,14 @@ using cricket::Session;
 namespace remoting {
 
 namespace {
+const char kControlChannelName[] = "control";
+const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
 const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortcp";
-const char kEventChannelName[] = "event";
 }  // namespace
+
+const char JingleChromotingConnection::kChromotingContentName[] = "chromoting";
 
 JingleChromotingConnection::JingleChromotingConnection(
     JingleChromotingServer* server)
@@ -73,15 +76,20 @@ void JingleChromotingConnection::SetStateChangeCallback(
   state_change_callback_.reset(callback);
 }
 
-// TODO(sergeyu): Remove this method after we switch to RTP.
-net::Socket* JingleChromotingConnection::GetVideoChannel() {
+net::Socket* JingleChromotingConnection::GetControlChannel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
-  return video_channel_adapter_.get();
+  return control_channel_adapter_.get();
 }
 
 net::Socket* JingleChromotingConnection::GetEventChannel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return event_channel_adapter_.get();
+}
+
+// TODO(sergeyu): Remove this method after we switch to RTP.
+net::Socket* JingleChromotingConnection::GetVideoChannel() {
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
+  return video_channel_adapter_.get();
 }
 
 net::Socket* JingleChromotingConnection::GetVideoRtpChannel() {
@@ -137,6 +145,14 @@ void JingleChromotingConnection::Close(Task* closed_task) {
   }
 
   if (!closed_) {
+    if (control_channel_adapter_.get())
+      control_channel_adapter_->Close(net::ERR_CONNECTION_CLOSED);
+
+    if (control_channel_) {
+      control_channel_->OnSessionTerminate(session_);
+      control_channel_ = NULL;
+    }
+
     if (event_channel_adapter_.get())
       event_channel_adapter_->Close(net::ERR_CONNECTION_CLOSED);
 
@@ -176,22 +192,19 @@ void JingleChromotingConnection::OnSessionState(
 
   switch (state) {
     case Session::STATE_SENTINITIATE:
-      OnInitiate(false);
-      break;
-
     case Session::STATE_RECEIVEDINITIATE:
-      OnInitiate(true);
+      OnInitiate();
       break;
 
     case Session::STATE_SENTACCEPT:
-      OnAccept(false);
-      break;
-
     case Session::STATE_RECEIVEDACCEPT:
-      OnAccept(true);
+      OnAccept();
       break;
 
+    case Session::STATE_SENTTERMINATE:
     case Session::STATE_RECEIVEDTERMINATE:
+    case Session::STATE_SENTREJECT:
+    case Session::STATE_RECEIVEDREJECT:
       OnTerminate();
       break;
 
@@ -201,31 +214,77 @@ void JingleChromotingConnection::OnSessionState(
       break;
 
     default:
+      // We don't care about other steates.
       break;
   }
 }
 
-void JingleChromotingConnection::OnInitiate(bool incoming) {
+void JingleChromotingConnection::OnInitiate() {
   jid_ = session_->remote_name();
-  if (incoming)
+
+  std::string content_name;
+  // If we initiate the connection, we get to specify the content name. When
+  // accepting one, the remote end specifies it.
+  if (session_->initiator()) {
+    content_name = kChromotingContentName;
+  } else {
+    const cricket::ContentInfo* content;
+    content = session_->remote_description()->FirstContentByType(
+        kChromotingXmlNamespace);
+    CHECK(content);
+    content_name = content->name;
+  }
+
+  // Create video RTP channels.
+  video_rtp_channel_.reset(new TransportChannelSocketAdapter(
+      session_->CreateChannel(content_name, kVideoRtpChannelName)));
+  video_rtcp_channel_.reset(new TransportChannelSocketAdapter(
+      session_->CreateChannel(content_name, kVideoRtcpChannelName)));
+
+  // Create control channel.
+  // TODO(sergeyu): Don't use talk_base::Thread::Current() here.
+  control_channel_ =
+      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
+  control_channel_->Connect(content_name, kControlChannelName);
+  control_channel_adapter_.reset(new StreamSocketAdapter(
+      control_channel_->GetStream()));
+
+  // Create event channel.
+  event_channel_ =
+      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
+  event_channel_->Connect(content_name, kEventChannelName);
+  event_channel_adapter_.reset(new StreamSocketAdapter(
+      event_channel_->GetStream()));
+
+  // Create video channel.
+  // TODO(sergeyu): Remove video channel when we are ready to switch to RTP.
+  video_channel_ =
+      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
+  video_channel_->Connect(content_name, kVideoChannelName);
+  video_channel_adapter_.reset(new StreamSocketAdapter(
+      video_channel_->GetStream()));
+
+  if (!session_->initiator())
     server_->AcceptConnection(this, session_);
+
   SetState(CONNECTING);
 }
 
-void JingleChromotingConnection::OnAccept(bool incoming) {
-  const cricket::ContentInfo* content =
-      session_->remote_description()->FirstContentByType(
-          kChromotingXmlNamespace);
-  CHECK(content);
-
+void JingleChromotingConnection::OnAccept() {
   // Set config for outgoing connections.
-  if (incoming) {
+  if (session_->initiator()) {
+    const cricket::ContentInfo* content =
+        session_->remote_description()->FirstContentByType(
+            kChromotingXmlNamespace);
+    CHECK(content);
+
     const ChromotingContentDescription* content_description =
         static_cast<const ChromotingContentDescription*>(content->description);
     ChromotocolConfig* config = content_description->config()->GetFinalConfig();
 
     // Terminate the session if the config we received is invalid.
     if (!config || !candidate_config()->IsSupported(config)) {
+      // TODO(sergeyu): Inform the user that the host is misbehaving?
       LOG(ERROR) << "Terminating outgoing session after an "
           "invalid session description has been received.";
       session_->Terminate();
@@ -235,31 +294,17 @@ void JingleChromotingConnection::OnAccept(bool incoming) {
     set_config(config);
   }
 
-  // Create video RTP channels.
-  video_rtp_channel_.reset(new TransportChannelSocketAdapter(
-      session_->CreateChannel(content->name, kVideoRtpChannelName)));
-  video_rtcp_channel_.reset(new TransportChannelSocketAdapter(
-      session_->CreateChannel(content->name, kVideoRtcpChannelName)));
-
-  // Create event channel.
-  event_channel_ =
-      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
-  event_channel_->Connect(content->name, kEventChannelName);
-  event_channel_adapter_.reset(new StreamSocketAdapter(
-      event_channel_->GetStream()));
-
-  // Create video channel.
-  // TODO(sergeyu): Remove video channel when we are ready to switch to RTP.
-  video_channel_ =
-      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
-  video_channel_->Connect(content->name, kVideoChannelName);
-  video_channel_adapter_.reset(new StreamSocketAdapter(
-      video_channel_->GetStream()));
-
   SetState(CONNECTED);
 }
 
 void JingleChromotingConnection::OnTerminate() {
+  if (control_channel_adapter_.get())
+    control_channel_adapter_->Close(net::ERR_CONNECTION_ABORTED);
+  if (control_channel_) {
+    control_channel_->OnSessionTerminate(session_);
+    control_channel_ = NULL;
+  }
+
   if (event_channel_adapter_.get())
     event_channel_adapter_->Close(net::ERR_CONNECTION_ABORTED);
   if (event_channel_) {

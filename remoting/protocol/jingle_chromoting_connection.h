@@ -31,13 +31,17 @@ class TransportChannelSocketAdapter;
 class JingleChromotingConnection : public ChromotingConnection,
                                    public sigslot::has_slots<> {
  public:
+  static const char kChromotingContentName[];
+
   explicit JingleChromotingConnection(JingleChromotingServer* client);
 
   // ChromotingConnection interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
-  virtual net::Socket* GetVideoChannel();
+  virtual net::Socket* GetControlChannel();
   virtual net::Socket* GetEventChannel();
+  virtual net::Socket* GetVideoChannel();
+
   virtual net::Socket* GetVideoRtpChannel();
   virtual net::Socket* GetVideoRtcpChannel();
 
@@ -67,8 +71,8 @@ class JingleChromotingConnection : public ChromotingConnection,
   void OnSessionState(cricket::BaseSession* session,
                       cricket::BaseSession::State state);
 
-  void OnInitiate(bool incoming);
-  void OnAccept(bool incoming);
+  void OnInitiate();
+  void OnAccept();
   void OnTerminate();
 
   void SetState(State new_state);
@@ -91,6 +95,8 @@ class JingleChromotingConnection : public ChromotingConnection,
   scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
   scoped_ptr<const ChromotocolConfig> config_;
 
+  cricket::PseudoTcpChannel* control_channel_;
+  scoped_ptr<StreamSocketAdapter> control_channel_adapter_;
   cricket::PseudoTcpChannel* event_channel_;
   scoped_ptr<StreamSocketAdapter> event_channel_adapter_;
   cricket::PseudoTcpChannel* video_channel_;

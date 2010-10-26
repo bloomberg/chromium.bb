@@ -42,24 +42,28 @@ class ChromotingConnection
   virtual void SetStateChangeCallback(StateChangeCallback* callback) = 0;
 
   // Reliable PseudoTCP channels for this connection.
-  // TODO(sergeyu): Remove VideoChannel, and use RTP channels instead.
-  // TODO(sergeyu): Make it possible to create/destroy new channels on-fly?
+  virtual net::Socket* GetControlChannel() = 0;
   virtual net::Socket* GetEventChannel() = 0;
+
+  // TODO(sergeyu): Remove VideoChannel, and use RTP channels instead.
   virtual net::Socket* GetVideoChannel() = 0;
 
   // Unreliable channels for this connection.
   virtual net::Socket* GetVideoRtpChannel() = 0;
   virtual net::Socket* GetVideoRtcpChannel() = 0;
 
+  // TODO(sergeyu): Make it possible to create/destroy additional channels
+  // on-fly?
+
   // JID of the other side.
   virtual const std::string& jid() = 0;
 
-  // Message loop that must be used for to access the channels of this
-  // connection.
+  // Message loop that must be used to access the channels of this connection.
   virtual MessageLoop* message_loop() = 0;
 
-  // Configuration of the protocol requested by the client.
-  // Returned pointer is valid until connection is closed.
+  // Configuration of the protocol that was sent or received in the
+  // session-initiate jingle message. Returned pointer is valid until
+  // connection is closed.
   virtual const CandidateChromotocolConfig* candidate_config() = 0;
 
   // Protocol configuration. Can be called only after session has been accepted.

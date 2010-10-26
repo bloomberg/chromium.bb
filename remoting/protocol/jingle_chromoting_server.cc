@@ -462,7 +462,8 @@ bool JingleChromotingServer::WriteContent(
 SessionDescription* JingleChromotingServer::CreateSessionDescription(
     const CandidateChromotocolConfig* config) {
   SessionDescription* desc = new SessionDescription();
-  desc->AddContent(kChromotingContentName, kChromotingXmlNamespace,
+  desc->AddContent(JingleChromotingConnection::kChromotingContentName,
+                   kChromotingXmlNamespace,
                    new ChromotingContentDescription(config));
   return desc;
 }

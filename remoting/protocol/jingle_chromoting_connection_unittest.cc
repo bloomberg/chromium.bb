@@ -199,6 +199,7 @@ class JingleChromotingConnectionTest : public testing::Test {
 class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
  public:
   enum ChannelType {
+    CONTROL,
     EVENT,
     VIDEO,
     VIDEO_RTP,
@@ -246,6 +247,8 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   net::Socket* SelectChannel(ChromotingConnection* connection,
                              ChannelType channel) {
     switch (channel) {
+      case CONTROL:
+        return connection->GetControlChannel();
       case EVENT:
         return connection->GetEventChannel();
       case VIDEO:
@@ -541,6 +544,22 @@ TEST_F(JingleChromotingConnectionTest, Connect) {
   CreateServerPair();
   InitiateConnection();
 }
+
+// Verify that data can be transmitted over the event channel.
+TEST_F(JingleChromotingConnectionTest, TestControlChannel) {
+  CreateServerPair();
+  InitiateConnection();
+  scoped_refptr<TCPChannelTester> tester =
+      new TCPChannelTester(thread_.message_loop(), host_connection_,
+                           client_connection_);
+  tester->Start(ChannelTesterBase::CONTROL);
+  tester->WaitFinished();
+  tester->CheckResults();
+
+  // Connections must be closed while |tester| still exists.
+  CloseConnections();
+}
+
 
 // Verify that data can be transmitted over the video channel.
 TEST_F(JingleChromotingConnectionTest, TestVideoChannel) {

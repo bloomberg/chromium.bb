@@ -83,11 +83,16 @@ void FakeChromotingConnection::SetStateChangeCallback(
   callback_.reset(callback);
 }
 
-FakeSocket* FakeChromotingConnection::GetVideoChannel() {
-  return &video_channel_;
+FakeSocket* FakeChromotingConnection::GetControlChannel() {
+  return &control_channel_;
 }
+
 FakeSocket* FakeChromotingConnection::GetEventChannel() {
   return &event_channel_;
+}
+
+FakeSocket* FakeChromotingConnection::GetVideoChannel() {
+  return &video_channel_;
 }
 
 FakeSocket* FakeChromotingConnection::GetVideoRtpChannel() {
