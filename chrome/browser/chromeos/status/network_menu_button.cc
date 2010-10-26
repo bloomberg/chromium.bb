@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "gfx/canvas_skia.h"
+#include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/window/window.h"
@@ -33,7 +34,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       host_(host),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(Tween::LINEAR);
+  animation_connecting_.SetTweenType(Tween::EASE_IN_OUT);
   NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
   CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
@@ -47,14 +48,16 @@ NetworkMenuButton::~NetworkMenuButton() {
 
 void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
   if (animation == &animation_connecting_) {
-    // Figure out which image to draw. We want a value between 0-100.
-    // 0 reperesents no signal and 100 represents full signal strength.
-    int value = static_cast<int>(animation_connecting_.GetCurrentValue()*100.0);
-    if (value < 0)
-      value = 0;
-    else if (value > 100)
-      value = 100;
-    SetIcon(IconForNetworkStrength(value, false));
+    // Draw animation of bars icon fading in and out.
+    // We are fading between 0 bars and a third of the opacity of 4 bars.
+    // Use the current value of the animation to calculate the alpha value
+    // of how transparent the icon is.
+    SetIcon(SkBitmapOperations::CreateBlendedBitmap(
+        *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            IDR_STATUSBAR_NETWORK_BARS0),
+        *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            IDR_STATUSBAR_NETWORK_BARS4),
+        animation_connecting_.GetCurrentValue() / 3));
     SchedulePaint();
   } else {
     MenuButton::AnimationProgressed(animation);
@@ -63,22 +66,6 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, StatusAreaButton implementation:
-
-void NetworkMenuButton::DrawPressed(gfx::Canvas* canvas) {
-  // If ethernet connected and not current connecting, then show ethernet
-  // pressed icon. Otherwise, show the bars pressed icon.
-  if (CrosLibrary::Get()->GetNetworkLibrary()->ethernet_connected() &&
-      !animation_connecting_.is_animating())
-    canvas->DrawBitmapInt(IconForDisplay(
-        *ResourceBundle::GetSharedInstance().
-            GetBitmapNamed(IDR_STATUSBAR_NETWORK_WIRED_PRESSED), SkBitmap()),
-        0, 0);
-  else
-    canvas->DrawBitmapInt(IconForDisplay(
-        *ResourceBundle::GetSharedInstance().
-            GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS_PRESSED), SkBitmap()),
-        0, 0);
-}
 
 void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(IconForDisplay(icon(), badge()), 0, 0);
@@ -95,7 +82,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(std::numeric_limits<int>::max());
-        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1));
+        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
       }
       std::string network_name = cros->wifi_connecting() ?
           cros->wifi_network().name() : cros->cellular_network().name();
@@ -137,23 +124,32 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
       }
     }
 
-    if (!cros->Connected() && !cros->Connecting()) {
-      SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
-    } else if (!cros->ethernet_connected() && !cros->wifi_connected() &&
-        (cros->cellular_connecting() || cros->cellular_connected())) {
-      int id = IDR_STATUSBAR_NETWORK_3G;
-      switch (cros->cellular_network().data_left()) {
-        case CellularNetwork::DATA_NONE:
-        case CellularNetwork::DATA_VERY_LOW:
-          id = IDR_STATUSBAR_NETWORK_3G_VLOWDATA;
-          break;
-        case CellularNetwork::DATA_LOW:
-          id = IDR_STATUSBAR_NETWORK_3G_LOWDATA;
-          break;
-        case CellularNetwork::DATA_NORMAL:
-          id = IDR_STATUSBAR_NETWORK_3G;
-          break;
+    // Figure out whether or not to show a badge.
+    int id = -1;
+    if (cros->Connecting()) {
+      if (cros->cellular_connecting()) {
+        id = IDR_STATUSBAR_NETWORK_3G;
       }
+    } else if (cros->Connected()) {
+      if (!cros->ethernet_connected() && !cros->wifi_connected() &&
+          cros->cellular_connected()) {
+        switch (cros->cellular_network().data_left()) {
+          case CellularNetwork::DATA_NONE:
+          case CellularNetwork::DATA_VERY_LOW:
+            id = IDR_STATUSBAR_NETWORK_3G_ERROR;
+            break;
+          case CellularNetwork::DATA_LOW:
+            id = IDR_STATUSBAR_NETWORK_3G_WARN;
+            break;
+          case CellularNetwork::DATA_NORMAL:
+            id = IDR_STATUSBAR_NETWORK_3G;
+            break;
+        }
+      }
+    } else {
+      id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
+    }
+    if (id != -1) {
       SetBadge(*rb.GetBitmapNamed(id));
     } else {
       SetBadge(SkBitmap());
@@ -172,10 +168,6 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
 void NetworkMenuButton::CellularDataPlanChanged(NetworkLibrary* cros) {
   // Call NetworkChanged which will update the icon.
   NetworkChanged(cros);
-}
-
-void NetworkMenuButton::SetBadge(const SkBitmap& badge) {
-  badge_ = badge;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

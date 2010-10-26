@@ -17,7 +17,7 @@
 namespace chromeos {
 
 // Number of pixels to separate each icon.
-const int kSeparation = 6;
+const int kSeparation = 3;
 
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
@@ -29,6 +29,10 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
 }
 
 void StatusAreaView::Init() {
+  // Clock.
+  clock_view_ = new ClockMenuButton(host_);
+  AddChildView(clock_view_);
+
   // InputMethod.
   input_method_view_ = new InputMethodMenuButton(host_);
   AddChildView(input_method_view_);
@@ -44,10 +48,6 @@ void StatusAreaView::Init() {
   // Power.
   power_view_ = new PowerMenuButton();
   AddChildView(power_view_);
-
-  // Clock.
-  clock_view_ = new ClockMenuButton(host_);
-  AddChildView(clock_view_);
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {
@@ -80,7 +80,8 @@ void StatusAreaView::Layout() {
       // Put next in row horizontally, and center vertically.
       cur->SetBounds(cur_x, cur_y, cur_size.width(), cur_size.height());
 
-      cur_x += cur_size.width() + kSeparation;
+      if (cur_size.width() > 0)
+        cur_x += cur_size.width() + kSeparation;
     }
   }
 }

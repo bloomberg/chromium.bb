@@ -20,7 +20,7 @@ namespace chromeos {
 // PowerMenuButton
 
 // static
-const int PowerMenuButton::kNumPowerImages = 12;
+const int PowerMenuButton::kNumPowerImages = 16;
 
 PowerMenuButton::PowerMenuButton()
     : StatusAreaButton(this),
@@ -110,21 +110,6 @@ void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton, StatusAreaButton implementation:
 
-void PowerMenuButton::DrawPressed(gfx::Canvas* canvas) {
-  DrawPowerIcon(canvas, *ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_STATUSBAR_BATTERY_PRESSED));
-}
-
-void PowerMenuButton::DrawIcon(gfx::Canvas* canvas) {
-  DrawPowerIcon(canvas, icon());
-}
-
-void PowerMenuButton::DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon) {
-  // Draw the battery icon 5 pixels down to center it.
-  static const int kIconVerticalPadding = 5;
-  canvas->DrawBitmapInt(icon, 0, kIconVerticalPadding);
-}
-
 void PowerMenuButton::UpdateIconAndLabelInfo() {
   PowerLibrary* cros = CrosLibrary::Get()->GetPowerLibrary();
   if (!cros)
@@ -168,6 +153,10 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
       IDR_STATUSBAR_BATTERY_CHARGING_10,
       IDR_STATUSBAR_BATTERY_CHARGING_11,
       IDR_STATUSBAR_BATTERY_CHARGING_12,
+      IDR_STATUSBAR_BATTERY_CHARGING_13,
+      IDR_STATUSBAR_BATTERY_CHARGING_14,
+      IDR_STATUSBAR_BATTERY_CHARGING_15,
+      IDR_STATUSBAR_BATTERY_CHARGING_16,
     };
     static const int kDischargingImages[kNumPowerImages] = {
       IDR_STATUSBAR_BATTERY_DISCHARGING_1,
@@ -182,6 +171,10 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
       IDR_STATUSBAR_BATTERY_DISCHARGING_10,
       IDR_STATUSBAR_BATTERY_DISCHARGING_11,
       IDR_STATUSBAR_BATTERY_DISCHARGING_12,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_13,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_14,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_15,
+      IDR_STATUSBAR_BATTERY_DISCHARGING_16,
     };
 
     int index = static_cast<int>(battery_percentage_ / 100.0 *

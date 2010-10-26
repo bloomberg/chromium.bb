@@ -24,28 +24,11 @@ FeedbackMenuButton::FeedbackMenuButton(StatusAreaHost* host)
       host_(host) {
   DCHECK(host_);
   SetTooltipText(l10n_util::GetString(IDS_STATUSBAR_FEEDBACK_TOOLTIP));
-}
-
-FeedbackMenuButton::~FeedbackMenuButton() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// FeedbackMenuButton, StatusAreaButton implementation:
-
-void FeedbackMenuButton::DrawPressed(gfx::Canvas* canvas) {
-  DrawFeedbackIcon(canvas, *ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_STATUSBAR_FEEDBACK_PRESSED));
-}
-
-void FeedbackMenuButton::DrawIcon(gfx::Canvas* canvas) {
-  DrawFeedbackIcon(canvas, *ResourceBundle::GetSharedInstance().
+  SetIcon(*ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_STATUSBAR_FEEDBACK));
 }
 
-void FeedbackMenuButton::DrawFeedbackIcon(gfx::Canvas* canvas, SkBitmap icon) {
-  // Draw the battery icon 5 pixels down to center it.
-  static const int kIconVerticalPadding = 5;
-  canvas->DrawBitmapInt(icon, 0, kIconVerticalPadding);
+FeedbackMenuButton::~FeedbackMenuButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

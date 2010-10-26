@@ -34,7 +34,7 @@ ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
   set_border(NULL);
   set_use_menu_button_paint(true);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
+      ResourceBundle::BaseFont).DeriveFont(1));
   SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
   SetShowMultipleIconStates(false);
   set_alignment(TextButton::ALIGN_CENTER);

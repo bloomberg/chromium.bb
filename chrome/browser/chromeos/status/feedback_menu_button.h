@@ -26,10 +26,6 @@ class FeedbackMenuButton : public StatusAreaButton,
   virtual ~FeedbackMenuButton();
 
  private:
-  // StatusAreaButton implementation.
-  virtual void DrawPressed(gfx::Canvas* canvas);
-  virtual void DrawIcon(gfx::Canvas* canvas);
-
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
@@ -55,9 +51,6 @@ class FeedbackMenuButton : public StatusAreaButton,
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index) {}
   virtual void MenuWillShow() {}
-
-  // This method will draw the |icon| in the appropriate place on the |canvas|.
-  void DrawFeedbackIcon(gfx::Canvas* canvas, SkBitmap icon);
 
   StatusAreaHost* host_;
 

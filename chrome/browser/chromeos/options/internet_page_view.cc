@@ -448,7 +448,7 @@ void RememberedSection::InitSection() {
   for (size_t i = 0; i < wifi_networks_.size(); ++i) {
     std::wstring name = ASCIIToWide(wifi_networks_[i].name());
 
-    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
     if (wifi_networks_[i].encrypted()) {
       icon = NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
@@ -463,7 +463,7 @@ void RememberedSection::InitSection() {
   for (size_t i = 0; i < celluar_networks_.size(); ++i) {
     std::wstring name = ASCIIToWide(celluar_networks_[i].name());
 
-    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
     // TODO(chocobo): Check cellular network 3g/edge.
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
 //    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);

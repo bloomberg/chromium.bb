@@ -43,7 +43,7 @@ namespace chromeos {
 // NetworkMenu
 
 // static
-const int NetworkMenu::kNumWifiImages = 9;
+const int NetworkMenu::kNumWifiImages = 4;
 
 // NOTE: Use an array rather than just calculating a resource number to avoid
 // creating implicit ordering dependencies on the resource values.
@@ -53,11 +53,6 @@ const int NetworkMenu::kBarsImages[kNumWifiImages] = {
   IDR_STATUSBAR_NETWORK_BARS2,
   IDR_STATUSBAR_NETWORK_BARS3,
   IDR_STATUSBAR_NETWORK_BARS4,
-  IDR_STATUSBAR_NETWORK_BARS5,
-  IDR_STATUSBAR_NETWORK_BARS6,
-  IDR_STATUSBAR_NETWORK_BARS7,
-  IDR_STATUSBAR_NETWORK_BARS8,
-  IDR_STATUSBAR_NETWORK_BARS9,
 };
 // static
 const int NetworkMenu::kBarsImagesBlack[kNumWifiImages] = {
@@ -65,35 +60,20 @@ const int NetworkMenu::kBarsImagesBlack[kNumWifiImages] = {
   IDR_STATUSBAR_NETWORK_BARS2_BLACK,
   IDR_STATUSBAR_NETWORK_BARS3_BLACK,
   IDR_STATUSBAR_NETWORK_BARS4_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS5_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS6_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS7_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS8_BLACK,
-  IDR_STATUSBAR_NETWORK_BARS9_BLACK,
 };
 // static
 const int NetworkMenu::kBarsImagesLowData[kNumWifiImages] = {
-  IDR_STATUSBAR_NETWORK_BARS1_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS2_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS3_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS4_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS5_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS6_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS7_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS8_LOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS9_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS1_ORANGE,
+  IDR_STATUSBAR_NETWORK_BARS2_ORANGE,
+  IDR_STATUSBAR_NETWORK_BARS3_ORANGE,
+  IDR_STATUSBAR_NETWORK_BARS4_ORANGE,
 };
 // static
 const int NetworkMenu::kBarsImagesVLowData[kNumWifiImages] = {
-  IDR_STATUSBAR_NETWORK_BARS1_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS2_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS3_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS4_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS5_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS6_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS7_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS8_VLOWDATA,
-  IDR_STATUSBAR_NETWORK_BARS9_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS1_RED,
+  IDR_STATUSBAR_NETWORK_BARS2_RED,
+  IDR_STATUSBAR_NETWORK_BARS3_RED,
+  IDR_STATUSBAR_NETWORK_BARS4_RED,
 };
 
 NetworkMenu::NetworkMenu()
@@ -401,18 +381,12 @@ SkBitmap NetworkMenu::IconForNetworkStrength(CellularNetwork cellular) {
 
 // static
 SkBitmap NetworkMenu::IconForDisplay(SkBitmap icon, SkBitmap badge) {
-  // Icons are 24x24.
-  static const int kIconWidth = 24;
-  static const int kIconHeight = 24;
-  // Draw the network icon 3 pixels down to center it.
-  static const int kIconX = 0;
-  static const int kIconY = 3;
   // Draw badge at (14,14).
   static const int kBadgeX = 14;
   static const int kBadgeY = 14;
 
-  gfx::CanvasSkia canvas(kIconWidth, kIconHeight, false);
-  canvas.DrawBitmapInt(icon, kIconX, kIconY);
+  gfx::CanvasSkia canvas(icon.width(), icon.height(), false);
+  canvas.DrawBitmapInt(icon, 0, 0);
   if (!badge.empty())
     canvas.DrawBitmapInt(badge, kBadgeX, kBadgeY);
   return canvas.ExtractBitmap();
@@ -504,7 +478,7 @@ void NetworkMenu::InitMenuItems() {
   // Other networks
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
-      IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+      IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
                      SkBitmap()),
       std::string(), FLAG_OTHER_NETWORK));
 

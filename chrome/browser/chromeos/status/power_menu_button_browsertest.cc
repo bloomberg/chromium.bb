@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
-  const int NUM_TIMES = 12;  // 6 + 8*12 = 102
+  const int NUM_TIMES = 16;
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .Times(NUM_TIMES)
       .WillRepeatedly((Return(true)))
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
       .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))))
       .RetiresOnSaturation();
 
-  // Test the 12 battery charging states.
+  // Test the 16 battery charging states.
   // NOTE: Use an array rather than just calculating a resource number to avoid
   // creating implicit ordering dependencies on the resource values.
   static const int kChargingImages[] = {
@@ -131,9 +131,13 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
     IDR_STATUSBAR_BATTERY_CHARGING_10,
     IDR_STATUSBAR_BATTERY_CHARGING_11,
     IDR_STATUSBAR_BATTERY_CHARGING_12,
+    IDR_STATUSBAR_BATTERY_CHARGING_13,
+    IDR_STATUSBAR_BATTERY_CHARGING_14,
+    IDR_STATUSBAR_BATTERY_CHARGING_15,
+    IDR_STATUSBAR_BATTERY_CHARGING_16,
   };
   size_t id = 0;
-  for (float percent = 6.0; percent < 100.0; percent += 8.0) {
+  for (float percent = 6.0; percent < 100.0; percent += 6.0) {
     EXPECT_CALL(*mock_power_library_, battery_percentage())
         .WillOnce((Return(percent)))
         .RetiresOnSaturation();
@@ -144,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargingTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
-  const int NUM_TIMES = 12;  // 6 + 8*12 = 102
+  const int NUM_TIMES = 16;
   EXPECT_CALL(*mock_power_library_, battery_is_present())
       .Times(NUM_TIMES)
       .WillRepeatedly((Return(true)))
@@ -166,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
       .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))))
       .RetiresOnSaturation();
 
-  // Test the 12 battery discharing states.
+  // Test the 16 battery discharing states.
   // NOTE: Use an array rather than just calculating a resource number to avoid
   // creating implicit ordering dependencies on the resource values.
   static const int kDischargingImages[] = {
@@ -182,9 +186,13 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryDischargingTest) {
     IDR_STATUSBAR_BATTERY_DISCHARGING_10,
     IDR_STATUSBAR_BATTERY_DISCHARGING_11,
     IDR_STATUSBAR_BATTERY_DISCHARGING_12,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_13,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_14,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_15,
+    IDR_STATUSBAR_BATTERY_DISCHARGING_16,
   };
   size_t id = 0;
-  for (float percent = 6.0; percent < 100.0; percent += 8.0) {
+  for (float percent = 6.0; percent < 100.0; percent += 6.0) {
     EXPECT_CALL(*mock_power_library_, battery_percentage())
         .WillOnce((Return(percent)))
         .RetiresOnSaturation();

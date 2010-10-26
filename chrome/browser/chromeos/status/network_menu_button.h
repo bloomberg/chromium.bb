@@ -59,12 +59,11 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void CellularDataPlanChanged(NetworkLibrary* obj);
 
   // Sets the badge icon.
-  void SetBadge(const SkBitmap& badge);
+  void SetBadge(const SkBitmap& badge) { badge_ = badge; }
   SkBitmap badge() const { return badge_; }
 
  protected:
   // StatusAreaButton implementation.
-  virtual void DrawPressed(gfx::Canvas* canvas);
   virtual void DrawIcon(gfx::Canvas* canvas);
 
   // NetworkMenu implementation:
