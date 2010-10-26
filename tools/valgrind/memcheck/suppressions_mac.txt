@@ -156,6 +156,24 @@
    fun:_cache_fill
 }
 
+# See http://www.openradar.me/8287193
+{
+   Invalid redzone accesses in DKeyHas8Words
+   Memcheck:Addr4
+   fun:DKeyHas8Words
+}
+
+# See https://bugs.kde.org/show_bug.cgi?id=188572
+# This suppression is missing in Valgrind on Mac 10.6
+# TODO(glider): remove it once it arrives in the trunk.
+{
+   Unavoidable leak in setenv()
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:__setenv
+   fun:setenv$UNIX2003
+}
+
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
 {
@@ -898,3 +916,35 @@
    fun:_ZN24BrowserAccessibilityTest5SetUpEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+
+{
+   bug_51682a
+   Memcheck:Leak
+   fun:malloc
+   fun:__cxa_get_globals
+   fun:__cxa_allocate_exception
+   fun:_ZN8Security9CssmError7throwMeEi
+   fun:_ZN9RSASigner6verifyEPKvmS1_m
+   fun:_ZN16SignatureContext5finalERKN8Security8CssmDataE
+   fun:_ZL20cssm_VerifyDataFinallyPK9cssm_data
+   fun:CSSM_VerifyDataFinal
+   fun:_ZN4base17SignatureVerifier11VerifyFinalEv
+   fun:_ZN36SignatureVerifierTest_BasicTest_Test8TestBodyEv
+}
+
+{
+   bug_51682b
+   Memcheck:Leak
+   fun:malloc
+   fun:__cxa_get_globals
+   fun:__cxa_allocate_exception
+   fun:_ZN8Security9CssmError7throwMeEi
+   fun:_ZNK8Security9DbVersion9findTableEj
+   fun:_ZNK8Security9DbVersion12createCursorEPK10cssm_query
+   fun:_ZN8Security10DbModifier12createCursorEPK10cssm_query
+   fun:_ZN8Security13AppleDatabase12dataGetFirstERNS_9DbContextEPKNS_9CssmQueryEP29cssm_db_record_attribute_dataPNS_8CssmDataERP21cssm_db_unique_record
+   fun:_ZN8Security15DatabaseSession12DataGetFirstElPKNS_9CssmQueryEP29cssm_db_record_attribute_dataPNS_8CssmDataERP21cssm_db_unique_record
+   fun:_ZL17cssm_DataGetFirst17cssm_dl_db_handlePK10cssm_queryPlP29cssm_db_record_attribute_dataP9cssm_dataPP21cssm_db_unique_record
+   fun:CSSM_DL_DataGetFirst
+}
+
