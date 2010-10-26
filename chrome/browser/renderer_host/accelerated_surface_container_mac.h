@@ -31,6 +31,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
@@ -91,7 +92,7 @@ class AcceleratedSurfaceContainerMac {
   // plugin process back to the browser process for drawing.
   // This is held as a CFTypeRef because we can't refer to the
   // IOSurfaceRef type when building on 10.5.
-  CFTypeRef surface_;
+  base::mac::ScopedCFTypeRef<CFTypeRef> surface_;
 
   // The TransportDIB which is used in pre-10.6 systems where the IOSurface
   // API is not supported.  This is a weak reference to the actual TransportDIB

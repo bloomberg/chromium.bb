@@ -14,7 +14,6 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     bool opaque)
     : manager_(manager),
       opaque_(opaque),
-      surface_(NULL),
       width_(0),
       height_(0),
       texture_(0),
@@ -25,25 +24,17 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
 }
 
 AcceleratedSurfaceContainerMac::~AcceleratedSurfaceContainerMac() {
-  ReleaseIOSurface();
-}
-
-void AcceleratedSurfaceContainerMac::ReleaseIOSurface() {
-  if (surface_) {
-    CFRelease(surface_);
-    surface_ = NULL;
-  }
 }
 
 void AcceleratedSurfaceContainerMac::SetSizeAndIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
-  ReleaseIOSurface();
+  surface_.reset();
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (io_surface_support) {
-    surface_ = io_surface_support->IOSurfaceLookup(
-        static_cast<uint32>(io_surface_identifier));
+    surface_.reset(io_surface_support->IOSurfaceLookup(
+        static_cast<uint32>(io_surface_identifier)));
     EnqueueTextureForDeletion();
     width_ = width;
     height_ = height;
@@ -85,7 +76,7 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     texture_pending_deletion_ = 0;
   }
   if (!texture_) {
-    if ((io_surface_support && !surface_) ||
+    if ((io_surface_support && !surface_.get()) ||
         (!io_surface_support && !transport_dib_.get()))
       return;
     glGenTextures(1, &texture_);
@@ -112,7 +103,7 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
   // When using an IOSurface, the texture does not need to be repeatedly
   // uploaded, just when we've been told we have to.
   if (io_surface_support && texture_needs_upload_) {
-    DCHECK(surface_);
+    DCHECK(surface_.get());
     glBindTexture(target, texture_);
     // Don't think we need to identify a plane.
     GLuint plane = 0;
@@ -123,7 +114,7 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
                                                height_,
                                                GL_BGRA,
                                                GL_UNSIGNED_INT_8_8_8_8_REV,
-                                               surface_,
+                                               surface_.get(),
                                                plane);
     texture_needs_upload_ = false;
   }
