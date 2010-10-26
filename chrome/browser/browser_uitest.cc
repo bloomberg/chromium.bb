@@ -159,9 +159,11 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
 
   // Use JavaScript URL to almost fork a new tab, but not quite.  (Leave the
   // opener non-null.)  Should not fork a process.
-  std::string url_prefix("javascript:(function(){w=window.open();");
-  GURL dont_fork_url(url_prefix +
-      "w.document.location=\"http://localhost:1337\";})()");
+  std::string url_str = "javascript:(function(){w=window.open(); ";
+  url_str += "w.document.location=\"";
+  url_str += test_server.GetURL("").spec();
+  url_str += "\";})()";
+  GURL dont_fork_url(url_str);
 
   // Make sure that a new tab but not new process has been created.
   ASSERT_TRUE(tab->NavigateToURLAsync(dont_fork_url));
@@ -172,8 +174,11 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   ASSERT_EQ(orig_tab_count + 1, new_tab_count);
 
   // Same thing if the current tab tries to redirect itself.
-  GURL dont_fork_url2(url_prefix +
-      "document.location=\"http://localhost:1337\";})()");
+  url_str = "javascript:(function(){w=window.open(); ";
+  url_str += "document.location=\"";
+  url_str += test_server.GetURL("").spec();
+  url_str += "\";})()";
+  GURL dont_fork_url2(url_str);
 
   // Make sure that no new process has been created.
   ASSERT_TRUE(tab->NavigateToURLAsync(dont_fork_url2));
