@@ -175,20 +175,21 @@ bool ExtensionUnpacker::Run() {
   // InitFromValue is allowed to generate a temporary id for the extension.
   // ANY CODE THAT FOLLOWS SHOULD NOT DEPEND ON THE CORRECT ID OF THIS
   // EXTENSION.
-  Extension extension(temp_install_dir_);
   std::string error;
-  if (!extension.InitFromValue(*parsed_manifest_, false, &error)) {
+  scoped_refptr<Extension> extension(Extension::Create(
+      temp_install_dir_, Extension::INVALID, *parsed_manifest_, false, &error));
+  if (!extension.get()) {
     SetError(error);
     return false;
   }
 
-  if (!extension_file_util::ValidateExtension(&extension, &error)) {
+  if (!extension_file_util::ValidateExtension(extension.get(), &error)) {
     SetError(error);
     return false;
   }
 
   // Decode any images that the browser needs to display.
-  std::set<FilePath> image_paths = extension.GetBrowserImages();
+  std::set<FilePath> image_paths = extension->GetBrowserImages();
   for (std::set<FilePath>::iterator it = image_paths.begin();
        it != image_paths.end(); ++it) {
     if (!AddDecodedImage(*it))
@@ -197,8 +198,8 @@ bool ExtensionUnpacker::Run() {
 
   // Parse all message catalogs (if any).
   parsed_catalogs_.reset(new DictionaryValue);
-  if (!extension.default_locale().empty()) {
-    if (!ReadAllMessageCatalogs(extension.default_locale()))
+  if (!extension->default_locale().empty()) {
+    if (!ReadAllMessageCatalogs(extension->default_locale()))
       return false;  // Error was already reported.
   }
 

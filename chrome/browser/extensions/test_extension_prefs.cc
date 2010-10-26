@@ -45,22 +45,25 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
   prefs_.reset(new ExtensionPrefs(pref_service_.get(), temp_dir_.path()));
 }
 
-Extension* TestExtensionPrefs::AddExtension(std::string name) {
+scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
   DictionaryValue dictionary;
   dictionary.SetString(extension_manifest_keys::kName, name);
   dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
   return AddExtensionWithManifest(dictionary, Extension::INTERNAL);
 }
 
-Extension* TestExtensionPrefs::AddExtensionWithManifest(
+scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
     const DictionaryValue& manifest, Extension::Location location) {
   std::string name;
   EXPECT_TRUE(manifest.GetString(extension_manifest_keys::kName, &name));
   FilePath path =  extensions_dir_.AppendASCII(name);
-  Extension* extension = new Extension(path);
   std::string errors;
-  extension->set_location(location);
-  EXPECT_TRUE(extension->InitFromValue(manifest, false, &errors));
+  scoped_refptr<Extension> extension = Extension::Create(
+      path, location, manifest, false, &errors);
+  EXPECT_TRUE(extension);
+  if (!extension)
+    return NULL;
+
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   const bool kInitialIncognitoEnabled = false;
   prefs_->OnExtensionInstalled(extension, Extension::ENABLED,
@@ -69,6 +72,6 @@ Extension* TestExtensionPrefs::AddExtensionWithManifest(
 }
 
 std::string TestExtensionPrefs::AddExtensionAndReturnId(std::string name) {
-  scoped_ptr<Extension> extension(AddExtension(name));
+  scoped_refptr<Extension> extension(AddExtension(name));
   return extension->id();
 }

@@ -34,11 +34,11 @@ class TestExtensionPrefs {
 
   // Creates a new Extension with the given name in our temp dir, adds it to
   // our ExtensionPrefs, and returns it.
-  Extension* AddExtension(std::string name);
+  scoped_refptr<Extension> AddExtension(std::string name);
 
   // Similar to AddExtension, but takes a dictionary with manifest values.
-  Extension* AddExtensionWithManifest(const DictionaryValue& manifest,
-                                      Extension::Location location);
+  scoped_refptr<Extension> AddExtensionWithManifest(
+      const DictionaryValue& manifest, Extension::Location location);
 
   // Similar to AddExtension, this adds a new test Extension. This is useful for
   // cases when you don't need the Extension object, but just the id it was

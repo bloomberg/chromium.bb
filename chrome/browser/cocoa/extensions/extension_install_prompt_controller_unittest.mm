@@ -60,19 +60,18 @@ public:
       return;
     }
 
-    scoped_ptr<Extension> extension(new Extension(path.DirName()));
-    if (!extension->InitFromValue(*value, false, &error)) {
+    extension_ = Extension::Create(
+        path.DirName(), Extension::INVALID, *value, false, &error);
+    if (!extension_.get()) {
       LOG(ERROR) << error;
       return;
     }
-
-    extension_.reset(extension.release());
   }
 
   BrowserTestHelper helper_;
   FilePath test_data_dir_;
   SkBitmap icon_;
-  scoped_ptr<Extension> extension_;
+  scoped_refptr<Extension> extension_;
 };
 
 

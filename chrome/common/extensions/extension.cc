@@ -283,6 +283,18 @@ Extension::RuntimeData::~RuntimeData() {
 //
 
 // static
+scoped_refptr<Extension> Extension::Create(const FilePath& path,
+                                           Location location,
+                                           const DictionaryValue& value,
+                                           bool require_key,
+                                           std::string* error) {
+  scoped_refptr<Extension> extension = new Extension(path, location);
+  if (!extension->InitFromValue(value, require_key, error))
+    return NULL;
+  return extension;
+}
+
+// static
 int Extension::GetPermissionMessageId(const std::string& permission) {
   return ExtensionConfig::GetSingleton()->GetPermissionMessageId(permission);
 }
@@ -399,9 +411,6 @@ bool Extension::IsHostedAppPermission(const std::string& str) {
     }
   }
   return false;
-}
-
-Extension::~Extension() {
 }
 
 const std::string Extension::VersionString() const {
@@ -998,15 +1007,16 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
   return true;
 }
 
-Extension::Extension(const FilePath& path)
-    : mutable_static_data_(new StaticData),
-      runtime_data_(new RuntimeData) {
+Extension::Extension(const FilePath& path, Location location)
+    : mutable_static_data_(new StaticData) {
   DCHECK(path.IsAbsolute());
 
   static_data_ = mutable_static_data_;
-  mutable_static_data_->location = INVALID;
-
+  mutable_static_data_->location = location;
   mutable_static_data_->path = MaybeNormalizePath(path);
+}
+
+Extension::~Extension() {
 }
 
 ExtensionResource Extension::GetResource(const std::string& relative_path) {
@@ -2236,7 +2246,7 @@ bool Extension::CanExecuteScriptEverywhere() const {
 Extension::RuntimeData* Extension::GetRuntimeData() const {
   // TODO(mpcomplete): it would be nice if I could verify we were on the UI
   // thread, but we're in common and don't have access to BrowserThread.
-  return const_cast<Extension::RuntimeData*>(runtime_data_.get());
+  return const_cast<Extension::RuntimeData*>(&runtime_data_);
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

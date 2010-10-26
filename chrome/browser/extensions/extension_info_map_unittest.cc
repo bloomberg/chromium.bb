@@ -28,27 +28,27 @@ class ExtensionInfoMapTest : public testing::Test {
 };
 
 // Returns a barebones test Extension object with the given name.
-static Extension* CreateExtension(const std::string& name) {
+static scoped_refptr<Extension> CreateExtension(const std::string& name) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)
   FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
 
-  scoped_ptr<Extension> extension(new Extension(path.AppendASCII(name)));
-
   DictionaryValue manifest;
   manifest.SetString(keys::kVersion, "1.0.0.0");
   manifest.SetString(keys::kName, name);
 
   std::string error;
-  EXPECT_TRUE(extension->InitFromValue(manifest, false, &error)) << error;
+  scoped_refptr<Extension> extension = Extension::Create(
+      path.AppendASCII(name), Extension::INVALID, manifest, false, &error);
+  EXPECT_TRUE(extension) << error;
 
-  return extension.release();
+  return extension;
 }
 
-static Extension* LoadManifest(const std::string& dir,
-                               const std::string& test_file) {
+static scoped_refptr<Extension> LoadManifest(const std::string& dir,
+                                             const std::string& test_file) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
@@ -61,11 +61,12 @@ static Extension* LoadManifest(const std::string& dir,
     return NULL;
 
   std::string error;
-  scoped_ptr<Extension> extension(new Extension(path));
-  EXPECT_TRUE(extension->InitFromValue(
-      *static_cast<DictionaryValue*>(result.get()), false, &error)) << error;
+  scoped_refptr<Extension> extension = Extension::Create(
+      path, Extension::INVALID, *static_cast<DictionaryValue*>(result.get()),
+      false, &error);
+  EXPECT_TRUE(extension) << error;
 
-  return extension.release();
+  return extension;
 }
 
 // Test that the ExtensionInfoMap handles refcounting properly.
@@ -74,9 +75,9 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
 
   // New extensions should have a single reference holding onto their static
   // data.
-  scoped_ptr<Extension> extension1(CreateExtension("extension1"));
-  scoped_ptr<Extension> extension2(CreateExtension("extension2"));
-  scoped_ptr<Extension> extension3(CreateExtension("extension3"));
+  scoped_refptr<Extension> extension1(CreateExtension("extension1"));
+  scoped_refptr<Extension> extension2(CreateExtension("extension2"));
+  scoped_refptr<Extension> extension3(CreateExtension("extension3"));
   EXPECT_TRUE(extension1->static_data()->HasOneRef());
   EXPECT_TRUE(extension2->static_data()->HasOneRef());
   EXPECT_TRUE(extension3->static_data()->HasOneRef());
@@ -93,7 +94,7 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
 
   // Delete extension1, and the info map should have the only ref.
   const Extension::StaticData* data1 = extension1->static_data();
-  extension1.reset();
+  extension1 = NULL;
   EXPECT_TRUE(data1->HasOneRef());
 
   // Remove extension2, and the extension2 object should have the only ref.
@@ -109,8 +110,8 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
 TEST_F(ExtensionInfoMapTest, Properties) {
   scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
 
-  scoped_ptr<Extension> extension1(CreateExtension("extension1"));
-  scoped_ptr<Extension> extension2(CreateExtension("extension2"));
+  scoped_refptr<Extension> extension1(CreateExtension("extension1"));
+  scoped_refptr<Extension> extension2(CreateExtension("extension2"));
 
   extension1->static_data()->AddRef();
   info_map->AddExtension(extension1->static_data());
@@ -132,9 +133,9 @@ TEST_F(ExtensionInfoMapTest, Properties) {
 TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
 
-  scoped_ptr<Extension> app(LoadManifest("manifest_tests",
+  scoped_refptr<Extension> app(LoadManifest("manifest_tests",
                                          "valid_app.json"));
-  scoped_ptr<Extension> extension(LoadManifest("manifest_tests",
+  scoped_refptr<Extension> extension(LoadManifest("manifest_tests",
                                                "tabs_extension.json"));
 
   GURL app_url("http://www.google.com/mail/foo.html");
