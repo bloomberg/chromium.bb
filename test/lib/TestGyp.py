@@ -595,7 +595,10 @@ class TestGypXcode(TestGypBase):
     re.compile('__________Shutting down distcc-pump include server\n', re.S),
   ]
 
-  up_to_date_ending = 'Checking Dependencies...\n** BUILD SUCCEEDED **\n'
+  up_to_date_endings = (
+    'Checking Dependencies...\n** BUILD SUCCEEDED **\n', # Xcode 3.0/3.1
+    'Check dependencies\n** BUILD SUCCEEDED **\n\n',     # Xcode 3.2
+  )
 
   def build(self, gyp_file, target=None, **kw):
     """
@@ -626,7 +629,7 @@ class TestGypXcode(TestGypBase):
       output = self.stdout()
       for expression in self.strip_up_to_date_expressions:
         output = expression.sub('', output)
-      if not output.endswith(self.up_to_date_ending):
+      if not output.endswith(self.up_to_date_endings):
         self.report_not_up_to_date()
         self.fail_test()
     return result
