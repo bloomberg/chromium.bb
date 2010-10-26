@@ -69,10 +69,14 @@ function GM_log(message) {
 }
 
 (function() {
+  function generateGreasemonkeyStub(name) {
+    return function() {
+      console.log("%s is not supported.", name);
+    };
+  }
+
   var apis = ["GM_getValue", "GM_setValue", "GM_registerMenuCommand"];
   for (var i = 0, api; api = apis[i]; i++) {
-    window[api] = function() {
-      console.log("%s is not supported.", api);
-    }
+    window[api] = generateGreasemonkeyStub(api);
   }
 })();
