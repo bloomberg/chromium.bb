@@ -1109,13 +1109,3 @@
    fun:main
    fun:__libc_start_main
 }
-{
-   bug_60381
-   Heapcheck:Leak
-   fun:Callback1::Type* NewCallback
-   fun:webkit_glue::BufferedDataSource::ReadInternal
-   fun:webkit_glue::BufferedDataSource::ReadTask
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:MessageLoop::RunTask
-}

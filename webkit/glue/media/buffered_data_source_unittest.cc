@@ -636,6 +636,11 @@ class BufferedDataSourceTest : public testing::Test {
       }
     }
 
+    // Attach a static function that deletes the memory referred by the
+    // "callback" parameter.
+    ON_CALL(*loader_, Read(_, _, _ , _))
+        .WillByDefault(DeleteArg<3>());
+
     StrictMock<media::MockFilterCallback> callback;
     EXPECT_CALL(*loader_, instance_size())
         .WillRepeatedly(Return(instance_size));
