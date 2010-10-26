@@ -62,9 +62,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/shell_integration.h"
@@ -1518,15 +1518,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
         profile->GetTemplateURLModel()->GetDefaultSearchProvider();
     // The default engine can be NULL if the administrator has disabled
     // default search.
-    TemplateURLPrepopulateData::SearchEngineType search_engine_type =
+    SearchEngineType search_engine_type =
         default_search_engine ? default_search_engine->search_engine_type() :
-                                TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER;
+                                SEARCH_ENGINE_OTHER;
     // Record the search engine chosen.
     if (master_prefs.run_search_engine_experiment) {
       UMA_HISTOGRAM_ENUMERATION(
           "Chrome.SearchSelectExperiment",
           search_engine_type,
-          TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+          SEARCH_ENGINE_MAX);
       // If the selection has been randomized, also record the winner by slot.
       if (master_prefs.randomize_search_engine_experiment) {
         size_t engine_pos = profile->GetTemplateURLModel()->
@@ -1538,7 +1538,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
           UMA_HISTOGRAM_ENUMERATION(
               experiment_type,
               search_engine_type,
-              TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+              SEARCH_ENGINE_MAX);
         } else {
           NOTREACHED() << "Invalid search engine selection slot.";
         }
@@ -1547,7 +1547,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       UMA_HISTOGRAM_ENUMERATION(
           "Chrome.SearchSelectExempt",
           search_engine_type,
-          TemplateURLPrepopulateData::SEARCH_ENGINE_MAX);
+          SEARCH_ENGINE_MAX);
     }
   }
 #endif

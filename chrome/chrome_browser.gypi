@@ -2596,6 +2596,7 @@
         'browser/search_engines/edit_search_engine_controller.h',
         'browser/search_engines/keyword_editor_controller.cc',
         'browser/search_engines/keyword_editor_controller.h',
+        'browser/search_engines/search_engine_type.h',
         'browser/search_engines/search_host_to_urls_map.h',
         'browser/search_engines/search_host_to_urls_map.cc',
         'browser/search_engines/search_provider_install_data.h',

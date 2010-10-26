@@ -15,9 +15,9 @@
 #include "base/time.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "grit/browser_resources.h"
@@ -36,7 +36,6 @@
 #include "views/window/window.h"
 
 using base::Time;
-using TemplateURLPrepopulateData::SearchEngineType;
 
 namespace {
 

@@ -11,10 +11,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "googleurl/src/gurl.h"
 
+class PrefService;
 class SearchTermsData;
 class TemplateURL;
 class WebDataService;
@@ -448,11 +449,10 @@ class TemplateURL {
     return input_encodings_;
   }
 
-  void set_search_engine_type(TemplateURLPrepopulateData::SearchEngineType
-      search_engine_type) {
+  void set_search_engine_type(SearchEngineType search_engine_type) {
     search_engine_type_ = search_engine_type;
   }
-  TemplateURLPrepopulateData::SearchEngineType search_engine_type() const {
+  SearchEngineType search_engine_type() const {
     return search_engine_type_;
   }
 
@@ -509,7 +509,7 @@ class TemplateURL {
   base::Time date_created_;
   bool created_by_policy_;
   int usage_count_;
-  TemplateURLPrepopulateData::SearchEngineType search_engine_type_;
+  SearchEngineType search_engine_type_;
   int logo_id_;
   int prepopulate_id_;
 

@@ -568,7 +568,7 @@ TemplateURL::TemplateURL()
       date_created_(base::Time::Now()),
       created_by_policy_(false),
       usage_count_(0),
-      search_engine_type_(TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER),
+      search_engine_type_(SEARCH_ENGINE_OTHER),
       logo_id_(0),
       prepopulate_id_(0) {
 }
