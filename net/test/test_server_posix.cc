@@ -4,6 +4,8 @@
 
 #include "net/test/test_server.h"
 
+#include <poll.h>
+
 #include <vector>
 
 #include "base/file_util.h"
@@ -11,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 
 namespace {
 
@@ -107,6 +110,19 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
+  struct pollfd poll_fds[1];
+
+  poll_fds[0].fd = child_fd_;
+  poll_fds[0].events = POLLIN | POLLPRI;
+  poll_fds[0].revents = 0;
+
+  int rv = HANDLE_EINTR(poll(poll_fds, 1,
+                             TestTimeouts::action_max_timeout_ms()));
+  if (rv != 1) {
+    LOG(ERROR) << "Failed to poll for the child file descriptor.";
+    return false;
+  }
+
   char buf[8];
   ssize_t n = HANDLE_EINTR(read(child_fd_, buf, sizeof(buf)));
   // We don't need the FD anymore.
