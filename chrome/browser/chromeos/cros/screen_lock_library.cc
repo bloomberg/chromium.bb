@@ -35,54 +35,18 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
   }
 
   void NotifyScreenLockRequested() {
-    // Make sure we run on IO thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ScreenLockLibraryImpl::NotifyScreenLockRequested));
-      return;
-    }
     chromeos::NotifyScreenLockRequested();
   }
 
   void NotifyScreenLockCompleted() {
-    // Make sure we run on IO thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ScreenLockLibraryImpl::NotifyScreenLockCompleted));
-      return;
-    }
     chromeos::NotifyScreenLockCompleted();
   }
 
   void NotifyScreenUnlockRequested() {
-    // Make sure we run on IO thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ScreenLockLibraryImpl::NotifyScreenUnlockRequested));
-      return;
-    }
     chromeos::NotifyScreenUnlockRequested();
   }
 
   void NotifyScreenUnlockCompleted() {
-    // Make sure we run on IO thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &ScreenLockLibraryImpl::NotifyScreenUnlockCompleted));
-      return;
-    }
     chromeos::NotifyScreenUnlockCompleted();
   }
 
@@ -175,4 +139,3 @@ ScreenLockLibrary* ScreenLockLibrary::GetImpl(bool stub) {
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::ScreenLockLibraryImpl);
-
