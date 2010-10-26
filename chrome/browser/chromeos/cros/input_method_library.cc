@@ -60,8 +60,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         defer_ime_startup_(false),
         should_change_input_method_(false),
         ibus_daemon_process_id_(0),
-        candidate_window_process_id_(0),
-        failure_count_(0) {
+        candidate_window_process_id_(0) {
     scoped_ptr<InputMethodDescriptors> input_method_descriptors(
         CreateFallbackInputMethodDescriptors());
     current_input_method_ = input_method_descriptors->at(0);
@@ -281,27 +280,13 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
 
     if (pending_config_requests_.empty()) {
       timer_.Stop();  // no-op if it's not running.
-    } else {
+    } else if (!timer_.IsRunning()) {
       // Flush is not completed. Start a timer if it's not yet running.
-      if (!timer_.IsRunning()) {
-        static const int64 kTimerIntervalInMsec = 100;
-        failure_count_ = 0;
-        timer_.Start(base::TimeDelta::FromMilliseconds(kTimerIntervalInMsec),
-                     this, &InputMethodLibraryImpl::FlushImeConfig);
-      } else {
-        // The timer is already running. We'll give up if it reaches the
-        // max retry count.
-        static const int kMaxRetries = 15;
-        ++failure_count_;
-        if (failure_count_ > kMaxRetries) {
-          LOG(ERROR) << "FlushImeConfig: Max retries exceeded. "
-                     << "current_input_method_id: " << current_input_method_id_
-                     << " pending_config_requests.size: "
-                     << pending_config_requests_.size();
-          timer_.Stop();
-        }
-      }
+      static const int64 kTimerIntervalInMsec = 100;
+      timer_.Start(base::TimeDelta::FromMilliseconds(kTimerIntervalInMsec),
+                   this, &InputMethodLibraryImpl::FlushImeConfig);
     }
+
     if (active_input_methods_are_changed) {
       FOR_EACH_OBSERVER(Observer, observers_, ActiveInputMethodsChanged(this));
     }
@@ -586,8 +571,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   int ibus_daemon_process_id_;
   // The process id of the candidate window. 0 if it's not running.
   int candidate_window_process_id_;
-  // The failure count of config flush attempts.
-  int failure_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
 };
