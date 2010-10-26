@@ -128,7 +128,7 @@ TEST_F(AudioRendererImplTest, Stop) {
 
   // It's possible that the upstream decoder replies right after being stopped.
   scoped_refptr<media::Buffer> buffer = new media::DataBuffer(kSize);
-  renderer_->OnReadComplete(buffer);
+  renderer_->ConsumeAudioSamples(buffer);
 }
 
 TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetPlaybackRate) {
@@ -149,11 +149,11 @@ TEST_F(AudioRendererImplTest, DestroyedMessageLoop_SetVolume) {
   renderer_->Stop(stop_callback_.NewCallback());
 }
 
-TEST_F(AudioRendererImplTest, DestroyedMessageLoop_OnReadComplete) {
+TEST_F(AudioRendererImplTest, DestroyedMessageLoop_ConsumeAudioSamples) {
   // Kill the message loop and verify OnReadComplete() still works.
   message_loop_.reset();
   scoped_refptr<media::Buffer> buffer = new media::DataBuffer(kSize);
-  renderer_->OnReadComplete(buffer);
+  renderer_->ConsumeAudioSamples(buffer);
   EXPECT_CALL(stop_callback_, OnFilterCallback());
   renderer_->Stop(stop_callback_.NewCallback());
 }

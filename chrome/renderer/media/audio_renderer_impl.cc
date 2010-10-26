@@ -82,7 +82,8 @@ void AudioRendererImpl::OnStop() {
       NewRunnableMethod(this, &AudioRendererImpl::DestroyTask));
 }
 
-void AudioRendererImpl::OnReadComplete(media::Buffer* buffer_in) {
+void AudioRendererImpl::ConsumeAudioSamples(
+    scoped_refptr<media::Buffer> buffer_in) {
   AutoLock auto_lock(lock_);
   if (stopped_)
     return;

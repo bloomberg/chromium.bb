@@ -86,14 +86,14 @@ class AudioRendererImpl : public media::AudioRendererBase,
   virtual void OnStop();
 
   // Called when the decoder completes a Read().
-  virtual void OnReadComplete(media::Buffer* buffer_in);
+  virtual void ConsumeAudioSamples(scoped_refptr<media::Buffer> buffer_in);
 
  private:
   // For access to constructor and IO thread methods.
   friend class AudioRendererImplTest;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest, Stop);
   FRIEND_TEST_ALL_PREFIXES(AudioRendererImplTest,
-                           DestroyedMessageLoop_OnReadComplete);
+                           DestroyedMessageLoop_ConsumeAudioSamples);
   // Helper methods.
   // Convert number of bytes to duration of time using information about the
   // number of channels, sample rate and sample bits.
