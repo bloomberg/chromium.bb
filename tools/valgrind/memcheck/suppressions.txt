@@ -3112,3 +3112,18 @@
    fun:_ZN7WebCore17HTMLCanvasElement10getContextERKN3WTF6StringEPNS_23CanvasContextAttributesE
    fun:_ZN7WebCore19V8HTMLCanvasElement18getContextCallbackERKN2v89ArgumentsE
 }
+{
+   bug_60667
+   Memcheck:Leak
+   fun:malloc
+   fun:ScanFromString
+   fun:_Z14PaParseStringsPKPKcPKiiR13TParseContext
+   fun:_ZN9TCompiler7compileEPKPKcii
+   fun:ShCompile
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl25angleValidateShaderSourceERNS0_17ShaderSourceEntryE
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl13compileShaderEj
+   fun:_ZN7WebCore25GraphicsContext3DInternal13compileShaderEi
+   fun:_ZN7WebCore17GraphicsContext3D13compileShaderEi
+   fun:_ZN7WebCore21WebGLRenderingContext13compileShaderEPNS_11WebGLShaderERi
+   fun:_ZN7WebCore29WebGLRenderingContextInternal21compileShaderCallbackERKN2v89ArgumentsE
+}
