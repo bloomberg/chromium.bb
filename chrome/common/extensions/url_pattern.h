@@ -91,12 +91,19 @@ class URLPattern {
     SCHEME_ALL      = -1,
   };
 
+  // Error codes returned from Parse().
+  enum ParseResult {
+    PARSE_SUCCESS,
+    PARSE_ERROR_MISSING_SCHEME_SEPARATOR,
+    PARSE_ERROR_INVALID_SCHEME,
+    PARSE_ERROR_WRONG_SCHEME_SEPARATOR,
+    PARSE_ERROR_EMPTY_HOST,
+    PARSE_ERROR_INVALID_HOST_WILDCARD,
+    PARSE_ERROR_EMPTY_PATH,
+  };
+
   // The <all_urls> string pattern.
   static const char kAllUrlsPattern[];
-
-  // Note: don't use this directly. This exists so URLPattern can be used
-  // with STL containers.
-  URLPattern();
 
   // Construct an URLPattern with the given set of allowable schemes. See
   // valid_schemes_ for more info.
@@ -134,9 +141,11 @@ class URLPattern {
   bool match_all_urls() const { return match_all_urls_; }
   void set_match_all_urls(bool val) { match_all_urls_ = val; }
 
-  // Initializes this instance by parsing the provided string. On failure, the
-  // instance will have some intermediate values and is in an invalid state.
-  bool Parse(const std::string& pattern_str);
+  // Initializes this instance by parsing the provided string. Returns
+  // URLPattern::PARSE_SUCCESS on success, or an error code otherwise. On
+  // failure, this instance will have some intermediate values and is in an
+  // invalid state.
+  ParseResult Parse(const std::string& pattern_str);
 
   // Sets the scheme for pattern matches. This can be a single '*' if the
   // pattern matches all valid schemes (as defined by the valid_schemes_
@@ -192,6 +201,12 @@ class URLPattern {
   };
 
  private:
+  friend class std::vector<URLPattern>;
+
+  // Note: don't use this directly. This exists so URLPattern can be used
+  // with STL containers.
+  URLPattern();
+
   // A bitmask containing the schemes which are considered valid for this
   // pattern. Parse() uses this to decide whether a pattern contains a valid
   // scheme. MatchesScheme uses this to decide whether a wildcard scheme_

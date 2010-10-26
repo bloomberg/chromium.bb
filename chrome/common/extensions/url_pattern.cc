@@ -58,14 +58,14 @@ URLPattern::URLPattern(int valid_schemes)
 URLPattern::URLPattern(int valid_schemes, const std::string& pattern)
     : valid_schemes_(valid_schemes), match_all_urls_(false),
       match_subdomains_(false) {
-  if (!Parse(pattern))
+  if (PARSE_SUCCESS != Parse(pattern))
     NOTREACHED() << "URLPattern is invalid: " << pattern;
 }
 
 URLPattern::~URLPattern() {
 }
 
-bool URLPattern::Parse(const std::string& pattern) {
+URLPattern::ParseResult URLPattern::Parse(const std::string& pattern) {
   // Special case pattern to match every valid URL.
   if (pattern == kAllUrlsPattern) {
     match_all_urls_ = true;
@@ -73,40 +73,51 @@ bool URLPattern::Parse(const std::string& pattern) {
     scheme_ = "*";
     host_.clear();
     path_ = "/*";
-    return true;
+    return PARSE_SUCCESS;
   }
 
-  size_t scheme_end_pos = pattern.find(":");
+  // Parse out the scheme.
+  size_t scheme_end_pos = pattern.find(chrome::kStandardSchemeSeparator);
+  bool has_standard_scheme_separator = true;
+
+  // Some urls also use ':' alone as the scheme separator.
+  if (scheme_end_pos == std::string::npos) {
+    scheme_end_pos = pattern.find(':');
+    has_standard_scheme_separator = false;
+  }
+
   if (scheme_end_pos == std::string::npos)
-    return false;
+    return PARSE_ERROR_MISSING_SCHEME_SEPARATOR;
 
   if (!SetScheme(pattern.substr(0, scheme_end_pos)))
-    return false;
-
-  std::string separator =
-      pattern.substr(scheme_end_pos, strlen(chrome::kStandardSchemeSeparator));
-  if (separator == chrome::kStandardSchemeSeparator)
-    scheme_end_pos += strlen(chrome::kStandardSchemeSeparator);
-  else
-    scheme_end_pos += 1;
-
-  // Advance past the scheme separator.
-  size_t host_start_pos = scheme_end_pos;
-  if (host_start_pos >= pattern.length())
-    return false;
-
-  // Parse out the host and path.
-  size_t path_start_pos = 0;
+    return PARSE_ERROR_INVALID_SCHEME;
 
   bool standard_scheme = IsStandardScheme(scheme_);
+  if (standard_scheme != has_standard_scheme_separator)
+    return PARSE_ERROR_WRONG_SCHEME_SEPARATOR;
+
+  // Advance past the scheme separator.
+  scheme_end_pos +=
+      (standard_scheme ? strlen(chrome::kStandardSchemeSeparator) : 1);
+  if (scheme_end_pos >= pattern.size())
+    return PARSE_ERROR_EMPTY_HOST;
+
+  // Parse out the host and path.
+  size_t host_start_pos = scheme_end_pos;
+  size_t path_start_pos = 0;
 
   // File URLs are special because they have no host.
   if (scheme_ == chrome::kFileScheme || !standard_scheme) {
     path_start_pos = host_start_pos;
   } else {
     size_t host_end_pos = pattern.find(kPathSeparator, host_start_pos);
+
+    // Host is required.
+    if (host_start_pos == host_end_pos)
+      return PARSE_ERROR_EMPTY_HOST;
+
     if (host_end_pos == std::string::npos)
-      return false;
+      return PARSE_ERROR_EMPTY_PATH;
 
     host_ = pattern.substr(host_start_pos, host_end_pos - host_start_pos);
 
@@ -124,14 +135,14 @@ bool URLPattern::Parse(const std::string& pattern) {
     // done as a convenience to developers who might otherwise be confused and
     // think '*' works as a glob in the host.
     if (host_.find('*') != std::string::npos)
-      return false;
+      return PARSE_ERROR_INVALID_HOST_WILDCARD;
 
     path_start_pos = host_end_pos;
   }
 
   path_ = pattern.substr(path_start_pos);
 
-  return true;
+  return PARSE_SUCCESS;
 }
 
 bool URLPattern::SetScheme(const std::string& scheme) {

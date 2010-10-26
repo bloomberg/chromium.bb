@@ -71,7 +71,7 @@ TEST(UserScriptTest, Match5) {
 
 TEST(UserScriptTest, Match6) {
   URLPattern pattern(kAllSchemes);
-  ASSERT_TRUE(pattern.Parse("http://*/foo*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse("http://*/foo*"));
 
   UserScript script;
   script.add_url_pattern(pattern);
@@ -86,7 +86,8 @@ TEST(UserScriptTest, UrlPatternGlobInteraction) {
   UserScript script;
 
   URLPattern pattern(kAllSchemes);
-  ASSERT_TRUE(pattern.Parse("http://www.google.com/*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS,
+            pattern.Parse("http://www.google.com/*"));
   script.add_url_pattern(pattern);
 
   script.add_glob("*bar*");
@@ -114,8 +115,8 @@ TEST(UserScriptTest, UrlPatternGlobInteraction) {
 TEST(UserScriptTest, Pickle) {
   URLPattern pattern1(kAllSchemes);
   URLPattern pattern2(kAllSchemes);
-  ASSERT_TRUE(pattern1.Parse("http://*/foo*"));
-  ASSERT_TRUE(pattern2.Parse("http://bar/baz*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern1.Parse("http://*/foo*"));
+  ASSERT_EQ(URLPattern::PARSE_SUCCESS, pattern2.Parse("http://bar/baz*"));
 
   UserScript script1;
   script1.js_scripts().push_back(UserScript::File(

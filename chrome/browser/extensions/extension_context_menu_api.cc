@@ -138,7 +138,7 @@ bool ExtensionContextMenuFunction::ParseURLPatterns(
       return false;
 
     URLPattern pattern(ExtensionMenuManager::kAllowedSchemes);
-    if (!pattern.Parse(tmp)) {
+    if (URLPattern::PARSE_SUCCESS != pattern.Parse(tmp)) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(kInvalidURLPatternError,
                                                        tmp);
       return false;

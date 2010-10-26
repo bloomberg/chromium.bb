@@ -534,12 +534,11 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       return false;
     }
 
-    URLPattern pattern;
+    URLPattern pattern(UserScript::kValidUserScriptSchemes);
     if (CanExecuteScriptEverywhere())
-      pattern = URLPattern(URLPattern::SCHEME_ALL);
-    else
-      pattern = URLPattern(UserScript::kValidUserScriptSchemes);
-    if (!pattern.Parse(match_str)) {
+      pattern.set_valid_schemes(URLPattern::SCHEME_ALL);
+
+    if (URLPattern::PARSE_SUCCESS != pattern.Parse(match_str)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
           base::IntToString(definition_index), base::IntToString(j));
       return false;
@@ -816,7 +815,12 @@ bool Extension::LoadExtent(const DictionaryValue* manifest,
     }
 
     URLPattern pattern(kValidWebExtentSchemes);
-    if (!pattern.Parse(pattern_string)) {
+    URLPattern::ParseResult result = pattern.Parse(pattern_string);
+    if (result == URLPattern::PARSE_ERROR_EMPTY_PATH) {
+      pattern_string += "/";
+      result = pattern.Parse(pattern_string);
+    }
+    if (URLPattern::PARSE_SUCCESS != result) {
       *error = ExtensionErrorUtils::FormatErrorMessage(value_error,
                                                        base::UintToString(i));
       return false;
@@ -1729,7 +1733,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           (UserScript::kValidUserScriptSchemes |
               URLPattern::SCHEME_CHROMEUI) & ~URLPattern::SCHEME_FILE);
 
-      if (!pattern.Parse(permission_str)) {
+      if (URLPattern::PARSE_SUCCESS != pattern.Parse(permission_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, base::IntToString(i));
         return false;

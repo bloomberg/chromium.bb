@@ -361,3 +361,13 @@ TEST_F(ExtensionManifestTest, GetHomepageURL) {
   extension.reset(LoadAndExpectSuccess("homepage_externally_hosted.json"));
   EXPECT_EQ(GURL(), extension->GetHomepageURL());
 }
+
+TEST_F(ExtensionManifestTest, DefaultPathForExtent) {
+  scoped_ptr<Extension> extension(
+      LoadAndExpectSuccess("default_path_for_extent.json"));
+
+  ASSERT_EQ(1u, extension->web_extent().patterns().size());
+  EXPECT_EQ("/*", extension->web_extent().patterns()[0].path());
+  EXPECT_TRUE(extension->web_extent().ContainsURL(
+      GURL("http://www.google.com/monkey")));
+}
