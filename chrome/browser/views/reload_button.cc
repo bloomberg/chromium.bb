@@ -19,8 +19,10 @@ ReloadButton::ReloadButton(LocationBarView* location_bar, Browser* browser)
       location_bar_(location_bar),
       browser_(browser),
       intended_mode_(MODE_RELOAD),
-      visible_mode_(MODE_RELOAD) {
-  DCHECK(location_bar_);
+      visible_mode_(MODE_RELOAD),
+      timer_delay_(base::TimeDelta::FromMilliseconds(GetDoubleClickTimeMS())),
+      testing_mouse_hovered_(false),
+      testing_reload_count_(0) {
 }
 
 ReloadButton::~ReloadButton() {
@@ -32,7 +34,8 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
   // If the change is forced, or the user isn't hovering the icon, or it's safe
   // to change it to the other image type, make the change immediately;
   // otherwise we'll let it happen later.
-  if (force || !IsMouseHovered() || ((mode == MODE_STOP) ?
+  if (force || (!IsMouseHovered() && !testing_mouse_hovered_) ||
+      ((mode == MODE_STOP) ?
       !timer_.IsRunning() : (visible_mode_ != MODE_STOP))) {
     timer_.Stop();
     SetToggled(mode == MODE_STOP);
@@ -50,10 +53,11 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
 ////////////////////////////////////////////////////////////////////////////////
 // ReloadButton, views::ButtonListener implementation:
 
-void ReloadButton::ButtonPressed(views::Button* button,
+void ReloadButton::ButtonPressed(views::Button* /* button */,
                                  const views::Event& event) {
   if (visible_mode_ == MODE_STOP) {
-    browser_->Stop();
+    if (browser_)
+      browser_->Stop();
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.
     ChangeMode(MODE_RELOAD, true);
@@ -74,7 +78,7 @@ void ReloadButton::ButtonPressed(views::Button* button,
 
     WindowOpenDisposition disposition =
         event_utils::DispositionFromEventFlags(flags);
-    if (disposition == CURRENT_TAB) {
+    if ((disposition == CURRENT_TAB) && location_bar_) {
       // Forcibly reset the location bar, since otherwise it won't discard any
       // ongoing user edits, since it doesn't realize this is a user-initiated
       // action.
@@ -87,10 +91,11 @@ void ReloadButton::ButtonPressed(views::Button* button,
     // may happen synchronously, thus the need to do this before telling the
     // browser to execute the reload command).
     timer_.Stop();
-    timer_.Start(base::TimeDelta::FromMilliseconds(GetDoubleClickTimeMS()),
-                 this, &ReloadButton::OnButtonTimer);
+    timer_.Start(timer_delay_, this, &ReloadButton::OnButtonTimer);
 
-    browser_->ExecuteCommandWithDisposition(command, disposition);
+    if (browser_)
+      browser_->ExecuteCommandWithDisposition(command, disposition);
+    ++testing_reload_count_;
   }
 }
 

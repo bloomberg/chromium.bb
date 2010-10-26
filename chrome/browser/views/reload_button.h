@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/timer.h"
 #include "views/controls/button/image_button.h"
 
@@ -37,25 +38,40 @@ class ReloadButton : public views::ToggleImageButton,
   void ChangeMode(Mode mode, bool force);
 
   // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* button, const views::Event& event);
+  virtual void ButtonPressed(views::Button* /* button */,
+                             const views::Event& event);
 
   // Overridden from views::View:
   virtual void OnMouseExited(const views::MouseEvent& e);
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
 
  private:
+  friend class ReloadButtonTest;
+
   void OnButtonTimer();
 
   base::OneShotTimer<ReloadButton> timer_;
 
+  // These may be NULL when testing.
   LocationBarView* location_bar_;
   Browser* browser_;
 
-  // The mode we should be in
+  // The mode we should be in assuming no timers are running.
   Mode intended_mode_;
 
-  // The currently-visible mode - this may different from the intended mode
+  // The currently-visible mode - this may differ from the intended mode.
   Mode visible_mode_;
+
+  // The delay time for the double-click timer.  This is a member so that tests
+  // can modify it.
+  base::TimeDelta timer_delay_;
+
+  // TESTING ONLY
+  // True if we should pretend the button is hovered.
+  bool testing_mouse_hovered_;
+  // Increments when we would tell the browser to "reload", so
+  // test code can tell whether we did so (as there may be no |browser_|).
+  int testing_reload_count_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReloadButton);
 };

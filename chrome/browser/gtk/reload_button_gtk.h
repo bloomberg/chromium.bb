@@ -37,47 +37,47 @@ class ReloadButtonGtk : public NotificationObserver {
   // Provide NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details);
+                       const NotificationDetails& /* details */);
 
  private:
-  friend class ReloadButtonGtkPeer;
+  friend class ReloadButtonGtkTest;
 
   CHROMEGTK_CALLBACK_0(ReloadButtonGtk, void, OnClicked);
   CHROMEGTK_CALLBACK_1(ReloadButtonGtk, gboolean, OnExpose, GdkEventExpose*);
-  CHROMEGTK_CALLBACK_1(ReloadButtonGtk, gboolean, OnLeaveNotify,
+  CHROMEGTK_CALLBACK_1(ReloadButtonGtk,
+                       gboolean,
+                       OnLeaveNotify,
                        GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_4(ReloadButtonGtk, gboolean, OnQueryTooltip, gint, gint,
-                       gboolean, GtkTooltip*);
-
-  void SetToggled();
-
-  bool timer_running() const {
-    return timer_.IsRunning() || pretend_timer_is_running_for_unittest_;
-  }
+  CHROMEGTK_CALLBACK_4(ReloadButtonGtk,
+                       gboolean,
+                       OnQueryTooltip,
+                       gint,
+                       gint,
+                       gboolean,
+                       GtkTooltip*);
 
   void OnButtonTimer();
 
   void UpdateThemeButtons();
 
-  // Used to listen for theme change notifications.
-  NotificationRegistrar registrar_;
+  base::OneShotTimer<ReloadButtonGtk> timer_;
 
+  // These may be NULL when testing.
   LocationBarViewGtk* const location_bar_;
-
-  // Keep a pointer to the Browser object to execute commands on it.
   Browser* const browser_;
 
-  // Delay time to wait before allowing a mode change.  This is to prevent a
-  // mode switch while the user is double clicking.
-  int button_delay_;
-  base::OneShotTimer<ReloadButtonGtk> timer_;
-  bool pretend_timer_is_running_for_unittest_;
+  // The delay time for the double-click timer.  This is a member so that tests
+  // can modify it.
+  base::TimeDelta timer_delay_;
 
-  // The mode we should be in.
+  // The mode we should be in assuming no timers are running.
   Mode intended_mode_;
 
-  // The currently-visible mode - this may different from the intended mode.
+  // The currently-visible mode - this may differ from the intended mode.
   Mode visible_mode_;
+
+  // Used to listen for theme change notifications.
+  NotificationRegistrar registrar_;
 
   GtkThemeProvider* theme_provider_;
 
@@ -86,6 +86,13 @@ class ReloadButtonGtk : public NotificationObserver {
   CustomDrawHoverController hover_controller_;
 
   OwnedWidgetGtk widget_;
+
+  // TESTING ONLY
+  // True if we should pretend the button is hovered.
+  bool testing_mouse_hovered_;
+  // Increments when we would tell the browser to "reload", so
+  // test code can tell whether we did so (as there may be no |browser_|).
+  int testing_reload_count_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReloadButtonGtk);
 };

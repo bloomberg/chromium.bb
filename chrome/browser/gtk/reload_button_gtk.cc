@@ -25,15 +25,15 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
                                  Browser* browser)
     : location_bar_(location_bar),
       browser_(browser),
-      button_delay_(0),
-      pretend_timer_is_running_for_unittest_(false),
       intended_mode_(MODE_RELOAD),
       visible_mode_(MODE_RELOAD),
       theme_provider_(browser ?
                       GtkThemeProvider::GetFrom(browser->profile()) : NULL),
       reload_(theme_provider_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
       stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, IDR_STOP_D),
-      widget_(gtk_chrome_button_new()) {
+      widget_(gtk_chrome_button_new()),
+      testing_mouse_hovered_(false),
+      testing_reload_count_(0) {
   gtk_widget_set_size_request(widget(), reload_.Width(), reload_.Height());
 
   gtk_widget_set_app_paintable(widget(), TRUE);
@@ -57,6 +57,13 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
                    NotificationType::BROWSER_THEME_CHANGED,
                    Source<GtkThemeProvider>(theme_provider_));
   }
+
+  // Set the default timer delay to the system double-click time.
+  int timer_delay_ms;
+  GtkSettings* settings = gtk_settings_get_default();
+  g_object_get(G_OBJECT(settings), "gtk-double-click-time", &timer_delay_ms,
+               NULL);
+  timer_delay_ = base::TimeDelta::FromMilliseconds(timer_delay_ms);
 }
 
 ReloadButtonGtk::~ReloadButtonGtk() {
@@ -69,9 +76,9 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
   // If the change is forced, or the user isn't hovering the icon, or it's safe
   // to change it to the other image type, make the change immediately;
   // otherwise we'll let it happen later.
-  if (force || GTK_WIDGET_STATE(widget()) == GTK_STATE_NORMAL ||
-      ((mode == MODE_STOP) ?
-        !timer_running() : (visible_mode_ != MODE_STOP))) {
+  if (force || ((GTK_WIDGET_STATE(widget()) == GTK_STATE_NORMAL) &&
+      !testing_mouse_hovered_) || ((mode == MODE_STOP) ?
+          !timer_.IsRunning() : (visible_mode_ != MODE_STOP))) {
     timer_.Stop();
     visible_mode_ = mode;
 
@@ -104,7 +111,7 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
 
 void ReloadButtonGtk::Observe(NotificationType type,
                               const NotificationSource& source,
-                              const NotificationDetails& details) {
+                              const NotificationDetails& /* details */) {
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
   GtkThemeProvider* provider = static_cast<GtkThemeProvider*>(
@@ -118,10 +125,10 @@ void ReloadButtonGtk::OnButtonTimer() {
   ChangeMode(intended_mode_, false);
 }
 
-void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
+void ReloadButtonGtk::OnClicked(GtkWidget* /* sender */) {
   if (visible_mode_ == MODE_STOP) {
-    // The stop button is disabled because the user hovered over the button
-    // until the stop action is no longer selectable.
+    // Do nothing if Stop was disabled due to an attempt to change back to
+    // RELOAD mode while hovered.
     if (stop_.paint_override() == GTK_STATE_INSENSITIVE)
       return;
 
@@ -131,7 +138,7 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
     // The user has clicked, so we can feel free to update the button,
     // even if the mouse is still hovering.
     ChangeMode(MODE_RELOAD, true);
-  } else if (!timer_running()) {
+  } else if (!timer_.IsRunning()) {
     // Shift-clicking or Ctrl-clicking the reload button means we should ignore
     // any cached content.
     int command;
@@ -148,18 +155,11 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
 
     WindowOpenDisposition disposition =
         event_utils::DispositionFromEventFlags(modifier_state_uint);
-    if (disposition == CURRENT_TAB) {
+    if ((disposition == CURRENT_TAB) && location_bar_) {
       // Forcibly reset the location bar, since otherwise it won't discard any
       // ongoing user edits, since it doesn't realize this is a user-initiated
       // action.
       location_bar_->Revert();
-    }
-
-    // Figure out the system double-click time.
-    if (button_delay_ == 0) {
-      GtkSettings* settings = gtk_settings_get_default();
-      g_object_get(G_OBJECT(settings), "gtk-double-click-time", &button_delay_,
-                   NULL);
     }
 
     // Start a timer - while this timer is running, the reload button cannot be
@@ -168,11 +168,11 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
     // may happen synchronously, thus the need to do this before telling the
     // browser to execute the reload command).
     timer_.Stop();
-    timer_.Start(base::TimeDelta::FromMilliseconds(button_delay_), this,
-                 &ReloadButtonGtk::OnButtonTimer);
+    timer_.Start(timer_delay_, this, &ReloadButtonGtk::OnButtonTimer);
 
     if (browser_)
       browser_->ExecuteCommandWithDisposition(command, disposition);
+    ++testing_reload_count_;
   }
 }
 
@@ -184,16 +184,16 @@ gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
       widget, e, hover_controller_.GetCurrentValue());
 }
 
-gboolean ReloadButtonGtk::OnLeaveNotify(GtkWidget* widget,
-                                        GdkEventCrossing* event) {
+gboolean ReloadButtonGtk::OnLeaveNotify(GtkWidget* /* widget */,
+                                        GdkEventCrossing* /* event */) {
   ChangeMode(intended_mode_, true);
   return FALSE;
 }
 
-gboolean ReloadButtonGtk::OnQueryTooltip(GtkWidget* sender,
-                                         gint x,
-                                         gint y,
-                                         gboolean keyboard_mode,
+gboolean ReloadButtonGtk::OnQueryTooltip(GtkWidget* /* sender */,
+                                         gint /* x */,
+                                         gint /* y */,
+                                         gboolean /* keyboard_mode */,
                                          GtkTooltip* tooltip) {
   // |location_bar_| can be NULL in tests.
   if (!location_bar_)
