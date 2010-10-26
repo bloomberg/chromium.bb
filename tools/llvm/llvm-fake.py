@@ -311,7 +311,10 @@ def SfiCompile(argv, arch, assembler, as_flags):
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
   triple=global_pnacl_triples[arch]
-  llc = [LLC] + global_config_flags['LLC'][arch] + ['-mtriple=%s' % triple]
+  llc_flags = global_config_flags['LLC'][arch] + ['-mtriple=%s' % triple]
+  if '-fPIC' in argv:
+    llc_flags += ['-relocation-model=pic']
+  llc = [LLC] + llc_flags
   llc += [ filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
@@ -449,13 +452,24 @@ def CompileToBC(argv, llvm_binary, temp = False):
   argv.append('-fuse-llvm-va-arg')
   Run(argv)
 
-def ExtractArch(argv):
-  if '-arch' in argv:
-    i = argv.index('-arch')
-    return argv[i + 1], argv[:i] + argv[i + 2:]
+def ExtractArg(argv, switch_name, is_key_value_pair):
+  """ Pull switch_name (and it's value if is_key_value_pair is True),
+      out of argv if it is specified.
+      Return a pair of
+        - the value of the switch if it is specified, or None if not.
+        - argv with the switch+value removed if it was specified.
+  """
+  if switch_name in argv:
+    i = argv.index(switch_name)
+    if is_key_value_pair:
+      return argv[i + 1], argv[:i] + argv[i + 2:]
+    else:
+      return True, argv[:i] + argv[i + 1:]
   else:
     return None, argv[:]
 
+def ExtractArch(argv):
+  return ExtractArg(argv, '-arch', True)
 
 def Incarnation_gcclike(argv):
   arch, argv = ExtractArch(argv)
@@ -624,7 +638,7 @@ def GenerateCombinedBitcodeFile(argv, arch):
   return output, args_native_ld
 
 
-def Translate(combined_bitcode_file, argv, arch):
+def Translate(combined_bitcode_file, argv, arch, isPIC):
   """The ld step for bitcode is quite elaborate:
      1) Run llc to convert to .s
      2) Run as to convert to .o
@@ -636,6 +650,8 @@ def Translate(combined_bitcode_file, argv, arch):
   obj_combined = output + ".bc.o"
 
   llc_flags = global_config_flags['LLC'][arch]
+  if isPIC:
+    llc_flags += ['-relocation-model=pic']
   Run([LLC] + llc_flags + [combined_bitcode_file, '-o', asm_combined])
 
   ascom = global_assemblers[arch]
@@ -651,22 +667,29 @@ def Translate(combined_bitcode_file, argv, arch):
 
 def Incarnation_bcld_generic(argv):
   arch, argv = ExtractArch(argv)
+  # Pull fPIC out now, since it's not an argument to LD. It is only relevant
+  # to LLC in the Translate stage.
+  isPIC, argv = ExtractArg(argv, '-fPIC', False)
+
   output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
   if '-emit-llvm' in argv:
-      return
-  Translate(output + ".bc", args_native_ld, arch)
+    return
+  Translate(output + ".bc", args_native_ld, arch, isPIC)
 
 
 def Incarnation_translate(argv):
-  argv.pop(0) # drop porgram name
+  argv.pop(0) # drop program name
   arch, argv = ExtractArch(argv)
+  # Pull fPIC out here, since it's not an argument to LD. It is only relevant
+  # to LLC in the Translate stage.
+  isPIC, argv = ExtractArg(argv, '-fPIC', False)
 
   bcfiles = [a for a in argv if a.endswith('.bc')]
   assert len(bcfiles) == 1
   combined_bitcode_file = bcfiles[0]
   argv.remove(combined_bitcode_file)
 
-  Translate(combined_bitcode_file, argv, arch)
+  Translate(combined_bitcode_file, argv, arch, isPIC)
 
 ######################################################################
 # Dispatch based on name the scripts is invoked with

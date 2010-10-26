@@ -215,6 +215,7 @@ def _SetEnvForPnacl(env, arch):
   pnacl_sdk_cc_flags = ' -emit-llvm  -std=gnu99'
   pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
   pnacl_sdk_ld_flags = ' -arch %s' % arch
+  pnacl_sdk_ld_flags += ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
   env.Replace(# Replace header and lib paths.
               NACL_SDK_INCLUDE=pnacl_sdk_include,
               NACL_SDK_LIB=pnacl_sdk_lib,

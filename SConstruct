@@ -97,6 +97,9 @@ ACCEPTABLE_ARGUMENTS = {
     'nacl_ccflags': None,
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
     'nacl_linkflags': None,
+    # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
+    # Not using nacl_linkflags since that gets clobbered in some tests.
+    'pnacl_bcldflags': None,
     'naclsdk_mode': None,
     'naclsdk_validate': None,
     # build only C libraries, skip C++, used during SDK build
@@ -1517,6 +1520,9 @@ linux_env.Prepend(LINKFLAGS=['-Wl,-z,noexecstack'])
 
 (linux_debug_env, linux_optimized_env) = GenerateOptimizationLevels(linux_env)
 
+# Do this before the site_scons/site_tools/naclsdk.py stuff to pass it along.
+pre_base_env.Append(
+    PNACL_BCLDFLAGS = ARGUMENTS.get('pnacl_bcldflags', '').split(':'))
 
 # ----------------------------------------------------------
 # The nacl_env is used to build native_client modules

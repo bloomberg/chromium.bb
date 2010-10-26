@@ -2678,6 +2678,19 @@ show-tests() {
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
 }
 
+#+ scons-determine-tests  - returns:
+#+    (a) "true smoke_tests [-k]" if all smoke tests should be built and run.
+#+ or (b) "false $@" if not all tests should be built because specific tests
+#+        are already identified in $@. The test must be the first element
+#+        of $@, but we don't check that here.
+scons-determine-tests() {
+  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
+    echo "true smoke_tests $@" # $@ should only tack on the -k flag or nothing
+  else
+    echo "false $@"
+  fi
+}
+
 scons-build-sel_ldr () {
   local  platform=$1
   ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
@@ -2695,19 +2708,39 @@ scons-pnacl-build () {
           "$@"
 }
 
+run-scons-tests() {
+  local platform=$1
+  local should_build_all=$2
+  local testname=$3
+  shift 3
+  # The rest of the arguments should be flags!
+
+  # See if we should build all the tests.
+  if ${should_build_all}; then
+    scons-pnacl-build ${platform} $@
+  fi
+
+  # Then run the listed tests.
+  scons-pnacl-build ${platform} ${testname} $@
+}
+
 test-scons-common () {
   local platform=$1
   shift
   scons-clean-pnacl-build-dir ${platform}
 
-  if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
-    # first build everything
-    scons-pnacl-build ${platform}
-    # then also run some of the tests built before
-    scons-pnacl-build ${platform} smoke_tests "$@"
-  else
-    scons-pnacl-build ${platform} "$@"
-  fi
+  test_setup=$(scons-determine-tests "$@")
+  run-scons-tests ${platform} ${test_setup}
+}
+
+test-scons-pic-common () {
+  local platform=$1
+  shift
+  local pic_flags="pnacl_bcldflags=-fPIC nacl_ccflags=-fPIC"
+  scons-clean-pnacl-build-dir ${platform}
+
+  test_setup=$(scons-determine-tests "$@")
+  run-scons-tests ${platform} ${test_setup} ${pic_flags}
 }
 
 #@ test-arm              - run arm tests via pnacl toolchain
@@ -2726,8 +2759,29 @@ test-x86-32() {
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
   test-scons-common x86-64 "$@"
+
+  # TODO(jvoung) have the bots call this directly, or at least keep
+  # test-x86-64 the same as the others.
+  test-x86-64-pic "$@"
 }
 
+#@ test-arm-pic           - run all arm pic tests via pnacl toolchain
+#@ test-arm-pic <test>    - run a single arm pic test via pnacl toolchain
+test-arm-pic() {
+  test-scons-pic-common arm "$@"
+}
+
+#@ test-x86-32-pic        - run all x86-32 pic tests via pnacl toolchain
+#@ test-x86-32-pic <test> - run a single x86-32 pic test via pnacl toolchain
+test-x86-32-pic() {
+  test-scons-pic-common x86-32 "$@"
+}
+
+#@ test-x86-64-pic        - run all x86-64 pic tests via pnacl toolchain
+#@ test-x86-64-pic <test> - run a single x86-64 pic test via pnacl toolchain
+test-x86-64-pic() {
+  test-scons-pic-common x86-64 "$@"
+}
 
 #@ test-all              - run arm, x86-32, and x86-64 tests. (all should pass)
 #@ test-all <test>       - run a single test on all architectures.
@@ -2817,28 +2871,6 @@ timed-test-spec() {
 #@ test-bot-base         - tests that must pass on the bots to validate a TC
 test-bot-base() {
   test-all
-}
-
-
-#@ timed-test-spec-all <spec-official> - Run spec on all interesting setups,
-#@   and measure benchmark stats as well (measurements emitted to stdout).
-timed-test-spec-all() {
-  official_specdir=$(readlink -f $1)
-
-  spushd tests/spec2k
-  ./run_all.sh CleanBenchmarks
-  ./run_all.sh PopulateFromSpecHarness ${official_specdir}
-
-# TODO(jvoung) enable more setups when issues fixed:
-# - gcc-x86-64: 253.perlbmk doesn't run without double-free/mem-corrupt
-# - nacl-gcc32: tiny float diff
-  local setups="SetupGccX8632Opt SetupNaclX8664Opt
-SetupPnaclX8632Opt SetupPnaclX8664Opt SetupPnaclArmOpt
-SetupPnaclTranslatorX8632Opt SetupPnaclTranslatorX8664Opt"
-  for setup in ${setups}; do
-    ./run_all.sh TimedBuildAndRunBenchmarks ${setup} train
-  done
-  spopd
 }
 
 
