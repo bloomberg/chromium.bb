@@ -325,16 +325,7 @@ void AutoFillOptionsHandler::EditCreditCard(const ListValue* args) {
     return;
   }
 
-  // TODO(jhawkins): Refactor and move this into PersonalDataManager.
-  CreditCard* credit_card = NULL;
-  for (std::vector<CreditCard*>::const_iterator iter =
-           personal_data_->credit_cards().begin();
-       iter != personal_data_->credit_cards().end(); ++iter) {
-    if ((*iter)->unique_id() == unique_id) {
-      credit_card = *iter;
-      break;
-    }
-  }
+  CreditCard* credit_card = personal_data_->GetCreditCardById(unique_id);
 
   if (!credit_card) {
     NOTREACHED();

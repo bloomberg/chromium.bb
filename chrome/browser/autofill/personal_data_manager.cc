@@ -549,6 +549,15 @@ void PersonalDataManager::RemoveCreditCard(int unique_id) {
   SetCreditCards(&credit_cards);
 }
 
+CreditCard* PersonalDataManager::GetCreditCardById(int unique_id) {
+  for (std::vector<CreditCard*>::iterator iter = credit_cards_.begin();
+       iter != credit_cards_.end(); ++iter) {
+    if ((*iter)->unique_id() == unique_id)
+      return *iter;
+  }
+  return NULL;
+}
+
 void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
                                                 FieldTypeSet* possible_types) {
   string16 clean_info = StringToLowerASCII(CollapseWhitespace(text, false));
