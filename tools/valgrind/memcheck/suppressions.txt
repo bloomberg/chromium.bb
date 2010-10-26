@@ -3066,3 +3066,14 @@
    fun:_ZN7WebCore14V8GCController10gcPrologueEv
    fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_16GarbageCollectorEPNS0_8GCTracerENS1_16CollectionPolicyE
 }
+{
+   bug_60654
+   Memcheck:Cond
+   fun:_ZN7WebCore25GraphicsContext3DInternal7reshapeEii
+   fun:_ZN7WebCore17GraphicsContext3D7reshapeEii
+   fun:_ZN7WebCore21WebGLRenderingContextC1EPNS_17HTMLCanvasElementEN3WTF10PassRefPtrINS_17GraphicsContext3DEEE
+   fun:_ZN7WebCore21WebGLRenderingContext6createEPNS_17HTMLCanvasElementEPNS_22WebGLContextAttributesE
+   fun:_ZN7WebCore17HTMLCanvasElement10getContextERKN3WTF6StringEPNS_23CanvasContextAttributesE
+   ...
+   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+}
