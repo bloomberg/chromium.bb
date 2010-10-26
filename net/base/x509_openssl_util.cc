@@ -6,11 +6,27 @@
 
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/time.h"
 
 namespace net {
 
 namespace x509_openssl_util {
+
+namespace {
+
+// Helper for ParseDate. |*field| must contain at least |field_len| characters.
+// |*field| will be advanced by |field_len| on exit. |*ok| is set to false if
+// there is an error in parsing the number, but left untouched otherwise.
+// Returns the parsed integer.
+int ParseIntAndAdvance(const char** field, size_t field_len, bool* ok) {
+  int result = 0;
+  *ok &= base::StringToInt(*field, *field + field_len, &result);
+  *field += field_len;
+  return result;
+}
+
+}  // namespace
 
 bool ParsePrincipalKeyAndValueByIndex(X509_NAME* name,
                                       int index,
@@ -59,44 +75,37 @@ bool ParseDate(ASN1_TIME* x509_time, base::Time* time) {
        x509_time->type != V_ASN1_GENERALIZEDTIME))
     return false;
 
-  std::string str_date(reinterpret_cast<char*>(x509_time->data),
-                       x509_time->length);
+  base::StringPiece str_date(reinterpret_cast<const char*>(x509_time->data),
+                             x509_time->length);
   // UTCTime: YYMMDDHHMMSSZ
   // GeneralizedTime: YYYYMMDDHHMMSSZ
   size_t year_length = x509_time->type == V_ASN1_UTCTIME ? 2 : 4;
-  size_t fields_offset = x509_time->type == V_ASN1_UTCTIME ? 0 : 2;
 
   if (str_date.length() < 11 + year_length)
     return false;
 
+  const char* field = str_date.data();
+  bool valid = true;
   base::Time::Exploded exploded = {0};
-  bool valid = base::StringToInt(str_date.begin(),
-                                 str_date.begin() + year_length,
-                                 &exploded.year);
+
+  exploded.year =         ParseIntAndAdvance(&field, year_length, &valid);
+  exploded.month =        ParseIntAndAdvance(&field, 2, &valid);
+  exploded.day_of_month = ParseIntAndAdvance(&field, 2, &valid);
+  exploded.hour =         ParseIntAndAdvance(&field, 2, &valid);
+  exploded.minute =       ParseIntAndAdvance(&field, 2, &valid);
+  exploded.second =       ParseIntAndAdvance(&field, 2, &valid);
   if (valid && year_length == 2)
     exploded.year += exploded.year < 50 ? 2000 : 1900;
 
-  valid &= base::StringToInt(str_date.begin() + fields_offset + 2,
-                             str_date.begin() + fields_offset + 4,
-                             &exploded.month);
-  valid &= base::StringToInt(str_date.begin() + fields_offset + 4,
-                             str_date.begin() + fields_offset + 6,
-                             &exploded.day_of_month);
-  valid &= base::StringToInt(str_date.begin() + fields_offset + 6,
-                             str_date.begin() + fields_offset + 8,
-                             &exploded.hour);
-  valid &= base::StringToInt(str_date.begin() + fields_offset + 8,
-                             str_date.begin() + fields_offset + 10,
-                             &exploded.minute);
-  valid &= base::StringToInt(str_date.begin() + fields_offset + 10,
-                             str_date.begin() + fields_offset + 12,
-                             &exploded.second);
+  valid &= exploded.HasValidValues();
 
-  if (!valid)
+  if (!valid) {
+    NOTREACHED() << "can't parse x509 date " << str_date;
     return false;
+  }
 
   *time = base::Time::FromUTCExploded(exploded);
-  return valid;
+  return true;
 }
 
 } // namespace x509_openssl_util
