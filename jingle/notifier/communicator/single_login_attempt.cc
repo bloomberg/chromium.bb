@@ -9,6 +9,7 @@
 
 #include "jingle/notifier/communicator/single_login_attempt.h"
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/connection_settings.h"
@@ -30,18 +31,12 @@ namespace notifier {
 SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings)
     : login_settings_(login_settings),
       connection_generator_(
+          ALLOW_THIS_IN_INITIALIZER_LIST(this),
           login_settings_->host_resolver(),
           &login_settings_->connection_options(),
           login_settings_->try_ssltcp_first(),
           login_settings_->server_list(),
           login_settings_->server_count()) {
-  connection_generator_.SignalExhaustedSettings.connect(
-      this,
-      &SingleLoginAttempt::OnAttemptedAllConnections);
-  connection_generator_.SignalNewSettings.connect(
-      this,
-      &SingleLoginAttempt::DoLogin);
-
   connection_generator_.StartGenerating();
 }
 
@@ -97,16 +92,7 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
   connection_generator_.UseNextConnection();
 }
 
-void SingleLoginAttempt::OnAttemptedAllConnections(
-    bool successfully_resolved_dns,
-    int first_dns_error) {
-  if (!successfully_resolved_dns)
-    VLOG(1) << "Could not resolve DNS: " << first_dns_error;
-  VLOG(1) << "Could not connect to any XMPP server";
-  SignalNeedAutoReconnect();
-}
-
-void SingleLoginAttempt::DoLogin(
+void SingleLoginAttempt::OnNewSettings(
     const ConnectionSettings& connection_settings) {
   // TODO(akalin): Resolve any unresolved IPs, possibly through a
   // proxy, instead of skipping them.
@@ -128,6 +114,15 @@ void SingleLoginAttempt::DoLogin(
           client_settings.token_service());
   xmpp_connection_.reset(
       new XmppConnection(client_settings, this, pre_xmpp_auth));
+}
+
+void SingleLoginAttempt::OnExhaustedSettings(
+    bool successfully_resolved_dns,
+    int first_dns_error) {
+  if (!successfully_resolved_dns)
+    VLOG(1) << "Could not resolve DNS: " << first_dns_error;
+  VLOG(1) << "Could not connect to any XMPP server";
+  SignalNeedAutoReconnect();
 }
 
 }  // namespace notifier

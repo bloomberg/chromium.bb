@@ -37,12 +37,14 @@
 namespace notifier {
 
 XmppConnectionGenerator::XmppConnectionGenerator(
+    Delegate* delegate,
     net::HostResolver* host_resolver,
     const ConnectionOptions* options,
     bool try_ssltcp_first,
     const ServerInformation* server_list,
     int server_count)
-    : host_resolver_(host_resolver),
+    : delegate_(delegate),
+      host_resolver_(host_resolver),
       resolve_callback_(
           ALLOW_THIS_IN_INITIALIZER_LIST(
               NewCallback(this,
@@ -56,8 +58,9 @@ XmppConnectionGenerator::XmppConnectionGenerator(
       successfully_resolved_dns_(false),
       first_dns_error_(0),
       options_(options) {
+  DCHECK(delegate_);
   DCHECK(host_resolver);
-  DCHECK(options);
+  DCHECK(options_);
   DCHECK_GT(server_count_, 0);
   for (int i = 0; i < server_count_; ++i) {
     server_list_[i] = server_list[i];
@@ -96,7 +99,10 @@ void XmppConnectionGenerator::UseNextConnection() {
     server_index_++;
     if (server_index_ >= server_count_) {
       // All out of possibilities.
-      HandleExhaustedConnections();
+      VLOG(1) << "(" << buzz::XmppEngine::ERROR_SOCKET
+              << ", " << first_dns_error_ << ")";
+      delegate_->OnExhaustedSettings(
+          successfully_resolved_dns_, first_dns_error_);
       return;
     }
 
@@ -179,13 +185,7 @@ void XmppConnectionGenerator::UseCurrentConnection() {
           << " connection to " << settings->server().IPAsString()
           << ":" << settings->server().port();
 
-  SignalNewSettings(*settings);
-}
-
-void XmppConnectionGenerator::HandleExhaustedConnections() {
-  VLOG(1) << "(" << buzz::XmppEngine::ERROR_SOCKET
-          << ", " << first_dns_error_ << ")";
-  SignalExhaustedSettings(successfully_resolved_dns_, first_dns_error_);
+  delegate_->OnNewSettings(*settings);
 }
 
 }  // namespace notifier

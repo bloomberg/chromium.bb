@@ -14,7 +14,6 @@
 #include "net/base/host_resolver.h"
 #include "net/base/net_log.h"
 #include "talk/base/scoped_ptr.h"
-#include "talk/base/sigslot.h"
 
 namespace talk_base {
 struct ProxyInfo;
@@ -34,12 +33,24 @@ struct ServerInformation {
 
 // Resolves dns names and iterates through the various ip address and transport
 // combinations.
-class XmppConnectionGenerator : public sigslot::has_slots<> {
+class XmppConnectionGenerator {
  public:
-  // try_ssltcp_first indicates that SSLTCP is tried before XMPP. Used by tests.
-  // server_list is the list of connections to attempt in priority order.
-  // server_count is the number of items in the server list.
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void OnNewSettings(const ConnectionSettings& new_settings) = 0;
+    virtual void OnExhaustedSettings(bool successfully_resolved_dns,
+                                     int first_dns_error) = 0;
+  };
+
+  // Does not take ownership of |delegate|.
+  // |try_ssltcp_first| indicates that SSLTCP is tried before
+  // XMPP. Used by tests.
+  // |server_list| is the list of connections to attempt in priority order.
+  // |server_count| is the number of items in the server list.
   XmppConnectionGenerator(
+      Delegate* delegate,
       net::HostResolver* host_resolver,
       const ConnectionOptions* options,
       bool try_ssltcp_first,
@@ -54,17 +65,11 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   void UseNextConnection();
   void UseCurrentConnection();
 
-  sigslot::signal1<const ConnectionSettings&> SignalNewSettings;
-
-  // SignalExhaustedSettings(bool successfully_resolved_dns,
-  //                         int first_dns_error);
-  sigslot::signal2<bool, int> SignalExhaustedSettings;
-
  private:
   void OnServerDNSResolved(int status);
   void HandleServerDNSResolved(int status);
-  void HandleExhaustedConnections();
 
+  Delegate* delegate_;
   net::SingleRequestHostResolver host_resolver_;
   scoped_ptr<net::CompletionCallback> resolve_callback_;
   net::AddressList address_list_;
