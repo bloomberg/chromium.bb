@@ -34,7 +34,9 @@
 #include "texstore.h"
 #include "image.h"
 
-
+#if defined(_MSC_VER)
+#pragma optimize("", off)
+#endif
 
 static GLint
 bytes_per_pixel(GLenum datatype, GLuint comps)

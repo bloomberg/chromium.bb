@@ -41,6 +41,10 @@
 #include "main/config.h"
 #include "m_eval.h"
 
+#if defined(_MSC_VER)
+#pragma optimize("", off)
+#endif
+
 static GLfloat inv_tab[MAX_EVAL_ORDER];
 
 

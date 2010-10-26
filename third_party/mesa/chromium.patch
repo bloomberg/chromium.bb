@@ -1750,8 +1750,6 @@ diff -c -r Mesa-7.9/src/glsl/linker.cpp MesaLib/src/glsl/linker.cpp
   		   other_var->max_array_access > size) {
   		  size = other_var->max_array_access;
   	       }
-Only in MesaLib/src/glsl: safe_strcmp.c
-Only in MesaLib/src/glsl: safe_strcmp.h
 diff -c -r Mesa-7.9/src/mapi/glapi/glapi_nop.c MesaLib/src/mapi/glapi/glapi_nop.c
 *** Mesa-7.9/src/mapi/glapi/glapi_nop.c	Fri Oct  1 15:51:28 2010
 --- MesaLib/src/mapi/glapi/glapi_nop.c	Fri Oct 22 15:41:35 2010
@@ -1812,6 +1810,58 @@ diff -c -r Mesa-7.9/src/mesa/main/compiler.h MesaLib/src/mesa/main/compiler.h
   #  define USED
   #endif
   
+diff -c -r Mesa-7.9/src/mesa/main/histogram.c MesaLib/src/mesa/main/histogram.c
+*** Mesa-7.9/src/mesa/main/histogram.c	Mon Oct  4 18:58:00 2010
+--- MesaLib/src/mesa/main/histogram.c	Tue Oct 26 11:17:37 2010
+***************
+*** 32,37 ****
+--- 32,40 ----
+  #include "macros.h"
+  #include "main/dispatch.h"
+  
++ #if defined(_MSC_VER)
++ #pragma optimize("", off)
++ #endif
+  
+  #if FEATURE_histogram
+  
+diff -c -r Mesa-7.9/src/mesa/main/image.c MesaLib/src/mesa/main/image.c
+*** Mesa-7.9/src/mesa/main/image.c	Mon Oct  4 18:58:00 2010
+--- MesaLib/src/mesa/main/image.c	Tue Oct 26 11:17:45 2010
+***************
+*** 37,42 ****
+--- 37,45 ----
+  #include "imports.h"
+  #include "macros.h"
+  
++ #if defined(_MSC_VER)
++ #pragma optimize("", off)
++ #endif
+  
+  /**
+   * NOTE:
+diff -c -r Mesa-7.9/src/mesa/main/mipmap.c MesaLib/src/mesa/main/mipmap.c
+*** Mesa-7.9/src/mesa/main/mipmap.c	Fri Oct  1 15:51:28 2010
+--- MesaLib/src/mesa/main/mipmap.c	Tue Oct 26 11:17:52 2010
+***************
+*** 34,40 ****
+  #include "texstore.h"
+  #include "image.h"
+  
+! 
+  
+  static GLint
+  bytes_per_pixel(GLenum datatype, GLuint comps)
+--- 34,42 ----
+  #include "texstore.h"
+  #include "image.h"
+  
+! #if defined(_MSC_VER)
+! #pragma optimize("", off)
+! #endif
+  
+  static GLint
+  bytes_per_pixel(GLenum datatype, GLuint comps)
 diff -c -r Mesa-7.9/src/mesa/main/querymatrix.c MesaLib/src/mesa/main/querymatrix.c
 *** Mesa-7.9/src/mesa/main/querymatrix.c	Mon Oct  4 18:58:00 2010
 --- MesaLib/src/mesa/main/querymatrix.c	Wed Oct  6 16:36:08 2010
@@ -1833,3 +1883,34 @@ diff -c -r Mesa-7.9/src/mesa/main/querymatrix.c MesaLib/src/mesa/main/querymatri
   
   /* fpclassify is available. */
   
+diff -c -r Mesa-7.9/src/mesa/math/m_eval.c MesaLib/src/mesa/math/m_eval.c
+*** Mesa-7.9/src/mesa/math/m_eval.c	Thu Feb  4 16:10:40 2010
+--- MesaLib/src/mesa/math/m_eval.c	Tue Oct 26 11:18:00 2010
+***************
+*** 41,46 ****
+--- 41,50 ----
+  #include "main/config.h"
+  #include "m_eval.h"
+  
++ #if defined(_MSC_VER)
++ #pragma optimize("", off)
++ #endif
++ 
+  static GLfloat inv_tab[MAX_EVAL_ORDER];
+  
+  
+diff -c -r Mesa-7.9/src/mesa/swrast/s_texcombine.c MesaLib/src/mesa/swrast/s_texcombine.c
+*** Mesa-7.9/src/mesa/swrast/s_texcombine.c	Fri Oct  1 15:51:28 2010
+--- MesaLib/src/mesa/swrast/s_texcombine.c	Tue Oct 26 11:01:39 2010
+***************
+*** 34,39 ****
+--- 34,42 ----
+  #include "s_context.h"
+  #include "s_texcombine.h"
+  
++ #if defined(_MSC_VER)
++ #pragma optimize("", off)
++ #endif
+  
+  /**
+   * Pointer to array of float[4]

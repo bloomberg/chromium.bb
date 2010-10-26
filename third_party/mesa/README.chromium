@@ -19,7 +19,12 @@ Modifications made with initial commit:
 Later modifications (see chromium.patch):
 - Added OSMesaGetProcAddress to MesaLib/src/mesa/drivers/osmesa/osmesa.def
 
-- Added #pragma optimize('', off) to MesaLib\src\mesa\swrast\s_texcombine.c
+- Added #pragma optimize('', off) to:
+  - MesaLib\src\mesa\main\histogram.c
+  - MesaLib\src\mesa\main\image.c
+  - MesaLib\src\mesa\main\mipmap.c
+  - MesaLib\src\mesa\math\m_eval.c
+  - MesaLib\src\mesa\swrast\s_texcombine.c
 
 - Deleted MesaLib/include/EGL/ - it was conflicting with angle
   - Also deleted MesaLib/include/GLES2/ and MesaLib/include/KHR/ for

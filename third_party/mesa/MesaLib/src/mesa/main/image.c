@@ -37,6 +37,9 @@
 #include "imports.h"
 #include "macros.h"
 
+#if defined(_MSC_VER)
+#pragma optimize("", off)
+#endif
 
 /**
  * NOTE:

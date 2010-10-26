@@ -32,6 +32,9 @@
 #include "macros.h"
 #include "main/dispatch.h"
 
+#if defined(_MSC_VER)
+#pragma optimize("", off)
+#endif
 
 #if FEATURE_histogram
 
