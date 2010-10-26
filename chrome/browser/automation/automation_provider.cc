@@ -161,12 +161,16 @@ void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
                            automation_resource_message_filter_,
                            g_browser_process->io_thread()->message_loop(),
                            true, g_browser_process->shutdown_event()));
-  chrome::VersionInfo version_info;
 
   // Send a hello message with our current automation protocol version.
-  channel_->Send(new AutomationMsg_Hello(0, version_info.Version().c_str()));
+  channel_->Send(new AutomationMsg_Hello(0, GetProtocolVersion().c_str()));
 
   TRACE_EVENT_END("AutomationProvider::ConnectToChannel", 0, "");
+}
+
+std::string AutomationProvider::GetProtocolVersion() {
+  chrome::VersionInfo version_info;
+  return version_info.Version().c_str();
 }
 
 void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {

@@ -4,6 +4,7 @@
 #ifndef CHROME_FRAME_TEST_NET_TEST_AUTOMATION_PROVIDER_H_
 #define CHROME_FRAME_TEST_NET_TEST_AUTOMATION_PROVIDER_H_
 
+#include <string>
 #include "chrome/browser/automation/automation_provider.h"
 
 class TestAutomationResourceMessageFilter;
@@ -47,6 +48,8 @@ class TestAutomationProvider
       TestAutomationProviderDelegate* delegate);
 
  protected:
+  virtual std::string GetProtocolVersion();
+
   int tab_handle_;
   TestAutomationProviderDelegate* delegate_;
 

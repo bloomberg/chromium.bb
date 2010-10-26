@@ -175,6 +175,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // is not of the TabContents type.
   TabContents* GetTabContentsForHandle(int handle, NavigationController** tab);
 
+  // Returns the protocol version which typically is the module version.
+  virtual std::string GetProtocolVersion();
+
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<InitialLoadObserver> initial_load_observer_;

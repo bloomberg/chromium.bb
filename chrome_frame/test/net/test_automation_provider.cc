@@ -5,8 +5,9 @@
 #include "chrome_frame/test/net/test_automation_provider.h"
 
 #include "base/command_line.h"
+#include "base/file_version_info.h"
+#include "base/path_service.h"
 #include "chrome/test/automation/automation_messages.h"
-
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 
 namespace {
@@ -96,6 +97,21 @@ URLRequestJob* TestAutomationProvider::Factory(URLRequest* request,
   }
 
   return NULL;
+}
+
+std::string TestAutomationProvider::GetProtocolVersion() {
+  // Return the version of chrome.dll
+  FilePath path;
+  PathService::Get(base::DIR_MODULE, &path);
+  path = path.AppendASCII("chrome.dll");
+
+  std::string version;
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfo(path));
+  if (version_info.get()) {
+    version = WideToASCII(version_info->product_version());
+  }
+  return version;
 }
 
 // static
