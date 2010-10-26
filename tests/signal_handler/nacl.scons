@@ -12,36 +12,21 @@ if trusted_env is None:
 if env['BUILD_ARCHITECTURE'] == 'arm':
   # TODO(mseaborn): Enable this test.
   Return()
-if trusted_env.Bit('windows') and env['BUILD_SUBARCH'] == '32':
-  Return()
 
 env.ComponentProgram('crash_test.nexe', 'crash_test.c')
-
 nodes = []
-
-def GetTestArgs(golden_file):
-  if trusted_env.Bit('windows'):
-    # TODO(mseaborn): Enable the test fully on 64-bit Windows.  Scons
-    # has trouble passing a string containing "|" on the command line.
-    return {}
-  else:
-    return {"stderr_golden": golden_file,
-            # Regular expression to filter out crash test messages.
-            "filter_regex": '"^\[CRASH_TEST\]|Fault in NaCl"'}
 
 # Test that crashes in untrusted code are recognised as such.
 nodes.append(env.CommandSelLdrTestNacl(
         'sig.out', command=[env.File('crash_test.nexe')],
-        exit_status='untrusted_segfault',
-        **GetTestArgs(env.File('untrusted-fault.stderr'))))
+        exit_status='untrusted_segfault'))
 
 # Test that crashes in trusted code are recognised as such.
 crash_env = env.Clone()
 crash_env['ENV']['NACL_CRASH_TEST'] = '1'
 nodes.append(crash_env.CommandSelLdrTestNacl(
         'sig2.out', command=[env.File('crash_test.nexe')],
-        exit_status='trusted_segfault',
-        **GetTestArgs(env.File('trusted-fault.stderr'))))
+        exit_status='trusted_segfault'))
 
 if not env.IsRunningUnderValgrind():
   env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_signal_handler_test')

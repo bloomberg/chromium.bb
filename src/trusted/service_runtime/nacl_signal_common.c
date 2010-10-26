@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
@@ -54,10 +55,37 @@ ssize_t NaClSignalErrorMessage(const char *msg) {
   return 0;
 }
 
-enum NaClSignalResult NaClSignalHandleNone(int in_untrusted_code,
-                                           int signal,
-                                           void *ctx) {
-  UNREFERENCED_PARAMETER(in_untrusted_code);
+/*
+ * Return non-zero if the signal context is currently executing in an
+ * untrusted environment.
+ */
+int NaClSignalContextIsUntrusted(const struct NaClSignalContext *sigCtx) {
+  /*
+   * We can not be in untrusted code unless we have a loaded and
+   * running NEXE, which means we must have a valid NaClApp object.
+   */
+  if (NULL == g_SignalNAP) return 0;
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+  /* For 32b x86, if the CS doesn't match, it's untrusted code. */
+  if (NaClGetGlobalCs() == sigCtx->cs) return 0;
+#else
+  /* For all other architectures, check the prog_ctr vs untrusted range. */
+
+  /* If the program counter is bellow the untrusted memory start address...*/
+  if (g_SignalNAP->mem_start > sigCtx->prog_ctr) return 0;
+
+  /* If the program counter is above the untrusted start end address...*/
+  if ((g_SignalNAP->mem_start + ((uintptr_t) 1U << g_SignalNAP->addr_bits)) <
+      sigCtx->prog_ctr) return 0;
+#endif
+
+  /* Otherwise the program counter points to untrusted memory. */
+  return 1;
+}
+
+
+enum NaClSignalResult NaClSignalHandleNone(int signal, void *ctx) {
   UNREFERENCED_PARAMETER(signal);
   UNREFERENCED_PARAMETER(ctx);
 
@@ -65,42 +93,49 @@ enum NaClSignalResult NaClSignalHandleNone(int in_untrusted_code,
   return NACL_SIGNAL_SKIP;
 }
 
-enum NaClSignalResult NaClSignalHandleAll(int in_untrusted_code,
-                                          int signal,
-                                          void *ctx) {
-  UNREFERENCED_PARAMETER(ctx);
+enum NaClSignalResult NaClSignalHandleAll(int signal, void *ctx) {
+  struct NaClSignalContext sigCtx;
+  char tmp[128];
 
   /*
    * Return an 8 bit error code which is -signal to
    * simulate normal OS behavior
    */
-  if (in_untrusted_code) {
-    NaClSignalErrorMessage("** Fault in NaCl untrusted code\n");
+
+  NaClSignalContextFromHandler(&sigCtx, ctx);
+  if (NaClSignalContextIsUntrusted(&sigCtx)) {
+    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: Halting "
+             "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
+    NaClSignalErrorMessage(tmp);
     _exit((-signal) & 0xFF);
   }
   else {
-    NaClSignalErrorMessage("** Fault in NaCl trusted code\n");
+    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: Halting "
+             "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
+    NaClSignalErrorMessage(tmp);
     _exit((-signal) & 0xFF);
   }
   return NACL_SIGNAL_RETURN;
 }
 
-enum NaClSignalResult NaClSignalHandleUntrusted(int in_untrusted_code,
-                                                int signal,
-                                                void *ctx) {
-  UNREFERENCED_PARAMETER(ctx);
-
+enum NaClSignalResult NaClSignalHandleUntrusted(int signal, void *ctx) {
+  struct NaClSignalContext sigCtx;
+  char tmp[128];
   /*
    * Return an 8 bit error code which is -signal to
    * simulate normal OS behavior
    */
-  if (in_untrusted_code) {
-    NaClSignalErrorMessage("** Fault in NaCl untrusted code\n");
+  NaClSignalContextFromHandler(&sigCtx, ctx);
+  if (NaClSignalContextIsUntrusted(&sigCtx)) {
+    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from untrusted code: Halting "
+             "at %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
+    NaClSignalErrorMessage(tmp);
     _exit((-signal) & 0xFF);
   }
   else {
-    /* Print a message and try the next handler. */
-    NaClSignalErrorMessage("** Fault in NaCl trusted code\n");
+    SNPRINTF(tmp, sizeof(tmp), "\n** Signal %d from trusted code: Continuing "
+             "from %" NACL_PRIXNACL_REG "h\n", signal, sigCtx.prog_ctr);
+    NaClSignalErrorMessage(tmp);
   }
   return NACL_SIGNAL_SEARCH;
 }
@@ -155,16 +190,14 @@ int NaClSignalHandlerRemove(int id) {
   return 0;
 }
 
-enum NaClSignalResult NaClSignalHandlerFind(int in_untrusted_code,
-                                            int signal,
-                                            void *ctx) {
+enum NaClSignalResult NaClSignalHandlerFind(int signal, void *ctx) {
   enum NaClSignalResult result = NACL_SIGNAL_SEARCH;
   struct NaClSignalNode *pNode;
 
   /* Iterate through handlers */
   pNode = s_FirstHandler;
   while (pNode) {
-    result = pNode->func(in_untrusted_code, signal, ctx);
+    result = pNode->func(signal, ctx);
 
     /* If we are not asking for the search to continue... */
     if (NACL_SIGNAL_SEARCH != result) break;

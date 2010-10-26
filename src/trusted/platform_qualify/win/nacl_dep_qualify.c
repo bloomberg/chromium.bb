@@ -13,16 +13,21 @@
 
 #include <setjmp.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 static int g_SigFound;
 
-static enum NaClSignalResult signal_catch(int in_untrusted_code,
-                                          int signal,
+static enum NaClSignalResult signal_catch(int signal,
                                           void *ctx) {
-  UNREFERENCED_PARAMETER(ctx);
+  struct NaClSignalContext sigCtx;
+  int in_untrusted_code;
+
+  NaClSignalContextFromHandler(&sigCtx, ctx);
+  in_untrusted_code = NaClSignalContextIsUntrusted(&sigCtx);
+
   /* Should be a trusted segfault */
   if (!in_untrusted_code && 11 == signal) {
     g_SigFound = signal;
