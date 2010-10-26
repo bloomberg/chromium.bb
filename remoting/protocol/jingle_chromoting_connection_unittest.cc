@@ -164,12 +164,10 @@ class JingleChromotingConnectionTest : public testing::Test {
         NewCallback(&client_connection_callback_,
                     &MockConnectionCallback::OnStateChange));
 
-    ASSERT_TRUE(
-        host_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
-            TestTimeouts::action_max_timeout_ms())));
-    ASSERT_TRUE(
-        client_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
-            TestTimeouts::action_max_timeout_ms())));
+    host_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_max_timeout_ms()));
+    client_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_max_timeout_ms()));
   }
 
   static void SignalEvent(base::WaitableEvent* event) {
@@ -225,9 +223,8 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   }
 
   void WaitFinished() {
-    ASSERT_TRUE(
-        done_event_.TimedWait(base::TimeDelta::FromMilliseconds(
-            TestTimeouts::action_max_timeout_ms())));
+    done_event_.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_max_timeout_ms()));
   }
 
   virtual void CheckResults() = 0;
@@ -535,9 +532,8 @@ TEST_F(JingleChromotingConnectionTest, RejectConnection) {
       NewCallback(&client_connection_callback_,
                   &MockConnectionCallback::OnStateChange));
 
-  ASSERT_TRUE(
-      done_event.TimedWait(base::TimeDelta::FromMilliseconds(
-          TestTimeouts::action_max_timeout_ms())));
+  done_event.TimedWait(
+      base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
 }
 
 // Verify that we can connect two endpoints.

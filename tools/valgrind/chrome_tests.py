@@ -232,11 +232,7 @@ class ChromeTests:
     return self.SimpleTest("chrome", "printing_unittests")
 
   def TestRemoting(self):
-    return self.SimpleTest("chrome", "remoting_unittests",
-                           cmd_args=[
-                            "--ui-test-timeout=240000",
-                            "--ui-test-action-timeout=120000",
-                            "--ui-test-action-max-timeout=280000"])
+    return self.SimpleTest("chrome", "remoting_unittests")
 
   def TestIpc(self):
     return self.SimpleTest("ipc", "ipc_tests",
