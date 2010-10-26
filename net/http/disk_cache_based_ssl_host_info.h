@@ -16,8 +16,9 @@
 
 namespace net {
 
-class IOBuffer;
 class HttpCache;
+class IOBuffer;
+struct SSLConfig;
 
 // DiskCacheBasedSSLHostInfo fetches information about an SSL host from our
 // standard disk cache. Since the information is defined to be non-sensitive,
@@ -25,7 +26,9 @@ class HttpCache;
 class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
                                   public NonThreadSafe {
  public:
-  DiskCacheBasedSSLHostInfo(const std::string& hostname, HttpCache* http_cache);
+  DiskCacheBasedSSLHostInfo(const std::string& hostname,
+                            const SSLConfig& ssl_config,
+                            HttpCache* http_cache);
 
   // Implementation of SSLHostInfo
   virtual void Start();

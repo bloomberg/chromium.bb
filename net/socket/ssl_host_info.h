@@ -9,10 +9,16 @@
 #include <vector>
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/ssl_client_socket.h"
 
 namespace net {
+
+class CertVerifier;
+class X509Certificate;
+struct SSLConfig;
 
 // SSLHostInfo is an interface for fetching information about an SSL server.
 // This information may be stored on disk so does not include keys or session
@@ -20,7 +26,7 @@ namespace net {
 // certificates.
 class SSLHostInfo {
  public:
-  SSLHostInfo();
+  SSLHostInfo(const std::string& hostname, const SSLConfig& ssl_config);
   virtual ~SSLHostInfo();
 
   // Start will commence the lookup. This must be called before any other
@@ -72,6 +78,14 @@ class SSLHostInfo {
   const State& state() const;
   State* mutable_state();
 
+  // This is true if state().certs.size() > 0 and state().certs[0] has been
+  // verified for |hostname_|.
+  bool cert_valid() const;
+
+  // If |cert_valid()| returns true, then this contains the result of verifying
+  // the certificate.
+  const CertVerifyResult& cert_verify_result() const;
+
  protected:
   // Parse parses an opaque blob of data and fills out the public member fields
   // of this object. It returns true iff the parse was successful. The public
@@ -79,6 +93,21 @@ class SSLHostInfo {
   bool Parse(const std::string& data);
   std::string Serialize() const;
   State state_;
+
+ private:
+  // This is the callback function which the CertVerifier calls via |callback_|.
+  void VerifyCallback(int rv);
+
+  // This is the hostname that we'll validate the certificates against.
+  const std::string hostname_;
+  bool cert_valid_;  // see the comments for |cert_valid|.
+  // These two members are taken from the SSLConfig.
+  bool rev_checking_enabled_;
+  bool verify_ev_cert_;
+  CertVerifyResult cert_verify_result_;
+  scoped_ptr<CertVerifier> verifier_;
+  scoped_refptr<X509Certificate> cert_;
+  scoped_refptr<CancelableCompletionCallback<SSLHostInfo> > callback_;
 };
 
 class SSLHostInfoFactory {
@@ -87,7 +116,8 @@ class SSLHostInfoFactory {
 
   // GetForHost returns a fresh, allocated SSLHostInfo for the given hostname
   // or NULL on failure.
-  virtual SSLHostInfo* GetForHost(const std::string& hostname) = 0;
+  virtual SSLHostInfo* GetForHost(const std::string& hostname,
+                                  const SSLConfig& ssl_config) = 0;
 };
 
 }  // namespace net

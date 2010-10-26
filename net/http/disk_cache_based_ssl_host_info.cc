@@ -13,8 +13,11 @@
 namespace net {
 
 DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
-    const std::string& hostname, HttpCache* http_cache)
-    : callback_(new CancelableCompletionCallback<DiskCacheBasedSSLHostInfo>(
+    const std::string& hostname,
+    const SSLConfig& ssl_config,
+    HttpCache* http_cache)
+    : SSLHostInfo(hostname, ssl_config),
+      callback_(new CancelableCompletionCallback<DiskCacheBasedSSLHostInfo>(
                         ALLOW_THIS_IN_INITIALIZER_LIST(this),
                         &DiskCacheBasedSSLHostInfo::DoLoop)),
       state_(GET_BACKEND),
