@@ -30,6 +30,7 @@
 
 #include <string>
 #include <list>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -301,7 +302,34 @@ public:
     // Make it a bit longer than the regular timeout to avoid killing the
     // TestShell process unless we really need to.
     static int GetLayoutTestTimeoutForWatchDog() {
-      return file_test_timeout_ms_ + 1000;
+      return (load_count_ * file_test_timeout_ms_) + 1000;
+    }
+
+    // Set the JavaScript flags to use. This is a vector as when multiple loads
+    // are specified each load can have different flags passed.
+    static void SetJavaScriptFlags(std::vector<std::string> js_flags) {
+      js_flags_ = js_flags;
+    }
+
+    // Set the number of times to load each URL.
+    static void SetMultipleLoad(int load_count) {
+      load_count_ = load_count;
+    }
+
+    // Get the number of times to load each URL.
+    static int GetLoadCount() { return load_count_; }
+
+    // Get the JavaScript flags for a specific load
+    static std::string GetJSFlagsForLoad(size_t load) {
+      if (load >= js_flags_.size()) return "";
+      return js_flags_[load];
+    }
+
+    // Set whether to dump when the loaded page has finished processing. This is
+    // used with multiple load testing where normally we only want to have the
+    // output from the last load.
+    static void SetDumpWhenFinished(bool dump_when_finished) {
+      dump_when_finished_ = dump_when_finished;
     }
 
 #if defined(OS_WIN)
@@ -442,6 +470,17 @@ private:
 
     // True while a test is running
     static bool test_is_pending_;
+
+    // Number of times to load each URL.
+    static int load_count_;
+
+    // JavaScript flags. Each element in the vector contains a set of flags as
+    // a string (e.g. "--xxx --yyy"). Each flag set is used for separate loads
+    // of each URL.
+    static std::vector<std::string> js_flags_;
+
+    // True if a test shell dump should be made when the test is finished.
+    static bool dump_when_finished_;
 
     // True if we're testing the accelerated canvas 2d path.
     static bool accelerated_2d_canvas_enabled_;

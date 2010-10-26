@@ -26,6 +26,7 @@
 #include "net/base/net_module.h"
 #include "net/base/net_util.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_util.h"
 #include "net/test/test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -130,6 +131,21 @@ int main(int argc, char* argv[]) {
     TestShell::SetAccelerated2dCanvasEnabled(true);
   if (parsed_command_line.HasSwitch(test_shell::kEnableAccelCompositing))
     TestShell::SetAcceleratedCompositingEnabled(true);
+
+  if (parsed_command_line.HasSwitch(test_shell::kMultipleLoads)) {
+    const std::string multiple_loads_str =
+        parsed_command_line.GetSwitchValueASCII(test_shell::kMultipleLoads);
+    int load_count;
+    base::StringToInt(multiple_loads_str, &load_count);
+    if (load_count <= 0) {
+  #ifndef NDEBUG
+      load_count = 2;
+  #else
+      load_count = 5;
+  #endif
+    }
+    TestShell::SetMultipleLoad(load_count);
+  }
 
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
@@ -247,11 +263,31 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  // Get the JavaScript flags. The test runner might send a quoted string which
+  // needs to be unquoted before further processing.
   std::string js_flags =
       parsed_command_line.GetSwitchValueASCII(test_shell::kJavaScriptFlags);
-  // Test shell always exposes the GC.
-  js_flags += " --expose-gc";
-  webkit_glue::SetJavaScriptFlags(js_flags);
+  js_flags = net::HttpUtil::Unquote(js_flags);
+  // Split the JavaScript flags into a list.
+  std::vector<std::string> js_flags_list;
+  size_t start = 0;
+  while (true) {
+    size_t comma_pos = js_flags.find_first_of(',', start);
+    std::string flags;
+    if (comma_pos == std::string::npos) {
+      flags = js_flags.substr(start, js_flags.length() - start);
+    } else {
+      flags = js_flags.substr(start, comma_pos - start);
+      start = comma_pos + 1;
+    }
+    // Test shell always exposes the GC.
+    flags += " --expose-gc";
+    js_flags_list.push_back(flags);
+    if (comma_pos == std::string::npos)
+      break;
+  }
+  TestShell::SetJavaScriptFlags(js_flags_list);
+
   // Expose GCController to JavaScript.
   WebScriptController::registerExtension(extensions_v8::GCExtension::Get());
 
@@ -361,7 +397,23 @@ int main(int argc, char* argv[]) {
               params.pixel_hash = pixel_hash;
           }
 
-          if (!TestShell::RunFileTest(params))
+          // Load the page the number of times specified.
+          bool fatal_error = false;
+          for (int i = 0; i < TestShell::GetLoadCount(); i++) {
+            // Set the JavaScript flags specified for this load.
+            webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(i));
+
+            // Only dump for the last load.
+            bool is_last_load = (i == (TestShell::GetLoadCount() - 1));
+            TestShell::SetDumpWhenFinished(is_last_load);
+
+            if (!TestShell::RunFileTest(params)) {
+              fatal_error = true;
+              break;
+            }
+          }
+
+          if (fatal_error)
             break;
 
           TestShell::SetFileTestTimeout(old_timeout_ms);

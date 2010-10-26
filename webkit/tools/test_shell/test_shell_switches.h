@@ -21,6 +21,7 @@ extern const char kTestShellTimeOut[];
 extern const char kStartupDialog[];
 extern const char kGPFaultErrorBox[];
 extern const char kJavaScriptFlags[];
+extern const char kMultipleLoads[];
 extern const char kRecordMode[];
 extern const char kPlaybackMode[];
 extern const char kNoEvents[];

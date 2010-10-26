@@ -115,6 +115,9 @@ bool TestShell::allow_external_pages_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
 bool TestShell::test_is_preparing_ = false;
 bool TestShell::test_is_pending_ = false;
+int TestShell::load_count_ = 1;
+std::vector<std::string> TestShell::js_flags_;
+bool TestShell::dump_when_finished_ = true;
 bool TestShell::accelerated_2d_canvas_enabled_ = false;
 bool TestShell::accelerated_compositing_enabled_ = false;
 
@@ -657,7 +660,7 @@ void TestShell::LoadFile(const FilePath& file) {
 void TestShell::LoadURL(const GURL& url) {
   // Used as a sentinal for run_webkit_tests.py to know when to start reading
   // test output for this test and so we know we're not getting out of sync.
-  if (layout_test_mode_ && test_params())
+  if (layout_test_mode_ && dump_when_finished_ && test_params())
     printf("#URL:%s\n", test_params()->test_url.c_str());
 
   LoadURLForFrame(url, std::wstring());

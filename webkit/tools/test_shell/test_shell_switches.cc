@@ -38,7 +38,13 @@ const char kStartupDialog[] = "testshell-startup-dialog";
 // it possible to attach a crashed test shell to a debugger.
 const char kGPFaultErrorBox[] = "gp-fault-error-box";
 
-// JavaScript flags passed to engine.
+// Make the test shell load the test URL multiple times. The output dump will
+// only be made from the default last run.
+const char kMultipleLoads[] = "multiple-loads";
+
+// JavaScript flags passed to engine. If multiple loads has been specified this
+// can be a list separated by commas. Each set of flags are passed to the engine
+// in the corresponding load.
 const char kJavaScriptFlags[] = "js-flags";
 
 // Run the http cache in record mode.

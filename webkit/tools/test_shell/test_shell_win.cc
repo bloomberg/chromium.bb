@@ -426,10 +426,12 @@ void TestShell::TestFinished() {
     return;  // reached when running under test_shell_tests
 
   test_is_pending_ = false;
-  HWND hwnd = *(TestShell::windowList()->begin());
-  TestShell* shell =
-      static_cast<TestShell*>(win_util::GetWindowUserData(hwnd));
-  TestShell::Dump(shell);
+  if (dump_when_finished_) {
+    HWND hwnd = *(TestShell::windowList()->begin());
+    TestShell* shell =
+        static_cast<TestShell*>(win_util::GetWindowUserData(hwnd));
+    TestShell::Dump(shell);
+  }
 
   UINT_PTR timer_id = reinterpret_cast<UINT_PTR>(this);
   KillTimer(mainWnd(), timer_id);

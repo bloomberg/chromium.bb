@@ -370,10 +370,12 @@ void TestShell::TestFinished() {
     return;  // reached when running under test_shell_tests
 
   test_is_pending_ = false;
-  NSWindow* window = *(TestShell::windowList()->begin());
-  WindowMap::iterator it = window_map_.Get().find(window);
-  if (it != window_map_.Get().end())
-    TestShell::Dump(it->second);
+  if (dump_when_finished_) {
+    NSWindow* window = *(TestShell::windowList()->begin());
+    WindowMap::iterator it = window_map_.Get().find(window);
+    if (it != window_map_.Get().end())
+      TestShell::Dump(it->second);
+  }
   MessageLoop::current()->Quit();
 }
 
