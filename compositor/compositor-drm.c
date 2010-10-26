@@ -457,7 +457,7 @@ create_output_for_connector(struct drm_compositor *ec,
 }
 
 static int
-create_outputs(struct drm_compositor *ec)
+create_outputs(struct drm_compositor *ec, int option_connector)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
@@ -616,7 +616,7 @@ drm_authenticate(struct wlsc_compositor *c, uint32_t id)
 }
 
 struct wlsc_compositor *
-drm_compositor_create(struct wl_display *display)
+drm_compositor_create(struct wl_display *display, int connector)
 {
 	struct drm_compositor *ec;
 	struct udev_enumerate *e;
@@ -663,7 +663,7 @@ drm_compositor_create(struct wl_display *display)
 	if (wlsc_compositor_init(&ec->base, display) < 0)
 		return NULL;
 
-	if (create_outputs(ec) < 0) {
+	if (create_outputs(ec, connector) < 0) {
 		fprintf(stderr, "failed to create output for %s\n", path);
 		return NULL;
 	}

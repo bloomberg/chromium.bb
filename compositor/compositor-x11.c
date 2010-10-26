@@ -620,7 +620,7 @@ x11_authenticate(struct wlsc_compositor *c, uint32_t id)
 }
 
 struct wlsc_compositor *
-x11_compositor_create(struct wl_display *display)
+x11_compositor_create(struct wl_display *display, int width, int height)
 {
 	struct x11_compositor *c;
 	struct wl_event_loop *loop;
@@ -648,7 +648,7 @@ x11_compositor_create(struct wl_display *display)
 	if (wlsc_compositor_init(&c->base, display) < 0)
 		return NULL;
 
-	x11_compositor_create_output(c, 1024, 640);
+	x11_compositor_create_output(c, width, height);
 
 	x11_input_create(c);
 

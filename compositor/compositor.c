@@ -32,14 +32,17 @@
 #include "wayland-server-protocol.h"
 #include "compositor.h"
 
-const char *option_background = "background.jpg";
-int option_connector = 0;
+static const char *option_background = "background.jpg";
+static const char *option_geometry = "1024x640";
+static int option_connector = 0;
 
 static const GOptionEntry option_entries[] = {
 	{ "background", 'b', 0, G_OPTION_ARG_STRING,
 	  &option_background, "Background image" },
 	{ "connector", 'c', 0, G_OPTION_ARG_INT,
 	  &option_connector, "KMS connector" },
+	{ "geometry", 'g', 0, G_OPTION_ARG_STRING,
+	  &option_geometry, "Geometry" },
 	{ NULL }
 };
 
@@ -1417,6 +1420,7 @@ int main(int argc, char *argv[])
 	struct wlsc_compositor *ec;
 	GError *error = NULL;
 	GOptionContext *context;
+	int width, height;
 
 	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
@@ -1426,19 +1430,24 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "option parsing failed: %s\n", error->message);
 		exit(EXIT_FAILURE);
 	}
+	if (sscanf(option_geometry, "%dx%d", &width, &height) != 2) {
+		fprintf(stderr, "invalid geometry option: %s \n",
+			option_geometry);
+		exit(EXIT_FAILURE);
+	}
 
 	display = wl_display_create();
 
 	if (getenv("DISPLAY"))
-		ec = x11_compositor_create(display);
+		ec = x11_compositor_create(display, width, height);
 	else
-		ec = drm_compositor_create(display);
+		ec = drm_compositor_create(display, option_connector);
 
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
-		
+
 	if (wl_display_add_socket(display, socket_name, sizeof socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);

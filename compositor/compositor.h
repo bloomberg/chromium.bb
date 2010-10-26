@@ -229,15 +229,12 @@ wl_buffer_create_drm(struct wlsc_compositor *compositor,
 		     struct wl_visual *visual);
 
 struct wlsc_compositor *
-x11_compositor_create(struct wl_display *display);
+x11_compositor_create(struct wl_display *display, int width, int height);
 
 struct wlsc_compositor *
-drm_compositor_create(struct wl_display *display);
+drm_compositor_create(struct wl_display *display, int connector);
 
 void
 screenshooter_create(struct wlsc_compositor *ec);
-
-extern const char *option_background;
-extern int option_connector;
 
 #endif
