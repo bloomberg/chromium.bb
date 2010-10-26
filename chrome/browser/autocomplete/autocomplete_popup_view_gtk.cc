@@ -356,9 +356,20 @@ void AutocompletePopupViewGtk::UpdatePopupAppearance() {
 }
 
 gfx::Rect AutocompletePopupViewGtk::GetTargetBounds() {
-  return gfx::Rect();
-}
+  if (!GTK_WIDGET_REALIZED(window_))
+    return gfx::Rect();
 
+  gfx::Rect retval = gtk_util::GetWidgetScreenBounds(window_);
+
+  // The widget bounds don't update synchronously so may be out of sync with
+  // our last size request.
+  GtkRequisition req;
+  gtk_widget_size_request(window_, &req);
+  retval.set_width(req.width);
+  retval.set_height(req.height);
+
+  return retval;
+}
 
 void AutocompletePopupViewGtk::PaintUpdatesNow() {
   // Paint our queued invalidations now, synchronously.

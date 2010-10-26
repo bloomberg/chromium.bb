@@ -18,6 +18,7 @@
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
@@ -38,6 +39,7 @@
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/location_bar_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -143,7 +145,8 @@ LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
       hbox_width_(0),
       entry_box_width_(0),
       show_selected_keyword_(false),
-      show_keyword_hint_(false) {
+      show_keyword_hint_(false),
+      update_instant_(true) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -429,6 +432,31 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
   }
 }
 
+void LocationBarViewGtk::OnAutocompleteWillClosePopup() {
+  // TODO(estade): implement me.
+}
+
+void LocationBarViewGtk::OnAutocompleteLosingFocus(
+    gfx::NativeView view_gaining_focus) {
+  // TODO(estade): implement me.
+}
+
+void LocationBarViewGtk::OnAutocompleteWillAccept() {
+  // TODO(estade): implement me.
+}
+
+bool LocationBarViewGtk::OnCommitSuggestedText(
+    const std::wstring& typed_text) {
+  // TODO(estade): implement me.
+  return false;
+}
+
+void LocationBarViewGtk::OnPopupBoundsChanged(const gfx::Rect& bounds) {
+  InstantController* instant = browser_->instant();
+  if (instant)
+    instant->SetOmniboxBounds(bounds);
+}
+
 void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     WindowOpenDisposition disposition,
     PageTransition::Type transition,
@@ -479,6 +507,22 @@ void LocationBarViewGtk::OnChanged() {
     SetKeywordHintLabel(keyword);
 
   AdjustChildrenVisibility();
+
+  InstantController* instant = browser_->instant();
+  string16 suggested_text;
+  if (update_instant_ && instant && GetTabContents()) {
+    if (location_entry_->model()->user_input_in_progress() &&
+        location_entry_->model()->popup_model()->IsOpen()) {
+      instant->Update(GetTabContents(),
+                      location_entry_->model()->CurrentMatch(),
+                      WideToUTF16(location_entry_->GetText()),
+                      &suggested_text);
+    } else {
+      instant->DestroyPreviewContents();
+    }
+  }
+
+  SetSuggestedText(suggested_text);
 }
 
 void LocationBarViewGtk::CreateStarButton() {
@@ -545,8 +589,7 @@ void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarViewGtk::SetSuggestedText(const string16& text) {
-  // TODO: implement me.
-  NOTIMPLEMENTED();
+  // TODO(estade): implement me.
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {

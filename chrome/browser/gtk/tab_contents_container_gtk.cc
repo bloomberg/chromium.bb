@@ -15,6 +15,7 @@
 
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
     : tab_contents_(NULL),
+      preview_contents_(NULL),
       status_bubble_(status_bubble) {
   Init();
 }
@@ -57,54 +58,101 @@ void TabContentsContainerGtk::Init() {
 }
 
 void TabContentsContainerGtk::SetTabContents(TabContents* tab_contents) {
+  HideTabContents(tab_contents_);
   if (tab_contents_) {
-    gfx::NativeView widget = tab_contents_->GetNativeView();
-    if (widget)
-      gtk_widget_hide(widget);
-
-    tab_contents_->WasHidden();
-
-    registrar_.Remove(this, NotificationType::RENDER_VIEW_HOST_CHANGED,
-        Source<NavigationController>(&tab_contents_->controller()));
     registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
                       Source<TabContents>(tab_contents_));
   }
 
   tab_contents_ = tab_contents;
 
-  // When detaching the last tab of the browser SetTabContents is invoked
-  // with NULL. Don't attempt to do anything in that case.
-  if (tab_contents_) {
-    // TabContents can change their RenderViewHost and hence the GtkWidget that
-    // is shown. I'm not entirely sure that we need to observe this event under
-    // GTK, but am putting a stub implementation and a comment saying that if
-    // we crash after that NOTIMPLEMENTED(), we'll need it.
-    registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CHANGED,
-                   Source<NavigationController>(&tab_contents_->controller()));
+  if (tab_contents_ == preview_contents_) {
+    // If the preview contents is becoming the new permanent tab contents, we
+    // just reassign some pointers.
+    preview_contents_ = NULL;
+  } else if (tab_contents_) {
+    // Otherwise we actually have to add it to the widget hierarchy.
+    PackTabContents(tab_contents);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                    Source<TabContents>(tab_contents_));
-
-    gfx::NativeView widget = tab_contents_->GetNativeView();
-    if (widget) {
-      if (widget->parent != expanded_)
-        gtk_container_add(GTK_CONTAINER(expanded_), widget);
-      gtk_widget_show(widget);
-    }
-
-    // We need to make sure that we are below the findbar.
-    // Sometimes the content native view will be null.
-    // TODO(estade): will this case ever cause findbar occlusion problems?
-    if (tab_contents_->GetContentNativeView()) {
-      GdkWindow* content_gdk_window =
-          tab_contents_->GetContentNativeView()->window;
-      if (content_gdk_window)
-        gdk_window_lower(content_gdk_window);
-    }
   }
+}
+
+void TabContentsContainerGtk::SetPreviewContents(TabContents* preview) {
+  if (preview_contents_)
+    RemovePreviewContents();
+  else
+    HideTabContents(tab_contents_);
+
+  preview_contents_ = preview;
+
+  PackTabContents(preview);
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                 Source<TabContents>(preview_contents_));
+}
+
+void TabContentsContainerGtk::RemovePreviewContents() {
+  if (!preview_contents_)
+    return;
+
+  HideTabContents(preview_contents_);
+
+  GtkWidget* preview_widget = preview_contents_->GetNativeView();
+  if (preview_widget)
+    gtk_container_remove(GTK_CONTAINER(expanded_), preview_widget);
+
+  registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                    Source<TabContents>(preview_contents_));
+  preview_contents_ = NULL;
+}
+
+void TabContentsContainerGtk::PopPreviewContents() {
+  if (!preview_contents_)
+    return;
+
+  RemovePreviewContents();
+
+  PackTabContents(tab_contents_);
+}
+
+void TabContentsContainerGtk::PackTabContents(TabContents* contents) {
+  if (!contents)
+    return;
+
+  gfx::NativeView widget = contents->GetNativeView();
+  if (widget) {
+    if (widget->parent != expanded_)
+      gtk_container_add(GTK_CONTAINER(expanded_), widget);
+    gtk_widget_show(widget);
+  }
+
+  // We need to make sure that we are below the findbar.
+  // Sometimes the content native view will be null.
+  if (contents->GetContentNativeView()) {
+    GdkWindow* content_gdk_window =
+        contents->GetContentNativeView()->window;
+    if (content_gdk_window)
+      gdk_window_lower(content_gdk_window);
+  }
+
+  contents->ShowContents();
+}
+
+void TabContentsContainerGtk::HideTabContents(TabContents* contents) {
+  if (!contents)
+    return;
+
+  gfx::NativeView widget = contents->GetNativeView();
+  if (widget)
+    gtk_widget_hide(widget);
+
+  contents->WasHidden();
+
 }
 
 void TabContentsContainerGtk::DetachTabContents(TabContents* tab_contents) {
   gfx::NativeView widget = tab_contents->GetNativeView();
+
   // It is possible to detach an unrealized, unparented TabContents if you
   // slow things down enough in valgrind. Might happen in the real world, too.
   if (widget && widget->parent) {
@@ -116,30 +164,20 @@ void TabContentsContainerGtk::DetachTabContents(TabContents* tab_contents) {
 void TabContentsContainerGtk::Observe(NotificationType type,
                                       const NotificationSource& source,
                                       const NotificationDetails& details) {
-  if (type == NotificationType::RENDER_VIEW_HOST_CHANGED) {
-    RenderViewHostSwitchedDetails* switched_details =
-        Details<RenderViewHostSwitchedDetails>(details).ptr();
-    RenderViewHostChanged(switched_details->old_host,
-                          switched_details->new_host);
-  } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
-    TabContentsDestroyed(Source<TabContents>(source).ptr());
-  } else {
-    NOTREACHED();
-  }
-}
+  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
 
-void TabContentsContainerGtk::RenderViewHostChanged(RenderViewHost* old_host,
-                                                    RenderViewHost* new_host) {
-  // TODO(port): Remove this method and the logic where we subscribe to the
-  // RENDER_VIEW_HOST_CHANGED notification. This was used on Windows for focus
-  // issues, and I'm not entirely convinced that this isn't necessary.
+  TabContentsDestroyed(Source<TabContents>(source).ptr());
 }
 
 void TabContentsContainerGtk::TabContentsDestroyed(TabContents* contents) {
   // Sometimes, a TabContents is destroyed before we know about it. This allows
   // us to clean up our state in case this happens.
-  DCHECK(contents == tab_contents_);
-  SetTabContents(NULL);
+  if (contents == preview_contents_)
+    PopPreviewContents();
+  else if (contents == tab_contents_)
+    SetTabContents(NULL);
+  else
+    NOTREACHED();
 }
 
 // -----------------------------------------------------------------------------

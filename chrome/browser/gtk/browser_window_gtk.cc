@@ -1137,19 +1137,15 @@ void BrowserWindowGtk::Paste() {
 }
 
 void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
-  // TODO: implement me
-  NOTIMPLEMENTED();
+  contents_container_->SetPreviewContents(preview_contents);
 }
 
 void BrowserWindowGtk::HideInstant() {
-  // TODO: implement me
-  NOTIMPLEMENTED();
+  contents_container_->PopPreviewContents();
 }
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
-  // TODO: implement me
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return gtk_util::GetWidgetScreenBounds(contents_container_->widget());
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

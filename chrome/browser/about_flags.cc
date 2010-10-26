@@ -125,7 +125,7 @@ const Experiment kExperiments[] = {
     "match-preview",  // Do not change; see above.
     IDS_FLAGS_INSTANT_NAME,
     IDS_FLAGS_INSTANT_DESCRIPTION,
-    kOsMac,
+    kOsMac | kOsLinux,
     switches::kEnableMatchPreview
   },
   // FIXME(scheib): Add Flags entry for accelerated Compositing,
