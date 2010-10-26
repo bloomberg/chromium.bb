@@ -36,7 +36,7 @@ class TestCompletionCallback {
   DISALLOW_COPY_AND_ASSIGN(TestCompletionCallback);
 };
 
-TEST(CannedBrowsingDataIndexedDBHelperTest, AddIndexedDB) {
+TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_AddIndexedDB) {
   TestingProfile profile;
 
   const GURL origin1("http://host1:1/");
@@ -66,7 +66,7 @@ TEST(CannedBrowsingDataIndexedDBHelperTest, AddIndexedDB) {
   EXPECT_EQ(FilePath(file2).value(), result[1].file_path.BaseName().value());
 }
 
-TEST(CannedBrowsingDataIndexedDBHelperTest, Unique) {
+TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_Unique) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
