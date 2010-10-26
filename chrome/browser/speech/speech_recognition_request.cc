@@ -16,10 +16,10 @@ namespace {
 
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
+const char* const kConfidenceString = "confidence";
 
-bool ParseServerResponse(const std::string& response_body, string16* value) {
-  DCHECK(value);
-
+bool ParseServerResponse(const std::string& response_body,
+                         speech_input::SpeechInputResultArray* result) {
   if (response_body.empty()) {
     LOG(WARNING) << "ParseServerResponse: Response was empty.";
     return false;
@@ -61,21 +61,38 @@ bool ParseServerResponse(const std::string& response_body, string16* value) {
     return false;
   }
 
-  Value* first_hypotheses = NULL;
-  if (!hypotheses_list->Get(0, &first_hypotheses)) {
-    LOG(WARNING) << "ParseServerResponse: Unable to read hypotheses value.";
-    return false;
+  size_t index = 0;
+  for (; index < hypotheses_list->GetSize(); ++index) {
+    Value* hypothesis = NULL;
+    if (!hypotheses_list->Get(index, &hypothesis)) {
+      LOG(WARNING) << "ParseServerResponse: Unable to read hypothesis value.";
+      break;
+    }
+    DCHECK(hypothesis);
+    if (!hypothesis->IsType(Value::TYPE_DICTIONARY)) {
+      LOG(WARNING) << "ParseServerResponse: Unexpected value type "
+                   << hypothesis->GetType();
+      break;
+    }
+
+    const DictionaryValue* hypothesis_value =
+        static_cast<DictionaryValue*>(hypothesis);
+    string16 utterance;
+    if (!hypothesis_value->GetString(kUtteranceString, &utterance)) {
+      LOG(WARNING) << "ParseServerResponse: Missing utterance value.";
+      break;
+    }
+
+    // It is not an error if the 'confidence' field is missing.
+    double confidence = 0.0;
+    hypothesis_value->GetReal(kConfidenceString, &confidence);
+
+    result->push_back(speech_input::SpeechInputResultItem(utterance,
+                                                          confidence));
   }
-  DCHECK(first_hypotheses);
-  if (!first_hypotheses->IsType(Value::TYPE_DICTIONARY)) {
-    LOG(WARNING) << "ParseServerResponse: Unexpected value type "
-                 << first_hypotheses->GetType();
-    return false;
-  }
-  const DictionaryValue* first_hypotheses_value =
-      static_cast<DictionaryValue*>(first_hypotheses);
-  if (!first_hypotheses_value->GetString(kUtteranceString, value)) {
-    LOG(WARNING) << "ParseServerResponse: Missing utterance value.";
+
+  if (index < hypotheses_list->GetSize()) {
+    result->clear();
     return false;
   }
 
@@ -129,13 +146,13 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
   DCHECK(url_.possibly_invalid_spec() == url.possibly_invalid_spec());
 
   bool error = !status.is_success() || response_code != 200;
-  string16 value;
+  SpeechInputResultArray result;
   if (!error)
-    error = !ParseServerResponse(data, &value);
+    error = !ParseServerResponse(data, &result);
   url_fetcher_.reset();
 
   DVLOG(1) << "SpeechRecognitionRequest: Invoking delegate with result.";
-  delegate_->SetRecognitionResult(error, value);
+  delegate_->SetRecognitionResult(error, result);
 }
 
 }  // namespace speech_input

@@ -2674,6 +2674,7 @@
         'browser/speech/speech_input_dispatcher_host.h',
         'browser/speech/speech_input_manager.cc',
         'browser/speech/speech_input_manager.h',
+        'browser/speech/speech_input_result.h',
         'browser/speech/speech_recognition_request.cc',
         'browser/speech/speech_recognition_request.h',
         'browser/speech/speech_recognizer.cc',

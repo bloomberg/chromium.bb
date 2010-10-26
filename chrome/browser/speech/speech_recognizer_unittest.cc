@@ -44,7 +44,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   // SpeechRecognizer::Delegate methods.
   virtual void SetRecognitionResult(int caller_id,
                                     bool error,
-                                    const string16& result) {
+                                    const SpeechInputResultArray& result) {
     result_received_ = true;
   }
 

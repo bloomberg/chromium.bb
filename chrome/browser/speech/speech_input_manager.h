@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 
 #include "base/basictypes.h"
+#include "chrome/common/speech_input_result.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_message.h"
 
@@ -21,7 +22,9 @@ class SpeechInputManager {
   // Implemented by the dispatcher host to relay events to the render views.
   class Delegate {
    public:
-    virtual void SetRecognitionResult(int caller_id, const string16& value) = 0;
+    virtual void SetRecognitionResult(
+        int caller_id,
+        const SpeechInputResultArray& result) = 0;
     virtual void DidCompleteRecording(int caller_id) = 0;
     virtual void DidCompleteRecognition(int caller_id) = 0;
 

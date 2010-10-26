@@ -36,9 +36,10 @@ class SpeechRecognizer
   // Implemented by the caller to receive recognition events.
   class Delegate {
    public:
-    virtual void SetRecognitionResult(int caller_id,
-                                      bool error,
-                                      const string16& value) = 0;
+    virtual void SetRecognitionResult(
+        int caller_id,
+        bool error,
+        const SpeechInputResultArray& result) = 0;
 
     // Invoked when audio recording stops, either due to the end pointer
     // detecting silence in user input or if |StopRecording| was called. The
@@ -96,7 +97,7 @@ class SpeechRecognizer
               uint32 size);
 
   // SpeechRecognitionRequest::Delegate methods.
-  void SetRecognitionResult(bool error, const string16& value);
+  void SetRecognitionResult(bool error, const SpeechInputResultArray& result);
 
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.

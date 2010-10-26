@@ -173,8 +173,8 @@ void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,
       &RenderViewHost::Send, message);
 }
 
-void SpeechInputDispatcherHost::SetRecognitionResult(int caller_id,
-                                                     const string16& result) {
+void SpeechInputDispatcherHost::SetRecognitionResult(
+    int caller_id, const SpeechInputResultArray& result) {
   VLOG(1) << "SpeechInputDispatcherHost::SetRecognitionResult enter";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);

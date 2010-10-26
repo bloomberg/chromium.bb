@@ -33,8 +33,9 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   virtual void StopRecording(int caller_id);
 
   // SpeechRecognizer::Delegate methods.
-  virtual void SetRecognitionResult(int caller_id, bool error,
-                                    const string16& value);
+  virtual void SetRecognitionResult(int caller_id,
+                                    bool error,
+                                    const SpeechInputResultArray& result);
   virtual void DidCompleteRecording(int caller_id);
   virtual void DidCompleteRecognition(int caller_id);
   virtual void OnRecognizerError(int caller_id,
@@ -149,12 +150,10 @@ void SpeechInputManagerImpl::StopRecording(int caller_id) {
   requests_[caller_id].recognizer->StopRecording();
 }
 
-void SpeechInputManagerImpl::SetRecognitionResult(int caller_id,
-                                                  bool error,
-                                                  const string16& value) {
+void SpeechInputManagerImpl::SetRecognitionResult(
+    int caller_id, bool error, const SpeechInputResultArray& result) {
   DCHECK(HasPendingRequest(caller_id));
-  GetDelegate(caller_id)->SetRecognitionResult(caller_id,
-                                               (error ? string16() : value));
+  GetDelegate(caller_id)->SetRecognitionResult(caller_id, result);
 }
 
 void SpeechInputManagerImpl::DidCompleteRecording(int caller_id) {

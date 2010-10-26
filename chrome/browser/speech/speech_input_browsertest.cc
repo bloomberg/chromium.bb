@@ -69,8 +69,9 @@ class FakeSpeechInputManager : public SpeechInputManager {
     if (caller_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
       delegate_->DidCompleteRecording(caller_id_);
-      delegate_->SetRecognitionResult(caller_id_,
-                                      ASCIIToUTF16(kTestResult));
+      SpeechInputResultArray results;
+      results.push_back(SpeechInputResultItem(ASCIIToUTF16(kTestResult), 1.0));
+      delegate_->SetRecognitionResult(caller_id_, results);
       delegate_->DidCompleteRecognition(caller_id_);
       caller_id_ = 0;
       delegate_ = NULL;

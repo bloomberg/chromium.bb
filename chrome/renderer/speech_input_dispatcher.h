@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_SPEECH_INPUT_DISPATCHER_H_
 
 #include "base/basictypes.h"
+#include "chrome/common/speech_input_result.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputController.h"
 
@@ -41,7 +42,8 @@ class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
   void stopRecording(int request_id);
 
  private:
-  void OnSpeechRecognitionResult(int request_id, const string16& result);
+  void OnSpeechRecognitionResult(
+      int request_id, const speech_input::SpeechInputResultArray& result);
   void OnSpeechRecordingComplete(int request_id);
   void OnSpeechRecognitionComplete(int request_id);
 

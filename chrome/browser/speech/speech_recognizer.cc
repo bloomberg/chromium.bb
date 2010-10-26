@@ -314,13 +314,14 @@ void SpeechRecognizer::HandleOnData(string* data) {
   // here as POST chunks.
 }
 
-void SpeechRecognizer::SetRecognitionResult(bool error, const string16& value) {
-  if (value.empty()) {
+void SpeechRecognizer::SetRecognitionResult(
+    bool error, const SpeechInputResultArray& result) {
+  if (result.empty()) {
     InformErrorAndCancelRecognition(RECOGNIZER_ERROR_NO_RESULTS);
     return;
   }
 
-  delegate_->SetRecognitionResult(caller_id_, error, value);
+  delegate_->SetRecognitionResult(caller_id_, error, result);
 
   // Guard against the delegate freeing us until we finish our job.
   scoped_refptr<SpeechRecognizer> me(this);

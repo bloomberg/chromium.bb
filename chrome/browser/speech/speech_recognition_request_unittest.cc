@@ -21,7 +21,8 @@ class SpeechRecognitionRequestTest : public SpeechRecognitionRequestDelegate,
   void CreateAndTestRequest(bool success, const std::string& http_response);
 
   // SpeechRecognitionRequestDelegate methods.
-  virtual void SetRecognitionResult(bool error, const string16& result) {
+  virtual void SetRecognitionResult(bool error,
+                                    const SpeechInputResultArray& result) {
     error_ = error;
     result_ = result;
   }
@@ -38,7 +39,7 @@ class SpeechRecognitionRequestTest : public SpeechRecognitionRequestDelegate,
  protected:
   TestURLFetcherFactory url_fetcher_factory_;
   bool error_;
-  string16 result_;
+  SpeechInputResultArray result_;
 };
 
 void SpeechRecognitionRequestTest::CreateAndTestRequest(
@@ -62,24 +63,30 @@ TEST_F(SpeechRecognitionRequestTest, BasicTest) {
   CreateAndTestRequest(true,
       "{\"hypotheses\":[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
   EXPECT_FALSE(error_);
-  EXPECT_EQ(ASCIIToUTF16("123456"), result_);
+  EXPECT_EQ(1U, result_.size());
+  EXPECT_EQ(ASCIIToUTF16("123456"), result_[0].utterance);
+  EXPECT_EQ(0.9, result_[0].confidence);
 
   // Normal success case with multiple results.
   CreateAndTestRequest(true,
       "{\"hypotheses\":[{\"utterance\":\"hello\",\"confidence\":0.9},"
       "{\"utterance\":\"123456\",\"confidence\":0.5}]}");
   EXPECT_FALSE(error_);
-  EXPECT_EQ(ASCIIToUTF16("hello"), result_);
+  EXPECT_EQ(2u, result_.size());
+  EXPECT_EQ(ASCIIToUTF16("hello"), result_[0].utterance);
+  EXPECT_EQ(0.9, result_[0].confidence);
+  EXPECT_EQ(ASCIIToUTF16("123456"), result_[1].utterance);
+  EXPECT_EQ(0.5, result_[1].confidence);
 
   // Http failure case.
   CreateAndTestRequest(false, "");
   EXPECT_TRUE(error_);
-  EXPECT_EQ(ASCIIToUTF16(""), result_);
+  EXPECT_EQ(0U, result_.size());
 
   // Malformed JSON case.
   CreateAndTestRequest(true, "{\"hypotheses\":[{\"unknownkey\":\"hello\"}]}");
   EXPECT_TRUE(error_);
-  EXPECT_EQ(ASCIIToUTF16(""), result_);
+  EXPECT_EQ(0U, result_.size());
 }
 
 }  // namespace speech_input

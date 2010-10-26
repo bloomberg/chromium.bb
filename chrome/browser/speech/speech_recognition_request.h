@@ -10,6 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/speech_input_result.h"
 #include "googleurl/src/gurl.h"
 
 class URLFetcher;
@@ -27,7 +28,8 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   // Interface for receiving callbacks from this object.
   class Delegate {
    public:
-    virtual void SetRecognitionResult(bool error, const string16& value) = 0;
+    virtual void SetRecognitionResult(
+        bool error, const SpeechInputResultArray& result) = 0;
 
    protected:
     virtual ~Delegate() {}

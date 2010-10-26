@@ -66,9 +66,11 @@ void SpeechInputDispatcher::stopRecording(int request_id) {
 }
 
 void SpeechInputDispatcher::OnSpeechRecognitionResult(
-    int request_id, const string16& result) {
+    int request_id, const speech_input::SpeechInputResultArray& result) {
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult enter";
-  WebKit::WebString webkit_result(result);
+  WebKit::WebSpeechInputResultArray webkit_result(result.size());
+  for (size_t i = 0; i < result.size(); ++i)
+    webkit_result[i].set(result[i].utterance, result[i].confidence);
   listener_->setRecognitionResult(request_id, webkit_result);
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult exit";
 }

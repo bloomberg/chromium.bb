@@ -21,6 +21,7 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/speech_input_result.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/window_container_type.h"
 #include "ipc/ipc_message_macros.h"
@@ -1057,7 +1058,7 @@ IPC_BEGIN_MESSAGES(View)
   // Relay a speech recognition result, either partial or final.
   IPC_MESSAGE_ROUTED2(ViewMsg_SpeechInput_SetRecognitionResult,
                       int /* request id */,
-                      string16 /* result */)
+                      speech_input::SpeechInputResultArray /* result */)
 
   // Indicate that speech recognizer has stopped recording and started
   // recognition.

@@ -14,6 +14,7 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/resource_response.h"
 #include "chrome/common/serialized_script_value.h"
+#include "chrome/common/speech_input_result.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_handle.h"
@@ -1226,6 +1227,28 @@ void ParamTraits<PepperDirEntry>::Log(const param_type& p, std::string* l) {
   LogParam(p.name, l);
   l->append(", ");
   LogParam(p.is_dir, l);
+  l->append(")");
+}
+
+void ParamTraits<speech_input::SpeechInputResultItem>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.utterance);
+  WriteParam(m, p.confidence);
+}
+
+bool ParamTraits<speech_input::SpeechInputResultItem>::Read(const Message* m,
+                                                            void** iter,
+                                                            param_type* p) {
+  return ReadParam(m, iter, &p->utterance) &&
+         ReadParam(m, iter, &p->confidence);
+}
+
+void ParamTraits<speech_input::SpeechInputResultItem>::Log(const param_type& p,
+                                                           std::string* l) {
+  l->append("(");
+  LogParam(p.utterance, l);
+  l->append(":");
+  LogParam(p.confidence, l);
   l->append(")");
 }
 
