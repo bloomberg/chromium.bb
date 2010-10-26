@@ -980,6 +980,13 @@ const char kSingleProcess[]                 = "single-process";
 // Start the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
+// Allow insecure XMPP connections for sync (for testing).
+const char kSyncAllowInsecureXmppConnection[] =
+    "sync-allow-insecure-xmpp-connection";
+
+// Invalidate any login info passed into sync's XMPP connection.
+const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
+
 // Use the SyncerThread implementation that matches up with the old pthread
 // impl semantics, but using Chrome synchronization primitives.  The only
 // difference between this and the default is that we now have no timeout on
@@ -995,8 +1002,8 @@ const char kSyncNotificationHost[]          = "sync-notification-host";
 // Override the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 
-// Control Sync XMPP client settings.
-const char kSyncUseSslTcp[]                 = "use-ssl-tcp";
+// Try to connect to XMPP using SSLTCP first (for testing).
+const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
 // Pass the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";

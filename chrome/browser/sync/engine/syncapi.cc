@@ -1554,11 +1554,16 @@ void SyncManager::SyncInternal::InitializeTalkMediator() {
         new sync_notifier::ServerNotifierThread(
             notifier_options_, state, this);
     talk_mediator_.reset(
-        new TalkMediatorImpl(server_notifier_thread, false));
+        new TalkMediatorImpl(server_notifier_thread,
+                             notifier_options_.invalidate_xmpp_login,
+                             notifier_options_.allow_insecure_connection));
   } else {
     notifier::MediatorThread* mediator_thread =
         new notifier::MediatorThreadImpl(notifier_options_);
-    talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, false));
+    talk_mediator_.reset(
+        new TalkMediatorImpl(mediator_thread,
+                             notifier_options_.invalidate_xmpp_login,
+                             notifier_options_.allow_insecure_connection));
     if (notifier_options_.notification_method !=
         notifier::NOTIFICATION_LEGACY) {
       if (notifier_options_.notification_method ==

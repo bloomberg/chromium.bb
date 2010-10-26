@@ -114,8 +114,8 @@ void LiveSyncTest::SetUp() {
   // minute waiting for a connection on port 5222 before they fail over to port
   // 443, the default SSL/TCP port. This switch causes the tests to use port 443
   // by default, without having to try port 5222.
-  if (!cl->HasSwitch(switches::kSyncUseSslTcp)) {
-    cl->AppendSwitch(switches::kSyncUseSslTcp);
+  if (!cl->HasSwitch(switches::kSyncTrySsltcpFirstForXmpp)) {
+    cl->AppendSwitch(switches::kSyncTrySsltcpFirstForXmpp);
   }
 
   // Mock the Mac Keychain service.  The real Keychain can block on user input.

@@ -280,9 +280,21 @@ void ProfileSyncService::InitSettings() {
   }
 
   notifier_options_.try_ssltcp_first =
-      command_line.HasSwitch(switches::kSyncUseSslTcp);
+      command_line.HasSwitch(switches::kSyncTrySsltcpFirstForXmpp);
   if (notifier_options_.try_ssltcp_first)
     VLOG(1) << "Trying SSL/TCP port before XMPP port for notifications.";
+
+  notifier_options_.invalidate_xmpp_login =
+      command_line.HasSwitch(switches::kSyncInvalidateXmppLogin);
+  if (notifier_options_.invalidate_xmpp_login) {
+    VLOG(1) << "Invalidating sync XMPP login.";
+  }
+
+  notifier_options_.allow_insecure_connection =
+      command_line.HasSwitch(switches::kSyncAllowInsecureXmppConnection);
+  if (notifier_options_.allow_insecure_connection) {
+    VLOG(1) << "Allowing insecure XMPP connections.";
+  }
 
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
     const std::string notification_method_str(

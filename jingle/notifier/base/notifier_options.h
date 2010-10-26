@@ -13,18 +13,21 @@ namespace notifier {
 struct NotifierOptions {
   NotifierOptions()
       : try_ssltcp_first(false),
+        allow_insecure_connection(false),
+        invalidate_xmpp_login(false),
         notification_method(kDefaultNotificationMethod) {}
-
-  NotifierOptions(const bool try_ssltcp_first,
-                  const net::HostPortPair& xmpp_host_port,
-                  NotificationMethod notification_method)
-      : try_ssltcp_first(try_ssltcp_first),
-        xmpp_host_port(xmpp_host_port),
-        notification_method(notification_method) {}
 
   // Indicates that the SSLTCP port (443) is to be tried before the the XMPP
   // port (5222) during login.
   bool try_ssltcp_first;
+
+  // Indicates that insecure connections (e.g., plain authentication,
+  // no TLS) are allowed.  Only used for testing.
+  bool allow_insecure_connection;
+
+  // Indicates that the login info passed to XMPP is invalidated so
+  // that login fails.
+  bool invalidate_xmpp_login;
 
   // Contains a custom URL and port for the notification server, if one is to
   // be used. Empty otherwise.
