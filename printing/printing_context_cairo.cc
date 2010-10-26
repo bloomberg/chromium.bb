@@ -8,6 +8,7 @@
 #include <gtk/gtkprintunixdialog.h>
 
 #include "base/logging.h"
+#include "printing/print_settings_initializer_gtk.h"
 
 namespace printing {
 
@@ -44,7 +45,8 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
       gtk_print_unix_dialog_get_page_setup(GTK_PRINT_UNIX_DIALOG(dialog));
 
   PageRanges ranges_vector;  // Nothing to initialize for default settings.
-  settings_.Init(settings, page_setup, ranges_vector, false);
+  PrintSettingsInitializerGtk::InitPrintSettings(
+          settings, page_setup, ranges_vector, false, &settings_);
 
   g_object_unref(settings);
   // |page_setup| is owned by dialog, so it does not need to be unref'ed.
@@ -56,6 +58,7 @@ PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
 PrintingContext::Result PrintingContextCairo::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
+
   settings_ = settings;
 
   NOTIMPLEMENTED();

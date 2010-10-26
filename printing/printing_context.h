@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"
 #include "printing/print_settings.h"

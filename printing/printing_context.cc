@@ -17,7 +17,9 @@ PrintingContext::~PrintingContext() {
 
 void PrintingContext::ResetSettings() {
   ReleaseContext();
+
   settings_.Clear();
+
   in_print_job_ = false;
   dialog_box_dismissed_ = false;
   abort_printing_ = false;

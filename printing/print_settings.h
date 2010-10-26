@@ -10,18 +10,6 @@
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
 
-#if defined(OS_MACOSX)
-#import <ApplicationServices/ApplicationServices.h>
-#endif
-
-#if defined(OS_WIN)
-typedef struct HDC__* HDC;
-typedef struct _devicemodeW DEVMODE;
-#elif defined(USE_X11)
-typedef struct _GtkPrintSettings GtkPrintSettings;
-typedef struct _GtkPageSetup GtkPageSetup;
-#endif
-
 namespace printing {
 
 // OS-independent print settings.
@@ -33,27 +21,6 @@ class PrintSettings {
   // Reinitialize the settings to the default values.
   void Clear();
 
-#if defined(OS_WIN)
-  // Reads the settings from the selected device context. Calculates derived
-  // values like printable_area_.
-  void Init(HDC hdc,
-            const DEVMODE& dev_mode,
-            const PageRanges& new_ranges,
-            const std::wstring& new_device_name,
-            bool selection_only);
-#elif defined(OS_MACOSX)
-  // Reads the settings from the given PMPrinter and PMPageFormat.
-  void Init(PMPrinter printer, PMPageFormat page_format,
-            const PageRanges& new_ranges, bool print_selection_only);
-#elif defined(USE_X11)
-  // Initializes the settings from the given GtkPrintSettings and GtkPageSetup.
-  // TODO(jhawkins): This method is a mess across the platforms. Refactor.
-  void Init(GtkPrintSettings* settings,
-            GtkPageSetup* page_setup,
-            const PageRanges& new_ranges,
-            bool print_selection_onl);
-#endif
-
   // Set printer printable area in in device units.
   void SetPrinterPrintableArea(gfx::Size const& physical_size_device_units,
                                gfx::Rect const& printable_area_device_units,
@@ -64,11 +31,16 @@ class PrintSettings {
   // output.
   bool Equals(const PrintSettings& rhs) const;
 
+  void set_landscape(bool landscape) { landscape_ = landscape; }
+  void set_printer_name(const std::wstring& printer_name) {
+    printer_name_ = printer_name;
+  }
   const std::wstring& printer_name() const { return printer_name_; }
   void set_device_name(const std::wstring& device_name) {
     device_name_ = device_name;
   }
   const std::wstring& device_name() const { return device_name_; }
+  void set_dpi(int dpi) { dpi_ = dpi; }
   int dpi() const { return dpi_; }
   const PageSetup& page_setup_device_units() const {
     return page_setup_device_units_;

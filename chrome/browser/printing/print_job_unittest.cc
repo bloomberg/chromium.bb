@@ -92,8 +92,8 @@ class TestPrintNotifObserv : public NotificationObserver {
 #define MAYBE_SimplePrint SimplePrint
 #endif
 TEST(PrintJobTest, MAYBE_SimplePrint) {
-  // Test the multithreaded nature of PrintJob to make sure we can use it with
-  // known livetime.
+  // Test the multi-threaded nature of PrintJob to make sure we can use it with
+  // known lifetime.
 
   // This message loop is actually never run.
   MessageLoop current;

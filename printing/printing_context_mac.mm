@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
+#include "printing/print_settings_initializer_mac.h"
 
 namespace printing {
 
@@ -97,12 +98,14 @@ void PrintingContextMac::ParsePrintInfo(NSPrintInfo* print_info) {
   PMPrinter printer;
   PMSessionGetCurrentPrinter(print_session, &printer);
 
-  settings_.Init(printer, page_format, page_ranges, false);
+  PrintSettingsInitializerMac::InitPrintSettings(
+          printer, page_format, page_ranges, false, &settings_);
 }
 
 PrintingContext::Result PrintingContextMac::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
+
   settings_ = settings;
 
   NOTIMPLEMENTED();

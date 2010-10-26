@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "printing/print_settings_initializer_win.h"
 #include "printing/printed_document.h"
 #include "skia/ext/platform_device_win.h"
 
@@ -212,8 +213,10 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
 PrintingContext::Result PrintingContextWin::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
+
   settings_ = settings;
-  // TODO(maruel): settings_->ToDEVMODE()
+
+  // TODO(maruel): settings_.ToDEVMODE()
   HANDLE printer;
   if (!OpenPrinter(const_cast<wchar_t*>(settings_.device_name().c_str()),
                    &printer,
@@ -393,11 +396,14 @@ bool PrintingContextWin::InitializeSettings(const DEVMODE& dev_mode,
       ranges_vector.push_back(range);
     }
   }
-  settings_.Init(context_,
-                 dev_mode,
-                 ranges_vector,
-                 new_device_name,
-                 selection_only);
+
+  PrintSettingsInitializerWin::InitPrintSettings(context_,
+                                                 dev_mode,
+                                                 ranges_vector,
+                                                 new_device_name,
+                                                 selection_only,
+                                                 &settings_);
+
   return true;
 }
 
