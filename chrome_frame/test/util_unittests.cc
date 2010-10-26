@@ -394,7 +394,13 @@ TEST(UtilTests, XUaCompatibleDirectiveTest) {
     // Ignore unrecognized values
     { "  IE=8 ; chrome = IE7.1; chrome = IE6;", 6 },
     // First valid wins
-    { "  IE=8 ; chrome = IE6; chrome = IE8;", 6 }
+    { "  IE=8 ; chrome = IE6; chrome = IE8;", 6 },
+    // Comma delimiter
+    { "  IE=8,chrome=IE6;", -1 },
+    { "  IE=8,chrome=IE6", 6 },
+    { "  IE=8,chrome=IE6, Something=Else;Why;Not", 6 },
+    { "  IE=8,chrome=1,Something=Else", INT_MAX },
+    { "  IE=8(a;b;c),chrome=IE7,Something=Else", 7 }
   };
 
   for (int case_index = 0; case_index < arraysize(test_cases); ++case_index) {

@@ -610,10 +610,10 @@ void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
 //
 // The header is a series of name-value pairs, with the names being HTTP tokens
 // and the values being either tokens or quoted-strings. Names and values are
-// joined by '=' and pairs are delimited by ';'. LWS may be used liberally
-// before and between names, values, '=', and ';'. See RFC 2616 for definitions
-// of token, quoted-string, and LWS. See Microsoft's documentation of the
-// X-UA-COMPATIBLE header here:
+// joined by '=' and pairs are delimited by either ';' or ','. LWS may be used
+// liberally before and between names, values, '=', and ';' or ','. See RFC 2616
+// for definitions of token, quoted-string, and LWS. See Microsoft's
+// documentation of the X-UA-COMPATIBLE header here:
 // http://msdn.microsoft.com/en-us/library/cc288325(VS.85).aspx
 //
 // At most one 'Chrome=<FILTER>' entry is expected in the header value. The
@@ -625,6 +625,9 @@ void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
 //
 // For example:
 // X-UA-Compatible: IE=8; Chrome=IE6
+//
+// The string is first interpreted using ';' as a delimiter. It is reevaluated
+// using ',' iff no valid 'chrome=' value is found.
 bool CheckXUaCompatibleDirective(const std::string& directive,
                                  int ie_major_version);
 

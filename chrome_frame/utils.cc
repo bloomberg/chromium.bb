@@ -1533,11 +1533,13 @@ void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout) {
   }
 }
 
-bool CheckXUaCompatibleDirective(const std::string& directive,
-                                 int ie_major_version) {
+// Returns -1 if no directive is found, std::numeric_limits<int>::max() if the
+// directive matches all IE versions ('Chrome=1') or the maximum IE version
+// matched ('Chrome=IE7' => 7)
+int GetXUaCompatibleDirective(const std::string& directive, char delimiter) {
   net::HttpUtil::NameValuePairsIterator name_value_pairs(directive.begin(),
                                                          directive.end(),
-                                                         ';');
+                                                         delimiter);
 
   // Loop through the values until a valid 'Chrome=<FILTER>' entry is found
   while (name_value_pairs.GetNext()) {
@@ -1552,7 +1554,7 @@ bool CheckXUaCompatibleDirective(const std::string& directive,
     size_t filter_length = filter_end - filter_begin;
 
     if (filter_length == 1 && *filter_begin == '1') {
-      return true;
+      return std::numeric_limits<int>::max();
     }
 
     if (filter_length < 3 ||
@@ -1568,9 +1570,18 @@ bool CheckXUaCompatibleDirective(const std::string& directive,
     }
 
     // The first valid directive we find wins, whether it matches or not
-    return ie_major_version <= header_ie_version;
+    return header_ie_version;
   }
-  return false;
+  return -1;
+}
+
+bool CheckXUaCompatibleDirective(const std::string& directive,
+                                 int ie_major_version) {
+  int header_ie_version = GetXUaCompatibleDirective(directive, ';');
+  if (header_ie_version == -1) {
+    header_ie_version = GetXUaCompatibleDirective(directive, ',');
+  }
+  return header_ie_version >= ie_major_version;
 }
 
 void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
