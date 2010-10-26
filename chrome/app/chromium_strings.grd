@@ -342,6 +342,9 @@ be available for now. -->
       <message name="IDS_INSTALL_HIGHER_VERSION" desc="Error displayed when higher version already exists.">
         This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and download it again.
       </message>
+      <message name="IDS_INSTALL_HIGHER_VERSION_CF" desc="Error displayed when higher version already exists.">
+        This computer already has a more recent version of Chromium Frame. If the software is not working, please uninstall Chromium Frame and download it again.
+      </message>
       <message name="IDS_INSTALL_USER_LEVEL_EXISTS" desc="Error displayed during system level install if user level Chromium is already installed.">
         Chromium has already been installed for this user. If the software is not working, please uninstall Chromium and download it again.
       </message>
@@ -352,7 +355,10 @@ be available for now. -->
         Installation failed due to unspecified error. If Chromium is currently running, please close it and try again.
       </message>
       <message name="IDS_SAME_VERSION_REPAIR_FAILED" desc="Error displayed if installation fails due to Chrome running.">
-        Can not install the same Google Chrome version that is currently running. Please close Google Chrome and try again.
+        Can not install the same Chromium version that is currently running. Please close Chromium and try again.
+      </message>
+      <message name="IDS_SAME_VERSION_REPAIR_FAILED_CF" desc="Error displayed if installation fails due to Chrome running.">
+        Can not install the same Chromium Frame version that is currently running. Please close Chromium Frame and try again.
       </message>
       <message name="IDS_SETUP_PATCH_FAILED" desc="Error message when setup.exe fails to patch itself.">
         Installation failed due to unspecified error. Please download Chromium again.

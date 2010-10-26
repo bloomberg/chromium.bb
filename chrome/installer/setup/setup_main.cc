@@ -282,8 +282,14 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
           installed_version->IsHigherThan(installer_version.get())) {
         LOG(ERROR) << "Higher version is already installed.";
         install_status = installer_util::HIGHER_VERSION_EXISTS;
-        InstallUtil::WriteInstallerResult(system_level, install_status,
-                                          IDS_INSTALL_HIGHER_VERSION_BASE,
+
+        int result_resource_id = IDS_INSTALL_HIGHER_VERSION_BASE;
+        if (InstallUtil::IsChromeFrameProcess()) {
+          result_resource_id = IDS_INSTALL_HIGHER_VERSION_CF_BASE;
+        }
+        InstallUtil::WriteInstallerResult(system_level,
+                                          install_status,
+                                          result_resource_id,
                                           NULL);
       } else {
         // We want to keep uncompressed archive (chrome.7z) that we get after
@@ -299,7 +305,11 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         std::wstring chrome_exe;
         if (install_status == installer_util::SAME_VERSION_REPAIR_FAILED) {
+          if (InstallUtil::IsChromeFrameProcess()) {
+            install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_CF_BASE;
+          } else {
             install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_BASE;
+          }
         } else if (install_status != installer_util::INSTALL_FAILED) {
           chrome_exe = installer::GetChromeInstallPath(system_level);
           if (chrome_exe.empty()) {

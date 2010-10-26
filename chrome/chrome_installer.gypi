@@ -130,7 +130,7 @@
             },
           ],
           'sources': [
-            'installer/app/chromium_strings.grd',
+            'app/chromium_strings.grd',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
