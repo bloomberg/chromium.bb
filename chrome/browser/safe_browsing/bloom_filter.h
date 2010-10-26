@@ -87,9 +87,9 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
     FAILURE_FILTER_READ_DATA_SHORT,
     FAILURE_FILTER_READ_DATA,
 
-    // Histogram space is determined by the max.  If this is exceeded,
-    // simply start a new histogram.
-    FAILURE_MAX = 50
+    // Memory space for histograms is determined by the max.  ALWAYS
+    // ADD NEW VALUES BEFORE THIS ONE.
+    FAILURE_FILTER_MAX
   };
 
   static void RecordFailure(FailureType failure_type);

@@ -179,9 +179,9 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     FORMAT_EVENT_SQLITE_DELETED,
     FORMAT_EVENT_SQLITE_DELETE_FAILED,
 
-    // Histogram space is determined by the max.  If this is exceeded,
-    // simply start a new histogram.
-    FORMAT_EVENT_MAX = 50
+    // Memory space for histograms is determined by the max.  ALWAYS
+    // ADD NEW VALUES BEFORE THIS ONE.
+    FORMAT_EVENT_MAX
   };
 
   // Helper to record an event related to format conversion from

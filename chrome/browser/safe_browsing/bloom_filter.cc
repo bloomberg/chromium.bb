@@ -42,7 +42,8 @@ int BloomFilter::FilterSizeForKeyCount(int key_count) {
 
 // static
 void BloomFilter::RecordFailure(FailureType failure_type) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.BloomFailure", failure_type, FAILURE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SB2.BloomFailure", failure_type,
+                            FAILURE_FILTER_MAX);
 }
 
 BloomFilter::BloomFilter(int bit_size) {

@@ -163,7 +163,8 @@ FilePath SafeBrowsingDatabase::BloomFilterForFilename(
 
 // static
 void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
-  UMA_HISTOGRAM_ENUMERATION("SB2.DatabaseFailure", failure_type, FAILURE_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SB2.DatabaseFailure", failure_type,
+                            FAILURE_DATABASE_MAX);
 }
 
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(SafeBrowsingStore* store)
