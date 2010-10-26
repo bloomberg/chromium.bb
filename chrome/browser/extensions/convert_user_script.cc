@@ -24,9 +24,9 @@
 
 namespace keys = extension_manifest_keys;
 
-scoped_refptr<Extension> ConvertUserScriptToExtension(
-    const FilePath& user_script_path, const GURL& original_url,
-    std::string* error) {
+Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
+                                        const GURL& original_url,
+                                        std::string* error) {
   std::string content;
   if (!file_util::ReadFileToString(user_script_path, &content)) {
     *error = "Could not read source file: " +
@@ -138,13 +138,12 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     return NULL;
   }
 
-  scoped_refptr<Extension> extension = Extension::Create(
-      temp_dir.path(), Extension::INTERNAL, *root, false, error);
-  if (!extension) {
+  scoped_ptr<Extension> extension(new Extension(temp_dir.path()));
+  if (!extension->InitFromValue(*root, false, error)) {
     NOTREACHED() << "Could not init extension " << *error;
     return NULL;
   }
 
   temp_dir.Take();  // The caller takes ownership of the directory.
-  return extension;
+  return extension.release();
 }

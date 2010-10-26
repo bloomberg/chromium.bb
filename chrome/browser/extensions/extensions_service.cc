@@ -293,7 +293,7 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   file_util::AbsolutePath(&extension_path);
 
   std::string error;
-  scoped_refptr<Extension> extension = extension_file_util::LoadExtension(
+  Extension* extension = extension_file_util::LoadExtension(
       extension_path,
       Extension::LOAD,
       false,  // Don't require id
@@ -421,7 +421,7 @@ void ExtensionsServiceBackend::ReloadExtensionManifests(
 
     // We need to reload original manifest in order to localize properly.
     std::string error;
-    scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
+    scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
         info->extension_path, info->extension_location, false, &error));
 
     if (extension.get())
@@ -894,19 +894,20 @@ void ExtensionsService::LoadComponentExtensions() {
       continue;
     }
 
+    scoped_ptr<Extension> extension(new Extension(it->root_directory));
+    extension->set_location(Extension::COMPONENT);
+
     std::string error;
-    scoped_refptr<Extension> extension(Extension::Create(
-        it->root_directory,
-        Extension::COMPONENT,
-        *static_cast<DictionaryValue*>(manifest.get()),
-        true,  // require key
-        &error));
-    if (!extension.get()) {
+    if (!extension->InitFromValue(
+            *static_cast<DictionaryValue*>(manifest.get()),
+            true,  // require key
+            &error)) {
       NOTREACHED() << error;
       return;
     }
 
-    OnExtensionLoaded(extension, false);  // Don't allow privilege increase.
+    OnExtensionLoaded(extension.release(), false);  // Don't allow privilege
+                                                    // increase.
   }
 }
 
@@ -1035,14 +1036,15 @@ void ExtensionsService::ContinueLoadAllExtensions(
 void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
                                                bool write_to_prefs) {
   std::string error;
-  scoped_refptr<Extension> extension(NULL);
+  Extension* extension = NULL;
   if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id)) {
     error = errors::kDisabledByPolicy;
   } else if (info.extension_manifest.get()) {
+    scoped_ptr<Extension> tmp(new Extension(info.extension_path));
     bool require_key = info.extension_location != Extension::LOAD;
-    extension = Extension::Create(
-        info.extension_path, info.extension_location, *info.extension_manifest,
-        require_key, &error);
+    tmp->set_location(info.extension_location);
+    if (tmp->InitFromValue(*info.extension_manifest, require_key, &error))
+      extension = tmp.release();
   } else {
     error = errors::kManifestUnreadable;
   }
@@ -1310,7 +1312,7 @@ void ExtensionsService::CheckForExternalUpdates() {
 
 void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // Make sure the extension gets deleted after we return from this function.
-  scoped_refptr<Extension> extension(
+  scoped_ptr<Extension> extension(
       GetExtensionByIdInternal(extension_id, true, true));
 
   // Callers should not send us nonexistent extensions.
@@ -1348,7 +1350,11 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
 }
 
 void ExtensionsService::UnloadAllExtensions() {
+  STLDeleteContainerPointers(extensions_.begin(), extensions_.end());
   extensions_.clear();
+
+  STLDeleteContainerPointers(disabled_extensions_.begin(),
+                             disabled_extensions_.end());
   disabled_extensions_.clear();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
@@ -1393,7 +1399,7 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
 void ExtensionsService::OnExtensionLoaded(Extension* extension,
                                           bool allow_privilege_increase) {
   // Ensure extension is deleted unless we transfer ownership.
-  scoped_refptr<Extension> scoped_extension(extension);
+  scoped_ptr<Extension> scoped_extension(extension);
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
@@ -1440,7 +1446,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 
     switch (extension_prefs_->GetExtensionState(extension->id())) {
       case Extension::ENABLED:
-        extensions_.push_back(scoped_extension);
+        extensions_.push_back(scoped_extension.release());
 
         NotifyExtensionLoaded(extension);
 
@@ -1448,7 +1454,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
             extension->GetChromeURLOverrides());
         break;
       case Extension::DISABLED:
-        disabled_extensions_.push_back(scoped_extension);
+        disabled_extensions_.push_back(scoped_extension.release());
         NotificationService::current()->Notify(
             NotificationType::EXTENSION_UPDATE_DISABLED,
             Source<Profile>(profile_),
@@ -1488,7 +1494,7 @@ void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
 void ExtensionsService::OnExtensionInstalled(Extension* extension,
                                              bool allow_privilege_increase) {
   // Ensure extension is deleted unless we transfer ownership.
-  scoped_refptr<Extension> scoped_extension(extension);
+  scoped_ptr<Extension> scoped_extension(extension);
   Extension::State initial_state = Extension::DISABLED;
   bool initial_enable_incognito = false;
   PendingExtensionMap::iterator it =
@@ -1625,7 +1631,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
   }
 
   // Transfer ownership of |extension| to OnExtensionLoaded.
-  OnExtensionLoaded(scoped_extension, allow_privilege_increase);
+  OnExtensionLoaded(scoped_extension.release(), allow_privilege_increase);
 }
 
 Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,

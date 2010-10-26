@@ -33,6 +33,7 @@ namespace {
 #elif defined(OS_POSIX)
     FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
+    Extension extension(path);
     std::string error;
 
     FilePath manifest_path = extension_path.Append(
@@ -40,10 +41,7 @@ namespace {
     scoped_ptr<DictionaryValue> extension_data(DeserializeJSONTestData(
         manifest_path, &error));
     EXPECT_EQ("", error);
-
-    scoped_refptr<Extension> extension(Extension::Create(
-        path, Extension::INVALID, *extension_data, true, &error));
-    EXPECT_TRUE(extension.get());
+    EXPECT_TRUE(extension.InitFromValue(*extension_data, true, &error));
     EXPECT_EQ("", error);
 
     scoped_ptr<DictionaryValue> expected_output_data(DeserializeJSONTestData(
@@ -52,7 +50,7 @@ namespace {
 
     // Produce test output.
     scoped_ptr<DictionaryValue> actual_output_data(
-        ExtensionsDOMHandler::CreateExtensionDetailValue(NULL, extension.get(),
+        ExtensionsDOMHandler::CreateExtensionDetailValue(NULL, &extension,
                                                          pages, true));
 
     // Compare the outputs.

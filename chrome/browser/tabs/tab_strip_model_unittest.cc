@@ -1511,13 +1511,12 @@ TEST_F(TabStripModelTest, Apps) {
 #elif defined(OS_POSIX)
   FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
-  scoped_refptr<Extension> extension_app(new Extension(path,
-                                                       Extension::INVALID));
-  extension_app->mutable_static_data_->launch_web_url = "http://www.google.com";
+  Extension extension_app(path);
+  extension_app.mutable_static_data_->launch_web_url = "http://www.google.com";
   TabContents* contents1 = CreateTabContents();
-  contents1->SetExtensionApp(extension_app);
+  contents1->SetExtensionApp(&extension_app);
   TabContents* contents2 = CreateTabContents();
-  contents2->SetExtensionApp(extension_app);
+  contents2->SetExtensionApp(&extension_app);
   TabContents* contents3 = CreateTabContents();
 
   SetID(contents1, 1);

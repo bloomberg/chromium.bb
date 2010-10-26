@@ -140,20 +140,18 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   // extension was unpacked to. We use this until the extension is finally
   // installed. For example, the install UI shows images from inside the
   // extension.
+  extension_.reset(new Extension(extension_root_));
 
   // Localize manifest now, so confirm UI gets correct extension name.
   std::string error;
-  if (!extension_l10n_util::LocalizeExtension(extension_root_,
+  if (!extension_l10n_util::LocalizeExtension(extension_.get(),
                                               final_manifest.get(),
                                               &error)) {
     ReportFailure(error);
     return;
   }
 
-  extension_ = Extension::Create(
-      extension_root_, Extension::INTERNAL, *final_manifest, true, &error);
-
-  if (!extension_.get()) {
+  if (!extension_->InitFromValue(*final_manifest, true, &error)) {
     ReportFailure(std::string("Manifest is invalid: ") + error);
     return;
   }
@@ -272,8 +270,8 @@ void SandboxedExtensionUnpacker::ReportFailure(const std::string& error) {
 
 void SandboxedExtensionUnpacker::ReportSuccess() {
   // Client takes ownership of temporary directory and extension.
-  client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_, extension_);
-  extension_ = NULL;
+  client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_,
+                           extension_.release());
 }
 
 DictionaryValue* SandboxedExtensionUnpacker::RewriteManifestFile(
