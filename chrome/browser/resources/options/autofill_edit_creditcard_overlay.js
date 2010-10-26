@@ -105,6 +105,7 @@ cr.define('options', function() {
     setDefaultSelectOptions_: function() {
       // Set the 'Expiration month' default options.
       var expirationMonth = $('expirationMonth');
+      expirationMonth.options.length = 0;
       for (var i = 1; i <= 12; ++i) {
         var text;
         if (i < 10)
@@ -120,6 +121,8 @@ cr.define('options', function() {
 
       // Set the 'Expiration year' default options.
       var expirationYear = $('expirationYear');
+      expirationYear.options.length = 0;
+
       var date = new Date();
       var year = parseInt(date.getFullYear());
       for (var i = 0; i < 10; ++i) {
