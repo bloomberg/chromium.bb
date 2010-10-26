@@ -3127,3 +3127,26 @@
    fun:_ZN7WebCore21WebGLRenderingContext13compileShaderEPNS_11WebGLShaderERi
    fun:_ZN7WebCore29WebGLRenderingContextInternal21compileShaderCallbackERKN2v89ArgumentsE
 }
+{
+   bug_60668
+   Memcheck:Cond
+   fun:_mesa_convert_colors
+   fun:convert_color_type
+   fun:_swrast_write_rgba_span
+   fun:general_triangle
+   fun:_swrast_validate_triangle
+   fun:_swrast_Triangle
+   fun:triangle_rgba
+   fun:_tnl_render_triangles_verts
+   fun:run_render
+   fun:_tnl_run_pipeline
+   fun:_tnl_draw_prims
+   fun:_tnl_vbo_draw_prims
+   fun:vbo_exec_DrawArrays
+   fun:neutral_DrawArrays
+   fun:glDrawArrays
+   fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl10drawArraysEmll
+   fun:_ZN7WebCore25GraphicsContext3DInternal10drawArraysEmll
+   fun:_ZN7WebCore17GraphicsContext3D10drawArraysEmll
+   fun:_ZN7WebCore21WebGLRenderingContext10drawArraysEmllRi
+}
