@@ -51,6 +51,8 @@
     '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
     # This test fails due to crbug.com/50706
     '-translate.TranslateTest.testToggleTranslateOption'
+    # Turkish I problem. crbug.com/60638
+    '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
   ],
 
   'win': [
