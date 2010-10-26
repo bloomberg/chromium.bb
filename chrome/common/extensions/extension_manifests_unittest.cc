@@ -37,48 +37,53 @@ class ExtensionManifestTest : public testing::Test {
     return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
   }
 
-  scoped_refptr<Extension> LoadExtensionWithLocation(
-      DictionaryValue* value,
-      Extension::Location location,
-      std::string* error) {
+  Extension* LoadExtensionWithLocation(DictionaryValue* value,
+                                       Extension::Location location,
+                                       std::string* error) {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("manifest_tests");
-    return Extension::Create(path.DirName(), location, *value, false, error);
+
+    scoped_ptr<Extension> extension(new Extension(path.DirName()));
+    extension->set_location(location);
+
+    if (!extension->InitFromValue(*value, false, error))
+      return NULL;
+
+    return extension.release();
   }
 
-  scoped_refptr<Extension> LoadExtension(const std::string& name,
-                                         std::string* error) {
+  Extension* LoadExtension(const std::string& name,
+                           std::string* error) {
     return LoadExtensionWithLocation(name, Extension::INTERNAL, error);
   }
 
-  scoped_refptr<Extension> LoadExtension(DictionaryValue* value,
-                                         std::string* error) {
+  Extension* LoadExtension(DictionaryValue* value,
+                           std::string* error) {
     return LoadExtensionWithLocation(value, Extension::INTERNAL, error);
   }
 
-  scoped_refptr<Extension> LoadExtensionWithLocation(
-      const std::string& name,
-      Extension::Location location,
-      std::string* error) {
+  Extension* LoadExtensionWithLocation(const std::string& name,
+                                       Extension::Location location,
+                                       std::string* error) {
     scoped_ptr<DictionaryValue> value(LoadManifestFile(name, error));
     if (!value.get())
       return NULL;
     return LoadExtensionWithLocation(value.get(), location, error);
   }
 
-  scoped_refptr<Extension> LoadAndExpectSuccess(const std::string& name) {
+  Extension* LoadAndExpectSuccess(const std::string& name) {
     std::string error;
-    scoped_refptr<Extension> extension = LoadExtension(name, &error);
+    Extension* extension = LoadExtension(name, &error);
     EXPECT_TRUE(extension) << name;
     EXPECT_EQ("", error) << name;
     return extension;
   }
 
-  scoped_refptr<Extension> LoadAndExpectSuccess(DictionaryValue* manifest,
-                                                const std::string& name) {
+  Extension* LoadAndExpectSuccess(DictionaryValue* manifest,
+                                  const std::string& name) {
     std::string error;
-    scoped_refptr<Extension> extension = LoadExtension(manifest, &error);
+    Extension* extension = LoadExtension(manifest, &error);
     EXPECT_TRUE(extension) << "Unexpected success for " << name;
     EXPECT_EQ("", error) << "Unexpected no error for " << name;
     return extension;
@@ -98,7 +103,7 @@ class ExtensionManifestTest : public testing::Test {
   void LoadAndExpectError(const std::string& name,
                           const std::string& expected_error) {
     std::string error;
-    scoped_refptr<Extension> extension(LoadExtension(name, &error));
+    scoped_ptr<Extension> extension(LoadExtension(name, &error));
     VerifyExpectedError(extension.get(), name, error, expected_error);
   }
 
@@ -106,7 +111,7 @@ class ExtensionManifestTest : public testing::Test {
                           const std::string& name,
                           const std::string& expected_error) {
     std::string error;
-    scoped_refptr<Extension> extension(LoadExtension(manifest, &error));
+    scoped_ptr<Extension> extension(LoadExtension(manifest, &error));
     VerifyExpectedError(extension.get(), name, error, expected_error);
   }
 
@@ -114,7 +119,7 @@ class ExtensionManifestTest : public testing::Test {
 };
 
 TEST_F(ExtensionManifestTest, ValidApp) {
-  scoped_refptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
+  scoped_ptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
   ASSERT_EQ(2u, extension->web_extent().patterns().size());
   EXPECT_EQ("http://www.google.com/mail/*",
             extension->web_extent().patterns()[0].GetAsString());
@@ -140,7 +145,7 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
                      ExtensionErrorUtils::FormatErrorMessage(
                          errors::kInvalidWebURL, "0"));
 
-  scoped_refptr<Extension> extension(
+  scoped_ptr<Extension> extension(
       LoadAndExpectSuccess("web_urls_default.json"));
   ASSERT_EQ(1u, extension->web_extent().patterns().size());
   EXPECT_EQ("*://www.google.com/*",
@@ -148,21 +153,21 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
 }
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
-  scoped_refptr<Extension> extension;
+  scoped_ptr<Extension> extension;
 
-  extension = LoadAndExpectSuccess("launch_tab.json");
+  extension.reset(LoadAndExpectSuccess("launch_tab.json"));
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
 
-  extension = LoadAndExpectSuccess("launch_panel.json");
+  extension.reset(LoadAndExpectSuccess("launch_panel.json"));
   EXPECT_EQ(extension_misc::LAUNCH_PANEL, extension->launch_container());
 
-  extension = LoadAndExpectSuccess("launch_default.json");
+  extension.reset(LoadAndExpectSuccess("launch_default.json"));
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
 
-  extension = LoadAndExpectSuccess("launch_width.json");
+  extension.reset(LoadAndExpectSuccess("launch_width.json"));
   EXPECT_EQ(640, extension->launch_width());
 
-  extension = LoadAndExpectSuccess("launch_height.json");
+  extension.reset(LoadAndExpectSuccess("launch_height.json"));
   EXPECT_EQ(480, extension->launch_height());
 
   LoadAndExpectError("launch_window.json",
@@ -193,15 +198,15 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
   LoadAndExpectError("launch_url_invalid_type.json",
                      errors::kInvalidLaunchWebURL);
 
-  scoped_refptr<Extension> extension;
-  extension = LoadAndExpectSuccess("launch_local_path.json");
+  scoped_ptr<Extension> extension;
+  extension.reset(LoadAndExpectSuccess("launch_local_path.json"));
   EXPECT_EQ(extension->url().spec() + "launch.html",
             extension->GetFullLaunchURL().spec());
 
   LoadAndExpectError("launch_web_url_relative.json",
                      errors::kInvalidLaunchWebURL);
 
-  extension = LoadAndExpectSuccess("launch_web_url_absolute.json");
+  extension.reset(LoadAndExpectSuccess("launch_web_url_absolute.json"));
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),
             extension->GetFullLaunchURL());
 }
@@ -212,13 +217,13 @@ TEST_F(ExtensionManifestTest, Override) {
   LoadAndExpectError("override_invalid_page.json",
                      errors::kInvalidChromeURLOverrides);
 
-  scoped_refptr<Extension> extension;
+  scoped_ptr<Extension> extension;
 
-  extension = LoadAndExpectSuccess("override_new_tab.json");
+  extension.reset(LoadAndExpectSuccess("override_new_tab.json"));
   EXPECT_EQ(extension->url().spec() + "newtab.html",
             extension->GetChromeURLOverrides().find("newtab")->second.spec());
 
-  extension = LoadAndExpectSuccess("override_history.json");
+  extension.reset(LoadAndExpectSuccess("override_history.json"));
   EXPECT_EQ(extension->url().spec() + "history.html",
             extension->GetChromeURLOverrides().find("history")->second.spec());
 }
@@ -232,11 +237,11 @@ TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   LoadAndExpectError("permission_chrome_resources_url.json",
       errors::kInvalidPermissionScheme);
   std::string error;
-  scoped_refptr<Extension> extension;
-  extension = LoadExtensionWithLocation(
+  scoped_ptr<Extension> extension;
+  extension.reset(LoadExtensionWithLocation(
       "permission_chrome_resources_url.json",
       Extension::COMPONENT,
-      &error);
+      &error));
   EXPECT_EQ("", error);
 }
 
@@ -255,8 +260,8 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  scoped_refptr<Extension> extension;
-  extension = LoadAndExpectSuccess("devtools_extension.json");
+  scoped_ptr<Extension> extension;
+  extension.reset(LoadAndExpectSuccess("devtools_extension.json"));
   EXPECT_EQ(extension->url().spec() + "devtools.html",
             extension->devtools_url().spec());
   *CommandLine::ForCurrentProcess() = old_command_line;
@@ -270,10 +275,11 @@ TEST_F(ExtensionManifestTest, DisallowHybridApps) {
 }
 
 TEST_F(ExtensionManifestTest, OptionsPageInApps) {
-  scoped_refptr<Extension> extension;
+  scoped_ptr<Extension> extension;
 
   // Allow options page with absolute URL in hosed apps.
-  extension = LoadAndExpectSuccess("hosted_app_absolute_options.json");
+  extension.reset(
+      LoadAndExpectSuccess("hosted_app_absolute_options.json"));
   EXPECT_STREQ("http",
                extension->options_url().scheme().c_str());
   EXPECT_STREQ("example.com",
@@ -309,8 +315,8 @@ TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
     permissions->Append(p);
     std::string message_name = StringPrintf("permission-%s", name);
     if (Extension::IsHostedAppPermission(name)) {
-      scoped_refptr<Extension> extension;
-      extension = LoadAndExpectSuccess(manifest.get(), message_name);
+      scoped_ptr<Extension> extension;
+      extension.reset(LoadAndExpectSuccess(manifest.get(), message_name));
     } else {
       LoadAndExpectError(manifest.get(), message_name,
                          errors::kInvalidPermission);
@@ -319,7 +325,7 @@ TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
 }
 
 TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
-  scoped_refptr<Extension> extension(
+  scoped_ptr<Extension> extension(
       LoadAndExpectSuccess("normalize_icon_paths.json"));
   EXPECT_EQ("16.png",
             extension->icons().Get(16, ExtensionIconSet::MATCH_EXACTLY));

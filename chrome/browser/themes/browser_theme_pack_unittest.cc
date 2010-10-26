@@ -397,6 +397,8 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
   // Part 1: Build the pack from an extension.
   {
     FilePath star_gazing_path = GetStarGazingPath();
+    Extension extension(star_gazing_path);
+
     FilePath manifest_path =
         star_gazing_path.AppendASCII("manifest.json");
     std::string error;
@@ -405,13 +407,11 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
         static_cast<DictionaryValue*>(serializer.Deserialize(NULL, &error)));
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
-    scoped_refptr<Extension> extension(Extension::Create(
-        star_gazing_path, Extension::INVALID, *valid_value, true, &error));
-    ASSERT_TRUE(extension.get());
+    ASSERT_TRUE(extension.InitFromValue(*valid_value, true, &error));
     ASSERT_EQ("", error);
 
     scoped_refptr<BrowserThemePack> pack =
-        BrowserThemePack::BuildFromExtension(extension.get());
+        BrowserThemePack::BuildFromExtension(&extension);
     ASSERT_TRUE(pack.get());
     ASSERT_TRUE(pack->WriteToDisk(file));
     VerifyStarGazing(pack.get());

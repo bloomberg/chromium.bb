@@ -81,14 +81,15 @@ void UninstallExtension(const FilePath& extensions_dir,
   file_util::Delete(extensions_dir.AppendASCII(id), true);  // recursive.
 }
 
-scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
-                                       Extension::Location location,
-                                       bool require_key,
-                                       std::string* error) {
+Extension* LoadExtension(const FilePath& extension_path,
+                         Extension::Location location,
+                         bool require_key,
+                         std::string* error) {
   FilePath manifest_path =
       extension_path.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
-    *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
+    *error =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
     return NULL;
   }
 
@@ -100,7 +101,8 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
       // It would be cleaner to have the JSON reader give a specific error
       // in this case, but other code tests for a file error with
       // error->empty().  For now, be consistent.
-      *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
+      *error =
+          l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_UNREADABLE);
     } else {
       *error = StringPrintf("%s  %s",
                             errors::kManifestParseError,
@@ -110,23 +112,26 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
   }
 
   if (!root->IsType(Value::TYPE_DICTIONARY)) {
-    *error = l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID);
+    *error =
+        l10n_util::GetStringUTF8(IDS_EXTENSION_MANIFEST_INVALID);
     return NULL;
   }
 
   DictionaryValue* manifest = static_cast<DictionaryValue*>(root.get());
-  if (!extension_l10n_util::LocalizeExtension(extension_path, manifest, error))
+
+  scoped_ptr<Extension> extension(new Extension(extension_path));
+  extension->set_location(location);
+
+  if (!extension_l10n_util::LocalizeExtension(extension.get(), manifest, error))
     return NULL;
 
-  scoped_refptr<Extension> extension(Extension::Create(
-      extension_path, location, *manifest, require_key, error));
-  if (!extension.get())
+  if (!extension->InitFromValue(*manifest, require_key, error))
     return NULL;
 
   if (!ValidateExtension(extension.get(), error))
     return NULL;
 
-  return extension;
+  return extension.release();
 }
 
 bool ValidateExtension(Extension* extension, std::string* error) {

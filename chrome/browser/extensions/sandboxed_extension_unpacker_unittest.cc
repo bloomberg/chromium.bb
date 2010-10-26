@@ -26,6 +26,7 @@ using testing::Invoke;
 void OnUnpackSuccess(const FilePath& temp_dir,
                      const FilePath& extension_root,
                      Extension* extension) {
+  delete extension;
   // Don't delete temp_dir here, we need to do some post op checking.
 }
 

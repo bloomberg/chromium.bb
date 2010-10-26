@@ -75,8 +75,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
   // Create a skeletal framework of either page action or browser action
   // type.  This extension only needs to have a type and a name to initialize
   // the ExtensionInstalledBubble for unit testing.
-  scoped_refptr<Extension> CreateExtension(
-        extension_installed_bubble::ExtensionType type) {
+  Extension* CreateExtension(extension_installed_bubble::ExtensionType type) {
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("dummy");
@@ -99,9 +98,10 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
       extension_input_value.Set(keys::kBrowserAction, browser_action);
     }
 
+    Extension* extension = new Extension(path);
     std::string error;
-    return Extension::Create(
-        path, Extension::INVALID, extension_input_value, false, &error);
+    extension->InitFromValue(extension_input_value, false, &error);
+    return extension;
   }
 
   // Allows us to create the window and browser for testing.
@@ -114,7 +114,7 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
   Browser* browser_;  // weak, owned by BrowserTestHelper.
 
   // Skeleton extension to be tested; reinitialized for each test.
-  scoped_refptr<Extension> extension_;
+  scoped_ptr<Extension> extension_;
 
   // The icon_ to be loaded into the bubble window.
   SkBitmap icon_;
@@ -122,7 +122,8 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
 
 // Confirm that window sizes are set correctly for a page action extension.
 TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
-  extension_ = CreateExtension(extension_installed_bubble::kPageAction);
+  extension_.reset(
+      CreateExtension(extension_installed_bubble::kPageAction));
   ExtensionInstalledBubbleControllerForTest* controller =
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_
@@ -165,7 +166,8 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
 }
 
 TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
-  extension_ = CreateExtension(extension_installed_bubble::kBrowserAction);
+  extension_.reset(
+      CreateExtension(extension_installed_bubble::kBrowserAction));
   ExtensionInstalledBubbleControllerForTest* controller =
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_

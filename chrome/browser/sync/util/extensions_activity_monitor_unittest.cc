@@ -53,7 +53,7 @@ class BookmarkAPIEventTask : public Task {
      done_->Signal();
    }
  private:
-  scoped_refptr<Extension> extension_;
+  scoped_ptr<Extension> extension_;
   scoped_refptr<FunctionType> function_;
   size_t repeats_;
   base::WaitableEvent* done_;
@@ -68,12 +68,13 @@ class BookmarkAPIEventGenerator {
   template <class T>
   void NewEvent(const FilePath::StringType& extension_path,
       T* bookmarks_function, size_t repeats) {
+    FilePath path(extension_path);
+    Extension* extension = new Extension(path);
     std::string error;
     DictionaryValue input;
     input.SetString(keys::kVersion, kTestExtensionVersion);
     input.SetString(keys::kName, kTestExtensionName);
-    scoped_refptr<Extension> extension(Extension::Create(
-        FilePath(extension_path), Extension::INVALID, input, false, &error));
+    extension->InitFromValue(input, false, &error);
     bookmarks_function->set_name(T::function_name());
     base::WaitableEvent done_event(false, false);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -127,13 +128,14 @@ class ExtensionsActivityMonitorTest : public testing::Test {
   static std::string GetExtensionIdForPath(
       const FilePath::StringType& extension_path) {
     std::string error;
+    FilePath path(extension_path);
+    Extension e(path);
     DictionaryValue input;
     input.SetString(keys::kVersion, kTestExtensionVersion);
     input.SetString(keys::kName, kTestExtensionName);
-    scoped_refptr<Extension> extension(Extension::Create(
-        FilePath(extension_path), Extension::INVALID, input, false, &error));
+    e.InitFromValue(input, false, &error);
     EXPECT_EQ("", error);
-    return extension->id();
+    return e.id();
   }
  private:
   NotificationService* service_;

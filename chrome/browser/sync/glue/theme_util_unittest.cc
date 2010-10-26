@@ -23,20 +23,17 @@ using ::testing::Return;
 class ThemeUtilTest : public testing::Test {
 };
 
-scoped_refptr<Extension> MakeThemeExtension(const FilePath& extension_path,
-                                            const std::string& name,
-                                            const std::string& update_url) {
+void MakeThemeExtension(Extension* extension,
+                        const std::string& name,
+                        const std::string& update_url) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName, name);
   source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
   source.SetString(extension_manifest_keys::kUpdateURL, update_url);
   source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
   std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      extension_path, Extension::INTERNAL, source, false, &error);
-  EXPECT_TRUE(extension);
+  EXPECT_TRUE(extension->InitFromValue(source, false, &error));
   EXPECT_EQ("", error);
-  return extension;
 }
 
 TEST_F(ThemeUtilTest, AreThemeSpecificsEqualHelper) {
@@ -171,17 +168,17 @@ TEST_F(ThemeUtilTest, GetThemeSpecificsHelperCustomTheme) {
   theme_specifics.set_use_custom_theme(false);
   theme_specifics.set_use_system_theme_by_default(true);
   FilePath file_path(kExtensionFilePath);
+  Extension extension(file_path);
   const std::string kThemeName("name");
   const std::string kThemeUpdateUrl("http://update.url/foo");
-  scoped_refptr<Extension> extension(
-      MakeThemeExtension(file_path, kThemeName, kThemeUpdateUrl));
-  GetThemeSpecificsFromCurrentThemeHelper(extension.get(), false, false,
+  MakeThemeExtension(&extension, kThemeName, kThemeUpdateUrl);
+  GetThemeSpecificsFromCurrentThemeHelper(&extension, false, false,
                                           &theme_specifics);
 
   EXPECT_TRUE(theme_specifics.use_custom_theme());
   EXPECT_TRUE(theme_specifics.use_system_theme_by_default());
   EXPECT_EQ(kThemeName, theme_specifics.custom_theme_name());
-  EXPECT_EQ(extension->id(), theme_specifics.custom_theme_id());
+  EXPECT_EQ(extension.id(), theme_specifics.custom_theme_id());
   EXPECT_EQ(kThemeUpdateUrl, theme_specifics.custom_theme_update_url());
 }
 
@@ -189,18 +186,18 @@ TEST_F(ThemeUtilTest, GetThemeSpecificsHelperCustomThemeDistinct) {
   sync_pb::ThemeSpecifics theme_specifics;
   theme_specifics.set_use_custom_theme(false);
   FilePath file_path(kExtensionFilePath);
+  Extension extension(file_path);
   const std::string kThemeName("name");
   const std::string kThemeUpdateUrl("http://update.url/foo");
-  scoped_refptr<Extension> extension(
-      MakeThemeExtension(file_path, kThemeName, kThemeUpdateUrl));
-  GetThemeSpecificsFromCurrentThemeHelper(extension.get(), true, false,
+  MakeThemeExtension(&extension, kThemeName, kThemeUpdateUrl);
+  GetThemeSpecificsFromCurrentThemeHelper(&extension, true, false,
                                           &theme_specifics);
 
   EXPECT_TRUE(theme_specifics.use_custom_theme());
   EXPECT_TRUE(theme_specifics.has_use_system_theme_by_default());
   EXPECT_FALSE(theme_specifics.use_system_theme_by_default());
   EXPECT_EQ(kThemeName, theme_specifics.custom_theme_name());
-  EXPECT_EQ(extension->id(), theme_specifics.custom_theme_id());
+  EXPECT_EQ(extension.id(), theme_specifics.custom_theme_id());
   EXPECT_EQ(kThemeUpdateUrl, theme_specifics.custom_theme_update_url());
 }
 

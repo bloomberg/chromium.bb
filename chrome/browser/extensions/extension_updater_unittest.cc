@@ -94,8 +94,7 @@ class MockService : public ExtensionUpdateService {
                          base::StringPrintf("Extension %d", i));
       if (update_url)
         manifest.SetString(extension_manifest_keys::kUpdateURL, *update_url);
-      scoped_refptr<Extension> e =
-          prefs_.AddExtensionWithManifest(manifest, location);
+      Extension* e = prefs_.AddExtensionWithManifest(manifest, location);
       ASSERT_TRUE(e != NULL);
       list->push_back(e);
     }
@@ -344,6 +343,10 @@ class ExtensionUpdaterTest : public testing::Test {
       EXPECT_EQ(extensions[0]->VersionString(), params["v"]);
     }
     EXPECT_EQ("", params["uc"]);
+
+    if (!pending) {
+      STLDeleteElements(&extensions);
+    }
   }
 
   static void TestBlacklistUpdateCheckRequests() {
@@ -435,6 +438,7 @@ class ExtensionUpdaterTest : public testing::Test {
     updateable = updater->DetermineUpdates(fetch_data, updates);
     EXPECT_EQ(1u, updateable.size());
     EXPECT_EQ(0, updateable[0]);
+    STLDeleteElements(&tmp);
   }
 
   static void TestDetermineUpdatesPending() {
@@ -784,6 +788,8 @@ class ExtensionUpdaterTest : public testing::Test {
       size_t pos = url1_query.find(search_string);
       EXPECT_TRUE(pos != std::string::npos);
     }
+
+    STLDeleteElements(&tmp);
   }
 
   // This makes sure that the extension updater properly stores the results
@@ -815,6 +821,8 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_FALSE(last_ping_day.is_null());
     int64 seconds_diff = (Time::Now() - last_ping_day).InSeconds();
     EXPECT_LT(seconds_diff - results.daystart_elapsed_seconds, 5);
+
+    STLDeleteElements(&tmp);
   }
 };
 
@@ -886,6 +894,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
     ASSERT_FALSE(extensions.empty());
     builder.AddExtension(*extensions[0]);
     EXPECT_TRUE(builder.GetFetches().empty());
+    STLDeleteElements(&extensions);
   }
 
   // Extensions with invalid update URLs should be rejected.
