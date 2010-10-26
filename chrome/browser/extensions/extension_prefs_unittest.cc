@@ -114,7 +114,7 @@ TEST_F(ExtensionPrefsToolbarOrder, ToolbarOrder) {}
 class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension.reset(prefs_.AddExtension("test"));
+    extension = prefs_.AddExtension("test");
     prefs()->SetExtensionState(extension.get(), Extension::DISABLED);
   }
 
@@ -123,7 +123,7 @@ class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_ptr<Extension> extension;
+  scoped_refptr<Extension> extension;
 };
 TEST_F(ExtensionPrefsExtensionState, ExtensionState) {}
 
@@ -131,7 +131,7 @@ TEST_F(ExtensionPrefsExtensionState, ExtensionState) {}
 class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension.reset(prefs_.AddExtension("test"));
+    extension = prefs_.AddExtension("test");
     prefs()->SetDidExtensionEscalatePermissions(extension.get(), true);
   }
 
@@ -140,7 +140,7 @@ class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_ptr<Extension> extension;
+  scoped_refptr<Extension> extension;
 };
 TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 
@@ -149,7 +149,7 @@ TEST_F(ExtensionPrefsEscalatePermissions, EscalatePermissions) {}
 class ExtensionPrefsVersionString : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension.reset(prefs_.AddExtension("test"));
+    extension = prefs_.AddExtension("test");
     EXPECT_EQ("0.1", prefs()->GetVersionString(extension->id()));
     prefs()->OnExtensionUninstalled(extension->id(),
                                     Extension::INTERNAL, false);
@@ -160,7 +160,7 @@ class ExtensionPrefsVersionString : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_ptr<Extension> extension;
+  scoped_refptr<Extension> extension;
 };
 TEST_F(ExtensionPrefsVersionString, VersionString) {}
 
@@ -173,11 +173,11 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
     // Install 5 extensions.
     for (int i = 0; i < 5; i++) {
       std::string name = "test" + base::IntToString(i);
-      extensions_.push_back(linked_ptr<Extension>(prefs_.AddExtension(name)));
+      extensions_.push_back(prefs_.AddExtension(name));
     }
     EXPECT_EQ(NULL, prefs()->GetInstalledExtensionInfo(not_installed_id_));
 
-    std::vector<linked_ptr<Extension> >::const_iterator iter;
+    ExtensionList::const_iterator iter;
     for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
       EXPECT_FALSE(prefs()->IsExtensionBlacklisted((*iter)->id()));
     }
@@ -194,7 +194,7 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
     EXPECT_TRUE(prefs()->IsExtensionBlacklisted(not_installed_id_));
 
     // Make sure the other id's are not blacklisted.
-    std::vector<linked_ptr<Extension> >::const_iterator iter;
+    ExtensionList::const_iterator iter;
     for (iter = extensions_.begin() + 1; iter != extensions_.end(); ++iter) {
       EXPECT_FALSE(prefs()->IsExtensionBlacklisted((*iter)->id()));
     }
@@ -212,7 +212,7 @@ class ExtensionPrefsBlacklist : public ExtensionPrefsTest {
   }
 
  private:
-  std::vector<linked_ptr<Extension> > extensions_;
+  ExtensionList extensions_;
 
   // An id we'll make up that doesn't match any installed extension id.
   std::string not_installed_id_;
@@ -315,7 +315,7 @@ TEST_F(ExtensionPrefsIdleInstallInfo, IdleInstallInfo) {}
 class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
  public:
   virtual void Initialize() {
-    extension_.reset(prefs_.AddExtension("on_extension_installed"));
+    extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_EQ(Extension::ENABLED,
               prefs()->GetExtensionState(extension_->id()));
     EXPECT_FALSE(prefs()->IsIncognitoEnabled(extension_->id()));
@@ -330,7 +330,7 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_ptr<Extension> extension_;
+  scoped_refptr<Extension> extension_;
 };
 TEST_F(ExtensionPrefsOnExtensionInstalled,
        ExtensionPrefsOnExtensionInstalled) {}
@@ -341,7 +341,7 @@ public:
     // No extensions yet.
     EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex());
 
-    extension_.reset(prefs_.AddExtension("on_extension_installed"));
+    extension_ = prefs_.AddExtension("on_extension_installed");
     EXPECT_EQ(Extension::ENABLED,
         prefs()->GetExtensionState(extension_->id()));
     prefs()->OnExtensionInstalled(extension_.get(),
@@ -364,6 +364,6 @@ public:
   }
 
 private:
-  scoped_ptr<Extension> extension_;
+  scoped_refptr<Extension> extension_;
 };
 TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}

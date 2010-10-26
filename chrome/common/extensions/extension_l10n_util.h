@@ -44,7 +44,7 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
 
 // Load message catalogs, localize manifest and attach message bundle to the
 // extension.
-bool LocalizeExtension(Extension* extension,
+bool LocalizeExtension(const FilePath& extension_path,
                        DictionaryValue* manifest,
                        std::string* error);
 

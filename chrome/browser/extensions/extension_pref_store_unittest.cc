@@ -17,6 +17,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace keys = extension_manifest_keys;
+
 namespace {
 
 class TestExtensionPrefStore : public ExtensionPrefStore {
@@ -32,20 +34,25 @@ class TestExtensionPrefStore : public ExtensionPrefStore {
       ADD_FAILURE() << "Failed to create temp dir";
       return;
     }
-    DictionaryValue empty_dict;
+    DictionaryValue simple_dict;
     std::string error;
 
-    ext1_scoped_.reset(new Extension(temp_dir_.path().AppendASCII("ext1")));
-    ext2_scoped_.reset(new Extension(temp_dir_.path().AppendASCII("ext2")));
-    ext3_scoped_.reset(new Extension(temp_dir_.path().AppendASCII("ext3")));
+    simple_dict.SetString(keys::kVersion, "1.0.0.0");
+    simple_dict.SetString(keys::kName, "unused");
+
+    ext1_scoped_ = Extension::Create(
+        temp_dir_.path().AppendASCII("ext1"), Extension::INVALID,
+        simple_dict, false, &error);
+    ext2_scoped_ = Extension::Create(
+        temp_dir_.path().AppendASCII("ext2"), Extension::INVALID,
+        simple_dict, false, &error);
+    ext3_scoped_ = Extension::Create(
+        temp_dir_.path().AppendASCII("ext3"), Extension::INVALID,
+        simple_dict, false, &error);
 
     ext1 = ext1_scoped_.get();
     ext2 = ext2_scoped_.get();
     ext3 = ext3_scoped_.get();
-
-    EXPECT_FALSE(ext1->InitFromValue(empty_dict, false, &error));
-    EXPECT_FALSE(ext2->InitFromValue(empty_dict, false, &error));
-    EXPECT_FALSE(ext3->InitFromValue(empty_dict, false, &error));
   }
 
   typedef std::vector<std::string> ExtensionIDs;
@@ -70,9 +77,9 @@ class TestExtensionPrefStore : public ExtensionPrefStore {
  private:
   ScopedTempDir temp_dir_;
 
-  scoped_ptr<Extension> ext1_scoped_;
-  scoped_ptr<Extension> ext2_scoped_;
-  scoped_ptr<Extension> ext3_scoped_;
+  scoped_refptr<Extension> ext1_scoped_;
+  scoped_refptr<Extension> ext2_scoped_;
+  scoped_refptr<Extension> ext3_scoped_;
 
   // Weak reference.
   PrefService* pref_service_;

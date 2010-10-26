@@ -78,7 +78,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
       .AppendASCII("1.0.0.0");
 
   std::string error;
-  scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
+  scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
       install_dir, Extension::LOAD, false, &error));
   ASSERT_TRUE(extension != NULL);
   EXPECT_EQ("The first extension that I made.", extension->description());
@@ -94,7 +94,7 @@ TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
       .AppendASCII("1.0");
 
   std::string error;
-  scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
+  scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
       install_dir, Extension::LOAD, false, &error));
   ASSERT_FALSE(extension == NULL);
   EXPECT_TRUE(error.empty());
@@ -152,7 +152,7 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
       .AppendASCII("1.0");
 
   std::string error;
-  scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
+  scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
       install_dir, Extension::LOAD, false, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
@@ -169,7 +169,7 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
       .AppendASCII("1.0");
 
   std::string error;
-  scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
+  scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
       install_dir, Extension::LOAD, false, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
@@ -185,7 +185,7 @@ TEST(ExtensionFileUtil, FailLoadingNonUTF8Scripts) {
       .AppendASCII("bad_encoding");
 
   std::string error;
-  scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
+  scoped_refptr<Extension> extension(extension_file_util::LoadExtension(
       install_dir, Extension::LOAD, false, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_STREQ("Could not load file 'bad_encoding.js' for content script. "

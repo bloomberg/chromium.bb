@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/ref_counted.h"
+
 class Extension;
 class FilePath;
 class GURL;
@@ -17,8 +19,7 @@ class GURL;
 // should take ownership on success, or NULL and |error| on failure.
 //
 // NOTE: This function does file IO and should not be called on the UI thread.
-Extension* ConvertUserScriptToExtension(const FilePath& user_script,
-                                        const GURL& original_url,
-                                        std::string* error);
+scoped_refptr<Extension> ConvertUserScriptToExtension(
+    const FilePath& user_script, const GURL& original_url, std::string* error);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CONVERT_USER_SCRIPT_H_

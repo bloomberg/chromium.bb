@@ -109,26 +109,26 @@ TEST_F(ExtensionIconManagerTest, LoadRemoveLoad) {
       static_cast<DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
   ASSERT_TRUE(manifest.get() != NULL);
 
-  Extension extension(manifest_path.DirName());
-  ASSERT_TRUE(extension.InitFromValue(*manifest.get(),
-                                      false /* require_key */,
-                                      NULL /* errors */));
+  scoped_refptr<Extension> extension(Extension::Create(
+      manifest_path.DirName(), Extension::INVALID, *manifest.get(),
+      false, NULL));
+  ASSERT_TRUE(extension.get());
   TestIconManager icon_manager(this);
 
   // Load the icon and grab the bitmap.
-  icon_manager.LoadIcon(&extension);
+  icon_manager.LoadIcon(extension.get());
   WaitForImageLoad();
-  SkBitmap first_icon = icon_manager.GetIcon(extension.id());
+  SkBitmap first_icon = icon_manager.GetIcon(extension->id());
   EXPECT_FALSE(gfx::BitmapsAreEqual(first_icon, default_icon));
 
   // Remove the icon from the manager.
-  icon_manager.RemoveIcon(extension.id());
+  icon_manager.RemoveIcon(extension->id());
 
   // Now re-load the icon - we should get the same result bitmap (and not the
   // default icon).
-  icon_manager.LoadIcon(&extension);
+  icon_manager.LoadIcon(extension.get());
   WaitForImageLoad();
-  SkBitmap second_icon = icon_manager.GetIcon(extension.id());
+  SkBitmap second_icon = icon_manager.GetIcon(extension->id());
   EXPECT_FALSE(gfx::BitmapsAreEqual(second_icon, default_icon));
 
   EXPECT_TRUE(gfx::BitmapsAreEqual(first_icon, second_icon));
