@@ -36,6 +36,7 @@ class TestCompletionCallback {
   DISALLOW_COPY_AND_ASSIGN(TestCompletionCallback);
 };
 
+// Functionality incomplete, needs further refactoring, http://crbug.com/60532.
 TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_AddIndexedDB) {
   TestingProfile profile;
 
@@ -66,6 +67,7 @@ TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_AddIndexedDB) {
   EXPECT_EQ(FilePath(file2).value(), result[1].file_path.BaseName().value());
 }
 
+// Functionality incomplete, needs further refactoring, http://crbug.com/60532.
 TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_Unique) {
   TestingProfile profile;
 
