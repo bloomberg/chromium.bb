@@ -107,8 +107,8 @@ def CheckCall(command, print_error=True, **kwargs):
 def SplitUrlRevision(url):
   """Splits url and returns a two-tuple: url, rev"""
   if url.startswith('ssh:'):
-    # Make sure ssh://test@example.com/test.git@stable works
-    regex = r'(ssh://(?:[\w]+@)?[-\w:\.]+/[-\w\./]+)(?:@(.+))?'
+    # Make sure ssh://user-name@example.com/~/test.git@stable works
+    regex = r'(ssh://(?:[-\w]+@)?[-\w:\.]+/[-~\w\./]+)(?:@(.+))?'
     components = re.search(regex, url).groups()
   else:
     components = url.split('@', 1)
