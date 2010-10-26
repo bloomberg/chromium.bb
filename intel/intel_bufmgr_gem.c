@@ -99,6 +99,8 @@ typedef struct _drm_intel_bufmgr_gem {
 	int available_fences;
 	int pci_device;
 	int gen;
+	char has_bsd;
+	char has_blt;
 	char bo_reuse;
 	char fenced_relocs;
 } drm_intel_bufmgr_gem;
@@ -1545,8 +1547,21 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	struct drm_i915_gem_execbuffer2 execbuf;
 	int ret, i;
 
-	if ((ring_flag != I915_EXEC_RENDER) && (ring_flag != I915_EXEC_BSD))
+	switch (ring_flag) {
+	default:
 		return -EINVAL;
+	case I915_EXEC_BLT:
+		if (!bufmgr_gem->has_blt)
+			return -EINVAL;
+		break;
+	case I915_EXEC_BSD:
+		if (!bufmgr_gem->has_bsd)
+			return -EINVAL;
+		break;
+	case I915_EXEC_RENDER:
+	case I915_EXEC_DEFAULT:
+		break;
+	}
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 	/* Update indices and set up the validate list. */
@@ -2054,7 +2069,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	struct drm_i915_gem_get_aperture aperture;
 	drm_i915_getparam_t gp;
 	int ret;
-	int exec2 = 0, has_bsd = 0;
+	int exec2 = 0;
 
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
 	if (bufmgr_gem == NULL)
@@ -2107,8 +2122,11 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 
 	gp.param = I915_PARAM_HAS_BSD;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
-	if (!ret)
-		has_bsd = 1;
+	bufmgr_gem->has_bsd = ret == 0;
+
+	gp.param = I915_PARAM_HAS_BLT;
+	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	bufmgr_gem->has_blt = ret == 0;
 
 	if (bufmgr_gem->gen < 4) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
@@ -2165,7 +2183,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	/* Use the new one if available */
 	if (exec2) {
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec2;
-		if (has_bsd)
+		if (bufmgr_gem->has_bsd|bufmgr_gem->has_blt)
 			bufmgr_gem->bufmgr.bo_mrb_exec = drm_intel_gem_bo_mrb_exec2;
 	} else
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
