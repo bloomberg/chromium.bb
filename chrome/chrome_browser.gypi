@@ -2802,6 +2802,8 @@
         'browser/sync/profile_sync_factory_impl.h',
         'browser/sync/profile_sync_service.cc',
         'browser/sync/profile_sync_service.h',
+        'browser/sync/profile_sync_service_harness.cc',
+        'browser/sync/profile_sync_service_harness.h',
         'browser/sync/profile_sync_service_observer.h',
         'browser/sync/signin_manager.cc',
         'browser/sync/signin_manager.h',

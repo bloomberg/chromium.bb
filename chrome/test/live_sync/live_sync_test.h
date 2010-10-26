@@ -13,7 +13,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
-#include "chrome/test/live_sync/profile_sync_service_test_harness.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 
@@ -101,11 +101,11 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // Returns a pointer to a particular sync client. Callee owns the object
   // and manages its lifetime.
-  ProfileSyncServiceTestHarness* GetClient(int index) WARN_UNUSED_RESULT;
+  ProfileSyncServiceHarness* GetClient(int index) WARN_UNUSED_RESULT;
 
   // Returns a reference to the collection of sync clients. Callee owns the
   // object and manages its lifetime.
-  std::vector<ProfileSyncServiceTestHarness*>& clients() WARN_UNUSED_RESULT {
+  std::vector<ProfileSyncServiceHarness*>& clients() WARN_UNUSED_RESULT {
     return clients_.get();
   }
 
@@ -209,7 +209,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Collection of sync clients used by a test. A sync client is associated with
   // a sync profile, and implements methods that sync the contents of the
   // profile with the server.
-  ScopedVector<ProfileSyncServiceTestHarness> clients_;
+  ScopedVector<ProfileSyncServiceHarness> clients_;
 
   // Sync profile against which changes to individual profiles are verified. We
   // don't need a corresponding verifier sync client because the contents of the

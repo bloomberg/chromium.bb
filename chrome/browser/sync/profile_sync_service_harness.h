@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
-#define CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_HARNESS_H_
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_HARNESS_H_
 #pragma once
 
 #include <string>
@@ -17,14 +17,20 @@ using browser_sync::sessions::SyncSessionSnapshot;
 class Profile;
 
 // An instance of this class is basically our notion of a "sync client" for
-// test purposes.  It harnesses the ProfileSyncService member of the profile
-// passed to it on construction and automates certain things like setup and
-// authentication.  It provides ways to "wait" adequate periods of time for
-// several clients to get to the same state.
-class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
+// automation purposes. It harnesses the ProfileSyncService member of the
+// profile passed to it on construction and automates certain things like setup
+// and authentication. It provides ways to "wait" adequate periods of time for
+// several clients to get to the same state. In order to use this class for
+// automation, derived classes must implement 2 methods: SignalStateComplete()
+// and AwaitStatusChange().
+class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
  public:
-  ProfileSyncServiceTestHarness(Profile* p, const std::string& username,
-                                const std::string& password, int id);
+  ProfileSyncServiceHarness(Profile* p,
+                            const std::string& username,
+                            const std::string& password,
+                            int id);
+
+  virtual ~ProfileSyncServiceHarness() {}
 
   // Creates a ProfileSyncService for the profile passed at construction and
   // enables sync for all available datatypes. Returns true only after sync has
@@ -54,7 +60,7 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // from the message queue. Returns true if two sync cycles have completed.
   // Note: Use this method when exactly one client makes local change(s), and
   // exactly one client is waiting to receive those changes.
-  bool AwaitMutualSyncCycleCompletion(ProfileSyncServiceTestHarness* partner);
+  bool AwaitMutualSyncCycleCompletion(ProfileSyncServiceHarness* partner);
 
   // Blocks the caller until |this| completes its ongoing sync cycle and every
   // other client in |partners| has a timestamp that is greater than or equal to
@@ -62,14 +68,14 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // makes local change(s), and more than one client is waiting to receive those
   // changes.
   bool AwaitGroupSyncCycleCompletion(
-      std::vector<ProfileSyncServiceTestHarness*>& partners);
+      std::vector<ProfileSyncServiceHarness*>& partners);
 
   // Blocks the caller until every client in |clients| completes its ongoing
   // sync cycle and all the clients' timestamps match.  Note: Use this method
   // when more than one client makes local change(s), and more than one client
   // is waiting to receive those changes.
   static bool AwaitQuiescence(
-      std::vector<ProfileSyncServiceTestHarness*>& clients);
+      std::vector<ProfileSyncServiceHarness*>& clients);
 
   // If a SetPassphrase call has been issued with a valid passphrase, this
   // will wait until the Cryptographer broadcasts SYNC_PASSPHRASE_ACCEPTED.
@@ -132,15 +138,24 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
   // Called from the observer when the current wait state has been completed.
   void SignalStateCompleteWithNextState(WaitState next_state);
-  void SignalStateComplete();
+
+  // Indicates that the operation being waited on is complete. Derived classes
+  // may implement this either by quitting the UI message loop, or by signaling
+  // a WaitableEvent object.
+  virtual void SignalStateComplete() = 0;
 
   // Finite state machine for controlling state.  Returns true only if a state
   // change has taken place.
   bool RunStateChangeMachine();
 
   // Returns true if a status change took place, false on timeout.
-  virtual bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
-                                            const std::string& reason);
+  bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
+                                    const std::string& reason);
+
+  // Waits until the sync client's status changes. Derived classes may implement
+  // this either by running the UI message loop, or by waiting on a
+  // WaitableEvent object.
+  virtual void AwaitStatusChange() = 0;
 
   // Returns true if the sync client has no unsynced items.
   bool IsSynced();
@@ -174,7 +189,7 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // Client ID, used for logging purposes.
   int id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTestHarness);
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceHarness);
 };
 
-#endif  // CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_HARNESS_H_

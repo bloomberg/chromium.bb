@@ -3,25 +3,25 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/test/test_timeouts.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/live_sync/profile_sync_service_test_harness.h"
-#include "chrome/test/ui_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 // The default value for min_timestamp_needed_ when we're not in the
 // WAITING_FOR_UPDATES state.
 static const int kMinTimestampNeededNone = -1;
+
+// The amount of time for which we wait for a live sync operation to complete.
+static const int kLiveSyncOperationTimeoutMs = 30000;
 
 // Simple class to implement a timeout using PostDelayedTask.  If it is not
 // aborted before picked up by a message queue, then it asserts with the message
@@ -29,8 +29,8 @@ static const int kMinTimestampNeededNone = -1;
 class StateChangeTimeoutEvent
     : public base::RefCountedThreadSafe<StateChangeTimeoutEvent> {
  public:
-  explicit StateChangeTimeoutEvent(ProfileSyncServiceTestHarness* caller,
-                                   const std::string& message);
+  StateChangeTimeoutEvent(ProfileSyncServiceHarness* caller,
+                          const std::string& message);
 
   // The entry point to the class from PostDelayedTask.
   void Callback();
@@ -49,7 +49,7 @@ class StateChangeTimeoutEvent
 
   // Due to synchronization of the IO loop, the caller will always be alive
   // if the class is not aborted.
-  ProfileSyncServiceTestHarness* caller_;
+  ProfileSyncServiceHarness* caller_;
 
   // Informative message to assert in the case of a timeout.
   std::string message_;
@@ -58,7 +58,7 @@ class StateChangeTimeoutEvent
 };
 
 StateChangeTimeoutEvent::StateChangeTimeoutEvent(
-    ProfileSyncServiceTestHarness* caller,
+    ProfileSyncServiceHarness* caller,
     const std::string& message)
     : aborted_(false), did_timeout_(false), caller_(caller), message_(message) {
 }
@@ -71,7 +71,7 @@ void StateChangeTimeoutEvent::Callback() {
     if (!caller_->RunStateChangeMachine()) {
       // Report the message.
       did_timeout_ = true;
-      EXPECT_FALSE(aborted_) << message_;
+      DCHECK(!aborted_) << message_;
       caller_->SignalStateComplete();
     }
   }
@@ -83,19 +83,21 @@ bool StateChangeTimeoutEvent::Abort() {
   return !did_timeout_;
 }
 
-ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(Profile* p,
-    const std::string& username, const std::string& password, int id)
+ProfileSyncServiceHarness::ProfileSyncServiceHarness(
+    Profile* p,
+    const std::string& username,
+    const std::string& password,
+    int id)
     : wait_state_(WAITING_FOR_ON_BACKEND_INITIALIZED),
-      profile_(p), service_(NULL),
+      profile_(p),
+      service_(NULL),
       last_timestamp_(0),
       min_timestamp_needed_(kMinTimestampNeededNone),
-      username_(username), password_(password), id_(id) {
-  // Ensure the profile has enough prefs registered for use by sync.
-  if (!p->GetPrefs()->FindPreference(prefs::kAcceptLanguages))
-    TabContents::RegisterUserPrefs(p->GetPrefs());
-}
+      username_(username),
+      password_(password),
+      id_(id) {}
 
-bool ProfileSyncServiceTestHarness::SetupSync() {
+bool ProfileSyncServiceHarness::SetupSync() {
   syncable::ModelTypeSet synced_datatypes;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
       i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -104,7 +106,7 @@ bool ProfileSyncServiceTestHarness::SetupSync() {
   return SetupSync(synced_datatypes);
 }
 
-bool ProfileSyncServiceTestHarness::SetupSync(
+bool ProfileSyncServiceHarness::SetupSync(
     const syncable::ModelTypeSet& synced_datatypes) {
   // Initialize the sync client's profile sync service object.
   service_ = profile_->GetProfileSyncService("");
@@ -118,14 +120,14 @@ bool ProfileSyncServiceTestHarness::SetupSync(
     service_->AddObserver(this);
 
   // Authenticate sync client using GAIA credentials.
-  service_->signin_.StartSignIn(username_, password_, "", "");
+  service_->signin()->StartSignIn(username_, password_, "", "");
 
   // Wait for the OnBackendInitialized() callback.
-  EXPECT_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
-  if (!AwaitStatusChangeWithTimeout(TestTimeouts::live_operation_timeout_ms(),
+  DCHECK_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
+  if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
       "Waiting for OnBackendInitialized().")) {
     LOG(ERROR) << "OnBackendInitialized() not seen after "
-               << TestTimeouts::live_operation_timeout_ms() / 1000
+               << kLiveSyncOperationTimeoutMs / 1000
                << " seconds.";
     return false;
   }
@@ -137,11 +139,11 @@ bool ProfileSyncServiceTestHarness::SetupSync(
   service()->OnUserChoseDatatypes(sync_everything, synced_datatypes);
 
   // Wait for initial sync cycle to complete.
-  EXPECT_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
-  if (!AwaitStatusChangeWithTimeout(TestTimeouts::live_operation_timeout_ms(),
+  DCHECK_EQ(wait_state_, WAITING_FOR_INITIAL_SYNC);
+  if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
       "Waiting for initial sync cycle to complete.")) {
     LOG(ERROR) << "Initial sync cycle did not complete after "
-               << TestTimeouts::live_operation_timeout_ms() / 1000
+               << kLiveSyncOperationTimeoutMs / 1000
                << " seconds.";
     return false;
   }
@@ -149,17 +151,13 @@ bool ProfileSyncServiceTestHarness::SetupSync(
   return true;
 }
 
-void ProfileSyncServiceTestHarness::SignalStateCompleteWithNextState(
+void ProfileSyncServiceHarness::SignalStateCompleteWithNextState(
     WaitState next_state) {
   wait_state_ = next_state;
   SignalStateComplete();
 }
 
-void ProfileSyncServiceTestHarness::SignalStateComplete() {
-  MessageLoopForUI::current()->Quit();
-}
-
-bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
+bool ProfileSyncServiceHarness::RunStateChangeMachine() {
   WaitState original_wait_state = wait_state_;
   switch (wait_state_) {
     case WAITING_FOR_ON_BACKEND_INITIALIZED: {
@@ -237,11 +235,11 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
   return original_wait_state != wait_state_;
 }
 
-void ProfileSyncServiceTestHarness::OnStateChanged() {
+void ProfileSyncServiceHarness::OnStateChanged() {
   RunStateChangeMachine();
 }
 
-bool ProfileSyncServiceTestHarness::AwaitPassphraseAccepted() {
+bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   LogClientInfo("AwaitPassphraseAccepted");
   if (wait_state_ == SYNC_DISABLED) {
     LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
@@ -250,12 +248,11 @@ bool ProfileSyncServiceTestHarness::AwaitPassphraseAccepted() {
   if (!service()->observed_passphrase_required())
     return true;
   wait_state_ = WAITING_FOR_PASSPHRASE_ACCEPTED;
-  return AwaitStatusChangeWithTimeout(
-      TestTimeouts::live_operation_timeout_ms(),
-      "Waiting for passphrase accepted.");
+  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
+                                      "Waiting for passphrase accepted.");
 }
 
-bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
+bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
     const std::string& reason) {
   LogClientInfo("AwaitSyncCycleCompletion");
   if (wait_state_ == SYNC_DISABLED) {
@@ -265,16 +262,13 @@ bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
   if (!IsSynced()) {
     if (wait_state_ == SERVER_UNREACHABLE) {
       // Client was offline; wait for it to go online, and then wait for sync.
-      AwaitStatusChangeWithTimeout(
-          TestTimeouts::live_operation_timeout_ms(), reason);
-      EXPECT_EQ(wait_state_, WAITING_FOR_SYNC_TO_FINISH);
-      return AwaitStatusChangeWithTimeout(
-          TestTimeouts::live_operation_timeout_ms(), reason);
+      AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
+      DCHECK_EQ(wait_state_, WAITING_FOR_SYNC_TO_FINISH);
+      return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
     } else {
-      EXPECT_TRUE(service()->sync_initialized());
+      DCHECK(service()->sync_initialized());
       wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
-      AwaitStatusChangeWithTimeout(
-          TestTimeouts::live_operation_timeout_ms(), reason);
+      AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
       if (wait_state_ == FULLY_SYNCED) {
         // Client is online; sync was successful.
         return true;
@@ -293,8 +287,8 @@ bool ProfileSyncServiceTestHarness::AwaitSyncCycleCompletion(
   }
 }
 
-bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
-    ProfileSyncServiceTestHarness* partner) {
+bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
+    ProfileSyncServiceHarness* partner) {
   LogClientInfo("AwaitMutualSyncCycleCompletion");
   if (!AwaitSyncCycleCompletion("Sync cycle completion on active client."))
     return false;
@@ -302,13 +296,13 @@ bool ProfileSyncServiceTestHarness::AwaitMutualSyncCycleCompletion(
       "Sync cycle completion on passive client.");
 }
 
-bool ProfileSyncServiceTestHarness::AwaitGroupSyncCycleCompletion(
-    std::vector<ProfileSyncServiceTestHarness*>& partners) {
+bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
+    std::vector<ProfileSyncServiceHarness*>& partners) {
   LogClientInfo("AwaitGroupSyncCycleCompletion");
   if (!AwaitSyncCycleCompletion("Sync cycle completion on active client."))
     return false;
   bool return_value = true;
-  for (std::vector<ProfileSyncServiceTestHarness*>::iterator it =
+  for (std::vector<ProfileSyncServiceHarness*>::iterator it =
       partners.begin(); it != partners.end(); ++it) {
     if ((this != *it) && ((*it)->wait_state_ != SYNC_DISABLED)) {
       return_value = return_value &&
@@ -320,11 +314,11 @@ bool ProfileSyncServiceTestHarness::AwaitGroupSyncCycleCompletion(
 }
 
 // static
-bool ProfileSyncServiceTestHarness::AwaitQuiescence(
-    std::vector<ProfileSyncServiceTestHarness*>& clients) {
+bool ProfileSyncServiceHarness::AwaitQuiescence(
+    std::vector<ProfileSyncServiceHarness*>& clients) {
   VLOG(1) << "AwaitQuiescence.";
   bool return_value = true;
-  for (std::vector<ProfileSyncServiceTestHarness*>::iterator it =
+  for (std::vector<ProfileSyncServiceHarness*>::iterator it =
       clients.begin(); it != clients.end(); ++it) {
     if ((*it)->wait_state_ != SYNC_DISABLED)
       return_value = return_value &&
@@ -333,7 +327,7 @@ bool ProfileSyncServiceTestHarness::AwaitQuiescence(
   return return_value;
 }
 
-bool ProfileSyncServiceTestHarness::WaitUntilTimestampIsAtLeast(
+bool ProfileSyncServiceHarness::WaitUntilTimestampIsAtLeast(
     int64 timestamp, const std::string& reason) {
   LogClientInfo("WaitUntilTimestampIsAtLeast");
   if (wait_state_ == SYNC_DISABLED) {
@@ -343,14 +337,13 @@ bool ProfileSyncServiceTestHarness::WaitUntilTimestampIsAtLeast(
   min_timestamp_needed_ = timestamp;
   if (GetUpdatedTimestamp() < min_timestamp_needed_) {
     wait_state_ = WAITING_FOR_UPDATES;
-    return AwaitStatusChangeWithTimeout(
-        TestTimeouts::live_operation_timeout_ms(), reason);
+    return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
   } else {
     return true;
   }
 }
 
-bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
+bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
     int timeout_milliseconds,
     const std::string& reason) {
   LogClientInfo("AwaitStatusChangeWithTimeout");
@@ -366,18 +359,17 @@ bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
       NewRunnableMethod(timeout_signal.get(),
                         &StateChangeTimeoutEvent::Callback),
       timeout_milliseconds);
-  LogClientInfo("Before RunMessageLoop");
-  ui_test_utils::RunMessageLoop();
-  LogClientInfo("After RunMessageLoop");
+  AwaitStatusChange();
+  LogClientInfo("AwaitStatusChangeWithTimeout succeeded");
   return timeout_signal->Abort();
 }
 
-ProfileSyncService::Status ProfileSyncServiceTestHarness::GetStatus() {
-  EXPECT_FALSE(service() == NULL) << "GetStatus(): service() is NULL.";
+ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
+  DCHECK(service() != NULL) << "GetStatus(): service() is NULL.";
   return service()->QueryDetailedSyncStatus();
 }
 
-bool ProfileSyncServiceTestHarness::IsSynced() {
+bool ProfileSyncServiceHarness::IsSynced() {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
   // snap->unsynced_count once http://crbug.com/48989 is fixed.
@@ -391,26 +383,25 @@ bool ProfileSyncServiceTestHarness::IsSynced() {
 }
 
 const SyncSessionSnapshot*
-    ProfileSyncServiceTestHarness::GetLastSessionSnapshot() const {
-  EXPECT_FALSE(service_ == NULL) << "Sync service has not yet been set up.";
+    ProfileSyncServiceHarness::GetLastSessionSnapshot() const {
+  DCHECK(service_ != NULL) << "Sync service has not yet been set up.";
   if (service_->backend()) {
     return service_->backend()->GetLastSessionSnapshot();
   }
   return NULL;
 }
 
-void ProfileSyncServiceTestHarness::EnableSyncForDatatype(
+void ProfileSyncServiceHarness::EnableSyncForDatatype(
     syncable::ModelType datatype) {
   LogClientInfo("EnableSyncForDatatype");
   syncable::ModelTypeSet synced_datatypes;
   if (wait_state_ == SYNC_DISABLED) {
     wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
     synced_datatypes.insert(datatype);
-    EXPECT_TRUE(SetupSync(synced_datatypes))
-        << "Reinitialization of Client " << id_ << " failed.";
+    DCHECK(SetupSync(synced_datatypes)) << "Reinitialization of Client " << id_
+                                        << " failed.";
   } else {
-    EXPECT_FALSE(service() == NULL)
-        << "EnableSyncForDatatype(): service() is null.";
+    DCHECK(service() != NULL) << "EnableSyncForDatatype(): service() is null.";
     service()->GetPreferredDataTypes(&synced_datatypes);
     syncable::ModelTypeSet::iterator it = synced_datatypes.find(
         syncable::ModelTypeFromInt(datatype));
@@ -428,12 +419,11 @@ void ProfileSyncServiceTestHarness::EnableSyncForDatatype(
   }
 }
 
-void ProfileSyncServiceTestHarness::DisableSyncForDatatype(
+void ProfileSyncServiceHarness::DisableSyncForDatatype(
     syncable::ModelType datatype) {
   LogClientInfo("DisableSyncForDatatype");
   syncable::ModelTypeSet synced_datatypes;
-  EXPECT_FALSE(service() == NULL)
-      << "DisableSyncForDatatype(): service() is null.";
+  DCHECK(service() != NULL) << "DisableSyncForDatatype(): service() is null.";
   service()->GetPreferredDataTypes(&synced_datatypes);
   syncable::ModelTypeSet::iterator it = synced_datatypes.find(datatype);
   if (it != synced_datatypes.end()) {
@@ -448,20 +438,19 @@ void ProfileSyncServiceTestHarness::DisableSyncForDatatype(
   }
 }
 
-void ProfileSyncServiceTestHarness::EnableSyncForAllDatatypes() {
+void ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   LogClientInfo("EnableSyncForAllDatatypes");
   if (wait_state_ == SYNC_DISABLED) {
     wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
-    EXPECT_TRUE(SetupSync())
-        << "Reinitialization of Client " << id_ << " failed.";
+    DCHECK(SetupSync()) << "Reinitialization of Client " << id_ << " failed.";
   } else {
     syncable::ModelTypeSet synced_datatypes;
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
         i < syncable::MODEL_TYPE_COUNT; ++i) {
       synced_datatypes.insert(syncable::ModelTypeFromInt(i));
     }
-    EXPECT_FALSE(service() == NULL)
-        << "EnableSyncForAllDatatypes(): service() is null.";
+    DCHECK(service() != NULL) << "EnableSyncForAllDatatypes(): service() is "
+                                 " null.";
     service()->OnUserChoseDatatypes(true, synced_datatypes);
     wait_state_ = WAITING_FOR_SYNC_TO_FINISH;
     AwaitSyncCycleCompletion("Waiting for datatype configuration.");
@@ -470,25 +459,25 @@ void ProfileSyncServiceTestHarness::EnableSyncForAllDatatypes() {
   }
 }
 
-void ProfileSyncServiceTestHarness::DisableSyncForAllDatatypes() {
+void ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
   LogClientInfo("DisableSyncForAllDatatypes");
-  EXPECT_FALSE(service() == NULL)
-      << "EnableSyncForAllDatatypes(): service() is null.";
+  DCHECK(service() != NULL) << "EnableSyncForAllDatatypes(): service() is "
+                               "null.";
   service()->DisableForUser();
   wait_state_ = SYNC_DISABLED;
   VLOG(1) << "DisableSyncForAllDatatypes(): Disabled sync for all datatypes on "
              "Client " << id_;
 }
 
-int64 ProfileSyncServiceTestHarness::GetUpdatedTimestamp() {
+int64 ProfileSyncServiceHarness::GetUpdatedTimestamp() {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-  EXPECT_FALSE(snap == NULL) << "GetUpdatedTimestamp(): Sync snapshot is NULL.";
-  EXPECT_LE(last_timestamp_, snap->max_local_timestamp);
+  DCHECK(snap != NULL) << "GetUpdatedTimestamp(): Sync snapshot is NULL.";
+  DCHECK_LE(last_timestamp_, snap->max_local_timestamp);
   last_timestamp_ = snap->max_local_timestamp;
   return last_timestamp_;
 }
 
-void ProfileSyncServiceTestHarness::LogClientInfo(std::string message) {
+void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   if (snap) {
     VLOG(1) << "Client " << id_ << ": " << message
