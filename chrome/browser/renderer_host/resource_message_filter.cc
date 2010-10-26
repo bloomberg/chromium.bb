@@ -779,16 +779,18 @@ void ResourceMessageFilter::OnGetPluginInfoOnFileThread(
 }
 
 void ResourceMessageFilter::OnGotPluginInfo(bool found,
-                                            WebPluginInfo info,
+                                            const WebPluginInfo& info,
                                             const std::string& actual_mime_type,
                                             const GURL& policy_url,
                                             IPC::Message* reply_msg) {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   if (found) {
-    info.enabled = info.enabled &&
-        plugin_service_->PrivatePluginAllowedForURL(info.path, policy_url);
+    WebPluginInfo info_copy = info;
+    info_copy.enabled = info_copy.enabled &&
+        plugin_service_->PrivatePluginAllowedForURL(info_copy.path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
+    scoped_ptr<PluginGroup> group(
+        PluginGroup::CopyOrCreatePluginGroup(info_copy));
     std::string resource = group->identifier();
     setting = map->GetContentSetting(policy_url,
                                      CONTENT_SETTINGS_TYPE_PLUGINS,

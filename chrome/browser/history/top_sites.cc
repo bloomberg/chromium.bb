@@ -782,16 +782,15 @@ void TopSites::OnTopSitesAvailable(
 }
 
 // static
-void TopSites::ProcessPendingCallbacks(PendingCallbackSet pending_callbacks,
-                                       const MostVisitedURLList& urls) {
-  PendingCallbackSet::iterator i;
-  for (i = pending_callbacks.begin();
+void TopSites::ProcessPendingCallbacks(
+    const PendingCallbackSet& pending_callbacks,
+    const MostVisitedURLList& urls) {
+  for (PendingCallbackSet::const_iterator i = pending_callbacks.begin();
        i != pending_callbacks.end(); ++i) {
     scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
     if (!request->canceled())
       request->ForwardResult(GetTopSitesCallback::TupleType(urls));
   }
-  pending_callbacks.clear();
 }
 
 void TopSites::OnThumbnailAvailable(CancelableRequestProvider::Handle handle,

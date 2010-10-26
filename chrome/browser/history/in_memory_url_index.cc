@@ -34,7 +34,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info,
 }
 
 struct InMemoryURLIndex::TermCharWordSet {
-  TermCharWordSet(Char16Set char_set, WordIDSet word_id_set, bool used)
+  TermCharWordSet(const Char16Set& char_set,
+                  const WordIDSet& word_id_set,
+                  bool used)
       : char_set_(char_set),
         word_id_set_(word_id_set),
         used_(used) {}
@@ -81,7 +83,7 @@ bool InMemoryURLIndex::Init(history::URLDatabase* history_db,
   return true;
 }
 
-bool InMemoryURLIndex::IndexRow(URLRow row) {
+bool InMemoryURLIndex::IndexRow(const URLRow& row) {
   const GURL& gurl(row.url());
   string16 url(net::FormatUrl(gurl, languages_,
       net::kFormatUrlOmitUsernamePassword,

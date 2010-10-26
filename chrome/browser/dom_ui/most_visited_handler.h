@@ -80,7 +80,7 @@ class MostVisitedHandler : public DOMMessageHandler,
   void SetPagesValueFromTopSites(const history::MostVisitedURLList& data);
 
   // Callback for TopSites.
-  void OnMostVisitedURLsAvailable(history::MostVisitedURLList data);
+  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
 
   // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
   void BlacklistURL(const GURL& url);

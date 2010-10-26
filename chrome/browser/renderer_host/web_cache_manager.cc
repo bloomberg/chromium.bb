@@ -248,7 +248,7 @@ bool WebCacheManager::AttemptTactic(
   return true;
 }
 
-void WebCacheManager::AddToStrategy(std::set<int> renderers,
+void WebCacheManager::AddToStrategy(const std::set<int>& renderers,
                                     AllocationTactic tactic,
                                     size_t extra_bytes_to_allocate,
                                     AllocationStrategy* strategy) {
@@ -304,7 +304,7 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
   }
 }
 
-void WebCacheManager::ClearRendederCache(std::set<int> renderers) {
+void WebCacheManager::ClearRendederCache(const std::set<int>& renderers) {
   std::set<int>::const_iterator iter = renderers.begin();
   for (; iter != renderers.end(); ++iter) {
     RenderProcessHost* host = RenderProcessHost::FromID(*iter);

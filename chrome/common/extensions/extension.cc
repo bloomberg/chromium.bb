@@ -2041,7 +2041,7 @@ GURL Extension::GetIconURL(int size, ExtensionIconSet::MatchType match_type) {
     return GetResourceURL(path);
 }
 
-bool Extension::CanSpecifyHostPermission(const URLPattern pattern) const {
+bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
   if (!pattern.match_all_urls() &&
       pattern.MatchesScheme(chrome::kChromeUIScheme)) {
     // Only allow access to chrome://favicon to regular extensions. Component

@@ -3815,14 +3815,15 @@ void TestingAutomationProvider::FillAutoFillProfile(
 
 /* static */
 ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
-    std::vector<AutoFillProfile*> autofill_profiles) {
+    const std::vector<AutoFillProfile*>& autofill_profiles) {
   ListValue* profiles = new ListValue;
 
   std::map<AutoFillFieldType, std::wstring> autofill_type_to_string
       = GetAutoFillFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
-  for (std::vector<AutoFillProfile*>::iterator it = autofill_profiles.begin();
+  for (std::vector<AutoFillProfile*>::const_iterator it =
+           autofill_profiles.begin();
        it != autofill_profiles.end(); ++it) {
     AutoFillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
@@ -3842,14 +3843,15 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
 
 /* static */
 ListValue* TestingAutomationProvider::GetListFromCreditCards(
-    std::vector<CreditCard*> credit_cards) {
+    const std::vector<CreditCard*>& credit_cards) {
   ListValue* cards = new ListValue;
 
   std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string =
       GetCreditCardFieldToStringMap();
 
   // For each AutoFillProfile, transform it to a dictionary object to return.
-  for (std::vector<CreditCard*>::iterator it = credit_cards.begin();
+  for (std::vector<CreditCard*>::const_iterator it =
+           credit_cards.begin();
        it != credit_cards.end(); ++it) {
     CreditCard* card = *it;
     DictionaryValue* card_info = new DictionaryValue;

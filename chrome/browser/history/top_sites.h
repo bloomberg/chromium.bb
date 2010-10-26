@@ -48,8 +48,8 @@ typedef std::vector<MostVisitedURL> MostVisitedURLList;
 // new tab page requests on the I/O thread without proxying to the UI thread is
 // a nontrivial performance win, especially when the browser is starting and
 // the UI thread is busy.
-class TopSites :
-      public base::RefCountedThreadSafe<TopSites,
+class TopSites
+    : public base::RefCountedThreadSafe<TopSites,
                                         BrowserThread::DeleteOnUIThread>,
       public NotificationObserver,
       public CancelableRequestProvider {
@@ -85,7 +85,7 @@ class TopSites :
                         const ThumbnailScore& score);
 
   // Callback for GetMostVisitedURLs.
-  typedef Callback1<MostVisitedURLList>::Type GetTopSitesCallback;
+  typedef Callback1<const MostVisitedURLList&>::Type GetTopSitesCallback;
   typedef std::set<scoped_refptr<CancelableRequest<GetTopSitesCallback> > >
       PendingCallbackSet;
 
@@ -188,8 +188,9 @@ class TopSites :
                            MostVisitedURLList data);
 
   // Returns a list of urls to each pending callback.
-  static void ProcessPendingCallbacks(PendingCallbackSet pending_callbacks,
-                                      const MostVisitedURLList& urls);
+  static void ProcessPendingCallbacks(
+      const PendingCallbackSet& pending_callbacks,
+      const MostVisitedURLList& urls);
 
   // Called when history service returns a thumbnail.
   void OnThumbnailAvailable(CancelableRequestProvider::Handle handle,

@@ -82,7 +82,7 @@ class TopSitesTest : public testing::Test {
   }
 
   // Callback for TopSites::GetMostVisitedURLs.
-  void OnTopSitesAvailable(history::MostVisitedURLList data) {
+  void OnTopSitesAvailable(const history::MostVisitedURLList& data) {
     urls_ = data;
     number_of_callbacks_++;
   }

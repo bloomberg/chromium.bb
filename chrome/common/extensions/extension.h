@@ -540,7 +540,7 @@ class Extension {
   // the manifest.  http, https, and chrome://favicon/ is allowed for all
   // extensions, while component extensions are allowed access to
   // chrome://resources.
-  bool CanSpecifyHostPermission(const URLPattern pattern) const;
+  bool CanSpecifyHostPermission(const URLPattern& pattern) const;
 
   // Whether the extension has access to the given URL.
   bool HasHostPermission(const GURL& url) const;

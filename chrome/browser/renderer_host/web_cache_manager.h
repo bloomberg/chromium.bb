@@ -162,7 +162,7 @@ class WebCacheManager {
   // For each renderer in |renderers|, computes its allocation according to
   // |tactic| and add the result to |strategy|.  Any |extra_bytes_to_allocate|
   // is divided evenly among the renderers.
-  void AddToStrategy(std::set<int> renderers,
+  void AddToStrategy(const std::set<int>& renderers,
                      AllocationTactic tactic,
                      size_t extra_bytes_to_allocate,
                      AllocationStrategy* strategy);
@@ -172,7 +172,7 @@ class WebCacheManager {
   void EnactStrategy(const AllocationStrategy& strategy);
 
   // Inform all |renderers| to clear their cache.
-  void ClearRendederCache(std::set<int> renderers);
+  void ClearRendederCache(const std::set<int>& renderers);
 
   // Check to see if any active renderers have fallen inactive.
   void FindInactiveRenderers();

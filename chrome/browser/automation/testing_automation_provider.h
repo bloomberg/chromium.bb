@@ -626,9 +626,9 @@ class TestingAutomationProvider : public AutomationProvider,
   // for profiles and credit cards to a ListValue of DictionaryValues. The
   // caller owns the returned object.
   static ListValue* GetListFromAutoFillProfiles(
-      std::vector<AutoFillProfile*> autofill_profiles);
+      const std::vector<AutoFillProfile*>& autofill_profiles);
   static ListValue* GetListFromCreditCards(
-      std::vector<CreditCard*> credit_cards);
+      const std::vector<CreditCard*>& credit_cards);
 
   // Return the map from the internal data representation to the string value
   // of auto fill fields and credit card fields.

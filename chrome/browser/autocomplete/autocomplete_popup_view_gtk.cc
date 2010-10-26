@@ -111,7 +111,7 @@ size_t GetUTF8Offset(const std::wstring& wide_text, size_t wide_text_offset) {
 
 void SetupLayoutForMatch(PangoLayout* layout,
     const std::wstring& text,
-    AutocompleteMatch::ACMatchClassifications classifications,
+    const AutocompleteMatch::ACMatchClassifications& classifications,
     const GdkColor* base_color,
     const GdkColor* dim_color,
     const GdkColor* url_color,

@@ -159,7 +159,7 @@ class InMemoryURLIndex {
   // URL History indexing support functions.
 
   // Index one URL history item.
-  bool IndexRow(URLRow row);
+  bool IndexRow(const URLRow& row);
 
   // Break a string down into its individual characters.
   // Note that this is temporarily intended to work on a single word, but

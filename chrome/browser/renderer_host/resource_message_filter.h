@@ -188,7 +188,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                                    const std::string& mime_type,
                                    IPC::Message* reply_msg);
   void OnGotPluginInfo(bool found,
-                       WebPluginInfo info,
+                       const WebPluginInfo& info,
                        const std::string& actual_mime_type,
                        const GURL& policy_url,
                        IPC::Message* reply_msg);
