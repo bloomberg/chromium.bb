@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/debug/debugger.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -26,7 +27,7 @@ TEST_F(FirstRunBubbleControllerTest, Init) {
                   backing:NSBackingStoreBuffered
          defer:NO]);
   [parent setReleasedWhenClosed:NO];
-  if (DebugUtil::BeingDebugged())
+  if (base::debug::BeingDebugged())
     [parent.get() orderFront:nil];
   else
     [parent.get() orderBack:nil];

@@ -21,7 +21,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "base/trace_event_win.h"
+#include "base/debug/trace_event_win.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
@@ -1159,19 +1159,19 @@ class EtwConsumer : public EtwTraceConsumerBase<EtwConsumer> {
 
   static void ProcessEvent(EVENT_TRACE* event) {
     DCHECK(delegate_);
-    if (event->Header.Guid != base::kTraceEventClass32)
+    if (event->Header.Guid != base::debug::kTraceEventClass32)
       return;
     if (event->Header.Class.Version != 0)
       return;
 
     switch (event->Header.Class.Type) {
-      case base::kTraceEventTypeBegin:
+      case base::debug::kTraceEventTypeBegin:
         delegate_->OnTraceEventBegin(event);
         break;
-      case base::kTraceEventTypeEnd:
+      case base::debug::kTraceEventTypeEnd:
         delegate_->OnTraceEventEnd(event);
         break;
-      case base::kTraceEventTypeInstant:
+      case base::debug::kTraceEventTypeInstant:
         delegate_->OnTraceEventInstant(event);
         break;
       default:
@@ -1203,9 +1203,9 @@ class EtwPerfSession {
     ASSERT_HRESULT_SUCCEEDED(controller_.StartFileSession(L"cf_perf",
         etl_log_file_.value().c_str(), false));
     ASSERT_HRESULT_SUCCEEDED(controller_.EnableProvider(
-        base::kChromeTraceProviderName,
+        base::debug::kChromeTraceProviderName,
         TRACE_LEVEL_INFORMATION,
-        ~(base::CAPTURE_STACK_TRACE)));
+        ~(base::debug::CAPTURE_STACK_TRACE)));
   }
 
   HRESULT Stop() {

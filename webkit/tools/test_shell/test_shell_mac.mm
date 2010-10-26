@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/data_pack.h"
 #include "base/debug_on_start.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -403,7 +403,7 @@ void TestShell::TestFinished() {
 
   // check for debugger, just bail if so. We don't want the timeouts hitting
   // when we're trying to track down an issue.
-  if (DebugUtil::BeingDebugged())
+  if (base::debug::BeingDebugged())
     return;
 
   NSThread* currentThread = [NSThread currentThread];

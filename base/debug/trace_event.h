@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,8 @@
 // trace report.  In the future, it may use another mechansim to facilitate
 // real-time analysis.
 
-#ifndef BASE_TRACE_EVENT_H_
-#define BASE_TRACE_EVENT_H_
+#ifndef BASE_DEBUG_TRACE_EVENT_H_
+#define BASE_DEBUG_TRACE_EVENT_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -26,7 +26,7 @@
 // value of the CHROMIUM_ENABLE_TRACE_EVENT define. The Windows implementation
 // is controlled by Event Tracing for Windows, which will turn tracing on only
 // if there is someone listening for the events it generates.
-#include "base/trace_event_win.h"
+#include "base/debug/trace_event_win.h"
 #else  // defined(OS_WIN)
 
 #include <string>
@@ -52,38 +52,41 @@
 // Record that an event (of name, id) has begun.  All BEGIN events should have
 // corresponding END events with a matching (name, id).
 #define TRACE_EVENT_BEGIN(name, id, extra) \
-  Singleton<base::TraceLog>::get()->Trace(name, \
-                                          base::TraceLog::EVENT_BEGIN, \
-                                          reinterpret_cast<const void*>(id), \
-                                          extra, \
-                                          __FILE__, \
-                                          __LINE__)
+  Singleton<base::debug::TraceLog>::get()->Trace( \
+      name, \
+      base::debug::TraceLog::EVENT_BEGIN, \
+      reinterpret_cast<const void*>(id), \
+      extra, \
+      __FILE__, \
+      __LINE__)
 
 // Record that an event (of name, id) has ended.  All END events should have
 // corresponding BEGIN events with a matching (name, id).
 #define TRACE_EVENT_END(name, id, extra) \
-  Singleton<base::TraceLog>::get()->Trace(name, \
-                                          base::TraceLog::EVENT_END, \
-                                          reinterpret_cast<const void*>(id), \
-                                          extra, \
-                                          __FILE__, \
-                                          __LINE__)
+  Singleton<base::debug::TraceLog>::get()->Trace( \
+      name, \
+      base::debug::TraceLog::EVENT_END, \
+      reinterpret_cast<const void*>(id), \
+      extra, \
+      __FILE__, \
+      __LINE__)
 
 // Record that an event (of name, id) with no duration has happened.
 #define TRACE_EVENT_INSTANT(name, id, extra) \
-  Singleton<base::TraceLog>::get()->Trace(name, \
-                                          base::TraceLog::EVENT_INSTANT, \
-                                          reinterpret_cast<const void*>(id), \
-                                          extra, \
-                                          __FILE__, \
-                                          __LINE__)
+  Singleton<base::debug::TraceLog>::get()->Trace( \
+      name, \
+      base::debug::TraceLog::EVENT_INSTANT, \
+      reinterpret_cast<const void*>(id), \
+      extra, \
+      __FILE__, \
+      __LINE__)
 #endif  // CHROMIUM_ENABLE_TRACE_EVENT
 
 namespace base {
-class ProcessMetrics;
-}
 
-namespace base {
+class ProcessMetrics;
+
+namespace debug {
 
 class TraceLog {
  public:
@@ -136,7 +139,9 @@ class TraceLog {
   RepeatingTimer<TraceLog> timer_;
 };
 
-} // namespace base
+}  // namespace debug
+}  // namespace base
+
 #endif  // defined(OS_WIN)
 
-#endif  // BASE_TRACE_EVENT_H_
+#endif  // BASE_DEBUG_TRACE_EVENT_H_

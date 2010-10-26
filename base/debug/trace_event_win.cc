@@ -1,13 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "base/trace_event_win.h"
+
+#include "base/debug/trace_event_win.h"
 
 #include "base/logging.h"
 #include "base/singleton.h"
 #include <initguid.h>  // NOLINT
 
 namespace base {
+namespace debug {
 
 // {3DADA31D-19EF-4dc1-B345-037927193422}
 const GUID kChromeTraceProviderName = {
@@ -22,7 +24,7 @@ const GUID kTraceEventClass64 = {
     0x97be602d, 0x2930, 0x4ac3, 0x80, 0x46, 0xb6, 0x76, 0x3b, 0x63, 0x1d, 0xfe};
 
 
-TraceLog::TraceLog() : EtwTraceProvider(base::kChromeTraceProviderName) {
+TraceLog::TraceLog() : EtwTraceProvider(kChromeTraceProviderName) {
   Register();
 }
 
@@ -36,7 +38,7 @@ bool TraceLog::StartTracing() {
 
 void TraceLog::TraceEvent(const char* name,
                           size_t name_len,
-                          base::TraceLog::EventType type,
+                          EventType type,
                           const void* id,
                           const char* extra,
                           size_t extra_len) {
@@ -48,24 +50,24 @@ void TraceLog::TraceEvent(const char* name,
 
   EtwEventType etw_type = 0;
   switch (type) {
-    case base::TraceLog::EVENT_BEGIN:
-      etw_type = base::kTraceEventTypeBegin;
+    case TraceLog::EVENT_BEGIN:
+      etw_type = kTraceEventTypeBegin;
       break;
-    case base::TraceLog::EVENT_END:
-      etw_type = base::kTraceEventTypeEnd;
+    case TraceLog::EVENT_END:
+      etw_type = kTraceEventTypeEnd;
       break;
 
-    case base::TraceLog::EVENT_INSTANT:
-      etw_type = base::kTraceEventTypeInstant;
+    case TraceLog::EVENT_INSTANT:
+      etw_type = kTraceEventTypeInstant;
       break;
 
     default:
       NOTREACHED() << "Unknown event type";
-      etw_type = base::kTraceEventTypeInstant;
+      etw_type = kTraceEventTypeInstant;
       break;
   }
 
-  EtwMofEvent<5> event(base::kTraceEventClass32,
+  EtwMofEvent<5> event(kTraceEventClass32,
                        etw_type,
                        TRACE_LEVEL_INFORMATION);
   event.SetField(0, name_len + 1, name);
@@ -74,7 +76,7 @@ void TraceLog::TraceEvent(const char* name,
 
   // See whether we're to capture a backtrace.
   void* backtrace[32];
-  if (enable_flags() & base::CAPTURE_STACK_TRACE) {
+  if (enable_flags() & CAPTURE_STACK_TRACE) {
     DWORD hash = 0;
     DWORD depth = CaptureStackBackTrace(0,
                                         arraysize(backtrace),
@@ -110,4 +112,5 @@ void TraceLog::Resurrect() {
   StaticMemorySingletonTraits<TraceLog>::Resurrect();
 }
 
+}  // namespace debug
 }  // namespace base

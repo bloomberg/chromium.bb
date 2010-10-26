@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "base/data_pack.h"
 #include "base/debug_util.h"
+#include "base/debug/stack_trace.h"
 #include "base/file_util.h"
 #include "base/lock.h"
 #include "base/logging.h"
@@ -139,7 +140,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   // If for some reason we were unable to load a resource dll, return an empty
   // string (better than crashing).
   if (!locale_resources_data_) {
-    StackTrace().PrintBacktrace();  // See http://crbug.com/21925.
+    base::debug::StackTrace().PrintBacktrace();  // See http://crbug.com/21925.
     LOG(WARNING) << "locale resources are not loaded";
     return string16();
   }
@@ -156,7 +157,8 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
     image = AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(),
                                       message_id);
     if (!image) {
-      StackTrace().PrintBacktrace();  // See http://crbug.com/21925.
+      // See http://crbug.com/21925.
+      base::debug::StackTrace().PrintBacktrace();
       NOTREACHED() << "unable to find resource: " << message_id;
       return std::wstring();
     }

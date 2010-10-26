@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 
+#include "base/debug/debugger.h"
 #include "base/logging.h"
 #include "base/test/test_timeouts.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
@@ -184,7 +185,7 @@ std::set<NSWindow*> CocoaTest::WindowsLeft() {
 CocoaTestHelperWindow* CocoaTest::test_window() {
   if (!test_window_) {
     test_window_ = [[CocoaTestHelperWindow alloc] init];
-    if (DebugUtil::BeingDebugged()) {
+    if (base::debug::BeingDebugged()) {
       [test_window_ orderFront:nil];
     } else {
       [test_window_ orderBack:nil];

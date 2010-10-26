@@ -63,7 +63,7 @@ const char kDebugMemoryInUse[] = "debug-memory-in-use";
 // Enable cookies on the file:// scheme.  --layout-tests also enables this.
 const char kEnableFileCookies[] = "enable-file-cookies";
 
-// Enable tracing events (see base/trace_event.h)
+// Enable tracing events (see base/debug/trace_event.h)
 const char kEnableTracing[] = "enable-tracing";
 
 // Allow scripts to close windows in all cases.

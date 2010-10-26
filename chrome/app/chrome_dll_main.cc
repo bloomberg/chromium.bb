@@ -38,6 +38,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
+#include "base/debug/debugger.h"
 #include "base/i18n/icu_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
@@ -627,9 +628,10 @@ int ChromeMain(int argc, char** argv) {
     // console) but doesn't for the child processes, killing them.
     // The fix is to have child processes ignore SIGINT; they'll die
     // on their own when the browser process goes away.
-    // Note that we *can't* rely on DebugUtil::BeingDebugged to catch this
-    // case because we are the child process, which is not being debugged.
-    if (!DebugUtil::BeingDebugged())
+    //
+    // Note that we *can't* rely on BeingDebugged to catch this case because we
+    // are the child process, which is not being debugged.
+    if (!base::debug::BeingDebugged())
       signal(SIGINT, SIG_IGN);
 #endif
   }

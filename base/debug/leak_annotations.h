@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_LEAK_ANNOTATIONS_H_
-#define BASE_LEAK_ANNOTATIONS_H_
+#ifndef BASE_DEBUG_LEAK_ANNOTATIONS_H_
+#define BASE_DEBUG_LEAK_ANNOTATIONS_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -25,4 +25,4 @@
 
 #endif
 
-#endif  // BASE_LEAK_ANNOTATIONS_H_
+#endif  // BASE_DEBUG_LEAK_ANNOTATIONS_H_

@@ -8,7 +8,7 @@
 #include "base/at_exit.h"
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/icu_util.h"
@@ -330,7 +330,7 @@ void ServeAsynchronousMockedRequests() {
 
 // Wrapper for debug_util
 bool BeingDebugged() {
-  return DebugUtil::BeingDebugged();
+  return base::debug::BeingDebugged();
 }
 
 // Wrappers for MessageLoop

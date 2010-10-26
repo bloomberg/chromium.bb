@@ -12,8 +12,8 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 
+#include "base/debug/trace_event.h"
 #include "base/message_loop.h"
-#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/gdi_util.h"

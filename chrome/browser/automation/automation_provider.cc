@@ -8,6 +8,7 @@
 
 #include "app/message_box_flags.h"
 #include "base/callback.h"
+#include "base/debug/trace_event.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -19,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
-#include "base/trace_event.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

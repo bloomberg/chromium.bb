@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event.h"
+#include "base/debug/trace_event.h"
 
 #include "base/format_macros.h"
 #include "base/file_path.h"
@@ -17,6 +17,7 @@
 #define USE_UNRELIABLE_NOW
 
 namespace base {
+namespace debug {
 
 static const char* kEventTypeNames[] = {
   "BEGIN",
@@ -161,4 +162,5 @@ void TraceLog::Log(const std::string& msg) {
   fprintf(log_file_, "%s", msg.c_str());
 }
 
-} // namespace base
+}  // namespace debug
+}  // namespace base

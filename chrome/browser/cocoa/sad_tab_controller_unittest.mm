@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/debug/debugger.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
@@ -35,7 +36,7 @@ class SadTabControllerTest : public RenderViewHostTestHarness {
     // from CocoaTest, so do a bootstrap and create test window.
     CocoaTest::BootstrapCocoa();
     test_window_ = [[CocoaTestHelperWindow alloc] init];
-    if (DebugUtil::BeingDebugged()) {
+    if (base::debug::BeingDebugged()) {
       [test_window_ orderFront:nil];
     } else {
       [test_window_ orderBack:nil];

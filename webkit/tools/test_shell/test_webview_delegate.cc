@@ -8,12 +8,12 @@
 
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/trace_event.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/native_widget_types.h"

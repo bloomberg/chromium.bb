@@ -5,14 +5,13 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "base/debug_util.h"
 #include "seccompsandbox/sandbox.h"
 
 #include "chrome/common/chrome_switches.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)
-        : parameters_(parameters) {
+    : parameters_(parameters) {
 }
 
 RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {

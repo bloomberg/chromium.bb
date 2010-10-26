@@ -5,8 +5,8 @@
 #include "chrome/browser/automation/automation_provider.h"
 
 #include "app/keyboard_codes.h"
+#include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
-#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_extension_function.h"

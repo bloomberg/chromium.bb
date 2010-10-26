@@ -8,7 +8,8 @@
 
 #include "app/win_util.h"
 #include "base/command_line.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -16,7 +17,6 @@
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/trace_event.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -579,7 +579,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // Help the process a little. It can't start the debugger by itself if
   // the process is in a sandbox.
   if (child_needs_help)
-    DebugUtil::SpawnDebuggerOnProcess(target.dwProcessId);
+    base::debug::SpawnDebuggerOnProcess(target.dwProcessId);
 
   return process;
 }

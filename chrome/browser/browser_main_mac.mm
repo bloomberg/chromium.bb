@@ -10,7 +10,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
 #include "base/file_path.h"
 #include "base/mac_util.h"
 #include "base/nss_util.h"
@@ -36,7 +36,7 @@ void DidEndMainMessageLoop() {
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {
   metrics->RecordBreakpadRegistration(IsCrashReporterEnabled());
-  metrics->RecordBreakpadHasDebugger(DebugUtil::BeingDebugged());
+  metrics->RecordBreakpadHasDebugger(base::debug::BeingDebugged());
 }
 
 void WarnAboutMinimumSystemRequirements() {

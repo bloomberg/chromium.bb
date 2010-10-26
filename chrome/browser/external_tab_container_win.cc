@@ -7,9 +7,9 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/trace_event.h"
 #include "base/win_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"

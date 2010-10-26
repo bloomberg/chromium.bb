@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/debug/debugger.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -42,7 +43,7 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
                     backing:NSBackingStoreBuffered
            defer:NO]);
     [parent setReleasedWhenClosed:NO];
-    if (DebugUtil::BeingDebugged())
+    if (base::debug::BeingDebugged())
       [parent.get() orderFront:nil];
     else
       [parent.get() orderBack:nil];

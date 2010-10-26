@@ -5,9 +5,12 @@
 #include <sstream>
 #include <string>
 
-#include "base/debug_util.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace debug {
 
 // Note: On Linux, this test currently only fully works on Debug builds.
 // See comments in the #ifdef soup if you intend to change this.
@@ -104,3 +107,6 @@ TEST(StackTrace, DebugOutputToStream) {
 TEST(StackTrace, DebugPrintBacktrace) {
   StackTrace().PrintBacktrace();
 }
+
+}  // namespace debug
+}  // namespace base

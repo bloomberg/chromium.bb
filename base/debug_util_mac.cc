@@ -5,6 +5,7 @@
 #include "base/debug_util.h"
 
 #include <signal.h>
+#include <unistd.h>
 
 #include "base/basictypes.h"
 

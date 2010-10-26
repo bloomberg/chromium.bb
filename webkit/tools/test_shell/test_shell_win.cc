@@ -11,6 +11,7 @@
 #include <shlwapi.h>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/memory_debug.h"
 #include "base/message_loop.h"
@@ -19,7 +20,6 @@
 #include "base/stack_container.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"

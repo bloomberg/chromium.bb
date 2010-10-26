@@ -32,7 +32,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -73,7 +73,7 @@ DEFINE_GUID(kChromeTraceProviderName,
 // with that error in the str parameter.
 MSVC_DISABLE_OPTIMIZE();
 static void SilentRuntimeAssertHandler(const std::string& str) {
-  DebugUtil::BreakDebugger();
+  base::debug::BreakDebugger();
 }
 static void SilentRuntimeReportHandler(const std::string& str) {
 }

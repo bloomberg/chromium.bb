@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/trace_event.h"
+#include "base/debug/trace_event.h"
 
 #include <strstream>
 
@@ -16,7 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <initguid.h>  // NOLINT - must be last include.
 
+namespace base {
+namespace debug {
+
 namespace {
+
 using testing::_;
 using testing::AnyNumber;
 using testing::InSequence;
@@ -81,7 +85,7 @@ class TraceEventTest: public testing::Test {
   }
 
   void SetUp() {
-    bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
+    bool is_xp = win::GetVersion() < base::win::VERSION_VISTA;
 
     if (is_xp) {
       // Tear down any dangling session from an earlier failing test.
@@ -94,10 +98,10 @@ class TraceEventTest: public testing::Test {
     // start the private, in-proc session, but on XP we need the global
     // session created and the provider enabled before we register our
     // provider.
-    base::TraceLog* tracelog = NULL;
+    TraceLog* tracelog = NULL;
     if (!is_xp) {
-      base::TraceLog::Resurrect();
-      tracelog = base::TraceLog::Get();
+      TraceLog::Resurrect();
+      tracelog = TraceLog::Get();
       ASSERT_TRUE(tracelog != NULL);
       ASSERT_FALSE(tracelog->IsTracing());
     }
@@ -127,13 +131,13 @@ class TraceEventTest: public testing::Test {
 
     // Enable the TraceLog provider GUID.
     ASSERT_HRESULT_SUCCEEDED(
-        controller_.EnableProvider(base::kChromeTraceProviderName,
+        controller_.EnableProvider(kChromeTraceProviderName,
                                    TRACE_LEVEL_INFORMATION,
                                    0));
 
     if (is_xp) {
-      base::TraceLog::Resurrect();
-      tracelog = base::TraceLog::Get();
+      TraceLog::Resurrect();
+      tracelog = TraceLog::Get();
     }
     ASSERT_TRUE(tracelog != NULL);
     EXPECT_TRUE(tracelog->IsTracing());
@@ -186,7 +190,7 @@ class TraceEventTest: public testing::Test {
 
  private:
   // We want our singleton torn down after each test.
-  base::ShadowingAtExitManager at_exit_manager_;
+  ShadowingAtExitManager at_exit_manager_;
   EtwTraceController controller_;
   FilePath log_file_;
   TestEventConsumer consumer_;
@@ -202,67 +206,67 @@ TEST_F(TraceEventTest, TraceLog) {
   InSequence in_sequence;
 
   // Full argument version, passing lengths explicitly.
-  base::TraceLog::Trace(kName,
+  TraceLog::Trace(kName,
                         strlen(kName),
-                        base::TraceLog::EVENT_BEGIN,
+                        TraceLog::EVENT_BEGIN,
                         kId,
                         kExtra,
                         strlen(kExtra));
 
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeBegin,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeBegin,
               kName, strlen(kName),
               kId,
               kExtra, strlen(kExtra));
 
   // Const char* version.
-  base::TraceLog::Trace(static_cast<const char*>(kName),
-                        base::TraceLog::EVENT_END,
+  TraceLog::Trace(static_cast<const char*>(kName),
+                        TraceLog::EVENT_END,
                         kId,
                         static_cast<const char*>(kExtra));
 
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeEnd,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeEnd,
               kName, strlen(kName),
               kId,
               kExtra, strlen(kExtra));
 
   // std::string extra version.
-  base::TraceLog::Trace(static_cast<const char*>(kName),
-                        base::TraceLog::EVENT_INSTANT,
+  TraceLog::Trace(static_cast<const char*>(kName),
+                        TraceLog::EVENT_INSTANT,
                         kId,
                         std::string(kExtra));
 
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeInstant,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeInstant,
               kName, strlen(kName),
               kId,
               kExtra, strlen(kExtra));
 
 
   // Test for sanity on NULL inputs.
-  base::TraceLog::Trace(NULL,
+  TraceLog::Trace(NULL,
                         0,
-                        base::TraceLog::EVENT_BEGIN,
+                        TraceLog::EVENT_BEGIN,
                         kId,
                         NULL,
                         0);
 
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeBegin,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeBegin,
               kEmpty, 0,
               kId,
               kEmpty, 0);
 
-  base::TraceLog::Trace(NULL,
+  TraceLog::Trace(NULL,
                         -1,
-                        base::TraceLog::EVENT_END,
+                        TraceLog::EVENT_END,
                         kId,
                         NULL,
                         -1);
 
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeEnd,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeEnd,
               kEmpty, 0,
               kId,
               kEmpty, 0);
@@ -277,25 +281,28 @@ TEST_F(TraceEventTest, Macros) {
   InSequence in_sequence;
 
   TRACE_EVENT_BEGIN(kName, kId, kExtra);
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeBegin,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeBegin,
               kName, strlen(kName),
               kId,
               kExtra, strlen(kExtra));
 
   TRACE_EVENT_END(kName, kId, kExtra);
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeEnd,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeEnd,
               kName, strlen(kName),
               kId,
               kExtra, strlen(kExtra));
 
   TRACE_EVENT_INSTANT(kName, kId, kExtra);
-  ExpectEvent(base::kTraceEventClass32,
-              base::kTraceEventTypeInstant,
+  ExpectEvent(kTraceEventClass32,
+              kTraceEventTypeInstant,
               kName, strlen(kName),
               kId,
               kExtra, strlen(kExtra));
 
   PlayLog();
 }
+
+}  // namespace debug
+}  // namespace base

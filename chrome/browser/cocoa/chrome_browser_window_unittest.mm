@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/debug/debugger.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +23,7 @@ class ChromeBrowserWindowTest : public CocoaTest {
                styleMask:mask
                backing:NSBackingStoreBuffered
                defer:NO];
-    if (DebugUtil::BeingDebugged()) {
+    if (base::debug::BeingDebugged()) {
       [window_ orderFront:nil];
     } else {
       [window_ orderBack:nil];

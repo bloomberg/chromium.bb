@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
@@ -20,7 +21,6 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
-#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (parsed_command_line.HasSwitch(test_shell::kEnableTracing))
-    base::TraceLog::StartTracing();
+    base::debug::TraceLog::StartTracing();
 
   net::HttpCache::Mode cache_mode = net::HttpCache::NORMAL;
 

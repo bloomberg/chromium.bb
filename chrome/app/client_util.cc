@@ -6,9 +6,9 @@
 #include <shlwapi.h>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/trace_event.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"

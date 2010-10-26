@@ -8,7 +8,7 @@
 
 #include "base/base_switches.h"
 #include "base/basictypes.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
 
 // Minimalist implementation to try to find a command line argument. We can use
 // kernel32 exported functions but not the CRT functions because we're too early
@@ -56,13 +56,13 @@ int __cdecl DebugOnStart::Init() {
     // - Do a int3.
 
     // It will fails if we run in a sandbox. That is expected.
-    DebugUtil::SpawnDebuggerOnProcess(GetCurrentProcessId());
+    base::debug::SpawnDebuggerOnProcess(GetCurrentProcessId());
 
     // Wait for a debugger to come take us.
-    DebugUtil::WaitForDebugger(60, false);
+    base::debug::WaitForDebugger(60, false);
   } else if (FindArgument(GetCommandLine(), switches::kWaitForDebugger)) {
     // Wait for a debugger to come take us.
-    DebugUtil::WaitForDebugger(60, true);
+    base::debug::WaitForDebugger(60, true);
   }
   return 0;
 }

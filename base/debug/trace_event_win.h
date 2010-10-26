@@ -3,36 +3,40 @@
 // found in the LICENSE file.
 
 // This file contains the Windows-specific declarations for trace_event.h.
-#ifndef BASE_TRACE_EVENT_WIN_H_
-#define BASE_TRACE_EVENT_WIN_H_
+#ifndef BASE_DEBUG_TRACE_EVENT_WIN_H_
+#define BASE_DEBUG_TRACE_EVENT_WIN_H_
 #pragma once
 
 #include <string>
 #include "base/event_trace_provider_win.h"
 
 #define TRACE_EVENT_BEGIN(name, id, extra) \
-  base::TraceLog::Trace(name, \
-                        base::TraceLog::EVENT_BEGIN, \
-                        reinterpret_cast<const void*>(id), \
-                        extra);
+  base::debug::TraceLog::Trace( \
+      name, \
+      base::debug::TraceLog::EVENT_BEGIN, \
+      reinterpret_cast<const void*>(id), \
+      extra);
 
 #define TRACE_EVENT_END(name, id, extra) \
-  base::TraceLog::Trace(name, \
-                        base::TraceLog::EVENT_END, \
-                        reinterpret_cast<const void*>(id), \
-                        extra);
+  base::debug::TraceLog::Trace( \
+      name, \
+      base::debug::TraceLog::EVENT_END, \
+      reinterpret_cast<const void*>(id), \
+      extra);
 
 #define TRACE_EVENT_INSTANT(name, id, extra) \
-  base::TraceLog::Trace(name, \
-                        base::TraceLog::EVENT_INSTANT, \
-                        reinterpret_cast<const void*>(id), \
-                        extra);
+  base::debug::TraceLog::Trace( \
+      name, \
+      base::debug::TraceLog::EVENT_INSTANT, \
+      reinterpret_cast<const void*>(id), \
+      extra);
 
 // Fwd.
 template <typename Type>
 struct StaticMemorySingletonTraits;
 
 namespace base {
+namespace debug {
 
 // This EtwTraceProvider subclass implements ETW logging
 // for the macros above on Windows.
@@ -95,7 +99,7 @@ class TraceLog : public EtwTraceProvider {
   //    string will be used.
   void TraceEvent(const char* name,
                   size_t name_len,
-                  base::TraceLog::EventType type,
+                  EventType type,
                   const void* id,
                   const char* extra,
                   size_t extra_len);
@@ -141,6 +145,7 @@ enum TraceEventFlags {
 // Forward decl.
 struct TraceLogSingletonTraits;
 
+}  // nemspace debug
 }  // namespace base
 
-#endif  // BASE_TRACE_EVENT_WIN_H_
+#endif  // BASE_DEBUG_TRACE_EVENT_WIN_H_

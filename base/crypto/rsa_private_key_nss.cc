@@ -10,7 +10,7 @@
 
 #include <list>
 
-#include "base/leak_annotations.h"
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/nss_util_internal.h"

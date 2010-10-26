@@ -18,6 +18,7 @@
 #include <wininet.h>
 
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -26,7 +27,6 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/thread_local.h"
-#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
 #include "grit/generated_resources.h"

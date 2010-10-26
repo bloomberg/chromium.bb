@@ -337,6 +337,7 @@
       'msvs_guid': '3767888B-76ED-4D2A-B1F5-263CC56A12AA',
       'type': 'executable',
       'dependencies': [
+        '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
