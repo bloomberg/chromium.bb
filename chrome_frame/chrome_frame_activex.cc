@@ -252,6 +252,7 @@ void ChromeFrameActivex::OnAutomationServerLaunchFailed(
 
   // Do not display warnings for privileged instances of Chrome Frame.
   if (reason == AUTOMATION_VERSION_MISMATCH && !is_privileged_) {
+    THREAD_SAFE_UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }
 }
