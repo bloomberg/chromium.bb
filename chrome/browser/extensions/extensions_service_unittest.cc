@@ -1257,9 +1257,8 @@ TEST_F(ExtensionsServiceTest, InstallApps) {
   ValidatePrefKeyCount(++pref_count);
 
   // A third app whose extent overlaps the first. Should fail.
-  // TODO(aa): bring this back when overlap is fixed. http://crbug.com/47445.
-  // PackAndInstallExtension(extensions_path.AppendASCII("app3"), false);
-  // ValidatePrefKeyCount(pref_count);
+  PackAndInstallExtension(extensions_path.AppendASCII("app3"), false);
+  ValidatePrefKeyCount(pref_count);
 }
 
 TEST_F(ExtensionsServiceTest, InstallAppsWithUnlimtedStorage) {
