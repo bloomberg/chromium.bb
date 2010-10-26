@@ -203,9 +203,18 @@ class URLPattern {
  private:
   friend class std::vector<URLPattern>;
 
+// Due to a bug in clang, we must make this constructor public.
+#if defined(__clang__)
+ public:
+#endif
+
   // Note: don't use this directly. This exists so URLPattern can be used
   // with STL containers.
   URLPattern();
+
+#if defined(__clang__)
+ private:
+#endif
 
   // A bitmask containing the schemes which are considered valid for this
   // pattern. Parse() uses this to decide whether a pattern contains a valid
