@@ -150,7 +150,6 @@ PageInfoModel::PageInfoModel(Profile* profile,
   }
   sections_.push_back(SectionInfo(
       icon_id,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       headline,
       description,
       SECTION_INFO_IDENTITY));
@@ -240,7 +239,6 @@ PageInfoModel::PageInfoModel(Profile* profile,
   if (!description.empty()) {
     sections_.push_back(SectionInfo(
         icon_id,
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
         headline,
         description,
         SECTION_INFO_CONNECTION));
@@ -299,23 +297,19 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
     visited_before_today = (first_visit_midnight < today);
   }
 
-  string16 title = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
+  string16 headline = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
 
   if (!visited_before_today) {
     sections_.push_back(SectionInfo(
         ICON_STATE_WARNING_MAJOR,
-        l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
-        title,
+        headline,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY),
         SECTION_INFO_FIRST_VISIT));
   } else {
     sections_.push_back(SectionInfo(
         ICON_STATE_INFO,
-        l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
-        title,
+        headline,
         l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
             WideToUTF16(base::TimeFormatShortDate(first_visit))),

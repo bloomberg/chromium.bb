@@ -5975,9 +5975,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGEINFO_CLOSE_BUTTON" desc="Text of button in the page info that closes the window.">
         Close
       </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE" desc="The name of the identity section.">
-        Identity
-      </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section when the page is secure.">
         The identity of this website has been verified by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>.
       </message>
@@ -6014,9 +6011,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The certificate does not specify a mechanism to check whether it has been revoked.
       </message>
 
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE" desc="The name of the connection section.">
-        Connection
-      </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT" desc="The text of the connection section when the connection is encrypted.">
         Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted with <ph name="BIT_COUNT">$2<ex>128</ex></ph>-bit encryption.
       </message>
@@ -7429,10 +7423,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Script on the page used too much memory. Reload to enable scripts again.
       </message>
 
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE"
-               desc="Title of the personal history section">
-        Visit history
-      </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY"
                desc="Message in IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE section displayed when first visited page today">
         You have never visited this site before today.

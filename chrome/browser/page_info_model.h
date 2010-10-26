@@ -52,12 +52,10 @@ class PageInfoModel {
 
   struct SectionInfo {
     SectionInfo(SectionStateIcon icon_id,
-                const string16& title,
                 const string16& headline,
                 const string16& description,
                 SectionInfoType type)
         : icon_id(icon_id),
-          title(title),
           headline(headline),
           description(description),
           type(type) {
@@ -65,9 +63,6 @@ class PageInfoModel {
 
     // The overall state of the connection (error, warning, ok).
     SectionStateIcon icon_id;
-
-    // The title of the section.
-    string16 title;
 
     // A single line describing the section, optional.
     string16 headline;

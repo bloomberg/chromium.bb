@@ -26,7 +26,7 @@ class FakeModel : public PageInfoModel {
                   const string16& description,
                   SectionInfoType type) {
     sections_.push_back(SectionInfo(
-        icon_id, string16(), headline, description, type));
+        icon_id, headline, description, type));
   }
 };
 
@@ -151,8 +151,7 @@ TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
   CreateBubble();
 
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
-      l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE),
       l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY),
       PageInfoModel::SECTION_INFO_FIRST_VISIT);

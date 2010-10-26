@@ -140,8 +140,6 @@ void PageInfoBubbleView::LayoutSections() {
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
     layout->StartRow(0, 0);
-    // TODO(finnur): Remove title from the info struct, since it is
-    //               not used anymore.
     const SkBitmap* icon = model_.GetIconImage(info.icon_id);
     layout->AddView(new Section(this, info, icon, cert_id_ > 0));
 
