@@ -1,4 +1,4 @@
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -351,9 +351,9 @@ class SVN(object):
     compiled_pattern = re.compile(pattern)
     # Place an upper limit.
     backoff_time = 5
-    i = 0
+    retries = 0
     while True:
-      i += 1
+      retries += 1
       previous_list_len = len(file_list)
       failure = []
 
@@ -406,7 +406,7 @@ class SVN(object):
           if len(file_list) == previous_list_len and not IsKnownFailure():
             # No known svn error was found and no progress, bail out.
             raise
-        if i == 10:
+        if retries == 10:
           raise
         print "Sleeping %.1f seconds and retrying...." % backoff_time
         time.sleep(backoff_time)
