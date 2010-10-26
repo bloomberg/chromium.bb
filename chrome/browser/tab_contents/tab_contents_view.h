@@ -153,8 +153,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking() {}
 
-  virtual bool ShouldDrawDropShadow();
-
  protected:
   TabContentsView();  // Abstract interface.
 

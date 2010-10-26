@@ -876,14 +876,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
     if (window) {
-      gfx::Rect drop_shadow_area(0, 0, kMaxWindowWidth,
-                                 gtk_util::kInfoBarDropShadowHeight);
-      bool drop_shadow = host_->IsRenderView() &&
-          static_cast<RenderViewHost*>(host_)->delegate()->GetViewDelegate()->
-              ShouldDrawDropShadow() &&
-          drop_shadow_area.Intersects(paint_rect);
-
-      if (!visually_deemphasized_ && !drop_shadow) {
+      if (!visually_deemphasized_) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
         backing_store->XShowRect(
@@ -915,15 +908,9 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
         backing_store->CairoShowRect(damage_rect, GDK_DRAWABLE(window));
 
         cairo_t* cr = gdk_cairo_create(window);
-        if (visually_deemphasized_) {
-          gdk_cairo_rectangle(cr, &rect);
-          cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
-          cairo_fill(cr);
-        }
-        if (drop_shadow) {
-          gtk_util::DrawTopDropShadowForRenderView(
-              cr, gfx::Point(), damage_rect);
-        }
+        gdk_cairo_rectangle(cr, &rect);
+        cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
+        cairo_fill(cr);
         cairo_destroy(cr);
 
         gdk_window_end_paint(window);

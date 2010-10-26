@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,9 @@ SkColor GetAverageColorOfFavicon(SkBitmap* bitmap, SkAlpha alpha);
 void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]);
 
 // Returns a blend of the supplied colors, ranging from |background| (for
-// |alpha| == 0) to |foreground| (for |alpha| == 255).
+// |alpha| == 0) to |foreground| (for |alpha| == 255). The alpha channels of
+// the supplied colors are also taken into account, so the returned color may
+// be partially transparent.
 SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha);
 
 // Given a foreground and background color, try to return a foreground color

@@ -143,6 +143,41 @@ void InfoBarContainerGtk::UpdateInfoBars() {
   }
 }
 
+void InfoBarContainerGtk::ShowArrowForDelegate(InfoBarDelegate* delegate,
+                                               bool animate) {
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableSecureInfoBars)) {
+    return;
+  }
+
+  GList* children = gtk_container_get_children(GTK_CONTAINER(widget()));
+  if (!children)
+    return;
+
+  // Iterate through the infobars and find the last one that isn't closing.
+  InfoBar* last_bar = NULL;
+  InfoBar* this_bar = NULL;
+  for (GList* iter = children; iter != NULL; iter = iter->next) {
+    this_bar = reinterpret_cast<InfoBar*>(
+        g_object_get_data(G_OBJECT(iter->data), kInfoBar));
+
+    if (this_bar->delegate() == delegate)
+      break;
+
+    if (!this_bar->IsClosing())
+      last_bar = this_bar;
+
+    this_bar = NULL;
+  }
+
+  if (last_bar)
+    last_bar->ShowArrowFor(this_bar, animate);
+  else
+    UpdateToolbarInfoBarState(this_bar, animate);
+
+  g_list_free(children);
+}
+
 void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
   InfoBar* infobar = delegate->CreateInfoBar();
   infobar->set_container(this);
@@ -155,8 +190,7 @@ void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
   else
     infobar->Open();
 
-  if (tab_contents_->GetInfoBarDelegateAt(0) == delegate)
-    UpdateToolbarInfoBarState(infobar, animate);
+  ShowArrowForDelegate(delegate, animate);
 }
 
 void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
@@ -169,21 +203,15 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
                           delegate);
   }
 
-  if (tab_contents_->GetInfoBarDelegateAt(0) == delegate) {
-    InfoBar* bar = NULL;
-    // Get the next infobar, if it exists, so we can change the color of the
-    // arrow to it.
-    GList* children = gtk_container_get_children(GTK_CONTAINER(widget()));
-    if (children) {
-      if (children->next) {
-        bar = reinterpret_cast<InfoBar*>(
-            g_object_get_data(G_OBJECT(children->next->data), kInfoBar));
-      }
-      g_list_free(children);
+  InfoBarDelegate* next_delegate = NULL;
+  for (int i = 1; i < tab_contents_->infobar_delegate_count(); ++i) {
+    if (tab_contents_->GetInfoBarDelegateAt(i - 1) == delegate) {
+      next_delegate = tab_contents_->GetInfoBarDelegateAt(i);
+      break;
     }
-
-    UpdateToolbarInfoBarState(bar, animate);
   }
+
+  ShowArrowForDelegate(next_delegate, animate);
 }
 
 void InfoBarContainerGtk::UpdateToolbarInfoBarState(
@@ -193,21 +221,9 @@ void InfoBarContainerGtk::UpdateToolbarInfoBarState(
     return;
   }
 
-  scoped_ptr<std::pair<SkColor, SkColor> > colors;
-
-  if (infobar) {
-    double r, g, b;
-    infobar->GetTopColor(infobar->delegate()->GetInfoBarType(), &r, &g, &b);
-    SkColor top = SkColorSetRGB(r * 0xff, g * 0xff, b * 0xff);
-    infobar->GetBottomColor(infobar->delegate()->GetInfoBarType(), &r, &g, &b);
-    SkColor bottom = SkColorSetRGB(r * 0xff, g * 0xff, b * 0xff);
-
-    colors.reset(new std::pair<SkColor, SkColor>(top, bottom));
-  }
-
   GtkWindow* parent = platform_util::GetTopLevel(widget());
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
   if (browser_window)
-    browser_window->SetInfoBarShowing(colors.get(), animate);
+    browser_window->SetInfoBarShowing(infobar, animate);
 }

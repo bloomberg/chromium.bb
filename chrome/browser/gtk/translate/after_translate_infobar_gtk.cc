@@ -62,8 +62,6 @@ void AfterTranslateInfoBar::Init() {
       l10n_util::GetStringUTF8(IDS_TRANSLATE_INFOBAR_REVERT).c_str());
   g_signal_connect(button, "clicked",G_CALLBACK(&OnRevertPressedThunk), this);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
-
-  gtk_widget_show_all(border_bin_.get());
 }
 
 void AfterTranslateInfoBar::OnOriginalLanguageModified(GtkWidget* sender) {

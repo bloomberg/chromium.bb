@@ -113,10 +113,6 @@ bool TabContentsView::IsEventTracking() const {
   return false;
 }
 
-bool TabContentsView::ShouldDrawDropShadow() {
-  return false;
-}
-
 TabContentsView::TabContentsView() : tab_contents_(NULL) {}
 
 void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {

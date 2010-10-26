@@ -59,7 +59,6 @@ class TabContentsViewGtk : public TabContentsView,
   virtual void SetInitialFocus();
   virtual void StoreFocus();
   virtual void RestoreFocus();
-  virtual bool ShouldDrawDropShadow();
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void ShowContextMenu(const ContextMenuParams& params);

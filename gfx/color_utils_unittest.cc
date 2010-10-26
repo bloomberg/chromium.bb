@@ -47,3 +47,21 @@ TEST(ColorUtils, ColorToHSLRegisterSpill) {
   EXPECT_EQ(153U, SkColorGetG(result));
   EXPECT_EQ(88U, SkColorGetB(result));
 }
+
+TEST(ColorUtils, AlphaBlend) {
+  SkColor fore = SkColorSetARGB(255, 200, 200, 200);
+  SkColor back = SkColorSetARGB(255, 100, 100, 100);
+
+  EXPECT_TRUE(color_utils::AlphaBlend(fore, back, 255) ==
+              fore);
+  EXPECT_TRUE(color_utils::AlphaBlend(fore, back, 0) ==
+              back);
+
+  // One is fully transparent, result is partially transparent.
+  back = SkColorSetA(back, 0);
+  EXPECT_EQ(136U, SkColorGetA(color_utils::AlphaBlend(fore, back, 136)));
+
+  // Both are fully transparent, result is fully transparent.
+  fore = SkColorSetA(fore, 0);
+  EXPECT_EQ(0U, SkColorGetA(color_utils::AlphaBlend(fore, back, 255)));
+}

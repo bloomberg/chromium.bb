@@ -1845,6 +1845,8 @@
         'browser/gtk/info_bubble_gtk.h',
         'browser/gtk/info_bubble_accelerators_gtk.cc',
         'browser/gtk/info_bubble_accelerators_gtk.h',
+        'browser/gtk/infobar_arrow_model.cc',
+        'browser/gtk/infobar_arrow_model.h',
         'browser/gtk/infobar_container_gtk.cc',
         'browser/gtk/infobar_container_gtk.h',
         'browser/gtk/infobar_gtk.cc',

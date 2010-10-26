@@ -7,13 +7,16 @@
 #pragma once
 
 #include "app/gtk_signal.h"
+#include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/gtk/infobar_arrow_model.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "third_party/skia/include/core/SkPaint.h"
 
 class CustomDrawButton;
 class GtkThemeProvider;
@@ -21,7 +24,8 @@ class InfoBarContainerGtk;
 class InfoBarDelegate;
 
 class InfoBar : public SlideAnimatorGtk::Delegate,
-                public NotificationObserver {
+                public NotificationObserver,
+                public InfoBarArrowModel::Observer {
  public:
   explicit InfoBar(InfoBarDelegate* delegate);
   virtual ~InfoBar();
@@ -53,12 +57,22 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // Returns true if the infobar is showing the its open or close animation.
   bool IsAnimating();
 
+  // Returns true if the infobar is showing the close animation.
+  bool IsClosing();
+
   void SetThemeProvider(GtkThemeProvider* theme_provider);
+
+  // Show an arrow that originates from another infobar (i.e. a bar was added
+  // below this one). If |other| is NULL, stop showing the arrow.
+  void ShowArrowFor(InfoBar* other, bool animate);
+
+  // InfoBarArrowModel::Observer implementation.
+  virtual void PaintStateChanged();
 
   // SlideAnimatorGtk::Delegate implementation.
   virtual void Closed();
 
-  // NotificationOPbserver implementation.
+  // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -95,8 +109,8 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // The top level widget of the infobar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 
-  // The second highest level widget of the infobar.
-  OwnedWidgetGtk border_bin_;
+  // The second highest widget in the hierarchy (after the slide widget).
+  GtkWidget* bg_box_;
 
   // The hbox that holds infobar elements (button, text, icon, etc.).
   GtkWidget* hbox_;
@@ -112,6 +126,10 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
 
   // The theme provider, used for getting border colors.
   GtkThemeProvider* theme_provider_;
+
+  // The model that tracks the paint state of the arrow for the infobar
+  // below this one (if it exists).
+  InfoBarArrowModel arrow_model_;
 
   NotificationRegistrar registrar_;
 

@@ -66,7 +66,6 @@ void ExtensionInfoBarGtk::BuildWidgets() {
 
   g_signal_connect(view_->native_view(), "size_allocate",
                    G_CALLBACK(&OnSizeAllocateThunk), this);
-  gtk_widget_show_all(border_bin_.get());
 }
 
 void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,

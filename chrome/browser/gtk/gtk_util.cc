@@ -1136,25 +1136,4 @@ WebDragOperationsMask GdkDragActionToWebDragOp(GdkDragAction action) {
   return op;
 }
 
-void DrawTopDropShadowForRenderView(cairo_t* cr, const gfx::Point& origin,
-    const gfx::Rect& paint_rect) {
-  gfx::Rect shadow_rect(paint_rect.x(), origin.y(),
-                        paint_rect.width(), kInfoBarDropShadowHeight);
-
-  // Avoid this extra work if we can.
-  if (!shadow_rect.Intersects(paint_rect))
-    return;
-
-  cairo_pattern_t* shadow =
-      cairo_pattern_create_linear(0.0, shadow_rect.y(),
-                                  0.0, shadow_rect.bottom());
-  cairo_pattern_add_color_stop_rgba(shadow, 0, 0, 0, 0, 0.6);
-  cairo_pattern_add_color_stop_rgba(shadow, 1, 0, 0, 0, 0.1);
-  cairo_rectangle(cr, shadow_rect.x(), shadow_rect.y(),
-                  shadow_rect.width(), shadow_rect.height());
-  cairo_set_source(cr, shadow);
-  cairo_fill(cr);
-  cairo_pattern_destroy(shadow);
-}
-
 }  // namespace gtk_util

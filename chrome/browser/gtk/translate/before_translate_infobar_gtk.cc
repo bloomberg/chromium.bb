@@ -73,8 +73,6 @@ void BeforeTranslateInfoBar::Init() {
                      G_CALLBACK(&OnAlwaysTranslatePressedThunk), this);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   }
-
-  gtk_widget_show_all(border_bin_.get());
 }
 
 void BeforeTranslateInfoBar::OnLanguageModified(GtkWidget* sender) {

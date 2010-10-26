@@ -51,6 +51,10 @@ class InfoBarContainerGtk : public NotificationObserver {
   // this process.
   void UpdateInfoBars();
 
+  // Makes the calls to show an arrow for |delegate| (either on the browser
+  // toolbar or on the next infobar up).
+  void ShowArrowForDelegate(InfoBarDelegate* delegate, bool animate);
+
   // Adds an InfoBar for the specified delegate, in response to a notification
   // from the selected TabContents.
   void AddInfoBar(InfoBarDelegate* delegate, bool animate);

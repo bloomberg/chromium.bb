@@ -12,12 +12,12 @@
 
 #include "app/active_window_watcher_x.h"
 #include "app/gtk_signal.h"
-#include "app/slide_animation.h"
 #include "app/x11_util.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/infobar_arrow_model.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -45,7 +45,7 @@ class BrowserWindowGtk : public BrowserWindow,
                          public NotificationObserver,
                          public TabStripModelObserver,
                          public ActiveWindowWatcherX::Observer,
-                         public AnimationDelegate {
+                         public InfoBarArrowModel::Observer {
  public:
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
@@ -145,10 +145,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // Overridden from ActiveWindowWatcher::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
-  // Overridden from AnimationDelegate.
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  // Overridden from InfoBarArrowModel::Observer.
+  virtual void PaintStateChanged();
 
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
@@ -178,16 +176,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // else for the custom frame.
   void ResetCustomFrameCursor();
 
-  // Toggles whether an infobar is showing. If |colors| is NULL, then no infobar
-  // is showing. When non-NULL, |colors| describes the gradient stop colors for
-  // the showing infobar.
-  // |animate| controls whether we animate to the new state set by |colors|.
-  void SetInfoBarShowing(const std::pair<SkColor, SkColor>* colors,
-                         bool animate);
-
-  // Called by the RenderViewHostDelegate::View (TabContentsViewGtk in our case)
-  // to decide whether to draw a drop shadow on the render view.
-  bool ShouldDrawInfobarDropShadowOnRenderView();
+  // Toggles whether an infobar is showing.
+  // |animate| controls whether we animate to the new state set by |bar|.
+  void SetInfoBarShowing(InfoBar* bar, bool animate);
 
   // Returns the BrowserWindowGtk registered with |window|.
   static BrowserWindowGtk* GetBrowserWindowForNativeWindow(
@@ -220,6 +211,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // have this method as a hack because GTK doesn't queue the toolbar area for
   // redraw when it should.
   void QueueToolbarRedraw();
+
+  // Get the position where the infobar arrow should be anchored in
+  // |relative_to| coordinates. This is the middle of the omnibox location icon.
+  int GetXPositionOfLocationIcon(GtkWidget* relative_to);
 
  protected:
   virtual void DestroyBrowser();
@@ -480,11 +475,9 @@ class BrowserWindowGtk : public BrowserWindow,
 
   scoped_ptr<FullscreenExitBubbleGtk> fullscreen_exit_bubble_;
 
-  // The top and bottom colors for the infobar gradient, if there is an
-  // infobar showing.
-  std::pair<SkColor, SkColor> infobar_colors_;
-
-  SlideAnimation infobar_animation_;
+  // The model that tracks the paint state of the arrow for the infobar
+  // directly below the toolbar.
+  InfoBarArrowModel infobar_arrow_model_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };

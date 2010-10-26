@@ -81,8 +81,6 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/canvas_skia_paint.h"
-#include "gfx/color_utils.h"
 #include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "gfx/skia_utils_gtk.h"
@@ -90,7 +88,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace {
 
@@ -261,10 +258,6 @@ GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
   return GDK_LAST_CURSOR;
 }
 
-GdkColor SkColorToGdkColor(const SkColor& color) {
-  return gfx::SkColorToGdkColor(color);
-}
-
 // A helper method for setting the GtkWindow size that should be used in place
 // of calling gtk_window_resize directly.  This is done to avoid a WM "feature"
 // where setting the window size to the monitor size causes the WM to set the
@@ -345,7 +338,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        maximize_after_show_(false),
        suppress_window_raise_(false),
        accel_group_(NULL),
-       infobar_animation_(this) {
+       infobar_arrow_model_(this) {
   // We register first so that other views like the toolbar can use the
   // is_active() function in their ActiveWindowChanged() handlers.
   ActiveWindowWatcherX::AddObserver(this);
@@ -388,8 +381,6 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   // Set the initial background color of widgets.
   SetBackgroundColor();
   HideUnsupportedWindowFeatures();
-
-  infobar_animation_.SetTweenType(Tween::LINEAR);
 
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
@@ -1680,7 +1671,7 @@ void BrowserWindowGtk::SetBackgroundColor() {
   SkColor frame_color = theme_provider->GetColor(frame_color_id);
 
   // Paint the frame color on the left, right and bottom.
-  GdkColor frame_color_gdk = SkColorToGdkColor(frame_color);
+  GdkColor frame_color_gdk = gfx::SkColorToGdkColor(frame_color);
   gtk_widget_modify_bg(GTK_WIDGET(window_), GTK_STATE_NORMAL,
                        &frame_color_gdk);
 
@@ -1692,7 +1683,8 @@ void BrowserWindowGtk::SetBackgroundColor() {
   // color, override the prelight also.
   color_utils::HSL hsl = { -1, 0.5, 0.65 };
   SkColor frame_prelight_color = color_utils::HSLShift(frame_color, hsl);
-  GdkColor frame_prelight_color_gdk = SkColorToGdkColor(frame_prelight_color);
+  GdkColor frame_prelight_color_gdk =
+      gfx::SkColorToGdkColor(frame_prelight_color);
   gtk_widget_modify_bg(contents_split_, GTK_STATE_PRELIGHT,
       &frame_prelight_color_gdk);
 
@@ -1798,179 +1790,74 @@ void BrowserWindowGtk::SaveWindowPosition() {
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
-void BrowserWindowGtk::AnimationEnded(const Animation* animation) {
-  InvalidateInfoBarBits();
+void BrowserWindowGtk::SetInfoBarShowing(InfoBar* bar, bool animate) {
+  infobar_arrow_model_.ShowArrowFor(bar, animate);
 }
 
-void BrowserWindowGtk::AnimationProgressed(const Animation* animation) {
+void BrowserWindowGtk::PaintStateChanged() {
   InvalidateInfoBarBits();
-}
-
-void BrowserWindowGtk::AnimationCanceled(const Animation* animation) {
-  InvalidateInfoBarBits();
-}
-
-void BrowserWindowGtk::SetInfoBarShowing(
-    const std::pair<SkColor, SkColor>* colors,
-    bool animate) {
-  if (colors) {
-    infobar_colors_ = *colors;
-
-    if (animate)
-      infobar_animation_.Show();
-    else
-      infobar_animation_.Reset(1.0);
-  } else {
-    if (animate)
-      infobar_animation_.Hide();
-    else
-      infobar_animation_.Reset();
-  }
-
-  InvalidateInfoBarBits();
-}
-
-bool BrowserWindowGtk::ShouldDrawInfobarDropShadowOnRenderView() {
-  return infobar_animation_.GetCurrentValue() != 0.0 &&
-      !(bookmark_bar_.get() && bookmark_bar_is_floating_);
 }
 
 void BrowserWindowGtk::InvalidateInfoBarBits() {
   gtk_widget_queue_draw(toolbar_border_);
   gtk_widget_queue_draw(toolbar_->widget());
-  if (bookmark_bar_.get())
+  if (bookmark_bar_.get() && !bookmark_bar_is_floating_)
     gtk_widget_queue_draw(bookmark_bar_->widget());
+}
 
-  // Redraw the top bit of the render view area.
-  int width = contents_container_->widget()->allocation.width;
-  int height = gtk_util::kInfoBarDropShadowHeight;
-  gtk_widget_queue_draw_area(contents_container_->widget(),
-                             0, 0, width, height);
+int BrowserWindowGtk::GetXPositionOfLocationIcon(GtkWidget* relative_to) {
+  GtkWidget* location_icon = toolbar_->GetLocationBarView()->
+      location_icon_widget();
+  int x = 0;
+  gtk_widget_translate_coordinates(
+      location_icon, relative_to,
+      (location_icon->allocation.width + 1) / 2,
+      0, &x, NULL);
+
+  if (GTK_WIDGET_NO_WINDOW(relative_to))
+    x += relative_to->allocation.x;
+
+  return x;
 }
 
 gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
                                                    GdkEventExpose* expose) {
-  double alpha = infobar_animation_.GetCurrentValue();
-  if (alpha == 0.0)
+  if (!infobar_arrow_model_.NeedToDrawInfoBarArrow())
     return FALSE;
 
-  GtkWidget* location_icon = toolbar_->GetLocationBarView()->
-      location_icon_widget();
-  int x = 0;
-  int top_y = 0;
-  // The offset between the vertical center of the location icon and the top
-  // of the arrow.
-  const int kArrowVerticalOffset = 4;
-  gtk_widget_translate_coordinates(
-      location_icon, sender,
-      location_icon->allocation.width / 2,
-      location_icon->allocation.height / 2 + kArrowVerticalOffset,
-      &x, &top_y);
+  int x = GetXPositionOfLocationIcon(sender);
 
   gfx::Rect toolbar_border(toolbar_border_->allocation);
   int y = 0;
   gtk_widget_translate_coordinates(toolbar_border_, sender,
                                    0, toolbar_border.bottom(),
                                    NULL, &y);
-
-  int arrow_height = y - top_y;
-  // The width of half the arrow.
-  const int kArrowWidth = 15;
-
-  if (GTK_WIDGET_NO_WINDOW(sender)) {
-    x += sender->allocation.x;
+  if (GTK_WIDGET_NO_WINDOW(sender))
     y += sender->allocation.y;
-  }
 
-  SkPath path;
-  path.moveTo(SkPoint::Make(x - kArrowWidth, y));
-  path.lineTo(SkPoint::Make(x, y - arrow_height));
-  path.lineTo(SkPoint::Make(x + kArrowWidth, y));
-  path.close();
-
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-
-  SkPoint grad_points[2];
-  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(y));
-  grad_points[1].set(SkIntToScalar(0),
-                     SkIntToScalar(y + InfoBar::kInfoBarHeight));
-
-  SkColor grad_colors[2];
-  grad_colors[0] = SkColorSetA(infobar_colors_.first, alpha * 0xff);
-  grad_colors[1] = SkColorSetA(infobar_colors_.second, alpha * 0xff);
-
-  SkShader* gradient_shader = SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode);
-  paint.setShader(gradient_shader);
-  gradient_shader->unref();
-
-  gfx::CanvasSkiaPaint canvas(expose, false);
-  canvas.drawPath(path, paint);
-
-  paint.setShader(NULL);
-  paint.setStyle(SkPaint::kStroke_Style);
-  // Smooth out the shadow.
-  paint.setAntiAlias(true);
-
-  const int kMaxShading = 100;
-  const int kShadingPixels = 5;
-
-  // The goal of all this mathematical trickery is to create a shadow for the
-  // arrow that looks decent. We want a shadow of a set width, and the thickest
-  // direction of that shadow needs to be perpendicular to the sides of the
-  // arrow.
-  double scale_factor = sqrt(static_cast<double>(
-      (arrow_height * arrow_height + kArrowWidth * kArrowWidth))) /
-      kShadingPixels;
-  double x_scale = arrow_height / scale_factor / kShadingPixels;
-  double y_scale = kArrowWidth / scale_factor / kShadingPixels;
-  for (int i = 1; i <= kShadingPixels; ++i) {
-    double x_backoff = x_scale * i;
-    double y_backoff = y_scale * i;
-    SkPath shadow_path;
-    shadow_path.moveTo(0, y - i);
-    // The +1 below makes sure the shadow hugs the left side of the arrow.
-    shadow_path.rLineTo(x - kArrowWidth - x_backoff + 1, 0);
-    shadow_path.rMoveTo(0, i - y_backoff);
-    shadow_path.rLineTo(kArrowWidth, -arrow_height);
-    // The -1.5 below makes sure the shadow hugs the right side of the arrow.
-    shadow_path.rLineTo(2 * x_backoff - 1.5, 0);
-    shadow_path.rLineTo(kArrowWidth, arrow_height);
-    shadow_path.rMoveTo(0, y_backoff - i);
-    shadow_path.rLineTo(sender->allocation.width, 0);
-
-    int shading = (kShadingPixels - i + 1) * kMaxShading / kShadingPixels;
-    paint.setColor(SkColorSetARGB(alpha * shading, 0, 0, 0));
-    canvas.drawPath(shadow_path, paint);
-  }
-
+  Profile* profile = browser()->profile();
+  infobar_arrow_model_.Paint(
+      sender, expose, gfx::Point(x, y),
+      GtkThemeProvider::GetFrom(profile)->GetBorderColor());
   return FALSE;
 }
 
 gboolean BrowserWindowGtk::OnBookmarkBarExpose(GtkWidget* sender,
                                                GdkEventExpose* expose) {
-  if (infobar_animation_.GetCurrentValue() == 0.0)
+  if (!infobar_arrow_model_.NeedToDrawInfoBarArrow())
     return FALSE;
 
-  // This shares the same draw path as the other widgets when it's not floating.
-  if (!bookmark_bar_is_floating_)
-    return OnExposeDrawInfobarBits(sender, expose);
+  if (bookmark_bar_is_floating_)
+    return FALSE;
 
-  gfx::Point origin;
-  if (GTK_WIDGET_NO_WINDOW(sender))
-    origin = gfx::Point(sender->allocation.x, sender->allocation.y);
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(expose->window));
-  gtk_util::DrawTopDropShadowForRenderView(cr, origin, gfx::Rect(expose->area));
-  cairo_destroy(cr);
-  return FALSE;
+  return OnExposeDrawInfobarBits(sender, expose);
 }
 
 void BrowserWindowGtk::OnBookmarkBarSizeAllocate(GtkWidget* sender,
                                                  GtkAllocation* allocation) {
   // The size of the bookmark bar affects how the infobar arrow is drawn on
   // the toolbar.
-  if (infobar_animation_.GetCurrentValue() != 0.0)
+  if (infobar_arrow_model_.NeedToDrawInfoBarArrow())
     gtk_widget_queue_draw(toolbar_->widget());
 }
 

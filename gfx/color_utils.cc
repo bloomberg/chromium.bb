@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -256,13 +256,28 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
     return background;
   if (alpha == 255)
     return foreground;
-  return SkColorSetRGB(
-    ((SkColorGetR(foreground) * alpha) +
-     (SkColorGetR(background) * (255 - alpha))) / 255,
-    ((SkColorGetG(foreground) * alpha) +
-     (SkColorGetG(background) * (255 - alpha))) / 255,
-    ((SkColorGetB(foreground) * alpha) +
-     (SkColorGetB(background) * (255 - alpha))) / 255);
+
+  int f_alpha = SkColorGetA(foreground);
+  int b_alpha = SkColorGetA(background);
+
+  double normalizer = (f_alpha * alpha + b_alpha * (255 - alpha)) / 255.0;
+  if (normalizer == 0.0)
+    return SkColorSetARGB(0, 0, 0, 0);
+
+  double f_weight = f_alpha * alpha / normalizer;
+  double b_weight = b_alpha * (255 - alpha) / normalizer;
+
+  double r = (SkColorGetR(foreground) * f_weight +
+              SkColorGetR(background) * b_weight) / 255.0;
+  double g = (SkColorGetG(foreground) * f_weight +
+              SkColorGetG(background) * b_weight) / 255.0;
+  double b = (SkColorGetB(foreground) * f_weight +
+              SkColorGetB(background) * b_weight) / 255.0;
+
+  return SkColorSetARGB(static_cast<int>(normalizer),
+                        static_cast<int>(r),
+                        static_cast<int>(g),
+                        static_cast<int>(b));
 }
 
 SkColor GetReadableColor(SkColor foreground, SkColor background) {

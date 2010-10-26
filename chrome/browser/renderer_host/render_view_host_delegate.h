@@ -209,10 +209,6 @@ class RenderViewHostDelegate {
     // The contents' preferred size changed.
     virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
 
-    // Called to determine whether the render view needs to draw a drop shadow
-    // at the top (currently used for infobars).
-    virtual bool ShouldDrawDropShadow();
-
    protected:
     virtual ~View() {}
   };
