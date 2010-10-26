@@ -360,6 +360,18 @@ button {
  * TODO(arv): Test the vertical position on Linux and CrOS as well.
  */
 
+/*
+ * Webkit does not move the absolute positioned input element properly and
+ * filed bug 48348 to track the problem.
+ *   https://bugs.webkit.org/show_bug.cgi?id=48348
+ * In the mean time, mark the outer label element 'relative' so that webkit
+ * aligns the input element properly.
+ */
+label.checkbox,
+label.radio {
+  position: relative;
+}
+
 label.checkbox > input,
 label.radio > input {
   margin-top: 1px;
