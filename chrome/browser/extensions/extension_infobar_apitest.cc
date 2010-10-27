@@ -6,11 +6,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 #define MAYBE_Infobars Infobars
-#elif defined(OS_MACOSX)
-// Temporarily marking as FAILS. See http://crbug.com/60990 for details.
-#define MAYBE_Infobars FAILS_Infobars
 #else
 // Need to finish port to Linux. See http://crbug.com/39916 for details.
 #define MAYBE_Infobars DISABLED_Infobars
