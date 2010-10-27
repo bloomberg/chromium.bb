@@ -71,6 +71,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
     system_salt_ = new_salt;
   }
   void set_username(const std::string& fake_user) { username_ = fake_user; }
+  void set_password(const std::string& fake_pass) { password_ = fake_pass; }
   void set_password_hash(const std::string& fake_hash) {
     ascii_hash_ = fake_hash;
   }

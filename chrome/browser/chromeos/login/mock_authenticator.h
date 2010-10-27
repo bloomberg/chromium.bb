@@ -66,6 +66,7 @@ class MockAuthenticator : public Authenticator {
     // If we want to be more like the real thing, we could save username
     // in AuthenticateToLogin, but there's not much of a point.
     consumer_->OnLoginSuccess(expected_username_,
+                              expected_password_,
                               credentials,
                               request_pending);
   }
@@ -110,8 +111,10 @@ class MockLoginUtils : public LoginUtils {
   }
 
   virtual void CompleteLogin(const std::string& username,
+                             const std::string& password,
                              const GaiaAuthConsumer::ClientLoginResult& res) {
     EXPECT_EQ(expected_username_, username);
+    EXPECT_EQ(expected_password_, password);
   }
 
   virtual void CompleteOffTheRecordLogin(const GURL& start_url) {

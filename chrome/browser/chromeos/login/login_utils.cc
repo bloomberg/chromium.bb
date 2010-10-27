@@ -32,6 +32,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -63,7 +64,9 @@ class LoginUtilsImpl : public LoginUtils {
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
-  virtual void CompleteLogin(const std::string& username,
+  virtual void CompleteLogin(
+      const std::string& username,
+      const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
   // Invoked after the tmpfs is successfully mounted.
@@ -110,7 +113,9 @@ class LoginUtilsWrapper {
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
 
-void LoginUtilsImpl::CompleteLogin(const std::string& username,
+void LoginUtilsImpl::CompleteLogin(
+    const std::string& username,
+    const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
@@ -175,7 +180,7 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
 
   // Set the CrOS user by getting this constructor run with the
   // user's email on first retrieval.
-  profile->GetProfileSyncService(username);
+  profile->GetProfileSyncService(username)->SetPassphrase(password);
   btl->AddLoginTimeMarker("SyncStarted", false);
 
   // Attempt to take ownership; this will fail if device is already owned.

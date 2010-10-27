@@ -462,6 +462,7 @@ void ExistingUserController::ShowError(int error_id,
 
 void ExistingUserController::OnLoginSuccess(
     const std::string& username,
+    const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests) {
   // LoginPerformer instance will delete itself once online auth result is OK.
@@ -477,7 +478,7 @@ void ExistingUserController::OnLoginSuccess(
       !UserManager::Get()->IsKnownUser(username)) {
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
-    LoginUtils::Get()->CompleteLogin(username, credentials);
+    LoginUtils::Get()->CompleteLogin(username, password, credentials);
     ActivateWizard(WizardController::IsDeviceRegistered() ?
         WizardController::kUserImageScreenName :
         WizardController::kRegistrationScreenName);
@@ -486,7 +487,7 @@ void ExistingUserController::OnLoginSuccess(
     WmIpc::Message message(WM_IPC_MESSAGE_WM_HIDE_LOGIN);
     WmIpc::instance()->SendMessage(message);
 
-    LoginUtils::Get()->CompleteLogin(username, credentials);
+    LoginUtils::Get()->CompleteLogin(username, password, credentials);
 
     // Delay deletion as we're on the stack.
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);

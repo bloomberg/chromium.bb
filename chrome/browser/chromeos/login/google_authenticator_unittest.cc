@@ -49,6 +49,7 @@ class GoogleAuthenticatorTest : public ::testing::Test {
  public:
   GoogleAuthenticatorTest()
       : username_("me@nowhere.org"),
+        password_("fakepass"),
         result_("", "", "", ""),
         bytes_as_ascii_("ffff"),
         user_manager_(new MockUserManager) {
@@ -126,9 +127,10 @@ class GoogleAuthenticatorTest : public ::testing::Test {
   void PrepForLogin(GoogleAuthenticator* auth) {
     auth->set_password_hash(hash_ascii_);
     auth->set_username(username_);
+    auth->set_password(password_);
     auth->SetLocalaccount("");
     auth->set_user_manager(user_manager_.get());
-    ON_CALL(*user_manager_.get(), IsKnownUser(_))
+    ON_CALL(*user_manager_.get(), IsKnownUser(username_))
         .WillByDefault(Return(true));
   }
 
@@ -148,6 +150,7 @@ class GoogleAuthenticatorTest : public ::testing::Test {
   unsigned char fake_hash_[32];
   std::string hash_ascii_;
   std::string username_;
+  std::string password_;
   GaiaAuthConsumer::ClientLoginResult result_;
   // Mocks, destroyed by CrosLibrary class.
   MockCryptohomeLibrary* mock_library_;
@@ -208,7 +211,7 @@ TEST_F(GoogleAuthenticatorTest, ReadNoLocalaccount) {
 
 TEST_F(GoogleAuthenticatorTest, OnLoginSuccess) {
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, _, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, password_, _, false))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -219,6 +222,7 @@ TEST_F(GoogleAuthenticatorTest, OnLoginSuccess) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->set_password_hash(hash_ascii_);
   auth->set_username(username_);
+  auth->set_password(password_);
   auth->OnLoginSuccess(result_, false);
 }
 
@@ -242,7 +246,7 @@ TEST_F(GoogleAuthenticatorTest, PasswordChange) {
   EXPECT_CALL(consumer, OnPasswordChangeDetected(result_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, password_, result_, false))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -297,7 +301,7 @@ TEST_F(GoogleAuthenticatorTest, ForgetOldData) {
   EXPECT_CALL(consumer, OnPasswordChangeDetected(result_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, password_, result_, false))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -357,6 +361,9 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForFailedLogin(auth.get());
+  EXPECT_CALL(*user_manager_.get(), IsKnownUser(username_))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   auth->OnClientLoginFailure(client_error);
   message_loop.RunAllPending();
 }
@@ -446,7 +453,7 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
       GoogleServiceAuthError::FromConnectionError(net::ERR_CONNECTION_RESET));
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, password_, result_, false))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
@@ -467,7 +474,7 @@ TEST_F(GoogleAuthenticatorTest, OnlineLogin) {
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, result_, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, password_, result_, false))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, Mount(username_, hash_ascii_, _))
@@ -485,7 +492,7 @@ TEST_F(GoogleAuthenticatorTest, CheckLocalaccount) {
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, _, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, std::string(), _, false))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, MountForBwsi(_))
@@ -507,7 +514,7 @@ TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
   BrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, _, false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_, std::string(), _, false))
       .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, MountForBwsi(_))
@@ -550,7 +557,10 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
   chromeos::CryptohomeBlob salt_v(fake_hash_, fake_hash_ + sizeof(fake_hash_));
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginSuccess(username_, Eq(result_), false))
+  EXPECT_CALL(consumer, OnLoginSuccess(username_,
+                                       password_,
+                                       Eq(result_),
+                                       false))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, Mount(username_, _, _))
@@ -568,7 +578,7 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->AuthenticateToLogin(
-      &profile, username_, hash_ascii_, std::string(), std::string());
+      &profile, username_, password_, std::string(), std::string());
 
   URLFetcher::set_factory(NULL);
   message_loop.RunAllPending();
@@ -589,7 +599,7 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLogin) {
       .WillOnce(Invoke(MockConsumer::OnFailQuit))
       .RetiresOnSaturation();
   // A failure case, but we still want the test to finish gracefully.
-  ON_CALL(consumer, OnLoginSuccess(username_, _, _))
+  ON_CALL(consumer, OnLoginSuccess(username_, password_, _, _))
       .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
 
   EXPECT_CALL(*mock_library_, GetSystemSalt())
@@ -631,7 +641,7 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLoginFailure) {
       .WillOnce(Invoke(MockConsumer::OnFailQuit))
       .RetiresOnSaturation();
   // A failure case, but we still want the test to finish gracefully.
-  ON_CALL(consumer, OnLoginSuccess(username_, _, _))
+  ON_CALL(consumer, OnLoginSuccess(username_, password_, _, _))
       .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
 
   EXPECT_CALL(*mock_library_, GetSystemSalt())
@@ -672,7 +682,7 @@ TEST_F(GoogleAuthenticatorTest, CancelLogin) {
       .RetiresOnSaturation();
 
   // A failure case, but we still want the test to finish gracefully.
-  ON_CALL(consumer, OnLoginSuccess(username_, _, _))
+  ON_CALL(consumer, OnLoginSuccess(username_, password_, _, _))
       .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
 
   // Stuff we expect to happen along the way.
@@ -723,7 +733,7 @@ TEST_F(GoogleAuthenticatorTest, CancelLoginAlreadyGotLocalaccount) {
       .RetiresOnSaturation();
 
   // A failure case, but we still want the test to finish gracefully.
-  ON_CALL(consumer, OnLoginSuccess(username_, _, _))
+  ON_CALL(consumer, OnLoginSuccess(username_, password_, _, _))
       .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
 
   // Stuff we expect to happen along the way.

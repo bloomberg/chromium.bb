@@ -52,6 +52,7 @@ class ScreenLocker : public LoginStatusConsumer,
   // LoginStatusConsumer implements:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
   virtual void OnLoginSuccess(const std::string& username,
+                              const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& result,
                               bool pending_requests);
 

@@ -43,10 +43,14 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
 
 void LoginPerformer::OnLoginSuccess(
     const std::string& username,
+    const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests) {
   if (delegate_) {
-    delegate_->OnLoginSuccess(username, credentials, pending_requests);
+    delegate_->OnLoginSuccess(username,
+                              password,
+                              credentials,
+                              pending_requests);
     if (!pending_requests)
       MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   } else {

@@ -114,7 +114,8 @@ void GoogleAuthenticator::PrepareClientLoginAttempt(
 }
 
 void GoogleAuthenticator::ClearClientLoginAttempt() {
-  password_.clear();
+  // Not clearing the password, because we may need to pass it to the
+  // sync service if login is successful.
   login_token_.clear();
   login_captcha_.clear();
 }
@@ -283,7 +284,10 @@ void GoogleAuthenticator::OnLoginSuccess(
                                                          ascii_hash_.c_str(),
                                                          &mount_error))) {
     BootTimesLoader::Get()->AddLoginTimeMarker("CryptohomeMounted", true);
-    consumer_->OnLoginSuccess(username_, credentials, request_pending);
+    consumer_->OnLoginSuccess(username_,
+                              password_,
+                              credentials,
+                              request_pending);
   } else if (!unlock_ &&
              mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {
     consumer_->OnPasswordChangeDetected(credentials);
@@ -327,6 +331,7 @@ void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
         &mount_error)) {
       LOG(WARNING) << "Logging in with localaccount: " << localaccount_;
       consumer_->OnLoginSuccess(username_,
+                                std::string(),
                                 GaiaAuthConsumer::ClientLoginResult(),
                                 false);
     } else {

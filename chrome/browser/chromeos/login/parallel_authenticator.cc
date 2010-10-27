@@ -141,6 +141,7 @@ void ParallelAuthenticator::OnLoginSuccess(
     already_reported_success_ = true;
   }
   consumer_->OnLoginSuccess(current_state_->username,
+                            current_state_->password,
                             credentials,
                             request_pending);
 }

@@ -42,7 +42,9 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // LoginStatusConsumer implementation:
   virtual void OnLoginFailure(const LoginFailure& error);
-  virtual void OnLoginSuccess(const std::string& username,
+  virtual void OnLoginSuccess(
+      const std::string& username,
+      const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests);
   virtual void OnOffTheRecordLoginSuccess();

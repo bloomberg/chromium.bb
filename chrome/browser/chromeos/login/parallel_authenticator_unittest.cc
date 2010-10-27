@@ -71,7 +71,8 @@ class ParallelAuthenticatorTest : public ::testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE),
         io_thread_(BrowserThread::IO),
-        username_("me@nowhere.org") {
+        username_("me@nowhere.org"),
+        password_("fakepass") {
     hash_ascii_.assign("0a010000000000a0");
     hash_ascii_.append(std::string(16, '0'));
   }
@@ -96,7 +97,11 @@ class ParallelAuthenticatorTest : public ::testing::Test {
     io_thread_.Start();
 
     auth_ = new ParallelAuthenticator(&consumer_);
-    state_.reset(new TestAttemptState(username_, "", hash_ascii_, "", ""));
+    state_.reset(new TestAttemptState(username_,
+                                      password_,
+                                      hash_ascii_,
+                                      "",
+                                      ""));
   }
 
   // Tears down the test fixture.
@@ -152,7 +157,7 @@ class ParallelAuthenticatorTest : public ::testing::Test {
   // Allow test to fail and exit gracefully, even if OnLoginSuccess()
   // wasn't supposed to happen.
   void FailOnLoginSuccess() {
-    ON_CALL(consumer_, OnLoginSuccess(_, _, _))
+    ON_CALL(consumer_, OnLoginSuccess(_, _, _, _))
         .WillByDefault(Invoke(MockConsumer::OnSuccessQuitAndFail));
   }
 
@@ -170,9 +175,10 @@ class ParallelAuthenticatorTest : public ::testing::Test {
   }
 
   void ExpectLoginSuccess(const std::string& username,
+                          const std::string& password,
                           const GaiaAuthConsumer::ClientLoginResult& result,
                           bool pending) {
-    EXPECT_CALL(consumer_, OnLoginSuccess(username, result, pending))
+    EXPECT_CALL(consumer_, OnLoginSuccess(username, password, result, pending))
         .WillOnce(Invoke(MockConsumer::OnSuccessQuit))
         .RetiresOnSaturation();
   }
@@ -206,6 +212,7 @@ class ParallelAuthenticatorTest : public ::testing::Test {
   BrowserThread io_thread_;
 
   std::string username_;
+  std::string password_;
   std::string hash_ascii_;
   GaiaAuthConsumer::ClientLoginResult result_;
 
@@ -260,7 +267,7 @@ TEST_F(ParallelAuthenticatorTest, ReadNoLocalaccount) {
 }
 
 TEST_F(ParallelAuthenticatorTest, OnLoginSuccess) {
-  EXPECT_CALL(consumer_, OnLoginSuccess(username_, result_, false))
+  EXPECT_CALL(consumer_, OnLoginSuccess(username_, password_, result_, false))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -339,7 +346,7 @@ TEST_F(ParallelAuthenticatorTest, DriveGuestLoginButFail) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveDataResync) {
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, password_, result_, false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
@@ -389,7 +396,7 @@ TEST_F(ParallelAuthenticatorTest, DriveRequestOldPassword) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveDataRecover) {
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, password_, result_, false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a key migration.
@@ -461,7 +468,7 @@ TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, password_, result_, false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
@@ -485,7 +492,7 @@ TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLogin) {
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, password_, result_, false);
   FailOnLoginFailure();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -501,7 +508,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLogin) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginDelayedOnline) {
-  ExpectLoginSuccess(username_, result_, true);
+  ExpectLoginSuccess(username_, password_, result_, true);
   FailOnLoginFailure();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -522,7 +529,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginDelayedOnline) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
-  ExpectLoginSuccess(username_, result_, true);
+  ExpectLoginSuccess(username_, password_, result_, true);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a key migration.
@@ -551,7 +558,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   RunResolve(auth_.get(), &message_loop_);
 
   // After the request below completes, OnLoginSuccess gets called again.
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, password_, result_, false);
 
   MockFactory<SuccessFetcher> factory;
   URLFetcher::set_factory(&factory);
@@ -567,7 +574,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
 
 TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
   GaiaAuthConsumer::ClientLoginResult success("sid", "lsid", "", "");
-  ExpectLoginSuccess(username_, success, false);
+  ExpectLoginSuccess(username_, password_, success, false);
   FailOnLoginFailure();
 
   // Set up state as though a cryptohome mount attempt has occurred and
@@ -582,7 +589,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
 TEST_F(ParallelAuthenticatorTest, DriveNeedNewPassword) {
   FailOnLoginSuccess();  // Set failing on success as the default...
   // ...but expect ONE successful login first.
-  ExpectLoginSuccess(username_, result_, true);
+  ExpectLoginSuccess(username_, password_, result_, true);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   LoginFailure failure = LoginFailure::FromNetworkAuthFailure(error);
@@ -630,7 +637,7 @@ TEST_F(ParallelAuthenticatorTest, DriveLocalLogin) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, std::string(), result_, false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to respond successfully to a cryptohome
@@ -648,7 +655,7 @@ TEST_F(ParallelAuthenticatorTest, DriveUnlock) {
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveLocalUnlock) {
-  ExpectLoginSuccess(username_, result_, false);
+  ExpectLoginSuccess(username_, std::string(), result_, false);
   FailOnLoginFailure();
 
   // Set up mock cryptohome library to fail a cryptohome key-check

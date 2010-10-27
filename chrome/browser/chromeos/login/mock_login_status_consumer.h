@@ -18,8 +18,9 @@ class MockConsumer : public LoginStatusConsumer {
   MockConsumer() {}
   ~MockConsumer() {}
   MOCK_METHOD1(OnLoginFailure, void(const LoginFailure& error));
-  MOCK_METHOD3(OnLoginSuccess, void(
+  MOCK_METHOD4(OnLoginSuccess, void(
       const std::string& username,
+      const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& result,
       bool pending_requests));
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
@@ -41,6 +42,7 @@ class MockConsumer : public LoginStatusConsumer {
   // Compatible with LoginStatusConsumer::OnLoginSuccess()
   static void OnSuccessQuit(
       const std::string& username,
+      const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests) {
     MessageLoop::current()->Quit();
@@ -48,6 +50,7 @@ class MockConsumer : public LoginStatusConsumer {
 
   static void OnSuccessQuitAndFail(
       const std::string& username,
+      const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests) {
     ADD_FAILURE() << "Login should NOT have succeeded!";
