@@ -56,6 +56,9 @@ class LoginUtils {
   // Returns if browser launch enabled now or not.
   virtual bool IsBrowserLaunchEnabled() const = 0;
 
+  // Prewarms the authentication network connection.
+  virtual void PrewarmAuthentication() = 0;
+
 };
 
 }  // namespace chromeos
