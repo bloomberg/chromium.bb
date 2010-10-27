@@ -166,8 +166,12 @@ bool NativeViewEGLContext::Initialize() {
     return false;
   }
 
-  // Create a context.
-  context_ = eglCreateContext(g_display, g_config, NULL, NULL);
+  static const EGLint kContextAttributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE
+  };
+
+  context_ = eglCreateContext(g_display, g_config, NULL, kContextAttributes);
   if (!context_) {
     LOG(ERROR) << "eglCreateContext failed with error "
                << GetLastEGLErrorString();
