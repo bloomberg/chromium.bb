@@ -92,11 +92,11 @@ const int kMinWebHeight = 50;
     }
 
     // Make sure |splitOffset| isn't too large or too small.
+    splitOffset = std::max(static_cast<CGFloat>(kMinWebHeight), splitOffset);
     splitOffset =
         std::min(splitOffset, NSHeight([splitView_ frame]) - kMinWebHeight);
     DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
                               << "smallest available tab contents space.";
-    splitOffset = std::max(static_cast<CGFloat>(0), splitOffset);
 
     [self resizeDevToolsToNewHeight:splitOffset];
   } else {

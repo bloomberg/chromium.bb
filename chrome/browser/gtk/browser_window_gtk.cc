@@ -98,6 +98,8 @@ const int kLoadingAnimationFrameTimeMs = 30;
 // matches the value in Views.
 const int kDefaultDevToolsHeight = 200;
 
+const int kMinDevToolsHeight = 50;
+
 const char* kBrowserWindowKey = "__BROWSER_WINDOW_GTK__";
 
 // The frame border is only visible in restored mode and is hardcoded to 4 px
@@ -1608,6 +1610,8 @@ void BrowserWindowGtk::InitWidgets() {
   int split_offset = g_browser_process->local_state()->GetInteger(
       prefs::kDevToolsSplitLocation);
   if (split_offset != -1) {
+    if (split_offset < kMinDevToolsHeight)
+      split_offset = kMinDevToolsHeight;
     gtk_paned_set_position(GTK_PANED(contents_split_), split_offset);
   } else {
     gtk_widget_set_size_request(devtools_container_->widget(), -1,
