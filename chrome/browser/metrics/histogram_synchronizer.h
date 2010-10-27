@@ -72,7 +72,7 @@ class HistogramSynchronizer : public
 
   // Gets a new sequence number to be sent to renderers from browser process.
   // This will also reset the current pending renderers for the given type.
-  int GetNextAvaibleSequenceNumber(RendererHistogramRequester requster);
+  int GetNextAvailableSequenceNumber(RendererHistogramRequester requster);
 
   // Increments the count of the renderers we're waiting for for the request
   // of the given type.
@@ -90,7 +90,7 @@ class HistogramSynchronizer : public
 
   // This condition variable is used to block caller of the synchronous request
   // to update histograms, and to signal that thread when updates are completed.
-  ConditionVariable received_all_renderer_historgrams_;
+  ConditionVariable received_all_renderer_histograms_;
 
   // When a request is made to asynchronously update the histograms, we store
   // the task and thread we use to post a completion notification in
