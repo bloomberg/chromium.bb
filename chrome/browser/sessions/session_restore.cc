@@ -503,6 +503,10 @@ class SessionRestoreImpl : public NotificationObserver {
   }
 
   void RestoreTabsToBrowser(const SessionWindow& window, Browser* browser) {
+#if defined(OS_CHROMEOS)
+    chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
+        "SessionRestore", true);
+#endif
     DCHECK(!window.tabs.empty());
     for (std::vector<SessionTab*>::const_iterator i = window.tabs.begin();
          i != window.tabs.end(); ++i) {

@@ -981,7 +981,6 @@ void ShowLoginWizard(const std::string& first_screen_name,
   controller->Init(first_screen_name, screen_bounds);
   controller->Show();
 
-  chromeos::LoginUtils::Get()->PrewarmAuthentication();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 

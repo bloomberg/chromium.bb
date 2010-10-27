@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
@@ -38,7 +36,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/pref_names.h"
@@ -59,14 +56,11 @@ const char kAuthSuffix[] = "\n";
 
 }  // namespace
 
-class LoginUtilsImpl : public LoginUtils, public NetworkLibrary::Observer {
+class LoginUtilsImpl : public LoginUtils {
  public:
   LoginUtilsImpl()
-      : browser_launch_enabled_(true),
-        waiting_for_network_(false) {
+      : browser_launch_enabled_(true) {
   }
-
-  ~LoginUtilsImpl();
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
@@ -90,18 +84,9 @@ class LoginUtilsImpl : public LoginUtils, public NetworkLibrary::Observer {
   // Returns if browser launch enabled now or not.
   virtual bool IsBrowserLaunchEnabled() const;
 
-  // Warms the url used by authentication.
-  virtual void PrewarmAuthentication();
-
-  // NetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(NetworkLibrary* obj);
-
-
  private:
   // Indicates if DoBrowserLaunch will actually launch the browser or not.
   bool browser_launch_enabled_;
-  // Indicates if we are registered for network notifications.
-  bool waiting_for_network_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsImpl);
 };
@@ -127,14 +112,6 @@ class LoginUtilsWrapper {
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
-
-LoginUtilsImpl::~LoginUtilsImpl() {
-  if (waiting_for_network_ &&
-      CrosLibrary::Get()->EnsureLoaded() &&
-      CrosLibrary::Get()->GetNetworkLibrary()) {
-    CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
-  }
-}
 
 void LoginUtilsImpl::CompleteLogin(
     const std::string& username,
@@ -311,31 +288,6 @@ void LoginUtilsImpl::EnableBrowserLaunch(bool enable) {
 
 bool LoginUtilsImpl::IsBrowserLaunchEnabled() const {
   return browser_launch_enabled_;
-}
-
-// If we're now connected, prewarm the auth url.
-void LoginUtilsImpl::NetworkChanged(NetworkLibrary* network) {
-  if (network->Connected()) {
-    chrome_browser_net::Preconnect::PreconnectOnUIThread(
-        GURL(GaiaAuthenticator2::kClientLoginUrl),
-        chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED);
-    network->RemoveObserver(this);
-    waiting_for_network_ = false;
-  }
-}
-
-void LoginUtilsImpl::PrewarmAuthentication() {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
-    if (network->Connected()) {
-      chrome_browser_net::Preconnect::PreconnectOnUIThread(
-          GURL(GaiaAuthenticator2::kClientLoginUrl),
-          chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED);
-    } else {
-      network->AddObserver(this);
-      waiting_for_network_ = true;
-    }
-  }
 }
 
 LoginUtils* LoginUtils::Get() {
