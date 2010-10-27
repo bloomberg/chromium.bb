@@ -13,7 +13,8 @@ class ReloadButtonGtkTest : public testing::Test {
   void CheckState(bool enabled,
                   ReloadButtonGtk::Mode intended_mode,
                   ReloadButtonGtk::Mode visible_mode,
-                  bool timer_running);
+                  bool double_click_timer_running,
+                  bool stop_to_reload_timer_running);
 
   // These accessors eliminate the need to declare each testcase as a friend.
   void set_mouse_hovered(bool hovered) {
@@ -30,42 +31,47 @@ class ReloadButtonGtkTest : public testing::Test {
 };
 
 ReloadButtonGtkTest::ReloadButtonGtkTest() : reload_(NULL, NULL) {
-  // Set the timer delay to 0 so that timers will fire as soon as we tell the
+  // Set the timer delays to 0 so that timers will fire as soon as we tell the
   // message loop to run pending tasks.
-  reload_.timer_delay_ = base::TimeDelta();
+  reload_.double_click_timer_delay_ = base::TimeDelta();
+  reload_.stop_to_reload_timer_delay_ = base::TimeDelta();
 }
 
 void ReloadButtonGtkTest::CheckState(bool enabled,
                                      ReloadButtonGtk::Mode intended_mode,
                                      ReloadButtonGtk::Mode visible_mode,
-                                     bool timer_running) {
+                                     bool double_click_timer_running,
+                                     bool stop_to_reload_timer_running) {
   EXPECT_NE(enabled, reload_.stop_.paint_override() == GTK_STATE_INSENSITIVE);
   EXPECT_EQ(intended_mode, reload_.intended_mode_);
   EXPECT_EQ(visible_mode, reload_.visible_mode_);
-  EXPECT_EQ(timer_running, reload_.timer_.IsRunning());
+  EXPECT_EQ(double_click_timer_running,
+            reload_.double_click_timer_.IsRunning());
+  EXPECT_EQ(stop_to_reload_timer_running,
+            reload_.stop_to_reload_timer_.IsRunning());
 }
 
 TEST_F(ReloadButtonGtkTest, Basic) {
-  // The stop/reload button starts in the "enabled reload" state with no timer
+  // The stop/reload button starts in the "enabled reload" state with no timers
   // running.
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
-             false);
+             false, false);
 
   // Press the button.  This should start the double-click timer.
   gtk_button_clicked(GTK_BUTTON(reload_.widget()));
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
-             true);
+             true, false);
 
   // Now change the mode (as if the browser had started loading the page).  This
-  // should cancel the timer since the button is not hovered.
+  // should cancel the double-click timer since the button is not hovered.
   reload_.ChangeMode(ReloadButtonGtk::MODE_STOP, false);
   CheckState(true, ReloadButtonGtk::MODE_STOP, ReloadButtonGtk::MODE_STOP,
-             false);
+             false, false);
 
   // Press the button again.  This should change back to reload.
   gtk_button_clicked(GTK_BUTTON(reload_.widget()));
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
-             false);
+             false, false);
 }
 
 TEST_F(ReloadButtonGtkTest, DoubleClickTimer) {
@@ -77,7 +83,7 @@ TEST_F(ReloadButtonGtkTest, DoubleClickTimer) {
   int original_reload_count = reload_count();
   gtk_button_clicked(GTK_BUTTON(reload_.widget()));
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
-             true);
+             true, false);
   EXPECT_EQ(original_reload_count, reload_count());
 
   // Hover the button, and change mode.  The visible mode should not change,
@@ -85,42 +91,55 @@ TEST_F(ReloadButtonGtkTest, DoubleClickTimer) {
   set_mouse_hovered(true);
   reload_.ChangeMode(ReloadButtonGtk::MODE_STOP, false);
   CheckState(true, ReloadButtonGtk::MODE_STOP, ReloadButtonGtk::MODE_RELOAD,
-             true);
+             true, false);
 
   // Now fire the timer.  This should complete the mode change.
   loop_.RunAllPending();
   CheckState(true, ReloadButtonGtk::MODE_STOP, ReloadButtonGtk::MODE_STOP,
-             false);
+             false, false);
 }
 
 TEST_F(ReloadButtonGtkTest, DisableOnHover) {
-  // Start by pressing the button and proceeding with the mode change.
+  // Change to stop and hover.
   gtk_button_clicked(GTK_BUTTON(reload_.widget()));
   reload_.ChangeMode(ReloadButtonGtk::MODE_STOP, false);
-
-  // Now hover the button and change back.  This should result in a disabled
-  // stop button.
   set_mouse_hovered(true);
+
+  // Now change back to reload.  This should result in a disabled stop button
+  // due to the hover.
   reload_.ChangeMode(ReloadButtonGtk::MODE_RELOAD, false);
   CheckState(false, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_STOP,
-             false);
+             false, true);
 
   // Un-hover the button, which should allow it to reset.
   set_mouse_hovered(false);
   fake_mouse_leave();
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
-             false);
+             false, false);
 }
 
 TEST_F(ReloadButtonGtkTest, ResetOnClick) {
-  // Start by pressing the button and proceeding with the mode change.
+  // Change to stop and hover.
   gtk_button_clicked(GTK_BUTTON(reload_.widget()));
   reload_.ChangeMode(ReloadButtonGtk::MODE_STOP, false);
-
-  // Hover the button and click it.  This should change back to reload despite
-  // the hover, because it's a direct user action.
   set_mouse_hovered(true);
+
+  // Press the button.  This should change back to reload despite the hover,
+  // because it's a direct user action.
   gtk_button_clicked(GTK_BUTTON(reload_.widget()));
   CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
-             false);
+             false, false);
+}
+
+TEST_F(ReloadButtonGtkTest, ResetOnTimer) {
+  // Change to stop, hover, and change back to reload.
+  gtk_button_clicked(GTK_BUTTON(reload_.widget()));
+  reload_.ChangeMode(ReloadButtonGtk::MODE_STOP, false);
+  set_mouse_hovered(true);
+  reload_.ChangeMode(ReloadButtonGtk::MODE_RELOAD, false);
+
+  // Now fire the stop-to-reload timer.  This should reset the button.
+  loop_.RunAllPending();
+  CheckState(true, ReloadButtonGtk::MODE_RELOAD, ReloadButtonGtk::MODE_RELOAD,
+             false, false);
 }

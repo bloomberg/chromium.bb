@@ -56,19 +56,17 @@ class ReloadButtonGtk : public NotificationObserver {
                        gboolean,
                        GtkTooltip*);
 
-  void OnButtonTimer();
-
   void UpdateThemeButtons();
 
-  base::OneShotTimer<ReloadButtonGtk> timer_;
+  void OnDoubleClickTimer();
+  void OnStopToReloadTimer();
+
+  base::OneShotTimer<ReloadButtonGtk> double_click_timer_;
+  base::OneShotTimer<ReloadButtonGtk> stop_to_reload_timer_;
 
   // These may be NULL when testing.
   LocationBarViewGtk* const location_bar_;
   Browser* const browser_;
-
-  // The delay time for the double-click timer.  This is a member so that tests
-  // can modify it.
-  base::TimeDelta timer_delay_;
 
   // The mode we should be in assuming no timers are running.
   Mode intended_mode_;
@@ -86,6 +84,11 @@ class ReloadButtonGtk : public NotificationObserver {
   CustomDrawHoverController hover_controller_;
 
   OwnedWidgetGtk widget_;
+
+  // The delay times for the timers.  These are members so that tests can modify
+  // them.
+  base::TimeDelta double_click_timer_delay_;
+  base::TimeDelta stop_to_reload_timer_delay_;
 
   // TESTING ONLY
   // True if we should pretend the button is hovered.

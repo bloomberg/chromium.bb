@@ -48,9 +48,11 @@ class ReloadButton : public views::ToggleImageButton,
  private:
   friend class ReloadButtonTest;
 
-  void OnButtonTimer();
+  void OnDoubleClickTimer();
+  void OnStopToReloadTimer();
 
-  base::OneShotTimer<ReloadButton> timer_;
+  base::OneShotTimer<ReloadButton> double_click_timer_;
+  base::OneShotTimer<ReloadButton> stop_to_reload_timer_;
 
   // These may be NULL when testing.
   LocationBarView* location_bar_;
@@ -62,9 +64,10 @@ class ReloadButton : public views::ToggleImageButton,
   // The currently-visible mode - this may differ from the intended mode.
   Mode visible_mode_;
 
-  // The delay time for the double-click timer.  This is a member so that tests
-  // can modify it.
-  base::TimeDelta timer_delay_;
+  // The delay times for the timers.  These are members so that tests can modify
+  // them.
+  base::TimeDelta double_click_timer_delay_;
+  base::TimeDelta stop_to_reload_timer_delay_;
 
   // TESTING ONLY
   // True if we should pretend the button is hovered.
