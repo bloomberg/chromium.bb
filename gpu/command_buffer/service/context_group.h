@@ -41,8 +41,8 @@ class ContextGroup : public base::RefCounted<ContextGroup> {
   bool Initialize(const char* allowed_features);
 
   // Sets the ContextGroup has having a lost context.
-  void SetLostContext() {
-    have_context_ = false;
+  void set_have_context(bool have_context) {
+    have_context_ = have_context;
   }
 
   uint32 max_vertex_attribs() const {

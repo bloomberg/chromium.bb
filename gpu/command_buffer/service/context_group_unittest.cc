@@ -43,7 +43,7 @@ class ContextGroupTest : public testing::Test {
   virtual void TearDown() {
     // we must release the ContextGroup before we clear out the GL interface.
     // since its destructor uses GL.
-    group_->SetLostContext();
+    group_->set_have_context(false);
     group_ = NULL;
     ::gfx::GLInterface::SetGLInterface(NULL);
     gl_.reset();

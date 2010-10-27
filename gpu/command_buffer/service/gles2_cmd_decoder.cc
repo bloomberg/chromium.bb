@@ -2342,9 +2342,9 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 }
 
 void GLES2DecoderImpl::Destroy() {
-  if (context_.get()) {
-    MakeCurrent();
-
+  bool have_context = context_.get() && MakeCurrent();
+  group_->set_have_context(have_context);
+  if (have_context) {
     if (attrib_0_buffer_id_) {
       glDeleteBuffersARB(1, &attrib_0_buffer_id_);
     }
@@ -2398,6 +2398,10 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_saved_color_texture_->Destroy();
       offscreen_saved_color_texture_.reset();
     }
+
+    // must release the ContextGroup before destroying the context as its
+    // destructor uses GL.
+    group_ = NULL;
 
     context_->Destroy();
     context_.reset();
