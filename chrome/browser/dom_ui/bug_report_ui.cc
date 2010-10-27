@@ -514,7 +514,7 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
   if (syslogs_lib) {
     syslogs_handle_ = syslogs_lib->RequestSyslogs(
-        true, &syslogs_consumer_,
+        true, true, &syslogs_consumer_,
         NewCallback(this, &BugReportHandler::SyslogsComplete));
   }
   // 2: user e-mail

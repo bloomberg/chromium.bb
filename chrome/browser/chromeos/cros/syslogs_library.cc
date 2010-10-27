@@ -13,13 +13,17 @@
 
 namespace chromeos {
 
+const char kContextFeedback[] = "feedback";
+const char kContextSysInfo[] = "sysinfo";
+
+
 class SyslogsLibraryImpl : public SyslogsLibrary {
  public:
   SyslogsLibraryImpl() {}
   virtual ~SyslogsLibraryImpl() {}
 
   virtual Handle RequestSyslogs(
-      bool compress_logs,
+      bool compress_logs, bool add_feedback_context,
       CancelableRequestConsumerBase* consumer,
       ReadCompleteCallback* callback);
 
@@ -27,7 +31,7 @@ class SyslogsLibraryImpl : public SyslogsLibrary {
   // Called from FILE thread.
   void ReadSyslogs(
       scoped_refptr<CancelableRequest<ReadCompleteCallback> > request,
-      bool compress_logs);
+      bool compress_logs, bool add_feedback_context);
 
   void LoadCompressedLogs(const FilePath& zip_file,
                           std::string* zip_content);
@@ -40,7 +44,7 @@ class SyslogsLibraryStubImpl : public SyslogsLibrary {
   SyslogsLibraryStubImpl() {}
   virtual ~SyslogsLibraryStubImpl() {}
 
-  virtual Handle RequestSyslogs(bool compress_logs,
+  virtual Handle RequestSyslogs(bool compress_logs, bool add_feedback_context,
                                 CancelableRequestConsumerBase* consumer,
                                 ReadCompleteCallback* callback) {
     if (callback)
@@ -60,7 +64,7 @@ SyslogsLibrary* SyslogsLibrary::GetImpl(bool stub) {
 
 
 CancelableRequestProvider::Handle SyslogsLibraryImpl::RequestSyslogs(
-    bool compress_logs,
+    bool compress_logs, bool add_feedback_context,
     CancelableRequestConsumerBase* consumer,
     ReadCompleteCallback* callback) {
   // Register the callback request.
@@ -73,7 +77,8 @@ CancelableRequestProvider::Handle SyslogsLibraryImpl::RequestSyslogs(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          this, &SyslogsLibraryImpl::ReadSyslogs, request, compress_logs));
+          this, &SyslogsLibraryImpl::ReadSyslogs, request,
+          compress_logs, add_feedback_context));
 
   return request->handle();
 }
@@ -81,7 +86,7 @@ CancelableRequestProvider::Handle SyslogsLibraryImpl::RequestSyslogs(
 // Called from FILE thread.
 void SyslogsLibraryImpl::ReadSyslogs(
     scoped_refptr<CancelableRequest<ReadCompleteCallback> > request,
-    bool compress_logs) {
+    bool compress_logs, bool add_feedback_context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (request->canceled())
@@ -101,7 +106,8 @@ void SyslogsLibraryImpl::ReadSyslogs(
   LogDictionaryType* logs = NULL;
   if (CrosLibrary::Get()->EnsureLoaded())
     logs = chromeos::GetSystemLogs(
-        compress_logs ? &zip_file : NULL);
+        compress_logs ? &zip_file : NULL,
+        add_feedback_context ? kContextFeedback : kContextSysInfo);
 
   std::string* zip_content = NULL;
   if (compress_logs) {
@@ -131,4 +137,3 @@ void SyslogsLibraryImpl::LoadCompressedLogs(const FilePath& zip_file,
 // Allows InvokeLater without adding refcounting. SyslogsLibraryImpl is a
 // Singleton and won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::SyslogsLibraryImpl);
-

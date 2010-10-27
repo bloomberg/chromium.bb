@@ -29,7 +29,7 @@ class SyslogsLibrary : public CancelableRequestProvider {
   // Returns the request handle. Call CancelRequest(Handle) to cancel
   // the request before the callback gets called.
   virtual Handle RequestSyslogs(
-      bool compress_logs,
+      bool compress_logs, bool feedback_context,
       CancelableRequestConsumerBase* consumer,
       ReadCompleteCallback* callback) = 0;
 

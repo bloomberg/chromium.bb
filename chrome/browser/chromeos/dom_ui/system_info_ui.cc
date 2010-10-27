@@ -94,7 +94,7 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
   if (syslogs_lib) {
     syslogs_lib->RequestSyslogs(
-        false,
+        false, false,
         &consumer_,
         NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
   }
