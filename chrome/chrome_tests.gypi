@@ -444,6 +444,7 @@
         'chrome_strings',
         'profile_import',
         'test_support_ui',
+        '../app/app.gyp:app_base',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -506,6 +507,7 @@
         'test/chrome_process_util_uitest.cc',
         'test/ui/dom_checker_uitest.cc',
         'test/ui/dromaeo_benchmark_uitest.cc',
+        'test/ui/gpu_uitest.cc',
         'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/npapi_uitest.cc',
@@ -521,8 +523,8 @@
         # http://code.google.com/p/chromium/issues/detail?id=18337
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
+            'chrome_mesa',
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
-            '../third_party/mesa/mesa.gyp:osmesa',
           ],
         }],
         # Only copy the pepper plugin on Windows which is the only platform

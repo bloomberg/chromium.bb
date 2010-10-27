@@ -7,11 +7,6 @@
   },
   'target_defaults': {
     'conditions': [
-      ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-        'cflags': [
-          '-fPIC',
-        ],
-      }],
       ['OS!="win"', {
         'defines': [
           # For talloc

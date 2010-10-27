@@ -13,6 +13,12 @@
 #include "base/logging.h"
 
 namespace gfx {
+
+const char kGLImplementationDesktopName[] = "desktop";
+const char kGLImplementationOSMesaName[]  = "osmesa";
+const char kGLImplementationEGLName[]     = "egl";
+const char kGLImplementationMockName[]    = "mock";
+
 namespace {
 
 typedef std::vector<base::NativeLibrary> LibraryArray;
@@ -38,10 +44,10 @@ GLImplementation GetNamedGLImplementation(const std::string& name) {
     const char* name;
     GLImplementation implemention;
   } name_pairs[] = {
-    { "desktop", kGLImplementationDesktopGL },
-    { "osmesa", kGLImplementationOSMesaGL },
-    { "egl", kGLImplementationEGLGLES2 },
-    { "mock", kGLImplementationMockGL }
+    { kGLImplementationDesktopName, kGLImplementationDesktopGL },
+    { kGLImplementationOSMesaName, kGLImplementationOSMesaGL },
+    { kGLImplementationEGLName, kGLImplementationEGLGLES2 },
+    { kGLImplementationMockName, kGLImplementationMockGL }
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(name_pairs); ++i) {

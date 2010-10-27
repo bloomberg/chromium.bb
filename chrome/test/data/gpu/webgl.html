@@ -1,0 +1,54 @@
+<html>
+<head>
+<script type="text/javascript">
+var canvas;
+var gl;
+
+function testHorizontalBands() {
+  gl.enable(gl.SCISSOR_TEST);
+
+  gl.clearColor(1, 0, 0, 1);
+  gl.scissor(0, 0, 16, 16);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gl.clearColor(0, 1, 0, 1);
+  gl.scissor(0, 16, 16, 16);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  gl.disable(gl.SCISSOR_TEST);
+
+  var array = new Uint8Array(16 * 32 * 4);  
+  gl.readPixels(0, 0, 16, 32, gl.RGBA, gl.UNSIGNED_BYTE, array);
+  
+  return array[0] == 255 && array[1] == 0 &&
+      array[16 * 32 * 4 - 4] == 0 && array[16 * 32 * 4 - 3] == 255;
+}
+
+function onLoad() {
+  canvas = document.getElementById("canvas1");
+  if (!canvas) {
+    document.title = "FAILED: canvas element not found";
+    return;
+  }
+
+  gl = canvas.getContext("experimental-webgl");
+  if (!gl) {
+    document.title = "FAILED: could not get webgl context for canvas";
+    return;
+  }
+
+  if (!testHorizontalBands()) {
+    document.title = "FAILED: did not render correctly";
+    return;
+  }
+
+  var renderer = gl.getParameter(gl.RENDERER);
+  document.title = "SUCCESS: " + renderer;
+}
+</script>
+</head>
+<body onload="onLoad()">
+<canvas id="canvas1" width="16px" height="32px">
+</canvas>
+</body>
+</html>
