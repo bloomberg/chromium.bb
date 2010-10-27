@@ -14,6 +14,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 
 using WebKit::WebDragOperation;
@@ -169,8 +170,10 @@ void WebDragDestGtk::OnDragDataReceived(
           // dragging files. To avoid exposing file system paths to web content,
           // file URLs are never set as the URL content for the drop.
           // TODO(estade): Can the filenames have a non-UTF8 encoding?
+          GURL url(*uri_iter);
           FilePath file_path;
-          if (net::FileURLToFilePath(GURL(*uri_iter), &file_path)) {
+          if (url.SchemeIs(chrome::kFileScheme) &&
+              net::FileURLToFilePath(url, &file_path)) {
             drop_data_->filenames.push_back(UTF8ToUTF16(file_path.value()));
             // This is a hack. Some file managers also populate text/plain with
             // a file URL when dragging files, so we clear it to avoid exposing
@@ -178,7 +181,7 @@ void WebDragDestGtk::OnDragDataReceived(
             drop_data_->plain_text.clear();
           } else if (!drop_data_->url.is_valid()) {
             // Also set the first non-file URL as the URL content for the drop.
-            drop_data_->url = GURL(*uri_iter);
+            drop_data_->url = url;
           }
         }
         g_strfreev(uris);
