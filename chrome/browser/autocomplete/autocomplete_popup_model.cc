@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extensions_service.h"

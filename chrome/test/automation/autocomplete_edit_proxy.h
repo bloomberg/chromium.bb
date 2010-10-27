@@ -11,6 +11,7 @@
 
 #include "base/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"

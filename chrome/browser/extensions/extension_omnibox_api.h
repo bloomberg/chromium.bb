@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/string16.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 // Event router class for events related to the omnibox API.

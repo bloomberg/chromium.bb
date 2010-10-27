@@ -5,6 +5,7 @@
 #include "chrome/browser/toolbar_model.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cert_store.h"

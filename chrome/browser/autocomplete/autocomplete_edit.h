@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
 #pragma once
 
-#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_transition_types.h"
@@ -21,6 +21,7 @@ class SkBitmap;
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompleteEditView;
+class AutocompleteResult;
 
 namespace gfx {
 class Rect;

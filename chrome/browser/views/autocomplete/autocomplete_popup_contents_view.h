@@ -22,6 +22,7 @@
 
 class AutocompleteEditModel;
 class AutocompleteEditViewWin;
+struct AutocompleteMatch;
 class BubbleBorder;
 class Profile;
 

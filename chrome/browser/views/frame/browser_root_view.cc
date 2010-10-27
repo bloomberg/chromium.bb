@@ -9,6 +9,7 @@
 #include "app/os_exchange_data.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/frame/browser_view.h"

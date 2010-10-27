@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "googleurl/src/gurl.h"
 
 AutocompleteClassifier::AutocompleteClassifier(Profile* profile)

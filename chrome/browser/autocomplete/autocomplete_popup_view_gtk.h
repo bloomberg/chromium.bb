@@ -8,9 +8,11 @@
 
 #include <gtk/gtk.h>
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -18,7 +20,6 @@
 
 class AutocompleteEditModel;
 class AutocompleteEditView;
-struct AutocompleteMatch;
 class AutocompletePopupModel;
 class GtkThemeProvider;
 class Profile;
@@ -48,6 +49,17 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
                        const NotificationDetails& details);
 
  private:
+  // Be friendly for unit tests.
+  friend class AutocompletePopupViewGtkTest;
+  static void SetupLayoutForMatch(
+      PangoLayout* layout,
+      const std::wstring& text,
+      const AutocompleteMatch::ACMatchClassifications& classifications,
+      const GdkColor* base_color,
+      const GdkColor* dim_color,
+      const GdkColor* url_color,
+      const std::string& prefix_text);
+
   void Show(size_t num_results);
   void Hide();
 

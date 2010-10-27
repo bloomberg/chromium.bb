@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -192,4 +193,3 @@ int HistoryQuickProvider::CalculateRelevance(int raw_score,
       return 900 + static_cast<int>(match_number);
   }
 }
-

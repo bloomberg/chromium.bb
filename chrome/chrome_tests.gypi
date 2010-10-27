@@ -981,6 +981,7 @@
         'browser/autocomplete_history_manager_unittest.cc',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
         'browser/autocomplete/autocomplete_edit_view_mac_unittest.mm',
+        'browser/autocomplete/autocomplete_popup_view_gtk_unittest.cc',
         'browser/autocomplete/autocomplete_popup_view_mac_unittest.mm',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/history_contents_provider_unittest.cc',
@@ -1641,6 +1642,7 @@
             }],
             ['toolkit_views==1', {
               'sources!': [
+                 'browser/autocomplete/autocomplete_popup_view_gtk_unittest.cc',
                  'browser/gtk/bookmark_bar_gtk_unittest.cc',
                  'browser/gtk/bookmark_editor_gtk_unittest.cc',
                  'browser/gtk/gtk_chrome_shrinkable_hbox_unittest.cc',

@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"
