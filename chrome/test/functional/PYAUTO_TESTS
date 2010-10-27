@@ -34,6 +34,8 @@
     'find_in_page',
     # Turkish I problem. crbug.com/60638
     '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
+    # crbug.com/60953
+    '-find_in_page.FindMatchTests.testSearchWithinSpecialURL',
     'execute_javascript',
     'history',
     'imports',
