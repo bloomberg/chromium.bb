@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -566,8 +567,12 @@ void InstantLoader::Update(TabContents* tab_contents,
         return;
       }
       SendUserInputScript(preview_contents_.get(), user_text_);
-      if (complete_suggested_text_.size() > user_text_.size() &&
-          !complete_suggested_text_.compare(0, user_text_.size(), user_text_)) {
+      string16 complete_suggested_text_lower = l10n_util::ToLower(
+          complete_suggested_text_);
+      string16 user_text_lower = l10n_util::ToLower(user_text_);
+      if (complete_suggested_text_lower.size() > user_text_lower.size() &&
+          !complete_suggested_text_lower.compare(0, user_text_lower.size(),
+                                                 user_text_lower)) {
         *suggested_text = complete_suggested_text_.substr(user_text_.size());
       }
     } else {
@@ -678,8 +683,12 @@ void InstantLoader::SetCompleteSuggestedText(
   if (complete_suggested_text == complete_suggested_text_)
     return;
 
-  if (user_text_.compare(0, user_text_.size(), complete_suggested_text,
-                         0, user_text_.size())) {
+  string16 user_text_lower = l10n_util::ToLower(user_text_);
+  string16 complete_suggested_text_lower = l10n_util::ToLower(
+      complete_suggested_text);
+  if (user_text_lower.compare(0, user_text_lower.size(),
+                              complete_suggested_text_lower,
+                              0, user_text_lower.size())) {
     // The user text no longer contains the suggested text, ignore it.
     complete_suggested_text_.clear();
     delegate_->SetSuggestedTextFor(this, string16());
