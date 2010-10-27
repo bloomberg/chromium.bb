@@ -12,8 +12,7 @@ class LocaleTestsBase : public UITest {
   LocaleTestsBase() : UITest(), old_lc_all_(NULL) {
   }
 
- protected:
-  void RestoreLcAllEnvironment() {
+  virtual void TearDown() {
 #if defined(OS_LINUX)
     scoped_ptr<base::Environment> env(base::Environment::Create());
     if (old_lc_all_) {
@@ -22,8 +21,10 @@ class LocaleTestsBase : public UITest {
       env->UnSetVar("LC_ALL");
     }
 #endif
-  };
+    UITest::TearDown();
+  }
 
+ protected:
   const char* old_lc_all_;
 };
 
@@ -66,15 +67,12 @@ class LocaleTestsZhTw : public LocaleTestsBase {
 
 TEST_F(LocaleTestsDa, TestStart) {
   // Just making sure we can start/shutdown cleanly.
-  RestoreLcAllEnvironment();
 }
 
 TEST_F(LocaleTestsHe, TestStart) {
   // Just making sure we can start/shutdown cleanly.
-  RestoreLcAllEnvironment();
 }
 
 TEST_F(LocaleTestsZhTw, TestStart) {
   // Just making sure we can start/shutdown cleanly.
-  RestoreLcAllEnvironment();
 }
