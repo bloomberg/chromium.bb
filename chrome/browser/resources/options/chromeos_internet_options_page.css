@@ -76,7 +76,7 @@
 
 .network-item-text {
   -webkit-padding-start: 30px;
-  background: 0 50% no-repeat;
+  background: left center no-repeat;
   cursor: default;
   display: table-cell;
   height: 32px;
@@ -85,6 +85,11 @@
   overflow: hidden;
   vertical-align: middle;
 }
+
+html[dir='rtl'] .network-item-text {
+  background: right center no-repeat;
+}
+
 
 .network-item[connected] > * > .network-name-label {
   font-weight: bold;
