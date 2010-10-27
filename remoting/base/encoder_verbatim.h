@@ -7,6 +7,8 @@
 
 #include "remoting/base/encoder.h"
 
+#include "gfx/rect.h"
+
 namespace remoting {
 
 class UpdateStreamPacket;
@@ -15,7 +17,9 @@ class UpdateStreamPacket;
 // buffer verbatim.
 class EncoderVerbatim : public Encoder {
  public:
-  EncoderVerbatim() {}
+  EncoderVerbatim();
+  EncoderVerbatim(int packet_size);
+
   virtual ~EncoderVerbatim() {}
 
   virtual void Encode(scoped_refptr<CaptureData> capture_data,
@@ -23,12 +27,23 @@ class EncoderVerbatim : public Encoder {
                       DataAvailableCallback* data_available_callback);
 
  private:
-  // Encode a single dirty rect. Called by Encode(). Output is written
-  // to |msg|.
-  // Returns false if there is an error.
-  bool EncodeRect(int x, int y, int width, int height,
-                  const scoped_refptr<CaptureData>& capture_data,
-                  UpdateStreamPacketMessage* msg);
+  // Encode a single dirty rect.
+  void EncodeRect(const gfx::Rect& rect, size_t rect_index);
+
+  // Marks a packets as the first in a series of rectangle updates.
+  void PrepareUpdateStart(const gfx::Rect& rect,
+                          RectangleUpdatePacket* update);
+
+  // Retrieves a pointer to the output buffer in |update| used for storing the
+  // encoded rectangle data.  Will resize the buffer to |size|.
+  uint8* GetOutputBuffer(RectangleUpdatePacket* update, size_t size);
+
+  // Submit |message| to |callback_|.
+  void SubmitMessage(ChromotingHostMessage* message, size_t rect_index);
+
+  scoped_refptr<CaptureData> capture_data_;
+  scoped_ptr<DataAvailableCallback> callback_;
+  int packet_size_;
 };
 
 }  // namespace remoting
