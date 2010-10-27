@@ -101,6 +101,7 @@
         'notifier/base/fake_ssl_client_socket_unittest.cc',
         'notifier/base/xmpp_connection_unittest.cc',
         'notifier/base/weak_xmpp_client_unittest.cc',
+        'notifier/communicator/xmpp_connection_generator_unittest.cc',
         'notifier/listener/push_notifications_subscribe_task_unittest.cc',
         'notifier/listener/talk_mediator_unittest.cc',
         'notifier/listener/send_update_task_unittest.cc',

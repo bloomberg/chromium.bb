@@ -81,6 +81,14 @@ void XmppConnectionGenerator::StartGenerating() {
   UseNextConnection();
 }
 
+namespace {
+
+const char* const PROTO_NAMES[cricket::PROTO_LAST + 1] = {
+  "udp", "tcp", "ssltcp"
+};
+
+}  // namespace
+
 void XmppConnectionGenerator::UseNextConnection() {
   DCHECK(settings_list_.get());
   // Loop until we can use a connection or we run out of connections
@@ -91,7 +99,12 @@ void XmppConnectionGenerator::UseNextConnection() {
     if (settings_index_ < settings_list_->GetCount()) {
       // We have more connection settings in the settings_list_ to
       // try, kick off the next one.
-      UseCurrentConnection();
+      ConnectionSettings* settings =
+          settings_list_->GetSettings(settings_index_);
+      VLOG(1) << "*** Attempting " << PROTO_NAMES[settings->protocol()]
+              << " connection to " << settings->server().IPAsString()
+              << ":" << settings->server().port();
+      delegate_->OnNewSettings(*settings);
       return;
     }
 
@@ -167,25 +180,6 @@ void XmppConnectionGenerator::HandleServerDNSResolved(int status) {
       server_list_[server_index_].server.port(),
       server_list_[server_index_].special_port_magic,
       try_ssltcp_first_);
-}
-
-static const char* const PROTO_NAMES[cricket::PROTO_LAST + 1] = {
-  "udp", "tcp", "ssltcp"
-};
-
-static const char* ProtocolToString(cricket::ProtocolType proto) {
-  return PROTO_NAMES[proto];
-}
-
-void XmppConnectionGenerator::UseCurrentConnection() {
-  VLOG(1) << "XmppConnectionGenerator::UseCurrentConnection";
-
-  ConnectionSettings* settings = settings_list_->GetSettings(settings_index_);
-  VLOG(1) << "*** Attempting " << ProtocolToString(settings->protocol())
-          << " connection to " << settings->server().IPAsString()
-          << ":" << settings->server().port();
-
-  delegate_->OnNewSettings(*settings);
 }
 
 }  // namespace notifier

@@ -63,7 +63,6 @@ class XmppConnectionGenerator {
   void StartGenerating();
 
   void UseNextConnection();
-  void UseCurrentConnection();
 
  private:
   void OnServerDNSResolved(int status);
