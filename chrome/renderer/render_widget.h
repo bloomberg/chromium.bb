@@ -128,6 +128,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
   friend class base::RefCounted<RenderWidget>;
+  // For unit tests.
+  friend class RenderWidgetTest;
 
   RenderWidget(RenderThreadBase* render_thread,
                WebKit::WebPopupType popup_type);
