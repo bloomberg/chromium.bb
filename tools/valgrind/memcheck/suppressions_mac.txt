@@ -947,4 +947,29 @@
    fun:_ZL17cssm_DataGetFirst17cssm_dl_db_handlePK10cssm_queryPlP29cssm_db_record_attribute_dataP9cssm_dataPP21cssm_db_unique_record
    fun:CSSM_DL_DataGetFirst
 }
-
+{
+   bug_60873
+   Memcheck:Cond
+   fun:UTF8ToCString
+   fun:_Z16UTF8ToClassicHFSPKcmmmPh
+   fun:_Z14PathMakeFSSpecPKcP6FSSpecPh
+   fun:NativePathNameToFSSpec
+   fun:ConvertProfLocation
+   fun:GetProfileLocationOfSuite
+   fun:_CMGetProfileOfSuite
+   fun:CMGetProfileByAVID
+   fun:CMSCreateDisplayProfile
+   fun:create
+   fun:CMSTransformCreate
+   fun:createBase
+   fun:initialize
+   fun:createColorTransform
+   fun:CGColorTransformCreateMutable
+   fun:CGBitmapColorTransformCreate
+   fun:__CGBitmapContextDelegateCreate
+   fun:__CGBitmapContextDelegateCreate
+   fun:createBitmapContext
+   fun:CGBitmapContextCreate
+   fun:_ZN4skia12_GLOBAL__N_1L16CGContextForDataEPvii
+   fun:_ZN4skia20BitmapPlatformDevice14CreateWithDataEPhiib
+}
