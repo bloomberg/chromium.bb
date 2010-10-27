@@ -229,7 +229,13 @@ cr.define('options.internet', function() {
         }
       } else {
         // forget button
-        var button = this.createButton_('forget_button', 'forget');
+        var button = this.createButton_('forget_button',
+                                        function(e) {
+                       chrome.send('buttonClickCallback',
+                                   [String(self.data.networkType),
+                                   self.data.servicePath,
+                                   'forget']);
+                     });
         if (cr.commandLine.options['--bwsi']) {
           // no disabling of networks while bwsi.
           button.disabled = true;
