@@ -1120,3 +1120,14 @@
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
+{
+   bug_60875
+   Heapcheck:Leak
+   ...
+   fun:remoting::JingleChromotingConnection::OnInitiate
+   fun:remoting::JingleChromotingConnection::OnSessionState
+   fun:sigslot::_connection2::emit
+   fun:sigslot::signal2::operator
+   fun:cricket::BaseSession::SetState
+   fun:cricket::Session::OnInitiateMessage
+}
