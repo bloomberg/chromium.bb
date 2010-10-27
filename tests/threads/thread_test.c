@@ -474,7 +474,7 @@ void TestPthreadExit() {
 }
 
 
-void* MallocThread(void *userdata) {
+void* MallocSmallThread(void *userdata) {
   void* ptr = 0;
   int i;
   for (i = 0; i < g_num_test_loops; ++i) {
@@ -485,14 +485,15 @@ void* MallocThread(void *userdata) {
 }
 
 
-void TestMalloc() {
+void TestMallocSmall() {
   int i = 0;
   pthread_t tid[NUM_THREADS];
   TEST_FUNCTION_START;
 
   PRINT(g_verbose, ("starting threads\n"));
   for (i = 0; i < NUM_THREADS; ++i) {
-    CHECK_OK(pthread_create_check_eagain(&tid[i], NULL, MallocThread, NULL));
+    CHECK_OK(pthread_create_check_eagain(&tid[i], NULL,
+                                         MallocSmallThread, NULL));
   }
 
   PRINT(g_verbose, ("joining threads\n"));
@@ -502,6 +503,37 @@ void TestMalloc() {
     free(mem);
   }
 
+  TEST_FUNCTION_END;
+}
+
+
+/* Test large allocations and deallocations in order to cover
+   grow_heap() and shrink_heap() in glibc's malloc/arena.c. */
+void* MallocLargeThread(void *unused) {
+  void *blocks[100];
+  int i;
+  for (i = 0; i < 100; i++) {
+    blocks[i] = malloc(0x1000);
+    EXPECT_NE(blocks[i], NULL);
+  }
+  for (i = 0; i < 100; i++) {
+    free(blocks[i]);
+  }
+  return NULL;
+}
+
+void TestMallocLarge() {
+  int i = 0;
+  pthread_t tid[NUM_THREADS];
+  TEST_FUNCTION_START;
+
+  for (i = 0; i < NUM_THREADS; i++) {
+    CHECK_OK(pthread_create_check_eagain(&tid[i], NULL,
+                                         MallocLargeThread, NULL));
+  }
+  for (i = 0; i < NUM_THREADS; i++) {
+    CHECK_OK(pthread_join(tid[i], NULL));
+  }
   TEST_FUNCTION_END;
 }
 
@@ -719,7 +751,8 @@ int main(int argc, char *argv[]) {
   TestErrorCheckingMutex();
   TestTSD();
   TestPthreadExit();
-  TestMalloc();
+  TestMallocSmall();
+  TestMallocLarge();
   TestRealloc();
 
   /* We have disabled this test by default since it is flaky under VMWARE. */
