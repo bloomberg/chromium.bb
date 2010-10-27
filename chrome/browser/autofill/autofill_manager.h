@@ -139,8 +139,13 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // Methods for packing and unpacking credit card and profile IDs for sending
   // and receiving to and from the renderer process.
-  static int PackIDs(int cc_id, int profile_id);
-  static void UnpackIDs(int id, int* cc_id, int* profile_id);
+  int PackGUIDs(const std::string& cc_guid, const std::string& profile_guid);
+  void UnpackGUIDs(int id, std::string* cc_guid, std::string* profile_guid);
+
+  // Maps GUIDs to and from IDs that are used to identify profiles and credit
+  // cards sent to and from the renderer process.
+  int GUIDToID(const std::string& guid);
+  const std::string IDToGUID(int id);
 
   // The following function is meant to be called from unit-test only.
   void set_disable_download_manager_requests(bool value) {
@@ -177,10 +182,17 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Deletes itself when closed.
   AutoFillCCInfoBarDelegate* cc_infobar_;
 
+  // GUID to ID mapping.  We keep two maps to convert back and forth.
+  std::map<std::string, int> guid_id_map_;
+  std::map<int, std::string> id_guid_map_;
+
   friend class TestAutoFillManager;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressAndCreditCardForm);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillPhoneNumber);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesRemoveField);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesAddField);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

@@ -67,7 +67,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "3734 Elvis Presley Blvd.", "Apt. 10",
                                   "Memphis", "Tennessee", "38116", "USA",
                                   "12345678901", "");
-    profile->set_unique_id(1);
+    profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(profile);
     profile = new AutoFillProfile;
     autofill_test::SetProfileInfo(profile, "Work", "Charles", "Hardin",
@@ -75,12 +75,12 @@ class TestPersonalDataManager : public PersonalDataManager {
                                   "123 Apple St.", "unit 6", "Lubbock",
                                   "Texas", "79401", "USA", "23456789012",
                                   "");
-    profile->set_unique_id(2);
+    profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(profile);
     profile = new AutoFillProfile;
     autofill_test::SetProfileInfo(profile, "Empty", "", "", "", "", "", "", "",
                                   "", "", "", "", "", "");
-    profile->set_unique_id(3);
+    profile->set_guid("00000000-0000-0000-0000-000000000003");
     profiles->push_back(profile);
   }
 
@@ -89,17 +89,17 @@ class TestPersonalDataManager : public PersonalDataManager {
     autofill_test::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
                                      "4234567890123456", // Visa
                                      "04", "2012");
-    credit_card->set_unique_id(4);
+    credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_test::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
                                      "5187654321098765", // Mastercard
                                      "10", "2014");
-    credit_card->set_unique_id(5);
+    credit_card->set_guid("00000000-0000-0000-0000-000000000005");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_test::SetCreditCardInfo(credit_card, "Empty", "", "", "", "");
-    credit_card->set_unique_id(6);
+    credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(credit_card);
   }
 
@@ -864,7 +864,6 @@ TEST_F(AutoFillManagerTest, FillAddressForm) {
                                 "916 16th St.", "Apt. 6", "Lubbock",
                                 "Texas", "79401", "USA",
                                 "12345678901", "");
-  profile->set_unique_id(7);
   autofill_manager_->AddProfile(profile);
 
   FormData form;
@@ -879,7 +878,8 @@ TEST_F(AutoFillManagerTest, FillAddressForm) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, AutoFillManager::PackIDs(0, 7)));
+      kPageID, form, autofill_manager_->PackGUIDs(std::string(),
+                                                  profile->guid())));
 
   int page_id = 0;
   FormData results;
@@ -940,7 +940,9 @@ TEST_F(AutoFillManagerTest, FillCreditCardForm) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, AutoFillManager::PackIDs(4, 0)));
+      kPageID, form,
+      autofill_manager_->PackGUIDs("00000000-0000-0000-0000-000000000004",
+                                   std::string())));
 
   int page_id = 0;
   FormData results;
@@ -975,7 +977,7 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
                                 "916 16th St.", "Apt. 6", "Lubbock",
                                 "Texas", "79401", "USA",
                                 "12345678901", "");
-  profile->set_unique_id(7);
+  profile->set_guid("00000000-0000-0000-0000-000000000008");
   autofill_manager_->AddProfile(profile);
 
   FormData form;
@@ -992,7 +994,9 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
   // an IPC message back to the renderer.
   const int kPageID = 1;
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, AutoFillManager::PackIDs(0, 7)));
+      kPageID, form,
+      autofill_manager_->PackGUIDs(std::string(),
+                                   "00000000-0000-0000-0000-000000000008")));
 
   int page_id = 0;
   FormData results;
@@ -1053,7 +1057,9 @@ TEST_F(AutoFillManagerTest, FillAddressAndCreditCardForm) {
   // Now fill the credit card data.
   process()->sink().ClearMessages();
   EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
-      kPageID, form, AutoFillManager::PackIDs(4, 0)));
+      kPageID, form,
+      autofill_manager_->PackGUIDs("00000000-0000-0000-0000-000000000004",
+                                   std::string())));
 
 
   page_id = 0;
@@ -1162,10 +1168,9 @@ TEST_F(AutoFillManagerTest, FillPhoneNumber) {
     // an IPC message back to the renderer.
     int page_id = 100 - i;
     process()->sink().ClearMessages();
-    EXPECT_TRUE(
-        autofill_manager_->FillAutoFillFormData(page_id,
-                                                form,
-                                                work_profile->unique_id()));
+    EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+        page_id, form,
+        autofill_manager_->PackGUIDs(std::string(), work_profile->guid())));
     page_id = 0;
     FormData results;
     EXPECT_TRUE(GetAutoFillFormDataFilledMessage(&page_id, &results));
@@ -1221,7 +1226,10 @@ TEST_F(AutoFillManagerTest, FormChangesRemoveField) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID, form, 1));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form,
+      autofill_manager_->PackGUIDs(std::string(),
+                                   "00000000-0000-0000-0000-000000000001")));
 
   int page_id = 0;
   FormData results;
@@ -1285,7 +1293,10 @@ TEST_F(AutoFillManagerTest, FormChangesAddField) {
   // The page ID sent to the AutoFillManager from the RenderView, used to send
   // an IPC message back to the renderer.
   const int kPageID = 1;
-  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(kPageID, form, 1));
+  EXPECT_TRUE(autofill_manager_->FillAutoFillFormData(
+      kPageID, form,
+      autofill_manager_->PackGUIDs(std::string(),
+                                   "00000000-0000-0000-0000-000000000001")));
 
   int page_id = 0;
   FormData results;

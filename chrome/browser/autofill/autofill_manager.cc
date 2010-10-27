@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/select_control_handler.h"
+#include "chrome/browser/guid.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -272,17 +273,17 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
     return false;
 
   // Unpack the |unique_id| into component parts.
-  int cc_id = 0;
-  int profile_id = 0;
-  UnpackIDs(unique_id, &cc_id, &profile_id);
-  DCHECK(cc_id == 0 || profile_id == 0);
+  std::string cc_guid;
+  std::string profile_guid;
+  UnpackGUIDs(unique_id, &cc_guid, &profile_guid);
+  DCHECK(!guid::IsValidGUID(cc_guid) || !guid::IsValidGUID(profile_guid));
 
   // Find the profile that matches the |profile_id|, if one is specified.
   const AutoFillProfile* profile = NULL;
-  if (profile_id != 0) {
+  if (guid::IsValidGUID(profile_guid)) {
     for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
          iter != profiles.end(); ++iter) {
-      if ((*iter)->unique_id() == profile_id) {
+      if ((*iter)->guid() == profile_guid) {
         profile = *iter;
         break;
       }
@@ -292,10 +293,10 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
 
   // Find the credit card that matches the |cc_id|, if one is specified.
   const CreditCard* credit_card = NULL;
-  if (cc_id != 0) {
+  if (guid::IsValidGUID(cc_guid)) {
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
          iter != credit_cards.end(); ++iter) {
-      if ((*iter)->unique_id() == cc_id) {
+      if ((*iter)->guid() == cc_guid) {
         credit_card = *iter;
         break;
       }
@@ -495,7 +496,7 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
         StartsWith(profile_field_value, field.value(), false)) {
       matched_profiles.push_back(profile);
       values->push_back(profile_field_value);
-      unique_ids->push_back(PackIDs(0, profile->unique_id()));
+      unique_ids->push_back(PackGUIDs(std::string(), profile->guid()));
     }
   }
 
@@ -532,7 +533,7 @@ void AutoFillManager::GetCreditCardSuggestions(FormStructure* form,
       values->push_back(creditcard_field_value);
       labels->push_back(kCreditCardPrefix + credit_card->LastFourDigits());
       icons->push_back(credit_card->type());
-      unique_ids->push_back(PackIDs(credit_card->unique_id(), 0));
+      unique_ids->push_back(PackGUIDs(credit_card->guid(), std::string()));
     }
   }
 }
@@ -608,8 +609,11 @@ void AutoFillManager::ParseForms(
 // When sending IDs (across processes) to the renderer we pack credit card and
 // profile IDs into a single integer.  Credit card IDs are sent in the high
 // word and profile IDs are sent in the low word.
-// static
-int AutoFillManager::PackIDs(int cc_id, int profile_id) {
+int AutoFillManager::PackGUIDs(const std::string& cc_guid,
+                               const std::string& profile_guid) {
+  int cc_id = GUIDToID(cc_guid);
+  int profile_id = GUIDToID(profile_guid);
+
   DCHECK(cc_id <= std::numeric_limits<unsigned short>::max());
   DCHECK(profile_id <= std::numeric_limits<unsigned short>::max());
 
@@ -619,9 +623,42 @@ int AutoFillManager::PackIDs(int cc_id, int profile_id) {
 // When receiving IDs (across processes) from the renderer we unpack credit card
 // and profile IDs from a single integer.  Credit card IDs are stored in the
 // high word and profile IDs are stored in the low word.
-// static
-void AutoFillManager::UnpackIDs(int id, int* cc_id, int* profile_id) {
-  *cc_id = id >> std::numeric_limits<unsigned short>::digits &
+void AutoFillManager::UnpackGUIDs(int id,
+                                  std::string* cc_guid,
+                                  std::string* profile_guid) {
+  int cc_id = id >> std::numeric_limits<unsigned short>::digits &
       std::numeric_limits<unsigned short>::max();
-  *profile_id = id & std::numeric_limits<unsigned short>::max();
+  int profile_id = id & std::numeric_limits<unsigned short>::max();
+
+  *cc_guid = IDToGUID(cc_id);
+  *profile_guid = IDToGUID(profile_id);
+}
+
+int AutoFillManager::GUIDToID(const std::string& guid) {
+  static int last_id = 1;
+
+  if (!guid::IsValidGUID(guid))
+    return 0;
+
+  std::map<std::string, int>::const_iterator iter = guid_id_map_.find(guid);
+  if (iter == guid_id_map_.end()) {
+    guid_id_map_[guid] = last_id;
+    id_guid_map_[last_id] = guid;
+    return last_id++;
+  } else {
+    return iter->second;
+  }
+}
+
+const std::string AutoFillManager::IDToGUID(int id) {
+  if (id == 0)
+    return std::string();
+
+  std::map<int, std::string>::const_iterator iter = id_guid_map_.find(id);
+  if (iter == id_guid_map_.end()) {
+    NOTREACHED();
+    return std::string();
+  }
+
+  return iter->second;
 }
