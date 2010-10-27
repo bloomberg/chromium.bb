@@ -9,6 +9,8 @@
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 class ProfileSyncService;
 
@@ -49,11 +51,18 @@ class SetStoreLoginFunction : public SyncExtensionFunction {
 };
 
 class PromptBrowserLoginFunction : public AsyncExtensionFunction,
+                                   public NotificationObserver,
                                    public BrowserSignin::SigninDelegate {
  public:
+  PromptBrowserLoginFunction();
   // Implements BrowserSignin::SigninDelegate interface.
   virtual void OnLoginSuccess();
   virtual void OnLoginFailure(const GoogleServiceAuthError& error);
+
+  // Implements the NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  protected:
   virtual ~PromptBrowserLoginFunction();
@@ -62,6 +71,12 @@ class PromptBrowserLoginFunction : public AsyncExtensionFunction,
  private:
   // Creates the message for signing in.
   virtual string16 GetLoginMessage();
+
+  // Are we waiting for a token available notification?
+  bool waiting_for_token_;
+
+  // Used for listening for TokenService notifications.
+  NotificationRegistrar registrar_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.promptBrowserLogin");
 };

@@ -14,9 +14,14 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -51,6 +56,32 @@ bool IsWebStoreURL(Profile* profile, const GURL& url) {
   Extension* store = service->GetWebStoreApp();
   DCHECK(store);
   return (service->GetExtensionByWebExtent(url) == store);
+}
+
+// Helper to create a dictionary with login and token properties set from
+// the appropriate values in the passed-in |profile|.
+DictionaryValue* CreateLoginResult(Profile* profile) {
+  DictionaryValue* dictionary = new DictionaryValue();
+  std::string username = GetBrowserSignin(profile)->GetSignedInUsername();
+  dictionary->SetString(kLoginKey, username);
+  if (!username.empty()) {
+    TokenService* token_service = profile->GetTokenService();
+    if (token_service->HasTokenForService(GaiaConstants::kSyncService)) {
+      dictionary->SetString(kTokenKey,
+                            token_service->GetTokenForService(
+                                GaiaConstants::kSyncService));
+    }
+  }
+  return dictionary;
+}
+
+// If |profile| is not off the record, returns it. Otherwise returns the real
+// (not off the record) default profile.
+Profile* GetDefaultProfile(Profile* profile) {
+  if (!profile->IsOffTheRecord())
+    return profile;
+  else
+    return g_browser_process->profile_manager()->GetDefaultProfile();
 }
 
 }  // namespace
@@ -108,11 +139,7 @@ bool InstallFunction::RunImpl() {
 bool GetBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
-  std::string username = GetBrowserSignin(profile_)->GetSignedInUsername();
-  DictionaryValue* dictionary = new DictionaryValue();
-  dictionary->SetString(kLoginKey, username);
-  // TODO(asargent) - send the browser login token here too if available.
-  result_.reset(dictionary);
+  result_.reset(CreateLoginResult(GetDefaultProfile(profile_)));
   return true;
 }
 
@@ -141,12 +168,29 @@ bool SetStoreLoginFunction::RunImpl() {
   return true;
 }
 
+PromptBrowserLoginFunction::PromptBrowserLoginFunction()
+    : waiting_for_token_(false) {}
+
 PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {
 }
 
 bool PromptBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
+
+  std::string preferred_email;
+  if (args_->GetSize() > 0) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &preferred_email));
+  }
+
+  Profile* profile = GetDefaultProfile(profile_);
+
+  // The user should not already be logged in.
+  std::string username = GetBrowserSignin(profile)->GetSignedInUsername();
+  if (!username.empty()) {
+    error_ = kAlreadyLoggedInError;
+    return false;
+  }
 
   // Login can currently only be invoked tab-modal.  Since this is
   // coming from the webstore, we should always have a tab, but check
@@ -155,22 +199,21 @@ bool PromptBrowserLoginFunction::RunImpl() {
   if (!tab)
     return false;
 
-  std::string username = GetBrowserSignin(profile_)->GetSignedInUsername();
-  std::string preferred_email;
-  if (args_->GetSize() > 0) {
-    EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &preferred_email));
-    if (!username.empty()) {
-      error_ = kAlreadyLoggedInError;
-      return false;
-    }
-  }
-
   // We return the result asynchronously, so we addref to keep ourself alive.
   // Matched with a Release in OnLoginSuccess() and OnLoginFailure().
   AddRef();
 
+  // Start listening for notifications about the token.
+  TokenService* token_service = profile->GetTokenService();
+  registrar_.Add(this,
+                 NotificationType::TOKEN_AVAILABLE,
+                 Source<TokenService>(token_service));
+  registrar_.Add(this,
+                 NotificationType::TOKEN_REQUEST_FAILED,
+                 Source<TokenService>(token_service));
+
   // TODO(johnnyg): Hook up preferred_email.
-  GetBrowserSignin(profile_)->RequestSignin(tab, GetLoginMessage(), this);
+  GetBrowserSignin(profile)->RequestSignin(tab, GetLoginMessage(), this);
 
   // The response will be sent asynchronously in OnLoginSuccess/OnLoginFailure.
   return true;
@@ -194,18 +237,10 @@ string16 PromptBrowserLoginFunction::GetLoginMessage() {
 }
 
 void PromptBrowserLoginFunction::OnLoginSuccess() {
-  // TODO(asargent) - send the browser login token here too if available.
-  DictionaryValue* dictionary = new DictionaryValue();
-  std::string username = GetBrowserSignin(profile_)->GetSignedInUsername();
-  dictionary->SetString(kLoginKey, username);
-
-  result_.reset(dictionary);
-  SendResponse(true);
-
   // Ensure that apps are synced.
   // - If the user has already setup sync, we add Apps to the current types.
   // - If not, we create a new set which is just Apps.
-  ProfileSyncService* service = GetSyncService(profile_);
+  ProfileSyncService* service = GetSyncService(GetDefaultProfile(profile_));
   syncable::ModelTypeSet types;
   if (service->HasSyncSetupCompleted())
     service->GetPreferredDataTypes(&types);
@@ -213,13 +248,43 @@ void PromptBrowserLoginFunction::OnLoginSuccess() {
   service->ChangePreferredDataTypes(types);
   service->SetSyncSetupCompleted();
 
-  // Matches the AddRef in RunImpl().
-  Release();
+  // We'll finish up in Observe() when the token is ready.
+  waiting_for_token_ = true;
 }
 
 void PromptBrowserLoginFunction::OnLoginFailure(
     const GoogleServiceAuthError& error) {
   SendResponse(false);
+  // Matches the AddRef in RunImpl().
+  Release();
+}
+
+void PromptBrowserLoginFunction::Observe(NotificationType type,
+                                         const NotificationSource& source,
+                                         const NotificationDetails& details) {
+  // Make sure this notification is for the service we are interested in.
+  std::string service;
+  if (type == NotificationType::TOKEN_AVAILABLE) {
+    TokenService::TokenAvailableDetails* available =
+        Details<TokenService::TokenAvailableDetails>(details).ptr();
+    service = available->service();
+  } else if (type == NotificationType::TOKEN_REQUEST_FAILED) {
+    TokenService::TokenRequestFailedDetails* failed =
+        Details<TokenService::TokenRequestFailedDetails>(details).ptr();
+    service = failed->service();
+  } else {
+    NOTREACHED();
+  }
+
+  if (service != GaiaConstants::kSyncService) {
+    return;
+  }
+
+  DCHECK(waiting_for_token_);
+
+  result_.reset(CreateLoginResult(GetDefaultProfile(profile_)));
+  SendResponse(true);
+
   // Matches the AddRef in RunImpl().
   Release();
 }

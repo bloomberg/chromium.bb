@@ -8,8 +8,11 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
+#include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -76,6 +79,11 @@ class FakeBrowserSignin : public BrowserSignin {
       // Simulate valid login.
       username_ = username_after_login_;
       delegate->OnLoginSuccess();
+
+      // Fake a token available notification.
+      TokenService* token_service = tab_contents->profile()->GetTokenService();
+      token_service->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+                                           "new_token");
     } else {
       delegate->OnLoginFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::REQUEST_CANCELED));
@@ -117,6 +125,15 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
                     const std::string& initial_login,
                     bool login_succeeds,
                     const std::string& login_result) {
+    // Clear the token service so previous tests don't affect things.
+    TokenService* token_service = browser()->profile()->GetTokenService();
+    token_service->ResetCredentialsInMemory();
+    if (!initial_login.empty()) {
+      // Initialize the token service with an existing token.
+      token_service->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+                                           "existing_token");
+    }
+
     FakeProfileSyncService sync_service;
     FakeBrowserSignin signin(login_succeeds, initial_login, login_result);
     WebstorePrivateApi::SetTestingProfileSyncService(&sync_service);
