@@ -56,6 +56,17 @@ class TestingProfile : public Profile {
   // for testing error conditions.
   void CreateHistoryService(bool delete_file, bool no_db);
 
+  // Shuts down and nulls out the reference to HistoryService.
+  void DestroyHistoryService();
+
+  // Creates TopSites. This returns immediately, and top sites may not be
+  // loaded. Use BlockUntilTopSitesLoaded to ensure TopSites has finished
+  // loading.
+  void CreateTopSites();
+
+  // Shuts down and nulls out the reference to TopSites.
+  void DestroyTopSites();
+
   // Creates the BookmkarBarModel. If not invoked the bookmark bar model is
   // NULL. If |delete_file| is true, the bookmarks file is deleted first, then
   // the model is created. As TestingProfile deletes the directory containing
@@ -80,6 +91,10 @@ class TestingProfile : public Profile {
   // CreateBookmarkModel.
   void BlockUntilBookmarkModelLoaded();
 
+  // Blocks until TopSites finishes loading.
+  void BlockUntilTopSitesLoaded();
+
+  // Creates a TemplateURLModel. If not invoked the TemplateURLModel is NULL.
   // Creates a TemplateURLFetcher. If not invoked, the TemplateURLFetcher is
   // NULL.
   void CreateTemplateURLFetcher();
@@ -177,6 +192,9 @@ class TestingProfile : public Profile {
     return template_url_fetcher_.get();
   }
   virtual history::TopSites* GetTopSites();
+  virtual history::TopSites* GetTopSitesWithoutCreating() {
+    return top_sites_.get();
+  }
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
   virtual FileSystemHostContext* GetFileSystemHostContext() { return NULL; }
@@ -295,10 +313,6 @@ class TestingProfile : public Profile {
  private:
   // Destroys favicon service if it has been created.
   void DestroyFaviconService();
-
-  // If the history service has been created, it is destroyed. This is invoked
-  // from the destructor.
-  void DestroyHistoryService();
 
   // If the webdata service has been created, it is destroyed.  This is invoked
   // from the destructor.

@@ -162,6 +162,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       int result_count,
       int days_back);
 
+  // QueryMostVisitedURLs without the request.
+  void QueryMostVisitedURLsImpl(int result_count,
+                                int days_back,
+                                MostVisitedURLList* result);
+
   // Computes the most recent URL(s) that the given canonical URL has
   // redirected to and returns true on success. There may be more than one
   // redirect in a row, so this function will fill the given array with the

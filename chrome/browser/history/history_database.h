@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -123,8 +123,11 @@ class HistoryDatabase : public DownloadDatabase,
     return needs_version_17_migration_;
   }
 
-  // Update the database version after the TopSites migration.
-  void MigrationToTopSitesDone();
+  // Marks the database as no longer needing migration.
+  void ThumbnailMigrationDone();
+
+  // Returns true if thumbnails needs to be migrated.
+  bool GetNeedsThumbnailMigration();
 
   // Visit table functions ----------------------------------------------------
 

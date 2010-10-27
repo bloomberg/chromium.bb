@@ -127,7 +127,8 @@ HistoryService::HistoryService()
       profile_(NULL),
       backend_loaded_(false),
       bookmark_service_(NULL),
-      no_db_(false) {
+      no_db_(false),
+      needs_top_sites_migration_(false) {
   // Is NULL when running generate_profile.
   if (NotificationService::current()) {
     registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
@@ -140,7 +141,8 @@ HistoryService::HistoryService(Profile* profile)
       profile_(profile),
       backend_loaded_(false),
       bookmark_service_(NULL),
-      no_db_(false) {
+      no_db_(false),
+      needs_top_sites_migration_(false) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
 }
@@ -770,12 +772,21 @@ void HistoryService::OnDBLoaded() {
   NotificationService::current()->Notify(NotificationType::HISTORY_LOADED,
                                          Source<Profile>(profile_),
                                          Details<HistoryService>(this));
+  if (profile_ && history::TopSites::IsEnabled()) {
+    // We don't want to force creation of TopSites.
+    history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
+    if (ts)
+      ts->HistoryLoaded();
+  }
 }
 
 void HistoryService::StartTopSitesMigration() {
+  needs_top_sites_migration_ = true;
   if (history::TopSites::IsEnabled()) {
-    history::TopSites* ts = profile_->GetTopSites();
-    ts->StartMigration();
+    // We don't want to force creation of TopSites.
+    history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
+    if (ts)
+      ts->MigrateFromHistory();
   }
 }
 

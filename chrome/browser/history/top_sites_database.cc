@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/sql/connection.h"
 #include "app/sql/transaction.h"
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_types.h"
@@ -11,56 +13,85 @@
 
 namespace history {
 
-TopSitesDatabaseImpl::TopSitesDatabaseImpl() {
+static const int kVersionNumber = 1;
+
+TopSitesDatabase::TopSitesDatabase() : may_need_history_migration_(false) {
 }
 
-TopSitesDatabaseImpl::~TopSitesDatabaseImpl() {
+TopSitesDatabase::~TopSitesDatabase() {
 }
 
-bool TopSitesDatabaseImpl::Init(const FilePath& db_name) {
-  // Settings copied from ThumbnailDatabase.
-  db_.set_error_delegate(GetErrorHandlerForThumbnailDb());
-  db_.set_page_size(4096);
-  db_.set_cache_size(64);
+bool TopSitesDatabase::Init(const FilePath& db_name) {
+  bool file_existed = file_util::PathExists(db_name);
 
-  if (!db_.Open(db_name)) {
-    LOG(WARNING) << db_.GetErrorMessage();
+  if (!file_existed)
+    may_need_history_migration_ = true;
+
+  db_.reset(CreateDB(db_name));
+  if (!db_.get())
     return false;
+
+  bool does_meta_exist = sql::MetaTable::DoesTableExist(db_.get());
+  if (!does_meta_exist && file_existed) {
+    may_need_history_migration_ = true;
+
+    // If the meta file doesn't exist, this version is old. We could remove all
+    // the entries as they are no longer applicable, but it's safest to just
+    // remove the file and start over.
+    db_.reset(NULL);
+    if (!file_util::Delete(db_name, false) &&
+        !file_util::Delete(db_name, false)) {
+      // Try to delete twice. If we can't, fail.
+      LOG(ERROR) << "unable to delete old TopSites file";
+      return false;
+    }
+    db_.reset(CreateDB(db_name));
+    if (!db_.get())
+      return false;
   }
 
-  return InitThumbnailTable();
+  if (!meta_table_.Init(db_.get(), kVersionNumber, kVersionNumber))
+    return false;
+
+  if (!InitThumbnailTable())
+    return false;
+
+  // Version check.
+  if (meta_table_.GetVersionNumber() != kVersionNumber)
+    return false;
+
+  return true;
 }
 
-bool TopSitesDatabaseImpl::InitThumbnailTable() {
-  if (!db_.DoesTableExist("thumbnails")) {
-    if (!db_.Execute("CREATE TABLE thumbnails ("
-                     "url LONGVARCHAR PRIMARY KEY,"
-                     "url_rank INTEGER ,"
-                     "title LONGVARCHAR,"
-                     "thumbnail BLOB,"
-                     "redirects LONGVARCHAR,"
-                     "boring_score DOUBLE DEFAULT 1.0, "
-                     "good_clipping INTEGER DEFAULT 0, "
-                     "at_top INTEGER DEFAULT 0, "
-                     "last_updated INTEGER DEFAULT 0) ")) {
-      LOG(WARNING) << db_.GetErrorMessage();
+bool TopSitesDatabase::InitThumbnailTable() {
+  if (!db_->DoesTableExist("thumbnails")) {
+    if (!db_->Execute("CREATE TABLE thumbnails ("
+                      "url LONGVARCHAR PRIMARY KEY,"
+                      "url_rank INTEGER ,"
+                      "title LONGVARCHAR,"
+                      "thumbnail BLOB,"
+                      "redirects LONGVARCHAR,"
+                      "boring_score DOUBLE DEFAULT 1.0, "
+                      "good_clipping INTEGER DEFAULT 0, "
+                      "at_top INTEGER DEFAULT 0, "
+                      "last_updated INTEGER DEFAULT 0) ")) {
+      LOG(WARNING) << db_->GetErrorMessage();
       return false;
     }
   }
   return true;
 }
 
-void TopSitesDatabaseImpl::GetPageThumbnails(MostVisitedURLList* urls,
-                                             std::map<GURL,
-                                             Images>* thumbnails) {
-  sql::Statement statement(db_.GetCachedStatement(
+void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
+                                             URLToImagesMap* thumbnails) {
+  sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT url, url_rank, title, thumbnail, redirects, "
       "boring_score, good_clipping, at_top, last_updated "
       "FROM thumbnails ORDER BY url_rank "));
 
   if (!statement) {
-    LOG(WARNING) << db_.GetErrorMessage();
+    LOG(WARNING) << db_->GetErrorMessage();
     return;
   }
 
@@ -92,7 +123,7 @@ void TopSitesDatabaseImpl::GetPageThumbnails(MostVisitedURLList* urls,
 }
 
 // static
-std::string TopSitesDatabaseImpl::GetRedirects(const MostVisitedURL& url) {
+std::string TopSitesDatabase::GetRedirects(const MostVisitedURL& url) {
   std::vector<std::string> redirects;
   for (size_t i = 0; i < url.redirects.size(); i++)
     redirects.push_back(url.redirects[i].spec());
@@ -100,7 +131,7 @@ std::string TopSitesDatabaseImpl::GetRedirects(const MostVisitedURL& url) {
 }
 
 // static
-void TopSitesDatabaseImpl::SetRedirects(const std::string& redirects,
+void TopSitesDatabase::SetRedirects(const std::string& redirects,
                                         MostVisitedURL* url) {
   std::vector<std::string> redirects_vector;
   SplitStringAlongWhitespace(redirects, &redirects_vector);
@@ -108,10 +139,10 @@ void TopSitesDatabaseImpl::SetRedirects(const std::string& redirects,
     url->redirects.push_back(GURL(redirects_vector[i]));
 }
 
-void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
+void TopSitesDatabase::SetPageThumbnail(const MostVisitedURL& url,
                                             int new_rank,
                                             const Images& thumbnail) {
-  sql::Transaction transaction(&db_);
+  sql::Transaction transaction(db_.get());
   transaction.Begin();
 
   int rank = GetURLRank(url);
@@ -125,9 +156,9 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
   transaction.Commit();
 }
 
-void TopSitesDatabaseImpl::UpdatePageThumbnail(
+void TopSitesDatabase::UpdatePageThumbnail(
     const MostVisitedURL& url, const Images& thumbnail) {
-  sql::Statement statement(db_.GetCachedStatement(
+  sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE thumbnails SET "
       "title = ?, thumbnail = ?, redirects = ?, "
@@ -149,15 +180,15 @@ void TopSitesDatabaseImpl::UpdatePageThumbnail(
   statement.BindInt64(6, score.time_at_snapshot.ToInternalValue());
   statement.BindString(7, url.url.spec());
   if (!statement.Run())
-    NOTREACHED() << db_.GetErrorMessage();
+    NOTREACHED() << db_->GetErrorMessage();
 }
 
-void TopSitesDatabaseImpl::AddPageThumbnail(const MostVisitedURL& url,
+void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
                                             int new_rank,
                                             const Images& thumbnail) {
   int count = GetRowCount();
 
-  sql::Statement statement(db_.GetCachedStatement(
+  sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT OR REPLACE INTO thumbnails "
       "(url, url_rank, title, thumbnail, redirects, "
@@ -180,21 +211,21 @@ void TopSitesDatabaseImpl::AddPageThumbnail(const MostVisitedURL& url,
   statement.BindBool(7, score.at_top);
   statement.BindInt64(8, score.time_at_snapshot.ToInternalValue());
   if (!statement.Run())
-    NOTREACHED() << db_.GetErrorMessage();
+    NOTREACHED() << db_->GetErrorMessage();
 
   UpdatePageRankNoTransaction(url, new_rank);
 }
 
-void TopSitesDatabaseImpl::UpdatePageRank(const MostVisitedURL& url,
+void TopSitesDatabase::UpdatePageRank(const MostVisitedURL& url,
                                           int new_rank) {
-  sql::Transaction transaction(&db_);
+  sql::Transaction transaction(db_.get());
   transaction.Begin();
   UpdatePageRankNoTransaction(url, new_rank);
   transaction.Commit();
 }
 
 // Caller should have a transaction open.
-void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
+void TopSitesDatabase::UpdatePageRankNoTransaction(
     const MostVisitedURL& url, int new_rank) {
   int prev_rank = GetURLRank(url);
   if (prev_rank == -1) {
@@ -205,7 +236,7 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
   // Shift the ranks.
   if (prev_rank > new_rank) {
     // Shift up
-    sql::Statement shift_statement(db_.GetCachedStatement(
+    sql::Statement shift_statement(db_->GetCachedStatement(
         SQL_FROM_HERE,
         "UPDATE thumbnails "
         "SET url_rank = url_rank + 1 "
@@ -216,7 +247,7 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
       shift_statement.Run();
   } else if (prev_rank < new_rank) {
     // Shift down
-    sql::Statement shift_statement(db_.GetCachedStatement(
+    sql::Statement shift_statement(db_->GetCachedStatement(
         SQL_FROM_HERE,
         "UPDATE thumbnails "
         "SET url_rank = url_rank - 1 "
@@ -228,7 +259,7 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
   }
 
   // Set the url's rank.
-  sql::Statement set_statement(db_.GetCachedStatement(
+  sql::Statement set_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE thumbnails "
       "SET url_rank = ? "
@@ -239,15 +270,15 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
     set_statement.Run();
 }
 
-bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
+bool TopSitesDatabase::GetPageThumbnail(const GURL& url,
                                             Images* thumbnail) {
-  sql::Statement statement(db_.GetCachedStatement(
+  sql::Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT thumbnail, boring_score, good_clipping, at_top, last_updated "
       "FROM thumbnails WHERE url=?"));
 
   if (!statement) {
-    LOG(WARNING) << db_.GetErrorMessage();
+    LOG(WARNING) << db_->GetErrorMessage();
     return false;
   }
 
@@ -266,13 +297,13 @@ bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
   return true;
 }
 
-int TopSitesDatabaseImpl::GetRowCount() {
+int TopSitesDatabase::GetRowCount() {
   int result = 0;
-  sql::Statement select_statement(db_.GetCachedStatement(
+  sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT COUNT (url) FROM thumbnails"));
   if (!select_statement) {
-    LOG(WARNING) << db_.GetErrorMessage();
+    LOG(WARNING) << db_->GetErrorMessage();
     return result;
   }
 
@@ -282,14 +313,14 @@ int TopSitesDatabaseImpl::GetRowCount() {
   return result;
 }
 
-int TopSitesDatabaseImpl::GetURLRank(const MostVisitedURL& url) {
+int TopSitesDatabase::GetURLRank(const MostVisitedURL& url) {
   int result = -1;
-  sql::Statement select_statement(db_.GetCachedStatement(
+  sql::Statement select_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT url_rank "
       "FROM thumbnails WHERE url=?"));
   if (!select_statement) {
-    LOG(WARNING) << db_.GetErrorMessage();
+    LOG(WARNING) << db_->GetErrorMessage();
     return result;
   }
 
@@ -301,15 +332,15 @@ int TopSitesDatabaseImpl::GetURLRank(const MostVisitedURL& url) {
 }
 
 // Remove the record for this URL. Returns true iff removed successfully.
-bool TopSitesDatabaseImpl::RemoveURL(const MostVisitedURL& url) {
+bool TopSitesDatabase::RemoveURL(const MostVisitedURL& url) {
   int old_rank = GetURLRank(url);
   if (old_rank < 0)
     return false;
 
-  sql::Transaction transaction(&db_);
+  sql::Transaction transaction(db_.get());
   transaction.Begin();
   // Decrement all following ranks.
-  sql::Statement shift_statement(db_.GetCachedStatement(
+  sql::Statement shift_statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE thumbnails "
       "SET url_rank = url_rank - 1 "
@@ -320,14 +351,29 @@ bool TopSitesDatabaseImpl::RemoveURL(const MostVisitedURL& url) {
   shift_statement.Run();
 
   sql::Statement delete_statement(
-      db_.GetCachedStatement(SQL_FROM_HERE,
-                             "DELETE FROM thumbnails WHERE url = ?"));
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "DELETE FROM thumbnails WHERE url = ?"));
   if (!delete_statement)
     return false;
   delete_statement.BindString(0, url.url.spec());
   delete_statement.Run();
 
   return transaction.Commit();
+}
+
+sql::Connection* TopSitesDatabase::CreateDB(const FilePath& db_name) {
+  scoped_ptr<sql::Connection> db(new sql::Connection());
+  // Settings copied from ThumbnailDatabase.
+  db->set_error_delegate(GetErrorHandlerForThumbnailDb());
+  db->set_page_size(4096);
+  db->set_cache_size(64);
+
+  if (!db->Open(db_name)) {
+    LOG(ERROR) << db->GetErrorMessage();
+    return NULL;
+  }
+
+  return db.release();
 }
 
 }  // namespace history

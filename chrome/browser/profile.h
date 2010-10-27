@@ -174,6 +174,9 @@ class Profile {
   // for this profile.
   virtual history::TopSites* GetTopSites() = 0;
 
+  // Variant of GetTopSites that doesn't force creation.
+  virtual history::TopSites* GetTopSitesWithoutCreating() = 0;
+
   // Retrieves a pointer to the VisitedLinkMaster associated with this
   // profile.  The VisitedLinkMaster is lazily created the first time
   // that this method is called.

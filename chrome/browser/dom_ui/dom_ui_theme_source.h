@@ -13,8 +13,6 @@
 class Profile;
 class RefCountedBytes;
 
-// ThumbnailSource is the gateway between network-level chrome:
-// requests for thumbnails and the history backend that serves these.
 class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
  public:
   explicit DOMUIThemeSource(Profile* profile);

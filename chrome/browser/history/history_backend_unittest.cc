@@ -139,7 +139,8 @@ class HistoryBackendTest : public testing::Test {
     backend_->Init(std::string(), false);
   }
   virtual void TearDown() {
-    backend_->Closing();
+    if (backend_.get())
+      backend_->Closing();
     backend_ = NULL;
     mem_backend_.reset();
     file_util::Delete(test_dir_, true);
@@ -792,6 +793,8 @@ TEST_F(HistoryBackendTest, RemoveVisitsSource) {
 // Test for migration of adding visit_source table.
 TEST_F(HistoryBackendTest, MigrationVisitSource) {
   ASSERT_TRUE(backend_.get());
+  backend_->Closing();
+  backend_ = NULL;
 
   FilePath old_history_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &old_history_path));
@@ -806,11 +809,12 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
   ASSERT_TRUE(file_util::CopyFile(old_history_path, new_history_file));
 
-  backend_->Closing();
   backend_ = new HistoryBackend(new_history_path,
                                 new HistoryBackendTestDelegate(this),
                                 &bookmark_model_);
   backend_->Init(std::string(), false);
+  backend_->Closing();
+  backend_ = NULL;
 
   // Now the database should already be migrated.
   // Check version first.

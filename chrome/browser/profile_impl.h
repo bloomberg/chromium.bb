@@ -48,6 +48,7 @@ class ProfileImpl : public Profile,
   virtual ChromeAppCacheService* GetAppCacheService();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual history::TopSites* GetTopSites();
+  virtual history::TopSites* GetTopSitesWithoutCreating();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();

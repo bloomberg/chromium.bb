@@ -514,7 +514,7 @@ ProfileImpl::~ProfileImpl() {
     web_data_service_->Shutdown();
 
   if (top_sites_.get())
-    top_sites_->ClearProfile();
+    top_sites_->Shutdown();
 
   if (history_service_.get())
     history_service_->Cleanup();
@@ -1124,6 +1124,10 @@ history::TopSites* ProfileImpl::GetTopSites() {
     top_sites_ = new history::TopSites(this);
     top_sites_->Init(GetPath().Append(chrome::kTopSitesFilename));
   }
+  return top_sites_;
+}
+
+history::TopSites* ProfileImpl::GetTopSitesWithoutCreating() {
   return top_sites_;
 }
 

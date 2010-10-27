@@ -491,6 +491,10 @@ class OffTheRecordProfileImpl : public Profile,
     return webkit_context_.get();
   }
 
+  virtual history::TopSites* GetTopSitesWithoutCreating() {
+    return NULL;
+  }
+
   virtual history::TopSites* GetTopSites() {
     return NULL;
   }

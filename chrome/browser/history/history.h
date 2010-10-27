@@ -118,6 +118,9 @@ class HistoryService : public CancelableRequestProvider,
   // it's finished loading.
   bool BackendLoaded();
 
+  // Returns true if the backend has finished loading.
+  bool backend_loaded() const { return backend_loaded_; }
+
   // Unloads the backend without actually shutting down the history service.
   // This can be used to temporarily reduce the browser process' memory
   // footprint.
@@ -515,6 +518,10 @@ class HistoryService : public CancelableRequestProvider,
   virtual Handle ScheduleDBTask(HistoryDBTask* task,
                                 CancelableRequestConsumerBase* consumer);
 
+  // Returns true if top sites needs to be migrated out of history into its own
+  // db.
+  bool needs_top_sites_migration() const { return needs_top_sites_migration_; }
+
   // Testing -------------------------------------------------------------------
 
   // Designed for unit tests, this passes the given task on to the history
@@ -846,6 +853,9 @@ class HistoryService : public CancelableRequestProvider,
   FilePath history_dir_;
   BookmarkService* bookmark_service_;
   bool no_db_;
+
+  // True if needs top site migration.
+  bool needs_top_sites_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
