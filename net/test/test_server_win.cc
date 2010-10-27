@@ -149,11 +149,24 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
-  char buf[8];
-  DWORD bytes_read;
-  BOOL result = ReadFile(child_fd_, buf, sizeof(buf), &bytes_read, NULL);
+  uint16 port;
+  uint8* buffer = reinterpret_cast<uint8*>(&port);
+  DWORD bytes_read = 0;
+  DWORD bytes_max = sizeof(port);
+  while (bytes_read < bytes_max) {
+    DWORD num_bytes;
+    if (!ReadFile(child_fd_, buffer + bytes_read, bytes_max - bytes_read,
+                  &num_bytes, NULL))
+      break;
+    if (num_bytes <= 0)
+      break;
+    bytes_read += num_bytes;
+  }
   child_fd_.Close();
-  return result && bytes_read > 0;
+  if (bytes_read < bytes_max)
+    return false;
+  host_port_pair_.set_port(port);
+  return true;
 }
 
 bool TestServer::CheckCATrusted() {
