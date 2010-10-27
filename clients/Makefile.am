@@ -3,8 +3,9 @@ noinst_LTLIBRARIES = libtoytoolkit.la
 
 INCLUDES = -I$(top_srcdir)/wayland $(CLIENT_CFLAGS) $(POPPLER_CFLAGS)
 
-LDADD = $(top_builddir)/wayland/libwayland-client.la	\
-	libtoytoolkit.la $(CLIENT_LIBS) -lrt -lm
+LDADD = libtoytoolkit.la				\
+	$(top_builddir)/wayland/libwayland-client.la	\
+	$(CLIENT_LIBS) -lrt -lm
 
 AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 
