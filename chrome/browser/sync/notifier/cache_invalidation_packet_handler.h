@@ -12,7 +12,10 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/non_thread_safe.h"
 #include "base/scoped_callback_factory.h"
+#include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "talk/xmpp/jid.h"
 
@@ -26,8 +29,6 @@ class Task;
 }  // namespace
 
 namespace sync_notifier {
-
-// TODO(akalin): Add a NonThreadSafe member to this class and use it.
 
 class CacheInvalidationPacketHandler {
  public:
@@ -50,8 +51,11 @@ class CacheInvalidationPacketHandler {
 
   void HandleInboundPacket(const std::string& packet);
 
+  NonThreadSafe non_thread_safe_;
   base::ScopedCallbackFactory<CacheInvalidationPacketHandler>
       scoped_callback_factory_;
+  scoped_ptr<CallbackRunner<Tuple1<invalidation::NetworkEndpoint* const&> > >
+      handle_outbound_packet_callback_;
 
   base::WeakPtr<talk_base::Task> base_task_;
   invalidation::InvalidationClient* invalidation_client_;

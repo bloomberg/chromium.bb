@@ -2500,6 +2500,7 @@
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/engine/verify_updates_command_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
+        'browser/sync/notifier/cache_invalidation_packet_handler_unittest.cc',
         'browser/sync/notifier/chrome_system_resources_unittest.cc',
         'browser/sync/notifier/registration_manager_unittest.cc',
         'browser/sync/profile_sync_factory_mock.cc',

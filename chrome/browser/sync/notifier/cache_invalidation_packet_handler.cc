@@ -198,6 +198,9 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
     base::WeakPtr<talk_base::Task> base_task,
     invalidation::InvalidationClient* invalidation_client)
     : scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      handle_outbound_packet_callback_(
+          scoped_callback_factory_.NewCallback(
+              &CacheInvalidationPacketHandler::HandleOutboundPacket)),
       base_task_(base_task),
       invalidation_client_(invalidation_client),
       seq_(0),
@@ -208,9 +211,8 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
       invalidation_client_->network_endpoint();
   CHECK(network_endpoint);
   network_endpoint->RegisterOutboundListener(
-      scoped_callback_factory_.NewCallback(
-          &CacheInvalidationPacketHandler::HandleOutboundPacket));
-  // Owned by base_task.
+      handle_outbound_packet_callback_.get());
+  // Owned by base_task.  Takes ownership of the callback.
   CacheInvalidationListenTask* listen_task =
       new CacheInvalidationListenTask(
           base_task_, scoped_callback_factory_.NewCallback(
@@ -219,6 +221,7 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
 }
 
 CacheInvalidationPacketHandler::~CacheInvalidationPacketHandler() {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   invalidation::NetworkEndpoint* network_endpoint =
       invalidation_client_->network_endpoint();
   CHECK(network_endpoint);
@@ -227,6 +230,7 @@ CacheInvalidationPacketHandler::~CacheInvalidationPacketHandler() {
 
 void CacheInvalidationPacketHandler::HandleOutboundPacket(
     invalidation::NetworkEndpoint* const& network_endpoint) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   if (!base_task_.get()) {
     return;
   }
@@ -251,6 +255,7 @@ void CacheInvalidationPacketHandler::HandleOutboundPacket(
 
 void CacheInvalidationPacketHandler::HandleInboundPacket(
     const std::string& packet) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
   invalidation::NetworkEndpoint* network_endpoint =
       invalidation_client_->network_endpoint();
   std::string decoded_message;
