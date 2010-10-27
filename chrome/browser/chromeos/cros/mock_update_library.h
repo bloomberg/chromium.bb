@@ -21,7 +21,7 @@ class MockUpdateLibrary : public UpdateLibrary {
   MOCK_METHOD0(CheckForUpdate, bool(void));
   MOCK_METHOD0(RebootAfterUpdate, bool(void));
   MOCK_METHOD1(SetReleaseTrack, bool(const std::string&));
-  MOCK_METHOD1(GetReleaseTrack, std::string());
+  MOCK_METHOD0(GetReleaseTrack, std::string());
   MOCK_CONST_METHOD0(status, const Status&(void));
 
  private:
