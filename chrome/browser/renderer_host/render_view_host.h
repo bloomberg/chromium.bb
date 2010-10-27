@@ -524,7 +524,7 @@ class RenderViewHost : public RenderWidgetHost {
   virtual void OnUserGesture();
   virtual void NotifyRendererUnresponsive();
   virtual void NotifyRendererResponsive();
-  virtual void OnMsgFocusedNodeChanged();
+  virtual void OnMsgFocusedNodeChanged(bool is_editable_node);
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
 

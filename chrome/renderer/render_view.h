@@ -881,6 +881,7 @@ class RenderView : public RenderWidget,
   void OnSetDOMUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   void OnSetInitialFocus(bool reverse);
+  void OnScrollFocusedEditableNodeIntoView();
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnSetupDevToolsClient();

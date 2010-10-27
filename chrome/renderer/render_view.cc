@@ -109,6 +109,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
@@ -203,6 +204,7 @@ using WebKit::WebDragData;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
+using WebKit::WebElement;
 using WebKit::WebExternalPopupMenu;
 using WebKit::WebExternalPopupMenuClient;
 using WebKit::WebFileChooserCompletion;
@@ -405,6 +407,21 @@ static std::string DetermineTextLanguage(const string16& text) {
     language = LanguageCodeWithDialects(cld_language);
   }
   return language;
+}
+
+// Returns true if the parameter node is a textfield, text area or a content
+// editable div.
+static bool IsEditableNode(const WebNode& node) {
+  bool is_editable_node = false;
+  if (!node.isNull()) {
+    if (node.isContentEditable()) {
+      is_editable_node = true;
+    } else if (node.isElementNode()) {
+      is_editable_node =
+          node.toConst<WebElement>().isTextFormControlElement();
+    }
+  }
+  return is_editable_node;
 }
 
 static bool WebAccessibilityNotificationToViewHostMsg(
@@ -785,6 +802,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DragSourceSystemDragEnded,
                         OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
+    IPC_MESSAGE_HANDLER(ViewMsg_ScrollFocusedEditableNodeIntoView,
+                        OnScrollFocusedEditableNodeIntoView)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
@@ -1356,6 +1375,22 @@ void RenderView::OnSetInitialFocus(bool reverse) {
   if (!webview())
     return;
   webview()->setInitialFocus(reverse);
+}
+
+void RenderView::OnScrollFocusedEditableNodeIntoView() {
+  if (!webview())
+    return;
+  WebFrame* focused_frame = webview()->focusedFrame();
+  if (focused_frame) {
+    WebDocument doc = focused_frame->document();
+    if (!doc.isNull()) {
+      WebNode node = doc.focusedNode();
+      if (IsEditableNode(node))
+        // TODO(varunjain): Change webkit API to scroll a particular node into
+        // view and use that API here instead.
+        webview()->scrollFocusedNodeIntoView();
+    }
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2311,7 +2346,7 @@ void RenderView::focusPrevious() {
 }
 
 void RenderView::focusedNodeChanged(const WebNode& node) {
-  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_));
+  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node)));
 
   if (WebAccessibilityCache::accessibilityEnabled() && node.isNull()) {
     // TODO(ctguil): Make WebKit send this notification.

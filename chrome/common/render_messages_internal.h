@@ -248,6 +248,11 @@ IPC_BEGIN_MESSAGES(View)
   // node.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus, bool /* reverse */)
 
+  // Tells the renderer to scroll the currently focused node into view only if
+  // the currently focused node is a Text node (textfield, text area or content
+  // editable divs).
+  IPC_MESSAGE_ROUTED0(ViewMsg_ScrollFocusedEditableNodeIntoView)
+
   // Tells the renderer to perform the specified navigation, interrupting any
   // existing navigation.
   IPC_MESSAGE_ROUTED1(ViewMsg_Navigate, ViewMsg_Navigate_Params)
@@ -1318,7 +1323,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
   IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_FocusedNodeChanged)
+
+  // Message sent from renderer to the browser when focus changes inside the
+  // webpage. The parameter says whether the newly focused element needs
+  // keyboard input (true for textfields, text areas and content editable divs).
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_FocusedNodeChanged,
+      bool /* is_editable_node */)
 
   // Returns the window location of the given window.
   // TODO(shess): Provide a mapping from reply_msg->routing_id() to
