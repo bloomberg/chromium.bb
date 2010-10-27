@@ -54,6 +54,7 @@ const NPUTF8* ChromeFrameNPAPI::plugin_property_identifier_names_[] = {
   "readystate",
   "onprivatemessage",
   "usechromenetwork",
+  "onclose",
 };
 
 const NPUTF8* ChromeFrameNPAPI::plugin_method_identifier_names_[] = {
@@ -97,6 +98,8 @@ static const char kPluginOnloadAttribute[] = "onload";
 static const char kPluginOnErrorAttribute[] = "onloaderror";
 static const char kPluginOnMessageAttribute[] = "onmessage";
 static const char kPluginOnPrivateMessageAttribute[] = "onprivatemessage";
+static const char kPluginOnCloseAttribute[] = "onclose";
+
 // These properties can only be set in arguments at control instantiation.
 // When the privileged_mode property is provided and set to true, the control
 // will probe for whether its hosting document has the system principal, in
@@ -197,6 +200,8 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
       onerror_handler_ = JavascriptToNPObject(argv[i]);
     } else if (LowerCaseEqualsASCII(argn[i], kPluginOnMessageAttribute)) {
       onmessage_handler_ = JavascriptToNPObject(argv[i]);
+    } else if (LowerCaseEqualsASCII(argn[i], kPluginOnCloseAttribute)) {
+      onclose_handler_ = JavascriptToNPObject(argv[i]);
     } else if (LowerCaseEqualsASCII(argn[i],
                                    kPluginPrivilegedModeAttribute)) {
       // Test for the FireFox privileged mode if the user requests it
@@ -300,6 +305,7 @@ void ChromeFrameNPAPI::Uninitialize() {
   onerror_handler_.Free();
   onmessage_handler_.Free();
   onprivatemessage_handler_.Free();
+  onclose_handler_.Free();
 
   Base::Uninitialize();
 }
@@ -641,6 +647,12 @@ bool ChromeFrameNPAPI::GetProperty(NPIdentifier name,
         return true;
       }
     }
+  } else if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_ONCLOSE]) {
+    if (onclose_handler_) {
+      variant->type = NPVariantType_Object;
+      variant->value.objectValue = onclose_handler_.Copy();
+      return true;
+    }
   } else if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_SRC]) {
     AllocateStringVariant(src_, variant);
     return true;
@@ -698,6 +710,10 @@ bool ChromeFrameNPAPI::SetProperty(NPIdentifier name,
         onprivatemessage_handler_ = variant->value.objectValue;
         return true;
       }
+    } else if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_ONCLOSE]) {
+      onclose_handler_.Free();
+      onclose_handler_ = variant->value.objectValue;
+      return true;
     }
   } else if (NPVARIANT_IS_STRING(*variant) || NPVARIANT_IS_NULL(*variant)) {
     if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_SRC]) {
@@ -871,6 +887,13 @@ void ChromeFrameNPAPI::OnAutomationServerLaunchFailed(
     THREAD_SAFE_UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }
+}
+
+void ChromeFrameNPAPI::OnCloseTab(int tab_handle) {
+  std::string arg;
+  FireEvent("close", arg);
+  ScopedNpVariant result;
+  InvokeDefault(onclose_handler_, arg, &result);
 }
 
 bool ChromeFrameNPAPI::InvokeDefault(NPObject* object,

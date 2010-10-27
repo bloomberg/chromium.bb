@@ -683,6 +683,10 @@ void ChromeActiveDocument::OnDidNavigate(int tab_handle,
 }
 
 void ChromeActiveDocument::OnCloseTab(int tab_handle) {
+  // Base class will fire DIChromeFrameEvents::onclose.
+  BaseActiveX::OnCloseTab(tab_handle);
+
+  // Close the container window.
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
   if (web_browser2)

@@ -1018,6 +1018,17 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRConditionalHeaderTest) {
   SimpleBrowserTest(IE, kXHRConditionalHeaderTestUrl);
 }
 
+const wchar_t kWindowCloseTestUrl[] =
+    L"window_close.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowClose) {
+  SimpleBrowserTest(IE, kWindowCloseTestUrl);
+}
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeFF_WindowClose) {
+  SimpleBrowserTest(FIREFOX, kWindowCloseTestUrl);
+}
+
 std::string GetHeaderValue(const std::string& headers,
                            const char* header_name) {
   net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(),

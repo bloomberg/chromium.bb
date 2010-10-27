@@ -140,6 +140,10 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
   void Fire_onchannelerror() {  // NOLINT
     FireMethodWithParams(CF_EVENT_DISPID_ONCHANNELERROR, NULL, 0);
   }
+
+  void Fire_onclose() {  // NOLINT
+    FireMethodWithParams(CF_EVENT_DISPID_ONCLOSE, NULL, 0);
+  }
 };
 
 extern bool g_first_launch_by_process_;
@@ -337,7 +341,6 @@ END_MSG_MAP()
     return S_OK;
   }
 
-
   // Used to setup the document_url_ member needed for completing navigation.
   // Create external tab (possibly in incognito mode).
   HRESULT IOleObject_SetClientSite(IOleClientSite* client_site) {
@@ -414,7 +417,6 @@ END_MSG_MAP()
     }
     DVLOG(1) << __FUNCTION__ << ": " << profile_path->value();
   }
-
 
   void OnLoad(int tab_handle, const GURL& url) {
     if (ready_state_ < READYSTATE_COMPLETE) {
@@ -565,6 +567,10 @@ END_MSG_MAP()
 
     ready_state_ = READYSTATE_UNINITIALIZED;
     FireOnChanged(DISPID_READYSTATE);
+  }
+
+  virtual void OnCloseTab(int tab_handle) {
+    Fire_onclose();
   }
 
   // Overridden to take advantage of readystate prop changes and send those

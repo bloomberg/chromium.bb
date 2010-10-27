@@ -118,6 +118,7 @@ typedef enum {
   CF_EVENT_DISPID_ONEXTENSIONREADY,
   CF_EVENT_DISPID_ONGETENABLEDEXTENSIONSCOMPLETE,
   CF_EVENT_DISPID_ONCHANNELERROR,
+  CF_EVENT_DISPID_ONCLOSE,
   CF_EVENT_DISPID_ONREADYSTATECHANGED = DISPID_READYSTATECHANGE,
 } ChromeFrameEventDispId;
 
@@ -166,6 +167,12 @@ library ChromeTabLib {
     // This event is fired when there is an error in communication channel with
     // Chrome and Automation must be reconnected to continue.
     void onchannelerror();
+
+    [id(CF_EVENT_DISPID_ONCLOSE)]
+    // This event is fired when the script inside the page wants to close it.
+    // This is just a notification, there is no way to prevent the script from
+    // closing.
+    void onclose();
   };
 
   [uuid(BB1176EE-20DD-41DC-9D1E-AC1335C7BBB0)]
