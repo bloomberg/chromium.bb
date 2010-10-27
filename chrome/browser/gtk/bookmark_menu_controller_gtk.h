@@ -68,12 +68,11 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   void NavigateToMenuItem(GtkWidget* menu_item,
                           WindowOpenDisposition disposition);
 
-  // Button press and release events for a GtkMenu and GtkMenuItem,
-  // respectively. We have to override these separate from OnMenuItemActivated
-  // because we need to handle right clicks and opening bookmarks with
-  // different dispositions.
-  CHROMEGTK_CALLBACK_1(BookmarkMenuController, gboolean, OnButtonPressed,
-                       GdkEventButton*);
+  // Button press and release events for a GtkMenu.
+  CHROMEGTK_CALLBACK_1(BookmarkMenuController, gboolean,
+                       OnMenuButtonPressedOrReleased, GdkEventButton*);
+
+  // Button release event for a GtkMenuItem.
   CHROMEGTK_CALLBACK_1(BookmarkMenuController, gboolean, OnButtonReleased,
                        GdkEventButton*);
 

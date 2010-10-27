@@ -140,7 +140,9 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
          start_child_index < parent->GetChildCount());
 
   g_signal_connect(menu, "button-press-event",
-                   G_CALLBACK(OnButtonPressedThunk), this);
+                   G_CALLBACK(OnMenuButtonPressedOrReleasedThunk), this);
+  g_signal_connect(menu, "button-release-event",
+                   G_CALLBACK(OnMenuButtonPressedOrReleasedThunk), this);
 
   for (int i = start_child_index; i < parent->GetChildCount(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
@@ -203,18 +205,22 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
   }
 }
 
-gboolean BookmarkMenuController::OnButtonPressed(
+gboolean BookmarkMenuController::OnMenuButtonPressedOrReleased(
     GtkWidget* sender,
     GdkEventButton* event) {
-  if (event->button == 1)
+  // Handle middle mouse downs and right mouse ups.
+  if (!((event->button == 2 && event->type == GDK_BUTTON_RELEASE) ||
+      (event->button == 3 && event->type == GDK_BUTTON_PRESS))) {
     return FALSE;
+  }
 
   ignore_button_release_ = false;
   GtkMenuShell* menu_shell = GTK_MENU_SHELL(sender);
   // If the cursor is outside our bounds, pass this event up to the parent.
   if (!gtk_util::WidgetContainsCursor(sender)) {
     if (menu_shell->parent_menu_shell) {
-      return OnButtonPressed(menu_shell->parent_menu_shell, event);
+      return OnMenuButtonPressedOrReleased(menu_shell->parent_menu_shell,
+                                           event);
     } else {
       // We are the top level menu; we can propagate no further.
       return FALSE;
@@ -235,7 +241,7 @@ gboolean BookmarkMenuController::OnButtonPressed(
   const BookmarkNode* node =
       menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
 
-  if (event->button == 2 && node) {
+  if (event->button == 2 && node && node->is_folder()) {
     bookmark_utils::OpenAll(parent_window_,
                             profile_, page_navigator_,
                             node, NEW_BACKGROUND_TAB);
