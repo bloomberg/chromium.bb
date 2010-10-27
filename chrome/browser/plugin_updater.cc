@@ -221,8 +221,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
     // We want to save this, but doing so requires loading the list of plugins,
     // so do it after a minute as to not impact startup performance.  Note that
     // plugins are loaded after 30s by the metrics service.
-    // TEMPORARY COMMENT OUT TO ELIMINATE FROM LINUX PERF BOT REGRESSIONS
-    //UpdatePreferences(profile, kPluginUpdateDelayMs);
+    UpdatePreferences(profile, kPluginUpdateDelayMs);
   }
 }
 
