@@ -58,6 +58,7 @@ struct SafeBrowsingService::WhiteListedEntry {
 
 SafeBrowsingService::UnsafeResource::UnsafeResource()
     : resource_type(ResourceType::MAIN_FRAME),
+      threat_type(URL_SAFE),
       client(NULL),
       render_process_host_id(-1),
       render_view_id(-1) {
@@ -67,7 +68,8 @@ SafeBrowsingService::UnsafeResource::~UnsafeResource() {}
 
 SafeBrowsingService::SafeBrowsingCheck::SafeBrowsingCheck()
     : client(NULL),
-      need_get_hash(false) {
+      need_get_hash(false),
+      result(URL_SAFE) {
 }
 
 SafeBrowsingService::SafeBrowsingCheck::~SafeBrowsingCheck() {}

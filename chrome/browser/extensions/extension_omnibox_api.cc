@@ -160,7 +160,7 @@ ExtensionOmniboxSuggestion::ExtensionOmniboxSuggestion() {}
 
 ExtensionOmniboxSuggestion::~ExtensionOmniboxSuggestion() {}
 
-ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() {}
+ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() : request_id(0) {}
 
 ExtensionOmniboxSuggestions::~ExtensionOmniboxSuggestions() {}
 
