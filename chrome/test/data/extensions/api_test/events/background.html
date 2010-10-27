@@ -38,6 +38,16 @@ chrome.test.runTests([
     onClicked.removeListener(dummy);
     chrome.test.assertFalse(onClicked.hasListeners());
     chrome.test.succeed();
-  }
+  },
+
+  // Tests that 2 pages attaching to the same event does not trigger a DCHECK.
+  function twoPageAttach() {
+    // Test harness should already have opened tab.html, which registers this
+    // listener.
+    chrome.browserAction.onClicked.addListener(function() {});
+
+    // Test continues in twoPageAttach.html.
+    window.open("twoPageAttach.html");
+  },
 ]);
 </script>

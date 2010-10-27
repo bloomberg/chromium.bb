@@ -51,6 +51,20 @@ static bool in_unit_tests = false;
 // are disabled.
 static bool bindings_registered = false;
 
+
+// A map of event names to the number of listeners for that event. We notify
+// the browser about event listeners when we transition between 0 and 1.
+typedef std::map<std::string, int> EventListenerCounts;
+
+struct SingletonData {
+  // A map of extension IDs to listener counts for that extension.
+  std::map<std::string, EventListenerCounts> listener_counts_;
+};
+
+static EventListenerCounts& GetListenerCounts(const std::string& extension_id) {
+  return Singleton<SingletonData>()->listener_counts_[extension_id];
+}
+
 class ExtensionImpl : public ExtensionBase {
  public:
   ExtensionImpl()
@@ -78,6 +92,8 @@ class ExtensionImpl : public ExtensionBase {
 
     if (args[0]->IsString()) {
       ContextInfo* context_info = GetInfoForCurrentContext();
+      EventListenerCounts& listener_counts =
+          GetListenerCounts(context_info->extension_id);
       std::string event_name(*v8::String::AsciiValue(args[0]));
       bool has_permission =
           ExtensionProcessBindings::CurrentContextHasPermission(event_name);
@@ -87,7 +103,7 @@ class ExtensionImpl : public ExtensionBase {
             event_name);
       }
 
-      if (++context_info->listener_counts[event_name] == 1) {
+      if (++listener_counts[event_name] == 1) {
         EventBindings::GetRenderThread()->Send(
             new ViewHostMsg_ExtensionAddListener(context_info->extension_id,
                                                  event_name));
@@ -111,8 +127,10 @@ class ExtensionImpl : public ExtensionBase {
       if (!context_info)
         return v8::Undefined();
 
+      EventListenerCounts& listener_counts =
+          GetListenerCounts(context_info->extension_id);
       std::string event_name(*v8::String::AsciiValue(args[0]));
-      if (--context_info->listener_counts[event_name] == 0) {
+      if (--listener_counts[event_name] == 0) {
         EventBindings::GetRenderThread()->Send(
             new ViewHostMsg_ExtensionRemoveListener(context_info->extension_id,
                                                     event_name));
