@@ -86,15 +86,15 @@ Central roster: hosting all Google Talk chats in ChromeOS.
   function loadGTalk() {
     if (window.GTalkNotifier) {
       document.getElementById('retryInfo').style.display = 'none';
+      var baseUrl = args['protocol'] + '://' + args['host'] + '/talkgadget/';
       chatClient = new window.GTalkNotifier(
           {
-            'clientBaseUrl':
-                args['protocol'] + '://' + args['host'] + '/talkgadget/',
+            'clientBaseUrl': baseUrl,
             'clientUrl': 'notifierclient' +
                 (args['jsmode'] != '' ? ('?jsmode=' + args['jsmode']) : ''),
             'propertyName': 'ChromeOS',
-            'xpcRelay': 'xpc_relay',
-            'xpcBlank': 'xpc_blank',
+            'xpcRelay': baseUrl + 'xpc_relay',
+            'xpcBlank': baseUrl + 'xpc_blank',
             'locale': args['hl'],
             'isCentralRoster': true,
             'hideProfileCard': true,
