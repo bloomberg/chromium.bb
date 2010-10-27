@@ -283,9 +283,11 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   // Called on a background thread. Synchronized via the CGL context lock.
   CGLLockContext(cglContext_);
 
-  // TODO(thakis): Pixel or view coordinates for size?
-  renderWidgetHostView_->DrawAcceleratedSurfaceInstance(
-      cglContext_, pluginHandle_, [self cachedSize]);
+  if (renderWidgetHostView_) {
+    // TODO(thakis): Pixel or view coordinates for size?
+    renderWidgetHostView_->DrawAcceleratedSurfaceInstance(
+        cglContext_, pluginHandle_, [self cachedSize]);
+  }
 
   CGLFlushDrawable(cglContext_);
   CGLUnlockContext(cglContext_);
