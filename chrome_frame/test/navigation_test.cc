@@ -6,6 +6,7 @@
 
 #include "base/scoped_comptr_win.h"
 #include "base/test/test_file_util.h"
+#include "base/win/windows_version.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
@@ -380,6 +381,14 @@ TEST_P(FullTabNavigationTest, DISABLED_JavascriptWindowOpenDifferentDomain) {
 // Tests that the parent window can successfully close its popup through
 // the javascript close method.
 TEST_P(FullTabNavigationTest, JavascriptWindowOpenCanClose) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
+
   std::wstring parent_url = GetTestUrl(L"window_open.html?simple.html");
   MockAccEventObserver acc_observer;
   MockIEEventSink new_window_mock;
@@ -467,6 +476,14 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test window.open calls.
 TEST_P(NavigationTransitionTest, JavascriptWindowOpen) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
+
   std::wstring parent_url = GetTestUrl(L"window_open.html?simple.html");
   std::wstring new_window_url = GetSimplePageUrl();
   MockAccEventObserver acc_observer;
@@ -741,6 +758,13 @@ void CloseWindow(HWND* window) {
 // We bring up the Save dialog via accessibility and save the file
 // and validate that all is well.
 TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
   chrome_frame_test::MockWindowObserver download_watcher;
   download_watcher.WatchWindow("File Download", "");
 

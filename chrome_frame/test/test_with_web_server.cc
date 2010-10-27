@@ -1022,10 +1022,25 @@ const wchar_t kWindowCloseTestUrl[] =
     L"window_close.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowClose) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      chrome_frame_test::GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
+
   SimpleBrowserTest(IE, kWindowCloseTestUrl);
 }
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeFF_WindowClose) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      chrome_frame_test::GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
   SimpleBrowserTest(FIREFOX, kWindowCloseTestUrl);
 }
 

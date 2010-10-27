@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
@@ -222,6 +223,14 @@ TEST_P(FullTabUITest, RendererHasFocus) {
 
 // Tests that view source works.
 TEST_P(FullTabUITest, ViewSource) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
+
   bool in_cf = GetParam().invokes_cf();
   if (!in_cf) {
     LOG(ERROR) << "Test not implemented for this configuration.";
@@ -414,6 +423,13 @@ TEST_F(ContextMenuTest, CFReload) {
 
 // Test view source from the context menu.
 TEST_F(ContextMenuTest, CFViewSource) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockIEEventSink view_source_mock;
   view_source_mock.ExpectAnyNavigations();
@@ -500,15 +516,36 @@ TEST_F(ContextMenuTest, CFInspector) {
 }
 
 TEST_F(ContextMenuTest, CFSavePageAs) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(DoSaveAsTest(L"", L"Save as...", L".html"));
 }
 
 TEST_F(ContextMenuTest, CFSaveLinkAs) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
   ASSERT_NO_FATAL_FAILURE(DoSaveAsTest(L"link", L"Save link as...", L".zip"));
 }
 
 // This tests that the about:version page can be opened via the CF context menu.
 TEST_F(ContextMenuTest, CFAboutVersionLoads) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   const wchar_t* kAboutVersionUrl = L"gcf:about:version";
   const wchar_t* kAboutVersionWithoutProtoUrl = L"about:version";
