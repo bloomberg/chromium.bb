@@ -32,6 +32,11 @@ cr.define('options', function() {
         $('aboutPageMoreInfo').classList.remove('hidden');
       };
 
+      $('channelSelect').onchange = function(event) {
+        var channel = event.target.value;
+        chrome.send('SetReleaseTrack', [channel]);
+      };
+
       // Notify the handler that the page is ready.
       chrome.send('PageReady');
     },
@@ -48,6 +53,17 @@ cr.define('options', function() {
 
     updateEnable_: function(enable) {
       $('checkNow').disabled = !enable;
+    },
+
+    // Updates the selected option in 'channelSelect' <select> element.
+    updateSelectedOption_: function(value) {
+      var options = $('channelSelect').querySelectorAll('option');
+      for (var i = 0; i < options.length; i++) {
+        var option = options[i];
+        if (option.value == value) {
+          option.selected = true;
+        }
+      }
     },
 
     // Changes the "check now" button to "restart now" button.
@@ -70,6 +86,10 @@ cr.define('options', function() {
 
   AboutPage.updateEnableCallback = function(enable) {
     AboutPage.getInstance().updateEnable_(enable);
+  };
+
+  AboutPage.updateSelectedOptionCallback = function(value) {
+    AboutPage.getInstance().updateSelectedOption_(value);
   };
 
   AboutPage.setUpdateImage = function(state) {

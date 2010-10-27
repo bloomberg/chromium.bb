@@ -50,6 +50,20 @@ class UpdateLibraryImpl : public UpdateLibrary {
     return RebootIfUpdated();
   }
 
+  bool SetReleaseTrack(const std::string& track) {
+    if (!CrosLibrary::Get()->EnsureLoaded())
+      return false;
+
+    return chromeos::SetTrack(track);
+  }
+
+  std::string GetReleaseTrack() {
+    if (!CrosLibrary::Get()->EnsureLoaded())
+      return false;
+
+    return chromeos::GetTrack();
+  }
+
   const UpdateLibrary::Status& status() const {
     return status_;
   }
@@ -107,6 +121,8 @@ class UpdateLibraryStubImpl : public UpdateLibrary {
   void RemoveObserver(Observer* observer) {}
   bool CheckForUpdate() { return false; }
   bool RebootAfterUpdate() { return false; }
+  bool SetReleaseTrack(const std::string& track) { return false; }
+  std::string GetReleaseTrack() { return "beta-channel"; }
   const UpdateLibrary::Status& status() const {
     return status_;
   }

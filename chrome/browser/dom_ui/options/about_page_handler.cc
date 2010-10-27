@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -237,6 +238,8 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void AboutPageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("PageReady",
       NewCallback(this, &AboutPageHandler::PageReady));
+  dom_ui_->RegisterMessageCallback("SetReleaseTrack",
+      NewCallback(this, &AboutPageHandler::SetReleaseTrack));
 
 #if defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("CheckNow",
@@ -253,9 +256,16 @@ void AboutPageHandler::PageReady(const ListValue* args) {
                      NewCallback(this, &AboutPageHandler::OnOSVersion),
                      true);
 
-  update_observer_.reset(new UpdateObserver(this));
   chromeos::UpdateLibrary* update_library =
       chromeos::CrosLibrary::Get()->GetUpdateLibrary();
+
+  // Update the channel information.
+  std::string channel = update_library->GetReleaseTrack();
+  scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
+  dom_ui_->CallJavascriptFunction(L"AboutPage.updateSelectedOptionCallback",
+                                  *channel_string);
+
+  update_observer_.reset(new UpdateObserver(this));
   update_library->AddObserver(update_observer_.get());
 
   // Update the DOMUI page with the current status. See comments below.
@@ -266,6 +276,13 @@ void AboutPageHandler::PageReady(const ListValue* args) {
   // already complete, update_observer_ won't receive a notification.
   // This is why we manually update the DOMUI page above.
   CheckNow(NULL);
+#endif
+}
+
+void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
+#if defined(OS_CHROMEOS)
+  const std::string channel = WideToUTF8(ExtractStringValue(args));
+  chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
 #endif
 }
 

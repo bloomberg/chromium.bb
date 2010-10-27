@@ -68,6 +68,14 @@ class UpdateLibrary {
   // Reboots if update has been performed.
   virtual bool RebootAfterUpdate() = 0;
 
+  // Sets the release track (channel). |track| should look like
+  // "beta-channel" and "dev-channel". Returns true on success.
+  virtual bool SetReleaseTrack(const std::string& track) = 0;
+
+  // Returns the release track (channel). On error, returns an empty
+  // string.
+  virtual std::string GetReleaseTrack() = 0;
+
   virtual const Status& status() const = 0;
 
   // Factory function, creates a new instance and returns ownership.
@@ -78,4 +86,3 @@ class UpdateLibrary {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_UPDATE_LIBRARY_H_
-

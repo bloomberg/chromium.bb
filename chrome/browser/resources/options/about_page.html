@@ -20,12 +20,11 @@
   <div class="hidden" id="aboutPageMoreInfo">
     <section>
       <h3 i18n-content="channel"></h3>
-      <!-- TODO seanparent: wire to channel API when available. -->
-      <select disabled>
-        <option value="release" i18n-content="release"></option>
-        <option value="beta" i18n-content="beta"></option>
-        <option selected value="development"
-                i18n-content="development"></option>
+      <select id="channelSelect">
+        <!-- There is no "release" channel at this moment -->
+        <!-- <option value="release" i18n-content="release"></option> -->
+        <option value="beta-channel" i18n-content="beta"></option>
+        <option value="dev-channel" i18n-content="development"></option>
       </select>
     </section>
     <section>

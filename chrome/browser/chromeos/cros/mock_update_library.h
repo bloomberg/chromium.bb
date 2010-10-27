@@ -20,6 +20,8 @@ class MockUpdateLibrary : public UpdateLibrary {
   MOCK_METHOD1(RemoveObserver, void(Observer*));  // NOLINT
   MOCK_METHOD0(CheckForUpdate, bool(void));
   MOCK_METHOD0(RebootAfterUpdate, bool(void));
+  MOCK_METHOD1(SetReleaseTrack, bool(const std::string&));
+  MOCK_METHOD1(GetReleaseTrack, std::string());
   MOCK_CONST_METHOD0(status, const Status&(void));
 
  private:
@@ -29,4 +31,3 @@ class MockUpdateLibrary : public UpdateLibrary {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_MOCK_UPDATE_LIBRARY_H_
-
