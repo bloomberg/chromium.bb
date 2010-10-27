@@ -38,46 +38,6 @@ const int kServerConnectionAttempts = 10;
 // Connection timeout in milliseconds for tests.
 const int kServerConnectionTimeoutMs = 1000;
 
-const char kTestServerShardFlag[] = "test-server-shard";
-
-int GetPortBase(net::TestServer::Type type) {
-  switch (type) {
-    case net::TestServer::TYPE_FTP:
-      return 3117;
-    case net::TestServer::TYPE_HTTP:
-      return 1337;
-    case net::TestServer::TYPE_HTTPS:
-      return 9443;
-    case net::TestServer::TYPE_HTTPS_CLIENT_AUTH:
-      return 9543;
-    case net::TestServer::TYPE_HTTPS_EXPIRED_CERTIFICATE:
-      // TODO(phajdan.jr): Some tests rely on this hardcoded value.
-      // Some uses of this are actually in .html/.js files.
-      return 9666;
-    case net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME:
-      return 9643;
-    default:
-      NOTREACHED();
-  }
-  return -1;
-}
-
-int GetPort(net::TestServer::Type type) {
-  int port = GetPortBase(type);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kTestServerShardFlag)) {
-    std::string shard_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                              kTestServerShardFlag));
-    int shard = -1;
-    if (base::StringToInt(shard_str, &shard)) {
-      port += shard;
-    } else {
-      LOG(FATAL) << "Got invalid " << kTestServerShardFlag << " flag value. "
-                 << "An integer is expected.";
-    }
-  }
-  return port;
-}
-
 std::string GetHostname(net::TestServer::Type type) {
   if (type == net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME) {
     // Return a different hostname string that resolves to the same hostname.
@@ -96,9 +56,10 @@ void SetMacTestCertificate(X509Certificate* cert);
 #endif
 
 TestServer::TestServer(Type type, const FilePath& document_root)
-    : host_port_pair_(GetHostname(type), GetPort(type)),
+    : host_port_pair_(GetHostname(type), 0),
       process_handle_(base::kNullProcessHandle),
-      type_(type) {
+      type_(type),
+      started_(false) {
   FilePath src_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
 
@@ -148,12 +109,15 @@ bool TestServer::Start() {
     return false;
   }
 
+  started_ = true;
   return true;
 }
 
 bool TestServer::Stop() {
   if (!process_handle_)
     return true;
+
+  started_ = false;
 
   // First check if the process has already terminated.
   bool ret = base::WaitForSingleProcess(process_handle_, 0);
@@ -168,6 +132,11 @@ bool TestServer::Stop() {
   }
 
   return ret;
+}
+
+const HostPortPair& TestServer::host_port_pair() const {
+  DCHECK(started_);
+  return host_port_pair_;
 }
 
 std::string TestServer::GetScheme() const {
