@@ -155,7 +155,7 @@ def ReadSuppressions(lines, supp_descriptor):
         raise SuppressionError(supp_descriptor, nline,
                                '"Memcheck:TYPE" is expected, got "%s"' % line)
       if not line[9:] in ["Addr1", "Addr2", "Addr4", "Addr8",
-                          "Cond", "Free", "Leak", "Overlap", "Param",
+                          "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
                           "Value1", "Value2", "Value4", "Value8"]:
         raise SuppressionError(supp_descriptor, nline,
                                'Unknown suppression type "%s"' % line[9:])
