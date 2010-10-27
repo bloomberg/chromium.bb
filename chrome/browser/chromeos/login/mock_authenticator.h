@@ -136,9 +136,6 @@ class MockLoginUtils : public LoginUtils {
     return auth_token_;
   }
 
-  virtual void PrewarmAuthentication() {
-  }
-
  private:
   std::string expected_username_;
   std::string expected_password_;

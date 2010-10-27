@@ -334,7 +334,7 @@ void BootTimesLoader::Observe(
     // and the page is reloaded.
     if (NetworkStateNotifier::Get()->is_connected()) {
       // Post difference between first tab and login success time.
-      AddLoginTimeMarker("LoginDone", true);
+      AddLoginTimeMarker("LoginDone", false);
       RecordCurrentStats(kChromeFirstRender);
       // Post chrome first render stat.
       registrar_.Remove(this, NotificationType::LOAD_START,
