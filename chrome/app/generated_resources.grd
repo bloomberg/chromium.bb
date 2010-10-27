@@ -6595,7 +6595,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Autofill options
         </message>
         <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-          Chrome Autofill options
+          <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill options
         </message>
       </if>
       <if expr="os == 'darwin'">
@@ -6606,7 +6606,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Autofill preferences
         </message>
         <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
-          Chrome Autofill preferences
+          <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill preferences
         </message>
       </if>
       <message name="IDS_AUTOFILL_LOADING" desc="The indicator that Autofill data is being loaded.">

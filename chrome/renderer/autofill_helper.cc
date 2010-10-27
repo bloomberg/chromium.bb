@@ -5,6 +5,8 @@
 #include "chrome/renderer/autofill_helper.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -127,8 +129,9 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
     }
   }
   if (show_options) {
-    // Append the 'AutoFill Options...' menu item.
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
+    // Append the 'Chrome Autofill options' menu item;
+    v.push_back(l10n_util::GetStringFUTF16(IDS_AUTOFILL_OPTIONS_POPUP,
+        WideToUTF16(chrome::kBrowserAppName)));
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(0);
