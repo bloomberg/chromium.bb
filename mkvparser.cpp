@@ -3991,11 +3991,12 @@ void Cluster::ParseSimpleBlock(long long start, long long size, size_t index)
 
 const BlockEntry* Cluster::GetFirst()
 {
-    //TODO: handle empty cluster
-
     LoadBlockEntries();
-    assert(m_entries);
-    assert(m_entriesCount >= 1);
+    //assert(m_entries);
+    //assert(m_entriesCount >= 1);
+
+    if ((m_entries == NULL) || (m_entriesCount == 0))
+        return NULL;
 
     const BlockEntry* const pFirst = m_entries[0];
     assert(pFirst);
@@ -4006,11 +4007,12 @@ const BlockEntry* Cluster::GetFirst()
 
 const BlockEntry* Cluster::GetLast()
 {
-    //TODO: handle empty cluster
-
     LoadBlockEntries();
-    assert(m_entries);
-    assert(m_entriesCount >= 1);
+    //assert(m_entries);
+    //assert(m_entriesCount >= 1);
+
+    if ((m_entries == NULL) || (m_entriesCount == 0))
+        return NULL;
 
     const size_t idx = m_entriesCount - 1;
 
@@ -4048,6 +4050,9 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack)
         return pTrack->GetEOS();
 
     LoadBlockEntries();
+
+    if ((m_entries == NULL) || (m_entriesCount == 0))
+        return NULL;
 
     BlockEntry** i = m_entries;
     assert(i);
@@ -4170,7 +4175,7 @@ const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack)
         return pTrack->GetEOS();
 
     LoadBlockEntries();
-    assert(m_entries);
+    //assert(m_entries);
 
     BlockEntry** i = m_entries + m_entriesCount;
     BlockEntry** const j = m_entries;
