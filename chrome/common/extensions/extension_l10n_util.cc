@@ -113,7 +113,7 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
   return true;
 }
 
-bool LocalizeExtension(Extension* extension,
+bool LocalizeExtension(const FilePath& extension_path,
                        DictionaryValue* manifest,
                        std::string* error) {
   DCHECK(manifest);
@@ -122,7 +122,7 @@ bool LocalizeExtension(Extension* extension,
 
   scoped_ptr<ExtensionMessageBundle> message_bundle(
       extension_file_util::LoadExtensionMessageBundle(
-          extension->path(), default_locale, error));
+          extension_path, default_locale, error));
 
   if (!message_bundle.get() && !error->empty())
     return false;

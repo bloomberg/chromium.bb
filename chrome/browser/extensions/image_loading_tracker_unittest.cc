@@ -51,7 +51,7 @@ class ImageLoadingTrackerTest : public testing::Test,
     return result;
   }
 
-  Extension* CreateExtension() {
+  scoped_refptr<Extension> CreateExtension() {
     // Create and load an extension.
     FilePath test_file;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
@@ -74,11 +74,8 @@ class ImageLoadingTrackerTest : public testing::Test,
     if (!valid_value.get())
       return NULL;
 
-    scoped_ptr<Extension> extension(new Extension(test_file));
-    if (!extension->InitFromValue(*valid_value, false, &error))
-      return NULL;
-
-    return extension.release();
+    return Extension::Create(
+        test_file, Extension::INVALID, *valid_value, false, &error);
   }
 
   SkBitmap image_;
@@ -99,7 +96,7 @@ class ImageLoadingTrackerTest : public testing::Test,
 
 // Tests asking ImageLoadingTracker to cache pushes the result to the Extension.
 TEST_F(ImageLoadingTrackerTest, Cache) {
-  scoped_ptr<Extension> extension(CreateExtension());
+  scoped_refptr<Extension> extension(CreateExtension());
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
@@ -146,7 +143,7 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
 // Tests deleting an extension while waiting for the image to load doesn't cause
 // problems.
 TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
-  scoped_ptr<Extension> extension(CreateExtension());
+  scoped_refptr<Extension> extension(CreateExtension());
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
@@ -170,7 +167,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.
-  extension.reset();
+  extension = NULL;
 
   WaitForImageLoad();
 

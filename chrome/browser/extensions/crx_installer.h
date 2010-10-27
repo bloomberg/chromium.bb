@@ -187,7 +187,7 @@ class CrxInstaller
 
   // The extension we're installing. We own this and either pass it off to
   // ExtensionsService on success, or delete it on failure.
-  scoped_ptr<Extension> extension_;
+  scoped_refptr<Extension> extension_;
 
   // If non-empty, contains the current version of the extension we're
   // installing (for upgrades).

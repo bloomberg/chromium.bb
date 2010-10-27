@@ -56,7 +56,7 @@ bool ExtensionCreator::InitializeInput(
 
   // Load the extension once. We don't really need it, but this does a lot of
   // useful validation of the structure.
-  scoped_ptr<Extension> extension(
+  scoped_refptr<Extension> extension(
       extension_file_util::LoadExtension(extension_dir,
                                          Extension::INTERNAL,
                                          false,  // key not required

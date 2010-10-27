@@ -21,7 +21,7 @@ TEST(ExtensionFromUserScript, Basic) {
                        .AppendASCII("user_script_basic.user.js");
 
   std::string error;
-  scoped_ptr<Extension> extension(ConvertUserScriptToExtension(
+  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo"), &error));
 
   ASSERT_TRUE(extension.get());
@@ -61,7 +61,7 @@ TEST(ExtensionFromUserScript, NoMetdata) {
                        .AppendASCII("user_script_no_metadata.user.js");
 
   std::string error;
-  scoped_ptr<Extension> extension(ConvertUserScriptToExtension(
+  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
       test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
 
   ASSERT_TRUE(extension.get());

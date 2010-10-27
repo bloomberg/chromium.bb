@@ -160,7 +160,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   FilePath extension_root_;
 
   // Represents the extension we're unpacking.
-  scoped_ptr<Extension> extension_;
+  scoped_refptr<Extension> extension_;
 
   // Whether we've received a response from the utility process yet.
   bool got_response_;

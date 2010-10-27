@@ -147,8 +147,8 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
 
 void CrxInstaller::ConvertUserScriptOnFileThread() {
   std::string error;
-  Extension* extension = ConvertUserScriptToExtension(source_file_,
-                                                      original_url_, &error);
+  scoped_refptr<Extension> extension =
+      ConvertUserScriptToExtension(source_file_, original_url_, &error);
   if (!extension) {
     ReportFailureFromFileThread(error);
     return;
@@ -243,7 +243,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Note: We take ownership of |extension| and |temp_dir|.
-  extension_.reset(extension);
+  extension_ = extension;
   temp_dir_ = temp_dir;
 
   // We don't have to delete the unpack dir explicity since it is a child of
@@ -357,8 +357,8 @@ void CrxInstaller::CompleteInstall() {
   // TODO(aa): All paths to resources inside extensions should be created
   // lazily and based on the Extension's root path at that moment.
   std::string error;
-  extension_.reset(extension_file_util::LoadExtension(
-      version_dir, install_source_, true, &error));
+  extension_ = extension_file_util::LoadExtension(
+      version_dir, install_source_, true, &error);
   DCHECK(error.empty());
 
   ReportSuccessFromFileThread();
@@ -406,8 +406,8 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  frontend_->OnExtensionInstalled(extension_.release(),
-                                  allow_privilege_increase_);
+  frontend_->OnExtensionInstalled(extension_, allow_privilege_increase_);
+  extension_ = NULL;
 
   // We're done. We don't post any more tasks to ourselves so we are deleted
   // soon.

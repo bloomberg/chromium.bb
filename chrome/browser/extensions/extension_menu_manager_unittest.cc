@@ -44,14 +44,14 @@ class ExtensionMenuManagerTest : public testing::Test {
   // Creates and returns a test Extension. The caller does *not* own the return
   // value.
   Extension* AddExtension(std::string name) {
-    Extension* extension = prefs_.AddExtension(name);
+    scoped_refptr<Extension> extension = prefs_.AddExtension(name);
     extensions_.push_back(extension);
     return extension;
   }
 
  protected:
   ExtensionMenuManager manager_;
-  ScopedVector<Extension> extensions_;
+  ExtensionList extensions_;
   TestExtensionPrefs prefs_;
   int next_id_;
 
