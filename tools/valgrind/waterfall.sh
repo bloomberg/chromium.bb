@@ -12,7 +12,7 @@ set -e
 
 THISDIR=$(dirname "${0}")
 LOGS_DIR=$THISDIR/waterfall.tmp
-WATERFALL_PAGE="http://build.chromium.org/buildbot/memory/builders"
+WATERFALL_PAGE="http://build.chromium.org/p/chromium.memory/builders"
 
 download() {
   # Download a file.
