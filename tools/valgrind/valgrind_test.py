@@ -738,9 +738,6 @@ class DrMemory(BaseTool):
                           "with the path to drmemory.exe"
     proc = pin_cmd.split(" ")
 
-    # Dump Dr.Memory events on error
-    # proc += ["-dr_ops", "dumpcore_mask 0x8bff"]
-
     suppression_count = 0
     for suppression_file in self._options.suppressions:
       if os.path.exists(suppression_file):
@@ -752,6 +749,9 @@ class DrMemory(BaseTool):
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
+    # Un-comment to dump Dr.Memory events on error
+    #proc += ["-dr_ops", "-dumpcore_mask 0x8bff"]
+
     proc += ["-logdir", self.temp_dir]
     proc += ["-batch", "-quiet"]
     proc += ["-no_check_leaks", "-no_count_leaks"]
@@ -760,7 +760,6 @@ class DrMemory(BaseTool):
     proc += ["--"]
 
     # Note that self._args begins with the name of the exe to be run.
-    self._args[0] += ".exe" # HACK
     proc += self._args
     return proc
 
