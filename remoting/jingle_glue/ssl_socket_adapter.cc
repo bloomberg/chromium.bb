@@ -248,7 +248,6 @@ bool TransportSocket::WasEverUsed() const {
 }
 
 bool TransportSocket::UsingTCPFastOpen() const {
-  NOTREACHED();
   return false;
 }
 
