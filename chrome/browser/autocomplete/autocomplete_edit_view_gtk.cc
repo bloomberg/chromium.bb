@@ -313,7 +313,7 @@ void AutocompleteEditViewGtk::Init() {
                                     0, 0);
   instant_text_tag_ = gtk_text_buffer_create_tag(
       instant_buffer_, NULL, "foreground", kTextBaseColor, NULL);
-  gtk_widget_set_can_focus(instant_view_, FALSE);
+  GTK_WIDGET_UNSET_FLAGS(instant_view_, GTK_CAN_FOCUS);
   g_signal_connect(instant_view_, "button-press-event",
                    G_CALLBACK(&HandleInstantViewButtonPressThunk), this);
 
