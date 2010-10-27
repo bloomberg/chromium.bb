@@ -93,15 +93,9 @@ for t in ['eh_virtual_dtor',
 
 
 # http://code.google.com/p/nativeclient/issues/detail?id=720
-TRACE_TESTS=['toolchain_tests', 'small_tests']
+STACKFRAME_TESTS=['toolchain_tests', 'small_tests']
 if eh_env['TARGET_FULLARCH'] == 'arm':
-  TRACE_TESTS=[]
-
-nexe = eh_env.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
-node = eh_env.CommandSelLdrTestNacl('unwind_trace.out',
-                                    command=[nexe],
-                                    exit_status='55')
-eh_env.AddNodeToTestSuite(node, TRACE_TESTS, 'run_unwind_trace_test')
+  STACKFRAME_TESTS=[]
 
 # http://code.google.com/p/nativeclient/issues/detail?id=720
 if eh_env['TARGET_FULLARCH'] != 'arm':
@@ -109,4 +103,19 @@ if eh_env['TARGET_FULLARCH'] != 'arm':
   node = eh_env.CommandSelLdrTestNacl('stack_frame.out',
                                        command=[nexe],
                                        exit_status='55')
-  eh_env.AddNodeToTestSuite(node, TRACE_TESTS, 'run_stack_frame_test')
+  eh_env.AddNodeToTestSuite(node, STACKFRAME_TESTS, 'run_stack_frame_test')
+
+TRACE_TESTS=['toolchain_tests', 'small_tests']
+if eh_env['TARGET_FULLARCH'] == 'arm':
+  TRACE_TESTS=[]
+
+# http://code.google.com/p/nativeclient/issues/detail?id=1106
+if ('PNACL_BCLDFLAGS' in eh_env and
+   '-fPIC' in eh_env.get('PNACL_BCLDFLAGS', [])):
+  TRACE_TESTS=[]
+
+nexe = eh_env.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
+node = eh_env.CommandSelLdrTestNacl('unwind_trace.out',
+                                    command=[nexe],
+                                    exit_status='55')
+eh_env.AddNodeToTestSuite(node, TRACE_TESTS, 'run_unwind_trace_test')
