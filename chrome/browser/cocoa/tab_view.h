@@ -47,6 +47,10 @@ enum AlertState {
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
   IBOutlet HoverCloseButton* closeButton_;
+
+  // See awakeFromNib for purpose.
+  scoped_nsobject<HoverCloseButton> closeButtonRetainer_;
+
   BOOL closing_;
 
   // Tracking area for close button mouseover images.

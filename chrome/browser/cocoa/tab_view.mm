@@ -8,6 +8,7 @@
 #import "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/nsimage_cache_mac.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
@@ -73,6 +74,16 @@ const CGFloat kRapidCloseDist = 2.5;
 
 - (void)awakeFromNib {
   [self setShowsDivider:NO];
+
+  // It is desirable for us to remove the close button from the cocoa hierarchy,
+  // so that VoiceOver does not encounter it.
+  // TODO(dtseng): crbug.com/59978.
+  // Retain in case we remove it from its superview.
+  closeButtonRetainer_.reset([closeButton_ retain]);
+  if (Singleton<BrowserAccessibilityState>::get()->IsAccessibleBrowser()) {
+    // The superview gives up ownership of the closeButton here.
+    [closeButton_ removeFromSuperview];
+  }
 }
 
 - (void)dealloc {
