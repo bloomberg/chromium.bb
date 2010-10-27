@@ -5,7 +5,7 @@
 #include "remoting/protocol/stream_writer.h"
 
 #include "base/message_loop.h"
-#include "remoting/protocol/chromoting_connection.h"
+#include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {

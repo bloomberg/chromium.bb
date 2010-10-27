@@ -5,7 +5,6 @@
 #ifndef REMOTING_JINGLE_GLUE_MOCK_OBJECTS_H_
 #define REMOTING_JINGLE_GLUE_MOCK_OBJECTS_H_
 
-#include "media/base/data_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 

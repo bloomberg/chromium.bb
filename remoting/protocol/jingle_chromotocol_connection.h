@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_JINGLE_CHROMOTING_CONNECTION_H_
-#define REMOTING_PROTOCOL_JINGLE_CHROMOTING_CONNECTION_H_
+#ifndef REMOTING_PROTOCOL_JINGLE_CHROMOTOCOL_CONNECTION_H_
+#define REMOTING_PROTOCOL_JINGLE_CHROMOTOCOL_CONNECTION_H_
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "remoting/protocol/chromoting_connection.h"
+#include "remoting/protocol/chromotocol_connection.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 
@@ -21,29 +21,29 @@ class Socket;
 
 namespace remoting {
 
-class JingleChromotingServer;
+class JingleChromotocolServer;
 class StreamSocketAdapter;
 class TransportChannelSocketAdapter;
 
-// Implements ChromotingConnection that work over libjingle session (the
+// Implements ChromotocolConnection that work over libjingle session (the
 // cricket::Session object is passed to Init() method). Created
-// by JingleChromotingServer for incoming and outgoing connections.
-class JingleChromotingConnection : public ChromotingConnection,
+// by JingleChromotocolServer for incoming and outgoing connections.
+class JingleChromotocolConnection : public ChromotocolConnection,
                                    public sigslot::has_slots<> {
  public:
   static const char kChromotingContentName[];
 
-  explicit JingleChromotingConnection(JingleChromotingServer* client);
+  explicit JingleChromotocolConnection(JingleChromotocolServer* client);
 
-  // ChromotingConnection interface.
+  // ChromotocolConnection interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
-  virtual net::Socket* GetControlChannel();
-  virtual net::Socket* GetEventChannel();
-  virtual net::Socket* GetVideoChannel();
+  virtual net::Socket* control_channel();
+  virtual net::Socket* event_channel();
+  virtual net::Socket* video_channel();
 
-  virtual net::Socket* GetVideoRtpChannel();
-  virtual net::Socket* GetVideoRtcpChannel();
+  virtual net::Socket* video_rtp_channel();
+  virtual net::Socket* video_rtcp_channel();
 
   virtual const std::string& jid();
   virtual MessageLoop* message_loop();
@@ -56,12 +56,12 @@ class JingleChromotingConnection : public ChromotingConnection,
   virtual void Close(Task* closed_task);
 
  protected:
-  virtual ~JingleChromotingConnection();
+  virtual ~JingleChromotocolConnection();
 
  private:
-  friend class JingleChromotingServer;
+  friend class JingleChromotocolServer;
 
-  // Called by JingleChromotingServer.
+  // Called by JingleChromotocolServer.
   void set_candidate_config(const CandidateChromotocolConfig* candidate_config);
   void Init(cricket::Session* session);
   bool HasSession(cricket::Session* session);
@@ -77,8 +77,8 @@ class JingleChromotingConnection : public ChromotingConnection,
 
   void SetState(State new_state);
 
-  // JingleChromotingServer that created this connection.
-  scoped_refptr<JingleChromotingServer> server_;
+  // JingleChromotocolServer that created this connection.
+  scoped_refptr<JingleChromotocolServer> server_;
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;
@@ -104,9 +104,9 @@ class JingleChromotingConnection : public ChromotingConnection,
   scoped_ptr<TransportChannelSocketAdapter> video_rtp_channel_;
   scoped_ptr<TransportChannelSocketAdapter> video_rtcp_channel_;
 
-  DISALLOW_COPY_AND_ASSIGN(JingleChromotingConnection);
+  DISALLOW_COPY_AND_ASSIGN(JingleChromotocolConnection);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_JINGLE_CHROMOTING_CONNECTION_H_
+#endif  // REMOTING_PROTOCOL_JINGLE_CHROMOTOCOL_CONNECTION_H_

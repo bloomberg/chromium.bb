@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_CHROMOTING_CONNECTION_H_
-#define REMOTING_PROTOCOL_CHROMOTING_CONNECTION_H_
+#ifndef REMOTING_PROTOCOL_CHROMOTOCOL_CONNECTION_H_
+#define REMOTING_PROTOCOL_CHROMOTOCOL_CONNECTION_H_
 
 #include <string>
 
@@ -19,13 +19,12 @@ class Socket;
 
 namespace remoting {
 
-// Generic interface for Chromoting connection used by both client and host.
+// Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
 // TODO(sergeyu): Remove refcounting?
-// TODO(sergeyu): Rename to ChromotocolConnection.
-class ChromotingConnection
-    : public base::RefCountedThreadSafe<ChromotingConnection> {
+class ChromotocolConnection
+    : public base::RefCountedThreadSafe<ChromotocolConnection> {
  public:
   enum State {
     INITIALIZING,
@@ -42,15 +41,15 @@ class ChromotingConnection
   virtual void SetStateChangeCallback(StateChangeCallback* callback) = 0;
 
   // Reliable PseudoTCP channels for this connection.
-  virtual net::Socket* GetControlChannel() = 0;
-  virtual net::Socket* GetEventChannel() = 0;
+  virtual net::Socket* control_channel() = 0;
+  virtual net::Socket* event_channel() = 0;
 
   // TODO(sergeyu): Remove VideoChannel, and use RTP channels instead.
-  virtual net::Socket* GetVideoChannel() = 0;
+  virtual net::Socket* video_channel() = 0;
 
   // Unreliable channels for this connection.
-  virtual net::Socket* GetVideoRtpChannel() = 0;
-  virtual net::Socket* GetVideoRtcpChannel() = 0;
+  virtual net::Socket* video_rtp_channel() = 0;
+  virtual net::Socket* video_rtcp_channel() = 0;
 
   // TODO(sergeyu): Make it possible to create/destroy additional channels
   // on-fly?
@@ -72,8 +71,8 @@ class ChromotingConnection
 
   // Set protocol configuration for an incoming session. Must be called
   // on the host before the connection is accepted, from
-  // ChromotingServer::NewConnectionCallback. Ownership of |config| is given
-  // to the connection.
+  // ChromotocolServer::IncomingConnectionCallback. Ownership of |config| is
+  // given to the connection.
   virtual void set_config(const ChromotocolConfig* config) = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called after
@@ -81,10 +80,15 @@ class ChromotingConnection
   virtual void Close(Task* closed_task) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<ChromotingConnection>;
-  virtual ~ChromotingConnection() { }
+  friend class base::RefCountedThreadSafe<ChromotocolConnection>;
+
+  ChromotocolConnection() { }
+  virtual ~ChromotocolConnection() { }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromotocolConnection);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CHROMOTING_CONNECTION_H_
+#endif  // REMOTING_PROTOCOL_CHROMOTOCOL_CONNECTION_H_

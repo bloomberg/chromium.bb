@@ -1044,12 +1044,8 @@
    bug_57966c
    Heapcheck:Leak
    ...
-   fun:remoting::JingleChromotingConnection::OnAccept
-   fun:remoting::JingleChromotingConnection::OnSessionState
-   fun:sigslot::_connection2::emit
-   fun:sigslot::signal2::operator
-   fun:cricket::BaseSession::SetState
-   fun:cricket::Session::Accept
+   fun:remoting::JingleChromotocolConnection::OnInitiate
+   fun:remoting::JingleChromotocolConnection::OnSessionState
 }
 {
    bug_58094
@@ -1119,15 +1115,4 @@
    fun:ReloadButtonGtkTest_*_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-}
-{
-   bug_60875
-   Heapcheck:Leak
-   ...
-   fun:remoting::JingleChromotingConnection::OnInitiate
-   fun:remoting::JingleChromotingConnection::OnSessionState
-   fun:sigslot::_connection2::emit
-   fun:sigslot::signal2::operator
-   fun:cricket::BaseSession::SetState
-   fun:cricket::Session::OnInitiateMessage
 }

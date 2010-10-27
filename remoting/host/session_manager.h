@@ -17,12 +17,6 @@
 // TODO(hclam): This class should not know the internal protobuf types.
 #include "remoting/proto/internal.pb.h"
 
-namespace media {
-
-class DataBuffer;
-
-}  // namespace media
-
 namespace remoting {
 
 class CaptureData;

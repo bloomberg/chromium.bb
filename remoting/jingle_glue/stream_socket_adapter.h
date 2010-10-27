@@ -16,7 +16,7 @@ class StreamInterface;
 namespace remoting {
 
 // StreamSocketAdapter implements net::Socket interface on top of
-// libjingle's StreamInterface. It is used by JingleChromotingConnection
+// libjingle's StreamInterface. It is used by JingleChromotocolConnection
 // to provide net::Socket interface for channels.
 class StreamSocketAdapter : public net::Socket,
                             public sigslot::has_slots<> {

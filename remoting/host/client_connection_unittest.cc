@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "media/base/data_buffer.h"
 #include "remoting/base/mock_objects.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/mock_objects.h"
@@ -23,7 +22,7 @@ class ClientConnectionTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    connection_ = new FakeChromotingConnection();
+    connection_ = new FakeChromotocolConnection();
     connection_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
@@ -31,7 +30,7 @@ class ClientConnectionTest : public testing::Test {
     viewer_->Init(connection_);
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
     connection_->state_change_callback()->Run(
-        ChromotingConnection::CONNECTED);
+        ChromotocolConnection::CONNECTED);
     message_loop_.RunAllPending();
   }
 
@@ -39,7 +38,7 @@ class ClientConnectionTest : public testing::Test {
   MockClientConnectionEventHandler handler_;
   scoped_refptr<ClientConnection> viewer_;
 
-  scoped_refptr<FakeChromotingConnection> connection_;
+  scoped_refptr<FakeChromotocolConnection> connection_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionTest);
@@ -57,16 +56,16 @@ TEST_F(ClientConnectionTest, SendUpdateStream) {
 
   // Verify that something has been written.
   // TODO(sergeyu): Verify that the correct data has been written.
-  EXPECT_GT(connection_->GetVideoChannel()->written_data().size(), 0u);
+  EXPECT_GT(connection_->video_channel()->written_data().size(), 0u);
 }
 
 TEST_F(ClientConnectionTest, StateChange) {
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get()));
-  connection_->state_change_callback()->Run(ChromotingConnection::CLOSED);
+  connection_->state_change_callback()->Run(ChromotocolConnection::CLOSED);
   message_loop_.RunAllPending();
 
   EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get()));
-  connection_->state_change_callback()->Run(ChromotingConnection::FAILED);
+  connection_->state_change_callback()->Run(ChromotocolConnection::FAILED);
   message_loop_.RunAllPending();
 }
 
@@ -83,7 +82,7 @@ TEST_F(ClientConnectionTest, Close) {
   message_loop_.RunAllPending();
 
   // Verify that nothing has been written.
-  EXPECT_EQ(connection_->GetVideoChannel()->written_data().size(), 0u);
+  EXPECT_EQ(connection_->video_channel()->written_data().size(), 0u);
 }
 
 }  // namespace remoting

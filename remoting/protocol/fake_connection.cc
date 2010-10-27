@@ -69,61 +69,63 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-FakeChromotingConnection::FakeChromotingConnection()
+FakeChromotocolConnection::FakeChromotocolConnection()
     : candidate_config_(CandidateChromotocolConfig::CreateDefault()),
       config_(ChromotocolConfig::CreateDefault()),
       message_loop_(NULL),
       jid_(kTestJid) {
 }
 
-FakeChromotingConnection::~FakeChromotingConnection() { }
+FakeChromotocolConnection::~FakeChromotocolConnection() { }
 
-void FakeChromotingConnection::SetStateChangeCallback(
+void FakeChromotocolConnection::SetStateChangeCallback(
     StateChangeCallback* callback) {
   callback_.reset(callback);
 }
 
-FakeSocket* FakeChromotingConnection::GetControlChannel() {
+FakeSocket* FakeChromotocolConnection::control_channel() {
   return &control_channel_;
 }
 
-FakeSocket* FakeChromotingConnection::GetEventChannel() {
+FakeSocket* FakeChromotocolConnection::event_channel() {
   return &event_channel_;
 }
 
-FakeSocket* FakeChromotingConnection::GetVideoChannel() {
+FakeSocket* FakeChromotocolConnection::video_channel() {
   return &video_channel_;
 }
 
-FakeSocket* FakeChromotingConnection::GetVideoRtpChannel() {
+FakeSocket* FakeChromotocolConnection::video_rtp_channel() {
   return &video_rtp_channel_;
 }
-FakeSocket* FakeChromotingConnection::GetVideoRtcpChannel() {
+
+FakeSocket* FakeChromotocolConnection::video_rtcp_channel() {
   return &video_rtcp_channel_;
 }
 
-const std::string& FakeChromotingConnection::jid() {
+const std::string& FakeChromotocolConnection::jid() {
   return jid_;
 }
 
-MessageLoop* FakeChromotingConnection::message_loop() {
+MessageLoop* FakeChromotocolConnection::message_loop() {
   return message_loop_;
 }
 
-const CandidateChromotocolConfig* FakeChromotingConnection::candidate_config() {
+const CandidateChromotocolConfig*
+FakeChromotocolConnection::candidate_config() {
   return candidate_config_.get();
 }
 
-const ChromotocolConfig* FakeChromotingConnection::config() {
+const ChromotocolConfig* FakeChromotocolConnection::config() {
   CHECK(config_.get());
   return config_.get();
 }
 
-void FakeChromotingConnection::set_config(const ChromotocolConfig* config) {
+void FakeChromotocolConnection::set_config(const ChromotocolConfig* config) {
   config_.reset(config);
 }
 
-void FakeChromotingConnection::Close(Task* closed_task) {
+void FakeChromotocolConnection::Close(Task* closed_task) {
   closed_ = true;
   closed_task->Run();
   delete closed_task;

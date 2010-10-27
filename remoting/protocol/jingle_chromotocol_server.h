@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_JINGLE_CHROMOTING_SERVER_H_
-#define REMOTING_PROTOCOL_JINGLE_CHROMOTING_SERVER_H_
+#ifndef REMOTING_PROTOCOL_JINGLE_CHROMOTOCOL_SERVER_H_
+#define REMOTING_PROTOCOL_JINGLE_CHROMOTOCOL_SERVER_H_
 
 #include <list>
 #include <string>
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "remoting/protocol/chromoting_server.h"
-#include "remoting/protocol/jingle_chromoting_connection.h"
+#include "remoting/protocol/chromotocol_server.h"
+#include "remoting/protocol/jingle_chromotocol_connection.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessionclient.h"
 #include "third_party/libjingle/source/talk/p2p/base/sessiondescription.h"
@@ -24,15 +24,17 @@ class SessionManager;
 
 namespace remoting {
 
+class JingleThread;
+
 // ContentDescription used for chromoting sessions. It simply wraps
 // CandidateChromotocolConfig. CandidateChromotocolConfig doesn't inherit
 // from ContentDescription to avoid dependency on libjingle in
-// ChromotingConnection interface.
-class ChromotingContentDescription : public cricket::ContentDescription {
+// ChromotocolConnection interface.
+class ChromotocolContentDescription : public cricket::ContentDescription {
  public:
-  explicit ChromotingContentDescription(
+  explicit ChromotocolContentDescription(
       const CandidateChromotocolConfig* config);
-  ~ChromotingContentDescription();
+  ~ChromotocolContentDescription();
 
   const CandidateChromotocolConfig* config() const {
     return candidate_config_.get();
@@ -45,45 +47,48 @@ class ChromotingContentDescription : public cricket::ContentDescription {
 // This class implements SessionClient for Chromoting sessions. It acts as a
 // server that accepts chromoting connections and can also make new connections
 // to other hosts.
-class JingleChromotingServer
-    : public ChromotingServer,
+class JingleChromotocolServer
+    : public ChromotocolServer,
       public cricket::SessionClient {
  public:
-  explicit JingleChromotingServer(MessageLoop* message_loop);
+  explicit JingleChromotocolServer(JingleThread* jingle_thread);
 
   // Initializes the session client. Doesn't accept ownership of the
   // |session_manager|. Close() must be called _before_ the |session_manager|
   // is destroyed.
   virtual void Init(const std::string& local_jid,
                     cricket::SessionManager* session_manager,
-                    NewConnectionCallback* new_connection_callback);
+                    IncomingConnectionCallback* incoming_connection_callback);
 
-  // ChromotingServer interface.
-  virtual scoped_refptr<ChromotingConnection> Connect(
+  // ChromotocolServer interface.
+  virtual scoped_refptr<ChromotocolConnection> Connect(
       const std::string& jid,
       CandidateChromotocolConfig* chromotocol_config,
-      ChromotingConnection::StateChangeCallback* state_change_callback);
+      ChromotocolConnection::StateChangeCallback* state_change_callback);
   virtual void Close(Task* closed_task);
 
   void set_allow_local_ips(bool allow_local_ips);
 
  protected:
-  virtual ~JingleChromotingServer();
+  virtual ~JingleChromotocolServer();
 
  private:
-  friend class JingleChromotingConnection;
+  friend class JingleChromotocolConnection;
 
-  // Message loop used by this session client.
+  // The jingle thread used by this object.
+  JingleThread* jingle_thread();
+
+  // Message loop that corresponds to jingle_thread().
   MessageLoop* message_loop();
 
-  // Called by JingleChromotingConnection when a new connection is initiated.
-  void AcceptConnection(JingleChromotingConnection* connection,
+  // Called by JingleChromotocolConnection when a new connection is initiated.
+  void AcceptConnection(JingleChromotocolConnection* connection,
                         cricket::Session* session);
 
   void DoConnect(
-      scoped_refptr<JingleChromotingConnection> connection,
+      scoped_refptr<JingleChromotocolConnection> connection,
       const std::string& jid,
-      ChromotingConnection::StateChangeCallback* state_change_callback);
+      ChromotocolConnection::StateChangeCallback* state_change_callback);
 
   // Creates outgoing session description for an incoming connection.
   cricket::SessionDescription* CreateSessionDescription(
@@ -104,18 +109,18 @@ class JingleChromotingServer
                             cricket::WriteError* error);
 
   std::string local_jid_;
-  MessageLoop* message_loop_;
+  JingleThread* jingle_thread_;
   cricket::SessionManager* session_manager_;
-  scoped_ptr<NewConnectionCallback> new_connection_callback_;
+  scoped_ptr<IncomingConnectionCallback> incoming_connection_callback_;
   bool allow_local_ips_;
 
   bool closed_;
 
-  std::list<scoped_refptr<JingleChromotingConnection> > connections_;
+  std::list<scoped_refptr<JingleChromotocolConnection> > connections_;
 
-  DISALLOW_COPY_AND_ASSIGN(JingleChromotingServer);
+  DISALLOW_COPY_AND_ASSIGN(JingleChromotocolServer);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_JINGLE_CHROMOTING_SERVER_H_
+#endif  // REMOTING_PROTOCOL_JINGLE_CHROMOTOCOL_SERVER_H_

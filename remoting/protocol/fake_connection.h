@@ -9,7 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "net/socket/socket.h"
-#include "remoting/protocol/chromoting_connection.h"
+#include "remoting/protocol/chromotocol_connection.h"
 
 namespace remoting {
 
@@ -50,12 +50,12 @@ class FakeSocket : public net::Socket {
   int input_pos_;
 };
 
-// FakeChromotingConnection is a dummy ChromotingConnection that uses
+// FakeChromotocolConnection is a dummy ChromotocolConnection that uses
 // FakeSocket for all channels.
-class FakeChromotingConnection : public ChromotingConnection {
+class FakeChromotocolConnection : public ChromotocolConnection {
  public:
-  FakeChromotingConnection();
-  virtual ~FakeChromotingConnection();
+  FakeChromotocolConnection();
+  virtual ~FakeChromotocolConnection();
 
   StateChangeCallback* state_change_callback() { return callback_.get(); }
 
@@ -67,12 +67,12 @@ class FakeChromotingConnection : public ChromotingConnection {
 
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
 
-  virtual FakeSocket* GetControlChannel();
-  virtual FakeSocket* GetEventChannel();
-  virtual FakeSocket* GetVideoChannel();
+  virtual FakeSocket* control_channel();
+  virtual FakeSocket* event_channel();
+  virtual FakeSocket* video_channel();
 
-  virtual FakeSocket* GetVideoRtpChannel();
-  virtual FakeSocket* GetVideoRtcpChannel();
+  virtual FakeSocket* video_rtp_channel();
+  virtual FakeSocket* video_rtcp_channel();
 
   virtual const std::string& jid();
 

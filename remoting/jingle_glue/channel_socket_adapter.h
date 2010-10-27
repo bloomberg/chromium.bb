@@ -16,8 +16,8 @@ class TransportChannel;
 namespace remoting {
 
 // TransportChannelSocketAdapter implements net::Socket interface on
-// top of libjingle's TransportChannel. It is used by JingleChromotingConnection
-// to provide net::Socket interface for channels.
+// top of libjingle's TransportChannel. It is used by
+// JingleChromotocolConnection to provide net::Socket interface for channels.
 class TransportChannelSocketAdapter : public net::Socket,
                                       public sigslot::has_slots<> {
  public:

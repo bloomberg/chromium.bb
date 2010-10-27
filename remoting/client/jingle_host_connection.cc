@@ -8,7 +8,7 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/protocol/jingle_chromoting_server.h"
+#include "remoting/protocol/jingle_chromotocol_server.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
@@ -63,8 +63,8 @@ void JingleHostConnection::InitConnection() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Initialize |chromotocol_server_|.
-  JingleChromotingServer* chromotocol_server =
-      new JingleChromotingServer(message_loop());
+  JingleChromotocolServer* chromotocol_server =
+      new JingleChromotocolServer(context_->jingle_thread());
   // TODO(ajwong): Make this a command switch when we're more stable.
   chromotocol_server->set_allow_local_ips(true);
   chromotocol_server->Init(
@@ -125,32 +125,32 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
 }
 
 void JingleHostConnection::OnNewChromotocolConnection(
-    ChromotingConnection* connection,
-    ChromotingServer::NewConnectionResponse* response) {
+    ChromotocolConnection* connection,
+    ChromotocolServer::IncomingConnectionResponse* response) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   // Client always rejects incoming connections.
-  *response = ChromotingServer::DECLINE;
+  *response = ChromotocolServer::DECLINE;
 }
 
 void JingleHostConnection::OnConnectionStateChange(
-    ChromotingConnection::State state) {
+    ChromotocolConnection::State state) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(event_callback_);
 
   switch (state) {
-    case ChromotingConnection::FAILED:
+    case ChromotocolConnection::FAILED:
       event_callback_->OnConnectionFailed(this);
       break;
 
-    case ChromotingConnection::CLOSED:
+    case ChromotocolConnection::CLOSED:
       event_callback_->OnConnectionClosed(this);
       break;
 
-    case ChromotingConnection::CONNECTED:
+    case ChromotocolConnection::CONNECTED:
       // Initialize reader and writer.
-      event_writer_.Init(connection_->GetEventChannel());
+      event_writer_.Init(connection_->event_channel());
       video_reader_.Init(
-          connection_->GetVideoChannel(),
+          connection_->video_channel(),
           NewCallback(this, &JingleHostConnection::OnVideoMessage));
       event_callback_->OnConnectionOpened(this);
       break;

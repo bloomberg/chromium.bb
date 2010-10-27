@@ -1,5 +1,5 @@
 # Fail under TSan, see http://crbug.com/57832
-JingleChromotingConnectionTest.TestControlChannel
-JingleChromotingConnectionTest.TestEventChannel
-JingleChromotingConnectionTest.TestVideoChannel
-JingleChromotingConnectionTest.TestVideoRtpChannel
+JingleChromotocolConnectionTest.TestControlChannel
+JingleChromotocolConnectionTest.TestEventChannel
+JingleChromotocolConnectionTest.TestVideoChannel
+JingleChromotocolConnectionTest.TestVideoRtpChannel

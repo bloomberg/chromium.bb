@@ -25,8 +25,8 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/jingle_glue/jingle_client.h"
-#include "remoting/protocol/chromoting_connection.h"
-#include "remoting/protocol/chromoting_server.h"
+#include "remoting/protocol/chromotocol_connection.h"
+#include "remoting/protocol/chromotocol_server.h"
 #include "remoting/protocol/stream_reader.h"
 #include "remoting/protocol/stream_writer.h"
 
@@ -53,13 +53,13 @@ class JingleHostConnection : public HostConnection,
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
-  // Callback for ChromotingServer.
+  // Callback for ChromotocolServer.
   void OnNewChromotocolConnection(
-      ChromotingConnection* connection,
-      ChromotingServer::NewConnectionResponse* response);
+      ChromotocolConnection* connection,
+      ChromotocolServer::IncomingConnectionResponse* response);
 
-  // Callback for ChromotingConnection.
-  void OnConnectionStateChange(ChromotingConnection::State state);
+  // Callback for ChromotocolConnection.
+  void OnConnectionStateChange(ChromotocolConnection::State state);
 
  private:
   // The message loop for the jingle thread this object works on.
@@ -81,8 +81,8 @@ class JingleHostConnection : public HostConnection,
   ClientContext* context_;
 
   scoped_refptr<JingleClient> jingle_client_;
-  scoped_refptr<ChromotingServer> chromotocol_server_;
-  scoped_refptr<ChromotingConnection> connection_;
+  scoped_refptr<ChromotocolServer> chromotocol_server_;
+  scoped_refptr<ChromotocolConnection> connection_;
 
   EventStreamWriter event_writer_;
   VideoStreamReader video_reader_;

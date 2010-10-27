@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/jingle_chromoting_connection.h"
+#include "remoting/protocol/jingle_chromotocol_connection.h"
 
 #include "base/message_loop.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/channel_socket_adapter.h"
+#include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/stream_socket_adapter.h"
-#include "remoting/protocol/jingle_chromoting_server.h"
+#include "remoting/protocol/jingle_chromotocol_server.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 #include "third_party/libjingle/source/talk/session/tunnel/pseudotcpchannel.h"
@@ -28,10 +29,10 @@ const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortcp";
 }  // namespace
 
-const char JingleChromotingConnection::kChromotingContentName[] = "chromoting";
+const char JingleChromotocolConnection::kChromotingContentName[] = "chromoting";
 
-JingleChromotingConnection::JingleChromotingConnection(
-    JingleChromotingServer* server)
+JingleChromotocolConnection::JingleChromotocolConnection(
+    JingleChromotocolServer* server)
     : server_(server),
       state_(INITIALIZING),
       closed_(false),
@@ -40,24 +41,24 @@ JingleChromotingConnection::JingleChromotingConnection(
       video_channel_(NULL) {
 }
 
-JingleChromotingConnection::~JingleChromotingConnection() {
+JingleChromotocolConnection::~JingleChromotocolConnection() {
   DCHECK(closed_);
 }
 
-void JingleChromotingConnection::Init(Session* session) {
+void JingleChromotocolConnection::Init(Session* session) {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
 
   session_ = session;
   jid_ = session_->remote_name();
   session_->SignalState.connect(
-      this, &JingleChromotingConnection::OnSessionState);
+      this, &JingleChromotocolConnection::OnSessionState);
 }
 
-bool JingleChromotingConnection::HasSession(cricket::Session* session) {
+bool JingleChromotocolConnection::HasSession(cricket::Session* session) {
   return session_ == session;
 }
 
-Session* JingleChromotingConnection::ReleaseSession() {
+Session* JingleChromotocolConnection::ReleaseSession() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
 
   SetState(CLOSED);
@@ -69,77 +70,77 @@ Session* JingleChromotingConnection::ReleaseSession() {
   return session;
 }
 
-void JingleChromotingConnection::SetStateChangeCallback(
+void JingleChromotocolConnection::SetStateChangeCallback(
     StateChangeCallback* callback) {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   DCHECK(callback);
   state_change_callback_.reset(callback);
 }
 
-net::Socket* JingleChromotingConnection::GetControlChannel() {
+net::Socket* JingleChromotocolConnection::control_channel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return control_channel_adapter_.get();
 }
 
-net::Socket* JingleChromotingConnection::GetEventChannel() {
+net::Socket* JingleChromotocolConnection::event_channel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return event_channel_adapter_.get();
 }
 
 // TODO(sergeyu): Remove this method after we switch to RTP.
-net::Socket* JingleChromotingConnection::GetVideoChannel() {
+net::Socket* JingleChromotocolConnection::video_channel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return video_channel_adapter_.get();
 }
 
-net::Socket* JingleChromotingConnection::GetVideoRtpChannel() {
+net::Socket* JingleChromotocolConnection::video_rtp_channel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return video_rtp_channel_.get();
 }
 
-net::Socket* JingleChromotingConnection::GetVideoRtcpChannel() {
+net::Socket* JingleChromotocolConnection::video_rtcp_channel() {
   DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return video_rtcp_channel_.get();
 }
 
-const std::string& JingleChromotingConnection::jid() {
+const std::string& JingleChromotocolConnection::jid() {
   // No synchronization is needed because jid_ is not changed
-  // after new connection is passed to JingleChromotingServer callback.
+  // after new connection is passed to JingleChromotocolServer callback.
   return jid_;
 }
 
-MessageLoop* JingleChromotingConnection::message_loop() {
+MessageLoop* JingleChromotocolConnection::message_loop() {
   return server_->message_loop();
 }
 
 const CandidateChromotocolConfig*
-JingleChromotingConnection::candidate_config() {
+JingleChromotocolConnection::candidate_config() {
   DCHECK(candidate_config_.get());
   return candidate_config_.get();
 }
 
-void JingleChromotingConnection::set_candidate_config(
+void JingleChromotocolConnection::set_candidate_config(
     const CandidateChromotocolConfig* candidate_config) {
   DCHECK(!candidate_config_.get());
   DCHECK(candidate_config);
   candidate_config_.reset(candidate_config);
 }
 
-const ChromotocolConfig* JingleChromotingConnection::config() {
+const ChromotocolConfig* JingleChromotocolConnection::config() {
   DCHECK(config_.get());
   return config_.get();
 }
 
-void JingleChromotingConnection::set_config(const ChromotocolConfig* config) {
+void JingleChromotocolConnection::set_config(const ChromotocolConfig* config) {
   DCHECK(!config_.get());
   DCHECK(config);
   config_.reset(config);
 }
 
-void JingleChromotingConnection::Close(Task* closed_task) {
+void JingleChromotocolConnection::Close(Task* closed_task) {
   if (MessageLoop::current() != server_->message_loop()) {
     server_->message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JingleChromotingConnection::Close,
+        FROM_HERE, NewRunnableMethod(this, &JingleChromotocolConnection::Close,
                                      closed_task));
     return;
   }
@@ -186,7 +187,7 @@ void JingleChromotingConnection::Close(Task* closed_task) {
   delete closed_task;
 }
 
-void JingleChromotingConnection::OnSessionState(
+void JingleChromotocolConnection::OnSessionState(
     BaseSession* session, BaseSession::State state) {
   DCHECK_EQ(session_, session);
 
@@ -219,7 +220,7 @@ void JingleChromotingConnection::OnSessionState(
   }
 }
 
-void JingleChromotingConnection::OnInitiate() {
+void JingleChromotocolConnection::OnInitiate() {
   jid_ = session_->remote_name();
 
   std::string content_name;
@@ -242,24 +243,20 @@ void JingleChromotingConnection::OnInitiate() {
       session_->CreateChannel(content_name, kVideoRtcpChannelName)));
 
   // Create control channel.
-  // TODO(sergeyu): Don't use talk_base::Thread::Current() here.
-  control_channel_ =
-      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
+  control_channel_ = new PseudoTcpChannel(server_->jingle_thread(), session_);
   control_channel_->Connect(content_name, kControlChannelName);
   control_channel_adapter_.reset(new StreamSocketAdapter(
       control_channel_->GetStream()));
 
   // Create event channel.
-  event_channel_ =
-      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
+  event_channel_ = new PseudoTcpChannel(server_->jingle_thread(), session_);
   event_channel_->Connect(content_name, kEventChannelName);
   event_channel_adapter_.reset(new StreamSocketAdapter(
       event_channel_->GetStream()));
 
   // Create video channel.
   // TODO(sergeyu): Remove video channel when we are ready to switch to RTP.
-  video_channel_ =
-      new PseudoTcpChannel(talk_base::Thread::Current(), session_);
+  video_channel_ = new PseudoTcpChannel(server_->jingle_thread(), session_);
   video_channel_->Connect(content_name, kVideoChannelName);
   video_channel_adapter_.reset(new StreamSocketAdapter(
       video_channel_->GetStream()));
@@ -270,7 +267,7 @@ void JingleChromotingConnection::OnInitiate() {
   SetState(CONNECTING);
 }
 
-void JingleChromotingConnection::OnAccept() {
+void JingleChromotocolConnection::OnAccept() {
   // Set config for outgoing connections.
   if (session_->initiator()) {
     const cricket::ContentInfo* content =
@@ -278,8 +275,8 @@ void JingleChromotingConnection::OnAccept() {
             kChromotingXmlNamespace);
     CHECK(content);
 
-    const ChromotingContentDescription* content_description =
-        static_cast<const ChromotingContentDescription*>(content->description);
+    const ChromotocolContentDescription* content_description =
+        static_cast<const ChromotocolContentDescription*>(content->description);
     ChromotocolConfig* config = content_description->config()->GetFinalConfig();
 
     // Terminate the session if the config we received is invalid.
@@ -297,7 +294,7 @@ void JingleChromotingConnection::OnAccept() {
   SetState(CONNECTED);
 }
 
-void JingleChromotingConnection::OnTerminate() {
+void JingleChromotocolConnection::OnTerminate() {
   if (control_channel_adapter_.get())
     control_channel_adapter_->Close(net::ERR_CONNECTION_ABORTED);
   if (control_channel_) {
@@ -329,7 +326,7 @@ void JingleChromotingConnection::OnTerminate() {
   closed_ = true;
 }
 
-void JingleChromotingConnection::SetState(State new_state) {
+void JingleChromotocolConnection::SetState(State new_state) {
   if (new_state != state_) {
     state_ = new_state;
     if (!closed_ && state_change_callback_.get())

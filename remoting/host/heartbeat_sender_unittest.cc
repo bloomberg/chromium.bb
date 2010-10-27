@@ -6,7 +6,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
 #include "base/string_number_conversions.h"
-#include "media/base/data_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_key_pair.h"

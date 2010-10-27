@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/data_buffer.h"
+#include "base/ref_counted.h"
 #include "remoting/host/differ_block.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

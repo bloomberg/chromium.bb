@@ -4,7 +4,7 @@
 
 // SessionManagerPair class is used by unittests to create a pair of session
 // managers connected to each other. These session managers are then can be
-// passed to a pair of JingleChromotingConnection objects, so that it is
+// passed to a pair of JingleChromotocolConnection objects, so that it is
 // possible to simulate connection between host and client.
 
 #ifndef REMOTING_PROTOCOL_MOCK_SESSION_MANAGER_H_

@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_MOCK_OBJECTS_H_
 #define REMOTING_HOST_MOCK_OBJECTS_H_
 
-#include "media/base/data_buffer.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/event_executor.h"

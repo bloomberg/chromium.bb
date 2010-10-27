@@ -24,7 +24,7 @@ extern "C" {
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/protocol/jingle_chromoting_server.h"
+#include "remoting/protocol/jingle_chromotocol_server.h"
 
 using remoting::kChromotingTokenServiceName;
 
@@ -51,13 +51,13 @@ class ProtocolTestConnection
         closed_event_(true, false) {
   }
 
-  void Init(ChromotingConnection* connection);
+  void Init(ChromotocolConnection* connection);
   void Write(const std::string& str);
   void Read();
   void Close();
 
-  // ChromotingConnection::Callback interface.
-  virtual void OnStateChange(ChromotingConnection::State state);
+  // ChromotocolConnection::Callback interface.
+  virtual void OnStateChange(ChromotocolConnection::State state);
  private:
   void DoWrite(scoped_refptr<net::IOBuffer> buf, int size);
   void DoRead();
@@ -71,7 +71,7 @@ class ProtocolTestConnection
 
   ProtocolTestClient* client_;
   MessageLoop* message_loop_;
-  scoped_refptr<ChromotingConnection> connection_;
+  scoped_refptr<ChromotocolConnection> connection_;
   net::CompletionCallbackImpl<ProtocolTestConnection> write_cb_;
   bool pending_write_;
   net::CompletionCallbackImpl<ProtocolTestConnection> read_cb_;
@@ -97,10 +97,10 @@ class ProtocolTestClient
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
-  // callback for JingleChromotingServer interface.
+  // callback for JingleChromotocolServer interface.
   virtual void OnNewChromotocolConnection(
-      ChromotingConnection* connection,
-      ChromotingServer::NewConnectionResponse* response);
+      ChromotocolConnection* connection,
+      ChromotocolServer::IncomingConnectionResponse* response);
 
  private:
   typedef std::list<scoped_refptr<ProtocolTestConnection> > ConnectionsList;
@@ -110,14 +110,14 @@ class ProtocolTestClient
 
   std::string host_jid_;
   scoped_refptr<JingleClient> client_;
-  scoped_refptr<JingleChromotingServer> server_;
+  scoped_refptr<JingleChromotocolServer> server_;
   ConnectionsList connections_;
   Lock connections_lock_;
   base::WaitableEvent closed_event_;
 };
 
 
-void ProtocolTestConnection::Init(ChromotingConnection* connection) {
+void ProtocolTestConnection::Init(ChromotocolConnection* connection) {
   connection_ = connection;
 }
 
@@ -139,7 +139,7 @@ void ProtocolTestConnection::DoWrite(
     return;
   }
 
-  net::Socket* channel = connection_->GetEventChannel();
+  net::Socket* channel = connection_->event_channel();
   if (channel != NULL) {
     int result = channel->Write(buf, size, &write_cb_);
     if (result < 0) {
@@ -162,7 +162,7 @@ void ProtocolTestConnection::Read() {
 void ProtocolTestConnection::DoRead() {
   read_buffer_ = new net::IOBuffer(kBufferSize);
   while (true) {
-    int result = connection_->GetEventChannel()->Read(
+    int result = connection_->event_channel()->Read(
         read_buffer_, kBufferSize, &read_cb_);
     if (result < 0) {
       if (result != net::ERR_IO_PENDING)
@@ -185,12 +185,12 @@ void ProtocolTestConnection::OnFinishedClosing() {
 }
 
 void ProtocolTestConnection::OnStateChange(
-    ChromotingConnection::State state) {
+    ChromotocolConnection::State state) {
   LOG(INFO) << "State of " << connection_->jid() << " changed to " << state;
-  if (state == ChromotingConnection::CONNECTED) {
+  if (state == ChromotocolConnection::CONNECTED) {
     // Start reading after we've connected.
     Read();
-  } else if (state == ChromotingConnection::CLOSED) {
+  } else if (state == ChromotocolConnection::CLOSED) {
     std::cerr << "Connection to " << connection_->jid()
               << " closed" << std::endl;
     client_->OnConnectionClosed(this);
@@ -226,7 +226,7 @@ void ProtocolTestClient::Run(const std::string& username,
   client_ = new JingleClient(&jingle_thread);
   client_->Init(username, auth_token, kChromotingTokenServiceName, this);
 
-  server_ = new JingleChromotingServer(jingle_thread.message_loop());
+  server_ = new JingleChromotocolServer(&jingle_thread);
 
   host_jid_ = host_jid;
 
@@ -296,12 +296,12 @@ void ProtocolTestClient::OnStateChange(
 }
 
 void ProtocolTestClient::OnNewChromotocolConnection(
-    ChromotingConnection* connection,
-    ChromotingServer::NewConnectionResponse* response) {
+    ChromotocolConnection* connection,
+    ChromotocolServer::IncomingConnectionResponse* response) {
   std::cerr << "Accepting connection from " << connection->jid() << std::endl;
 
   connection->set_config(ChromotocolConfig::CreateDefault());
-  *response = ChromotingServer::ACCEPT;
+  *response = ChromotocolServer::ACCEPT;
 
   ProtocolTestConnection* test_connection =
       new ProtocolTestConnection(this, client_->message_loop());

@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "media/base/data_buffer.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/client_connection.h"

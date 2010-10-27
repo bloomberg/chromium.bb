@@ -12,15 +12,9 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/chromoting_connection.h"
+#include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/stream_reader.h"
 #include "remoting/protocol/stream_writer.h"
-
-namespace media {
-
-class DataBuffer;
-
-}  // namespace media
 
 namespace remoting {
 
@@ -61,10 +55,10 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
 
   virtual ~ClientConnection();
 
-  virtual void Init(ChromotingConnection* connection);
+  virtual void Init(ChromotocolConnection* connection);
 
   // Returns the connection in use.
-  virtual ChromotingConnection* connection() { return connection_; }
+  virtual ChromotocolConnection* connection();
 
   // Send information to the client for initialization.
   virtual void SendInitClientMessage(int width, int height);
@@ -90,14 +84,14 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   ClientConnection();
 
  private:
-  // Callback for ChromotingConnection.
-  void OnConnectionStateChange(ChromotingConnection::State state);
+  // Callback for ChromotocolConnection.
+  void OnConnectionStateChange(ChromotocolConnection::State state);
 
   // Callback for EventsStreamReader.
   void OnMessageReceived(ChromotingClientMessage* message);
 
   // Process a libjingle state change event on the |loop_|.
-  void StateChangeTask(ChromotingConnection::State state);
+  void StateChangeTask(ChromotocolConnection::State state);
 
   // Process a data buffer received from libjingle.
   void MessageReceivedTask(ChromotingClientMessage* message);
@@ -105,7 +99,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   void OnClosed();
 
   // The libjingle channel used to send and receive data from the remote client.
-  scoped_refptr<ChromotingConnection> connection_;
+  scoped_refptr<ChromotocolConnection> connection_;
 
   EventStreamReader event_reader_;
   VideoStreamWriter video_writer_;

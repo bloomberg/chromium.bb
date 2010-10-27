@@ -28,12 +28,16 @@ ClientConnection::~ClientConnection() {
   // connection.
 }
 
-void ClientConnection::Init(ChromotingConnection* connection) {
+void ClientConnection::Init(ChromotocolConnection* connection) {
   DCHECK_EQ(connection->message_loop(), MessageLoop::current());
 
   connection_ = connection;
   connection_->SetStateChangeCallback(
       NewCallback(this, &ClientConnection::OnConnectionStateChange));
+}
+
+ChromotocolConnection* ClientConnection::connection() {
+  return connection_;
 }
 
 void ClientConnection::SendInitClientMessage(int width, int height) {
@@ -79,12 +83,12 @@ void ClientConnection::Disconnect() {
 ClientConnection::ClientConnection() {}
 
 void ClientConnection::OnConnectionStateChange(
-    ChromotingConnection::State state) {
-  if (state == ChromotingConnection::CONNECTED) {
+    ChromotocolConnection::State state) {
+  if (state == ChromotocolConnection::CONNECTED) {
     event_reader_.Init(
-        connection_->GetEventChannel(),
+        connection_->event_channel(),
         NewCallback(this, &ClientConnection::OnMessageReceived));
-    video_writer_.Init(connection_->GetVideoChannel());
+    video_writer_.Init(connection_->video_channel());
   }
 
   loop_->PostTask(FROM_HERE,
@@ -97,21 +101,21 @@ void ClientConnection::OnMessageReceived(ChromotingClientMessage* message) {
                         message));
 }
 
-void ClientConnection::StateChangeTask(ChromotingConnection::State state) {
+void ClientConnection::StateChangeTask(ChromotocolConnection::State state) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   DCHECK(handler_);
   switch(state) {
-    case ChromotingConnection::CONNECTING:
+    case ChromotocolConnection::CONNECTING:
       break;
     // Don't care about this message.
-    case ChromotingConnection::CONNECTED:
+    case ChromotocolConnection::CONNECTED:
       handler_->OnConnectionOpened(this);
       break;
-    case ChromotingConnection::CLOSED:
+    case ChromotocolConnection::CLOSED:
       handler_->OnConnectionClosed(this);
       break;
-    case ChromotingConnection::FAILED:
+    case ChromotocolConnection::FAILED:
       handler_->OnConnectionFailed(this);
       break;
     default:
@@ -126,7 +130,7 @@ void ClientConnection::MessageReceivedTask(ChromotingClientMessage* message) {
   handler_->HandleMessage(this, message);
 }
 
-// OnClosed() is used as a callback for ChromotingConnection::Close().
+// OnClosed() is used as a callback for ChromotocolConnection::Close().
 void ClientConnection::OnClosed() {
 }
 

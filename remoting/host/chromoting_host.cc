@@ -15,7 +15,7 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/protocol/messages_decoder.h"
-#include "remoting/protocol/jingle_chromoting_server.h"
+#include "remoting/protocol/jingle_chromotocol_server.h"
 
 namespace remoting {
 
@@ -215,8 +215,8 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     VLOG(1) << "Host connected as " << jingle_client->GetFullJid();
 
     // Create and start |chromotocol_server_|.
-    JingleChromotingServer* server =
-        new JingleChromotingServer(context_->jingle_thread()->message_loop());
+    JingleChromotocolServer* server =
+        new JingleChromotocolServer(context_->jingle_thread());
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
     server->Init(jingle_client->GetFullJid(),
@@ -239,18 +239,18 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 }
 
 void ChromotingHost::OnNewClientConnection(
-    ChromotingConnection* connection,
-    ChromotingServer::NewConnectionResponse* response) {
+    ChromotocolConnection* connection,
+    ChromotocolServer::IncomingConnectionResponse* response) {
   AutoLock auto_lock(lock_);
   // TODO(hclam): Allow multiple clients to connect to the host.
   if (client_.get() || state_ != kStarted) {
-    *response = ChromotingServer::DECLINE;
+    *response = ChromotocolServer::DECLINE;
     return;
   }
 
   // Check that the user has access to the host.
   if (!access_verifier_.VerifyPermissions(connection->jid())) {
-    *response = ChromotingServer::DECLINE;
+    *response = ChromotocolServer::DECLINE;
     return;
   }
 
@@ -266,13 +266,13 @@ void ChromotingHost::OnNewClientConnection(
   if (!config) {
     LOG(WARNING) << "Rejecting connection from " << connection->jid()
                  << " because no compartible configuration has been found.";
-    *response = ChromotingServer::INCOMPATIBLE;
+    *response = ChromotocolServer::INCOMPATIBLE;
     return;
   }
 
   connection->set_config(config);
 
-  *response = ChromotingServer::ACCEPT;
+  *response = ChromotocolServer::ACCEPT;
 
   VLOG(1) << "Client connected: " << connection->jid();
 
