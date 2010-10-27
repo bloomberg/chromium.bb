@@ -24,9 +24,6 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
                              HtmlDialogUIDelegate* delegate);
   ~ConstrainedHtmlDelegateWin();
 
-  // Called when the dialog is actually being added to the views hierarchy.
-  void Init(gfx::NativeView parent_window);
-
   // ConstrainedHtmlUIDelegate interface.
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
   virtual void OnDialogClose();
@@ -44,15 +41,18 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
   void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Overridden from TabContentsContainer.
+  virtual gfx::Size GetPreferredSize() {
+    gfx::Size size;
+    html_delegate_->GetDialogSize(&size);
+    return size;
+  }
+
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) {
     TabContentsContainer::ViewHierarchyChanged(is_add, parent, child);
     if (is_add && child == this) {
       ChangeTabContents(&html_tab_contents_);
-      gfx::Size size;
-      html_delegate_->GetDialogSize(&size);
-      SetBounds(x(), y(), size.width(), size.height());
     }
   }
 
