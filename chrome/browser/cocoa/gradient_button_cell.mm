@@ -448,7 +448,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
         active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
                  BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
         true) : [NSColor colorWithCalibratedWhite:0.0
-                                            alpha:0.6 * outerStrokeAlphaMult_];
+                                            alpha:0.3 * outerStrokeAlphaMult_];
   }
   [strokeColor setStroke];
 
