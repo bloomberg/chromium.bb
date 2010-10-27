@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/point.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -2336,6 +2337,11 @@ GURL Browser::GetHomePage() const {
   // --homepage overrides any preferences.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kHomePage)) {
+    // TODO(evanm): clean up usage of DIR_CURRENT.
+    //   http://code.google.com/p/chromium/issues/detail?id=60630
+    // For now, allow this code to call getcwd().
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     FilePath browser_directory;
     PathService::Get(base::DIR_CURRENT, &browser_directory);
     GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,

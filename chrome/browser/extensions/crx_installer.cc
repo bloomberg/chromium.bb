@@ -12,6 +12,7 @@
 #include "base/singleton.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -112,7 +113,12 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
   source_file_ = source_file;
 
   FilePath user_data_temp_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
+  {
+    // We shouldn't be doing disk IO on the UI thread.
+    //   http://code.google.com/p/chromium/issues/detail?id=60634
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    CHECK(PathService::Get(chrome::DIR_USER_DATA_TEMP, &user_data_temp_dir));
+  }
 
   scoped_refptr<SandboxedExtensionUnpacker> unpacker(
       new SandboxedExtensionUnpacker(

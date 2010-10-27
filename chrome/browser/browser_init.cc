@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_list.h"
@@ -851,7 +852,14 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
     } else {
       // This will create a file URL or a regular URL.
-      GURL url(URLFixerUpper::FixupRelativeFile(cur_dir_, param));
+      // This call can (in rare circumstances) block the UI thread.
+      // Allow it until this bug is fixed.
+      //  http://code.google.com/p/chromium/issues/detail?id=60641
+      GURL url;
+      {
+        base::ThreadRestrictions::ScopedAllowIO allow_io;
+        url = URLFixerUpper::FixupRelativeFile(cur_dir_, param);
+      }
       // Exclude dangerous schemes.
       if (url.is_valid()) {
         ChildProcessSecurityPolicy *policy =

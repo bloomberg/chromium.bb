@@ -6,13 +6,14 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/callback.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
@@ -52,6 +53,11 @@ void ImportDataHandler::GetLocalizedValues(
 
 void ImportDataHandler::Initialize() {
   importer_list_.reset(new ImporterList);
+
+  // We should not be loading profiles from the UI thread!
+  // Temporarily allow this until we fix
+  //   http://code.google.com/p/chromium/issues/detail?id=60825
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   importer_list_->DetectSourceProfiles();
   int profiles_count = importer_list_->GetAvailableProfileCount();
 

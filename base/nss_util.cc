@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/stringprintf.h"
+#include "base/thread_restrictions.h"
 
 // USE_NSS means we use NSS for everything crypto-related.  If USE_NSS is not
 // defined, such as on Mac and Windows, we use NSS for SSL only -- we don't
@@ -310,6 +311,10 @@ void EnsureNSPRInit() {
 }
 
 void EnsureNSSInit() {
+  // Initializing SSL causes us to do blocking IO.
+  // Temporarily allow it until we fix
+  //   http://code.google.com/p/chromium/issues/detail?id=59847
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   Singleton<NSSInitSingleton>::get();
 }
 

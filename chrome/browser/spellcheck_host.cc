@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_split.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profile.h"
@@ -28,7 +29,13 @@ namespace {
 
 FilePath GetFirstChoiceFilePath(const std::string& language) {
   FilePath dict_dir;
-  PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
+  {
+    // This should not do blocking IO from the UI thread!
+    // Temporarily allow it for now.
+    //   http://code.google.com/p/chromium/issues/detail?id=60643
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
+  }
   return SpellCheckCommon::GetVersionedFileName(language, dict_dir);
 }
 
