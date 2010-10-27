@@ -429,11 +429,7 @@ void WebPluginDelegateStub::CreateSharedBuffer(
     uint32 size,
     base::SharedMemory* shared_buf,
     base::SharedMemoryHandle* remote_handle) {
-  if (!shared_buf->Create(std::string(), false, false, size)) {
-    NOTREACHED();
-    return;
-  }
-  if (!shared_buf->Map(size)) {
+  if (!shared_buf->CreateAndMapAnonymous(size)) {
     NOTREACHED();
     shared_buf->Close();
     return;

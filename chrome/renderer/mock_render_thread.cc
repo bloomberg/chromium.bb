@@ -147,8 +147,7 @@ void MockRenderThread::OnDuplicateSection(
 void MockRenderThread::OnAllocatePDFTransport(
     uint32 buffer_size, base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
-  shared_buf.Create("", false, false, buffer_size);
-  if (!shared_buf.Map(buffer_size)) {
+  if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
     *handle = base::SharedMemory::NULLHandle();
     NOTREACHED() << "Cannot map PDF transport buffer";
     return;

@@ -225,7 +225,7 @@ void AudioRendererHost::DoCompleteCreation(
 
     SendMessage(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
         entry->render_view_id, entry->stream_id, foreign_memory_handle,
-        foreign_socket_handle, entry->shared_memory.max_size()));
+        foreign_socket_handle, entry->shared_memory.created_size()));
     return;
   }
 
@@ -233,7 +233,7 @@ void AudioRendererHost::DoCompleteCreation(
   // process.
   SendMessage(new ViewMsg_NotifyAudioStreamCreated(
       entry->render_view_id, entry->stream_id, foreign_memory_handle,
-      entry->shared_memory.max_size()));
+      entry->shared_memory.created_size()));
 }
 
 void AudioRendererHost::DoSendPlayingMessage(
@@ -355,8 +355,7 @@ void AudioRendererHost::OnCreateStream(
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
   // Create the shared memory and share with the renderer process.
-  if (!entry->shared_memory.Create("", false, false, hardware_packet_size) ||
-      !entry->shared_memory.Map(entry->shared_memory.max_size())) {
+  if (!entry->shared_memory.CreateAndMapAnonymous(hardware_packet_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(msg.routing_id(), stream_id);
     return;
@@ -480,7 +479,7 @@ void AudioRendererHost::OnNotifyPacketReady(
   }
 
   DCHECK(!entry->controller->LowLatencyMode());
-  CHECK(packet_size <= entry->shared_memory.max_size());
+  CHECK(packet_size <= entry->shared_memory.created_size());
 
   if (!entry->pending_buffer_request) {
     NOTREACHED() << "Buffer received but no such pending request";

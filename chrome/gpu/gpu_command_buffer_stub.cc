@@ -162,7 +162,7 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
     // process.
     buffer.shared_memory->ShareToProcess(channel_->renderer_handle(),
                                          transfer_buffer);
-    *size = buffer.shared_memory->max_size();
+    *size = buffer.shared_memory->created_size();
   }
 }
 

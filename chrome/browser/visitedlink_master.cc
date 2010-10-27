@@ -675,14 +675,7 @@ bool VisitedLinkMaster::CreateURLTable(int32 num_entries, bool init_to_empty) {
   if (!shared_memory_)
     return false;
 
-  if (!shared_memory_->Create(std::string() /* anonymous */,
-                              false /* read-write */, false /* create */,
-                              alloc_size)) {
-    return false;
-  }
-
-  // Map into our process.
-  if (!shared_memory_->Map(alloc_size)) {
+  if (!shared_memory_->CreateAndMapAnonymous(alloc_size)) {
     delete shared_memory_;
     shared_memory_ = NULL;
     return false;

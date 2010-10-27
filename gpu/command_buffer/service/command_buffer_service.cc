@@ -43,9 +43,8 @@ bool CommandBufferService::Initialize(int32 size) {
   num_entries_ = size / sizeof(CommandBufferEntry);
 
   ring_buffer_.reset(new SharedMemory);
-  if (ring_buffer_->Create(std::string(), false, false, size)) {
-    if (ring_buffer_->Map(size))
-      return true;
+  if (ring_buffer_->CreateAndMapAnonymous(size)) {
+    return true;
   }
 
   num_entries_ = 0;
@@ -61,7 +60,7 @@ Buffer CommandBufferService::GetRingBuffer() {
   Buffer buffer;
   if (ring_buffer_.get()) {
     buffer.ptr = ring_buffer_->memory();
-    buffer.size = ring_buffer_->max_size();
+    buffer.size = ring_buffer_->created_size();
     buffer.shared_memory = ring_buffer_.get();
   }
   return buffer;
@@ -100,7 +99,7 @@ void CommandBufferService::SetGetOffset(int32 get_offset) {
 
 int32 CommandBufferService::CreateTransferBuffer(size_t size) {
   linked_ptr<SharedMemory> buffer(new SharedMemory);
-  if (!buffer->Create(std::string(), false, false, size))
+  if (!buffer->CreateAnonymous(size))
     return -1;
 
   if (unused_registered_object_elements_.empty()) {
@@ -153,13 +152,13 @@ Buffer CommandBufferService::GetTransferBuffer(int32 handle) {
     return Buffer();
 
   if (!shared_memory->memory()) {
-    if (!shared_memory->Map(shared_memory->max_size()))
+    if (!shared_memory->Map(shared_memory->created_size()))
       return Buffer();
   }
 
   Buffer buffer;
   buffer.ptr = shared_memory->memory();
-  buffer.size = shared_memory->max_size();
+  buffer.size = shared_memory->created_size();
   buffer.shared_memory = shared_memory;
   return buffer;
 }

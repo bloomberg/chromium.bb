@@ -253,14 +253,7 @@ static base::SharedMemory* Serialize(const UserScriptList& scripts) {
   // Create the shared memory object.
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
 
-  if (!shared_memory->Create(std::string(),  // anonymous
-                             false,  // read-only
-                             false,  // open existing
-                             pickle.size()))
-    return NULL;
-
-  // Map into our process.
-  if (!shared_memory->Map(pickle.size()))
+  if (!shared_memory->CreateAndMapAnonymous(pickle.size()))
     return NULL;
 
   // Copy the pickle to shared memory.

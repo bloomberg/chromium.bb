@@ -109,7 +109,7 @@ class GpuVideoDecoderHostTest : public testing::Test,
         new GpuVideoDecoderHost(&router_, this, kContextRouteId,
                                 kDecoderHostId));
     shared_memory_.reset(new base::SharedMemory());
-    shared_memory_->Create("", false, false, kTransportBufferSize);
+    shared_memory_->CreateAnonymous(kTransportBufferSize);
 
     GpuVideoDecoderHostMsg_CreateVideoDecoderDone msg1(kDecoderHostId,
                                                        kDecoderId);

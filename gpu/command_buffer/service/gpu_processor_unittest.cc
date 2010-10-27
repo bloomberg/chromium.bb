@@ -29,8 +29,7 @@ class GPUProcessorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     shared_memory_.reset(new ::base::SharedMemory);
-    shared_memory_->Create(std::string(), false, false, kRingBufferSize);
-    shared_memory_->Map(kRingBufferSize);
+    shared_memory_->CreateAndMapAnonymous(kRingBufferSize);
     buffer_ = static_cast<int32*>(shared_memory_->memory());
     shared_memory_buffer_.ptr = buffer_;
     shared_memory_buffer_.size = kRingBufferSize;

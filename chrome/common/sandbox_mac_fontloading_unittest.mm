@@ -91,13 +91,8 @@ bool FontLoadingTestCase::BeforeSandboxInit() {
     return false;
   }
 
-  if (!font_shmem_->Create("", false, false, font_data_length_)) {
+  if (!font_shmem_->CreateAndMapAnonymous(font_data_length_)) {
     LOG(ERROR) << "SharedMemory::Create failed";
-    return false;
-  }
-
-  if (!font_shmem_->Map(font_data_length_)) {
-    LOG(ERROR) << "SharedMemory::Map failed";
     return false;
   }
 

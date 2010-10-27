@@ -62,10 +62,7 @@ bool GpuVideoDecoder::CreateInputTransferBuffer(
   if (!input_transfer_buffer_.get())
     return false;
 
-  if (!input_transfer_buffer_->Create(std::string(), false, false, size))
-    return false;
-
-  if (!input_transfer_buffer_->Map(size))
+  if (!input_transfer_buffer_->CreateAndMapAnonymous(size))
     return false;
 
   if (!input_transfer_buffer_->ShareToProcess(renderer_handle_, handle))

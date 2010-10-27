@@ -117,9 +117,7 @@ class ResourceDispatcherTest : public testing::Test,
 
       // received data message with the test contents
       base::SharedMemory shared_mem;
-      EXPECT_TRUE(shared_mem.Create(std::string(), false, false,
-                                    test_page_contents_len));
-      EXPECT_TRUE(shared_mem.Map(test_page_contents_len));
+      EXPECT_TRUE(shared_mem.CreateAndMapAnonymous(test_page_contents_len));
       char* put_data_here = static_cast<char*>(shared_mem.memory());
       memcpy(put_data_here, test_page_contents, test_page_contents_len);
       base::SharedMemoryHandle dup_handle;
@@ -291,8 +289,8 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 
  protected:
   virtual void SetUp() {
-    EXPECT_EQ(true, shared_handle_.Create("DeferredResourceLoaderTest", false,
-                                          false, 100));
+    EXPECT_EQ(true, shared_handle_.CreateNamed("DeferredResourceLoaderTest",
+                                               false, 100));
     ResourceDispatcherTest::SetUp();
   }
 

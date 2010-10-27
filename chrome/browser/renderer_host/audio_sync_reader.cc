@@ -20,9 +20,9 @@ void AudioSyncReader::UpdatePendingBytes(uint32 bytes) {
 }
 
 uint32 AudioSyncReader::Read(void* data, uint32 size) {
-  int read_size = std::min(size, shared_memory_->max_size());
+  uint32 read_size = std::min(size, shared_memory_->created_size());
   memcpy(data, shared_memory_->memory(), read_size);
-  memset(shared_memory_->memory(), 0, shared_memory_->max_size());
+  memset(shared_memory_->memory(), 0, shared_memory_->created_size());
   return read_size;
 }
 

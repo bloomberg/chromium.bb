@@ -255,8 +255,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
 
   // Create shared memory region.
   base::SharedMemory shared_buf;
-  ASSERT_TRUE(shared_buf.Create("", false, true, bytes));
-  ASSERT_TRUE(shared_buf.Map(bytes));
+  ASSERT_TRUE(shared_buf.CreateAndMapAnonymous(bytes));
   memcpy(shared_buf.memory(), fake_bitmap, bytes);
   base::SharedMemoryHandle handle_to_share;
   base::ProcessHandle current_process = base::kNullProcessHandle;

@@ -169,7 +169,7 @@ void CommandBufferStub::OnGetTransferBuffer(
   Buffer buffer = command_buffer_->GetTransferBuffer(id);
   if (buffer.shared_memory) {
     buffer.shared_memory->ShareToProcess(peer_handle, transfer_buffer);
-    *size = buffer.shared_memory->max_size();
+    *size = buffer.shared_memory->created_size();
   }
 
   base::CloseProcessHandle(peer_handle);
