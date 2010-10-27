@@ -10,7 +10,7 @@
 
 namespace skia {
 
-class SkBitmapPlatformDeviceFactory : public SkRasterDeviceFactory {
+class BitmapPlatformDeviceFactory : public SkDeviceFactory {
  public:
   virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
                               bool isOpaque, bool isForLayer);
@@ -69,7 +69,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
   virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(SkBitmapPlatformDeviceFactory);
+    return SkNEW(BitmapPlatformDeviceFactory);
   }
 
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The

@@ -12,18 +12,18 @@
 
 namespace skia {
 
-SkDevice* SkVectorPlatformDeviceFactory::newDevice(SkBitmap::Config config,
-                                                   int width, int height,
-                                                   bool isOpaque,
-                                                   bool isForLayer) {
+SkDevice* VectorPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+                                                 int width, int height,
+                                                 bool isOpaque,
+                                                 bool isForLayer) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
   return CreateDevice(width, height, isOpaque, NULL);
 }
 
 //static
-SkDevice* SkVectorPlatformDeviceFactory::CreateDevice(int width, int height,
-                                                      bool is_opaque,
-                                                      HANDLE shared_section) {
+SkDevice* VectorPlatformDeviceFactory::CreateDevice(int width, int height,
+                                                    bool is_opaque,
+                                                    HANDLE shared_section) {
   if (!is_opaque) {
     // TODO(maruel):  http://crbug.com/18382 When restoring a semi-transparent
     // layer, i.e. merging it, we need to rasterize it because GDI doesn't

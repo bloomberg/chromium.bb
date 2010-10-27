@@ -16,8 +16,8 @@ VectorCanvas::VectorCanvas(HDC dc, int width, int height) {
 }
 
 bool VectorCanvas::initialize(HDC context, int width, int height) {
-  SkDevice* device = SkVectorPlatformDeviceFactory::CreateDevice(width, height,
-                                                                 true, context);
+  SkDevice* device = VectorPlatformDeviceFactory::CreateDevice(width, height,
+                                                               true, context);
   if (!device)
     return false;
 

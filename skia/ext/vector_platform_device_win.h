@@ -12,7 +12,7 @@
 
 namespace skia {
 
-class SkVectorPlatformDeviceFactory : public SkRasterDeviceFactory {
+class VectorPlatformDeviceFactory : public SkDeviceFactory {
  public:
   virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
                               bool isOpaque, bool isForLayer);
@@ -33,7 +33,7 @@ class VectorPlatformDevice : public PlatformDevice {
   virtual ~VectorPlatformDevice();
 
   virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(SkVectorPlatformDeviceFactory);
+    return SkNEW(VectorPlatformDeviceFactory);
   }
 
   virtual HDC getBitmapDC() {

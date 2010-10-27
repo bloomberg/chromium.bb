@@ -15,7 +15,7 @@
 #elif defined(__APPLE__)
 #include "skia/ext/bitmap_platform_device_mac.h"
 namespace skia {
-typedef SkBitmapPlatformDeviceFactory SkVectorPlatformDeviceFactory;
+typedef BitmapPlatformDeviceFactory VectorPlatformDeviceFactory;
 }  // namespace skia
 #endif
 

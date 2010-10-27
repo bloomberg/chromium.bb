@@ -15,10 +15,10 @@
 
 namespace skia {
 
-SkDevice* SkBitmapPlatformDeviceFactory::newDevice(SkBitmap::Config config,
-                                                   int width, int height,
-                                                   bool isOpaque,
-                                                   bool isForLayer) {
+SkDevice* BitmapPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+                                                 int width, int height,
+                                                 bool isOpaque,
+                                                 bool isForLayer) {
   SkASSERT(config == SkBitmap::kARGB_8888_Config);
   return BitmapPlatformDevice::create(width, height, isOpaque, NULL);
 }

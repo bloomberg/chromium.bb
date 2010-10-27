@@ -15,8 +15,8 @@ VectorCanvas::VectorCanvas(cairo_t* context, int width, int height) {
 }
 
 bool VectorCanvas::initialize(cairo_t* context, int width, int height) {
-  SkDevice* device = SkVectorPlatformDeviceFactory::CreateDevice(context, width,
-                                                                 height, true);
+  SkDevice* device = VectorPlatformDeviceFactory::CreateDevice(context, width,
+                                                               height, true);
   if (!device)
     return false;
 

@@ -10,7 +10,7 @@
 namespace skia {
 
 PlatformCanvas::PlatformCanvas()
-    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
+    : SkCanvas(SkNEW(BitmapPlatformDeviceFactory)) {
 }
 
 PlatformCanvas::PlatformCanvas(SkDeviceFactory* factory) : SkCanvas(factory) {

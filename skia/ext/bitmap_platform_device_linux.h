@@ -43,7 +43,7 @@ typedef struct _cairo_surface cairo_surface_t;
 
 namespace skia {
 
-class SkBitmapPlatformDeviceFactory : public SkRasterDeviceFactory {
+class BitmapPlatformDeviceFactory : public SkDeviceFactory {
  public:
   virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
                               bool isOpaque, bool isForLayer);
@@ -86,7 +86,7 @@ class BitmapPlatformDevice : public PlatformDevice {
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
 
   virtual SkDeviceFactory* getDeviceFactory() {
-    return SkNEW(SkBitmapPlatformDeviceFactory);
+    return SkNEW(BitmapPlatformDeviceFactory);
   }
 
   virtual void makeOpaque(int x, int y, int width, int height);

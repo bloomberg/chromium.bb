@@ -10,7 +10,7 @@
 namespace skia {
 
 PlatformCanvas::PlatformCanvas(int width, int height, bool is_opaque)
-    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
+    : SkCanvas(SkNEW(BitmapPlatformDeviceFactory)) {
   initialize(width, height, is_opaque);
 }
 
@@ -18,7 +18,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                CGContextRef context)
-    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
+    : SkCanvas(SkNEW(BitmapPlatformDeviceFactory)) {
   initialize(width, height, is_opaque);
 }
 
@@ -26,7 +26,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                uint8_t* data)
-    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
+    : SkCanvas(SkNEW(BitmapPlatformDeviceFactory)) {
   initialize(width, height, is_opaque, data);
 }
 
