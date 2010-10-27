@@ -55,13 +55,14 @@ const char kShowHomeButton[] = "ShowHomeButton";
 const char kPrintingEnabled[] = "PrintingEnabled";
 const char kJavascriptEnabled[] = "JavascriptEnabled";
 const char kSavingBrowserHistoryDisabled[] = "SavingBrowserHistoryDisabled";
+const char kDeveloperToolsDisabled[] = "DeveloperToolsDisabled";
+const char kBlockThirdPartyCookies[] = "BlockThirdPartyCookies";
 
 // Chrome Frame specific policy constants
 const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";
 const char kRenderInChromeFrameList[] = "RenderInChromeFrameList";
 const char kRenderInHostList[] = "RenderInHostList";
 const char kChromeFrameContentTypes[] = "ChromeFrameContentTypes";
-const char kDeveloperToolsDisabled[] = "DeveloperToolsDisabled";
 
 #if defined(OS_CHROMEOS)
 // ChromeOS policy constants

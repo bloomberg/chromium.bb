@@ -53,6 +53,7 @@ extern const char kPrintingEnabled[];
 extern const char kJavascriptEnabled[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kDeveloperToolsDisabled[];
+extern const char kBlockThirdPartyCookies[];
 
 // Chrome Frame specific policy constants
 extern const char kChromeFrameRendererSettings[];

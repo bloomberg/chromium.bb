@@ -59,6 +59,7 @@ class ConfigurationPolicyStore {
     kPolicySavingBrowserHistoryDisabled,
     kPolicyDeveloperToolsDisabled,
     kPolicyChromeOsLockOnIdleSuspend,
+    kPolicyBlockThirdPartyCookies,
   };
 
   static const int kPolicyNoProxyServerMode = 0;
