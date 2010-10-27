@@ -65,6 +65,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
 // TODO(jschuh): FLAKY because the process doesn't have sufficient time
 // to start on most BuildBot runs and I don't want to add longer delays to
 // the test. I'll circle back and make this work properly when i get a chance.
+// See http://crbug.com/60026
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
   const char* testurlstr = "http://localhost/";
   const GURL testurl(testurlstr);

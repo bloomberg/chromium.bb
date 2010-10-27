@@ -202,6 +202,7 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
 }
 
 #if defined(OS_LINUX)
+// http://crbug.com/30021
 #define IncognitoSharedWorkers FLAKY_IncognitoSharedWorkers
 #endif
 

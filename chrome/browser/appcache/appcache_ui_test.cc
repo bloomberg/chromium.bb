@@ -10,6 +10,7 @@ class AppCacheUITest : public UILayoutTest {
   virtual ~AppCacheUITest() {}
 };
 
+// Flaky: http://crbug.com/54717
 TEST_F(AppCacheUITest, FLAKY_AppCacheLayoutTests) {
   static const char* kLayoutTestFiles[] = {
       "404-manifest.html",

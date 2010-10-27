@@ -193,6 +193,7 @@ TEST_F(PluginTest, FlashSecurity) {
 #if defined(OS_WIN)
 // TODO(port) Port the following tests to platforms that have the required
 // plugins.
+// Flaky: http://crbug.com/55915
 TEST_F(PluginTest, FLAKY_Quicktime) {
   TestPlugin("quicktime.html", action_max_timeout_ms(), false);
 }

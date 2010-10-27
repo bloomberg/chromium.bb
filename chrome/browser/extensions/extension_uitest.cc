@@ -121,6 +121,7 @@ class ExtensionTestSimpleApiCall : public ExtensionUITest {
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestSimpleApiCall);
 };
 
+// Flaky: http://crbug.com/44599
 TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
   namespace keys = extension_automation_constants;
 

@@ -324,7 +324,7 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
 }
 
 #if defined(OS_LINUX)
-// Fails sometimes on Linux valgrind. http://crbug.com/32615
+// Fails sometimes on Linux valgrind. http://crbug.com/45675
 #define MAYBE_BrowserCloseWithInnerFocusedFrame \
     FLAKY_BrowserCloseWithInnerFocusedFrame
 #else
@@ -414,7 +414,8 @@ TEST_F(UnloadTest, BrowserCloseTwoSecondBeforeUnloadAlert) {
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     DISABLED_BrowserCloseTabWhenOtherTabHasListener
 #else
-// Flaky on Linux as well. http://crbug.com/45562
+// Flaky on Linux under valgrind. http://crbug.com/46781
+// TODO(stuartmorgan): Switch to just disabling for valgrind.
 #define MAYBE_BrowserCloseTabWhenOtherTabHasListener \
     FLAKY_BrowserCloseTabWhenOtherTabHasListener
 #endif

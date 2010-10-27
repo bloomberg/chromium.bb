@@ -208,7 +208,7 @@ TEST_F(TabRestoreUITest, MiddleTab) {
 
 // Close a tab, switch windows, then restore the tab. The tab should be in its
 // original window and position, and active.
-// This test is flaky. See http://crbug.com/14132 and 11213.
+// This test is flaky. See http://crbug.com/54894
 TEST_F(TabRestoreUITest, FLAKY_RestoreToDifferentWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());

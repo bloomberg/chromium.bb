@@ -139,8 +139,8 @@ TEST_F(SessionHistoryTest, BasicBackForward) {
 }
 
 // Test that back/forward works when navigating in subframes.
-// Fails on Windows. See crbug.com/TODO
 #if defined(OS_WIN)
+// Flaky on Windows. See crbug.com/48833
 #define MAYBE_FrameBackForward FLAKY_FrameBackForward
 #else
 #define MAYBE_FrameBackForward FrameBackForward

@@ -378,6 +378,7 @@ TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
 
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
+// Flaky: http://crbug.com/29110
 TEST_F(SessionRestoreUITest,
        FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
   NavigateToURL(url1_);
