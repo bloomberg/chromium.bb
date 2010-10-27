@@ -49,6 +49,11 @@ node = env.CommandSelLdrTestNacl('initfini.out',
 env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
 
 
+# NOTE: the tests below break easily under valgrid and since
+#       they do not exercise malloc/free we exclude
+if env.IsRunningUnderValgrind():
+  Return()
+
 
 sloppy_env = env.Clone()
 sloppy_env.FilterOut(CFLAGS=['-pedantic', '-O2'])
@@ -63,22 +68,23 @@ sloppy_env.AddNodeToTestSuite(node,
 
 
 eh_env = env.Clone()
-if ARGUMENTS.get('bitcode'):
-  # http://code.google.com/p/nativeclient/issues/detail?id=720
-  eh_env.FilterOut(CFLAGS=['-O2'])
-  eh_env.FilterOut(CCFLAGS=['-O2'])
 
+# http://code.google.com/p/nativeclient/issues/detail?id=720
+# we should try all 4 combinations here opt/no-opt, fp/no-fp
+eh_env.FilterOut(CFLAGS=['-pedantic', '-O2', '-fomit-frame-pointer'])
+eh_env.FilterOut(CCFLAGS=['-pedantic', '-O2', '-fomit-frame-pointer'])
+eh_env.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
+
+# http://code.google.com/p/nativeclient/issues/detail?id=720
+EH_TESTS=['toolchain_tests', 'small_tests']
+if ARGUMENTS.get('bitcode') and eh_env['TARGET_FULLARCH'] != 'x86-32':
+  EH_TESTS=[]
 
 for t in ['eh_virtual_dtor',
           'eh_loop_single',
           'eh_loop_many',
           'eh_catch_many',
           'eh_loop_break']:
-  EH_TESTS=['toolchain_tests', 'small_tests']
-  # http://code.google.com/p/nativeclient/issues/detail?id=720
-  if ARGUMENTS.get('bitcode') and eh_env['TARGET_FULLARCH'] != 'x86-32':
-      EH_TESTS=[]
-
   nexe = eh_env.ComponentProgram(t + '.nexe', t + '.cc')
   node = eh_env.CommandSelLdrTestNacl(t + '.out',
                                       command=[nexe],
@@ -86,32 +92,21 @@ for t in ['eh_virtual_dtor',
   eh_env.AddNodeToTestSuite(node, EH_TESTS, 'run_' + t + '_test')
 
 
-eh_env2 = env.Clone()
-eh_env2.FilterOut(CFLAGS=['-pedantic', '-O2'])
-eh_env2.FilterOut(CCFLAGS=['-pedantic', '-O2'])
-eh_env2.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
 # http://code.google.com/p/nativeclient/issues/detail?id=720
 TRACE_TESTS=['toolchain_tests', 'small_tests']
-if ARGUMENTS.get('bitcode') and eh_env2['TARGET_FULLARCH'] != 'x86-32':
+if eh_env['TARGET_FULLARCH'] == 'arm':
   TRACE_TESTS=[]
 
-# TODO(robertm): put a dummy Unwind_Backtrace into the pnacl TC
-if  eh_env2['TARGET_FULLARCH'] != 'arm':
-  nexe = eh_env2.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
-  node = eh_env2.CommandSelLdrTestNacl('unwind_trace.out',
-                                       command=[nexe],
-                                       exit_status='55')
-  eh_env2.AddNodeToTestSuite(node,
-                             TRACE_TESTS,
-                             'run_unwind_trace_test')
+nexe = eh_env.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
+node = eh_env.CommandSelLdrTestNacl('unwind_trace.out',
+                                    command=[nexe],
+                                    exit_status='55')
+eh_env.AddNodeToTestSuite(node, TRACE_TESTS, 'run_unwind_trace_test')
 
-# NOTE: PNaCl does not even compile yet, o.w.
-#       it seems reasonable to tie this the previous test
-if not ARGUMENTS.get('bitcode') and not eh_env2.IsRunningUnderValgrind():
-  nexe = eh_env2.ComponentProgram('stack_frame.nexe', 'stack_frame.cc')
-  node = eh_env2.CommandSelLdrTestNacl('stack_frame.out',
+# http://code.google.com/p/nativeclient/issues/detail?id=720
+if eh_env['TARGET_FULLARCH'] != 'arm':
+  nexe = eh_env.ComponentProgram('stack_frame.nexe', 'stack_frame.cc')
+  node = eh_env.CommandSelLdrTestNacl('stack_frame.out',
                                        command=[nexe],
                                        exit_status='55')
-  eh_env2.AddNodeToTestSuite(node,
-                             TRACE_TESTS,
-                             'run_stack_frame_test')
+  eh_env.AddNodeToTestSuite(node, TRACE_TESTS, 'run_stack_frame_test')
