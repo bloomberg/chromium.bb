@@ -280,13 +280,14 @@ int main(int argc, char* argv[]) {
       flags = js_flags.substr(start, comma_pos - start);
       start = comma_pos + 1;
     }
-    // Test shell always exposes the GC.
-    flags += " --expose-gc";
     js_flags_list.push_back(flags);
     if (comma_pos == std::string::npos)
       break;
   }
   TestShell::SetJavaScriptFlags(js_flags_list);
+
+  // Test shell always exposes the GC.
+  webkit_glue::SetJavaScriptFlags("--expose-gc");
 
   // Expose GCController to JavaScript.
   WebScriptController::registerExtension(extensions_v8::GCExtension::Get());
