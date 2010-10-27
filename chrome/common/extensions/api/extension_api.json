@@ -2670,12 +2670,12 @@
         "properties": {
           "menuItemId": {
             "type": "integer",
-            "description": "The id of the menu item that was clicked."
+            "description": "The ID of the menu item that was clicked."
           },
           "parentMenuItemId": {
             "type": "integer",
             "optional": true,
-            "description": "The parent id, if any, for the item clicked."
+            "description": "The parent ID, if any, for the item clicked."
           },
           "mediaType": {
             "type": "string",
@@ -2685,21 +2685,21 @@
           "linkUrl": {
             "type": "string",
             "optional": true,
-            "description": "If the element is a link, the url it points to."
+            "description": "If the element is a link, the URL it points to."
           },
           "srcUrl": {
             "type": "string",
             "optional": true,
-            "description": "Will be present for elements with a 'src' url."
+            "description": "Will be present for elements with a 'src' URL."
           },
           "pageUrl": {
             "type": "string",
-            "description": "The url of the page where the menu item was clicked."
+            "description": "The URL of the page where the menu item was clicked."
           },
           "frameUrl": {
             "type": "string",
             "optional": true,
-            "description": " The url of the frame of the element where the context menu was clicked, if it was in a frame."
+            "description": " The URL of the frame of the element where the context menu was clicked, if it was in a frame."
           },
           "selectionText": {
             "type": "string",
@@ -2720,7 +2720,7 @@
         "description": "Creates a new context menu item. Note that if an error occurs during creation, you may not find out until the creation callback fires (the details will be in chrome.extension.lastError).",
         "returns": {
           "type": "integer",
-          "description": "The id of the newly created item."
+          "description": "The ID of the newly created item."
         },
         "parameters": [
           {
@@ -2735,12 +2735,12 @@
               "title": {
                 "type": "string",
                 "optional": "true",
-                "description": "This must be specified unless type is 'separator'."
+                "description": "The text to be displayed in the item; this is <em>required</em> unless <em>type</em> is 'separator'. When the context is 'selection', you can use '%s' within the string to show the selected text. For example, if this parameter's value is \"Translate '%s' to Pig Latin\" and the user selects the word 'cool', the context menu item for the selection is \"Translate cool to Pig Latin\"."
               },
               "checked": {
                 "type": "boolean",
                 "optional": true,
-                "description": "This only applies to the initial state of a checkbox or radio item. It indicates if the item should initially be checked/selected. Only one radio item can be selected at a time in a given group of radio items."
+                "description": "The initial state of a checkbox or radio item: true for selected and false for unselected. Only one radio item can be selected at a time in a given group of radio items."
               },
               "contexts": {
                 "type": "array",
@@ -2769,19 +2769,19 @@
               "parentId": {
                 "type": "integer",
                 "optional": true,
-                "description": "The id of a parent menu item - this makes the item a child of a previously added item."
+                "description": "The ID of a parent menu item; this makes the item a child of a previously added item."
               },
               "documentUrlPatterns": {
                 "type": "array",
                 "items": {"type": "string"},
                 "optional": true,
-                "description": "Lets you restrict the item to only apply to documents whose URL matches one of the given patterns. (This applies to frames as well). For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
+                "description": "Lets you restrict the item to apply only to documents whose URL matches one of the given patterns. (This applies to frames as well.) For details on the format of a pattern, see <a href='match_patterns.html'>Match Patterns</a>."
               },
               "targetUrlPatterns": {
                 "type": "array",
                 "items": {"type": "string"},
                 "optional": true,
-                "description": "Similar to documentUrlPatterns, but this lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags."
+                "description": "Similar to documentUrlPatterns, but lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags."
               }
             }
           },
@@ -2789,7 +2789,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when the item has been created in the browser. If there were any problems creating the item, details will be avilable in chrome.extension.lastError.",
+            "description": "Called when the item has been created in the browser. If there were any problems creating the item, details will be available in chrome.extension.lastError.",
             "parameters": []
           }
         ]
@@ -2802,7 +2802,7 @@
           {
             "type": "integer",
             "name": "id",
-            "description": "The id of the item to update."
+            "description": "The ID of the item to update."
           },
           {
             "type": "object",
@@ -2865,7 +2865,7 @@
           {
             "type": "integer",
             "name": "menuItemId",
-            "description": "The id of the context menu item to remove."
+            "description": "The ID of the context menu item to remove."
           },
           {
             "type": "function",

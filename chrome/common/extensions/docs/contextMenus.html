@@ -537,7 +537,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This must be specified unless type is 'separator'.</dd>
+          <dd>The text to be displayed in the item; this is <em>required</em> unless <em>type</em> is 'separator'. When the context is 'selection', you can use '%s' within the string to show the selected text. For example, if this parameter's value is "Translate '%s' to Pig Latin" and the user selects the word 'cool', the context menu item for the selection is "Translate cool to Pig Latin".</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -595,7 +595,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This only applies to the initial state of a checkbox or radio item. It indicates if the item should initially be checked/selected. Only one radio item can be selected at a time in a given group of radio items.</dd>
+          <dd>The initial state of a checkbox or radio item: true for selected and false for unselected. Only one radio item can be selected at a time in a given group of radio items.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -901,7 +901,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of a parent menu item - this makes the item a child of a previously added item.</dd>
+          <dd>The ID of a parent menu item; this makes the item a child of a previously added item.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -970,7 +970,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Lets you restrict the item to only apply to documents whose URL matches one of the given patterns. (This applies to frames as well). For details on the format of a pattern, see <a href="match_patterns.html">Match Patterns</a>.</dd>
+          <dd>Lets you restrict the item to apply only to documents whose URL matches one of the given patterns. (This applies to frames as well.) For details on the format of a pattern, see <a href="match_patterns.html">Match Patterns</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1039,7 +1039,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Similar to documentUrlPatterns, but this lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags.</dd>
+          <dd>Similar to documentUrlPatterns, but lets you filter based on the src attribute of img/audio/video tags and the href of anchor tags.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1107,7 +1107,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Called when the item has been created in the browser. If there were any problems creating the item, details will be avilable in chrome.extension.lastError.</dd>
+          <dd>Called when the item has been created in the browser. If there were any problems creating the item, details will be available in chrome.extension.lastError.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1171,7 +1171,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the newly created item.</dd>
+          <dd>The ID of the newly created item.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1282,7 +1282,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the context menu item to remove.</dd>
+          <dd>The ID of the context menu item to remove.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1580,7 +1580,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the item to update.</dd>
+          <dd>The ID of the item to update.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2401,7 +2401,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The id of the menu item that was clicked.</dd>
+          <dd>The ID of the menu item that was clicked.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2459,7 +2459,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The parent id, if any, for the item clicked.</dd>
+          <dd>The parent ID, if any, for the item clicked.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2575,7 +2575,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If the element is a link, the url it points to.</dd>
+          <dd>If the element is a link, the URL it points to.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2633,7 +2633,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Will be present for elements with a 'src' url.</dd>
+          <dd>Will be present for elements with a 'src' URL.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2691,7 +2691,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The url of the page where the menu item was clicked.</dd>
+          <dd>The URL of the page where the menu item was clicked.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2749,7 +2749,7 @@ You can find samples of this API on the
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd> The url of the frame of the element where the context menu was clicked, if it was in a frame.</dd>
+          <dd> The URL of the frame of the element where the context menu was clicked, if it was in a frame.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
