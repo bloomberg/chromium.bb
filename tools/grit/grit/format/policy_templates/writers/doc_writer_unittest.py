@@ -63,6 +63,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       config={
         'app_name': 'Chrome',
         'frame_name': 'Chrome Frame',
+        'os_name': 'Chrome OS',
         'win_reg_key_name': 'MockKey',
       },
       messages=MockMessageDictionary())

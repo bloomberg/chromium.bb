@@ -454,11 +454,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       'win': 'Windows',
       'mac': 'Mac',
       'linux': 'Linux',
+      'chrome_os': self.config['os_name'],
     }
     # Human-readable names of supported products.
     self._PRODUCT_MAP = {
       'chrome': self.config['app_name'],
       'chrome_frame': self.config['frame_name'],
+      'chrome_os': self.config['os_name'],
     }
     # Human-readable names of supported features.
     self._FEATURE_MAP = {

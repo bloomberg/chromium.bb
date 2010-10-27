@@ -142,7 +142,7 @@
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
-    },    
+    },
     {
       'name': 'JavascriptEnabled',
       'type': 'main',
@@ -504,8 +504,8 @@
       'name': 'ChromeOsLockOnIdleSuspend',
       'type': 'main',
       'annotations': {
-        'platforms': ['linux'],  # Note this should be ChromeOs.
-        'products': ['chrome'],
+        'platforms': ['chrome_os'],
+        'products': ['chrome_os'],
         'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
