@@ -6029,6 +6029,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK" desc="Linking 2 sentences in 1 paragraph.">
         <ph name="SENTENCE1">$1<ex>Your connection is encrypted.</ex></ph> <ph name="SENTENCE2">$2<ex>However, this page includes resources from other pages whose identity cannot be verified.</ex></ph>
       </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION" desc="This message gives the version of the SSL protocol used to protect the HTTPS connection.">
+        The connection uses <ph name="SSL_VERSION">$1<ex>TLS 1.0</ex></ph>.
+      </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS" desc="This message gives details of the cryptographic primitives used to protect the HTTPS connection.">
         The connection is encrypted using <ph name="CIPHER">$1<ex>AES_128</ex></ph>, with <ph name="MAC">$2<ex>SHA1</ex></ph> for message authentication and <ph name="KX">$3<ex>RSA</ex></ph> as the key exchange mechanism.
       </message>

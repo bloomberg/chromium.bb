@@ -195,6 +195,15 @@ PageInfoModel::PageInfoModel(Profile* profile,
   uint16 cipher_suite =
       net::SSLConnectionStatusToCipherSuite(ssl.connection_status());
   if (ssl.security_bits() > 0 && cipher_suite) {
+    int ssl_version =
+        net::SSLConnectionStatusToVersion(ssl.connection_status());
+    const char* ssl_version_str;
+    net::SSLVersionToString(&ssl_version_str, ssl_version);
+    description += ASCIIToUTF16("\n\n");
+    description += l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
+        ASCIIToUTF16(ssl_version_str));
+
     bool did_fallback = (ssl.connection_status() &
                          net::SSL_CONNECTION_SSL3_FALLBACK) != 0;
     bool no_renegotiation =
@@ -212,7 +221,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
     uint8 compression_id =
         net::SSLConnectionStatusToCompression(ssl.connection_status());
     if (compression_id) {
-      const char *compression;
+      const char* compression;
       net::SSLCompressionToString(&compression, compression_id);
       description += l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_COMPRESSION_DETAILS,
