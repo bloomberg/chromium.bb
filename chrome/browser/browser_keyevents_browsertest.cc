@@ -501,14 +501,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 }
 #endif
 
-#if defined(OS_WIN)
-// Tests may fail on windows:  http://crbug.com/55713
-#define MAYBE_AccessKeys FLAKY_AccessKeys
-#else
-#define MAYBE_AccessKeys AccessKeys
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
