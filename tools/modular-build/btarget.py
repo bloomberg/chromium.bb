@@ -24,6 +24,11 @@ def CheckedRepr(val):
   return x
 
 
+class BuildOptions(object):
+
+  allow_non_pristine = False
+
+
 class TargetState(object):
 
   def __init__(self, filename):
@@ -64,7 +69,7 @@ class TargetBase(object):
   def _GetOutputHash(self):
     raise NotImplemented()
 
-  def NeedsBuild(self):
+  def NeedsBuild(self, opts):
     # TODO(mseaborn): add a test case for this feature or remove it.
     if os.path.exists(self.dest_path + ".pin"):
       return False
@@ -73,19 +78,25 @@ class TargetBase(object):
     # manually altered, in which case we don't want to overwrite it
     # (especially if it's source).
     cached = self._state.GetState()
-    return cached is None or self.GetCurrentInput() != cached["input"]
+    return (cached is None or
+            (not cached.get("pristine", True) and
+             not opts.allow_non_pristine) or
+            self.GetCurrentInput() != cached["input"])
 
-  def DoBuild(self):
+  def DoBuild(self, opts):
     input = self.GetCurrentInput()
-    self._build_func()
+    result_info = self._build_func(opts)
+    if result_info is None:
+      result_info = {}
     # TODO(mseaborn): This could record other metadata, such as:
     #  * time taken to build
-    #  * whether this was a pristine build
     #  * inputs that shouldn't make a difference, e.g. filenames, username,
     #    hostname, and other environment.
     # It might also be useful to record failures.
-    self._state.SetState({"input": input,
-                          "output": self._GetOutputHash()})
+    new_state = {"input": input,
+                 "output": self._GetOutputHash(),
+                 "pristine": result_info.get("pristine", True)}
+    self._state.SetState(new_state)
 
   def GetOutput(self):
     cached = self._state.GetState()
@@ -168,14 +179,14 @@ def ResetDir(dest_dir):
 # TODO(mseaborn): This should rescan the source tree on each rebuild
 # to check whether it has been manually modified.
 def SourceTarget(name, dest_dir, src_tree):
-  def DoBuild():
+  def DoBuild(opts):
     ResetDir(dest_dir)
     src_tree.WriteTree(dest_dir)
   return BuildTarget(name, dest_dir, DoBuild, args=["source"], deps=[])
 
 
 def ExistingSource(name, dir_path):
-  def DoBuild():
+  def DoBuild(opts):
     pass
   return NonSnapshottingBuildTarget(name, dir_path, DoBuild,
                                     args=["existing"], deps=[])
@@ -220,14 +231,16 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
   prefix_dir = prefix_obj.dest_path
   assert os.path.join(src.dest_path).startswith("/"), src.dest_path
 
-  def DoBuild():
-    ResetDir(build_dir)
+  def DoBuild(opts):
     prefix_cmd = ["env"] + GetPrefixVars(prefix_obj.dest_path)
-    subprocess.check_call(
-        prefix_cmd + ["env"] + configure_env +
-        [os.path.join(src.dest_path, "configure"),
-         "--prefix=%s" % prefix_dir] + configure_opts,
-        cwd=build_dir)
+    pristine = not opts.allow_non_pristine or not os.path.exists(build_dir)
+    if pristine:
+      ResetDir(build_dir)
+      subprocess.check_call(
+          prefix_cmd + ["env"] + configure_env +
+          [os.path.join(src.dest_path, "configure"),
+           "--prefix=%s" % prefix_dir] + configure_opts,
+          cwd=build_dir)
     subprocess.check_call(prefix_cmd + make_cmd + ["-j2"], cwd=build_dir)
 
     if use_install_root:
@@ -244,6 +257,7 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
             prefix_cmd + install_cmd + ["DESTDIR=%s" % dest_dir],
             cwd=build_dir)
       InstallDestdir(prefix_dir, install_dir, DoInstall)
+    return {"pristine": pristine}
 
   return BuildTarget(name, install_dir, DoBuild,
                      args=["autoconf", configure_opts, configure_env,
@@ -252,7 +266,7 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
 
 
 def ExportHeaders(name, dest_dir, src_dir):
-  def DoBuild():
+  def DoBuild(opts):
     ResetDir(dest_dir)
     nacl_dir = src_dir.dest_path
     subprocess.check_call(
@@ -273,18 +287,21 @@ def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj, scons_args):
       "extra_sdk_include_destination=%s" % os.path.join(
           dest_dir, "nacl", "include"),
       ] + scons_args
-  def DoBuild():
-    ResetDir(build_dir)
+  def DoBuild(opts):
+    pristine = not opts.allow_non_pristine or not os.path.exists(build_dir)
+    if pristine:
+      ResetDir(build_dir)
     ResetDir(dest_dir)
     subprocess.check_call(scons_cmd + ["--verbose"],
                           cwd=src_dir.dest_path)
+    return {"pristine": pristine}
   return BuildTarget(name, dest_dir, DoBuild,
                      args=[scons_cmd],
                      deps=[src_dir, prefix_obj])
 
 
 def TreeMapper(name, dest_dir, map_func, input_trees, args=[]):
-  def DoBuild():
+  def DoBuild(opts):
     trees = [input_tree.GetOutputTree() for input_tree in input_trees]
     result = map_func(*trees + args)
     ResetDir(dest_dir)
@@ -299,7 +316,7 @@ def UnionDir(name, dest_dir, input_trees):
 
 
 def TestModule(name, dest_dir, prefix_obj, code, compiler):
-  def DoBuild():
+  def DoBuild(opts):
     ResetDir(dest_dir)
     dirtree.WriteFile(os.path.join(dest_dir, "prog.c"), code)
     subprocess.check_call(
@@ -325,7 +342,7 @@ def Memoize(func):
   return wrapper
 
 
-def PrintPlan(targets, stream):
+def PrintPlan(targets, stream, opts=BuildOptions()):
   @Memoize
   def Visit(target):
     state = "no"
@@ -333,7 +350,7 @@ def PrintPlan(targets, stream):
       if Visit(dep) != "no":
         state = "maybe"
     try:
-      if target.NeedsBuild():
+      if target.NeedsBuild(opts):
         state = "yes"
     except TargetNotBuiltException:
       # This target has been built, but one of its inputs hasn't
@@ -347,14 +364,14 @@ def PrintPlan(targets, stream):
     Visit(target)
 
 
-def Rebuild(targets, stream):
+def Rebuild(targets, stream, opts=BuildOptions()):
   @Memoize
   def Visit(target):
     for dep in target.GetDeps():
       Visit(dep)
-    if target.NeedsBuild():
+    if target.NeedsBuild(opts):
       stream.write("** building %s\n" % target.GetName())
-      target.DoBuild()
+      target.DoBuild(opts)
     else:
       stream.write("** skipping %s\n" % target.GetName())
   for target in targets:
@@ -442,6 +459,10 @@ def BuildMain(root_targets, args, stream):
                     help="Build single targets without following "
                     "dependencies.  This will rebuild targets even if they "
                     "are considered up-to-date.")
+  parser.add_option("--np", "--non-pristine", dest="non_pristine",
+                    action="store_true",
+                    help="Re-run 'make' without deleting the build directory "
+                    "or re-running 'configure'")
   options, args = parser.parse_args(args)
 
   do_graph = False
@@ -449,6 +470,8 @@ def BuildMain(root_targets, args, stream):
     do_graph = True
     args = args[1:]
 
+  opts = BuildOptions()
+  opts.allow_non_pristine = options.non_pristine
   if len(args) > 0:
     root_targets = SubsetTargets(root_targets, args)
   if do_graph:
@@ -461,8 +484,8 @@ def BuildMain(root_targets, args, stream):
     if options.do_build:
       for target in root_targets:
         stream.write("** building %s\n" % target.GetName())
-        target.DoBuild()
+        target.DoBuild(opts)
   else:
-    PrintPlan(root_targets, stream)
+    PrintPlan(root_targets, stream, opts)
     if options.do_build:
-      Rebuild(root_targets, stream)
+      Rebuild(root_targets, stream, opts)

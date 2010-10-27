@@ -39,7 +39,7 @@ class BuildTargetTests(TempDirTestCase):
 
   def DummyTarget(self, name, deps):
     dest_dir = self.MakeTempDir()
-    def DoBuild():
+    def DoBuild(opts):
       pass
     return btarget.BuildTarget(name, dest_dir, DoBuild, args=[], deps=deps)
 
@@ -86,7 +86,7 @@ class BuildTargetTests(TempDirTestCase):
                       "input: yes\nsrc: no\nbld: maybe\n")
     btarget.Rebuild([install], open(os.devnull, "w"))
     # Try again to test idempotence of install step.
-    install.DoBuild()
+    install.DoBuild(btarget.BuildOptions())
 
   @Quieten
   def test_building_specific_targets(self):
@@ -190,7 +190,7 @@ digraph {
     btarget.Rebuild([install], open(os.devnull, "w"))
     assert os.path.exists(os.path.join(tempdir, "install/bin/hellow"))
     # Try again to test idempotence of install step.
-    install.DoBuild()
+    install.DoBuild(btarget.BuildOptions())
     assert os.path.exists(os.path.join(tempdir, "install/bin/hellow"))
 
   def test_union_dirs(self):
@@ -281,7 +281,7 @@ digraph {
 
     target2 = btarget.TreeMapper("dir_out", os.path.join(tempdir, "dir_out"),
                                  MapperFunc2, [])
-    self.assertEquals(target2.NeedsBuild(), True)
+    self.assertEquals(target2.NeedsBuild(btarget.BuildOptions()), True)
 
   @Quieten
   def test_component_with_library(self):
@@ -320,6 +320,42 @@ digraph {
     self.assertEquals(proc.wait(), 0)
     self.assertEquals(stdout, "Hello world, in libhello\n"
                       "argv[1] = rhizome\nargv[2] = stolon\n")
+
+  @Quieten
+  def test_non_pristine_remake(self):
+    tempdir = self.MakeTempDir()
+    src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
+                               GetExample("non-pristine"))
+    input_prefix = btarget.UnionDir("input",
+                                    os.path.join(tempdir, "prefix"),
+                                    [])
+    install = btarget.AutoconfModule("bld",
+                                     os.path.join(tempdir, "install"),
+                                     os.path.join(tempdir, "build"),
+                                     input_prefix,
+                                     src)
+    stream = open(os.devnull, "w")
+    # Test that running for the first time with --non-pristine works:
+    # it should run configure if it has not already been run.
+    btarget.BuildMain([install], ["--non-pristine", "-b"], stream)
+    self.assertEquals(
+        dirtree.ReadFile(os.path.join(install.dest_path, "built_file")),
+        "Make was run\n")
+    # Since the previous build was for the first time, it was
+    # pristine, so it should not need rebuilding.
+    self.assertFalse(install.NeedsBuild(btarget.BuildOptions()))
+    # Running a second time accumulates a line.
+    btarget.BuildMain([install], ["--non-pristine", "-s", "-b", "bld"],
+                      stream)
+    self.assertEquals(
+        dirtree.ReadFile(os.path.join(install.dest_path, "built_file")),
+        "Make was run\n" * 2)
+    # Running again without --non-pristine will force a rebuild,
+    # because the previous output was not pristine.
+    btarget.BuildMain([install], ["-b"], stream)
+    self.assertEquals(
+        dirtree.ReadFile(os.path.join(install.dest_path, "built_file")),
+        "Make was run\n")
 
 
 if __name__ == "__main__":
