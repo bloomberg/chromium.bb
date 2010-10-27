@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
+#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/favicon_service.h"
@@ -58,13 +59,23 @@ const char kSetOmniboxBoundsScript[] =
     "if (window.chrome.setDropdownDimensions) "
     "window.chrome.setDropdownDimensions($1, $2, $3, $4);";
 
-// Script sent to see if the page really supports instant.
+// We first send this script down to determine if the page supports instant.
 const char kSupportsInstantScript[] =
+    "if (window.chrome.sv) true; else false;";
+
+// If kSupportsInstantScript returns true, we then wait until
+// setDropdownDimensions has been registered. This is necessary as
+// 'window.chrome.sv' is set an onload time, but not setDropdownDimensions.
+const char kIsDropdownDimensionRegisteredScript[] =
     "if (window.chrome.setDropdownDimensions) true; else false;";
 
 // Number of ms to delay before updating the omnibox bounds. This is a bit long
 // as updating the bounds ends up being quite expensive.
 const int kUpdateBoundsDelayMS = 500;
+
+// Number of ms we delay before seeing if the page has registered the instant
+// functions.
+const int kRegisterDelayMS = 10;
 
 // Escapes quotes in the |text| so that it be passed to JavaScript as a quoted
 // string.
@@ -132,7 +143,8 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
         unique_id_(tab_contents_->controller().pending_entry()->unique_id()),
         text_(text),
         initial_text_(text),
-        execute_js_id_(0) {
+        execute_js_id_(0),
+        got_supports_result_(false) {
     registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                    Source<TabContents>(tab_contents_));
   }
@@ -168,11 +180,30 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
         DCHECK(loader_);
         bool bool_result;
         if (!result->second || !result->second->IsType(Value::TYPE_BOOLEAN) ||
-            !result->second->GetAsBoolean(&bool_result) || !bool_result) {
+            !result->second->GetAsBoolean(&bool_result)) {
           DoesntSupportInstant();
           return;
+        } else if (!got_supports_result_) {
+          // First evaluation. Result tells us whether page supports instant.
+          if (!bool_result) {
+            DoesntSupportInstant();
+            // WARNING: we may have been deleted.
+            return;
+          } else {
+            // Page supports instant, but we have to wait until page actually
+            // registers functions.
+            got_supports_result_ = true;
+            SendRegisterScript();
+          }
+        } else {
+          // Result tells us if instant functions have been registered.
+          if (bool_result) {
+            SupportsInstant();
+          } else {
+            // Wait a bit and ask again to see if the page supports instant.
+            WaitForRegister();
+          }
         }
-        SupportsInstant();
         return;
       }
 
@@ -194,6 +225,18 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
     execute_js_id_ = rvh->ExecuteJavascriptInWebFrameNotifyResult(
         string16(),
         ASCIIToUTF16(kSupportsInstantScript));
+  }
+
+  void WaitForRegister() {
+    register_timer_.Start(base::TimeDelta::FromMilliseconds(kRegisterDelayMS),
+                          this, &FrameLoadObserver::SendRegisterScript);
+  }
+
+  void SendRegisterScript() {
+    RenderViewHost* rvh = tab_contents_->render_view_host();
+    execute_js_id_ = rvh->ExecuteJavascriptInWebFrameNotifyResult(
+        string16(),
+        ASCIIToUTF16(kIsDropdownDimensionRegisteredScript));
   }
 
   // Invoked when we determine the page doesn't really support instant.
@@ -242,6 +285,11 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
   // ID of the javascript that was executed to determine if the page supports
   // instant.
   int execute_js_id_;
+
+  // Timer used to wait for JS functions to be registered.
+  base::OneShotTimer<FrameLoadObserver> register_timer_;
+
+  bool got_supports_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameLoadObserver);
 };
@@ -578,9 +626,15 @@ void InstantLoader::Update(TabContents* tab_contents,
     } else {
       // Load the instant URL. We don't reflect the url we load in url() as
       // callers expect that we're loading the URL they tell us to.
+      //
+      // This uses an empty string for the replacement text as the url doesn't
+      // really have the search params, but we need to use the replace
+      // functionality so that embeded tags (like {google:baseURL}) are escaped
+      // correctly.
+      // TODO(sky): having to use a replaceable url is a bit of a hack here.
       GURL instant_url(
           template_url->instant_url()->ReplaceSearchTerms(
-              *template_url, UTF16ToWideHack(user_text), -1, std::wstring()));
+              *template_url, std::wstring(), -1, std::wstring()));
       initial_instant_url_ = url;
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
