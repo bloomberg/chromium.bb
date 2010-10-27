@@ -3195,3 +3195,21 @@
    fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 
+{
+   bug_60890
+   Memcheck:Jump
+   ...
+   fun:find_objects
+   fun:find_objects_by_template
+   fun:nssToken_FindCertificatesBySubject
+   fun:nssTrustDomain_FindCertificatesBySubject
+   fun:nssCertificate_BuildChain
+   fun:NSSCertificate_BuildChain
+   fun:CERT_FindCertIssuer
+   fun:ocsp_CreateCertID
+   fun:CERT_CreateOCSPCertID
+   fun:PKIX_PL_OcspCertID_Create
+   fun:pkix_OcspChecker_CheckLocal
+}
+
+
