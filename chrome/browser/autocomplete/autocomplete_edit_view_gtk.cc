@@ -304,6 +304,19 @@ void AutocompleteEditViewGtk::Init() {
   g_signal_connect(text_view_, "delete-from-cursor",
                    G_CALLBACK(&HandleDeleteFromCursorThunk), this);
 
+  // Setup for the Instant suggestion text view.
+  instant_view_ = gtk_text_view_new();
+  instant_buffer_ = gtk_text_view_get_buffer(GTK_TEXT_VIEW(instant_view_));
+  gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(text_view_),
+                                    instant_view_,
+                                    GTK_TEXT_WINDOW_WIDGET,
+                                    0, 0);
+  instant_text_tag_ = gtk_text_buffer_create_tag(
+      instant_buffer_, NULL, "foreground", kTextBaseColor, NULL);
+  gtk_widget_set_can_focus(instant_view_, FALSE);
+  g_signal_connect(instant_view_, "button-press-event",
+                   G_CALLBACK(&HandleInstantViewButtonPressThunk), this);
+
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
@@ -346,9 +359,8 @@ int AutocompleteEditViewGtk::TextWidth() {
 }
 
 int AutocompleteEditViewGtk::WidthOfTextAfterCursor() {
-  // TODO(sky): implement this.
-  NOTIMPLEMENTED();
-  return TextWidth();
+  // Not used.
+  return -1;
 }
 
 gfx::Font AutocompleteEditViewGtk::GetFont() {
@@ -416,12 +428,7 @@ void AutocompleteEditViewGtk::OpenURL(const GURL& url,
 }
 
 std::wstring AutocompleteEditViewGtk::GetText() const {
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
-  gchar* utf8 = gtk_text_buffer_get_text(text_buffer_, &start, &end, false);
-  std::wstring out(UTF8ToWide(utf8));
-  g_free(utf8);
-  return out;
+  return GetTextFromBuffer(text_buffer_);
 }
 
 bool AutocompleteEditViewGtk::IsEditingOrEmpty() const {
@@ -660,6 +667,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
         style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
 
     g_object_set(faded_text_tag_, "foreground-gdk", &average_color, NULL);
+    g_object_set(instant_text_tag_, "foreground-gdk", &average_color, NULL);
     g_object_set(normal_text_tag_, "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
   } else {
@@ -699,6 +707,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
         browser_defaults::kAutocompleteEditFontPixelSize);
 
     g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
+    g_object_set(instant_text_tag_, "foreground", kTextBaseColor, NULL);
     g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
   }
 }
@@ -972,24 +981,41 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
   gboolean has_selection =
       gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
 
+  bool handled = true;
+
   // We want the GtkEntry behavior when you move the cursor while you have a
   // selection.  GtkTextView just drops the selection and moves the cursor, but
   // instead we want to move the cursor to the appropiate end of the selection.
-  if (step == GTK_MOVEMENT_VISUAL_POSITIONS && !extend_selection &&
-      (count == 1 || count == -1) && has_selection) {
-    // We have a selection and start / end are in ascending order.
-    // Cursor placement will remove the selection, so we need inform |model_|
-    // about this change by calling On{Before|After}PossibleChange() methods.
-    OnBeforePossibleChange();
-    gtk_text_buffer_place_cursor(text_buffer_,
-                                 count == 1 ? &sel_end : &sel_start);
-    OnAfterPossibleChange();
+  if (step == GTK_MOVEMENT_VISUAL_POSITIONS && !extend_selection) {
+    if ((count == 1 || count == -1) && has_selection) {
+      // We have a selection and start / end are in ascending order.
+      // Cursor placement will remove the selection, so we need inform |model_|
+      // about this change by calling On{Before|After}PossibleChange() methods.
+      OnBeforePossibleChange();
+      gtk_text_buffer_place_cursor(text_buffer_,
+                                   count == 1 ? &sel_end : &sel_start);
+      OnAfterPossibleChange();
+    } else if (count == 1 && !has_selection) {
+      gint cursor_pos;
+      g_object_get(G_OBJECT(text_buffer_), "cursor-position", &cursor_pos,
+                   NULL);
+      if (cursor_pos == gtk_text_buffer_get_char_count(text_buffer_))
+        controller_->OnCommitSuggestedText(std::wstring());
+      else
+        handled = false;
+    } else {
+      handled = false;
+    }
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
     model_->OnUpOrDownKeyPressed(model_->result().size() * count);
   } else if (step == GTK_MOVEMENT_DISPLAY_LINES) {  // Arrow up and down.
     model_->OnUpOrDownKeyPressed(count);
   } else {
+    handled = false;
+  }
+
+  if (!handled) {
     // Cursor movement may change the selection, we need to record the change
     // and report it to |model_|.
     if (has_selection || extend_selection)
@@ -1424,6 +1450,16 @@ int AutocompleteEditViewGtk::GetTextLength() {
   return gtk_text_iter_get_offset(&end);
 }
 
+std::wstring AutocompleteEditViewGtk::GetTextFromBuffer(
+    GtkTextBuffer* buffer) const {
+  GtkTextIter start, end;
+  gtk_text_buffer_get_bounds(buffer, &start, &end);
+  gchar* utf8 = gtk_text_buffer_get_text(buffer, &start, &end, false);
+  std::wstring out(UTF8ToWide(utf8));
+  g_free(utf8);
+  return out;
+}
+
 void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
@@ -1481,9 +1517,47 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   }
 }
 
+void AutocompleteEditViewGtk::SetInstantSuggestion(
+    const std::string& suggestion) {
+  if (suggestion.empty()) {
+    gtk_widget_hide(instant_view_);
+  } else {
+    gtk_text_buffer_set_text(instant_buffer_, suggestion.data(),
+                             suggestion.size());
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(instant_buffer_, &start, &end);
+    gtk_text_buffer_apply_tag(instant_buffer_, instant_text_tag_, &start, &end);
+    gtk_widget_show(instant_view_);
+  }
+}
+
+bool AutocompleteEditViewGtk::CommitInstantSuggestion() {
+  if (!GTK_WIDGET_VISIBLE(instant_view_))
+    return false;
+
+  std::wstring suggest_text = GetTextFromBuffer(instant_buffer_);
+  if (suggest_text.empty())
+    return false;
+
+  OnBeforePossibleChange();
+  SetUserText(GetText() + suggest_text);
+  OnAfterPossibleChange();
+  return true;
+}
+
 void AutocompleteEditViewGtk::TextChanged() {
   EmphasizeURLComponents();
   controller_->OnChanged();
+
+  // Move the instant suggestion to the end of the text.
+  GtkTextIter start, end;
+  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+  GdkRectangle rect;
+  gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_), &end, &rect);
+
+  // +1 so the cursor will show.
+  gtk_text_view_move_child(GTK_TEXT_VIEW(text_view_), instant_view_,
+                           rect.x + rect.width + 1, 0);
 }
 
 void AutocompleteEditViewGtk::SavePrimarySelection(
@@ -1570,6 +1644,14 @@ void AutocompleteEditViewGtk::HandleDeleteFromCursor(GtkWidget *sender,
 
 void AutocompleteEditViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
   AdjustTextJustification();
+}
+
+gboolean AutocompleteEditViewGtk::HandleInstantViewButtonPress(
+    GtkWidget* sender,
+    GdkEventButton* event) {
+  // Clicking on the view should have no effect; just stop propagation of the
+  // event.
+  return TRUE;
 }
 
 // static

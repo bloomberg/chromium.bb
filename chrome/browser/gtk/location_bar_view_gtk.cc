@@ -433,22 +433,46 @@ void LocationBarViewGtk::Update(const TabContents* contents) {
 }
 
 void LocationBarViewGtk::OnAutocompleteWillClosePopup() {
-  // TODO(estade): implement me.
+  if (!update_instant_)
+    return;
+
+  InstantController* instant = browser_->instant();
+  if (instant && !instant->commit_on_mouse_up())
+    instant->DestroyPreviewContents();
 }
 
 void LocationBarViewGtk::OnAutocompleteLosingFocus(
     gfx::NativeView view_gaining_focus) {
-  // TODO(estade): implement me.
+  SetSuggestedText(string16());
+
+  // TODO(estade): should the implementation of this function from here on be
+  // moved to InstantController?
+  InstantController* instant = browser_->instant();
+  if (!instant)
+    return;
+
+  if (!instant->is_active() || !instant->GetPreviewContents())
+    return;
+
+  // TODO(estade): Determine correct instant commit type.
+  instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 void LocationBarViewGtk::OnAutocompleteWillAccept() {
-  // TODO(estade): implement me.
+  update_instant_ = false;
 }
 
 bool LocationBarViewGtk::OnCommitSuggestedText(
     const std::wstring& typed_text) {
-  // TODO(estade): implement me.
-  return false;
+  InstantController* instant = browser_->instant();
+  if (!instant)
+    return false;
+
+  bool updating_instant = update_instant_;
+  update_instant_ = false;
+  bool rv = location_entry_->CommitInstantSuggestion();
+  update_instant_ = updating_instant;
+  return rv;
 }
 
 void LocationBarViewGtk::OnPopupBoundsChanged(const gfx::Rect& bounds) {
@@ -461,35 +485,37 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     WindowOpenDisposition disposition,
     PageTransition::Type transition,
     const GURL& alternate_nav_url) {
-  if (!url.is_valid())
-    return;
+  if (url.is_valid()) {
+    location_input_ = UTF8ToWide(url.spec());
+    disposition_ = disposition;
+    transition_ = transition;
 
-  location_input_ = UTF8ToWide(url.spec());
-  disposition_ = disposition;
-  transition_ = transition;
-
-  if (!command_updater_)
-    return;
-
-  if (!alternate_nav_url.is_valid()) {
-    command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-    return;
+    if (command_updater_) {
+      if (!alternate_nav_url.is_valid()) {
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+      } else {
+        AlternateNavURLFetcher* fetcher =
+            new AlternateNavURLFetcher(alternate_nav_url);
+        // The AlternateNavURLFetcher will listen for the pending navigation
+        // notification that will be issued as a result of the "open URL." It
+        // will automatically install itself into that navigation controller.
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+        if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
+          // I'm not sure this should be reachable, but I'm not also sure enough
+          // that it shouldn't to stick in a NOTREACHED().  In any case, this is
+          // harmless.
+          delete fetcher;
+        } else {
+          // The navigation controller will delete the fetcher.
+        }
+      }
+    }
   }
 
-  AlternateNavURLFetcher* fetcher =
-      new AlternateNavURLFetcher(alternate_nav_url);
-  // The AlternateNavURLFetcher will listen for the pending navigation
-  // notification that will be issued as a result of the "open URL." It
-  // will automatically install itself into that navigation controller.
-  command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-  if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
-    // I'm not sure this should be reachable, but I'm not also sure enough
-    // that it shouldn't to stick in a NOTREACHED().  In any case, this is
-    // harmless.
-    delete fetcher;
-  } else {
-    // The navigation controller will delete the fetcher.
-  }
+  if (browser_->instant())
+    browser_->instant()->DestroyPreviewContents();
+
+  update_instant_ = true;
 }
 
 void LocationBarViewGtk::OnChanged() {
@@ -589,7 +615,7 @@ void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarViewGtk::SetSuggestedText(const string16& text) {
-  // TODO(estade): implement me.
+  location_entry_->SetInstantSuggestion(UTF16ToUTF8(text));
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {

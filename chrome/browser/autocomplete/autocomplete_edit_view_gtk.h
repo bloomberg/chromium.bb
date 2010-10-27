@@ -145,6 +145,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   void SetBaseColor();
 
+  void SetInstantSuggestion(const std::string& suggestion);
+  bool CommitInstantSuggestion();
+
   // Used by LocationBarViewGtk to inform AutocompleteEditViewGtk if the tab to
   // search should be enabled or not. See the comment of |enable_tab_to_search_|
   // for details.
@@ -206,6 +209,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        HandleWidgetDirectionChanged, GtkTextDirection);
   CHROMEGTK_CALLBACK_2(AutocompleteEditViewGtk, void,
                        HandleDeleteFromCursor, GtkDeleteType, gint);
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean,
+                       HandleInstantViewButtonPress, GdkEventButton*);
 
   // Callback for the PRIMARY selection clipboard.
   static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
@@ -254,6 +259,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Return the number of characers in the current buffer.
   int GetTextLength();
 
+  // Get the string contents for the given buffer.
+  std::wstring GetTextFromBuffer(GtkTextBuffer* buffer) const;
+
   // Try to parse the current text as a URL and colorize the components.
   void EmphasizeURLComponents();
 
@@ -299,6 +307,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   GtkTextTag* secure_scheme_tag_;
   GtkTextTag* security_error_scheme_tag_;
   GtkTextTag* normal_text_tag_;
+
+  // Objects for the instant suggestion text view.
+  GtkWidget* instant_view_;
+  GtkTextBuffer* instant_buffer_;
+  GtkTextTag* instant_text_tag_;
 
   scoped_ptr<AutocompleteEditModel> model_;
   scoped_ptr<AutocompletePopupView> popup_view_;

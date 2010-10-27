@@ -91,6 +91,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   virtual void OnAutocompleteWillClosePopup();
   virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus);
   virtual void OnAutocompleteWillAccept();
+  // For this implementation, the parameter is ignored.
   virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
@@ -419,8 +420,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // The last search keyword that was shown via the |tab_to_search_box_|.
   std::wstring last_keyword_;
 
-  // True if instant search should be updated. Copied from Views. For now, it
-  // is always true.
+  // True if we should update the instant controller when the edit text changes.
   bool update_instant_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
