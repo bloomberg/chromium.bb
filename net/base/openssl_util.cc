@@ -59,6 +59,10 @@ OpenSSLInitSingleton* GetOpenSSLInitSingleton() {
   return Singleton<OpenSSLInitSingleton>::get();
 }
 
+void EnsureOpenSSLInit() {
+  Singleton<OpenSSLInitSingleton>::get();
+}
+
 // static
 void OpenSSLInitSingleton::LockingCallback(int mode,
                                             int n,

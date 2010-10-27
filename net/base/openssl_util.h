@@ -25,7 +25,7 @@ class ScopedSSL {
 };
 
 // Singleton for initializing / cleaning up OpenSSL and holding a X509 store.
-// Access it via EnsureOpenSSLInit().
+// Access it via GetOpenSSLInitSingleton().
 class OpenSSLInitSingleton {
  public:
   SSL_CTX* ssl_ctx() const { return ssl_ctx_.get(); }
@@ -48,6 +48,12 @@ class OpenSSLInitSingleton {
 };
 
 OpenSSLInitSingleton* GetOpenSSLInitSingleton();
+
+// Initialize OpenSSL if it isn't already initialized. This must be called
+// before any other OpenSSL functions (except GetOpenSSLInitSingleton above).
+// This function is thread-safe, and OpenSSL will only ever be initialized once.
+// OpenSSL will be properly shut down on program exit.
+void EnsureOpenSSLInit();
 
 }  // namespace net
 
