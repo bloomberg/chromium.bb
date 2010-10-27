@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html i18n-values='dir:textdirection;'>
+<style>
+
+html, body {
+  margin: 0;
+  overflow: hidden;
+}
+
+input {
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+</style>
+
+<body>
+  <input>
+</body>
+
+<script>
+
+var textfield = document.querySelector('input');
+textfield.addEventListener('input', sendTextfieldValueToBrowser);
+
+/**
+ * Sends the textfield value to the browser. Called whenever the user presses a
+ * key. We first check if the key-press has really changed the text, then send
+ * the new value to the browser if so.
+ */
+function sendTextfieldValueToBrowser() {
+  chrome.send('textfieldValue', [textfield.value]);
+}
+
+/**
+ * Sets textfield value
+ * @param {string} value
+ */
+function setTextfieldValue(value) {
+  textfield.value = value;
+  sendTextfieldValueToBrowser();
+}
+
+</script>
+</html>

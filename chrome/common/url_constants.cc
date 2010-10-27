@@ -88,6 +88,7 @@ const char kChromeUINewTabURL[] = "chrome://newtab";
 const char kChromeUIPluginsURL[] = "chrome://plugins/";
 const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
+const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
@@ -122,6 +123,7 @@ const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISyncResourcesHost[] = "syncresources";
+const char kChromeUITextfieldsHost[] = "textfields";
 const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
 

@@ -177,6 +177,12 @@ class TabContents : public PageNavigator,
   RenderViewHost* render_view_host() const {
     return render_manager_.current_host();
   }
+
+  DOMUI* dom_ui() const {
+    return render_manager_.dom_ui() ? render_manager_.dom_ui()
+        : render_manager_.pending_dom_ui();
+  }
+
   // Returns the currently active RenderWidgetHostView. This may change over
   // time and can be NULL (during setup and teardown).
   RenderWidgetHostView* GetRenderWidgetHostView() const {

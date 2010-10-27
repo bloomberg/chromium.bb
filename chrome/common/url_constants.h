@@ -79,6 +79,7 @@ extern const char kChromeUINewTabURL[];
 extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPrintURL[];
 extern const char kChromeUISettingsURL[];
+extern const char kChromeUITextfieldsURL[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIFileBrowseURL[];
@@ -113,6 +114,7 @@ extern const char kChromeUIResourcesHost[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUISettingsHost[];
 extern const char kChromeUISyncResourcesHost[];
+extern const char kChromeUITextfieldsHost[];
 extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
 

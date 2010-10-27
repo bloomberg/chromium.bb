@@ -26,6 +26,7 @@
 #include "chrome/browser/dom_ui/remoting_ui.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/dom_ui/slideshow_ui.h"
+#include "chrome/browser/dom_ui/textfields_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
@@ -131,6 +132,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewDOMUI<DownloadsUI>;
+  if (url.host() == chrome::kChromeUITextfieldsHost)
+    return &NewDOMUI<TextfieldsUI>;
   if (url.host() == chrome::kChromeUIExtensionsHost)
     return &NewDOMUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIHistoryHost)
