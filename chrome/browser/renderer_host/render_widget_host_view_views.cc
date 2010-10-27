@@ -77,6 +77,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {
+  RenderViewGone();
 }
 
 void RenderWidgetHostViewViews::InitAsChild() {
@@ -163,7 +164,6 @@ void RenderWidgetHostViewViews::Blur() {
   host_->Blur();
 }
 
-
 bool RenderWidgetHostViewViews::IsShowing() {
   return IsVisible();
 }
@@ -233,6 +233,7 @@ void RenderWidgetHostViewViews::DidUpdateBackingStore(
 }
 
 void RenderWidgetHostViewViews::RenderViewGone() {
+  GetRenderWidgetHost()->ViewDestroyed();
   Destroy();
 }
 
@@ -330,7 +331,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
   DCHECK(!about_to_validate_and_paint_);
 
   // TODO(anicolao): get the damage somehow
-  //invalid_rect_ = damage_rect;
+  // invalid_rect_ = damage_rect;
   invalid_rect_ = bounds();
   about_to_validate_and_paint_ = true;
   BackingStoreX* backing_store = static_cast<BackingStoreX*>(
