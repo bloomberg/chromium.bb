@@ -203,7 +203,7 @@ class URLPattern {
  private:
   friend class std::vector<URLPattern>;
 
-// Due to a bug in clang, we must make this constructor public.
+// See clang bug: http://llvm.org/bugs/show_bug.cgi?id=8479
 #if defined(__clang__)
  public:
 #endif
