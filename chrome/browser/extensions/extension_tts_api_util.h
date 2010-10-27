@@ -17,6 +17,7 @@ const char kGenderKey[] = "gender";
 const char kRateKey[] = "rate";
 const char kPitchKey[] = "pitch";
 const char kVolumeKey[] = "volume";
+const char kEnqueueKey[] = "enqueue";
 const char kEqualStr[] = "=";
 const char kDelimiter[] = ";";
 

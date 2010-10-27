@@ -38,7 +38,7 @@ class ExtensionTtsPlatformImplLinux : public ExtensionTtsPlatformImpl {
 
   // Get the single instance of this class.
   static ExtensionTtsPlatformImplLinux* GetInstance() {
-    return ExtensionTtsPlatformImplLinux::GetInstance();
+    return Singleton<ExtensionTtsPlatformImplLinux>::get();
   }
 
  private:

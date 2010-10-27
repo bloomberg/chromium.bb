@@ -29,6 +29,7 @@
 namespace chromeos {
 
 using ::testing::AnyNumber;
+using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -378,17 +379,20 @@ void CrosMock::SetPowerLibraryExpectations() {
 }
 
 void CrosMock::SetSpeechSynthesisLibraryExpectations() {
+  InSequence s;
+  EXPECT_CALL(*mock_speech_synthesis_library_, StopSpeaking())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, Speak(_))
-      .Times(1)
       .WillOnce(Return(true))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, StopSpeaking())
-      .Times(1)
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_speech_synthesis_library_, Speak(_))
       .WillOnce(Return(true))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_speech_synthesis_library_, IsSpeaking())
-      .Times(4)
-      .WillOnce(Return(true))
       .WillOnce(Return(true))
       .WillOnce(Return(true))
       .WillOnce(Return(false))

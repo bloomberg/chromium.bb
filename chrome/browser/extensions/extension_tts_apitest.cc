@@ -2,19 +2,164 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_tts_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
-// This extension API is currently only supported on Chrome OS.
+// Needed for CreateFunctor.
+#define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
+#include "testing/gmock_mutant.h"
+
 #if defined(OS_CHROMEOS)
-#define MAYBE_Tts Tts
-#else
-#define MAYBE_Tts DISABLED_Tts
+#include "chrome/browser/chromeos/cros/cros_mock.h"
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tts) {
+using ::testing::CreateFunctor;
+using ::testing::DoAll;
+using ::testing::InSequence;
+using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::_;
+
+class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
+ public:
+  MOCK_METHOD6(Speak,
+               bool(const std::string& utterance,
+                    const std::string& language,
+                    const std::string& gender,
+                    double rate,
+                    double pitch,
+                    double volume));
+  MOCK_METHOD0(StopSpeaking, bool(void));
+  MOCK_METHOD0(IsSpeaking, bool(void));
+
+  void SetErrorToEpicFail() {
+    set_error("epic fail");
+  }
+};
+
+class TtsApiTest : public ExtensionApiTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    ExtensionTtsController::GetInstance()->SetPlatformImpl(
+        &mock_platform_impl_);
+  }
+
+ protected:
+  StrictMock<MockExtensionTtsPlatformImpl> mock_platform_impl_;
+};
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakFinishesImmediately) {
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(false));
+  ASSERT_TRUE(RunExtensionTest("tts/speak_once")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakKeepsSpeakingTwice) {
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
+  ASSERT_TRUE(RunExtensionTest("tts/speak_once")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakInterrupt) {
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak("text 1", _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak("text 2", _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
+  ASSERT_TRUE(RunExtensionTest("tts/interrupt")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakQueueInterrupt) {
+  // In this test, two utterances are queued, and then a third
+  // interrupts. Speak() never gets called on the second utterance.
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak("text 1", _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak("text 3", _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
+  ASSERT_TRUE(RunExtensionTest("tts/queue_interrupt")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakEnqueue) {
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak("text 1", _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_platform_impl_, Speak("text 2", _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(true))
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
+  ASSERT_TRUE(RunExtensionTest("tts/enqueue")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(
+              CreateFunctor(&mock_platform_impl_,
+                            &MockExtensionTtsPlatformImpl::SetErrorToEpicFail)),
+          Return(false)));
+  EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillOnce(Return(false));
+  ASSERT_TRUE(RunExtensionTest("tts/speak_error")) << message_;
+}
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TtsChromeOs) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -24,3 +169,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tts) {
 
   ASSERT_TRUE(RunExtensionTest("tts/chromeos")) << message_;
 }
+#endif

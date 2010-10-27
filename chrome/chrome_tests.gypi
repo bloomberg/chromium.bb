@@ -2031,10 +2031,6 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
-            # Currently TTS extension API is supported only for chromeos.
-            # Remove the following exclude when support for other platforms
-            # is added.
-            ['exclude', 'browser/extensions/extension_tts_apitest.cc'],
           ],
           'sources!': [
             'browser/dom_ui/mediaplayer_browsertest.cc',

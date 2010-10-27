@@ -3,24 +3,27 @@
 // found in the LICENSE file.
 
 // TTS api test for Chrome on ChromeOS.
-// browser_tests.exe --gtest_filter="ExtensionApiTest.TtsChromeOs"
+// browser_tests.exe --gtest_filter="TtsApiTest.*"
 
 chrome.test.runTests([
-  function testChromeOsSpeech() {
+  function testSpeakCallbackFunctionIsCalled() {
     var callbacks = 0;
-    chrome.experimental.tts.speak('text 1', {}, function() {
+    chrome.experimental.tts.speak('first try', {'enqueue': true}, function() {
         chrome.test.assertNoLastError();
         callbacks++;
       });
-    chrome.experimental.tts.speak('text 2', {}, function() {
+    chrome.experimental.tts.speak('second try', {'enqueue': true}, function() {
+        chrome.test.assertEq('epic fail', chrome.extension.lastError.message);
+        callbacks++;
+      });
+    chrome.experimental.tts.speak('third try', {'enqueue': true}, function() {
         chrome.test.assertNoLastError();
         callbacks++;
-        if (callbacks == 2) {
+        if (callbacks == 3) {
           chrome.test.succeed();
         } else {
           chrome.test.fail();
         }
       });
   }
-
 ]);

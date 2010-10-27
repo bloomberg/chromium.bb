@@ -503,7 +503,12 @@
             "optional": true,
             "description": "The speak options. This parameter is currently ignored.",
             "properties": {
-              "languageName": {
+              "enqueue": {
+	        "type": "boolean",
+		"optional": true,
+		"description": "If true, enqueues this utterance if TTS is already in progress. If false (the default), interrupts any current speech and flushes the speech queue before speaking this new utterance."
+              },
+	      "languageName": {
                 "type": "string",
                 "optional": true,
                 "description": "The language name for synthesis specified in the form <language>-<locale>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
