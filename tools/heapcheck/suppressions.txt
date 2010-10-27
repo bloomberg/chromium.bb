@@ -1109,3 +1109,14 @@
    fun:main
    fun:__libc_start_main
 }
+{
+   bug_60872
+   Heapcheck:Leak
+   fun:base::BaseTimer::Start
+   fun:ReloadButtonGtk::OnClicked
+   fun:ReloadButtonGtk::OnClickedThunk
+   fun:g_closure_invoke
+   fun:ReloadButtonGtkTest_*_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
+   fun:testing::Test::Run
+}
