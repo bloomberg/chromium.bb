@@ -89,6 +89,8 @@ class ChromeTests:
 
   def _DefaultCommand(self, tool, module, exe=None, valgrind_test_args=None):
     '''Generates the default command array that most tests will use.'''
+    if exe and common.IsWindows():
+      exe = exe + '.exe'
 
     if not self._options.build_dir:
       if common.IsWine():
@@ -99,6 +101,7 @@ class ChromeTests:
           os.path.join(self._source_dir, "xcodebuild", "Debug"),
           os.path.join(self._source_dir, "sconsbuild", "Debug"),
           os.path.join(self._source_dir, "out", "Debug"),
+          os.path.join(self._source_dir, "build", "Debug"),
         ]
         if exe:
           self._options.build_dir = FindDirContainingNewestFile(dirs, exe)
