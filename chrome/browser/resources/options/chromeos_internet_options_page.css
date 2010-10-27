@@ -138,6 +138,7 @@ html[dir='rtl'] .details-button {
 #detailsInternetPage:not([connected]) > #advancedSection,
 #detailsInternetPage[connecting] > * > #detailsInternetLogin,
 #detailsInternetPage[connected] > * > #detailsInternetLogin,
+#detailsInternetPage:not([wireless]) > * > #detailsInternetOk,
 #detailsInternetPage[ethernet] .wifi-details,
 #detailsInternetPage[ethernet] .cellular-details,
 #detailsInternetPage[cellular] .wifi-details,

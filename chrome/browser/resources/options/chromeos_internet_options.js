@@ -44,10 +44,12 @@ cr.define('options', function() {
       $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
       InternetOptions.setupAttributes(templateData);
       // Setting up the details page
+      $('detailsInternetOk').onclick = function(event) {
+          InternetOptions.setDetails();
+      };
       $('detailsInternetDismiss').onclick = function(event) {
           OptionsPage.clearOverlays();
       };
-
       $('detailsInternetLogin').onclick = function(event) {
           InternetOptions.loginFromDetails();
       };
@@ -111,18 +113,21 @@ cr.define('options', function() {
     if (data.type == 2) {
       var newinfo = [];
       newinfo.push(data.servicePath);
-      newinfo.push($('rememberNetwork').checked);
+      newinfo.push($('rememberNetwork').checked ? "true" : "false");
       if (data.encrypted) {
         if (data.certneeded) {
           newinfo.push($('inetIdent').value);
           newinfo.push($('inetCert').value);
           newinfo.push($('inetCertPass').value);
         } else {
+          newinfo.push('');
+          newinfo.push('');
           newinfo.push($('inetPass').value);
         }
       }
       chrome.send('setDetails', newinfo);
     }
+    OptionsPage.clearOverlays();
   };
 
   InternetOptions.setupAttributes = function(data) {
@@ -238,6 +243,8 @@ cr.define('options', function() {
       page.removeAttribute('gsm');
       $('inetSsid').textContent = data.ssid;
       $('rememberNetwork').checked = data.autoConnect;
+      page.removeAttribute('cert');
+      page.removeAttribute('password');
       if (data.encrypted) {
         if (data.certNeeded) {
           page.setAttribute('cert', true);
@@ -251,11 +258,18 @@ cr.define('options', function() {
             $('inetCertPass').value = data.certPass;
           }
         } else {
-          page.removeAttribute('cert');
-          $('inetPass').value = data.pass;
+          page.setAttribute('password', true);
+          var passfield = $('inetPass');
+          passfield.value = data.pass;
+          passfield.type = 'password';
+          $('inetShowPass').addEventListener('change', function(e) {
+            if ($('inetShowPass').checked) {
+              passfield.type = 'text';
+            } else {
+              passfield.type = 'password';
+            }
+          });
         }
-      } else {
-        page.removeAttribute('cert');
       }
     } else if(data.type == 5) {
       OptionsPage.showTab($('cellularPlanNavTab'));

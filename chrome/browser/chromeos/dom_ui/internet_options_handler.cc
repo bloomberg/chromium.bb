@@ -259,6 +259,8 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE));
 
+  localized_strings->SetString("detailsInternetOk",
+      l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("detailsInternetDismiss",
       l10n_util::GetStringUTF16(IDS_CANCEL));
 
@@ -465,10 +467,12 @@ string16 InternetOptionsHandler::GetPlanWarning(
 }
 
 void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
-
   std::string service_path;
+  std::string remember;
 
-  if (!args->GetString(0, &service_path)) {
+  if (args->GetSize() < 2 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &remember)) {
     NOTREACHED();
     return;
   }
@@ -479,64 +483,46 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
   if (cros->FindWifiNetworkByPath(service_path, &network)) {
     bool changed = false;
     if (network.encrypted()) {
-      if (network.encryption() == chromeos::SECURITY_8021X) {
-        std::string certpath;
-        std::string ident;
-        std::string certpass;
-        bool remember;
+      std::string password;
 
-        if (args->GetSize() != 5 ||
-            !args->GetBoolean(1, &remember) ||
-            !args->GetString(2, &ident) ||
-            !args->GetString(3, &certpath) ||
-            !args->GetString(4, &certpass)) {
+      if (args->GetSize() != 5 ||
+          !args->GetString(4, &password)) {
+        NOTREACHED();
+        return;
+      }
+      if (password != network.passphrase()) {
+        network.set_passphrase(password);
+        changed = true;
+      }
+
+      if (network.encryption() == chromeos::SECURITY_8021X) {
+        std::string ident;
+        std::string certpath;
+
+        if (!args->GetString(2, &ident) ||
+            !args->GetString(3, &certpath)) {
           NOTREACHED();
           return;
         }
-
-        bool auto_connect = remember;
-        if (auto_connect != network.auto_connect()) {
-          network.set_auto_connect(auto_connect);
-          changed = true;
-        }
         if (ident != network.identity()) {
           network.set_identity(ident);
-          changed = true;
-        }
-        if (certpass != network.passphrase()) {
-          network.set_passphrase(certpass);
           changed = true;
         }
         if (certpath != network.cert_path()) {
           network.set_cert_path(certpath);
           changed = true;
         }
-      } else {
-        std::string password;
-        std::string remember;
-
-        if (args->GetSize() != 5 ||
-            !args->GetString(1, &remember) ||
-            !args->GetString(4, &password)) {
-          NOTREACHED();
-          return;
-        }
-
-        bool auto_connect = (remember == "true");
-        if (auto_connect != network.auto_connect()) {
-          network.set_auto_connect(auto_connect);
-          changed = true;
-        }
-        if (password != network.passphrase()) {
-          network.set_passphrase(password);
-          changed = true;
-        }
       }
     }
-    if (changed) {
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(
-          network);
+
+    bool auto_connect = remember == "true";
+    if (auto_connect != network.auto_connect()) {
+      network.set_auto_connect(auto_connect);
+      changed = true;
     }
+
+    if (changed)
+      cros->SaveWifiNetwork(network);
   }
 }
 
@@ -770,7 +756,7 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
     } else if (cros->FindWifiNetworkByPath(service_path, &network)) {
       if (command == "connect") {
         // Connect to wifi here. Open password page if appropriate.
-        if (network.encrypted()) {
+        if (network.encrypted() && !network.auto_connect()) {
           if (network.encryption() == chromeos::SECURITY_8021X) {
             PopulateDictionaryDetails(network, cros);
           } else {

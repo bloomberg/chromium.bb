@@ -228,7 +228,7 @@ cr.define('options.internet', function() {
               }));
         }
       } else {
-        // forget button
+        // Put "Forget this network" button.
         var button = this.createButton_('forget_button',
                                         function(e) {
                        chrome.send('buttonClickCallback',
@@ -237,7 +237,7 @@ cr.define('options.internet', function() {
                                    'forget']);
                      });
         if (cr.commandLine.options['--bwsi']) {
-          // no disabling of networks while bwsi.
+          // Disable this for guest session(bwsi).
           button.disabled = true;
         }
 
@@ -273,8 +273,8 @@ cr.define('options.internet', function() {
       togglePassCheckbox.target = passInput;
       togglePassCheckbox.addEventListener('change', this.handleShowPass_);
       togglePassSpan.textContent = localStrings.getString('inetShowPass');
+      togglePassLabel.appendChild(togglePassCheckbox);
       togglePassLabel.appendChild(togglePassSpan);
-      passwordDiv.appendChild(togglePassCheckbox);
       passwordDiv.appendChild(togglePassLabel);
 
       // Disable login button if there is no password.
