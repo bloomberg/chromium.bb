@@ -17,6 +17,10 @@ const int kDataCompleteWaitPeriod = 1000 * 2;  // 2 seconds
 // static
 const size_t NetworkLocationProvider::PositionCache::kMaximumSize = 10;
 
+NetworkLocationProvider::PositionCache::PositionCache() {}
+
+NetworkLocationProvider::PositionCache::~PositionCache() {}
+
 bool NetworkLocationProvider::PositionCache::CachePosition(
     const GatewayData& gateway_data,
     const WifiData& wifi_data,

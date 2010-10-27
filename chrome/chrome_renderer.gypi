@@ -125,6 +125,7 @@
         'renderer/indexed_db_dispatcher.h',
         'renderer/localized_error.cc',
         'renderer/localized_error.h',
+        'renderer/navigation_state.cc',
         'renderer/navigation_state.h',
         'renderer/notification_provider.cc',
         'renderer/notification_provider.h',

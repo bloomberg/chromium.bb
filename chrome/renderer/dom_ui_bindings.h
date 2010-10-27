@@ -14,9 +14,7 @@
 // in the browser process.
 class DOMBoundBrowserObject : public CppBoundClass {
  public:
-  DOMBoundBrowserObject()
-      : sender_(NULL),
-        routing_id_(0) { }
+  DOMBoundBrowserObject();
   virtual ~DOMBoundBrowserObject();
 
   // Set the message channel back to the browser.
@@ -59,7 +57,7 @@ class DOMBoundBrowserObject : public CppBoundClass {
 class DOMUIBindings : public DOMBoundBrowserObject {
  public:
   DOMUIBindings();
-  virtual ~DOMUIBindings() {}
+  virtual ~DOMUIBindings();
 
   // The send() function provided to Javascript.
   void send(const CppArgumentList& args, CppVariant* result);

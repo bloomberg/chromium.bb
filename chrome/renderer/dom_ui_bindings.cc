@@ -12,6 +12,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
+DOMBoundBrowserObject::DOMBoundBrowserObject()
+    : sender_(NULL),
+      routing_id_(0) {
+}
+
 DOMBoundBrowserObject::~DOMBoundBrowserObject() {
   STLDeleteContainerPointers(properties_.begin(), properties_.end());
 }
@@ -19,6 +24,8 @@ DOMBoundBrowserObject::~DOMBoundBrowserObject() {
 DOMUIBindings::DOMUIBindings() {
   BindMethod("send", &DOMUIBindings::send);
 }
+
+DOMUIBindings::~DOMUIBindings() {}
 
 void DOMUIBindings::send(const CppArgumentList& args, CppVariant* result) {
   // We expect at least a string message identifier, and optionally take

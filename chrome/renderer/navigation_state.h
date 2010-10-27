@@ -8,15 +8,20 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/page_transition_types.h"
-#include "chrome/renderer/user_script_idle_scheduler.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
-#include "webkit/glue/alt_error_page_resource_fetcher.h"
-#include "webkit/glue/password_form.h"
+
+namespace webkit_glue {
+struct PasswordForm;
+class AltErrorPageResourceFetcher;
+}
+
+class UserScriptIdleScheduler;
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
@@ -35,8 +40,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     kLoadTypeMax               // Bounding value for this enum.
   };
 
-  virtual ~NavigationState() {
-  }
+  virtual ~NavigationState();
 
   static NavigationState* CreateBrowserInitiated(
       int32 pending_page_id,
@@ -61,9 +65,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   UserScriptIdleScheduler* user_script_idle_scheduler() {
     return user_script_idle_scheduler_.get();
   }
-  void set_user_script_idle_scheduler(UserScriptIdleScheduler* scheduler) {
-    user_script_idle_scheduler_.reset(scheduler);
-  }
+  void set_user_script_idle_scheduler(UserScriptIdleScheduler* scheduler);
 
   // Contains the page_id for this navigation or -1 if there is none yet.
   int32 pending_page_id() const { return pending_page_id_; }
@@ -184,16 +186,12 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   webkit_glue::PasswordForm* password_form_data() const {
     return password_form_data_.get();
   }
-  void set_password_form_data(webkit_glue::PasswordForm* data) {
-    password_form_data_.reset(data);
-  }
+  void set_password_form_data(webkit_glue::PasswordForm* data);
 
   webkit_glue::AltErrorPageResourceFetcher* alt_error_page_fetcher() const {
     return alt_error_page_fetcher_.get();
   }
-  void set_alt_error_page_fetcher(webkit_glue::AltErrorPageResourceFetcher* f) {
-    alt_error_page_fetcher_.reset(f);
-  }
+  void set_alt_error_page_fetcher(webkit_glue::AltErrorPageResourceFetcher* f);
 
   const std::string& security_info() const { return security_info_; }
   void set_security_info(const std::string& security_info) {
@@ -277,30 +275,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
                   const base::Time& request_time,
                   bool is_content_initiated,
                   int32 pending_page_id,
-                  int pending_history_list_offset)
-      : transition_type_(transition_type),
-        load_type_(UNDEFINED_LOAD),
-        request_time_(request_time),
-        scheme_type_(static_cast<URLPattern::SchemeMasks>(0)),
-        load_histograms_recorded_(false),
-        request_committed_(false),
-        is_content_initiated_(is_content_initiated),
-        pending_page_id_(pending_page_id),
-        pending_history_list_offset_(pending_history_list_offset),
-        postpone_loading_data_(false),
-        cache_policy_override_set_(false),
-        cache_policy_override_(WebKit::WebURLRequest::UseProtocolCachePolicy),
-        user_script_idle_scheduler_(NULL),
-        http_status_code_(0),
-        was_fetched_via_spdy_(false),
-        was_npn_negotiated_(false),
-        was_alternate_protocol_available_(false),
-        was_fetched_via_proxy_(false),
-        was_translated_(false),
-        was_within_same_page_(false),
-        was_prefetcher_(false),
-        was_referred_by_prefetcher_(false) {
-  }
+                  int pending_history_list_offset);
 
   PageTransition::Type transition_type_;
   LoadType load_type_;

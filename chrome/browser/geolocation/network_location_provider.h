@@ -35,6 +35,9 @@ class NetworkLocationProvider
     // device data.
     static const size_t kMaximumSize;
 
+    PositionCache();
+    ~PositionCache();
+
     // Caches the current position response for the current set of cell ID and
     // WiFi data. In the case of the cache exceeding kMaximumSize this will
     // evict old entries in FIFO orderer of being added.

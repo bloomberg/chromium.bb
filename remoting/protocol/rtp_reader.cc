@@ -9,9 +9,12 @@
 
 namespace remoting {
 
+RtpPacket::RtpPacket() {}
+RtpPacket::~RtpPacket() {}
+
 // RtpReader class.
-RtpReader::RtpReader() { }
-RtpReader::~RtpReader() { }
+RtpReader::RtpReader() {}
+RtpReader::~RtpReader() {}
 
 void RtpReader::Init(net::Socket* socket,
                      OnMessageCallback* on_message_callback) {

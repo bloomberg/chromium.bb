@@ -12,6 +12,9 @@
 namespace remoting {
 
 struct RtpPacket {
+  RtpPacket();
+  ~RtpPacket();
+
   RtpHeader header;
   scoped_refptr<net::IOBuffer> data;
   char* payload;
