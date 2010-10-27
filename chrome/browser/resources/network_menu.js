@@ -143,7 +143,12 @@ NetworkMenuItem.prototype = {
             this.passwordEdit.value, '', this.rememberCheckbox.checked);
       }
     } else {
-      sendConnect(index, '', '', this.rememberCheckbox.checked);
+      if (this.attrs.remembered) {
+        sendConnect(index, this.attrs.passphrase, '',
+                    this.rememberCheckbox.checked);
+      } else {
+        sendConnect(index, '', '', this.rememberCheckbox.checked);
+      }
     }
   },
 

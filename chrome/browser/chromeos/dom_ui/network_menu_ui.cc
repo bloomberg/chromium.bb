@@ -185,6 +185,7 @@ DictionaryValue* NetworkMenuUI::CreateMenuItem(const menus::MenuModel* model,
   item->SetString("status", info.status);
   item->SetString("message", info.message);
   item->SetString("ip_address", info.ip_address);
+  item->SetString("passphrase", info.passphrase);
   item->SetBoolean("need_passphrase", info.need_passphrase);
   item->SetBoolean("remembered", info.remembered);
   return item;

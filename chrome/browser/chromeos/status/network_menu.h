@@ -61,6 +61,8 @@ class NetworkMenu : public views::ViewMenuDelegate,
     std::string message;
     // IP address (if network is active, empty otherwise)
     std::string ip_address;
+    // Remembered passphrase.
+    std::string passphrase;
     // true if the network requires a passphrase.
     bool need_passphrase;
     // true if the network is currently remembered.

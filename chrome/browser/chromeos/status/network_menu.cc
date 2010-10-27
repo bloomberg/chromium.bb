@@ -128,11 +128,14 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
             IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
       }
       if (wifi.encrypted()) {
+        info->need_passphrase = true;
         if (wifi.IsCertificateLoaded() ||
             wifi.encryption() == SECURITY_8021X) {
           info->need_passphrase = false;
-        } else {
-          info->need_passphrase = true;
+        }
+        if (wifi.favorite()) {
+          info->passphrase = wifi.passphrase();
+          info->need_passphrase = false;
         }
       } else {
         info->need_passphrase = false;
