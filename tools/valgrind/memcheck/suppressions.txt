@@ -479,6 +479,16 @@
    fun:SEC_PKCS12DecoderUpdate
 }
 {
+   bug_58730_strlen_addr8
+   Memcheck:Addr8
+   fun:__strlen_sse2
+}
+{
+   bug_58730_strlen_cond
+   Memcheck:Cond
+   fun:__strlen_sse2
+}
+{
    bug_58730_strcmp_addr8
    Memcheck:Addr8
    fun:__strcmp_ssse3
@@ -497,6 +507,36 @@
    bug_58730_strncmp_value8
    Memcheck:Value8
    fun:__strncmp_ssse3
+}
+{
+   bug_58730_memmove_value4
+   Memcheck:Value4
+   fun:__memmove_ssse3
+}
+{
+   bug_58730_memmove_cond
+   Memcheck:Cond
+   fun:__memmove_ssse3
+}
+{
+   bug_58730_memcpy_value4
+   Memcheck:Value4
+   fun:__memcpy_ssse3
+}
+{
+   bug_58730_memcpy_addr8
+   Memcheck:Addr8
+   fun:__memcpy_ssse3
+}
+{
+   bug_58730_memcpy_cond
+   Memcheck:Cond
+   fun:__memcpy_ssse3
+}
+{
+   bug_58730_memmove_chk_cond
+   Memcheck:Cond
+   fun:__memmove_chk_ssse3
 }
 {
    bug_58730_libc.so_addr8
