@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
@@ -46,6 +47,8 @@ class CacheInvalidationPacketHandler {
   ~CacheInvalidationPacketHandler();
 
  private:
+  FRIEND_TEST(CacheInvalidationPacketHandlerTest, Basic);
+
   void HandleOutboundPacket(
       invalidation::NetworkEndpoint* const& network_endpoint);
 

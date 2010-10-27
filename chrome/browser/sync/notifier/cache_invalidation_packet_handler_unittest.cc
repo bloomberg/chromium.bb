@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 
+#include "base/base64.h"
 #include "base/message_loop.h"
 #include "base/weak_ptr.h"
 #include "google/cacheinvalidation/invalidation-client.h"
@@ -15,8 +16,6 @@
 #include "talk/xmpp/asyncsocket.h"
 
 namespace sync_notifier {
-
-namespace {
 
 using ::testing::_;
 using ::testing::NotNull;
@@ -75,6 +74,10 @@ TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
               RegisterOutboundListener(NotNull())).Times(1);
   EXPECT_CALL(mock_network_endpoint,
               RegisterOutboundListener(NULL)).Times(1);
+  const char kInboundMessage[] = "non-bogus";
+  EXPECT_CALL(mock_network_endpoint,
+              HandleInboundMessage(kInboundMessage)).Times(1);
+  EXPECT_CALL(mock_network_endpoint, TakeOutboundMessage(_)).Times(1);
 
   weak_xmpp_client->Start();
   buzz::XmppClientSettings settings;
@@ -85,10 +88,24 @@ TEST_F(CacheInvalidationPacketHandlerTest, Basic) {
   // Initialize the XMPP client.
   message_loop.RunAllPending();
 
-  CacheInvalidationPacketHandler handler(
-      base_task, &mock_invalidation_client);
-}
+  {
+    CacheInvalidationPacketHandler handler(
+        base_task, &mock_invalidation_client);
+    // Take care of any tasks posted by the constructor.
+    message_loop.RunAllPending();
 
-}  // namespace
+    {
+      handler.HandleInboundPacket("bogus");
+      std::string inbound_message_encoded;
+      EXPECT_TRUE(
+          base::Base64Encode(kInboundMessage, &inbound_message_encoded));
+      handler.HandleInboundPacket(inbound_message_encoded);
+    }
+
+    handler.HandleOutboundPacket(&mock_network_endpoint);
+    // Take care of any tasks posted by HandleOutboundPacket().
+    message_loop.RunAllPending();
+  }
+}
 
 }  // namespace sync_notifier
