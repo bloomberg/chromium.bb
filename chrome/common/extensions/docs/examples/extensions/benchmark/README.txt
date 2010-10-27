@@ -14,5 +14,14 @@ To use this benchmark, you'll need to run chrome with the the
 the benchmark can clear idle connections and the cache.
 
 The code found in the jst/ subdirectory is JSTemplate code from
-http://code.google.com/p/google-jstemplate/
+http://code.google.com/p/google-jstemplate/.
+
+In jquery/, jquery-1.4.2.min.js is from http://jquery.com/. jquery.flot.min.js
+is a plotting library and from http://code.google.com/p/flot/.
+jquery.flot.dashes.js is an enhancement of Flot for dashed lines and from 
+http://code.google.com/p/flot/issues/detail?id=61.
+
+In util/, sortable.js serves for sorting table content and is from
+http://www.kryogenix.org/code/browser/sorttable/. table2CSV.js is for exporting
+table data to .csv and from http://www.kunalbabre.com/projects/table2CSV.php.
 

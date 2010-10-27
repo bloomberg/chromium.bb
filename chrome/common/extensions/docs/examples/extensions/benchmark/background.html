@@ -240,7 +240,7 @@ function Benchmark() {
   this.openNextPage = function() {
     var benchmark = nextBenchmark();
     benchmark.pageStart();
-    chrome.tabs.create({"url": benchmark.url(),"selected": false},
+    chrome.tabs.create({"url": benchmark.url(),"selected": true},
                        function(tab) {
                          benchmarkWindow = tab;
                          // script.js only executes on tested pages

@@ -4,14 +4,11 @@
   <script src="jst/util.js" type="text/javascript"></script>
   <script src="jst/jsevalcontext.js" type="text/javascript"></script>
   <script src="jst/jstemplate.js" type="text/javascript"></script>
-  <script src="jst/jstemplate_example.js" type="text/javascript"></script>
   <script src="jquery/jquery-1.4.2.min.js" type="text/javascript"></script>
-  <script src="jquery/jquery-ui-1.8.4.custom.min.js" type="text/javascript"></script>
-  <script src="jquery/jquery.flot.js" type="text/javascript"></script>
+  <script src="jquery/jquery.flot.min.js" type="text/javascript"></script>
   <script src="jquery/jquery.flot.dashes.js" type="text/javascript"></script>
-  <script src="jquery/jquery.flot.navigate.js" type="text/javascript"></script>
-  <script src="jquery/jquery.flot.valuelabels.js" type="text/javascript"></script>
-  <script src="jquery/jquery.client.js" type="text/javascript"></script>
+  <script src="util/table2CSV.js" type="text/javascript"></script> 
+  <script src="util/sorttable.js" type="text/javascript"></script>
 
 <style>
 body {
@@ -61,22 +58,36 @@ div#header p {
   display: inline;
 }
 
-table.list {
+table.sortable {
   font-size: 84%;
   table-layout: fixed;
 }
 
-table.list:not([class*='filtered']) tr:nth-child(odd) td:not([class*='filtered']) {
+table.sortable:not([class*='filtered']) tr:nth-child(even) td:not([class*='filtered']) {
   background: #eff3ff;
 }
 
-table.list th {
+.nobg {
   padding: 0 0.5em;
   vertical-align: bottom;
   font-weight: bold;
   color: #315d94;
   color: black;
   text-align: center;
+}
+
+.bg{
+  padding: 0 0.5em;
+  vertical-align: bottom;
+  font-weight: bold;
+  color: #315d94;
+  color: black;
+  text-align: center;
+  cursor: pointer;
+}
+
+.bg:hover {
+  background: #eff3aa;
 }
 
 .avg {
@@ -90,13 +101,12 @@ table.list th {
 }
 
 .bggraph {
-  background-color: #faa;
   white-space: nowrap;
 }
 
-.file_input_div
+.file_input
 {
-  position: relative;
+  position: absolute;
   width: 140px;
   height: 26px;
   overflow: hidden;
@@ -116,16 +126,10 @@ table.list th {
   right: 0px;
   top: 0px;
   opacity: 0;
-
-  filter: alpha(opacity=0);
-  -ms-filter: "alpha(opacity=0)";
-  -khtml-opacity: 0;
-  -moz-opacity: 0;
 }
 </style>
 
 <script>
-
 var max_sample = 0;
 
 Array.max = function(array) {
@@ -532,16 +536,17 @@ function clearIndicator () {
   }
 }
 
-// Enable/disable button according to checkbox change.
+// Enable/Disable buttons according to checkbox change.
 function checkSelected () {
   var checkboxArr = document.getElementsByName("checkboxArr"); 
   if (checkAmount(checkboxArr) !=0) {
+    document.getElementById("clearSelected").disabled = false;
     document.getElementById("compare").disabled = false;
   } else {
+    document.getElementById("clearSelected").disabled = true;
     document.getElementById("compare").disabled = true;
   }
 }
-
 
 // Object to summarize everything
 var totals = {};
@@ -781,11 +786,34 @@ function run() {
 function showConfirm() {
   var r = confirm("Are you sure to clear results?");
   if (r) {
-    clearResults();
+    // Find out the event source element.
+    var evtSrc = window.event.srcElement; 
+    if (evtSrc.value == "Clear Selected") {
+      clearSelected();
+    } else if (evtSrc.value == "Clear All") {
+      clearResults();
+    }
   }
 }
 
-// Clear the results
+// Clear the selected results
+function clearSelected() {
+  var extension = chrome.extension.getBackgroundPage();
+  var checkboxArr = document.getElementsByName("checkboxArr");
+  var rowIndexArr = getSelectedIndex(checkboxArr);
+  var currIndex;
+  for (var i = 0; i < rowIndexArr.length; i++) {
+    currIndex = rowIndexArr[i];
+    // Update the index of the original row in the modified array. 
+    currIndex -= i;
+    extension.results.data.splice(currIndex, 1);
+    document.location.reload(true);
+    updateChart(this);
+    jsinit();
+  }
+}
+
+// Clear all the results
 function clearResults() {
   var extension = chrome.extension.getBackgroundPage();
   extension.results = {};
@@ -794,6 +822,13 @@ function clearResults() {
   document.getElementById("baseline").value = "";
   updateChart(this);
   jsinit();
+}
+
+// Export html table into CSV format.
+function export() {
+  var checkboxArr = document.getElementsByName("checkboxArr");
+  var rowNum = checkboxArr.length + 1; // # of data rows plus total-stats row. 
+  $('#t').table2CSV(rowNum);
 }
 
 // Toggle display of an element
@@ -821,57 +856,58 @@ Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
 Enable Spdy?<input id="enablespdy" type="checkbox">
 <br>
-<span>URLs to load</span> <input type="text" id="testurl" size="100">
-<div class="file_input_div">
+<span>URLs to load</span> <input type="text" id="testurl" size="80">
+<span class="file_input">
 <input class="file_input_button" type="button" value="Load URLs From File" />
 <input class="file_input_hidden" type="file" id="files" name="files[]" multiple />
-</div>
-<form onsubmit="config();run()" style="display:inline">
+</span>
+<form onsubmit="config();run()">
 <input type="submit" value="Run">
 </form>
-<input type="button" value="Clear Results" onclick="showConfirm()">
 <p>
 
 <h1>Results</h1>
 
 <input id="expand" type="button" value="Show More Details" onclick="expand()">
-
-<table id="t" class="list" width="100%">
+<input id="clearSelected" type="button" value="Clear Selected" disabled="true" onclick="showConfirm()">
+<input id="clearAll" type="button" value="Clear All" onclick="showConfirm()">
+<input type="button" value="Export As .csv" onclick="export()">
+<table id="t" class="sortable" width="100%">
   <tr>
-  <th width=35></th>
-  <th width=150>url</th>
-  <th width=80 style="display:none">timestamp</th>
-  <th width=50>iterations</th>
-  <th width=50 >via spdy</th>
-  <th width=50 style="display:none">start load mean</th>
-  <th width=50 style="display:none">commit load mean</th>
-  <th width=50>doc load mean</th>
-  <th width=50>paint mean</th>
-  <th width=50>total load mean</th>
-  <th width=50>stddev</th>
-  <th width=50 style="display:none">stderr</th>
-  <th width=50 style="display:none">95% CI-low</th>
-  <th width=50 style="display:none">95% CI-high</th>
-  <th width=50 style="display:none">min</th>
-  <th width=50 style="display:none">max</th>
-  <th width=50 style="display:none"># Requests</th>
-  <th width=50 style="display:none"># Connects</th>
-  <th width=50 style="display:none"># SPDY Sessions</th>
-  <th width=50 style="display:none">Read KB</th>
-  <th width=50 style="display:none">Write KB</th>
-  <th width=50>Read KBps</th>
-  <th width=50>Write KBps</th>
-  <th width=50># DOM</th>
-  <th width=70 style="display:none">max DOM depth</th>
-  <th width=30 style="display:none">min</th>
-  <th width=30 style="display:none">avg</th>
-  <th samples style="display:none"></th>
+  <th width=35 class="nobg"></th>
+  <th width=215 class="nobg">url</th>
+  <th width=110 class="nobg" style="display:none">timestamp</th>
+  <th width=50 class="nobg">iterations</th>
+  <th width=50 class="nobg">via spdy</th>
+  <th width=50 class="bg" style="display:none">start load mean</th>
+  <th width=50 class="bg" style="display:none">commit load mean</th>
+  <th width=50 class="bg">doc load mean</th>
+  <th width=50 class="bg">paint mean</th>
+  <th width=50 class="bg">total load mean</th>
+  <th width=50 class="bg">stddev</th>
+  <th width=50 class="bg" style="display:none">stderr</th>
+  <th width=50 class="bg" style="display:none">95% CI-low</th>
+  <th width=50 class="bg" style="display:none">95% CI-high</th>
+  <th width=50 class="bg" style="display:none">min</th>
+  <th width=50 class="bg" style="display:none">max</th>
+  <th width=60 class="bg" style="display:none"># Requests</th>
+  <th width=60 class="bg" style="display:none"># Connects</th>
+  <th width=50 class="bg" style="display:none"># SPDY Sessions</th>
+  <th width=50 class="bg" style="display:none">Read KB</th>
+  <th width=50 class="bg" style="display:none">Write KB</th>
+  <th width=50 class="bg">Read KBps</th>
+  <th width=50 class="bg">Write KBps</th>
+  <th width=50 class="bg"># DOM</th>
+  <th width=70 class="bg" style="display:none">max DOM depth</th>
+  <th width=30 class="bg" style="display:none">min</th>
+  <th width=30 class="bg" style="display:none">avg</th>
+  <th samples class="nobg" style="display:none">total loan time samples</th>
   </tr>
 
   <tr id="t.total" jsselect="totals">
   <td class="avg" jseval="1"></td>
   <td class="url">TOTALS <span jscontent="url"></span></td>
-  <td class="avg" jseval="1"></td>
+  <td class="avg" style="display:none"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" style="display:none"><span jseval="val = startLoadMean.toFixed(1)" jscontent="val"></span></td>
@@ -879,6 +915,13 @@ Enable Spdy?<input id="enablespdy" type="checkbox">
   <td class="avg"><span jseval="val = docLoadMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = paintMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = mean.toFixed(1)" jscontent="val"></span></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
   <td class="avg" jseval="1"></td>
@@ -923,7 +966,7 @@ Enable Spdy?<input id="enablespdy" type="checkbox">
   <td class="data" style="display:none"><span jsselect="totalResults"><span jscontent="$this"></span>,</span> </td>
   </tr>
   <tr jsdisplay="data.length == 0">
-  <td colspan=11>No tests have been run yet.</td>
+  <td colspan=2>No tests have been run yet.</td>
   </tr>
   <tr jsdisplay="data.length > 1">
   <td width=25 jseval="1"></td>
