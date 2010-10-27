@@ -498,7 +498,7 @@ void TabContentsViewGtk::SetFloatingPosition(const gfx::Size& size) {
     gtk_widget_size_request(widget, &requisition);
 
     int child_x = std::max(half_view_width - (requisition.width / 2), 0);
-    PositionChild(widget, child_x, 0, requisition.width, requisition.height);
+    PositionChild(widget, child_x, 0, 0, 0);
   }
 }
 
