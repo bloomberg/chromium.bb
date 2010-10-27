@@ -685,6 +685,16 @@ void GtkThemeProvider::LoadGtkValues() {
   SetThemeTintFromGtk(BrowserThemeProvider::TINT_FRAME_INCOGNITO, &frame_color);
   SetThemeTintFromGtk(BrowserThemeProvider::TINT_BACKGROUND_TAB, &frame_color);
 
+  // The inactive color/tint is special: We *must* use the exact insensitive
+  // color for all inactive windows, otherwise we end up neon pink half the
+  // time.
+  SetThemeColorFromGtk(BrowserThemeProvider::COLOR_FRAME_INACTIVE,
+                       &inactive_frame_color);
+  SetTintToExactColor(BrowserThemeProvider::TINT_FRAME_INACTIVE,
+                      &inactive_frame_color);
+  SetTintToExactColor(BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE,
+                      &inactive_frame_color);
+
   SetThemeColorFromGtk(BrowserThemeProvider::COLOR_FRAME, &frame_color);
   BuildTintedFrameColor(BrowserThemeProvider::COLOR_FRAME_INACTIVE,
                         BrowserThemeProvider::TINT_FRAME_INACTIVE);
@@ -719,16 +729,6 @@ void GtkThemeProvider::LoadGtkValues() {
 
   colors_[BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT] =
       color_utils::HSLToSkColor(inactive_tab_text_hsl, 255);
-
-  // The inactive color/tint is special: We *must* use the exact insensitive
-  // color for all inactive windows, otherwise we end up neon pink half the
-  // time.
-  SetThemeColorFromGtk(BrowserThemeProvider::COLOR_FRAME_INACTIVE,
-                       &inactive_frame_color);
-  SetTintToExactColor(BrowserThemeProvider::TINT_FRAME_INACTIVE,
-                      &inactive_frame_color);
-  SetTintToExactColor(BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE,
-                      &inactive_frame_color);
 
   // We pick the text and background colors for the NTP out of the colors for a
   // GtkEntry. We do this because GtkEntries background color is never the same
@@ -840,8 +840,9 @@ void GtkThemeProvider::SetThemeTintFromGtk(int id, const GdkColor* color) {
 }
 
 void GtkThemeProvider::BuildTintedFrameColor(int color_id, int tint_id) {
-  colors_[color_id] = HSLShift(colors_[BrowserThemeProvider::COLOR_FRAME],
-                               tints_[tint_id]);
+  colors_[color_id] = HSLShift(
+      GetDefaultColor(BrowserThemeProvider::COLOR_FRAME),
+      tints_[tint_id]);
 }
 
 void GtkThemeProvider::SetTintToExactColor(int id, const GdkColor* color) {
