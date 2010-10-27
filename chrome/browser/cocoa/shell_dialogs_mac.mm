@@ -13,6 +13,7 @@
 
 #include "app/l10n_util_mac.h"
 #import "base/cocoa_protocols_mac.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -165,8 +166,13 @@ void SelectFileDialogImpl::SelectFile(
   NSString* default_dir = nil;
   NSString* default_filename = nil;
   if (!default_path.empty()) {
-    default_dir = base::SysUTF8ToNSString(default_path.DirName().value());
-    default_filename = base::SysUTF8ToNSString(default_path.BaseName().value());
+    if (file_util::DirectoryExists(default_path)) {
+      default_dir = base::SysUTF8ToNSString(default_path.value());
+    } else {
+      default_dir = base::SysUTF8ToNSString(default_path.DirName().value());
+      default_filename =
+          base::SysUTF8ToNSString(default_path.BaseName().value());
+    }
   }
 
   NSMutableArray* allowed_file_types = nil;
