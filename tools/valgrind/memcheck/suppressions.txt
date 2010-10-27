@@ -3195,6 +3195,19 @@
    fun:_ZN7WebCore17GraphicsContext3D10texImage2DEjjjjjjjjPv
 }
 {
+   bug_60958
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlsym
+   fun:_Z26InitLibcLocaltimeFunctionsv
+   fun:pthread_once
+   fun:_ZNK4base4Time7ExplodeEbPNS0_8ExplodedE
+   fun:_ZNK4base4Time12LocalExplodeEPNS0_8ExplodedE
+   fun:_ZNK4base4Time13LocalMidnightEv
+   fun:_ZN7history20VisitSegmentDatabase17QuerySegmentUsageEN4base4TimeEiPSt6vectorIP13PageUsageDataSaIS5_EE
+}
+{
    bug_60887
    Memcheck:Param
    write(buf)
@@ -3209,7 +3222,6 @@
    fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
    fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
-
 {
    bug_60890
    Memcheck:Jump
@@ -3226,5 +3238,3 @@
    fun:PKIX_PL_OcspCertID_Create
    fun:pkix_OcspChecker_CheckLocal
 }
-
-
