@@ -24,6 +24,10 @@
 #include "chrome/common/pref_names.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
+// How long to wait to save the plugin enabled information, which might need to
+// go to disk.
+#define kPluginUpdateDelayMs (60 * 1000)
+
 PluginUpdater::PluginUpdater()
     : enable_internal_pdf_(true),
       notify_pending_(false) {
@@ -213,16 +217,20 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
     // See http://crbug.com/50105 for background.
     EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReader8GroupName));
     EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReader9GroupName));
-    UpdatePreferences(profile);
+
+    // We want to save this, but doing so requires loading the list of plugins,
+    // so do it after a minute as to not impact startup performance.  Note that
+    // plugins are loaded after 30s by the metrics service.
+    UpdatePreferences(profile, kPluginUpdateDelayMs);
   }
 }
 
-void PluginUpdater::UpdatePreferences(Profile* profile) {
-  BrowserThread::PostTask(
+void PluginUpdater::UpdatePreferences(Profile* profile, int delay_ms) {
+  BrowserThread::PostDelayedTask(
     BrowserThread::FILE,
     FROM_HERE,
     NewRunnableFunction(
-        &PluginUpdater::GetPreferencesDataOnFileThread, profile));
+        &PluginUpdater::GetPreferencesDataOnFileThread, profile), delay_ms);
 }
 
 void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {

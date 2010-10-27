@@ -244,7 +244,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   // TODO(viettrungluu): We might also want to ensure that the plugins
   // list is always written to prefs even when the user hasn't disabled a
   // plugin. <http://crbug.com/39101>
-  plugin_updater->UpdatePreferences(dom_ui_->GetProfile());
+  plugin_updater->UpdatePreferences(dom_ui_->GetProfile(), 0);
 }
 
 void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {

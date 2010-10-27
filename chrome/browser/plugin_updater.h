@@ -36,7 +36,7 @@ class PluginUpdater : public NotificationObserver {
   void DisablePluginGroupsFromPrefs(Profile* profile);
 
   // Write the enable/disable status to the user's preference file.
-  void UpdatePreferences(Profile* profile);
+  void UpdatePreferences(Profile* profile, int delay_ms);
 
   // NotificationObserver method overrides
   void Observe(NotificationType type,
