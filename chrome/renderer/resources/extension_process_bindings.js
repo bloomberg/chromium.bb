@@ -70,7 +70,7 @@ var chrome = chrome || {};
         throw new Error("Parameter " + i + " is required.");
       }
     }
-  }
+  };
 
   // Callback handling.
   var requests = [];
@@ -82,7 +82,7 @@ var chrome = chrome || {};
         delete chrome.extension.lastError;
       } else {
         if (!error) {
-          error = "Unknown error."
+          error = "Unknown error.";
         }
         console.error("Error during " + name + ": " + error);
         chrome.extension.lastError = {
@@ -130,6 +130,8 @@ var chrome = chrome || {};
       delete requests[requestId];
       delete chrome.extension.lastError;
     }
+
+    return undefined;
   };
 
   chromeHidden.setViewType = function(type) {
@@ -288,7 +290,7 @@ var chrome = chrome || {};
         function(text, requestId) {
       var suggestCallback = function(suggestions) {
         chrome.experimental.omnibox.sendSuggestions(requestId, suggestions);
-      }
+      };
       chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
     };
   }
@@ -318,7 +320,7 @@ var chrome = chrome || {};
       for (var index = 0, name; name = namespaces[index]; index++) {
         module[name] = module[name] || {};
         module = module[name];
-      };
+      }
 
       // Add types to global validationTypes
       if (apiDef.types) {
@@ -412,7 +414,7 @@ var chrome = chrome || {};
 
       // getTabContentses is retained for backwards compatibility
       // See http://crbug.com/21433
-      chrome.extension.getTabContentses = chrome.extension.getExtensionTabs
+      chrome.extension.getTabContentses = chrome.extension.getExtensionTabs;
     });
 
     apiFunctions["tabs.connect"].handleRequest = function(tabId, connectInfo) {
@@ -564,7 +566,7 @@ var chrome = chrome || {};
         img.onerror = function() {
           console.error("Could not load " + actionType + " icon '" +
                         details.path + "'.");
-        }
+        };
         img.onload = function() {
           var canvas = document.createElement("canvas");
           canvas.width = img.width > iconSize ? iconSize : img.width;
@@ -577,7 +579,7 @@ var chrome = chrome || {};
           details.imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                           canvas.height);
           sendCustomRequest(nativeFunction, name, [details], parameters);
-        }
+        };
         img.src = details.path;
       } else {
         throw new Error(
@@ -686,19 +688,19 @@ var chrome = chrome || {};
     apiFunctions["experimental.omnibox.styleNone"].handleRequest =
         function(offset) {
       return {type: "none", offset: offset};
-    }
+    };
     apiFunctions["experimental.omnibox.styleUrl"].handleRequest =
         function(offset) {
       return {type: "url", offset: offset};
-    }
+    };
     apiFunctions["experimental.omnibox.styleMatch"].handleRequest =
         function(offset) {
       return {type: "match", offset: offset};
-    }
+    };
     apiFunctions["experimental.omnibox.styleDim"].handleRequest =
         function(offset) {
       return {type: "dim", offset: offset};
-    }
+    };
 
     if (chrome.test) {
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
