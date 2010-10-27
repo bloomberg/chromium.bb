@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_SEARCH_ENGINE_TYPE_H_
 #pragma once
 
+// Fills logo slot for search engines with no logo available.
+static const int kNoSearchEngineLogo = 0;
+
 // Enum to record the user's default search engine choice in UMA.  Add new
 // search engines at the bottom and do not delete from this list, so as not
 // to disrupt UMA data already recorded.

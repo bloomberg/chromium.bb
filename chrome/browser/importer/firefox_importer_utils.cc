@@ -18,6 +18,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -214,8 +215,11 @@ void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
         search_engine_for_url.erase(iter);
       }
       // Give this a keyword to facilitate tab-to-search, if possible.
+      GURL gurl = GURL(url);
       template_url->set_keyword(
-          TemplateURLModel::GenerateKeyword(GURL(url), false));
+          TemplateURLModel::GenerateKeyword(gurl, false));
+      template_url->set_logo_id(
+          TemplateURLPrepopulateData::GetSearchEngineLogo(gurl));
       template_url->set_show_in_default_list(true);
       search_engine_for_url[url] = template_url;
       if (!default_turl)

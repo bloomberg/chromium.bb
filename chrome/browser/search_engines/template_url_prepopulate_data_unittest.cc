@@ -13,6 +13,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test TemplateURLPrepopulateDataTest;
@@ -177,4 +178,17 @@ TEST_F(TemplateURLPrepopulateDataTest, SearchEngineFromOrigin) {
   EXPECT_EQ(NULL, TemplateURLPrepopulateData::GetEngineForOrigin(
       profile.GetPrefs(),
       not_a_search_engine));
+}
+
+TEST_F(TemplateURLPrepopulateDataTest, GetSearchEngineLogo) {
+  GURL bad_engine("http://example.com/");
+  EXPECT_EQ(kNoSearchEngineLogo,
+            TemplateURLPrepopulateData::GetSearchEngineLogo(bad_engine));
+  GURL engine_with_logo("http://www.ask.com/");
+  EXPECT_EQ(IDR_SEARCH_ENGINE_LOGO_ASK,
+            TemplateURLPrepopulateData::GetSearchEngineLogo(engine_with_logo));
+  GURL engine_no_logo("http://araby.com/");
+  EXPECT_EQ(kNoSearchEngineLogo,
+            TemplateURLPrepopulateData::GetSearchEngineLogo(engine_no_logo));
+
 }

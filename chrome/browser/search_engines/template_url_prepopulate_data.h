@@ -38,6 +38,9 @@ TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs);
 // TemplateURL.
 TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find);
 
+// Returns search engine logo for URLs known to have a search engine logo.
+int GetSearchEngineLogo(const GURL& url_to_find);
+
 }  // namespace TemplateURLPrepopulateData
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PREPOPULATE_DATA_H_

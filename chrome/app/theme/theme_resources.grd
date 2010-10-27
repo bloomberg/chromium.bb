@@ -274,10 +274,10 @@
       <include name="IDR_SAD_FAVICON" file="sadfavicon.png" type="BINDATA" />
       <include name="IDR_SAD_TAB" file="sadtab.png" type="BINDATA" />
       <include name="IDR_SEARCH_ENGINE_DIALOG_TOP" file="search_engine_top.png" type="BINDATA" />
-      <include name="IDR_SEARCH_ENGINE_LOGO_OTHER" file="notused.png" type="BINDATA" />
       <if expr="pp_ifdef('_google_chrome')">
         <include name="IDR_SEARCH_ENGINE_LOGO_ABCSOK" file="google_chrome/search_abcsok.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ALTAVISTA" file="google_chrome/search_altavista.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_AOL" file="google_chrome/search_aol.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ASK" file="google_chrome/search_ask.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BAIDU" file="google_chrome/search_baidu.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BING" file="google_chrome/search_bing.png" type="BINDATA" />
@@ -312,6 +312,7 @@
       <if expr="not pp_ifdef('_google_chrome')">
         <include name="IDR_SEARCH_ENGINE_LOGO_ABCSOK" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ALTAVISTA" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_AOL" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ASK" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BAIDU" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_BING" file="notused.png" type="BINDATA" />

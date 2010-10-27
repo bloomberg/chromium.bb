@@ -143,7 +143,7 @@ const PrepopulatedEngine aol = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  IDR_SEARCH_ENGINE_LOGO_AOL,
   35,
 };
 
@@ -156,7 +156,7 @@ const PrepopulatedEngine araby = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   12,
 };
 
@@ -247,7 +247,7 @@ const PrepopulatedEngine atlas_cz = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   27,
 };
 
@@ -260,7 +260,7 @@ const PrepopulatedEngine atlas_sk = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   27,
 };
 
@@ -1119,7 +1119,7 @@ const PrepopulatedEngine eniro_fi = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   29,
 };
 
@@ -1132,7 +1132,7 @@ const PrepopulatedEngine eniro_se = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   29,
 };
 
@@ -1145,7 +1145,7 @@ const PrepopulatedEngine fonecta_02_fi = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   46,
 };
 
@@ -1159,7 +1159,7 @@ const PrepopulatedEngine go = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   40,
 };
 
@@ -1201,7 +1201,7 @@ const PrepopulatedEngine guruji = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   38,
 };
 
@@ -1214,7 +1214,7 @@ const PrepopulatedEngine hispavista = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   18,
 };
 
@@ -1240,7 +1240,7 @@ const PrepopulatedEngine jabse = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   19,
 };
 
@@ -1253,7 +1253,7 @@ const PrepopulatedEngine jubii = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   28,
 };
 
@@ -1266,7 +1266,7 @@ const PrepopulatedEngine kvasir = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   73,
 };
 
@@ -1279,7 +1279,7 @@ const PrepopulatedEngine latne = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   71,
 };
 
@@ -1292,7 +1292,7 @@ const PrepopulatedEngine leit = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   59,
 };
 
@@ -1305,7 +1305,7 @@ const PrepopulatedEngine libero = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   63,
 };
 
@@ -1331,7 +1331,7 @@ const PrepopulatedEngine maktoob = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   13,
 };
 
@@ -1344,7 +1344,7 @@ const PrepopulatedEngine masrawy = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   14,
 };
 
@@ -1357,7 +1357,7 @@ const PrepopulatedEngine mynet = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   101,
 };
 
@@ -1383,7 +1383,7 @@ const PrepopulatedEngine nate = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   69,
 };
 
@@ -1437,7 +1437,7 @@ const PrepopulatedEngine nur_kz = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   20,
 };
 
@@ -1463,7 +1463,7 @@ const PrepopulatedEngine onet = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   75,
 };
 
@@ -1541,7 +1541,7 @@ const PrepopulatedEngine rediff = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   37,
 };
 
@@ -1554,7 +1554,7 @@ const PrepopulatedEngine rednano = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   41,
 };
 
@@ -1593,7 +1593,7 @@ const PrepopulatedEngine search_de_CH = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   51,
 };
 
@@ -1606,7 +1606,7 @@ const PrepopulatedEngine search_fr_CH = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   22,
 };
 
@@ -1633,7 +1633,7 @@ const PrepopulatedEngine spray = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   99,
 };
 
@@ -1646,7 +1646,7 @@ const PrepopulatedEngine terra_ar = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   90,
 };
 
@@ -1659,7 +1659,7 @@ const PrepopulatedEngine terra_es = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   90,
 };
 
@@ -1685,7 +1685,7 @@ const PrepopulatedEngine uol = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   82,
 };
 
@@ -1724,7 +1724,7 @@ const PrepopulatedEngine wp = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   76,
 };
 
@@ -2287,7 +2287,7 @@ const PrepopulatedEngine yamli = {
   NULL,
   NULL,
   SEARCH_ENGINE_OTHER,
-  IDR_SEARCH_ENGINE_LOGO_OTHER,
+  kNoSearchEngineLogo,
   11,
 };
 
@@ -3557,6 +3557,17 @@ TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find) {
       return MakePrepopulateTemplateURLFromPrepopulateEngine(*kAllEngines[i]);
   }
   return NULL;
+}
+
+int GetSearchEngineLogo(const GURL& url_to_find) {
+  GURL origin_to_find = url_to_find.GetOrigin();
+  for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
+    std::string url_utf8_string(ToUTF8(kAllEngines[i]->search_url));
+    GURL url(url_utf8_string);
+    if (origin_to_find == url.GetOrigin())
+      return kAllEngines[i]->logo_id;
+  }
+  return kNoSearchEngineLogo;
 }
 
 }  // namespace TemplateURLPrepopulateData
