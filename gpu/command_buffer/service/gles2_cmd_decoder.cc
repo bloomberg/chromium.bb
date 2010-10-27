@@ -1453,6 +1453,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
                        decoder_->offscreen_saved_frame_buffer_->id());
   const int width = decoder_->offscreen_size_.width();
   const int height = decoder_->offscreen_size_.height();
+  glDisable(GL_SCISSOR_TEST);
   if (IsAngle()) {
     glBlitFramebufferANGLE(0, 0, width, height, 0, 0, width, height,
                            GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -1470,6 +1471,9 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
 
   ScopedGLErrorSuppressor suppressor(decoder_);
   decoder_->RestoreCurrentFramebufferBindings();
+  if (decoder_->enable_scissor_test_) {
+    glEnable(GL_SCISSOR_TEST);
+  }
 }
 
 Texture::Texture(GLES2DecoderImpl* decoder)
