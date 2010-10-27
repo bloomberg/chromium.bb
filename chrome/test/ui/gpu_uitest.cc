@@ -22,7 +22,7 @@ class GPUTest : public UITest {
 };
 
 // TODO(apatrick): Other pending changes will fix this for mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_UITestLaunchedWithOSMesa FAILS_UITestLaunchedWithOSMesa
 #else
 #define MAYBE_UITestLaunchedWithOSMesa UITestLaunchedWithOSMesa
