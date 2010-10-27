@@ -59,7 +59,7 @@ class UpdateLibraryImpl : public UpdateLibrary {
 
   std::string GetReleaseTrack() {
     if (!CrosLibrary::Get()->EnsureLoaded())
-      return false;
+      return "";
 
     return chromeos::GetTrack();
   }
