@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 
-#include <ostream>
 #include <string>
 
 #include "base/file_path.h"
@@ -46,28 +45,28 @@ class WriteToDiskTask : public Task {
 
     size_t bytes_written = fwrite(data_.data(), 1, data_.length(), tmp_file);
     if (!file_util::CloseFile(tmp_file)) {
-      file_util::Delete(tmp_file_path, false);
       LogFailure("failed to close temporary file");
+      file_util::Delete(tmp_file_path, false);
       return;
     }
     if (bytes_written < data_.length()) {
-      file_util::Delete(tmp_file_path, false);
       LogFailure("error writing, bytes_written=" +
                  base::Uint64ToString(bytes_written));
+      file_util::Delete(tmp_file_path, false);
       return;
     }
 
     if (!file_util::ReplaceFile(tmp_file_path, path_)) {
-      file_util::Delete(tmp_file_path, false);
       LogFailure("could not rename temporary file");
+      file_util::Delete(tmp_file_path, false);
       return;
     }
   }
 
  private:
   void LogFailure(const std::string& message) {
-    LOG(WARNING) << "failed to write " << path_.value()
-                 << ": " << message;
+    PLOG(WARNING) << "failed to write " << path_.value()
+                  << ": " << message;
   }
 
   const FilePath path_;
