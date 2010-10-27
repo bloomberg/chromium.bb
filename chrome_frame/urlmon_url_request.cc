@@ -585,12 +585,15 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   }
 
   // In the rare case if "User-Agent" string is already in |current_headers|.
-  if (IsGcfDefaultRenderer()) {
-    new_headers += ReplaceOrAddUserAgent(current_headers,
-                                         http_utils::GetChromeUserAgent());
-  } else {
-    new_headers += AppendCFUserAgentString(current_headers, NULL);
-  }
+  // We send Chrome's user agent in requests initiated within ChromeFrame to
+  // enable third party content in pages rendered in ChromeFrame to correctly
+  // send content for Chrome as the third party content may not be equipped to
+  // identify chromeframe as the user agent. This also ensures that the user
+  // agent reported in scripts in chrome frame is consistent with that sent
+  // in outgoing requests.
+  new_headers += ReplaceOrAddUserAgent(current_headers,
+                                       http_utils::GetChromeUserAgent());
+  new_headers += AppendCFUserAgentString(UTF8ToWide(new_headers).c_str(), NULL);
 
   if (!new_headers.empty()) {
     *additional_headers = reinterpret_cast<wchar_t*>(
