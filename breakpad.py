@@ -74,8 +74,9 @@ def Register():
 
 # Skip unit tests and we don't want anything from non-googler.
 if (not 'test' in sys.modules['__main__'].__file__ and
-    socket.getfqdn().endswith('.google.com') and
-    not 'NO_BREAKPAD' in os.environ):
+    not 'NO_BREAKPAD' in os.environ and
+    (socket.getfqdn().endswith('.google.com') or
+     socket.getfqdn().endswith('.chromium.org'))):
   Register()
 
 # Uncomment this line if you want to test it out.
