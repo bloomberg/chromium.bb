@@ -304,6 +304,10 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleWidgetDirectionChangedThunk), this);
   g_signal_connect(text_view_, "delete-from-cursor",
                    G_CALLBACK(&HandleDeleteFromCursorThunk), this);
+#if GTK_CHECK_VERSION(2,20,0)
+  g_signal_connect(text_view_, "preedit-changed",
+                   G_CALLBACK(&HandlePreeditChangedThunk), this);
+#endif
 
   // Setup for the Instant suggestion text view.
   instant_view_ = gtk_text_view_new();
@@ -1705,3 +1709,24 @@ void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
     OwnPrimarySelection(selected_text_);
   }
 }
+
+#if GTK_CHECK_VERSION(2,20,0)
+void AutocompleteEditViewGtk::HandlePreeditChanged(GtkWidget* sender,
+                                                   const gchar* preedit) {
+  // GtkTextView won't fire "begin-user-action" and "end-user-action" signals
+  // when changing the preedit string, so we need to call
+  // OnBeforePossibleChange() and OnAfterPossibleChange() by ourselves.
+  OnBeforePossibleChange();
+  if (preedit && *preedit) {
+    // GtkTextView will only delete the selection range when committing the
+    // preedit string, which will cause very strange behavior, so we need to
+    // delete the selection range here explicitly. See http://crbug.com/18808.
+    if (preedit_.empty())
+      gtk_text_buffer_delete_selection(text_buffer_, false, true);
+    preedit_ = UTF8ToWide(preedit);
+  } else {
+    preedit_.clear();
+  }
+  OnAfterPossibleChange();
+}
+#endif

@@ -211,6 +211,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        HandleDeleteFromCursor, GtkDeleteType, gint);
   CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean,
                        HandleInstantViewButtonPress, GdkEventButton*);
+#if GTK_CHECK_VERSION(2,20,0)
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandlePreeditChanged,
+                       const gchar*);
+#endif
 
   // Callback for the PRIMARY selection clipboard.
   static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
@@ -421,6 +425,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Indicates if the selected text is suggested text or not. If the selection
   // is not suggested text, that means the user manually made the selection.
   bool selection_suggested_;
+
+#if GTK_CHECK_VERSION(2,20,0)
+  // Stores the text being composed by the input method.
+  std::wstring preedit_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };
