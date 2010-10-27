@@ -31,10 +31,12 @@
 class ExtensionLoadedNotificationObserver : public NotificationObserver {
  public:
   ExtensionLoadedNotificationObserver(
-      ExtensionInstalledBubbleController* controller)
+      ExtensionInstalledBubbleController* controller, Profile* profile)
           : controller_(controller) {
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-        NotificationService::AllSources());
+        Source<Profile>(profile));
+    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+        Source<Profile>(profile));
   }
 
  private:
@@ -47,6 +49,13 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
       Extension* extension = Details<Extension>(details).ptr();
       if (extension == [controller_ extension]) {
         [controller_ performSelectorOnMainThread:@selector(showWindow:)
+                                      withObject:controller_
+                                   waitUntilDone:NO];
+      }
+    } else if (type == NotificationType::EXTENSION_UNLOADED) {
+      const Extension* extension = Details<const Extension>(details).ptr();
+      if (extension == [controller_ extension]) {
+        [controller_ performSelectorOnMainThread:@selector(extensionUnloaded:)
                                       withObject:controller_
                                    waitUntilDone:NO];
       }
@@ -91,7 +100,8 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
     }
 
     // Start showing window only after extension has fully loaded.
-    extensionObserver_.reset(new ExtensionLoadedNotificationObserver(self));
+    extensionObserver_.reset(new ExtensionLoadedNotificationObserver(
+        self, browser->profile()));
   }
   return self;
 }
@@ -140,8 +150,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 // Extracted to a function here so that it can be overwritten for unit
 // testing.
 - (void)removePageActionPreviewIfNecessary {
-  DCHECK(extension_);
-  if (!extension_->page_action() || pageActionRemoved_)
+  if (!extension_ || !extension_->page_action() || pageActionRemoved_)
     return;
   pageActionRemoved_ = YES;
 
@@ -327,6 +336,10 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 
 - (NSRect)getExtensionInstalledInfoMsgFrame {
   return [extensionInstalledInfoMsg_ frame];
+}
+
+- (void)extensionUnloaded:(id)sender {
+  extension_ = NULL;
 }
 
 @end

@@ -89,6 +89,10 @@ typedef enum {
 // the extensionObserver when the extension has completed loading.
 - (void)showWindow:(id)sender;
 
+// Clears our weak pointer to the Extension. This callback is triggered by
+// the extensionObserver when the extension is unloaded.
+- (void)extensionUnloaded:(id)sender;
+
 @end
 
 @interface ExtensionInstalledBubbleController(ExposedForTesting)

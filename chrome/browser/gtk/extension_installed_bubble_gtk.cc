@@ -72,7 +72,9 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(Extension *extension,
   // be sure that a browser action or page action has had views created which we
   // can inspect for the purpose of pointing to them.
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-      NotificationService::AllSources());
+      Source<Profile>(browser->profile()));
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+      Source<Profile>(browser->profile()));
 }
 
 ExtensionInstalledBubbleGtk::~ExtensionInstalledBubbleGtk() {}
@@ -87,6 +89,10 @@ void ExtensionInstalledBubbleGtk::Observe(NotificationType type,
       MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
           &ExtensionInstalledBubbleGtk::ShowInternal));
     }
+  } else if (type == NotificationType::EXTENSION_UNLOADED) {
+    const Extension* extension = Details<const Extension>(details).ptr();
+    if (extension == extension_)
+      extension_ = NULL;
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }
@@ -248,7 +254,7 @@ void ExtensionInstalledBubbleGtk::OnButtonClick(GtkWidget* button,
 // InfoBubbleDelegate
 void ExtensionInstalledBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                                     bool closed_by_escape) {
-  if (extension_->page_action()) {
+  if (extension_ && type_ == PAGE_ACTION) {
     // Turn the page action preview off.
     BrowserWindowGtk* browser_window =
           BrowserWindowGtk::GetBrowserWindowForNativeWindow(
