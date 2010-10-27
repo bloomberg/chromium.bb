@@ -112,9 +112,20 @@ Central roster: hosting all Google Talk chats in ChromeOS.
       retryConnectionCountdown();
     }
   }
+  function onPageLoaded() {
+    if (localStorage.hasOpenedInViewer) {
+      runGTalkScript();
+    }
+  }
+  function onOpenedInViewer() {
+    if (!localStorage.hasOpenedInViewer) {
+      localStorage.hasOpenedInViewer = true;
+      runGTalkScript();
+    }
+  }
 </script>
 </head>
-<body onload='runGTalkScript()'>
+<body onload='onPageLoaded()'>
   <div id='retryInfo' style='display:none'>
     <p>Could not connect to Google Talk</p>
     <p id='retryStatus'></p>

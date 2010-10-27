@@ -33,6 +33,7 @@ found in the LICENSE file.
                   document.adoptNode(iframe);
                 }
                 document.body.appendChild(iframe);
+                iframe.contentWindow.onOpenedInViewer();
               }
             }
           }
