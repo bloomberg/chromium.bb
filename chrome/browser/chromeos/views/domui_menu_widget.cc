@@ -129,7 +129,7 @@ DOMUIMenuWidget::DOMUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
     : views::WidgetGtk(views::WidgetGtk::TYPE_POPUP),
       domui_menu_(domui_menu),
       dom_view_(NULL),
-      did_pointer_grab_(false),
+      did_input_grab_(false),
       is_root_(root) {
   DCHECK(domui_menu_);
   // TODO(oshima): Disabling transparent until we migrate bookmark
@@ -169,9 +169,10 @@ void DOMUIMenuWidget::Close() {
 
 void DOMUIMenuWidget::ReleaseGrab() {
   WidgetGtk::ReleaseGrab();
-  if (did_pointer_grab_) {
-    did_pointer_grab_ = false;
+  if (did_input_grab_) {
+    did_input_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
+    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
 
     ClearGrabWidget();
   }
@@ -179,7 +180,7 @@ void DOMUIMenuWidget::ReleaseGrab() {
 
 gboolean DOMUIMenuWidget::OnGrabBrokeEvent(GtkWidget* widget,
                                            GdkEvent* event) {
-  did_pointer_grab_ = false;
+  did_input_grab_ = false;
   Hide();
   return WidgetGtk::OnGrabBrokeEvent(widget, event);
 }
@@ -310,16 +311,22 @@ void DOMUIMenuWidget::CaptureGrab() {
   // Release the current grab.
   ClearGrabWidget();
 
-  // NOTE: we do this to ensure we get mouse events from other apps, a grab
-  // done with gtk_grab_add doesn't get events from other apps.
-  GdkGrabStatus grab_status =
+  // NOTE: we do this to ensure we get mouse/keyboard events from
+  // other apps, a grab done with gtk_grab_add doesn't get events from
+  // other apps.
+  GdkGrabStatus pointer_grab_status =
       gdk_pointer_grab(window_contents()->window, FALSE,
                        static_cast<GdkEventMask>(
                            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                            GDK_POINTER_MOTION_MASK),
                        NULL, NULL, GDK_CURRENT_TIME);
-  did_pointer_grab_ = (grab_status == GDK_GRAB_SUCCESS);
-  DCHECK(did_pointer_grab_);
+  GdkGrabStatus keyboard_grab_status =
+      gdk_keyboard_grab(window_contents()->window, FALSE,
+                        GDK_CURRENT_TIME);
+
+  did_input_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS &&
+      keyboard_grab_status == GDK_GRAB_SUCCESS;
+  DCHECK(did_input_grab_);
 
   EnableInput(false /* no selection */);
 }

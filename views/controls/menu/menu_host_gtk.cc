@@ -22,7 +22,7 @@ MenuHostGtk::MenuHostGtk(SubmenuView* submenu)
     : WidgetGtk(WidgetGtk::TYPE_POPUP),
       destroying_(false),
       submenu_(submenu),
-      did_pointer_grab_(false) {
+      did_input_grab_(false) {
   GdkEvent* event = gtk_get_current_event();
   if (event) {
     if (event->type == GDK_BUTTON_PRESS || event->type == GDK_2BUTTON_PRESS ||
@@ -100,9 +100,10 @@ bool MenuHostGtk::ReleaseCaptureOnMouseReleased() {
 
 void MenuHostGtk::ReleaseGrab() {
   WidgetGtk::ReleaseGrab();
-  if (did_pointer_grab_) {
-    did_pointer_grab_ = false;
+  if (did_input_grab_) {
+    did_input_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
+    gdk_keyboard_ungrab(GDK_CURRENT_TIME);
   }
 }
 
@@ -117,13 +118,12 @@ void MenuHostGtk::OnDestroy(GtkWidget* object) {
 }
 
 gboolean MenuHostGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
-  did_pointer_grab_ = false;
+  did_input_grab_ = false;
   // Grab can be broken by drag & drop, other menu or screen locker.
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
-  if (!menu_controller->drag_in_progress()) {
+  if (!menu_controller->drag_in_progress())
     menu_controller->CancelAll();
-  }
   return WidgetGtk::OnGrabBrokeEvent(widget, event);
 }
 
@@ -133,20 +133,25 @@ void MenuHostGtk::DoCapture() {
   if (current_grab_window)
     gtk_grab_remove(current_grab_window);
 
-  // Make sure all app mouse events are targetted at us only.
+  // Make sure all app mouse/keyboard events are targetted at us only.
   DoGrab();
 
-  // And do a grab.
-  // NOTE: we do this to ensure we get mouse events from other apps, a grab
-  // done with gtk_grab_add doesn't get events from other apps.
-  GdkGrabStatus grab_status =
+  // And do a grab.  NOTE: we do this to ensure we get mouse/keyboard
+  // events from other apps, a grab done with gtk_grab_add doesn't get
+  // events from other apps.
+  GdkGrabStatus pointer_grab_status =
       gdk_pointer_grab(window_contents()->window, FALSE,
                        static_cast<GdkEventMask>(
                            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                            GDK_POINTER_MOTION_MASK),
                        NULL, NULL, GDK_CURRENT_TIME);
-  did_pointer_grab_ = (grab_status == GDK_GRAB_SUCCESS);
-  DCHECK(did_pointer_grab_);
+  GdkGrabStatus keyboard_grab_status =
+      gdk_keyboard_grab(window_contents()->window, FALSE,
+                        GDK_CURRENT_TIME);
+
+  did_input_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS &&
+      keyboard_grab_status == GDK_GRAB_SUCCESS;
+  DCHECK(did_input_grab_);
   // need keyboard grab.
 }
 

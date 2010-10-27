@@ -40,7 +40,7 @@ class MenuHostGtk : public WidgetGtk, public MenuHost {
   // release.
   virtual bool ReleaseCaptureOnMouseReleased();
 
-  // Overriden to also release pointer grab.
+  // Overriden to also release input grab.
   virtual void ReleaseGrab();
 
   virtual void OnDestroy(GtkWidget* object);
@@ -55,8 +55,8 @@ class MenuHostGtk : public WidgetGtk, public MenuHost {
   // The view we contain.
   SubmenuView* submenu_;
 
-  // Have we done a pointer grab?
-  bool did_pointer_grab_;
+  // Have we done input grab?
+  bool did_input_grab_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuHostGtk);
 };
