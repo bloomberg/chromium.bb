@@ -8,7 +8,7 @@ string16 FormGroup::GetPreviewText(const AutoFillType& type) const {
   return GetFieldText(type);
 }
 
-const string16& FormGroup::Label() const { return EmptyString16(); }
+const string16 FormGroup::Label() const { return string16(); }
 
 bool FormGroup::operator!=(const FormGroup& form_group) const {
   FieldTypeSet a, b, symmetric_difference;

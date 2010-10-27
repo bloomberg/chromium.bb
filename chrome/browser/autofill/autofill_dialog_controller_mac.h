@@ -160,12 +160,6 @@ class Profile;
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
 
-// Creates an array of labels and populates a vector of corresponding IDs
-// representing the addresses and associated billing address IDs in the
-// |profiles_| member.
-// Only returns labels and IDs for which there exists address information.
-- (void)addressLabels:(NSArray**)labels addressIDs:(std::vector<int>*)ids;
-
 @end
 
 // Interface exposed for unit testing.

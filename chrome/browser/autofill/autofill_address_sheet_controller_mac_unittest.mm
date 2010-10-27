@@ -17,7 +17,7 @@ typedef CocoaTest AutoFillAddressSheetControllerTest;
 TEST(AutoFillAddressSheetControllerTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile;
   scoped_nsobject<AutoFillAddressSheetController> controller(
       [[AutoFillAddressSheetController alloc]
           initWithProfile:profile

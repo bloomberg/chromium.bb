@@ -53,7 +53,7 @@ class FormGroup {
 
   // Returns the label for this FormGroup item. This should be overridden for
   // form group items that implement a label.
-  virtual const string16& Label() const;
+  virtual const string16 Label() const;
 
   // Returns true if the field data in |form_group| does not match the field
   // data in this FormGroup.

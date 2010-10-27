@@ -21,7 +21,7 @@ class CreditCard : public FormGroup {
 
   // For use in STL containers.
   CreditCard();
-  CreditCard(const CreditCard& card);
+  CreditCard(const CreditCard& credit_card);
   virtual ~CreditCard();
 
   // FormGroup implementation:
@@ -35,7 +35,7 @@ class CreditCard : public FormGroup {
   virtual string16 GetFieldText(const AutoFillType& type) const;
   virtual string16 GetPreviewText(const AutoFillType& type) const;
   virtual void SetInfo(const AutoFillType& type, const string16& value);
-  const string16& Label() const { return label_; }
+  virtual const string16 Label() const { return label_; }
 
   // The number altered for display, for example: ******1234
   string16 ObfuscatedNumber() const;
@@ -54,11 +54,19 @@ class CreditCard : public FormGroup {
   void set_guid(const std::string& guid) { guid_ = guid; }
 
   // For use in STL containers.
-  void operator=(const CreditCard&);
+  void operator=(const CreditCard& credit_card);
+
+  // Comparison for Sync.  Returns 0 if the credit card is the same as |this|,
+  // or < 0, or > 0 if it is different.  The implied ordering can be used for
+  // culling duplicates.  The ordering is based on collation order of the
+  // textual contents of the fields.
+  // GUIDs, labels, and unique IDs are not compared, only the values of the
+  // credit cards themselves.
+  int Compare(const CreditCard& credit_card) const;
 
   // Used by tests.
-  bool operator==(const CreditCard& creditcard) const;
-  bool operator!=(const CreditCard& creditcard) const;
+  bool operator==(const CreditCard& credit_card) const;
+  bool operator!=(const CreditCard& credit_card) const;
   void set_label(const string16& label) { label_ = label; }
 
   // Returns true if |value| is a credit card number.  Uses the Luhn formula to
@@ -149,6 +157,6 @@ class CreditCard : public FormGroup {
 };
 
 // So we can compare CreditCards with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard);
+std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card);
 
 #endif  // CHROME_BROWSER_AUTOFILL_CREDIT_CARD_H_

@@ -18,14 +18,14 @@ typedef CocoaTest AutoFillAddressModelTest;
 TEST(AutoFillAddressModelTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile;
   scoped_nsobject<AutoFillAddressModel> model([[AutoFillAddressModel alloc]
       initWithProfile:profile]);
   EXPECT_TRUE(model.get());
 }
 
 TEST(AutoFillAddressModelTest, InitializationFromProfile) {
-  AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile;
   autofill_test::SetProfileInfo(
       &profile,
       "Billing",
@@ -59,7 +59,7 @@ TEST(AutoFillAddressModelTest, InitializationFromProfile) {
 }
 
 TEST(AutoFillAddressModelTest, CopyModelToProfile) {
-  AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile;
   autofill_test::SetProfileInfo(
       &profile,
       "Billing",

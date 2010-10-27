@@ -17,7 +17,7 @@ typedef CocoaTest AutoFillCreditCardSheetControllerTest;
 TEST(AutoFillCreditCardSheetControllerTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  CreditCard credit_card(ASCIIToUTF16("myCC"), 0);
+  CreditCard credit_card;
   scoped_nsobject<AutoFillCreditCardSheetController> controller(
       [[AutoFillCreditCardSheetController alloc]
           initWithCreditCard:credit_card

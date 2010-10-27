@@ -191,7 +191,7 @@ TEST_F(AutoFillDialogControllerTest, NoEditsDoNotChangeObserverProfiles) {
 }
 
 TEST_F(AutoFillDialogControllerTest, NoEditsDoNotChangeObserverCreditCards) {
-  CreditCard credit_card(ASCIIToUTF16("myCC"), 345);
+  CreditCard credit_card;
   credit_cards().push_back(&credit_card);
   LoadDialog();
   [controller_ closeDialog];
@@ -204,7 +204,7 @@ TEST_F(AutoFillDialogControllerTest, NoEditsDoNotChangeObserverCreditCards) {
 }
 
 TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
-  AutoFillProfile profile(ASCIIToUTF16("Home"), 17);
+  AutoFillProfile profile;
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("John"));
   profile.SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16("C"));
   profile.SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16("Smith"));
@@ -249,15 +249,11 @@ TEST_F(AutoFillDialogControllerTest, AutoFillDataMutation) {
   ASSERT_TRUE(observer_.hit_);
   ASSERT_TRUE(observer_.profiles_.size() == 1);
 
-  profiles()[0]->set_unique_id(observer_.profiles_[0].unique_id());
-  // Do not compare labels.  Label is a derived field.
-  observer_.profiles_[0].set_label(string16());
-  profiles()[0]->set_label(string16());
-  ASSERT_EQ(observer_.profiles_[0], *profiles()[0]);
+  ASSERT_EQ(0, observer_.profiles_[0].Compare(*profiles()[0]));
 }
 
 TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
-  CreditCard credit_card(ASCIIToUTF16("myCC"), 345);
+  CreditCard credit_card;
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("DCH"));
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
                       ASCIIToUTF16("1234 5678 9101 1121"));
@@ -289,17 +285,14 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
 
   ASSERT_TRUE(observer_.hit_);
   ASSERT_TRUE(observer_.credit_cards_.size() == 1);
-
-  // Don't compare unique ids.
-  credit_cards()[0]->set_unique_id(observer_.credit_cards_[0].unique_id());
-  ASSERT_EQ(observer_.credit_cards_[0], *credit_cards()[0]);
+  ASSERT_EQ(0, observer_.credit_cards_[0].Compare(*credit_cards()[0]));
 }
 
 TEST_F(AutoFillDialogControllerTest, TwoProfiles) {
-  AutoFillProfile profile1(ASCIIToUTF16("One"), 1);
+  AutoFillProfile profile1;
   profile1.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile1);
-  AutoFillProfile profile2(ASCIIToUTF16("Two"), 2);
+  AutoFillProfile profile2;
   profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bob"));
   profiles().push_back(&profile2);
   LoadDialog();
@@ -314,20 +307,15 @@ TEST_F(AutoFillDialogControllerTest, TwoProfiles) {
 
   // Contents should match.  With the exception of the |unique_id|.
   for (size_t i = 0, count = profiles().size(); i < count; i++) {
-    profiles()[i]->set_unique_id([controller_ profiles][i].unique_id());
-
-    // Do not compare labels.  Label is a derived field.
-    [controller_ profiles][i].set_label(string16());
-    profiles()[i]->set_label(string16());
-    ASSERT_EQ([controller_ profiles][i], *profiles()[i]);
+    ASSERT_EQ(0, [controller_ profiles][i].Compare(*profiles()[i]));
   }
 }
 
 TEST_F(AutoFillDialogControllerTest, TwoCreditCards) {
-  CreditCard credit_card1(ASCIIToUTF16("Visa"), 1);
+  CreditCard credit_card1;
   credit_card1.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card1);
-  CreditCard credit_card2(ASCIIToUTF16("Mastercard"), 2);
+  CreditCard credit_card2;
   credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bob"));
   credit_cards().push_back(&credit_card2);
   LoadDialog();
@@ -342,13 +330,12 @@ TEST_F(AutoFillDialogControllerTest, TwoCreditCards) {
 
   // Contents should match.  With the exception of the |unique_id|.
   for (size_t i = 0, count = credit_cards().size(); i < count; i++) {
-    credit_cards()[i]->set_unique_id([controller_ creditCards][i].unique_id());
-    ASSERT_EQ([controller_ creditCards][i], *credit_cards()[i]);
+    ASSERT_EQ(0, [controller_ creditCards][i].Compare(*credit_cards()[i]));
   }
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
-  AutoFillProfile profile(ASCIIToUTF16("One"), 1);
+  AutoFillProfile profile;
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile);
   LoadDialog();
@@ -376,7 +363,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
-  CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  CreditCard credit_card;
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
   LoadDialog();
@@ -405,7 +392,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewEmptyProfile) {
-  AutoFillProfile profile(string16(), 1);
+  AutoFillProfile profile;
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile);
   LoadDialog();
@@ -423,7 +410,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewEmptyProfile) {
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewEmptyCreditCard) {
-  CreditCard credit_card(string16(), 1);
+  CreditCard credit_card;
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
   LoadDialog();
@@ -442,7 +429,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewEmptyCreditCard) {
 }
 
 TEST_F(AutoFillDialogControllerTest, DeleteProfile) {
-  AutoFillProfile profile(ASCIIToUTF16("One"), 1);
+  AutoFillProfile profile;
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile);
   LoadDialog();
@@ -459,7 +446,7 @@ TEST_F(AutoFillDialogControllerTest, DeleteProfile) {
 }
 
 TEST_F(AutoFillDialogControllerTest, DeleteCreditCard) {
-  CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  CreditCard credit_card;
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
   LoadDialog();
@@ -476,10 +463,10 @@ TEST_F(AutoFillDialogControllerTest, DeleteCreditCard) {
 }
 
 TEST_F(AutoFillDialogControllerTest, TwoProfilesDeleteOne) {
-  AutoFillProfile profile(ASCIIToUTF16("One"), 1);
+  AutoFillProfile profile;
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile);
-  AutoFillProfile profile2(ASCIIToUTF16("Two"), 2);
+  AutoFillProfile profile2;
   profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bob"));
   profiles().push_back(&profile2);
   LoadDialog();
@@ -493,21 +480,14 @@ TEST_F(AutoFillDialogControllerTest, TwoProfilesDeleteOne) {
   // Sizes should be different.  New size should be 1.
   ASSERT_NE(observer_.profiles_.size(), profiles().size());
   ASSERT_EQ(observer_.profiles_.size(), 1UL);
-
-  // First address should match.
-  profiles()[0]->set_unique_id(observer_.profiles_[0].unique_id());
-
-  // Do not compare labels.  Label is a derived field.
-  observer_.profiles_[0].set_label(string16());
-  profile.set_label(string16());
-  ASSERT_EQ(observer_.profiles_[0], profile);
+  ASSERT_EQ(0, observer_.profiles_[0].Compare(profile));
 }
 
 TEST_F(AutoFillDialogControllerTest, TwoCreditCardsDeleteOne) {
-  CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  CreditCard credit_card;
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
-  CreditCard credit_card2(ASCIIToUTF16("Mastercard"), 2);
+  CreditCard credit_card2;
   credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bob"));
   credit_cards().push_back(&credit_card2);
   LoadDialog();
@@ -523,22 +503,21 @@ TEST_F(AutoFillDialogControllerTest, TwoCreditCardsDeleteOne) {
   ASSERT_EQ(observer_.credit_cards_.size(), 1UL);
 
   // First credit card should match.
-  credit_cards()[0]->set_unique_id(observer_.credit_cards_[0].unique_id());
-  ASSERT_EQ(observer_.credit_cards_[0], credit_card);
+  ASSERT_EQ(0, observer_.credit_cards_[0].Compare(credit_card));
 }
 
 TEST_F(AutoFillDialogControllerTest, DeleteMultiple) {
-  AutoFillProfile profile(ASCIIToUTF16("One"), 1);
+  AutoFillProfile profile;
   profile.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Joe"));
   profiles().push_back(&profile);
-  AutoFillProfile profile2(ASCIIToUTF16("Two"), 2);
+  AutoFillProfile profile2;
   profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Bob"));
   profiles().push_back(&profile2);
 
-  CreditCard credit_card(ASCIIToUTF16("Visa"), 1);
+  CreditCard credit_card;
   credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Joe"));
   credit_cards().push_back(&credit_card);
-  CreditCard credit_card2(ASCIIToUTF16("Mastercard"), 2);
+  CreditCard credit_card2;
   credit_card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Bob"));
   credit_cards().push_back(&credit_card2);
 
@@ -562,17 +541,11 @@ TEST_F(AutoFillDialogControllerTest, DeleteMultiple) {
   ASSERT_NE(observer_.credit_cards_.size(), credit_cards().size());
   ASSERT_EQ(observer_.credit_cards_.size(), 1UL);
 
-  // First address should match.
-  profiles()[0]->set_unique_id(observer_.profiles_[0].unique_id());
-
-  // Do not compare labels.  Label is a derived field.
-  observer_.profiles_[0].set_label(string16());
-  profile.set_label(string16());
-  ASSERT_EQ(observer_.profiles_[0], profile);
+  // Profiles should match.
+  ASSERT_EQ(0, observer_.profiles_[0].Compare(profile));
 
   // Second credit card should match.
-  credit_cards()[0]->set_unique_id(observer_.credit_cards_[0].unique_id());
-  ASSERT_EQ(observer_.credit_cards_[0], credit_card2);
+  ASSERT_EQ(0, observer_.credit_cards_[0].Compare(credit_card2));
 }
 
 // Auxilliary profiles are enabled by default.
@@ -618,9 +591,9 @@ TEST_F(AutoFillDialogControllerTest, AuxiliaryProfilesChanged) {
 }
 
 TEST_F(AutoFillDialogControllerTest, WaitForDataToLoad) {
-  AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
+  AutoFillProfile profile;
   profiles().push_back(&profile);
-  CreditCard credit_card(ASCIIToUTF16("Visa"), 0);
+  CreditCard credit_card;
   credit_cards().push_back(&credit_card);
   helper_.test_profile_->test_manager_->test_data_is_loaded_ = false;
   LoadDialog();

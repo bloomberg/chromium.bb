@@ -18,14 +18,14 @@ typedef CocoaTest AutoFillCreditCardModelTest;
 TEST(AutoFillCreditCardModelTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  CreditCard credit_card(ASCIIToUTF16("myCC"), 0);
+  CreditCard credit_card;
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
   EXPECT_TRUE(model.get());
 }
 
 TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
-  CreditCard credit_card(string16(), 0);
+  CreditCard credit_card;
   autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
       "John Dillinger", "123456789012", "01", "2010");
   scoped_nsobject<AutoFillCreditCardModel> model(
@@ -39,7 +39,7 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
 }
 
 TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
-  CreditCard credit_card(string16(), 0);
+  CreditCard credit_card;
   autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
       "John Dillinger", "123456789012", "01", "2010");
   scoped_nsobject<AutoFillCreditCardModel> model(

@@ -281,8 +281,7 @@ class PreferenceObserver : public NotificationObserver {
   DCHECK(!addressSheetController.get());
 
   // Create a new default address.
-  string16 newName = l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_ADDRESS);
-  AutoFillProfile newAddress(newName, 0);
+  AutoFillProfile newAddress;
 
   // Create a new address sheet controller in "Add" mode.
   addressSheetController.reset(
@@ -304,8 +303,7 @@ class PreferenceObserver : public NotificationObserver {
   DCHECK(!creditCardSheetController.get());
 
   // Create a new default credit card.
-  string16 newName = l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_CREDITCARD);
-  CreditCard newCreditCard(newName, 0);
+  CreditCard newCreditCard;
 
   // Create a new address sheet controller in "Add" mode.
   creditCardSheetController.reset(
@@ -329,7 +327,7 @@ class PreferenceObserver : public NotificationObserver {
 
   if (returnCode) {
     // Create a new address and save it to the |profiles_| list.
-    AutoFillProfile newAddress(string16(), 0);
+    AutoFillProfile newAddress;
     [addressSheetController copyModelToProfile:&newAddress];
     if (!newAddress.IsEmpty()) {
       profiles_.push_back(newAddress);
@@ -356,7 +354,7 @@ class PreferenceObserver : public NotificationObserver {
 
   if (returnCode) {
     // Create a new credit card and save it to the |creditCards_| list.
-    CreditCard newCreditCard(string16(), 0);
+    CreditCard newCreditCard;
     [creditCardSheetController copyModelToCreditCard:&newCreditCard];
     if (!newCreditCard.IsEmpty()) {
       creditCards_.push_back(newCreditCard);
@@ -601,33 +599,6 @@ class PreferenceObserver : public NotificationObserver {
   }
 
   return 0;
-}
-
-- (void)addressLabels:(NSArray**)labels addressIDs:(std::vector<int>*)ids {
-  NSUInteger capacity = profiles_.size();
-  NSMutableArray* array = [NSMutableArray arrayWithCapacity:capacity];
-  ids->clear();
-
-  std::vector<AutoFillProfile>::iterator i;
-  for (i = profiles_.begin(); i != profiles_.end(); ++i) {
-    FieldTypeSet fields;
-    i->GetAvailableFieldTypes(&fields);
-    if (fields.find(ADDRESS_HOME_LINE1) == fields.end() &&
-        fields.find(ADDRESS_HOME_LINE2) == fields.end() &&
-        fields.find(ADDRESS_HOME_APT_NUM) == fields.end() &&
-        fields.find(ADDRESS_HOME_CITY) == fields.end() &&
-        fields.find(ADDRESS_HOME_STATE) == fields.end() &&
-        fields.find(ADDRESS_HOME_ZIP) == fields.end() &&
-        fields.find(ADDRESS_HOME_COUNTRY) == fields.end()) {
-      // No address information in this profile; it's useless as a billing
-      // address.
-      continue;
-    }
-    [array addObject:SysUTF16ToNSString(i->Label())];
-    ids->push_back(i->unique_id());
-  }
-
-  *labels = array;
 }
 
 // Accessor for |autoFillEnabled| preference state.  Note: a checkbox in Nib
@@ -917,7 +888,7 @@ class PreferenceObserver : public NotificationObserver {
     // TODO(dhollowa): Using SetInfo() call to validate phone number.  Should
     // have explicit validation method.  More robust validation is needed as
     // well eventually.
-    AutoFillProfile profile(string16(), 0);
+    AutoFillProfile profile;
     profile.SetInfo(AutoFillType(PHONE_HOME_WHOLE_NUMBER),
                     base::SysNSStringToUTF16(string));
     if (profile.GetFieldText(AutoFillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {

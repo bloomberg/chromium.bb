@@ -171,7 +171,7 @@ FormGroup* AutoFillProfile::Clone() const {
   return profile;
 }
 
-const string16& AutoFillProfile::Label() const {
+const string16 AutoFillProfile::Label() const {
   return label_;
 }
 
@@ -398,34 +398,10 @@ int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
 }
 
 bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
-  // The following AutoFill field types are the only types we store in the WebDB
-  // so far, so we're only concerned with matching these types in the profile.
-  const AutoFillFieldType types[] = { NAME_FIRST,
-                                      NAME_MIDDLE,
-                                      NAME_LAST,
-                                      EMAIL_ADDRESS,
-                                      COMPANY_NAME,
-                                      ADDRESS_HOME_LINE1,
-                                      ADDRESS_HOME_LINE2,
-                                      ADDRESS_HOME_CITY,
-                                      ADDRESS_HOME_STATE,
-                                      ADDRESS_HOME_ZIP,
-                                      ADDRESS_HOME_COUNTRY,
-                                      PHONE_HOME_NUMBER,
-                                      PHONE_FAX_NUMBER };
-
-  if (label_ != profile.label_ ||
-      unique_id_ != profile.unique_id_) {
+  if (label_ != profile.label_ || unique_id_ != profile.unique_id_)
     return false;
-  }
 
-  for (size_t index = 0; index < arraysize(types); ++index) {
-    if (GetFieldText(AutoFillType(types[index])) !=
-        profile.GetFieldText(AutoFillType(types[index])))
-      return false;
-  }
-
-  return true;
+  return Compare(profile) == 0;
 }
 
 bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {

@@ -6655,9 +6655,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_BAD_LABEL_TOOLTIP" desc="Tooltip that appears over the wrong label.">
         Label must contain at least one character.
       </message>
-      <message name="IDS_AUTOFILL_NEW_ADDRESS" desc="The profile label of a new address.">
-        New address
-      </message>
       <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
         , '''
       </message>
@@ -6675,9 +6672,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_NAME_FORMAT" desc="The format string of the summary of an address. $1=firstName, $2=separator, $3=lastName">
         <ph name="FIRSTNAME">$1<ex>John</ex></ph><ph name="SEPARATOR">$2<ex>''' '''</ex></ph><ph name="LASTNAME">$3<ex>Smith</ex></ph>
-      </message>
-      <message name="IDS_AUTOFILL_NEW_CREDITCARD" desc="The profile label of a new credit card.">
-        New credit card
       </message>
       <message name="IDS_AUTOFILL_UNTITLED_LABEL" desc="The text substituted on empty label">
         Untitled

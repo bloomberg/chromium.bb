@@ -49,7 +49,7 @@ class AutoFillProfile : public FormGroup {
   // The user-visible label of the profile, generated in relation to other
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
-  virtual const string16& Label() const;
+  virtual const string16 Label() const;
 
   int unique_id() const { return unique_id_; }
   void set_unique_id(int id) { unique_id_ = id; }
@@ -91,7 +91,8 @@ class AutoFillProfile : public FormGroup {
 
   // Comparison for Sync.  Returns 0 if the profile is the same as |this|,
   // or < 0, or > 0 if it is different.  The implied ordering can be used for
-  // culling duplicates.
+  // culling duplicates.  The ordering is based on collation order of the
+  // textual contents of the fields.
   // GUIDs, labels, and unique IDs are not compared, only the values of the
   // profiles themselves.
   int Compare(const AutoFillProfile& profile) const;

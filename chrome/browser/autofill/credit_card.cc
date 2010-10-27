@@ -35,14 +35,14 @@ const int kAutoFillCreditCardLength = arraysize(kAutoFillCreditCardTypes);
 // These values must match the values in WebKitClientImpl in webkit/glue. We
 // send these strings to WK, which then asks WebKitClientImpl to load the image
 // data.
-const char* kAmericanExpressCard = "americanExpressCC";
-const char* kDinersCard = "dinersCC";
-const char* kDiscoverCard = "discoverCC";
-const char* kGenericCard = "genericCC";
-const char* kJCBCard = "jcbCC";
-const char* kMasterCard = "masterCardCC";
-const char* kSoloCard = "soloCC";
-const char* kVisaCard = "visaCC";
+const char* const kAmericanExpressCard = "americanExpressCC";
+const char* const kDinersCard = "dinersCC";
+const char* const kDiscoverCard = "discoverCC";
+const char* const kGenericCard = "genericCC";
+const char* const kJCBCard = "jcbCC";
+const char* const kMasterCard = "masterCardCC";
+const char* const kSoloCard = "soloCC";
+const char* const kVisaCard = "visaCC";
 
 std::string GetCreditCardType(const string16& number) {
   // Credit card number specifications taken from:
@@ -149,8 +149,8 @@ CreditCard::CreditCard()
       guid_(guid::GenerateGUID()) {
 }
 
-CreditCard::CreditCard(const CreditCard& card) : FormGroup() {
-  operator=(card);
+CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {
+  operator=(credit_card);
 }
 
 CreditCard::~CreditCard() {}
@@ -372,43 +372,45 @@ string16 CreditCard::LastFourDigits() const {
   return number().substr(number().size() - kNumLastDigits, kNumLastDigits);
 }
 
-void CreditCard::operator=(const CreditCard& source) {
-  number_ = source.number_;
-  name_on_card_ = source.name_on_card_;
-  type_ = source.type_;
-  last_four_digits_ = source.last_four_digits_;
-  expiration_month_ = source.expiration_month_;
-  expiration_year_ = source.expiration_year_;
-  label_ = source.label_;
-  unique_id_ = source.unique_id_;
-  guid_ = source.guid_;
+void CreditCard::operator=(const CreditCard& credit_card) {
+  number_ = credit_card.number_;
+  name_on_card_ = credit_card.name_on_card_;
+  type_ = credit_card.type_;
+  last_four_digits_ = credit_card.last_four_digits_;
+  expiration_month_ = credit_card.expiration_month_;
+  expiration_year_ = credit_card.expiration_year_;
+  label_ = credit_card.label_;
+  unique_id_ = credit_card.unique_id_;
+  guid_ = credit_card.guid_;
 }
 
-bool CreditCard::operator==(const CreditCard& creditcard) const {
+int CreditCard::Compare(const CreditCard& credit_card) const {
   // The following CreditCard field types are the only types we store in the
   // WebDB so far, so we're only concerned with matching these types in the
-  // profile.
+  // credit card.
   const AutoFillFieldType types[] = { CREDIT_CARD_NAME,
-                                      CREDIT_CARD_TYPE,
                                       CREDIT_CARD_NUMBER,
                                       CREDIT_CARD_EXP_MONTH,
                                       CREDIT_CARD_EXP_4_DIGIT_YEAR };
-
-  if ((label_ != creditcard.label_) || (unique_id_ != creditcard.unique_id_)) {
-    return false;
-  }
-
   for (size_t index = 0; index < arraysize(types); ++index) {
-    if (GetFieldText(AutoFillType(types[index])) !=
-        creditcard.GetFieldText(AutoFillType(types[index])))
-      return false;
+    int comparison = GetFieldText(AutoFillType(types[index])).compare(
+        credit_card.GetFieldText(AutoFillType(types[index])));
+    if (comparison != 0)
+      return comparison;
   }
 
-  return true;
+  return 0;
 }
 
-bool CreditCard::operator!=(const CreditCard& creditcard) const {
-  return !operator==(creditcard);
+bool CreditCard::operator==(const CreditCard& credit_card) const {
+  if (label_ != credit_card.label_ || unique_id_ != credit_card.unique_id_)
+    return false;
+
+  return Compare(credit_card) == 0;
+}
+
+bool CreditCard::operator!=(const CreditCard& credit_card) const {
+  return !operator==(credit_card);
 }
 
 // Use the Luhn formula to validate the number.
@@ -442,7 +444,6 @@ bool CreditCard::IsEmpty() const {
   GetAvailableFieldTypes(&types);
   return types.empty();
 }
-
 
 string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ == 0)
@@ -610,23 +611,23 @@ bool CreditCard::ConvertDate(const string16& date, int* num) const {
 }
 
 // So we can compare CreditCards with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const CreditCard& creditcard) {
+std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
   return os
-      << UTF16ToUTF8(creditcard.Label())
+      << UTF16ToUTF8(credit_card.Label())
       << " "
-      << creditcard.unique_id()
+      << credit_card.unique_id()
       << " "
-      << creditcard.guid()
+      << credit_card.guid()
       << " "
-      << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))
+      << UTF16ToUTF8(credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))
       << " "
-      << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_TYPE)))
+      << UTF16ToUTF8(credit_card.GetFieldText(AutoFillType(CREDIT_CARD_TYPE)))
       << " "
-      << UTF16ToUTF8(creditcard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)))
+      << UTF16ToUTF8(credit_card.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)))
       << " "
-      << UTF16ToUTF8(creditcard.GetFieldText(
+      << UTF16ToUTF8(credit_card.GetFieldText(
              AutoFillType(CREDIT_CARD_EXP_MONTH)))
       << " "
-      << UTF16ToUTF8(creditcard.GetFieldText(
+      << UTF16ToUTF8(credit_card.GetFieldText(
              AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
 }
