@@ -32,10 +32,10 @@ namespace gfx {
 // as an LTR string (using base::i18n::WrapStringWithLTRFormatting()) so that it
 // is displayed properly in an RTL context. Please refer to
 // http://crbug.com/6487 for more information.
-std::wstring ElideUrl(const GURL& url,
-                      const gfx::Font& font,
-                      int available_pixel_width,
-                      const std::wstring& languages);
+string16 ElideUrl(const GURL& url,
+                  const gfx::Font& font,
+                  int available_pixel_width,
+                  const std::wstring& languages);
 
 // Elides |text| to fit in |available_pixel_width|.  If |elide_in_middle| is
 // set the ellipsis is placed in the middle of the string; otherwise it is

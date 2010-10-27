@@ -41,18 +41,6 @@ string16 CutString(const string16& text,
       text.substr(text.length() - half_length, half_length);
 }
 
-// TODO(tony): Get rid of wstrings.
-string16 GetDisplayStringInLTRDirectionality(const std::wstring& text) {
-  return base::i18n::GetDisplayStringInLTRDirectionality(WideToUTF16(text));
-}
-
-// TODO(tony): This is just a crutch until we convert ElideUrl to string16.
-std::wstring ElideTextWide(const std::wstring& text, const gfx::Font& font,
-                           int available_pixel_width, bool elide_in_middle) {
-  return UTF16ToWideHack(ElideText(WideToUTF16Hack(text), font,
-                         available_pixel_width, elide_in_middle));
-}
-
 }  // namespace
 
 namespace gfx {
@@ -67,61 +55,61 @@ namespace gfx {
 // kerning/ligatures/etc. issues potentially wrong by assuming that the width of
 // a rendered string is always the sum of the widths of its substrings.  Also I
 // suspect it could be made simpler.
-std::wstring ElideUrl(const GURL& url,
-                      const gfx::Font& font,
-                      int available_pixel_width,
-                      const std::wstring& languages) {
+string16 ElideUrl(const GURL& url,
+                  const gfx::Font& font,
+                  int available_pixel_width,
+                  const std::wstring& languages) {
   // Get a formatted string and corresponding parsing of the url.
   url_parse::Parsed parsed;
-  std::wstring url_string = UTF16ToWideHack(net::FormatUrl(url,
-      WideToUTF8(languages), net::kFormatUrlOmitAll, UnescapeRule::SPACES,
-      &parsed, NULL, NULL));
+  string16 url_string = net::FormatUrl(url, WideToUTF8(languages),
+      net::kFormatUrlOmitAll, UnescapeRule::SPACES, &parsed, NULL, NULL);
   if (available_pixel_width <= 0)
     return url_string;
 
   // If non-standard or not file type, return plain eliding.
   if (!(url.SchemeIsFile() || url.IsStandard()))
-    return ElideTextWide(url_string, font, available_pixel_width, false);
+    return ElideText(url_string, font, available_pixel_width, false);
 
   // Now start eliding url_string to fit within available pixel width.
   // Fist pass - check to see whether entire url_string fits.
-  int pixel_width_url_string = font.GetStringWidth(url_string);
+  int pixel_width_url_string = font.GetStringWidth(UTF16ToWideHack(url_string));
   if (available_pixel_width >= pixel_width_url_string)
     return url_string;
 
   // Get the path substring, including query and reference.
   size_t path_start_index = parsed.path.begin;
   size_t path_len = parsed.path.len;
-  std::wstring url_path_query_etc = url_string.substr(path_start_index);
-  std::wstring url_path = url_string.substr(path_start_index, path_len);
+  string16 url_path_query_etc = url_string.substr(path_start_index);
+  string16 url_path = url_string.substr(path_start_index, path_len);
 
   // Return general elided text if url minus the query fits.
-  std::wstring url_minus_query = url_string.substr(0, path_start_index +
-      path_len);
-  if (available_pixel_width >= font.GetStringWidth(url_minus_query))
-    return ElideTextWide(url_string, font, available_pixel_width, false);
+  string16 url_minus_query = url_string.substr(0, path_start_index + path_len);
+  if (available_pixel_width >=
+      font.GetStringWidth(UTF16ToWideHack(url_minus_query)))
+    return ElideText(url_string, font, available_pixel_width, false);
 
   // Get Host.
-  std::wstring url_host = UTF8ToWide(url.host());
+  string16 url_host = UTF8ToUTF16(url.host());
 
   // Get domain and registry information from the URL.
-  std::wstring url_domain = UTF8ToWide(
+  string16 url_domain = UTF8ToUTF16(
       net::RegistryControlledDomainService::GetDomainAndRegistry(url));
   if (url_domain.empty())
     url_domain = url_host;
 
   // Add port if required.
   if (!url.port().empty()) {
-    url_host += L":" + UTF8ToWide(url.port());
-    url_domain += L":" + UTF8ToWide(url.port());
+    url_host += UTF8ToUTF16(":" + url.port());
+    url_domain += UTF8ToUTF16(":" + url.port());
   }
 
   // Get sub domain.
-  std::wstring url_subdomain;
+  string16 url_subdomain;
   size_t domain_start_index = url_host.find(url_domain);
   if (domain_start_index > 0)
     url_subdomain = url_host.substr(0, domain_start_index);
-  if ((url_subdomain == L"www." || url_subdomain.empty() ||
+  static const string16 kWwwPrefix = UTF8ToUTF16("www.");
+  if ((url_subdomain == kWwwPrefix || url_subdomain.empty() ||
       url.SchemeIsFile())) {
     url_subdomain.clear();
   }
@@ -131,93 +119,100 @@ std::wstring ElideUrl(const GURL& url,
   // domain is now C: - this is a nice hack for eliding to work pleasantly.
   if (url.SchemeIsFile()) {
     // Split the path string using ":"
-    std::vector<std::wstring> file_path_split;
-    base::SplitString(url_path, L':', &file_path_split);
+    std::vector<string16> file_path_split;
+    base::SplitString(url_path, ':', &file_path_split);
     if (file_path_split.size() > 1) {  // File is of type "file:///C:/.."
       url_host.clear();
       url_domain.clear();
       url_subdomain.clear();
 
-      url_host = url_domain = file_path_split.at(0).substr(1) + L":";
+      static const string16 kColon = UTF8ToUTF16(":");
+      url_host = url_domain = file_path_split.at(0).substr(1) + kColon;
       url_path_query_etc = url_path = file_path_split.at(1);
     }
   }
 
   // Second Pass - remove scheme - the rest fits.
-  int pixel_width_url_host = font.GetStringWidth(url_host);
-  int pixel_width_url_path = font.GetStringWidth(url_path_query_etc);
+  int pixel_width_url_host = font.GetStringWidth(UTF16ToWideHack(url_host));
+  int pixel_width_url_path = font.GetStringWidth(UTF16ToWideHack(
+      url_path_query_etc));
   if (available_pixel_width >=
       pixel_width_url_host + pixel_width_url_path)
     return url_host + url_path_query_etc;
 
   // Third Pass: Subdomain, domain and entire path fits.
-  int pixel_width_url_domain = font.GetStringWidth(url_domain);
-  int pixel_width_url_subdomain = font.GetStringWidth(url_subdomain);
+  int pixel_width_url_domain = font.GetStringWidth(UTF16ToWideHack(url_domain));
+  int pixel_width_url_subdomain = font.GetStringWidth(UTF16ToWideHack(
+      url_subdomain));
   if (available_pixel_width >=
       pixel_width_url_subdomain + pixel_width_url_domain +
       pixel_width_url_path)
     return url_subdomain + url_domain + url_path_query_etc;
 
   // Query element.
-  std::wstring url_query;
-  const int pixel_width_dots_trailer = font.GetStringWidth(kEllipsis);
+  string16 url_query;
+  const int kPixelWidthDotsTrailer = font.GetStringWidth(kEllipsis);
   if (parsed.query.is_nonempty()) {
-    url_query = std::wstring(L"?") + url_string.substr(parsed.query.begin);
+    url_query = UTF8ToUTF16("?") + url_string.substr(parsed.query.begin);
     if (available_pixel_width >= (pixel_width_url_subdomain +
         pixel_width_url_domain + pixel_width_url_path -
-        font.GetStringWidth(url_query))) {
-      return ElideTextWide(url_subdomain + url_domain + url_path_query_etc,
-                           font, available_pixel_width, false);
+        font.GetStringWidth(UTF16ToWideHack(url_query)))) {
+      return ElideText(url_subdomain + url_domain + url_path_query_etc,
+                       font, available_pixel_width, false);
     }
   }
 
   // Parse url_path using '/'.
-  std::vector<std::wstring> url_path_elements;
-  base::SplitString(url_path, L'/', &url_path_elements);
+  static const string16 kForwardSlash = UTF8ToUTF16("/");
+  std::vector<string16> url_path_elements;
+  base::SplitString(url_path, kForwardSlash[0], &url_path_elements);
 
   // Get filename - note that for a path ending with /
   // such as www.google.com/intl/ads/, the file name is ads/.
-  int url_path_number_of_elements = static_cast<int> (url_path_elements.
-                                                      size());
-  std::wstring url_filename;
+  size_t url_path_number_of_elements = url_path_elements.size();
+  DCHECK(url_path_number_of_elements != 0);
+  string16 url_filename;
   if ((url_path_elements.at(url_path_number_of_elements - 1)).length() > 0) {
-    url_filename = *(url_path_elements.end()-1);
+    url_filename = *(url_path_elements.end() - 1);
   } else if (url_path_number_of_elements > 1) {  // Path ends with a '/'.
     url_filename = url_path_elements.at(url_path_number_of_elements - 2) +
-        L'/';
+        kForwardSlash;
     url_path_number_of_elements--;
   }
+  DCHECK(url_path_number_of_elements != 0);
 
-  const int kMaxNumberOfUrlPathElementsAllowed = 1024;
+  const size_t kMaxNumberOfUrlPathElementsAllowed = 1024;
   if (url_path_number_of_elements <= 1 ||
       url_path_number_of_elements > kMaxNumberOfUrlPathElementsAllowed) {
     // No path to elide, or too long of a path (could overflow in loop below)
     // Just elide this as a text string.
-    return ElideTextWide(url_subdomain + url_domain + url_path_query_etc, font,
-                         available_pixel_width, false);
+    return ElideText(url_subdomain + url_domain + url_path_query_etc, font,
+                     available_pixel_width, false);
   }
 
   // Start eliding the path and replacing elements by "../".
-  std::wstring an_ellipsis_and_a_slash(kEllipsis);
-  an_ellipsis_and_a_slash += L'/';
-  int pixel_width_url_filename = font.GetStringWidth(url_filename);
-  int pixel_width_dot_dot_slash = font.GetStringWidth(an_ellipsis_and_a_slash);
+  static const string16 kEllipsisAndSlash = WideToUTF16(kEllipsis) +
+      kForwardSlash;
+  int pixel_width_url_filename = font.GetStringWidth(UTF16ToWideHack(
+      url_filename));
+  int pixel_width_dot_dot_slash = font.GetStringWidth(UTF16ToWideHack(
+      kEllipsisAndSlash));
   int pixel_width_slash = font.GetStringWidth(L"/");
   int pixel_width_url_path_elements[kMaxNumberOfUrlPathElementsAllowed];
-  for (int i = 0; i < url_path_number_of_elements; ++i) {
+  for (size_t i = 0; i < url_path_number_of_elements; ++i) {
     pixel_width_url_path_elements[i] =
-       font.GetStringWidth(url_path_elements.at(i));
+       font.GetStringWidth(UTF16ToWideHack(url_path_elements.at(i)));
   }
 
   // Check with both subdomain and domain.
-  std::wstring elided_path;
+  string16 elided_path;
   int pixel_width_elided_path;
-  for (int i = url_path_number_of_elements - 1; i >= 1; --i) {
+  for (size_t i = url_path_number_of_elements - 1; i >= 1; --i) {
     // Add the initial elements of the path.
     elided_path.clear();
     pixel_width_elided_path = 0;
-    for (int j = 0; j < i; ++j) {
-      elided_path += url_path_elements.at(j) + L'/';
+    for (size_t j = 0; j < i; ++j) {
+      elided_path += url_path_elements.at(j) + kForwardSlash;
       pixel_width_elided_path += pixel_width_url_path_elements[j] +
           pixel_width_slash;
     }
@@ -227,7 +222,7 @@ std::wstring ElideUrl(const GURL& url,
       elided_path += url_filename;
       pixel_width_elided_path += pixel_width_url_filename;
     } else {
-      elided_path += an_ellipsis_and_a_slash + url_filename;
+      elided_path += kEllipsisAndSlash + url_filename;
       pixel_width_elided_path += pixel_width_dot_dot_slash +
           pixel_width_url_filename;
     }
@@ -235,8 +230,8 @@ std::wstring ElideUrl(const GURL& url,
     if (available_pixel_width >=
         pixel_width_url_subdomain + pixel_width_url_domain +
         pixel_width_elided_path) {
-      return ElideTextWide(url_subdomain + url_domain + elided_path + url_query,
-                           font, available_pixel_width, false);
+      return ElideText(url_subdomain + url_domain + elided_path + url_query,
+                       font, available_pixel_width, false);
     }
   }
 
@@ -245,22 +240,22 @@ std::wstring ElideUrl(const GURL& url,
   // This is added only if the subdomain pixel width is larger than
   // the pixel width of kEllipsis. Otherwise, subdomain remains,
   // which means that this case has been resolved earlier.
-  std::wstring url_elided_domain = url_subdomain + url_domain;
+  string16 url_elided_domain = url_subdomain + url_domain;
   int pixel_width_url_elided_domain = pixel_width_url_domain;
-  if (pixel_width_url_subdomain > pixel_width_dots_trailer) {
+  if (pixel_width_url_subdomain > kPixelWidthDotsTrailer) {
     if (!url_subdomain.empty()) {
-      url_elided_domain = kEllipsis + url_domain;
-      pixel_width_url_elided_domain += pixel_width_dots_trailer;
+      url_elided_domain = kEllipsisAndSlash[0] + url_domain;
+      pixel_width_url_elided_domain += kPixelWidthDotsTrailer;
     } else {
       url_elided_domain = url_domain;
     }
 
-    for (int i = url_path_number_of_elements - 1; i >= 1; --i) {
+    for (size_t i = url_path_number_of_elements - 1; i >= 1; --i) {
       // Add the initial elements of the path.
       elided_path.clear();
       pixel_width_elided_path = 0;
-      for (int j = 0; j < i; ++j) {
-        elided_path += url_path_elements.at(j) + L'/';
+      for (size_t j = 0; j < i; ++j) {
+        elided_path += url_path_elements.at(j) + kForwardSlash;
         pixel_width_elided_path += pixel_width_url_path_elements[j] +
             pixel_width_slash;
       }
@@ -270,69 +265,73 @@ std::wstring ElideUrl(const GURL& url,
         elided_path += url_filename;
         pixel_width_elided_path += pixel_width_url_filename;
       } else {
-        elided_path += an_ellipsis_and_a_slash + url_filename;
+        elided_path += kEllipsisAndSlash + url_filename;
         pixel_width_elided_path += pixel_width_dot_dot_slash +
             pixel_width_url_filename;
       }
 
       if (available_pixel_width >=
           pixel_width_url_elided_domain + pixel_width_elided_path) {
-        return ElideTextWide(url_elided_domain + elided_path + url_query, font,
-                             available_pixel_width, false);
+        return ElideText(url_elided_domain + elided_path + url_query, font,
+                         available_pixel_width, false);
       }
     }
   }
 
   // Return elided domain/../filename anyway.
-  std::wstring final_elided_url_string(url_elided_domain);
-  if ((available_pixel_width - font.GetStringWidth(url_elided_domain)) >
-      pixel_width_dot_dot_slash + pixel_width_dots_trailer +
+  string16 final_elided_url_string(url_elided_domain);
+  int url_elided_domain_width = font.GetStringWidth(UTF16ToWideHack(
+      url_elided_domain));
+  if ((available_pixel_width - url_elided_domain_width) >
+      pixel_width_dot_dot_slash + kPixelWidthDotsTrailer +
       font.GetStringWidth(L"UV"))  // A hack to prevent trailing "../...".
     final_elided_url_string += elided_path;
   else
     final_elided_url_string += url_path;
 
-  return ElideTextWide(final_elided_url_string, font, available_pixel_width,
-                       false);
+  return ElideText(final_elided_url_string, font, available_pixel_width, false);
 }
 
 string16 ElideFilename(const FilePath& filename,
                        const gfx::Font& font,
                        int available_pixel_width) {
-  int full_width = font.GetStringWidth(filename.ToWStringHack());
-  if (full_width <= available_pixel_width) {
-    std::wstring elided_name = filename.ToWStringHack();
-    return GetDisplayStringInLTRDirectionality(elided_name);
-  }
-
 #if defined(OS_WIN)
-  std::wstring extension = filename.Extension();
+  string16 filename_utf16 = filename.value();
+  string16 extension = filename.Extension();
+  string16 rootname = filename.BaseName().RemoveExtension().value();
 #elif defined(OS_POSIX)
-  std::wstring extension = base::SysNativeMBToWide(filename.Extension());
+  string16 filename_utf16 = WideToUTF16(base::SysNativeMBToWide(
+      filename.value()));
+  string16 extension = WideToUTF16(base::SysNativeMBToWide(
+      filename.Extension()));
+  string16 rootname = WideToUTF16(base::SysNativeMBToWide(
+      filename.BaseName().RemoveExtension().value()));
 #endif
-  std::wstring rootname =
-      filename.BaseName().RemoveExtension().ToWStringHack();
+
+  int full_width = font.GetStringWidth(UTF16ToWideHack(filename_utf16));
+  if (full_width <= available_pixel_width)
+    return base::i18n::GetDisplayStringInLTRDirectionality(filename_utf16);
 
   if (rootname.empty() || extension.empty()) {
-    std::wstring elided_name = ElideTextWide(filename.ToWStringHack(), font,
-                                             available_pixel_width, false);
-    return GetDisplayStringInLTRDirectionality(elided_name);
+    string16 elided_name = ElideText(filename_utf16, font,
+                                     available_pixel_width, false);
+    return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
-  int ext_width = font.GetStringWidth(extension);
-  int root_width = font.GetStringWidth(rootname);
+  int ext_width = font.GetStringWidth(UTF16ToWideHack(extension));
+  int root_width = font.GetStringWidth(UTF16ToWideHack(rootname));
 
   // We may have trimmed the path.
   if (root_width + ext_width <= available_pixel_width) {
-    std::wstring elided_name = rootname + extension;
-    return GetDisplayStringInLTRDirectionality(elided_name);
+    string16 elided_name = rootname + extension;
+    return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
   int available_root_width = available_pixel_width - ext_width;
-  std::wstring elided_name =
-      ElideTextWide(rootname, font, available_root_width, false);
+  string16 elided_name =
+      ElideText(rootname, font, available_root_width, false);
   elided_name += extension;
-  return GetDisplayStringInLTRDirectionality(elided_name);
+  return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
 }
 
 // This function adds an ellipsis at the end of the text if the text
@@ -371,7 +370,7 @@ string16 ElideText(const string16& text,
   for (size_t guess = (lo + hi) / 2; guess != lo; guess = (lo + hi) / 2) {
     // We check the length of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.
-    int guess_length = font.GetStringWidth(UTF16ToWide(
+    int guess_length = font.GetStringWidth(UTF16ToWideHack(
         CutString(text, guess, elide_in_middle, true)));
     // Check again that we didn't hit a Pango width overflow. If so, cut the
     // current string in half and start over.

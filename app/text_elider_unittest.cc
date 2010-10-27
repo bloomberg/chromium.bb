@@ -43,7 +43,7 @@ void RunTest(Testcase* testcases, size_t num_testcases) {
     const GURL url(testcases[i].input);
     // Should we test with non-empty language list?
     // That's kinda redundant with net_util_unittests.
-    EXPECT_EQ(testcases[i].output,
+    EXPECT_EQ(WideToUTF16(testcases[i].output),
               ElideUrl(url, font, font.GetStringWidth(testcases[i].output),
                        std::wstring()));
   }

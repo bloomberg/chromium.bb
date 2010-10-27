@@ -160,10 +160,9 @@ static std::wstring CreateToolTipForURLAndTitle(const gfx::Point& screen_loc,
     // "/http://www.yahoo.com" when rendered, as is, in an RTL context since
     // the Unicode BiDi algorithm puts certain characters on the left by
     // default.
-    std::wstring elided_url(gfx::ElideUrl(url, tt_font, max_width, languages));
-    elided_url = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-        WideToUTF16(elided_url)));
-    result.append(elided_url);
+    string16 elided_url(gfx::ElideUrl(url, tt_font, max_width, languages));
+    elided_url = base::i18n::GetDisplayStringInLTRDirectionality(elided_url);
+    result.append(UTF16ToWideHack(elided_url));
   }
   return result;
 }

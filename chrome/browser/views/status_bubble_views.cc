@@ -646,8 +646,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const string16& languages) {
   popup_->GetBounds(&popup_bounds, true);
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  url_text_ = WideToUTF16(gfx::ElideUrl(url, view_->Label::font(),
-      text_width, UTF16ToWide(languages)));
+  url_text_ = gfx::ElideUrl(url, view_->Label::font(),
+      text_width, UTF16ToWideHack(languages));
 
   std::wstring original_url_text =
       UTF16ToWideHack(net::FormatUrl(url, UTF16ToUTF8(languages)));
@@ -801,8 +801,8 @@ void StatusBubbleViews::ExpandBubble() {
   gfx::Rect popup_bounds;
   popup_->GetBounds(&popup_bounds, true);
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
-  url_text_ = WideToUTF16(gfx::ElideUrl(url_, view_->Label::font(),
-      max_status_bubble_width, UTF16ToWideHack(languages_)));
+  url_text_ = gfx::ElideUrl(url_, view_->Label::font(),
+      max_status_bubble_width, UTF16ToWideHack(languages_));
   int expanded_bubble_width =std::max(GetStandardStatusBubbleWidth(),
       std::min(view_->Label::font().GetStringWidth(UTF16ToWide(url_text_)) +
                    (kShadowThickness * 2) + kTextPositionX +

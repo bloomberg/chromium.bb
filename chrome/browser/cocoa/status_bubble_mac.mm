@@ -152,8 +152,8 @@ void StatusBubbleMac::SetURL(const GURL& url, const string16& languages) {
                      [font pointSize]);
 
   string16 original_url_text = net::FormatUrl(url, UTF16ToUTF8(languages));
-  string16 status = WideToUTF16(gfx::ElideUrl(url, font_chr, text_width,
-      UTF16ToWideHack(languages)));
+  string16 status = gfx::ElideUrl(url, font_chr, text_width,
+      UTF16ToWideHack(languages));
 
   SetText(status, true);
 
@@ -608,8 +608,8 @@ void StatusBubbleMac::ExpandBubble() {
   NSFont* font = [[window_ contentView] font];
   gfx::Font font_chr(base::SysNSStringToWide([font fontName]),
       [font pointSize]);
-  string16 expanded_url = WideToUTF16(gfx::ElideUrl(url_, font_chr,
-      max_bubble_width, UTF16ToWide(languages_)));
+  string16 expanded_url = gfx::ElideUrl(url_, font_chr,
+      max_bubble_width, UTF16ToWideHack(languages_));
 
   // Scale width from gfx::Font in view coordinates to window coordinates.
   int required_width_for_string =
