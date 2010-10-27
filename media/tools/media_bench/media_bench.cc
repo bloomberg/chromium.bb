@@ -53,7 +53,7 @@ const char kLoop[]         = "loop";
 #if defined(OS_WIN)
 
 // Enable to build with exception handler
-//#define ENABLE_WINDOWS_EXCEPTIONS 1
+// #define ENABLE_WINDOWS_EXCEPTIONS 1
 
 #ifdef ENABLE_WINDOWS_EXCEPTIONS
 // warning: disable warning about exception handler.
@@ -367,6 +367,10 @@ int main(int argc, const char** argv) {
     return 1;
   }
 
+  // Remember size of video.
+  int video_width = codec_context->width;
+  int video_height = codec_context->height;
+
   // Stats collector.
   EnterTimingSection();
   std::vector<double> decode_times;
@@ -556,8 +560,9 @@ int main(int argc, const char** argv) {
   log_out->setf(std::ios::fixed);
   log_out->precision(2);
   *log_out << std::endl;
-  *log_out << "     Frames:" << std::setw(11) << frames
-           << std::endl;
+  *log_out << "     Frames:" << std::setw(11) << frames << std::endl;
+  *log_out << "      Width:" << std::setw(11) << video_width << std::endl;
+  *log_out << "     Height:" << std::setw(11) << video_height << std::endl;
   *log_out << "      Total:" << std::setw(11) << total.InMillisecondsF()
            << " ms" << std::endl;
   *log_out << "  Summation:" << std::setw(11) << sum
