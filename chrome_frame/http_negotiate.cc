@@ -367,7 +367,7 @@ HRESULT HttpNegotiatePatch::ReportProgress(
         render_in_chrome_frame = CheckForCFNavigation(browser, true);
       }
 
-      DLOG_IF(INFO, !render_in_chrome_frame) << " - browser not tagged";
+      DVLOG_IF(1, !render_in_chrome_frame) << " - browser not tagged";
 
       if (!render_in_chrome_frame) {
         // Check to see if we need to alter the mime type that gets reported

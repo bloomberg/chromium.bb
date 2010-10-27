@@ -712,7 +712,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   scoped_ptr<installer::Version>
       installed_version(InstallUtil::GetChromeVersion(system_install));
   if (installed_version.get())
-    LOG(INFO) << "version on the system: " << installed_version->GetString();
+    VLOG(1) << "version on the system: " << installed_version->GetString();
 
   installer_util::InstallStatus install_status = installer_util::UNKNOWN_STATUS;
   // If --uninstall option is given, uninstall chrome

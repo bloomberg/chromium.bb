@@ -254,8 +254,8 @@ void SyncerThread::ThreadMainLoop() {
     VLOG(1) << "Syncer thread waiting for database initialization.";
     while (vault_.syncer_ == NULL && !vault_.stop_syncer_thread_)
       vault_field_changed_.Wait();
-    VLOG_IF(1, !(vault_.syncer_ == NULL))
-        << "Syncer was found after DB started.";
+    VLOG_IF(1, !(vault_.syncer_ == NULL)) << "Syncer was found after DB "
+                                             "started.";
   }
 
   while (!vault_.stop_syncer_thread_) {

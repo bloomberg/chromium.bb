@@ -229,7 +229,7 @@ void BrowserSignin::RequestSignin(TabContents* tab_contents,
 std::string BrowserSignin::GetSignedInUsername() const {
   std::string username =
       profile_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-  LOG(INFO) << "GetSignedInUsername: " << username;
+  VLOG(1) << "GetSignedInUsername: " << username;
   return username;
 }
 
@@ -238,7 +238,7 @@ void BrowserSignin::Observe(NotificationType type,
                             const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
-      LOG(INFO) << "GOOGLE_SIGNIN_SUCCESSFUL";
+      VLOG(1) << "GOOGLE_SIGNIN_SUCCESSFUL";
       if (delegate_)
         delegate_->OnLoginSuccess();
       // Close the dialog.
@@ -246,7 +246,7 @@ void BrowserSignin::Observe(NotificationType type,
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {
-      LOG(INFO) << "GOOGLE_SIGNIN_FAILED";
+      VLOG(1) << "GOOGLE_SIGNIN_FAILED";
       // The signin failed, refresh the UI with error information.
       html_dialog_ui_delegate_->ReloadUI();
       break;

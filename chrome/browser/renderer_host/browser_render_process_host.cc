@@ -258,7 +258,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 }
 
 BrowserRenderProcessHost::~BrowserRenderProcessHost() {
-  LOG_IF(INFO, g_log_bug53991) << "~BrowserRenderProcessHost: " << this;
+  VLOG_IF(1, g_log_bug53991) << "~BrowserRenderProcessHost: " << this;
 
   WebCacheManager::GetInstance()->Remove(id());
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());

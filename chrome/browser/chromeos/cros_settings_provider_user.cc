@@ -150,8 +150,8 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
       VLOG(1) << "Set cros setting " << path << "=" << value;
     }
   } else if (path == kDeviceOwner) {
-    LOG(INFO) << "Setting owner is not supported. "
-              << "Please use 'UpdateCachedOwner' instead.";
+    VLOG(1) << "Setting owner is not supported. Please use 'UpdateCachedOwner' "
+               "instead.";
   } else if (path == kAccountsPrefUsers) {
     VLOG(1) << "Setting user whitelist is not implemented.  Please use "
                "whitelist/unwhitelist instead.";

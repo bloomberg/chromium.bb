@@ -264,9 +264,9 @@ Browser::Browser(Type type, Profile* profile)
 }
 
 Browser::~Browser() {
-  LOG_IF(INFO, g_log_bug53991) <<
-      "~Browser: " << profile_->IsOffTheRecord() <<
-      "; stillActive=" << BrowserList::IsOffTheRecordSessionActive();
+  VLOG_IF(1, g_log_bug53991) << "~Browser: " << profile_->IsOffTheRecord()
+                             << "; stillActive="
+                             << BrowserList::IsOffTheRecordSessionActive();
 
   if (profile_->GetProfileSyncService())
     profile_->GetProfileSyncService()->RemoveObserver(this);

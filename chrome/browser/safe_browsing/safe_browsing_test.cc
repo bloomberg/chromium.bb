@@ -155,24 +155,19 @@ class SafeBrowsingTestServer {
 
   // Stop the python server test suite.
   bool Stop() {
-    if (server_handle_ == base::kNullProcessHandle) {
+    if (server_handle_ == base::kNullProcessHandle)
       return true;
-    }
 
     // First check if the process has already terminated.
-    bool ret = base::WaitForSingleProcess(server_handle_, 0);
-    if (!ret) {
-      ret = base::KillProcess(server_handle_, 1, true);
-    }
-
-    if (ret) {
-      base::CloseProcessHandle(server_handle_);
-      server_handle_ = base::kNullProcessHandle;
-      LOG(INFO) << "Stopped.";
-    } else {
-      LOG(INFO) << "Kill failed?";
+    if (!base::WaitForSingleProcess(server_handle_, 0) &&
+        !base::KillProcess(server_handle_, 1, true)) {
+      VLOG(1) << "Kill failed?";
       return false;
     }
+
+    base::CloseProcessHandle(server_handle_);
+    server_handle_ = base::kNullProcessHandle;
+    VLOG(1) << "Stopped.";
     return true;
   }
 

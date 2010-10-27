@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,15 +303,15 @@ TEST_F(FilePathWatcherTest, NonExistentDirectory) {
   ASSERT_TRUE(file_util::CreateDirectory(dir));
 
   ASSERT_TRUE(WriteFile(file, "content"));
-  LOG(INFO) << "Waiting for file creation";
+  VLOG(1) << "Waiting for file creation";
   WaitForEvents();
 
   ASSERT_TRUE(WriteFile(file, "content v2"));
-  LOG(INFO) << "Waiting for file change";
+  VLOG(1) << "Waiting for file change";
   WaitForEvents();
 
   ASSERT_TRUE(file_util::Delete(file, false));
-  LOG(INFO) << "Waiting for file deletion";
+  VLOG(1) << "Waiting for file deletion";
   WaitForEvents();
 }
 
@@ -338,11 +338,11 @@ TEST_F(FilePathWatcherTest, DirectoryChain) {
     ASSERT_TRUE(file_util::CreateDirectory(sub_path));
   }
   ASSERT_TRUE(WriteFile(file, "content"));
-  LOG(INFO) << "Waiting for file creation";
+  VLOG(1) << "Waiting for file creation";
   WaitForEvents();
 
   ASSERT_TRUE(WriteFile(file, "content v2"));
-  LOG(INFO) << "Waiting for file modification";
+  VLOG(1) << "Waiting for file modification";
   WaitForEvents();
 }
 
@@ -367,11 +367,11 @@ TEST_F(FilePathWatcherTest, DeleteAndRecreate) {
   SetupWatch(test_file(), &watcher, delegate.get());
 
   ASSERT_TRUE(file_util::Delete(test_file(), false));
-  LOG(INFO) << "Waiting for file deletion";
+  VLOG(1) << "Waiting for file deletion";
   WaitForEvents();
 
   ASSERT_TRUE(WriteFile(test_file(), "content"));
-  LOG(INFO) << "Waiting for file creation";
+  VLOG(1) << "Waiting for file creation";
   WaitForEvents();
 }
 
@@ -384,23 +384,23 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
   SetupWatch(dir, &watcher, delegate.get());
 
   ASSERT_TRUE(file_util::CreateDirectory(dir));
-  LOG(INFO) << "Waiting for directory creation";
+  VLOG(1) << "Waiting for directory creation";
   WaitForEvents();
 
   ASSERT_TRUE(WriteFile(file1, "content"));
-  LOG(INFO) << "Waiting for file1 creation";
+  VLOG(1) << "Waiting for file1 creation";
   WaitForEvents();
 
   ASSERT_TRUE(WriteFile(file1, "content v2"));
-  LOG(INFO) << "Waiting for file1 modification";
+  VLOG(1) << "Waiting for file1 modification";
   WaitForEvents();
 
   ASSERT_TRUE(file_util::Delete(file1, false));
-  LOG(INFO) << "Waiting for file1 deletion";
+  VLOG(1) << "Waiting for file1 deletion";
   WaitForEvents();
 
   ASSERT_TRUE(WriteFile(file2, "content"));
-  LOG(INFO) << "Waiting for file2 creation";
+  VLOG(1) << "Waiting for file2 creation";
   WaitForEvents();
 }
 
@@ -419,12 +419,12 @@ TEST_F(FilePathWatcherTest, MoveParent) {
   // Setup a directory hierarchy.
   ASSERT_TRUE(file_util::CreateDirectory(subdir));
   ASSERT_TRUE(WriteFile(file, "content"));
-  LOG(INFO) << "Waiting for file creation";
+  VLOG(1) << "Waiting for file creation";
   WaitForEvents();
 
   // Move the parent directory.
   file_util::Move(dir, dest);
-  LOG(INFO) << "Waiting for directory move";
+  VLOG(1) << "Waiting for directory move";
   WaitForEvents();
 }
 

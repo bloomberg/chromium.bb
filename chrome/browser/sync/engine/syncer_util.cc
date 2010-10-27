@@ -62,16 +62,13 @@ using syncable::WriteTransaction;
 
 namespace browser_sync {
 
-using std::string;
-using std::vector;
-
 // Returns the number of unsynced entries.
 // static
 int SyncerUtil::GetUnsyncedEntries(syncable::BaseTransaction* trans,
-                                   vector<int64> *handles) {
+                                   std::vector<int64> *handles) {
   trans->directory()->GetUnsyncedMetaHandles(trans, handles);
-  VLOG_IF(1, handles->size() > 0)
-      << "Have " << handles->size() << " unsynced items.";
+  VLOG_IF(1, !handles->empty()) << "Have " << handles->size()
+                                << " unsynced items.";
   return handles->size();
 }
 
@@ -137,7 +134,7 @@ syncable::Id SyncerUtil::FindLocalIdToUpdate(
   // SyncEntity has NOT been applied to LOCAL fields.
   // DB has not yet been modified, no entries created for this update.
 
-  const string& client_id = trans->directory()->cache_guid();
+  const std::string& client_id = trans->directory()->cache_guid();
 
   if (update.has_client_defined_unique_tag() &&
       !update.client_defined_unique_tag().empty()) {
@@ -325,9 +322,9 @@ namespace {
 // Helper to synthesize a new-style sync_pb::EntitySpecifics for use locally,
 // when the server speaks only the old sync_pb::SyncEntity_BookmarkData-based
 // protocol.
-void UpdateBookmarkSpecifics(const string& singleton_tag,
-                             const string& url,
-                             const string& favicon_bytes,
+void UpdateBookmarkSpecifics(const std::string& singleton_tag,
+                             const std::string& url,
+                             const std::string& favicon_bytes,
                              MutableEntry* local_entry) {
   // In the new-style protocol, the server no longer sends bookmark info for
   // the "google_chrome" folder.  Mimic that here.
@@ -349,7 +346,7 @@ void UpdateBookmarkSpecifics(const string& singleton_tag,
 void SyncerUtil::UpdateServerFieldsFromUpdate(
     MutableEntry* target,
     const SyncEntity& update,
-    const string& name) {
+    const std::string& name) {
   if (update.deleted()) {
     if (target->Get(SERVER_IS_DEL)) {
       // If we already think the item is server-deleted, we're done.
@@ -386,11 +383,11 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
       ServerTimeToClientTime(update.mtime()));
   target->Put(SERVER_IS_DIR, update.IsFolder());
   if (update.has_server_defined_unique_tag()) {
-    const string& tag = update.server_defined_unique_tag();
+    const std::string& tag = update.server_defined_unique_tag();
     target->Put(UNIQUE_SERVER_TAG, tag);
   }
   if (update.has_client_defined_unique_tag()) {
-    const string& tag = update.client_defined_unique_tag();
+    const std::string& tag = update.client_defined_unique_tag();
     target->Put(UNIQUE_CLIENT_TAG, tag);
   }
   // Store the datatype-specific part as a protobuf.
@@ -572,7 +569,7 @@ bool SyncerUtil::AddItemThenPredecessors(
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
     syncable::MetahandleSet* inserted_items,
-    vector<syncable::Id>* commit_ids) {
+    std::vector<syncable::Id>* commit_ids) {
 
   if (!inserted_items->insert(item->Get(META_HANDLE)).second)
     return false;
@@ -600,8 +597,8 @@ void SyncerUtil::AddPredecessorsThenItem(
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
     syncable::MetahandleSet* inserted_items,
-    vector<syncable::Id>* commit_ids) {
-  vector<syncable::Id>::size_type initial_size = commit_ids->size();
+    std::vector<syncable::Id>* commit_ids) {
+  size_t initial_size = commit_ids->size();
   if (!AddItemThenPredecessors(trans, item, inclusion_filter, inserted_items,
                                commit_ids))
     return;
@@ -615,9 +612,9 @@ void SyncerUtil::AddPredecessorsThenItem(
 void SyncerUtil::AddUncommittedParentsAndTheirPredecessors(
     syncable::BaseTransaction* trans,
     syncable::MetahandleSet* inserted_items,
-    vector<syncable::Id>* commit_ids,
+    std::vector<syncable::Id>* commit_ids,
     syncable::Id parent_id) {
-  vector<syncable::Id>::size_type intial_commit_ids_size = commit_ids->size();
+  size_t intial_commit_ids_size = commit_ids->size();
   // Climb the tree adding entries leaf -> root.
   while (!parent_id.ServerKnows()) {
     Entry parent(trans, GET_BY_ID, parent_id);

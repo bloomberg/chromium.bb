@@ -262,8 +262,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
 
   // TODO(evanm): prefer the newest version of flash, etc. here?
 
-  LOG_IF(INFO, PluginList::DebugPluginLoading())
-      << "Using " << info.path.value();
+  VLOG_IF(1, PluginList::DebugPluginLoading()) << "Using " << info.path.value();
 
   return true;
 }

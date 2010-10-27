@@ -122,9 +122,9 @@ void HostedFetcher::Start() {
   URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
   int response_code = RC_REQUEST_OK;
   std::string data;
-  LOG(INFO) << upload_data();
+  VLOG(1) << upload_data();
   if (upload_data().find("HOSTED") == std::string::npos) {
-    LOG(INFO) << "HostedFetcher failing request";
+    VLOG(1) << "HostedFetcher failing request";
     response_code = RC_FORBIDDEN;
     data.assign("Error=BadAuthentication");
   }

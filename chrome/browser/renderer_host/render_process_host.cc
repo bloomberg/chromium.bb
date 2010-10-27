@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,14 +111,13 @@ RenderProcessHost::~RenderProcessHost() {
 
 void RenderProcessHost::Attach(IPC::Channel::Listener* listener,
                                int routing_id) {
-  LOG_IF(INFO, g_log_bug53991) <<
-      "AddListener: (" << this << "): " << routing_id;
+  VLOG_IF(1, g_log_bug53991) << "AddListener: (" << this << "): " << routing_id;
   listeners_.AddWithID(listener, routing_id);
 }
 
 void RenderProcessHost::Release(int listener_id) {
-  LOG_IF(INFO, g_log_bug53991) <<
-      "RemListener: (" << this << "): " << listener_id;
+  VLOG_IF(1, g_log_bug53991) << "RemListener: (" << this << "): "
+                             << listener_id;
   DCHECK(listeners_.Lookup(listener_id) != NULL);
   listeners_.Remove(listener_id);
 

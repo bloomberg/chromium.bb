@@ -57,10 +57,10 @@ class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
                                 bool show_history)
       : PageInfoBubbleView(parent_window, profile, url, ssl, show_history),
         container_(container) {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
   }
   virtual ~ExternalTabPageInfoBubbleView() {
-    DLOG(INFO) << __FUNCTION__;
+    DVLOG(1) << __FUNCTION__;
   }
   // LinkController methods:
   virtual void LinkActivated(views::Link* source, int event_flags) {

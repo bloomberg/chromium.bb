@@ -161,8 +161,9 @@ template <class T> class TaskMarshallerThroughWindowsMessages
 
   void DeleteAllPendingTasks() {
     AutoLock lock(lock_);
-    DLOG_IF(INFO, !pending_tasks_.empty()) << "Destroying " <<
-      pending_tasks_.size() << "  pending tasks";
+    DVLOG_IF(1, !pending_tasks_.empty()) << "Destroying "
+                                         << pending_tasks_.size()
+                                         << " pending tasks";
     while (!pending_tasks_.empty()) {
       Task* task = pending_tasks_.front();
       pending_tasks_.pop();

@@ -27,9 +27,8 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
                                                   FeatureMap* features) {
   PerfTimer timer;
   if (url.HostIsIPAddress()) {
-    if (!features->AddBooleanFeature(features::kUrlHostIsIpAddress)) {
+    if (!features->AddBooleanFeature(features::kUrlHostIsIpAddress))
       return false;
-    }
   } else {
     std::string host;
     TrimString(url.host(), ".", &host);  // Remove any leading/trailing dots.
@@ -42,16 +41,15 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
             true /* allow_unknown_registries */);
 
     if (registry_length == 0 || registry_length == std::string::npos) {
-      DLOG(INFO) << "Could not find TLD for host: " << host;
+      DVLOG(1) << "Could not find TLD for host: " << host;
       return false;
     }
-    DCHECK_LT(registry_length, host.size())
-        << "Non-zero registry length, but host is only a TLD: " << host;
+    DCHECK_LT(registry_length, host.size()) << "Non-zero registry length, but "
+        "host is only a TLD: " << host;
     size_t tld_start = host.size() - registry_length;
     if (!features->AddBooleanFeature(features::kUrlTldToken +
-                                     host.substr(tld_start))) {
+                                     host.substr(tld_start)))
       return false;
-    }
 
     // Pull off the TLD and the preceeding dot.
     host.erase(tld_start - 1);
@@ -62,33 +60,28 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
         std::remove(host_tokens.begin(), host_tokens.end(), "");
     host_tokens.erase(new_end, host_tokens.end());
     if (host_tokens.empty()) {
-      DLOG(INFO) << "Could not find domain for host: " << host;
+      DVLOG(1) << "Could not find domain for host: " << host;
       return false;
     }
     if (!features->AddBooleanFeature(features::kUrlDomainToken +
-                                     host_tokens.back())) {
+                                     host_tokens.back()))
       return false;
-    }
     host_tokens.pop_back();
 
     // Now we're just left with the "other" host tokens.
     for (std::vector<std::string>::iterator it = host_tokens.begin();
          it != host_tokens.end(); ++it) {
-      if (!features->AddBooleanFeature(features::kUrlOtherHostToken + *it)) {
+      if (!features->AddBooleanFeature(features::kUrlOtherHostToken + *it))
         return false;
-      }
     }
 
     if (host_tokens.size() > 1) {
-      if (!features->AddBooleanFeature(
-              features::kUrlNumOtherHostTokensGTOne)) {
+      if (!features->AddBooleanFeature(features::kUrlNumOtherHostTokensGTOne))
         return false;
-      }
       if (host_tokens.size() > 3) {
         if (!features->AddBooleanFeature(
-                features::kUrlNumOtherHostTokensGTThree)) {
+                features::kUrlNumOtherHostTokensGTThree))
           return false;
-        }
       }
     }
   }
@@ -97,9 +90,8 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
   SplitStringIntoLongAlphanumTokens(url.path(), &long_tokens);
   for (std::vector<std::string>::iterator it = long_tokens.begin();
        it != long_tokens.end(); ++it) {
-    if (!features->AddBooleanFeature(features::kUrlPathToken + *it)) {
+    if (!features->AddBooleanFeature(features::kUrlPathToken + *it))
       return false;
-    }
   }
 
   UMA_HISTOGRAM_TIMES("SBClientPhishing.URLFeatureTime", timer.Elapsed());
@@ -120,9 +112,8 @@ void PhishingUrlFeatureExtractor::SplitStringIntoLongAlphanumTokens(
   // TODO(bryner): Determine a meaningful min size.
   for (std::vector<std::string>::iterator it = raw_splits.begin();
        it != raw_splits.end(); ++it) {
-    if (it->length() >= kMinPathComponentLength) {
+    if (it->length() >= kMinPathComponentLength)
       tokens->push_back(*it);
-    }
   }
 }
 

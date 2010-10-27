@@ -341,8 +341,7 @@ void MobileSetupHandler::PropertyChanged(const char* service_path,
     return;
   }
   std::string value_string;
-  LOG(INFO) << "Cellular property change: " << key << " = " <<
-      value_string.c_str();
+  VLOG(1) << "Cellular property change: " << key << " = " << value_string;
   // Force status updates.
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->UpdateSystemInfo();
   EvaluateCellularNetwork();
@@ -399,12 +398,12 @@ void MobileSetupHandler::EvaluateCellularNetwork() {
   PlanActivationState new_state = state_;
   const chromeos::CellularNetwork* network = GetNetwork();
   if (network) {
-    LOG(INFO) << "Cellular:\n  service=" << network->GetStateString().c_str() <<
-        "\n  ui=" << GetStateDescription(state_) <<
-        "\n  activation=" << network->GetActivationStateString().c_str() <<
-        "\n  restricted=" << (network->restricted_pool() ? "yes" : "no") <<
-         "\n  error=" << network->GetErrorString().c_str() <<
-         "\n  setvice_path=" << network->service_path().c_str();
+    VLOG(1) << "Cellular:\n  service=" << network->GetStateString()
+            << "\n  ui=" << GetStateDescription(state_)
+            << "\n  activation=" << network->GetActivationStateString()
+            << "\n  restricted=" << (network->restricted_pool() ? "yes" : "no")
+            << "\n  error=" << network->GetErrorString()
+            << "\n  setvice_path=" << network->service_path();
   } else {
     LOG(WARNING) << "Cellular service lost";
   }
@@ -417,11 +416,8 @@ void MobileSetupHandler::EvaluateCellularNetwork() {
             if (network->failed_or_disconnected()) {
               new_state = PLAN_ACTIVATION_ACTIVATING;
             } else if (network->connection_state() == chromeos::STATE_READY) {
-              if (network->restricted_pool()) {
-                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-              } else {
-                new_state = PLAN_ACTIVATION_DONE;
-              }
+              new_state = network->restricted_pool() ?
+                  PLAN_ACTIVATION_SHOWING_PAYMENT : PLAN_ACTIVATION_DONE;
             }
             break;
           case chromeos::ACTIVATION_STATE_UNKNOWN:
@@ -429,8 +425,7 @@ void MobileSetupHandler::EvaluateCellularNetwork() {
             if (network->failed_or_disconnected()) {
               new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
             } if (network->connected()) {
-              LOG(INFO) << "Disconnecting from " <<
-                  network->service_path().c_str();
+              VLOG(1) << "Disconnecting from " << network->service_path();
               chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
                   DisconnectFromWirelessNetwork(*network);
             }
@@ -540,8 +535,8 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
   static bool first_time = true;
   if (state_ == new_state && !first_time)
     return;
-  LOG(INFO) << "Activation state flip old = " << GetStateDescription(state_) <<
-      ", new = " << GetStateDescription(new_state);
+  VLOG(1) << "Activation state flip old = " << GetStateDescription(state_)
+          << ", new = " << GetStateDescription(new_state);
   first_time = false;
   state_ = new_state;
   switch (new_state) {
@@ -549,10 +544,9 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
       break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       DCHECK(network);
-      LOG(INFO) << "Activating service " << network->service_path().c_str();
-      if (!network->StartActivation()) {
+      VLOG(1) << "Activating service " << network->service_path();
+      if (!network->StartActivation())
         new_state = PLAN_ACTIVATION_ERROR;
-      }
       break;
     case PLAN_ACTIVATION_ACTIVATING:
       DCHECK(network);

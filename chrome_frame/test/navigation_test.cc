@@ -903,7 +903,7 @@ TEST_F(HttpHeaderTest, ImageSvgXml) {
 TEST_P(FullTabNavigationTest, RefreshContents) {
   bool in_cf = GetParam().invokes_cf();
   if (!in_cf) {
-    LOG(INFO) << "Disabled for this configuration";
+    VLOG(1) << "Disabled for this configuration";
     return;
   }
 

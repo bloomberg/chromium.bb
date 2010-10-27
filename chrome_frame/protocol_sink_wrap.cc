@@ -679,7 +679,7 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
   DCHECK(orig_start);
   if (!url || !prot_sink || !bind_info)
     return E_INVALIDARG;
-  DLOG_IF(INFO, url != NULL) << "OnStart: " << url << PiFlags2Str(flags);
+  DVLOG_IF(1, url != NULL) << "OnStart: " << url << PiFlags2Str(flags);
 
   ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {
@@ -760,7 +760,7 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
 
   base::win::ScopedBstr url;
   uri->GetPropertyBSTR(Uri_PROPERTY_ABSOLUTE_URI, url.Receive(), 0);
-  DLOG_IF(INFO, url != NULL) << "OnStartEx: " << url << PiFlags2Str(flags);
+  DVLOG_IF(1, url != NULL) << "OnStartEx: " << url << PiFlags2Str(flags);
 
   ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {

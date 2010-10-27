@@ -230,7 +230,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     DoQueryService(SID_SShellBrowser, client_site, browser_service.Receive());
     if (browser_service) {
       bool flagged = CheckForCFNavigation(browser_service, true);
-      DLOG_IF(INFO, flagged) << "Cleared flagged browser service";
+      DVLOG_IF(1, flagged) << "Cleared flagged browser service";
     }
   }
 
@@ -1209,8 +1209,7 @@ HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
 
   if (travel_log) {
     hr = browser_service_local->GetTravelLog(travel_log);
-    DLOG_IF(INFO, !travel_log) << "browser_service->GetTravelLog failed: " <<
-        hr;
+    DVLOG_IF(1, !travel_log) << "browser_service->GetTravelLog failed: " << hr;
   }
 
   if (browser_service)
