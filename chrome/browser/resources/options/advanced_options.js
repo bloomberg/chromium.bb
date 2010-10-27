@@ -242,6 +242,12 @@ var OptionsPage = options.OptionsPage;
     }
   };
 
+  AdvancedOptions.HideCloudPrintProxySection = function() {
+    if (!cr.isChromeOS) {
+      $('cloud-print-proxy-section').style.display = 'none';
+    }
+  };
+
   // Export
   return {
     AdvancedOptions: AdvancedOptions

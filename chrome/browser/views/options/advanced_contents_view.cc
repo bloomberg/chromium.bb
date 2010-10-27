@@ -1674,7 +1674,8 @@ void AdvancedContentsView::InitControlLayout() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new SecuritySection(profile()));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCloudPrintProxy)) {
+          switches::kEnableCloudPrintProxy) &&
+      profile()->GetCloudPrintProxyService()) {
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(new CloudPrintProxySection(profile()));
   }

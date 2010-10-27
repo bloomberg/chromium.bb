@@ -256,7 +256,7 @@ void AdvancedOptionsHandler::RegisterMessages() {
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
 #endif
 #if !defined(OS_CHROMEOS)
-  if (!cloud_print_proxy_ui_enabled_) {
+  if (cloud_print_proxy_ui_enabled_) {
     dom_ui_->RegisterMessageCallback("showCloudPrintSetupDialog",
         NewCallback(this,
                     &AdvancedOptionsHandler::ShowCloudPrintSetupDialog));
@@ -458,11 +458,19 @@ void AdvancedOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
 
 void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {
   DCHECK(dom_ui_);
-  dom_ui_->GetProfile()->GetCloudPrintProxyService()->
-      RefreshStatusFromService();
+  if (cloud_print_proxy_ui_enabled_)
+    dom_ui_->GetProfile()->GetCloudPrintProxyService()->
+        RefreshStatusFromService();
 }
 
 void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
+  if (NULL == dom_ui_->GetProfile()->GetCloudPrintProxyService()) {
+    cloud_print_proxy_ui_enabled_ = false;
+    dom_ui_->CallJavascriptFunction(
+        L"options.AdvancedOptions.HideCloudPrintProxySection");
+    return;
+  }
+
   std::string email;
   if (dom_ui_->GetProfile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail))
     email = dom_ui_->GetProfile()->GetPrefs()->GetString(
