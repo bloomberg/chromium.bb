@@ -187,7 +187,6 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Wrappers for the ShowNetworkConfigView / ShowTabbedNetworkSettings.
   void ShowWifi(const WifiNetwork& wifi, bool focus_login) const;
   void ShowCellular(const CellularNetwork& cellular, bool focus_login) const;
-  void ActivateCellular(const CellularNetwork& cellular) const;
   void ShowEthernet(const EthernetNetwork& ethernet) const;
   void ShowOther() const;
 
@@ -211,9 +210,6 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   // Holds minimum width or -1 if it wasn't set up.
   int min_width_;
-
-  // If true, call into the settings UI for network configuration dialogs.
-  bool use_settings_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenu);
 };
