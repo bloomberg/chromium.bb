@@ -8,6 +8,8 @@
 
 import cgi
 from datetime import datetime
+import operator
+import optparse
 import os
 import re
 import sys
@@ -136,7 +138,7 @@ def _GrabChanges(path, tag1, tag2):
   cmd = 'cd %s && git config --get remote.cros.projectname' % path
   projectname = _GrabOutput(cmd).strip()
   log_fmt = '%x00%H\t%ce\t%cd\t%s\t%b'
-  cmd_fmt = 'cd %s && git log --format="%s" --date=local %s..%s'
+  cmd_fmt = 'cd %s && git log --format="%s" --date=local "%s..%s"'
   cmd = cmd_fmt % (path, log_fmt, tag1, tag2)
   output = _GrabOutput(cmd)
   commits = []
@@ -147,29 +149,33 @@ def _GrabChanges(path, tag1, tag2):
     commits.append(change)
   return commits
 
+def _ParseArgs():
+  parser = optparse.OptionParser()
+  parser.add_option("--sort-by-date", dest="sort_by_date", default=False,
+                    action='store_true', help="Sort commits by date.")
+  return parser.parse_args()
+
 
 def main():
   tags = _GrabTags()
   tag1 = None
-  if len(sys.argv) == 3:
-    tag1 = sys.argv[1]
-    tag2 = sys.argv[2]
-  elif len(sys.argv) == 2:
-    tag2 = sys.argv[1]
+  options, args = _ParseArgs()
+  if len(args) == 2:
+    tag1, tag2 = args
+  elif len(args) == 1:
+    tag2, = args
+    if tag2 in tags:
+      tag1 = tags[tags.index(tag2) + 1]
+    else:
+      print >>sys.stderr, 'Unrecognized tag: %s' % tag2
+      sys.exit(1)
   else:
     print >>sys.stderr, 'Usage: %s [tag1] tag2' % sys.argv[0]
     print >>sys.stderr, 'If only one tag is specified, we view the differences'
     print >>sys.stderr, 'between that tag and the previous tag. You can also'
     print >>sys.stderr, 'specify cros/master to show differences with'
     print >>sys.stderr, 'tip-of-tree.'
-    sys.exit(1)
-  if not tag2.startswith('cros/') and tag2 not in tags:
-    print >>sys.stderr, 'Unrecognized tag: %s' % tag2
-    sys.exit(1)
-  if not tag1:
-    tag1 = tags[tags.index(tag2) + 1]
-  if not tag1.startswith('cros/') and tag1 not in tags:
-    print >>sys.stderr, 'Unrecognized tag: %s' % tag1
+    print >>sys.stderr, 'E.g. %s %s cros/master' % (sys.argv[0], tags[0])
     sys.exit(1)
 
   print >>sys.stderr, 'Finding differences between %s and %s' % (tag1, tag2)
@@ -185,7 +191,11 @@ def main():
   cols = ['Project', 'Date', 'Commit', 'Committer', 'Bugs', 'Subject']
   print '<table border="1" cellpadding="4">'
   print '<tr><th>%s</th>' % ('</th><th>'.join(cols))
-  for change in sorted(changes):
+  if options.sort_by_date:
+    changes.sort(key=operator.attrgetter("commit_date"))
+  else:
+    changes.sort()
+  for change in changes:
     print change.AsHTMLTableRow()
   print '</table>'
   print '</html>'
