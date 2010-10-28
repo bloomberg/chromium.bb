@@ -171,9 +171,9 @@ FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
     }
   } else {
     char buf[1024];
-    size_t count = readlink(target_path.value().c_str(), buf, sizeof(buf));
+    size_t count = readlink(target_path.value().c_str(), buf, arraysize(buf));
     if (count > 0) {
-      target_path = FilePath(FilePath::StringType(buf));
+      target_path = FilePath(FilePath::StringType(buf, count));
     } else {
       PLOG(ERROR) << "Unable to read symlink " << symlink_path.value();
     }
