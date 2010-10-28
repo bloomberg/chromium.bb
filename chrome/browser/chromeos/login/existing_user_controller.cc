@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "gfx/native_widget_types.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/screen.h"
@@ -404,6 +405,10 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         LOG(WARNING) << "No captcha image url was found?";
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
       }
+    } else if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
+               failure.error().state() ==
+                   GoogleServiceAuthError::HOSTED_NOT_ALLOWED) {
+      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED, error);
     } else {
       if (controllers_[selected_view_index_]->is_new_user())
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
@@ -431,7 +436,8 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   ClearErrors();
-  std::wstring error_text = l10n_util::GetString(error_id);
+  std::wstring error_text = l10n_util::GetStringF(
+      error_id, l10n_util::GetString(IDS_PRODUCT_OS_NAME));
   // TODO(dpolukhin): show detailed error info. |details| string contains
   // low level error info that is not localized and even is not user friendly.
   // For now just ignore it because error_text contains all required information
@@ -447,8 +453,11 @@ void ExistingUserController::ShowError(int error_id,
     arrow = BubbleBorder::BOTTOM_LEFT;
   }
   std::wstring help_link;
-  if (num_login_attempts_ > static_cast<size_t>(1))
+  if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED) {
+    help_link = l10n_util::GetString(IDS_LEARN_MORE);
+  } else if (num_login_attempts_ > static_cast<size_t>(1)) {
     help_link = l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON);
+  }
 
   bubble_ = MessageBubble::Show(
       controllers_[selected_view_index_]->controls_window(),
@@ -524,13 +533,17 @@ void ExistingUserController::OnHelpLinkActivated() {
   if (!help_app_.get())
     help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
   switch (login_performer_->error().state()) {
-    case(GoogleServiceAuthError::CONNECTION_FAILED):
+    case GoogleServiceAuthError::CONNECTION_FAILED:
       help_app_->ShowHelpTopic(
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
       break;
-    case(GoogleServiceAuthError::ACCOUNT_DISABLED):
+    case GoogleServiceAuthError::ACCOUNT_DISABLED:
         help_app_->ShowHelpTopic(
             HelpAppLauncher::HELP_ACCOUNT_DISABLED);
+        break;
+    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED:
+        help_app_->ShowHelpTopic(
+            HelpAppLauncher::HELP_HOSTED_ACCOUNT);
         break;
     default:
       help_app_->ShowHelpTopic(login_performer_->login_timed_out() ?

@@ -29,11 +29,13 @@ class HelpAppLauncher : public LoginHtmlDialog::Delegate {
     HELP_CANT_ACCESS_ACCOUNT_OFFLINE,
     // Showed in case when account was disabled.
     HELP_ACCOUNT_DISABLED,
+    // Showed in case when hosted account is used.
+    HELP_HOSTED_ACCOUNT,
     HELP_TOPIC_COUNT
   };
 
   // Parent window is used to show dialog.
-  HelpAppLauncher(gfx::NativeWindow parent_window);
+  explicit HelpAppLauncher(gfx::NativeWindow parent_window);
 
   // Shows specified help topic.
   // TODO: Pass topic ID.

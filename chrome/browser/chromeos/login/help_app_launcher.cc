@@ -20,7 +20,8 @@ const char* kHelpTopicFiles[] = { "connectivity.html",
                                   "usage.html",
                                   "accessaccount.html",
                                   "password.html",
-                                  "disabled.html" };
+                                  "disabled.html",
+                                  "hosted.html" };
 }  // namespace
 
 COMPILE_ASSERT(arraysize(kHelpTopicFiles) == HelpAppLauncher::HELP_TOPIC_COUNT,

@@ -10535,6 +10535,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING_NEW" desc="Couldn't log in because username or password invalid">
         Sorry, your email or password could not be verified. Please try again.
       </message>
+      <message name="IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't log in because hosted account is used">
+        This type of account will not work with <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.  Please contact your domain administrator or use an @gmail.com account to sign in.
+      </message>
       <message name="IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED" desc="Couldn't log in because offline login has failed and network is not connected">
         Offline login failed and network not connected
       </message>
