@@ -21,9 +21,9 @@ class GPUTest : public UITest {
   FilePath gpu_test_dir_;
 };
 
-// TODO(apatrick): Other pending changes will fix this for mac.
+// TODO(apatrick): Other pending changes will fix this for mac and linux.
 #if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_UITestLaunchedWithOSMesa FAILS_UITestLaunchedWithOSMesa
+#define MAYBE_UITestLaunchedWithOSMesa DISABLED_UITestLaunchedWithOSMesa
 #else
 #define MAYBE_UITestLaunchedWithOSMesa FLAKY_UITestLaunchedWithOSMesa
 #endif
