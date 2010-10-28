@@ -43,6 +43,9 @@ cr.define('options', function() {
       userNameEdit.disabled = !AccountsOptions.currentUserIsOwner();
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
+
+      $('allowGuestCheck').addEventListener('click',
+          this.handleAllowGuestCheckClick_);
     },
 
     /**
@@ -59,12 +62,23 @@ cr.define('options', function() {
     },
 
     /**
+     * Handler for allow guest check click.
+     * @private
+     */
+    handleAllowGuestCheckClick_: function(e) {
+      // Whitelist existing users when guest login is being disabled.
+      if (!$('allowGuestCheck').checked) {
+        chrome.send('whitelistExistingUsers', []);
+      }
+    },
+
+    /**
      * Handler for "add" event fired from userNameEdit.
      * @private
      * @param {Event} e Add event fired from userNameEdit.
      */
     handleAddUser_: function(e) {
-      $('userList').addUser(e.user);
+      AccountsOptions.addUsers([e.user]);
     }
   };
 
@@ -80,7 +94,17 @@ cr.define('options', function() {
    */
   AccountsOptions.setUserPictures = function(cache) {
     $('userList').setUserPictures(cache);
-  }
+  };
+
+  /**
+   * Adds given users to userList.
+   */
+  AccountsOptions.addUsers = function(users) {
+    var userList = $('userList');
+    for (var i = 0; i < users.length; ++i) {
+      userList.addUser(users[i]);
+    }
+  };
 
   // Export
   return {

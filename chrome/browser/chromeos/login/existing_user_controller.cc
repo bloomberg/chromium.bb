@@ -98,22 +98,6 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
   }
 }
 
-// Returns true if given email is in user whitelist.
-// Note this function is for display purpose only and should use
-// CheckWhitelist op for the real whitelist check.
-bool IsEmailInCachedWhitelist(const std::string& email) {
-  const ListValue* whitelist = UserCrosSettingsProvider::cached_whitelist();
-  if (whitelist) {
-    StringValue email_value(email);
-    for (ListValue::const_iterator i(whitelist->begin());
-        i != whitelist->end(); ++i) {
-      if ((*i)->Equals(&email_value))
-        return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
 ExistingUserController*
@@ -149,7 +133,8 @@ ExistingUserController::ExistingUserController(
 
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
       if (UserCrosSettingsProvider::cached_allow_new_user() ||
-          IsEmailInCachedWhitelist(users[i].email())) {
+          UserCrosSettingsProvider::IsEmailInCachedWhitelist(
+              users[i].email())) {
         controllers_.push_back(new UserController(this, users[i]));
       }
     }

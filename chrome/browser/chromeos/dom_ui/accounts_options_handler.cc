@@ -31,6 +31,8 @@ void AccountsOptionsHandler::RegisterMessages() {
       NewCallback(this, &AccountsOptionsHandler::UnwhitelistUser));
   dom_ui_->RegisterMessageCallback("fetchUserPictures",
       NewCallback(this, &AccountsOptionsHandler::FetchUserPictures));
+  dom_ui_->RegisterMessageCallback("whitelistExistingUsers",
+      NewCallback(this, &AccountsOptionsHandler::WhitelistExistingUsers));
 }
 
 void AccountsOptionsHandler::GetLocalizedValues(
@@ -95,6 +97,26 @@ void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
 
   dom_ui_->CallJavascriptFunction(L"AccountsOptions.setUserPictures",
       user_pictures);
+}
+
+void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
+  ListValue whitelist_users;
+
+  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
+  for (std::vector<UserManager::User>::const_iterator it = users.begin();
+       it < users.end(); ++it) {
+    const std::string& email = it->email();
+    if (!UserCrosSettingsProvider::IsEmailInCachedWhitelist(email)) {
+      DictionaryValue* user_dict = new DictionaryValue;
+      user_dict->SetString("name", it->GetDisplayName());
+      user_dict->SetString("email", email);
+      user_dict->SetBoolean("owner", false);
+
+      whitelist_users.Append(user_dict);
+    }
+  }
+
+  dom_ui_->CallJavascriptFunction(L"AccountsOptions.addUsers", whitelist_users);
 }
 
 }  // namespace chromeos

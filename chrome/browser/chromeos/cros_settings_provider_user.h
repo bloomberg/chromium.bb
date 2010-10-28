@@ -34,6 +34,11 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
   static const ListValue* cached_whitelist();
   static std::string cached_owner();
 
+  // Returns true if given email is in user whitelist.
+  // Note this function is for display purpose only and should use
+  // CheckWhitelist op for the real whitelist check.
+  static bool IsEmailInCachedWhitelist(const std::string& email);
+
   // CrosSettingsProvider implementation.
   virtual void Set(const std::string& path, Value* in_value);
   virtual bool Get(const std::string& path, Value** out_value) const;

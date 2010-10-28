@@ -88,6 +88,7 @@ UserCrosSettingsProvider::~UserCrosSettingsProvider() {
   SignedSettingsHelper::Get()->CancelCallback(this);
 }
 
+// static
 void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
   // Cached signed settings values
   local_state->RegisterBooleanPref(kAccountsPrefAllowGuest, true);
@@ -97,20 +98,24 @@ void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(kDeviceOwner, "");
 }
 
+// static
 bool UserCrosSettingsProvider::cached_allow_guest() {
   return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowGuest);
 }
 
+// static
 bool UserCrosSettingsProvider::cached_allow_new_user() {
   return g_browser_process->local_state()->GetBoolean(
     kAccountsPrefAllowNewUser);
 }
 
+// static
 bool UserCrosSettingsProvider::cached_show_users_on_signin() {
   return g_browser_process->local_state()->GetBoolean(
       kAccountsPrefShowUserNamesOnSignIn);
 }
 
+// static
 const ListValue* UserCrosSettingsProvider::cached_whitelist() {
   PrefService* prefs = g_browser_process->local_state();
   const ListValue* cached_users = prefs->GetList(kAccountsPrefUsers);
@@ -125,8 +130,24 @@ const ListValue* UserCrosSettingsProvider::cached_whitelist() {
   return cached_users;
 }
 
+// static
 std::string UserCrosSettingsProvider::cached_owner() {
   return g_browser_process->local_state()->GetString(kDeviceOwner);
+}
+
+// static
+bool UserCrosSettingsProvider::IsEmailInCachedWhitelist(
+    const std::string& email) {
+  const ListValue* whitelist = cached_whitelist();
+  if (whitelist) {
+    StringValue email_value(email);
+    for (ListValue::const_iterator i(whitelist->begin());
+        i != whitelist->end(); ++i) {
+      if ((*i)->Equals(&email_value))
+        return true;
+    }
+  }
+  return false;
 }
 
 void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
