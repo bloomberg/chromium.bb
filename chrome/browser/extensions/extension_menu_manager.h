@@ -244,6 +244,7 @@ class ExtensionMenuManager : public NotificationObserver {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, DeleteParent);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, RemoveOneByOne);
 
   // This is a helper function which takes care of de-selecting any other radio
   // items in the same group (i.e. that are adjacent in the list).

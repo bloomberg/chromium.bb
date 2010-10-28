@@ -211,7 +211,7 @@ TEST_F(ExtensionMenuManagerTest, DeleteParent) {
 
   // Now remove item1 and make sure item2 and item3 are gone as well.
   ASSERT_TRUE(manager_.RemoveContextMenuItem(item1_id));
-  ASSERT_EQ(0u, manager_.MenuItems(extension->id())->size());
+  ASSERT_EQ(NULL, manager_.MenuItems(extension->id()));
   ASSERT_EQ(0u, manager_.items_by_id_.size());
   ASSERT_EQ(NULL, manager_.GetItemById(item1_id));
   ASSERT_EQ(NULL, manager_.GetItemById(item2_id));
@@ -387,6 +387,23 @@ TEST_F(ExtensionMenuManagerTest, RemoveAll) {
   // Remove extension1's items.
   manager_.RemoveAllContextItems(extension1->id());
   EXPECT_EQ(NULL, manager_.MenuItems(extension1->id()));
+}
+
+// Tests that removing all items one-by-one doesn't leave an entry around.
+TEST_F(ExtensionMenuManagerTest, RemoveOneByOne) {
+  // Add 2 test items.
+  Extension* extension1 = AddExtension("1111");
+  ExtensionMenuItem* item1 = CreateTestItem(extension1);
+  ExtensionMenuItem* item2 = CreateTestItem(extension1);
+  ASSERT_TRUE(manager_.AddContextItem(extension1, item1));
+  ASSERT_TRUE(manager_.AddContextItem(extension1, item2));
+
+  ASSERT_FALSE(manager_.context_items_.empty());
+
+  manager_.RemoveContextMenuItem(item1->id());
+  manager_.RemoveContextMenuItem(item2->id());
+
+  ASSERT_TRUE(manager_.context_items_.empty());
 }
 
 TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {

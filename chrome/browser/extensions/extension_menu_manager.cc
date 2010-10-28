@@ -276,8 +276,10 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
     items_by_id_.erase(*removed_iter);
   }
 
-  if (list.empty())
+  if (list.empty()) {
+    context_items_.erase(extension_id);
     icon_manager_.RemoveIcon(extension_id);
+  }
 
   return result;
 }
