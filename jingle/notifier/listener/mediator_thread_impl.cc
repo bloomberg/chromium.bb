@@ -125,7 +125,7 @@ void MediatorThreadImpl::DoLogin(
   // the IOThread one).
   host_resolver_.reset(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL, NULL));
+                                    NULL));
 
   notifier::ServerInformation server_list[2];
   int server_list_count = 0;

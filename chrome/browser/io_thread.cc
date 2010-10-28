@@ -21,7 +21,6 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/raw_host_resolver_proc.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_cache.h"
@@ -88,24 +87,8 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
       parallelism = 20;
   }
 
-  // Use the specified DNS server for doing raw resolutions if requested
-  // from the command-line.
-  scoped_refptr<net::HostResolverProc> resolver_proc;
-  if (command_line.HasSwitch(switches::kDnsServer)) {
-    std::string dns_ip_string =
-        command_line.GetSwitchValueASCII(switches::kDnsServer);
-    net::IPAddressNumber dns_ip_number;
-    if (net::ParseIPLiteralToNumber(dns_ip_string, &dns_ip_number)) {
-      resolver_proc =
-          new chrome_common_net::RawHostResolverProc(dns_ip_number, NULL);
-    } else {
-      LOG(ERROR) << "Invalid IP address specified for --dns-server: "
-                 << dns_ip_string;
-    }
-  }
-
   net::HostResolver* global_host_resolver =
-      net::CreateSystemHostResolver(parallelism, resolver_proc.get(), net_log);
+      net::CreateSystemHostResolver(parallelism, net_log);
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {

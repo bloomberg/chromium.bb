@@ -61,7 +61,7 @@ void TestShellRequestContext::Init(
 #endif
   host_resolver_ =
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL, NULL);
+                                    NULL);
   proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0, NULL);
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();

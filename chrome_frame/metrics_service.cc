@@ -149,7 +149,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
 
     host_resolver_ =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                      NULL, NULL);
+                                      NULL);
     net::ProxyConfigService* proxy_config_service =
         net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
     DCHECK(proxy_config_service);

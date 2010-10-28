@@ -439,8 +439,6 @@
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
         'common/net/predictor_common.h',
-        'common/net/raw_host_resolver_proc.cc',
-        'common/net/raw_host_resolver_proc.h',
         'common/net/socket_stream.h',
         'common/net/url_fetcher.cc',
         'common/net/url_fetcher.h',
