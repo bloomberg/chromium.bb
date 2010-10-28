@@ -25,7 +25,7 @@ class GPUTest : public UITest {
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_UITestLaunchedWithOSMesa FAILS_UITestLaunchedWithOSMesa
 #else
-#define MAYBE_UITestLaunchedWithOSMesa UITestLaunchedWithOSMesa
+#define MAYBE_UITestLaunchedWithOSMesa FLAKY_UITestLaunchedWithOSMesa
 #endif
 
 TEST_F(GPUTest, MAYBE_UITestLaunchedWithOSMesa) {
