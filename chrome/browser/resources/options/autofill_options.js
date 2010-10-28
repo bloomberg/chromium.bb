@@ -23,8 +23,8 @@ cr.define('options', function() {
     this.numAddresses = 0;
     this.numCreditCards = 0;
     this.activeNavTab = null;
-    this.addressIDs = null;
-    this.creditCardIDs = null;
+    this.addressGUIDs = null;
+    this.creditCardGUIDs = null;
     OptionsPage.call(this, 'autoFillOptions',
                      templateData.autoFillOptionsTitle,
                      'autoFillOptionsPage');
@@ -150,11 +150,11 @@ cr.define('options', function() {
       var profileList = $('profileList');
       var blankAddress = profileList.options[addressOffset];
       this.numAddresses = addresses.length;
-      this.addressIDs = new Array(this.numAddresses);
+      this.addressGUIDs = new Array(this.numAddresses);
       for (var i = 0; i < this.numAddresses; i++) {
         var address = addresses[i];
         var option = new Option(address['label']);
-        this.addressIDs[i] = address['uniqueID'];
+        this.addressGUIDs[i] = address['guid'];
         profileList.add(option, blankAddress);
       }
 
@@ -170,11 +170,11 @@ cr.define('options', function() {
       this.resetCreditCards_();
       var profileList = $('profileList');
       this.numCreditCards = creditCards.length;
-      this.creditCardIDs = new Array(this.numCreditCards);
+      this.creditCardGUIDs = new Array(this.numCreditCards);
       for (var i = 0; i < this.numCreditCards; i++) {
         var creditCard = creditCards[i];
         var option = new Option(creditCard['label']);
-        this.creditCardIDs[i] = creditCard['uniqueID'];
+        this.creditCardGUIDs[i] = creditCard['guid'];
         profileList.add(option, null);
       }
 
@@ -205,10 +205,9 @@ cr.define('options', function() {
     editProfile_: function() {
       var idx = $('profileList').selectedIndex;
       if ((profileIndex = this.getAddressIndex_(idx)) != -1) {
-        chrome.send('editAddress', [String(this.addressIDs[profileIndex])]);
+        chrome.send('editAddress', [this.addressGUIDs[profileIndex]]);
       } else if ((profileIndex = this.getCreditCardIndex_(idx)) != -1) {
-        chrome.send('editCreditCard',
-                    [String(this.creditCardIDs[profileIndex])]);
+        chrome.send('editCreditCard', [this.creditCardGUIDs[profileIndex]]);
       }
     },
 
@@ -220,10 +219,9 @@ cr.define('options', function() {
     removeProfile_: function() {
       var idx = $('profileList').selectedIndex;
       if ((profileIndex = this.getAddressIndex_(idx)) != -1)
-        chrome.send('removeAddress', [String(this.addressIDs[profileIndex])]);
+        chrome.send('removeAddress', [this.addressGUIDs[profileIndex]]);
       else if ((profileIndex = this.getCreditCardIndex_(idx)) != -1)
-        chrome.send('removeCreditCard',
-                    [String(this.creditCardIDs[profileIndex])]);
+        chrome.send('removeCreditCard', [this.creditCardGUIDs[profileIndex]]);
     },
 
     /**

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/guid.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 
@@ -88,8 +89,8 @@ void AutoFillOptionsHandler::RegisterMessages() {
       NewCallback(this, &AutoFillOptionsHandler::UpdateCreditCard));
 
   dom_ui_->RegisterMessageCallback(
-        "editCreditCard",
-        NewCallback(this, &AutoFillOptionsHandler::EditCreditCard));
+      "editCreditCard",
+      NewCallback(this, &AutoFillOptionsHandler::EditCreditCard));
 
   dom_ui_->RegisterMessageCallback(
       "removeCreditCard",
@@ -154,11 +155,11 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
 
   ListValue addresses;
   for (std::vector<AutoFillProfile*>::const_iterator i =
-           personal_data_->profiles().begin();
-       i != personal_data_->profiles().end(); ++i) {
+           personal_data_->web_profiles().begin();
+       i != personal_data_->web_profiles().end(); ++i) {
     DictionaryValue* address = new DictionaryValue();
     address->SetString("label", (*i)->Label());
-    address->SetInteger("uniqueID", (*i)->unique_id());
+    address->SetString("guid", (*i)->guid());
     addresses.Append(address);
   }
 
@@ -171,7 +172,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
        i != personal_data_->credit_cards().end(); ++i) {
     DictionaryValue* credit_card = new DictionaryValue();
     credit_card->SetString("label", (*i)->PreviewSummary());
-    credit_card->SetInteger("uniqueID", (*i)->unique_id());
+    credit_card->SetString("guid", (*i)->guid());
     credit_cards.Append(credit_card);
   }
 
@@ -183,14 +184,13 @@ void AutoFillOptionsHandler::UpdateAddress(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
-  int unique_id = 0;
-  if (!ExtractIntegerValue(args, &unique_id)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
 
-  AutoFillProfile profile;
-  profile.set_unique_id(unique_id);
+  AutoFillProfile profile(guid);
 
   string16 value;
   if (args->GetString(1, &value))
@@ -216,23 +216,25 @@ void AutoFillOptionsHandler::UpdateAddress(const ListValue* args) {
   if (args->GetString(11, &value))
     profile.SetInfo(AutoFillType(EMAIL_ADDRESS), value);
 
-  if (unique_id == 0)
+  if (!guid::IsValidGUID(profile.guid())) {
+    profile.set_guid(guid::GenerateGUID());
     personal_data_->AddProfile(profile);
-  else
+  } else {
     personal_data_->UpdateProfile(profile);
+  }
 }
 
 void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
-  int unique_id = 0;
-  if (!ExtractIntegerValue(args, &unique_id)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
 
-  AutoFillProfile* profile = personal_data_->GetProfileById(unique_id);
+  AutoFillProfile* profile = personal_data_->GetProfileByGUID(guid);
   if (!profile) {
     NOTREACHED();
     return;
@@ -242,7 +244,7 @@ void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
   // directly to CallJavascriptFunction().
   ListValue addressList;
   DictionaryValue* address = new DictionaryValue();
-  address->SetInteger("uniqueID", profile->unique_id());
+  address->SetString("guid", profile->guid());
   address->SetString("fullName",
                      profile->GetFieldText(AutoFillType(NAME_FULL)));
   address->SetString("companyName",
@@ -277,27 +279,26 @@ void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
-  int unique_id = 0;
-  if (!ExtractIntegerValue(args, &unique_id)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
 
-  personal_data_->RemoveProfile(unique_id);
+  personal_data_->RemoveProfile(guid);
 }
 
 void AutoFillOptionsHandler::UpdateCreditCard(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
-  int unique_id = 0;
-  if (!ExtractIntegerValue(args, &unique_id)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
 
-  CreditCard credit_card;
-  credit_card.set_unique_id(unique_id);
+  CreditCard credit_card(guid);
 
   string16 value;
   if (args->GetString(1, &value))
@@ -309,23 +310,26 @@ void AutoFillOptionsHandler::UpdateCreditCard(const ListValue* args) {
   if (args->GetString(4, &value))
     credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), value);
 
-  if (unique_id == 0)
+  if (!guid::IsValidGUID(credit_card.guid())) {
+    credit_card.set_guid(guid::GenerateGUID());
     personal_data_->AddCreditCard(credit_card);
-  else
+  } else {
     personal_data_->UpdateCreditCard(credit_card);
+  }
+
 }
 
 void AutoFillOptionsHandler::EditCreditCard(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
       return;
 
-  int unique_id = 0;
-  if (!ExtractIntegerValue(args, &unique_id)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
 
-  CreditCard* credit_card = personal_data_->GetCreditCardById(unique_id);
+  CreditCard* credit_card = personal_data_->GetCreditCardByGUID(guid);
 
   if (!credit_card) {
     NOTREACHED();
@@ -336,7 +340,7 @@ void AutoFillOptionsHandler::EditCreditCard(const ListValue* args) {
   // directly to CallJavascriptFunction().
   ListValue credit_card_list;
   DictionaryValue* credit_card_data = new DictionaryValue();
-  credit_card_data->SetInteger("uniqueID", credit_card->unique_id());
+  credit_card_data->SetString("guid", credit_card->guid());
   credit_card_data->SetString(
       "nameOnCard",
       credit_card->GetFieldText(AutoFillType(CREDIT_CARD_NAME)));
@@ -359,11 +363,11 @@ void AutoFillOptionsHandler::RemoveCreditCard(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
-  int unique_id = 0;
-  if (!ExtractIntegerValue(args, &unique_id)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
 
-  personal_data_->RemoveCreditCard(unique_id);
+  personal_data_->RemoveCreditCard(guid);
 }

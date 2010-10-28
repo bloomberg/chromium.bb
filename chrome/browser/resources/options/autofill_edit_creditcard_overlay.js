@@ -5,8 +5,8 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
 
-  // The unique ID of the loaded credit card.
-  var uniqueID;
+  // The GUID of the loaded credit card.
+  var guid;
 
   /**
    * AutoFillEditCreditCardOverlay class
@@ -39,7 +39,7 @@ cr.define('options', function() {
         self.dismissOverlay_();
       }
 
-      self.uniqueID = 0;
+      self.guid = '';
       self.clearInputFields_();
       self.connectInputEvents_();
       self.setDefaultSelectOptions_();
@@ -51,7 +51,7 @@ cr.define('options', function() {
      */
     dismissOverlay_: function() {
       this.clearInputFields_();
-      this.uniqueID = 0;
+      this.guid = '';
       OptionsPage.clearOverlays();
     },
 
@@ -62,7 +62,7 @@ cr.define('options', function() {
      */
     saveCreditCard_: function() {
       var creditCard = new Array(5);
-      creditCard[0] = String(this.uniqueID);
+      creditCard[0] = this.guid;
       creditCard[1] = $('nameOnCard').value;
       creditCard[2] = $('creditCardNumber').value;
       creditCard[3] = $('expirationMonth').value;
@@ -174,13 +174,13 @@ cr.define('options', function() {
 
     /**
      * Loads the credit card data from |creditCard|, sets the input fields based
-     * on this data and stores the unique ID of the credit card.
+     * on this data and stores the GUID of the credit card.
      * @private
      */
     loadCreditCard_: function(creditCard) {
       this.setInputFields_(creditCard);
       this.inputFieldChanged_();
-      this.uniqueID = creditCard['uniqueID'];
+      this.guid = creditCard['guid'];
     },
   };
 

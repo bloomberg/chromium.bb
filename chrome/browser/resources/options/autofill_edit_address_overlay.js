@@ -5,8 +5,8 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
 
-  // The unique ID of the loaded address.
-  var uniqueID;
+  // The GUID of the loaded address.
+  var guid;
 
   /**
    * AutoFillEditAddressOverlay class
@@ -39,19 +39,19 @@ cr.define('options', function() {
         self.dismissOverlay_();
       }
 
-      self.uniqueID = 0;
+      self.guid = '';
       self.clearInputFields_();
       self.connectInputEvents_();
     },
 
     /**
-     * Clears any uncommitted input, resets the stored unique ID and dismisses
-     * the overlay.
+     * Clears any uncommitted input, resets the stored GUID and dismisses the
+     * overlay.
      * @private
      */
     dismissOverlay_: function() {
       this.clearInputFields_();
-      this.uniqueID = 0;
+      this.guid = '';
       OptionsPage.clearOverlays();
     },
 
@@ -62,7 +62,7 @@ cr.define('options', function() {
      */
     saveAddress_: function() {
       var address = new Array();
-      address[0] = String(this.uniqueID);
+      address[0] = this.guid;
       address[1] = $('fullName').value;
       address[2] = $('companyName').value;
       address[3] = $('addrLine1').value;
@@ -129,13 +129,13 @@ cr.define('options', function() {
 
     /**
      * Loads the address data from |address|, sets the input fields based on
-     * this data and stores the unique ID of the address.
+     * this data and stores the GUID of the address.
      * @private
      */
     loadAddress_: function(address) {
       this.setInputFields_(address);
       this.inputFieldChanged_();
-      this.uniqueID = address['uniqueID'];
+      this.guid = address['guid'];
     },
 
     /**

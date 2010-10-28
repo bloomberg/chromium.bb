@@ -26,19 +26,17 @@ namespace {
 // before AutoFill will attempt to import the data into a profile.
 const int kMinImportSize = 3;
 
-const char kUnlabeled[] = "Unlabeled";
-
 template<typename T>
-class FormGroupIDMatchesFunctor {
+class FormGroupGUIDMatchesFunctor {
  public:
-  explicit FormGroupIDMatchesFunctor(int id) : id_(id) {}
+  explicit FormGroupGUIDMatchesFunctor(const std::string& guid) : guid_(guid) {}
 
   bool operator()(const T& form_group) {
-    return form_group.unique_id() == id_;
+    return form_group.guid() == guid_;
   }
 
  private:
-  int id_;
+  std::string guid_;
 };
 
 template<typename T>
@@ -234,14 +232,7 @@ void PersonalDataManager::GetImportedFormData(AutoFillProfile** profile,
   DCHECK(profile);
   DCHECK(credit_card);
 
-  if (imported_profile_.get()) {
-    imported_profile_->set_label(ASCIIToUTF16(kUnlabeled));
-  }
   *profile = imported_profile_.get();
-
-  if (imported_credit_card_.get()) {
-    imported_credit_card_->set_label(ASCIIToUTF16(kUnlabeled));
-  }
   *credit_card = imported_credit_card_.get();
 }
 
@@ -467,7 +458,12 @@ void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
   // Update the cached profile.
   for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
        iter != web_profiles_->end(); ++iter) {
-    if ((*iter)->unique_id() == profile.unique_id()) {
+    if ((*iter)->guid() == profile.guid()) {
+      // TODO(dhollowa): Remove |unique_id| once GUID migration work is
+      // complete. Until the |WebDataService::UpdateAutoFillProfile| is changed
+      // to use the GUID we need to preserve the unique ID association.
+      // http:://crbug.com/58813
+      const_cast<AutoFillProfile&>(profile).set_unique_id((*iter)->unique_id());
       delete *iter;
       *iter = new AutoFillProfile(profile);
       break;
@@ -478,26 +474,27 @@ void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
-void PersonalDataManager::RemoveProfile(int unique_id) {
+void PersonalDataManager::RemoveProfile(const std::string& guid) {
   // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
   std::vector<AutoFillProfile> profiles(web_profiles_.size());
   std::transform(web_profiles_.begin(), web_profiles_.end(),
                  profiles.begin(),
                  DereferenceFunctor<AutoFillProfile>());
 
-  // Remove the profile that matches |unique_id|.
+  // Remove the profile that matches |guid|.
   profiles.erase(
       std::remove_if(profiles.begin(), profiles.end(),
-                     FormGroupIDMatchesFunctor<AutoFillProfile>(unique_id)),
+                     FormGroupGUIDMatchesFunctor<AutoFillProfile>(guid)),
       profiles.end());
 
   SetProfiles(&profiles);
 }
 
-AutoFillProfile* PersonalDataManager::GetProfileById(int unique_id) {
+AutoFillProfile* PersonalDataManager::GetProfileByGUID(
+    const std::string& guid) {
   for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
        iter != web_profiles_->end(); ++iter) {
-    if ((*iter)->unique_id() == unique_id)
+    if ((*iter)->guid() == guid)
       return *iter;
   }
   return NULL;
@@ -522,7 +519,12 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   // Update the cached credit card.
   for (std::vector<CreditCard*>::iterator iter = credit_cards_->begin();
        iter != credit_cards_->end(); ++iter) {
-    if ((*iter)->unique_id() == credit_card.unique_id()) {
+    if ((*iter)->guid() == credit_card.guid()) {
+      // TODO(dhollowa): Remove |unique_id| once GUID migration work is
+      // complete. Until the |WebDataService::UpdateCreditCard| is changed
+      // to use the GUID we need to preserve the unique ID association.
+      // http:://crbug.com/58813
+      const_cast<CreditCard&>(credit_card).set_unique_id((*iter)->unique_id());
       delete *iter;
       *iter = new CreditCard(credit_card);
       break;
@@ -533,26 +535,26 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
-void PersonalDataManager::RemoveCreditCard(int unique_id) {
+void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
   // TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
   std::vector<CreditCard> credit_cards(credit_cards_.size());
   std::transform(credit_cards_.begin(), credit_cards_.end(),
                  credit_cards.begin(),
                  DereferenceFunctor<CreditCard>());
 
-  // Remove the credit card that matches |unique_id|.
+  // Remove the credit card that matches |guid|.
   credit_cards.erase(
       std::remove_if(credit_cards.begin(), credit_cards.end(),
-                     FormGroupIDMatchesFunctor<CreditCard>(unique_id)),
+                     FormGroupGUIDMatchesFunctor<CreditCard>(guid)),
       credit_cards.end());
 
   SetCreditCards(&credit_cards);
 }
 
-CreditCard* PersonalDataManager::GetCreditCardById(int unique_id) {
+CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   for (std::vector<CreditCard*>::iterator iter = credit_cards_.begin();
        iter != credit_cards_.end(); ++iter) {
-    if ((*iter)->unique_id() == unique_id)
+    if ((*iter)->guid() == guid)
       return *iter;
   }
   return NULL;
@@ -799,8 +801,6 @@ void PersonalDataManager::SaveImportedCreditCard() {
 
   // Set to true if |imported_credit_card_| is merged into the profile list.
   bool merged = false;
-
-  imported_credit_card_->set_label(ASCIIToUTF16(kUnlabeled));
 
   std::vector<CreditCard> creditcards;
   for (std::vector<CreditCard*>::const_iterator iter =

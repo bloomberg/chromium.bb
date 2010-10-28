@@ -106,12 +106,12 @@ class PersonalDataManager
   // Updates |profile| which already exists in the web database.
   void UpdateProfile(const AutoFillProfile& profile);
 
-  // Removes the profile represented by |unique_id|.
-  void RemoveProfile(int unique_id);
+  // Removes the profile represented by |guid|.
+  void RemoveProfile(const std::string& guid);
 
-  // Returns the profile with the specified |unique_id|, or NULL if there is no
-  // profile with the specified |unique_id|.
-  AutoFillProfile* GetProfileById(int unique_id);
+  // Returns the profile with the specified |guid|, or NULL if there is no
+  // profile with the specified |guid|.
+  AutoFillProfile* GetProfileByGUID(const std::string& guid);
 
   // Adds |credit_card| to the web database.
   void AddCreditCard(const CreditCard& credit_card);
@@ -119,12 +119,12 @@ class PersonalDataManager
   // Updates |credit_card| which already exists in the web database.
   void UpdateCreditCard(const CreditCard& credit_card);
 
-  // Removes the credit card represented by |unique_id|.
-  void RemoveCreditCard(int unique_id);
+  // Removes the credit card represented by |guid|.
+  void RemoveCreditCard(const std::string& guid);
 
-  // Returns the credit card with the specified |unique_id|, or NULL if there is
-  // no credit card with the specified |unique_id|.
-  CreditCard* GetCreditCardById(int unique_id);
+  // Returns the credit card with the specified |guid|, or NULL if there is
+  // no credit card with the specified |guid|.
+  CreditCard* GetCreditCardByGUID(const std::string& guid);
 
   // Gets the possible field types for the given text, determined by matching
   // the text with all known personal information and returning matching types.
