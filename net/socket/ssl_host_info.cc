@@ -24,7 +24,9 @@ SSLHostInfo::SSLHostInfo(
     const std::string& hostname,
     const SSLConfig& ssl_config)
     : hostname_(hostname),
-      cert_valid_(false),
+      cert_verification_complete_(false),
+      cert_parsing_failed_(false),
+      cert_verification_callback_(NULL),
       rev_checking_enabled_(ssl_config.rev_checking_enabled),
       verify_ev_cert_(ssl_config.verify_ev_cert),
       callback_(new CancelableCompletionCallback<SSLHostInfo>(
@@ -80,7 +82,7 @@ bool SSLHostInfo::Parse(const std::string& data) {
   state->certs.clear();
   state->server_hello.clear();
   state->npn_valid = false;
-  cert_valid_ = false;
+  cert_verification_complete_ = false;
 
   if (!proto.ParseFromString(data))
     return false;
@@ -107,11 +109,14 @@ bool SSLHostInfo::Parse(const std::string& data) {
       if (rev_checking_enabled_)
         flags |= X509Certificate::VERIFY_REV_CHECKING_ENABLED;
       verifier_.reset(new CertVerifier);
-      VLOG(1) << "Kicking off validation for " << hostname_;
+      VLOG(1) << "Kicking off verification for " << hostname_;
       if (verifier_->Verify(cert_.get(), hostname_, flags,
                             &cert_verify_result_, callback_) == OK) {
-        cert_valid_ = true;
+        VerifyCallback(OK);
       }
+    } else {
+      cert_parsing_failed_ = true;
+      DCHECK(!cert_verification_callback_);
     }
   }
 
@@ -136,16 +141,28 @@ std::string SSLHostInfo::Serialize() const {
   return proto.SerializeAsString();
 }
 
-bool SSLHostInfo::cert_valid() const {
-  return cert_valid_;
-}
-
 const CertVerifyResult& SSLHostInfo::cert_verify_result() const {
   return cert_verify_result_;
 }
 
+int SSLHostInfo::WaitForCertVerification(CompletionCallback* callback) {
+  if (cert_verification_complete_)
+    return cert_verification_result_;
+  DCHECK(!cert_parsing_failed_);
+  DCHECK(!cert_verification_callback_);
+  DCHECK(!state_.certs.empty());
+  cert_verification_callback_ = callback;
+  return ERR_IO_PENDING;
+}
+
 void SSLHostInfo::VerifyCallback(int rv) {
-  cert_valid_ = rv == OK;
+  cert_verification_complete_ = true;
+  cert_verification_result_ = rv;
+  if (cert_verification_callback_) {
+    CompletionCallback* callback = cert_verification_callback_;
+    cert_verification_callback_ = NULL;
+    callback->Run(rv);
+  }
 }
 
 SSLHostInfoFactory::~SSLHostInfoFactory() {}

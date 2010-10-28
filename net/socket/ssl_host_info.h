@@ -78,13 +78,16 @@ class SSLHostInfo {
   const State& state() const;
   State* mutable_state();
 
-  // This is true if state().certs.size() > 0 and state().certs[0] has been
-  // verified for |hostname_|.
-  bool cert_valid() const;
-
   // If |cert_valid()| returns true, then this contains the result of verifying
   // the certificate.
   const CertVerifyResult& cert_verify_result() const;
+
+  // WaitForCertVerification returns ERR_IO_PENDING if the certificate chain in
+  // |state().certs| is still being validated and arranges for the given
+  // callback to be called when the verification completes. If the verification has
+  // already finished then WaitForCertVerification returns the result of that
+  // verification.
+  int WaitForCertVerification(CompletionCallback* callback);
 
  protected:
   // Parse parses an opaque blob of data and fills out the public member fields
@@ -100,7 +103,10 @@ class SSLHostInfo {
 
   // This is the hostname that we'll validate the certificates against.
   const std::string hostname_;
-  bool cert_valid_;  // see the comments for |cert_valid|.
+  bool cert_verification_complete_;
+  bool cert_parsing_failed_;
+  int cert_verification_result_;
+  CompletionCallback* cert_verification_callback_;
   // These two members are taken from the SSLConfig.
   bool rev_checking_enabled_;
   bool verify_ev_cert_;
