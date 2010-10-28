@@ -3900,8 +3900,7 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
   int num_profiles = profiles.GetSize();
   for (int i = 0; i < num_profiles; i++) {
     profiles.GetDictionary(i, &profile_info);
-    // Choose an id of 0 so that a unique id will be created.
-    AutoFillProfile profile(string16(), 0);
+    AutoFillProfile profile;
     // Loop through the possible profile types and add those provided.
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
          autofill_type_to_string.begin();
@@ -3934,7 +3933,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
   int num_credit_cards = cards.GetSize();
   for (int i = 0; i < num_credit_cards; i++) {
     cards.GetDictionary(i, &card_info);
-    CreditCard card(string16(), 0);
+    CreditCard card;
     // Loop through the possible credit card fields and add those provided.
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
         credit_card_type_to_string.begin();
