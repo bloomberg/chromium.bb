@@ -13,6 +13,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/bookmarks/bookmark_bar_bridge.h"
+#import "chrome/browser/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_state.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_button.h"
@@ -43,14 +44,33 @@ namespace bookmarks {
 // Used as a maximum width for buttons on the bar.
 const CGFloat kDefaultBookmarkWidth = 150.0;
 
-// TODO(jrg): http://crbug.com/36276 to get final sizes.
+// Horizontal frame inset for buttons in the bookmark bar.
+const CGFloat kBookmarkHorizontalPadding = 1.0;
+
+// Vertical frame inset for buttons in the bookmark bar.
+const CGFloat kBookmarkVerticalPadding = 2.0;
+
 // Used as a min/max width for buttons on menus (not on the bar).
 const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
-const CGFloat kBookmarkVerticalPadding = 2.0;
-const CGFloat kBookmarkHorizontalPadding = 1.0;
+// Horizontal separation between a menu button and both edges of its menu.
 const CGFloat kBookmarkSubMenuHorizontalPadding = 5.0;
+
+// TODO(mrossetti): Add constant (kBookmarkVerticalSeparation) for the gap
+// between buttons in a folder menu. Right now we're using
+// kBookmarkVerticalPadding, which is dual purpose and wrong.
+// http://crbug.com/59057
+
+// Convenience constant giving the vertical distance from the top extent of one
+// folder button to the next button.
+const CGFloat kBookmarkButtonVerticalSpan =
+    kBookmarkButtonHeight + kBookmarkVerticalPadding;
+
+// The minimum separation between a folder menu and the edge of the screen.
+// If the menu gets closer to the edge of the screen (either right or left)
+// then it is pops up in the opposite direction.
+// (See -[BookmarkBarFolderController childFolderWindowLeftForWidth:]).
 const CGFloat kBookmarkHorizontalScreenPadding = 8.0;
 
 // Our NSScrollView is supposed to be just barely big enough to fit its

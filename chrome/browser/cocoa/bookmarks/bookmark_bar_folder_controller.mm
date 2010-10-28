@@ -27,13 +27,11 @@ const NSTimeInterval kBookmarkBarFolderScrollInterval = 0.1;
 // Amount to scroll by per timer fire.  We scroll rather slowly; to
 // accomodate we do several at a time.
 const CGFloat kBookmarkBarFolderScrollAmount =
-    3 * (bookmarks::kBookmarkButtonHeight +
-         bookmarks::kBookmarkVerticalPadding);
+    3 * bookmarks::kBookmarkButtonVerticalSpan;
 
 // Amount to scroll for each scroll wheel delta.
 const CGFloat kBookmarkBarFolderScrollWheelAmount =
-    1 * (bookmarks::kBookmarkButtonHeight +
-         bookmarks::kBookmarkVerticalPadding);
+    1 * bookmarks::kBookmarkButtonVerticalSpan;
 
 // When constraining a scrolling bookmark bar folder window to the
 // screen, shrink the "constrain" by this much vertically.  Currently
@@ -387,8 +385,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 - (int)windowHeightForButtonCount:(int)buttonCount {
-  return (buttonCount * (bookmarks::kBookmarkButtonHeight +
-                         bookmarks::kBookmarkVerticalPadding)) +
+  return (buttonCount * bookmarks::kBookmarkButtonVerticalSpan) +
       bookmarks::kBookmarkVerticalPadding;
 }
 
@@ -475,8 +472,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // http://crbug.com/35966
   NSRect buttonsOuterFrame = NSMakeRect(
     bookmarks::kBookmarkSubMenuHorizontalPadding,
-    (height -
-     (bookmarks::kBookmarkButtonHeight + bookmarks::kBookmarkVerticalPadding)),
+    (height - bookmarks::kBookmarkButtonVerticalSpan),
     bookmarks::kDefaultBookmarkWidth,
     bookmarks::kBookmarkButtonHeight);
 
@@ -498,8 +494,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
                                                  frame:buttonsOuterFrame];
       [buttons_ addObject:button];
       [mainView_ addSubview:button];
-      buttonsOuterFrame.origin.y -= (bookmarks::kBookmarkButtonHeight +
-                                     bookmarks::kBookmarkVerticalPadding);
+      buttonsOuterFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
     }
   }
 
@@ -886,8 +881,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // bookmark_bar_controller.mm, but vertical instead of horizontal.
 // Generalize to be axis independent then share code.
 // http://crbug.com/35966
-// Get UI review on "middle half" ness.
-// http://crbug.com/36276
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point {
   for (BookmarkButton* button in buttons_.get()) {
     // No early break -- makes no assumption about button ordering.
@@ -1252,8 +1245,11 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)addButtonForNode:(const BookmarkNode*)node
                  atIndex:(NSInteger)buttonIndex {
-  // Propose the frame for the new button.
-  NSRect newButtonFrame = NSMakeRect(0, 0, 500, 500);  // Placeholder values.
+  // Propose the frame for the new button. By default, this will be set to the
+  // topmost button's frame (and there will always be one) offset upward in
+  // anticipation of insertion.
+  NSRect newButtonFrame = [[buttons_ objectAtIndex:0] frame];
+  newButtonFrame.origin.y += bookmarks::kBookmarkButtonVerticalSpan;
   // When adding a button to an empty folder we must remove the 'empty'
   // placeholder button. This can be detected by checking for a parent
   // child count of 1.
@@ -1277,8 +1273,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // which is where the new button will be located.
     newButtonFrame = [button frame];
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.y += bookmarks::kBookmarkBarHeight +
-        bookmarks::kBookmarkVerticalPadding;
+    buttonFrame.origin.y += bookmarks::kBookmarkButtonVerticalSpan;
     [button setFrame:buttonFrame];
   }
   [[button cell] mouseExited:nil];  // De-highlight.
@@ -1352,8 +1347,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       for (NSInteger i = fromIndex; i < toIndex; ++i) {
         BookmarkButton* button = [buttons_ objectAtIndex:i];
         NSRect frame = [button frame];
-        frame.origin.y += bookmarks::kBookmarkBarHeight +
-            bookmarks::kBookmarkVerticalPadding;
+        frame.origin.y += bookmarks::kBookmarkButtonVerticalSpan;
         [button setFrameOrigin:frame.origin];
       }
     } else {
@@ -1362,8 +1356,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       for (NSInteger i = fromIndex - 1; i >= toIndex; --i) {
         BookmarkButton* button = [buttons_ objectAtIndex:i];
         NSRect buttonFrame = [button frame];
-        buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight +
-            bookmarks::kBookmarkVerticalPadding;
+        buttonFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
         [button setFrameOrigin:buttonFrame.origin];
       }
     }
@@ -1408,8 +1401,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     BookmarkButton* button = [buttons_ objectAtIndex:i];
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.y -= bookmarks::kBookmarkButtonHeight +
-      bookmarks::kBookmarkVerticalPadding;
+    buttonFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
     [button setFrame:buttonFrame];
   }
   // Search for and adjust submenus, if necessary.

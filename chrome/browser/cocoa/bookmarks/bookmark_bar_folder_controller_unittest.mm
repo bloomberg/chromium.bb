@@ -24,11 +24,31 @@
 // Add a redirect to make testing easier.
 @interface BookmarkBarFolderController(MakeTestingEasier)
 - (IBAction)openBookmarkFolderFromButton:(id)sender;
+- (void)validateMenuSpacing;
 @end
 
 @implementation BookmarkBarFolderController(MakeTestingEasier)
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
   [[self folderTarget] openBookmarkFolderFromButton:sender];
+}
+
+// Utility function to verify that the buttons in this folder are all
+// evenly spaced in a progressive manner.
+- (void)validateMenuSpacing {
+  BOOL firstButton = YES;
+  CGFloat lastVerticalOffset = 0.0;
+  for (BookmarkButton* button in [self buttons]) {
+    if (firstButton) {
+      firstButton = NO;
+      lastVerticalOffset = [button frame].origin.y;
+    } else {
+      CGFloat nextVerticalOffset = [button frame].origin.y;
+      EXPECT_CGFLOAT_EQ(lastVerticalOffset -
+                            bookmarks::kBookmarkButtonVerticalSpan,
+                        nextVerticalOffset);
+      lastVerticalOffset = nextVerticalOffset;
+    }
+  }
 }
 @end
 
@@ -709,6 +729,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   expectedToWindowFrame.size.height += diff;
   EXPECT_NSRECT_EQ(expectedToWindowFrame, newToWindowFrame);
 
+  // Check button spacing.
+  [folderController validateMenuSpacing];
+
   // Move the button back to the bar at the beginning.
   draggedButton = [folderController buttonWithTitleEqualTo:@"1b"];
   ASSERT_TRUE(draggedButton);
@@ -836,6 +859,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
       "4f2f1b 4f2f2b 4f2f3b 5b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] ");
   EXPECT_EQ(expected_string, model_test_utils::ModelStringFromNode(root));
 
+  // Check button spacing.
+  [folderController validateMenuSpacing];
+  [subfolderController validateMenuSpacing];
+
   // Check the window layouts. The folder window should not have changed,
   // but the subfolder window should have shifted vertically and grown.
   NSRect newToWindowFrame = [toWindow frame];
@@ -893,6 +920,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveWithinFolder) {
   // The folder window should not have changed.
   NSRect newToWindowFrame = [toWindow frame];
   EXPECT_NSRECT_EQ(oldToWindowFrame, newToWindowFrame);
+
+  // Check button spacing.
+  [folderController validateMenuSpacing];
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragParentOntoChild) {
@@ -927,6 +957,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragParentOntoChild) {
                           copy:NO];
   // The model should not have changed.
   EXPECT_EQ(model_string, model_test_utils::ModelStringFromNode(root));
+
+  // Check button spacing.
+  [folderController validateMenuSpacing];
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveChildToParent) {
@@ -973,6 +1006,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveChildToParent) {
       "4f2f1b 4f2f2b ] 4f3f:[ 4f3f1b 4f3f2b 4f3f3b ] ] 5b ");
   EXPECT_EQ(expected_string, model_test_utils::ModelStringFromNode(root));
 
+  // Check button spacing.
+  [folderController validateMenuSpacing];
   // The window should not have gone away.
   EXPECT_TRUE([bar_ folderController]);
   // The subfolder should have gone away.
@@ -1077,6 +1112,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MoveRemoveAddButtons) {
   EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:1] title]);
   EXPECT_NSEQ(@"2f3b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [buttons count]);
+
+  // Check button spacing.
+  [folder validateMenuSpacing];
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, ControllerForNode) {
@@ -1199,6 +1237,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   // Check the size. It should have reduced.
   EXPECT_GT(menuWidth, NSWidth([folderMenu frame]));
   EXPECT_GT(buttonWidth, NSWidth([button frame]));
+
+  // Check button spacing.
+  [folderController validateMenuSpacing];
 }
 
 // See http://crbug.com/46101
@@ -1324,6 +1365,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
                                "2f3b ] 3b 4b ");
   actual = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(expectedA, actual);
+
+  // Check button spacing.
+  [folderController validateMenuSpacing];
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
@@ -1363,6 +1407,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkDataToTrash) {
                              "2f3b ] 3b 4b ");
   actual = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(expected, actual);
+
+  // Check button spacing.
+  [folderController validateMenuSpacing];
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {
@@ -1405,6 +1452,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, AddURLs) {
                              "2f2f3b ] 2f3b ] 3b 4b ");
   actual = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(expected, actual);
+
+  // Check button spacing.
+  [folderController validateMenuSpacing];
 }
 
 TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {

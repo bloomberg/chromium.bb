@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_bridge.h"
-#import "chrome/browser/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
