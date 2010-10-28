@@ -760,15 +760,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
-#if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && !defined(NDEBUG)
-// Hangy, http://crbug.com/50025.
-#define MAYBE_FocusOnReloadCrashedTab DISABLED_FocusOnReloadCrashedTab
-#else
-#define MAYBE_FocusOnReloadCrashedTab FocusOnReloadCrashedTab
-#endif
-
 // Tests that focus goes where expected when using reload on a crashed tab.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
