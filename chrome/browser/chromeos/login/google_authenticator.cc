@@ -58,7 +58,7 @@ const int kPassHashLen = 32;
 GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       user_manager_(UserManager::Get()),
-      hosted_policy_(GaiaAuthenticator2::HostedAccountsNotAllowed),
+      hosted_policy_(GaiaAuthenticator2::HostedAccountsAllowed),
       unlock_(false),
       try_again_(true),
       checked_for_localaccount_(false) {
@@ -188,20 +188,17 @@ void GoogleAuthenticator::OnClientLoginSuccess(
   VLOG(1) << "Online login successful!";
   ClearClientLoginAttempt();
 
-  if (hosted_policy_ == GaiaAuthenticator2::HostedAccountsAllowed) {
-    // We don't allow HOSTED accounts to log in.  Call OnLoginFailure()
-    // with an appropriate LoginFailure.
-    LoginFailure failure_details =
-        LoginFailure::FromNetworkAuthFailure(
-            GoogleServiceAuthError(
-                GoogleServiceAuthError::HOSTED_NOT_ALLOWED));
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &GoogleAuthenticator::OnLoginFailure,
-                          failure_details));
-    VLOG(1) << "Rejecting valid HOSTED account.";
+  if (hosted_policy_ == GaiaAuthenticator2::HostedAccountsAllowed &&
+      !user_manager_->IsKnownUser(username_)) {
+    // First time user, and we don't know if the account is HOSTED or not.
+    // Since we don't allow HOSTED accounts to log in, we need to try
+    // again, without allowing HOSTED accounts.
+    //
+    // NOTE: we used to do this in the opposite order, so that we'd only
+    // try the HOSTED pathway if GOOGLE-only failed.  This breaks CAPTCHA
+    // handling, though.
     hosted_policy_ = GaiaAuthenticator2::HostedAccountsNotAllowed;
+    TryClientLogin();
     return;
   }
   BrowserThread::PostTask(
@@ -227,10 +224,20 @@ void GoogleAuthenticator::OnClientLoginFailure(
   if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS &&
       !user_manager_->IsKnownUser(username_) &&
       hosted_policy_ != GaiaAuthenticator2::HostedAccountsAllowed) {
-    // if this was a first-time login, then we may have failed because the
-    // account is HOSTED.  Try again, but allowing HOSTED accounts.
-    hosted_policy_ = GaiaAuthenticator2::HostedAccountsAllowed;
-    TryClientLogin();
+    // This was a first-time login, we already tried allowing HOSTED accounts
+    // and succeeded.  That we've failed with INVALID_GAIA_CREDENTIALS now
+    // indicates that the account is HOSTED.
+    LoginFailure failure_details =
+        LoginFailure::FromNetworkAuthFailure(
+            GoogleServiceAuthError(
+                GoogleServiceAuthError::HOSTED_NOT_ALLOWED));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+                          &GoogleAuthenticator::OnLoginFailure,
+                          failure_details));
+    LOG(WARNING) << "Rejecting valid HOSTED account.";
+    hosted_policy_ = GaiaAuthenticator2::HostedAccountsNotAllowed;
     return;
   }
 

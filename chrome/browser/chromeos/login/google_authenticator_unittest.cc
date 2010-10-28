@@ -483,6 +483,9 @@ TEST_F(GoogleAuthenticatorTest, OnlineLogin) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
+  EXPECT_CALL(*user_manager_.get(), IsKnownUser(username_))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
   auth->OnClientLoginSuccess(result_);
   message_loop.RunAllPending();
 }
@@ -577,6 +580,10 @@ TEST_F(GoogleAuthenticatorTest, FullLogin) {
   URLFetcher::set_factory(&factory);
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
+  EXPECT_CALL(*user_manager_.get(), IsKnownUser(username_))
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  auth->set_user_manager(user_manager_.get());
   auth->AuthenticateToLogin(
       &profile, username_, password_, std::string(), std::string());
 
@@ -614,6 +621,7 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLogin) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->set_user_manager(user_manager_.get());
   EXPECT_CALL(*user_manager_.get(), IsKnownUser(username_))
+      .WillOnce(Return(false))
       .WillOnce(Return(false))
       .RetiresOnSaturation();
   auth->AuthenticateToLogin(
@@ -656,6 +664,7 @@ TEST_F(GoogleAuthenticatorTest, FullHostedLoginFailure) {
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   auth->set_user_manager(user_manager_.get());
   EXPECT_CALL(*user_manager_.get(), IsKnownUser(username_))
+      .WillOnce(Return(false))
       .WillOnce(Return(false))
       .RetiresOnSaturation();
   auth->AuthenticateToLogin(
