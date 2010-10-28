@@ -41,6 +41,7 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     "dir-listing-ls-16",
     "dir-listing-ls-17",
     "dir-listing-ls-18",
+    "dir-listing-ls-19",
     "dir-listing-mlsd-1",
     "dir-listing-mlsd-2",
     "dir-listing-netware-1",
