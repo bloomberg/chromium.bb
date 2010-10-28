@@ -63,8 +63,8 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 
   void SimpleTest(const GURL& test_url) {
-    // The test page will open a cursor on IndexedDB, then navigate to either a
-    // #pass or #fail ref.
+    // The test page will perform tests on IndexedDB, then navigate to either
+    // a #pass or #fail ref.
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         browser(), test_url, 2);
     std::string result = browser()->GetSelectedTabContents()->GetURL().ref();
@@ -103,4 +103,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }

@@ -1,7 +1,6 @@
 function emptyCursorSuccess()
 {
   debug('Empty cursor opened successfully.')
-  // TODO(bulach): check that we can iterate the cursor.
   done();
 }
 
@@ -16,11 +15,19 @@ function openEmptyCursor()
 
 function cursorSuccess()
 {
+  var cursor = event.result;
+  if (cursor === null) {
+    debug('Cursor reached end of range.');
+    openEmptyCursor();
+    return;
+  }
+
   debug('Cursor opened successfully.');
   shouldBe("event.result.direction", "0");
   shouldBe("event.result.key", "'myKey'");
   shouldBe("event.result.value", "'myValue'");
-  openEmptyCursor();
+
+  cursor.continue();
 }
 
 function openCursor(objectStore)
