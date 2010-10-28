@@ -2716,11 +2716,21 @@ const BlockEntry* Segment::Seek(
         assert(lo > i);
         assert(lo <= j);
 
-        Cluster* const pCluster = *--lo;
-        assert(pCluster);
-        assert(pCluster->GetTime() <= time_ns);
+        while (lo > i)
+        {
+            Cluster* const pCluster = *--lo;
+            assert(pCluster);
+            assert(pCluster->GetTime() <= time_ns);
 
-        return pCluster->GetEntry(pTrack);
+            const BlockEntry* const pBE = pCluster->GetEntry(pTrack);
+
+            if ((pBE != 0) && !pBE->EOS())
+                return pBE;
+
+            //landed on empty cluster (no entries)
+        }
+
+        return pTrack->GetEOS();  //weird
     }
 
     assert(pTrack->GetType() == 1);  //video
@@ -2761,17 +2771,16 @@ const BlockEntry* Segment::Seek(
 
     {
         const BlockEntry* const pBlockEntry = pCluster->GetEntry(pTrack);
-        assert(pBlockEntry);
 
-        if (!pBlockEntry->EOS())  //found a keyframe
+        if ((pBlockEntry != 0) && !pBlockEntry->EOS())  //found a keyframe
         {
             const Block* const pBlock = pBlockEntry->GetBlock();
             assert(pBlock);
 
-            //TODO: this isn't necessarily the keyframe we want,
+            //NOTE: this isn't necessarily the keyframe we want,
             //since there might another keyframe on this same
-            //cluster with a greater timecode that but that is
-            //still less than the requested time.  For now we
+            //cluster with a greater timecode, that is still
+            //less than the requested time.  For now we
             //simply return the first keyframe we find.
 
             if (pBlock->GetTime(pCluster) <= time_ns)
@@ -2788,9 +2797,8 @@ const BlockEntry* Segment::Seek(
         assert(pCluster->GetTime() <= time_ns);
 
         const BlockEntry* const pBlockEntry = pCluster->GetMaxKey(pVideo);
-        assert(pBlockEntry);
 
-        if (!pBlockEntry->EOS())
+        if ((pBlockEntry != 0) && !pBlockEntry->EOS())
             return pBlockEntry;
     }
 
