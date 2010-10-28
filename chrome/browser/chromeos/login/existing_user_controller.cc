@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/views/window.h"
 #include "chrome/common/chrome_switches.h"
@@ -157,6 +158,7 @@ void ExistingUserController::Init() {
         background_bounds_,
         GURL(url_string),
         &background_view_);
+    background_view_->EnableShutdownButton();
 
     if (!WizardController::IsDeviceRegistered()) {
       background_view_->SetOobeProgressBarVisible(true);
@@ -187,7 +189,6 @@ void ExistingUserController::OwnBackground(
   DCHECK(!background_window_);
   background_window_ = background_widget;
   background_view_ = background_view;
-  background_view_->OnOwnerChanged();
 }
 
 void ExistingUserController::LoginNewUser(const std::string& username,
@@ -359,10 +360,6 @@ void ExistingUserController::SelectUser(int index) {
     message.set_param(0, index);
     WmIpc::instance()->SendMessage(message);
   }
-}
-
-void ExistingUserController::OnGoIncognitoButton() {
-  LoginOffTheRecord();
 }
 
 void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {

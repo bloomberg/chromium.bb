@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/feedback_menu_button.h"
@@ -94,9 +95,8 @@ BackgroundView::BackgroundView()
       os_version_label_(NULL),
       boot_times_label_(NULL),
       progress_bar_(NULL),
-      go_incognito_button_(NULL),
+      shutdown_button_(NULL),
       did_paint_(false),
-      delegate_(NULL),
 #if defined(OFFICIAL_BUILD)
       is_official_build_(true),
 #else
@@ -118,6 +118,13 @@ void BackgroundView::Init(const GURL& background_url) {
     background_area_->SetVisible(false);
     background_area_->LoadURL(background_url);
   }
+}
+
+void BackgroundView::EnableShutdownButton() {
+  DCHECK(!shutdown_button_);
+  shutdown_button_ = new ShutdownButton();
+  shutdown_button_->Init();
+  AddChildView(shutdown_button_);
 }
 
 // static
@@ -168,21 +175,6 @@ void BackgroundView::SetOobeProgress(LoginStep step) {
     progress_bar_->SetProgress(step);
 }
 
-// Toggles GoIncognito button visibility.
-void BackgroundView::SetGoIncognitoButtonVisible(bool visible,
-                                                 Delegate *delegate) {
-  // Set delegate to handle button pressing.
-  delegate_ = delegate;
-  bool currently_visible =
-      go_incognito_button_ && go_incognito_button_->IsVisible();
-  if (currently_visible != visible) {
-    if (!go_incognito_button_) {
-      InitGoIncognitoButton();
-    }
-    go_incognito_button_->SetVisible(visible);
-  }
-}
-
 void BackgroundView::ShowScreenSaver() {
   SetStatusAreaVisible(false);
   background_area_->SetVisible(true);
@@ -201,17 +193,6 @@ bool BackgroundView::IsScreenSaverVisible() {
 
 bool BackgroundView::ScreenSaverEnabled() {
   return background_area_ != NULL;
-}
-
-void BackgroundView::OnOwnerChanged() {
-  delegate_ = NULL;
-  if (go_incognito_button_) {
-    // BackgroundView is passed among multiple controllers, so they should
-    // explicitly enable "Go incognito" button if needed.
-    RemoveChildView(go_incognito_button_);
-    delete go_incognito_button_;
-    go_incognito_button_ = NULL;
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,8 +214,6 @@ void BackgroundView::Layout() {
   const int kProgressBarBottomPadding = 20;
   const int kProgressBarWidth = 750;
   const int kProgressBarHeight = 70;
-  const int kGoIncognitoButtonBottomPadding = 12;
-  const int kGoIncognitoButtonRightPadding = 12;
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   status_area_->SetBounds(
       width() - status_area_size.width() - kCornerPadding,
@@ -264,25 +243,14 @@ void BackgroundView::Layout() {
         kProgressBarWidth,
         kProgressBarHeight);
   }
-  if (go_incognito_button_) {
-    gfx::Size go_button_size = go_incognito_button_->GetPreferredSize();
-    go_incognito_button_->SetBounds(
-          width() - go_button_size.width()- kGoIncognitoButtonRightPadding,
-          height() - go_button_size.height() - kGoIncognitoButtonBottomPadding,
-          go_button_size.width(),
-          go_button_size.height());
+  if (shutdown_button_) {
+    shutdown_button_->LayoutIn(this);
   }
   if (background_area_)
     background_area_->SetBounds(this->bounds());
 }
 
 void BackgroundView::ChildPreferredSizeChanged(View* child) {
-  Layout();
-  SchedulePaint();
-}
-
-void BackgroundView::OnLocaleChanged() {
-  UpdateLocalizedStrings();
   Layout();
   SchedulePaint();
 }
@@ -313,16 +281,6 @@ bool BackgroundView::IsBrowserMode() const {
 
 bool BackgroundView::IsScreenLockerMode() const {
   return false;
-}
-
-void BackgroundView::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
-  if (sender == go_incognito_button_) {
-    DCHECK(delegate_);
-    if (delegate_) {
-      delegate_->OnGoIncognitoButton();
-    }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -383,51 +341,6 @@ void BackgroundView::InitProgressBar() {
   steps.push_back(IDS_OOBE_PICTURE);
   progress_bar_ = new OobeProgressBar(steps);
   AddChildView(progress_bar_);
-}
-
-void BackgroundView::InitGoIncognitoButton() {
-  SkColor kButtonColor = 0xFF4F6985;
-  SkColor kStrokeColor = 0xFF657A91;
-  int kStrokeWidth = 1;
-  int kVerticalPadding = 8;
-  int kHorizontalPadding = 12;
-  int kCornerRadius = 4;
-
-  go_incognito_button_ =
-      new TextButtonWithHandCursorOver(this, std::wstring());
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  go_incognito_button_->SetIcon(*rb.GetBitmapNamed(IDR_INCOGNITO_GUY));
-  go_incognito_button_->SetFocusable(true);
-  // Set label colors.
-  go_incognito_button_->SetEnabledColor(SK_ColorWHITE);
-  go_incognito_button_->SetDisabledColor(SK_ColorWHITE);
-  go_incognito_button_->SetHighlightColor(SK_ColorWHITE);
-  go_incognito_button_->SetHoverColor(SK_ColorWHITE);
-  // Disable throbbing and make border always visible.
-  go_incognito_button_->SetAnimationDuration(0);
-  go_incognito_button_->SetNormalHasBorder(true);
-  // Setup round shapes.
-  go_incognito_button_->set_background(
-      CreateRoundedBackground(
-          kCornerRadius, kStrokeWidth, kButtonColor, kStrokeColor));
-
-  go_incognito_button_->set_border(
-      views::Border::CreateEmptyBorder(kVerticalPadding,
-                                       kHorizontalPadding,
-                                       kVerticalPadding,
-                                       kHorizontalPadding));
-  // Set button text.
-  UpdateLocalizedStrings();
-  // Enable and add to the views hierarchy.
-  go_incognito_button_->SetEnabled(true);
-  AddChildView(go_incognito_button_);
-}
-
-void BackgroundView::UpdateLocalizedStrings() {
-  if (go_incognito_button_) {
-    go_incognito_button_->SetText(
-        UTF8ToWide(l10n_util::GetStringUTF8(IDS_GO_INCOGNITO_BUTTON)));
-  }
 }
 
 void BackgroundView::UpdateWindowType() {
