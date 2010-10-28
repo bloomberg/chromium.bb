@@ -39,10 +39,9 @@ WebKitContext::~WebKitContext() {
 
 void WebKitContext::PurgeMemory() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    bool result = BrowserThread::PostTask(
+    BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
         NewRunnableMethod(this, &WebKitContext::PurgeMemory));
-    DCHECK(result);
     return;
   }
 
@@ -54,11 +53,10 @@ void WebKitContext::DeleteDataModifiedSince(
     const char* url_scheme_to_be_skipped,
     const std::vector<string16>& protected_origins) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT)) {
-    bool result = BrowserThread::PostTask(
+    BrowserThread::PostTask(
         BrowserThread::WEBKIT, FROM_HERE,
         NewRunnableMethod(this, &WebKitContext::DeleteDataModifiedSince,
                           cutoff, url_scheme_to_be_skipped, protected_origins));
-    DCHECK(result);
     return;
   }
 
