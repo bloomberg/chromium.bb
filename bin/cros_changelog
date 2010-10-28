@@ -1,0 +1,195 @@
+#!/usr/bin/python
+
+# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Helper script for printing differences between tags."""
+
+import cgi
+from datetime import datetime
+import os
+import re
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../lib'))
+from cros_build_lib import RunCommand
+
+DEFAULT_TRACKER = 'chromium-os'
+
+
+def _GrabOutput(cmd):
+  """Returns output from specified command."""
+  return RunCommand(cmd, shell=True, print_cmd=False,
+                    redirect_stdout=True).output
+
+
+def _GrabTags():
+  """Returns list of tags from current git repository."""
+  cmd = ("git for-each-ref refs/tags | awk '{print $3}' | "
+         "sed 's,refs/tags/,,g' | sort -t. -k3,3rn -k4,4rn")
+  return _GrabOutput(cmd).split()
+
+
+def _GrabDirs():
+  """Returns list of directories managed by repo."""
+  return _GrabOutput('repo forall -c "pwd"').split()
+
+
+class Commit(object):
+  """Class for tracking git commits."""
+
+  def __init__(self, commit, projectname, commit_email, commit_date, subject,
+               body):
+    """Create commit logs."""
+    self.commit = commit
+    self.projectname = projectname
+    self.commit_email = commit_email
+    fmt = '%a %b %d %H:%M:%S %Y'
+    self.commit_date = datetime.strptime(commit_date, fmt)
+    self.subject = subject
+    self.body = body
+    self.bug_ids = self._GetBugIDs()
+
+  def _GetBugIDs(self):
+    """Get bug ID from commit logs."""
+
+    entries = []
+    for line in self.body.split('\n'):
+      match = re.match(r'^ *BUG *=(.*)', line)
+      if match:
+        for i in match.group(1).split(','):
+          entries.extend(filter(None, [x.strip() for x in i.split()]))
+
+    bug_ids = []
+    last_tracker = DEFAULT_TRACKER
+    regex = (r'http://code.google.com/p/(\S+)/issues/detail\?id=([0-9]+)'
+             r'|(\S+):([0-9]+)|(\b[0-9]+\b)')
+
+    for new_item in entries:
+      bug_numbers = re.findall(regex, new_item)
+      for bug_tuple in bug_numbers:
+        if bug_tuple[0] and bug_tuple[1]:
+          bug_ids.append('%s:%s' % (bug_tuple[0], bug_tuple[1]))
+          last_tracker = bug_tuple[0]
+        elif bug_tuple[2] and bug_tuple[3]:
+          bug_ids.append('%s:%s' % (bug_tuple[2], bug_tuple[3]))
+          last_tracker = bug_tuple[2]
+        elif bug_tuple[4]:
+          bug_ids.append('%s:%s' % (last_tracker, bug_tuple[4]))
+
+    bug_ids.sort(key=str.lower)
+    return bug_ids
+
+  def AsHTMLTableRow(self):
+    """Returns HTML for this change, for printing as part of a table.
+
+    Columns: Project, Date, Commit, Committer, Bugs, Subject.
+    """
+
+    bugs = []
+    bug_url_fmt = 'http://code.google.com/p/%s/issues/detail?id=%s'
+    link_fmt = '<a href="%s">%s</a>'
+    for bug in self.bug_ids:
+      tracker, bug_id = bug.split(':')
+
+      # Get bug URL. We use short URLs to make the URLs a bit more readable.
+      if tracker == 'chromium-os':
+        bug_url = 'http://crosbug.com/%s' % bug_id
+      elif tracker == 'chrome-os-partner':
+        bug_url = 'http://crosbug.com/p/%s' % bug_id
+      else:
+        bug_url = bug_url_fmt % (tracker, bug_id)
+
+      bugs.append(link_fmt % (bug_url, bug))
+
+    url_fmt = 'http://chromiumos-git/git/?p=%s.git;a=commitdiff;h=%s'
+    url = url_fmt % (self.projectname, self.commit)
+    commit_desc = link_fmt % (url, self.commit[:8])
+    bug_str = '<br>'.join(bugs)
+    if not bug_str:
+      if (self.projectname == 'kernel-next' or
+          self.commit_email == 'chrome-bot@chromium.org'):
+        bug_str = 'not needed'
+      else:
+        bug_str = '<font color="red">none</font>'
+
+    cols = [
+      cgi.escape(self.projectname),
+      str(self.commit_date),
+      commit_desc,
+      cgi.escape(self.commit_email),
+      bug_str,
+      cgi.escape(self.subject[:100]),
+    ]
+    return '<tr><td>%s</td></tr>' % ('</td><td>'.join(cols))
+
+  def __cmp__(self, other):
+    """Compare two Commit objects first by project name, then by date."""
+    return (cmp(self.projectname, other.projectname) or
+            cmp(self.commit_date, other.commit_date))
+
+
+def _GrabChanges(path, tag1, tag2):
+  """Return list of commits to path between tag1 and tag2."""
+
+  cmd = 'cd %s && git config --get remote.cros.projectname' % path
+  projectname = _GrabOutput(cmd).strip()
+  log_fmt = '%x00%H\t%ce\t%cd\t%s\t%b'
+  cmd_fmt = 'cd %s && git log --format="%s" --date=local %s..%s'
+  cmd = cmd_fmt % (path, log_fmt, tag1, tag2)
+  output = _GrabOutput(cmd)
+  commits = []
+  for log_data in output.split('\0')[1:]:
+    commit, commit_email, commit_date, subject, body = log_data.split('\t', 4)
+    change = Commit(commit, projectname, commit_email, commit_date, subject,
+                    body)
+    commits.append(change)
+  return commits
+
+
+def main():
+  tags = _GrabTags()
+  tag1 = None
+  if len(sys.argv) == 3:
+    tag1 = sys.argv[1]
+    tag2 = sys.argv[2]
+  elif len(sys.argv) == 2:
+    tag2 = sys.argv[1]
+  else:
+    print >>sys.stderr, 'Usage: %s [tag1] tag2' % sys.argv[0]
+    print >>sys.stderr, 'If only one tag is specified, we view the differences'
+    print >>sys.stderr, 'between that tag and the previous tag. You can also'
+    print >>sys.stderr, 'specify cros/master to show differences with'
+    print >>sys.stderr, 'tip-of-tree.'
+    sys.exit(1)
+  if not tag2.startswith('cros/') and tag2 not in tags:
+    print >>sys.stderr, 'Unrecognized tag: %s' % tag2
+    sys.exit(1)
+  if not tag1:
+    tag1 = tags[tags.index(tag2) + 1]
+  if not tag1.startswith('cros/') and tag1 not in tags:
+    print >>sys.stderr, 'Unrecognized tag: %s' % tag1
+    sys.exit(1)
+
+  print >>sys.stderr, 'Finding differences between %s and %s' % (tag1, tag2)
+  paths = _GrabDirs()
+  changes = []
+  for path in paths:
+    changes.extend(_GrabChanges(path, tag1, tag2))
+
+  title = 'Changelog for %s to %s' % (tag1, tag2)
+  print '<html>'
+  print '<head><title>%s</title></head>' % title
+  print '<h1>%s</h1>' % title
+  cols = ['Project', 'Date', 'Commit', 'Committer', 'Bugs', 'Subject']
+  print '<table border="1" cellpadding="4">'
+  print '<tr><th>%s</th>' % ('</th><th>'.join(cols))
+  for change in sorted(changes):
+    print change.AsHTMLTableRow()
+  print '</table>'
+  print '</html>'
+
+
+if __name__ == '__main__':
+  main()
