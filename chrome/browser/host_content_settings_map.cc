@@ -658,12 +658,19 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
     return;
   }
 
+  PrefService* prefs = profile_->GetPrefs();
+  // If the preference block-third-party-cookies is managed then do not allow to
+  // change it.
+  if (prefs->IsManagedPreference(prefs::kBlockThirdPartyCookies)) {
+    NOTREACHED();
+    return;
+  }
+
   {
     AutoLock auto_lock(lock_);
     block_third_party_cookies_ = block;
   }
 
-  PrefService* prefs = profile_->GetPrefs();
   if (block)
     prefs->SetBoolean(prefs::kBlockThirdPartyCookies, true);
   else
@@ -1004,4 +1011,3 @@ void HostContentSettingsMap::CanonicalizeContentSettingsExceptions(
         move_items[i].second, pattern_settings_dictionary);
   }
 }
-
