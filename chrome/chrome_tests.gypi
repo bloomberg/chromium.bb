@@ -456,6 +456,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
+        'chrome_mesa',
         'default_plugin/default_plugin.gyp:default_plugin',
         '../third_party/ppapi/ppapi.gyp:ppapi_tests',
         '../webkit/support/webkit_support.gyp:copy_npapi_layout_test_plugin',
@@ -523,7 +524,6 @@
         # http://code.google.com/p/chromium/issues/detail?id=18337
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
-            'chrome_mesa',
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
         }],
@@ -1847,6 +1847,8 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        # Runtime dependencies
+        'chrome_mesa',
       ],
       'include_dirs': [
         '..',
