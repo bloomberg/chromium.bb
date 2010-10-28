@@ -8,6 +8,7 @@
 #include <wincrypt.h>
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -18,7 +19,7 @@
 
 namespace {
 
-bool LaunchTestServerAsJob(const std::wstring& cmdline,
+bool LaunchTestServerAsJob(const CommandLine& cmdline,
                            bool start_hidden,
                            base::ProcessHandle* process_handle,
                            ScopedHandle* job_handle) {
@@ -32,10 +33,10 @@ bool LaunchTestServerAsJob(const std::wstring& cmdline,
   // If this code is run under a debugger, the test server process is
   // automatically associated with a job object created by the debugger.
   // The CREATE_BREAKAWAY_FROM_JOB flag is used to prevent this.
-  if (!CreateProcess(NULL,
-                     const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
-                     TRUE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
-                     &startup_info, &process_info)) {
+  if (!CreateProcess(
+      NULL, const_cast<wchar_t*>(cmdline.command_line_string().c_str()),
+      NULL, NULL, TRUE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL,
+      &startup_info, &process_info)) {
     LOG(ERROR) << "Could not create process.";
     return false;
   }
@@ -74,6 +75,7 @@ bool LaunchTestServerAsJob(const std::wstring& cmdline,
 }  // namespace
 
 namespace net {
+
 bool TestServer::LaunchPython(const FilePath& testserver_path) {
   FilePath python_exe;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_exe))
@@ -83,29 +85,10 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
       .Append(FILE_PATH_LITERAL("python_24"))
       .Append(FILE_PATH_LITERAL("python.exe"));
 
-  std::wstring command_line =
-      L"\"" + python_exe.value() + L"\" " +
-      L"\"" + testserver_path.value() +
-      L"\" --port=" + ASCIIToWide(base::IntToString(host_port_pair_.port())) +
-      L" --data-dir=\"" + document_root_.value() + L"\"";
-
-  if (type_ == TYPE_FTP)
-    command_line.append(L" -f");
-
-  FilePath certificate_path(GetCertificatePath());
-  if (!certificate_path.value().empty()) {
-    if (!file_util::PathExists(certificate_path)) {
-      LOG(ERROR) << "Certificate path " << certificate_path.value()
-                 << " doesn't exist. Can't launch https server.";
-      return false;
-    }
-    command_line.append(L" --https=\"");
-    command_line.append(certificate_path.value());
-    command_line.append(L"\"");
-  }
-
-  if (type_ == TYPE_HTTPS_CLIENT_AUTH)
-    command_line.append(L" --ssl-client-auth");
+  CommandLine python_command(python_exe);
+  python_command.AppendArgPath(testserver_path);
+  if (!AddCommandLineArguments(&python_command))
+    return false;
 
   HANDLE child_read = NULL;
   HANDLE child_write = NULL;
@@ -133,15 +116,15 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   // safe to truncate the handle (when passing it from 64-bit to
   // 32-bit) or sign-extend the handle (when passing it from 32-bit to
   // 64-bit)."
-  command_line.append(
-      L" --startup-pipe=" +
-      ASCIIToWide(base::IntToString(reinterpret_cast<uintptr_t>(child_write))));
+  python_command.AppendSwitchASCII(
+      "startup-pipe",
+      base::IntToString(reinterpret_cast<uintptr_t>(child_write)));
 
-  if (!LaunchTestServerAsJob(command_line,
+  if (!LaunchTestServerAsJob(python_command,
                              true,
                              &process_handle_,
                              &job_handle_)) {
-    LOG(ERROR) << "Failed to launch " << command_line;
+    LOG(ERROR) << "Failed to launch " << python_command.command_line_string();
     return false;
   }
 

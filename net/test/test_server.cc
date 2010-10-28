@@ -30,6 +30,8 @@
 #include "net/test/python_utils.h"
 #include "testing/platform_test.h"
 
+namespace net {
+
 namespace {
 
 // Number of connection attempts for tests.
@@ -40,30 +42,43 @@ const int kServerConnectionTimeoutMs = 1000;
 
 const char kTestServerShardFlag[] = "test-server-shard";
 
-int GetPortBase(net::TestServer::Type type) {
-  switch (type) {
-    case net::TestServer::TYPE_FTP:
-      return 3117;
-    case net::TestServer::TYPE_HTTP:
-      return 1337;
-    case net::TestServer::TYPE_HTTPS:
+int GetHTTPSPortBase(const TestServer::HTTPSOptions& options) {
+  if (options.request_client_certificate)
+    return 9543;
+
+  switch (options.server_certificate) {
+    case TestServer::HTTPSOptions::CERT_OK:
       return 9443;
-    case net::TestServer::TYPE_HTTPS_CLIENT_AUTH:
-      return 9543;
-    case net::TestServer::TYPE_HTTPS_EXPIRED_CERTIFICATE:
+    case TestServer::HTTPSOptions::CERT_MISMATCHED_NAME:
+      return 9643;
+    case TestServer::HTTPSOptions::CERT_EXPIRED:
       // TODO(phajdan.jr): Some tests rely on this hardcoded value.
       // Some uses of this are actually in .html/.js files.
       return 9666;
-    case net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME:
-      return 9643;
     default:
       NOTREACHED();
   }
   return -1;
 }
 
-int GetPort(net::TestServer::Type type) {
-  int port = GetPortBase(type);
+int GetPortBase(TestServer::Type type,
+                const TestServer::HTTPSOptions& options) {
+  switch (type) {
+    case TestServer::TYPE_FTP:
+      return 3117;
+    case TestServer::TYPE_HTTP:
+      return 1337;
+    case TestServer::TYPE_HTTPS:
+      return GetHTTPSPortBase(options);
+    default:
+      NOTREACHED();
+  }
+  return -1;
+}
+
+int GetPort(TestServer::Type type,
+            const TestServer::HTTPSOptions& options) {
+  int port = GetPortBase(type, options);
   if (CommandLine::ForCurrentProcess()->HasSwitch(kTestServerShardFlag)) {
     std::string shard_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                               kTestServerShardFlag));
@@ -78,8 +93,11 @@ int GetPort(net::TestServer::Type type) {
   return port;
 }
 
-std::string GetHostname(net::TestServer::Type type) {
-  if (type == net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME) {
+std::string GetHostname(TestServer::Type type,
+                        const TestServer::HTTPSOptions& options) {
+  if (type == TestServer::TYPE_HTTPS &&
+      options.server_certificate ==
+          TestServer::HTTPSOptions::CERT_MISMATCHED_NAME) {
     // Return a different hostname string that resolves to the same hostname.
     return "localhost";
   }
@@ -89,16 +107,59 @@ std::string GetHostname(net::TestServer::Type type) {
 
 }  // namespace
 
-namespace net {
-
 #if defined(OS_MACOSX)
 void SetMacTestCertificate(X509Certificate* cert);
 #endif
 
+TestServer::HTTPSOptions::HTTPSOptions()
+    : server_certificate(CERT_OK),
+      request_client_certificate(false),
+      bulk_ciphers(HTTPSOptions::BULK_CIPHER_ANY) {}
+
+TestServer::HTTPSOptions::HTTPSOptions(
+    TestServer::HTTPSOptions::ServerCertificate cert)
+    : server_certificate(cert),
+      request_client_certificate(false),
+      bulk_ciphers(HTTPSOptions::BULK_CIPHER_ANY) {}
+
+TestServer::HTTPSOptions::~HTTPSOptions() {}
+
+FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
+  switch (server_certificate) {
+    case CERT_OK:
+    case CERT_MISMATCHED_NAME:
+      return FilePath(FILE_PATH_LITERAL("ok_cert.pem"));
+    case CERT_EXPIRED:
+      return FilePath(FILE_PATH_LITERAL("expired_cert.pem"));
+    default:
+      NOTREACHED();
+  }
+  return FilePath();
+}
+
 TestServer::TestServer(Type type, const FilePath& document_root)
-    : host_port_pair_(GetHostname(type), GetPort(type)),
-      process_handle_(base::kNullProcessHandle),
-      type_(type) {
+    : type_(type) {
+  Init(document_root);
+}
+
+TestServer::TestServer(const HTTPSOptions& https_options,
+                       const FilePath& document_root)
+    : https_options_(https_options), type_(TYPE_HTTPS) {
+  Init(document_root);
+}
+
+TestServer::~TestServer() {
+#if defined(OS_MACOSX)
+  SetMacTestCertificate(NULL);
+#endif
+  Stop();
+}
+
+void TestServer::Init(const FilePath& document_root) {
+  host_port_pair_ = HostPortPair(GetHostname(type_, https_options_),
+                                 GetPort(type_, https_options_));
+  process_handle_ = base::kNullProcessHandle;
+
   FilePath src_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &src_dir);
 
@@ -110,15 +171,8 @@ TestServer::TestServer(Type type, const FilePath& document_root)
                        .Append(FILE_PATH_LITERAL("certificates"));
 }
 
-TestServer::~TestServer() {
-#if defined(OS_MACOSX)
-  SetMacTestCertificate(NULL);
-#endif
-  Stop();
-}
-
 bool TestServer::Start() {
-  if (GetScheme() == "https") {
+  if (type_ == TYPE_HTTPS) {
     if (!LoadTestRootCert())
       return false;
     if (!CheckCATrusted())
@@ -177,9 +231,6 @@ std::string TestServer::GetScheme() const {
     case TYPE_HTTP:
       return "http";
     case TYPE_HTTPS:
-    case TYPE_HTTPS_CLIENT_AUTH:
-    case TYPE_HTTPS_MISMATCHED_HOSTNAME:
-    case TYPE_HTTPS_EXPIRED_CERTIFICATE:
       return "https";
     default:
       NOTREACHED();
@@ -292,21 +343,51 @@ bool TestServer::LoadTestRootCert() {
 #endif
 }
 
-FilePath TestServer::GetCertificatePath() {
-  switch (type_) {
-    case TYPE_FTP:
-    case TYPE_HTTP:
-      return FilePath();
-    case TYPE_HTTPS:
-    case TYPE_HTTPS_CLIENT_AUTH:
-    case TYPE_HTTPS_MISMATCHED_HOSTNAME:
-      return certificates_dir_.AppendASCII("ok_cert.pem");
-    case TYPE_HTTPS_EXPIRED_CERTIFICATE:
-      return certificates_dir_.AppendASCII("expired_cert.pem");
-    default:
-      NOTREACHED();
+bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
+  command_line->AppendSwitchASCII("port",
+                                  base::IntToString(host_port_pair_.port()));
+  command_line->AppendSwitchPath("data-dir", document_root_);
+
+  if (type_ == TYPE_FTP) {
+    command_line->AppendArg("-f");
+  } else if (type_ == TYPE_HTTPS) {
+    FilePath certificate_path(certificates_dir_);
+    certificate_path = certificate_path.Append(
+        https_options_.GetCertificateFile());
+    if (!file_util::PathExists(certificate_path)) {
+      LOG(ERROR) << "Certificate path " << certificate_path.value()
+                 << " doesn't exist. Can't launch https server.";
+      return false;
+    }
+    command_line->AppendSwitchPath("https", certificate_path);
+
+    if (https_options_.request_client_certificate)
+      command_line->AppendSwitch("ssl-client-auth");
+
+    for (std::vector<FilePath>::const_iterator it =
+             https_options_.client_authorities.begin();
+         it != https_options_.client_authorities.end(); ++it) {
+      if (!file_util::PathExists(*it)) {
+        LOG(ERROR) << "Client authority path " << it->value()
+                   << " doesn't exist. Can't launch https server.";
+        return false;
+      }
+
+      command_line->AppendSwitchPath("ssl-client-ca", *it);
+    }
+
+    const char kBulkCipherSwitch[] = "ssl-bulk-cipher";
+    if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_RC4)
+      command_line->AppendSwitchASCII(kBulkCipherSwitch, "rc4");
+    if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_AES128)
+      command_line->AppendSwitchASCII(kBulkCipherSwitch, "aes128");
+    if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_AES256)
+      command_line->AppendSwitchASCII(kBulkCipherSwitch, "aes256");
+    if (https_options_.bulk_ciphers & HTTPSOptions::BULK_CIPHER_3DES)
+      command_line->AppendSwitchASCII(kBulkCipherSwitch, "3des");
   }
-  return FilePath();
+
+  return true;
 }
 
 }  // namespace net

@@ -20,13 +20,16 @@
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 class SSLUITest : public InProcessBrowserTest {
+  typedef net::TestServer::HTTPSOptions HTTPSOptions;
+
  public:
   SSLUITest()
-      : https_server_(net::TestServer::TYPE_HTTPS, FilePath(kDocRoot)),
-        https_server_expired_(net::TestServer::TYPE_HTTPS_EXPIRED_CERTIFICATE,
-                              FilePath(kDocRoot)),
+      : https_server_(
+            HTTPSOptions(HTTPSOptions::CERT_OK), FilePath(kDocRoot)),
+        https_server_expired_(
+            HTTPSOptions(HTTPSOptions::CERT_EXPIRED), FilePath(kDocRoot)),
         https_server_mismatched_(
-            net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME,
+            HTTPSOptions(HTTPSOptions::CERT_MISMATCHED_NAME),
             FilePath(kDocRoot)) {
     EnableDOMAutomation();
   }

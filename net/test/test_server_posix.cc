@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/process_util.h"
@@ -55,28 +56,12 @@ class OrphanedTestServerFilter : public base::ProcessFilter {
 }  // namespace
 
 namespace net {
+
 bool TestServer::LaunchPython(const FilePath& testserver_path) {
-  std::vector<std::string> command_line;
-  command_line.push_back("python");
-  command_line.push_back(testserver_path.value());
-  command_line.push_back("--port=" + base::IntToString(host_port_pair_.port()));
-  command_line.push_back("--data-dir=" + document_root_.value());
-
-  if (type_ == TYPE_FTP)
-    command_line.push_back("-f");
-
-  FilePath certificate_path(GetCertificatePath());
-  if (!certificate_path.value().empty()) {
-    if (!file_util::PathExists(certificate_path)) {
-      LOG(ERROR) << "Certificate path " << certificate_path.value()
-                 << " doesn't exist. Can't launch https server.";
-      return false;
-    }
-    command_line.push_back("--https=" + certificate_path.value());
-  }
-
-  if (type_ == TYPE_HTTPS_CLIENT_AUTH)
-    command_line.push_back("--ssl-client-auth");
+  CommandLine python_command(FilePath(FILE_PATH_LITERAL("python")));
+  python_command.AppendArgPath(testserver_path);
+  if (!AddCommandLineArguments(&python_command))
+    return false;
 
   int pipefd[2];
   if (pipe(pipefd) != 0) {
@@ -91,7 +76,8 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   base::file_handle_mapping_vector map_write_fd;
   map_write_fd.push_back(std::make_pair(pipefd[1], pipefd[1]));
 
-  command_line.push_back("--startup-pipe=" + base::IntToString(pipefd[1]));
+  python_command.AppendSwitchASCII("startup-pipe",
+                                   base::IntToString(pipefd[1]));
 
   // Try to kill any orphaned testserver processes that may be running.
   OrphanedTestServerFilter filter(testserver_path.value(),
@@ -101,8 +87,10 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   }
 
   // Launch a new testserver process.
-  if (!base::LaunchApp(command_line, map_write_fd, false, &process_handle_)) {
-    LOG(ERROR) << "Failed to launch " << command_line[0] << " ...";
+  if (!base::LaunchApp(python_command.argv(), map_write_fd, false,
+                       &process_handle_)) {
+    LOG(ERROR) << "Failed to launch " << python_command.command_line_string()
+               << " ...";
     return false;
   }
 
