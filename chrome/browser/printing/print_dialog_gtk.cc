@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
@@ -169,7 +170,13 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* job, GError* error) {
   if (job)
     g_object_unref(job);
 
-  file_util::Delete(path_to_pdf_, false);
+  {
+    // We should not be doing disk access from the UI thread!
+    // Temporarily allowing until we fix:
+    //   http://code.google.com/p/chromium/issues/detail?id=60988
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    file_util::Delete(path_to_pdf_, false);
+  }
 
   delete this;
 }
