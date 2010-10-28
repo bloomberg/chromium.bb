@@ -404,6 +404,8 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_DISABLEDPLUGINS_DESC" desc="Description of the 'disable plugins' policy.">
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
+      The wildcard characters '*' and '?' can be used to match sequences of arbitrary characters. '*' matches an arbitrary number of characters while '?' specifies an optional single character, i.e. matches zero or one characters. The escape character is '\', so to match actual '*', '?', or '\' characters, you can put a '\' in front of them.
+
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
     </message>
     <message name="IDS_POLICY_DISABLEDPLUGINS_LABEL" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
