@@ -1197,9 +1197,7 @@
    fun:sqlite3_step
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase15InitLoginsTableEv
-   fun:_ZN11WebDatabase4InitERK8FilePath
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556b
@@ -1216,8 +1214,7 @@
    fun:_ZN3sql9Statement3RunEv
    fun:_ZN3sql10Connection17CommitTransactionEv
    fun:_ZN3sql11Transaction6CommitEv
-   fun:_ZN11WebDatabase4InitERK8FilePath
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556c
@@ -1233,8 +1230,7 @@
    fun:_ZN3sql9Statement3RunEv
    fun:_ZN3sql10Connection17CommitTransactionEv
    fun:_ZN3sql11Transaction6CommitEv
-   fun:_ZN11WebDatabase4InitERK8FilePath
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556d
@@ -1251,8 +1247,7 @@
    fun:_ZN3sql9Statement3RunEv
    fun:_ZN3sql10Connection17CommitTransactionEv
    fun:_ZN3sql11Transaction6CommitEv
-   fun:_ZN11WebDatabase4InitERK8FilePath
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556e
@@ -1266,9 +1261,7 @@
    fun:sqlite3_step
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase15InitLoginsTableEv
-   fun:_ZN11WebDatabase4InitERK8FilePath
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556f
@@ -1282,9 +1275,7 @@
    fun:sqlite3_step
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase15InitLoginsTableEv
-   fun:_ZN11WebDatabase4InitERK8FilePath
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556g
@@ -1294,7 +1285,7 @@
    ...
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase15InitLoginsTableEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_60556h
@@ -1303,7 +1294,7 @@
    ...
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase15InitLoginsTableEv
+   fun:_ZN11WebDatabase*
 }
 {
    bug_20581
