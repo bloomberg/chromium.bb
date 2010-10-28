@@ -4092,6 +4092,13 @@
                 },
               ],
             }],
+            ['OS=="linux" and gcc_version==45', {
+              # Avoid gcc 4.5 miscompilation of template_url.cc
+              # as per http://crbug.com/41887
+              'cflags': [
+                '-fno-ipa-cp',
+              ],
+            }],
           ],
           # Exclude files that should be excluded for all non-Windows platforms.
           'sources!': [
