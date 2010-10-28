@@ -58,7 +58,6 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
                                              bool incognito_enabled) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  size_t num_before = service->extensions()->size();
   {
     NotificationRegistrar registrar;
     registrar.Add(this, NotificationType::EXTENSION_LOADED,
@@ -66,15 +65,26 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
     service->LoadExtension(path);
     ui_test_utils::RunMessageLoop();
   }
-  size_t num_after = service->extensions()->size();
-  if (num_after != (num_before + 1))
+
+  // Find the extension by iterating backwards since it is likely last.
+  FilePath extension_path = path;
+  file_util::AbsolutePath(&extension_path);
+  Extension* extension = NULL;
+  for (ExtensionList::const_reverse_iterator iter =
+           service->extensions()->rbegin();
+       iter != service->extensions()->rend(); ++iter) {
+    if ((*iter)->path() == extension_path) {
+      extension = *iter;
+      break;
+    }
+  }
+  if (!extension)
     return false;
 
   if (incognito_enabled) {
     // Enable the incognito bit in the extension prefs. The call to
     // OnExtensionInstalled ensures the other extension prefs are set up with
     // the defaults.
-    Extension* extension = service->extensions()->at(num_after - 1);
     service->extension_prefs()->OnExtensionInstalled(
         extension, Extension::ENABLED, false);
     service->SetIsIncognitoEnabled(extension, true);
