@@ -1259,6 +1259,7 @@
         'browser/extensions/extension_process_manager_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',
+        'browser/extensions/extension_webnavigation_unittest.cc',
         'browser/extensions/extensions_quota_service_unittest.cc',
         'browser/extensions/extensions_service_unittest.cc',
         'browser/extensions/extensions_service_unittest.h',

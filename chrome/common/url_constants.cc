@@ -140,6 +140,8 @@ const char kChromeUIWrenchMenu[] = "wrench-menu";
 const char kChromeUINetworkMenu[] = "network-menu";
 #endif
 
+const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";
+
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 
 const char kBlobViewInternalsURL[] = "chrome://blob-internals/";

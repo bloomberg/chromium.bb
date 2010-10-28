@@ -131,6 +131,9 @@ extern const char kChromeUIWrenchMenu[];
 extern const char kChromeUINetworkMenu[];
 #endif
 
+// Special URL used to start a navigation to an error page.
+extern const char kUnreachableWebDataURL[];
+
 // AppCache related URL.
 extern const char kAppCacheViewInternalsURL[];
 

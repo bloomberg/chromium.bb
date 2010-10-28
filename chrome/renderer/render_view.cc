@@ -305,7 +305,6 @@ static const int kDelaySecondsForContentStateSync = 1;
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
-static const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";
 static const char kBackForwardNavigationScheme[] = "history";
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
@@ -1675,7 +1674,7 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
   }
 
   frame->loadHTMLString(alt_html,
-                        GURL(kUnreachableWebDataURL),
+                        GURL(chrome::kUnreachableWebDataURL),
                         failed_url,
                         replace);
 }
@@ -4828,7 +4827,7 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
   // Load an empty page first so there is an immediate response to the error,
   // and then kick off a request for the alternate error page.
   frame->loadHTMLString(std::string(),
-                        GURL(kUnreachableWebDataURL),
+                        GURL(chrome::kUnreachableWebDataURL),
                         error.unreachableURL,
                         replace);
 
