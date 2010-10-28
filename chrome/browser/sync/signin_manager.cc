@@ -83,6 +83,9 @@ void SigninManager::ProvideSecondFactorAccessCode(
 }
 
 void SigninManager::SignOut() {
+  if (!profile_)
+    return;
+
   client_login_.reset();
   last_result_ = ClientLoginResult();
   username_.clear();
