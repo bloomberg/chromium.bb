@@ -7,7 +7,9 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "net/base/io_buffer.h"
-#include "remoting/protocol/messages_decoder.h"
+#include "remoting/base/multiple_array_input_stream.h"
+#include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/message_decoder.h"
 #include "remoting/protocol/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,44 +62,42 @@ static void PrepareData(uint8** buffer, int* size) {
   memcpy(*buffer, encoded_data.c_str(), *size);
 }
 
-TEST(MessagesDecoderTest, BasicOperations) {
+void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   // Prepare encoded data for testing.
   int size;
   uint8* test_data;
   PrepareData(&test_data, &size);
   scoped_array<uint8> memory_deleter(test_data);
 
-  // Then simulate using MessagesDecoder to decode variable
+  // Then simulate using MessageDecoder to decode variable
   // size of encoded data.
   // The first thing to do is to generate a variable size of data. This is done
   // by iterating the following array for read sizes.
-  const int kReadSizes[] = {1, 2, 3, 1};
-
-  MessagesDecoder decoder;
+  MessageDecoder decoder;
 
   // Then feed the protocol decoder using the above generated data and the
   // read pattern.
-  HostMessageList message_list;
+  std::list<ChromotingHostMessage*> message_list;
   for (int i = 0; i < size;) {
     // First generate the amount to feed the decoder.
-    int read = std::min(size - i, kReadSizes[i % arraysize(kReadSizes)]);
+    int read = std::min(size - i, read_sequence[i % sequence_size]);
 
-    // And then prepare a DataBuffer for feeding it.
+    // And then prepare an IOBuffer for feeding it.
     scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(read);
     memcpy(buffer->data(), test_data + i, read);
-    decoder.ParseHostMessages(buffer, read, &message_list);
+    decoder.ParseMessages(buffer, read, &message_list);
     i += read;
   }
 
   // Then verify the decoded messages.
   EXPECT_EQ(31u, message_list.size());
-  ASSERT_TRUE(message_list.size() > 0);
   EXPECT_TRUE(message_list.front()->has_init_client());
   delete message_list.front();
   message_list.pop_front();
 
   int index = 0;
-  for (HostMessageList::iterator it = message_list.begin();
+  for (std::list<ChromotingHostMessage*>::iterator it =
+           message_list.begin();
        it != message_list.end(); ++it) {
     ChromotingHostMessage* message = *it;
     int type = index % 3;
@@ -116,6 +116,21 @@ TEST(MessagesDecoderTest, BasicOperations) {
     }
   }
   STLDeleteElements(&message_list);
+}
+
+TEST(MessageDecoderTest, SmallReads) {
+  const int kReads[] = {1, 2, 3, 1};
+  SimulateReadSequence(kReads, arraysize(kReads));
+}
+
+TEST(MessageDecoderTest, LargeReads) {
+  const int kReads[] = {50, 50, 5};
+  SimulateReadSequence(kReads, arraysize(kReads));
+}
+
+TEST(MessageDecoderTest, EmptyReads) {
+  const int kReads[] = {4, 0, 50, 0};
+  SimulateReadSequence(kReads, arraysize(kReads));
 }
 
 }  // namespace remoting

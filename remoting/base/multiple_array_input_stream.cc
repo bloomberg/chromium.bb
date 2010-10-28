@@ -5,13 +5,13 @@
 #include <functional>
 
 #include "base/logging.h"
+#include "net/base/io_buffer.h"
 #include "remoting/base/multiple_array_input_stream.h"
 
 namespace remoting {
 
 MultipleArrayInputStream::MultipleArrayInputStream()
     : current_buffer_(0),
-      current_buffer_offset_(0),
       position_(0),
       last_returned_size_(0) {
 }
@@ -19,24 +19,21 @@ MultipleArrayInputStream::MultipleArrayInputStream()
 MultipleArrayInputStream::~MultipleArrayInputStream() {
 }
 
-void MultipleArrayInputStream::AddBuffer(
-    const char* buffer, int size) {
+void MultipleArrayInputStream::AddBuffer(net::IOBuffer* buffer, int size) {
   DCHECK_EQ(position_, 0); // Haven't started reading.
-  buffers_.push_back(buffer);
-  buffer_sizes_.push_back(size);
-  DCHECK_EQ(buffers_.size(), buffer_sizes_.size());
+  buffers_.push_back(new net::DrainableIOBuffer(buffer, size));
 }
 
 bool MultipleArrayInputStream::Next(const void** data, int* size) {
   if (current_buffer_ < buffers_.size()) {
-    // Also reply with that is remaining in the current buffer.
-    last_returned_size_ =
-        buffer_sizes_[current_buffer_] - current_buffer_offset_;
-    *data = buffers_[current_buffer_] + current_buffer_offset_;
+    // Reply with the number of bytes remaining in the current buffer.
+    scoped_refptr<net::DrainableIOBuffer> buffer = buffers_[current_buffer_];
+    last_returned_size_ = buffer->BytesRemaining();
+    *data = buffer->data();
     *size = last_returned_size_;
 
     // After reading the current buffer then advance to the next buffer.
-    current_buffer_offset_ = 0;
+    buffer->DidConsume(last_returned_size_);
     ++current_buffer_;
     position_ += last_returned_size_;
     return true;
@@ -52,14 +49,13 @@ bool MultipleArrayInputStream::Next(const void** data, int* size) {
 
 void MultipleArrayInputStream::BackUp(int count) {
   DCHECK_LE(count, last_returned_size_);
-  DCHECK_EQ(0, current_buffer_offset_);
   DCHECK_GT(current_buffer_, 0u);
 
-  // Rewind one buffer.
+  // Rewind one buffer and rewind data offset by |count| bytes.
   --current_buffer_;
-  current_buffer_offset_ = buffer_sizes_[current_buffer_] - count;
+  scoped_refptr<net::DrainableIOBuffer> buffer = buffers_[current_buffer_];
+  buffer->SetOffset(buffer->size() - count);
   position_ -= count;
-  DCHECK_GE(current_buffer_offset_, 0);
   DCHECK_GE(position_, 0);
 }
 
@@ -68,20 +64,17 @@ bool MultipleArrayInputStream::Skip(int count) {
   last_returned_size_ = 0;
 
   while (count && current_buffer_ < buffers_.size()) {
-    int read = std::min(
-        count,
-        buffer_sizes_[current_buffer_] - current_buffer_offset_);
+    scoped_refptr<net::DrainableIOBuffer> buffer = buffers_[current_buffer_];
+    int read = std::min(count, buffer->BytesRemaining());
 
     // Advance the current buffer offset and position.
-    current_buffer_offset_ += read;
+    buffer->DidConsume(read);
     position_ += read;
     count -= read;
 
     // If the current buffer is fully read, then advance to the next buffer.
-    if (current_buffer_offset_ == buffer_sizes_[current_buffer_]) {
+    if (!buffer->BytesRemaining())
       ++current_buffer_;
-      current_buffer_offset_ = 0;
-    }
   }
   return count == 0;
 }

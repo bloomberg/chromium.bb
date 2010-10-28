@@ -11,6 +11,7 @@
 #include "remoting/client/host_connection.h"
 #include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
+#include "remoting/proto/internal.pb.h"
 
 namespace remoting {
 

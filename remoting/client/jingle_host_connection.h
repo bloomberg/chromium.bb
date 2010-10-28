@@ -25,9 +25,9 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/chromotocol_server.h"
-#include "remoting/protocol/stream_reader.h"
 #include "remoting/protocol/stream_writer.h"
 
 class MessageLoop;
@@ -85,7 +85,7 @@ class JingleHostConnection : public HostConnection,
   scoped_refptr<ChromotocolConnection> connection_;
 
   EventStreamWriter event_writer_;
-  VideoStreamReader video_reader_;
+  MessageReader video_reader_;
 
   HostEventCallback* event_callback_;
 

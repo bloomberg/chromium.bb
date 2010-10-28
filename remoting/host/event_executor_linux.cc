@@ -4,7 +4,8 @@
 
 #include "remoting/host/event_executor_linux.h"
 
-#include "remoting/protocol/messages_decoder.h"
+#include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/message_decoder.h"
 
 namespace remoting {
 

@@ -5,8 +5,8 @@
 #ifndef REMOTING_PROTOCOL_STREAM_WRITER_H_
 #define REMOTING_PROTOCOL_STREAM_WRITER_H_
 
+#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
-#include "remoting/protocol/messages_decoder.h"
 
 namespace remoting {
 

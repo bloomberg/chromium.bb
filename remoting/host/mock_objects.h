@@ -8,7 +8,7 @@
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/event_executor.h"
-#include "remoting/protocol/messages_decoder.h"
+#include "remoting/proto/internal.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {

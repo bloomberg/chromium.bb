@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "net/base/io_buffer.h"
 #include "remoting/base/multiple_array_input_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,7 +72,7 @@ static void PrepareData(scoped_ptr<MultipleArrayInputStream>* stream) {
   const char* data = kTestData.c_str();
   for (int i = 0; i < segments; ++i) {
     int size = i % 2 == 0 ? 1 : 2;
-    mstream->AddBuffer(data, size);
+    mstream->AddBuffer(new net::StringIOBuffer(std::string(data, size)), size);
     data += size;
   }
   stream->reset(mstream);

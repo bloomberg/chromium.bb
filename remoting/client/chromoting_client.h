@@ -7,11 +7,12 @@
 #ifndef REMOTING_CLIENT_CHROMOTING_CLIENT_H
 #define REMOTING_CLIENT_CHROMOTING_CLIENT_H
 
+#include <list>
+
 #include "base/task.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_view.h"
-#include "remoting/protocol/messages_decoder.h"
 
 class MessageLoop;
 
@@ -89,7 +90,7 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   // processed.
   //
   // Used to serialize sending of messages to the client.
-  HostMessageList received_messages_;
+  std::list<ChromotingHostMessage*> received_messages_;
 
   // True if a message is being processed. Can be used to determine if it is
   // safe to dispatch another message.

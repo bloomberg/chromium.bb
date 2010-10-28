@@ -7,9 +7,9 @@
 
 #include "base/ref_counted.h"
 #include "net/base/completion_callback.h"
-#include "remoting/protocol/messages_decoder.h"
 
 namespace net {
+class IOBuffer;
 class Socket;
 }  // namespace net
 

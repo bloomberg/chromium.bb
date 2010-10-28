@@ -12,7 +12,7 @@
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/client_connection.h"
-#include "remoting/protocol/messages_decoder.h"
+#include "remoting/protocol/message_decoder.h"
 
 namespace remoting {
 

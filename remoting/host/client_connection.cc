@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(hclam): Remove this header once MessageDispatcher is used.
+#include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/host/client_connection.h"
 
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
-#include "remoting/protocol/messages_decoder.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
@@ -85,7 +86,7 @@ ClientConnection::ClientConnection() {}
 void ClientConnection::OnConnectionStateChange(
     ChromotocolConnection::State state) {
   if (state == ChromotocolConnection::CONNECTED) {
-    event_reader_.Init(
+    event_reader_.Init<ChromotingClientMessage>(
         connection_->event_channel(),
         NewCallback(this, &ClientConnection::OnMessageReceived));
     video_writer_.Init(connection_->video_channel());

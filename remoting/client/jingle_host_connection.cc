@@ -5,6 +5,8 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+// TODO(hclam): Remove this header once MessageDispatcher is used.
+#include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -149,7 +151,7 @@ void JingleHostConnection::OnConnectionStateChange(
     case ChromotocolConnection::CONNECTED:
       // Initialize reader and writer.
       event_writer_.Init(connection_->event_channel());
-      video_reader_.Init(
+      video_reader_.Init<ChromotingHostMessage>(
           connection_->video_channel(),
           NewCallback(this, &JingleHostConnection::OnVideoMessage));
       event_callback_->OnConnectionOpened(this);

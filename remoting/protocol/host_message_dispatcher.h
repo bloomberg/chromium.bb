@@ -9,58 +9,73 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace remoting {
 
-class ChromotingClientMessage;
-class ChromotingConnection;
-class EventStreamReader;
+class ChromotocolConnection;
+class ClientControlMessage;
+class ClientEventMessage;
 class HostControlMessageHandler;
 class HostEventMessageHandler;
+class MessageReader;
 
 // A message dispatcher used to listen for messages received in
-// ChromotingConnection. It dispatches messages to the corresponding
+// ChromotocolConnection. It dispatches messages to the corresponding
 // handler.
 //
 // Internally it contains an EventStreamReader that decodes data on
 // communications channels into protocol buffer messages.
-// EventStreamReader is registered with ChromotingConnection given to it.
+// EventStreamReader is registered with ChromotocolConnection given to it.
 //
 // Object of this class is owned by ChromotingHost to dispatch messages
 // to itself.
-class HostMessageDispatcher {
+class HostMessageDispatcher :
+      public base::RefCountedThreadSafe<HostMessageDispatcher> {
  public:
-  // Construct a message dispatcher that dispatches messages received
-  // in ChromotingConnection.
-  HostMessageDispatcher(base::MessageLoopProxy* message_loop_proxy,
-                        ChromotingConnection* connection,
-                        HostControlMessageHandler* control_message_handler,
-                        HostEventMessageHandler* event_message_handler);
-
+  // Construct a message dispatcher.
+  HostMessageDispatcher();
   virtual ~HostMessageDispatcher();
 
+  // Initialize the message dispatcher with the given connection and
+  // message handlers.
+  // Return true if initalization was successful.
+  bool Initialize(ChromotocolConnection* connection,
+                  HostControlMessageHandler* control_message_handler,
+                  HostEventMessageHandler* event_message_handler);
+
  private:
+  // A single protobuf can contain multiple messages that will be handled by
+  // different message handlers.  We use this wrapper to ensure that the
+  // protobuf is only deleted after all the handlers have finished executing.
+  template <typename T>
+  class RefCountedMessage : public base::RefCounted<RefCountedMessage<T> > {
+   public:
+    RefCountedMessage(T* message) : message_(message) { }
+
+    T* message() { return message_.get(); }
+
+   private:
+    scoped_ptr<T> message_;
+  };
+
   // This method is called by |control_channel_reader_| when a control
   // message is received.
-  void OnControlMessageReceived(ChromotingClientMessage* message);
+  void OnControlMessageReceived(ClientControlMessage* message);
 
   // This method is called by |event_channel_reader_| when a event
   // message is received.
-  void OnEventMessageReceived(ChromotingClientMessage* message);
+  void OnEventMessageReceived(ClientEventMessage* message);
 
-  // Message loop to dispatch the messages.
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  // Dummy methods to destroy messages.
+  template <class T>
+  static void DeleteMessage(scoped_refptr<T> message) { }
 
-  // EventStreamReader that runs on the control channel. It runs a loop
-  // that parses data on the channel and then delegate the message to this
+  // MessageReader that runs on the control channel. It runs a loop
+  // that parses data on the channel and then delegates the message to this
   // class.
-  scoped_ptr<EventStreamReader> control_channel_reader_;
+  scoped_ptr<MessageReader> control_message_reader_;
 
-  // EventStreamReader that runs on the event channel.
-  scoped_ptr<EventStreamReader> event_channel_reader_;
+  // MessageReader that runs on the event channel.
+  scoped_ptr<MessageReader> event_message_reader_;
 
   // Event handlers for control channel and event channel respectively.
   // Method calls to these objects are made on the message loop given.

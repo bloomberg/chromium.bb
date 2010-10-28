@@ -14,7 +14,6 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
-#include "remoting/protocol/messages_decoder.h"
 #include "remoting/protocol/jingle_chromotocol_server.h"
 
 namespace remoting {
