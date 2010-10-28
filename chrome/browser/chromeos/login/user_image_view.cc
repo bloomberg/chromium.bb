@@ -33,8 +33,6 @@ const int kVerticalMargin = 10;
 const int kHorizontalPadding = 10;
 // Padding between vertically neighboring elements.
 const int kVerticalPadding = 10;
-// Size for user image shown on the screen.
-const int kUserImageSize = 256;
 
 // IDs of column sets for grid layout manager.
 enum ColumnSets {

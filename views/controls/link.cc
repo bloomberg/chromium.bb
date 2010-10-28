@@ -179,7 +179,7 @@ std::string Link::GetClassName() const {
 }
 
 void Link::SetHighlightedColor(const SkColor& color) {
-  normal_color_ = color;
+  highlighted_color_ = color;
   ValidateStyle();
 }
 

@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
@@ -78,6 +79,8 @@ MessageBubble::MessageBubble(views::WidgetGtk::Type type,
     layout->StartRowWithPadding(0, 1, 0, kBorderSize);
     help_link_ = new views::Link(help);
     help_link_->SetController(this);
+    help_link_->SetNormalColor(login::kLinkColor);
+    help_link_->SetHighlightedColor(login::kLinkColor);
     layout->AddView(help_link_);
   }
 }

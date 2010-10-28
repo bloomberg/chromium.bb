@@ -47,7 +47,7 @@ const int kUserNameGap = 4;
 
 // Approximate height of controls window, this constant is used in new user
 // case to make border window size close to existing users.
-const int kControlsHeight = 26;
+const int kControlsHeight = 28;
 
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.
@@ -365,10 +365,11 @@ WidgetGtk* UserController::CreateControlsWindow(
   if (is_new_user_)
     *height += kUserImageSize + kUserNameGap;
 
+  int width = kUserImageSize;
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   ConfigureLoginWindow(window,
                        index,
-                       gfx::Rect(kUserImageSize, *height),
+                       gfx::Rect(width, *height),
                        WM_IPC_WINDOW_LOGIN_CONTROLS,
                        control_view);
   return window;
