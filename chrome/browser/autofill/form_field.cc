@@ -207,6 +207,12 @@ bool FormField::ParseText(std::vector<AutoFillField*>::const_iterator* iter,
                           const string16& pattern,
                           AutoFillField** dest,
                           bool match_label_only) {
+  // Some forms have one or more hidden fields before each visible input; skip
+  // past these.
+  while (**iter && LowerCaseEqualsASCII((**iter)->form_control_type(),
+                                        kControlTypeHidden))
+    (*iter)++;
+
   AutoFillField* field = **iter;
   if (!field)
     return false;
