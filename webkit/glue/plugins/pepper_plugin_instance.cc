@@ -44,6 +44,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_graphics_2d.h"
@@ -60,9 +62,12 @@
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
+using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebPluginContainer;
+using WebKit::WebString;
+using WebKit::WebURLRequest;
 using WebKit::WebView;
 
 namespace pepper {
@@ -836,6 +841,26 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
       container_->invalidate();
     }
   }
+  return true;
+}
+
+bool PluginInstance::NavigateToURL(const char* url, const char* target) {
+  if (!url || !target || !container_)
+    return false;
+
+  WebDocument document = container_->element().document();
+  GURL complete_url = document.completeURL(WebString::fromUTF8(url));
+  // Don't try to deal with the security issues of javascript.
+  if (complete_url.SchemeIs("javascript"))
+    return false;
+
+  WebURLRequest request(complete_url);
+  document.frame()->setReferrerForRequest(request, GURL());
+  request.setHTTPMethod(WebString::fromUTF8("GET"));
+  request.setFirstPartyForCookies(document.firstPartyForCookies());
+
+  WebString target_str = WebString::fromUTF8(target);
+  container_->loadFrameRequest(request, target_str, false, NULL);
   return true;
 }
 

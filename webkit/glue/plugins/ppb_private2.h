@@ -17,7 +17,7 @@
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
 
-#define PPB_PRIVATE2_INTERFACE "PPB_Private2;3"
+#define PPB_PRIVATE2_INTERFACE "PPB_Private2;4"
 
 #ifdef _WIN32
 typedef HANDLE PP_FileHandle;
@@ -105,6 +105,13 @@ struct PPB_Private2 {
   // Frees the data allocated by GetModuleLocalDirContents.
   void (*FreeModuleLocalDirContents)(PP_Module module,
                                      PP_DirContents_Dev* contents);
+
+  // Navigate to URL. May open a new tab if target is not "_self". Return true
+  // if success. This differs from javascript:window.open() in that it bypasses
+  // the popup blocker, even when this is not called from an event handler.
+  bool (*NavigateToURL)(PP_Instance instance,
+                        const char* url,
+                        const char* target);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE2_H_

@@ -160,6 +160,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool IsFullscreen();
   bool SetFullscreen(bool fullscreen);
 
+  // Implementation of PPB_Private2.
+  bool NavigateToURL(const char* url, const char* target);
+
  private:
   bool LoadFindInterface();
   bool LoadPrivateInterface();

@@ -210,6 +210,15 @@ void FreeModuleLocalDirContents(PP_Module module,
   delete contents;
 }
 
+bool NavigateToURL(PP_Instance pp_instance,
+                   const char* url,
+                   const char* target) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
+  if (!instance)
+    return false;
+  return instance->NavigateToURL(url, target);
+}
+
 const PPB_Private2 ppb_private2 = {
   &SetInstanceAlwaysOnTop,
   &Private2::DrawGlyphs,
@@ -221,6 +230,7 @@ const PPB_Private2 ppb_private2 = {
   &QueryModuleLocalFile,
   &GetModuleLocalDirContents,
   &FreeModuleLocalDirContents,
+  &NavigateToURL,
 };
 
 }  // namespace
