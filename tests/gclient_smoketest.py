@@ -262,11 +262,11 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Test unversioned checkout.
     self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
-                      ['running', 'running',
-                       # This is due to the way svn update is called for a
-                       # single file when File() is used in a DEPS file.
-                       ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
-                       'running', 'running', 'running', 'running'])
+        ['running', 'running',
+          # This is due to the way svn update is called for a
+          # single file when File() is used in a DEPS file.
+          ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
+          'running', 'running', 'running', 'running'])
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
         ('trunk/third_party/foo@1', 'src/third_party/foo'),
@@ -399,6 +399,38 @@ class GClientSmokeSVN(GClientSmokeBase):
         ('trunk/third_party/foo@2', 'src/third_party/prout'))
     tree['src/file/other/DEPS'] = (
         self.FAKE_REPOS.svn_revs[2]['trunk/other/DEPS'])
+    tree['src/svn_hooked1'] = 'svn_hooked1'
+    self.assertTree(tree)
+
+  def testSyncCustomDeps(self):
+    if not self.enabled:
+      return
+    out = (
+        'solutions = [\n'
+        '  { "name"        : "src",\n'
+        '    "url"         : "%(base)s/src",\n'
+        '    "custom_deps" : {\n'
+        # Remove 2 deps, change 1, add 1.
+        '      "src/other": None,\n'
+        '      "src/third_party/foo": \'%(base)s/third_party/prout\',\n'
+        '      "src/file/other": None,\n'
+        '      "new_deps": "/trunk/src/third_party",\n'
+        '    },\n'
+        '    "safesync_url": "",\n'
+        '  },\n'
+        ']\n\n' %
+      { 'base': self.svn_base + 'trunk' })
+    fileobj = open(os.path.join(self.root_dir, '.gclient'), 'w')
+    fileobj.write(out)
+    fileobj.close()
+    self.parseGclient(
+        ['sync', '--deps', 'mac', '--jobs', '1'],
+        ['running', 'running', 'running', 'running'],
+        untangle=True)
+    tree = self.mangle_svn_tree(
+        ('trunk/src@2', 'src'),
+        ('trunk/third_party/prout@2', 'src/third_party/foo'),
+        ('trunk/src/third_party@2', 'new_deps'))
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
