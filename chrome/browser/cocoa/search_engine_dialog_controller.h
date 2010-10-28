@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#import "base/ref_counted.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 
@@ -27,7 +28,7 @@ class TemplateURLModel;
   TemplateURLModel* searchEnginesModel_;
 
   // Bridge to the C++ world.
-  scoped_ptr<SearchEngineDialogControllerBridge> bridge_;
+  scoped_refptr<SearchEngineDialogControllerBridge> bridge_;
 
   // Offered search engine choices.
   std::vector<const TemplateURL*> choices_;

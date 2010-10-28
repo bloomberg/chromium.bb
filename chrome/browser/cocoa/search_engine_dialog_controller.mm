@@ -40,7 +40,9 @@ const int kLogoLabelHeight = 25;
 - (IBAction)searchEngineSelected:(id)sender;
 @end
 
-class SearchEngineDialogControllerBridge : public TemplateURLModelObserver {
+class SearchEngineDialogControllerBridge :
+    public base::RefCounted<SearchEngineDialogControllerBridge>,
+    public TemplateURLModelObserver {
  public:
   SearchEngineDialogControllerBridge(SearchEngineDialogController* controller);
 
@@ -71,7 +73,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
                                           ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self != nil) {
-    bridge_.reset(new SearchEngineDialogControllerBridge(self));
+    bridge_ = new SearchEngineDialogControllerBridge(self);
   }
   return self;
 }
@@ -85,11 +87,15 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
   searchEnginesModel_->AddObserver(bridge_.get());
 
   if (searchEnginesModel_->loaded()) {
-    [self onTemplateURLModelChanged];
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            bridge_.get(),
+            &SearchEngineDialogControllerBridge::OnTemplateURLModelChanged));
   } else {
     searchEnginesModel_->Load();
-    MessageLoop::current()->Run();
   }
+  MessageLoop::current()->Run();
 }
 
 - (void)onTemplateURLModelChanged {

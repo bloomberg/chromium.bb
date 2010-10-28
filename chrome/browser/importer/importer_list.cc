@@ -35,9 +35,9 @@ ImporterList::~ImporterList() {
 }
 
 void ImporterList::DetectSourceProfiles() {
+// The first run import will automatically take settings from the first
+// profile detected, which should be the user's current default.
 #if defined(OS_WIN)
-  // The order in which detect is called determines the order
-  // in which the options appear in the dropdown combo-box
   if (ShellIntegration::IsFirefoxDefaultBrowser()) {
     DetectFirefoxProfiles();
     DetectIEProfiles();
@@ -47,10 +47,15 @@ void ImporterList::DetectSourceProfiles() {
   }
   // TODO(brg) : Current UI requires win_util.
   DetectGoogleToolbarProfiles();
+#elif defined(OS_MACOSX)
+  if (ShellIntegration::IsFirefoxDefaultBrowser()) {
+    DetectFirefoxProfiles();
+    DetectSafariProfiles();
+  } else {
+    DetectSafariProfiles();
+    DetectFirefoxProfiles();
+  }
 #else
-#if defined(OS_MACOSX)
-  DetectSafariProfiles();
-#endif
   DetectFirefoxProfiles();
 #endif
 }
