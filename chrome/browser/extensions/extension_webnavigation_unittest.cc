@@ -46,12 +46,10 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
 // before a new navigation happened in this frame.
 TEST_F(FrameNavigationStateTest, ErrorState) {
   FrameNavigationState navigation_state;
-  TestTabContents* tab_contents =
-      new TestTabContents(profile(), contents()->GetSiteInstance());
   const long long frame_id = 42;
   const GURL url("http://www.google.com/");
 
-  navigation_state.TrackFrame(frame_id, url, true, tab_contents);
+  navigation_state.TrackFrame(frame_id, url, true, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id));
 
   // After an error occurred, no further events should be sent.
@@ -60,11 +58,11 @@ TEST_F(FrameNavigationStateTest, ErrorState) {
 
   // Navigations to the "unreachable web data" URL should be ignored.
   navigation_state.TrackFrame(
-      frame_id, GURL(chrome::kUnreachableWebDataURL), true, tab_contents);
+      frame_id, GURL(chrome::kUnreachableWebDataURL), true, contents());
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id));
 
   // However, when the frame navigates again, it should send events again.
-  navigation_state.TrackFrame(frame_id, url, true, tab_contents);
+  navigation_state.TrackFrame(frame_id, url, true, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id));
 }
 
@@ -72,14 +70,12 @@ TEST_F(FrameNavigationStateTest, ErrorState) {
 // before a new navigation happened in this frame.
 TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
   FrameNavigationState navigation_state;
-  TestTabContents* tab_contents =
-      new TestTabContents(profile(), contents()->GetSiteInstance());
   const long long frame_id1 = 23;
   const long long frame_id2 = 42;
   const GURL url("http://www.google.com/");
 
-  navigation_state.TrackFrame(frame_id1, url, true, tab_contents);
-  navigation_state.TrackFrame(frame_id2, url, false, tab_contents);
+  navigation_state.TrackFrame(frame_id1, url, true, contents());
+  navigation_state.TrackFrame(frame_id2, url, false, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
 
@@ -90,12 +86,12 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
 
   // Navigations to the "unreachable web data" URL should be ignored.
   navigation_state.TrackFrame(
-      frame_id2, GURL(chrome::kUnreachableWebDataURL), false, tab_contents);
+      frame_id2, GURL(chrome::kUnreachableWebDataURL), false, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
 
   // However, when the frame navigates again, it should send events again.
-  navigation_state.TrackFrame(frame_id2, url, false, tab_contents);
+  navigation_state.TrackFrame(frame_id2, url, false, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
 }
