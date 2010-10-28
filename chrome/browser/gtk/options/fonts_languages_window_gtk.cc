@@ -63,8 +63,7 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
       fonts_page_(profile_),
       languages_page_(profile_) {
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringFUTF8(IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str(),
+      l10n_util::GetStringUTF8(IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE).c_str(),
       // Prefs window is shared between all browser windows.
       NULL,
       // Non-modal.
