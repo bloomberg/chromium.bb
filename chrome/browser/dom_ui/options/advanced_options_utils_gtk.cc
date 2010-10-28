@@ -7,7 +7,6 @@
 #include "chrome/browser/dom_ui/options/advanced_options_utils.h"
 
 #include "app/gtk_signal.h"
-#include "app/gtk_util.h"
 #include "base/file_util.h"
 #include "base/environment.h"
 #include "base/process_util.h"

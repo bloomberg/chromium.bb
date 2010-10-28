@@ -9,8 +9,8 @@
 #include <gtk/gtk.h>
 
 #include "base/file_util.h"
+#include "base/gtk_util.h"
 #include "base/logging.h"
-#include "app/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/mime_util.h"
 #include "base/thread.h"

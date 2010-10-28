@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"

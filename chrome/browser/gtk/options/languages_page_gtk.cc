@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "app/gtk_signal.h"
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"

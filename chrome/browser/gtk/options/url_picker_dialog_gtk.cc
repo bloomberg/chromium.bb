@@ -4,7 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"

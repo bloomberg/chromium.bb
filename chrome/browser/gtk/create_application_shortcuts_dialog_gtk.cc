@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/environment.h"
 #include "base/utf_string_conversions.h"

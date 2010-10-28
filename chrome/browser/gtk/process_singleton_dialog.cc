@@ -4,9 +4,9 @@
 
 #include "chrome/browser/gtk/process_singleton_dialog.h"
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 
 // static

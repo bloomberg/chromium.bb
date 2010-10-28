@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "app/gtk_util.h"
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"

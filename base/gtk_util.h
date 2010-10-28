@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
 
 namespace gtk_util {
 
@@ -16,6 +17,11 @@ std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label);
 
 // Removes the "&" accelerators from a Windows label.
 std::string RemoveWindowsStyleAccelerators(const std::string& label);
+
+// Makes a copy of |pixels| with the ordering changed from BGRA to RGBA.
+// The caller is responsible for free()ing the data. If |stride| is 0, it's
+// assumed to be 4 * |width|.
+uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride);
 
 }  // namespace gtk_util
 
