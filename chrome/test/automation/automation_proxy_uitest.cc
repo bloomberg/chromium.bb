@@ -1199,10 +1199,17 @@ class ExternalTabUITestPopupEnabled : public ExternalTabUITest {
   }
 };
 
+#if defined(OS_WIN)
+// http://crbug.com/61023 - Fails on one popular operating system.
+#define MAYBE_WindowDotOpen FLAKY_WindowDotOpen
+#else
+#define MAYBE_WindowDotOpen WindowDotOpen
+#endif
+
 // Testing AutomationMsg_AttachExternalTab callback from Chrome.
 // Open a popup window with window.open() call. The created popup window opens
 // another popup window (again using window.open() call).
-TEST_F(ExternalTabUITestPopupEnabled, WindowDotOpen) {
+TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
   mock_->IgnoreFavIconNetworkRequest();
