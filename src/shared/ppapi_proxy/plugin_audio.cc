@@ -29,6 +29,11 @@ PP_Resource Create(PP_Instance instance,
   return kInvalidResourceId;
 }
 
+bool IsAudio(PP_Resource audio) {
+  UNREFERENCED_PARAMETER(audio);
+  return false;
+}
+
 PP_Resource GetCurrentConfig(PP_Resource audio) {
   UNREFERENCED_PARAMETER(audio);
   return kInvalidResourceId;
@@ -48,6 +53,7 @@ bool StopPlayback(PP_Resource audio) {
 const PPB_Audio_Dev* PluginAudio::GetInterface() {
   static const PPB_Audio_Dev intf = {
     Create,
+    IsAudio,
     GetCurrentConfig,
     StartPlayback,
     StopPlayback,

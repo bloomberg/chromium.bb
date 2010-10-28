@@ -681,8 +681,7 @@ static const void* GetInstanceInterface() {
     NULL,  // DidChangeFocus
     NULL,  // HandleInputEvent
     NULL,  // HandleDocumentLoad
-    GetInstanceObject,
-    NULL  // GetSelectedText
+    GetInstanceObject
   };
 
   return reinterpret_cast<const void*>(&instance_class);

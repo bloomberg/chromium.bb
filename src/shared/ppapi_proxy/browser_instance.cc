@@ -180,16 +180,6 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   }
   return ObjectProxy::New(capability, channel);
 }
-
-PP_Var GetSelectedText(PP_Instance instance, bool html) {
-  DebugPrintf("BrowserInstance::GetSelectedText(%"NACL_PRId64")\n");
-  NACL_UNIMPLEMENTED();
-  // TODO(sehr): implement object proxying.
-  UNREFERENCED_PARAMETER(instance);
-  UNREFERENCED_PARAMETER(html);
-  return PP_MakeUndefined();
-}
-
 }  // namespace
 
 const PPP_Instance* BrowserInstance::GetInterface() {
@@ -200,8 +190,7 @@ const PPP_Instance* BrowserInstance::GetInterface() {
     DidChangeFocus,
     HandleInputEvent,
     HandleDocumentLoad,
-    GetInstanceObject,
-    GetSelectedText
+    GetInstanceObject
   };
   return &intf;
 }

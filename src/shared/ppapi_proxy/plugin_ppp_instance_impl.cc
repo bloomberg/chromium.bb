@@ -210,20 +210,3 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_GetSelectedText(
-    NaClSrpcChannel* channel,
-    int64_t instance,
-    int32_t html,
-    uint32_t* ret_bytes,
-    char* ret) {
-  const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL ||
-      instance_interface->GetSelectedText == NULL) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  PP_Var ret_var = instance_interface->GetSelectedText(instance, html != 0);
-  if (!ppapi_proxy::SerializeTo(&ret_var, ret, ret_bytes)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  return NACL_SRPC_RESULT_OK;
-}
