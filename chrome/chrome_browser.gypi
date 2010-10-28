@@ -2248,6 +2248,8 @@
         'browser/net/sqlite_persistent_cookie_store.cc',
         'browser/net/sqlite_persistent_cookie_store.h',
         'browser/net/ssl_config_service_manager.h',
+        'browser/net/ssl_config_service_manager_pref.cc',
+        'browser/net/ssl_config_service_manager_system.cc',
         'browser/net/url_fixer_upper.cc',
         'browser/net/url_fixer_upper.h',
         'browser/net/url_info.cc',
@@ -3416,7 +3418,6 @@
           ],
           'sources': [
             'browser/crash_handler_host_linux.h',
-            'browser/net/ssl_config_service_manager_pref.cc',
             'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
             'third_party/mozilla_security_manager/nsNSSCertHelper.h',
             'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
@@ -3472,6 +3473,17 @@
             'browser/file_path_watcher_stub.cc',
           ],
         }],
+        # Use system SSL settings on Mac and Windows.  Use preferences
+        # for SSL settings on other platforms.
+        ['OS=="mac" or OS=="win"', {
+          'sources!': [
+            'browser/net/ssl_config_service_manager_pref.cc',
+          ],
+        }, {  # else
+          'sources!': [
+            'browser/net/ssl_config_service_manager_system.cc',
+          ],
+        }],
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
@@ -3493,7 +3505,6 @@
             'browser/views/extensions/extension_view.h',
           ],
           'sources': [
-            'browser/net/ssl_config_service_manager_system.cc',
             # Build Apple sample code
             '../third_party/apple/ImageAndTextCell.h',
             '../third_party/apple/ImageAndTextCell.m',
@@ -3652,7 +3663,6 @@
             }
           },
           'sources': [
-            'browser/net/ssl_config_service_manager_system.cc',
             # Using built-in rule in vstudio for midl.
             'browser/history/history_indexer.idl',
           ],
