@@ -21,6 +21,8 @@ class CrosSettingsProviderProxy : public CrosSettingsProvider {
   virtual bool HandlesSetting(const std::string& path);
 
  private:
+  chromeos::ProxyConfigServiceImpl* GetConfigService() const;
+
   void AppendPortIfValid(
       const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
       std::string* server_uri);

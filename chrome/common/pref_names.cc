@@ -771,7 +771,7 @@ const char kSaveFileDefaultDirectory[] = "savefile.default_directory";
 
 // String which specifies the last directory that was chosen for uploading
 // or opening a file.
-extern const char kSelectFileLastDirectory[] = "selectfile.last_directory";
+const char kSelectFileLastDirectory[] = "selectfile.last_directory";
 
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
@@ -1028,6 +1028,12 @@ const char kRemotingHasSetupCompleted[] = "remoting.has_setup_completed";
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
+#if defined(OS_CHROMEOS)
+// Dictionary for transient storage of settings that should go into signed
+// settings storage before owner has been assigned.
+const char kSignedSettingsTempStorage[] = "signed_settings_temp_storage";
+#endif
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 
@@ -1041,9 +1047,9 @@ const char kCloudPrintAuthToken[] = "cloud_print.auth_token";
 const char kCloudPrintXMPPAuthToken[] = "cloud_print.xmpp_auth_token";
 // The email address of the account used to authenticate with the Cloud Print
 // server.
-extern const char kCloudPrintEmail[] = "cloud_print.email";
+const char kCloudPrintEmail[] = "cloud_print.email";
 // Settings specific to underlying print system.
-extern const char kCloudPrintPrintSystemSettings[] =
+const char kCloudPrintPrintSystemSettings[] =
     "cloud_print.print_system_settings";
 
 // Used by the service process to determine if the remoting host is enabled.

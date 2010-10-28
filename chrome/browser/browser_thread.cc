@@ -95,7 +95,7 @@ BrowserThread::~BrowserThread() {
   AutoLock lock(lock_);
   browser_threads_[identifier_] = NULL;
 #ifndef NDEBUG
-  // Double check that the threads are ordererd correctly in the enumeration.
+  // Double check that the threads are ordered correctly in the enumeration.
   for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
     DCHECK(!browser_threads_[i]) <<
         "Threads must be listed in the reverse order that they die";

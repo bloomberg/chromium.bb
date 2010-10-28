@@ -620,6 +620,8 @@
         'browser/chromeos/login/signed_settings.h',
         'browser/chromeos/login/signed_settings_helper.cc',
         'browser/chromeos/login/signed_settings_helper.h',
+        'browser/chromeos/login/signed_settings_temp_storage.cc',
+        'browser/chromeos/login/signed_settings_temp_storage.h',
         'browser/chromeos/login/test_attempt_state.cc',
         'browser/chromeos/login/test_attempt_state.h',
         'browser/chromeos/login/update_screen.cc',

@@ -39,8 +39,8 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   class Delegate {
    public:
     // These methods will be called on the UI thread.
-    virtual void OnSettingsOpSucceeded(T value) = 0;
-    virtual void OnSettingsOpFailed() = 0;
+    virtual void OnSettingsOpSucceeded(T value) {}
+    virtual void OnSettingsOpFailed() {}
   };
 
   SignedSettings();

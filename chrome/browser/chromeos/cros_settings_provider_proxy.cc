@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/profile_manager.h"
 
 namespace chromeos {
 
@@ -16,12 +17,10 @@ CrosSettingsProviderProxy::CrosSettingsProviderProxy() { }
 
 void CrosSettingsProviderProxy::Set(const std::string& path,
                                     Value* in_value) {
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser || !in_value) {
+  if (!in_value) {
     return;
   }
-  chromeos::ProxyConfigServiceImpl* config_service =
-      browser->profile()->GetChromeOSProxyConfigServiceImpl();
+  chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
@@ -187,15 +186,10 @@ void CrosSettingsProviderProxy::Set(const std::string& path,
 
 bool CrosSettingsProviderProxy::Get(const std::string& path,
                                     Value** out_value) const {
-  Browser* browser = BrowserList::GetLastActive();
   bool found = false;
   bool managed = false;
   Value* data;
-  if (!browser) {
-    return false;
-  }
-  chromeos::ProxyConfigServiceImpl* config_service =
-      browser->profile()->GetChromeOSProxyConfigServiceImpl();
+  chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
@@ -269,6 +263,16 @@ bool CrosSettingsProviderProxy::HandlesSetting(const std::string& path) {
 }
 
 //----------------- CrosSettingsProviderProxy: private methods -----------------
+
+chromeos::ProxyConfigServiceImpl*
+    CrosSettingsProviderProxy::GetConfigService() const {
+  Browser* browser = BrowserList::GetLastActive();
+  // browser is NULL at OOBE/login stage.
+  Profile* profile = browser ?
+      browser->profile() :
+      ProfileManager::GetDefaultProfile();
+  return profile->GetChromeOSProxyConfigServiceImpl();
+}
 
 void CrosSettingsProviderProxy::AppendPortIfValid(
     const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,

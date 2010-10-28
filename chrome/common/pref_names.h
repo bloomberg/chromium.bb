@@ -394,6 +394,10 @@ extern const char kProxyServer[];
 extern const char kProxyPacUrl[];
 extern const char kProxyBypassList[];
 
+#if defined(OS_CHROMEOS)
+extern const char kSignedSettingsTempStorage[];
+#endif
+
 extern const char kRegisteredBackgroundContents[];
 
 }  // namespace prefs

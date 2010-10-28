@@ -79,7 +79,7 @@ const int kMenuWidthOffset = 6;
 const SkColor kWelcomeColor = 0xFFCDD3D6;
 
 // Hints for size of proxy settings dialog.
-static const int kProxySettingsDialogReasonableWidth = 700;
+static const int kProxySettingsDialogReasonableWidth = 750;
 static const int kProxySettingsDialogReasonableHeight = 460;
 static const int kProxySettingsDialogReasonableWidthRatio = 0.4;
 static const int kProxySettingsDialogReasonableHeightRatio = 0.4;

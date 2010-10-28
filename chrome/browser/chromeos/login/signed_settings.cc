@@ -9,10 +9,12 @@
 
 #include "base/ref_counted.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 
 namespace chromeos {
 
@@ -99,6 +101,7 @@ class RetrievePropertyOp : public SignedSettings {
 SignedSettings* SignedSettings::CreateCheckWhitelistOp(
     const std::string& email,
     SignedSettings::Delegate<bool>* d) {
+  DCHECK(d != NULL);
   return new CheckWhitelistOp(email, d);
 }
 
@@ -107,6 +110,7 @@ SignedSettings* SignedSettings::CreateWhitelistOp(
     const std::string& email,
     bool add_to_whitelist,
     SignedSettings::Delegate<bool>* d) {
+  DCHECK(d != NULL);
   return new WhitelistOp(email, add_to_whitelist, d);
 }
 
@@ -115,6 +119,7 @@ SignedSettings* SignedSettings::CreateStorePropertyOp(
     const std::string& name,
     const std::string& value,
     SignedSettings::Delegate<bool>* d) {
+  DCHECK(d != NULL);
   return new StorePropertyOp(name, value, d);
 }
 
@@ -122,6 +127,7 @@ SignedSettings* SignedSettings::CreateStorePropertyOp(
 SignedSettings* SignedSettings::CreateRetrievePropertyOp(
     const std::string& name,
     SignedSettings::Delegate<std::string>* d) {
+  DCHECK(d != NULL);
   return new RetrievePropertyOp(name, d);
 }
 
@@ -224,6 +230,15 @@ StorePropertyOp::StorePropertyOp(const std::string& name,
 StorePropertyOp::~StorePropertyOp() {}
 
 bool StorePropertyOp::Execute() {
+  if (!service_->IsAlreadyOwned()) {
+    if (g_browser_process &&
+        g_browser_process->local_state() &&
+        SignedSettingsTempStorage::Store(name_, value_,
+                                         g_browser_process->local_state())) {
+      d_->OnSettingsOpSucceeded(true);
+      return true;
+    }
+  }
   // Posts a task to the FILE thread to sign |name_|=|value_|.
   std::string to_sign = base::StringPrintf("%s=%s",
                                            name_.c_str(),
@@ -273,6 +288,24 @@ RetrievePropertyOp::~RetrievePropertyOp() {}
 
 bool RetrievePropertyOp::Execute() {
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
+  // TODO(dilmah): Fix the race:
+  // At the moment when device becomes owned there is lapse of time after
+  // device has been owned and before temp_storage settings are finally
+  // persisted into signed settings.
+  // In this lapse of time Retrieve loses access to those settings.
+  if (!service_->IsAlreadyOwned()) {
+    if (g_browser_process &&
+        g_browser_process->local_state() &&
+        SignedSettingsTempStorage::Retrieve(
+            name_, &value_, g_browser_process->local_state())) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          NewRunnableMethod(this,
+                            &RetrievePropertyOp::OnKeyOpComplete,
+                            OwnerManager::SUCCESS, std::vector<uint8>()));
+      return true;
+    }
+  }
   std::vector<uint8> sig;
   if (!CrosLibrary::Get()->GetLoginLibrary()->RetrieveProperty(name_,
                                                                &value_,

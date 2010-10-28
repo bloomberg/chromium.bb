@@ -9,7 +9,9 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
@@ -95,7 +97,13 @@ void OwnerManager::OnComplete(bool value) {
                         &OwnerManager::SendNotification,
                         result,
                         NotificationService::NoDetails()));
-
+  // We've stored some settings in transient storage
+  // before owner has been assigned.
+  // Now owner is assigned and key is generated and we should persist
+  // those settings into signed storage.
+  if (g_browser_process && g_browser_process->local_state()) {
+    SignedSettingsTempStorage::Finalize(g_browser_process->local_state());
+  }
 }
 
 bool OwnerManager::EnsurePublicKey() {
