@@ -123,56 +123,6 @@
 # Periodically we should sweep this file and the bug tracker clean by
 # running overnight and removing outdated bugs/suppressions.
 {
-   bug_30547_a
-   Heapcheck:Leak
-   ...
-   fun:std::string::_Rep::_S_create
-   ...
-   fun:base::JSONWriter::Write
-   fun:JSONStringValueSerializer::Serialize
-   fun:BookmarkStorage::SerializeData
-   fun:BookmarkStorage::SaveNow
-   fun:BookmarkStorage::BookmarkModelDeleted
-   fun:*~BookmarkModel
-}
-{
-   bug_30547_b
-   Heapcheck:Leak
-   ...
-   fun:ImportantFileWriter::WriteNow
-   fun:BookmarkStorage::SaveNow
-   fun:BookmarkStorage::BookmarkModelDeleted
-}
-# IPCChannelTest.ChannelProxyTest leaks memory.
-{
-   bug_26920_a
-   Heapcheck:Leak
-   fun:*ChannelProxy
-   fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
-}
-# TODO(glider): deal with asterisks in stack traces
-# (like "CancelableTask* NewRunnableMethod" here)
-{
-   bug_26920_b
-   Heapcheck:Leak
-   ...
-   fun:IPC::ChannelProxy::Context::OnChannelError
-   fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
-   ...
-   fun:base::MessagePumpLibevent::OnLibeventNotification
-   fun:event_process_active
-   fun:event_base_loop
-}
-{
-   bug_26920_c
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   ...
-   fun:*basic_string
-   fun:IPCChannelTest_ChannelProxyTest_Test::TestBody
-}
-{
    bug_31643
    Heapcheck:Leak
    fun:browser_sync::BookmarkModelWorker::CallDoWorkFromModelSafeThreadAndWait
@@ -269,13 +219,6 @@
   fun:RenderViewTest::TearDown
 }
 {
-  bug_39009
-  Heapcheck:Leak
-  ...
-  fun:BookmarkModel::Load
-  fun:TestingProfile::CreateBookmarkModel
-}
-{
   bug_38487
   Heapcheck:Leak
   fun:browser_sync::TypedUrlDataTypeController::Stop
@@ -366,12 +309,6 @@
    Heapcheck:Leak
    fun:Callback1::Type* NewCallback
    fun:media::VideoDecoderImpl::DoInitialize
-}
-{
-   bug_45072
-   Heapcheck:Leak
-   fun:::RunTest_EnsureTaskDeletion*
-   fun:MessageLoopTest_*EnsureTaskDeletion_*::TestBody
 }
 {
    bug_46571_a
