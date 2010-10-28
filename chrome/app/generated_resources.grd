@@ -8924,6 +8924,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_BUTTON">
         Sign in
       </message>
+      <message name="IDS_ENTER_GUEST_SESSION_BUTTON">
+        Enter
+      </message>
       <message name="IDS_LOGIN_REMOVE">
         Remove
       </message>

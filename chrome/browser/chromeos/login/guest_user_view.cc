@@ -63,7 +63,7 @@ void GuestUserView::RecreateFields() {
   delete submit_button_;
   submit_button_ = new UserEntryButton(
       user_controller_,
-      l10n_util::GetString(IDS_LOGIN_BUTTON));
+      l10n_util::GetString(IDS_ENTER_GUEST_SESSION_BUTTON));
   AddChildView(submit_button_);
   Layout();
   SchedulePaint();
