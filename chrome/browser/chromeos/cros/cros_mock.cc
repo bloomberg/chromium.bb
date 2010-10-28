@@ -275,7 +275,7 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
 
   // NetworkDropdownButton::NetworkChanged() calls:
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
-      .Times(2)  // also called by NetworkMenu::InitMenuItems()
+      .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, wifi_connected())
@@ -295,7 +295,7 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, Connected())
-      .Times(2)  // also called by NetworkMenu::InitMenuItems()
+      .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, Connecting())
@@ -304,29 +304,21 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .RetiresOnSaturation();
 
   // NetworkMenu::InitMenuItems() calls:
+  EXPECT_CALL(*mock_network_library_, ethernet_available())
+      .Times(1)
+      .WillRepeatedly((Return(true)))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+      .Times(1)
+      .WillRepeatedly((Return(false)))
+      .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, ethernet_connecting())
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, wifi_networks())
-      .Times(1)
-      .WillRepeatedly((ReturnRef(wifi_networks_)))
-      .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, wifi_available())
       .Times(1)
       .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, wifi_network())
-      .Times(1)
-      .WillRepeatedly((ReturnRef(wifi_network_)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, cellular_networks())
-      .Times(1)
-      .WillRepeatedly((ReturnRef(cellular_networks_)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, cellular_network())
-      .Times(1)
-      .WillRepeatedly((ReturnRef(cellular_network_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, cellular_available())
       .Times(1)
