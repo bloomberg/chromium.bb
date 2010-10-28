@@ -4255,10 +4255,10 @@ const Block* SimpleBlock::GetBlock() const
 }
 
 
-bool SimpleBlock::IsBFrame() const
-{
-    return false;
-}
+//bool SimpleBlock::IsBFrame() const
+//{
+//    return false;
+//}
 
 
 BlockGroup::BlockGroup(
@@ -4394,10 +4394,10 @@ short BlockGroup::GetNextTimeCode() const
 }
 
 
-bool BlockGroup::IsBFrame() const
-{
-    return (m_nextTimeCode > 0);
-}
+//bool BlockGroup::IsBFrame() const
+//{
+//    return (m_nextTimeCode > 0);
+//}
 
 
 

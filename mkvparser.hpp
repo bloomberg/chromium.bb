@@ -105,7 +105,7 @@ public:
     virtual Cluster* GetCluster() const = 0;
     virtual size_t GetIndex() const = 0;
     virtual const Block* GetBlock() const = 0;
-    virtual bool IsBFrame() const = 0;
+    //virtual bool IsBFrame() const = 0;
 
 protected:
     BlockEntry();
@@ -125,7 +125,7 @@ public:
     Cluster* GetCluster() const;
     size_t GetIndex() const;
     const Block* GetBlock() const;
-    bool IsBFrame() const;
+    //bool IsBFrame() const;
 
 protected:
     Cluster* const m_pCluster;
@@ -148,7 +148,7 @@ public:
     Cluster* GetCluster() const;
     size_t GetIndex() const;
     const Block* GetBlock() const;
-    bool IsBFrame() const;
+    //bool IsBFrame() const;
 
     short GetPrevTimeCode() const;  //relative to block's time
     short GetNextTimeCode() const;  //as above
