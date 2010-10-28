@@ -31,7 +31,7 @@ void SwitchToPluginProcess() {
 }
 
 __attribute__((visibility("default")))
-WebPluginDelegateImpl* GetActiveDelegate() {
+OpaquePluginRef GetActiveDelegate() {
   return WebPluginDelegateImpl::GetActiveDelegate();
 }
 
@@ -70,15 +70,15 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
 }
 
 __attribute__((visibility("default")))
-void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
+void NotifyPluginOfSetThemeCursor(OpaquePluginRef delegate,
                                   ThemeCursor cursor) {
-  delegate->SetThemeCursor(cursor);
+  static_cast<WebPluginDelegateImpl*>(delegate)->SetThemeCursor(cursor);
 }
 
 __attribute__((visibility("default")))
-void NotifyPluginOfSetCursor(WebPluginDelegateImpl* delegate,
+void NotifyPluginOfSetCursor(OpaquePluginRef delegate,
                              const Cursor* cursor) {
-  delegate->SetCursor(cursor);
+  static_cast<WebPluginDelegateImpl*>(delegate)->SetCursor(cursor);
 }
 
 void NotifyPluginOfSetCursorVisibility(bool visibility) {
@@ -90,8 +90,8 @@ void NotifyPluginOfSetCursorVisibility(bool visibility) {
 }
 
 __attribute__((visibility("default")))
-bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate) {
-  return delegate->GetWindowHasFocus();
+bool GetPluginWindowHasFocus(const OpaquePluginRef delegate) {
+  return static_cast<WebPluginDelegateImpl*>(delegate)->GetWindowHasFocus();
 }
 
 }  // namespace mac_plugin_interposing
@@ -235,9 +235,9 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 @implementation NSCursor (ChromePluginInterposing)
 
 - (void)chromePlugin_set {
-  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
+  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
   if (delegate) {
-    delegate->SetNSCursor(self);
+    static_cast<WebPluginDelegateImpl*>(delegate)->SetNSCursor(self);
     return;
   }
   [self chromePlugin_set];

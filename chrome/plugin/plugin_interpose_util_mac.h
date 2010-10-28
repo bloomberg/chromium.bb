@@ -10,7 +10,9 @@
 
 #import "base/basictypes.h"
 
-class WebPluginDelegateImpl;
+// This is really a WebPluginDelegateImpl, but that class is private to the
+// framework, and these functions are called from a dylib.
+typedef void* OpaquePluginRef;
 
 namespace mac_plugin_interposing {
 
@@ -22,7 +24,7 @@ void SetUpCocoaInterposing();
 void SwitchToPluginProcess();
 
 // Returns the delegate currently processing events.
-WebPluginDelegateImpl* GetActiveDelegate();
+OpaquePluginRef GetActiveDelegate();
 
 // Sends a message to the browser process to inform it that the given window
 // has been brought forward.
@@ -40,15 +42,15 @@ void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
 void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
 
 // Sends a message to the plugin that a theme cursor was set.
-void NotifyPluginOfSetThemeCursor(WebPluginDelegateImpl* delegate,
+void NotifyPluginOfSetThemeCursor(OpaquePluginRef delegate,
                                   ThemeCursor cursor);
 
 // Sends a message to the plugin that a cursor was set.
-void NotifyPluginOfSetCursor(WebPluginDelegateImpl* delegate,
+void NotifyPluginOfSetCursor(OpaquePluginRef delegate,
                              const Cursor* cursor);
 
 // Returns true if the window containing the given plugin delegate is focused.
-bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate);
+bool GetPluginWindowHasFocus(const OpaquePluginRef delegate);
 
 }  // namespace MacPluginInterpose
 

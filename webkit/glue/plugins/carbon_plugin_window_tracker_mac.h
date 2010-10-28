@@ -10,7 +10,9 @@
 
 #include "base/basictypes.h"
 
-class WebPluginDelegateImpl;
+// This is really a WebPluginDelegateImpl, but that class is private to the
+// framework, and these functions are called from a dylib.
+typedef void* OpaquePluginRef;
 
 // Creates and tracks the invisible windows that are necessary for
 // Carbon-event-model plugins.
@@ -27,21 +29,21 @@ class __attribute__((visibility("default"))) CarbonPluginWindowTracker {
   static CarbonPluginWindowTracker* SharedInstance();
 
   // Creates a new carbon window associated with |delegate|.
-  WindowRef CreateDummyWindowForDelegate(WebPluginDelegateImpl* delegate);
+  WindowRef CreateDummyWindowForDelegate(OpaquePluginRef delegate);
 
   // Returns the WebPluginDelegate associated with the given dummy window.
-  WebPluginDelegateImpl* GetDelegateForDummyWindow(WindowRef window) const;
+  OpaquePluginRef GetDelegateForDummyWindow(WindowRef window) const;
 
   // Returns the dummy window associated with |delegate|.
-  WindowRef GetDummyWindowForDelegate(WebPluginDelegateImpl* delegate) const;
+  WindowRef GetDummyWindowForDelegate(OpaquePluginRef delegate) const;
 
   // Destroys the dummy window for |delegate|.
-  void DestroyDummyWindowForDelegate(WebPluginDelegateImpl* delegate,
+  void DestroyDummyWindowForDelegate(OpaquePluginRef delegate,
                                      WindowRef window);
 
  private:
-  typedef std::map<WindowRef, WebPluginDelegateImpl*> WindowToDelegateMap;
-  typedef std::map<WebPluginDelegateImpl*, WindowRef> DelegateToWindowMap;
+  typedef std::map<WindowRef, OpaquePluginRef> WindowToDelegateMap;
+  typedef std::map<OpaquePluginRef, WindowRef> DelegateToWindowMap;
   WindowToDelegateMap window_to_delegate_map_;
   DelegateToWindowMap delegate_to_window_map_;
 

@@ -20,7 +20,7 @@ static bool IsModalWindow(WindowRef window) {
   return (status == noErr) && (modality != kWindowModalityNone);
 }
 
-static bool IsContainingWindowActive(const WebPluginDelegateImpl* delegate) {
+static bool IsContainingWindowActive(const OpaquePluginRef delegate) {
   return mac_plugin_interposing::GetPluginWindowHasFocus(delegate);
 }
 
@@ -60,7 +60,7 @@ static void OnPluginWindowSelected(WindowRef window) {
 #pragma mark -
 
 static Boolean ChromePluginIsWindowActive(WindowRef window) {
-  const WebPluginDelegateImpl* delegate =
+  const OpaquePluginRef delegate =
       CarbonPluginWindowTracker::SharedInstance()->GetDelegateForDummyWindow(
           window);
   return delegate ? IsContainingWindowActive(delegate)
@@ -68,7 +68,7 @@ static Boolean ChromePluginIsWindowActive(WindowRef window) {
 }
 
 static Boolean ChromePluginIsWindowHilited(WindowRef window) {
-  const WebPluginDelegateImpl* delegate =
+  const OpaquePluginRef delegate =
       CarbonPluginWindowTracker::SharedInstance()->GetDelegateForDummyWindow(
           window);
   return delegate ? IsContainingWindowActive(delegate)
@@ -125,7 +125,7 @@ static void ChromePluginDisposeDialog(DialogRef dialog) {
 }
 
 static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
-  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
+  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
   CarbonPluginWindowTracker* tracker =
       CarbonPluginWindowTracker::SharedInstance();
   WindowRef plugin_window = tracker->GetDummyWindowForDelegate(delegate);
@@ -146,7 +146,7 @@ static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
 }
 
 static OSStatus ChromePluginSetThemeCursor(ThemeCursor cursor) {
-  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
+  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
   if (delegate) {
     mac_plugin_interposing::NotifyPluginOfSetThemeCursor(delegate, cursor);
     return noErr;
@@ -155,7 +155,7 @@ static OSStatus ChromePluginSetThemeCursor(ThemeCursor cursor) {
 }
 
 static void ChromePluginSetCursor(const Cursor* cursor) {
-  WebPluginDelegateImpl* delegate = mac_plugin_interposing::GetActiveDelegate();
+  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
   if (delegate) {
     mac_plugin_interposing::NotifyPluginOfSetCursor(delegate, cursor);
     return;

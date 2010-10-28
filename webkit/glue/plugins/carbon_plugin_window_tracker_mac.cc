@@ -14,7 +14,7 @@ CarbonPluginWindowTracker* CarbonPluginWindowTracker::SharedInstance() {
 }
 
 WindowRef CarbonPluginWindowTracker::CreateDummyWindowForDelegate(
-    WebPluginDelegateImpl* delegate) {
+    OpaquePluginRef delegate) {
   // The real size will be set by the plugin instance, once that size is known.
   Rect window_bounds = { 0, 0, 100, 100 };
   WindowRef new_ref = NULL;
@@ -28,7 +28,7 @@ WindowRef CarbonPluginWindowTracker::CreateDummyWindowForDelegate(
   return new_ref;
 }
 
-WebPluginDelegateImpl* CarbonPluginWindowTracker::GetDelegateForDummyWindow(
+OpaquePluginRef CarbonPluginWindowTracker::GetDelegateForDummyWindow(
     WindowRef window) const {
   WindowToDelegateMap::const_iterator i = window_to_delegate_map_.find(window);
   if (i != window_to_delegate_map_.end())
@@ -37,7 +37,7 @@ WebPluginDelegateImpl* CarbonPluginWindowTracker::GetDelegateForDummyWindow(
 }
 
 WindowRef CarbonPluginWindowTracker::GetDummyWindowForDelegate(
-    WebPluginDelegateImpl* delegate) const {
+    OpaquePluginRef delegate) const {
   DelegateToWindowMap::const_iterator i =
       delegate_to_window_map_.find(delegate);
   if (i != delegate_to_window_map_.end())
@@ -46,7 +46,7 @@ WindowRef CarbonPluginWindowTracker::GetDummyWindowForDelegate(
 }
 
 void CarbonPluginWindowTracker::DestroyDummyWindowForDelegate(
-    WebPluginDelegateImpl* delegate, WindowRef window) {
+    OpaquePluginRef delegate, WindowRef window) {
   DCHECK(GetDelegateForDummyWindow(window) == delegate);
   window_to_delegate_map_.erase(window);
   delegate_to_window_map_.erase(delegate);
