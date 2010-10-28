@@ -611,6 +611,19 @@
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
 {
+   bug_49250_e
+   Memcheck:Cond
+   ...
+   fun:gleUpdateState
+   fun:gleInitializeContext
+   fun:gliCreateContext
+   fun:CGLRestoreDispatchFunction
+   fun:CGLCreateContext
+   fun:_ZN8remoting11CapturerMac26ScreenConfigurationChangedEv
+   fun:_ZN8remoting15CapturerMacTest5SetUpEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+{
    bug_50286
    Memcheck:Leak
    fun:_Znw*
