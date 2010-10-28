@@ -67,55 +67,61 @@ sloppy_env.AddNodeToTestSuite(node,
                               'run_return_address_test')
 
 
-eh_env = env.Clone()
-
-# http://code.google.com/p/nativeclient/issues/detail?id=720
-# we should try all 4 combinations here opt/no-opt, fp/no-fp
-eh_env.FilterOut(CFLAGS=['-pedantic', '-O2', '-fomit-frame-pointer'])
-eh_env.FilterOut(CCFLAGS=['-pedantic', '-O2', '-fomit-frame-pointer'])
-eh_env.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
-
-# http://code.google.com/p/nativeclient/issues/detail?id=720
-EH_TESTS=['toolchain_tests', 'small_tests']
-if ARGUMENTS.get('bitcode') and eh_env['TARGET_FULLARCH'] != 'x86-32':
-  EH_TESTS=[]
-
-for t in ['eh_virtual_dtor',
-          'eh_loop_single',
-          'eh_loop_many',
-          'eh_catch_many',
-          'eh_loop_break']:
-  nexe = eh_env.ComponentProgram(t + '.nexe', t + '.cc')
-  node = eh_env.CommandSelLdrTestNacl(t + '.out',
-                                      command=[nexe],
-                                      exit_status='55')
-  eh_env.AddNodeToTestSuite(node, EH_TESTS, 'run_' + t + '_test')
+def IsPicBuild(env):
+  return 'PNACL_BCLDFLAGS' in env and '-fPIC' in env.get('PNACL_BCLDFLAGS', [])
 
 
-# http://code.google.com/p/nativeclient/issues/detail?id=720
-STACKFRAME_TESTS=['toolchain_tests', 'small_tests']
-if eh_env['TARGET_FULLARCH'] == 'arm':
-  STACKFRAME_TESTS=[]
+# NOTE: we assume that the incoming env contains '-O2', '-fomit-frame-pointer'
+def MakeEnv(use_opts, use_frames):
+  new_env = env.Clone()
+  new_env.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
+  new_env.FilterOut(CFLAGS=['-pedantic'])
+  new_env.FilterOut(CCFLAGS=['-pedantic'])
+  if use_frames:
+    new_env.FilterOut(CFLAGS=['-fomit-frame-pointer'])
+    new_env.FilterOut(CCFLAGS=['-fomit-frame-pointer'])
+  else:
+    new_env.Append(CFLAGS=['-fomit-frame-pointer'])
+    new_env.Append(CCFLAGS=['-fomit-frame-pointer'])
+  if use_opts:
+    new_env.Append(CFLAGS=['-O2'])
+    new_env.Append(CCFLAGS=['-O2'])
+  else:
+    new_env.FilterOut(CFLAGS=['-O2'])
+    new_env.FilterOut(CCFLAGS=['-O2'])
+  return new_env
 
-# http://code.google.com/p/nativeclient/issues/detail?id=720
-if eh_env['TARGET_FULLARCH'] != 'arm':
-  nexe = eh_env.ComponentProgram('stack_frame.nexe', 'stack_frame.cc')
-  node = eh_env.CommandSelLdrTestNacl('stack_frame.out',
-                                       command=[nexe],
-                                       exit_status='55')
-  eh_env.AddNodeToTestSuite(node, STACKFRAME_TESTS, 'run_stack_frame_test')
+ENVIRONMENTS_TO_TRY = [ ('noopt_frame', MakeEnv(False, True)),
+                        ('noopt_noframe', MakeEnv(False, False)),
+                        ('opt_frame', MakeEnv(True, True)),
+                        ('opt_noframe', MakeEnv(True, False)),
+                        ]
 
-TRACE_TESTS=['toolchain_tests', 'small_tests']
-if eh_env['TARGET_FULLARCH'] == 'arm':
-  TRACE_TESTS=[]
-
-# http://code.google.com/p/nativeclient/issues/detail?id=1106
-if ('PNACL_BCLDFLAGS' in eh_env and
-   '-fPIC' in eh_env.get('PNACL_BCLDFLAGS', [])):
-  TRACE_TESTS=[]
-
-nexe = eh_env.ComponentProgram('unwind_trace.nexe', 'unwind_trace.cc')
-node = eh_env.CommandSelLdrTestNacl('unwind_trace.out',
-                                    command=[nexe],
-                                    exit_status='55')
-eh_env.AddNodeToTestSuite(node, TRACE_TESTS, 'run_unwind_trace_test')
+for tag, e in ENVIRONMENTS_TO_TRY:
+  for src in ['unwind_trace.cc',
+              'stack_frame.cc',
+              'eh_virtual_dtor.cc',
+              'eh_loop_single.cc',
+              'eh_loop_many.cc',
+              'eh_catch_many.cc',
+              'eh_loop_break.cc']:
+    tests = ['toolchain_tests', 'small_tests']
+    # http://code.google.com/p/nativeclient/issues/detail?id=720
+    if e['TARGET_FULLARCH'] == 'arm':
+      # this test needs a lot more work for ARM and does not even compile
+      if  src =='stack_frame.cc':
+        continue
+      tests = []
+    # http://code.google.com/p/nativeclient/issues/detail?id=1106
+    if IsPicBuild(e):
+      tests = []
+    # the tracing gets messed up by inlining
+    if src =='unwind_trace.cc' and tag.startswith('opt'):
+      tests = []
+    name = src.split('.')[0] + '_' + tag
+    nobj = e.ComponentObject(name + '.o', src)
+    nexe = e.ComponentProgram(name + '.nexe', nobj)
+    node = e.CommandSelLdrTestNacl(name + '.out',
+                                   command=[nexe],
+                                   exit_status='55')
+    e.AddNodeToTestSuite(node, tests, 'run_' + name  +'_test')
