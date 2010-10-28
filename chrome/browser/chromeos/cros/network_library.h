@@ -40,6 +40,7 @@ class Network {
   ConnectionState connection_state() const { return state_; }
   bool connecting() const { return state_ == STATE_ASSOCIATION ||
       state_ == STATE_CONFIGURATION || state_ == STATE_CARRIER; }
+  bool configuring() const { return state_ == STATE_CONFIGURATION; }
   bool connected() const { return state_ == STATE_READY; }
   bool connecting_or_connected() const { return connecting() || connected(); }
   bool failed() const { return state_ == STATE_FAILURE; }

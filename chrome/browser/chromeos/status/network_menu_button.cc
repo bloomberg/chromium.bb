@@ -86,9 +86,14 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
       }
       std::string network_name = cros->wifi_connecting() ?
           cros->wifi_network().name() : cros->cellular_network().name();
+      bool configuring = cros->wifi_connecting() ?
+          cros->wifi_network().configuring() :
+          cros->cellular_network().configuring();
       SetTooltipText(
-          l10n_util::GetStringF(IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-                                UTF8ToWide(network_name)));
+          l10n_util::GetStringF(configuring ?
+              IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP :
+              IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+              UTF8ToWide(network_name)));
     } else {
       // Stop connecting animation since we are not connecting.
       animation_connecting_.Stop();

@@ -10075,10 +10075,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         No network
       </message>
       <message name="IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP" desc="Tooltip for the network menu status bar icon when connecting to a network.">
-        Connecting to: <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+        Associating with <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP" desc="Tooltip for the network menu status bar icon when configure ip addres for a network.">
+        Configuring IP Address for <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
       <message name="IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP" desc="Tooltip for the network menu status bar icon when connected to a network.">
-        Network: <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
+        Connected to <ph name="NAME">$1<ex>GoogleGuest</ex></ph>
       </message>
       <message name="IDS_STATUSBAR_CLOCK_TOOLTIP" desc="Tooltip for the clock in the status bar.">
         <ph name="DATE">$1<ex>Aug 16, 2010</ex></ph>
