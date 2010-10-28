@@ -201,6 +201,8 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       titlebar_right_buttons_vbox_(NULL),
       titlebar_left_buttons_hbox_(NULL),
       titlebar_right_buttons_hbox_(NULL),
+      titlebar_left_spy_frame_(NULL),
+      titlebar_right_spy_frame_(NULL),
       top_padding_left_(NULL),
       top_padding_right_(NULL),
       app_mode_favicon_(NULL),
@@ -214,17 +216,17 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
 void BrowserTitlebar::Init() {
   // The widget hierarchy is shown below.
   //
-  // +- EventBox (container_) -------------------------------------+
-  // +- HBox (container_hbox_) ------------------------------------+
-  // |+ VBox ---++- Algn. -++- Alignment --------------++ VBox ---+|
-  // || titlebar||+ Image +||   (titlebar_alignment_)  || titlebar||
-  // || left    |||       |||                          || right   ||
-  // || button  |||spy_guy|||                          || button  ||
-  // || vbox    |||       |||+- TabStripGtk  ---------+|| vbox    ||
-  // ||         |||  )8\  |||| tab   tab   tabclose   |||         ||
-  // ||         ||+-------+||+------------------------+||         ||
-  // |+---------++---------++--------------------------++---------+|
-  // +-------------------------------------------------------------+
+  // +- EventBox (container_) ------------------------------------------------+
+  // +- HBox (container_hbox_) -----------------------------------------------+
+  // |+ VBox ---++- Algn. -++- Alignment --------------++- Algn. -++ VBox ---+|
+  // || titlebar||titlebar ||   (titlebar_alignment_)  ||titlebar || titlebar||
+  // || left    ||left     ||                          ||right    || right   ||
+  // || button  ||spy      ||                          ||spy      || button  ||
+  // || vbox    ||frame    ||+- TabStripGtk  ---------+||frame    || vbox    ||
+  // ||         ||         || tab   tab   tabclose    |||         ||         ||
+  // ||         ||         ||+------------------------+||         ||         ||
+  // |+---------++---------++--------------------------++---------++---------+|
+  // +------------------------------------------------------------------------+
   //
   // There are two vboxes on either side of |container_hbox_| because when the
   // desktop is GNOME, the button placement is configurable based on a metacity
@@ -245,6 +247,9 @@ void BrowserTitlebar::Init() {
   // ||+-------------------------------------------+||
   // |+---------------------------------------------+|
   // +-----------------------------------------------+
+  //
+  // The two spy alignments are only allocated if this window is an incognito
+  // window. Only one of them holds the spy image.
   //
   // If we're a popup window or in app mode, we don't display the spy guy or
   // the tab strip.  Instead, put an hbox in titlebar_alignment_ in place of
@@ -269,10 +274,27 @@ void BrowserTitlebar::Init() {
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateChangedThunk), this);
 
-  // Allocate the two button boxes on the left and right parts of the bar.
+  // Allocate the two button boxes on the left and right parts of the bar, and
+  // spyguy frames in case of incognito mode.
   titlebar_left_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_buttons_vbox_,
                      FALSE, FALSE, 0);
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
+    titlebar_left_spy_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    gtk_widget_set_no_show_all(titlebar_left_spy_frame_, TRUE);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_left_spy_frame_), 0,
+        kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
+    gtk_box_pack_start(GTK_BOX(container_hbox_), titlebar_left_spy_frame_,
+                       FALSE, FALSE, 0);
+
+    titlebar_right_spy_frame_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    gtk_widget_set_no_show_all(titlebar_right_spy_frame_, TRUE);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_right_spy_frame_), 0,
+        kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
+    gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_right_spy_frame_,
+                     FALSE, FALSE, 0);
+  }
   titlebar_right_buttons_vbox_ = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_right_buttons_vbox_,
                    FALSE, FALSE, 0);
@@ -280,20 +302,6 @@ void BrowserTitlebar::Init() {
   // Either read the gconf database and register for updates (on GNOME), or use
   // the default value (anywhere else).
   Singleton<GConfTitlebarListener>()->SetTitlebarButtons(this);
-
-  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
-      browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
-    GtkWidget* spy_guy = gtk_image_new_from_pixbuf(GetOTRAvatar());
-    gtk_misc_set_alignment(GTK_MISC(spy_guy), 0.0, 1.0);
-    GtkWidget* spy_frame = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-    // We use this alignment rather than setting padding on the GtkImage because
-    // the image's intrinsic padding doesn't clip the pixbuf during painting.
-    gtk_alignment_set_padding(GTK_ALIGNMENT(spy_frame), 0,
-        kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
-    gtk_widget_set_size_request(spy_guy, -1, 0);
-    gtk_container_add(GTK_CONTAINER(spy_frame), spy_guy);
-    gtk_box_pack_start(GTK_BOX(container_hbox_), spy_frame, FALSE, FALSE, 0);
-  }
 
   // We use an alignment to control the titlebar height.
   titlebar_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -374,6 +382,8 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
   bool left_side = true;
   StringTokenizer tokenizer(button_string, ":,");
   tokenizer.set_options(StringTokenizer::RETURN_DELIMS);
+  int left_count = 0;
+  int right_count = 0;
   while (tokenizer.GetNext()) {
     if (tokenizer.token_is_delim()) {
       if (*tokenizer.token_begin() == ':')
@@ -381,6 +391,7 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
     } else {
       base::StringPiece token = tokenizer.token_piece();
       if (token == "minimize") {
+        (left_side ? left_count : right_count)++;
         GtkWidget* parent_box = GetButtonHBox(left_side);
         minimize_button_.reset(
             BuildTitlebarButton(IDR_MINIMIZE, IDR_MINIMIZE_P,
@@ -390,6 +401,7 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
         gtk_widget_size_request(minimize_button_->widget(),
                                 &minimize_button_req_);
       } else if (token == "maximize") {
+        (left_side ? left_count : right_count)++;
         GtkWidget* parent_box = GetButtonHBox(left_side);
         restore_button_.reset(
             BuildTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
@@ -405,6 +417,7 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
         gtk_widget_size_request(restore_button_->widget(),
                                 &restore_button_req_);
       } else if (token == "close") {
+        (left_side ? left_count : right_count)++;
         GtkWidget* parent_box = GetButtonHBox(left_side);
         close_button_.reset(
             BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P,
@@ -416,6 +429,29 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
       }
       // Ignore any other values like "pin" since we don't have images for
       // those.
+    }
+  }
+
+  // If we are in incognito mode, add the spy guy to either the end of the left
+  // or the beginning of the right depending on which side has fewer buttons.
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
+    GtkWidget* spy_guy = gtk_image_new_from_pixbuf(GetOTRAvatar());
+    gtk_misc_set_alignment(GTK_MISC(spy_guy), 0.0, 1.0);
+    gtk_widget_show(spy_guy);
+
+    // Remove previous state.
+    gtk_util::RemoveAllChildren(titlebar_left_spy_frame_);
+    gtk_util::RemoveAllChildren(titlebar_right_spy_frame_);
+
+    if (right_count > left_count) {
+      gtk_container_add(GTK_CONTAINER(titlebar_left_spy_frame_), spy_guy);
+      gtk_widget_show(titlebar_left_spy_frame_);
+      gtk_widget_hide(titlebar_right_spy_frame_);
+    } else {
+      gtk_container_add(GTK_CONTAINER(titlebar_right_spy_frame_), spy_guy);
+      gtk_widget_show(titlebar_right_spy_frame_);
+      gtk_widget_hide(titlebar_left_spy_frame_);
     }
   }
 
