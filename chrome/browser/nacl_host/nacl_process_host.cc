@@ -11,6 +11,7 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/metrics/nacl_histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
@@ -114,7 +115,7 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* resource_message_filter,
   if (!LaunchSelLdr()) {
     return false;
   }
-
+  UmaNaclHistogramEnumeration(NACL_STARTED);
   resource_message_filter_ = resource_message_filter;
   reply_msg_ = reply_msg;
 

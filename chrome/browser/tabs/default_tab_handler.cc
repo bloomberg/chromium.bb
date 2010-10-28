@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/metrics/nacl_histogram.h"
 #include "chrome/browser/tabs/default_tab_handler.h"
-
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 
@@ -14,6 +14,7 @@ DefaultTabHandler::DefaultTabHandler(TabHandlerDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(
         model_(new TabStripModel(this, delegate->GetProfile()))) {
+  UmaNaclHistogramEnumeration(FIRST_TAB_NACL_BASELINE);
   model_->AddObserver(this);
 }
 
@@ -34,6 +35,7 @@ TabStripModel* DefaultTabHandler::GetTabStripModel() const {
 // DefaultTabHandler, TabStripModelDelegate implementation:
 
 TabContents* DefaultTabHandler::AddBlankTab(bool foreground) {
+  UmaNaclHistogramEnumeration(NEW_TAB_NACL_BASELINE);
   return delegate_->AsBrowser()->AddBlankTab(foreground);
 }
 
