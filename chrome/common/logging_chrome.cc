@@ -135,18 +135,9 @@ LoggingDestination DetermineLogMode(const CommandLine& command_line) {
 }
 
 #if defined(OS_CHROMEOS)
-void SetUpSymlink(const FilePath& symlink_path, const FilePath& new_log_path) {
-  // We don't care if the unlink fails; we're going to continue anyway.
-  if (unlink(symlink_path.value().c_str()) == -1)
-    PLOG(WARNING) << "Unable to unlink " << symlink_path.value();
-  if (symlink(new_log_path.value().c_str(),
-              symlink_path.value().c_str()) == -1) {
-    PLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
-                << " pointing at " << new_log_path.value();
-  }
-}
-
-FilePath TimestampLog(const FilePath& new_log_file, base::Time timestamp) {
+namespace {
+FilePath GenerateTimestampedName(const FilePath& base_path,
+                                 base::Time timestamp) {
   base::Time::Exploded time_deets;
   timestamp.LocalExplode(&time_deets);
   std::string suffix = StringPrintf("_%02d%02d%02d-%02d%02d%02d",
@@ -156,25 +147,71 @@ FilePath TimestampLog(const FilePath& new_log_file, base::Time timestamp) {
                                     time_deets.hour,
                                     time_deets.minute,
                                     time_deets.second);
-  FilePath new_log_path = new_log_file.InsertBeforeExtension(suffix);
-  SetUpSymlink(new_log_file, new_log_path);
-
-  return new_log_path;
+  return base_path.InsertBeforeExtension(suffix);
 }
 
+FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
+  // If not starting a new log, then just log through the existing
+  // symlink, but if the symlink doesn't exist, create it.  If
+  // starting a new log, then delete the old symlink and make a new
+  // one to a fresh log file.
+  FilePath target_path;
+  if (new_log || !file_util::PathExists(symlink_path)) {
+    target_path = GenerateTimestampedName(symlink_path, base::Time::Now());
+
+    // We don't care if the unlink fails; we're going to continue anyway.
+    if (unlink(symlink_path.value().c_str()) == -1) {
+      if (new_log) // only warn if we might expect it to succeed.
+        PLOG(WARNING) << "Unable to unlink " << symlink_path.value();
+    }
+    if (symlink(target_path.value().c_str(),
+                symlink_path.value().c_str()) == -1) {
+      PLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
+                  << " pointing at " << target_path.value();
+    }
+  } else {
+    char buf[1024];
+    size_t count = readlink(target_path.value().c_str(), buf, sizeof(buf));
+    if (count > 0) {
+      target_path = FilePath(FilePath::StringType(buf));
+    } else {
+      PLOG(ERROR) << "Unable to read symlink " << symlink_path.value();
+    }
+  }
+  return target_path;
+}
+
+void RemoveSymlinkAndLog(const FilePath& link_path,
+                         const FilePath& target_path) {
+  if (::unlink(link_path.value().c_str()) == -1)
+    PLOG(WARNING) << "Unable to unlink symlink " << link_path.value();
+  if (::unlink(target_path.value().c_str()) == -1)
+    PLOG(WARNING) << "Unable to unlink log file " << target_path.value();
+}
+
+}  // anonymous namespace
+
 void RedirectChromeLogging(const FilePath& new_log_dir,
-                           const CommandLine& command_line,
-                           OldFileDeletionState delete_old_log_file) {
+                           const CommandLine& command_line) {
   DCHECK(!chrome_logging_redirected_) <<
     "Attempted to redirect logging when it was already initialized.";
-  FilePath log_file_name = GetLogFileName().BaseName();
-  FilePath new_log_path =
-      TimestampLog(new_log_dir.Append(log_file_name), base::Time::Now());
-  InitLogging(new_log_path.value().c_str(),
-              DetermineLogMode(command_line),
-              logging::LOCK_LOG_FILE,
-              delete_old_log_file);
-  chrome_logging_redirected_ = true;
+  FilePath orig_log_path = GetLogFileName();
+  FilePath log_path = new_log_dir.Append(orig_log_path.BaseName());
+
+  // Always force a new symlink when redirecting.
+  FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
+
+  // ChromeOS always logs through the symlink, so it shouldn't be
+  // deleted if it already exists.
+  if (!InitLogging(log_path.value().c_str(),
+                   DetermineLogMode(command_line),
+                   logging::LOCK_LOG_FILE,
+                   logging::APPEND_TO_OLD_LOG_FILE)) {
+    LOG(ERROR) << "Unable to initialize logging to " << log_path.value();
+    RemoveSymlinkAndLog(log_path, target_path);
+  } else {
+    chrome_logging_redirected_ = true;
+  }
 }
 #endif
 
@@ -188,21 +225,48 @@ void InitChromeLogging(const CommandLine& command_line,
 #endif
 
   FilePath log_path = GetLogFileName();
+
 #if defined(OS_CHROMEOS)
-  log_path = TimestampLog(log_path, base::Time::Now());
+  // On ChromeOS we log to the symlink.  We force creation of a new
+  // symlink if we've been asked to delete the old log, since that
+  // indicates the start of a new session.
+  FilePath target_path = SetUpSymlinkIfNeeded(
+      log_path, delete_old_log_file == logging::DELETE_OLD_LOG_FILE);
+
+  // Because ChromeOS manages the move to a new session by redirecting
+  // the link, it shouldn't remove the old file in the logging code,
+  // since that will remove the newly created link instead.
+  delete_old_log_file = logging::APPEND_TO_OLD_LOG_FILE;
 #endif
 
-  logging::InitLogging(log_path.value().c_str(),
-                       DetermineLogMode(command_line),
-                       logging::LOCK_LOG_FILE,
-                       delete_old_log_file);
+  bool success = InitLogging(log_path.value().c_str(),
+                             DetermineLogMode(command_line),
+                             logging::LOCK_LOG_FILE,
+                             delete_old_log_file);
+
+#if defined(OS_CHROMEOS)
+  if (!success) {
+    PLOG(ERROR) << "Unable to initialize logging to " << log_path.value()
+                << " (which should be a link to " << target_path.value() << ")";
+    RemoveSymlinkAndLog(log_path, target_path);
+    return;
+  }
+#else
+  if (!success) {
+    PLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
+    return;
+  }
+#endif
 
   // Default to showing error dialogs.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))
     logging::SetShowErrorDialogs(true);
 
   // we want process and thread IDs because we have a lot of things running
-  logging::SetLogItems(true, true, false, true);
+  logging::SetLogItems(true,  // enable_process_id
+                       true,  // enable_thread_id
+                       false, // enable_timestamp
+                       true); // enable_tickcount
 
   // We call running in unattended mode "headless", and allow
   // headless mode to be configured either by the Environment

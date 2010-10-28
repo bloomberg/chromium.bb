@@ -1232,8 +1232,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
     logging::RedirectChromeLogging(
         user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
-        *(CommandLine::ForCurrentProcess()),
-        logging::DELETE_OLD_LOG_FILE);
+        *(CommandLine::ForCurrentProcess()));
   }
 #endif
 

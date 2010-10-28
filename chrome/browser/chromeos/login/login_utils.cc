@@ -139,8 +139,7 @@ void LoginUtilsImpl::CompleteLogin(
   // Switch log file as soon as possible.
   logging::RedirectChromeLogging(
       user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
-      *(CommandLine::ForCurrentProcess()),
-      logging::DELETE_OLD_LOG_FILE);
+      *(CommandLine::ForCurrentProcess()));
   btl->AddLoginTimeMarker("LoggingRedirected", false);
 
   // The default profile will have been changed because the ProfileManager

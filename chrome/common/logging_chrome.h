@@ -38,8 +38,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
 #if defined(OS_CHROMEOS)
 void RedirectChromeLogging(const FilePath& new_log_dir,
-                           const CommandLine& command_line,
-                           OldFileDeletionState delete_old_log_file);
+                           const CommandLine& command_line);
 #endif
 
 // Call when done using logging for Chrome.
