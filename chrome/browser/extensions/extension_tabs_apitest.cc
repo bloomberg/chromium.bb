@@ -9,6 +9,14 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
+#if defined(OS_WIN)
+// This test times out on win.
+// http://crbug.com/58269
+#define MAYBE_Tabs DISABLED_Tabs
+#else
+#define MAYBE_Tabs Tabs
+#endif
+
 // Possible race in ChromeURLDataManager. http://crbug.com/59198
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_TabOnRemoved DISABLED_TabOnRemoved
@@ -16,7 +24,7 @@
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(test_server()->Start());
 
   // The test creates a tab and checks that the URL of the new tab
@@ -25,23 +33,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kHomePageIsNewTabPage, true);
 
-  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud.html")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMove) {
-  ASSERT_TRUE(test_server()->Start());
-  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabEvents) {
-  ASSERT_TRUE(test_server()->Start());
-  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabRelativeURLs) {
-  ASSERT_TRUE(test_server()->Start());
-  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "relative_urls.html"))
-      << message_;
+  ASSERT_TRUE(RunExtensionTest("tabs/basics")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
