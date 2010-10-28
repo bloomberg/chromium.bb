@@ -159,6 +159,7 @@ class FileSystemPathManager::GetFileSystemRootPathTask
 
   void DispatchCallback(const FilePath& root_path) {
     callback_->Run(!root_path.empty(), root_path, name_);
+    callback_.reset();
   }
 
   scoped_refptr<base::MessageLoopProxy> file_message_loop_;
