@@ -6,8 +6,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-// Times out. See http://crbug.com/46601.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Popup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Popup) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
