@@ -12,7 +12,8 @@
 #include "gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()
-    : allocate_fbo_(false),
+    : io_surface_id_(0),
+      allocate_fbo_(false),
       texture_(0),
       fbo_(0),
       depth_stencil_renderbuffer_(0) {
@@ -266,7 +267,12 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
   // make our IOSurfaces global and send back their identifiers. On
   // the browser process side the identifier is reconstituted into an
   // IOSurface for on-screen rendering.
-  return io_surface_support->IOSurfaceGetID(io_surface_);
+  io_surface_id_ = io_surface_support->IOSurfaceGetID(io_surface_);
+  return io_surface_id_;
+}
+
+uint64 AcceleratedSurface::GetSurfaceId() {
+  return io_surface_id_;
 }
 
 TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(

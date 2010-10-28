@@ -124,12 +124,12 @@ void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
-    gfx::PluginWindowHandle id) {
+    gfx::PluginWindowHandle id, uint64 surface_id) {
   AutoLock lock(lock_);
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
-    container->set_was_painted_to();
+    container->set_was_painted_to(surface_id);
 }
 
 bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(

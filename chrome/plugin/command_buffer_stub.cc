@@ -226,8 +226,8 @@ void CommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 }
 
 void CommandBufferStub::SwapBuffersCallback() {
-  Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(plugin_host_route_id_,
-                                                          window_));
+  Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(
+      plugin_host_route_id_, window_, processor_->GetSurfaceId()));
 }
 
 void CommandBufferStub::AllocTransportDIB(const size_t size,

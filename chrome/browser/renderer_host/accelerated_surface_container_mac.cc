@@ -14,6 +14,7 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     bool opaque)
     : manager_(manager),
       opaque_(opaque),
+      surface_id_(0),
       width_(0),
       height_(0),
       texture_(0),
@@ -31,10 +32,13 @@ void AcceleratedSurfaceContainerMac::SetSizeAndIOSurface(
     int32 height,
     uint64 io_surface_identifier) {
   surface_.reset();
+  surface_id_ = 0;
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (io_surface_support) {
     surface_.reset(io_surface_support->IOSurfaceLookup(
         static_cast<uint32>(io_surface_identifier)));
+    if (surface_.get())
+      surface_id_ = io_surface_identifier;
     EnqueueTextureForDeletion();
     width_ = width;
     height_ = height;
@@ -190,6 +194,16 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     glEnd();
     glDisable(target);
   }
+}
+
+void AcceleratedSurfaceContainerMac::set_was_painted_to(uint64 surface_id) {
+  if (surface_id) {
+    // Check that only the most current IOSurface allocated for this container
+    // is painted to.
+    DCHECK(surface_);
+    DCHECK_EQ(surface_id, surface_id_);
+  }
+  was_painted_to_ = true;
 }
 
 void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion() {

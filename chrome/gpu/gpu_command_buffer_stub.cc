@@ -198,10 +198,8 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 
 void GpuCommandBufferStub::SwapBuffersCallback() {
   ChildThread* gpu_thread = ChildThread::current();
-  gpu_thread->Send(
-      new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(renderer_id_,
-                                                      render_view_id_,
-                                                      handle_));
+  gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(
+      renderer_id_, render_view_id_, handle_, processor_->GetSurfaceId()));
 }
 #endif  // defined(OS_MACOSX)
 

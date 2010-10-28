@@ -176,7 +176,8 @@ class WebPluginDelegateProxy
   void OnAcceleratedSurfaceAllocTransportDIB(size_t size,
                                              TransportDIB::Handle* dib_handle);
   void OnAcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id);
-  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
+                                          uint64 surface_id);
 #endif
 
   // Draw a graphic indicating a crashed plugin.

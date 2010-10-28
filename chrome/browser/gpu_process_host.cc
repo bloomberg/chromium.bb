@@ -309,10 +309,14 @@ namespace {
 class BuffersSwappedDispatcher : public Task {
  public:
   BuffersSwappedDispatcher(
-      int32 renderer_id, int32 render_view_id, gfx::PluginWindowHandle window)
+      int32 renderer_id,
+      int32 render_view_id,
+      gfx::PluginWindowHandle window,
+      uint64 surface_id)
       : renderer_id_(renderer_id),
         render_view_id_(render_view_id),
-        window_(window) {
+        window_(window),
+        surface_id_(surface_id) {
   }
 
   void Run() {
@@ -323,13 +327,14 @@ class BuffersSwappedDispatcher : public Task {
     RenderWidgetHostView* view = host->view();
     if (!view)
       return;
-    view->AcceleratedSurfaceBuffersSwapped(window_);
+    view->AcceleratedSurfaceBuffersSwapped(window_, surface_id_);
   }
 
  private:
   int32 renderer_id_;
   int32 render_view_id_;
   gfx::PluginWindowHandle window_;
+  uint64 surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BuffersSwappedDispatcher);
 };
@@ -339,10 +344,12 @@ class BuffersSwappedDispatcher : public Task {
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     int32 renderer_id,
     int32 render_view_id,
-    gfx::PluginWindowHandle window) {
+    gfx::PluginWindowHandle window,
+    uint64 surface_id) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      new BuffersSwappedDispatcher(renderer_id, render_view_id, window));
+      new BuffersSwappedDispatcher(
+          renderer_id, render_view_id, window, surface_id));
 }
 #endif
 

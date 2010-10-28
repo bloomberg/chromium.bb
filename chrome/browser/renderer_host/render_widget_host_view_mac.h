@@ -244,7 +244,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int32 width,
       int32 height,
       TransportDIB::Handle transport_dib);
-  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
+                                                uint64 surface_id);
   virtual void GpuRenderingStateDidChange();
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context,

@@ -669,8 +669,9 @@ WebPluginAcceleratedSurface* WebPluginProxy::GetAcceleratedSurface() {
 }
 
 void WebPluginProxy::AcceleratedFrameBuffersDidSwap(
-    gfx::PluginWindowHandle window) {
-  Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(route_id_, window));
+    gfx::PluginWindowHandle window, uint64 surface_id) {
+  Send(new PluginHostMsg_AcceleratedSurfaceBuffersSwapped(
+        route_id_, window, surface_id));
 }
 
 void WebPluginProxy::SetAcceleratedSurface(

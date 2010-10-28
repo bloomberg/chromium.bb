@@ -511,7 +511,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                                            int32 width,
                                            int32 height,
                                            TransportDIB::Handle transport_dib);
-  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
+                                          uint64 surface_id);
 #elif defined(OS_POSIX)
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);

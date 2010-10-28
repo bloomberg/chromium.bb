@@ -1045,9 +1045,9 @@ void RenderWidgetHost::OnAcceleratedSurfaceSetTransportDIB(
 }
 
 void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window) {
+    gfx::PluginWindowHandle window, uint64 surface_id) {
   if (view_) {
-    view_->AcceleratedSurfaceBuffersSwapped(window);
+    view_->AcceleratedSurfaceBuffersSwapped(window, surface_id);
   }
 }
 #elif defined(OS_POSIX)

@@ -142,10 +142,11 @@ IPC_BEGIN_MESSAGES(GpuHost)
   // This message notifies the browser process that the renderer
   // swapped the buffers associated with the given "window", which
   // should cause the browser to redraw the compositor's contents.
-  IPC_MESSAGE_CONTROL3(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+  IPC_MESSAGE_CONTROL4(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                        int32, /* renderer_id */
                        int32, /* render_view_id */
-                       gfx::PluginWindowHandle /* window */)
+                       gfx::PluginWindowHandle /* window */,
+                       uint64 /* surface_id */)
 #endif
 
 IPC_END_MESSAGES(GpuHost)

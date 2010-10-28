@@ -913,7 +913,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window) {
+    gfx::PluginWindowHandle window, uint64 surface_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PluginViewMap::iterator it = plugin_views_.find(window);
   DCHECK(plugin_views_.end() != it);
@@ -922,7 +922,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   }
   DCHECK([it->second isKindOfClass:[AcceleratedPluginView class]]);
 
-  plugin_container_manager_.SetSurfaceWasPaintedTo(window);
+  plugin_container_manager_.SetSurfaceWasPaintedTo(window, surface_id);
   AcceleratedPluginView* view =
       static_cast<AcceleratedPluginView*>(it->second);
   // The surface is hidden until its first paint, to not show gargabe.

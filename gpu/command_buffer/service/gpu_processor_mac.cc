@@ -93,6 +93,12 @@ void GPUProcessor::SetTransportDIBAllocAndFree(
   surface_->SetTransportDIBAllocAndFree(allocator, deallocator);
 }
 
+uint64 GPUProcessor::GetSurfaceId() {
+  if (!surface_.get())
+    return 0;
+  return surface_->GetSurfaceId();
+}
+
 void GPUProcessor::WillSwapBuffers() {
   DCHECK(decoder_.get());
   DCHECK(decoder_->GetGLContext());

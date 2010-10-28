@@ -83,6 +83,8 @@ class GPUProcessor : public CommandBufferEngine {
   virtual void SetTransportDIBAllocAndFree(
       Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
       Callback1<TransportDIB::Id>::Type* deallocator);
+  // Returns the id of the current IOSurface, or 0.
+  virtual uint64 GetSurfaceId();
 #endif
 
   // Sets a callback which is called when a SwapBuffers command is processed.

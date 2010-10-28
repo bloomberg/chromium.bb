@@ -2238,14 +2238,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       gfx::PluginWindowHandle /* window */,
                       int32 /* width */,
                       int32 /* height */,
-                      uint64 /* identifier for IOSurface */)
+                      uint64 /* surface_id */)
 
   // This message notifies the browser process that the plug-in
   // swapped the buffers associated with the given "window", which
   // should cause the browser to redraw the various plug-ins'
   // contents.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
-                      gfx::PluginWindowHandle /* window */)
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
+                      gfx::PluginWindowHandle /* window */,
+                      uint64 /* surface_id */)
 #endif
 
   // A renderer sends this to the browser process when it wants to create a

@@ -332,7 +332,8 @@ class RenderView : public RenderWidget,
                                          int32 width,
                                          int32 height,
                                          TransportDIB::Handle transport_dib);
-  void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
+                                        uint64 surface_id);
 #endif
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);

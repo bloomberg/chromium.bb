@@ -438,7 +438,7 @@ IPC_BEGIN_MESSAGES(PluginHost)
                       gfx::PluginWindowHandle /* window */,
                       int32 /* width */,
                       int32 /* height */,
-                      uint64 /* identifier for IOSurface */)
+                      uint64 /* surface_id */)
 
 
   // On the Mac, shared memory can't be allocated in the sandbox, so
@@ -458,8 +458,9 @@ IPC_BEGIN_MESSAGES(PluginHost)
   // browser process) that the plug-in swapped the buffers associated
   // with the given "window", which should cause the browser to redraw
   // the various plug-ins' contents.
-  IPC_MESSAGE_ROUTED1(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
-                      gfx::PluginWindowHandle /* window */)
+  IPC_MESSAGE_ROUTED2(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
+                      gfx::PluginWindowHandle /* window */,
+                      uint64 /* surface_id */)
 #endif
 
 IPC_END_MESSAGES(PluginHost)

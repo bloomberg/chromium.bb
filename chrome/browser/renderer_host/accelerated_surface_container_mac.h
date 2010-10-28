@@ -77,7 +77,7 @@ class AcceleratedSurfaceContainerMac {
   void ForceTextureReload() { texture_needs_upload_ = true; }
 
   // Notifies the surface that it was painted to.
-  void set_was_painted_to() { was_painted_to_ = true; }
+  void set_was_painted_to(uint64 surface_id);
 
   // Returns if the surface should be shown.
   bool should_be_visible() const { return visible_ && was_painted_to_; }
@@ -93,6 +93,9 @@ class AcceleratedSurfaceContainerMac {
   // This is held as a CFTypeRef because we can't refer to the
   // IOSurfaceRef type when building on 10.5.
   base::mac::ScopedCFTypeRef<CFTypeRef> surface_;
+
+  // The id of |surface_|, or 0 if |surface_| is NULL.
+  uint64 surface_id_;
 
   // The TransportDIB which is used in pre-10.6 systems where the IOSurface
   // API is not supported.  This is a weak reference to the actual TransportDIB

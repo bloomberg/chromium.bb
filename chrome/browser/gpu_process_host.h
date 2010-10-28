@@ -102,7 +102,8 @@ class GpuProcessHost : public BrowserChildProcessHost {
       const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
   void OnAcceleratedSurfaceBuffersSwapped(int32 renderer_id,
                                           int32 render_view_id,
-                                          gfx::PluginWindowHandle window);
+                                          gfx::PluginWindowHandle window,
+                                          uint64 surface_id);
 #endif
 
   void ReplyToRenderer(const IPC::ChannelHandle& channel,

@@ -59,5 +59,6 @@ void WebPluginAcceleratedSurfaceProxy::StartDrawing() {
 
 void WebPluginAcceleratedSurfaceProxy::EndDrawing() {
   surface_->SwapBuffers();
-  plugin_proxy_->AcceleratedFrameBuffersDidSwap(window_handle_);
+  plugin_proxy_->AcceleratedFrameBuffersDidSwap(
+      window_handle_, surface_->GetSurfaceId());
 }

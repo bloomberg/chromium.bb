@@ -167,7 +167,7 @@ void TestRenderWidgetHostView::AcceleratedSurfaceSetIOSurface(
     gfx::PluginWindowHandle window,
     int32 width,
     int32 height,
-    uint64 io_surface_identifier) {
+    uint64 surface_id) {
 }
 
 void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
@@ -178,7 +178,7 @@ void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
 }
 
 void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window) {
+    gfx::PluginWindowHandle window, uint64 surface_id) {
 }
 
 void TestRenderWidgetHostView::GpuRenderingStateDidChange() {

@@ -149,7 +149,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 
   // Tell the browser (via the renderer) to invalidate because the
   // accelerated buffers have changed.
-  virtual void AcceleratedFrameBuffersDidSwap(gfx::PluginWindowHandle window);
+  virtual void AcceleratedFrameBuffersDidSwap(
+      gfx::PluginWindowHandle window, uint64 surface_id);
 
   // Tell the renderer and browser to associate the given plugin handle with
   // |accelerated_surface_identifier|. The geometry is used to resize any

@@ -112,13 +112,14 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                               int32 width,
                                               int32 height,
-                                              uint64 io_surface_identifier);
+                                              uint64 surface_id);
   virtual void AcceleratedSurfaceSetTransportDIB(
       gfx::PluginWindowHandle window,
       int32 width,
       int32 height,
       TransportDIB::Handle transport_dib);
-  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
+                                                uint64 surface_id);
   virtual void GpuRenderingStateDidChange();
 #endif
   virtual void SetVisuallyDeemphasized(bool deemphasized) { }

@@ -229,7 +229,7 @@ class RenderWidgetHostView {
       int32 height,
       TransportDIB::Handle transport_dib) = 0;
   virtual void AcceleratedSurfaceBuffersSwapped(
-      gfx::PluginWindowHandle window) = 0;
+      gfx::PluginWindowHandle window, uint64 surface_id) = 0;
   virtual void GpuRenderingStateDidChange() = 0;
 #endif
 

@@ -5987,8 +5987,9 @@ void RenderView::AcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id) {
 }
 
 void RenderView::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window) {
-  Send(new ViewHostMsg_AcceleratedSurfaceBuffersSwapped(routing_id(), window));
+    gfx::PluginWindowHandle window, uint64 surface_id) {
+  Send(new ViewHostMsg_AcceleratedSurfaceBuffersSwapped(
+      routing_id(), window, surface_id));
 }
 #endif
 

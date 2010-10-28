@@ -74,7 +74,7 @@ class AcceleratedSurfaceContainerManagerMac {
   void ForceTextureReload();
 
   // Notifies a surface that it has been painted to.
-  void SetSurfaceWasPaintedTo(gfx::PluginWindowHandle id);
+  void SetSurfaceWasPaintedTo(gfx::PluginWindowHandle id, uint64 surface_id);
 
   // Returns if a given surface should be shown.
   bool SurfaceShouldBeVisible(gfx::PluginWindowHandle id) const;
