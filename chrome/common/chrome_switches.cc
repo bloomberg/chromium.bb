@@ -1003,7 +1003,8 @@ const char kSyncerThreadTimedStop[]         = "syncer-thread-timed-stop";
 // Override the default notification method for sync.
 const char kSyncNotificationMethod[]        = "sync-notification-method";
 
-// Override the default host used for sync notifications.
+// Override the default host used for sync notifications.  Can be either
+// "host" or "host:port".
 const char kSyncNotificationHost[]          = "sync-notification-host";
 
 // Override the default server used for profile sync.

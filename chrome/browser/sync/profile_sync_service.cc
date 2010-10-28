@@ -8,12 +8,14 @@
 #include <set>
 
 #include "app/l10n_util.h"
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -248,6 +250,32 @@ void ProfileSyncService::GetDataTypeControllerStates(
       (*state_map)[iter->first] = iter->second.get()->state();
 }
 
+namespace {
+
+// TODO(akalin): Figure out whether this should be a method of
+// HostPortPair.
+net::HostPortPair StringToHostPortPair(const std::string& host_port_str,
+                                       uint16 default_port) {
+  std::string::size_type colon_index = host_port_str.find(':');
+  if (colon_index == std::string::npos) {
+    return net::HostPortPair(host_port_str, default_port);
+  }
+
+  std::string host = host_port_str.substr(0, colon_index);
+  std::string port_str = host_port_str.substr(colon_index + 1);
+  int port = default_port;
+  if (!base::StringToInt(port_str, &port) ||
+      (port <= 0) || (port > kuint16max)) {
+    LOG(WARNING) << "Could not parse valid port from " << port_str
+                 << "; using port " << default_port;
+    return net::HostPortPair(host, default_port);
+  }
+
+  return net::HostPortPair(host, port);
+}
+
+}  // namespace
+
 void ProfileSyncService::InitSettings() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -272,8 +300,8 @@ void ProfileSyncService::InitSettings() {
     std::string value(command_line.GetSwitchValueASCII(
         switches::kSyncNotificationHost));
     if (!value.empty()) {
-      notifier_options_.xmpp_host_port.set_host(value);
-      notifier_options_.xmpp_host_port.set_port(notifier::kDefaultXmppPort);
+      notifier_options_.xmpp_host_port =
+          StringToHostPortPair(value, notifier::kDefaultXmppPort);
     }
     VLOG(1) << "Using " << notifier_options_.xmpp_host_port.ToString()
             << " for test sync notification server.";
