@@ -28,11 +28,6 @@
 #include "app/l10n_util_mac.h"
 #endif
 
-// TODO(playmobil): remove this undef once SkPostConfig.h is fixed.
-// skia/include/corecg/SkPostConfig.h #defines strcasecmp() so we can't use
-// base::strcasecmp() without #undefing it here.
-#undef strcasecmp
-
 namespace {
 
 #if defined(OS_WIN)
