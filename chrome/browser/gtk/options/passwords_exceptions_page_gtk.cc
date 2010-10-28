@@ -186,7 +186,10 @@ gint PasswordsExceptionsPageGtk::CompareSite(GtkTreeModel* model,
 void PasswordsExceptionsPageGtk::ExceptionListPopulater::populate() {
   DCHECK(!pending_login_query_);
   PasswordStore* store = page_->GetPasswordStore();
-  pending_login_query_ = store->GetBlacklistLogins(this);
+  if (store != NULL)
+    pending_login_query_ = store->GetBlacklistLogins(this);
+  else
+    LOG(ERROR) << "No password store! Cannot display exceptions.";
 }
 
 void

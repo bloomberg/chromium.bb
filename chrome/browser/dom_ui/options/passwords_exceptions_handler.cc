@@ -167,7 +167,10 @@ void PasswordsExceptionsHandler::SetPasswordExceptionList() {
 void PasswordsExceptionsHandler::PasswordListPopulater::Populate() {
   DCHECK(!pending_login_query_);
   PasswordStore* store = page_->GetPasswordStore();
-  pending_login_query_ = store->GetAutofillableLogins(this);
+  if (store != NULL)
+    pending_login_query_ = store->GetAutofillableLogins(this);
+  else
+    LOG(ERROR) << "No password store! Cannot display passwords.";
 }
 
 void PasswordsExceptionsHandler::PasswordListPopulater::
@@ -182,7 +185,10 @@ void PasswordsExceptionsHandler::PasswordListPopulater::
 void PasswordsExceptionsHandler::PasswordExceptionListPopulater::Populate() {
   DCHECK(!pending_login_query_);
   PasswordStore* store = page_->GetPasswordStore();
-  pending_login_query_ = store->GetBlacklistLogins(this);
+  if (store != NULL)
+    pending_login_query_ = store->GetBlacklistLogins(this);
+  else
+    LOG(ERROR) << "No password store! Cannot display exceptions.";
 }
 
 void PasswordsExceptionsHandler::PasswordExceptionListPopulater::
