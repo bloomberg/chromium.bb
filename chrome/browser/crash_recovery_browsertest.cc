@@ -34,7 +34,9 @@ class CrashRecoveryBrowserTest : public InProcessBrowserTest {
 #endif
 
 // Test that reload works after a crash.
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_Reload) {
+// Times out on all platforms after WebKit roll 70722:70770.
+// http://crbug.com/61097
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DISABLED_Reload) {
   // The title of the active tab should change each time this URL is loaded.
   GURL url(
       "data:text/html,<script>document.title=new Date().valueOf()</script>");
