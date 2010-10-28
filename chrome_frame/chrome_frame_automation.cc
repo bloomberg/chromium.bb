@@ -571,7 +571,6 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       proxy_factory_(g_proxy_factory.get()),
       handle_top_level_requests_(false),
       tab_handle_(-1),
-      session_id_(-1),
       external_tab_cookie_(0),
       url_fetcher_(NULL),
       url_fetcher_flags_(PluginUrlRequestManager::NOT_THREADSAFE),
@@ -900,10 +899,6 @@ void ChromeFrameAutomationClient::GetEnabledExtensionsComplete(
   delete extension_directories;
 }
 
-int ChromeFrameAutomationClient::GetSessionId() const {
-  return session_id_;
-}
-
 void ChromeFrameAutomationClient::OnChromeFrameHostMoved() {
   // Use a local var to avoid the small possibility of getting the tab_
   // member be cleared while we try to use it.
@@ -966,13 +961,13 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
       2);
 
   IPC::SyncMessage* message =
-      new AutomationMsg_CreateExternalTab(0, settings, NULL, NULL, 0, 0);
+      new AutomationMsg_CreateExternalTab(0, settings, NULL, NULL, NULL);
   automation_server_->SendAsAsync(message, new CreateExternalTabContext(this),
                                   this);
 }
 
 AutomationLaunchResult ChromeFrameAutomationClient::CreateExternalTabComplete(
-    HWND chrome_window, HWND tab_window, int tab_handle, int session_id) {
+    HWND chrome_window, HWND tab_window, int tab_handle) {
   if (!automation_server_) {
     // If we receive this notification while shutting down, do nothing.
     DLOG(ERROR) << "CreateExternalTabComplete called when automation server "
@@ -989,7 +984,6 @@ AutomationLaunchResult ChromeFrameAutomationClient::CreateExternalTabComplete(
     tab_ = automation_server_->CreateTabProxy(tab_handle);
     tab_->AddObserver(this);
     tab_handle_ = tab_handle;
-    session_id_ = session_id;
   }
   return launch_result;
 }

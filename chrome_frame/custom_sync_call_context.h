@@ -85,16 +85,15 @@ class GetEnabledExtensionsContext
 class CreateExternalTabContext
     : public SyncMessageReplyDispatcher::SyncMessageCallContext {
  public:
-  typedef Tuple4<HWND, HWND, int, int> output_type;
+  typedef Tuple3<HWND, HWND, int> output_type;
   explicit CreateExternalTabContext(ChromeFrameAutomationClient* client)
       : client_(client) {
   }
 
-  void Completed(HWND chrome_window, HWND tab_window, int tab_handle,
-                 int session_id) {
+  void Completed(HWND chrome_window, HWND tab_window, int tab_handle) {
     AutomationLaunchResult launch_result =
         client_->CreateExternalTabComplete(chrome_window, tab_window,
-                                           tab_handle, session_id);
+                                           tab_handle);
     client_->PostTask(FROM_HERE,
                       NewRunnableMethod(
                           client_.get(),

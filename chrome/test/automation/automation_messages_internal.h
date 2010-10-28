@@ -428,12 +428,11 @@ IPC_BEGIN_MESSAGES(Automation)
   // hosted by an external process.
   // Request:
   //   ExternalTabSettings - settings for external tab
-  IPC_SYNC_MESSAGE_ROUTED1_4(AutomationMsg_CreateExternalTab,
+  IPC_SYNC_MESSAGE_ROUTED1_3(AutomationMsg_CreateExternalTab,
                              IPC::ExternalTabSettings  /* settings*/,
                              gfx::NativeWindow  /* Tab container window */,
                              gfx::NativeWindow  /* Tab window */,
-                             int  /* Handle to the new tab */,
-                             int  /* Session Id of the new tab */)
+                             int  /* Handle to the new tab */)
 
   // This message notifies the AutomationProvider to navigate to a specified
   // url in the external tab with given handle. The first parameter is the

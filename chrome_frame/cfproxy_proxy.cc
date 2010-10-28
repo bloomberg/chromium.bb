@@ -181,7 +181,7 @@ void CFProxy::Tab_Navigate(int tab, const GURL& url, const GURL& referrer) {
 
 void CFProxy::CreateTab(ChromeProxyDelegate* delegate,
                         const IPC::ExternalTabSettings& p) {
-  IPC::SyncMessage* m = new AutomationMsg_CreateExternalTab(0, p, 0, 0, 0, 0);
+  IPC::SyncMessage* m = new AutomationMsg_CreateExternalTab(0, p, 0, 0, 0);
   sync_dispatcher_.QueueSyncMessage(m, delegate, NULL);
   SendIpcMessage(m);
 }
