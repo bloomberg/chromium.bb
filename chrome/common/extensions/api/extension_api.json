@@ -876,7 +876,7 @@
         ],
         "returns": {
           "$ref": "Port",
-          "description": "A port that can be used to communicate with the content scripts running in the specified tab."
+          "description": "A port that can be used to communicate with the content scripts running in the specified tab. The port's <a href='extension.html#type-Port'>onDisconnect</a> event is fired if the tab closes or does not exist. "
         }
       },
       {
@@ -901,7 +901,7 @@
               {
                 "name": "response",
                 "type": "any",
-                "description": "The JSON response object sent by the handler of the request."
+                "description": "The JSON response object sent by the handler of the request. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
               }
             ]
           }

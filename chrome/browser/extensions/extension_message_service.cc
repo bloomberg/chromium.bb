@@ -74,9 +74,11 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
 }
 
 static void DispatchOnDisconnect(
-    const ExtensionMessageService::MessagePort& port, int source_port_id) {
+    const ExtensionMessageService::MessagePort& port, int source_port_id,
+    bool connection_error) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
+  args.Set(1, Value::CreateBooleanValue(connection_error));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
       "", ExtensionMessageService::kDispatchOnDisconnect, args, GURL()));
 }
@@ -183,7 +185,7 @@ void ExtensionMessageService::OpenChannelToTab(
     // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
     // disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
-                         GET_OPPOSITE_PORT_ID(receiver_port_id));
+                         GET_OPPOSITE_PORT_ID(receiver_port_id), true);
     return;
   }
 
@@ -209,14 +211,13 @@ bool ExtensionMessageService::OpenChannelImpl(
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name) {
-  // TODO(mpcomplete): notify source if receiver doesn't exist
   if (!source)
     return false;  // Closed while in flight.
 
   if (!receiver.sender) {
     // Treat it as a disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
-                         GET_OPPOSITE_PORT_ID(receiver_port_id));
+                         GET_OPPOSITE_PORT_ID(receiver_port_id), true);
     return false;
   }
 
@@ -303,7 +304,7 @@ void ExtensionMessageService::CloseChannelImpl(
       channel_iter->second->receiver : channel_iter->second->opener;
 
   if (notify_other_port)
-    DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id));
+    DispatchOnDisconnect(port, GET_OPPOSITE_PORT_ID(closing_port_id), false);
   delete channel_iter->second;
   channels_.erase(channel_iter);
 }

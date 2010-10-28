@@ -431,6 +431,11 @@ var chrome = chrome || {};
       var port = chrome.tabs.connect(tabId,
                                      {name: chromeHidden.kRequestChannel});
       port.postMessage(request);
+      port.onDisconnect.addListener(function() {
+        // For onDisconnects, we only notify the callback if there was an error.
+        if (chrome.extension.lastError && responseCallback)
+          responseCallback();
+      });
       port.onMessage.addListener(function(response) {
         if (responseCallback)
           responseCallback(response);

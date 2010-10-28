@@ -1039,7 +1039,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A port that can be used to communicate with the content scripts running in the specified tab.</dd>
+          <dd>A port that can be used to communicate with the content scripts running in the specified tab. The port's <a href="extension.html#type-Port">onDisconnect</a> event is fired if the tab closes or does not exist. </dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -4342,7 +4342,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The JSON response object sent by the handler of the request.</dd>
+          <dd>The JSON response object sent by the handler of the request. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -4434,7 +4434,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The JSON response object sent by the handler of the request.</dd>
+          <dd>The JSON response object sent by the handler of the request. If an error occurs while connecting to the specified tab, the callback will be called with no arguments and <a href="extension.html#property-lastError">chrome.extension.lastError</a> will be set to the error message.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

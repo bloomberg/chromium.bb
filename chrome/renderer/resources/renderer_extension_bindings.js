@@ -12,7 +12,7 @@
 var chrome = chrome || {};
 (function () {
   native function OpenChannelToExtension(sourceId, targetId, name);
-  native function CloseChannel(portId);
+  native function CloseChannel(portId, notifyBrowser);
   native function PortAddRef(portId);
   native function PortRelease(portId);
   native function PostMessage(portId, msg);
@@ -106,11 +106,24 @@ var chrome = chrome || {};
   };
 
   // Called by native code when a channel has been closed.
-  chromeHidden.Port.dispatchOnDisconnect = function(portId) {
+  chromeHidden.Port.dispatchOnDisconnect = function(
+      portId, connectionInvalid) {
     var port = ports[portId];
     if (port) {
-      port.onDisconnect.dispatch(port);
-      delete ports[portId];
+      // Update the renderer's port bookkeeping, without notifying the browser.
+      CloseChannel(portId, false);
+      if (connectionInvalid) {
+        var errorMsg = 
+          "Could not establish connection. Receiving end does not exist.";
+        chrome.extension.lastError = {"message": errorMsg};
+        console.error("Port error: " + errorMsg);
+      }
+      try {
+        port.onDisconnect.dispatch(port);
+      } finally {
+        delete chrome.extension.lastError;
+        delete ports[portId];
+      }
     }
   };
 
@@ -137,7 +150,7 @@ var chrome = chrome || {};
   // Disconnects the port from the other end.
   chrome.Port.prototype.disconnect = function() {
     delete ports[this.portId_];
-    CloseChannel(this.portId_);
+    CloseChannel(this.portId_, true);
   }
 
   // This function is called on context initialization for both content scripts

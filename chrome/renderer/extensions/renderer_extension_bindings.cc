@@ -130,14 +130,16 @@ class ExtensionImpl : public ExtensionBase {
 
   // Forcefully disconnects a port.
   static v8::Handle<v8::Value> CloseChannel(const v8::Arguments& args) {
-    if (args.Length() >= 1 && args[0]->IsInt32()) {
+    if (args.Length() >= 2 && args[0]->IsInt32() && args[1]->IsBoolean()) {
       int port_id = args[0]->Int32Value();
       if (!HasPortData(port_id)) {
         return v8::Undefined();
       }
       // Send via the RenderThread because the RenderView might be closing.
-      EventBindings::GetRenderThread()->Send(
-          new ViewHostMsg_ExtensionCloseChannel(port_id));
+      bool notify_browser = args[1]->BooleanValue();
+      if (notify_browser)
+        EventBindings::GetRenderThread()->Send(
+            new ViewHostMsg_ExtensionCloseChannel(port_id));
       ClearPortData(port_id);
     }
     return v8::Undefined();

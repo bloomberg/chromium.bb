@@ -8,6 +8,8 @@ var testTabId = null;
 var pass = chrome.test.callbackPass;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
+var callbackFail = chrome.test.callbackFail;
+var fail = chrome.test.fail;
 
 chrome.test.getConfig(function(config) {
 
@@ -82,21 +84,40 @@ chrome.test.getConfig(function(config) {
       }
     },
 
-    /* TODO: Enable this test once we do checking on the tab id for
-       chrome.tabs.connect (crbug.com/27565).
     function connectNoTab() {
+      // Expect a disconnect event when you connect to a non-existant tab, and
+      // once disconnected, expect an error while trying to post messages.
+      var errorMsg = 
+        "Could not establish connection. Receiving end does not exist.";
       chrome.tabs.create({}, pass(function(tab) {
         chrome.tabs.remove(tab.id, pass(function() {
-          var port = chrome.tabs.connect(tab.id);
-          assertEq(null, port);
+          var p = chrome.tabs.connect(tab.id);
+          p.onDisconnect.addListener(callbackFail(errorMsg, function() {
+            try {
+              p.postMessage();
+              fail("Error should have been thrown.");
+            } catch (e) {
+              // Do nothing- an exception should be thrown.
+            }
+          }));
         }));
       }));
-    }, */
+    },
 
     function sendRequest() {
       var request = "test";
       chrome.tabs.sendRequest(testTabId, request, pass(function(response) {
         assertEq(request, response);
+      }));
+    },
+
+    function sendRequestNoTab() {
+      var errorMsg = 
+        "Could not establish connection. Receiving end does not exist.";
+      chrome.tabs.create({}, pass(function(tab) {
+        chrome.tabs.remove(tab.id, pass(function() {
+          chrome.tabs.sendRequest(tab.id, "test", callbackFail(errorMsg));
+        }));
       }));
     }
   ]);
