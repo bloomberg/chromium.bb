@@ -3247,10 +3247,3 @@
    fun:PKIX_PL_OcspCertID_Create
    fun:pkix_OcspChecker_CheckLocal
 }
-{
-   logging_chrome_to_be_removed
-   Memcheck:Cond
-   fun:strlen
-   ...
-   fun:*logging16DetermineLogMode*
-}
