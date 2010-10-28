@@ -151,10 +151,12 @@ _start:
          * destructors are invoked from here.
          */
 #if defined(__x86_64__)
-        movl    $_fini, %edi
+        /* TODO(eaeltsin): replace _fini with __libc_fini_array! */
+        leal    _fini(%rip), %edi
         call    atexit
 #else
         subl    $12, %esp  /* Padding to maintain 0mod16 alignment */
+        /* TODO(eaeltsin): replace _fini with __libc_fini_array! */
         pushl   $_fini
         call    atexit
         addl    $16, %esp  /* Pop parameter and padding */
@@ -173,7 +175,7 @@ _start:
          * Install the pthread_shutdown call to be called at exit.
          */
 #if defined(__x86_64__)
-        movl    $__pthread_shutdown, %edi
+        leal    __pthread_shutdown(%rip), %edi
         call    atexit
 #else
         subl    $12, %esp  /* Padding to maintain 0mod16 alignment */
@@ -186,6 +188,7 @@ _start:
          * Execute the init section before starting main.  The C++ static
          * object constructors are invoked from here.
          */
+        /* TODO(eaeltsin): replace _init with __libc_init_array! */
         call    _init
 
         /*
