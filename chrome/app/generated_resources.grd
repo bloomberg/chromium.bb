@@ -10000,7 +10000,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cellular
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
-        Connecting
+        Connecting...
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED" desc="The network device status connected.">
         Connected
@@ -10010,6 +10010,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLED" desc="The network device status disabled.">
         Off
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATING" desc="The network device is activating.">
+        Activating...
+      </message>
+      <message name="IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE" desc="Activate the network device.">
+        Activate <ph name="NETWORKSERVICE">$1<ex>YBH Cellular</ex></ph>
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
         Enable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
