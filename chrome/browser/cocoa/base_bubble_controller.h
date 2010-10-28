@@ -5,6 +5,11 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/cocoa_protocols_mac.h"
+#include "base/scoped_ptr.h"
+
+namespace BaseBubbleControllerInternal {
+class Bridge;
+}
 
 @class InfoBubbleView;
 
@@ -24,6 +29,8 @@
   NSWindow* parentWindow_;  // weak
   NSPoint anchor_;
   IBOutlet InfoBubbleView* bubble_;  // to set arrow position
+  // Bridge that listens for notifications.
+  scoped_ptr<BaseBubbleControllerInternal::Bridge> base_bridge_;
 }
 
 @property (nonatomic, readonly) NSWindow* parentWindow;

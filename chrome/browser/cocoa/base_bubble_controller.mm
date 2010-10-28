@@ -10,11 +10,40 @@
 #include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 
 @interface BaseBubbleController (Private)
 - (void)updateOriginFromAnchor;
 @end
+
+namespace BaseBubbleControllerInternal {
+
+// This bridge listens for notifications so that the bubble closes when a user
+// switches tabs (including by opening a new one).
+class Bridge : public NotificationObserver {
+ public:
+  explicit Bridge(BaseBubbleController* controller) : controller_(controller) {
+    registrar_.Add(this, NotificationType::TAB_CONTENTS_HIDDEN,
+        NotificationService::AllSources());
+  }
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    [controller_ close];
+  }
+
+ private:
+  BaseBubbleController* controller_;  // Weak, owns this.
+  NotificationRegistrar registrar_;
+};
+
+}  // namespace BaseBubbleControllerInternal
 
 @implementation BaseBubbleController
 
@@ -62,6 +91,7 @@
   if ((self = [super initWithWindow:theWindow])) {
     parentWindow_ = parentWindow;
     anchor_ = anchoredAt;
+
     DCHECK(![[self window] delegate]);
     [theWindow setDelegate:self];
 
@@ -87,6 +117,8 @@
   DCHECK([self window]);
   DCHECK(bubble_);
   DCHECK_EQ(self, [[self window] delegate]);
+
+  base_bridge_.reset(new BaseBubbleControllerInternal::Bridge(self));
 
   [bubble_ setBubbleType:info_bubble::kWhiteInfoBubble];
   [bubble_ setArrowLocation:info_bubble::kTopRight];

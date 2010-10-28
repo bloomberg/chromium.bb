@@ -42,6 +42,8 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
 }
 
 - (void)awakeFromNib {
+  [super awakeFromNib];
+
   NSWindow* window = [self window];
   [[self bubble] setArrowLocation:info_bubble::kTopLeft];
 
