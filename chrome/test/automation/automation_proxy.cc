@@ -487,11 +487,13 @@ scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(
     gfx::NativeWindow* external_tab_container,
     gfx::NativeWindow* tab) {
   int handle = 0;
+  int session_id = 0;
   bool succeeded =
       Send(new AutomationMsg_CreateExternalTab(0, settings,
                                                external_tab_container,
                                                tab,
-                                               &handle));
+                                               &handle,
+                                               &session_id));
   if (!succeeded) {
     return NULL;
   }

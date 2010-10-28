@@ -126,8 +126,9 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
 
 
   // Sync message responses.
+  // TODO(stoyan): Error_code
   virtual void Completed_CreateTab(bool success, HWND chrome_wnd,
-      HWND tab_window, int tab_handle);  // TODO(stoyan): Error_code
+      HWND tab_window, int tab_handle, int session_id);
   virtual void Completed_ConnectToTab(bool success, HWND chrome_window,
       HWND tab_window, int tab_handle);
   virtual void Completed_Navigate(bool success,
@@ -181,7 +182,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   void UiConnected(ChromeProxy* proxy);
   void UiPeerLost(ChromeProxy* proxy, DisconnectReason reason);
   void UiCompleted_CreateTab(bool success, HWND chrome_window,
-                             HWND tab_window, int tab_handle);
+                             HWND tab_window, int tab_handle, int session_id);
 
   // With the present state of affairs the only response we can possibly handle
   // in the background IPC thread is Completed_CreateTab() where we can

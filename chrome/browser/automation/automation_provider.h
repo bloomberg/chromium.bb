@@ -357,7 +357,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void CreateExternalTab(const IPC::ExternalTabSettings& settings,
                          gfx::NativeWindow* tab_container_window,
                          gfx::NativeWindow* tab_window,
-                         int* tab_handle);
+                         int* tab_handle,
+                         int* session_id);
 
   void ConnectExternalTab(uint64 cookie,
                           bool allow,

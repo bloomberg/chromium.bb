@@ -157,7 +157,7 @@ class ChromeProxyDelegate {
 
   // Sync message responses.
   virtual void Completed_CreateTab(bool success, HWND chrome_wnd,
-      HWND tab_window, int tab_handle) = 0;
+      HWND tab_window, int tab_handle, int session_id) = 0;
   virtual void Completed_ConnectToTab(bool success, HWND chrome_window,
       HWND tab_window, int tab_handle) = 0;
   virtual void Completed_Navigate(bool success,

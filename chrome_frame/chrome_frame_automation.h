@@ -364,6 +364,9 @@ class ChromeFrameAutomationClient
       void* user_data,
       std::vector<FilePath>* extension_directories);
 
+  // Returns the session ID used to identify a Tab in Chrome.
+  virtual int GetSessionId() const;
+
   virtual void OnChromeFrameHostMoved();
 
   TabProxy* tab() const { return tab_.get(); }
@@ -458,7 +461,8 @@ class ChromeFrameAutomationClient
   void CreateExternalTab();
   AutomationLaunchResult CreateExternalTabComplete(HWND chrome_window,
                                                    HWND tab_window,
-                                                   int tab_handle);
+                                                   int tab_handle,
+                                                   int session_id);
   // Called in UI thread. Here we fire event to the client notifying for
   // the result of Initialize() method call.
   void InitializeComplete(AutomationLaunchResult result);
@@ -529,6 +533,8 @@ class ChromeFrameAutomationClient
   bool handle_top_level_requests_;
   ProxyFactory* proxy_factory_;
   int tab_handle_;
+  // The SessionId used by Chrome as the id in the Javascript Tab object.
+  int session_id_;
   // Only used if we attach to an existing tab.
   uint64 external_tab_cookie_;
 
