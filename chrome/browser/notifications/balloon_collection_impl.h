@@ -122,7 +122,7 @@ class BalloonCollectionImpl : public BalloonCollection
     static const int kBalloonMinWidth = 300;
     static const int kBalloonMaxWidth = 300;
     static const int kBalloonMinHeight = 24;
-    static const int kBalloonMaxHeight = 120;
+    static const int kBalloonMaxHeight = 160;
 
     static Placement placement_;
     gfx::Rect work_area_;
