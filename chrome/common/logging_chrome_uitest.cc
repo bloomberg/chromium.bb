@@ -162,10 +162,7 @@ class RendererCrashTest : public UITest {
 #define EXPECTED_CRASH_CRASHES 1
 #endif
 
-#if defined(OS_WIN)
-// http://crbug.com/32048
-#define Crash FLAKY_Crash
-#elif defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
 // http://crbug.com/43115
 #define Crash DISABLED_Crash
 #elif defined(OS_MACOSX)

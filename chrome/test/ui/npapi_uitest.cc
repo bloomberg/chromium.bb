@@ -45,9 +45,7 @@ TEST_F(NPAPITesterBase, Arguments) {
 }
 
 // Test invoking many plugins within a single page.
-// Test still flaky under valgrind
-// http://crbug.com/28372, http://crbug.com/45561
-TEST_F(NPAPITesterBase, FLAKY_ManyPlugins) {
+TEST_F(NPAPITesterBase, ManyPlugins) {
   const FilePath test_case(FILE_PATH_LITERAL("many_plugins.html"));
   GURL url(ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case));
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
@@ -336,8 +334,7 @@ TEST_F(NPAPITesterBase, EnsureScriptingWorksInDestroy) {
 
 // This test uses a Windows Event to signal to the plugin that it should crash
 // on NP_Initialize.
-// This is flaky. http://crbug.com/32048
-TEST_F(NPAPITesterBase, FLAKY_NoHangIfInitCrashes) {
+TEST_F(NPAPITesterBase, NoHangIfInitCrashes) {
   if (UITest::in_process_renderer())
     return;
 

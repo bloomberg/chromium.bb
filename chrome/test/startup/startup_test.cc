@@ -297,13 +297,7 @@ TEST_F(StartupTest, PerfFewTabsReference) {
   RunPerfTestWithManyTabs("few_tabs", "cmdline-ref", 5, 2, false);
 }
 
-// http://crbug.com/52858
-#if defined(OS_MACOSX)
-#define MAYBE_PerfRestoreFewTabs FLAKY_PerfRestoreFewTabs
-#else
-#define MAYBE_PerfRestoreFewTabs PerfRestoreFewTabs
-#endif
-TEST_F(StartupTest, MAYBE_PerfRestoreFewTabs) {
+TEST_F(StartupTest, PerfRestoreFewTabs) {
   RunPerfTestWithManyTabs("few_tabs", "restore", 5, 2, true);
 }
 

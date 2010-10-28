@@ -920,9 +920,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_DeleteCookieTest) {
 const wchar_t kAnchorUrlNavigate[] =
     L"fulltab_anchor_url_navigate.html#chrome_frame";
 
-// http://code.google.com/p/chromium/issues/detail?id=35341
-TEST_F(ChromeFrameTestWithWebServer,
-       FLAKY_FullTabModeIE_AnchorUrlNavigateTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AnchorUrlNavigateTest) {
   if (IsIBrowserServicePatchEnabled()) {
     LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
     return;

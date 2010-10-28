@@ -344,8 +344,7 @@ class DevToolsRemoteListenSocketTest: public PlatformTest {
 };
 
 // This test is flaky; see comment in ::TestServerSend.
-// http://code.google.com/p/chromium/issues/detail?id=48562
-TEST_F(DevToolsRemoteListenSocketTest, FLAKY_ServerSend) {
+TEST_F(DevToolsRemoteListenSocketTest, ServerSend) {
   tester_->TestServerSend();
 }
 
