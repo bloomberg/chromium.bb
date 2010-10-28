@@ -72,42 +72,21 @@ const size_t kMaxLineCount       = 10;
 const size_t kMaxSystemLogLength = 1024;
 #endif
 
+const int64 kInitialRetryDelay = 900000; // 15 minutes
+const int64 kRetryDelayIncreaseFactor = 2;
+const int64 kRetryDelayLimit = 14400000; // 4 hours
+
+
 }  // namespace
 
-
-#if defined(OS_CHROMEOS)
-class FeedbackNotification {
- public:
-  // Note: notification will show only on one profile at a time.
-  void Show(Profile* profile, const string16& message, bool urgent) {
-    if (notification_.get()) {
-        notification_->Hide();
-    }
-    notification_.reset(
-        new chromeos::SystemNotification(profile, kNotificationId,
-                               IDR_STATUSBAR_FEEDBACK,
-                               l10n_util::GetStringUTF16(
-                                   IDS_BUGREPORT_NOTIFICATION_TITLE)));
-    notification_->Show(message, urgent, false);
-  }
-
- private:
-  FeedbackNotification() {}
-  friend struct DefaultSingletonTraits<FeedbackNotification>;
-
-  scoped_ptr<chromeos::SystemNotification> notification_;
-  DISALLOW_COPY_AND_ASSIGN(FeedbackNotification);
-};
-#endif
 
 // Simple URLFetcher::Delegate to clean up URLFetcher on completion.
 class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
  public:
-#if defined(OS_CHROMEOS)
-  explicit PostCleanup(Profile* profile);
-#else
-  PostCleanup();
-#endif
+  PostCleanup(Profile* profile, std::string* post_body,
+              int64 previous_delay) : profile_(profile),
+                                      post_body_(post_body),
+                                      previous_delay_(previous_delay) { }
   // Overridden from URLFetcher::Delegate.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
@@ -121,18 +100,15 @@ class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
 
  private:
   Profile* profile_;
+  std::string* post_body_;
+  int64 previous_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(PostCleanup);
 };
 
-#if defined(OS_CHROMEOS)
-  BugReportUtil::PostCleanup::PostCleanup(Profile* profile)
-      : profile_(profile) {
-#else
-  BugReportUtil::PostCleanup::PostCleanup() : profile_(NULL) {
-#endif
-}
-
+// Don't use the data parameter, instead use the pointer we pass into every
+// post cleanup object - that pointer will be deleted and deleted only on a
+// successful post to the feedback server.
 void BugReportUtil::PostCleanup::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
@@ -143,34 +119,35 @@ void BugReportUtil::PostCleanup::OnURLFetchComplete(
 
   std::stringstream error_stream;
   if (response_code == kHttpPostSuccessNoContent) {
+    // We've sent our report, delete the report data
+    delete post_body_;
+
     error_stream << "Success";
-  } else if (response_code == kHttpPostFailNoConnection) {
-    error_stream << "No connection to server.";
-  } else if ((response_code > kHttpPostFailClientError) &&
+  } else {
+    // Uh oh, feedback failed, send it off to retry
+    if (previous_delay_) {
+      if (previous_delay_ < kRetryDelayLimit)
+        previous_delay_ *= kRetryDelayIncreaseFactor;
+    } else {
+      previous_delay_ = kInitialRetryDelay;
+    }
+    BugReportUtil::DispatchFeedback(profile_, post_body_, previous_delay_);
+
+    // Process the error for debug output
+    if (response_code == kHttpPostFailNoConnection) {
+        error_stream << "No connection to server.";
+    } else if ((response_code > kHttpPostFailClientError) &&
       (response_code < kHttpPostFailServerError)) {
-    error_stream << "Client error: HTTP response code " << response_code;
-  } else if (response_code > kHttpPostFailServerError) {
-    error_stream << "Server error: HTTP response code " << response_code;
-  } else {
-    error_stream << "Unknown error: HTTP response code " << response_code;
+        error_stream << "Client error: HTTP response code " << response_code;
+    } else if (response_code > kHttpPostFailServerError) {
+        error_stream << "Server error: HTTP response code " << response_code;
+    } else {
+        error_stream << "Unknown error: HTTP response code " << response_code;
+    }
   }
 
-  LOG(WARNING) << "Submission to feedback server (" << url
-               << ") status: " << error_stream.str();
-
-#if defined(OS_CHROMEOS)
-  // Show the notification to the user; this notification will stay active till
-  // either the user closes it, or we display another notification.
-  if (response_code == kHttpPostSuccessNoContent) {
-    Singleton<FeedbackNotification>()->Show(profile_, l10n_util::GetStringUTF16(
-        IDS_BUGREPORT_FEEDBACK_STATUS_SUCCESS), false);
-  } else {
-    Singleton<FeedbackNotification>()->Show(profile_,
-        l10n_util::GetStringFUTF16(IDS_BUGREPORT_FEEDBACK_STATUS_FAIL,
-                                   ASCIIToUTF16(error_stream.str())),
-        true);
-  }
-#endif
+  LOG(WARNING) << "FEEDBACK: Submission to feedback server (" << url <<
+      ") status: " << error_stream.str() << std::endl;
 
   // Delete the URLFetcher.
   delete source;
@@ -213,13 +190,47 @@ void BugReportUtil::SetFeedbackServer(const std::string& server) {
   feedback_server_ = server;
 }
 
+// static
+void BugReportUtil::DispatchFeedback(Profile* profile,
+                                     std::string* post_body,
+                                     int64 delay) {
+  DCHECK(post_body);
+
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableFunction(
+      &BugReportUtil::SendFeedback, profile, post_body, delay), delay);
+}
+
+// static
+void BugReportUtil::SendFeedback(Profile* profile,
+                                 std::string* post_body,
+                                 int64 previous_delay) {
+  DCHECK(post_body);
+
+  GURL post_url;
+  if (CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kFeedbackServer))
+    post_url = GURL(CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kFeedbackServer));
+  else
+    post_url = GURL(kBugReportPostUrl);
+
+  URLFetcher* fetcher = new URLFetcher(post_url, URLFetcher::POST,
+                            new BugReportUtil::PostCleanup(profile,
+                                                           post_body,
+                                                           previous_delay));
+  fetcher->set_request_context(profile->GetRequestContext());
+
+  fetcher->set_upload_data(std::string(kProtBufMimeType), *post_body);
+  fetcher->Start();
+}
+
 
 // static
 void BugReportUtil::AddFeedbackData(
     userfeedback::ExternalExtensionSubmit* feedback_data,
     const std::string& key, const std::string& value) {
-  // We have no reason to log any empty values - gives us no data
-  if (value == "") return;
+  // Don't bother with empty keys or values
+  if (key=="" || value == "") return;
   // Create log_value object and add it to the web_data object
   userfeedback::ProductSpecificData log_value;
   log_value.set_key(key);
@@ -263,15 +274,6 @@ void BugReportUtil::SendReport(Profile* profile,
 #else
     int png_height) {
 #endif
-  GURL post_url;
-
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kFeedbackServer))
-    post_url = GURL(CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kFeedbackServer));
-  else
-    post_url = GURL(kBugReportPostUrl);
-
   // Create google feedback protocol buffer objects
   userfeedback::ExternalExtensionSubmit feedback_data;
   // type id set to 0, unused field but needs to be initialized to 0
@@ -320,17 +322,6 @@ void BugReportUtil::SendReport(Profile* profile,
   SetOSVersion(&os_version);
   AddFeedbackData(&feedback_data, std::string(kOsVersionTag), os_version);
 
-#if defined(OS_CHROMEOS)
-  if (sys_info) {
-    for (chromeos::LogDictionaryType::const_iterator i = sys_info->begin();
-         i != sys_info->end(); ++i)
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCompressSystemFeedback) || ValidFeedbackSize(i->second)) {
-        AddFeedbackData(&feedback_data, i->first, i->second);
-      }
-  }
-#endif
-
   // Include the page image if we have one.
   if (png_data) {
     userfeedback::PostedScreenshot screenshot;
@@ -347,15 +338,24 @@ void BugReportUtil::SendReport(Profile* profile,
   }
 
 #if defined(OS_CHROMEOS)
-  // Include the page image if we have one.
-  if (zipped_logs_data && CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kCompressSystemFeedback)) {
-    userfeedback::ProductSpecificBinaryData attachment;
-    attachment.set_mime_type(kBZip2MimeType);
-    attachment.set_name(kLogsAttachmentName);
-    attachment.set_data(std::string(zipped_logs_data, zipped_logs_length));
+  if (sys_info) {
+    // Add the product specific data
+    for (chromeos::LogDictionaryType::const_iterator i = sys_info->begin();
+         i != sys_info->end(); ++i)
+      if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCompressSystemFeedback) || ValidFeedbackSize(i->second)) {
+        AddFeedbackData(&feedback_data, i->first, i->second);
+      }
 
-    *(feedback_data.add_product_specific_binary_data()) = attachment;
+    // If we have zipped logs, add them here
+    if (zipped_logs_data && CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kCompressSystemFeedback)) {
+      userfeedback::ProductSpecificBinaryData attachment;
+      attachment.set_mime_type(kBZip2MimeType);
+      attachment.set_name(kLogsAttachmentName);
+      attachment.set_data(std::string(zipped_logs_data, zipped_logs_length));
+      *(feedback_data.add_product_specific_binary_data()) = attachment;
+    }
   }
 #endif
 
@@ -379,19 +379,12 @@ void BugReportUtil::SendReport(Profile* profile,
 
   *(feedback_data.mutable_chrome_data()) = chrome_data;
 
-  // We have the body of our POST, so send it off to the server.
-  URLFetcher* fetcher = new URLFetcher(post_url, URLFetcher::POST,
-#if defined(OS_CHROMEOS)
-                                       new BugReportUtil::PostCleanup(profile));
-#else
-                                       new BugReportUtil::PostCleanup());
-#endif
-  fetcher->set_request_context(profile->GetRequestContext());
+  // Serialize our report to a string pointer we can pass around
+  std::string* post_body = new std::string;
+  feedback_data.SerializeToString(post_body);
 
-  std::string post_body;
-  feedback_data.SerializeToString(&post_body);
-  fetcher->set_upload_data(std::string(kProtBufMimeType), post_body);
-  fetcher->Start();
+  // We have the body of our POST, so send it off to the server with 0 delay
+  DispatchFeedback(profile, post_body, 0);
 }
 
 // static
