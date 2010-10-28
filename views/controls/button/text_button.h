@@ -109,10 +109,6 @@ class TextButton : public CustomButton {
 
   void set_prefix_type(PrefixType type) { prefix_type_ = type; }
 
-  void set_icon_text_padding(int icon_text_padding) {
-    icon_text_padding_ = icon_text_padding;
-  }
-
   // Sets the icon.
   void SetIcon(const SkBitmap& icon);
   void SetHoverIcon(const SkBitmap& icon);
@@ -229,9 +225,6 @@ class TextButton : public CustomButton {
   bool show_multiple_icon_states_;
 
   PrefixType prefix_type_;
-
-  // Padding between icon and text.
-  int icon_text_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };

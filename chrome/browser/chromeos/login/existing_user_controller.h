@@ -27,11 +27,10 @@ namespace chromeos {
 class HelpAppLauncher;
 class MessageBubble;
 
-// ExistingUserController is used to handle login when someone has
-// already logged into the machine. When Init is invoked, a
-// UserController is created for each of the Users's in the
-// UserManager (including one for new user and one for Guest login),
-// and the window manager is then told to show the windows.
+// ExistingUserController is used to handle login when someone has already
+// logged into the machine. When Init is invoked a UserController is created for
+// each of the Users's in the UserManager (including one for new user and
+// one for BWSI login), and the window manager is then told to show the windows.
 //
 // To use ExistingUserController create an instance of it and invoke Init.
 //
@@ -39,6 +38,7 @@ class MessageBubble;
 // the user logs in (or chooses to see other settings).
 class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
+                               public BackgroundView::Delegate,
                                public LoginPerformer::Delegate,
                                public MessageBubbleDelegate,
                                public CaptchaView::Delegate,
@@ -84,6 +84,9 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void RemoveUser(UserController* source);
   virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
   virtual void SelectUser(int index);
+
+  // BackgroundView::Delegate
+  virtual void OnGoIncognitoButton();
 
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error);

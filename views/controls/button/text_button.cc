@@ -15,8 +15,8 @@
 
 namespace views {
 
-// Default padding between the icon and text.
-static const int kDefaultIconTextPadding = 5;
+// Padding between the icon and text.
+static const int kIconTextPadding = 5;
 
 // Preferred padding between text and edge
 static const int kPreferredPaddingHorizontal = 6;
@@ -195,8 +195,7 @@ TextButton::TextButton(ButtonListener* listener, const std::wstring& text)
       max_width_(0),
       normal_has_border_(false),
       show_multiple_icon_states_(true),
-      prefix_type_(PREFIX_NONE),
-      icon_text_padding_(kDefaultIconTextPadding) {
+      prefix_type_(PREFIX_NONE) {
   SetText(text);
   set_border(new TextButtonBorder);
   SetAnimationDuration(kHoverAnimationDurationMs);
@@ -298,7 +297,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   if (icon.width() > 0) {
     content_width += icon.width();
     if (!text_.empty())
-      content_width += icon_text_padding_;
+      content_width += kIconTextPadding;
   }
   // Place the icon along the left edge.
   int icon_x;
@@ -312,7 +311,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   }
   int text_x = icon_x;
   if (icon.width() > 0)
-    text_x += icon.width() + icon_text_padding_;
+    text_x += icon.width() + kIconTextPadding;
   const int text_width = std::min(text_size_.width(),
                                   width() - insets.right() - text_x);
   int text_y = (available_height - text_size_.height()) / 2 + insets.top();
@@ -320,7 +319,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   // If the icon should go on the other side, swap the elements.
   if (icon_placement_ == ICON_ON_RIGHT) {
     int new_text_x = icon_x;
-    icon_x = new_text_x + text_width + icon_text_padding_;
+    icon_x = new_text_x + text_width + kIconTextPadding;
     text_x = new_text_x;
   }
 
@@ -410,7 +409,7 @@ gfx::Size TextButton::GetPreferredSize() {
                          insets.height());
 
   if (icon_.width() > 0 && !text_.empty())
-    prefsize.Enlarge(icon_text_padding_, 0);
+    prefsize.Enlarge(kIconTextPadding, 0);
 
   if (max_width_ > 0)
     prefsize.set_width(std::min(max_width_, prefsize.width()));
