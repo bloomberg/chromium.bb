@@ -1810,45 +1810,6 @@
             },
           },
         },
-        {
-          'target_name': 'generate_profile',
-          'type': 'executable',
-          'msvs_guid': '2E969AE9-7B12-4EDB-8E8B-48C7AE7BE357',
-          'dependencies': [
-            'browser',
-            'renderer',
-            'syncapi',
-            '../base/base.gyp:base',
-            '../skia/skia.gyp:skia',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'tools/profiles/generate_profile.cc',
-            'tools/profiles/thumbnail-inl.h',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'conditions': [
-                ['win_use_allocator_shim==1', {
-                  'dependencies': [
-                    '<(allocator_target)',
-                  ],
-                }],
-              ],
-              'configurations': {
-                'Debug_Base': {
-                  'msvs_settings': {
-                    'VCLinkerTool': {
-                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                    },
-                  },
-                },
-              },
-            }],
-          ],
-        },
       ]},  # 'targets'
     ],  # OS=="win"
     ['OS=="win" or OS=="mac" or OS=="linux"',

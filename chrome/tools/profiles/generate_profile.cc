@@ -7,20 +7,38 @@
 
 #include "chrome/tools/profiles/thumbnail-inl.h"
 
+#include "app/app_paths.h"
+#include "app/resource_bundle.h"
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/win_util.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/top_sites.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/test/testing_profile.h"
 #include "chrome/common/thumbnail_score.h"
+#include "chrome/common/notification_service.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using base::Time;
+
+// Addition types data can be generated for. By default only urls/visits are
+// added.
+enum Types {
+  TOP_SITES = 1 << 0,
+  FULL_TEXT = 1 << 1
+};
 
 // Probabilities of different word lengths, as measured from Darin's profile.
 //   kWordLengthProbabilities[n-1] = P(word of length n)
@@ -90,14 +108,12 @@ std::wstring ConstructRandomPage() {
 }
 
 // Insert a batch of |batch_size| URLs, starting at pageid |page_id|.
-// When history_only is set, we will not generate thumbnail or full text data.
-void InsertURLBatch(const std::wstring& profile_dir, int page_id,
-                    int batch_size, bool history_only) {
-  scoped_refptr<HistoryService> history_service(new HistoryService);
-  if (!history_service->Init(FilePath::FromWStringHack(profile_dir), NULL)) {
-    printf("Could not init the history service\n");
-    exit(1);
-  }
+void InsertURLBatch(Profile* profile,
+                    int page_id,
+                    int batch_size,
+                    int types) {
+  HistoryService* history_service =
+      profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
   // Probability of following a link on the current "page"
   // (vs randomly jumping to a new page).
@@ -115,10 +131,17 @@ void InsertURLBatch(const std::wstring& profile_dir, int page_id,
   // Scoping value for page IDs (required by the history service).
   void* id_scope = reinterpret_cast<void*>(1);
 
+  scoped_ptr<SkBitmap> google_bitmap(
+      gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
+  scoped_ptr<SkBitmap> weewar_bitmap(
+      gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
+
   printf("Inserting %d URLs...\n", batch_size);
   GURL previous_url;
   PageTransition::Type transition = PageTransition::TYPED;
   const int end_page_id = page_id + batch_size;
+  history::TopSites* top_sites =
+      history::TopSites::IsEnabled() ? profile->GetTopSites() : NULL;
   for (; page_id < end_page_id; ++page_id) {
     // Randomly decide whether this new URL simulates following a link or
     // whether it's a jump to a new URL.
@@ -155,17 +178,15 @@ void InsertURLBatch(const std::wstring& profile_dir, int page_id,
                              redirects, history::SOURCE_BROWSED, true);
     ThumbnailScore score(0.75, false, false);
     history_service->SetPageTitle(url, ConstructRandomTitle());
-    if (!history_only) {
+    if (types & FULL_TEXT)
       history_service->SetPageContents(url, ConstructRandomPage());
-      if (RandomInt(0, 2) == 0) {
-        scoped_ptr<SkBitmap> bitmap(
-            gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
+    if (types & TOP_SITES) {
+      SkBitmap* bitmap = (RandomInt(0, 2) == 0) ? google_bitmap.get() :
+                                                  weewar_bitmap.get();
+      if (top_sites)
+        top_sites->SetPageThumbnail(url, *bitmap, score);
+      else
         history_service->SetPageThumbnail(url, *bitmap, score);
-      } else {
-        scoped_ptr<SkBitmap> bitmap(
-            gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
-        history_service->SetPageThumbnail(url, *bitmap, score);
-      }
     }
 
     previous_url = url;
@@ -173,48 +194,95 @@ void InsertURLBatch(const std::wstring& profile_dir, int page_id,
     if (revisit_urls.empty() || RandomFloat() < kRevisitableURLProbability)
       revisit_urls.push_back(url);
   }
-
-  printf("Letting the history service catch up...\n");
-  history_service->SetOnBackendDestroyTask(new MessageLoop::QuitTask);
-  history_service->Cleanup();
-  history_service = NULL;
-  MessageLoop::current()->Run();
 }
 
 int main(int argc, const char* argv[]) {
+  CommandLine::Init(argc, argv);
   base::EnableTerminationOnHeapCorruption();
   base::AtExitManager exit_manager;
+  CommandLine* cl = CommandLine::ForCurrentProcess();
 
-  int next_arg = 1;
-  bool history_only = false;
-  if (strcmp(argv[next_arg], "--history-only") == 0) {
-    history_only = true;
-    next_arg++;
-  }
+  int types = 0;
+  if (cl->HasSwitch("top-sites"))
+    types |= TOP_SITES;
+  if (cl->HasSwitch("full-text"))
+    types |= FULL_TEXT;
 
   // We require two arguments: urlcount and profiledir.
-  if (argc - next_arg < 2) {
-    printf("usage: %s [--history-only] <urlcount> <profiledir>\n", argv[0]);
-    printf("\n  --history-only Generate only history, not thumbnails or full");
-    printf("\n                 text index data.\n\n");
+  if (cl->args().size() < 2) {
+    printf("usage: %s [--top-sites] [--full-text] <urlcount> "
+           "<profiledir>\n", argv[0]);
+    printf("\n  --top-sites Generate thumbnails\n");
+    printf("\n  --full-text Generate full text index\n");
     return -1;
   }
 
-  const int url_count = atoi(argv[next_arg++]);
-  std::wstring profile_dir = UTF8ToWide(argv[next_arg++]);
+  int url_count = 0;
+  base::StringToInt(WideToUTF8(cl->args()[0]), &url_count);
+  FilePath dst_dir(cl->args()[1]);
+  if (!dst_dir.IsAbsolute()) {
+    FilePath current_dir;
+    file_util::GetCurrentDirectory(&current_dir);
+    dst_dir = current_dir.Append(dst_dir);
+  }
+  if (!file_util::CreateDirectory(dst_dir)) {
+    printf("Unable to create directory %ls: %ls\n",
+           dst_dir.value().c_str(),
+           win_util::FormatLastWin32Error().c_str());
+  }
 
-  MessageLoop main_message_loop;
+  icu_util::Initialize();
+
+  chrome::RegisterPathProvider();
+  app::RegisterPathProvider();
+  ResourceBundle::InitSharedInstance("en-US");
+  NotificationService notification_service;
+  MessageLoopForUI message_loop;
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+  BrowserThread db_thread(BrowserThread::DB, &message_loop);
+  TestingProfile profile;
+  profile.CreateHistoryService(false, false);
+  if (types & TOP_SITES) {
+    profile.CreateTopSites();
+    profile.BlockUntilTopSitesLoaded();
+  }
 
   srand(static_cast<unsigned int>(Time::Now().ToInternalValue()));
-  icu_util::Initialize();
 
   // The maximum number of URLs to insert into history in one batch.
   const int kBatchSize = 2000;
   int page_id = 0;
   while (page_id < url_count) {
     const int batch_size = std::min(kBatchSize, url_count - page_id);
-    InsertURLBatch(profile_dir, page_id, batch_size, history_only);
+    InsertURLBatch(&profile, page_id, batch_size, types);
+    // Run all pending messages to give TopSites a chance to catch up.
+    message_loop.RunAllPending();
     page_id += batch_size;
+  }
+
+  printf("Writing to disk\n");
+
+  profile.DestroyTopSites();
+  profile.DestroyHistoryService();
+
+  message_loop.RunAllPending();
+
+  file_util::FileEnumerator file_iterator(
+      profile.GetPath(), false,
+      static_cast<file_util::FileEnumerator::FILE_TYPE>(
+          file_util::FileEnumerator::FILES));
+  FilePath path = file_iterator.Next();
+  while (!path.empty()) {
+    FilePath dst_file = dst_dir.Append(path.BaseName());
+    file_util::Delete(dst_file, false);
+    printf("Copying file %ls to %ls\n", path.value().c_str(),
+           dst_file.value().c_str());
+    if (!file_util::CopyFile(path, dst_file)) {
+      printf("Copying file failed: %ls\n",
+             win_util::FormatLastWin32Error().c_str());
+      return -1;
+    }
+    path = file_iterator.Next();
   }
 
   return 0;

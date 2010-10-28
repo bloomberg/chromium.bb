@@ -2870,6 +2870,46 @@
     ['OS=="win"', {
       'targets': [
         {
+          'target_name': 'generate_profile',
+          'type': 'executable',
+          'msvs_guid': '2E969AE9-7B12-4EDB-8E8B-48C7AE7BE357',
+          'dependencies': [
+            'test_support_common',
+            'browser',
+            'renderer',
+            'syncapi',
+            '../base/base.gyp:base',
+            '../skia/skia.gyp:skia',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'tools/profiles/generate_profile.cc',
+            'tools/profiles/thumbnail-inl.h',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'conditions': [
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '<(allocator_target)',
+                  ],
+                }],
+              ],
+              'configurations': {
+                'Debug_Base': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
+                },
+              },
+            }],
+          ],
+        },
+        {
           'target_name': 'security_tests',
           'type': 'shared_library',
           'msvs_guid': 'E750512D-FC7C-4C98-BF04-0A0DAF882055',
