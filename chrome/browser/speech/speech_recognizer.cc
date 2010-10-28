@@ -17,8 +17,6 @@ using std::list;
 using std::string;
 
 namespace {
-const char* const kDefaultSpeechRecognitionUrl =
-    "http://www.google.com/speech-api/v1/recognize?lang=en-us&client=chromium";
 const char* const kContentTypeSpeex =
     "audio/x-speex-with-header-byte; rate=16000";
 const int kSpeexEncodingQuality = 8;
@@ -109,9 +107,12 @@ void SpeexEncoder::Encode(const short* samples,
   }
 }
 
-SpeechRecognizer::SpeechRecognizer(Delegate* delegate, int caller_id)
+SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
+                                   int caller_id,
+                                   const std::string& grammar)
     : delegate_(delegate),
       caller_id_(caller_id),
+      grammar_(grammar),
       encoder_(new SpeexEncoder()),
       endpointer_(kAudioSampleRate),
       num_samples_recorded_(0),
@@ -211,10 +212,8 @@ void SpeechRecognizer::StopRecording() {
   }
   DCHECK(!request_.get());
   request_.reset(new SpeechRecognitionRequest(
-      Profile::GetDefaultRequestContext(),
-      GURL(kDefaultSpeechRecognitionUrl),
-      this));
-  request_->Send(kContentTypeSpeex, data);
+      Profile::GetDefaultRequestContext(), this));
+  request_->Send(grammar_, kContentTypeSpeex, data);
   ReleaseAudioBuffers();  // No need to keep the audio anymore.
 }
 

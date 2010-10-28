@@ -9,11 +9,14 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
 
+const char* const kDefaultSpeechRecognitionUrl =
+    "http://www.google.com/speech-api/v1/recognize?client=chromium&";
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 const char* const kConfidenceString = "confidence";
@@ -106,21 +109,30 @@ namespace speech_input {
 int SpeechRecognitionRequest::url_fetcher_id_for_tests = 0;
 
 SpeechRecognitionRequest::SpeechRecognitionRequest(
-    URLRequestContextGetter* context, const GURL& url, Delegate* delegate)
+    URLRequestContextGetter* context, Delegate* delegate)
     : url_context_(context),
-      url_(url),
       delegate_(delegate) {
   DCHECK(delegate);
 }
 
 SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 
-bool SpeechRecognitionRequest::Send(const std::string& content_type,
+bool SpeechRecognitionRequest::Send(const std::string& grammar,
+                                    const std::string& content_type,
                                     const std::string& audio_data) {
   DCHECK(!url_fetcher_.get());
 
-  url_fetcher_.reset(URLFetcher::Create(
-      url_fetcher_id_for_tests, url_, URLFetcher::POST, this));
+  std::vector<std::string> parts;
+  // TODO(leandro): Replace with the language tag given by WebKit.
+  parts.push_back("lang=en-us");
+  if (!grammar.empty())
+    parts.push_back("grammar=" + EscapeQueryParamValue(grammar, true));
+  GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
+
+  url_fetcher_.reset(URLFetcher::Create(url_fetcher_id_for_tests,
+                                        url,
+                                        URLFetcher::POST,
+                                        this));
   url_fetcher_->set_upload_data(content_type, audio_data);
   url_fetcher_->set_request_context(url_context_);
 
@@ -143,7 +155,6 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
     const ResponseCookies& cookies,
     const std::string& data) {
   DCHECK_EQ(url_fetcher_.get(), source);
-  DCHECK(url_.possibly_invalid_spec() == url.possibly_invalid_spec());
 
   bool error = !status.is_success() || response_code != 200;
   SpeechInputResultArray result;

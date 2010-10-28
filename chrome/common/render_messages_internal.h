@@ -2872,10 +2872,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Requests the speech input service to start speech recognition on behalf of
   // the given |render_view_id|.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_SpeechInput_StartRecognition,
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_SpeechInput_StartRecognition,
                        int /* render_view_id */,
                        int /* request id */,
-                       gfx::Rect /* element rect in render view coordinates */)
+                       gfx::Rect /* element rect in render view coordinates */,
+                       std::string /* grammar */)
 
   // Requests the speech input service to cancel speech recognition on behalf of
   // the given |render_view_id|. If speech recognition is not happening nor or

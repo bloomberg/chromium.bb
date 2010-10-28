@@ -37,7 +37,6 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
 
   // |url| is the server address to which the request wil be sent.
   SpeechRecognitionRequest(URLRequestContextGetter* context,
-                           const GURL& url,
                            Delegate* delegate);
 
   virtual ~SpeechRecognitionRequest();
@@ -45,7 +44,9 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   // Sends a new request with the given audio data, returns true if successful.
   // The same object can be used to send multiple requests but only after the
   // previous request has completed.
-  bool Send(const std::string& content_type, const std::string& audio_data);
+  bool Send(const std::string& grammar,
+            const std::string& content_type,
+            const std::string& audio_data);
 
   bool HasPendingRequest() { return url_fetcher_ != NULL; }
 
@@ -59,7 +60,6 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
 
  private:
   scoped_refptr<URLRequestContextGetter> url_context_;
-  const GURL url_;
   Delegate* delegate_;
   scoped_ptr<URLFetcher> url_fetcher_;
 

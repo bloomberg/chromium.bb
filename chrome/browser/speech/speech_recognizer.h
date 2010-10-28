@@ -73,7 +73,8 @@ class SpeechRecognizer
     virtual ~Delegate() {}
   };
 
-  SpeechRecognizer(Delegate* delegate, int caller_id);
+  SpeechRecognizer(Delegate* delegate, int caller_id,
+                   const std::string& grammar);
   ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
@@ -117,6 +118,7 @@ class SpeechRecognizer
 
   Delegate* delegate_;
   int caller_id_;
+  std::string grammar_;
 
   // Buffer holding the recorded audio. Owns the strings inside the list.
   typedef std::list<std::string*> AudioBufferQueue;

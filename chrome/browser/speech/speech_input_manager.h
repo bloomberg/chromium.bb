@@ -53,7 +53,8 @@ class SpeechInputManager {
                                 int caller_id,
                                 int render_process_id,
                                 int render_view_id,
-                                const gfx::Rect& element_rect)  = 0;
+                                const gfx::Rect& element_rect,
+                                const std::string& grammar)  = 0;
   virtual void CancelRecognition(int caller_id) = 0;
   virtual void StopRecording(int caller_id) = 0;
 };

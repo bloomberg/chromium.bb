@@ -23,7 +23,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
   SpeechRecognizerTest()
       : io_thread_(BrowserThread::IO, &message_loop_),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            recognizer_(new SpeechRecognizer(this, 1))),
+            recognizer_(new SpeechRecognizer(this, 1, std::string()))),
         recording_complete_(false),
         recognition_complete_(false),
         result_received_(false),

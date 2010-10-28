@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/speech_input_dispatcher.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputListener.h"
@@ -34,19 +35,23 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
 }
 
 bool SpeechInputDispatcher::startRecognition(
-    int request_id, const WebKit::WebString& language,
-    const WebKit::WebRect& element_rect) {
-  return startRecognition(request_id, element_rect);
+    int request_id,
+    const WebKit::WebString& language,
+    const WebKit::WebRect& element_rect,
+    const WebKit::WebString& grammar) {
+  return startRecognition(request_id, element_rect, grammar);
 }
 
 bool SpeechInputDispatcher::startRecognition(
-    int request_id, const WebKit::WebRect& element_rect) {
+    int request_id,
+    const WebKit::WebRect& element_rect,
+    const WebKit::WebString& grammar) {
   VLOG(1) << "SpeechInputDispatcher::startRecognition enter";
   gfx::Size scroll = render_view_->webview()->mainFrame()->scrollOffset();
   gfx::Rect rect = element_rect;
   rect.Offset(-scroll.width(), -scroll.height());
   render_view_->Send(new ViewHostMsg_SpeechInput_StartRecognition(
-      render_view_->routing_id(), request_id, rect));
+      render_view_->routing_id(), request_id, rect, UTF16ToUTF8(grammar)));
   VLOG(1) << "SpeechInputDispatcher::startRecognition exit";
   return true;
 }
