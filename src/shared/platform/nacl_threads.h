@@ -70,19 +70,6 @@ void NaClThreadExit(void);
  */
 void NaClThreadKill(struct NaClThread *target);
 
-/*
- * Thread Specific Data.  Both Linux and Windows support Thread Local
- * Storage, but OSX does not.  Thus, we use the older, more primitive
- * TSD interface to get thread-specific information.
- */
-
-int NaClTsdKeyCreate(struct NaClTsdKey  *tsdp);
-
-int NaClTsdSetSpecific(struct NaClTsdKey  *tsdp,
-                       void const         *ptr);
-
-void *NaClTsdGetSpecific(struct NaClTsdKey  *tsdp);
-
 uint32_t NaClThreadId(void);
 
 EXTERN_C_END

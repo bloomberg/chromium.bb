@@ -86,41 +86,6 @@ void NaClThreadKill(struct NaClThread *target) {
   TerminateThread(target->tid, 0);
 }
 
-int NaClTsdKeyCreate(struct NaClTsdKey  *tsdp) {
-  int key;
-
-  key = TlsAlloc();
-
-  if (key == TLS_OUT_OF_INDEXES) {
-    NaClLog(LOG_ERROR,
-            "NaClTsdKeyCreate: could not create new key, error code %d",
-            GetLastError());
-    return 0;
-  }
-
-  tsdp->key = key;
-  return 1;
-}
-
-int NaClTsdSetSpecific(struct NaClTsdKey  *tsdp,
-                       void const         *ptr) {
-  int res;
-
-  res = TlsSetValue(tsdp->key, (void *) ptr);  /* const_cast<void *>(ptr) */
-
-  if (0 == res) {
-    NaClLog(LOG_ERROR,
-            "NaClTsdSetSpecific: could not set new value, error code %d",
-            res);
-    return 0;
-  }
-  return 1;
-}
-
-void *NaClTsdGetSpecific(struct NaClTsdKey  *tsdp) {
-  return TlsGetValue(tsdp->key);
-}
-
 uint32_t NaClThreadId(void) {
   return GetCurrentThreadId();
 }

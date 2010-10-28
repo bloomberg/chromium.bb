@@ -18,8 +18,4 @@ struct NaClThread {
   HANDLE tid; /* thread handle */
 };
 
-struct NaClTsdKey {
-  DWORD key;
-};
-
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_NACL_THREADS_TYPES_H_ */

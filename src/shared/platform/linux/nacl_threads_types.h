@@ -21,10 +21,6 @@ struct NaClThread {
   pthread_t tid;
 };
 
-struct NaClTsdKey {
-  pthread_key_t key;
-};
-
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_LINUX_NACL_THREADS_TYPES_H_ */

@@ -131,37 +131,6 @@ void NaClThreadKill(struct NaClThread *target) {
   pthread_kill(target->tid, SIGKILL);
 }
 
-int NaClTsdKeyCreate(struct NaClTsdKey  *tsdp) {
-  int errcode;
-
-  errcode = pthread_key_create(&tsdp->key, (void (*)(void *)) NULL);
-  /* returns zero on success, error code on failure */
-  if (0 != errcode) {
-    NaClLog(LOG_ERROR,
-            "NaClTsdKeyCreate: could not create new key, error code %d",
-            errcode);
-  }
-  return 0 == errcode;
-}
-
-int NaClTsdSetSpecific(struct NaClTsdKey  *tsdp,
-                       void const         *ptr) {
-  int errcode;
-
-  errcode = pthread_setspecific(tsdp->key, ptr);
-  /* returns zero on success, error code on failure */
-  if (0 != errcode) {
-    NaClLog(LOG_ERROR,
-            "NaClTsdSetSpecific: could not set new value, error code %d",
-            errcode);
-  }
-  return 0 == errcode;
-}
-
-void *NaClTsdGetSpecific(struct NaClTsdKey  *tsdp) {
-  return pthread_getspecific(tsdp->key);
-}
-
 uint32_t NaClThreadId(void) {
   return (uintptr_t) pthread_self();
 }
