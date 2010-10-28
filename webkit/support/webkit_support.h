@@ -157,7 +157,7 @@ WebKit::WebURL GetDevToolsPathAsURL();
 
 // - FileSystem
 void OpenFileSystem(WebKit::WebFrame* frame, WebKit::WebFileSystem::Type type,
-    WebKit::WebFileSystemCallbacks* callbacks);
+    long long size, bool create, WebKit::WebFileSystemCallbacks* callbacks);
 
 // -------- Keyboard code
 enum {

@@ -541,8 +541,8 @@ WebURL GetDevToolsPathAsURL() {
 }
 
 // FileSystem
-void OpenFileSystem(WebFrame*, WebFileSystem::Type,
-    WebFileSystemCallbacks* callbacks) {
+void OpenFileSystem(WebFrame*, WebFileSystem::Type type,
+    long long, bool, WebFileSystemCallbacks* callbacks) {
   // TODO(kinuko): hook up FileSystemPathManager in a way that the code could
   // be shared with test_shell.
   if (test_environment->webkit_client()->file_system_root().empty()) {
