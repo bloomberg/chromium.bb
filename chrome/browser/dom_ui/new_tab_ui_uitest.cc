@@ -30,8 +30,7 @@ class NewTabUITest : public UITest {
   }
 };
 
-// See bug 60946.
-TEST_F(NewTabUITest, FLAKY_NTPHasThumbnails) {
+TEST_F(NewTabUITest, NTPHasThumbnails) {
   // Switch to the "new tab" tab, which should be any new tab after the
   // first (the first is about:blank).
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
