@@ -2032,6 +2032,7 @@
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
         'test/out_of_proc_test_runner.cc',
+        'test/plugin/pdf_browsertest.cc',
         'test/render_view_test.cc',
         'test/render_view_test.h',
       ],
