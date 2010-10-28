@@ -22,7 +22,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/bug_report_data.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/dom_ui/dom_ui_screenshot_source.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -197,17 +196,39 @@ class BugReportHandler : public DOMMessageHandler,
 
   void SetupScreenshotsSource();
   void ClobberScreenshotsSource();
+  void CloseTab();
+  void SendReport();
 
-  void CancelFeedbackCollection();
-  void CloseFeedbackTab();
+#if defined(OS_CHROMEOS)
+  void SyslogsComplete(chromeos::LogDictionaryType* logs,
+                       std::string* zip_content);
+#endif
 
   TabContents* tab_;
   DOMUIScreenshotSource* screenshot_source_;
 
-  BugReportData* bug_report_;
-  string16 target_tab_title_;
+  // Target tab url.
   std::string target_tab_url_;
+  // Target tab page title.
+  string16 target_tab_title_;
+
+  // These are filled in by HandleSendReport and used in SendReport.
+  int problem_type_;
+  std::string page_url_;
+  std::string description_;
+  std::vector<unsigned char> image_;
+
 #if defined(OS_CHROMEOS)
+  // Chromeos specific values for SendReport.
+  std::string user_email_;
+  chromeos::LogDictionaryType* sys_info_;
+  // Flags to control behavior of SyslogsComplete callback.
+  bool send_sys_info_;
+  // NOTE: Extra boolean sent_report_ is required because callback may
+  // occur before or after we call SendReport().
+  bool sent_report_;
+  // Content of the compressed system logs.
+  std::string* zip_content_;
   // Variables to track SyslogsLibrary::RequestSyslogs callback.
   chromeos::SyslogsLibrary::Handle syslogs_handle_;
   CancelableRequestConsumer syslogs_consumer_;
@@ -346,41 +367,34 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
   SendResponse(request_id, html_bytes);
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BugReportData
+// BugReportHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-void BugReportData::SendReport() {
+BugReportHandler::BugReportHandler(TabContents* tab)
+    : tab_(tab)
+    , screenshot_source_(NULL)
+    , problem_type_(0)
 #if defined(OS_CHROMEOS)
-  // In case we already got the syslogs and sent the report, leave
-  if (sent_report_) return;
-  // Set send_report_ so that no one else processes SendReport
-  sent_report_ = true;
+    , sys_info_(NULL)
+    , send_sys_info_(false)
+    , sent_report_(false)
+    , zip_content_(NULL)
+    , syslogs_handle_(0)
 #endif
+{
+}
 
-  int image_data_size = image_.size();
-  char* image_data = image_data_size ?
-      reinterpret_cast<char*>(&(image_.front())) : NULL;
-  BugReportUtil::SendReport(profile_
-                            , UTF16ToUTF8(target_tab_title_)
-                            , problem_type_
-                            , page_url_
-                            , description_
-                            , image_data
-                            , image_data_size
-                            , browser::screen_size.width()
-                            , browser::screen_size.height()
+BugReportHandler::~BugReportHandler() {
 #if defined(OS_CHROMEOS)
-                            , user_email_
-                            , zip_content_ ? zip_content_->c_str() : NULL
-                            , zip_content_ ? zip_content_->length() : 0
-                            , send_sys_info_ ? sys_info_ : NULL
-#endif
-                            );
-
-#if defined(OS_CHROMEOS)
+  // If we requested the syslogs but haven't received them, cancel the request.
+  if (syslogs_handle_ != 0) {
+    chromeos::SyslogsLibrary* syslogs_lib =
+        chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
+    if (syslogs_lib)
+      syslogs_lib->CancelRequest(syslogs_handle_);
+  }
   if (sys_info_) {
     delete sys_info_;
     sys_info_ = NULL;
@@ -390,31 +404,6 @@ void BugReportData::SendReport() {
     zip_content_ = NULL;
   }
 #endif
-
-  // Once the report has been sent, this object has no purpose in life, delete
-  // ourselves.
-  delete this;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// BugReportHandler
-//
-////////////////////////////////////////////////////////////////////////////////
-BugReportHandler::BugReportHandler(TabContents* tab)
-    : tab_(tab)
-    , screenshot_source_(NULL)
-#if defined(OS_CHROMEOS)
-    , syslogs_handle_(0)
-#endif
-{
-}
-
-BugReportHandler::~BugReportHandler() {
-  // Just in case we didn't send off bug_report_ to SendReport
-  if (bug_report_)
-    delete bug_report_;
 }
 
 void BugReportHandler::ClobberScreenshotsSource() {
@@ -508,8 +497,6 @@ void BugReportHandler::RegisterMessages() {
 }
 
 void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
-  bug_report_ = new BugReportData();
-
   // send back values which the dialog js needs initially
   ListValue dialog_defaults;
 
@@ -528,7 +515,7 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   if (syslogs_lib) {
     syslogs_handle_ = syslogs_lib->RequestSyslogs(
         true, true, &syslogs_consumer_,
-        NewCallback(bug_report_, &BugReportData::SyslogsComplete));
+        NewCallback(this, &BugReportHandler::SyslogsComplete));
   }
   // 2: user e-mail
   dialog_defaults.Append(new StringValue(GetUserEmail()));
@@ -562,10 +549,9 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   }
 
   // #0 - Problem type.
-  int problem_type;
   std::string problem_type_str;
   (*i)->GetAsString(&problem_type_str);
-  if (!base::StringToInt(problem_type_str, &problem_type)) {
+  if (!base::StringToInt(problem_type_str, &problem_type_)) {
     LOG(ERROR) << "Incorrect data passed to sendReport.";
     return;
   }
@@ -575,16 +561,14 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   }
 
   // #1 - Page url.
-  std::string page_url;
-  (*i)->GetAsString(&page_url);
+  (*i)->GetAsString(&page_url_);
   if (++i == list_value->end()) {
     LOG(ERROR) << "Incorrect data passed to sendReport.";
     return;
   }
 
   // #2 - Description.
-  std::string description;
-  (*i)->GetAsString(&description);
+  (*i)->GetAsString(&description_);
   if (++i == list_value->end()) {
     LOG(ERROR) << "Incorrect data passed to sendReport.";
     return;
@@ -596,9 +580,8 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   screenshot_path.erase(0, strlen(kScreenshotBaseUrl));
 
   // Get the image to send in the report.
-  std::vector<unsigned char> image;
   if (screenshot_path.size() > 0) {
-    image = screenshot_source_->GetScreenshot(screenshot_path);
+    image_ = screenshot_source_->GetScreenshot(screenshot_path);
   }
 
 #if defined(OS_CHROMEOS)
@@ -608,8 +591,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   }
 
   // #4 - User e-mail
-  std::string user_email;
-  (*i)->GetAsString(&user_email);
+  (*i)->GetAsString(&user_email_);
   if (++i == list_value->end()) {
     LOG(ERROR) << "Incorrect data passed to sendReport.";
     return;
@@ -618,50 +600,83 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   // #5 - System info checkbox.
   std::string sys_info_checkbox;
   (*i)->GetAsString(&sys_info_checkbox);
-  bool send_sys_info = (sys_info_checkbox == "true");
-
-  // If we aren't sending the sys_info, cancel the gathering of the syslogs.
-  if (!send_sys_info)
-    CancelFeedbackCollection();
-
-  // Update the data in bug_report_ so it can be sent
-  bug_report_->UpdateData(dom_ui_->GetProfile()
-                          , target_tab_url_
-                          , target_tab_title_
-                          , problem_type
-                          , page_url
-                          , description
-                          , image
-#if defined(OS_CHROMEOS)
-                          , user_email
-                          , send_sys_info
-                          , false // sent_report
-#endif
-                          );
+  send_sys_info_ = (sys_info_checkbox == "true");
 
   // If we don't require sys_info, or we have it, or we never requested it
   // (because libcros failed to load), then send the report now.
   // Otherwise, the report will get sent when we receive sys_info.
-  if (!send_sys_info || bug_report_->sys_info() != NULL ||
-      syslogs_handle_ == 0) {
-    bug_report_->SendReport();
+  if (!send_sys_info_ || sys_info_ != NULL || syslogs_handle_ == 0) {
+    SendReport();
+    // If we scheduled a callback, don't call SendReport() again.
+    send_sys_info_ = false;
   }
 #else
-  bug_report_->SendReport();
+  SendReport();
 #endif
-  // Lose the pointer to the BugReportData object; the object will delete itself
-  // from SendReport, whether we called it, or will be called by the log
-  // completion routine.
-  bug_report_ = NULL;
-
-  // Whether we sent the report, or if it will be sent by the Syslogs complete
-  // function, close our feedback tab anyway, we have no more use for it.
-  CloseFeedbackTab();
 }
 
+void BugReportHandler::SendReport() {
+  int image_data_size = image_.size();
+  char* image_data = image_data_size ?
+      reinterpret_cast<char*>(&(image_.front())) : NULL;
+  if (!dom_ui_)
+    return;
+  BugReportUtil::SendReport(dom_ui_->GetProfile()
+                            , UTF16ToUTF8(target_tab_title_)
+                            , problem_type_
+                            , page_url_
+                            , description_
+                            , image_data
+                            , image_data_size
+                            , browser::screen_size.width()
+                            , browser::screen_size.height()
+#if defined(OS_CHROMEOS)
+                            , user_email_
+                            , zip_content_ ? zip_content_->c_str() : NULL
+                            , zip_content_ ? zip_content_->length() : 0
+                            , send_sys_info_ ? sys_info_ : NULL
+#endif
+                            );
+
+#if defined(OS_CHROMEOS)
+  if (sys_info_) {
+    delete sys_info_;
+    sys_info_ = NULL;
+  }
+  if (zip_content_) {
+    delete zip_content_;
+    zip_content_ = NULL;
+  }
+  sent_report_ = true;
+#endif
+
+  CloseTab();
+}
+
+#if defined(OS_CHROMEOS)
+// Called from the same thread as HandleGetDialogDefaults, i.e. the UI thread.
+void BugReportHandler::SyslogsComplete(chromeos::LogDictionaryType* logs,
+                                       std::string* zip_content) {
+  if (sent_report_) {
+    // We already sent the report, just delete the data.
+    if (logs)
+      delete logs;
+    if (zip_content)
+      delete zip_content;
+  } else {
+    zip_content_ = zip_content;
+    sys_info_ = logs;  // Will get deleted when SendReport() is called.
+    if (send_sys_info_) {
+      // We already prepared the report, send it now.
+      SendReport();
+    }
+  }
+  syslogs_handle_ = 0;
+}
+#endif
+
 void BugReportHandler::HandleCancel(const ListValue*) {
-  CancelFeedbackCollection();
-  CloseFeedbackTab();
+  CloseTab();
 }
 
 void BugReportHandler::HandleOpenSystemTab(const ListValue* args) {
@@ -670,18 +685,7 @@ void BugReportHandler::HandleOpenSystemTab(const ListValue* args) {
 #endif
 }
 
-void BugReportHandler::CancelFeedbackCollection() {
-#if defined(OS_CHROMEOS)
-  if (syslogs_handle_ != 0) {
-    chromeos::SyslogsLibrary* syslogs_lib =
-        chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
-    if (syslogs_lib)
-      syslogs_lib->CancelRequest(syslogs_handle_);
-  }
-#endif
-}
-
-void BugReportHandler::CloseFeedbackTab() {
+void BugReportHandler::CloseTab() {
   Browser* browser = BrowserList::GetLastActive();
   if (browser) {
     browser->CloseTabContents(tab_);
