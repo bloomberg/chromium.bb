@@ -1619,6 +1619,13 @@
    fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
 }
 {
+   bug_30704d
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:_ZNK16BrowserThemePack11WriteToDiskE8FilePath
+}
+{
    bug_31800
    Memcheck:Leak
    fun:_Znw*
@@ -3215,21 +3222,6 @@
    fun:_ZNK4base4Time12LocalExplodeEPNS0_8ExplodedE
    fun:_ZNK4base4Time13LocalMidnightEv
    fun:_ZN7history20VisitSegmentDatabase17QuerySegmentUsageEN4base4TimeEiPSt6vectorIP13PageUsageDataSaIS5_EE
-}
-{
-   bug_60887
-   Memcheck:Param
-   write(buf)
-   obj:/lib/tls/i686/cmov/libc-2.7.so
-   fun:new_do_write
-   fun:_IO_do_write@@GLIBC_2.1
-   fun:_IO_file_overflow@@GLIBC_2.1
-   fun:_IO_file_xsputn@@GLIBC_2.1
-   fun:fwrite
-   fun:_ZN4base8DataPack9WritePackERK8FilePathRKSt3mapIjNS_11StringPieceESt4lessIjESaISt4pairIKjS5_EEE
-   fun:_ZNK16BrowserThemePack11WriteToDiskE8FilePath
-   fun:_ZN45BrowserThemePackTest_CanBuildAndReadPack_Test8TestBodyEv
-   fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_60890
