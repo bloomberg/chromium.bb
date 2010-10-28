@@ -816,9 +816,12 @@ void TestingAutomationProvider::GetLastActiveBrowserWindow(int* handle) {
 }
 
 void TestingAutomationProvider::GetActiveWindow(int* handle) {
-  gfx::NativeWindow window =
-      BrowserList::GetLastActive()->window()->GetNativeHandle();
-  *handle = window_tracker_->Add(window);
+  *handle = 0;
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser) {
+    gfx::NativeWindow window = browser->window()->GetNativeHandle();
+    *handle = window_tracker_->Add(window);
+  }
 }
 
 void TestingAutomationProvider::ExecuteBrowserCommandAsync(int handle,
