@@ -6,7 +6,6 @@
 #define GFX_GTK_NATIVE_VIEW_ID_MANAGER_H_
 #pragma once
 
-#include <gtk/gtk.h>
 #include <map>
 
 #include "base/singleton.h"
@@ -60,16 +59,11 @@ class GtkNativeViewManager {
   // |*xid| is set to 0.
   bool GetXIDForId(XID* xid, gfx::NativeViewId id);
 
-  // Generate an XID that doesn't change.
+  // Must be called from the UI thread because we may need the associated
+  // widget to create a window.
   //
-  // The GPU process assumes that the XID associated with a GL context
-  // does not change. To maintain this invariant we create and overlay
-  // whose XID is static. This requires reparenting as the underlying
-  // window comes and goes.  It incurs a bit of overhead, so a permanent
-  // XID must be requested.
-  //
-  // Must be called from the UI thread so that the widget that we
-  // overlay does not change while we construct the overlay.
+  // Keeping the XID permanent requires a bit of overhead, so it must
+  // be explicitly requested.
   //
   // xid: (output) the resulting X window
   // id: a value previously returned from GetIdForWidget
@@ -80,7 +74,6 @@ class GtkNativeViewManager {
   void OnRealize(gfx::NativeView widget);
   void OnUnrealize(gfx::NativeView widget);
   void OnDestroy(gfx::NativeView widget);
-  void OnSizeAllocate(gfx::NativeView widget, GtkAllocation *alloc);
 
   Lock& unrealize_lock() { return unrealize_lock_; }
 
@@ -91,11 +84,10 @@ class GtkNativeViewManager {
   friend struct DefaultSingletonTraits<GtkNativeViewManager>;
 
   struct NativeViewInfo {
-    NativeViewInfo() : x_window_id(0), permanent_window_id(0) { }
-    // XID associated with GTK widget.
+    NativeViewInfo() : widget(NULL), x_window_id(0) {
+    }
+    gfx::NativeView widget;
     XID x_window_id;
-    // Permanent overlay (0 if not requested yet).
-    XID permanent_window_id;
   };
 
   gfx::NativeViewId GetWidgetId(gfx::NativeView id);

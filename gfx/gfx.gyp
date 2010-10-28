@@ -168,6 +168,8 @@
           'sources': [
             'gtk_native_view_id_manager.cc',
             'gtk_native_view_id_manager.h',
+            'gtk_preserve_window.cc',
+            'gtk_preserve_window.h',
             'gtk_util.cc',
             'gtk_util.h',
             'native_theme_linux.cc',

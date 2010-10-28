@@ -23,6 +23,7 @@
 #include "media/base/media_switches.h"
 
 #if defined(OS_LINUX)
+#include "app/x11_util.h"
 #include "gfx/gtk_native_view_id_manager.h"
 #endif
 
@@ -237,7 +238,7 @@ void SendDelayedReply(IPC::Message* reply_msg) {
 }
 
 void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
-  unsigned long xid;
+  XID xid;
 
   GtkNativeViewManager* manager = Singleton<GtkNativeViewManager>::get();
   if (!manager->GetPermanentXIDForId(&xid, id)) {
@@ -253,11 +254,11 @@ void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
       NewRunnableFunction(&SendDelayedReply, reply_msg));
 }
 
-}
+} // namespace
 
 void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id,
                                   IPC::Message *reply_msg) {
-  // Have to request a permanent overlay from UI thread.
+  // Have to request a permanent XID from UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&GetViewXIDDispatcher, id, reply_msg));

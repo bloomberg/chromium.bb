@@ -38,6 +38,7 @@
 #include "chrome/browser/renderer_host/video_layer_x.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "gfx/gtk_preserve_window.h"
 #include "gfx/gtk_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "webkit/glue/plugins/webplugin.h"
@@ -71,9 +72,8 @@ using WebKit::WebMouseWheelEvent;
 class RenderWidgetHostViewGtkWidget {
  public:
   static GtkWidget* CreateNewWidget(RenderWidgetHostViewGtk* host_view) {
-    GtkWidget* widget = gtk_fixed_new();
+    GtkWidget* widget = gtk_preserve_window_new();
     gtk_widget_set_name(widget, "chrome-render-widget-host-view");
-    gtk_fixed_set_has_window(GTK_FIXED(widget), TRUE);
     // We manually double-buffer in Paint() because Paint() may or may not be
     // called in repsonse to an "expose-event" signal.
     gtk_widget_set_double_buffered(widget, FALSE);
