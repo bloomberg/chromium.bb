@@ -281,9 +281,6 @@ nacl_glibc_skiplist = [
     # run_egyptian_cotton_test creates a smaller number of threads than
     # expected because the threads are given 2MB-sized stacks.
     'run_egyptian_cotton_test',
-    # run_thread_test fails, apparently because
-    # global_futex_emulation_mutex_desc is getting corrupted.
-    'run_thread_test',
     # This test assumes it can allocate address ranges from the
     # dynamic code area itself.  However, this does not work when
     # ld.so assumes it can do the same.  To fix this, ld.so will need
