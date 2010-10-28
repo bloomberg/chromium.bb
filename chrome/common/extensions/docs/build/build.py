@@ -162,8 +162,14 @@ def main():
              "build.sh script instead, which uses depot_tools python.")
 
   parser = OptionParser()
-  parser.add_option("--test-shell-path", dest="test_shell_path")
-  parser.add_option("--page-name", dest="page_name")
+  parser.add_option("--test-shell-path", dest="test_shell_path",
+                    metavar="PATH",
+                    help="path to test_shell executable")
+  parser.add_option("--page-name", dest="page_name", metavar="PAGE",
+                    help="only generate docs for PAGE.html")
+  parser.add_option("--nozip", dest="zips", action="store_false",
+                    help="do not generate zip files for samples",
+                    default=True)
   (options, args) = parser.parse_args()
 
   if (options.test_shell_path and os.path.isfile(options.test_shell_path)):
@@ -194,6 +200,11 @@ def main():
   # Render a manifest file containing metadata about all the extension samples
   samples_manifest = SamplesManifest(_samples_dir, _base_dir, api_manifest)
   samples_manifest.writeToFile(_samples_json)
+
+  # Write zipped versions of the samples listed in the manifest to the
+  # filesystem, unless the user has disabled it
+  if options.zips:
+    samples_manifest.writeZippedSamples()
 
   modified_files = RenderPages(page_names, test_shell)
 

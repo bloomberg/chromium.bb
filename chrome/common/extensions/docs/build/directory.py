@@ -221,15 +221,10 @@ class SamplesManifest(object):
 
   def writeToFile(self, path):
     """ Writes the contents of this manifest file as a JSON-encoded text file.
-    For each sample written to the manifest, create a zip file with the sample
-    contents in the sample's parent directory.
 
     Args:
       path: The path to write the samples manifest file to.
     """
-
-    for sample in self._manifest_data['samples']:
-      sample.write_zip()
 
     manifest_text = json.dumps(self._manifest_data, indent=2)
     output_path = os.path.realpath(path)
@@ -240,6 +235,13 @@ class SamplesManifest(object):
                       "The specific error was: %s." % msg)
     output_file.write(manifest_text)
     output_file.close()
+
+  def writeZippedSamples(self):
+    """ For each sample in the current manifest, create a zip file with the
+    sample contents in the sample's parent directory. """
+
+    for sample in self._manifest_data['samples']:
+      sample.write_zip()
 
 class Sample(dict):
   """ Represents metadata about a Chrome extension sample.
@@ -275,6 +277,7 @@ class Sample(dict):
     self['search_string'] = self._get_search_string()
     self['source_files'] = self._parse_source_files()
     self['id'] = hashlib.sha1(self['path']).hexdigest()
+    self['zip_path'] = self._get_relative_zip_path()
 
   _FEATURE_ATTRIBUTES = (
     'browser_action',
@@ -371,6 +374,19 @@ class Sample(dict):
     return real_manifest_path.replace(real_base_path, '')\
                              .replace('manifest.json', '')[1:]
 
+  def _get_relative_zip_path(self):
+    """ Returns a relative path from the base dir to the sample's zip file.
+
+    Intended for locating the zip file for the sample in the samples manifest.
+
+    Returns:
+      A relative directory path form the sample manifest's directory to this
+      sample's zip file.
+    """
+    zip_filename = self._get_zip_filename()
+    zip_relpath = os.path.dirname(os.path.dirname(self._get_relative_path()))
+    return os.path.join(zip_relpath, zip_filename)
+
   def _get_search_string(self):
     """ Constructs a string to be used when searching the samples list.
 
@@ -393,6 +409,17 @@ class Sample(dict):
                                           .replace('\'', '')\
                                           .upper()
     return search_string
+
+  def _get_zip_filename(self):
+    """ Returns the filename to be used for a generated zip of the sample.
+
+    Returns:
+      A string in the form of "<dirname>.zip" where <dirname> is the name
+      of the directory containing this sample's manifest.json.
+    """
+    sample_path = os.path.realpath(os.path.dirname(self._manifest_path))
+    sample_dirname = os.path.basename(sample_path)
+    return "%s.zip" % sample_dirname
 
   def _parse_api_calls(self, api_methods):
     """ Returns a list of Chrome extension API calls the sample makes.
@@ -589,7 +616,7 @@ class Sample(dict):
     sample_dirname = os.path.basename(sample_path)
     sample_parentpath = os.path.dirname(sample_path)
 
-    zip_filename = "%s.zip" % sample_dirname
+    zip_filename = self._get_zip_filename()
     zip_path = os.path.join(sample_parentpath, zip_filename)
     zip_file = zipfile.ZipFile(zip_path, 'w')
 
@@ -603,11 +630,6 @@ class Sample(dict):
           # Relative path to store the file in under the zip.
           relpath = sample_dirname + abspath.replace(sample_path, "")
           zip_file.write(abspath, relpath)
-
-      self['zip_path'] = os.path.join(
-          os.path.dirname(os.path.dirname(self._get_relative_path())),
-          zip_filename)
-
     except RuntimeError, msg:
       raise Exception("Could not write zip at " % zip_path)
     finally:
