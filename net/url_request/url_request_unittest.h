@@ -126,7 +126,7 @@ class TestURLRequestContext : public URLRequestContext {
   TestURLRequestContext() {
     host_resolver_ =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                      NULL);
+                                      NULL, NULL);
     proxy_service_ = net::ProxyService::CreateDirect();
     Init();
   }
@@ -134,7 +134,7 @@ class TestURLRequestContext : public URLRequestContext {
   explicit TestURLRequestContext(const std::string& proxy) {
     host_resolver_  =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                      NULL);
+                                      NULL, NULL);
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules().ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);

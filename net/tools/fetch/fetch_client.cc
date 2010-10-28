@@ -137,7 +137,7 @@ int main(int argc, char**argv) {
 
   scoped_ptr<net::HostResolver> host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL));
+                                    NULL, NULL));
 
   scoped_refptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateDirect());
