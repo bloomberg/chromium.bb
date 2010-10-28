@@ -202,7 +202,7 @@ bool WebGraphicsContext3DCommandBufferImpl::isGLES2NPOTStrict() {
 
 bool WebGraphicsContext3DCommandBufferImpl::
     isErrorGeneratedOnOutOfBoundsAccesses() {
-  return false;
+  return true;
 }
 
 unsigned int WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
