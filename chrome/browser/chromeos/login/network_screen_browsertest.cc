@@ -82,13 +82,15 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .Times(3)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, Connected())
-        .Times(3)
+        .Times(4)
         .WillRepeatedly(Return(false));
+    // Add a Connecting for prewarming auth url check.
     EXPECT_CALL(*mock_network_library_, Connecting())
         .Times(2)
         .WillRepeatedly(Return(false));
+    // Add an AddObserver for prewarming auth url check.
     EXPECT_CALL(*mock_network_library_, AddObserver(_))
-        .Times(2);
+        .Times(3);
     EXPECT_CALL(*mock_network_library_, RemoveObserver(_))
         .Times(2);
 

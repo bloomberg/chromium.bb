@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
+#include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/mock_update_library.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
@@ -20,7 +21,8 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
  public:
   UpdateScreenTest() : WizardInProcessBrowserTest("update"),
                        mock_login_library_(NULL),
-                       mock_update_library_(NULL) {}
+                       mock_update_library_(NULL),
+                       mock_network_library_(NULL){}
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
@@ -47,6 +49,15 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_update_library_, CheckForUpdate())
         .Times(1)
         .WillOnce(Return(true));
+
+    mock_network_library_ = cros_mock_->mock_network_library();
+    EXPECT_CALL(*mock_network_library_, Connected())
+        .Times(1)  // also called by NetworkMenu::InitMenuItems()
+        .WillRepeatedly((Return(false)))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, AddObserver(_))
+        .Times(1)
+        .RetiresOnSaturation();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
@@ -56,6 +67,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
 
   MockLoginLibrary* mock_login_library_;
   MockUpdateLibrary* mock_update_library_;
+  MockNetworkLibrary* mock_network_library_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateScreenTest);

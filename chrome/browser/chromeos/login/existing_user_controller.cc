@@ -177,6 +177,7 @@ void ExistingUserController::Init() {
 
   WmMessageListener::instance()->AddObserver(this);
 
+  LoginUtils::Get()->PrewarmAuthentication();
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 }
