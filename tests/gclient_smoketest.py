@@ -434,6 +434,34 @@ class GClientSmokeSVN(GClientSmokeBase):
     tree['src/svn_hooked1'] = 'svn_hooked1'
     self.assertTree(tree)
 
+  def testSyncCustomDepsNoDeps(self):
+    if not self.enabled:
+      return
+    out = (
+        'solutions = [\n'
+        # This directory has no DEPS file.
+        '  { "name"        : "src/third_party",\n'
+        '    "url"         : "%(base)s/src/third_party",\n'
+        '    "custom_deps" : {\n'
+        # Add 1.
+        '      "src/other": \'/trunk/other\',\n'
+        '    },\n'
+        '    "safesync_url": "",\n'
+        '  },\n'
+        ']\n\n' %
+      { 'base': self.svn_base + 'trunk' })
+    fileobj = open(os.path.join(self.root_dir, '.gclient'), 'w')
+    fileobj.write(out)
+    fileobj.close()
+    self.parseGclient(
+        ['sync', '--deps', 'mac', '--jobs', '1'],
+        ['running', 'running'],
+        untangle=True)
+    tree = self.mangle_svn_tree(
+        ('trunk/src/third_party@2', 'src/third_party'),
+        ('trunk/other@2', 'src/other'))
+    self.assertTree(tree)
+
   def testRevertAndStatus(self):
     if not self.enabled:
       return

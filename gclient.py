@@ -49,7 +49,7 @@ Hooks
     ]
 """
 
-__version__ = "0.6"
+__version__ = "0.6.1"
 
 import copy
 import logging
@@ -254,14 +254,6 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       logging.debug('%s was already parsed' % self.name)
       return
     self.deps_parsed = True
-    filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
-    if not os.path.isfile(filepath):
-      logging.info('%s: No DEPS file found at %s' % (self.name, filepath))
-      return
-    deps_content = gclient_utils.FileRead(filepath)
-    logging.debug(deps_content)
-
-    # Eval the content.
     # One thing is unintuitive, vars= {} must happen before Var() use.
     local_scope = {}
     var = self.VarImpl(self.custom_vars, local_scope)
@@ -271,10 +263,17 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
       'Var': var.Lookup,
       'deps_os': {},
     }
-    try:
-      exec(deps_content, global_scope, local_scope)
-    except SyntaxError, e:
-      gclient_utils.SyntaxErrorToError(filepath, e)
+    filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
+    if not os.path.isfile(filepath):
+      logging.info('%s: No DEPS file found at %s' % (self.name, filepath))
+    else:
+      deps_content = gclient_utils.FileRead(filepath)
+      logging.debug(deps_content)
+      # Eval the content.
+      try:
+        exec(deps_content, global_scope, local_scope)
+      except SyntaxError, e:
+        gclient_utils.SyntaxErrorToError(filepath, e)
     deps = local_scope.get('deps', {})
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
@@ -283,9 +282,9 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
         os_deps = local_scope['deps_os'].get(deps_os_key, {})
         if len(self.enforced_os()) > 1:
           # Ignore any conflict when including deps for more than one
-          # platform, so we collect the broadest set of dependencies available.
-          # We may end up with the wrong revision of something for our
-          # platform, but this is the best we can do.
+          # platform, so we collect the broadest set of dependencies
+          # available. We may end up with the wrong revision of something for
+          # our platform, but this is the best we can do.
           deps.update([x for x in os_deps.items() if not x[0] in deps])
         else:
           deps.update(os_deps)
