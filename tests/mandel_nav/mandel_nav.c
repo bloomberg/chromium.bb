@@ -601,6 +601,12 @@ NACL_SRPC_METHOD("shift_colors:i:", ShiftColors);
 int main(int argc, char* argv[]) {
   int retval;
   struct work_item *item;
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+    return 1;
+  }
   /* Initialize the graphics subsystem.  */
   retval = nacl_multimedia_init(NACL_SUBSYSTEM_VIDEO | NACL_SUBSYSTEM_EMBED);
   if (0 != retval) {
@@ -625,5 +631,6 @@ int main(int argc, char* argv[]) {
   /* Shutdown and return.  */
   nacl_video_shutdown();
   nacl_multimedia_shutdown();
+  NaClSrpcModuleFini();
   return 0;
 }

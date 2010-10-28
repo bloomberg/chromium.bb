@@ -967,14 +967,16 @@ int NaClSrpcCommandLoopMain(const struct NaClSrpcHandlerDesc *methods) {
   /* Build the service */
   NaClSrpcService *service = (NaClSrpcService *) malloc(sizeof(*service));
   if (NULL == service) {
-    return 1;
+    return 0;
   }
   if (!NaClSrpcServiceHandlerCtor(service, methods)) {
     free(service);
-    return 1;
+    return 0;
   }
-  /* TODO(sehr): Add the descriptor for the default socket address */
-  /* Message processing loop. */
+  /*
+   * TODO(sehr): Add the descriptor for the default socket address
+   * message processing loop.
+   */
   NaClSrpcCommandLoop(service, NULL, Interpreter, kNaClSrpcInvalidImcDesc);
-  return 0;
+  return 1;
 }

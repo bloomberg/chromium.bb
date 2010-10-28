@@ -217,34 +217,17 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
-void *HandleConnection(void *arg) {
-  int sock_fd = (int) arg;
-  int rc;
-  int success = NaClSrpcServerLoop(sock_fd, srpc_methods, NULL);
-  assert(success);
-  rc = close(sock_fd);
-  assert(rc == 0);
-  return NULL;
-}
-
 int main() {
+  assert(NaClSrpcModuleInit());
   /*
    * We need to be able to handle multiple connections because
    * srpc_sockaddr.html tests this by doing
    * __defaultSocketAddress().connect().  So, rather than using
-   * NaClSrpcMain() (which might be single-threaded), we handle
-   * multiple connections explicitly.
+   * NaClSrpcAcceptClientConnection(), we handle multiple connections
+   * explicitly.
    */
   while (1) {
-    pthread_t tid;
-    int rc;
-    int sock_fd = imc_accept(BOUND_SOCKET);
-    if (sock_fd < 0) {
-      return 0;
-    }
-    rc = pthread_create(&tid, NULL, HandleConnection, (void *) sock_fd);
-    assert(rc == 0);
-    rc = pthread_detach(tid);
-    assert(rc == 0);
+    assert(NaClSrpcAcceptClientOnThread(srpc_methods));
   }
+  NaClSrpcModuleFini();
 }

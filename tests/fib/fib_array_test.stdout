@@ -1,6 +1,5 @@
 RPC Name                 Input args Output args
   0 service_discovery               C         
   1 fib                  ii         I         
-  2 __shutdown                                
 fib RESULTS:   I(10,1,1,2,3,5,8,13,21,34,55)
 fib RESULTS:   I(15,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987)

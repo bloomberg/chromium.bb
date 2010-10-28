@@ -830,12 +830,18 @@ void Shutdown() {
 // Initializes SRPC service, acquires video output, runs demo & shuts down.
 // Main application thread entry point.
 int main(int argc, char **argv) {
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+    return 1;
+  }
   // initialize nacl video
   Initialize();
   // run the photo demo loop
   RunDemo();
   // shutdown nacl video
   Shutdown();
+  NaClSrpcModuleFini();
   return 0;
 }
-

@@ -13,6 +13,7 @@ env.Append(CCFLAGS=['-Wno-strict-aliasing'])
 trusted_untrusted_shared = [
     'imc_buffer.c',
     'invoke.c',
+    'module_init_fini.c',
     'nacl_srpc.c',
     'rpc_serialize.c',
     'rpc_service.c',
@@ -22,9 +23,8 @@ trusted_untrusted_shared = [
 
 # NOTE: these files maybe candidates for a separate library
 untrusted_only = [
-    'accept_loop.c',
-    'main.c',
-    'rpc_main.c',
+    'accept.c',
+    'accept_threaded.c',
     'rpc_universal.c']
 
 env.ComponentLibrary('libsrpc',

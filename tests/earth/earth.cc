@@ -878,6 +878,12 @@ int main(int argc, char *argv[]) {
   RunDemo(surface);
   Shutdown(surface);
 #else
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+    return 1;
+  }
   // NOTE: We current cannot distinguish whether we run in the browser or not
   bool run_in_browser = false;
   ParseCmdLineArgs(argc, argv);
@@ -890,6 +896,7 @@ int main(int argc, char *argv[]) {
     sem_wait(&GlobalDemoSemaphore);
     RunDemo(surface);
   } while (run_in_browser);  // for now run only once
+  NaClSrpcModuleFini();
 #endif
 
   return 0;

@@ -16,13 +16,10 @@
 extern void __libc_init_array();
 extern void __libc_fini_array();
 extern int main(int argc, char *argv[], char *envp[]);
-extern void __srpc_init();
-extern void __srpc_wait();
 extern void exit(int result);
 extern void __pthread_initialize();
 extern void __pthread_shutdown();
 extern void atexit(void (*funptr)());
-extern void __av_wait();
 
 /*
  * We have to force the symbols below to be linked in as they
@@ -83,24 +80,7 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
    *       * add a pointer to .ctors section
    */
   __libc_init_array();
-  /*
-   * Initialize the SRPC module before starting main.  There is a weak
-   * definition in libnacl that can be overridden by libsrpc.
-   */
-  __srpc_init();
-
-  /*
-   * Wait for libav startup to connect to the browser.  There is a weak
-   * definition in libnacl that can be overridden by libav.
-   */
-  __av_wait();
-
   result = main(argc, argv, envp);
-  /*
-   * Wait for srpc shutdown.  There is a weak definition in libnacl
-   * that can be overridden by libsrpc.
-   */
-  __srpc_wait();
   /*
    * exit will also call atexit()
    */

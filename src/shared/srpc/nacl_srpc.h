@@ -555,6 +555,7 @@ typedef struct NaClSrpcChannel NaClSrpcChannel;
  *  @return On success, 1; on failure, 0.
  */
 int NaClSrpcClientCtor(NaClSrpcChannel *channel, NaClSrpcImcDescType imc_desc);
+
 /**
  *  Constructs an SRPC server object communicating over an IMC descriptor.
  *  Servers wait for RPC requests, dispatch them to implementations, and return
@@ -643,6 +644,33 @@ extern const struct NaClSrpcHandlerDesc
 #define NACL_SRPC_METHOD(entry_format, method_handler) \
   NACL_SRPC_METHOD_ARRAY(NaClSrpcMethod##method_handler) = \
       { { entry_format, method_handler } }
+
+/**
+ *  Initializes the SRPC module.
+ *  @return Returns one on success, zero otherwise.
+ */
+int NaClSrpcModuleInit();
+
+/**
+ *  Shuts down the SRPC module.
+ */
+void NaClSrpcModuleFini();
+
+/**
+ *  @serverSrpc Waits for a connection from a client.  When a client
+ *  connects, the server starts responding to RPC requests.
+ *  @param methods The array of methods exported.
+ *  @return Returns one on success, zero otherwise.
+ */
+int NaClSrpcAcceptClientConnection(const struct NaClSrpcHandlerDesc *methods);
+
+/**
+ *  @serverSrpc Waits for a connection from a client.  When a client
+ *  connects, spawns a new thread with a server responding to RPC requests.
+ *  @param methods The array of methods exported.
+ *  @return Returns one on success, zero otherwise.
+ */
+int NaClSrpcAcceptClientOnThread(const struct NaClSrpcHandlerDesc *methods);
 
 /**
  *  @clientSrpc Invokes a specified RPC on the given channel.  Parameters

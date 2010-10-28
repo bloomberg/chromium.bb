@@ -132,5 +132,16 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
 };
 
 int main() {
-  return NaClSrpcMain(srpc_methods);
+  printf("================== CLIENT ================\n");
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  printf("================== CLIENT INIT ================\n");
+  if (!NaClSrpcAcceptClientConnection(srpc_methods)) {
+    printf("================== CLIENT ACCEPT FAILED ================\n");
+    return 1;
+  }
+  printf("================== CLIENT ACCEPT DONE ================\n");
+  NaClSrpcModuleFini();
+  return 0;
 }

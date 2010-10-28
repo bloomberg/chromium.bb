@@ -171,7 +171,9 @@ status_map = {
         'linux2': -11, # SIGSEGV
         'darwin': -11, # SIGBUS
         'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
-        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  [ -1073741819, # -0x3ffffffb or 0xc0000005
+                    -1073741674, # -0x3fffff6a or 0xc0000096
+                   ],
         'win64':  -4,
         },
     'untrusted_segfault': {
@@ -251,10 +253,20 @@ def ProcessOptions(argv):
 # Thus, we convert the desired val and returned val if negative to postive
 # before comparing.
 def ExitStatusIsOK(expected, actual):
-  if expected < 0:
-    expected = (expected + 256) % 256
-    actual = (actual + 256) % 256
-  return expected == actual
+  if isinstance(expected, list):
+    for e in expected:
+      a = actual
+      if e < 0:
+        e = e % 256
+        a = a % 256
+      if e == a:
+        return True
+    return False
+  else:
+    if expected < 0:
+      expected = expected % 256
+      actual = actual % 256
+    return expected == actual
 
 
 def main(argv):

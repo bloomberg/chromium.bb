@@ -12,23 +12,23 @@
 #define BOUND_SOCKET 3
 
 
-int NaClSrpcMain(const struct NaClSrpcHandlerDesc *methods) {
+int NaClSrpcAcceptClientConnection(const struct NaClSrpcHandlerDesc *methods) {
+  int sock_fd = -1;
+  int result = 1;
+
   if (NaClSrpcIsStandalone()) {
     return NaClSrpcCommandLoopMain(methods);
-  } else {
-    int sock_fd;
-    int result = 0;
-
-    sock_fd = imc_accept(BOUND_SOCKET);
-    if (sock_fd == -1) {
-      return 1;
-    }
-    if (!NaClSrpcServerLoop(sock_fd, methods, NULL)) {
-      result = 1;
-    }
-    if (close(sock_fd) != 0) {
-      result = 1;
-    }
-    return result;
   }
+
+  sock_fd = imc_accept(BOUND_SOCKET);
+  if (sock_fd == -1) {
+    return 0;
+  }
+  if (!NaClSrpcServerLoop(sock_fd, methods, NULL)) {
+    result = 0;
+  }
+  if (close(sock_fd) != 0) {
+    result = 0;
+  }
+  return result;
 }

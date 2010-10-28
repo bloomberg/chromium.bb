@@ -317,9 +317,20 @@ void ParseCmdLineArgs(int argc, char **argv) {
 
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
 int main(int argc, char **argv) {
+#if !defined(STANDALONE)
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+    return 1;
+  }
+#endif  // !defined(STANDALONE)
   ParseCmdLineArgs(argc, argv);
   Surface *surface = Initialize();
   RunDemo(surface);
   Shutdown(surface);
+#if !defined(STANDALONE)
+  NaClSrpcModuleFini();
+#endif  // !defined(STANDALONE)
   return 0;
 }

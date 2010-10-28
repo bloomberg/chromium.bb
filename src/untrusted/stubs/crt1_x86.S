@@ -192,18 +192,6 @@ _start:
         call    _init
 
         /*
-         * Initialize the SRPC module before starting main.  There is a weak
-         * definition in libnacl that can be overridden by libsrpc.
-         */
-        call    __srpc_init
-
-        /*
-         * Wait for libav startup to connect to the browser.  There is a weak
-         * definition in libnacl that can be overridden by libav.
-         */
-        call    __av_wait
-
-        /*
          * Invoke main, the start of the user's code.
          */
 #if defined(__x86_64__)
@@ -217,12 +205,6 @@ _start:
         subl    $12, %esp  /* Make space for the return value */
         pushl   %eax       /* Save return value for use by exit call. */
 #endif
-
-        /*
-         * Wait for srpc shutdown.  There is a weak definition in libnacl
-         * that can be overridden by libsrpc.
-         */
-        call    __srpc_wait
 
         /*
          * Call exit from the C library so atexit gets called, and the

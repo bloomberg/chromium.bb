@@ -36,19 +36,9 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { NULL, NULL },
 };
 
-/* NOTE: we "overwrite" a bunch of weak functions here some of them are
- * already doing "nothing" in their weak version but we want to force a
- * duplicate symbol error should we accidentally link in a non weak version
- * of the code. These functions are called in src/untrusted/stubs/crt1_*.S
-*/
-
-void __srpc_init() {}
-void __srpc_wait() {}
-void __av_wait() {}
-
 /*
  * NOTE: the following functions, weakly defined in src/untrusted/nacl/tls.c
- * cannot be overwritten
+ * cannot be overwritten.
  */
 #if 0
 void __pthread_initialize() {}
@@ -56,5 +46,12 @@ void __pthread_shutdown() {}
 #endif
 
 int main() {
-  return NaClSrpcCommandLoopMain(srpc_methods);
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientConnection(srpc_methods)) {
+    return 1;
+  }
+  NaClSrpcModuleFini();
+  return 0;
 }

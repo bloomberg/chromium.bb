@@ -57,5 +57,12 @@ const struct NaClSrpcHandlerDesc srpc_methods[] = {
 };
 
 int main() {
-  return NaClSrpcMain(srpc_methods);
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientConnection(srpc_methods)) {
+    return 1;
+  }
+  NaClSrpcModuleFini();
+  return 0;
 }

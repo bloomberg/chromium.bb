@@ -728,9 +728,16 @@ void ParseCmdLineArgs(int argc, char **argv) {
   g_num_regions = ClampThreads(g_num_regions);
 }
 
-
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
 int main(int argc, char **argv) {
+#if !defined(STANDALONE)
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientOnThread(__kNaClSrpcHandlers)) {
+    return 1;
+  }
+#endif  // STANDALONE
   // Initialise with an arbitrary seed in order to get consistent
   // results between newlib and glibc.
   srand48(0xC0DE533D);
@@ -740,5 +747,8 @@ int main(int argc, char **argv) {
   RunDemo(surface);
   Shutdown(surface);
 
+#if !defined(STANDALONE)
+  NaClSrpcModuleFini();
+#endif  // STANDALONE
   return 0;
 }

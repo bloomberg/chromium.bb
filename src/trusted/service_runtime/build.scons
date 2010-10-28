@@ -735,9 +735,9 @@ if ((not env.Bit('windows') or not env.get('COVERAGE_ENABLED')) and
 # ----------------------------------------------------------
 
 # TODO: Create integration test nexes for arm.
-INTEGRATION_TESTS_X86 = [ 'mandel_v2',
-                          'fib_scalar_v2',
-                          'fib_array_v2' ]
+INTEGRATION_TESTS_X86 = [ 'mandel',
+                          'fib_scalar',
+                          'fib_array' ]
 INTEGRATION_TESTS_X86_STDIN_OUT = ['$SCONSTRUCT_DIR/tests/mandel/test',
                                    '$SCONSTRUCT_DIR/tests/fib/fib_scalar_test',
                                    '$SCONSTRUCT_DIR/tests/fib/fib_array_test' ]
@@ -750,7 +750,9 @@ def AddIntegrationTest(test, location):
       test + '_canned.out',
       command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
       stdin = location + '.stdin',
-      stdout_golden = location + '.stdout')
+      stdout_golden = location + '.stdout',
+      osenv = 'NACL_SRPC_STANDALONE=1'
+      )
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 if env['TARGET_ARCHITECTURE'] == 'x86':

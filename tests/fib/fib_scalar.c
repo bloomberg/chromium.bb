@@ -39,12 +39,16 @@ NaClSrpcError FibonacciScalar(NaClSrpcChannel *channel,
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { "fib:iii:i", FibonacciScalar },
-  /* __shutdown is only here to avoid changing the stdout golden file
-     and the checked-in version of the executable. */
-  { "__shutdown::", NULL },
   { NULL, NULL },
 };
 
 int main() {
-  return NaClSrpcMain(srpc_methods);
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  if (!NaClSrpcAcceptClientConnection(srpc_methods)) {
+    return 1;
+  }
+  NaClSrpcModuleFini();
+  return 0;
 }
