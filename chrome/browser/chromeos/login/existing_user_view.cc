@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
+#include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "views/focus/focus_manager.h"
@@ -15,11 +16,11 @@
 namespace chromeos {
 
 // Textfield with custom processing for Tab/Shift+Tab to select entries.
-class UserEntryTextfield : public views::Textfield {
+class UserEntryTextfield : public TextfieldWithMargin {
  public:
   UserEntryTextfield(UserController* controller,
                      views::Textfield::StyleFlags style)
-      : Textfield(style),
+      : TextfieldWithMargin(style),
         controller_(controller) {}
 
   // Overridden from views::View:

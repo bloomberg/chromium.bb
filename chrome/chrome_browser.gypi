@@ -624,6 +624,8 @@
         'browser/chromeos/login/signed_settings_temp_storage.h',
         'browser/chromeos/login/test_attempt_state.cc',
         'browser/chromeos/login/test_attempt_state.h',
+        'browser/chromeos/login/textfield_with_margin.cc',
+        'browser/chromeos/login/textfield_with_margin.h',
         'browser/chromeos/login/update_screen.cc',
         'browser/chromeos/login/update_screen.h',
         'browser/chromeos/login/update_view.cc',
