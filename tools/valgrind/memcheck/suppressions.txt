@@ -1185,8 +1185,7 @@
 {
    bug_60556a
    Memcheck:Addr4
-   fun:pcache1Fetch
-   fun:sqlite3PcacheFetch
+   ...
    fun:sqlite3PagerAcquire2
    fun:sqlite3PagerAcquire
    fun:btreeGetPage
@@ -1286,6 +1285,25 @@
    fun:_ZN11WebDatabase15InitLoginsTableEv
    fun:_ZN11WebDatabase4InitERK8FilePath
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
+{
+   bug_60556g
+   Memcheck:Addr1
+   fun:memset
+   fun:sqlite3PcacheFetch
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase15InitLoginsTableEv
+}
+{
+   bug_60556h
+   Memcheck:Param
+   read(buf)
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
+   fun:_ZN11WebDatabase15InitLoginsTableEv
 }
 {
    bug_20581
