@@ -10,8 +10,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "views/controls/button/native_button.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/painter.h"
 #include "views/screen.h"
@@ -20,13 +18,10 @@ namespace chromeos {
 
 namespace {
 
-// Font size correction in points for login/oobe textfields/buttons.
-const int kFontSizeCorrectionDelta = 2;
-
 // Time in ms per throbber frame.
 const int kThrobberFrameMs = 60;
 
-// Time in ms before smoothed throbber is shown.
+// Time in ms before smothed throbber is shown.
 const int kThrobberStartDelayMs = 500;
 
 const SkColor kBackgroundCenterColor = SkColorSetRGB(41, 50, 67);
@@ -97,16 +92,6 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   }
 
   return bounds;
-}
-
-void CorrectNativeButtonFontSize(views::NativeButton* button) {
-  if (button)
-    button->SetFont(button->font().DeriveFont(kFontSizeCorrectionDelta));
-}
-
-void CorrectTextfieldFontSize(views::Textfield* textfield) {
-  if (textfield)
-    textfield->SetFont(textfield->font().DeriveFont(kFontSizeCorrectionDelta));
 }
 
 GURL GetAccountRecoveryHelpUrl() {

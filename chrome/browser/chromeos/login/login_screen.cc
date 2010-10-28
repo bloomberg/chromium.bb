@@ -27,18 +27,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-namespace {
-
-// Considering 10px shadow from each side.
-const int kLoginScreenWidth = 288;
-const int kLoginScreenHeight = 318;
-
-}  // anonymous namespace
-
 namespace chromeos {
 
 LoginScreen::LoginScreen(WizardScreenDelegate* delegate)
-    : ViewScreen<NewUserView>(delegate, kLoginScreenWidth, kLoginScreenHeight),
+    : ViewScreen<NewUserView>(delegate),
       bubble_(NULL),
       authenticator_(NULL) {
   if (CrosLibrary::Get()->EnsureLoaded()) {

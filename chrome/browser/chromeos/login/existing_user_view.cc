@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
@@ -63,7 +62,6 @@ void ExistingUserView::RecreateFields() {
     SetLayoutManager(new views::FillLayout);
     password_field_ = new UserEntryTextfield(user_controller_,
                                              views::Textfield::STYLE_PASSWORD);
-    login::CorrectTextfieldFontSize(password_field_);
     password_field_->SetFocusable(true);
     password_field_->SetController(user_controller_);
     AddChildView(password_field_);

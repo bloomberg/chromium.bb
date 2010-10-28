@@ -18,9 +18,7 @@ class Size;
 }  // namespace gfx
 
 namespace views {
-class NativeButton;
 class Painter;
-class Textfield;
 class Throbber;
 }  // namespace views
 
@@ -40,12 +38,6 @@ views::Painter* CreateBackgroundPainter();
 // |size| is not empty. Otherwise the whole monitor is occupied.
 gfx::Rect CalculateScreenBounds(const gfx::Size& size);
 
-// Corrects font size for NativeButton control.
-void CorrectNativeButtonFontSize(views::NativeButton* button);
-
-// Corrects font size for Textfield control.
-void CorrectTextfieldFontSize(views::Textfield* textfield);
-
 // Returns URL used for account recovery.
 GURL GetAccountRecoveryHelpUrl();
 
@@ -58,9 +50,6 @@ enum Command {
   SIGN_OUT,
 };
 
-// Minimal width for the button.
-const int kButtonMinWidth = 90;
-
 // Gap between edge and image view, and image view and controls.
 const int kBorderSize = 6;
 
@@ -72,9 +61,6 @@ const SkColor kBackgroundColor = SK_ColorWHITE;
 
 // Text color on the login controls.
 const SkColor kTextColor = SK_ColorWHITE;
-
-// Default link color on login/OOBE controls.
-const SkColor kLinkColor = 0xFF0066CC;
 
 // Default size of the OOBE screen. Includes 10px shadow from each side.
 // See rounded_rect_painter.cc for border definitions.

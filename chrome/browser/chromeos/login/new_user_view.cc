@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
-#include "gfx/font.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -138,11 +137,9 @@ void NewUserView::Init() {
   AddChildView(splitter_);
 
   username_field_ = new UsernameField();
-  login::CorrectTextfieldFontSize(username_field_);
   AddChildView(username_field_);
 
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  login::CorrectTextfieldFontSize(password_field_);
   AddChildView(password_field_);
 
   throbber_ = CreateDefaultSmoothedThrobber();
@@ -167,7 +164,8 @@ void NewUserView::Init() {
   AddAccelerator(accel_login_off_the_record_);
   AddAccelerator(accel_enable_accessibility_);
 
-  OnLocaleChanged();
+  UpdateLocalizedStrings();
+  RequestFocus();
 
   // Controller to handle events from textfields
   username_field_->SetController(this);
@@ -212,8 +210,6 @@ void NewUserView::RecreatePeculiarControls() {
   // sized so delete and recreate the button on text update.
   delete sign_in_button_;
   sign_in_button_ = new views::NativeButton(this, std::wstring());
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  login::CorrectNativeButtonFontSize(sign_in_button_);
   UpdateSignInButtonState();
 
   if (!CrosLibrary::Get()->EnsureLoaded())
@@ -290,10 +286,6 @@ void NewUserView::ViewHierarchyChanged(bool is_add,
         focus_grabber_factory_.NewRunnableMethod(
             &NewUserView::FocusFirstField));
     WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
-  } else if (is_add && (child == username_field_ || child == password_field_)) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        focus_grabber_factory_.NewRunnableMethod(
-            &NewUserView::Layout));
   }
 }
 
@@ -385,13 +377,8 @@ void NewUserView::Layout() {
 
   y += (setViewBounds(username_field_, x, y, width, true) + kRowPad);
   y += (setViewBounds(password_field_, x, y, width, true) + 3 * kRowPad);
-
   int throbber_y = y;
-  int sign_in_button_width =
-      std::max(login::kButtonMinWidth,
-               sign_in_button_->GetPreferredSize().width());
-  y += (setViewBounds(sign_in_button_, x, y, sign_in_button_width,true) +
-      kRowPad);
+  y += (setViewBounds(sign_in_button_, x, y, width, false) + kRowPad);
   setViewBounds(throbber_,
                 x + width - throbber_->GetPreferredSize().width(),
                 throbber_y + (sign_in_button_->GetPreferredSize().height() -
@@ -526,8 +513,6 @@ void NewUserView::EnableInputControls(bool enabled) {
 void NewUserView::InitLink(views::Link** link) {
   *link = new views::Link(std::wstring());
   (*link)->SetController(this);
-  (*link)->SetNormalColor(login::kLinkColor);
-  (*link)->SetHighlightedColor(login::kLinkColor);
   AddChildView(*link);
 }
 

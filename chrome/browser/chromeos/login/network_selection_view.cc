@@ -250,7 +250,9 @@ void NetworkSelectionView::InitLayout() {
                         GridLayout::FIXED, dropdown_width, dropdown_width);
   column_set->AddPaddingColumn(1, kPaddingColumnWidth);
 
-  const int h_padding = 30;
+  const int h_padding = 30/*(screen_size.width() - 2 * kBorderSize -
+      connecting_network_label_->GetPreferredSize().width() -
+      throbber_->GetPreferredSize().width()) / 2*/;
   column_set = contents_layout->AddColumnSet(THROBBER_ROW);
   column_set->AddPaddingColumn(1, h_padding);
   column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
@@ -329,8 +331,6 @@ void NetworkSelectionView::Init() {
   proxy_settings_link_->SetController(this);
   proxy_settings_link_->SetVisible(true);
   proxy_settings_link_->SetFocusable(true);
-  proxy_settings_link_->SetNormalColor(login::kLinkColor);
-  proxy_settings_link_->SetHighlightedColor(login::kLinkColor);
 
   UpdateLocalizedStrings();
 }
