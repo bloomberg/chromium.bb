@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;bookmarkbarattached:bookmarkbarattached">
+<head>
+<title i18n-content="title"></title>
+<style>
+body {
+  margin:10px 8px 10px 8px;
+}
+html[dir="ltr"] .icon {
+  float:right;
+  margin:0 6px 0 3px;
+  -webkit-transform: scale(-1, 1);
+}
+html[dir="rtl"] .icon {
+  float:left;
+  margin:0 3px 0 6px;
+}
+.content {
+  border-radius: 5px 5px;
+  background-color:#eee;
+  color:black;
+  padding:10px 10px 10px 10px;
+  max-width:600px;
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:66px;
+}
+.extensionsmessage {
+  color:black;
+  padding:10px 10px 10px 10px;
+  max-width:600px;
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:5px;
+}
+.extensionicon {
+  float:left;
+  margin:10px 5px 0 0px;
+  width:30px;
+}
+</style>
+<script>
+// Until themes can clear the cache, force-reload the theme stylesheet.
+document.write('<link id="incognitothemecss" rel="stylesheet" ' +
+               'href="chrome://theme/css/newincognitotab.css?' +
+               Date.now() + '">');
+</script>
+</head>
+<body>
+<div class="content" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+  <img src="shared/images/guest_icon_standalone.png" class="icon" />
+  <span i18n-values=".innerHTML:content"></span>
+</div>
+</body>
+<script>
+function themeChanged() {
+  document.getElementById('incognitothemecss').href =
+      'chrome://theme/css/newincognitotab.css?' + Date.now();
+}
+
+function bookmarkBarAttached() {
+  document.documentElement.setAttribute("bookmarkbarattached", "true");
+}
+
+function bookmarkBarDetached() {
+  document.documentElement.setAttribute("bookmarkbarattached", "false");
+}
+</script>
+</html>
