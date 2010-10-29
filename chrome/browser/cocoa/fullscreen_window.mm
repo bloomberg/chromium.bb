@@ -26,12 +26,27 @@
                                    defer:YES
                                   screen:screen])) {
     [self setReleasedWhenClosed:NO];
+    // Borderless windows don't usually show up in the Windows menu so whine at
+    // Cocoa until it complies. See -dealloc and -setTitle: as well.
+    [NSApp addWindowsItem:self title:@"" filename:NO];
   }
   return self;
 }
 
+- (void)dealloc {
+  // Paranoia; doesn't seem to be necessary but it doesn't hurt.
+  [NSApp removeWindowsItem:self];
+
+  [super dealloc];
+}
+
+- (void)setTitle:(NSString *)title {
+  [NSApp changeWindowsItem:self title:title filename:NO];
+  [super setTitle:title];
+}
+
 // According to
-// http://www.cocoabuilder.com/archive/message/cocoa/2006/6/19/165953,
+// http://www.cocoabuilder.com/archive/message/cocoa/2006/6/19/165953 ,
 // NSBorderlessWindowMask windows cannot become key or main.
 // In our case, however, we don't want that behavior, so we override
 // canBecomeKeyWindow and canBecomeMainWindow.

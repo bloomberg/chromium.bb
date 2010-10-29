@@ -1887,6 +1887,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   if (statusBubble_)
     statusBubble_->SwitchParentWindow(destWindow);
 
+  // Move the title over.
+  [destWindow setTitle:[window title]];
+
   // The window needs to be onscreen before we can set its first responder.
   [destWindow makeKeyAndOrderFront:self];
   [focusTracker restoreFocusInWindow:destWindow];
