@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/third_party/crt/crthelper.h"
+#include "native_client/src/untrusted/crt/crthelper.h"
 
 ADD_FUN_PTR_TO_SEC(__CTOR_END__[1], ".ctors", FUN_PTR_END_MARKER);
 ADD_FUN_PTR_TO_SEC(__DTOR_END__[1], ".dtors", FUN_PTR_END_MARKER);

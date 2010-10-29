@@ -1850,7 +1850,7 @@ nacl_extra_sdk_env.Append(
       'src/include/nacl/nacl.scons',
       'src/shared/gio/nacl.scons',
       'src/shared/srpc/nacl.scons',
-      'src/third_party/crt/nacl.scons',
+      'src/untrusted/crt/nacl.scons',
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       ####  ALPHABETICALLY SORTED ####

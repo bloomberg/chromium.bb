@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/third_party/crt/crthelper.h"
+#include "native_client/src/untrusted/crt/crthelper.h"
 
 
 /* NOTE: currently disable as it would pull in parts
