@@ -24,6 +24,4 @@ node = env.CommandSelLdrTestNacl('mandel_test.out',
                                  stdout_golden=env.File('test.stdout'),
                                  osenv='NACL_SRPC_STANDALONE=1',
                                  )
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'sel_ldr_tests'],
-                       )
+env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_mandel')

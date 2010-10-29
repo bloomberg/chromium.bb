@@ -303,6 +303,12 @@ nacl_glibc_skiplist = [
     # Syscall wrappers not implemented yet.
     'run_sysbasic_test',
     'run_sysbrk_test',
+    # Depends on __kNaClSrpcHandlers being defined in crt1.o
+    'run_earth',
+    'run_life',
+    'run_mandel',
+    'run_mandel_nav',
+    'run_voronoi',
     # Needs further investigation.
     'sdk_minimal_test',
     # TODO(elijahtaylor) add apropriate syscall hooks for glibc
