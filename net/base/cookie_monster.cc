@@ -1067,7 +1067,7 @@ int CookieMonster::GarbageCollect(const Time& current,
       Time oldest_safe_cookie(
           expiry_and_key_scheme_ == EKS_KEEP_RECENT_AND_PURGE_ETLDP1 ?
               (Time::Now() - TimeDelta::FromDays(kSafeFromGlobalPurgeDays)) :
-              Time::Now());
+              Time());                  // Null time == ignore access time.
       int num_evicted = GarbageCollectDeleteList(
           current,
           oldest_safe_cookie,
