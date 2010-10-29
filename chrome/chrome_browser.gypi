@@ -3432,12 +3432,6 @@
           ],
           'sources': [
             'browser/crash_handler_host_linux.h',
-            'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
-            'third_party/mozilla_security_manager/nsNSSCertHelper.h',
-            'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
-            'third_party/mozilla_security_manager/nsNSSCertificate.h',
-            'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
-            'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
           ],
           'conditions': [
             ['use_gnome_keyring==1', {
@@ -3464,6 +3458,16 @@
             }, {  # linux_breakpad==0
               'sources': [
                 'browser/crash_handler_host_linux_stub.cc',
+              ],
+            }],
+            ['use_openssl==0', {
+              'sources': [
+                'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
+                'third_party/mozilla_security_manager/nsNSSCertHelper.h',
+                'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
+                'third_party/mozilla_security_manager/nsNSSCertificate.h',
+                'third_party/mozilla_security_manager/nsUsageArrayHelper.cpp',
+                'third_party/mozilla_security_manager/nsUsageArrayHelper.h',
               ],
             }],
           ],

@@ -79,10 +79,11 @@ std::string ProcessRawBytes(const unsigned char* data, size_t data_length) {
   return ProcessRawBytesWithSeparators(data, data_length, ' ', '\n');
 }
 
+#if defined(USE_NSS)
 std::string ProcessRawBits(const unsigned char* data, size_t data_length) {
-  return ProcessRawBytesWithSeparators(data, (data_length + 7) / 8, ' ', '\n');
+  return ProcessRawBytes(data, (data_length + 7) / 8);
 }
-
+#endif  // USE_NSS
 
 }  // x509_certificate_model
 

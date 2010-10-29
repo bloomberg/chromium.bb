@@ -134,10 +134,12 @@ std::string ProcessRawBytesWithSeparators(const unsigned char* data,
 std::string ProcessRawBytes(const unsigned char* data,
                             size_t data_length);
 
+#if defined(USE_NSS)
 // Format a buffer as a space separated string, with 16 bytes on each line.
 // |data_length| is the length in bits.
 std::string ProcessRawBits(const unsigned char* data,
                            size_t data_length);
+#endif  // USE_NSS
 
 }  // namespace x509_certificate_model
 
