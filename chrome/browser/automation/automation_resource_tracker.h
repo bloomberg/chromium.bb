@@ -38,21 +38,21 @@ class AutomationResourceTrackerImpl {
   // These need to be implemented in AutomationResourceTracker,
   // since it needs to call the subclass's type-specific notification
   // registration functions.
-  virtual void AddObserverTypeProxy(void* resource) = 0;
-  virtual void RemoveObserverTypeProxy(void* resource) = 0;
+  virtual void AddObserverTypeProxy(const void* resource) = 0;
+  virtual void RemoveObserverTypeProxy(const void* resource) = 0;
 
-  int AddImpl(void* resource);
-  void RemoveImpl(void* resource);
+  int AddImpl(const void* resource);
+  void RemoveImpl(const void* resource);
   int GenerateHandle();
-  bool ContainsResourceImpl(void* resource);
+  bool ContainsResourceImpl(const void* resource);
   bool ContainsHandleImpl(int handle);
-  void* GetResourceImpl(int handle);
-  int GetHandleImpl(void* resource);
-  void HandleCloseNotification(void* resource);
+  const void* GetResourceImpl(int handle);
+  int GetHandleImpl(const void* resource);
+  void HandleCloseNotification(const void* resource);
 
  protected:
-  typedef std::map<void*, int> ResourceToHandleMap;
-  typedef std::map<int, void*> HandleToResourceMap;
+  typedef std::map<const void*, int> ResourceToHandleMap;
+  typedef std::map<int, const void*> HandleToResourceMap;
   ResourceToHandleMap resource_to_handle_;
   HandleToResourceMap handle_to_resource_;
 
@@ -109,8 +109,9 @@ class AutomationResourceTracker : public NotificationObserver,
 
   // Returns the resource pointer associated with a given handle, or NULL
   // if that handle is not present in the mapping.
+  // The casts here allow this to compile with both T = Foo and T = const Foo.
   T GetResource(int handle) {
-    return static_cast<T>(GetResourceImpl(handle));
+    return static_cast<T>(const_cast<void*>(GetResourceImpl(handle)));
   }
 
   // Returns the handle associated with a given resource pointer, or 0 if
@@ -144,11 +145,12 @@ class AutomationResourceTracker : public NotificationObserver,
 
  private:
   // These proxy calls from the base Impl class to the template's subclss.
-  virtual void AddObserverTypeProxy(void* resource) {
-    AddObserver(static_cast<T>(resource));
+  // The casts here allow this to compile with both T = Foo and T = const Foo.
+  virtual void AddObserverTypeProxy(const void* resource) {
+    AddObserver(static_cast<T>(const_cast<void*>(resource)));
   }
-  virtual void RemoveObserverTypeProxy(void* resource) {
-    RemoveObserver(static_cast<T>(resource));
+  virtual void RemoveObserverTypeProxy(const void* resource) {
+    RemoveObserver(static_cast<T>(const_cast<void*>(resource)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(AutomationResourceTracker);

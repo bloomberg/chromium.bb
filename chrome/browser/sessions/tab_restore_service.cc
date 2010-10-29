@@ -476,7 +476,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
   if (tab->current_navigation_index == -1 && entry_count > 0)
     tab->current_navigation_index = 0;
 
-  Extension* extension = controller->tab_contents()->extension_app();
+  const Extension* extension = controller->tab_contents()->extension_app();
   if (extension)
     tab->extension_app_id = extension->id();
 

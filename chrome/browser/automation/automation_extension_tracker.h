@@ -12,7 +12,7 @@ class Extension;
 
 // Tracks an Extension. An Extension is removed on uninstall, not on disable.
 class AutomationExtensionTracker
-    : public AutomationResourceTracker<Extension*> {
+    : public AutomationResourceTracker<const Extension*> {
  public:
   explicit AutomationExtensionTracker(IPC::Message::Sender* automation);
 
@@ -23,10 +23,10 @@ class AutomationExtensionTracker
   // extension, is the one who sends the notification about extension
   // uninstalls. Instead of using this method, one observer is added for all
   // extensions in the constructor.
-  virtual void AddObserver(Extension* resource);
+  virtual void AddObserver(const Extension* resource);
 
   // See related comment above as to why this method is empty.
-  virtual void RemoveObserver(Extension* resource);
+  virtual void RemoveObserver(const Extension* resource);
 
   // Overriding AutomationResourceTracker Observe. AutomationResourceTracker's
   // Observe expects the NotificationSource to be the object that is closing.

@@ -36,8 +36,10 @@ const int kIconSize = 69;
 class InstallDialogContent : public views::View, public views::DialogDelegate {
  public:
   InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
-      Extension* extension, SkBitmap* icon, ExtensionInstallUI::PromptType type)
-          : delegate_(delegate), icon_(NULL), type_(type) {
+                       const Extension* extension,
+                       SkBitmap* icon,
+                       ExtensionInstallUI::PromptType type)
+        : delegate_(delegate), icon_(NULL), type_(type) {
     // Scale down to icon size, but allow smaller icons (don't scale up).
     gfx::Size size(icon->width(), icon->height());
     if (size.width() > kIconSize || size.height() > kIconSize)
@@ -142,7 +144,10 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 
 // static
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    Profile* profile,
+    Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
     PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {

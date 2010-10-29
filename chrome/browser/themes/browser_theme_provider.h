@@ -152,7 +152,7 @@ class BrowserThemeProvider : public NonThreadSafe,
 #endif
 
   // Set the current theme to the theme defined in |extension|.
-  virtual void SetTheme(Extension* extension);
+  virtual void SetTheme(const Extension* extension);
 
   // Reset the theme to default.
   virtual void UseDefaultTheme();
@@ -221,7 +221,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Let all the browser views know that themes have changed.
   // extension is NULL iff the theme is being set to the
   // default/system theme.
-  virtual void NotifyThemeChanged(Extension* extension);
+  virtual void NotifyThemeChanged(const Extension* extension);
 
 #if defined(OS_MACOSX)
   // Let all the browser views know that themes have changed in a platform way.
@@ -245,7 +245,7 @@ class BrowserThemeProvider : public NonThreadSafe,
 
   // Implementation of SetTheme() (and the fallback from LoadThemePrefs() in
   // case we don't have a theme pack).
-  void BuildFromExtension(Extension* extension);
+  void BuildFromExtension(const Extension* extension);
 
   // Remove preference values for themes that are no longer in use.
   void RemoveUnusedThemes();

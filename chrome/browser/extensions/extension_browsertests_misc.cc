@@ -260,13 +260,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtA")));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
   ASSERT_EQ(size_before + 1, service->extensions()->size());
-  Extension* extensionA = service->extensions()->at(size_before);
+  const Extension* extensionA = service->extensions()->at(size_before);
 
   // Load extension B.
   ASSERT_TRUE(LoadExtension(base_path.AppendASCII("ExtB")));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(2));
   ASSERT_EQ(size_before + 2, service->extensions()->size());
-  Extension* extensionB = service->extensions()->at(size_before + 1);
+  const Extension* extensionB = service->extensions()->at(size_before + 1);
 
   ReloadExtension(extensionA->id());
   // ExtensionA has changed, so refetch it.
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   ASSERT_EQ(size_before + 1, service->extensions()->size());
-  Extension* extension = service->extensions()->at(size_before);
+  const Extension* extension = service->extensions()->at(size_before);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n browser action").c_str(),
                extension->description().c_str());
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   ASSERT_EQ(size_before + 1, service->extensions()->size());
-  Extension* extension = service->extensions()->at(size_before);
+  const Extension* extension = service->extensions()->at(size_before);
 
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
                extension->description().c_str());
@@ -422,7 +422,7 @@ void NavigateToFeedAndValidate(net::TestServer* server,
   }
 
   ExtensionsService* service = browser->profile()->GetExtensionsService();
-  Extension* extension = service->extensions()->back();
+  const Extension* extension = service->extensions()->back();
   std::string id = extension->id();
 
   // Navigate to the subscribe page directly.
@@ -778,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const ExtensionList* extensions = service->extensions();
   ASSERT_EQ(1u, extensions->size());
-  Extension* extension = extensions->at(0);
+  const Extension* extension = extensions->at(0);
 
   // Go to the chrome://extensions page and click the Options button.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));

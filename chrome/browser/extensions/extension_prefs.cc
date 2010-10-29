@@ -320,7 +320,7 @@ bool ExtensionPrefs::DidExtensionEscalatePermissions(
 }
 
 void ExtensionPrefs::SetDidExtensionEscalatePermissions(
-    Extension* extension, bool did_escalate) {
+    const Extension* extension, bool did_escalate) {
   UpdateExtensionPref(extension->id(), kExtensionDidEscalatePermissions,
                       Value::CreateBooleanValue(did_escalate));
   prefs_->ScheduleSavePersistentPrefs();
@@ -518,7 +518,7 @@ void ExtensionPrefs::SetToolbarOrder(
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
-    Extension* extension, Extension::State initial_state,
+    const Extension* extension, Extension::State initial_state,
     bool initial_incognito_enabled) {
   const std::string& id = extension->id();
   UpdateExtensionPref(id, kPrefState,
@@ -575,7 +575,7 @@ Extension::State ExtensionPrefs::GetExtensionState(
   return static_cast<Extension::State>(state);
 }
 
-void ExtensionPrefs::SetExtensionState(Extension* extension,
+void ExtensionPrefs::SetExtensionState(const Extension* extension,
                                        Extension::State state) {
   UpdateExtensionPref(extension->id(), kPrefState,
                       Value::CreateIntegerValue(state));
@@ -596,7 +596,7 @@ std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
   return version;
 }
 
-void ExtensionPrefs::UpdateManifest(Extension* extension) {
+void ExtensionPrefs::UpdateManifest(const Extension* extension) {
   if (extension->location() != Extension::LOAD) {
     UpdateExtensionPref(extension->id(), kPrefManifest,
                         extension->manifest_value()->DeepCopy());

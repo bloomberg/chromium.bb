@@ -64,13 +64,13 @@ class ImageLoadingTracker : public NotificationObserver {
   // |max_size| it will be resized to those dimensions. IMPORTANT NOTE: this
   // function may call back your observer synchronously (ie before it returns)
   // if the image was found in the cache.
-  void LoadImage(Extension* extension,
+  void LoadImage(const Extension* extension,
                  const ExtensionResource& resource,
                  const gfx::Size& max_size,
                  CacheParam cache);
 
  private:
-  typedef std::map<int, Extension*> LoadMap;
+  typedef std::map<int, const Extension*> LoadMap;
 
   class ImageLoader;
 

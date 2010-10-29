@@ -57,7 +57,7 @@ class MockService : public ExtensionUpdateService {
     FAIL();
   }
 
-  virtual Extension* GetExtensionById(const std::string& id, bool) {
+  virtual const Extension* GetExtensionById(const std::string& id, bool) {
     ADD_FAILURE();
     return NULL;
   }
@@ -142,7 +142,7 @@ class ServiceForManifestTests : public MockService {
 
   virtual ~ServiceForManifestTests() {}
 
-  virtual Extension* GetExtensionById(const std::string& id, bool) {
+  virtual const Extension* GetExtensionById(const std::string& id, bool) {
     for (ExtensionList::iterator iter = extensions_.begin();
         iter != extensions_.end(); ++iter) {
      if ((*iter)->id() == id) {
@@ -194,7 +194,7 @@ class ServiceForDownloadTests : public MockService {
     return pending_extensions_;
   }
 
-  virtual Extension* GetExtensionById(const std::string& id, bool) {
+  virtual const Extension* GetExtensionById(const std::string& id, bool) {
     last_inquired_extension_id_ = id;
     return NULL;
   }
@@ -803,7 +803,7 @@ class ExtensionUpdaterTest : public testing::Test {
     service.set_extensions(tmp);
 
     ManifestFetchData fetch_data(update_url);
-    Extension* extension = tmp[0];
+    const Extension* extension = tmp[0];
     fetch_data.AddExtension(extension->id(), extension->VersionString(),
                             ManifestFetchData::kNeverPinged);
     UpdateManifest::Results results;

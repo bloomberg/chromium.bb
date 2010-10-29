@@ -107,7 +107,7 @@ bool GetAllExtensionsFunction::RunImpl() {
 bool LaunchAppFunction::RunImpl() {
   std::string extension_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
-  Extension* extension = service()->GetExtensionById(extension_id, true);
+  const Extension* extension = service()->GetExtensionById(extension_id, true);
   if (!extension) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kNoExtensionError,
                                                      extension_id);
@@ -219,7 +219,7 @@ void ExtensionManagementEventRouter::Observe(
         Details<UninstalledExtensionInfo>(details).ptr()->extension_id;
     args.Append(Value::CreateStringValue(extension_id));
   } else {
-    Extension* extension = Details<Extension>(details).ptr();
+    const Extension* extension = Details<const Extension>(details).ptr();
     CHECK(extension);
     ExtensionsService* service = profile->GetExtensionsService();
     bool enabled = service->GetExtensionById(extension->id(), false) != NULL;

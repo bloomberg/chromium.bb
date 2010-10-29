@@ -45,13 +45,13 @@ class ExtensionInstalledBubbleGtk
   // the extension has loaded. |extension| is the installed extension. |browser|
   // is the browser window which will host the bubble. |icon| is the install
   // icon of the extension.
-  static void Show(Extension *extension, Browser *browser, SkBitmap icon);
+  static void Show(const Extension* extension, Browser *browser, SkBitmap icon);
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionInstalledBubbleGtk>;
 
   // Private ctor. Registers a listener for EXTENSION_LOADED.
-  ExtensionInstalledBubbleGtk(Extension *extension, Browser *browser,
+  ExtensionInstalledBubbleGtk(const Extension* extension, Browser *browser,
                               SkBitmap icon);
 
   virtual ~ExtensionInstalledBubbleGtk();
@@ -74,7 +74,7 @@ class ExtensionInstalledBubbleGtk
   static void OnButtonClick(GtkWidget* button,
                             ExtensionInstalledBubbleGtk* toolbar);
 
-  Extension *extension_;
+  const Extension* extension_;
   Browser *browser_;
   SkBitmap icon_;
   NotificationRegistrar registrar_;

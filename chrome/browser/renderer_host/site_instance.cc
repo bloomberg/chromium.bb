@@ -190,7 +190,7 @@ GURL SiteInstance::GetEffectiveURL(Profile* profile, const GURL& url) {
   if (!profile || !profile->GetExtensionsService())
     return url;
 
-  Extension* extension =
+  const Extension* extension =
       profile->GetExtensionsService()->GetExtensionByWebExtent(url);
   if (extension) {
     // If the URL is part of an extension's web extent, convert it to an

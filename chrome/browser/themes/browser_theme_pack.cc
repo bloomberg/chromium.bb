@@ -326,7 +326,8 @@ BrowserThemePack::~BrowserThemePack() {
 }
 
 // static
-BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
+BrowserThemePack* BrowserThemePack::BuildFromExtension(
+    const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(extension->is_theme());
@@ -576,7 +577,7 @@ BrowserThemePack::BrowserThemePack()
       source_images_(NULL) {
 }
 
-void BrowserThemePack::BuildHeader(Extension* extension) {
+void BrowserThemePack::BuildHeader(const Extension* extension) {
   header_ = new BrowserThemePackHeader;
   header_->version = kThemePackVersion;
 

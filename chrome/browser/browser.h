@@ -145,7 +145,7 @@ class Browser : public TabHandlerDelegate,
   // shell.  |extension| is optional. If supplied, we create a window with
   // a bigger icon and title text, that supports tabs.
   static Browser* CreateForApp(const std::string& app_name,
-                               Extension* extension,
+                               const Extension* extension,
                                Profile* profile,
                                bool is_panel);
 
@@ -154,7 +154,7 @@ class Browser : public TabHandlerDelegate,
   static Browser* CreateForDevTools(Profile* profile);
 
   // Returns the extension app associated with this window, if any.
-  Extension* extension_app() { return extension_app_; }
+  const Extension* extension_app() { return extension_app_; }
 
   // Set overrides for the initial window bounds and maximized state.
   void set_override_bounds(const gfx::Rect& bounds) {
@@ -235,7 +235,7 @@ class Browser : public TabHandlerDelegate,
   // NULL.
   static TabContents* OpenApplication(
       Profile* profile,
-      Extension* extension,
+      const Extension* extension,
       extension_misc::LaunchContainer container,
       TabContents* existing_tab);
 
@@ -246,7 +246,7 @@ class Browser : public TabHandlerDelegate,
   // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
   static TabContents* OpenApplicationWindow(
       Profile* profile,
-      Extension* extension,
+      const Extension* extension,
       extension_misc::LaunchContainer container,
       const GURL& url);
 
@@ -257,7 +257,7 @@ class Browser : public TabHandlerDelegate,
   // |existing_tab| if not NULL.  Returns NULL if there are no appropriate
   // existing browser windows for |profile|.
   static TabContents* OpenApplicationTab(Profile* profile,
-                                         Extension* extension,
+                                         const Extension* extension,
                                          TabContents* existing_tab);
 
   // Opens a new window and opens the bookmark manager.
@@ -1124,7 +1124,7 @@ class Browser : public TabHandlerDelegate,
   WebAppAction pending_web_app_action_;
 
   // The extension app associated with this window, if any.
-  Extension* extension_app_;
+  const Extension* extension_app_;
 
   // Tracks the display mode of the tabstrip.
   mutable BooleanPrefMember use_vertical_tabs_;

@@ -323,7 +323,7 @@ TEST_F(ExtensionMenuManagerTest, ExtensionUnloadRemovesMenuItems) {
   // gone.
   notifier->Notify(NotificationType::EXTENSION_UNLOADED,
                    Source<Profile>(NULL),
-                   Details<Extension>(extension1));
+                   Details<const Extension>(extension1));
   ASSERT_EQ(NULL, manager_.MenuItems(extension1->id()));
   ASSERT_EQ(1u, manager_.MenuItems(extension2->id())->size());
   ASSERT_TRUE(manager_.GetItemById(id1) == NULL);

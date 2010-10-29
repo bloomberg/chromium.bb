@@ -774,7 +774,8 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return extensions_request_context_;
 }
 
-void ProfileImpl::RegisterExtensionWithRequestContexts(Extension* extension) {
+void ProfileImpl::RegisterExtensionWithRequestContexts(
+    const Extension* extension) {
   // AddRef to ensure the data lives until the other thread gets it. Balanced in
   // OnNewExtensions.
   extension->static_data()->AddRef();
@@ -785,7 +786,8 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(Extension* extension) {
                         extension->static_data()));
 }
 
-void ProfileImpl::UnregisterExtensionWithRequestContexts(Extension* extension) {
+void ProfileImpl::UnregisterExtensionWithRequestContexts(
+    const Extension* extension) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
@@ -1033,7 +1035,7 @@ void ProfileImpl::InitThemes() {
   }
 }
 
-void ProfileImpl::SetTheme(Extension* extension) {
+void ProfileImpl::SetTheme(const Extension* extension) {
   InitThemes();
   theme_provider_.get()->SetTheme(extension);
 }
@@ -1048,7 +1050,7 @@ void ProfileImpl::ClearTheme() {
   theme_provider_.get()->UseDefaultTheme();
 }
 
-Extension* ProfileImpl::GetTheme() {
+const Extension* ProfileImpl::GetTheme() {
   InitThemes();
 
   std::string id = theme_provider_.get()->GetThemeID();
@@ -1220,7 +1222,7 @@ void ProfileImpl::Observe(NotificationType type,
               Source<Profile>(this), NotificationService::NoDetails());
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
-    Extension* extension = Details<Extension>(details).ptr();
+    const Extension* extension = Details<const Extension>(details).ptr();
     SetTheme(extension);
   } else if (NotificationType::BOOKMARK_MODEL_LOADED == type) {
     GetProfileSyncService();  // Causes lazy-load if sync is enabled.

@@ -285,7 +285,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns the full list of permission messages that this extension
   // should display at install time.
-  std::vector<string16> GetPermissionMessages();
+  std::vector<string16> GetPermissionMessages() const;
 
   // Returns the distinct hosts that should be displayed in the install UI. This
   // discards some of the detail that is present in the manifest to make it as
@@ -293,7 +293,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // and path components of URLPatterns and de-dupe the result.
   static std::vector<std::string> GetDistinctHosts(
       const URLPatternList& host_patterns);
-  std::vector<std::string> GetDistinctHosts();
+  std::vector<std::string> GetDistinctHosts() const;
 
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
@@ -378,7 +378,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
 
   // See HistogramType definition above.
-  HistogramType GetHistogramType();
+  HistogramType GetHistogramType() const;
 
   // Returns an absolute url to a resource inside of an extension. The
   // |extension_url| argument should be the url() from an Extension object. The
@@ -393,10 +393,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns an extension resource object. |relative_path| should be UTF8
   // encoded.
-  ExtensionResource GetResource(const std::string& relative_path);
+  ExtensionResource GetResource(const std::string& relative_path) const;
 
   // As above, but with |relative_path| following the file system's encoding.
-  ExtensionResource GetResource(const FilePath& relative_path);
+  ExtensionResource GetResource(const FilePath& relative_path) const;
 
   // |input| is expected to be the text of an rsa public or private key. It
   // tolerates the presence or absence of bracking header/footer like this:
@@ -418,14 +418,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Determine whether |new_extension| has increased privileges compared to
   // |old_extension|.
-  static bool IsPrivilegeIncrease(Extension* old_extension,
-                                  Extension* new_extension);
+  static bool IsPrivilegeIncrease(const Extension* old_extension,
+                                  const Extension* new_extension);
 
   // Given an extension and icon size, read it if present and decode it into
   // result. In the browser process, this will DCHECK if not called on the
   // file thread. To easily load extension images on the UI thread, see
   // ImageLoadingTracker.
-  static void DecodeIcon(Extension* extension,
+  static void DecodeIcon(const Extension* extension,
                          Icons icon_size,
                          scoped_ptr<SkBitmap>* result);
 
@@ -560,12 +560,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
-  std::set<FilePath> GetBrowserImages();
+  std::set<FilePath> GetBrowserImages() const;
 
   // Get an extension icon as a resource or URL.
-  ExtensionResource GetIconResource(int size,
-                                    ExtensionIconSet::MatchType match_type);
-  GURL GetIconURL(int size, ExtensionIconSet::MatchType match_type);
+  ExtensionResource GetIconResource(
+      int size, ExtensionIconSet::MatchType match_type) const;
+  GURL GetIconURL(int size, ExtensionIconSet::MatchType match_type) const;
 
   const DictionaryValue* manifest_value() const {
     return static_data_->manifest_value.get();
@@ -609,13 +609,13 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Whether the background page, if any, is ready. We don't load other
   // components until then. If there is no background page, we consider it to
   // be ready.
-  bool GetBackgroundPageReady();
-  void SetBackgroundPageReady();
+  bool GetBackgroundPageReady() const;
+  void SetBackgroundPageReady() const;
 
   // Getter and setter for the flag that specifies whether the extension is
   // being upgraded.
   bool being_upgraded() const { return GetRuntimeData()->being_upgraded; }
-  void set_being_upgraded(bool value) {
+  void set_being_upgraded(bool value) const {
     GetRuntimeData()->being_upgraded = value;
   }
 
@@ -625,11 +625,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // before any scaling may have been done to produce the pixels in |image|.
   void SetCachedImage(const ExtensionResource& source,
                       const SkBitmap& image,
-                      const gfx::Size& original_size);
+                      const gfx::Size& original_size) const;
   bool HasCachedImage(const ExtensionResource& source,
-                      const gfx::Size& max_size);
+                      const gfx::Size& max_size) const;
   SkBitmap GetCachedImage(const ExtensionResource& source,
-                          const gfx::Size& max_size);
+                          const gfx::Size& max_size) const;
   bool is_hosted_app() const { return is_app() && !web_extent().is_empty(); }
   bool is_packaged_app() const { return is_app() && web_extent().is_empty(); }
 
@@ -658,7 +658,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // value of NULL means there is no matching image cached (we allow caching an
   // empty SkBitmap).
   SkBitmap* GetCachedImageImpl(const ExtensionResource& source,
-                               const gfx::Size& max_size);
+                               const gfx::Size& max_size) const;
 
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
@@ -700,21 +700,21 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
-  bool ContainsNonThemeKeys(const DictionaryValue& source);
+  bool ContainsNonThemeKeys(const DictionaryValue& source) const;
 
   // Returns true if the string is one of the known api permissions (see
   // kPermissions).
-  bool IsAPIPermission(const std::string& permission);
+  bool IsAPIPermission(const std::string& permission) const;
 
   // The set of unique API install messages that the extension has.
   // NOTE: This only includes messages related to permissions declared in the
   // "permissions" key in the manifest.  Permissions implied from other features
   // of the manifest, like plugins and content scripts are not included.
-  std::set<string16> GetSimplePermissionMessages();
+  std::set<string16> GetSimplePermissionMessages() const;
 
   // The permission message displayed related to the host permissions for
   // this extension.
-  string16 GetHostPermissionMessage();
+  string16 GetHostPermissionMessage() const;
 
   // Returns a mutable pointer to our runtime data. Can only be called on
   // the UI thread.
@@ -739,7 +739,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };
 
-typedef std::vector< scoped_refptr<Extension> > ExtensionList;
+typedef std::vector< scoped_refptr<const Extension> > ExtensionList;
 typedef std::set<std::string> ExtensionIdSet;
 
 // Handy struct to pass core extension info around.

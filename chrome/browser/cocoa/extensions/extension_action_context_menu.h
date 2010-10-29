@@ -28,7 +28,7 @@ class DevmodeObserver;
 @interface ExtensionActionContextMenu : NSMenu {
  @private
   // The extension that this menu belongs to. Weak.
-  Extension* extension_;
+  const Extension* extension_;
 
   // The extension action this menu belongs to. Weak.
   ExtensionAction* action_;
@@ -48,7 +48,7 @@ class DevmodeObserver;
 }
 
 // Initializes and returns a context menu for the given extension and profile.
-- (id)initWithExtension:(Extension*)extension
+- (id)initWithExtension:(const Extension*)extension
                 profile:(Profile*)profile
         extensionAction:(ExtensionAction*)action;
 

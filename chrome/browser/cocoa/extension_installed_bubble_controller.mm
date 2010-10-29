@@ -46,7 +46,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
                const NotificationSource& source,
                const NotificationDetails& details) {
     if (type == NotificationType::EXTENSION_LOADED) {
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       if (extension == [controller_ extension]) {
         [controller_ performSelectorOnMainThread:@selector(showWindow:)
                                       withObject:controller_
@@ -74,7 +74,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 @synthesize pageActionRemoved = pageActionRemoved_;  // Exposed for unit test.
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                 extension:(Extension*)extension
+                 extension:(const Extension*)extension
                    browser:(Browser*)browser
                       icon:(SkBitmap)icon {
   NSString* nibPath =

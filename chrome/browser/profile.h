@@ -297,7 +297,7 @@ class Profile {
   virtual void InitThemes() = 0;
 
   // Set the theme to the specified extension.
-  virtual void SetTheme(Extension* extension) = 0;
+  virtual void SetTheme(const Extension* extension) = 0;
 
   // Set the theme to the machine's native theme.
   virtual void SetNativeTheme() = 0;
@@ -307,7 +307,7 @@ class Profile {
 
   // Gets the theme that was last set. Returns NULL if the theme is no longer
   // installed, if there is no installed theme, or the theme was cleared.
-  virtual Extension* GetTheme() = 0;
+  virtual const Extension* GetTheme() = 0;
 
   // Returns or creates the ThemeProvider associated with this profile
   virtual BrowserThemeProvider* GetThemeProvider() = 0;
@@ -330,12 +330,14 @@ class Profile {
   // notification has fired. The purpose for handling this event first is to
   // avoid race conditions by making sure URLRequestContexts learn about new
   // extensions before anything else needs them to know.
-  virtual void RegisterExtensionWithRequestContexts(Extension* extension) {}
+  virtual void RegisterExtensionWithRequestContexts(
+      const Extension* extension) {}
 
   // Called by the ExtensionsService that lives in this profile. Lets the
   // profile clean up its RequestContexts once all the listeners to the
   // EXTENSION_UNLOADED notification have finished running.
-  virtual void UnregisterExtensionWithRequestContexts(Extension* extension) {}
+  virtual void UnregisterExtensionWithRequestContexts(
+      const Extension* extension) {}
 
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;

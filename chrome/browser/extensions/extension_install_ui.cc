@@ -82,7 +82,7 @@ ExtensionInstallUI::~ExtensionInstallUI() {
 }
 
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
-                                        Extension* extension) {
+                                        const Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   delegate_ = delegate;
@@ -92,7 +92,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   // to allow the user to revert if they don't like it.
   if (extension->is_theme()) {
     // Remember the current theme in case the user pressed undo.
-    Extension* previous_theme = profile_->GetTheme();
+    const Extension* previous_theme = profile_->GetTheme();
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
 
@@ -113,7 +113,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
 }
 
 void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
-                                          Extension* extension) {
+                                          const Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   delegate_ = delegate;
@@ -121,7 +121,7 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
   ShowConfirmation(UNINSTALL_PROMPT);
 }
 
-void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
+void ExtensionInstallUI::OnInstallSuccess(const Extension* extension) {
   if (extension->is_theme()) {
     ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
                      extension, profile_);
@@ -226,7 +226,7 @@ void ExtensionInstallUI::OnImageLoaded(
 
 void ExtensionInstallUI::ShowThemeInfoBar(
     const std::string& previous_theme_id, bool previous_use_system_theme,
-    Extension* new_theme, Profile* profile) {
+    const Extension* new_theme, Profile* profile) {
   if (!new_theme->is_theme())
     return;
 
@@ -283,7 +283,7 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
 
 #if defined(OS_MACOSX)
 void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
-    Extension* new_extension) {
+    const Extension* new_extension) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (!browser)
     return;
@@ -304,7 +304,7 @@ void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
 #endif
 
 InfoBarDelegate* ExtensionInstallUI::GetNewThemeInstalledInfoBarDelegate(
-    TabContents* tab_contents, Extension* new_theme,
+    TabContents* tab_contents, const Extension* new_theme,
     const std::string& previous_theme_id, bool previous_use_system_theme) {
 #if defined(TOOLKIT_GTK)
   return new GtkThemeInstalledInfoBarDelegate(tab_contents, new_theme,

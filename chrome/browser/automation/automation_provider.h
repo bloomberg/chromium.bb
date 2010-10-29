@@ -150,7 +150,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Adds the extension passed in to the extension tracker, and returns
   // the associated handle. If the tracker already contains the extension,
   // the handle is simply returned.
-  int AddExtension(Extension* extension);
+  int AddExtension(const Extension* extension);
 
 #if defined(OS_WIN)
   // Adds the external tab passed in to the tab tracker.
@@ -323,15 +323,15 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Returns the extension for the given handle. Returns NULL if there is
   // no extension for the handle.
-  Extension* GetExtension(int extension_handle);
+  const Extension* GetExtension(int extension_handle);
 
   // Returns the extension for the given handle, if the handle is valid and
   // the associated extension is enabled. Returns NULL otherwise.
-  Extension* GetEnabledExtension(int extension_handle);
+  const Extension* GetEnabledExtension(int extension_handle);
 
   // Returns the extension for the given handle, if the handle is valid and
   // the associated extension is disabled. Returns NULL otherwise.
-  Extension* GetDisabledExtension(int extension_handle);
+  const Extension* GetDisabledExtension(int extension_handle);
 
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();

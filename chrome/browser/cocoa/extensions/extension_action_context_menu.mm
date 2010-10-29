@@ -36,7 +36,7 @@
 // Also acts as the extension's UI delegate in order to display the dialog.
 class AsyncUninstaller : public ExtensionInstallUI::Delegate {
  public:
-  AsyncUninstaller(Extension* extension, Profile* profile)
+  AsyncUninstaller(const Extension* extension, Profile* profile)
       : extension_(extension),
         profile_(profile) {
     install_ui_.reset(new ExtensionInstallUI(profile));
@@ -55,7 +55,7 @@ class AsyncUninstaller : public ExtensionInstallUI::Delegate {
 
  private:
   // The extension that we're loading the icon for. Weak.
-  Extension* extension_;
+  const Extension* extension_;
 
   // The current profile. Weak.
   Profile* profile_;
@@ -125,7 +125,7 @@ int CurrentTabId() {
 
 }  // namespace
 
-- (id)initWithExtension:(Extension*)extension
+- (id)initWithExtension:(const Extension*)extension
                 profile:(Profile*)profile
         extensionAction:(ExtensionAction*)action{
   if ((self = [super initWithTitle:@""])) {

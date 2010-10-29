@@ -144,7 +144,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
           "Relative page_url given with no extension_name";
 
       ExtensionsService* service = browser()->profile()->GetExtensionsService();
-      Extension* extension =
+      const Extension* extension =
           service->GetExtensionById(last_loaded_extension_id_, false);
       if (!extension)
         return false;
@@ -165,7 +165,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 }
 
 // Test that exactly one extension loaded.
-Extension* ExtensionApiTest::GetSingleLoadedExtension() {
+const Extension* ExtensionApiTest::GetSingleLoadedExtension() {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
 
   int found_extension_index = -1;
@@ -185,7 +185,7 @@ Extension* ExtensionApiTest::GetSingleLoadedExtension() {
     found_extension_index = static_cast<int>(i);
   }
 
-  Extension* extension = service->extensions()->at(found_extension_index);
+  const Extension* extension = service->extensions()->at(found_extension_index);
   if (!extension) {
     message_ = "extension pointer is NULL.";
     return NULL;

@@ -125,7 +125,7 @@ const ExtensionMenuItem::List* ExtensionMenuManager::MenuItems(
   return NULL;
 }
 
-bool ExtensionMenuManager::AddContextItem(Extension* extension,
+bool ExtensionMenuManager::AddContextItem(const Extension* extension,
                                           ExtensionMenuItem* item) {
   const std::string& extension_id = item->extension_id();
   // The item must have a non-empty extension id, and not have already been
@@ -455,7 +455,7 @@ void ExtensionMenuManager::Observe(NotificationType type,
     NOTREACHED();
     return;
   }
-  Extension* extension = Details<Extension>(details).ptr();
+  const Extension* extension = Details<const Extension>(details).ptr();
   if (ContainsKey(context_items_, extension->id())) {
     RemoveAllContextItems(extension->id());
   }

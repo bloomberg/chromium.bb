@@ -600,7 +600,7 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     ExtensionsService* ext_service = profile_->GetExtensionsService();
     if (ext_service) {
-      Extension* extension = ext_service->GetExtensionByURL(origin);
+      const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension)
         return UTF8ToUTF16(extension->name());
     }

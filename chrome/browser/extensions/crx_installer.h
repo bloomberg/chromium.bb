@@ -120,13 +120,13 @@ class CrxInstaller
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.
-  bool AllowInstall(Extension* extension, std::string* error);
+  bool AllowInstall(const Extension* extension, std::string* error);
 
   // SandboxedExtensionUnpackerClient
   virtual void OnUnpackFailure(const std::string& error_message);
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
-                               Extension* extension);
+                               const Extension* extension);
 
   // Runs on the UI thread. Confirms with the user (via ExtensionInstallUI) that
   // it is OK to install this extension.
@@ -187,7 +187,7 @@ class CrxInstaller
 
   // The extension we're installing. We own this and either pass it off to
   // ExtensionsService on success, or delete it on failure.
-  scoped_refptr<Extension> extension_;
+  scoped_refptr<const Extension> extension_;
 
   // If non-empty, contains the current version of the extension we're
   // installing (for upgrades).

@@ -157,7 +157,8 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
   OnUnpackSuccess(extension->path(), extension->path(), extension);
 }
 
-bool CrxInstaller::AllowInstall(Extension* extension, std::string* error) {
+bool CrxInstaller::AllowInstall(const Extension* extension,
+                                std::string* error) {
   DCHECK(error);
 
   // We always allow themes and external installs.
@@ -239,7 +240,7 @@ void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
 
 void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                                    const FilePath& extension_dir,
-                                   Extension* extension) {
+                                   const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Note: We take ownership of |extension| and |temp_dir|.
@@ -282,7 +283,7 @@ void CrxInstaller::ConfirmInstall() {
   }
 
   GURL overlapping_url;
-  Extension* overlapping_extension =
+  const Extension* overlapping_extension =
       frontend_->GetExtensionByOverlappingWebExtent(extension_->web_extent());
   if (overlapping_extension) {
     ReportFailureFromUIThread(l10n_util::GetStringFUTF8(

@@ -288,7 +288,7 @@ RefCountedMemory* BrowserThemeProvider::GetRawData(int id) const {
   return data;
 }
 
-void BrowserThemeProvider::SetTheme(Extension* extension) {
+void BrowserThemeProvider::SetTheme(const Extension* extension) {
   // Clear our image cache.
   FreePlatformCaches();
 
@@ -557,7 +557,8 @@ void BrowserThemeProvider::LoadThemePrefs() {
       // theme is being migrated.
       ExtensionsService* service = profile_->GetExtensionsService();
       if (service) {
-        Extension* extension = service->GetExtensionById(current_id, false);
+        const Extension* extension =
+            service->GetExtensionById(current_id, false);
         if (extension) {
           DLOG(ERROR) << "Migrating theme";
           BuildFromExtension(extension);
@@ -573,13 +574,13 @@ void BrowserThemeProvider::LoadThemePrefs() {
   }
 }
 
-void BrowserThemeProvider::NotifyThemeChanged(Extension* extension) {
+void BrowserThemeProvider::NotifyThemeChanged(const Extension* extension) {
   VLOG(1) << "Sending BROWSER_THEME_CHANGED";
   // Redraw!
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::BROWSER_THEME_CHANGED,
                   Source<BrowserThemeProvider>(this),
-                  Details<Extension>(extension));
+                  Details<const Extension>(extension));
 #if defined(OS_MACOSX)
   NotifyPlatformThemeChanged();
 #endif  // OS_MACOSX
@@ -600,7 +601,7 @@ void BrowserThemeProvider::SaveThemeID(const std::string& id) {
   profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, id);
 }
 
-void BrowserThemeProvider::BuildFromExtension(Extension* extension) {
+void BrowserThemeProvider::BuildFromExtension(const Extension* extension) {
   scoped_refptr<BrowserThemePack> pack =
       BrowserThemePack::BuildFromExtension(extension);
   if (!pack.get()) {

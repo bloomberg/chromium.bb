@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
   UserActionObserver observer;
 
   ASSERT_TRUE(RunExtensionTest("metrics")) << message_;
-  Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
   observer.ValidateUserActions(extension,

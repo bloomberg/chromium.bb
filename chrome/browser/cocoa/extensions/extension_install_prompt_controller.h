@@ -49,7 +49,7 @@ class Profile;
 
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                 extension:(Extension*)extension
+                 extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
                       icon:(SkBitmap*)bitmap
                   warnings:(const std::vector<string16>&)warnings;

@@ -35,33 +35,34 @@ class ExtensionProcessManager : public NotificationObserver {
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
   // profile.
-  virtual ExtensionHost* CreateView(Extension* extension,
+  virtual ExtensionHost* CreateView(const Extension* extension,
                             const GURL& url,
                             Browser* browser,
                             ViewType::Type view_type);
   ExtensionHost* CreateView(const GURL& url,
                             Browser* browser,
                             ViewType::Type view_type);
-  ExtensionHost* CreatePopup(Extension* extension,
+  ExtensionHost* CreatePopup(const Extension* extension,
                              const GURL& url,
                              Browser* browser);
   ExtensionHost* CreatePopup(const GURL& url, Browser* browser);
-  ExtensionHost* CreateInfobar(Extension* extension,
+  ExtensionHost* CreateInfobar(const Extension* extension,
                                const GURL& url,
                                Browser* browser);
   ExtensionHost* CreateInfobar(const GURL& url,
                                Browser* browser);
 
   // Open the extension's options page.
-  void OpenOptionsPage(Extension* extension, Browser* browser);
+  void OpenOptionsPage(const Extension* extension, Browser* browser);
 
   // Creates a new UI-less extension instance.  Like CreateView, but not
   // displayed anywhere.
-  virtual void CreateBackgroundHost(Extension* extension, const GURL& url);
+  virtual void CreateBackgroundHost(const Extension* extension,
+                                    const GURL& url);
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
-  ExtensionHost* GetBackgroundHostForExtension(Extension* extension);
+  ExtensionHost* GetBackgroundHostForExtension(const Extension* extension);
 
   // Returns the SiteInstance that the given URL belongs to.
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url);

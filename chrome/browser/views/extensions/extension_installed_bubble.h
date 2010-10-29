@@ -44,13 +44,13 @@ class ExtensionInstalledBubble
   // the extension has loaded. |extension| is the installed extension. |browser|
   // is the browser window which will host the bubble. |icon| is the install
   // icon of the extension.
-  static void Show(Extension *extension, Browser *browser, SkBitmap icon);
+  static void Show(const Extension* extension, Browser *browser, SkBitmap icon);
 
  private:
   friend class base::RefCountedThreadSafe<ExtensionInstalledBubble>;
 
   // Private ctor. Registers a listener for EXTENSION_LOADED.
-  ExtensionInstalledBubble(Extension *extension, Browser *browser,
+  ExtensionInstalledBubble(const Extension* extension, Browser *browser,
                            SkBitmap icon);
 
   ~ExtensionInstalledBubble() {}
@@ -69,7 +69,7 @@ class ExtensionInstalledBubble
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return true; }
 
-  Extension* extension_;
+  const Extension* extension_;
   Browser* browser_;
   SkBitmap icon_;
   NotificationRegistrar registrar_;

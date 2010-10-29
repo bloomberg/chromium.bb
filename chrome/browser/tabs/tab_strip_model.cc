@@ -756,7 +756,7 @@ void TabStripModel::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_UNLOADED: {
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
         TabContents* contents = GetTabContentsAt(i);

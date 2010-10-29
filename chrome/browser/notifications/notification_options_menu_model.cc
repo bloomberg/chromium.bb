@@ -68,7 +68,7 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
     if (origin.SchemeIs(chrome::kExtensionScheme)) {
       ExtensionsService* ext_service =
           balloon_->profile()->GetExtensionsService();
-      Extension* extension = ext_service->GetExtensionByURL(origin);
+      const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension) {
         ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
         const std::string& id = extension->id();
@@ -126,7 +126,7 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
         service->GrantPermission(origin);
       break;
     case kToggleExtensionCommand: {
-      Extension* extension = ext_service->GetExtensionByURL(origin);
+      const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension) {
         ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
         const std::string& id = extension->id();

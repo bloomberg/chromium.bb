@@ -45,7 +45,8 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
       !extensions_service->is_ready())
     return NULL;
 
-  Extension* extension = extensions_service->GetExtensionByURL(opener_url);
+  const Extension* extension =
+      extensions_service->GetExtensionByURL(opener_url);
   if (!extension)
     extension = extensions_service->GetExtensionByWebExtent(opener_url);
   if (!extension ||

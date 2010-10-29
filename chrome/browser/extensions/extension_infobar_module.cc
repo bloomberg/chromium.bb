@@ -32,7 +32,7 @@ bool ShowInfoBarFunction::RunImpl() {
   std::string html_path;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kHtmlPath, &html_path));
 
-  Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   GURL url = extension->GetResourceURL(extension->url(), html_path);
 
   Browser* browser = NULL;

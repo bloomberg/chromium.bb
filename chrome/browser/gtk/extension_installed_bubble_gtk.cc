@@ -43,14 +43,14 @@ const int kContentBorder = 7;
 
 }  // namespace
 
-void ExtensionInstalledBubbleGtk::Show(Extension* extension, Browser* browser,
+void ExtensionInstalledBubbleGtk::Show(const Extension* extension,
+                                       Browser* browser,
                                        SkBitmap icon) {
   new ExtensionInstalledBubbleGtk(extension, browser, icon);
 }
 
-ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(Extension *extension,
-                                                         Browser *browser,
-                                                         SkBitmap icon)
+ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(
+    const Extension* extension, Browser *browser, SkBitmap icon)
     : extension_(extension),
       browser_(browser),
       icon_(icon),
@@ -83,7 +83,7 @@ void ExtensionInstalledBubbleGtk::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
   if (type == NotificationType::EXTENSION_LOADED) {
-    Extension* extension = Details<Extension>(details).ptr();
+    const Extension* extension = Details<const Extension>(details).ptr();
     if (extension == extension_) {
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
       MessageLoopForUI::current()->PostTask(FROM_HERE, NewRunnableMethod(this,

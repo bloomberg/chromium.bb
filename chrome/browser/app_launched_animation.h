@@ -18,7 +18,7 @@ class AppLaunchedAnimation {
  public:
   // Starts an animation of the |extension| being launched. The |rect| is the
   // rect of the app icon.
-  static void Show(Extension* extension, const gfx::Rect& rect);
+  static void Show(const Extension* extension, const gfx::Rect& rect);
 
  private:
   AppLaunchedAnimation() { }

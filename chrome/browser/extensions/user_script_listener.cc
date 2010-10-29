@@ -98,7 +98,7 @@ void UserScriptListener::ReplaceURLPatterns(const URLPatterns& patterns) {
   url_patterns_ = patterns;
 }
 
-void UserScriptListener::CollectURLPatterns(Extension* extension,
+void UserScriptListener::CollectURLPatterns(const Extension* extension,
                                             URLPatterns* patterns) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -118,12 +118,13 @@ void UserScriptListener::Observe(NotificationType type,
 
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED: {
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       if (extension->content_scripts().empty())
         return;  // no new patterns from this extension.
 
       URLPatterns new_patterns;
-      CollectURLPatterns(Details<Extension>(details).ptr(), &new_patterns);
+      CollectURLPatterns(Details<const Extension>(details).ptr(),
+                         &new_patterns);
       if (!new_patterns.empty()) {
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
@@ -134,7 +135,8 @@ void UserScriptListener::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_UNLOADED: {
-      Extension* unloaded_extension = Details<Extension>(details).ptr();
+      const Extension* unloaded_extension =
+          Details<const Extension>(details).ptr();
       if (unloaded_extension->content_scripts().empty())
         return;  // no patterns to delete for this extension.
 

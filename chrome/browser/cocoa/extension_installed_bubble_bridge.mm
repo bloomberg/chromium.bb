@@ -12,7 +12,7 @@
 
 void ExtensionInstalledBubbleCocoa::ShowExtensionInstalledBubble(
     gfx::NativeWindow window,
-    Extension* extension,
+    const Extension* extension,
     Browser* browser,
     SkBitmap icon) {
   // The controller is deallocated when the window is closed, so no need to

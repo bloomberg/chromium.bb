@@ -198,7 +198,7 @@ class ExtensionMenuManager : public NotificationObserver {
   // Adds a top-level menu item for an extension, requiring the |extension|
   // pointer so it can load the icon for the extension. Takes ownership of
   // |item|. Returns a boolean indicating success or failure.
-  bool AddContextItem(Extension* extension, ExtensionMenuItem* item);
+  bool AddContextItem(const Extension* extension, ExtensionMenuItem* item);
 
   // Add an item as a child of another item which has been previously added, and
   // takes ownership of |item|. Returns a boolean indicating success or failure.

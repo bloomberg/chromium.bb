@@ -587,7 +587,7 @@ RenderProcessHost* TabContents::GetRenderProcessHost() const {
   return render_manager_.current_host()->process();
 }
 
-void TabContents::SetExtensionApp(Extension* extension) {
+void TabContents::SetExtensionApp(const Extension* extension) {
   DCHECK(!extension || extension->GetFullLaunchURL().is_valid());
   extension_app_ = extension;
 
@@ -605,7 +605,7 @@ void TabContents::SetExtensionAppById(const std::string& extension_app_id) {
 
   ExtensionsService* extension_service = profile()->GetExtensionsService();
   if (extension_service && extension_service->is_ready()) {
-    Extension* extension =
+    const Extension* extension =
         extension_service->GetExtensionById(extension_app_id, false);
     if (extension)
       SetExtensionApp(extension);
@@ -3157,7 +3157,7 @@ void TabContents::Observe(NotificationType type,
   }
 }
 
-void TabContents::UpdateExtensionAppIcon(Extension* extension) {
+void TabContents::UpdateExtensionAppIcon(const Extension* extension) {
   extension_app_icon_.reset();
 
   if (extension) {
@@ -3174,12 +3174,12 @@ void TabContents::UpdateExtensionAppIcon(Extension* extension) {
   }
 }
 
-Extension* TabContents::GetExtensionContaining(const GURL& url) {
+const Extension* TabContents::GetExtensionContaining(const GURL& url) {
   ExtensionsService* extensions_service = profile()->GetExtensionsService();
   if (!extensions_service)
     return NULL;
 
-  Extension* extension = extensions_service->GetExtensionByURL(url);
+  const Extension* extension = extensions_service->GetExtensionByURL(url);
   return extension ?
       extension : extensions_service->GetExtensionByWebExtent(url);
 }

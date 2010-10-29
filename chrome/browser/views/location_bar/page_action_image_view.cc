@@ -26,8 +26,8 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL) {
-  Extension* extension = profile->GetExtensionsService()->GetExtensionById(
-      page_action->extension_id(), false);
+  const Extension* extension = profile->GetExtensionsService()->
+      GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
   // Load all the icons declared in the manifest. This is the contents of the
@@ -146,8 +146,8 @@ bool PageActionImageView::OnKeyPressed(const views::KeyEvent& e) {
 
 void PageActionImageView::ShowContextMenu(const gfx::Point& p,
                                           bool is_mouse_gesture) {
-  Extension* extension = profile_->GetExtensionsService()->GetExtensionById(
-      page_action()->extension_id(), false);
+  const Extension* extension = profile_->GetExtensionsService()->
+      GetExtensionById(page_action()->extension_id(), false);
   Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
       platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();
   context_menu_contents_ =

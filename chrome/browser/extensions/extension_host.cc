@@ -122,8 +122,10 @@ class ExtensionHost::ProcessCreationQueue {
 ////////////////
 // ExtensionHost
 
-ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
-                             const GURL& url, ViewType::Type host_type)
+ExtensionHost::ExtensionHost(const Extension* extension,
+                             SiteInstance* site_instance,
+                             const GURL& url,
+                             ViewType::Type host_type)
     : extension_(extension),
       profile_(site_instance->browsing_instance()->profile()),
       did_stop_loading_(false),
@@ -265,7 +267,7 @@ void ExtensionHost::Observe(NotificationType type,
       // sent. NULL it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are
       // present.
-      if (extension_ == Details<Extension>(details).ptr())
+      if (extension_ == Details<const Extension>(details).ptr())
         extension_ = NULL;
       break;
     default:

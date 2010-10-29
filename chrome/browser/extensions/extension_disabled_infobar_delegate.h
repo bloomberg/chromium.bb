@@ -13,10 +13,10 @@ class Profile;
 // Shows UI to inform the user that an extension was disabled after upgrading
 // to higher permissions.
 void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
-                             Extension* extension);
+                             const Extension* extension);
 
 // Shows the extension install dialog.
 void ShowExtensionDisabledDialog(ExtensionsService* service, Profile* profile,
-                                 Extension* extension);
+                                 const Extension* extension);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_INFOBAR_DELEGATE_H_

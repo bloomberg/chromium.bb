@@ -268,7 +268,7 @@ void TryUpdateClient(
       extension_data->merged_data();
   DcheckIsExtensionSpecificsValid(specifics);
   const std::string& id = specifics.id();
-  Extension* extension = extensions_service->GetExtensionById(id, true);
+  const Extension* extension = extensions_service->GetExtensionById(id, true);
   if (extension) {
     if (!IsExtensionValidAndSyncable(*extension, allowed_extension_types)) {
       LOG(DFATAL) << "TryUpdateClient() called for non-syncable extension "
@@ -446,7 +446,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
   DcheckIsExtensionSpecificsValid(server_data);
   ExtensionData extension_data =
       ExtensionData::FromData(ExtensionData::SERVER, server_data);
-  Extension* extension =
+  const Extension* extension =
       extensions_service->GetExtensionById(server_data.id(), true);
   if (extension) {
     if (!IsExtensionValidAndSyncable(
@@ -478,7 +478,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
 void RemoveFromClient(const ExtensionSyncTraits& traits,
                       const std::string& id,
                       ExtensionsService* extensions_service) {
-  Extension* extension = extensions_service->GetExtensionById(id, true);
+  const Extension* extension = extensions_service->GetExtensionById(id, true);
   if (extension) {
     if (IsExtensionValidAndSyncable(*extension,
                                     traits.allowed_extension_types)) {

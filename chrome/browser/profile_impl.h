@@ -72,17 +72,18 @@ class ProfileImpl : public Profile,
   virtual PersonalDataManager* GetPersonalDataManager();
   virtual FileSystemHostContext* GetFileSystemHostContext();
   virtual void InitThemes();
-  virtual void SetTheme(Extension* extension);
+  virtual void SetTheme(const Extension* extension);
   virtual void SetNativeTheme();
   virtual void ClearTheme();
-  virtual Extension* GetTheme();
+  virtual const Extension* GetTheme();
   virtual BrowserThemeProvider* GetThemeProvider();
   virtual bool HasCreatedDownloadManager() const;
   virtual URLRequestContextGetter* GetRequestContext();
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
-  virtual void RegisterExtensionWithRequestContexts(Extension* extension);
-  virtual void UnregisterExtensionWithRequestContexts(Extension* extension);
+  virtual void RegisterExtensionWithRequestContexts(const Extension* extension);
+  virtual void UnregisterExtensionWithRequestContexts(
+      const Extension* extension);
   virtual net::SSLConfigService* GetSSLConfigService();
   virtual HostContentSettingsMap* GetHostContentSettingsMap();
   virtual HostZoomMap* GetHostZoomMap();

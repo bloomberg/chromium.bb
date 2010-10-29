@@ -134,7 +134,7 @@ ImageLoadingTracker::~ImageLoadingTracker() {
     loader_->StopTracking();
 }
 
-void ImageLoadingTracker::LoadImage(Extension* extension,
+void ImageLoadingTracker::LoadImage(const Extension* extension,
                                     const ExtensionResource& resource,
                                     const gfx::Size& max_size,
                                     CacheParam cache) {
@@ -187,7 +187,7 @@ void ImageLoadingTracker::Observe(NotificationType type,
   DCHECK(type == NotificationType::EXTENSION_UNLOADED ||
          type == NotificationType::EXTENSION_UNLOADED_DISABLED);
 
-  Extension* extension = Details<Extension>(details).ptr();
+  const Extension* extension = Details<const Extension>(details).ptr();
 
   // Remove all entries in the load_map_ referencing the extension. This ensures
   // we don't attempt to cache the image when the load completes.

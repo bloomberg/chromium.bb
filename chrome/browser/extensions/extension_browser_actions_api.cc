@@ -26,7 +26,7 @@ bool BrowserActionFunction::RunImpl() {
   if (details_->HasKey("tabId"))
     EXTENSION_FUNCTION_VALIDATE(details_->GetInteger("tabId", &tab_id_));
 
-  Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   browser_action_ = extension->browser_action();
   if (!browser_action_) {
     error_ = kNoBrowserActionError;

@@ -15,7 +15,7 @@
 
 ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(Browser* browser,
                                                    TabContents* tab_contents,
-                                                   Extension* extension,
+                                                   const Extension* extension,
                                                    const GURL& url)
     : InfoBarDelegate(tab_contents),
       observer_(NULL),
@@ -78,7 +78,7 @@ void ExtensionInfoBarDelegate::Observe(NotificationType type,
       break;
     }
     case NotificationType::EXTENSION_UNLOADED: {
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       if (extension_ == extension)
         tab_contents_->RemoveInfoBar(this);
       break;

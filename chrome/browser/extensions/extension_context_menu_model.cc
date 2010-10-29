@@ -28,7 +28,7 @@ enum MenuEntries {
 };
 
 ExtensionContextMenuModel::ExtensionContextMenuModel(
-    Extension* extension,
+    const Extension* extension,
     Browser* browser,
     PopupDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
@@ -53,7 +53,7 @@ ExtensionContextMenuModel::~ExtensionContextMenuModel() {
 }
 
 void ExtensionContextMenuModel::InitCommonCommands() {
-  Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
 
   // The extension pointer should only be null if the extension was uninstalled,
   // and since the menu just opened, it should still be installed.
@@ -73,7 +73,7 @@ bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
-  Extension* extension = this->GetExtension();
+  const Extension* extension = this->GetExtension();
   if (!extension)
     return false;
 
@@ -99,7 +99,7 @@ bool ExtensionContextMenuModel::GetAcceleratorForCommandId(
 }
 
 void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
-  Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   if (!extension)
     return;
 
@@ -151,7 +151,7 @@ void ExtensionContextMenuModel::InstallUIAbort() {
   Release();
 }
 
-Extension* ExtensionContextMenuModel::GetExtension() const {
+const Extension* ExtensionContextMenuModel::GetExtension() const {
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   return extension_service->GetExtensionById(extension_id_, false);
 }

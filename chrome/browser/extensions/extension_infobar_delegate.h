@@ -28,10 +28,10 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   };
 
   ExtensionInfoBarDelegate(Browser* browser, TabContents* contents,
-                           Extension* extension, const GURL& url);
+                           const Extension* extension, const GURL& url);
   ~ExtensionInfoBarDelegate();
 
-  Extension* extension() { return extension_; }
+  const Extension* extension() { return extension_; }
   ExtensionHost* extension_host() { return extension_host_.get(); }
 
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
@@ -60,7 +60,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   // The observer monitoring when the delegate dies.
   DelegateObserver* observer_;
 
-  Extension* extension_;
+  const Extension* extension_;
 
   TabContents* tab_contents_;
 

@@ -44,7 +44,7 @@ bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
   return false;
 }
 
-std::string GetIconURL(Extension* extension, Extension::Icons icon,
+std::string GetIconURL(const Extension* extension, Extension::Icons icon,
                        const std::string& default_val) {
   GURL url = extension->GetIconURL(icon, ExtensionIconSet::MATCH_EXACTLY);
   if (!url.is_empty())
@@ -103,7 +103,7 @@ void AppLauncherHandler::Observe(NotificationType type,
 }
 
 // static
-void AppLauncherHandler::CreateAppInfo(Extension* extension,
+void AppLauncherHandler::CreateAppInfo(const Extension* extension,
                                        ExtensionPrefs* extension_prefs,
                                        DictionaryValue* value) {
   value->Clear();
@@ -202,7 +202,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   dom_ui_->tab_contents()->GetContainerBounds(&tab_contents_bounds);
   rect.Offset(tab_contents_bounds.origin());
 
-  Extension* extension =
+  const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
   Profile* profile = extensions_service_->profile();
@@ -231,7 +231,7 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
     return;
   }
 
-  Extension* extension =
+  const Extension* extension =
       extensions_service_->GetExtensionById(extension_id, false);
   DCHECK(extension);
 
@@ -240,7 +240,7 @@ void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
       static_cast<ExtensionPrefs::LaunchType>(launch_type));
 }
 
-void AppLauncherHandler::AnimateAppIcon(Extension* extension,
+void AppLauncherHandler::AnimateAppIcon(const Extension* extension,
                                         const gfx::Rect& rect) {
   // We make this check for the case of minimized windows, unit tests, etc.
   if (platform_util::IsVisible(dom_ui_->tab_contents()->GetNativeView()) &&
@@ -255,7 +255,7 @@ void AppLauncherHandler::AnimateAppIcon(Extension* extension,
 
 void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
   std::string extension_id = WideToUTF8(ExtractStringValue(args));
-  Extension* extension = extensions_service_->GetExtensionById(
+  const Extension* extension = extensions_service_->GetExtensionById(
       extension_id, false);
   if (!extension)
     return;
@@ -295,7 +295,7 @@ void AppLauncherHandler::InstallUIProceed() {
 
   // The extension can be uninstalled in another window while the UI was
   // showing. Do nothing in that case.
-  Extension* extension =
+  const Extension* extension =
       extensions_service_->GetExtensionById(extension_id_prompting_, true);
   if (!extension)
     return;

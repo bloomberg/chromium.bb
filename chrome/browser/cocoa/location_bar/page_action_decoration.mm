@@ -39,8 +39,8 @@ PageActionDecoration::PageActionDecoration(
       current_tab_id_(-1),
       preview_enabled_(false) {
   DCHECK(profile);
-  Extension* extension = profile->GetExtensionsService()->GetExtensionById(
-      page_action->extension_id(), false);
+  const Extension* extension = profile->GetExtensionsService()->
+      GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
   // Load all the icons declared in the manifest. This is the contents of the
@@ -219,7 +219,7 @@ NSMenu* PageActionDecoration::GetMenu() {
   ExtensionsService* service = profile_->GetExtensionsService();
   if (!service)
     return nil;
-  Extension* extension = service->GetExtensionById(
+  const Extension* extension = service->GetExtensionById(
       page_action_->extension_id(), false);
   DCHECK(extension);
   if (!extension)

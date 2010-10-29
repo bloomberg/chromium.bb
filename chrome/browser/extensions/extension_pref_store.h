@@ -39,13 +39,13 @@ class ExtensionPrefStore : public PrefStore,
   // Begins tracking the preference and value an extension wishes to set. This
   // must be called each time an extension API tries to set a preference.
   // The ExtensionPrefStore will take ownership of the |pref_value|.
-  virtual void InstallExtensionPref(Extension* extension,
+  virtual void InstallExtensionPref(const Extension* extension,
                                     const char* pref_path,
                                     Value* pref_value);
 
   // Removes an extension and all its preference settings from this PrefStore.
   // This must be called when an extension is uninstalled or disabled.
-  virtual void UninstallExtension(Extension* extension);
+  virtual void UninstallExtension(const Extension* extension);
 
   // PrefStore methods:
   virtual DictionaryValue* prefs() { return prefs_.get(); }
@@ -56,7 +56,7 @@ class ExtensionPrefStore : public PrefStore,
   // The nested pairs are <extension, <pref_path, pref_value> >. This is here,
   // rather than in (say) notification_type.h, to keep the dependency on
   // std::pair out of the many places that include notification_type.h.
-  typedef std::pair<Extension*, std::pair<const char*, Value*> >
+  typedef std::pair<const Extension*, std::pair<const char*, Value*> >
       ExtensionPrefDetails;
 
  protected:
@@ -95,10 +95,10 @@ class ExtensionPrefStore : public PrefStore,
 
   // Associates an extension with the prefs it sets. Owns the pref values.
   struct ExtensionPrefs {
-    ExtensionPrefs(Extension* extension, PrefValueMap* values);
+    ExtensionPrefs(const Extension* extension, PrefValueMap* values);
     ~ExtensionPrefs();
 
-    Extension* extension;
+    const Extension* extension;
     PrefValueMap* pref_values;
   };
 

@@ -25,7 +25,7 @@ using testing::Invoke;
 
 void OnUnpackSuccess(const FilePath& temp_dir,
                      const FilePath& extension_root,
-                     Extension* extension) {
+                     const Extension* extension) {
   // Don't delete temp_dir here, we need to do some post op checking.
 }
 
@@ -37,7 +37,7 @@ class MockSandboxedExtensionUnpackerClient
   MOCK_METHOD3(OnUnpackSuccess,
                void(const FilePath& temp_dir,
                     const FilePath& extension_root,
-                    Extension* extension));
+                    const Extension* extension));
 
   MOCK_METHOD1(OnUnpackFailure,
                void(const std::string& error));

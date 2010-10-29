@@ -51,7 +51,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   virtual SkBitmap* GetBitmapNamed(int id) const;
   virtual SkColor GetColor(int id) const;
   virtual bool HasCustomImage(int id) const;
-  virtual void SetTheme(Extension* extension);
+  virtual void SetTheme(const Extension* extension);
   virtual void UseDefaultTheme();
   virtual void SetNativeTheme();
   virtual bool UsingDefaultTheme();
@@ -153,7 +153,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
-  virtual void NotifyThemeChanged(Extension* extension);
+  virtual void NotifyThemeChanged(const Extension* extension);
 
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches();

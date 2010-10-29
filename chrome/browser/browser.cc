@@ -345,7 +345,7 @@ Browser* Browser::CreateForType(Type type, Profile* profile) {
 
 // static
 Browser* Browser::CreateForApp(const std::string& app_name,
-                               Extension* extension,
+                               const Extension* extension,
                                Profile* profile,
                                bool is_panel) {
   Browser::Type type = TYPE_APP;
@@ -499,7 +499,8 @@ TabContents* Browser::OpenApplication(Profile* profile,
 
   // If the extension with |app_id| could't be found, most likely because it
   // was uninstalled.
-  Extension* extension = extensions_service->GetExtensionById(app_id, false);
+  const Extension* extension =
+      extensions_service->GetExtensionById(app_id, false);
   if (!extension)
     return NULL;
 
@@ -510,7 +511,7 @@ TabContents* Browser::OpenApplication(Profile* profile,
 // static
 TabContents* Browser::OpenApplication(
     Profile* profile,
-    Extension* extension,
+    const Extension* extension,
     extension_misc::LaunchContainer container,
     TabContents* existing_tab) {
   TabContents* tab = NULL;
@@ -538,7 +539,7 @@ TabContents* Browser::OpenApplication(
 // static
 TabContents* Browser::OpenApplicationWindow(
     Profile* profile,
-    Extension* extension,
+    const Extension* extension,
     extension_misc::LaunchContainer container,
     const GURL& url_input) {
   GURL url;
@@ -589,7 +590,7 @@ TabContents* Browser::OpenApplicationWindow(Profile* profile, GURL& url) {
 
 // static
 TabContents* Browser::OpenApplicationTab(Profile* profile,
-                                         Extension* extension,
+                                         const Extension* extension,
                                          TabContents* existing_tab) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   TabContents* contents = NULL;
@@ -3273,7 +3274,7 @@ void Browser::Observe(NotificationType type,
       if (profile_->IsSameProfile(profile)) {
         ExtensionsService* service = profile->GetExtensionsService();
         DCHECK(service);
-        Extension* extension = Details<Extension>(details).ptr();
+        const Extension* extension = Details<const Extension>(details).ptr();
         if (service->extension_prefs()->DidExtensionEscalatePermissions(
                 extension->id()))
           ShowExtensionDisabledUI(service, profile_, extension);
@@ -3286,7 +3287,7 @@ void Browser::Observe(NotificationType type,
       window()->GetLocationBar()->UpdatePageActions();
 
       // Close any tabs from the unloaded extension.
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       TabStripModel* model = tab_handler_->GetTabStripModel();
       for (int i = model->count() - 1; i >= 0; --i) {
         TabContents* tc = model->GetTabContentsAt(i);
@@ -3322,7 +3323,7 @@ void Browser::Observe(NotificationType type,
       TabContents* tab_contents = GetSelectedTabContents();
       if (!tab_contents)
         break;
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       CrashedExtensionInfoBarDelegate* delegate = NULL;
       for (int i = 0; i < tab_contents->infobar_delegate_count();) {
         delegate = tab_contents->GetInfoBarDelegateAt(i)->

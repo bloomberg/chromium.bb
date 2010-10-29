@@ -107,7 +107,7 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
   // Gets the extension that called this function. This can return NULL for
   // async functions, for example if the extension is unloaded while the
   // function is running.
-  Extension* GetExtension();
+  const Extension* GetExtension();
 
   // Gets the "current" browser, if any.
   //

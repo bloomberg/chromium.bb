@@ -186,7 +186,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
       // If this extension keyword is disabled, make sure we don't add any
       // matches (including the synchronous one below).
       ExtensionsService* service = profile_->GetExtensionsService();
-      Extension* extension = service->GetExtensionById(
+      const Extension* extension = service->GetExtensionById(
           template_url->GetExtensionId(), false);
       bool enabled = extension && (!profile_->IsOffTheRecord() ||
                                    service->IsIncognitoEnabled(extension));

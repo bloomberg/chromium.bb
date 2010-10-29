@@ -3672,7 +3672,7 @@ void TestingAutomationProvider::GetThemeInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  Extension* theme = browser->profile()->GetTheme();
+  const Extension* theme = browser->profile()->GetTheme();
   if (theme) {
     return_value->SetString("name", theme->name());
     return_value->Set("images", theme->GetThemeImages()->DeepCopy());

@@ -15,7 +15,7 @@ AutomationResourceTrackerImpl::AutomationResourceTrackerImpl(
 AutomationResourceTrackerImpl::~AutomationResourceTrackerImpl() {
 }
 
-int AutomationResourceTrackerImpl::AddImpl(void* resource) {
+int AutomationResourceTrackerImpl::AddImpl(const void* resource) {
   if (ContainsResourceImpl(resource))
     return resource_to_handle_[resource];
 
@@ -30,7 +30,7 @@ int AutomationResourceTrackerImpl::AddImpl(void* resource) {
   return handle;
 }
 
-void AutomationResourceTrackerImpl::RemoveImpl(void* resource) {
+void AutomationResourceTrackerImpl::RemoveImpl(const void* resource) {
   if (!ContainsResourceImpl(resource))
     return;
 
@@ -48,7 +48,7 @@ int AutomationResourceTrackerImpl::GenerateHandle() {
   return ++handle;
 }
 
-bool AutomationResourceTrackerImpl::ContainsResourceImpl(void* resource) {
+bool AutomationResourceTrackerImpl::ContainsResourceImpl(const void* resource) {
   return resource_to_handle_.find(resource) != resource_to_handle_.end();
 }
 
@@ -56,7 +56,7 @@ bool AutomationResourceTrackerImpl::ContainsHandleImpl(int handle) {
   return handle_to_resource_.find(handle) != handle_to_resource_.end();
 }
 
-void* AutomationResourceTrackerImpl::GetResourceImpl(int handle) {
+const void* AutomationResourceTrackerImpl::GetResourceImpl(int handle) {
   HandleToResourceMap::const_iterator iter = handle_to_resource_.find(handle);
   if (iter == handle_to_resource_.end())
     return NULL;
@@ -64,7 +64,7 @@ void* AutomationResourceTrackerImpl::GetResourceImpl(int handle) {
   return iter->second;
 }
 
-int AutomationResourceTrackerImpl::GetHandleImpl(void* resource) {
+int AutomationResourceTrackerImpl::GetHandleImpl(const void* resource) {
   ResourceToHandleMap::const_iterator iter =
     resource_to_handle_.find(resource);
   if (iter == resource_to_handle_.end())
@@ -73,7 +73,8 @@ int AutomationResourceTrackerImpl::GetHandleImpl(void* resource) {
   return iter->second;
 }
 
-void AutomationResourceTrackerImpl::HandleCloseNotification(void* resource) {
+void AutomationResourceTrackerImpl::HandleCloseNotification(
+    const void* resource) {
   if (!ContainsResourceImpl(resource))
     return;
 

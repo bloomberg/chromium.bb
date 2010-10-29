@@ -23,7 +23,7 @@ class ExtensionIconManager : public ImageLoadingTracker::Observer {
   virtual ~ExtensionIconManager();
 
   // Start loading the icon for the given extension.
-  void LoadIcon(Extension* extension);
+  void LoadIcon(const Extension* extension);
 
   // This returns a bitmap of width/height kFavIconSize, loaded either from an
   // entry specified in the extension's 'icon' section of the manifest, or a

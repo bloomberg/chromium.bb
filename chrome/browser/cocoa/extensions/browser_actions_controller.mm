@@ -70,13 +70,13 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Creates and then adds the given extension's action button to the container
 // at the given index within the container. It does not affect the toolbar model
 // object since it is called when the toolbar model changes.
-- (void)createActionButtonForExtension:(Extension*)extension
+- (void)createActionButtonForExtension:(const Extension*)extension
                              withIndex:(NSUInteger)index;
 
 // Removes an action button for the given extension from the container. This
 // method also does not affect the underlying toolbar model since it is called
 // when the toolbar model changes.
-- (void)removeActionButtonForExtension:(Extension*)extension;
+- (void)removeActionButtonForExtension:(const Extension*)extension;
 
 // Useful in the case of a Browser Action being added/removed from the middle of
 // the container, this method repositions each button according to the current
@@ -90,7 +90,7 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // Returns the existing button with the given extension backing it; nil if it
 // cannot be found or the extension's ID is invalid.
-- (BrowserActionButton*)buttonForExtension:(Extension*)extension;
+- (BrowserActionButton*)buttonForExtension:(const Extension*)extension;
 
 // Returns the preferred width of the container given the number of visible
 // buttons |buttonCount|.
@@ -141,7 +141,7 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // Returns whether the given extension should be displayed. Only displays
 // incognito-enabled extensions in incognito mode. Otherwise returns YES.
-- (BOOL)shouldDisplayBrowserAction:(Extension*)extension;
+- (BOOL)shouldDisplayBrowserAction:(const Extension*)extension;
 
 // The reason |frame| is specified in these chevron functions is because the
 // container may be animating and the end frame of the animation should be
@@ -203,12 +203,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 
   // ExtensionToolbarModel::Observer implementation.
-  void BrowserActionAdded(Extension* extension, int index) {
+  void BrowserActionAdded(const Extension* extension, int index) {
     [owner_ createActionButtonForExtension:extension withIndex:index];
     [owner_ resizeContainerAndAnimate:NO];
   }
 
-  void BrowserActionRemoved(Extension* extension) {
+  void BrowserActionRemoved(const Extension* extension) {
     [owner_ removeActionButtonForExtension:extension];
     [owner_ resizeContainerAndAnimate:NO];
   }
@@ -342,7 +342,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 }
 
-- (NSView*)browserActionViewForExtension:(Extension*)extension {
+- (NSView*)browserActionViewForExtension:(const Extension*)extension {
   for (BrowserActionButton* button in [buttons_ allValues]) {
     if ([button extension] == extension)
       return button;
@@ -374,7 +374,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   return [self containerWidthWithButtonCount:savedButtonCount];
 }
 
-- (NSPoint)popupPointForBrowserAction:(Extension*)extension {
+- (NSPoint)popupPointForBrowserAction:(const Extension*)extension {
   if (!extension->browser_action())
     return NSZeroPoint;
 
@@ -446,7 +446,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [containerView_ resizeToWidth:width animate:NO];
 }
 
-- (void)createActionButtonForExtension:(Extension*)extension
+- (void)createActionButtonForExtension:(const Extension*)extension
                              withIndex:(NSUInteger)index {
   if (!extension->browser_action())
     return;
@@ -491,7 +491,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   [containerView_ setNeedsDisplay:YES];
 }
 
-- (void)removeActionButtonForExtension:(Extension*)extension {
+- (void)removeActionButtonForExtension:(const Extension*)extension {
   if (!extension->browser_action())
     return;
 
@@ -555,7 +555,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 }
 
-- (BrowserActionButton*)buttonForExtension:(Extension*)extension {
+- (BrowserActionButton*)buttonForExtension:(const Extension*)extension {
   NSString* extensionId = base::SysUTF8ToNSString(extension->id());
   DCHECK(extensionId);
   if (!extensionId)
@@ -744,7 +744,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 }
 
-- (BOOL)shouldDisplayBrowserAction:(Extension*)extension {
+- (BOOL)shouldDisplayBrowserAction:(const Extension*)extension {
   // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
           profile_->GetExtensionsService()->IsIncognitoEnabled(extension));
@@ -854,7 +854,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   if (profile_->IsOffTheRecord())
     index = toolbarModel_->IncognitoIndexToOriginal(index);
   if (index < toolbarModel_->size()) {
-    Extension* extension = toolbarModel_->GetExtensionByIndex(index);
+    const Extension* extension = toolbarModel_->GetExtensionByIndex(index);
     return [buttons_ objectForKey:base::SysUTF8ToNSString(extension->id())];
   }
   return nil;

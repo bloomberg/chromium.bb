@@ -88,7 +88,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 - (void)resizeContainerAndAnimate:(BOOL)animate;
 
 // Returns the NSView for the action button associated with an extension.
-- (NSView*)browserActionViewForExtension:(Extension*)extension;
+- (NSView*)browserActionViewForExtension:(const Extension*)extension;
 
 // Returns the saved width determined by the number of shown Browser Actions
 // preference property. If no preference is found, then the width for the
@@ -98,7 +98,7 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // Returns where the popup arrow should point to for a given Browser Action. If
 // it is passed an extension that is not a Browser Action, then it will return
 // NSZeroPoint.
-- (NSPoint)popupPointForBrowserAction:(Extension*)extension;
+- (NSPoint)popupPointForBrowserAction:(const Extension*)extension;
 
 // Returns whether the chevron button is currently hidden or in the process of
 // being hidden (fading out). Will return NO if it is not hidden or is in the

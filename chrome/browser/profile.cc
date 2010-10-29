@@ -335,7 +335,7 @@ class OffTheRecordProfileImpl : public Profile,
     profile_->InitThemes();
   }
 
-  virtual void SetTheme(Extension* extension) {
+  virtual void SetTheme(const Extension* extension) {
     profile_->SetTheme(extension);
   }
 
@@ -347,7 +347,7 @@ class OffTheRecordProfileImpl : public Profile,
     profile_->ClearTheme();
   }
 
-  virtual Extension* GetTheme() {
+  virtual const Extension* GetTheme() {
     return profile_->GetTheme();
   }
 

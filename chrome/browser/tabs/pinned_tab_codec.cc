@@ -43,7 +43,7 @@ static void EncodePinnedTab(TabStripModel* model,
 
   TabContents* tab_contents = model->GetTabContentsAt(index);
   if (model->IsAppTab(index)) {
-    Extension* extension = tab_contents->extension_app();
+    const Extension* extension = tab_contents->extension_app();
     DCHECK(extension);
     value->SetString(kAppID, extension->id());
     // For apps we use the launch url. We do this for the following reason:

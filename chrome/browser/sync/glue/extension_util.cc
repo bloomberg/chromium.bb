@@ -232,7 +232,7 @@ bool IsExtensionOutdated(const Extension& extension,
 
 void SetExtensionProperties(
     const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionsService* extensions_service, Extension* extension) {
+    ExtensionsService* extensions_service, const Extension* extension) {
   DcheckIsExtensionSpecificsValid(specifics);
   CHECK(extensions_service);
   CHECK(extension);

@@ -63,7 +63,7 @@ class ExtensionPrefs {
   void SetToolbarOrder(const std::vector<std::string>& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
-  void OnExtensionInstalled(Extension* extension,
+  void OnExtensionInstalled(const Extension* extension,
                             Extension::State initial_state,
                             bool initial_incognito_enabled);
 
@@ -76,14 +76,14 @@ class ExtensionPrefs {
   Extension::State GetExtensionState(const std::string& extension_id);
 
   // Called to change the extension's state when it is enabled/disabled.
-  void SetExtensionState(Extension* extension, Extension::State);
+  void SetExtensionState(const Extension* extension, Extension::State);
 
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id);
 
   // If |did_escalate| is true, the preferences for |extension| will be set to
   // require the install warning when the user tries to enable.
-  void SetDidExtensionEscalatePermissions(Extension* extension,
+  void SetDidExtensionEscalatePermissions(const Extension* extension,
                                           bool did_escalate);
 
   // Returns the version string for the currently installed extension, or
@@ -92,7 +92,7 @@ class ExtensionPrefs {
 
   // Re-writes the extension manifest into the prefs.
   // Called to change the extension's manifest when it's re-localized.
-  void UpdateManifest(Extension* extension);
+  void UpdateManifest(const Extension* extension);
 
   // Returns extension path based on extension ID, or empty FilePath on error.
   FilePath GetExtensionPath(const std::string& extension_id);

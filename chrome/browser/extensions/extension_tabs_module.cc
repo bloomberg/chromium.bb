@@ -65,7 +65,7 @@ static bool GetTabById(int tab_id, Profile* profile,
 // but because the api shipped with urls resolved relative to their extension
 // base, we decided it wasn't worth breaking existing extensions to fix.
 static GURL ResolvePossiblyRelativeURL(std::string url_string,
-                                       Extension* extension);
+                                       const Extension* extension);
 
 // Return the type name for a browser window type.
 static std::string GetWindowTypeText(Browser::Type type);
@@ -705,7 +705,7 @@ bool UpdateTabFunction::RunImpl() {
     // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
     // we need to check host permissions before allowing them.
     if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-      Extension* extension = GetExtension();
+      const Extension* extension = GetExtension();
       const std::vector<URLPattern> host_permissions =
           extension->host_permissions();
       if (!Extension::CanExecuteScriptOnPage(
@@ -1149,7 +1149,7 @@ static std::string GetWindowTypeText(Browser::Type type) {
 }
 
 static GURL ResolvePossiblyRelativeURL(std::string url_string,
-                                       Extension* extension) {
+                                       const Extension* extension) {
   GURL url = GURL(url_string);
   if (!url.is_valid())
     url = extension->GetResourceURL(url_string);

@@ -17,7 +17,7 @@
 namespace browser_sync {
 
 namespace {
-std::string GetThemeId(Extension* current_theme) {
+std::string GetThemeId(const Extension* current_theme) {
   if (current_theme) {
     DCHECK(current_theme->is_theme());
   }
@@ -39,10 +39,10 @@ void ThemeChangeProcessor::Observe(NotificationType type,
                                    const NotificationDetails& details) {
   DCHECK(running());
   DCHECK(profile_);
-  Extension* extension = Details<Extension>(details).ptr();
+  const Extension* extension = Details<const Extension>(details).ptr();
   std::string current_or_future_theme_id =
       profile_->GetThemeProvider()->GetThemeID();
-  Extension* current_theme = profile_->GetTheme();
+  const Extension* current_theme = profile_->GetTheme();
   switch (type.value) {
     case NotificationType::BROWSER_THEME_CHANGED:
       // We pay attention to this notification only when it signifies

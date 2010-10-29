@@ -69,7 +69,7 @@ const int kAnimationWaitMaxRetry = 10;
 class InstalledBubbleContent : public views::View,
                                public views::ButtonListener {
  public:
-  InstalledBubbleContent(Extension* extension,
+  InstalledBubbleContent(const Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
                          SkBitmap* icon)
       : info_bubble_(NULL),
@@ -241,12 +241,13 @@ class InstalledBubbleContent : public views::View,
   DISALLOW_COPY_AND_ASSIGN(InstalledBubbleContent);
 };
 
-void ExtensionInstalledBubble::Show(Extension *extension, Browser *browser,
+void ExtensionInstalledBubble::Show(const Extension* extension,
+                                    Browser *browser,
                                     SkBitmap icon) {
   new ExtensionInstalledBubble(extension, browser, icon);
 }
 
-ExtensionInstalledBubble::ExtensionInstalledBubble(Extension *extension,
+ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
                                                    Browser *browser,
                                                    SkBitmap icon)
     : extension_(extension),
@@ -281,7 +282,7 @@ void ExtensionInstalledBubble::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
   if (type == NotificationType::EXTENSION_LOADED) {
-    Extension* extension = Details<Extension>(details).ptr();
+    const Extension* extension = Details<const Extension>(details).ptr();
     if (extension == extension_) {
       animation_wait_retries_ = 0;
       // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.

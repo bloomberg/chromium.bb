@@ -299,7 +299,7 @@ int Extension::GetPermissionMessageId(const std::string& permission) {
   return ExtensionConfig::GetSingleton()->GetPermissionMessageId(permission);
 }
 
-std::vector<string16> Extension::GetPermissionMessages() {
+std::vector<string16> Extension::GetPermissionMessages() const {
   std::vector<string16> messages;
   if (!plugins().empty()) {
     messages.push_back(
@@ -317,7 +317,7 @@ std::vector<string16> Extension::GetPermissionMessages() {
   return messages;
 }
 
-std::set<string16> Extension::GetSimplePermissionMessages() {
+std::set<string16> Extension::GetSimplePermissionMessages() const {
   std::set<string16> messages;
   std::set<std::string>::const_iterator i;
   for (i = api_permissions().begin(); i != api_permissions().end(); ++i) {
@@ -328,7 +328,7 @@ std::set<string16> Extension::GetSimplePermissionMessages() {
   return messages;
 }
 
-std::vector<std::string> Extension::GetDistinctHosts() {
+std::vector<std::string> Extension::GetDistinctHosts() const {
   return GetDistinctHosts(GetEffectiveHostPermissions().patterns());
 }
 
@@ -359,7 +359,7 @@ std::vector<std::string> Extension::GetDistinctHosts(
   return distinct_hosts;
 }
 
-string16 Extension::GetHostPermissionMessage() {
+string16 Extension::GetHostPermissionMessage() const {
   if (HasEffectiveAccessToAllHosts())
     return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS);
 
@@ -447,7 +447,7 @@ std::string Extension::GenerateIdForPath(const FilePath& path) {
   return id;
 }
 
-Extension::HistogramType Extension::GetHistogramType() {
+Extension::HistogramType Extension::GetHistogramType() const {
   if (is_theme())
     return TYPE_THEME;
   if (converted_from_user_script())
@@ -782,7 +782,7 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   return result.release();
 }
 
-bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
+bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) const {
   for (DictionaryValue::key_iterator key = source.begin_keys();
        key != source.end_keys(); ++key) {
     if (!IsBaseCrxKey(*key) && *key != keys::kTheme)
@@ -1019,7 +1019,8 @@ Extension::Extension(const FilePath& path, Location location)
 Extension::~Extension() {
 }
 
-ExtensionResource Extension::GetResource(const std::string& relative_path) {
+ExtensionResource Extension::GetResource(
+    const std::string& relative_path) const {
 #if defined(OS_POSIX)
   FilePath relative_file_path(relative_path);
 #elif defined(OS_WIN)
@@ -1028,7 +1029,8 @@ ExtensionResource Extension::GetResource(const std::string& relative_path) {
   return ExtensionResource(id(), path(), relative_file_path);
 }
 
-ExtensionResource Extension::GetResource(const FilePath& relative_file_path) {
+ExtensionResource Extension::GetResource(
+    const FilePath& relative_file_path) const {
   return ExtensionResource(id(), path(), relative_file_path);
 }
 
@@ -1108,8 +1110,8 @@ bool Extension::FormatPEMForFileOutput(const std::string input,
 // extensions that require less permissions than the current version, but then
 // we don't silently allow them to go back. In order to fix this, we would need
 // to remember the max set of permissions we ever granted a single extension.
-bool Extension::IsPrivilegeIncrease(Extension* old_extension,
-                                    Extension* new_extension) {
+bool Extension::IsPrivilegeIncrease(const Extension* old_extension,
+                                    const Extension* new_extension) {
   // If the old extension had native code access, we don't need to go any
   // further. Things can't get any worse.
   if (old_extension->plugins().size() > 0)
@@ -1156,7 +1158,7 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
 }
 
 // static
-void Extension::DecodeIcon(Extension* extension,
+void Extension::DecodeIcon(const Extension* extension,
                            Icons icon_size,
                            scoped_ptr<SkBitmap>* result) {
   FilePath icon_path = extension->GetIconResource(
@@ -1899,7 +1901,7 @@ GURL Extension::GetHomepageURL() const {
   return url;
 }
 
-std::set<FilePath> Extension::GetBrowserImages() {
+std::set<FilePath> Extension::GetBrowserImages() const {
   std::set<FilePath> image_paths;
   // TODO(viettrungluu): These |FilePath::FromWStringHack(UTF8ToWide())|
   // indicate that we're doing something wrong.
@@ -1949,12 +1951,12 @@ GURL Extension::GetFullLaunchURL() const {
     return GURL(launch_web_url());
 }
 
-bool Extension::GetBackgroundPageReady() {
+bool Extension::GetBackgroundPageReady() const {
   return (GetRuntimeData()->background_page_ready ||
           background_url().is_empty());
 }
 
-void Extension::SetBackgroundPageReady() {
+void Extension::SetBackgroundPageReady() const {
   DCHECK(!background_url().is_empty());
   GetRuntimeData()->background_page_ready = true;
   NotificationService::current()->Notify(
@@ -1982,7 +1984,7 @@ void Extension::SetScriptingWhitelist(
 
 void Extension::SetCachedImage(const ExtensionResource& source,
                                const SkBitmap& image,
-                               const gfx::Size& original_size) {
+                               const gfx::Size& original_size) const {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
   const FilePath& path = source.relative_path();
@@ -1997,14 +1999,14 @@ void Extension::SetCachedImage(const ExtensionResource& source,
 }
 
 bool Extension::HasCachedImage(const ExtensionResource& source,
-                               const gfx::Size& max_size) {
+                               const gfx::Size& max_size) const {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
   return GetCachedImageImpl(source, max_size) != NULL;
 }
 
 SkBitmap Extension::GetCachedImage(const ExtensionResource& source,
-                                   const gfx::Size& max_size) {
+                                   const gfx::Size& max_size) const {
   DCHECK(source.extension_root() == path());  // The resource must come from
                                               // this extension.
   SkBitmap* image = GetCachedImageImpl(source, max_size);
@@ -2012,7 +2014,7 @@ SkBitmap Extension::GetCachedImage(const ExtensionResource& source,
 }
 
 SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
-                                        const gfx::Size& max_size) {
+                                        const gfx::Size& max_size) const {
   const FilePath& path = source.relative_path();
 
   // Look for exact size match.
@@ -2036,14 +2038,15 @@ SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
 }
 
 ExtensionResource Extension::GetIconResource(
-    int size, ExtensionIconSet::MatchType match_type) {
+    int size, ExtensionIconSet::MatchType match_type) const {
   std::string path = icons().Get(size, match_type);
   if (path.empty())
     return ExtensionResource();
   return GetResource(path);
 }
 
-GURL Extension::GetIconURL(int size, ExtensionIconSet::MatchType match_type) {
+GURL Extension::GetIconURL(int size,
+                           ExtensionIconSet::MatchType match_type) const {
   std::string path = icons().Get(size, match_type);
   if (path.empty())
     return GURL();
@@ -2064,7 +2067,7 @@ bool Extension::CanSpecifyHostPermission(const URLPattern& pattern) const {
   return true;
 }
 
-// static.
+// static
 bool Extension::HasApiPermission(
     const std::set<std::string>& api_permissions,
     const std::string& function_name) {
@@ -2204,7 +2207,7 @@ bool Extension::HasEffectiveAccessToAllHosts() const {
   return false;
 }
 
-bool Extension::IsAPIPermission(const std::string& str) {
+bool Extension::IsAPIPermission(const std::string& str) const {
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
     if (str == Extension::kPermissions[i].name) {
       // Only allow the experimental API permission if the command line

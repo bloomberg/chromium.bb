@@ -36,7 +36,7 @@ class ExtensionView : public views::NativeViewHost {
 
   ExtensionHost* host() const { return host_; }
   Browser* browser() const { return browser_; }
-  Extension* extension() const;
+  const Extension* extension() const;
   RenderViewHost* render_view_host() const;
   void DidStopLoading();
   void SetIsClipped(bool is_clipped);

@@ -258,7 +258,7 @@ int AutomationProvider::GetIndexForNavigationController(
   return parent->GetIndexOfController(controller);
 }
 
-int AutomationProvider::AddExtension(Extension* extension) {
+int AutomationProvider::AddExtension(const Extension* extension) {
   DCHECK(extension);
   return extension_tracker_->Add(extension);
 }
@@ -299,12 +299,13 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
   return dl_item_value;
 }
 
-Extension* AutomationProvider::GetExtension(int extension_handle) {
+const Extension* AutomationProvider::GetExtension(int extension_handle) {
   return extension_tracker_->GetResource(extension_handle);
 }
 
-Extension* AutomationProvider::GetEnabledExtension(int extension_handle) {
-  Extension* extension = extension_tracker_->GetResource(extension_handle);
+const Extension* AutomationProvider::GetEnabledExtension(int extension_handle) {
+  const Extension* extension =
+      extension_tracker_->GetResource(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   if (extension && service &&
       service->GetExtensionById(extension->id(), false))
@@ -312,8 +313,10 @@ Extension* AutomationProvider::GetEnabledExtension(int extension_handle) {
   return NULL;
 }
 
-Extension* AutomationProvider::GetDisabledExtension(int extension_handle) {
-  Extension* extension = extension_tracker_->GetResource(extension_handle);
+const Extension* AutomationProvider::GetDisabledExtension(
+    int extension_handle) {
+  const Extension* extension =
+      extension_tracker_->GetResource(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   if (extension && service &&
       service->GetExtensionById(extension->id(), true) &&
@@ -799,7 +802,7 @@ void AutomationProvider::GetEnabledExtensions(
     const ExtensionList* extensions = service->extensions();
     DCHECK(extensions);
     for (size_t i = 0; i < extensions->size(); ++i) {
-      Extension* extension = (*extensions)[i];
+      const Extension* extension = (*extensions)[i];
       DCHECK(extension);
       if (extension->location() == Extension::INTERNAL ||
           extension->location() == Extension::LOAD) {
@@ -848,7 +851,7 @@ void AutomationProvider::InstallExtensionAndGetHandle(
 void AutomationProvider::UninstallExtension(int extension_handle,
                                             bool* success) {
   *success = false;
-  Extension* extension = GetExtension(extension_handle);
+  const Extension* extension = GetExtension(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   if (extension && service) {
     ExtensionUnloadNotificationObserver observer;
@@ -861,7 +864,7 @@ void AutomationProvider::UninstallExtension(int extension_handle,
 
 void AutomationProvider::EnableExtension(int extension_handle,
                                          IPC::Message* reply_message) {
-  Extension* extension = GetDisabledExtension(extension_handle);
+  const Extension* extension = GetDisabledExtension(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
   // Only enable if this extension is disabled.
@@ -882,7 +885,7 @@ void AutomationProvider::EnableExtension(int extension_handle,
 void AutomationProvider::DisableExtension(int extension_handle,
                                           bool* success) {
   *success = false;
-  Extension* extension = GetEnabledExtension(extension_handle);
+  const Extension* extension = GetEnabledExtension(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   if (extension && service) {
     ExtensionUnloadNotificationObserver observer;
@@ -897,7 +900,7 @@ void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
     int extension_handle, int browser_handle,
     IPC::Message* reply_message) {
   bool success = false;
-  Extension* extension = GetEnabledExtension(extension_handle);
+  const Extension* extension = GetEnabledExtension(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   ExtensionMessageService* message_service =
       profile_->GetExtensionMessageService();
@@ -922,7 +925,7 @@ void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
 void AutomationProvider::MoveExtensionBrowserAction(
     int extension_handle, int index, bool* success) {
   *success = false;
-  Extension* extension = GetEnabledExtension(extension_handle);
+  const Extension* extension = GetEnabledExtension(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   if (extension && service) {
     ExtensionToolbarModel* toolbar = service->toolbar_model();
@@ -943,7 +946,7 @@ void AutomationProvider::GetExtensionProperty(
     bool* success,
     std::string* value) {
   *success = false;
-  Extension* extension = GetExtension(extension_handle);
+  const Extension* extension = GetExtension(extension_handle);
   ExtensionsService* service = profile_->GetExtensionsService();
   if (extension && service) {
     ExtensionToolbarModel* toolbar = service->toolbar_model();

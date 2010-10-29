@@ -24,8 +24,7 @@ class ExtensionGalleryInstallApiTest : public ExtensionApiTest {
 #else
 #define MAYBE_InstallAndUninstall InstallAndUninstall
 #endif
-IN_PROC_BROWSER_TEST_F(ExtensionGalleryInstallApiTest,
-                       MAYBE_InstallAndUninstall) {
+IN_PROC_BROWSER_TEST_F(ExtensionGalleryInstallApiTest, InstallAndUninstall) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 

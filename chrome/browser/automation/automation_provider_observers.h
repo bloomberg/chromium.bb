@@ -273,7 +273,7 @@ class ExtensionReadyNotificationObserver : public NotificationObserver {
   scoped_refptr<AutomationProvider> automation_;
   int id_;
   IPC::Message* reply_message_;
-  Extension* extension_;
+  const Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReadyNotificationObserver);
 };

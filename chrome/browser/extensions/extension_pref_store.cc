@@ -25,7 +25,7 @@ ExtensionPrefStore::~ExtensionPrefStore() {
   notification_registrar_.RemoveAll();
 }
 
-void ExtensionPrefStore::InstallExtensionPref(Extension* extension,
+void ExtensionPrefStore::InstallExtensionPref(const Extension* extension,
                                               const char* new_pref_path,
                                               Value* new_pref_value) {
   ExtensionStack::iterator i;
@@ -62,7 +62,7 @@ void ExtensionPrefStore::InstallExtensionPref(Extension* extension,
   UpdateOnePref(new_pref_path);
 }
 
-void ExtensionPrefStore::UninstallExtension(Extension* extension) {
+void ExtensionPrefStore::UninstallExtension(const Extension* extension) {
   // Remove this extension from the stack.
   for (ExtensionStack::iterator i = extension_stack_.begin();
       i != extension_stack_.end(); ++i) {
@@ -178,7 +178,7 @@ void ExtensionPrefStore::Observe(NotificationType type,
     }
     case NotificationType::EXTENSION_UNLOADED: {
       Profile* extension_profile = Source<Profile>(source).ptr();
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       // The ExtensionPrefStore for the local state watches all profiles.
       if (profile_ == NULL || profile_ == extension_profile)
         UninstallExtension(extension);
@@ -190,7 +190,7 @@ void ExtensionPrefStore::Observe(NotificationType type,
   }
 }
 
-ExtensionPrefStore::ExtensionPrefs::ExtensionPrefs(Extension* extension,
+ExtensionPrefStore::ExtensionPrefs::ExtensionPrefs(const Extension* extension,
     PrefValueMap* values) : extension(extension), pref_values(values) {}
 
 ExtensionPrefStore::ExtensionPrefs::~ExtensionPrefs() {

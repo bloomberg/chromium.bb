@@ -144,16 +144,17 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // If the given extension has an omnibox keyword, adds a TemplateURL for that
   // keyword. Only 1 keyword is allowed for a given extension. If the keyword
   // already exists for this extension, does nothing.
-  void RegisterExtensionKeyword(Extension* extension);
+  void RegisterExtensionKeyword(const Extension* extension);
 
   // Removes the TemplateURL containing the keyword for the given extension,
   // if any.
-  void UnregisterExtensionKeyword(Extension* extension);
+  void UnregisterExtensionKeyword(const Extension* extension);
 
   // Returns the TemplateURL associated with the keyword for this extension.
   // This works by checking the extension ID, not the keyword, so it will work
   // even if the user changed the keyword.
-  const TemplateURL* GetTemplateURLForExtension(Extension* extension) const;
+  const TemplateURL* GetTemplateURLForExtension(
+      const Extension* extension) const;
 
   // Returns the set of URLs describing the keywords. The elements are owned
   // by TemplateURLModel and should not be deleted.

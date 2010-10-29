@@ -208,14 +208,14 @@ class TabContents : public PageNavigator,
   // NOTE: this should only be manipulated before the tab is added to a browser.
   // TODO(sky): resolve if this is the right way to identify an app tab. If it
   // is, than this should be passed in the constructor.
-  void SetExtensionApp(Extension* extension);
+  void SetExtensionApp(const Extension* extension);
 
   // Convenience for setting the app extension by id. This does nothing if
   // |extension_app_id| is empty, or an extension can't be found given the
   // specified id.
   void SetExtensionAppById(const std::string& extension_app_id);
 
-  Extension* extension_app() const { return extension_app_; }
+  const Extension* extension_app() const { return extension_app_; }
   bool is_app() const { return extension_app_ != NULL; }
 
   // If an app extension has been explicitly set for this TabContents its icon
@@ -1050,11 +1050,11 @@ class TabContents : public PageNavigator,
   // App extensions related methods:
 
   // Returns the first extension whose extent contains |url|.
-  Extension* GetExtensionContaining(const GURL& url);
+  const Extension* GetExtensionContaining(const GURL& url);
 
   // Resets app_icon_ and if |extension| is non-null creates a new
   // ImageLoadingTracker to load the extension's image.
-  void UpdateExtensionAppIcon(Extension* extension);
+  void UpdateExtensionAppIcon(const Extension* extension);
 
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
@@ -1233,7 +1233,7 @@ class TabContents : public PageNavigator,
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
-  Extension* extension_app_;
+  const Extension* extension_app_;
 
   // Icon for extension_app_ (if non-null) or extension_for_current_page_.
   SkBitmap extension_app_icon_;

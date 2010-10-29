@@ -319,7 +319,7 @@ void GtkThemeProvider::InitThemesFor(NotificationObserver* observer) {
                     NotificationService::NoDetails());
 }
 
-void GtkThemeProvider::SetTheme(Extension* extension) {
+void GtkThemeProvider::SetTheme(const Extension* extension) {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
   LoadDefaultValues();
   BrowserThemeProvider::SetTheme(extension);
@@ -580,7 +580,7 @@ void GtkThemeProvider::LoadThemePrefs() {
   RebuildMenuIconSets();
 }
 
-void GtkThemeProvider::NotifyThemeChanged(Extension* extension) {
+void GtkThemeProvider::NotifyThemeChanged(const Extension* extension) {
   BrowserThemeProvider::NotifyThemeChanged(extension);
 
   // Notify all GtkChromeButtons of their new rendering mode:

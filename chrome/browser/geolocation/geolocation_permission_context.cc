@@ -362,7 +362,7 @@ void GeolocationPermissionContext::RequestGeolocationPermission(
 
   ExtensionsService* extensions = profile_->GetExtensionsService();
   if (extensions) {
-    Extension* ext = extensions->GetExtensionByURL(requesting_frame);
+    const Extension* ext = extensions->GetExtensionByURL(requesting_frame);
     if (!ext)
       ext = extensions->GetExtensionByWebExtent(requesting_frame);
     if (ext && ext->HasApiPermission(Extension::kGeolocationPermission)) {

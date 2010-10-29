@@ -201,10 +201,10 @@ class TestingProfile : public Profile {
   virtual BrowserSignin* GetBrowserSignin() { return NULL; }
   virtual bool HasCreatedDownloadManager() const { return false; }
   virtual void InitThemes();
-  virtual void SetTheme(Extension* extension) {}
+  virtual void SetTheme(const Extension* extension) {}
   virtual void SetNativeTheme() {}
   virtual void ClearTheme() {}
-  virtual Extension* GetTheme() { return NULL; }
+  virtual const Extension* GetTheme() { return NULL; }
   virtual BrowserThemeProvider* GetThemeProvider() {
     InitThemes();
     return theme_provider_.get();

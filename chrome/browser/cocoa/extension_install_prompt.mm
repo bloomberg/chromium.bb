@@ -20,7 +20,10 @@
 class Profile;
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    Profile* profile,
+    Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
     ExtensionInstallUI::PromptType type) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 

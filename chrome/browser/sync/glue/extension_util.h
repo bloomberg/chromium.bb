@@ -132,7 +132,7 @@ bool IsExtensionOutdated(const Extension& extension,
 // valid.
 void SetExtensionProperties(
     const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionsService* extensions_service, Extension* extension);
+    ExtensionsService* extensions_service, const Extension* extension);
 
 // Merge |specifics| into |merged_specifics|.  Both must be valid and
 // have the same ID.  The merge policy is currently to copy the

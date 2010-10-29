@@ -58,8 +58,7 @@
 
 namespace {
 
-bool ShouldShowExtension(Extension* extension) {
-
+bool ShouldShowExtension(const Extension* extension) {
   // Don't show themes since this page's UI isn't really useful for themes.
   if (extension->is_theme())
     return false;
@@ -407,7 +406,7 @@ void ExtensionsDOMHandler::OnIconsLoaded(DictionaryValue* json) {
 }
 
 ExtensionResource ExtensionsDOMHandler::PickExtensionIcon(
-    Extension* extension) {
+    const Extension* extension) {
   return extension->GetIconResource(Extension::EXTENSION_ICON_MEDIUM,
                                     ExtensionIconSet::MATCH_BIGGER);
 }
@@ -459,7 +458,7 @@ void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
   if (enable_str == "true") {
     ExtensionPrefs* prefs = extensions_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      Extension* extension =
+      const Extension* extension =
           extensions_service_->GetExtensionById(extension_id, true);
       ShowExtensionDisabledDialog(extensions_service_,
                                   dom_ui_->GetProfile(), extension);
@@ -476,8 +475,8 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const ListValue* args) {
   std::string extension_id, enable_str;
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &enable_str));
-  Extension* extension = extensions_service_->GetExtensionById(extension_id,
-                                                               true);
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, true);
   DCHECK(extension);
 
   // Flipping the incognito bit will generate unload/load notifications for the
@@ -501,15 +500,15 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
   std::string extension_id, allow_str;
   CHECK(args->GetString(0, &extension_id));
   CHECK(args->GetString(1, &allow_str));
-  Extension* extension = extensions_service_->GetExtensionById(extension_id,
-                                                               true);
+  const Extension* extension =
+      extensions_service_->GetExtensionById(extension_id, true);
   DCHECK(extension);
 
   extensions_service_->SetAllowFileAccess(extension, allow_str == "true");
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
-  Extension* extension = GetExtension(args);
+  const Extension* extension = GetExtension(args);
   if (!extension)
     return;
 
@@ -527,7 +526,7 @@ void ExtensionsDOMHandler::InstallUIProceed() {
 
   // The extension can be uninstalled in another window while the UI was
   // showing. Do nothing in that case.
-  Extension* extension =
+  const Extension* extension =
       extensions_service_->GetExtensionById(extension_id_prompting_, true);
   if (!extension)
     return;
@@ -542,7 +541,7 @@ void ExtensionsDOMHandler::InstallUIAbort() {
 }
 
 void ExtensionsDOMHandler::HandleOptionsMessage(const ListValue* args) {
-  Extension* extension = GetExtension(args);
+  const Extension* extension = GetExtension(args);
   if (!extension || extension->options_url().is_empty())
     return;
   dom_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
@@ -703,7 +702,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
   }
 }
 
-Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
+const Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
   std::string extension_id = WideToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   return extensions_service_->GetExtensionById(extension_id, true);
@@ -846,7 +845,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 }
 
 std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
-    Extension* extension) {
+    const Extension* extension) {
   std::vector<ExtensionPage> result;
 
   // Get the extension process's active views.
@@ -872,7 +871,7 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
 
 void ExtensionsDOMHandler::GetActivePagesForExtensionProcess(
     RenderProcessHost* process,
-    Extension* extension,
+    const Extension* extension,
     std::vector<ExtensionPage> *result) {
   if (!process)
     return;

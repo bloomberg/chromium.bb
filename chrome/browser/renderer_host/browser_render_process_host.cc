@@ -711,7 +711,7 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     return;
   ViewMsg_ExtensionsUpdated_Params params;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
-    Extension* extension = service->extensions()->at(i);
+    const Extension* extension = service->extensions()->at(i);
     ViewMsg_ExtensionRendererInfo info;
     info.id = extension->id();
     info.web_extent = extension->web_extent();

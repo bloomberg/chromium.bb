@@ -42,7 +42,7 @@ class AppLauncherHandler
                       const NotificationDetails& details);
 
   // Populate a dictionary with the information from an extension.
-  static void CreateAppInfo(Extension* extension,
+  static void CreateAppInfo(const Extension* extension,
                             ExtensionPrefs* extension_prefs,
                             DictionaryValue* value);
 
@@ -75,7 +75,7 @@ class AppLauncherHandler
   ExtensionInstallUI* GetExtensionInstallUI();
 
   // Starts the animation of the app icon.
-  void AnimateAppIcon(Extension* extension, const gfx::Rect& rect);
+  void AnimateAppIcon(const Extension* extension, const gfx::Rect& rect);
 
   // The apps are represented in the extensions model.
   scoped_refptr<ExtensionsService> extensions_service_;

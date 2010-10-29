@@ -180,7 +180,7 @@ void RenderViewContextMenu::AppendExtensionItems(
     const std::string& extension_id, int* index) {
   ExtensionsService* service = profile_->GetExtensionsService();
   ExtensionMenuManager* manager = service->menu_manager();
-  Extension* extension = service->GetExtensionById(extension_id, false);
+  const Extension* extension = service->GetExtensionById(extension_id, false);
   DCHECK_GE(*index, 0);
   int max_index =
       IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST - IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
@@ -318,7 +318,7 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::set<std::string> ids = menu_manager->ExtensionIds();
   std::vector<std::pair<std::string, std::string> > sorted_ids;
   for (std::set<std::string>::iterator i = ids.begin(); i != ids.end(); ++i) {
-    Extension* extension = service->GetExtensionById(*i, false);
+    const Extension* extension = service->GetExtensionById(*i, false);
     if (extension)
       sorted_ids.push_back(
           std::pair<std::string, std::string>(extension->name(), *i));

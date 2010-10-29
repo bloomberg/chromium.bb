@@ -20,7 +20,7 @@ namespace ExtensionInstalledBubbleCocoa {
 // This function is called by the ExtensionInstallUI when an extension has been
 // installed.
 void ShowExtensionInstalledBubble(gfx::NativeWindow window,
-                                  Extension* extension,
+                                  const Extension* extension,
                                   Browser* browser,
                                   SkBitmap icon);
 }

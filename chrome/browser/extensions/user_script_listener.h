@@ -82,7 +82,7 @@ class UserScriptListener
 
   // Helper to collect the extension's user script URL patterns in a list and
   // return it.
-  void CollectURLPatterns(Extension* extension, URLPatterns* patterns);
+  void CollectURLPatterns(const Extension* extension, URLPatterns* patterns);
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

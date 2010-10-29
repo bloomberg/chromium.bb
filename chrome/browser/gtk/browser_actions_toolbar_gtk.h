@@ -47,7 +47,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // Returns the widget in use by the BrowserActionButton corresponding to
   // |extension|. Used in positioning the ExtensionInstalledBubble for
   // BrowserActions.
-  GtkWidget* GetBrowserActionWidget(Extension* extension);
+  GtkWidget* GetBrowserActionWidget(const Extension* extension);
 
   int button_count() { return extension_button_map_.size(); }
 
@@ -83,10 +83,10 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   // Create the UI for a single browser action. This will stick the button
   // at the end of the toolbar.
-  void CreateButtonForExtension(Extension* extension, int index);
+  void CreateButtonForExtension(const Extension* extension, int index);
 
   // Delete resources associated with UI for a browser action.
-  void RemoveButtonForExtension(Extension* extension);
+  void RemoveButtonForExtension(const Extension* extension);
 
   // Change the visibility of widget() based on whether we have any buttons
   // to show.
@@ -102,12 +102,12 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
   // for incognito.
-  bool ShouldDisplayBrowserAction(Extension* extension);
+  bool ShouldDisplayBrowserAction(const Extension* extension);
 
   // ExtensionToolbarModel::Observer implementation.
-  virtual void BrowserActionAdded(Extension* extension, int index);
-  virtual void BrowserActionRemoved(Extension* extension);
-  virtual void BrowserActionMoved(Extension* extension, int index);
+  virtual void BrowserActionAdded(const Extension* extension, int index);
+  virtual void BrowserActionRemoved(const Extension* extension);
+  virtual void BrowserActionMoved(const Extension* extension, int index);
   virtual void ModelLoaded();
 
   // AnimationDelegate implementation.

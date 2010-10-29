@@ -28,7 +28,8 @@ static std::wstring GetTitle(Profile* profile,
                              const GURL& frame_url) {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
   if (extensions_service) {
-    Extension* extension = extensions_service->GetExtensionByURL(frame_url);
+    const Extension* extension =
+        extensions_service->GetExtensionByURL(frame_url);
     if (!extension)
       extension = extensions_service->GetExtensionByWebExtent(frame_url);
 

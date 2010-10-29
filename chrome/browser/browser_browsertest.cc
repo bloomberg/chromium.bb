@@ -156,7 +156,7 @@ class BrowserTest : public ExtensionBrowserTest {
   }
 
   // Returns the app extension aptly named "App Test".
-  Extension* GetExtension() {
+  const Extension* GetExtension() {
     const ExtensionList* extensions =
         browser()->profile()->GetExtensionsService()->extensions();
     for (size_t i = 0; i < extensions->size(); ++i) {
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
 
-  Extension* extension_app = GetExtension();
+  const Extension* extension_app = GetExtension();
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   GURL url(test_server()->GetURL("empty.html"));
   TabStripModel* model = browser()->tabstrip_model();
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
-  Extension* extension_app = GetExtension();
+  const Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
   TabContents* app_contents = new TabContents(browser()->profile(), NULL,
                                               MSG_ROUTING_NONE, NULL, NULL);

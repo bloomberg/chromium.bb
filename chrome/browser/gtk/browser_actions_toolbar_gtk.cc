@@ -83,7 +83,7 @@ class BrowserActionButton : public NotificationObserver,
                             public MenuGtk::Delegate {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
-                      Extension* extension,
+                      const Extension* extension,
                       GtkThemeProvider* theme_provider)
       : toolbar_(toolbar),
         extension_(extension),
@@ -143,7 +143,7 @@ class BrowserActionButton : public NotificationObserver,
 
   GtkWidget* widget() { return alignment_.get(); }
 
-  Extension* extension() { return extension_; }
+  const Extension* extension() { return extension_; }
 
   // NotificationObserver implementation.
   void Observe(NotificationType type,
@@ -312,7 +312,7 @@ class BrowserActionButton : public NotificationObserver,
   BrowserActionsToolbarGtk* toolbar_;
 
   // The extension that contains this browser action.
-  Extension* extension_;
+  const Extension* extension_;
 
   // The button for this browser action.
   scoped_ptr<CustomDrawButton> button_;
@@ -497,8 +497,8 @@ void BrowserActionsToolbarGtk::SetContainerWidth() {
     SetButtonHBoxWidth(WidthForIconCount(showing_actions));
 }
 
-void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
-                                                        int index) {
+void BrowserActionsToolbarGtk::CreateButtonForExtension(
+    const Extension* extension, int index) {
   if (!ShouldDisplayBrowserAction(extension))
     return;
 
@@ -535,7 +535,7 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
 }
 
 GtkWidget* BrowserActionsToolbarGtk::GetBrowserActionWidget(
-    Extension* extension) {
+    const Extension* extension) {
   ExtensionButtonMap::iterator it = extension_button_map_.find(
       extension->id());
   if (it == extension_button_map_.end())
@@ -544,7 +544,8 @@ GtkWidget* BrowserActionsToolbarGtk::GetBrowserActionWidget(
   return it->second.get()->widget();
 }
 
-void BrowserActionsToolbarGtk::RemoveButtonForExtension(Extension* extension) {
+void BrowserActionsToolbarGtk::RemoveButtonForExtension(
+    const Extension* extension) {
   if (extension_button_map_.erase(extension->id()))
     UpdateVisibility();
   UpdateChevronVisibility();
@@ -558,7 +559,7 @@ void BrowserActionsToolbarGtk::UpdateVisibility() {
 }
 
 bool BrowserActionsToolbarGtk::ShouldDisplayBrowserAction(
-    Extension* extension) {
+    const Extension* extension) {
   // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
           profile_->GetExtensionsService()->IsIncognitoEnabled(extension));
@@ -577,7 +578,7 @@ void BrowserActionsToolbarGtk::AnimateToShowNIcons(int count) {
   resize_animation_.Show();
 }
 
-void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
+void BrowserActionsToolbarGtk::BrowserActionAdded(const Extension* extension,
                                                   int index) {
   overflow_menu_.reset();
 
@@ -594,7 +595,8 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
   }
 }
 
-void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
+void BrowserActionsToolbarGtk::BrowserActionRemoved(
+    const Extension* extension) {
   overflow_menu_.reset();
 
   if (drag_button_ != NULL) {
@@ -610,7 +612,7 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
   }
 }
 
-void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
+void BrowserActionsToolbarGtk::BrowserActionMoved(const Extension* extension,
                                                   int index) {
   // We initiated this move action, and have already moved the button.
   if (drag_button_ != NULL)
@@ -648,7 +650,7 @@ void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
 }
 
 void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
-  Extension* extension = model_->GetExtensionByIndex(command_id);
+  const Extension* extension = model_->GetExtensionByIndex(command_id);
   ExtensionAction* browser_action = extension->browser_action();
 
   int tab_id = GetCurrentTabId();
@@ -870,7 +872,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     if (profile_->IsOffTheRecord())
       model_index = model_->IncognitoIndexToOriginal(i);
 
-    Extension* extension = model_->GetExtensionByIndex(model_index);
+    const Extension* extension = model_->GetExtensionByIndex(model_index);
     BrowserActionButton* button = extension_button_map_[extension->id()].get();
 
     overflow_menu_model_->AddItem(model_index, UTF8ToUTF16(extension->name()));
@@ -910,7 +912,7 @@ gboolean BrowserActionsToolbarGtk::OnOverflowMenuButtonPress(
   if (profile_->IsOffTheRecord())
     item_index = model_->IncognitoIndexToOriginal(item_index);
 
-  Extension* extension = model_->GetExtensionByIndex(item_index);
+  const Extension* extension = model_->GetExtensionByIndex(item_index);
   ExtensionButtonMap::iterator it = extension_button_map_.find(
       extension->id());
   if (it == extension_button_map_.end()) {

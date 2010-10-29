@@ -51,7 +51,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   typedef std::list<ExtensionHost*> HostPointerList;
   static HostPointerList* recently_deleted();
 
-  ExtensionHost(Extension* extension, SiteInstance* site_instance,
+  ExtensionHost(const Extension* extension, SiteInstance* site_instance,
                 const GURL& url, ViewType::Type host_type);
   ~ExtensionHost();
 
@@ -73,7 +73,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // instantiate Browser objects.
   void CreateView(Browser* browser);
 
-  Extension* extension() { return extension_; }
+  const Extension* extension() { return extension_; }
   RenderViewHost* render_view_host() const { return render_view_host_; }
   RenderProcessHost* render_process_host() const;
   SiteInstance* site_instance() const;
@@ -238,7 +238,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   bool is_background_page() const { return !view(); }
 
   // The extension that we're hosting in this view.
-  Extension* extension_;
+  const Extension* extension_;
 
   // The profile that this host is tied to.
   Profile* profile_;

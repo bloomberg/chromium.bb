@@ -30,13 +30,13 @@ class ExtensionToolbarModel : public NotificationObserver {
    public:
     // An extension with a browser action button has been added, and should go
     // in the toolbar at |index|.
-    virtual void BrowserActionAdded(Extension* extension, int index) {}
+    virtual void BrowserActionAdded(const Extension* extension, int index) {}
 
     // The browser action button for |extension| should no longer show.
-    virtual void BrowserActionRemoved(Extension* extension) {}
+    virtual void BrowserActionRemoved(const Extension* extension) {}
 
     // The browser action button for |extension| has been moved to |index|.
-    virtual void BrowserActionMoved(Extension* extension, int index) {}
+    virtual void BrowserActionMoved(const Extension* extension, int index) {}
 
     // Called when the model has finished loading.
     virtual void ModelLoaded() {}
@@ -48,7 +48,7 @@ class ExtensionToolbarModel : public NotificationObserver {
   // Functions called by the view.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-  void MoveBrowserAction(Extension* extension, int index);
+  void MoveBrowserAction(const Extension* extension, int index);
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".
   void SetVisibleIconCount(int count);
@@ -69,7 +69,7 @@ class ExtensionToolbarModel : public NotificationObserver {
     return toolitems_.end();
   }
 
-  Extension* GetExtensionByIndex(int index) const;
+  const Extension* GetExtensionByIndex(int index) const;
 
   // Utility functions for converting between an index into the list of
   // incognito-enabled browser actions, and the list of all browser actions.
@@ -93,8 +93,8 @@ class ExtensionToolbarModel : public NotificationObserver {
   // Our observers.
   ObserverList<Observer> observers_;
 
-  void AddExtension(Extension* extension);
-  void RemoveExtension(Extension* extension);
+  void AddExtension(const Extension* extension);
+  void RemoveExtension(const Extension* extension);
 
   // Our ExtensionsService, guaranteed to outlive us.
   ExtensionsService* service_;

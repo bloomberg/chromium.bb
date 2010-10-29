@@ -81,7 +81,7 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
   if (!previous_theme_id_.empty()) {
     ExtensionsService* service = profile_->GetExtensionsService();
     if (service) {
-      Extension* previous_theme =
+      const Extension* previous_theme =
           service->GetExtensionById(previous_theme_id_, true);
       if (previous_theme) {
         profile_->SetTheme(previous_theme);
@@ -102,7 +102,7 @@ void ThemeInstalledInfoBarDelegate::Observe(
     case NotificationType::BROWSER_THEME_CHANGED: {
       // If the new theme is different from what this info bar is associated
       // with, close this info bar since it is no longer relevant.
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       if (!extension || theme_id_ != extension->id())
         tab_contents_->RemoveInfoBar(this);
       break;
@@ -113,6 +113,6 @@ void ThemeInstalledInfoBarDelegate::Observe(
   }
 }
 
-bool ThemeInstalledInfoBarDelegate::MatchesTheme(Extension* theme) {
+bool ThemeInstalledInfoBarDelegate::MatchesTheme(const Extension* theme) {
   return (theme && theme->id() == theme_id_);
 }

@@ -53,7 +53,7 @@ BrowserSignin* GetBrowserSignin(Profile* profile) {
 
 bool IsWebStoreURL(Profile* profile, const GURL& url) {
   ExtensionsService* service = profile->GetExtensionsService();
-  Extension* store = service->GetWebStoreApp();
+  const Extension* store = service->GetWebStoreApp();
   DCHECK(store);
   return (service->GetExtensionByWebExtent(url) == store);
 }

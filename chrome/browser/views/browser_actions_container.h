@@ -54,13 +54,14 @@ class BrowserActionButton : public views::MenuButton,
                             public ImageLoadingTracker::Observer,
                             public NotificationObserver {
  public:
-  BrowserActionButton(Extension* extension, BrowserActionsContainer* panel);
+  BrowserActionButton(const Extension* extension,
+                      BrowserActionsContainer* panel);
 
   // Call this instead of delete.
   void Destroy();
 
   ExtensionAction* browser_action() const { return browser_action_; }
-  Extension* extension() { return extension_; }
+  const Extension* extension() { return extension_; }
 
   // Called to update the display to match the browser action's state.
   void UpdateState();
@@ -112,7 +113,7 @@ class BrowserActionButton : public views::MenuButton,
   ExtensionAction* browser_action_;
 
   // The extension associated with the browser action we're displaying.
-  Extension* extension_;
+  const Extension* extension_;
 
   // The object that is waiting for the image loading to complete
   // asynchronously.
@@ -146,7 +147,7 @@ class BrowserActionButton : public views::MenuButton,
 
 class BrowserActionView : public views::View {
  public:
-  BrowserActionView(Extension* extension, BrowserActionsContainer* panel);
+  BrowserActionView(const Extension* extension, BrowserActionsContainer* panel);
   virtual ~BrowserActionView();
 
   BrowserActionButton* button() { return button_; }
@@ -391,9 +392,9 @@ class BrowserActionsContainer
   static int IconHeight();
 
   // ExtensionToolbarModel::Observer implementation.
-  virtual void BrowserActionAdded(Extension* extension, int index);
-  virtual void BrowserActionRemoved(Extension* extension);
-  virtual void BrowserActionMoved(Extension* extension, int index);
+  virtual void BrowserActionAdded(const Extension* extension, int index);
+  virtual void BrowserActionRemoved(const Extension* extension);
+  virtual void BrowserActionMoved(const Extension* extension, int index);
   virtual void ModelLoaded();
 
   void LoadImages();
@@ -441,7 +442,7 @@ class BrowserActionsContainer
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
   // for incognito.
-  bool ShouldDisplayBrowserAction(Extension* extension);
+  bool ShouldDisplayBrowserAction(const Extension* extension);
 
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in

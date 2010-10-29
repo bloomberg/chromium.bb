@@ -71,7 +71,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       RemoveServerData(traits_, id, profile_->GetProfileSyncService());
     }
   } else {
-    const Extension* extension = Details<Extension>(details).ptr();
+    const Extension* extension = Details<const Extension>(details).ptr();
     CHECK(extension);
     VLOG(1) << "Updating server data for extension " << extension->id()
             << " (notification type = " << type.value << ")";

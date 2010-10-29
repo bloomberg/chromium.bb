@@ -172,7 +172,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
                                           .AppendASCII("browser_action")
                                           .AppendASCII("crash_57536")));
 
-  Extension* extension = service->extensions()->at(size_before);
+  const Extension* extension = service->extensions()->at(size_before);
 
   std::cout << "Creating bitmap\n" << std::flush;
 

@@ -78,7 +78,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   const std::vector<URLPattern> host_permissions =
       extension->host_permissions();
   if (!Extension::CanExecuteScriptOnPage(
@@ -158,7 +158,7 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     return false;
   }
 
-  Extension* extension = GetExtension();
+  const Extension* extension = GetExtension();
   if (!extension) {
     SendResponse(false);
     return false;

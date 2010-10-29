@@ -45,7 +45,7 @@ void ExtensionToolbarModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ExtensionToolbarModel::MoveBrowserAction(Extension* extension,
+void ExtensionToolbarModel::MoveBrowserAction(const Extension* extension,
                                               int index) {
   ExtensionList::iterator pos = std::find(begin(), end(), extension);
   if (pos == end()) {
@@ -93,7 +93,7 @@ void ExtensionToolbarModel::Observe(NotificationType type,
   if (!service_->is_ready())
     return;
 
-  Extension* extension = Details<Extension>(details).ptr();
+  const Extension* extension = Details<const Extension>(details).ptr();
   if (type == NotificationType::EXTENSION_LOADED) {
     AddExtension(extension);
   } else if (type == NotificationType::EXTENSION_UNLOADED ||
@@ -104,7 +104,7 @@ void ExtensionToolbarModel::Observe(NotificationType type,
   }
 }
 
-void ExtensionToolbarModel::AddExtension(Extension* extension) {
+void ExtensionToolbarModel::AddExtension(const Extension* extension) {
   // We only care about extensions with browser actions.
   if (!extension->browser_action())
     return;
@@ -126,7 +126,7 @@ void ExtensionToolbarModel::AddExtension(Extension* extension) {
   UpdatePrefs();
 }
 
-void ExtensionToolbarModel::RemoveExtension(Extension* extension) {
+void ExtensionToolbarModel::RemoveExtension(const Extension* extension) {
   ExtensionList::iterator pos = std::find(begin(), end(), extension);
   if (pos == end()) {
     return;
@@ -162,7 +162,7 @@ void ExtensionToolbarModel::InitializeExtensionList() {
 
   // Create the lists.
   for (size_t i = 0; i < service_->extensions()->size(); ++i) {
-    Extension* extension = service_->extensions()->at(i);
+    const Extension* extension = service_->extensions()->at(i);
     if (!extension->browser_action())
       continue;
 
@@ -208,7 +208,7 @@ void ExtensionToolbarModel::UpdatePrefs() {
   service_->extension_prefs()->SetToolbarOrder(ids);
 }
 
-Extension* ExtensionToolbarModel::GetExtensionByIndex(int index) const {
+const Extension* ExtensionToolbarModel::GetExtensionByIndex(int index) const {
   return toolitems_.at(index);
 }
 

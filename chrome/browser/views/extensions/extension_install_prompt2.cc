@@ -58,7 +58,7 @@ class InstallDialogContent2
     : public views::View, public views::DialogDelegate {
  public:
   InstallDialogContent2(ExtensionInstallUI::Delegate* delegate,
-                        Extension* extension,
+                        const Extension* extension,
                         SkBitmap* icon,
                         const std::vector<string16>& permissions);
 
@@ -109,7 +109,7 @@ class InstallDialogContent2
 
 
 InstallDialogContent2::InstallDialogContent2(
-    ExtensionInstallUI::Delegate* delegate, Extension* extension,
+    ExtensionInstallUI::Delegate* delegate, const Extension* extension,
     SkBitmap* icon, const std::vector<string16>& permissions)
         : delegate_(delegate),
           icon_(NULL),
@@ -292,7 +292,8 @@ void InstallDialogContent2::Layout() {
 
 // static
 void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    Profile* profile, Delegate* delegate, const Extension* extension,
+    SkBitmap* icon,
     const std::vector<string16>& permissions) {
 #if defined(OS_CHROMEOS)
   // Use a normal browser window as parent on ChromeOS.

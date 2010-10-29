@@ -58,17 +58,17 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  virtual void ConfirmInstall(Delegate* delegate, Extension* extension);
+  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension);
 
   // This is called by the extensions management page to verify whether the
   // uninstallation should proceed. This is declared virtual for testing.
   //
   // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
-  virtual void ConfirmUninstall(Delegate* delegate, Extension* extension);
+  virtual void ConfirmUninstall(Delegate* delegate, const Extension* extension);
 
   // Installation was successful. This is declared virtual for testing.
-  virtual void OnInstallSuccess(Extension* extension);
+  virtual void OnInstallSuccess(const Extension* extension);
 
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const std::string& error);
@@ -85,7 +85,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // GetNewThemeInstalledInfoBarDelegate()).
   static void ShowThemeInfoBar(
       const std::string& previous_theme_id, bool previous_use_system_theme,
-      Extension* new_theme, Profile* profile);
+      const Extension* new_theme, Profile* profile);
 
  private:
   // Starts the process of showing a confirmation UI, which is split into two.
@@ -96,25 +96,25 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 #if defined(OS_MACOSX)
   // When an extension is installed on Mac with neither browser action nor
   // page action icons, show an infobar instead of a popup bubble.
-  void ShowGenericExtensionInstalledInfoBar(Extension* new_extension);
+  void ShowGenericExtensionInstalledInfoBar(const Extension* new_extension);
 #endif
 
   // Returns the delegate to control the browser's info bar. This is
   // within its own function due to its platform-specific nature.
   static InfoBarDelegate* GetNewThemeInstalledInfoBarDelegate(
-      TabContents* tab_contents, Extension* new_theme,
+      TabContents* tab_contents, const Extension* new_theme,
       const std::string& previous_theme_id, bool previous_use_system_theme);
 
   // Implements the showing of the install/uninstall dialog prompt.
   // NOTE: The implementations of this function is platform-specific.
   static void ShowExtensionInstallUIPromptImpl(
-      Profile* profile, Delegate* delegate, Extension* extension,
+      Profile* profile, Delegate* delegate, const Extension* extension,
       SkBitmap* icon, PromptType type);
 
   // Implements the showing of the new install dialog. The implementations of
   // this function are platform-specific.
   static void ShowExtensionInstallUIPrompt2Impl(
-      Profile* profile, Delegate* delegate, Extension* extension,
+      Profile* profile, Delegate* delegate, const Extension* extension,
       SkBitmap* icon, const std::vector<string16>& permissions);
 
   Profile* profile_;
@@ -125,7 +125,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   bool previous_use_system_theme_;
 
   SkBitmap icon_;  // The extensions installation icon.
-  Extension* extension_;  // The extension we are showing the UI for.
+  const Extension* extension_;  // The extension we are showing the UI for.
   Delegate* delegate_;    // The delegate we will call Proceed/Abort on after
                           // confirmation UI.
   PromptType prompt_type_;  // The type of prompt we are going to show.

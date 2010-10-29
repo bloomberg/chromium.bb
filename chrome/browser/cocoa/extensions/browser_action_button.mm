@@ -45,7 +45,8 @@ const CGFloat kShadowOffset = 2.0;
 class ExtensionImageTrackerBridge : public NotificationObserver,
                                     public ImageLoadingTracker::Observer {
  public:
-  ExtensionImageTrackerBridge(BrowserActionButton* owner, Extension* extension)
+  ExtensionImageTrackerBridge(BrowserActionButton* owner,
+                              const Extension* extension)
       : owner_(owner),
         tracker_(this) {
     // The Browser Action API does not allow the default icon path to be
@@ -113,7 +114,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 }
 
 - (id)initWithFrame:(NSRect)frame
-          extension:(Extension*)extension
+          extension:(const Extension*)extension
             profile:(Profile*)profile
               tabId:(int)tabId {
   if ((self = [super initWithFrame:frame])) {

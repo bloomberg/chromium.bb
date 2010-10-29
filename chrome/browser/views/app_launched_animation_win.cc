@@ -38,7 +38,7 @@ class AppLaunchedAnimationWin : public AnimationDelegate,
                                 public ImageLoadingTracker::Observer,
                                 public views::ImageView {
  public:
-  AppLaunchedAnimationWin(Extension* extension, const gfx::Rect& rect);
+  AppLaunchedAnimationWin(const Extension* extension, const gfx::Rect& rect);
 
  private:
   // AnimationDelegate
@@ -65,7 +65,7 @@ class AppLaunchedAnimationWin : public AnimationDelegate,
   DISALLOW_COPY_AND_ASSIGN(AppLaunchedAnimationWin);
 };
 
-AppLaunchedAnimationWin::AppLaunchedAnimationWin(Extension* extension,
+AppLaunchedAnimationWin::AppLaunchedAnimationWin(const Extension* extension,
                                                  const gfx::Rect& rect)
     : popup_(NULL),
       rect_(rect),
@@ -128,7 +128,8 @@ void AppLaunchedAnimationWin::OnImageLoaded(SkBitmap* image,
 }  // namespace
 
 // static
-void AppLaunchedAnimation::Show(Extension* extension, const gfx::Rect& rect) {
+void AppLaunchedAnimation::Show(const Extension* extension,
+                                const gfx::Rect& rect) {
   // The animation will delete itself when it's finished.
   new AppLaunchedAnimationWin(extension, rect);
 }

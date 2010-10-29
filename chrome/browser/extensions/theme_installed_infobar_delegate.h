@@ -33,7 +33,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // Returns true if the given theme is the same as the one associated with this
   // info bar.
-  bool MatchesTheme(Extension* theme);
+  bool MatchesTheme(const Extension* theme);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

@@ -239,15 +239,15 @@ void BackgroundModeManager::Observe(NotificationType type,
 #endif
       break;
     case NotificationType::EXTENSION_LOADED:
-      if (IsBackgroundApp(*Details<Extension>(details).ptr()))
+      if (IsBackgroundApp(*Details<const Extension>(details).ptr()))
         OnBackgroundAppLoaded();
       break;
     case NotificationType::EXTENSION_UNLOADED:
-      if (IsBackgroundApp(*Details<Extension>(details).ptr()))
+      if (IsBackgroundApp(*Details<const Extension>(details).ptr()))
         OnBackgroundAppUnloaded();
       break;
     case NotificationType::EXTENSION_INSTALLED:
-      if (IsBackgroundApp(*Details<Extension>(details).ptr()))
+      if (IsBackgroundApp(*Details<const Extension>(details).ptr()))
         OnBackgroundAppInstalled();
       break;
     case NotificationType::EXTENSION_UNINSTALLED:

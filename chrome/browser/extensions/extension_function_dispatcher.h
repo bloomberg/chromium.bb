@@ -125,7 +125,7 @@ class ExtensionFunctionDispatcher {
  private:
   ExtensionFunctionDispatcher(RenderViewHost* render_view_host,
                               Delegate* delegate,
-                              Extension* extension,
+                              const Extension* extension,
                               const GURL& url);
 
   // We need to keep a pointer to the profile because we use it in the dtor

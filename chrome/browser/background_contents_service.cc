@@ -110,7 +110,7 @@ void BackgroundContentsService::Observe(NotificationType type,
       break;
     case NotificationType::EXTENSION_UNLOADED:
       ShutdownAssociatedBackgroundContents(
-          ASCIIToUTF16(Details<Extension>(details)->id()));
+          ASCIIToUTF16(Details<const Extension>(details)->id()));
       break;
     default:
       NOTREACHED();
@@ -157,7 +157,7 @@ void BackgroundContentsService::CreateBackgroundContents(
 
   // Check to make sure that the parent extension is still enabled.
   ExtensionsService* extensions_service = profile->GetExtensionsService();
-  Extension* extension = extensions_service->GetExtensionById(
+  const Extension* extension = extensions_service->GetExtensionById(
       UTF16ToASCII(application_id), false);
 
   if (!extension) {

@@ -341,7 +341,7 @@ ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
   if (!service->ExtensionBindingsAllowed(url))
     return NULL;
 
-  Extension* extension = service->GetExtensionByURL(url);
+  const Extension* extension = service->GetExtensionByURL(url);
   if (!extension)
     extension = service->GetExtensionByWebExtent(url);
 
@@ -355,7 +355,7 @@ ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     RenderViewHost* render_view_host,
     Delegate* delegate,
-    Extension* extension,
+    const Extension* extension,
     const GURL& url)
   : profile_(render_view_host->process()->profile()),
     render_view_host_(render_view_host),
@@ -448,7 +448,7 @@ void ExtensionFunctionDispatcher::HandleRequest(
   function->set_user_gesture(params.user_gesture);
   ExtensionsService* service = profile()->GetExtensionsService();
   DCHECK(service);
-  Extension* extension = service->GetExtensionById(extension_id(), false);
+  const Extension* extension = service->GetExtensionById(extension_id(), false);
   DCHECK(extension);
   function->set_include_incognito(service->IsIncognitoEnabled(extension) &&
                                   !extension->incognito_split_mode());

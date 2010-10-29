@@ -10,7 +10,7 @@
 
 AutomationExtensionTracker::AutomationExtensionTracker(
     IPC::Message::Sender* automation)
-    : AutomationResourceTracker<Extension*>(automation) {
+    : AutomationResourceTracker<const Extension*>(automation) {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
@@ -20,9 +20,9 @@ AutomationExtensionTracker::AutomationExtensionTracker(
 AutomationExtensionTracker::~AutomationExtensionTracker() {
 }
 
-void AutomationExtensionTracker::AddObserver(Extension* resource) {}
+void AutomationExtensionTracker::AddObserver(const Extension* resource) {}
 
-void AutomationExtensionTracker::RemoveObserver(Extension* resource) {}
+void AutomationExtensionTracker::RemoveObserver(const Extension* resource) {}
 
 void AutomationExtensionTracker::Observe(NotificationType type,
                                          const NotificationSource& source,
@@ -31,7 +31,7 @@ void AutomationExtensionTracker::Observe(NotificationType type,
       type != NotificationType::EXTENSION_UNLOADED_DISABLED)
     return;
 
-  Extension* extension = Details<Extension>(details).ptr();
+  const Extension* extension = Details<const Extension>(details).ptr();
   Profile* profile = Source<Profile>(source).ptr();
   if (profile) {
     ExtensionsService* service = profile->GetExtensionsService();

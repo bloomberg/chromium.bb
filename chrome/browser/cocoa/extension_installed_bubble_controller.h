@@ -47,7 +47,7 @@ typedef enum {
     NSWindowController<NSWindowDelegate> {
  @private
   NSWindow* parentWindow_;  // weak
-  Extension* extension_;  // weak
+  const Extension* extension_;  // weak
   Browser* browser_;  // weak
   scoped_nsobject<NSImage> icon_;
 
@@ -72,13 +72,13 @@ typedef enum {
   IBOutlet NSTextField* extensionInstalledInfoMsg_;
 }
 
-@property (nonatomic, readonly) Extension* extension;
+@property (nonatomic, readonly) const Extension* extension;
 @property (nonatomic) BOOL pageActionRemoved;
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                 extension:(Extension*)extension
+                 extension:(const Extension*)extension
                    browser:(Browser*)browser
                       icon:(SkBitmap)icon;
 

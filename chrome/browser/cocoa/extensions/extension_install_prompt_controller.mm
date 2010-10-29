@@ -58,7 +58,7 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                 extension:(Extension*)extension
+                 extension:(const Extension*)extension
                   delegate:(ExtensionInstallUI::Delegate*)delegate
                       icon:(SkBitmap*)icon
                   warnings:(const std::vector<string16>&)warnings {
@@ -185,7 +185,10 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
 
 
 void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    Profile* profile,
+    Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
     const std::vector<string16>& warnings) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {

@@ -89,8 +89,8 @@ class ExtensionUpdateService {
   virtual const PendingExtensionMap& pending_extensions() const = 0;
   virtual void UpdateExtension(const std::string& id, const FilePath& path,
                                const GURL& download_url) = 0;
-  virtual Extension* GetExtensionById(const std::string& id,
-                                      bool include_disabled) = 0;
+  virtual const Extension* GetExtensionById(const std::string& id,
+                                            bool include_disabled) = 0;
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
   virtual void CheckAdminBlacklist() = 0;
@@ -179,11 +179,11 @@ class ExtensionsService
 
   // Whether this extension can run in an incognito window.
   bool IsIncognitoEnabled(const Extension* extension);
-  void SetIsIncognitoEnabled(Extension* extension, bool enabled);
+  void SetIsIncognitoEnabled(const Extension* extension, bool enabled);
 
   // Whether this extension can inject scripts into pages with file URLs.
   bool AllowFileAccess(const Extension* extension);
-  void SetAllowFileAccess(Extension* extension, bool allow);
+  void SetAllowFileAccess(const Extension* extension, bool allow);
 
   // Initialize and start all installed extensions.
   void Init();
@@ -192,7 +192,8 @@ class ExtensionsService
   void InitEventRouters();
 
   // Look up an extension by ID.
-  Extension* GetExtensionById(const std::string& id, bool include_disabled) {
+  const Extension* GetExtensionById(const std::string& id,
+                                    bool include_disabled) {
     return GetExtensionByIdInternal(id, true, include_disabled);
   }
 
@@ -285,18 +286,19 @@ class ExtensionsService
   void GarbageCollectExtensions();
 
   // The App that represents the web store.
-  Extension* GetWebStoreApp();
+  const Extension* GetWebStoreApp();
 
   // Lookup an extension by |url|.
-  Extension* GetExtensionByURL(const GURL& url);
+  const Extension* GetExtensionByURL(const GURL& url);
 
   // If there is an extension for the specified url it is returned. Otherwise
   // returns the extension whose web extent contains |url|.
-  Extension* GetExtensionByWebExtent(const GURL& url);
+  const Extension* GetExtensionByWebExtent(const GURL& url);
 
   // Returns an extension that contains any URL that overlaps with the given
   // extent, if one exists.
-  Extension* GetExtensionByOverlappingWebExtent(const ExtensionExtent& extent);
+  const Extension* GetExtensionByOverlappingWebExtent(
+      const ExtensionExtent& extent);
 
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension
@@ -321,11 +323,11 @@ class ExtensionsService
   virtual void OnLoadedInstalledExtensions();
 
   // Called when an extension has been loaded.
-  void OnExtensionLoaded(Extension* extension,
+  void OnExtensionLoaded(const Extension* extension,
                          bool allow_privilege_increase);
 
   // Called by the backend when an extension has been installed.
-  void OnExtensionInstalled(Extension* extension,
+  void OnExtensionInstalled(const Extension* extension,
                             bool allow_privilege_increase);
 
   // Called by the backend when an external extension is found.
@@ -411,9 +413,9 @@ class ExtensionsService
 
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
-  Extension* GetExtensionByIdInternal(const std::string& id,
-                                      bool include_enabled,
-                                      bool include_disabled);
+  const Extension* GetExtensionByIdInternal(const std::string& id,
+                                            bool include_enabled,
+                                            bool include_disabled);
 
   // Like AddPendingExtension() but assumes an extension with the same
   // id is not already installed.
@@ -425,10 +427,10 @@ class ExtensionsService
       Extension::Location install_source);
 
   // Handles sending notification that |extension| was loaded.
-  void NotifyExtensionLoaded(Extension* extension);
+  void NotifyExtensionLoaded(const Extension* extension);
 
   // Handles sending notification that |extension| was unloaded.
-  void NotifyExtensionUnloaded(Extension* extension);
+  void NotifyExtensionUnloaded(const Extension* extension);
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
@@ -437,10 +439,10 @@ class ExtensionsService
   void LoadInstalledExtension(const ExtensionInfo& info, bool write_to_prefs);
 
   // Helper methods to configure the storage services accordingly.
-  void GrantProtectedStorage(Extension* extension);
-  void RevokeProtectedStorage(Extension* extension);
-  void GrantUnlimitedStorage(Extension* extension);
-  void RevokeUnlimitedStorage(Extension* extension);
+  void GrantProtectedStorage(const Extension* extension);
+  void RevokeProtectedStorage(const Extension* extension);
+  void GrantUnlimitedStorage(const Extension* extension);
+  void RevokeUnlimitedStorage(const Extension* extension);
 
   // The profile this ExtensionsService is part of.
   Profile* profile_;

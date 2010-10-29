@@ -178,7 +178,7 @@ class ExtensionsDOMHandler
   void HandleSelectFilePathMessage(const ListValue* args);
 
   // Utility for callbacks that get an extension ID as the sole argument.
-  Extension* GetExtension(const ListValue* args);
+  const Extension* GetExtension(const ListValue* args);
 
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();
@@ -198,15 +198,16 @@ class ExtensionsDOMHandler
                        const NotificationDetails& details);
 
   // Helper that lists the current active html pages for an extension.
-  std::vector<ExtensionPage> GetActivePagesForExtension(Extension* extension);
+  std::vector<ExtensionPage> GetActivePagesForExtension(
+      const Extension* extension);
   void GetActivePagesForExtensionProcess(
       RenderProcessHost* process,
-      Extension* extension,
+      const Extension* extension,
       std::vector<ExtensionPage> *result);
 
   // Returns the best icon to display in the UI for an extension, or an empty
   // ExtensionResource if no good icon exists.
-  ExtensionResource PickExtensionIcon(Extension* extension);
+  ExtensionResource PickExtensionIcon(const Extension* extension);
 
   // Loads the extension resources into the json data, then calls OnIconsLoaded.
   // Takes ownership of |icons|.

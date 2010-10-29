@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme.crx");
   ASSERT_TRUE(InstallExtensionWithUI(theme_path, 1));
-  Extension* theme = browser()->profile()->GetTheme();
+  const Extension* theme = browser()->profile()->GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_crx, theme->id());
   VerifyThemeInfoBarAndUndoInstall();

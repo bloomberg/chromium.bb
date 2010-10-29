@@ -364,7 +364,7 @@ void PluginService::Observe(NotificationType type,
                             const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED: {
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
@@ -380,7 +380,7 @@ void PluginService::Observe(NotificationType type,
     }
 
     case NotificationType::EXTENSION_UNLOADED: {
-      Extension* extension = Details<Extension>(details).ptr();
+      const Extension* extension = Details<const Extension>(details).ptr();
       bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];

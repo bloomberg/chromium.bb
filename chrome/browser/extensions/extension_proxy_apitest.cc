@@ -16,7 +16,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyAutoSettings) {
       switches::kEnableExperimentalExtensionApis);
 
   ASSERT_TRUE(RunExtensionTest("proxy/auto")) << message_;
-  Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualSingle) {
       switches::kEnableExperimentalExtensionApis);
 
   ASSERT_TRUE(RunExtensionTest("proxy/single")) << message_;
-  Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualIndividual) {
       switches::kEnableExperimentalExtensionApis);
 
   ASSERT_TRUE(RunExtensionTest("proxy/individual")) << message_;
-  Extension* extension = GetSingleLoadedExtension();
+  const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();

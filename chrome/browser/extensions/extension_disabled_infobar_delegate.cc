@@ -26,7 +26,7 @@ class ExtensionDisabledDialogDelegate
  public:
   ExtensionDisabledDialogDelegate(Profile* profile,
                                   ExtensionsService* service,
-                                  Extension* extension)
+                                  const Extension* extension)
         : service_(service), extension_(extension) {
     AddRef();  // Balanced in Proceed or Abort.
 
@@ -55,7 +55,7 @@ class ExtensionDisabledDialogDelegate
   scoped_ptr<ExtensionInstallUI> install_ui_;
 
   ExtensionsService* service_;
-  Extension* extension_;
+  const Extension* extension_;
 };
 
 class ExtensionDisabledInfobarDelegate
@@ -64,7 +64,7 @@ class ExtensionDisabledInfobarDelegate
  public:
   ExtensionDisabledInfobarDelegate(TabContents* tab_contents,
                                    ExtensionsService* service,
-                                   Extension* extension)
+                                   const Extension* extension)
       : ConfirmInfoBarDelegate(tab_contents),
         tab_contents_(tab_contents),
         service_(service),
@@ -110,7 +110,7 @@ class ExtensionDisabledInfobarDelegate
     switch (type.value) {
       case NotificationType::EXTENSION_LOADED:
       case NotificationType::EXTENSION_UNLOADED_DISABLED: {
-        Extension* extension = Details<Extension>(details).ptr();
+        const Extension* extension = Details<const Extension>(details).ptr();
         if (extension == extension_)
           tab_contents_->RemoveInfoBar(this);
         break;
@@ -124,11 +124,11 @@ class ExtensionDisabledInfobarDelegate
   NotificationRegistrar registrar_;
   TabContents* tab_contents_;
   ExtensionsService* service_;
-  Extension* extension_;
+  const Extension* extension_;
 };
 
 void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
-                             Extension* extension) {
+                             const Extension* extension) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser)
     return;
@@ -142,7 +142,7 @@ void ShowExtensionDisabledUI(ExtensionsService* service, Profile* profile,
 }
 
 void ShowExtensionDisabledDialog(ExtensionsService* service, Profile* profile,
-                                 Extension* extension) {
+                                 const Extension* extension) {
   // This object manages its own lifetime.
   new ExtensionDisabledDialogDelegate(profile, service, extension);
 }

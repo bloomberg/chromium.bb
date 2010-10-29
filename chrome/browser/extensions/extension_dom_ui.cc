@@ -112,7 +112,7 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 
   ImageLoadingTracker tracker_;
   scoped_refptr<FaviconService::GetFaviconRequest> request_;
-  Extension* extension_;
+  const Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDOMUIImageLoadingTracker);
 };
@@ -126,7 +126,7 @@ ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, GURL url)
     : DOMUI(tab_contents),
       url_(url) {
   ExtensionsService* service = tab_contents->profile()->GetExtensionsService();
-  Extension* extension = service->GetExtensionByURL(url);
+  const Extension* extension = service->GetExtensionByURL(url);
   if (!extension)
     extension = service->GetExtensionByWebExtent(url);
   DCHECK(extension);
@@ -271,7 +271,7 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
     }
 
     // Verify that the extension that's being referred to actually exists.
-    Extension* extension = service->GetExtensionByURL(extension_url);
+    const Extension* extension = service->GetExtensionByURL(extension_url);
     if (!extension) {
       // This can currently happen if you use --load-extension one run, and
       // then don't use it the next.  It could also happen if an extension

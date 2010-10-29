@@ -494,7 +494,7 @@ void ExtensionReadyNotificationObserver::Observe(
       success = true;
       break;
     case NotificationType::EXTENSION_LOADED:
-      extension_ = Details<Extension>(details).ptr();
+      extension_ = Details<const Extension>(details).ptr();
       if (!DidExtensionHostsStopLoading(manager_))
         return;
       success = true;

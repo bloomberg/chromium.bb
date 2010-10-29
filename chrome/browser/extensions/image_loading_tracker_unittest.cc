@@ -163,7 +163,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UNLOADED,
       NotificationService::AllSources(),
-      Details<Extension>(extension.get()));
+      Details<const Extension>(extension.get()));
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.

@@ -42,7 +42,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   scoped_nsobject<NSViewAnimation> moveAnimation_;
 
   // The extension for this button. Weak.
-  Extension* extension_;
+  const Extension* extension_;
 
   // The ID of the active tab.
   int tabId_;
@@ -57,7 +57,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 }
 
 - (id)initWithFrame:(NSRect)frame
-          extension:(Extension*)extension
+          extension:(const Extension*)extension
             profile:(Profile*)profile
               tabId:(int)tabId;
 
@@ -76,7 +76,7 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
 - (NSImage*)compositedImage;
 
 @property(readonly, nonatomic) BOOL isBeingDragged;
-@property(readonly, nonatomic) Extension* extension;
+@property(readonly, nonatomic) const Extension* extension;
 @property(readwrite, nonatomic) int tabId;
 
 @end

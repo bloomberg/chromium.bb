@@ -94,7 +94,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.
-  Extension* GetSingleLoadedExtension();
+  const Extension* GetSingleLoadedExtension();
 
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
   virtual void SetUpCommandLine(CommandLine* command_line);

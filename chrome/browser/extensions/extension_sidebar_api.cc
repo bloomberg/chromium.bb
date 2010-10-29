@@ -51,7 +51,7 @@ const char kShownState[] = "shown";
 }
 
 static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-                                       Extension* extension) {
+                                       const Extension* extension) {
   GURL url = GURL(url_string);
   if (!url.is_valid())
     url = extension->GetResourceURL(url_string);
@@ -59,7 +59,7 @@ static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
   return url;
 }
 
-static bool CanUseHost(Extension* extension,
+static bool CanUseHost(const Extension* extension,
                        const GURL& url,
                        std::string* error) {
   if (extension->HasHostPermission(url))

@@ -69,7 +69,7 @@ bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
   // Find the extension by iterating backwards since it is likely last.
   FilePath extension_path = path;
   file_util::AbsolutePath(&extension_path);
-  Extension* extension = NULL;
+  const Extension* extension = NULL;
   for (ExtensionList::const_reverse_iterator iter =
            service->extensions()->rbegin();
        iter != service->extensions()->rend(); ++iter) {
@@ -107,14 +107,15 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
 
   // Simulate a user abort on an extension installation.
-  virtual void ConfirmInstall(Delegate* delegate, Extension* extension) {
+  virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
     delegate->InstallUIAbort();
     MessageLoopForUI::current()->Quit();
   }
 
-  virtual void ConfirmUninstall(Delegate* delegate, Extension* extension) {}
+  virtual void ConfirmUninstall(Delegate* delegate,
+                                const Extension* extension) {}
 
-  virtual void OnInstallSuccess(Extension* extension) {}
+  virtual void OnInstallSuccess(const Extension* extension) {}
 
   virtual void OnInstallFailure(const std::string& error) {}
 };
@@ -288,7 +289,7 @@ void ExtensionBrowserTest::Observe(NotificationType type,
                                    const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
-      last_loaded_extension_id_ = Details<Extension>(details).ptr()->id();
+      last_loaded_extension_id_ = Details<const Extension>(details).ptr()->id();
       VLOG(1) << "Got EXTENSION_LOADED notification.";
       MessageLoopForUI::current()->Quit();
       break;

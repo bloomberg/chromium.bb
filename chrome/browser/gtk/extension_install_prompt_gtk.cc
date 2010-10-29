@@ -38,7 +38,7 @@ void OnDialogResponse(GtkDialog* dialog, int response_id,
 }
 
 void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
-                             Extension *extension,
+                             const Extension* extension,
                              ExtensionInstallUI::Delegate *delegate,
                              ExtensionInstallUI::PromptType type) {
   // Build the dialog.
@@ -87,7 +87,10 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
 }  // namespace
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
-    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    Profile* profile,
+    Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
     ExtensionInstallUI::PromptType type) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {

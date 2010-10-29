@@ -21,7 +21,7 @@ ExtensionFunction::ExtensionFunction()
 ExtensionFunction::~ExtensionFunction() {
 }
 
-Extension* ExtensionFunction::GetExtension() {
+const Extension* ExtensionFunction::GetExtension() {
   ExtensionsService* service = profile_->GetExtensionsService();
   DCHECK(service);
   return service->GetExtensionById(extension_id_, false);

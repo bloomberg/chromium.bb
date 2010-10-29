@@ -87,7 +87,7 @@ void SetCurrentThemeFromThemeSpecifics(
     VLOG(1) << "Applying theme " << id << " with update_url " << update_url;
     ExtensionsService* extensions_service = profile->GetExtensionsService();
     CHECK(extensions_service);
-    Extension* extension = extensions_service->GetExtensionById(id, true);
+    const Extension* extension = extensions_service->GetExtensionById(id, true);
     if (extension) {
       if (!extension->is_theme()) {
         VLOG(1) << "Extension " << id << " is not a theme; aborting";

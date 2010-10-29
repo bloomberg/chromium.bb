@@ -47,7 +47,7 @@ void ExtensionInfoBarGtk::OnImageLoaded(
 
 void ExtensionInfoBarGtk::BuildWidgets() {
   // Start loading the image for the menu button.
-  Extension* extension = delegate_->extension_host()->extension();
+  const Extension* extension = delegate_->extension_host()->extension();
   ExtensionResource icon_resource = extension->GetIconResource(
       Extension::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
   if (!icon_resource.relative_path().empty()) {

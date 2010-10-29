@@ -421,7 +421,7 @@ class ExtensionsServiceTest
                        const NotificationDetails& details) {
     switch (type.value) {
       case NotificationType::EXTENSION_LOADED: {
-        Extension* extension = Details<Extension>(details).ptr();
+        const Extension* extension = Details<const Extension>(details).ptr();
         loaded_.push_back(extension);
         // The tests rely on the errors being in a certain order, which can vary
         // depending on how filesystem iteration works.
@@ -430,7 +430,7 @@ class ExtensionsServiceTest
       }
 
       case NotificationType::EXTENSION_UNLOADED: {
-        Extension* e = Details<Extension>(details).ptr();
+        const Extension* e = Details<const Extension>(details).ptr();
         unloaded_id_ = e->id();
         ExtensionList::iterator i =
             std::find(loaded_.begin(), loaded_.end(), e);
@@ -443,7 +443,7 @@ class ExtensionsServiceTest
       }
       case NotificationType::EXTENSION_INSTALLED:
       case NotificationType::THEME_INSTALLED:
-        installed_ = Details<Extension>(details).ptr();
+        installed_ = Details<const Extension>(details).ptr();
         break;
 
       default:
@@ -678,7 +678,7 @@ class ExtensionsServiceTest
  protected:
   ExtensionList loaded_;
   std::string unloaded_id_;
-  Extension* installed_;
+  const Extension* installed_;
 
  private:
   NotificationRegistrar registrar_;
@@ -776,7 +776,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ValidateIntegerPref(good2, "state", Extension::ENABLED);
   ValidateIntegerPref(good2, "location", Extension::INTERNAL);
 
-  Extension* extension = loaded_[0];
+  const Extension* extension = loaded_[0];
   const UserScriptList& scripts = extension->content_scripts();
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(3u, scripts[0].url_patterns().size());
@@ -1276,7 +1276,7 @@ TEST_F(ExtensionsServiceTest, InstallAppsWithUnlimtedStorage) {
   PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
-  Extension* extension = service_->extensions()->at(0);
+  const Extension* extension = service_->extensions()->at(0);
   const std::string id1 = extension->id();
   EXPECT_TRUE(extension->HasApiPermission(
                   Extension::kUnlimitedStoragePermission));
@@ -1334,7 +1334,7 @@ TEST_F(ExtensionsServiceTest, InstallAppsAndCheckStorageProtection) {
   PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
   ValidatePrefKeyCount(++pref_count);
   ASSERT_EQ(1u, service_->extensions()->size());
-  Extension* extension = service_->extensions()->at(0);
+  const Extension* extension = service_->extensions()->at(0);
   EXPECT_TRUE(extension->is_app());
   const std::string id1 = extension->id();
   EXPECT_FALSE(service_->protected_storage_map_.empty());
@@ -1463,7 +1463,7 @@ TEST_F(ExtensionsServiceTest, UpdateExtension) {
   FilePath path = extensions_path.AppendASCII("good.crx");
 
   InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
+  const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.0", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
 
@@ -1498,7 +1498,7 @@ TEST_F(ExtensionsServiceTest, UpdateWillNotDowngrade) {
   FilePath path = extensions_path.AppendASCII("good2.crx");
 
   InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
+  const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.1", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
 
@@ -1518,7 +1518,7 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
   FilePath path = extensions_path.AppendASCII("good.crx");
 
   InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
+  const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ(good_crx, good->id());
   UpdateExtension(good_crx, path, FAILED_SILENTLY);
 }
@@ -1533,7 +1533,7 @@ TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesState) {
   FilePath path = extensions_path.AppendASCII("good.crx");
 
   InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
+  const Extension* good = service_->extensions()->at(0);
   ASSERT_EQ("1.0.0.0", good->VersionString());
   ASSERT_EQ(good_crx, good->id());
 
@@ -1545,7 +1545,7 @@ TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesState) {
   path = extensions_path.AppendASCII("good2.crx");
   UpdateExtension(good_crx, path, INSTALLED);
   ASSERT_EQ(1u, service_->disabled_extensions()->size());
-  Extension* good2 = service_->disabled_extensions()->at(0);
+  const Extension* good2 = service_->disabled_extensions()->at(0);
   ASSERT_EQ("1.0.0.1", good2->version()->GetString());
   EXPECT_TRUE(service_->IsIncognitoEnabled(good2));
 }
@@ -1603,7 +1603,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
 
-  Extension* extension = service_->GetExtensionById(kGoodId, true);
+  const Extension* extension = service_->GetExtensionById(kGoodId, true);
   ASSERT_TRUE(extension);
 
   bool enabled = service_->GetExtensionById(kGoodId, false);
@@ -1630,7 +1630,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), theme_crx));
 
-  Extension* extension = service_->GetExtensionById(theme_crx, true);
+  const Extension* extension = service_->GetExtensionById(theme_crx, true);
   ASSERT_TRUE(extension);
 
   EXPECT_EQ(Extension::ENABLED,
@@ -1655,7 +1655,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), theme_crx));
 
-  Extension* extension = service_->GetExtensionById(theme_crx, true);
+  const Extension* extension = service_->GetExtensionById(theme_crx, true);
   ASSERT_TRUE(extension);
 
   EXPECT_EQ(Extension::ENABLED,
@@ -1682,7 +1682,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingCrxThemeMismatch) {
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), theme_crx));
 
-  Extension* extension = service_->GetExtensionById(theme_crx, true);
+  const Extension* extension = service_->GetExtensionById(theme_crx, true);
   ASSERT_FALSE(extension);
 }
 
@@ -1739,7 +1739,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   FilePath path = extensions_path.AppendASCII("good.crx");
   InstallExtension(path, true);
   ASSERT_EQ(1u, service_->extensions()->size());
-  Extension* good = service_->extensions()->at(0);
+  const Extension* good = service_->extensions()->at(0);
 
   EXPECT_FALSE(good->is_theme());
 
@@ -1794,7 +1794,7 @@ TEST_F(ExtensionsServiceTest, UnloadBlacklistedExtension) {
   FilePath path = extensions_path.AppendASCII("good.crx");
 
   InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
+  const Extension* good = service_->extensions()->at(0);
   EXPECT_EQ(good_crx, good->id());
   UpdateExtension(good_crx, path, FAILED_SILENTLY);
 
@@ -2127,7 +2127,7 @@ TEST_F(ExtensionsServiceTest, ClearExtensionData) {
   path = path.AppendASCII("extensions");
   path = path.AppendASCII("good.crx");
   InstallExtension(path, true);
-  Extension* extension = service_->GetExtensionById(good_crx, false);
+  const Extension* extension = service_->GetExtensionById(good_crx, false);
   ASSERT_TRUE(extension);
   GURL ext_url(extension->url());
   string16 origin_id =
