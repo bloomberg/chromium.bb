@@ -17,6 +17,30 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../lib'))
 from cros_build_lib import RunCommand
 
+
+# TODO(dianders):
+# We use GData to access the tracker on code.google.com.  Eventually, we
+# want to create an ebuild and add the ebuild to hard-host-depends
+# For now, we'll just include instructions for installing it.
+INSTRS_FOR_GDATA = """
+To access the tracker you need the GData library.  To install in your home dir:
+
+  GDATA_INSTALL_DIR=~/gdatalib
+  mkdir -p "$GDATA_INSTALL_DIR"
+
+  TMP_DIR=`mktemp -d`
+  pushd $TMP_DIR
+  wget http://gdata-python-client.googlecode.com/files/gdata-2.0.12.zip
+  unzip gdata-2.0.12.zip
+  cd gdata-2.0.12/
+  python setup.py install --home="$GDATA_INSTALL_DIR"
+  popd
+
+  export PYTHONPATH="$GDATA_INSTALL_DIR/lib/python:$PYTHONPATH"
+
+You should add the PYTHONPATH line to your .bashrc file (or equivalent)."""
+
+
 DEFAULT_TRACKER = 'chromium-os'
 
 
@@ -38,11 +62,73 @@ def _GrabDirs():
   return _GrabOutput('repo forall -c "pwd"').split()
 
 
+class Issue(object):
+  """Class for holding info about issues (aka bugs)."""
+
+  def __init__(self, project_name, issue_id, tracker_acc):
+    """Constructor for Issue object.
+
+    Args:
+      project_name: The tracker project to query.
+      issue_id: The ID of the issue to query
+      tracker_acc: A TrackerAccess object, or None.
+    """
+    self.project_name = project_name
+    self.issue_id = issue_id
+    self.milestone = ''
+    self.priority = ''
+
+    if tracker_acc is not None:
+      keyed_labels = tracker_acc.GetKeyedLabels(project_name, issue_id)
+      if 'Mstone' in keyed_labels:
+        self.milestone = keyed_labels['Mstone']
+      if 'Pri' in keyed_labels:
+        self.priority = keyed_labels['Pri']
+
+  def GetUrl(self):
+    """Returns the URL to access the issue."""
+    bug_url_fmt = 'http://code.google.com/p/%s/issues/detail?id=%s'
+
+    # Get bug URL. We use short URLs to make the URLs a bit more readable.
+    if self.project_name == 'chromium-os':
+      bug_url = 'http://crosbug.com/%s' % self.issue_id
+    elif self.project_name == 'chrome-os-partner':
+      bug_url = 'http://crosbug.com/p/%s' % self.issue_id
+    else:
+      bug_url = bug_url_fmt % (self.project_name, self.issue_id)
+
+    return bug_url
+
+  def __str__(self):
+    """Provides a string representation of the issue.
+
+    Returns:
+      A string that looks something like:
+
+      project:id (milestone, priority)
+    """
+    if self.milestone and self.priority:
+      info_str = ' (%s, P%s)' % (self.milestone, self.priority)
+    elif self.milestone:
+      info_str = ' (%s)' % self.milestone
+    elif self.priority:
+      info_str = ' (P%s)' % self.priority
+    else:
+      info_str = ''
+
+    return '%s:%s%s' % (self.project_name, self.issue_id, info_str)
+
+  def __cmp__(self, other):
+    """Compare two Issue objects."""
+    return cmp((self.project_name.lower(), self.issue_id),
+               (other.project_name.lower(), other.issue_id))
+
+
 class Commit(object):
   """Class for tracking git commits."""
 
   def __init__(self, commit, projectname, commit_email, commit_date, subject,
-               body):
+               body, tracker_acc):
     """Create commit logs."""
     self.commit = commit
     self.projectname = projectname
@@ -51,10 +137,18 @@ class Commit(object):
     self.commit_date = datetime.strptime(commit_date, fmt)
     self.subject = subject
     self.body = body
-    self.bug_ids = self._GetBugIDs()
+    self._tracker_acc = tracker_acc
+    self._issues = self._GetIssues()
 
-  def _GetBugIDs(self):
-    """Get bug ID from commit logs."""
+  def _GetIssues(self):
+    """Get bug info from commit logs and issue tracker.
+
+    This should be called as the last step of __init__, since it
+    assumes that our member variables are already setup.
+
+    Returns:
+      A list of Issue objects, each of which holds info about a bug.
+    """
 
     entries = []
     for line in self.body.split('\n'):
@@ -63,7 +157,7 @@ class Commit(object):
         for i in match.group(1).split(','):
           entries.extend(filter(None, [x.strip() for x in i.split()]))
 
-    bug_ids = []
+    issues = []
     last_tracker = DEFAULT_TRACKER
     regex = (r'http://code.google.com/p/(\S+)/issues/detail\?id=([0-9]+)'
              r'|(\S+):([0-9]+)|(\b[0-9]+\b)')
@@ -72,38 +166,32 @@ class Commit(object):
       bug_numbers = re.findall(regex, new_item)
       for bug_tuple in bug_numbers:
         if bug_tuple[0] and bug_tuple[1]:
-          bug_ids.append('%s:%s' % (bug_tuple[0], bug_tuple[1]))
+          issues.append(Issue(bug_tuple[0], bug_tuple[1], self._tracker_acc))
           last_tracker = bug_tuple[0]
         elif bug_tuple[2] and bug_tuple[3]:
-          bug_ids.append('%s:%s' % (bug_tuple[2], bug_tuple[3]))
+          issues.append(Issue(bug_tuple[2], bug_tuple[3], self._tracker_acc))
           last_tracker = bug_tuple[2]
         elif bug_tuple[4]:
-          bug_ids.append('%s:%s' % (last_tracker, bug_tuple[4]))
+          issues.append(Issue(last_tracker, bug_tuple[4], self._tracker_acc))
 
-    bug_ids.sort(key=str.lower)
-    return bug_ids
+    issues.sort()
+    return issues
 
   def AsHTMLTableRow(self):
     """Returns HTML for this change, for printing as part of a table.
 
     Columns: Project, Date, Commit, Committer, Bugs, Subject.
+
+    Returns:
+      A string usable as an HTML table row, like:
+
+      <tr><td>Blah</td><td>Blah blah</td></tr>
     """
 
     bugs = []
-    bug_url_fmt = 'http://code.google.com/p/%s/issues/detail?id=%s'
     link_fmt = '<a href="%s">%s</a>'
-    for bug in self.bug_ids:
-      tracker, bug_id = bug.split(':')
-
-      # Get bug URL. We use short URLs to make the URLs a bit more readable.
-      if tracker == 'chromium-os':
-        bug_url = 'http://crosbug.com/%s' % bug_id
-      elif tracker == 'chrome-os-partner':
-        bug_url = 'http://crosbug.com/p/%s' % bug_id
-      else:
-        bug_url = bug_url_fmt % (tracker, bug_id)
-
-      bugs.append(link_fmt % (bug_url, bug))
+    for issue in self._issues:
+      bugs.append(link_fmt % (issue.GetUrl(), str(issue)))
 
     url_fmt = 'http://chromiumos-git/git/?p=%s.git;a=commitdiff;h=%s'
     url = url_fmt % (self.projectname, self.commit)
@@ -132,7 +220,7 @@ class Commit(object):
             cmp(self.commit_date, other.commit_date))
 
 
-def _GrabChanges(path, tag1, tag2):
+def _GrabChanges(path, tag1, tag2, tracker_acc):
   """Return list of commits to path between tag1 and tag2."""
 
   cmd = 'cd %s && git config --get remote.cros.projectname' % path
@@ -145,14 +233,25 @@ def _GrabChanges(path, tag1, tag2):
   for log_data in output.split('\0')[1:]:
     commit, commit_email, commit_date, subject, body = log_data.split('\t', 4)
     change = Commit(commit, projectname, commit_email, commit_date, subject,
-                    body)
+                    body, tracker_acc)
     commits.append(change)
   return commits
 
+
 def _ParseArgs():
   parser = optparse.OptionParser()
-  parser.add_option("--sort-by-date", dest="sort_by_date", default=False,
-                    action='store_true', help="Sort commits by date.")
+  parser.add_option(
+      "--sort-by-date", dest="sort_by_date", default=False,
+      action='store_true', help="Sort commits by date.")
+  parser.add_option(
+      "--tracker-user", dest="tracker_user", default=None,
+      help="Specify a username to login to code.google.com.")
+  parser.add_option(
+      "--tracker-pass", dest="tracker_pass", default=None,
+      help="Specify a password to go w/ user.")
+  parser.add_option(
+      "--tracker-passfile", dest="tracker_passfile", default=None,
+      help="Specify a file containing a password to go w/ user.")
   return parser.parse_args()
 
 
@@ -178,11 +277,27 @@ def main():
     print >>sys.stderr, 'E.g. %s %s cros/master' % (sys.argv[0], tags[0])
     sys.exit(1)
 
+  if options.tracker_user is not None:
+    # TODO(dianders): Once we install GData automatically, move the import
+    # to the top of the file where it belongs.  It's only here to allow
+    # people to run the script without GData.
+    try:
+      import tracker_access
+    except ImportError:
+      print >>sys.stderr, INSTRS_FOR_GDATA
+      sys.exit(1)
+    if options.tracker_passfile is not None:
+      options.tracker_pass = open(options.tracker_passfile, "r").read().strip()
+    tracker_acc = tracker_access.TrackerAccess(options.tracker_user,
+                                               options.tracker_pass)
+  else:
+    tracker_acc = None
+
   print >>sys.stderr, 'Finding differences between %s and %s' % (tag1, tag2)
   paths = _GrabDirs()
   changes = []
   for path in paths:
-    changes.extend(_GrabChanges(path, tag1, tag2))
+    changes.extend(_GrabChanges(path, tag1, tag2, tracker_acc))
 
   title = 'Changelog for %s to %s' % (tag1, tag2)
   print '<html>'
