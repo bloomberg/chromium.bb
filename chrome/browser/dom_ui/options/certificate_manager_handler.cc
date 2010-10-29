@@ -25,6 +25,7 @@ namespace {
 static const char kKeyId[] = "id";
 static const char kSubNodesId[] = "subnodes";
 static const char kNameId[] = "name";
+static const char kReadOnlyId[] = "readonly";
 static const char kIconId[] = "icon";
 static const char kSecurityDeviceId[] = "device";
 static const char kErrorId[] = "error";
@@ -848,6 +849,9 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
         cert_dict->SetString(kKeyId, CertToId(*cert));
         cert_dict->SetString(kNameId, certificate_manager_model_->GetColumnText(
             *cert, CertificateManagerModel::COL_SUBJECT_NAME));
+        cert_dict->SetBoolean(
+            kReadOnlyId,
+            certificate_manager_model_->cert_db().IsReadOnly(cert));
         // TODO(mattm): Other columns.
         cert_dict->SetString(kIconId, "none");
         subnodes->Append(cert_dict);
