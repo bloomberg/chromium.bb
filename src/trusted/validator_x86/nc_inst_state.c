@@ -443,11 +443,8 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
      * if applicable.
      */
     if (state->inst->flags & NACL_IFLAG(OpcodeInModRm)) {
-      /* TODO(karl) Optimize this with faster match on
-       * opcode value in first operand.
-       */
-      if (modrm_opcode(state->modrm) !=
-          (state->inst->operands[0].kind - Opcode0)) {
+      NaClInst* inst = state->inst;
+      if (modrm_opcode(state->modrm) != inst->opcode[inst->num_opcode_bytes]) {
         DEBUG(
             NaClLog(LOG_INFO,
                     "Discarding, opcode in mrm byte (%02"NACL_PRIx8") "

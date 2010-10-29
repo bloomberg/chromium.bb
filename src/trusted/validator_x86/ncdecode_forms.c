@@ -240,33 +240,23 @@ void NaClSetInstCat(NaClInstCat icat) {
   int visible_count = 0;
   int i;
   int num_ops;
-  int real_num_ops;
   NaClInst* inst = NaClGetDefInst();
   num_ops = inst->num_operands;
-  real_num_ops = num_ops;  /* Until proven otherwise. */
   for (i = 0; i < num_ops; ++i) {
+    Bool is_visible = FALSE;
+    ++operand_index;
     if (NACL_EMPTY_OPFLAGS ==
-        (inst->operands[i].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
-      Bool is_visible = FALSE;
-      ++operand_index;
-      if (NACL_EMPTY_OPFLAGS ==
-          (inst->operands[i].flags & NACL_OPFLAG(OpImplicit))) {
-        is_visible = TRUE;
-        ++visible_count;
-      }
-      NaClAddOpFlags(i, NaClGetIcatFlags(
-          icat, operand_index, (is_visible ? visible_count : 0), real_num_ops));
-    } else {
-      /* Note: This code assumes that OperandExtendsOpcode operands must precede
-       * real operands.
-       */
-      --real_num_ops;
+        (inst->operands[i].flags & NACL_OPFLAG(OpImplicit))) {
+      is_visible = TRUE;
+      ++visible_count;
     }
+    NaClAddOpFlags(i, NaClGetIcatFlags(
+        icat, operand_index, (is_visible ? visible_count : 0), num_ops));
   }
   /* Do special fixup for binary case with 3 arguments. In such
    * cases, the first argument is only a set, rather than a set/use.
    */
-  if ((Binary == icat) && (2 < real_num_ops)) {
+  if ((Binary == icat) && (3 == num_ops)) {
     NaClRemoveOpFlags(0, NACL_OPFLAG(OpUse));
   }
   NaClAddMiscellaneousFlags();
@@ -280,8 +270,8 @@ static Bool IsSLValue(int16_t val) {
 }
 
 /* Returns the opcode denoted by a SL (slash) value. */
-static NaClOpKind SLOpcode(int16_t val) {
-  return Opcode0 - val;
+static uint8_t SLOpcode(int16_t val) {
+  return (uint8_t) (0 - val);
 }
 
 Bool NaClInInstructionSet(const NaClMnemonic* names,
@@ -323,11 +313,8 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
             return TRUE;
           }
           if (IsSLValue(val)) {
-            /* Compare to opcode in operand[0]. */
-            if ((inst->num_operands > 0) &&
-                (inst->operands[0].flags &&
-                 NACL_OPFLAG(OperandExtendsOpcode)) &&
-                (SLOpcode(val) ==  inst->operands[0].kind)) {
+            if ((inst->flags & NACL_IFLAG(OpcodeInModRm)) &&
+                (SLOpcode(val) == inst->opcode[inst->num_opcode_bytes])) {
               /* good, continue search. */
             } else {
               is_good = FALSE;
@@ -909,11 +896,11 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
 }
 
 void NaClDefInvModRmInst(NaClInstPrefix prefix, uint8_t opcode,
-                         NaClOpKind modrm_opcode) {
+                         uint8_t modrm_opcode) {
   NaClDefInstPrefix(prefix);
   NaClDefInvalid(opcode);
   NaClAddIFlags(NACL_IFLAG(OpcodeInModRm));
-  NaClDefOp(modrm_opcode, NACL_IFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(modrm_opcode);
   NaClResetToDefaultInstPrefix();
 }
 
@@ -941,12 +928,12 @@ void DEF_UNARY_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
 #define DEFINE_UNARY_OINST(XXX) \
 void DEF_USUBO_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
                          NaClInstPrefix prefix, \
-                         NaClOpKind modrm_opcode, \
+                         uint8_t modrm_opcode, \
                          NaClMnemonic inst, \
                          NaClInstCat icat) { \
   NaClDefInstPrefix(prefix); \
   NaClDefInst(opbyte, itype, NACL_IFLAG(OpcodeInModRm), inst); \
-  NaClDefOp(modrm_opcode, NACL_IFLAG(OperandExtendsOpcode)); \
+  NaClDefOpcodeExtension(modrm_opcode); \
   DEF_OPERAND(XXX)(); \
   NaClSetInstCat(icat); \
   NaClResetToDefaultInstPrefix();             \
@@ -1135,12 +1122,12 @@ DEFINE_BINARY_INST(Wss, Vss)
 #define DEFINE_BINARY_OINST(XXX, YYY) \
 void DEF_OINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
                          NaClInstPrefix prefix, \
-                         NaClOpKind modrm_opcode, \
+                         uint8_t modrm_opcode, \
                          NaClMnemonic inst, \
                          NaClInstCat icat) { \
   NaClDefInstPrefix(prefix); \
   NaClDefInst(opbyte, itype, NACL_IFLAG(OpcodeInModRm), inst); \
-  NaClDefOp(modrm_opcode, NACL_OPFLAG(OperandExtendsOpcode)); \
+  NaClDefOpcodeExtension(modrm_opcode); \
   DEF_OPERAND(XXX)(); \
   DEF_OPERAND(YYY)(); \
   NaClSetInstCat(icat); \
@@ -1385,7 +1372,7 @@ static void NaClParseOpcode(const char* opcode,
         NaClDefFatal("invalid opcode register offset");
       }
       NaClDefInst(opcode_value + reg, insttype, NACL_IFLAG(OpcodePlusR), name);
-      NaClDefOp(OpcodeBaseMinus0 + reg, NACL_IFLAG(OperandExtendsOpcode));
+      NaClDefOpcodeRegisterValue(reg);
     }
     else {
       NaClDefInst(opcode_value + reg, insttype, NACL_EMPTY_IFLAGS, name);
@@ -1400,7 +1387,7 @@ static void NaClParseOpcode(const char* opcode,
       }
       ext = (int) STRTOULL(opcode_ext, NULL, 10);
       NaClDefInst(opcode_value, insttype, NACL_IFLAG(OpcodeInModRm), name);
-      NaClDefOp(Opcode0 + ext, NACL_OPFLAG(OperandExtendsOpcode));
+      NaClDefOpcodeExtension(ext);
     }
   } else {
     NaClDefInst(opcode_value, insttype, NACL_EMPTY_IFLAGS, name);

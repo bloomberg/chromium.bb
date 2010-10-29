@@ -548,11 +548,11 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("ff/0: Inc $Ev", NACLi_386, st, UnaryUpdate);
   NaClDefine("ff/1: Dec $Ev", NACLi_386, st, UnaryUpdate);
   NaClBegDef("ff/2: Call {%@ip}, {%@sp}, $Ev", NACLi_386, st);
-  NaClAddOpFlags(3, NACL_OPFLAG(OperandNear));
+  NaClAddOpFlags(2, NACL_OPFLAG(OperandNear));
   NaClEndDef(Call);
   NaClDefine("ff/3: Call {%@ip}, {%@sp}, $Mp", NACLi_386, st, Call);
   NaClBegDef("ff/4: Jmp {%@ip}, $Ev", NACLi_386, st);
-  NaClAddOpFlags(2, NACL_OPFLAG(OperandNear));
+  NaClAddOpFlags(1, NACL_OPFLAG(OperandNear));
   NaClEndDef(Jump);
   NaClDefine("ff/5: Jmp {%@ip}, $Mp", NACLi_386, st, Jump);
   NaClDefine("ff/6: Push {%@sp}, $Ev", NACLi_386, st, Push);

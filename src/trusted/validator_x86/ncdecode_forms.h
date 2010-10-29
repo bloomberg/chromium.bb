@@ -202,8 +202,7 @@ typedef void (*NaClDefOperand)();
  * an opcode in the ModRm byte.
  * TODO(karl) Remove this function once code has been ported to new API.
  */
-void NaClDefInvModRmInst(NaClInstPrefix, uint8_t opcode,
-                         NaClOpKind modrm_opcode);
+void NaClDefInvModRmInst(NaClInstPrefix, uint8_t opcode, uint8_t modrm_opcode);
 
 /* Generic macro to define the name of an opcode with no type arguments.
  * Note: Size is intentionally set to be the same as for
@@ -256,7 +255,7 @@ void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
 #define DECLARE_UNARY_OINST(XXX) \
   void DEF_USUBO_INST(XXX)(NaClInstType itype, uint8_t opbyte, \
                            NaClInstPrefix prefix,              \
-                           NaClOpKind modrm_opcode,            \
+                           uint8_t modrm_opcode,               \
                            NaClMnemonic inst,                  \
                            NaClInstCat icat)
 
@@ -460,7 +459,7 @@ DECLARE_BINARY_INST(Wss, Vss);
 #define DECLARE_BINARY_OINST(XXX, YYY) \
   void DEF_OINST(XXX, YYY)(NaClInstType itype, uint8_t opbyte, \
                            NaClInstPrefix prefix, \
-                           NaClOpKind modrm_opcode, \
+                           uint8_t modrm_opcode, \
                            NaClMnemonic inst, \
                            NaClInstCat icat)
 

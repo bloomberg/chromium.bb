@@ -15,10 +15,6 @@ OpDest
 OpAddress
 # Operand is implicit (rather than explicit)
 OpImplicit
-# Operand is an extension of the opcode, rather than a (real) operand.
-# This should be defined on the first operand for opcodes with values
-# OpcodeInModRm, OpcodePlusR, and OpcodePlusI.
-OperandExtendsOpcode
 # When jump address, the jump is near (rather than far).
 OperandNear
 # When jump address, the jump is far (rather than near).

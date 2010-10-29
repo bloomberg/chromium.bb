@@ -89,7 +89,13 @@ typedef struct NaClInst {
   /* The number of opcode bytes in the instruction. */
   uint8_t num_opcode_bytes;
   /* The actual opcode bytes. */
-  /* The (last) byte value representing the (opcode) instruction. */
+  /* The (last) byte value representing the (opcode) instruction.
+   * Note: If the instruction opcode continues in the modrm byte
+   * (defined by flag OpcodeInModRm), or a register value is
+   * encoded into the opcode byte (defined by flag OpcodePlusR),
+   * then the corresponding value (0..7) is stored in byte
+   * opcode[num_opcode_bytes];
+   */
   uint8_t opcode[NACL_MAX_OPCODE_BYTES];
   /* Defines the origin of this instruction. */
   NaClInstType insttype;

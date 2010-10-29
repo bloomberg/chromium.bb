@@ -59,10 +59,10 @@ void NaClResetToDefaultInstPrefix();
 void NaClDefInstChoices(const uint8_t opcode, const int count);
 
 /* Same as NaClDefInstChoices, but extends the opcode with the
- * opcode in the modrm byte.
+ * modrm opcode in the modrm byte (must be in [0..7]).
  */
 void NaClDefInstMrmChoices(const uint8_t opcode,
-                           const NaClOpKind modrm_opcode,
+                           const uint8_t modrm_opcode,
                            const int count);
 
 /* Same as NaClDefInstChoices, but you can explicitly define the
@@ -73,11 +73,11 @@ void NaClDefPrefixInstChoices(const NaClInstPrefix prefix,
                               const int count);
 
 /* Same as NaClDefPrefixInstChoices, but extends the opcode with
- * the opcode in the modrm byte.
+ * the modrm opcode in the modrm byte (must be in [0..7]).
  */
 void NaClDefPrefixInstMrmChoices(const NaClInstPrefix prefix,
                                  const uint8_t opcode,
-                                 const NaClOpKind modrm_opcode,
+                                 const uint8_t modrm_opcode,
                                  const int count);
 
 /* Same as NaClDefInstChoices, except that the counts for
@@ -88,10 +88,10 @@ void NaClDefInstChoices_32_64(const uint8_t opcode,
                               const int count_64);
 
 /* Same as NaClDefInstChoices_32_64, but extends the opcode with
- * the opcode in the modrm byte.
+ * the modrm opcode in the modrm byte (must be in [0..7]).
  */
 void NaClDefInstMrmChoices_32_64(const uint8_t opcode,
-                                 const NaClOpKind modrm_opcode,
+                                 const uint8_t modrm_opcode,
                                  const int count_32,
                                  const int count_64);
 
@@ -104,11 +104,11 @@ void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
                                     const int count_64);
 
 /* Same as NaClDefPrefixInstChoices_32_64, but extends the opcode with
- * the opcode in the modrm byte.
+ * the modrm opcode in the modrm byte (must be in [0..7]).
  */
 void NaClDefPrefixInstMrmChoices_32_64(const NaClInstPrefix prefix,
                                        const uint8_t opcode,
-                                       const NaClOpKind modrm_opcode,
+                                       const uint8_t modrm_opcode,
                                        const int count_32,
                                        const int count_64);
 
@@ -135,6 +135,15 @@ void NaClDefInst(
  * returned by this function.
  */
 NaClInst* NaClGetDefInst();
+
+/* Define an opcode extension for the current instruction, which is
+ * a value between 0 and 7, that appears in the modrm byte of the
+ * instruction.
+ */
+void NaClDefOpcodeExtension(int opcode);
+
+/* Define a register value embedded in the opcode value. */
+void NaClDefOpcodeRegisterValue(int r);
 
 /* Defines a specific sequence of byte codes for which the next NaClDefInst
  * should apply. When specified, restricts the match to be only defined for

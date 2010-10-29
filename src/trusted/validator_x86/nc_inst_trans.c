@@ -980,8 +980,7 @@ static NaClExp* NaClAppendOpcodeBaseReg(
     NaClInstState* state, NaClOp* operand) {
   /* Note: Difference held as first operand (by convention). */
   int reg_index;
-  assert(state->inst->num_operands > 1);
-  reg_index = state->inst->operands[0].kind - OpcodeBaseMinus0;
+  reg_index = state->inst->opcode[state->inst->num_opcode_bytes];
   assert(reg_index >= 0 && reg_index < 8);
   DEBUG(NaClLog(LOG_INFO, "Translate opcode base register %d\n", reg_index));
   return NaClAppendRegKind(state, NaClExtractOpRegKind(state, operand),
@@ -995,7 +994,7 @@ static NaClExp* NaClAppendStOpcodeBaseReg(NaClInstState* state) {
   /* Note: Difference held as first operand (by convention). */
   int reg_index;
   assert(state->inst->num_operands > 1);
-  reg_index = state->inst->operands[0].kind - OpcodeBaseMinus0;
+  reg_index = state->inst->opcode[state->inst->num_opcode_bytes];
   assert(reg_index >= 0 && reg_index < 8);
   DEBUG(NaClLog(LOG_INFO, "Translate opcode base register %d\n", reg_index));
   return NaClAppendReg(RegST0 + reg_index, &state->nodes);
@@ -1832,17 +1831,15 @@ void NaClBuildExpVector(struct NaClInstState* state) {
   } else {
     int i;
     for (i = 0; i < state->inst->num_operands; i++) {
+      NaClExp* n;
       NaClOp* op = &state->inst->operands[i];
-      if (0 == (op->flags & NACL_OPFLAG(OperandExtendsOpcode))) {
-        NaClExp* n;
-        DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
-        n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
-        if (op->flags & NACL_OPFLAG(OpImplicit)) {
-          n->flags |= NACL_EFLAG(ExprImplicit);
-        }
-        NaClAddOpSetUse(NaClAppendOperand(state, op), op);
-        DEBUG(NaClExpVectorPrint(NaClLogGetGio(), &state->nodes));
+      DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
+      n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
+      if (op->flags & NACL_OPFLAG(OpImplicit)) {
+        n->flags |= NACL_EFLAG(ExprImplicit);
       }
+      NaClAddOpSetUse(NaClAppendOperand(state, op), op);
+      DEBUG(NaClExpVectorPrint(NaClLogGetGio(), &state->nodes));
     }
   }
 }

@@ -72,14 +72,14 @@ static void NaClDefBswap() {
     NaClDefInst(0xC8 + i, NACLi_386,
                 NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodePlusR),
                 InstBswap);
-    NaClDefOp(OpcodeBaseMinus0 + i, NACL_OPFLAG(OperandExtendsOpcode));
+    NaClDefOpcodeRegisterValue(i);
     NaClDefOp(G_OpcodeBase, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
 
     NaClDefInst(0xC8 + i, NACLi_386,
                 NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
                 NACL_IFLAG(OpcodePlusR),
                 InstBswap);
-    NaClDefOp(OpcodeBaseMinus0 + i, NACL_OPFLAG(OperandExtendsOpcode));
+    NaClDefOpcodeRegisterValue(i);
     NaClDefOp(G_OpcodeBase, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
   }
 }
@@ -98,19 +98,19 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("0f00/7: Invalid", NACLi_INVALID, st, Other);
 
   NaClDefine("0f01/0: Sgdt $Ms", NACLi_SYSTEM, st, UnarySet);
-  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, Opcode1, 2);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 1, 2);
   NaClDefine("0f01/1: Sidt $Ms", NACLi_SYSTEM, st, UnarySet);
   /* Disallows Monitor/mwait.*/
   NaClDefine("0f01/1: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("0f01/2: Lgdt $Ms", NACLi_SYSTEM, st, Uses);
-  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, Opcode3, 2);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 3, 2);
   NaClDefine("0f01/3: Lidt $Ms", NACLi_SYSTEM, st, Uses);
   /* Disallows Vmrun, Vmmcall, Vmload, Vmsave, Stgi, Clgi, Skinit, Invlpga */
   NaClDefine("0f01/3: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("0f01/4: Smsw $Mw/Rv", NACLi_SYSTEM, st, UnarySet);
   NaClDefine("0f01/5: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("0f01/6: Lmsw $Ew", NACLi_INVALID, st, Uses);
-  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, Opcode7, 2);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 7, 2);
   NaClDefine("0f01/7: Invlpg $Mb", NACLi_SYSTEM, st, Uses);
   /* Disallows Swapgs, Rdtscp. */
   NaClDefine("0f01/7: Invalid", NACLi_INVALID, st, Other);
@@ -159,33 +159,33 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefInst(0x18, NACLi_SSE,
               NACL_IFLAG(OpcodeInModRm),
               InstPrefetchnta);
-  NaClDefOp(Opcode0, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(0);
   NaClDefOp(Mb_Operand, NACL_EMPTY_OPFLAGS);
 
 
   NaClDefInst(0x18, NACLi_SSE,
               NACL_IFLAG(OpcodeInModRm),
               InstPrefetcht0);
-  NaClDefOp(Opcode1, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(1);
   NaClDefOp(Mb_Operand, NACL_EMPTY_OPFLAGS);
 
 
   NaClDefInst(0x18, NACLi_SSE,
               NACL_IFLAG(OpcodeInModRm),
               InstPrefetcht1);
-  NaClDefOp(Opcode2, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(2);
   NaClDefOp(Mb_Operand, NACL_EMPTY_OPFLAGS);
 
 
   NaClDefInst(0x18, NACLi_SSE,
               NACL_IFLAG(OpcodeInModRm),
               InstPrefetcht2);
-  NaClDefOp(Opcode3, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(3);
   NaClDefOp(Mb_Operand, NACL_EMPTY_OPFLAGS);
 
   for (i = 4; i < 8; ++i) {
     NaClDefInst(0x18, NACLi_386, NACL_IFLAG(OpcodeInModRm), InstNop);
-    NaClDefOp(Opcode0 + i, NACL_OPFLAG(OperandExtendsOpcode));
+    NaClDefOpcodeExtension(i);
   }
 
   /* TODO(karl) Should we verify the contents of the nop matches table 4.1
@@ -197,7 +197,7 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
               NACL_IFLAG(OperandSize_v) | NACL_IFLAG(IgnorePrefixDATA16) |
               NACL_IFLAG(IgnorePrefixSEGCS),
               InstNop);
-  NaClDefOp(Opcode0, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(0);
 
   NaClDefInvalid(0x24);
   NaClDefInvalid(0x25);
@@ -333,24 +333,24 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefInst(0xae, NACLi_SSE2,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstLfence);
-  NaClDefOp(Opcode5, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(5);
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 
   NaClDefInst(0xae, NACLi_SSE2,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstMfence);
-  NaClDefOp(Opcode6, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(6);
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 
-  NaClDefInstMrmChoices(0xae, Opcode7, 2);
+  NaClDefInstMrmChoices(0xae, 7, 2);
   NaClDefInst(0xae, NACLi_SFENCE_CLFLUSH,
               NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIs0x3),
               InstSfence);
-  NaClDefOp(Opcode7, NACL_OPFLAG(OperandExtendsOpcode));
+  NaClDefOpcodeExtension(7);
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
 
   DEF_USUBO_INST(Mb_)(NACLi_SFENCE_CLFLUSH, 0xae, Prefix0F,
-                      Opcode7, InstClflush, Uses);
+                      7, InstClflush, Uses);
   NaClAddIFlags(NACL_IFLAG(OpcodeLtC0InModRm));
   NaClDefInstChoices_32_64(0xaf, 1, 2);
   NaClDefInst(0xaf, NACLi_386,
@@ -435,32 +435,32 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
    * be kept in 64-bit mode, because the compiler needs it to access
    * the top 32-bits of a 64-bit value.
    */
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode4, InstBt, Compare);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 4, InstBt, Compare);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
                 NACL_IFLAG(Opcode32Only));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode4, InstBt, Compare);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 4, InstBt, Compare);
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(Opcode64Only));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode5, InstBts, Binary);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 5, InstBts, Binary);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
                 NACL_IFLAG(Opcode32Only));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode5, InstBts, Binary);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 5, InstBts, Binary);
   NaClAddIFlags(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeHasImmed_b));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode6, InstBtr, Binary);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 6, InstBtr, Binary);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
                 NACL_IFLAG(Opcode32Only));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode6, InstBtr, Binary);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 6, InstBtr, Binary);
   NaClAddIFlags(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeHasImmed_b));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode7, InstBtc, Binary);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 7, InstBtc, Binary);
   NaClAddIFlags(NACL_IFLAG(NaClIllegal) | NACL_IFLAG(OpcodeHasImmed_b) |
                 NACL_IFLAG(Opcode32Only));
 
-  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, Opcode7, InstBtc, Binary);
+  DEF_OINST(Ev_, Ib_)(NACLi_386, 0xba, Prefix0F, 7, InstBtc, Binary);
   NaClAddIFlags(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OpcodeHasImmed_b));
 
   /* ISE reviewers suggested omitting btc */

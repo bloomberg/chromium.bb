@@ -1,7 +1,7 @@
 /*
  * Copyright 2009 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
- * be found in the <LICENSE file.
+ * be found in the LICENSE file.
  */
 
 /* Descriptors to model instructions, opcodes, and instruction operands. */
@@ -20,19 +20,10 @@
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_flag_impl.h"
 
 uint8_t NaClGetInstNumberOperands(NaClInst* inst) {
-  uint8_t operands = inst->num_operands;
-  if (operands > 0 &&
-      (inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
-    --operands;
-  }
-  return operands;
+  return inst->num_operands;
 }
 
 NaClOp* NaClGetInstOperand(NaClInst* inst, uint8_t index) {
-  if (inst->num_operands > 0 &&
-      (inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
-    ++index;
-  }
   assert(index < inst->num_operands);
   return &inst->operands[index];
 }
@@ -121,7 +112,6 @@ static const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
 void NaClInstPrint(struct Gio* f, NaClInst* inst) {
   int i;
   int count = 2;
-  Bool simplified_opcode_ext = FALSE;
   /* Add prefix bytes if defined by prefix. */
   const char* prefix = OpcodePrefixBytes(inst->prefix);
   int prefix_len = (int) strlen(prefix);
@@ -140,45 +130,12 @@ void NaClInstPrint(struct Gio* f, NaClInst* inst) {
     gprintf(f,"%02x", inst->opcode[i]);
     count += 2;
   }
-
-  /* If opcode continues in modrm byte, then add the value to this list. */
-  if ((0 < inst->num_operands) &&
-      (inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
-    if (inst->flags & NACL_IFLAG(OpcodeInModRm)) {
-      switch (inst->operands[0].kind) {
-        case Opcode0:
-        case Opcode1:
-        case Opcode2:
-        case Opcode3:
-        case Opcode4:
-        case Opcode5:
-        case Opcode6:
-        case Opcode7:
-          gprintf(f, " / %d", inst->operands[0].kind - Opcode0);
-          count += 4;
-          simplified_opcode_ext = TRUE;
-          break;
-        default:
-          break;
-      }
-    } else if (inst->flags & NACL_IFLAG(OpcodePlusR)) {
-      switch (inst->operands[0].kind) {
-        case OpcodeBaseMinus0:
-        case OpcodeBaseMinus1:
-        case OpcodeBaseMinus2:
-        case OpcodeBaseMinus3:
-        case OpcodeBaseMinus4:
-        case OpcodeBaseMinus5:
-        case OpcodeBaseMinus6:
-        case OpcodeBaseMinus7:
-          gprintf(f, " - r%d", inst->operands[0].kind - OpcodeBaseMinus0);
-          count += 5;
-          simplified_opcode_ext = TRUE;
-          break;
-        default:
-          break;
-      }
-    }
+  if (inst->flags & NACL_IFLAG(OpcodeInModRm)) {
+    gprintf(f, " / %d", inst->opcode[inst->num_opcode_bytes]);
+    count += 4;
+  } else if (inst->flags & NACL_IFLAG(OpcodePlusR)) {
+    gprintf(f, " - r%d", inst->opcode[inst->num_opcode_bytes]);
+    count += 5;
   }
   while (count < 30) {
     gprintf(f, " ");
@@ -202,14 +159,8 @@ void NaClInstPrint(struct Gio* f, NaClInst* inst) {
     gprintf(f, "\n");
     /* Now print actual encoding of each operand. */
     for (i = 0; i < inst->num_operands; ++i) {
-      if ((i == 0) && simplified_opcode_ext) {
-        /* Printed out as part of opcode sequence, don't repeat for
-         * human readable form.
-         */
-      } else {
-        gprintf(f, "      ");
-        NaClOpPrint(f, inst->operands + i);
-      }
+      gprintf(f, "      ");
+      NaClOpPrint(f, inst->operands + i);
     }
   }
 }

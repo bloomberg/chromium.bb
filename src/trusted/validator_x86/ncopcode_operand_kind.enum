@@ -396,29 +396,5 @@ RegXMM15
 # on operand size.
 RegGP7
 
-# The following only appears as the first (implicit) operand when the Opcode
-# has flag OpcodePlusR or OpcodePlusI . When defined, the operand defines the
-# amount to subtract from the opcode to get the opcode base.
-OpcodeBaseMinus0
-OpcodeBaseMinus1
-OpcodeBaseMinus2
-OpcodeBaseMinus3
-OpcodeBaseMinus4
-OpcodeBaseMinus5
-OpcodeBaseMinus6
-OpcodeBaseMinus7
-
-# The following only appears as the first (implicit) operand when the Opcode
-# has flag OpcodeInModRm. When defined, the operand defines the opcode value
-# inside the Mod/Rm byte.
-Opcode0
-Opcode1
-Opcode2
-Opcode3
-Opcode4
-Opcode5
-Opcode6
-Opcode7
-
 # Predefined constants.
 Const_1

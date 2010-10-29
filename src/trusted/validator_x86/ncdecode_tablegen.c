@@ -122,11 +122,9 @@ static NaClInst* NaClInstTable[NCDTABLESIZE][NaClInstPrefixEnumSize];
 
 #define NACL_DEFAULT_CHOICE_COUNT (-1)
 
-#define NACL_NO_MODRM_OPCODE Unknown_Operand
+#define NACL_NO_MODRM_OPCODE 8
 
-#define NACL_NO_MODRM_OPCODE_INDEX 8
-
-#define NACL_MODRM_OPCODE_SIZE (NACL_NO_MODRM_OPCODE_INDEX + 1)
+#define NACL_MODRM_OPCODE_SIZE (NACL_NO_MODRM_OPCODE + 1)
 
 /* Holds the expected number of entries in the defined instructions.
  * Note: the last index corresponds to the modrm opcode, or
@@ -188,268 +186,265 @@ static char* NaClDefaultOperandsDesc(NaClInst* inst) {
   int i;
   buffer[0] = '\0';  /* just in case there isn't any operands. */
   for (i = 0; i < inst->num_operands; ++i) {
-    if (NACL_EMPTY_OPFLAGS == (inst->operands[i].flags &
-                               (NACL_OPFLAG(OperandExtendsOpcode)))) {
-      Bool is_implicit = (NACL_EMPTY_OPFLAGS != (inst->operands[i].flags &
-                                                 NACL_OPFLAG(OpImplicit)));
-      NaClOpKind kind = inst->operands[i].kind;
-      if (is_first) {
-        is_first = FALSE;
-      } else {
+    Bool is_implicit = (NACL_EMPTY_OPFLAGS != (inst->operands[i].flags &
+                                               NACL_OPFLAG(OpImplicit)));
+    NaClOpKind kind = inst->operands[i].kind;
+    if (is_first) {
+      is_first = FALSE;
+    } else {
+      CharAdvance(&buf, &buf_size,
+                  SNPRINTF(buf, buf_size, ", "));
+    }
+    if (is_implicit) {
+      CharAdvance(&buf, &buf_size,
+                  SNPRINTF(buf, buf_size, "{"));
+    }
+    switch (kind) {
+      case A_Operand:
+      case Aw_Operand:
+      case Av_Operand:
+      case Ao_Operand:
         CharAdvance(&buf, &buf_size,
-                    SNPRINTF(buf, buf_size, ", "));
-      }
-      if (is_implicit) {
+                    SNPRINTF(buf, buf_size, "$A"));
+        break;
+      case E_Operand:
+      case Eb_Operand:
+      case Ew_Operand:
+      case Ev_Operand:
+      case Eo_Operand:
+      case Edq_Operand:
         CharAdvance(&buf, &buf_size,
-                    SNPRINTF(buf, buf_size, "{"));
-      }
-      switch(kind) {
-        case A_Operand:
-        case Aw_Operand:
-        case Av_Operand:
-        case Ao_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$A"));
-          break;
-        case E_Operand:
-        case Eb_Operand:
-        case Ew_Operand:
-        case Ev_Operand:
-        case Eo_Operand:
-        case Edq_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$E"));
-          break;
-        case G_Operand:
-        case Gb_Operand:
-        case Gw_Operand:
-        case Gv_Operand:
-        case Go_Operand:
-        case Gdq_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$G"));
-          break;
-        case ES_G_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "es:$G"));
-          break;
-        case DS_G_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "ds:$G"));
-          break;
-        case G_OpcodeBase:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$/r"));
-          break;
-        case I_Operand:
-        case Ib_Operand:
-        case Iw_Operand:
-        case Iv_Operand:
-        case Io_Operand:
-        case I2_Operand:
-        case J_Operand:
-        case Jb_Operand:
-        case Jw_Operand:
-        case Jv_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$I"));
-          break;
-        case M_Operand:
-        case Mb_Operand:
-        case Mw_Operand:
-        case Mv_Operand:
-        case Mo_Operand:
-        case Mdq_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$M"));
-          break;
-        case Mpw_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "m16:16"));
-          break;
-        case Mpv_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "m16:32"));
-          break;
-        case Mpo_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "m16:64"));
-          break;
-        case Mmx_E_Operand:
-        case Mmx_N_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$E(mmx)"));
-          break;
-        case Mmx_G_Operand:
-        case Mmx_Gd_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$G(mmx)"));
-          break;
-        case Xmm_E_Operand:
-        case Xmm_Eo_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$E(xmm)"));
-          break;
-        case Xmm_G_Operand:
-        case Xmm_Go_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$G(xmm)"));
-          break;
-        case O_Operand:
-        case Ob_Operand:
-        case Ow_Operand:
-        case Ov_Operand:
-        case Oo_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "$O"));
-          break;
-        case S_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "%%Sreg"));
-          break;
-        case St_Operand:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "%%st"));
-          break;
-        case RegAL:
-        case RegBL:
-        case RegCL:
-        case RegDL:
-        case RegAH:
-        case RegBH:
-        case RegCH:
-        case RegDH:
-        case RegDIL:
-        case RegSIL:
-        case RegBPL:
-        case RegSPL:
-        case RegR8B:
-        case RegR9B:
-        case RegR10B:
-        case RegR11B:
-        case RegR12B:
-        case RegR13B:
-        case RegR14B:
-        case RegR15B:
-        case RegAX:
-        case RegBX:
-        case RegCX:
-        case RegDX:
-        case RegSI:
-        case RegDI:
-        case RegBP:
-        case RegSP:
-        case RegR8W:
-        case RegR9W:
-        case RegR10W:
-        case RegR11W:
-        case RegR12W:
-        case RegR13W:
-        case RegR14W:
-        case RegR15W:
-        case RegEAX:
-        case RegEBX:
-        case RegECX:
-        case RegEDX:
-        case RegESI:
-        case RegEDI:
-        case RegEBP:
-        case RegESP:
-        case RegR8D:
-        case RegR9D:
-        case RegR10D:
-        case RegR11D:
-        case RegR12D:
-        case RegR13D:
-        case RegR14D:
-        case RegR15D:
-        case RegCS:
-        case RegDS:
-        case RegSS:
-        case RegES:
-        case RegFS:
-        case RegGS:
-        case RegEFLAGS:
-        case RegRFLAGS:
-        case RegEIP:
-        case RegRIP:
-        case RegRAX:
-        case RegRBX:
-        case RegRCX:
-        case RegRDX:
-        case RegRSI:
-        case RegRDI:
-        case RegRBP:
-        case RegRSP:
-        case RegR8:
-        case RegR9:
-        case RegR10:
-        case RegR11:
-        case RegR12:
-        case RegR13:
-        case RegR14:
-        case RegR15:
-        case RegREIP:
-        case RegREAX:
-        case RegREBX:
-        case RegRECX:
-        case RegREDX:
-        case RegRESP:
-        case RegREBP:
-        case RegRESI:
-        case RegREDI:
-        case RegDS_EDI:
-        case RegDS_EBX:
-        case RegES_EDI:
-        case RegST0:
-        case RegST1:
-        case RegST2:
-        case RegST3:
-        case RegST4:
-        case RegST5:
-        case RegST6:
-        case RegST7:
-        case RegMMX0:
-        case RegMMX1:
-        case RegMMX2:
-        case RegMMX3:
-        case RegMMX4:
-        case RegMMX5:
-        case RegMMX6:
-        case RegMMX7:
-        case RegXMM0:
-        case RegXMM1:
-        case RegXMM2:
-        case RegXMM3:
-        case RegXMM4:
-        case RegXMM5:
-        case RegXMM6:
-        case RegXMM7:
-        case RegXMM8:
-        case RegXMM9:
-        case RegXMM10:
-        case RegXMM11:
-        case RegXMM12:
-        case RegXMM13:
-        case RegXMM14:
-        case RegXMM15:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "%%%s",
-                               NaClOpKindName(kind) + strlen("Reg")));
-          break;
-        case Const_1:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "1"));
-          break;
-        default:
-          CharAdvance(&buf, &buf_size,
-                      SNPRINTF(buf, buf_size, "???"));
-          break;
-      }
-      if (is_implicit) {
+                    SNPRINTF(buf, buf_size, "$E"));
+        break;
+      case G_Operand:
+      case Gb_Operand:
+      case Gw_Operand:
+      case Gv_Operand:
+      case Go_Operand:
+      case Gdq_Operand:
         CharAdvance(&buf, &buf_size,
-                    SNPRINTF(buf, buf_size, "}"));
-      }
+                    SNPRINTF(buf, buf_size, "$G"));
+        break;
+      case ES_G_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "es:$G"));
+        break;
+      case DS_G_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "ds:$G"));
+        break;
+      case G_OpcodeBase:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$/r"));
+        break;
+      case I_Operand:
+      case Ib_Operand:
+      case Iw_Operand:
+      case Iv_Operand:
+      case Io_Operand:
+      case I2_Operand:
+      case J_Operand:
+      case Jb_Operand:
+      case Jw_Operand:
+      case Jv_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$I"));
+        break;
+      case M_Operand:
+      case Mb_Operand:
+      case Mw_Operand:
+      case Mv_Operand:
+      case Mo_Operand:
+      case Mdq_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$M"));
+        break;
+      case Mpw_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "m16:16"));
+        break;
+      case Mpv_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "m16:32"));
+        break;
+      case Mpo_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "m16:64"));
+        break;
+      case Mmx_E_Operand:
+      case Mmx_N_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$E(mmx)"));
+        break;
+      case Mmx_G_Operand:
+      case Mmx_Gd_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$G(mmx)"));
+        break;
+      case Xmm_E_Operand:
+      case Xmm_Eo_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$E(xmm)"));
+        break;
+      case Xmm_G_Operand:
+      case Xmm_Go_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$G(xmm)"));
+        break;
+      case O_Operand:
+      case Ob_Operand:
+      case Ow_Operand:
+      case Ov_Operand:
+      case Oo_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "$O"));
+        break;
+      case S_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "%%Sreg"));
+        break;
+      case St_Operand:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "%%st"));
+        break;
+      case RegAL:
+      case RegBL:
+      case RegCL:
+      case RegDL:
+      case RegAH:
+      case RegBH:
+      case RegCH:
+      case RegDH:
+      case RegDIL:
+      case RegSIL:
+      case RegBPL:
+      case RegSPL:
+      case RegR8B:
+      case RegR9B:
+      case RegR10B:
+      case RegR11B:
+      case RegR12B:
+      case RegR13B:
+      case RegR14B:
+      case RegR15B:
+      case RegAX:
+      case RegBX:
+      case RegCX:
+      case RegDX:
+      case RegSI:
+      case RegDI:
+      case RegBP:
+      case RegSP:
+      case RegR8W:
+      case RegR9W:
+      case RegR10W:
+      case RegR11W:
+      case RegR12W:
+      case RegR13W:
+      case RegR14W:
+      case RegR15W:
+      case RegEAX:
+      case RegEBX:
+      case RegECX:
+      case RegEDX:
+      case RegESI:
+      case RegEDI:
+      case RegEBP:
+      case RegESP:
+      case RegR8D:
+      case RegR9D:
+      case RegR10D:
+      case RegR11D:
+      case RegR12D:
+      case RegR13D:
+      case RegR14D:
+      case RegR15D:
+      case RegCS:
+      case RegDS:
+      case RegSS:
+      case RegES:
+      case RegFS:
+      case RegGS:
+      case RegEFLAGS:
+      case RegRFLAGS:
+      case RegEIP:
+      case RegRIP:
+      case RegRAX:
+      case RegRBX:
+      case RegRCX:
+      case RegRDX:
+      case RegRSI:
+      case RegRDI:
+      case RegRBP:
+      case RegRSP:
+      case RegR8:
+      case RegR9:
+      case RegR10:
+      case RegR11:
+      case RegR12:
+      case RegR13:
+      case RegR14:
+      case RegR15:
+      case RegREIP:
+      case RegREAX:
+      case RegREBX:
+      case RegRECX:
+      case RegREDX:
+      case RegRESP:
+      case RegREBP:
+      case RegRESI:
+      case RegREDI:
+      case RegDS_EDI:
+      case RegDS_EBX:
+      case RegES_EDI:
+      case RegST0:
+      case RegST1:
+      case RegST2:
+      case RegST3:
+      case RegST4:
+      case RegST5:
+      case RegST6:
+      case RegST7:
+      case RegMMX0:
+      case RegMMX1:
+      case RegMMX2:
+      case RegMMX3:
+      case RegMMX4:
+      case RegMMX5:
+      case RegMMX6:
+      case RegMMX7:
+      case RegXMM0:
+      case RegXMM1:
+      case RegXMM2:
+      case RegXMM3:
+      case RegXMM4:
+      case RegXMM5:
+      case RegXMM6:
+      case RegXMM7:
+      case RegXMM8:
+      case RegXMM9:
+      case RegXMM10:
+      case RegXMM11:
+      case RegXMM12:
+      case RegXMM13:
+      case RegXMM14:
+      case RegXMM15:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "%%%s",
+                             NaClOpKindName(kind) + strlen("Reg")));
+        break;
+      case Const_1:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "1"));
+        break;
+      default:
+        CharAdvance(&buf, &buf_size,
+                    SNPRINTF(buf, buf_size, "???"));
+        break;
+    }
+    if (is_implicit) {
+      CharAdvance(&buf, &buf_size,
+                  SNPRINTF(buf, buf_size, "}"));
     }
   }
   return strdup(buffer);
@@ -484,18 +479,6 @@ void NaClResetToDefaultInstPrefix() {
 
 NaClInst* NaClGetDefInst() {
   return current_inst;
-}
-
-/* Check that the given operand is an extention of the opcode
- * currently being defined. If not, generate appropriate error
- * message and stop program.
- */
-static void NaClCheckIfOpExtendsInst(NaClOp* operand) {
-  if (NACL_EMPTY_OPFLAGS == (operand->flags &
-                             NACL_OPFLAG(OperandExtendsOpcode))) {
-    NaClFatalInst(
-        "First operand should be marked with flag OperandExtendsOpcode");
-  }
 }
 
 /* Check if an E_Operand operand has been repeated, since it should
@@ -615,39 +598,6 @@ static void NaClApplySanityChecksToOp(int index) {
   const NaClIFlags operand_sizes = NaClOperandSizes(current_inst);
 
   if (!apply_sanity_checks) return;
-
-  /* Check special cases for operand 0. */
-  if (index == 0) {
-    if (current_inst->flags & NACL_IFLAG(OpcodeInModRm)) {
-      if ((operand->kind < Opcode0) ||
-          (operand->kind > Opcode7)) {
-        NaClFatalOp(
-            index,
-            "First operand of OpcodeInModRm  must be in {Opcode0..Opcode7}");
-      }
-      NaClCheckIfOpExtendsInst(operand);
-    }
-    if (current_inst->flags & NACL_IFLAG(OpcodePlusR)) {
-      if ((operand->kind < OpcodeBaseMinus0) ||
-          (operand->kind > OpcodeBaseMinus7)) {
-        NaClFatalOp(
-            index,
-            "First operand of OpcodePlusR must be in "
-            "{OpcodeBaseMinus0..OpcodeBaseMinus7}");
-      }
-      NaClCheckIfOpExtendsInst(operand);
-    }
-  }
-  if (operand->flags & NACL_OPFLAG(OperandExtendsOpcode)) {
-    if (index > 0) {
-      NaClFatalOp(index, "OperandExtendsOpcode only allowed on first operand");
-    }
-    if (operand->flags != NACL_OPFLAG(OperandExtendsOpcode)) {
-      NaClFatalOp(index,
-                   "Only OperandExtendsOpcode allowed for flag "
-                   "values on this operand");
-    }
-  }
 
   /* Check that operand is consistent with other operands defined, or flags
    * defined on the opcode.
@@ -842,32 +792,6 @@ static void NaClApplySanityChecksToOp(int index) {
       }
       NaClCheckIfIRepeated(index);
       break;
-    case OpcodeBaseMinus0:
-    case OpcodeBaseMinus1:
-    case OpcodeBaseMinus2:
-    case OpcodeBaseMinus3:
-    case OpcodeBaseMinus4:
-    case OpcodeBaseMinus5:
-    case OpcodeBaseMinus6:
-    case OpcodeBaseMinus7:
-      if (NACL_EMPTY_IFLAGS == (current_inst->flags &
-                                NACL_IFLAG(OpcodePlusR))) {
-        NaClFatalOp(index, "Expects opcode to have flag OpcodePlusR");
-      }
-      break;
-    case Opcode0:
-    case Opcode1:
-    case Opcode2:
-    case Opcode3:
-    case Opcode4:
-    case Opcode5:
-    case Opcode6:
-    case Opcode7:
-      if (NACL_EMPTY_IFLAGS == (current_inst->flags &
-                                NACL_IFLAG(OpcodeInModRm))) {
-        NaClFatalOp(index, "Expects opcode to have flag OpcodeInModRm");
-      }
-      break;
     default:
       break;
   }
@@ -887,6 +811,8 @@ static void NaClDefOpInternal(NaClOpKind kind, NaClOpFlags flags) {
 static void NaClInstallCurrentIntoOpcodeMrm(const NaClInstPrefix prefix,
                                             const uint8_t opcode,
                                             int mrm_index) {
+  DEBUG(NaClLog(LOG_INFO, "  Installing into [%x][%s][%d]\n",
+                opcode, NaClInstPrefixName(prefix), mrm_index));
   if (NULL == NaClInstMrmTable[opcode][prefix][mrm_index]) {
     NaClInstMrmTable[opcode][prefix][mrm_index] = current_inst_mrm;
   } else {
@@ -932,32 +858,22 @@ static void NaClRemoveCurrentInstMrmFromInstTable() {
  */
 static void NaClRemoveCurrentInstMrmFromInstMrmTable() {
   /* Be sure to try opcode in first operand (if applicable),
-   * and the default list NACL_NO_MODRM_OPCODE_INDEX, in case
+   * and the default list NACL_NO_MODRM_OPCODE, in case
    * the operand hasn't been processed yet.
    */
-  int mrm_opcode = NACL_NO_MODRM_OPCODE_INDEX;
-  if (current_inst->flags & NACL_IFLAG(OpcodeInModRm) &&
-      current_inst->num_operands > 0) {
-    switch(current_inst->operands[0].kind) {
-      case Opcode0:
-      case Opcode1:
-      case Opcode2:
-      case Opcode3:
-      case Opcode4:
-      case Opcode5:
-      case Opcode6:
-      case Opcode7:
-        mrm_opcode = current_inst->operands[0].kind - Opcode0;
-        break;
-      default:
-        break;
-    }
+  int mrm_opcode = NACL_NO_MODRM_OPCODE;
+  if (current_inst->flags & NACL_IFLAG(OpcodeInModRm)) {
+    mrm_opcode = current_inst->opcode[current_inst->num_opcode_bytes];
   }
+
   while (1) {
     uint8_t opcode = current_inst->opcode[current_inst->num_opcode_bytes - 1];
     NaClMrmInst* prev = NULL;
     NaClMrmInst* next =
         NaClInstMrmTable[opcode][current_inst->prefix][mrm_opcode];
+    DEBUG(NaClLog(LOG_INFO, "Removing [%02x][%s][%d]?",
+                  opcode, NaClInstPrefixName(current_inst->prefix),
+                  mrm_opcode));
     while (NULL != next) {
       if (current_inst_mrm == next) {
         /* Found - remove! */
@@ -973,8 +889,8 @@ static void NaClRemoveCurrentInstMrmFromInstMrmTable() {
         next = next->next;
       }
     }
-    if (mrm_opcode == NACL_NO_MODRM_OPCODE_INDEX) return;
-    mrm_opcode = NACL_NO_MODRM_OPCODE_INDEX;
+    if (mrm_opcode == NACL_NO_MODRM_OPCODE) return;
+    mrm_opcode = NACL_NO_MODRM_OPCODE;
   }
 }
 
@@ -984,7 +900,7 @@ static void NaClMoveCurrentToMrmIndex(int mrm_index) {
   NaClMrmInst* prev = NULL;
   NaClMrmInst* next =
       NaClInstMrmTable[opcode][current_opcode_prefix]
-                      [NACL_NO_MODRM_OPCODE_INDEX];
+                      [NACL_NO_MODRM_OPCODE];
   while (current_inst_mrm != next) {
     if (next == NULL) return;
     prev = next;
@@ -992,7 +908,7 @@ static void NaClMoveCurrentToMrmIndex(int mrm_index) {
   }
   if (NULL == prev) {
     NaClInstMrmTable[opcode][current_opcode_prefix]
-                    [NACL_NO_MODRM_OPCODE_INDEX] =
+                    [NACL_NO_MODRM_OPCODE] =
         next->next;
   } else {
     prev->next = next->next;
@@ -1013,6 +929,37 @@ static void NaClPrintlnOpFlags(struct Gio* g, NaClOpFlags flags) {
 }
 
 static void NaClApplySanityChecksToInst();
+
+void NaClDefOpcodeExtension(int opcode) {
+  uint8_t byte_opcode;
+  byte_opcode = (uint8_t) opcode;
+  if ((opcode < 0) || (opcode > 7)) {
+    NaClFatalInst("Attempted to define opcode extension not in range [0..7]");
+  }
+  if (NACL_EMPTY_IFLAGS ==
+      (current_inst->flags & NACL_IFLAG(OpcodeInModRm))) {
+    NaClFatalInst(
+        "Opcode extension in [0..7], but not OpcodeInModRm");
+  }
+  DEBUG(NaClLog(LOG_INFO, "Defining opcode extension %d\n", opcode));
+  NaClMoveCurrentToMrmIndex(byte_opcode);
+  current_inst->opcode[current_inst->num_opcode_bytes] = byte_opcode;
+}
+
+void NaClDefOpcodeRegisterValue(int r) {
+  uint8_t byte_r;
+  byte_r = (uint8_t) r;
+  if ((r < 0) || (r > 7)) {
+    NaClFatalInst("Attempted to define an embedded opcode register value "
+                  "not in range [0.. 7]");
+  }
+  if (NACL_EMPTY_IFLAGS ==
+      (current_inst->flags & NACL_IFLAG(OpcodePlusR))) {
+    NaClFatalInst(
+        "Attempted to define opcode register value when not OpcodePlusR");
+  }
+  current_inst->opcode[current_inst->num_opcode_bytes] = byte_r;
+}
 
 /* Same as previous function, except that sanity checks
  * are applied to see if inconsistent information is
@@ -1071,26 +1018,6 @@ void NaClDefOp(
     default:
       break;
   }
-
-  /* Readjust counts if opcode appears in modrm, and not a specific opcode
-   * sequence.
-   */
-  if ((index == 0) && (NULL == current_inst_node)) {
-    switch (kind) {
-      case Opcode0:
-      case Opcode1:
-      case Opcode2:
-      case Opcode3:
-      case Opcode4:
-      case Opcode5:
-      case Opcode6:
-      case Opcode7:
-        NaClMoveCurrentToMrmIndex(kind - Opcode0);
-        break;
-      default:
-        break;
-    }
-  }
   /* Define and apply sanity checks. */
   NaClDefOpInternal(kind, flags);
   NaClApplySanityChecksToOp(index);
@@ -1110,10 +1037,6 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
 }
 
 void NaClAddOperandFlags(uint8_t operand_index, NaClOpFlags more_flags) {
-  if ((current_inst->num_operands > 0) &&
-      (current_inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
-    ++operand_index;
-  }
   NaClAddOpFlags(operand_index, more_flags);
 }
 
@@ -1285,7 +1208,7 @@ static void NaClPrintInstDescriptor(struct Gio* out,
                                     const NaClInstPrefix prefix,
                                     const int opcode,
                                     const int modrm_index) {
-  if (NACL_NO_MODRM_OPCODE_INDEX == modrm_index) {
+  if (NACL_NO_MODRM_OPCODE == modrm_index) {
     gprintf(out, "%s 0x%02x: ",
             NaClInstPrefixName(prefix), opcode);
   } else {
@@ -1294,39 +1217,30 @@ static void NaClPrintInstDescriptor(struct Gio* out,
   }
 }
 
+static void VerifyModRmOpcodeRange(NaClInstPrefix prefix,
+                                   uint8_t opcode,
+                                   uint8_t modrm_opcode) {
+  if (modrm_opcode > NACL_NO_MODRM_OPCODE) {
+    NaClPrintInstDescriptor(NaClLogGetGio(), prefix, opcode, modrm_opcode);
+    NaClFatal("Illegal modrm opcode specification when defined opcode choices");
+  }
+}
+
 void NaClDefPrefixInstMrmChoices_32_64(const NaClInstPrefix prefix,
                                        const uint8_t opcode,
-                                       const NaClOpKind modrm_opcode,
+                                       const uint8_t modrm_opcode,
                                        const int count_32,
                                        const int count_64) {
-  int modrm_index = NACL_NO_MODRM_OPCODE_INDEX;
-  switch (modrm_opcode) {
-    case Opcode0:
-    case Opcode1:
-    case Opcode2:
-    case Opcode3:
-    case Opcode4:
-    case Opcode5:
-    case Opcode6:
-    case Opcode7:
-      modrm_index = modrm_opcode - Opcode0;
-      break;
-    case Unknown_Operand:
-      break;
-    default:
-      gprintf(NaClLogGetGio(), "%s:", NaClOpKindName(modrm_opcode));
-      NaClFatal(
-          "Illegal specification of modrm opcode when defining opcode choices");
-      break;
-  }
-  if (NaClInstCount[opcode][prefix][modrm_index] != NACL_DEFAULT_CHOICE_COUNT) {
-    NaClPrintInstDescriptor(NaClLogGetGio(), prefix, opcode, modrm_index);
+  VerifyModRmOpcodeRange(prefix, opcode, modrm_opcode);
+  if (NaClInstCount[opcode][prefix][modrm_opcode] !=
+      NACL_DEFAULT_CHOICE_COUNT) {
+    NaClPrintInstDescriptor(NaClLogGetGio(), prefix, opcode, modrm_opcode);
     NaClFatal("Redefining NaClOpcode choice count");
   }
   if (NACL_FLAGS_run_mode == X86_32) {
-    NaClInstCount[opcode][prefix][modrm_index] = count_32;
+    NaClInstCount[opcode][prefix][modrm_opcode] = count_32;
   } else if (NACL_FLAGS_run_mode == X86_64) {
-    NaClInstCount[opcode][prefix][modrm_index] = count_64;
+    NaClInstCount[opcode][prefix][modrm_opcode] = count_64;
   }
 }
 
@@ -1335,7 +1249,7 @@ void NaClDefInstChoices(const uint8_t opcode, const int count) {
 }
 
 void NaClDefInstMrmChoices(const uint8_t opcode,
-                           const NaClOpKind modrm_opcode,
+                           const uint8_t modrm_opcode,
                            const int count) {
   NaClDefPrefixInstMrmChoices(current_opcode_prefix, opcode,
                               modrm_opcode, count);
@@ -1349,7 +1263,7 @@ void NaClDefPrefixInstChoices(const NaClInstPrefix prefix,
 
 void NaClDefPrefixInstMrmChoices(const NaClInstPrefix prefix,
                                  const uint8_t opcode,
-                                 const NaClOpKind modrm_opcode,
+                                 const uint8_t modrm_opcode,
                                  const int count) {
   NaClDefPrefixInstMrmChoices_32_64(prefix, opcode, modrm_opcode,
                                          count, count);
@@ -1363,7 +1277,7 @@ void NaClDefInstChoices_32_64(const uint8_t opcode,
 }
 
 void NaClDefInstMrmChoices_32_64(const uint8_t opcode,
-                                 const NaClOpKind modrm_opcode,
+                                 const uint8_t modrm_opcode,
                                  const int count_32,
                                  const int count_64) {
   NaClDefPrefixInstMrmChoices_32_64(current_opcode_prefix, opcode,
@@ -1428,7 +1342,7 @@ static void NaClDefInstInternal(
     flags |= NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3);
   }
 
-  DEBUG(NaClLog(LOG_INFO, "Define %s %"NACL_PRIx8": %s(%d)\n",
+  DEBUG(NaClLog(LOG_INFO, "Define %s %"NACL_PRIx8": %s(%02x)\n",
                 NaClInstPrefixName(current_opcode_prefix),
                 opcode, NaClMnemonicName(name), name);
         NaClIFlagsPrint(NaClLogGetGio(), flags));
@@ -1489,7 +1403,7 @@ static void NaClDefInstInternal(
     }
     /* Install assuming no modrm opcode. Let NaClDefOp move if needed. */
     NaClInstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
-                                NACL_NO_MODRM_OPCODE_INDEX);
+                                NACL_NO_MODRM_OPCODE);
   } else if (NULL == current_inst_node->matching_inst) {
     DEBUG(NaClLog(LOG_INFO, "  instruction sequence install\n"));
     current_inst_node->matching_inst = current_inst;
@@ -1661,7 +1575,7 @@ static void NaClInitInstTables() {
   for (i = 0; i < NCDTABLESIZE; ++i) {
     for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
       NaClInstTable[i][prefix] = NULL;
-      for (j = 0; j <= NACL_NO_MODRM_OPCODE_INDEX; ++j) {
+      for (j = 0; j <= NACL_NO_MODRM_OPCODE; ++j) {
         NaClInstCount[i][prefix][j] = NACL_DEFAULT_CHOICE_COUNT;
       }
     }
