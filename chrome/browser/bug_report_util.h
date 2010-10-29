@@ -30,18 +30,8 @@ class TabContents;
 
 class BugReportUtil {
  public:
-#if defined(OS_CHROMEOS)
-  enum BugType {
-    CONNECTIVITY_ISSUE = 0,
-    SYNC_ISSUE,
-    CRASH_ISSUE,
-    PAGE_FORMATTING,
-    EXTENSION_ISSUE,
-    SUSPEND_ISSUE,
-    PHISHING_PAGE,
-    OTHER_PROBLEM
-  };
-#else
+
+#if defined(OS_MACOSX)
   enum BugType {
     PAGE_WONT_LOAD = 0,
     PAGE_LOOKS_ODD,
@@ -53,6 +43,7 @@ class BugReportUtil {
     OTHER_PROBLEM
   };
 #endif
+
 
   // SetOSVersion copies the maj.minor.build + servicePack_string
   // into a string. We currently have:
@@ -67,6 +58,11 @@ class BugReportUtil {
 
   // This sets the address of the feedback server to be used by SendReport
   static void SetFeedbackServer(const std::string& server);
+
+  // Send the feedback report after the specified delay
+  static void DispatchFeedback(Profile* profile, std::string* feedback_data,
+                               int64 delay);
+
 
   // Generates bug report data.
   static void SendReport(Profile* profile,
@@ -98,6 +94,10 @@ class BugReportUtil {
   static void AddFeedbackData(
       userfeedback::ExternalExtensionSubmit* feedback_data,
       const std::string& key, const std::string& value);
+
+  // Send the feedback report
+  static void SendFeedback(Profile* profile, std::string* feedback_data,
+                           int64 previous_delay);
 
 #if defined(OS_CHROMEOS)
   static bool ValidFeedbackSize(const std::string& content);

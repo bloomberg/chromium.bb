@@ -352,6 +352,8 @@
         'browser/browsing_data_remover.h',
         'browser/browsing_instance.cc',
         'browser/browsing_instance.h',
+        'browser/bug_report_data.h',
+        'browser/bug_report_data.cc',
         'browser/bug_report_util.cc',
         'browser/bug_report_util.h',
         # TODO(rkc): Find a better way to include these files
