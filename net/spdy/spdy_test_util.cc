@@ -519,44 +519,14 @@ spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
                                    associated_stream_id);
 }
 
-// Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
-// |extra_headers| are the extra header-value pairs, which typically
-// will vary the most between calls.
-// Returns a SpdyFrame.
-spdy::SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id) {
-  static const char* const kStandardGetHeaders[] = {
-    "hello",
-    "bye",
-    "status",
-    "301 Moved Permanently",
-    "location",
-    "http://www.foo.com/index.php",
-    "version",
-    "HTTP/1.1"
-  };
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
-                                   false,
-                                   stream_id,
-                                   LOWEST,
-                                   spdy::SYN_REPLY,
-                                   spdy::CONTROL_FLAG_NONE,
-                                   kStandardGetHeaders,
-                                   arraysize(kStandardGetHeaders));
-}
-
-// Constructs a standard SPDY SYN_REPLY packet with an Internal Server
-// Error status code.
-// Returns a SpdyFrame.
-spdy::SpdyFrame* ConstructSpdySynReplyError(int stream_id) {
-  return ConstructSpdySynReplyError("500 Internal Server Error", 1);
-}
-
 // Constructs a standard SPDY SYN_REPLY packet with the specified status code.
 // Returns a SpdyFrame.
-spdy::SpdyFrame* ConstructSpdySynReplyError(const char* const status,
-                                            int stream_id) {
-  static const char* const kStandardGetHeaders[] = {
+spdy::SpdyFrame* ConstructSpdySynReplyError(
+    const char* const status,
+    const char* const* const extra_headers,
+    int extra_header_count,
+    int stream_id) {
+  const char* const kStandardGetHeaders[] = {
     "hello",
     "bye",
     "status",
@@ -564,8 +534,8 @@ spdy::SpdyFrame* ConstructSpdySynReplyError(const char* const status,
     "version",
     "HTTP/1.1"
   };
-  return ConstructSpdyControlFrame(NULL,
-                                   0,
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
                                    false,
                                    stream_id,
                                    LOWEST,
@@ -574,6 +544,29 @@ spdy::SpdyFrame* ConstructSpdySynReplyError(const char* const status,
                                    kStandardGetHeaders,
                                    arraysize(kStandardGetHeaders));
 }
+
+// Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id) {
+  static const char* const kExtraHeaders[] = {
+    "location",
+    "http://www.foo.com/index.php",
+  };
+  return ConstructSpdySynReplyError("301 Moved Permanently", kExtraHeaders,
+                                    arraysize(kExtraHeaders)/2, stream_id);
+}
+
+// Constructs a standard SPDY SYN_REPLY packet with an Internal Server
+// Error status code.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdySynReplyError(int stream_id) {
+  return ConstructSpdySynReplyError("500 Internal Server Error", NULL, 0, 1);
+}
+
+
+
 
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically

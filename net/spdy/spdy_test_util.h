@@ -260,8 +260,12 @@ spdy::SpdyFrame* ConstructSpdySynReplyError(int stream_id);
 
 // Constructs a standard SPDY SYN_REPLY packet with the specified status code.
 // Returns a SpdyFrame.
-spdy::SpdyFrame* ConstructSpdySynReplyError(const char* const status,
-                                            int stream_id);
+spdy::SpdyFrame* ConstructSpdySynReplyError(
+    const char* const status,
+    const char* const* const extra_headers,
+    int extra_header_count,
+    int stream_id);
+
 // Constructs a standard SPDY POST SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
