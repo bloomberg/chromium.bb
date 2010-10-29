@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -30,14 +31,14 @@ class SignedSettingsTempStorageTest : public ::testing::Test {
     FilePath temp_file;
     ASSERT_TRUE(
         file_util::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
-    local_state_ = PrefService::CreatePrefService(temp_file, NULL);
-    ASSERT_TRUE(NULL != local_state_);
-    SignedSettingsTempStorage::RegisterPrefs(local_state_);
+    local_state_.reset(PrefService::CreatePrefService(temp_file, NULL));
+    ASSERT_TRUE(NULL != local_state_.get());
+    SignedSettingsTempStorage::RegisterPrefs(local_state_.get());
   }
 
   std::map<std::string, std::string> ref_map_;
   ScopedTempDir temp_dir_;
-  PrefService* local_state_;
+  scoped_ptr<PrefService> local_state_;
 };
 
 TEST_F(SignedSettingsTempStorageTest, Basic) {
@@ -56,7 +57,7 @@ TEST_F(SignedSettingsTempStorageTest, Basic) {
   for (size_t i = 0; i < a_list.size(); ++i) {
     EXPECT_TRUE(SignedSettingsTempStorage::Store(a_list[i]->first,
                                                  a_list[i]->second,
-                                                 local_state_));
+                                                 local_state_.get()));
   }
   for (int i = 0; i < 3; ++i) {
     std::copy(a_list.begin(), a_list.end(), std::back_inserter(b_list));
@@ -65,11 +66,11 @@ TEST_F(SignedSettingsTempStorageTest, Basic) {
   std::string value;
   for (size_t i = 0; i < b_list.size(); ++i) {
     EXPECT_TRUE(SignedSettingsTempStorage::Retrieve(b_list[i]->first, &value,
-                                                    local_state_));
+                                                    local_state_.get()));
     EXPECT_EQ(b_list[i]->second, value);
     EXPECT_FALSE(SignedSettingsTempStorage::Retrieve("non-existent tv-series",
                                                      &value,
-                                                     local_state_));
+                                                     local_state_.get()));
   }
 }
 
