@@ -42,7 +42,7 @@ int GetCheckForUpgradeEveryMs() {
   std::string interval =
       cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
   if (!interval.empty() && base::StringToInt(interval, &interval_ms))
-    return interval_ms * 1000; // Command line value is in seconds.
+    return interval_ms * 1000;  // Command line value is in seconds.
 
   // Otherwise check once an hour for dev channel and once a day for all other
   // channels/builds.
@@ -58,17 +58,6 @@ int GetCheckForUpgradeEveryMs() {
 
 // How long to wait before notifying the user about the upgrade.
 const int kNotifyUserAfterMs = 0;
-
-// The thread to run the upgrade detection code on. We use FILE for Linux
-// because we don't want to block the UI thread while launching a background
-// process and reading its output; on the Mac, checking for an upgrade
-// requires reading a file.
-const BrowserThread::ID kDetectUpgradeTaskID =
-#if defined(OS_POSIX)
-    BrowserThread::FILE;
-#else
-    BrowserThread::UI;
-#endif
 
 // This task checks the currently running version of Chrome against the
 // installed version. If the installed version is newer, it runs the passed
@@ -88,7 +77,7 @@ class DetectUpgradeTask : public Task {
   }
 
   virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(kDetectUpgradeTaskID));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
     using installer::Version;
     scoped_ptr<Version> installed_version;
@@ -179,7 +168,11 @@ void UpgradeDetector::CheckForUpgrade() {
   method_factory_.RevokeAll();
   Task* callback_task =
       method_factory_.NewRunnableMethod(&UpgradeDetector::UpgradeDetected);
-  BrowserThread::PostTask(kDetectUpgradeTaskID, FROM_HERE,
+  // We use FILE as the thread to run the upgrade detection code on all
+  // platforms. For Linux, this is because we don't want to block the UI thread
+  // while launching a background process and reading its output; on the Mac and
+  // on Windows checking for an upgrade requires reading a file.
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           new DetectUpgradeTask(callback_task));
 }
 
