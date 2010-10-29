@@ -166,6 +166,8 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
       UTF16ToUTF8(link_text).c_str());
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(link_button), FALSE);
+  gtk_util::ForceFontSizePixels(
+      GTK_CHROME_LINK_BUTTON(link_button)->label, 13.4);
   DCHECK(callback);
   g_signal_connect(link_button, "clicked", callback, this);
   gtk_util::SetButtonTriggersNavigation(link_button);
@@ -182,7 +184,10 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
   GtkWidget* trailing_label = gtk_label_new(
       UTF16ToUTF8(display_text.substr(link_offset)).c_str());
 
-  // TODO(joth): Unlike the AddLabalAndLink below, none of the label widgets
+  gtk_util::ForceFontSizePixels(initial_label, 13.4);
+  gtk_util::ForceFontSizePixels(trailing_label, 13.4);
+
+  // TODO(joth): Unlike the AddLabelAndLink below, none of the label widgets
   // are set as shrinkable here, meaning the text will run under the close
   // button etc. when the width is restricted, rather than eliding.
   gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
@@ -221,6 +226,7 @@ void InfoBar::AddLabelAndLink(const string16& display_text,
   if (link_button)
     gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
   GtkWidget* label = gtk_label_new(UTF16ToUTF8(display_text).c_str());
+  gtk_util::ForceFontSizePixels(label, 13.4);
   // In order to avoid the link_button and the label overlapping with each
   // other, we make the label shrinkable.
   gtk_widget_set_size_request(label, 0, -1);
@@ -384,6 +390,7 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
 
   std::string label_text = UTF16ToUTF8(delegate->GetMessageText());
   GtkWidget* label = gtk_label_new(label_text.c_str());
+  gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_util::CenterWidgetInHBox(confirm_hbox_, label, false, kEndOfLabelSpacing);
   gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
