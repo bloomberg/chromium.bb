@@ -491,6 +491,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   backend_initialized_ = false;
   observed_passphrase_required_ = false;
   last_attempted_user_email_.clear();
+  last_auth_error_ = GoogleServiceAuthError::None();
 }
 
 void ProfileSyncService::ClearServerData() {
