@@ -6,9 +6,7 @@
 
 #include <dlfcn.h>
 #include <errno.h>
-#if !defined(OS_MACOSX)
 #include <gcrypt.h>
-#endif
 #include <pthread.h>
 
 #include "base/file_util.h"
@@ -20,7 +18,6 @@
 #include "googleurl/src/gurl.h"
 #include "printing/backend/cups_helper.h"
 
-#if !defined(OS_MACOSX)
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
 
 namespace {
@@ -67,7 +64,6 @@ class GcryptInitializer {
 };
 
 }  // namespace
-#endif
 
 namespace printing {
 
@@ -186,10 +182,8 @@ bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
     const DictionaryValue* print_backend_settings) {
-#if !defined(OS_MACOSX)
   // Initialize gcrypt library.
   Singleton<GcryptInitializer>::get();
-#endif
 
   std::string print_server_url_str;
   if (print_backend_settings) {
