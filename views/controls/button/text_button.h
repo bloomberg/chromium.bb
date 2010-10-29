@@ -109,6 +109,10 @@ class TextButton : public CustomButton {
 
   void set_prefix_type(PrefixType type) { prefix_type_ = type; }
 
+  void set_icon_text_spacing(int icon_text_spacing) {
+    icon_text_spacing_ = icon_text_spacing;
+  }
+
   // Sets the icon.
   void SetIcon(const SkBitmap& icon);
   void SetHoverIcon(const SkBitmap& icon);
@@ -225,6 +229,9 @@ class TextButton : public CustomButton {
   bool show_multiple_icon_states_;
 
   PrefixType prefix_type_;
+
+  // Space between icon and text.
+  int icon_text_spacing_;
 
   DISALLOW_COPY_AND_ASSIGN(TextButton);
 };
