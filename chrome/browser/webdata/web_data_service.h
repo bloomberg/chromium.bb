@@ -436,21 +436,31 @@ class WebDataService
   void RemoveFormValueForElementName(const string16& name,
                                      const string16& value);
 
+  // DEPRECATED
+  // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
   // Schedules a task to add an AutoFill profile to the web database.
   void AddAutoFillProfile(const AutoFillProfile& profile);
 
+  // Schedules a task to add an AutoFill profile to the web database.
+  void AddAutoFillProfileGUID(const AutoFillProfile& profile);
+
+  // DEPRECATED
+  // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
   // Schedules a task to update an AutoFill profile in the web database.
   void UpdateAutoFillProfile(const AutoFillProfile& profile);
 
-  // Schedules a task to remove an AutoFill profile from the web database.
-  // |profile_id| is the unique ID of the profile to remove.
+  // Schedules a task to update an AutoFill profile in the web database.
+  void UpdateAutoFillProfileGUID(const AutoFillProfile& profile);
+
   // DEPRECATED
   // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
+  // Schedules a task to remove an AutoFill profile from the web database.
+  // |profile_id| is the unique ID of the profile to remove.
   void RemoveAutoFillProfile(int profile_id);
 
   // Schedules a task to remove an AutoFill profile from the web database.
   // |guid| is the identifer of the profile to remove.
-  void RemoveAutoFillProfile(const std::string& guid);
+  void RemoveAutoFillProfileGUID(const std::string& guid);
 
   // Initiates the request for all AutoFill profiles.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
@@ -458,21 +468,31 @@ class WebDataService
   // consumer owns the profiles.
   Handle GetAutoFillProfiles(WebDataServiceConsumer* consumer);
 
-  // Schedules a task to add credit card to the web database.
-  void AddCreditCard(const CreditCard& creditcard);
-
-  // Schedules a task to update credit card in the web database.
-  void UpdateCreditCard(const CreditCard& creditcard);
-
-  // Schedules a task to remove a credit card from the web database.
-  // |creditcard_id| is the unique ID of the credit card to remove.
   // DEPRECATED
   // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
-  void RemoveCreditCard(int creditcard_id);
+  // Schedules a task to add credit card to the web database.
+  void AddCreditCard(const CreditCard& credit_card);
+
+  // Schedules a task to add credit card to the web database.
+  void AddCreditCardGUID(const CreditCard& credit_card);
+
+  // DEPRECATED
+  // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
+  // Schedules a task to update credit card in the web database.
+  void UpdateCreditCard(const CreditCard& credit_card);
+
+  // Schedules a task to update credit card in the web database.
+  void UpdateCreditCardGUID(const CreditCard& credit_card);
+
+  // DEPRECATED
+  // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
+  // Schedules a task to remove a credit card from the web database.
+  // |credit_card_id| is the unique ID of the credit card to remove.
+  void RemoveCreditCard(int credit_card_id);
 
   // Schedules a task to remove a credit card from the web database.
   // |guid| is identifer of the credit card to remove.
-  void RemoveCreditCard(const std::string& guid);
+  void RemoveCreditCardGUID(const std::string& guid);
 
   // Initiates the request for all credit cards.  The method
   // OnWebDataServiceRequestDone of |consumer| gets called when the request is
@@ -611,14 +631,16 @@ class WebDataService
   void RemoveFormValueForElementNameImpl(
       GenericRequest2<string16, string16>* request);
   void AddAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
+  void AddAutoFillProfileGUIDImpl(GenericRequest<AutoFillProfile>* request);
   void UpdateAutoFillProfileImpl(GenericRequest<AutoFillProfile>* request);
-  // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
+  void UpdateAutoFillProfileGUIDImpl(GenericRequest<AutoFillProfile>* request);
   void RemoveAutoFillProfileImpl(GenericRequest<int>* request);
   void RemoveAutoFillProfileGUIDImpl(GenericRequest<std::string>* request);
   void GetAutoFillProfilesImpl(WebDataRequest* request);
   void AddCreditCardImpl(GenericRequest<CreditCard>* request);
+  void AddCreditCardGUIDImpl(GenericRequest<CreditCard>* request);
   void UpdateCreditCardImpl(GenericRequest<CreditCard>* request);
-  // TODO(dhollowa): Remove unique IDs.  http://crbug.com/58813
+  void UpdateCreditCardGUIDImpl(GenericRequest<CreditCard>* request);
   void RemoveCreditCardImpl(GenericRequest<int>* request);
   void RemoveCreditCardGUIDImpl(GenericRequest<std::string>* request);
   void GetCreditCardsImpl(WebDataRequest* request);
