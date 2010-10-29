@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/win/pe_image.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/interception_internal.h"
 #include "sandbox/src/interceptors.h"
 #include "sandbox/src/sandbox.h"
@@ -424,8 +425,10 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
   }
 
   Wow64 WowHelper(child_, ntdll_base);
-  if (!WowHelper.WaitForNtdll(INFINITE))
-    return false;
+  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
+    if (!WowHelper.WaitForNtdll(INFINITE))
+      return false;
+  }
 
   char* interceptor_base = NULL;
 
