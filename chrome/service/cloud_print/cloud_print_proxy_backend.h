@@ -9,11 +9,10 @@
 #include <string>
 
 #include "base/thread.h"
-#include "chrome/common/net/url_fetcher.h"
-#include "googleurl/src/gurl.h"
 #include "printing/backend/print_backend.h"
 
 class CloudPrintProxyService;
+class GURL;
 class DictionaryValue;
 
 // CloudPrintProxyFrontend is the interface used by CloudPrintProxyBackend to

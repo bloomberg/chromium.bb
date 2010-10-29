@@ -1131,6 +1131,8 @@
         'service/cloud_print/cloud_print_proxy.h',
         'service/cloud_print/cloud_print_proxy_backend.cc',
         'service/cloud_print/cloud_print_proxy_backend.h',
+        'service/cloud_print/cloud_print_url_fetcher.cc',
+        'service/cloud_print/cloud_print_url_fetcher.h',
         'service/cloud_print/job_status_updater.cc',
         'service/cloud_print/job_status_updater.h',
         'service/cloud_print/print_system_dummy.cc',
