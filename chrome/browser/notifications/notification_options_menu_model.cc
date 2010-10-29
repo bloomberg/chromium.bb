@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -17,8 +18,8 @@
 #include "grit/generated_resources.h"
 
 // Menu commands
-const int kRevokePermissionCommand = 0;
-const int kDisableExtensionCommand = 1;
+const int kTogglePermissionCommand = 0;
+const int kToggleExtensionCommand = 1;
 const int kOpenContentSettingsCommand = 2;
 
 NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
@@ -31,12 +32,12 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
     const string16 disable_label = l10n_util::GetStringUTF16(
         IDS_EXTENSIONS_DISABLE);
-    AddItem(kDisableExtensionCommand, disable_label);
+    AddItem(kToggleExtensionCommand, disable_label);
   } else {
     const string16 disable_label = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
         notification.display_source());
-    AddItem(kRevokePermissionCommand, disable_label);
+    AddItem(kTogglePermissionCommand, disable_label);
   }
 
   const string16 settings_label = l10n_util::GetStringUTF16(
@@ -45,6 +46,52 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
 }
 
 NotificationOptionsMenuModel::~NotificationOptionsMenuModel() {
+}
+
+bool NotificationOptionsMenuModel::IsLabelForCommandIdDynamic(int command_id)
+    const {
+  return command_id == kTogglePermissionCommand ||
+         command_id == kToggleExtensionCommand;
+}
+
+string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
+    const {
+  // TODO(tfarina,johnnyg): Removed this code if we decide to close
+  // notifications after permissions are revoked.
+  if (command_id == kTogglePermissionCommand ||
+      command_id == kToggleExtensionCommand) {
+    const Notification& notification = balloon_->notification();
+    const GURL& origin = notification.origin_url();
+
+    DesktopNotificationService* service =
+        balloon_->profile()->GetDesktopNotificationService();
+    if (origin.SchemeIs(chrome::kExtensionScheme)) {
+      ExtensionsService* ext_service =
+          balloon_->profile()->GetExtensionsService();
+      Extension* extension = ext_service->GetExtensionByURL(origin);
+      if (extension) {
+        ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
+        const std::string& id = extension->id();
+        if (extension_prefs->GetExtensionState(id) == Extension::ENABLED)
+          return l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE);
+        else
+          return l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE);
+      }
+    } else {
+      if (service->GetContentSetting(origin) == CONTENT_SETTING_ALLOW) {
+        return l10n_util::GetStringFUTF16(
+            IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
+            notification.display_source());
+      } else {
+        return l10n_util::GetStringFUTF16(
+            IDS_NOTIFICATION_BALLOON_ENABLE_MESSAGE,
+            notification.display_source());
+      }
+    }
+  } else if (command_id == kOpenContentSettingsCommand) {
+    return l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_SETTINGS_BUTTON);
+  }
+  return string16();
 }
 
 bool NotificationOptionsMenuModel::IsCommandIdChecked(int /* command_id */)
@@ -72,13 +119,22 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
       balloon_->profile()->GetExtensionsService();
   const GURL& origin = balloon_->notification().origin_url();
   switch (command_id) {
-    case kRevokePermissionCommand:
-      service->DenyPermission(origin);
+    case kTogglePermissionCommand:
+      if (service->GetContentSetting(origin) == CONTENT_SETTING_ALLOW)
+        service->DenyPermission(origin);
+      else
+        service->GrantPermission(origin);
       break;
-    case kDisableExtensionCommand: {
+    case kToggleExtensionCommand: {
       Extension* extension = ext_service->GetExtensionByURL(origin);
-      if (extension)
-        ext_service->DisableExtension(extension->id());
+      if (extension) {
+        ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
+        const std::string& id = extension->id();
+        if (extension_prefs->GetExtensionState(id) == Extension::ENABLED)
+          ext_service->DisableExtension(id);
+        else
+          ext_service->EnableExtension(id);
+      }
       break;
     }
     case kOpenContentSettingsCommand: {

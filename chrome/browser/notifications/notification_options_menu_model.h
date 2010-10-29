@@ -15,6 +15,10 @@ class NotificationOptionsMenuModel : public menus::SimpleMenuModel,
   explicit NotificationOptionsMenuModel(Balloon* balloon);
   virtual ~NotificationOptionsMenuModel();
 
+  // Overridden from menus::SimpleMenuModel:
+  virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+  virtual string16 GetLabelForCommandId(int command_id) const;
+
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;

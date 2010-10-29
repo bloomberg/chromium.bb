@@ -114,6 +114,8 @@ class DesktopNotificationService : public NotificationObserver {
 
   static void RegisterUserPrefs(PrefService* user_prefs);
 
+  ContentSetting GetContentSetting(const GURL& origin);
+
  private:
   void InitPrefs();
   void StartObserving();
@@ -129,8 +131,6 @@ class DesktopNotificationService : public NotificationObserver {
   // or on the frame of the notification toast.  Different from the origin
   // itself when dealing with extensions.
   string16 DisplayNameForOrigin(const GURL& origin);
-
-  ContentSetting GetContentSetting(const GURL& origin);
 
   // The profile which owns this object.
   Profile* profile_;
