@@ -36,12 +36,14 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugin_page_delegate.h"
 
+using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
 using WebKit::WebCookieJar;
@@ -1115,6 +1117,13 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
 
   // Sets the routing id to associate the ResourceRequest with the RenderView.
   webframe_->dispatchWillSendRequest(info.request);
+
+  // Sets the appcache host id to allow retrieval from the appcache.
+  if (WebApplicationCacheHostImpl* appcache_host =
+          WebApplicationCacheHostImpl::FromFrame(webframe_)) {
+    appcache_host->willStartSubResourceRequest(info.request);
+  }
+
   if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
     devtools_agent->identifierForInitialRequest(resource_id, webframe_,
                                                 info.request);

@@ -18,10 +18,12 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
+#include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 
+using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -215,6 +217,12 @@ int32_t URLLoader::Open(URLRequestInfo* request,
     return PP_ERROR_NOACCESS;
 
   frame->dispatchWillSendRequest(web_request);
+
+  // Sets the appcache host id to allow retrieval from the appcache.
+  if (WebApplicationCacheHostImpl* appcache_host =
+          WebApplicationCacheHostImpl::FromFrame(frame)) {
+    appcache_host->willStartSubResourceRequest(web_request);
+  }
 
   loader_.reset(WebKit::webKitClient()->createURLLoader());
   if (!loader_.get())
