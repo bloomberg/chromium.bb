@@ -33,7 +33,8 @@ namespace chromeos {
 static const char kPluginSelectionPolicyFile[] =
     "/usr/share/chromeos-assets/flash/plugin_policy";
 
-PluginSelectionPolicy::PluginSelectionPolicy() : initialized_(false) {
+PluginSelectionPolicy::PluginSelectionPolicy()
+    : init_from_file_finished_(false) {
 }
 
 void PluginSelectionPolicy::StartInit() {
@@ -52,15 +53,13 @@ bool PluginSelectionPolicy::InitFromFile(const FilePath& policy_file) {
   // This must always be called from the FILE thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  // Note: We're "initialized" even if loading the file fails.
-  initialized_ = true;
-
   string data;
   // This should be a really small file, so we're OK with just
   // slurping it.
   if (!file_util::ReadFileToString(policy_file, &data)) {
     LOG(ERROR) << "Unable to read plugin policy file \""
                << policy_file.value() << "\".";
+    init_from_file_finished_ = true;
     return false;
   }
 
@@ -81,6 +80,7 @@ bool PluginSelectionPolicy::InitFromFile(const FilePath& policy_file) {
       // Has to be preceeded by a "plugin" statement.
       if (last_plugin.empty()) {
         LOG(ERROR) << "Plugin policy file error: 'allow' out of context.";
+        init_from_file_finished_ = true;
         return false;
       }
       line = line.substr(6);
@@ -92,6 +92,7 @@ bool PluginSelectionPolicy::InitFromFile(const FilePath& policy_file) {
       // Has to be preceeded by a "plugin" statement.
       if (last_plugin.empty()) {
         LOG(ERROR) << "Plugin policy file error: 'deny' out of context.";
+        init_from_file_finished_ = true;
         return false;
       }
       line = line.substr(5);
@@ -113,6 +114,7 @@ bool PluginSelectionPolicy::InitFromFile(const FilePath& policy_file) {
     policies.insert(make_pair(last_plugin, policy));
 
   policies_.swap(policies);
+  init_from_file_finished_ = true;
   return true;
 }
 
@@ -136,7 +138,8 @@ bool PluginSelectionPolicy::IsAllowed(const GURL& url,
   // initialization is complete.  Right now it is guaranteed only by
   // the startup order and the fact that InitFromFile runs on the FILE
   // thread too.
-  DCHECK(initialized_) << "Tried to check policy before policy is initialized.";
+  DCHECK(init_from_file_finished_)
+      << "Tried to check policy before policy is initialized.";
 
   string name = path.BaseName().value();
 

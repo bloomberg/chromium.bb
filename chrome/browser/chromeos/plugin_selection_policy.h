@@ -56,9 +56,10 @@ class PluginSelectionPolicy
  private:
   // To allow access to InitFromFile
   FRIEND_TEST_ALL_PREFIXES(PluginSelectionPolicyTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(PluginSelectionPolicyTest, FindFirstAllowed);
   FRIEND_TEST_ALL_PREFIXES(PluginSelectionPolicyTest, InitFromFile);
   FRIEND_TEST_ALL_PREFIXES(PluginSelectionPolicyTest, IsAllowed);
-  FRIEND_TEST_ALL_PREFIXES(PluginSelectionPolicyTest, FindFirstAllowed);
+  FRIEND_TEST_ALL_PREFIXES(PluginSelectionPolicyTest, MissingFile);
 
   // Initializes from the default policy file.
   bool Init();
@@ -70,7 +71,14 @@ class PluginSelectionPolicy
   typedef std::map<std::string, Policy> PolicyMap;
 
   PolicyMap policies_;
-  bool initialized_;
+
+  // This is used to DCHECK if we try and call IsAllowed or
+  // FindFirstAllowed before we've finished executing InitFromFile.
+  // Note: We're "finished" even if loading the file fails -- the
+  // point of the DCHECK is to make sure we haven't violated our
+  // ordering/threading assumptions, not to make sure that we're
+  // properly initialized.
+  bool init_from_file_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginSelectionPolicy);
 };
