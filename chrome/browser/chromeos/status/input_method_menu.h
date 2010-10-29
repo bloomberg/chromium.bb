@@ -31,8 +31,11 @@ class InputMethodMenu : public views::ViewMenuDelegate,
                         public NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
+                  // TODO(yusukes): combine the three booleans into one enum.
+                  // http://crosbug.com/8386.
                   bool is_browser_mode,
-                  bool is_screen_locker);
+                  bool is_screen_locker,
+                  bool is_out_of_box_experience_mode);
   virtual ~InputMethodMenu();
 
   // menus::MenuModel implementation.
@@ -149,6 +152,7 @@ class InputMethodMenu : public views::ViewMenuDelegate,
   bool logged_in_;
   const bool is_browser_mode_;
   const bool is_screen_locker_mode_;
+  const bool is_out_of_box_experience_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenu);
 };

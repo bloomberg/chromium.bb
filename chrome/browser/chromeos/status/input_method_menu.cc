@@ -116,7 +116,8 @@ namespace chromeos {
 
 InputMethodMenu::InputMethodMenu(PrefService* pref_service,
                                  bool is_browser_mode,
-                                 bool is_screen_locker_mode)
+                                 bool is_screen_locker_mode,
+                                 bool is_out_of_box_experience_mode)
     : input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
                                 GetActiveInputMethods()),
       model_(NULL),
@@ -128,7 +129,8 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
       pref_service_(pref_service),
       logged_in_(false),
       is_browser_mode_(is_browser_mode),
-      is_screen_locker_mode_(is_screen_locker_mode) {
+      is_screen_locker_mode_(is_screen_locker_mode),
+      is_out_of_box_experience_mode_(is_out_of_box_experience_mode) {
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
 
@@ -214,7 +216,8 @@ int InputMethodMenu::GetGroupIdAt(int index) const {
   DCHECK_GE(index, 0);
 
   if (IndexIsInInputMethodList(index)) {
-    return kRadioGroupLanguage;
+    return is_out_of_box_experience_mode_ ?
+        kRadioGroupNone : kRadioGroupLanguage;
   }
 
   if (GetPropertyIndex(index, &index)) {
@@ -276,7 +279,8 @@ menus::MenuModel::ItemType InputMethodMenu::GetTypeAt(int index) const {
   }
 
   if (IndexIsInInputMethodList(index)) {
-    return menus::MenuModel::TYPE_RADIO;
+    return is_out_of_box_experience_mode_ ?
+        menus::MenuModel::TYPE_COMMAND : menus::MenuModel::TYPE_RADIO;
   }
 
   if (GetPropertyIndex(index, &index)) {

@@ -18,7 +18,8 @@ namespace chromeos {
 KeyboardSwitchMenu::KeyboardSwitchMenu()
     : InputMethodMenu(NULL /* pref_service */,
                       false /* is_browser_mode */,
-                      false /* is_screen_locker */) {
+                      false /* is_screen_locker_mode */,
+                      true /* is_out_of_box_experience_mode */) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
