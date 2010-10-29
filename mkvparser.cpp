@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cstring>
 #include <new>
+#include <climits>
 //#include <windows.h>
 //#include "odbgstream.hpp"
 //using std::endl;
@@ -2348,8 +2349,8 @@ void CuePoint::TrackPosition::Parse(
     }
 
     assert(m_pos >= 0);
-    //assert(m_track > 0);
-    //assert(m_block > 0);
+    assert(m_track > 0);
+    assert(m_block > 0);
 }
 
 
@@ -2999,6 +3000,7 @@ Track::Info::Info():
     codecPrivate(NULL),
     codecPrivateSize(0),
     codecNameAsUTF8(NULL)
+    //lacing(false)
 {
 }
 
@@ -3055,6 +3057,12 @@ const unsigned char* Track::GetCodecPrivate(size_t& size) const
 {
     size = m_info.codecPrivateSize;
     return m_info.codecPrivate;
+}
+
+
+bool Track::GetLacing() const
+{
+    return m_info.lacing;
 }
 
 
@@ -3461,7 +3469,13 @@ Tracks::Tracks(Segment* pSegment, long long start, long long size_) :
         //pos now desinates start of element
 
         if (id == 0x2E)  //TrackEntry ID
-            ParseTrackEntry(pos, size1, *m_trackEntriesEnd++);
+        {
+            Track*& pTrack = *m_trackEntriesEnd;
+            ParseTrackEntry(pos, size1, pTrack);
+
+            if (pTrack)
+                ++m_trackEntriesEnd;
+        }
 
         pos += size1;  //consume payload
         assert(pos <= stop);
@@ -3496,6 +3510,8 @@ void Tracks::ParseTrackEntry(
     Track::Settings audioSettings;
     audioSettings.start = -1;
 
+    long long lacing = 1;  //default is true
+
     while (pos < stop)
     {
 #ifdef _DEBUG
@@ -3514,6 +3530,8 @@ void Tracks::ParseTrackEntry(
             assert(i.nameAsUTF8);
         else if (Match(pReader, pos, 0x06, i.codecId))
             ;
+        else if (Match(pReader, pos, 0x1C, lacing))
+            assert(lacing <= 1);
         else if (Match(pReader,
                        pos,
                        0x23A2,
@@ -3559,6 +3577,8 @@ void Tracks::ParseTrackEntry(
     //TODO: propertly vet info.number, to ensure both its existence,
     //and that it is unique among all tracks.
     assert(i.number > 0);
+
+    i.lacing = (lacing > 0) ? true : false;
 
     //TODO: vet settings, to ensure that video settings (0x60)
     //were specified when type = 1, and that audio settings (0x61)
@@ -4130,6 +4150,11 @@ Cluster::GetEntry(
 
     while (i != j)
     {
+#ifdef _DEBUG
+        const ptrdiff_t idx = i - m_entries;
+        idx;
+#endif
+
         const BlockEntry* const pEntry = *i++;
         assert(pEntry);
         assert(!pEntry->EOS());
@@ -4425,14 +4450,21 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
     const long hr = pReader->Read(pos, 1, &m_flags);
     assert(hr == 0L);
 
+    const int invisible = int(m_flags & 0x08);
+    invisible;
+    assert(!invisible);
+
+    const int lacing = int(m_flags & 0x06);
+    lacing;
+    assert(!lacing);
+
     ++pos;
     assert(pos <= stop);
 
     m_frameOff = pos;
 
     const long long frame_size = stop - pos;
-
-    assert(frame_size <= 2147483647L);
+    assert(frame_size <= LONG_MAX);
 
     m_frameSize = static_cast<long>(frame_size);
 }

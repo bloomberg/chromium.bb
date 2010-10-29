@@ -192,6 +192,7 @@ public:
     const char* GetCodecNameAsUTF8() const;
     const char* GetCodecId() const;
     const unsigned char* GetCodecPrivate(size_t&) const;
+    bool GetLacing() const;
 
     const BlockEntry* GetEOS() const;
 
@@ -211,7 +212,9 @@ public:
         unsigned char* codecPrivate;
         size_t codecPrivateSize;
         char* codecNameAsUTF8;
+        bool lacing;
         Settings settings;
+
         Info();
         void Clear();
     };
