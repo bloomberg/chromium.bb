@@ -90,6 +90,13 @@ struct OrderByCreationTimeDesc {
   }
 };
 
+// Constants for use in VLOG
+const int kVlogPerCookieMonster = 1;
+const int kVlogPeriodic = 3;
+const int kVlogGarbageCollection = 5;
+const int kVlogSetCookies = 7;
+const int kVlogGetCookies = 9;
+
 }  // namespace
 
 // static
@@ -724,7 +731,8 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
   }
 
   // The scheme didn't match any in our whitelist.
-  DVLOG(1) << "WARNING: Unsupported cookie scheme: " << url.scheme();
+  VLOG(kVlogPerCookieMonster) << "WARNING: Unsupported cookie scheme: "
+                              << url.scheme();
   return false;
 }
 
@@ -747,7 +755,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     const CookieOptions& options) {
   lock_.AssertAcquired();
 
-  DVLOG(1) << "SetCookie() line: " << cookie_line;
+  VLOG(kVlogSetCookies) << "SetCookie() line: " << cookie_line;
 
   Time creation_time = creation_time_or_null;
   if (creation_time.is_null()) {
@@ -759,12 +767,12 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   ParsedCookie pc(cookie_line);
 
   if (!pc.IsValid()) {
-    DVLOG(1) << "WARNING: Couldn't parse cookie";
+    VLOG(kVlogSetCookies) << "WARNING: Couldn't parse cookie";
     return false;
   }
 
   if (options.exclude_httponly() && pc.IsHttpOnly()) {
-    DVLOG(1) << "SetCookie() not setting httponly cookie";
+    VLOG(kVlogSetCookies) << "SetCookie() not setting httponly cookie";
     return false;
   }
 
@@ -785,7 +793,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
                                !cookie_expires.is_null(), cookie_expires));
 
   if (!cc.get()) {
-    DVLOG(1) << "WARNING: Failed to allocate CanonicalCookie";
+    VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
     return false;
   }
   return SetCanonicalCookie(&cc, creation_time, options);
@@ -839,11 +847,12 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
                                        const CookieOptions& options) {
   const std::string key(GetKey((*cc)->Domain()));
   if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly())) {
-    DVLOG(1) << "SetCookie() not clobbering httponly cookie";
+    VLOG(kVlogSetCookies) << "SetCookie() not clobbering httponly cookie";
     return false;
   }
 
-  DVLOG(1) << "SetCookie() key: " << key << " cc: " << (*cc)->DebugString();
+  VLOG(kVlogSetCookies) << "SetCookie() key: " << key << " cc: "
+                        << (*cc)->DebugString();
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
@@ -906,7 +915,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
     histogram_cookie_deletion_cause_->Add(deletion_cause);
 
   CanonicalCookie* cc = it->second;
-  DVLOG(1) << "InternalDeleteCookie() cc: " << cc->DebugString();
+  VLOG(kVlogSetCookies) << "InternalDeleteCookie() cc: " << cc->DebugString();
 
   if (cc->IsPersistent() && store_ && sync_to_store)
     store_->DeleteCookie(*cc);
@@ -973,7 +982,8 @@ static bool FindLeastRecentlyAccessed(
     std::vector<CookieMonster::CookieMap::iterator>* cookie_its) {
   DCHECK_LE(num_purge, num_max);
   if (cookie_its->size() > num_max) {
-    DVLOG(1) << "FindLeastRecentlyAccessed() Deep Garbage Collect.";
+    VLOG(kVlogGarbageCollection)
+        << "FindLeastRecentlyAccessed() Deep Garbage Collect.";
     num_purge += cookie_its->size() - num_max;
     DCHECK_GT(cookie_its->size(), num_purge);
 
@@ -1020,7 +1030,7 @@ int CookieMonster::GarbageCollect(const Time& current,
 
   // Collect garbage for this key.
   if (cookies_.count(key) > kDomainMaxCookies) {
-    DVLOG(1) << "GarbageCollect() key: " << key;
+    VLOG(kVlogGarbageCollection) << "GarbageCollect() key: " << key;
 
     std::vector<CookieMap::iterator> cookie_its;
     num_deleted += GarbageCollectExpired(
@@ -1056,7 +1066,7 @@ int CookieMonster::GarbageCollect(const Time& current,
       (expiry_and_key_scheme_ == EKS_DISCARD_RECENT_AND_PURGE_DOMAIN ||
        earliest_access_time_ <
        Time::Now() - TimeDelta::FromDays(kSafeFromGlobalPurgeDays))) {
-    DVLOG(1) << "GarbageCollect() everything";
+    VLOG(kVlogGarbageCollection) << "GarbageCollect() everything";
     std::vector<CookieMap::iterator> cookie_its;
     base::Time oldest_left;
     num_deleted += GarbageCollectExpired(
@@ -1259,7 +1269,7 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
 
   histogram_time_get_->AddTime(TimeTicks::Now() - start_time);
 
-  DVLOG(1) << "GetCookies() result: " << cookie_line;
+  VLOG(kVlogGetCookies) << "GetCookies() result: " << cookie_line;
 
   return cookie_line;
 }
@@ -1497,8 +1507,9 @@ void CookieMonster::RecordPeriodicStats(const base::Time& current_time) {
     it_key = its_cookies.second;
   }
 
-  DVLOG(1) << "Time for recording cookie stats (us): "
-           << (TimeTicks::Now() - beginning_of_time).InMicroseconds();
+  VLOG(kVlogPeriodic)
+      << "Time for recording cookie stats (us): "
+      << (TimeTicks::Now() - beginning_of_time).InMicroseconds();
 
   last_statistic_record_time_ = current_time;
 }
