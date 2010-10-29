@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
@@ -507,7 +508,8 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
       // TODO(oshima): support auto login mode (this is not implemented yet)
       // http://crosbug.com/1881
       unlock_on_input_(user_.email().empty()),
-      locked_(false) {
+      locked_(false),
+      start_time_(base::Time::Now()) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 }
@@ -571,6 +573,15 @@ void ScreenLocker::Init() {
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   DVLOG(1) << "OnLoginFailure";
+  UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_OnLoginFailure"));
+  if (authentication_start_time_.is_null()) {
+    LOG(ERROR) << "authentication_start_time_ is not set";
+  } else {
+    base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
+    VLOG(1) << "Authentication failure time: " << delta.InSecondsF();
+    UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationFailureTime", delta);
+  }
+
   EnableInput();
   // Don't enable signout button here as we're showing
   // MessageBubble.
@@ -615,6 +626,14 @@ void ScreenLocker::OnLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& unused,
     bool pending_requests) {
   VLOG(1) << "OnLoginSuccess: Sending Unlock request.";
+  if (authentication_start_time_.is_null()) {
+    LOG(ERROR) << "authentication_start_time_ is not set";
+  } else {
+    base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
+    VLOG(1) << "Authentication success time: " << delta.InSecondsF();
+    UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
+  }
+
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
 }
@@ -630,6 +649,7 @@ void ScreenLocker::InfoBubbleClosing(InfoBubble* info_bubble,
 }
 
 void ScreenLocker::Authenticate(const string16& password) {
+  authentication_start_time_ = base::Time::Now();
   screen_lock_view_->SetEnabled(false);
   screen_lock_view_->SetSignoutEnabled(false);
   BrowserThread::PostTask(
@@ -656,7 +676,7 @@ void ScreenLocker::EnableInput() {
 
 void ScreenLocker::Signout() {
   if (!error_info_) {
-    // TODO(oshima): record this action in user metrics.
+    UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
     if (CrosLibrary::Get()->EnsureLoaded()) {
       CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     }
@@ -676,6 +696,7 @@ void ScreenLocker::OnGrabInputs() {
 // static
 void ScreenLocker::Show() {
   VLOG(1) << "In ScreenLocker::Show";
+  UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Show"));
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
 
   // Exit fullscreen.
@@ -771,6 +792,10 @@ void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
 void ScreenLocker::ScreenLockReady() {
   VLOG(1) << "ScreenLockReady: sending completed signal to power manager.";
   locked_ = true;
+  base::TimeDelta delta = base::Time::Now() - start_time_;
+  VLOG(1) << "Screen lock time: " << delta.InSecondsF();
+  UMA_HISTOGRAM_TIMES("ScreenLocker.ScreenLockTime", delta);
+
   if (background_view_->ScreenSaverEnabled()) {
     lock_widget_->GetFocusManager()->RegisterAccelerator(
         views::Accelerator(app::VKEY_ESCAPE, false, false, false), this);
@@ -821,6 +846,8 @@ void ScreenLocker::StopScreenSaver() {
 void ScreenLocker::StartScreenSaver() {
   if (!background_view_->IsScreenSaverVisible()) {
     VLOG(1) << "StartScreenSaver";
+    UserMetrics::RecordAction(
+        UserMetricsAction("ScreenLocker_StartScreenSaver"));
     background_view_->ShowScreenSaver();
     if (screen_lock_view_) {
       screen_lock_view_->SetEnabled(false);

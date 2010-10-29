@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -181,6 +182,11 @@ class ScreenLocker : public LoginStatusConsumer,
   // Reference to the single instance of the screen locker object.
   // This is used to make sure there is only one screen locker instance.
   static ScreenLocker* screen_locker_;
+
+  // The time when the screen locker object is created.
+  base::Time start_time_;
+  // The time when the authenticaton is started.
+  base::Time authentication_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };
