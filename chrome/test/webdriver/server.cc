@@ -25,6 +25,7 @@
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/create_session.h"
+#include "chrome/test/webdriver/commands/execute_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/source_command.h"
@@ -58,6 +59,7 @@ void SetCallback(struct mg_context* ctx, const char* pattern) {
 void InitCallbacks(struct mg_context* ctx) {
   SetCallback<CreateSession>(ctx,   "/session");
   SetCallback<BackCommand>(ctx,     "/session/*/back");
+  SetCallback<ExecuteCommand>(ctx,  "/session/*/execute");
   SetCallback<ForwardCommand>(ctx,  "/session/*/forward");
   SetCallback<RefreshCommand>(ctx,  "/session/*/refresh");
   SetCallback<SourceCommand>(ctx,   "/session/*/source");
@@ -81,6 +83,7 @@ int main(int argc, char *argv[]) {
   CommandLine cmd_line = CommandLine(argc, argv);
 #elif OS_WIN
   std::string c;
+
   for (int i = 0; i < argc; ++i) {
     c += std::string(argv[i]);
   }

@@ -672,6 +672,8 @@
         'test/webdriver/commands/command.cc',
         'test/webdriver/commands/create_session.h',
         'test/webdriver/commands/create_session.cc',
+        'test/webdriver/commands/execute_command.h',
+        'test/webdriver/commands/execute_command.cc',
         'test/webdriver/commands/navigate_commands.h',
         'test/webdriver/commands/navigate_commands.cc',
         'test/webdriver/commands/response.h',

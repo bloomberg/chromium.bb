@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/json/json_writer.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/webdriver/error_codes.h"
 #include "chrome/test/webdriver/commands/response.h"
 
@@ -55,8 +56,12 @@ class Command {
     return i < path_segments_.size() ? path_segments_.at(i) : "";
   }
 
-  // Returns the command parameter with the given |key| as a string. Returns
-  // false if there is no such parameter, or if it is not a string.
+  // Returns the command parameter with the given |key| as a UTF-16 string.
+  // Returns true on success.
+  bool GetStringParameter(const std::string& key, string16* out) const;
+
+  // Returns the command parameter with the given |key| as a ASCII string.
+  // Returns true on success.
   bool GetStringASCIIParameter(const std::string& key, std::string* out) const;
 
   // Returns the command parameter with the given |key| as a boolean. Returns
@@ -70,6 +75,13 @@ class Command {
  private:
   const std::vector<std::string> path_segments_;
   const scoped_ptr<const DictionaryValue> parameters_;
+
+  // An autorelease pool must exist on any thread where Objective C is used,
+  // even implicitly. Otherwise the warning:
+  //   "Objects autoreleased with no pool in place."
+  // is printed for every object deallocted.  Since every incomming command to
+  // chrome driver is allocated a new thread, the release pool is declared here.
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   DISALLOW_COPY_AND_ASSIGN(Command);
 };

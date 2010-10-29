@@ -15,6 +15,7 @@ import string
 import subprocess
 import sys
 import time
+import types
 import unittest
 import urllib2
 from selenium.remote.webdriver import WebDriver
@@ -40,11 +41,7 @@ WEBDRIVER_PROCESS = None
 if not WEBDRIVER_SERVER_URL:
   WEBDRIVER_SERVER_URL = 'http://localhost:%d' % WEBDRIVER_PORT
 
-class TestNavigation(unittest.TestCase):
-
-  SEARCH = "http://www.google.com/webhp?hl=en"
-  NEWS = "http://www.google.com/news?hl=en"
-
+class RemoteWebDriverTest(unittest.TestCase):
   """A new instance of chrome driver is started for every test case"""
   def setUp(self):
     global WEBDRIVER_SERVER_URL
@@ -57,7 +54,7 @@ class TestNavigation(unittest.TestCase):
       sys.exit(-1)
 
     time.sleep(5)
-    self.driver = WebDriver.WebDriver(WEBDRIVER_SERVER_URL, "chrome", "ANY");
+    self.driver = WebDriver.WebDriver(WEBDRIVER_SERVER_URL, "chrome", "ANY")
     self.assertTrue(self.driver)
 
   def tearDown(self):
@@ -78,6 +75,54 @@ class TestNavigation(unittest.TestCase):
         WEBDRIVER_PROCESS.kill()
         WEBDRIVER_PROCESS = None
 
+  """Preforms a string search ignoring case"""
+  def assertFind(self, text, search):
+    text = string.lower(text)
+    search = string.lower(search)
+    self.assertNotEqual(-1, string.find(text, search))
+
+class TestJavaScriptExecution(RemoteWebDriverTest):
+  """ Test the execute javascript ability of the remote driver"""
+  def testNoModification(self):
+    self.driver.get("http://www.google.com")
+    title = self.driver.execute_script("return document.title")
+    self.assertEqual(title, self.driver.get_title())
+
+  def testModification(self):
+    self.driver.get("http://www.google.com")
+    title = self.driver.get_title()
+    self.assertFind(title, "google")
+    r = self.driver.execute_script("return document.Foo")
+    self.assertTrue(r == None)
+    self.driver.execute_script("document.Foo = \"Hello\"")
+    r = self.driver.execute_script("return document.Foo")
+    self.assertTrue(r == "Hello")
+
+  def testComplexObjectFetch(self):
+    self.driver.get("http://www.google.com")
+    loc = self.driver.execute_script("return window.location")
+    self.assertTrue(type(loc) is types.DictType)
+    self.assertTrue(loc.has_key("hostname"))
+    self.assertFind(loc["hostname"], "google")
+
+  def testJavascriptExeception(self):
+    self.driver.get("http://www.google.com")
+    self.assertRaises(ErrorInResponseException, self.driver.execute_script,
+                      "return windows");
+
+  def testJavascriptWithNoReturn(self):
+    self.driver.get("http://www.google.com")
+    try:
+      ret = self.driver.execute_script("return window.foobar")
+      self.assertTrue(type(ret) is types.NoneType)
+    except:
+      self.assertTrue(False)
+
+
+class TestNavigation(RemoteWebDriverTest):
+  SEARCH = "http://www.google.com/webhp?hl=en"
+  NEWS = "http://www.google.com/news?hl=en"
+
   """Verifies that navigation to a specific page is correct by asserting on the
   the reported URL.  The function will not work with pages that redirect."""
   def navigate(self, url):
@@ -87,12 +132,6 @@ class TestNavigation(unittest.TestCase):
   def assertURL(self, url):
     u = self.driver.get_current_url()
     self.assertEqual(u, url)
-
-  """Preforms a string search ignoring case"""
-  def assertFind(self, text, search):
-    text = string.lower(text)
-    search = string.lower(search)
-    self.assertNotEqual(-1, string.find(text, search))
 
   def testNavigateToURL(self):
     # No redirects are allowed on the google home page.
@@ -112,7 +151,7 @@ class TestNavigation(unittest.TestCase):
     self.navigate(self.SEARCH)
 
     # Go back to news.
-    self.driver.back();
+    self.driver.back()
     self.assertURL(self.NEWS)
 
     # Move forward to search.
@@ -142,6 +181,7 @@ class TestNavigation(unittest.TestCase):
     self.assertFind(source, u"document.body.style") # Basic javascript.
     self.assertFind(source, u"feeling lucky") # Lucky button.
     self.assertFind(source, u"google search") # Searh button.
+
 
 if __name__ == '__main__':
   parser = optparse.OptionParser('%prog [options]')
