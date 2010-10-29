@@ -160,7 +160,7 @@ msvcrt.dll!_RTDynamicCast
 UNINITIALIZED READ
 ADVAPI32.dll!WmiMofEnumerateResourcesA
 ADVAPI32.dll!WmiMofEnumerateResourcesA
-ADVAPI32.dll!StackTraceW
+ADVAPI32.dll!Sta*TraceW
 
 # http://code.google.com/p/drmemory/issues/detail?id=55
 UNADDRESSABLE ACCESS
@@ -202,6 +202,15 @@ UNINITIALIZED READ
 UNADDRESSABLE ACCESS
 ...
 *!MessageBoxIndirect*
+
+# http://code.google.com/p/drmemory/issues/detail?id=65
+UNINITIALIZED READ
+...
+ADVAPI32.dll!SystemFunction036
+
+UNINITIALIZED READ
+...
+*!talk_base::CreateRandomString
 
 ############################
 # TODO(timurrrr): investigate these
@@ -267,13 +276,8 @@ UNINITIALIZED READ
 *!SyncSocketClientListener::OnMsgClassResponse
 
 UNINITIALIZED READ
-WSHTCPIP.dll!WSHGetSockaddrType
 ...
-WS2_32.dll!connect
-
-UNINITIALIZED READ
-...
-WS2_32.dll!socket
+WS2_32.dll!*
 
 UNINITIALIZED READ
 ...
@@ -284,11 +288,25 @@ UNINITIALIZED READ
 
 UNINITIALIZED READ
 ...
+*!NdrClientCall2
+
+UNINITIALIZED READ
+...
 *!SetSecurityDescriptorDacl
 
 UNINITIALIZED READ
 ...
 MSWSOCK.dll!WSPStartup
+
+UNINITIALIZED READ
+...
+*!Reg*Value
+
+UNINITIALIZED READ
+ntdll.dll!RtlpNtOpenKey
+ntdll.dll!RtlMakeSelfRelativeSD
+ntdll.dll!RtlAbsoluteToSelfRelativeSD
+ADVAPI32.dll!MakeSelfRelativeSD
 
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
