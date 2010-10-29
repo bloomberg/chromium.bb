@@ -275,9 +275,8 @@ display_create_drm_surface_from_file(struct display *display,
 	}
 
 	surface = display_create_drm_surface(display, rect);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     rect->width, rect->height,
-		     0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rect->width, rect->height,
+			GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	gdk_pixbuf_unref(pixbuf);
 

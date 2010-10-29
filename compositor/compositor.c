@@ -192,8 +192,8 @@ texture_from_png(const char *filename, int width, int height)
 	else
 		format = GL_RGB;
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+			format, GL_UNSIGNED_BYTE, data);
 
 	gdk_pixbuf_unref(pixbuf);
 
