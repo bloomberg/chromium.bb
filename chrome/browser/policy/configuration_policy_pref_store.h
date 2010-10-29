@@ -41,9 +41,9 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // Creates a ConfigurationPolicyPrefStore that reads recommended policy.
   static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
 
-  // Returns the default policy value map for Chrome.
-  static ConfigurationPolicyProvider::StaticPolicyValueMap
-      GetChromePolicyValueMap();
+  // Returns the default policy definition list for Chrome.
+  static ConfigurationPolicyProvider::PolicyDefinitionList*
+      GetChromePolicyDefinitionList();
 
   typedef std::set<const char*> ProxyPreferenceSet;
 
@@ -64,8 +64,8 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   static const PolicyToPreferenceMapEntry simple_policy_map_[];
   static const PolicyToPreferenceMapEntry proxy_policy_map_[];
   static const PolicyToPreferenceMapEntry default_search_policy_map_[];
-  static const ConfigurationPolicyProvider::StaticPolicyValueMap
-      policy_value_map_;
+  static const ConfigurationPolicyProvider::PolicyDefinitionList
+      policy_definition_list_;
 
   ConfigurationPolicyProvider* provider_;
   scoped_ptr<DictionaryValue> prefs_;

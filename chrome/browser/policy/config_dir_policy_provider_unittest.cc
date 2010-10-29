@@ -6,47 +6,24 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/policy_constants.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Mock;
-
 namespace policy {
-
-// Shorter reload intervals for testing PolicyDirWatcher.
-const int kSettleIntervalSecondsForTesting = 0;
-const int kReloadIntervalMinutesForTesting = 1;
 
 template<typename BASE>
 class ConfigDirPolicyProviderTestBase : public BASE {
  protected:
-  ConfigDirPolicyProviderTestBase()
-      : ui_thread_(BrowserThread::UI, &loop_),
-        file_thread_(BrowserThread::FILE, &loop_) {}
+  ConfigDirPolicyProviderTestBase() {}
 
   virtual void SetUp() {
-    // Determine the directory to use for testing.
-    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-    test_dir_ =
-        test_dir_.Append(FILE_PATH_LITERAL("ConfigDirPolicyProviderTest"));
-
-    // Make sure the directory is fresh.
-    file_util::Delete(test_dir_, true);
-    file_util::CreateDirectory(test_dir_);
-    ASSERT_TRUE(file_util::DirectoryExists(test_dir_));
-  }
-
-  virtual void TearDown() {
-    loop_.RunAllPending();
-    // Clean up test directory.
-    ASSERT_TRUE(file_util::Delete(test_dir_, true));
-    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   }
 
   // JSON-encode a dictionary and write it to a file.
@@ -55,155 +32,53 @@ class ConfigDirPolicyProviderTestBase : public BASE {
     std::string data;
     JSONStringValueSerializer serializer(&data);
     serializer.Serialize(dict);
-    FilePath file_path(test_dir_.AppendASCII(file_name));
+    FilePath file_path(test_dir().AppendASCII(file_name));
     ASSERT_TRUE(file_util::WriteFile(file_path, data.c_str(), data.size()));
   }
 
-  FilePath test_dir_;
-  MessageLoop loop_;
-  BrowserThread ui_thread_;
-  BrowserThread file_thread_;
+  const FilePath& test_dir() { return test_dir_.path(); }
+
+ private:
+  ScopedTempDir test_dir_;
 };
 
-// A mock provider that allows us to capture reload notifications.
-class MockConfigDirPolicyProvider : public ConfigDirPolicyProvider {
- public:
-  explicit MockConfigDirPolicyProvider(const FilePath& config_dir_)
-      : ConfigDirPolicyProvider(
-          ConfigurationPolicyPrefStore::GetChromePolicyValueMap(),
-          config_dir_) {
-  }
-
-  MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
-};
-
-class PolicyDirLoaderTest
+class ConfigDirPolicyLoaderTest
     : public ConfigDirPolicyProviderTestBase<testing::Test> {
- protected:
-  PolicyDirLoaderTest() {}
-
-  virtual void SetUp() {
-    ConfigDirPolicyProviderTestBase<testing::Test>::SetUp();
-    provider_.reset(new MockConfigDirPolicyProvider(test_dir_));
-  }
-
-  virtual void TearDown() {
-    provider_.reset(NULL);
-    ConfigDirPolicyProviderTestBase<testing::Test>::TearDown();
-  }
-
-  scoped_ptr<MockConfigDirPolicyProvider> provider_;
-};
-
-TEST_F(PolicyDirLoaderTest, BasicLoad) {
-  DictionaryValue test_dict;
-  test_dict.SetString("HomepageLocation", "http://www.google.com");
-  WriteConfigFile(test_dict, "config_file");
-
-  scoped_refptr<PolicyDirLoader> loader_(
-      new PolicyDirLoader(provider_->AsWeakPtr(), test_dir_,
-                          kSettleIntervalSecondsForTesting,
-                          kReloadIntervalMinutesForTesting));
-  scoped_ptr<DictionaryValue> policy(loader_->GetPolicy());
-  EXPECT_TRUE(policy.get());
-  EXPECT_EQ(1U, policy->size());
-
-  std::string str_value;
-  EXPECT_TRUE(policy->GetString("HomepageLocation", &str_value));
-  EXPECT_EQ("http://www.google.com", str_value);
-
-  loader_->Stop();
-}
-
-TEST_F(PolicyDirLoaderTest, TestRefresh) {
-  scoped_refptr<PolicyDirLoader> loader_(
-      new PolicyDirLoader(provider_->AsWeakPtr(), test_dir_,
-                          kSettleIntervalSecondsForTesting,
-                          kReloadIntervalMinutesForTesting));
-  scoped_ptr<DictionaryValue> policy(loader_->GetPolicy());
-  EXPECT_TRUE(policy.get());
-  EXPECT_EQ(0U, policy->size());
-
-  DictionaryValue test_dict;
-  test_dict.SetString("HomepageLocation", "http://www.google.com");
-  WriteConfigFile(test_dict, "config_file");
-
-  EXPECT_CALL(*provider_, NotifyStoreOfPolicyChange()).Times(1);
-  loader_->OnFilePathChanged(test_dir_.AppendASCII("config_file"));
-
-  // Run the loop. The refresh should be handled immediately since the settle
-  // interval has been disabled.
-  loop_.RunAllPending();
-  Mock::VerifyAndClearExpectations(provider_.get());
-
-  policy.reset(loader_->GetPolicy());
-  EXPECT_TRUE(policy.get());
-  EXPECT_EQ(1U, policy->size());
-
-  std::string str_value;
-  EXPECT_TRUE(policy->GetString("HomepageLocation", &str_value));
-  EXPECT_EQ("http://www.google.com", str_value);
-
-  loader_->Stop();
-}
-
-template<typename BASE>
-class ConfigDirPolicyProviderTestWithMockStore
-    : public ConfigDirPolicyProviderTestBase<BASE> {
- protected:
-  virtual void SetUp() {
-    ConfigDirPolicyProviderTestBase<BASE>::SetUp();
-    // Create a fresh policy store mock.
-    policy_store_.reset(new MockConfigurationPolicyStore());
-  }
-
-  scoped_ptr<MockConfigurationPolicyStore> policy_store_;
-};
-
-class ConfigDirPolicyProviderTest
-    : public ConfigDirPolicyProviderTestWithMockStore<testing::Test> {
 };
 
 // The preferences dictionary is expected to be empty when there are no files to
 // load.
-TEST_F(ConfigDirPolicyProviderTest, ReadPrefsEmpty) {
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_TRUE(policy_store_->policy_map().empty());
+TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
+  ConfigDirPolicyLoader loader(test_dir());
+  scoped_ptr<DictionaryValue> policy(loader.Load());
+  EXPECT_TRUE(policy.get());
+  EXPECT_TRUE(policy->empty());
 }
 
 // Reading from a non-existent directory should result in an empty preferences
 // dictionary.
-TEST_F(ConfigDirPolicyProviderTest, ReadPrefsNonExistentDirectory) {
-  FilePath non_existent_dir(test_dir_.Append(FILE_PATH_LITERAL("not_there")));
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(),
-      non_existent_dir);
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_TRUE(policy_store_->policy_map().empty());
+TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
+  FilePath non_existent_dir(test_dir().Append(FILE_PATH_LITERAL("not_there")));
+  ConfigDirPolicyLoader loader(non_existent_dir);
+  scoped_ptr<DictionaryValue> policy(loader.Load());
+  EXPECT_TRUE(policy.get());
+  EXPECT_TRUE(policy->empty());
 }
 
 // Test reading back a single preference value.
-TEST_F(ConfigDirPolicyProviderTest, ReadPrefsSinglePref) {
+TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsSinglePref) {
   DictionaryValue test_dict;
   test_dict.SetString("HomepageLocation", "http://www.google.com");
   WriteConfigFile(test_dict, "config_file");
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
 
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_EQ(1U, policy_store_->policy_map().size());
-  const Value* value =
-      policy_store_->Get(ConfigurationPolicyStore::kPolicyHomePage);
-  ASSERT_TRUE(value);
-  std::string str_value;
-  EXPECT_TRUE(value->GetAsString(&str_value));
-  EXPECT_EQ("http://www.google.com", str_value);
+  ConfigDirPolicyLoader loader(test_dir());
+  scoped_ptr<DictionaryValue> policy(loader.Load());
+  EXPECT_TRUE(policy.get());
+  EXPECT_TRUE(policy->Equals(&test_dict));
 }
 
 // Test merging values from different files.
-TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
+TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   // Write a bunch of data files in order to increase the chance to detect the
   // provider not respecting lexicographic ordering when reading them. Since the
   // filesystem may return files in arbitrary order, there is no way to be sure,
@@ -217,17 +92,11 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
   WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
     WriteConfigFile(test_dict_bar, base::IntToString(i));
-  ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
 
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_EQ(1U, policy_store_->policy_map().size());
-  const Value* value =
-      policy_store_->Get(ConfigurationPolicyStore::kPolicyHomePage);
-  ASSERT_TRUE(value);
-  std::string str_value;
-  EXPECT_TRUE(value->GetAsString(&str_value));
-  EXPECT_EQ("http://foo.com", str_value);
+  ConfigDirPolicyLoader loader(test_dir());
+  scoped_ptr<DictionaryValue> policy(loader.Load());
+  EXPECT_TRUE(policy.get());
+  EXPECT_TRUE(policy->Equals(&test_dict_foo));
 }
 
 // Holds policy type, corresponding policy key string and a valid value for use
@@ -298,15 +167,31 @@ class ValueTestParams {
 // Tests whether the provider correctly reads a value from the file and forwards
 // it to the store.
 class ConfigDirPolicyProviderValueTest
-    : public ConfigDirPolicyProviderTestWithMockStore<
+    : public ConfigDirPolicyProviderTestBase<
           testing::TestWithParam<ValueTestParams> > {
+ protected:
+  ConfigDirPolicyProviderValueTest()
+      : ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_) {}
+
+  virtual void TearDown() {
+    loop_.RunAllPending();
+  }
+
+  MockConfigurationPolicyStore policy_store_;
+
+ private:
+  MessageLoop loop_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 };
 
 TEST_P(ConfigDirPolicyProviderValueTest, Default) {
   ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_TRUE(policy_store_->policy_map().empty());
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      test_dir());
+  EXPECT_TRUE(provider.Provide(&policy_store_));
+  EXPECT_TRUE(policy_store_.policy_map().empty());
 }
 
 TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
@@ -314,9 +199,10 @@ TEST_P(ConfigDirPolicyProviderValueTest, NullValue) {
   dict.Set(GetParam().policy_key(), Value::CreateNullValue());
   WriteConfigFile(dict, "empty");
   ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_TRUE(policy_store_->policy_map().empty());
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      test_dir());
+  EXPECT_TRUE(provider.Provide(&policy_store_));
+  EXPECT_TRUE(policy_store_.policy_map().empty());
 }
 
 TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
@@ -324,10 +210,11 @@ TEST_P(ConfigDirPolicyProviderValueTest, TestValue) {
   dict.Set(GetParam().policy_key(), GetParam().test_value()->DeepCopy());
   WriteConfigFile(dict, "policy");
   ConfigDirPolicyProvider provider(
-      ConfigurationPolicyPrefStore::GetChromePolicyValueMap(), test_dir_);
-  EXPECT_TRUE(provider.Provide(policy_store_.get()));
-  EXPECT_EQ(1U, policy_store_->policy_map().size());
-  const Value* value = policy_store_->Get(GetParam().type());
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
+      test_dir());
+  EXPECT_TRUE(provider.Provide(&policy_store_));
+  EXPECT_EQ(1U, policy_store_.policy_map().size());
+  const Value* value = policy_store_.Get(GetParam().type());
   ASSERT_TRUE(value);
   EXPECT_TRUE(GetParam().test_value()->Equals(value));
 }

@@ -15,6 +15,8 @@ class MockPreferences : public MacPreferences {
   MockPreferences();
   virtual ~MockPreferences();
 
+  virtual Boolean AppSynchronize(CFStringRef applicationID);
+
   virtual CFPropertyListRef CopyAppValue(CFStringRef key,
                                          CFStringRef applicationID);
 

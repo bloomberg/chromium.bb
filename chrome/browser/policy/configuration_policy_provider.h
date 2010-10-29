@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store.h"
 
@@ -21,18 +23,18 @@ class ConfigurationPolicyProvider {
  public:
   // Used for static arrays of policy values that is used to initialize an
   // instance of the ConfigurationPolicyProvider.
-  struct StaticPolicyValueMap {
+  struct PolicyDefinitionList {
     struct Entry {
       ConfigurationPolicyStore::PolicyType policy_type;
       Value::ValueType value_type;
       const char* name;
     };
 
-    size_t entry_count;
-    const Entry* entries;
+    const Entry* begin;
+    const Entry* end;
   };
 
-  explicit ConfigurationPolicyProvider(const StaticPolicyValueMap& policy_map);
+  explicit ConfigurationPolicyProvider(const PolicyDefinitionList* policy_list);
 
   virtual ~ConfigurationPolicyProvider();
 
@@ -51,21 +53,14 @@ class ConfigurationPolicyProvider {
   virtual void NotifyStoreOfPolicyChange();
 
  protected:
-  // A structure mapping policies to their implementations by providers.
-  struct PolicyValueMapEntry {
-    ConfigurationPolicyStore::PolicyType policy_type;
-    Value::ValueType value_type;
-    std::string name;
-  };
-  typedef std::vector<PolicyValueMapEntry> PolicyValueMap;
-
-  const PolicyValueMap& policy_value_map() const {
-    return policy_value_map_;
+  const PolicyDefinitionList* policy_definition_list() const {
+    return policy_definition_list_;
   }
 
  private:
   // Contains the default mapping from policy values to the actual names.
-  PolicyValueMap policy_value_map_;
+  const ConfigurationPolicyProvider::PolicyDefinitionList*
+      policy_definition_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);

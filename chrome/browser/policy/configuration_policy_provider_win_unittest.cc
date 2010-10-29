@@ -183,9 +183,8 @@ void ConfigurationPolicyProviderWinTest::SetUp() {
   ActivateOverrides();
 
   store_.reset(new MockConfigurationPolicyStore);
-  provider_.reset(
-      new ConfigurationPolicyProviderWin(
-            ConfigurationPolicyPrefStore::GetChromePolicyValueMap()));
+  provider_.reset(new ConfigurationPolicyProviderWin(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()));
 }
 
 void ConfigurationPolicyProviderWinTest::TearDown() {

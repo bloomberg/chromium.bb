@@ -7,116 +7,19 @@
 #include <set>
 
 #include "base/file_util.h"
-#include "base/logging.h"
-#include "base/message_loop.h"
-#include "base/task.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/json_value_serializer.h"
 
 namespace policy {
 
-// Amount of time we wait for the files in the policy directory to settle before
-// trying to load it. This alleviates the problem of reading partially written
-// files and allows to batch quasi-simultaneous changes.
-const int kSettleIntervalSeconds = 5;
-
-// The time interval for rechecking policy. This is our fallback in case the
-// directory watch fails or doesn't report a change.
-const int kReloadIntervalMinutes = 15;
-
-// PolicyDirLoader implementation:
-
-PolicyDirLoader::PolicyDirLoader(
-    base::WeakPtr<ConfigDirPolicyProvider> provider,
-    const FilePath& config_dir,
-    int settle_interval_seconds,
-    int reload_interval_minutes)
-    : provider_(provider),
-      origin_loop_(MessageLoop::current()),
-      config_dir_(config_dir),
-      reload_task_(NULL),
-      settle_interval_seconds_(settle_interval_seconds),
-      reload_interval_minutes_(reload_interval_minutes) {
-  // Force an initial load, so GetPolicy() works.
-  policy_.reset(Load());
-  DCHECK(policy_.get());
+ConfigDirPolicyLoader::ConfigDirPolicyLoader(const FilePath& config_dir)
+    : FileBasedPolicyProvider::Delegate(config_dir) {
 }
 
-PolicyDirLoader::~PolicyDirLoader() {}
-
-void PolicyDirLoader::Stop() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            NewRunnableMethod(this, &PolicyDirLoader::Stop));
-    return;
-  }
-
-  if (reload_task_) {
-    reload_task_->Cancel();
-    reload_task_ = NULL;
-  }
-}
-
-void PolicyDirLoader::Reload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Check the directory time in order to see whether a reload is required.
-  base::TimeDelta delay;
-  base::Time now = base::Time::Now();
-  if (!IsSafeToReloadPolicy(now, &delay)) {
-    ScheduleReloadTask(delay);
-    return;
-  }
-
-  // Load the policy definitions.
-  scoped_ptr<DictionaryValue> new_policy(Load());
-
-  // Check again in case the directory has changed while reading it.
-  if (!IsSafeToReloadPolicy(now, &delay)) {
-    ScheduleReloadTask(delay);
-    return;
-  }
-
-  // Replace policy definition.
-  bool changed = false;
-  {
-    AutoLock lock(lock_);
-    changed = !policy_->Equals(new_policy.get());
-    policy_.reset(new_policy.release());
-  }
-
-  // There's a change, report it!
-  if (changed) {
-    VLOG(1) << "Policy reload from " << config_dir_.value() << " succeeded.";
-    origin_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &PolicyDirLoader::NotifyPolicyChanged));
-  }
-
-  // As a safeguard in case the file watcher fails, schedule a reload task
-  // that'll make us recheck after a reasonable interval.
-  ScheduleReloadTask(base::TimeDelta::FromMinutes(reload_interval_minutes_));
-}
-
-DictionaryValue* PolicyDirLoader::GetPolicy() {
-  AutoLock lock(lock_);
-  return static_cast<DictionaryValue*>(policy_->DeepCopy());
-}
-
-void PolicyDirLoader::OnFilePathChanged(const FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  Reload();
-}
-
-void PolicyDirLoader::OnError() {
-  LOG(ERROR) << "FileWatcher on " << config_dir_.value() << " failed.";
-}
-
-DictionaryValue* PolicyDirLoader::Load() {
+DictionaryValue* ConfigDirPolicyLoader::Load() {
   // Enumerate the files and sort them lexicographically.
   std::set<FilePath> files;
-  file_util::FileEnumerator file_enumerator(config_dir_, false,
+  file_util::FileEnumerator file_enumerator(config_file_path(), false,
                                             file_util::FileEnumerator::FILES);
   for (FilePath config_file_path = file_enumerator.Next();
        !config_file_path.empty(); config_file_path = file_enumerator.Next())
@@ -146,135 +49,38 @@ DictionaryValue* PolicyDirLoader::Load() {
   return policy;
 }
 
-bool PolicyDirLoader::IsSafeToReloadPolicy(const base::Time& now,
-                                           base::TimeDelta* delay) {
-  DCHECK(delay);
-  base::PlatformFileInfo dir_info;
+base::Time ConfigDirPolicyLoader::GetLastModification() {
+  base::Time last_modification = base::Time();
+  base::PlatformFileInfo file_info;
 
-  // Reading an empty directory or a file is always safe.
-  if (!file_util::GetFileInfo(config_dir_, &dir_info) ||
-      !dir_info.is_directory) {
-    last_modification_file_ = base::Time();
-    return true;
+  // If the path does not exist or points to a directory, it's safe to load.
+  if (!file_util::GetFileInfo(config_file_path(), &file_info) ||
+      !file_info.is_directory) {
+    return last_modification;
   }
 
-  // If there was a change since the last recorded modification, wait some more.
-  base::TimeDelta settleInterval(
-      base::TimeDelta::FromSeconds(settle_interval_seconds_));
-  if (dir_info.last_modified != last_modification_file_) {
-    last_modification_file_ = dir_info.last_modified;
-    last_modification_clock_ = now;
-    *delay = settleInterval;
-    return false;
+  // Enumerate the files and find the most recent modification timestamp.
+  file_util::FileEnumerator file_enumerator(config_file_path(),
+                                            false,
+                                            file_util::FileEnumerator::FILES);
+  for (FilePath config_file = file_enumerator.Next();
+       !config_file.empty();
+       config_file = file_enumerator.Next()) {
+    if (file_util::GetFileInfo(config_file, &file_info) &&
+        !file_info.is_directory) {
+      last_modification = std::min(last_modification, file_info.last_modified);
+    }
   }
 
-  // Check whether the settle interval has elapsed.
-  base::TimeDelta age = now - last_modification_clock_;
-  if (age < settleInterval) {
-    *delay = settleInterval - age;
-    return false;
-  }
-
-  return true;
+  return last_modification;
 }
-
-void PolicyDirLoader::ScheduleReloadTask(const base::TimeDelta& delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  if (reload_task_)
-    reload_task_->Cancel();
-
-  reload_task_ = NewRunnableMethod(this, &PolicyDirLoader::ReloadFromTask);
-  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE, reload_task_,
-                                delay.InMilliseconds());
-}
-
-void PolicyDirLoader::NotifyPolicyChanged() {
-  DCHECK_EQ(origin_loop_, MessageLoop::current());
-  if (provider_)
-    provider_->NotifyStoreOfPolicyChange();
-}
-
-void PolicyDirLoader::ReloadFromTask() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Drop the reference to the reload task, since the task might be the only
-  // referer that keeps us alive, so we should not Cancel() it.
-  reload_task_ = NULL;
-
-  Reload();
-}
-
-// PolicyDirWatcher implementation:
-
-PolicyDirWatcher::PolicyDirWatcher() {}
-
-void PolicyDirWatcher::Init(PolicyDirLoader* loader) {
-  // Initialization can happen early when the file thread is not yet available.
-  // So post a task to ourselves on the UI thread which will run after threading
-  // is up and schedule watch initialization on the file thread.
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &PolicyDirWatcher::InitWatcher,
-                        scoped_refptr<PolicyDirLoader>(loader)));
-}
-
-PolicyDirWatcher::~PolicyDirWatcher() {}
-
-void PolicyDirWatcher::InitWatcher(
-    const scoped_refptr<PolicyDirLoader>& loader) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &PolicyDirWatcher::InitWatcher, loader));
-    return;
-  }
-
-  if (!watcher_.Watch(loader->config_dir(), loader.get()))
-    loader->OnError();
-
-  // There might have been changes to the directory in the time between
-  // construction of the loader and initialization of the watcher. Call reload
-  // to detect if that is the case.
-  loader->Reload();
-}
-
-// ConfigDirPolicyProvider implementation:
 
 ConfigDirPolicyProvider::ConfigDirPolicyProvider(
-    const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map,
+    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
     const FilePath& config_dir)
-    : ConfigurationPolicyProvider(policy_map) {
-  loader_ = new PolicyDirLoader(AsWeakPtr(), config_dir, kSettleIntervalSeconds,
-                                kReloadIntervalMinutes);
-  watcher_ = new PolicyDirWatcher;
-  watcher_->Init(loader_.get());
+    : FileBasedPolicyProvider(policy_list,
+                              new ConfigDirPolicyLoader(config_dir)) {
 }
 
-ConfigDirPolicyProvider::~ConfigDirPolicyProvider() {
-  loader_->Stop();
-}
-
-bool ConfigDirPolicyProvider::Provide(ConfigurationPolicyStore* store) {
-  scoped_ptr<DictionaryValue> policy(loader_->GetPolicy());
-  DCHECK(policy.get());
-  DecodePolicyValueTree(policy.get(), store);
-  return true;
-}
-
-void ConfigDirPolicyProvider::DecodePolicyValueTree(
-    DictionaryValue* policies,
-    ConfigurationPolicyStore* store) {
-  const PolicyValueMap& mapping(policy_value_map());
-  for (PolicyValueMap::const_iterator i = mapping.begin();
-       i != mapping.end(); ++i) {
-    const PolicyValueMapEntry& entry(*i);
-    Value* value;
-    if (policies->Get(entry.name, &value) && value->IsType(entry.value_type))
-      store->Apply(entry.policy_type, value->DeepCopy());
-  }
-
-  // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
-  // supports it.
-}
 
 }  // namespace policy

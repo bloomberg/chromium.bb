@@ -55,6 +55,10 @@ void SetOverrideVersionedDirectory(const FilePath* path);
 // framework are things that also depend on the framework, such as the helper
 // app bundle.
 FilePath GetFrameworkBundlePath();
+
+// Get the local library directory.
+bool GetLocalLibraryDirectory(FilePath* result);
+
 #endif  // OS_MACOSX
 
 }  // namespace chrome

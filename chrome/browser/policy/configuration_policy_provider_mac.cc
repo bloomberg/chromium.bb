@@ -4,28 +4,50 @@
 
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/path_service.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/common/chrome_paths.h"
 
 namespace policy {
 
-ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const StaticPolicyValueMap& policy_map)
-    : ConfigurationPolicyProvider(policy_map),
-      preferences_(new MacPreferences()) {
+static FilePath GetManagedPolicyPath() {
+  // This constructs the path to the plist file in which Mac OS X stores the
+  // managed preference for the application. This is undocumented and therefore
+  // fragile, but if it doesn't work out, FileBasedPolicyLoader has a task that
+  // polls periodically in order to reload managed preferences later even if we
+  // missed the change.
+  FilePath path;
+  if (!PathService::Get(chrome::DIR_MANAGED_PREFS, &path))
+    return FilePath();
+
+  CFBundleRef bundle(CFBundleGetMainBundle());
+  if (!bundle)
+    return FilePath();
+
+  CFStringRef bundle_id = CFBundleGetIdentifier(bundle);
+  if (!bundle_id)
+    return FilePath();
+
+  return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
 }
 
-ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
-    const StaticPolicyValueMap& policy_map, MacPreferences* preferences)
-    : ConfigurationPolicyProvider(policy_map), preferences_(preferences) {
+MacPreferencesPolicyLoader::MacPreferencesPolicyLoader(
+    MacPreferences* preferences,
+    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
+    : FileBasedPolicyProvider::Delegate(GetManagedPolicyPath()),
+      policy_list_(policy_list),
+      preferences_(preferences) {
 }
 
-bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
-  const PolicyValueMap& mapping = policy_value_map();
+DictionaryValue* MacPreferencesPolicyLoader::Load() {
+  preferences_->AppSynchronize(kCFPreferencesCurrentApplication);
+  DictionaryValue* policy = new DictionaryValue;
 
-  for (PolicyValueMap::const_iterator current = mapping.begin();
-       current != mapping.end(); ++current) {
+  const ConfigurationPolicyProvider::PolicyDefinitionList::Entry* current;
+  for (current = policy_list_->begin; current != policy_list_->end; ++current) {
     base::mac::ScopedCFTypeRef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(current->name));
     base::mac::ScopedCFTypeRef<CFPropertyListRef> value(
@@ -40,16 +62,13 @@ bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
         if (CFGetTypeID(value) == CFStringGetTypeID()) {
           std::string string_value =
               base::SysCFStringRefToUTF8((CFStringRef)value.get());
-          store->Apply(
-              current->policy_type,
-              Value::CreateStringValue(string_value));
+          policy->SetString(current->name, string_value);
         }
         break;
       case Value::TYPE_BOOLEAN:
         if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
           bool bool_value = CFBooleanGetValue((CFBooleanRef)value.get());
-          store->Apply(current->policy_type,
-                       Value::CreateBooleanValue(bool_value));
+          policy->SetBoolean(current->name, bool_value);
         }
         break;
       case Value::TYPE_INTEGER:
@@ -59,8 +78,7 @@ bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
                                        kCFNumberIntType,
                                        &int_value);
           if (cast)
-            store->Apply(current->policy_type,
-                         Value::CreateIntegerValue(int_value));
+            policy->SetInteger(current->name, int_value);
         }
         break;
       case Value::TYPE_LIST:
@@ -81,16 +99,38 @@ bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
             }
           }
           if (valid_array)
-            store->Apply(current->policy_type, list_value.release());
+            policy->Set(current->name, list_value.release());
         }
         break;
       default:
         NOTREACHED();
-        return false;
     }
   }
 
-  return true;
+  return policy;
+}
+
+base::Time MacPreferencesPolicyLoader::GetLastModification() {
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(config_file_path(), &file_info) ||
+      file_info.is_directory) {
+    return base::Time();
+  }
+
+  return file_info.last_modified;
+}
+
+ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
+    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list)
+    : FileBasedPolicyProvider(policy_list,
+          new MacPreferencesPolicyLoader(new MacPreferences, policy_list)) {
+}
+
+ConfigurationPolicyProviderMac::ConfigurationPolicyProviderMac(
+    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list,
+    MacPreferences* preferences)
+    : FileBasedPolicyProvider(policy_list,
+          new MacPreferencesPolicyLoader(preferences, policy_list)) {
 }
 
 }  // namespace policy

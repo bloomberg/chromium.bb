@@ -10,15 +10,8 @@
 namespace policy {
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider(
-    const StaticPolicyValueMap& policy_map) {
-  for (size_t i = 0; i < policy_map.entry_count; ++i) {
-    PolicyValueMapEntry entry = {
-      policy_map.entries[i].policy_type,
-      policy_map.entries[i].value_type,
-      std::string(policy_map.entries[i].name)
-    };
-    policy_value_map_.push_back(entry);
-  }
+    const PolicyDefinitionList* policy_list)
+    : policy_definition_list_(policy_list) {
 }
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {}

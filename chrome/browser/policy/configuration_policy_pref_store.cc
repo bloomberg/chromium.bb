@@ -52,38 +52,38 @@ class ConfigurationPolicyProviderKeeper {
   scoped_ptr<ConfigurationPolicyProvider> recommended_provider_;
 
   static ConfigurationPolicyProvider* CreateManagedProvider() {
-    const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map =
-        ConfigurationPolicyPrefStore::GetChromePolicyValueMap();
+    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
 #if defined(OS_WIN)
-    return new ConfigurationPolicyProviderWin(policy_map);
+    return new ConfigurationPolicyProviderWin(policy_list);
 #elif defined(OS_MACOSX)
-    return new ConfigurationPolicyProviderMac(policy_map);
+    return new ConfigurationPolicyProviderMac(policy_list);
 #elif defined(OS_POSIX)
     FilePath config_dir_path;
     if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-      return new ConfigDirPolicyProvider(policy_map,
+      return new ConfigDirPolicyProvider(policy_list,
           config_dir_path.Append(FILE_PATH_LITERAL("managed")));
     } else {
-      return new DummyConfigurationPolicyProvider(policy_map);
+      return new DummyConfigurationPolicyProvider(policy_list);
     }
 #else
-    return new DummyConfigurationPolicyProvider(policy_map);
+    return new DummyConfigurationPolicyProvider(policy_list);
 #endif
   }
 
   static ConfigurationPolicyProvider* CreateRecommendedProvider() {
-    const ConfigurationPolicyProvider::StaticPolicyValueMap& policy_map =
-        ConfigurationPolicyPrefStore::GetChromePolicyValueMap();
+    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     FilePath config_dir_path;
     if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-      return new ConfigDirPolicyProvider(policy_map,
+      return new ConfigDirPolicyProvider(policy_list,
           config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
     } else {
-      return new DummyConfigurationPolicyProvider(policy_map);
+      return new DummyConfigurationPolicyProvider(policy_list);
     }
 #else
-    return new DummyConfigurationPolicyProvider(policy_map);
+    return new DummyConfigurationPolicyProvider(policy_list);
 #endif
   }
 
@@ -168,9 +168,9 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
 };
 
 /* static */
-ConfigurationPolicyProvider::StaticPolicyValueMap
-ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
-  static ConfigurationPolicyProvider::StaticPolicyValueMap::Entry entries[] = {
+ConfigurationPolicyProvider::PolicyDefinitionList*
+ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
+  static ConfigurationPolicyProvider::PolicyDefinitionList::Entry entries[] = {
     { ConfigurationPolicyStore::kPolicyHomePage,
         Value::TYPE_STRING, key::kHomepageLocation },
     { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
@@ -250,21 +250,11 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
 #endif
   };
 
-  ConfigurationPolicyProvider::StaticPolicyValueMap map = {
-    arraysize(entries),
-    entries
+  static ConfigurationPolicyProvider::PolicyDefinitionList policy_list = {
+    entries,
+    entries + arraysize(entries),
   };
-  return map;
-}
-
-void ConfigurationPolicyPrefStore::GetProxyPreferenceSet(
-    ProxyPreferenceSet* proxy_pref_set) {
-  proxy_pref_set->clear();
-  for (size_t current = 0; current < arraysize(proxy_policy_map_); ++current) {
-    proxy_pref_set->insert(proxy_policy_map_[current].preference_path);
-  }
-  proxy_pref_set->insert(prefs::kNoProxyServer);
-  proxy_pref_set->insert(prefs::kProxyAutoDetect);
+  return &policy_list;
 }
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
@@ -277,7 +267,8 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       use_system_proxy_(false) {
 }
 
-ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {}
+ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
+}
 
 PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   proxy_disabled_ = false;
@@ -327,6 +318,17 @@ ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
   ConfigurationPolicyProviderKeeper* keeper =
       Singleton<ConfigurationPolicyProviderKeeper>::get();
   return new ConfigurationPolicyPrefStore(keeper->recommended_provider());
+}
+
+// static
+void ConfigurationPolicyPrefStore::GetProxyPreferenceSet(
+    ProxyPreferenceSet* proxy_pref_set) {
+  proxy_pref_set->clear();
+  for (size_t current = 0; current < arraysize(proxy_policy_map_); ++current) {
+    proxy_pref_set->insert(proxy_policy_map_[current].preference_path);
+  }
+  proxy_pref_set->insert(prefs::kNoProxyServer);
+  proxy_pref_set->insert(prefs::kProxyAutoDetect);
 }
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry*

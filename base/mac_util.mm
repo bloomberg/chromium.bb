@@ -219,16 +219,26 @@ OSType CreatorCodeForApplication() {
   return CreatorCodeForCFBundleRef(bundle);
 }
 
-bool GetUserDirectory(NSSearchPathDirectory directory, FilePath* result) {
+bool GetSearchPathDirectory(NSSearchPathDirectory directory,
+                            NSSearchPathDomainMask domain_mask,
+                            FilePath* result) {
   DCHECK(result);
   NSArray* dirs =
-      NSSearchPathForDirectoriesInDomains(directory, NSUserDomainMask, YES);
+      NSSearchPathForDirectoriesInDomains(directory, domain_mask, YES);
   if ([dirs count] < 1) {
     return false;
   }
   NSString* path = [dirs objectAtIndex:0];
   *result = FilePath([path fileSystemRepresentation]);
   return true;
+}
+
+bool GetLocalDirectory(NSSearchPathDirectory directory, FilePath* result) {
+  return GetSearchPathDirectory(directory, NSLocalDomainMask, result);
+}
+
+bool GetUserDirectory(NSSearchPathDirectory directory, FilePath* result) {
+  return GetSearchPathDirectory(directory, NSUserDomainMask, result);
 }
 
 FilePath GetUserLibraryPath() {

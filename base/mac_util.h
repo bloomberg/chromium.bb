@@ -24,8 +24,10 @@ class NSWindow;
 // Adapted from NSPathUtilities.h and NSObjCRuntime.h.
 #if __LP64__ || NS_BUILD_32_LIKE_64
 typedef unsigned long NSSearchPathDirectory;
+typedef unsigned long NSSearchPathDomainMask;
 #else
 typedef unsigned int NSSearchPathDirectory;
+typedef unsigned int NSSearchPathDomainMask;
 #endif
 
 namespace mac_util {
@@ -74,10 +76,22 @@ OSType CreatorCodeForCFBundleRef(CFBundleRef bundle);
 // app bundle's creator code anyway.
 OSType CreatorCodeForApplication();
 
+// Searches for directories for the given key in only the given |domain_mask|.
+// If found, fills result (which must always be non-NULL) with the
+// first found directory and returns true.  Otherwise, returns false.
+bool GetSearchPathDirectory(NSSearchPathDirectory directory,
+                            NSSearchPathDomainMask domain_mask,
+                            FilePath* result);
+
 // Searches for directories for the given key in only the user domain.
 // If found, fills result (which must always be non-NULL) with the
 // first found directory and returns true.  Otherwise, returns false.
 bool GetUserDirectory(NSSearchPathDirectory directory, FilePath* result);
+
+// Searches for directories for the given key in only the local domain.
+// If found, fills result (which must always be non-NULL) with the
+// first found directory and returns true.  Otherwise, returns false.
+bool GetLocalDirectory(NSSearchPathDirectory directory, FilePath* result);
 
 // Returns the ~/Library directory.
 FilePath GetUserLibraryPath();

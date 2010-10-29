@@ -14,8 +14,8 @@ namespace policy {
 class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
   explicit DummyConfigurationPolicyProvider(
-      const StaticPolicyValueMap& policy_map)
-      : ConfigurationPolicyProvider(policy_map) {
+      const PolicyDefinitionList* policy_list)
+      : ConfigurationPolicyProvider(policy_list) {
   }
   virtual ~DummyConfigurationPolicyProvider() {}
 

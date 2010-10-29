@@ -21,6 +21,8 @@ class MacPreferences {
   MacPreferences() {}
   virtual ~MacPreferences() {}
 
+  virtual Boolean AppSynchronize(CFStringRef applicationID);
+
   virtual CFPropertyListRef CopyAppValue(CFStringRef key,
                                          CFStringRef applicationID);
 

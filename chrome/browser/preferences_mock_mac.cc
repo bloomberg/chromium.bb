@@ -17,6 +17,9 @@ MockPreferences::MockPreferences() {
 MockPreferences::~MockPreferences() {
 }
 
+Boolean MockPreferences::AppSynchronize(CFStringRef applicationID) {
+  return true;
+}
 
 CFPropertyListRef MockPreferences::CopyAppValue(CFStringRef key,
                                                 CFStringRef applicationID) {

@@ -133,20 +133,17 @@ class ConfigurationPolicyProviderMacTest
   virtual void SetUp() {
     prefs_ = new MockPreferences;
     store_.reset(new MockConfigurationPolicyStore);
-    provider_.reset(
-        new ConfigurationPolicyProviderMac(
-            ConfigurationPolicyPrefStore::GetChromePolicyValueMap(),
-            prefs_));
   }
 
  protected:
   MockPreferences* prefs_;
   scoped_ptr<MockConfigurationPolicyStore> store_;
-  scoped_ptr<ConfigurationPolicyProviderMac> provider_;
 };
 
 TEST_P(ConfigurationPolicyProviderMacTest, Default) {
-  EXPECT_TRUE(provider_->Provide(store_.get()));
+  ConfigurationPolicyProviderMac provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
+  EXPECT_TRUE(provider.Provide(store_.get()));
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
@@ -156,7 +153,11 @@ TEST_P(ConfigurationPolicyProviderMacTest, Invalid) {
   base::mac::ScopedCFTypeRef<CFDataRef> invalid_data(
       CFDataCreate(NULL, NULL, 0));
   prefs_->AddTestItem(name, invalid_data.get(), true);
-  EXPECT_TRUE(provider_->Provide(store_.get()));
+
+  // Create the provider and have it read |prefs_|.
+  ConfigurationPolicyProviderMac provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
+  EXPECT_TRUE(provider.Provide(store_.get()));
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
@@ -167,7 +168,11 @@ TEST_P(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
       GetParam().GetPropertyListValue());
   ASSERT_TRUE(test_value.get());
   prefs_->AddTestItem(name, test_value.get(), false);
-  EXPECT_TRUE(provider_->Provide(store_.get()));
+
+  // Create the provider and have it read |prefs_|.
+  ConfigurationPolicyProviderMac provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
+  EXPECT_TRUE(provider.Provide(store_.get()));
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
@@ -178,7 +183,11 @@ TEST_P(ConfigurationPolicyProviderMacTest, TestValue) {
       GetParam().GetPropertyListValue());
   ASSERT_TRUE(test_value.get());
   prefs_->AddTestItem(name, test_value, true);
-  EXPECT_TRUE(provider_->Provide(store_.get()));
+
+  // Create the provider and have it read |prefs_|.
+  ConfigurationPolicyProviderMac provider(
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(), prefs_);
+  EXPECT_TRUE(provider.Provide(store_.get()));
   ASSERT_EQ(1U, store_->policy_map().size());
   const Value* value = store_->Get(GetParam().type());
   ASSERT_TRUE(value);

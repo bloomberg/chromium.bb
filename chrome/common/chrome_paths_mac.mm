@@ -105,4 +105,8 @@ FilePath GetFrameworkBundlePath() {
   return GetVersionedDirectory().Append(kFrameworkName);
 }
 
+bool GetLocalLibraryDirectory(FilePath* result) {
+  return mac_util::GetLocalDirectory(NSLibraryDirectory, result);
+}
+
 }  // namespace chrome

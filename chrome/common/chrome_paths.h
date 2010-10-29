@@ -42,6 +42,10 @@ enum {
                                 // to set policies for chrome. This directory
                                 // contains subdirectories.
 #endif
+#if defined(OS_MACOSX)
+  DIR_MANAGED_PREFS,            // Directory that stores the managed prefs plist
+                                // files for the current user.
+#endif
   FILE_RESOURCE_MODULE,         // Full path and filename of the module that
                                 // contains embedded resources (version,
                                 // strings, images, etc.).

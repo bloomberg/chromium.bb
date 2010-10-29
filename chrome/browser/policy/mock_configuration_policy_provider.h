@@ -20,7 +20,7 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
   MockConfigurationPolicyProvider()
       : ConfigurationPolicyProvider(
-          ConfigurationPolicyPrefStore::GetChromePolicyValueMap()) {
+          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()) {
   }
   ~MockConfigurationPolicyProvider() {
     STLDeleteValues(&policy_map_);

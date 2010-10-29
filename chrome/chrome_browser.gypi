@@ -2396,6 +2396,8 @@
         'browser/policy/device_token_fetcher.cc',
         'browser/policy/device_token_fetcher.h',
         'browser/policy/dummy_configuration_policy_provider.h',
+        'browser/policy/file_based_policy_provider.cc',
+        'browser/policy/file_based_policy_provider.h',
         'browser/policy/managed_prefs_banner_base.cc',
         'browser/policy/managed_prefs_banner_base.h',
         'browser/policy/mock_device_management_backend.cc',

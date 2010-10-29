@@ -84,7 +84,7 @@ class ConfigurationPolicyProviderWin
   };
 
   explicit ConfigurationPolicyProviderWin(
-      const StaticPolicyValueMap& policy_map);
+      const PolicyDefinitionList* policy_list);
   virtual ~ConfigurationPolicyProviderWin();
 
   // ConfigurationPolicyProvider method overrides:

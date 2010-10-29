@@ -156,8 +156,8 @@ void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
 }
 
 ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin(
-    const StaticPolicyValueMap& policy_map)
-    : ConfigurationPolicyProvider(policy_map) {
+    const PolicyDefinitionList* policy_list)
+    : ConfigurationPolicyProvider(policy_list) {
   watcher_ = new GroupPolicyChangeWatcher(this->AsWeakPtr(),
                                           kReloadIntervalMinutes);
   watcher_->Start();
@@ -239,9 +239,9 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
 
 bool ConfigurationPolicyProviderWin::Provide(
     ConfigurationPolicyStore* store) {
-  const PolicyValueMap& mapping(policy_value_map());
-  for (PolicyValueMap::const_iterator current = mapping.begin();
-       current != mapping.end(); ++current) {
+  const PolicyDefinitionList* policy_list(policy_definition_list());
+  for (const PolicyDefinitionList::Entry* current = policy_list->begin;
+       current != policy_list->end; ++current) {
     std::wstring name = UTF8ToWide(current->name);
     switch (current->value_type) {
       case Value::TYPE_STRING: {

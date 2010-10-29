@@ -4,6 +4,10 @@
 
 #include "chrome/browser/preferences_mac.h"
 
+Boolean MacPreferences::AppSynchronize(CFStringRef applicationID) {
+  return CFPreferencesAppSynchronize(applicationID);
+}
+
 CFPropertyListRef MacPreferences::CopyAppValue(CFStringRef key,
                                                CFStringRef applicationID) {
   return CFPreferencesCopyAppValue(key, applicationID);
