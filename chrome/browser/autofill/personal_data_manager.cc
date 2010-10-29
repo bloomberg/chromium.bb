@@ -470,6 +470,9 @@ void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
     }
   }
 
+  // Ensure that profile labels are up to date.
+  AutoFillProfile::AdjustInferredLabels(&web_profiles_.get());
+
   wds->UpdateAutoFillProfile(profile);
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
