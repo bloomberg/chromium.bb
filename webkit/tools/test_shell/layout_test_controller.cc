@@ -1128,9 +1128,10 @@ void LayoutTestController::setAllowFileAccessFromFileURLs(
 
 void LayoutTestController::setMockSpeechInputResult(const CppArgumentList& args,
                                                     CppVariant* result) {
-  if (args.size() > 0 && args[0].isString()) {
+  if (args.size() > 0 && args[0].isString() && args[1].isString()) {
     shell_->speech_input_controller_mock()->setMockRecognitionResult(
-        WebString::fromUTF8(args[0].ToString()));
+        WebString::fromUTF8(args[0].ToString()),
+        WebString::fromUTF8(args[1].ToString()));
   }
   result->SetNull();
 }

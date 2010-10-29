@@ -47,6 +47,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
                         int render_process_id,
                         int render_view_id,
                         const gfx::Rect& element_rect,
+                        const std::string& language,
                         const std::string& grammar) {
     VLOG(1) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);
