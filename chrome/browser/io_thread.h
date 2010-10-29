@@ -61,7 +61,7 @@ class IOThread : public BrowserProcessSubThread {
   // It will post a task to the IO thread to perform the actual initialization.
   void InitNetworkPredictor(bool prefetching_enabled,
                             base::TimeDelta max_dns_queue_delay,
-                            size_t max_concurrent,
+                            size_t max_speculative_parallel_resolves,
                             const chrome_common_net::UrlList& startup_urls,
                             ListValue* referral_list,
                             bool preconnect_enabled);
@@ -92,9 +92,8 @@ class IOThread : public BrowserProcessSubThread {
   void InitNetworkPredictorOnIOThread(
       bool prefetching_enabled,
       base::TimeDelta max_dns_queue_delay,
-      size_t max_concurrent,
-        const chrome_common_net::UrlList& startup_urls,
-
+      size_t max_speculative_parallel_resolves,
+      const chrome_common_net::UrlList& startup_urls,
       ListValue* referral_list,
       bool preconnect_enabled);
 

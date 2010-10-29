@@ -65,7 +65,7 @@ class PredictorTest : public testing::Test {
       : io_thread_(BrowserThread::IO, &loop_),
         host_resolver_(new net::MockCachingHostResolver()),
         default_max_queueing_delay_(TimeDelta::FromMilliseconds(
-            PredictorInit::kMaxPrefetchQueueingDelayMs)) {
+            PredictorInit::kMaxSpeculativeResolveQueueDelayMs)) {
   }
 
  protected:
@@ -112,7 +112,7 @@ TEST_F(PredictorTest, StartupShutdownTest) {
   scoped_refptr<Predictor> testing_master =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
   testing_master->Shutdown();
 }
@@ -126,7 +126,7 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
   scoped_refptr<Predictor> testing_master =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
 
   GURL localhost("http://localhost:80");
@@ -152,7 +152,7 @@ TEST_F(PredictorTest, SingleLookupTest) {
   scoped_refptr<Predictor> testing_master =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
 
   GURL goog("http://www.google.com:80");
@@ -184,7 +184,7 @@ TEST_F(PredictorTest, ConcurrentLookupTest) {
   scoped_refptr<Predictor> testing_master =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
 
   GURL goog("http://www.google.com:80"),
@@ -221,7 +221,6 @@ TEST_F(PredictorTest, ConcurrentLookupTest) {
   EXPECT_FALSE(testing_master->WasFound(bad1));
   EXPECT_FALSE(testing_master->WasFound(bad2));
 
-  EXPECT_GT(testing_master->peak_pending_lookups(), names.size() / 2);
   EXPECT_LE(testing_master->peak_pending_lookups(), names.size());
   EXPECT_LE(testing_master->peak_pending_lookups(),
             testing_master->max_concurrent_dns_lookups());
@@ -235,7 +234,7 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
   scoped_refptr<Predictor> testing_master =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
 
   UrlList names;
@@ -355,7 +354,7 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
   scoped_refptr<Predictor> predictor =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
   predictor->SerializeReferrers(referral_list.get());
@@ -374,7 +373,7 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   scoped_refptr<Predictor> predictor =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
@@ -402,7 +401,7 @@ TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   scoped_refptr<Predictor> predictor =
       new Predictor(host_resolver_.get(),
                     default_max_queueing_delay_,
-                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    PredictorInit::kMaxSpeculativeParallelResolves,
                     false);
   GURL motivation_url("http://www.google.com:110");
 

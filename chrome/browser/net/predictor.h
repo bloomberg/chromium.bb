@@ -263,7 +263,10 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // When true, we don't make new lookup requests.
   bool shutdown_;
 
-  // The number of concurrent lookups currently allowed.
+  // The number of concurrent speculative lookups currently allowed to be sent
+  // to the resolver.  Any additional lookups will be queued to avoid exceeding
+  // this value.  The queue is a priority queue that will accelerate
+  // sub-resource speculation, and retard resolutions suggested by page scans.
   const size_t max_concurrent_dns_lookups_;
 
   // The maximum queueing delay that is acceptable before we enter congestion

@@ -68,7 +68,9 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
     // List options with different counts.
     // Firefox limits total to 8 in parallel, and default is currently 50.
     int parallel_6 = trial->AppendGroup("parallel_6", kProbabilityPerGroup);
+    int parallel_7 = trial->AppendGroup("parallel_7", kProbabilityPerGroup);
     int parallel_8 = trial->AppendGroup("parallel_8", kProbabilityPerGroup);
+    int parallel_9 = trial->AppendGroup("parallel_9", kProbabilityPerGroup);
     int parallel_10 = trial->AppendGroup("parallel_10", kProbabilityPerGroup);
     int parallel_14 = trial->AppendGroup("parallel_14", kProbabilityPerGroup);
     int parallel_20 = trial->AppendGroup("parallel_20", kProbabilityPerGroup);
@@ -78,8 +80,12 @@ net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
 
     if (trial->group() == parallel_6)
       parallelism = 6;
+    else if (trial->group() == parallel_7)
+      parallelism = 7;
     else if (trial->group() == parallel_8)
       parallelism = 8;
+    else if (trial->group() == parallel_9)
+      parallelism = 9;
     else if (trial->group() == parallel_10)
       parallelism = 10;
     else if (trial->group() == parallel_14)
@@ -221,7 +227,7 @@ IOThread::Globals* IOThread::globals() {
 void IOThread::InitNetworkPredictor(
     bool prefetching_enabled,
     base::TimeDelta max_dns_queue_delay,
-    size_t max_concurrent,
+    size_t max_speculative_parallel_resolves,
     const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
@@ -231,7 +237,8 @@ void IOThread::InitNetworkPredictor(
       NewRunnableMethod(
           this,
           &IOThread::InitNetworkPredictorOnIOThread,
-          prefetching_enabled, max_dns_queue_delay, max_concurrent,
+          prefetching_enabled, max_dns_queue_delay,
+          max_speculative_parallel_resolves,
           startup_urls, referral_list, preconnect_enabled));
 }
 
@@ -391,7 +398,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
 void IOThread::InitNetworkPredictorOnIOThread(
     bool prefetching_enabled,
     base::TimeDelta max_dns_queue_delay,
-    size_t max_concurrent,
+    size_t max_speculative_parallel_resolves,
     const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
@@ -403,7 +410,7 @@ void IOThread::InitNetworkPredictorOnIOThread(
   predictor_ = new chrome_browser_net::Predictor(
       globals_->host_resolver.get(),
       max_dns_queue_delay,
-      max_concurrent,
+      max_speculative_parallel_resolves,
       preconnect_enabled);
   predictor_->AddRef();
 
