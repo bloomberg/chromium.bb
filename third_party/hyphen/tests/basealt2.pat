@@ -1,0 +1,10 @@
+ISO8859-1
+l·1l/l=l,1,3
+a1atje./a=t,1,3
+e1etje./é=tje,1,5
+.schif1fahrt/ff=f,5,2
+c1k/k=k,1,2
+d1dzsel./dzs=dzs,1,4
+.as3szon/sz=sz,2,3
+n1nyal./ny=ny,1,3
+.til1lata./ll=l,3,2
