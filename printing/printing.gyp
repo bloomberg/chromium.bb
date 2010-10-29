@@ -112,12 +112,6 @@
           ],
         }],
         ['use_cups==1', {
-          'link_settings': {
-            'libraries': [
-              '-lcups',
-              '-lgcrypt',
-            ],
-          },
           'defines': [
             # PRINT_BACKEND_AVAILABLE disables the default dummy implementation
             # of the print backend and enables a custom implementation instead.
@@ -127,6 +121,22 @@
             'backend/cups_helper.cc',
             'backend/cups_helper.h',
             'backend/print_backend_cups.cc',
+          ],
+          'conditions': [
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/usr/lib/libcups.dylib',
+                ]
+              },
+            }, {
+              'link_settings': {
+                'libraries': [
+                  '-lcups',
+                  '-lgcrypt',
+                ],
+              },
+            }],              
           ],
         }],
       ],

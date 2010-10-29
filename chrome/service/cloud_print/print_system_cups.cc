@@ -7,7 +7,6 @@
 #include <cups/cups.h>
 #include <dlfcn.h>
 #include <errno.h>
-#include <gcrypt.h>
 #include <pthread.h>
 
 #include <list>
