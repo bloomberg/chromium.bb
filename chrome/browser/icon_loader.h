@@ -11,10 +11,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/message_loop_proxy.h"
+#include "base/ref_counted.h"
+#include "gfx/scoped_image.h"
+
 #if defined(TOOLKIT_USES_GTK)
 #include "base/file_path.h"
 #endif
-#include "base/ref_counted.h"
 
 #if defined(OS_WIN)
 // On Windows, we group files by their extension, with several exceptions:
@@ -68,13 +71,13 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
   void NotifyDelegate();
 
   // The message loop object of the thread in which we notify the delegate.
-  MessageLoop* target_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> target_message_loop_;
 
   IconGroupID group_;
 
   IconSize icon_size_;
 
-  SkBitmap* bitmap_;
+  gfx::ScopedImage<SkBitmap> bitmap_;
 
   Delegate* delegate_;
 

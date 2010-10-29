@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,8 +66,8 @@ void IconLoader::ParseIcon() {
       pixel_vector.resize(height * stride);
       memcpy(const_cast<unsigned char*>(pixel_vector.data()), BGRA_pixels,
              height * stride);
-      bitmap_ = gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(pixel_vector,
-                                                            width, height);
+      bitmap_.Set(gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(pixel_vector,
+                                                              width, height));
       free(BGRA_pixels);
     }
   } else {

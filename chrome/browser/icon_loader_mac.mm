@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ void IconLoader::ReadIcon() {
   else
     return;
 
-  bitmap_ = new SkBitmap(gfx::NSImageToSkBitmap(icon, size, false));
+  bitmap_.Set(new SkBitmap(gfx::NSImageToSkBitmap(icon, size, false)));
 
   target_message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IconLoader::NotifyDelegate));
