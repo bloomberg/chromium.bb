@@ -116,9 +116,9 @@ class NetworkConfigView : public views::View,
   // NetworkConfigFlags to specify which UIs to show.
   int flags_;
 
-  EthernetNetwork* ethernet_;
-  WifiNetwork* wifi_;
-  CellularNetwork* cellular_;
+  scoped_ptr<EthernetNetwork> ethernet_;
+  scoped_ptr<WifiNetwork> wifi_;
+  scoped_ptr<CellularNetwork> cellular_;
 
   CellularConfigView* cellularconfig_view_;
   WifiConfigView* wificonfig_view_;

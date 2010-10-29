@@ -59,9 +59,6 @@ NetworkConfigView::NetworkConfigView(const CellularNetwork* cellular)
 NetworkConfigView::NetworkConfigView()
     : browser_mode_(true),
       flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
-      ethernet_(NULL),
-      wifi_(NULL),
-      cellular_(NULL),
       cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
@@ -69,12 +66,6 @@ NetworkConfigView::NetworkConfigView()
 }
 
 NetworkConfigView::~NetworkConfigView() {
-  if (ethernet_)
-    delete ethernet_;
-  if (wifi_)
-    delete wifi_;
-  if (cellular_)
-    delete cellular_;
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
@@ -189,7 +180,7 @@ void NetworkConfigView::Init() {
   AddChildView(tabs_);
 
   if (flags_ & FLAG_CELLULAR) {
-    cellularconfig_view_ = new CellularConfigView(this, cellular_);
+    cellularconfig_view_ = new CellularConfigView(this, cellular_.get());
     tabs_->AddTab(
         l10n_util::GetString(IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE),
         cellularconfig_view_);
@@ -198,7 +189,7 @@ void NetworkConfigView::Init() {
     if (flags_ & FLAG_OTHER_NETWORK)
       wificonfig_view_ = new WifiConfigView(this);
     else
-      wificonfig_view_ = new WifiConfigView(this, wifi_);
+      wificonfig_view_ = new WifiConfigView(this, wifi_.get());
     tabs_->AddTab(
         l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK_CONFIG),
         wificonfig_view_);
