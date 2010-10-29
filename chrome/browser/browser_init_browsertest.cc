@@ -60,34 +60,4 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   BrowserList::RemoveObserver(&observer);
 }
 
-// Test that we prevent openning potentially dangerous schemes from the
-// command line.
-// TODO(jschuh): FLAKY because the process doesn't have sufficient time
-// to start on most BuildBot runs and I don't want to add longer delays to
-// the test. I'll circle back and make this work properly when i get a chance.
-// See http://crbug.com/60026
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
-  const char* testurlstr = "http://localhost/";
-  const GURL testurl(testurlstr);
-  CommandLine cmdline(CommandLine::NO_PROGRAM);
-  cmdline.AppendArg(testurlstr);
-  cmdline.AppendArg("javascript:alert('boo')");
-  cmdline.AppendArg(testurlstr);
-  cmdline.AppendArg("view-source:http://localhost/");
-
-  // This will pick up the current browser instance.
-  BrowserInit::LaunchWithProfile launch(FilePath(), cmdline);
-  launch.Launch(browser()->profile(), false);
-
-  // TODO(jschuh): Give the browser a chance to start first.
-  PlatformThread::Sleep(50);
-
-  // Skip about:blank in the first tab
-  for (int  i = 1; i < browser()->tab_count(); i++) {
-    const GURL &url = browser()->GetTabContentsAt(i)->GetURL();
-    ASSERT_EQ(url, testurl);
-  }
-  ASSERT_EQ(browser()->tab_count(), 3);
-}
-
 }  // namespace
