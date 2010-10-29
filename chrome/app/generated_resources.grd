@@ -4103,12 +4103,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DNS_SERVER_DESCRIPTION" desc="">
         User specified DNS server, which Chrome will use for DNS resolutions rather than the system defaults.
       </message>
-      <message name="IDS_FLAGS_SECURE_INFOBARS_NAME" desc="Name of the 'Infobar refresh' lab.">
-        Infobar refresh
-      </message>
-      <message name="IDS_FLAGS_SECURE_INFOBARS_DESCRIPTION" desc="Description of the 'Infobar Refresh' lab.">
-        Adds some visual hinting to infobars that makes them impossible for websites to spoof.
-      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">

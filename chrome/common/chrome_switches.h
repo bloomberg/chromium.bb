@@ -146,7 +146,6 @@ extern const char kEnablePrintPreview[];
 extern const char kEnableRemoting[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSearchProviderApiV2[];
-extern const char kEnableSecureInfoBars[];
 extern const char kEnableSnapStart[];
 extern const char kEnableStatsTable[];
 extern const char kEnableSync[];

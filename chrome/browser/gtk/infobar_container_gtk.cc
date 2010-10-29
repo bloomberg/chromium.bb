@@ -145,11 +145,6 @@ void InfoBarContainerGtk::UpdateInfoBars() {
 
 void InfoBarContainerGtk::ShowArrowForDelegate(InfoBarDelegate* delegate,
                                                bool animate) {
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableSecureInfoBars)) {
-    return;
-  }
-
   GList* children = gtk_container_get_children(GTK_CONTAINER(widget()));
   if (!children)
     return;
@@ -216,11 +211,6 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
 
 void InfoBarContainerGtk::UpdateToolbarInfoBarState(
     InfoBar* infobar, bool animate) {
-  if (!CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableSecureInfoBars)) {
-    return;
-  }
-
   GtkWindow* parent = platform_util::GetTopLevel(widget());
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);

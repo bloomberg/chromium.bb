@@ -143,13 +143,6 @@ const Experiment kExperiments[] = {
     kOsLinux,
     switches::kDnsServer
   },
-  {
-    "secure-infobars",  // Do not change; see above
-    IDS_FLAGS_SECURE_INFOBARS_NAME,
-    IDS_FLAGS_SECURE_INFOBARS_DESCRIPTION,
-    kOsAll,
-    switches::kEnableSecureInfoBars
-  }
 };
 
 const Experiment* experiments = kExperiments;
