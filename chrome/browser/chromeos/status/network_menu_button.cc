@@ -68,7 +68,8 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 // NetworkMenuButton, StatusAreaButton implementation:
 
 void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
-  canvas->DrawBitmapInt(IconForDisplay(icon(), badge()), 0, 0);
+  canvas->DrawBitmapInt(IconForDisplay(icon(), badge()),
+                        horizontal_padding(), 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

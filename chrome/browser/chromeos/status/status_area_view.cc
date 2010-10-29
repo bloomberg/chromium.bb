@@ -17,7 +17,7 @@
 namespace chromeos {
 
 // Number of pixels to separate each icon.
-const int kSeparation = 3;
+const int kSeparation = 1;
 
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),

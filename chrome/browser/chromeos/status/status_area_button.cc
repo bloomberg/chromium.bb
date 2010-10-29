@@ -59,6 +59,9 @@ gfx::Size StatusAreaButton::GetPreferredSize() {
     }
   }
 
+  // Add padding.
+  prefsize.Enlarge(2 * horizontal_padding(), 0);
+
   return prefsize;
 }
 
@@ -75,7 +78,7 @@ void StatusAreaButton::SetText(const std::wstring& text) {
 }
 
 void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
-  canvas->DrawBitmapInt(icon(), 0, 0);
+  canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
 }
 
 }  // namespace chromeos

@@ -39,6 +39,10 @@ class StatusAreaButton : public views::MenuButton {
   virtual int icon_height() { return 24; }
   virtual int icon_width() { return 23; }
 
+  // Subclasses can override this method to return more or less padding.
+  // The padding is added to both the left and right side.
+  virtual int horizontal_padding() { return 1; }
+
   // True if the button wants to use views::MenuButton drawings.
   bool use_menu_button_paint_;
 

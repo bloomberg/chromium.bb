@@ -42,7 +42,7 @@ InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
   set_border(NULL);
   set_use_menu_button_paint(true);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
+      ResourceBundle::BaseFont).DeriveFont(1));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
   SetShowMultipleIconStates(false);

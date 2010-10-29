@@ -59,6 +59,9 @@ class ClockMenuButton : public StatusAreaButton,
   // changes.
   void UpdateText();
 
+ protected:
+  virtual int horizontal_padding() { return 3; }
+
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
