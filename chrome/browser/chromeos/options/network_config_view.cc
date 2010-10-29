@@ -22,20 +22,20 @@ using views::WidgetGtk;
 
 namespace chromeos {
 
-NetworkConfigView::NetworkConfigView(EthernetNetwork ethernet)
+NetworkConfigView::NetworkConfigView(const EthernetNetwork* ethernet)
     : browser_mode_(true),
       flags_(FLAG_ETHERNET | FLAG_SHOW_IPCONFIG),
-      ethernet_(ethernet),
+      ethernet_(new EthernetNetwork(*ethernet)),
       cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
       delegate_(NULL) {
 }
 
-NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
+NetworkConfigView::NetworkConfigView(const WifiNetwork* wifi, bool login_only)
     : browser_mode_(true),
       flags_(FLAG_WIFI),
-      wifi_(wifi),
+      wifi_(new WifiNetwork(*wifi)),
       cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
@@ -46,10 +46,10 @@ NetworkConfigView::NetworkConfigView(WifiNetwork wifi, bool login_only)
     flags_ |= FLAG_SHOW_IPCONFIG;
 }
 
-NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
+NetworkConfigView::NetworkConfigView(const CellularNetwork* cellular)
     : browser_mode_(true),
       flags_(FLAG_CELLULAR | FLAG_SHOW_IPCONFIG),
-      cellular_(cellular),
+      cellular_(new CellularNetwork(*cellular)),
       cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
@@ -59,10 +59,22 @@ NetworkConfigView::NetworkConfigView(CellularNetwork cellular)
 NetworkConfigView::NetworkConfigView()
     : browser_mode_(true),
       flags_(FLAG_WIFI | FLAG_LOGIN_ONLY | FLAG_OTHER_NETWORK),
+      ethernet_(NULL),
+      wifi_(NULL),
+      cellular_(NULL),
       cellularconfig_view_(NULL),
       wificonfig_view_(NULL),
       ipconfig_view_(NULL),
       delegate_(NULL) {
+}
+
+NetworkConfigView::~NetworkConfigView() {
+  if (ethernet_)
+    delete ethernet_;
+  if (wifi_)
+    delete wifi_;
+  if (cellular_)
+    delete cellular_;
 }
 
 gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
@@ -114,9 +126,9 @@ std::wstring NetworkConfigView::GetWindowTitle() const {
   if (flags_ & FLAG_OTHER_NETWORK)
     return l10n_util::GetString(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS);
   if (flags_ & FLAG_WIFI)
-    return ASCIIToWide(wifi_.name());
+    return ASCIIToWide(wifi_->name());
   if (flags_ & FLAG_CELLULAR)
-    return ASCIIToWide(cellular_.name());
+    return ASCIIToWide(cellular_->name());
   return l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
 }
 
@@ -194,11 +206,11 @@ void NetworkConfigView::Init() {
 
   if (flags_ & FLAG_SHOW_IPCONFIG) {
     if (flags_ & FLAG_WIFI)
-      ipconfig_view_ = new IPConfigView(wifi_.device_path());
+      ipconfig_view_ = new IPConfigView(wifi_->device_path());
     else if (flags_ & FLAG_CELLULAR)
-      ipconfig_view_ = new IPConfigView(cellular_.device_path());
+      ipconfig_view_ = new IPConfigView(cellular_->device_path());
     else
-      ipconfig_view_ = new IPConfigView(ethernet_.device_path());
+      ipconfig_view_ = new IPConfigView(ethernet_->device_path());
     tabs_->AddTab(
         l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_IP_CONFIG),
         ipconfig_view_);

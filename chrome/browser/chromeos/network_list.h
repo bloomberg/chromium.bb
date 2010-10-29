@@ -36,8 +36,8 @@ class NetworkList  {
           label(label) {}
     NetworkItem(NetworkType network_type,
                 string16 label,
-                WifiNetwork wifi_network,
-                CellularNetwork cellular_network)
+                WifiNetwork* wifi_network,
+                CellularNetwork* cellular_network)
         : network_type(network_type),
           label(label),
           wifi_network(wifi_network),
@@ -46,8 +46,8 @@ class NetworkList  {
 
     NetworkType network_type;
     string16 label;      // string representation of the network (shown in UI).
-    WifiNetwork wifi_network;
-    CellularNetwork cellular_network;
+    WifiNetwork* wifi_network;
+    CellularNetwork* cellular_network;
     bool connected;
   };
 

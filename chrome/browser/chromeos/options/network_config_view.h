@@ -42,14 +42,14 @@ class NetworkConfigView : public views::View,
   };
 
   // Configure dialog for ethernet.
-  explicit NetworkConfigView(EthernetNetwork ethernet);
+  explicit NetworkConfigView(const EthernetNetwork* ethernet);
   // Configure dialog for wifi. If |login_only|, then only show login tab.
-  explicit NetworkConfigView(WifiNetwork wifi, bool login_only);
+  explicit NetworkConfigView(const WifiNetwork* wifi, bool login_only);
   // Configure dialog for cellular.
-  explicit NetworkConfigView(CellularNetwork cellular);
+  explicit NetworkConfigView(const CellularNetwork* cellular);
   // Login dialog for hidden networks.
   explicit NetworkConfigView();
-  virtual ~NetworkConfigView() {}
+  virtual ~NetworkConfigView();
 
   // Returns corresponding native window.
   gfx::NativeWindow GetNativeWindow() const;
@@ -116,9 +116,9 @@ class NetworkConfigView : public views::View,
   // NetworkConfigFlags to specify which UIs to show.
   int flags_;
 
-  EthernetNetwork ethernet_;
-  WifiNetwork wifi_;
-  CellularNetwork cellular_;
+  EthernetNetwork* ethernet_;
+  WifiNetwork* wifi_;
+  CellularNetwork* cellular_;
 
   CellularConfigView* cellularconfig_view_;
   WifiConfigView* wificonfig_view_;

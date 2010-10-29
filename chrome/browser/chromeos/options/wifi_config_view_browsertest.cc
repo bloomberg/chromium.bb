@@ -32,16 +32,17 @@ class WifiConfigViewTest : public CrosInProcessBrowserTest {
 // Test that if nothing is changed, we don't call SaveWifiNetwork.
 IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, NoChangeSaveTest) {
   EXPECT_CALL(*mock_network_library_, SaveWifiNetwork(_)).Times(0);
-  WifiConfigView* view = new WifiConfigView(NULL, WifiNetwork());
+  scoped_ptr<WifiNetwork> network(new WifiNetwork());
+  WifiConfigView* view = new WifiConfigView(NULL, network.get());
   view->Save();
 }
 
 // Test that if autoconnect was changed, we call SaveWifiNetwork.
 IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangeAutoConnectSaveTest) {
   EXPECT_CALL(*mock_network_library_, SaveWifiNetwork(_)).Times(1);
-  WifiNetwork remembered_network = WifiNetwork();
-  remembered_network.set_favorite(true);
-  WifiConfigView* view = new WifiConfigView(NULL, remembered_network);
+  scoped_ptr<WifiNetwork> remembered_network(new WifiNetwork());
+  remembered_network->set_favorite(true);
+  WifiConfigView* view = new WifiConfigView(NULL, remembered_network.get());
   ASSERT_TRUE(view->autoconnect_checkbox_ != NULL);
   view->autoconnect_checkbox_->SetChecked(
       !view->autoconnect_checkbox_->checked());
@@ -51,9 +52,9 @@ IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangeAutoConnectSaveTest) {
 // Test that if password was changed, we call SaveWifiNetwork.
 IN_PROC_BROWSER_TEST_F(WifiConfigViewTest, ChangePasswordSaveTest) {
   EXPECT_CALL(*mock_network_library_, SaveWifiNetwork(_)).Times(1);
-  WifiNetwork wifi = WifiNetwork();
-  wifi.set_encryption(SECURITY_WEP);
-  WifiConfigView* view = new WifiConfigView(NULL, wifi);
+  scoped_ptr<WifiNetwork> wifi(new WifiNetwork());
+  wifi->set_encryption(SECURITY_WEP);
+  WifiConfigView* view = new WifiConfigView(NULL, wifi.get());
   view->passphrase_textfield_->SetText(ASCIIToUTF16("test"));
   view->Save();
 }

@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
@@ -35,6 +36,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/ssl_config_service.h"
 
 namespace {
 
@@ -75,6 +77,20 @@ const char kCellularConfigPath[] =
 const char kVersionField[] = "version";
 const char kErrorsField[] = "errors";
 
+chromeos::CellularNetwork* GetCellularNetwork() {
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
+  if (lib->cellular_networks().begin() != lib->cellular_networks().end()) {
+    return *(lib->cellular_networks().begin());
+  }
+  return NULL;
+}
+
+chromeos::CellularNetwork* GetCellularNetwork(const std::string& service_path) {
+  return chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary()->FindCellularNetworkByPath(service_path);
+}
+
 }  // namespace
 
 class CellularConfigDocument {
@@ -98,7 +114,7 @@ static std::map<std::string, std::string> error_messages_;
 
 class MobileSetupUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
-  MobileSetupUIHTMLSource();
+  explicit MobileSetupUIHTMLSource(const std::string& service_path);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -110,8 +126,9 @@ class MobileSetupUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
-  ~MobileSetupUIHTMLSource() {}
+  virtual ~MobileSetupUIHTMLSource() {}
 
+  std::string service_path_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupUIHTMLSource);
 };
 
@@ -121,7 +138,7 @@ class MobileSetupHandler : public DOMMessageHandler,
                            public chromeos::NetworkLibrary::PropertyObserver,
                            public base::SupportsWeakPtr<MobileSetupHandler> {
  public:
-  MobileSetupHandler();
+  explicit MobileSetupHandler(const std::string& service_path);
   virtual ~MobileSetupHandler();
 
   // Init work after Attach.
@@ -137,9 +154,6 @@ class MobileSetupHandler : public DOMMessageHandler,
   virtual void PropertyChanged(const char* service_path,
                                const char* key,
                                const Value* value);
-
-  // Returns currently present cellular network, NULL if no network found.
-  static const chromeos::CellularNetwork* GetNetwork();
 
  private:
   typedef enum PlanActivationState {
@@ -161,13 +175,18 @@ class MobileSetupHandler : public DOMMessageHandler,
   void SendDeviceInfo();
 
   // Verify the state of cellular network and modify internal state.
-  void EvaluateCellularNetwork();
+  void EvaluateCellularNetwork(const chromeos::CellularNetwork* network);
   // Check the current cellular network for error conditions.
   bool GotActivationError(const chromeos::CellularNetwork* network,
                           std::string* error);
   void ChangeState(const chromeos::CellularNetwork* network,
                    PlanActivationState new_state,
                    const std::string& error_description);
+
+  // Control routines for handling other types of connections during
+  // cellular activation.
+  void ReEnableOtherConnections();
+  void DisableOtherConnections();
 
   // Converts the currently active CellularNetwork device into a JS object.
   static void GetDeviceInfo(const chromeos::CellularNetwork* network,
@@ -192,6 +211,11 @@ class MobileSetupHandler : public DOMMessageHandler,
   TabContents* tab_contents_;
   // Internal handler state.
   PlanActivationState state_;
+  std::string service_path_;
+  // Flags that control if wifi and ethernet connection needs to be restored
+  // after the activation of cellular network.
+  bool reenable_wifi_;
+  bool reenable_ethernet_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -212,6 +236,7 @@ std::string CellularConfigDocument::GetErrorMessage(const std::string& code) {
 
 bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
   error_map_.clear();
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   std::string config;
   if (!file_util::ReadFileToString(config_path, &config))
@@ -220,13 +245,13 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
   scoped_ptr<Value> root(base::JSONReader::Read(config, true));
   DCHECK(root.get() != NULL);
   if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
-    VLOG(1) << "Bad cellular config file";
+    LOG(WARNING) << "Bad cellular config file";
     return false;
   }
 
   DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
   if (!root_dict->GetString(kVersionField, &version_)) {
-    VLOG(1) << "Cellular config file missing version";
+    LOG(WARNING) << "Cellular config file missing version";
     return false;
   }
   DictionaryValue* errors = NULL;
@@ -237,7 +262,7 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
        ++keys) {
     std::string value;
     if (!errors->GetString(*keys, &value)) {
-      VLOG(1) << "Bad cellular config error value";
+      LOG(WARNING) << "Bad cellular config error value";
       error_map_.clear();
       return false;
     }
@@ -253,20 +278,22 @@ bool CellularConfigDocument::LoadFromFile(const FilePath& config_path) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUIHTMLSource::MobileSetupUIHTMLSource()
-    : DataSource(chrome::kChromeUIMobileSetupHost, MessageLoop::current()) {
+MobileSetupUIHTMLSource::MobileSetupUIHTMLSource(
+    const std::string& service_path)
+    : DataSource(chrome::kChromeUIMobileSetupHost, MessageLoop::current()),
+      service_path_(service_path) {
 }
 
 void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
                                                 bool is_off_the_record,
                                                 int request_id) {
-  const chromeos::CellularNetwork* network = MobileSetupHandler::GetNetwork();
+  const chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
 
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_MOBILE_SETUP_TITLE));
   strings.SetString("connecting_header",
                     l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
-                    network ? UTF8ToUTF16(network->name()) : string16()));
+                        network ? UTF8ToUTF16(network->name()) : string16()));
   strings.SetString("error_header",
                     l10n_util::GetStringUTF16(IDS_MOBILE_ERROR_HEADER));
   strings.SetString("activating_header",
@@ -295,8 +322,12 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
 // MobileSetupHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-MobileSetupHandler::MobileSetupHandler()
-    : tab_contents_(NULL), state_(PLAN_ACTIVATION_PAGE_LOADING) {
+MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
+    : tab_contents_(NULL),
+      state_(PLAN_ACTIVATION_PAGE_LOADING),
+      service_path_(service_path),
+      reenable_wifi_(false),
+      reenable_ethernet_(false) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -304,6 +335,8 @@ MobileSetupHandler::~MobileSetupHandler() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveObserver(this);
   lib->RemoveProperyObserver(this);
+  net::SSLConfigService::AllowRevChecking();
+  ReEnableOtherConnections();
 }
 
 DOMMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
@@ -324,27 +357,34 @@ void MobileSetupHandler::RegisterMessages() {
       NewCallback(this, &MobileSetupHandler::HandleSetTransactionStatus));
 }
 
-void MobileSetupHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
+void MobileSetupHandler::NetworkChanged(chromeos::NetworkLibrary* lib) {
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
-  EvaluateCellularNetwork();
+  EvaluateCellularNetwork(GetCellularNetwork(service_path_));
 }
 
 void MobileSetupHandler::PropertyChanged(const char* service_path,
                                          const char* key,
                                          const Value* value) {
+
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
-  const chromeos::CellularNetwork* network = GetNetwork();
+  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  if (!network) {
+    EvaluateCellularNetwork(NULL);
+    return;
+  }
   if (network->service_path() != service_path) {
     NOTREACHED();
     return;
   }
   std::string value_string;
-  VLOG(1) << "Cellular property change: " << key << " = " << value_string;
-  // Force status updates.
+  VLOG(1) << "Cellular property change: " << key << " = " <<
+      value_string.c_str();
+
+  // TODO(zelidrag, ers): Remove this once we flip the notification machanism.
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->UpdateSystemInfo();
-  EvaluateCellularNetwork();
+  EvaluateCellularNetwork(network);
 }
 
 void MobileSetupHandler::HandleCloseTab(const ListValue* args) {
@@ -357,20 +397,21 @@ void MobileSetupHandler::HandleCloseTab(const ListValue* args) {
 }
 
 void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
-  const chromeos::CellularNetwork* network = GetNetwork();
+  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
   if (!network) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR, std::string());
     return;
   }
-
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
+  lib->RemoveObserver(this);
+  lib->RemoveProperyObserver(this);
   // Start monitoring network and service property changes.
-  chromeos::NetworkLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->AddObserver(this);
   lib->AddProperyObserver(network->service_path().c_str(),
                           this);
   state_ = PLAN_ACTIVATION_START;
-  EvaluateCellularNetwork();
+  EvaluateCellularNetwork(network);
 }
 
 void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
@@ -386,24 +427,28 @@ void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
   // The payment is received, try to reconnect and check the status all over
   // again.
   if (LowerCaseEqualsASCII(status, "OK")) {
-    ChangeState(GetNetwork(), PLAN_ACTIVATION_START, std::string());
+    chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+        GetNetworkLibrary();
+    ChangeState(
+        lib->cellular_network(),
+        PLAN_ACTIVATION_START, std::string());
   }
 }
 
 
-void MobileSetupHandler::EvaluateCellularNetwork() {
+void MobileSetupHandler::EvaluateCellularNetwork(
+    const chromeos::CellularNetwork* network) {
   if (!dom_ui_)
     return;
 
   PlanActivationState new_state = state_;
-  const chromeos::CellularNetwork* network = GetNetwork();
   if (network) {
-    VLOG(1) << "Cellular:\n  service=" << network->GetStateString()
+    VLOG(1) << "Cellular:\n  service=" << network->GetStateString().c_str()
             << "\n  ui=" << GetStateDescription(state_)
-            << "\n  activation=" << network->GetActivationStateString()
+            << "\n  activation=" << network->GetActivationStateString().c_str()
             << "\n  restricted=" << (network->restricted_pool() ? "yes" : "no")
-            << "\n  error=" << network->GetErrorString()
-            << "\n  setvice_path=" << network->service_path();
+            << "\n  error=" << network->GetErrorString().c_str()
+            << "\n  setvice_path=" << network->service_path().c_str();
   } else {
     LOG(WARNING) << "Cellular service lost";
   }
@@ -424,10 +469,11 @@ void MobileSetupHandler::EvaluateCellularNetwork() {
           case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
             if (network->failed_or_disconnected()) {
               new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
-            } if (network->connected()) {
-              VLOG(1) << "Disconnecting from " << network->service_path();
+            } else if (network->connected()) {
+              VLOG(1) << "Disconnecting from " <<
+                  network->service_path().c_str();
               chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-                  DisconnectFromWirelessNetwork(*network);
+                  DisconnectFromWirelessNetwork(network);
             }
             break;
           default:
@@ -459,8 +505,9 @@ void MobileSetupHandler::EvaluateCellularNetwork() {
           case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
             // Wait in this state until activation state changes.
             break;
+          case chromeos::ACTIVATION_STATE_ACTIVATING:
+            break;
           default:
-            NOTREACHED();
             break;
         }
       }
@@ -485,7 +532,6 @@ void MobileSetupHandler::EvaluateCellularNetwork() {
             }
             break;
           default:
-            NOTREACHED();
             break;
         }
       }
@@ -535,16 +581,18 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
   static bool first_time = true;
   if (state_ == new_state && !first_time)
     return;
-  VLOG(1) << "Activation state flip old = " << GetStateDescription(state_)
-          << ", new = " << GetStateDescription(new_state);
+  VLOG(1) << "Activation state flip old = " <<
+          GetStateDescription(state_) << ", new = " <<
+          GetStateDescription(new_state);
   first_time = false;
   state_ = new_state;
   switch (new_state) {
     case PLAN_ACTIVATION_START:
+      DisableOtherConnections();
       break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       DCHECK(network);
-      VLOG(1) << "Activating service " << network->service_path();
+      LOG(INFO) << "Activating service " << network->service_path().c_str();
       if (!network->StartActivation())
         new_state = PLAN_ACTIVATION_ERROR;
       break;
@@ -552,17 +600,30 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
       DCHECK(network);
       if (network) {
         chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
-            ConnectToCellularNetwork(*network);
+            ConnectToCellularNetwork(network);
       }
       break;
     case PLAN_ACTIVATION_PAGE_LOADING:
       return;
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
-    case PLAN_ACTIVATION_DONE:
-    case PLAN_ACTIVATION_ERROR:
+      // Fix for fix SSL for the walled gardens where cert chain verification
+      // might not work.
+      net::SSLConfigService::DisallowRevChecking();
       break;
+    case PLAN_ACTIVATION_DONE:
+    case PLAN_ACTIVATION_ERROR: {
+      net::SSLConfigService::AllowRevChecking();
+      // Remove observers, we are done with this page.
+      chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+          GetNetworkLibrary();
+      lib->RemoveObserver(this);
+      lib->RemoveProperyObserver(this);
+      // Reactivate other types of connections if we have
+      // shut them down previously.
+      ReEnableOtherConnections();
+      break;
+    }
   }
-
   DictionaryValue device_dict;
   if (network)
     GetDeviceInfo(network, &device_dict);
@@ -573,10 +634,35 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
       kJsDeviceStatusChangedHandler, device_dict);
 }
 
+void MobileSetupHandler::ReEnableOtherConnections() {
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
+  if (reenable_ethernet_) {
+    reenable_ethernet_ = false;
+    lib->EnableEthernetNetworkDevice(true);
+  }
+  if (reenable_wifi_) {
+    reenable_wifi_ = false;
+    lib->EnableCellularNetworkDevice(true);
+  }
+}
+
+void MobileSetupHandler::DisableOtherConnections() {
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
+  if (!reenable_ethernet_ && lib->ethernet_enabled()) {
+    reenable_ethernet_ = true;
+    lib->EnableEthernetNetworkDevice(false);
+  }
+  if (!reenable_wifi_ && lib->wifi_enabled()) {
+    reenable_wifi_ = true;
+    lib->EnableCellularNetworkDevice(false);
+  }
+}
 
 bool MobileSetupHandler::GotActivationError(
     const chromeos::CellularNetwork* network, std::string* error) {
-  if (network)
+  if (!network)
     return false;
   bool got_error = false;
   const char* error_code = kErrorDefault;
@@ -620,21 +706,8 @@ bool MobileSetupHandler::GotActivationError(
   return got_error;
 }
 
-const chromeos::CellularNetwork* MobileSetupHandler::GetNetwork() {
-  chromeos::NetworkLibrary* network_lib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-
-  const chromeos::CellularNetworkVector& cell_networks =
-      network_lib->cellular_networks();
-  if (!cell_networks.size())
-    return NULL;
-  return &(*(cell_networks.begin()));
-}
-
 void MobileSetupHandler::GetDeviceInfo(const chromeos::CellularNetwork* network,
           DictionaryValue* value) {
-  if (!network)
-    return;
   value->SetString("carrier", network->name());
   value->SetString("payment_url", network->payment_url());
   value->SetString("MEID", network->meid());
@@ -659,7 +732,7 @@ void MobileSetupHandler::LoadCellularConfig() {
     scoped_ptr<CellularConfigDocument> config(new CellularConfigDocument());
     bool config_loaded = config->LoadFromFile(config_path);
     if (config_loaded) {
-      VLOG(1) << "Cellular config file loaded: " << kCellularConfigPath;
+      LOG(INFO) << "Cellular config file loaded: " << kCellularConfigPath;
       // lock
       cellular_config_.reset(config.release());
     } else {
@@ -677,10 +750,13 @@ void MobileSetupHandler::LoadCellularConfig() {
 ////////////////////////////////////////////////////////////////////////////////
 
 MobileSetupUI::MobileSetupUI(TabContents* contents) : DOMUI(contents){
-  MobileSetupHandler* handler = new MobileSetupHandler();
+  const chromeos::CellularNetwork* network = GetCellularNetwork();
+  std::string service_path = network ? network->service_path() : std::string();
+  MobileSetupHandler* handler = new MobileSetupHandler(service_path);
   AddMessageHandler((handler)->Attach(this));
   handler->Init(contents);
-  MobileSetupUIHTMLSource* html_source = new MobileSetupUIHTMLSource();
+  MobileSetupUIHTMLSource* html_source =
+      new MobileSetupUIHTMLSource(service_path);
 
   // Set up the chrome://mobilesetup/ source.
   BrowserThread::PostTask(

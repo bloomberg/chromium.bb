@@ -27,11 +27,12 @@ namespace chromeos {
 // The width of the password field.
 const int kPasswordWidth = 150;
 
-WifiConfigView::WifiConfigView(NetworkConfigView* parent, WifiNetwork wifi)
+WifiConfigView::WifiConfigView(NetworkConfigView* parent,
+                               const WifiNetwork* wifi)
     : parent_(parent),
       other_network_(false),
       can_login_(false),
-      wifi_(wifi),
+      wifi_(new WifiNetwork(*wifi)),
       ssid_textfield_(NULL),
       identity_textfield_(NULL),
       certificate_browse_button_(NULL),
@@ -46,6 +47,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
     : parent_(parent),
       other_network_(true),
       can_login_(false),
+      wifi_(NULL),
       ssid_textfield_(NULL),
       identity_textfield_(NULL),
       certificate_browse_button_(NULL),
@@ -54,6 +56,9 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       passphrase_visible_button_(NULL),
       autoconnect_checkbox_(NULL) {
   Init();
+}
+
+WifiConfigView::~WifiConfigView() {
 }
 
 void WifiConfigView::UpdateCanLogin(void) {
@@ -149,7 +154,7 @@ bool WifiConfigView::Login() {
   } else {
     Save();
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-        wifi_, GetPassphrase(),
+        wifi_.get(), GetPassphrase(),
         identity_string, certificate_path_);
   }
   return true;
@@ -162,8 +167,8 @@ bool WifiConfigView::Save() {
 
     if (autoconnect_checkbox_) {
       bool auto_connect = autoconnect_checkbox_->checked();
-      if (auto_connect != wifi_.auto_connect()) {
-        wifi_.set_auto_connect(auto_connect);
+      if (auto_connect != wifi_->auto_connect()) {
+        wifi_->set_auto_connect(auto_connect);
         changed = true;
       }
     }
@@ -171,14 +176,14 @@ bool WifiConfigView::Save() {
     if (passphrase_textfield_) {
       const std::string& passphrase =
           UTF16ToUTF8(passphrase_textfield_->text());
-      if (passphrase != wifi_.passphrase()) {
-        wifi_.set_passphrase(passphrase);
+      if (passphrase != wifi_->passphrase()) {
+        wifi_->set_passphrase(passphrase);
         changed = true;
       }
     }
 
     if (changed)
-      CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(wifi_);
+      CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(wifi_.get());
   }
   return true;
 }
@@ -230,7 +235,7 @@ void WifiConfigView::Init() {
     ssid_textfield_->SetController(this);
     layout->AddView(ssid_textfield_);
   } else {
-    views::Label* label = new views::Label(ASCIIToWide(wifi_.name()));
+    views::Label* label = new views::Label(ASCIIToWide(wifi_->name()));
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(label);
   }
@@ -245,23 +250,23 @@ void WifiConfigView::Init() {
   // in general, but very common. WPA Supplicant doesn't report the
   // EAP type because it's unknown until the process begins, and we'd
   // need some kind of callback.
-  if (wifi_.encrypted() && wifi_.encryption() == SECURITY_8021X) {
+  if (wifi_->encrypted() && wifi_->encryption() == SECURITY_8021X) {
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY)));
     identity_textfield_ = new views::Textfield(
         views::Textfield::STYLE_DEFAULT);
     identity_textfield_->SetController(this);
-    if (!wifi_.identity().empty())
-      identity_textfield_->SetText(UTF8ToUTF16(wifi_.identity()));
+    if (!wifi_->identity().empty())
+      identity_textfield_->SetText(UTF8ToUTF16(wifi_->identity()));
     layout->AddView(identity_textfield_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
-    if (!wifi_.cert_path().empty()) {
-      certificate_path_ = wifi_.cert_path();
-      certificate_loaded = wifi_.IsCertificateLoaded();
+    if (!wifi_->cert_path().empty()) {
+      certificate_path_ = wifi_->cert_path();
+      certificate_loaded = wifi_->IsCertificateLoaded();
     }
     if (certificate_loaded) {
       std::wstring label = l10n_util::GetString(
@@ -283,10 +288,10 @@ void WifiConfigView::Init() {
   }
 
   // Add passphrase if other_network or wifi is encrypted.
-  if (other_network_ || (wifi_.encrypted() && !certificate_loaded)) {
+  if (other_network_ || (wifi_->encrypted() && !certificate_loaded)) {
     layout->StartRow(0, column_view_set_id);
     int label_text_id;
-    if (wifi_.encryption() == SECURITY_8021X)
+    if (wifi_->encryption() == SECURITY_8021X)
       label_text_id =
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD;
     else
@@ -295,8 +300,8 @@ void WifiConfigView::Init() {
     passphrase_textfield_ = new views::Textfield(
         views::Textfield::STYLE_PASSWORD);
     passphrase_textfield_->SetController(this);
-    if (!wifi_.passphrase().empty())
-      passphrase_textfield_->SetText(UTF8ToUTF16(wifi_.passphrase()));
+    if (!wifi_->passphrase().empty())
+      passphrase_textfield_->SetText(UTF8ToUTF16(wifi_->passphrase()));
     layout->AddView(passphrase_textfield_);
     // Password visible button.
     passphrase_visible_button_ = new views::ImageButton(this);
@@ -306,7 +311,7 @@ void WifiConfigView::Init() {
     passphrase_visible_button_->SetImageAlignment(
         views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
     // Disable viewing password by unauthenticated user.
-    if (!wifi_.passphrase().empty() &&
+    if (!wifi_->passphrase().empty() &&
         chromeos::UserManager::Get()->logged_in_user().email().empty()) {
       passphrase_visible_button_->SetVisible(false);
     }
@@ -316,12 +321,12 @@ void WifiConfigView::Init() {
 
   // If there's an error, add an error message label.
   // Right now, only displaying bad_passphrase and bad_wepkey errors.
-  if (wifi_.error() == ERROR_BAD_PASSPHRASE ||
-      wifi_.error() == ERROR_BAD_WEPKEY) {
+  if (wifi_->error() == ERROR_BAD_PASSPHRASE ||
+      wifi_->error() == ERROR_BAD_WEPKEY) {
     layout->StartRow(0, column_view_set_id);
     layout->SkipColumns(1);
     int id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
-    if (wifi_.error() == ERROR_BAD_WEPKEY)
+    if (wifi_->error() == ERROR_BAD_WEPKEY)
       id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
     views::Label* label_error = new views::Label(l10n_util::GetString(id));
     label_error->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -332,11 +337,11 @@ void WifiConfigView::Init() {
 
   // Autoconnect checkbox
   // Only show if this network is already remembered (a favorite).
-  if (wifi_.favorite()) {
+  if (wifi_->favorite()) {
     autoconnect_checkbox_ = new views::Checkbox(l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
     // For other network, default to autoconnect.
-    bool autoconnect = other_network_ || wifi_.auto_connect();
+    bool autoconnect = other_network_ || wifi_->auto_connect();
     autoconnect_checkbox_->SetChecked(autoconnect);
     layout->StartRow(0, column_view_set_id);
     layout->AddView(autoconnect_checkbox_, 3, 1);

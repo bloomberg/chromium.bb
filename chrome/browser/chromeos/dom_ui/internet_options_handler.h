@@ -56,10 +56,10 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
 
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
-  void PopulateDictionaryDetails(const chromeos::Network& net,
+  void PopulateDictionaryDetails(const chromeos::Network* net,
                                  chromeos::NetworkLibrary* cros);
 
-  void PopupWirelessPassword(const chromeos::WifiNetwork& network);
+  void PopupWirelessPassword(const chromeos::WifiNetwork* network);
 
   // Converts CellularDataPlan structure into dictionary for JS. Formats
   // plan settings into human readable texts.

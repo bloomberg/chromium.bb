@@ -65,34 +65,37 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
         IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
     networks_.push_back(NetworkItem(NETWORK_ETHERNET,
                                     label,
-                                    WifiNetwork(),
-                                    CellularNetwork()));
+                                    NULL,
+                                    NULL));
     AddNetworkIndexToList(index++, ethernet_connected, ethernet_connecting);
   }
 
   // TODO(nkostylev): Show public WiFi networks first.
-  WifiNetworkVector wifi = network_lib->wifi_networks();
+  const WifiNetworkVector& wifi = network_lib->wifi_networks();
   for (WifiNetworkVector::const_iterator it = wifi.begin();
        it != wifi.end(); ++it, ++index) {
     networks_.push_back(NetworkItem(NETWORK_WIFI,
-                                    ASCIIToUTF16(it->name()),
+                                    ASCIIToUTF16((*it)->name()),
                                     *it,
-                                    CellularNetwork()));
-    if (network_lib->wifi_network().service_path() == it->service_path()) {
+                                    NULL));
+    if (network_lib->wifi_network() &&
+        network_lib->wifi_network()->service_path() == (*it)->service_path()) {
       AddNetworkIndexToList(index,
                             network_lib->wifi_connected(),
                             network_lib->wifi_connecting());
     }
   }
 
-  CellularNetworkVector cellular = network_lib->cellular_networks();
+  const CellularNetworkVector& cellular = network_lib->cellular_networks();
   for (CellularNetworkVector::const_iterator it = cellular.begin();
        it != cellular.end(); ++it, ++index) {
     networks_.push_back(NetworkItem(NETWORK_CELLULAR,
-                                    ASCIIToUTF16(it->name()),
-                                    WifiNetwork(),
+                                    ASCIIToUTF16((*it)->name()),
+                                    NULL,
                                     *it));
-    if (network_lib->cellular_network().service_path() == it->service_path()) {
+    if (network_lib->cellular_network() &&
+        network_lib->cellular_network()->service_path() ==
+            (*it)->service_path()) {
       AddNetworkIndexToList(index,
                             network_lib->cellular_connected(),
                             network_lib->cellular_connecting());
@@ -126,10 +129,11 @@ bool NetworkList::IsSameNetwork(const NetworkList::NetworkItem* network,
       // Assuming that there's only single Ethernet network.
       return true;
     case NETWORK_WIFI:
-      return id == network->wifi_network.name();
+      return network->wifi_network && id == network->wifi_network->name();
       break;
     case NETWORK_CELLULAR:
-      return id == network->cellular_network.name();
+      return network->cellular_network &&
+          id == network->cellular_network->name();
       break;
     default:
       return false;

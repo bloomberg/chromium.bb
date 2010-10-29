@@ -95,6 +95,7 @@ cr.define('mobile', function() {
           $('finalMessage').classList.add('hidden');
           $('errorMessage').classList.add('hidden');
           $('systemStatus').classList.remove('hidden');
+          break;
         case MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION:
         case MobileSetup.PLAN_ACTIVATION_ACTIVATING:
           $('statusHeader').textContent =
@@ -126,8 +127,6 @@ cr.define('mobile', function() {
           break;
       }
       this.state_ = new_state;
-      $('statusHeader').textContent =
-          $('statusHeader').textContent + ' (state = ' + new_state + ')';
     },
 
     updateDeviceStatus_: function(deviceInfo) {

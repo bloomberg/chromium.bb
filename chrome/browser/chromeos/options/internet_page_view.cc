@@ -319,17 +319,17 @@ void WirelessSection::InitSection() {
   // Wifi
   wifi_networks_ = cros->wifi_networks();
   for (size_t i = 0; i < wifi_networks_.size(); ++i) {
-    std::wstring name = ASCIIToWide(wifi_networks_[i].name());
+    std::wstring name = ASCIIToWide(wifi_networks_[i]->name());
 
     SkBitmap icon = NetworkMenu::IconForNetworkStrength(
-        wifi_networks_[i].strength(), true);
-    if (wifi_networks_[i].encrypted()) {
+        wifi_networks_[i]->strength(), true);
+    if (wifi_networks_[i]->encrypted()) {
       icon = NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
     }
 
-    bool connecting = wifi_networks_[i].connecting();
-    bool connected = wifi_networks_[i].connected();
+    bool connecting = wifi_networks_[i]->connecting();
+    bool connected = wifi_networks_[i]->connected();
     AddWirelessNetwork(i, icon, name, connecting, connected, TYPE_WIFI);
   }
 
@@ -337,17 +337,17 @@ void WirelessSection::InitSection() {
   celluar_networks_ = cros->cellular_networks();
   // Cellular networks ssids.
   for (size_t i = 0; i < celluar_networks_.size(); ++i) {
-    std::wstring name = ASCIIToWide(celluar_networks_[i].name());
+    std::wstring name = ASCIIToWide(celluar_networks_[i]->name());
 
     SkBitmap icon = NetworkMenu::IconForNetworkStrength(
-        celluar_networks_[i].strength(), true);
+        celluar_networks_[i]->strength(), true);
     // TODO(chocobo): Check cellular network 3g/edge.
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
 //    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
     icon = NetworkMenu::IconForDisplay(icon, badge);
 
-    bool connecting = celluar_networks_[i].connecting();
-    bool connected = celluar_networks_[i].connected();
+    bool connecting = celluar_networks_[i]->connecting();
+    bool connected = celluar_networks_[i]->connected();
     AddWirelessNetwork(i, icon, name, connecting, connected, TYPE_CELLULAR);
   }
 }
@@ -370,7 +370,7 @@ void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
     if (static_cast<int>(wifi_networks_.size()) > id) {
       if (button == CONNECT_BUTTON) {
         // Connect to wifi here. Open password page if appropriate.
-        if (wifi_networks_[id].encrypted()) {
+        if (wifi_networks_[id]->encrypted()) {
           NetworkConfigView* view =
               new NetworkConfigView(wifi_networks_[id], true);
           CreateModalPopup(view);
@@ -446,44 +446,23 @@ void RememberedSection::InitSection() {
   // Wifi
   wifi_networks_ = cros->remembered_wifi_networks();
   for (size_t i = 0; i < wifi_networks_.size(); ++i) {
-    std::wstring name = ASCIIToWide(wifi_networks_[i].name());
+    std::wstring name = ASCIIToWide(wifi_networks_[i]->name());
 
     SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
-    if (wifi_networks_[i].encrypted()) {
+    if (wifi_networks_[i]->encrypted()) {
       icon = NetworkMenu::IconForDisplay(icon,
           *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
     }
 
     AddNetwork(i, icon, name, false, std::wstring(), FORGET_BUTTON, TYPE_WIFI);
   }
-
-  // Cellular
-  celluar_networks_ = cros->remembered_cellular_networks();
-  // Cellular networks ssids.
-  for (size_t i = 0; i < celluar_networks_.size(); ++i) {
-    std::wstring name = ASCIIToWide(celluar_networks_[i].name());
-
-    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK);
-    // TODO(chocobo): Check cellular network 3g/edge.
-    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
-//    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
-    icon = NetworkMenu::IconForDisplay(icon, badge);
-
-    AddNetwork(i, icon, name, false, std::wstring(), FORGET_BUTTON,
-               TYPE_CELLULAR);
-  }
 }
 
 void RememberedSection::ButtonClicked(int button, int connection_type, int id) {
-  if (connection_type == TYPE_CELLULAR) {
-    if (static_cast<int>(celluar_networks_.size()) > id) {
-      CrosLibrary::Get()->GetNetworkLibrary()->ForgetWirelessNetwork(
-          celluar_networks_[id].service_path());
-    }
-  } else if (connection_type == TYPE_WIFI) {
+  if (connection_type == TYPE_WIFI) {
     if (static_cast<int>(wifi_networks_.size()) > id) {
-      CrosLibrary::Get()->GetNetworkLibrary()->ForgetWirelessNetwork(
-          wifi_networks_[id].service_path());
+      CrosLibrary::Get()->GetNetworkLibrary()->ForgetWifiNetwork(
+          wifi_networks_[id]->service_path());
     }
   } else {
     NOTREACHED();

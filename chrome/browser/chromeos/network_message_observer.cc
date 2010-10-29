@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -42,6 +43,8 @@ NetworkMessageObserver::~NetworkMessageObserver() {
   notification_connection_error_.Hide();
   notification_low_data_.Hide();
   notification_no_data_.Hide();
+  STLDeleteValues(&cellular_networks_);
+  STLDeleteValues(&wifi_networks_);
 }
 
 void NetworkMessageObserver::CreateModalPopup(views::WindowDelegate* view) {
@@ -71,24 +74,24 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
   // Check to see if we have any newly failed wifi network.
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
        it < wifi_networks.end(); it++) {
-    const WifiNetwork& wifi = *it;
-    if (wifi.failed()) {
+    const WifiNetwork* wifi = *it;
+    if (wifi->failed()) {
       ServicePathWifiMap::iterator iter =
-          wifi_networks_.find(wifi.service_path());
+          wifi_networks_.find(wifi->service_path());
       // If the network did not previously exist, then don't do anything.
       // For example, if the user travels to a location and finds a service
       // that has previously failed, we don't want to show a notification.
       if (iter == wifi_networks_.end())
         continue;
 
-      const WifiNetwork& wifi_old = iter->second;
+      const WifiNetwork* wifi_old = iter->second;
       // If this network was in a failed state previously, then it's not new.
-      if (wifi_old.failed())
+      if (wifi_old->failed())
         continue;
 
       // Display login box again for bad_passphrase and bad_wepkey errors.
-      if (wifi.error() == ERROR_BAD_PASSPHRASE ||
-          wifi.error() == ERROR_BAD_WEPKEY) {
+      if (wifi->error() == ERROR_BAD_PASSPHRASE ||
+          wifi->error() == ERROR_BAD_WEPKEY) {
         // The NetworkConfigView will show the appropriate error message.
         view = new NetworkConfigView(wifi, true);
         // There should only be one wifi network that failed to connect.
@@ -101,31 +104,35 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
       // We only do this if we were trying to make a new connection.
       // So if a previously connected network got disconnected for any reason,
       // we don't display notification.
-      if (wifi_old.connecting()) {
-        new_failed_network = wifi.name();
+      if (wifi_old->connecting()) {
+        new_failed_network = wifi->name();
         // Like above, there should only be one newly failed network.
         break;
       }
     }
 
     // If we find any network connecting, we hide the error notification.
-    if (wifi.connecting()) {
+    if (wifi->connecting()) {
       notification_connection_error_.Hide();
     }
   }
 
   // Refresh stored networks.
+  STLDeleteValues(&wifi_networks_);
   wifi_networks_.clear();
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
        it < wifi_networks.end(); it++) {
-    const WifiNetwork& wifi = *it;
-    wifi_networks_[wifi.service_path()] = wifi;
+    const WifiNetwork* wifi = *it;
+    wifi_networks_[wifi->service_path()] = new WifiNetwork(*wifi);
   }
+
+  STLDeleteValues(&cellular_networks_);
   cellular_networks_.clear();
   for (CellularNetworkVector::const_iterator it = cellular_networks.begin();
        it < cellular_networks.end(); it++) {
-    const CellularNetwork& cellular = *it;
-    cellular_networks_[cellular.service_path()] = cellular;
+    const CellularNetwork* cellular = *it;
+    cellular_networks_[cellular->service_path()] =
+        new CellularNetwork(*cellular);
   }
 
   // Show connection error notification if necessary.
@@ -144,15 +151,17 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
 }
 
 void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
-  const CellularNetwork& cellular = obj->cellular_network();
+  const CellularNetwork* cellular = obj->cellular_network();
+  if (!cellular)
+    return;
   // Active plan is the first one in the list. Use empty one if none found.
-  const CellularDataPlanList& plans = cellular.GetDataPlans();
+  const CellularDataPlanList& plans = cellular->GetDataPlans();
   CellularDataPlan plan = plans.empty() ? CellularDataPlan() : plans[0];
   // If connected cellular network changed, or data plan is different, then
   // it's a new network. Then hide all previous notifications.
   bool new_plan = false;
-  if (cellular.service_path() != cellular_service_path_) {
-    cellular_service_path_ = cellular.service_path();
+  if (cellular->service_path() != cellular_service_path_) {
+    cellular_service_path_ = cellular->service_path();
     new_plan = true;
   } else if (plan.plan_name != cellular_data_plan_.plan_name ||
       plan.plan_type != cellular_data_plan_.plan_type) {
@@ -180,7 +189,7 @@ void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
   }
 
   if (plan.plan_type != CELLULAR_DATA_PLAN_UNKNOWN) {
-    if (cellular.data_left() == CellularNetwork::DATA_NONE) {
+    if (cellular->data_left() == CellularNetwork::DATA_NONE) {
       notification_low_data_.Hide();
       int message = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
           IDS_NETWORK_MINUTES_REMAINING_MESSAGE :
@@ -190,7 +199,7 @@ void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
           l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
           NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
-    } else if (cellular.data_left() == CellularNetwork::DATA_VERY_LOW) {
+    } else if (cellular->data_left() == CellularNetwork::DATA_VERY_LOW) {
       notification_no_data_.Hide();
       int message = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
           IDS_NETWORK_MINUTES_REMAINING_MESSAGE :

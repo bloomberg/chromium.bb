@@ -47,10 +47,7 @@ cr.define('options.internet', function() {
       if (e.button == 0) {
         var el = e.target;
         // If click is on action buttons of a network item.
-        if (el.buttonType && el.networkType && el.servicePath) {
-          chrome.send('buttonClickCallback',
-              [String(el.networkType), el.servicePath, el.buttonType]);
-        } else {
+        if (!(el.buttonType && el.networkType && el.servicePath)) {
           if (el.className == 'other-network' || el.buttonType) {
             return;
           }
@@ -65,8 +62,9 @@ cr.define('options.internet', function() {
 
           if (item) {
             var data = item.data;
-            // Don't try to connect to Ethernet.
-            if (data && data.networkType == 1)
+            // Don't try to connect to Ethernet or unactivated Cellular.
+            if (data && (data.networkType == 1 ||
+                        (data.networkType == 5 && data.activation_state != 1)))
               return;
             for (var i = 0; i < this.childNodes.length; i++) {
               if (this.childNodes[i] != item)
@@ -198,7 +196,7 @@ cr.define('options.internet', function() {
         if (this.data.networkType != NetworkItem.TYPE_ETHERNET &&
             !show_activate && this.data.connected) {
           buttonsDiv.appendChild(
-              this.createButton_('disconnect_button',
+              this.createButton_('disconnect_button', 'disconnect',
                                   function(e) {
                  chrome.send('buttonClickCallback',
                              [String(self.data.networkType),
@@ -209,7 +207,7 @@ cr.define('options.internet', function() {
         // Show [Activate] button for non-activated Cellular network.
         if (show_activate) {
           buttonsDiv.appendChild(
-              this.createButton_('activate_button',
+              this.createButton_('activate_button', 'activate',
                                  function(e) {
                 chrome.send('buttonClickCallback',
                             [String(self.data.networkType),
@@ -219,7 +217,7 @@ cr.define('options.internet', function() {
         }
         if (this.data.connected) {
           buttonsDiv.appendChild(
-              this.createButton_('options_button',
+              this.createButton_('options_button', 'options',
                                  function(e) {
                 chrome.send('buttonClickCallback',
                             [String(self.data.networkType),
@@ -377,8 +375,9 @@ cr.define('options.internet', function() {
      * @param {Object} name The name of the localStrings to use for the text.
      * @param {Object} type The type of button.
      */
-    createButton_: function(name, callback) {
+    createButton_: function(name, type, callback) {
       var buttonEl = this.ownerDocument.createElement('button');
+      buttonEl.buttonType = type;
       buttonEl.textContent = localStrings.getString(name);
       buttonEl.addEventListener('click', callback);
       return buttonEl;

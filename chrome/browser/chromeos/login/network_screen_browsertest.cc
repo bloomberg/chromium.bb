@@ -182,9 +182,9 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
       .WillOnce((Return(true)));
-  WifiNetwork wifi;
+  scoped_ptr<WifiNetwork> wifi(new WifiNetwork());
   EXPECT_CALL(*mock_network_library_, wifi_network())
-      .WillOnce(ReturnRef(wifi));
+      .WillOnce(Return(wifi.get()));
 
   network_screen->NetworkChanged(mock_network_library_);
   EXPECT_FALSE(network_view->IsContinueEnabled());
@@ -223,9 +223,9 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, cellular_connecting())
       .WillOnce((Return(true)));
-  CellularNetwork cellular;
+  scoped_ptr<CellularNetwork> cellular(new CellularNetwork());
   EXPECT_CALL(*mock_network_library_, cellular_network())
-      .WillOnce(ReturnRef(cellular));
+      .WillOnce(Return(cellular.get()));
 
   network_screen->NetworkChanged(mock_network_library_);
   EXPECT_FALSE(network_view->IsContinueEnabled());
@@ -262,9 +262,9 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
       .WillOnce((Return(false)));
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
       .WillOnce((Return(true)));
-  WifiNetwork wifi;
+  scoped_ptr<WifiNetwork> wifi(new WifiNetwork());
   EXPECT_CALL(*mock_network_library_, wifi_network())
-      .WillOnce(ReturnRef(wifi));
+      .WillOnce(Return(wifi.get()));
   EXPECT_CALL(*mock_network_library_, Connected())
       .WillOnce(Return(false));
 

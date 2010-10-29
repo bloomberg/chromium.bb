@@ -8,6 +8,7 @@
 #include <map>
 
 #include "app/l10n_util.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -83,6 +84,15 @@ static bool EnsureCrosLoaded() {
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
+Network::Network(const Network& network) {
+  service_path_ = network.service_path();
+  device_path_ = network.device_path();
+  ip_address_ = network.ip_address();
+  type_ = network.type();
+  state_ = network.state();
+  error_ = network.error();
+}
+
 void Network::Clear() {
   state_ = STATE_UNKNOWN;
   error_ = ERROR_UNKNOWN;
@@ -91,16 +101,16 @@ void Network::Clear() {
   ip_address_.clear();
 }
 
-void Network::ConfigureFromService(const ServiceInfo& service) {
-  type_ = service.type;
-  state_ = service.state;
-  error_ = service.error;
-  service_path_ = SafeString(service.service_path);
-  device_path_ = SafeString(service.device_path);
+Network::Network(const ServiceInfo* service) {
+  type_ = service->type;
+  state_ = service->state;
+  error_ = service->error;
+  service_path_ = SafeString(service->service_path);
+  device_path_ = SafeString(service->device_path);
   ip_address_.clear();
   // If connected, get ip config.
-  if (EnsureCrosLoaded() && connected() && service.device_path) {
-    IPConfigStatus* ipconfig_status = ListIPConfigs(service.device_path);
+  if (EnsureCrosLoaded() && connected() && service->device_path) {
+    IPConfigStatus* ipconfig_status = ListIPConfigs(service->device_path);
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; i++) {
         IPConfig ipconfig = ipconfig_status->ips[i];
@@ -180,6 +190,21 @@ std::string Network::GetErrorString() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WirelessNetwork
+WirelessNetwork::WirelessNetwork(const WirelessNetwork& network)
+    : Network(network) {
+  name_ = network.name();
+  strength_ = network.strength();
+  auto_connect_ = network.auto_connect();
+  favorite_ = network.favorite();
+}
+
+WirelessNetwork::WirelessNetwork(const ServiceInfo* service)
+    : Network(service) {
+  name_ = SafeString(service->name);
+  strength_ = service->strength;
+  auto_connect_ = service->auto_connect;
+  favorite_ = service->favorite;
+}
 
 void WirelessNetwork::Clear() {
   Network::Clear();
@@ -187,14 +212,6 @@ void WirelessNetwork::Clear() {
   strength_ = 0;
   auto_connect_ = false;
   favorite_ = false;
-}
-
-void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
-  Network::ConfigureFromService(service);
-  name_ = SafeString(service.name);
-  strength_ = service.strength;
-  auto_connect_ = service.auto_connect;
-  favorite_ = service.favorite;
 }
 
 
@@ -208,6 +225,62 @@ CellularNetwork::CellularNetwork()
       roaming_state_(ROAMING_STATE_UNKNOWN),
       restricted_pool_(false),
       prl_version_(0) {
+  type_ = TYPE_CELLULAR;
+}
+
+CellularNetwork::CellularNetwork(const CellularNetwork& network)
+    : WirelessNetwork(network) {
+  activation_state_ = network.activation_state();
+  network_technology_ = network.network_technology();
+  roaming_state_ = network.roaming_state();
+  restricted_pool_ = network.restricted_pool();
+  service_name_ = network.service_name();
+  operator_name_ = network.operator_name();
+  operator_code_ = network.operator_code();
+  payment_url_ = network.payment_url();
+  meid_ = network.meid();
+  imei_ = network.imei();
+  imsi_ = network.imsi();
+  esn_ = network.esn();
+  mdn_ = network.mdn();
+  min_ = network.min();
+  model_id_ = network.model_id();
+  manufacturer_ = network.manufacturer();
+  firmware_revision_ = network.firmware_revision();
+  hardware_revision_ = network.hardware_revision();
+  last_update_ = network.last_update();
+  prl_version_ = network.prl_version();
+  type_ = TYPE_CELLULAR;
+}
+
+CellularNetwork::CellularNetwork(const ServiceInfo* service)
+    : WirelessNetwork(service) {
+  service_name_ = SafeString(service->name);
+  activation_state_ = service->activation_state;
+  network_technology_ = service->network_technology;
+  roaming_state_ = service->roaming_state;
+  restricted_pool_ = service->restricted_pool;
+  // Carrier Info
+  if (service->carrier_info) {
+    operator_name_ = SafeString(service->carrier_info->operator_name);
+    operator_code_ = SafeString(service->carrier_info->operator_code);
+    payment_url_ = SafeString(service->carrier_info->payment_url);
+  }
+  // Device Info
+  if (service->device_info) {
+    meid_ = SafeString(service->device_info->MEID);
+    imei_ = SafeString(service->device_info->IMEI);
+    imsi_ = SafeString(service->device_info->IMSI);
+    esn_ = SafeString(service->device_info->ESN);
+    mdn_ = SafeString(service->device_info->MDN);
+    min_ = SafeString(service->device_info->MIN);
+    model_id_ = SafeString(service->device_info->model_id);
+    manufacturer_ = SafeString(service->device_info->manufacturer);
+    firmware_revision_ = SafeString(service->device_info->firmware_revision);
+    hardware_revision_ = SafeString(service->device_info->hardware_revision);
+    last_update_ = SafeString(service->device_info->last_update);
+    prl_version_ = service->device_info->PRL_version;
+  }
   type_ = TYPE_CELLULAR;
 }
 
@@ -239,36 +312,6 @@ void CellularNetwork::Clear() {
   hardware_revision_.clear();
   last_update_.clear();
   prl_version_ = 0;
-}
-
-void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
-  WirelessNetwork::ConfigureFromService(service);
-  service_name_ = SafeString(service.name);
-  activation_state_ = service.activation_state;
-  network_technology_ = service.network_technology;
-  roaming_state_ = service.roaming_state;
-  restricted_pool_ = service.restricted_pool;
-  // Carrier Info
-  if (service.carrier_info) {
-    operator_name_ = SafeString(service.carrier_info->operator_name);
-    operator_code_ = SafeString(service.carrier_info->operator_code);
-    payment_url_ = SafeString(service.carrier_info->payment_url);
-  }
-  // Device Info
-  if (service.device_info) {
-    meid_ = SafeString(service.device_info->MEID);
-    imei_ = SafeString(service.device_info->IMEI);
-    imsi_ = SafeString(service.device_info->IMSI);
-    esn_ = SafeString(service.device_info->ESN);
-    mdn_ = SafeString(service.device_info->MDN);
-    min_ = SafeString(service.device_info->MIN);
-    model_id_ = SafeString(service.device_info->model_id);
-    manufacturer_ = SafeString(service.device_info->manufacturer);
-    firmware_revision_ = SafeString(service.device_info->firmware_revision);
-    hardware_revision_ = SafeString(service.device_info->hardware_revision);
-    last_update_ = SafeString(service.device_info->last_update);
-    prl_version_ = service.device_info->PRL_version;
-  }
 }
 
 bool CellularNetwork::is_gsm() const {
@@ -400,8 +443,20 @@ WifiNetwork::WifiNetwork()
   type_ = TYPE_WIFI;
 }
 
-WifiNetwork::WifiNetwork(const ServiceInfo& service) : WirelessNetwork() {
-  ConfigureFromService(service);
+WifiNetwork::WifiNetwork(const WifiNetwork& network)
+    : WirelessNetwork(network) {
+  encryption_ = network.encryption();
+  passphrase_ = network.passphrase();
+  identity_ = network.identity();
+  cert_path_ = network.cert_path();
+}
+
+WifiNetwork::WifiNetwork(const ServiceInfo* service)
+    : WirelessNetwork(service) {
+  encryption_ = service->security;
+  passphrase_ = SafeString(service->passphrase);
+  identity_ = SafeString(service->identity);
+  cert_path_ = SafeString(service->cert_path);
   type_ = TYPE_WIFI;
 }
 
@@ -411,14 +466,6 @@ void WifiNetwork::Clear() {
   passphrase_.clear();
   identity_.clear();
   cert_path_.clear();
-}
-
-void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
-  WirelessNetwork::ConfigureFromService(service);
-  encryption_ = service.security;
-  passphrase_ = SafeString(service.passphrase);
-  identity_ = SafeString(service.identity);
-  cert_path_ = SafeString(service.cert_path);
 }
 
 std::string WifiNetwork::GetEncryptionString() {
@@ -465,6 +512,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   NetworkLibraryImpl()
       : network_status_connection_(NULL),
         data_plan_monitor_(NULL),
+        ethernet_(NULL),
+        wifi_(NULL),
+        cellular_(NULL),
         available_devices_(0),
         enabled_devices_(0),
         connected_devices_(0),
@@ -485,11 +535,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     // DCHECK(!observers_.size());
     DCHECK(!property_observers_.size());
-    for (PropertyChangeObserverMap::iterator iter = property_observers_.begin();
-         iter != property_observers_.end();
-         ++iter) {
-      delete iter->second;
-    }
+    STLDeleteValues(&property_observers_);
+    ClearNetworks();
   }
 
   void AddObserver(Observer* observer) {
@@ -504,6 +551,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                   PropertyObserver* observer) {
     DCHECK(service_path);
     DCHECK(observer);
+    if (!EnsureCrosLoaded())
+      return;
     // First, add the observer to the callback map.
     PropertyChangeObserverMap::iterator iter = property_observers_.find(
         std::string(service_path));
@@ -534,17 +583,29 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  virtual const EthernetNetwork& ethernet_network() const { return ethernet_; }
-  virtual bool ethernet_connecting() const { return ethernet_.connecting(); }
-  virtual bool ethernet_connected() const { return ethernet_.connected(); }
+  virtual EthernetNetwork* ethernet_network() { return ethernet_; }
+  virtual bool ethernet_connecting() const {
+    return ethernet_ ? ethernet_->connecting() : false;
+  }
+  virtual bool ethernet_connected() const {
+    return ethernet_ ? ethernet_->connected() : false;
+  }
 
-  virtual const WifiNetwork& wifi_network() const { return wifi_; }
-  virtual bool wifi_connecting() const { return wifi_.connecting(); }
-  virtual bool wifi_connected() const { return wifi_.connected(); }
+  virtual WifiNetwork* wifi_network() { return wifi_; }
+  virtual bool wifi_connecting() const {
+    return wifi_ ? wifi_->connecting() : false;
+  }
+  virtual bool wifi_connected() const {
+    return wifi_ ? wifi_->connected() : false;
+  }
 
-  virtual const CellularNetwork& cellular_network() const { return cellular_; }
-  virtual bool cellular_connecting() const { return cellular_.connecting(); }
-  virtual bool cellular_connected() const { return cellular_.connected(); }
+  virtual CellularNetwork* cellular_network() { return cellular_; }
+  virtual bool cellular_connecting() const {
+    return cellular_ ? cellular_->connecting() : false;
+  }
+  virtual bool cellular_connected() const {
+    return cellular_ ? cellular_->connected() : false;
+  }
 
   bool Connected() const {
     return ethernet_connected() || wifi_connected() || cellular_connected();
@@ -557,12 +618,12 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   const std::string& IPAddress() const {
     // Returns highest priority IP address.
     if (ethernet_connected())
-      return ethernet_.ip_address();
+      return ethernet_->ip_address();
     if (wifi_connected())
-      return wifi_.ip_address();
+      return wifi_->ip_address();
     if (cellular_connected())
-      return cellular_.ip_address();
-    return ethernet_.ip_address();
+      return cellular_->ip_address();
+    return ethernet_->ip_address();
   }
 
   virtual const WifiNetworkVector& wifi_networks() const {
@@ -577,34 +638,16 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return cellular_networks_;
   }
 
-  virtual const CellularNetworkVector& remembered_cellular_networks() const {
-    return remembered_cellular_networks_;
-  }
-
   /////////////////////////////////////////////////////////////////////////////
 
-  virtual bool FindWifiNetworkByPath(
-      const std::string& path, WifiNetwork* result) const {
-    const WifiNetwork* wifi =
-        GetWirelessNetworkByPath(wifi_networks_, path);
-    if (wifi) {
-      if (result)
-        *result = *wifi;
-      return true;
-    }
-    return false;
+  virtual WifiNetwork* FindWifiNetworkByPath(
+      const std::string& path) {
+    return GetWirelessNetworkByPath(wifi_networks_, path);
   }
 
-  virtual bool FindCellularNetworkByPath(
-      const std::string& path, CellularNetwork* result) const {
-    const CellularNetwork* cellular =
-        GetWirelessNetworkByPath(cellular_networks_, path);
-    if (cellular) {
-      if (result)
-        *result = *cellular;
-      return true;
-    }
-    return false;
+  virtual CellularNetwork* FindCellularNetworkByPath(
+      const std::string& path) {
+    return GetWirelessNetworkByPath(cellular_networks_, path);
   }
 
   virtual void RequestWifiScan() {
@@ -638,27 +681,28 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return true;
   }
 
-  virtual void ConnectToWifiNetwork(WifiNetwork network,
+  virtual void ConnectToWifiNetwork(const WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {
-    if (EnsureCrosLoaded()) {
-      if (ConnectToNetworkWithCertInfo(network.service_path().c_str(),
-          password.empty() ? NULL : password.c_str(),
-          identity.empty() ? NULL : identity.c_str(),
-          certpath.empty() ? NULL : certpath.c_str())) {
-        // Update local cache and notify listeners.
-        WifiNetwork* wifi = GetWirelessNetworkByPath(
-            wifi_networks_, network.service_path());
-        if (wifi) {
-          wifi->set_passphrase(password);
-          wifi->set_identity(identity);
-          wifi->set_cert_path(certpath);
-          wifi->set_connecting(true);
-          wifi_ = *wifi;
-        }
-        NotifyNetworkChanged();
+    DCHECK(network);
+    if (!EnsureCrosLoaded())
+      return;
+    if (ConnectToNetworkWithCertInfo(network->service_path().c_str(),
+        password.empty() ? NULL : password.c_str(),
+        identity.empty() ? NULL : identity.c_str(),
+        certpath.empty() ? NULL : certpath.c_str())) {
+      // Update local cache and notify listeners.
+      WifiNetwork* wifi = GetWirelessNetworkByPath(
+          wifi_networks_, network->service_path());
+      if (wifi) {
+        wifi->set_passphrase(password);
+        wifi->set_identity(identity);
+        wifi->set_cert_path(certpath);
+        wifi->set_connecting(true);
+        wifi_ = wifi;
       }
+      NotifyNetworkChanged();
     }
   }
 
@@ -667,119 +711,116 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {
-    if (EnsureCrosLoaded()) {
-      // First create a service from hidden network.
-      ServiceInfo* service = GetWifiService(ssid.c_str(),
-                                            SECURITY_UNKNOWN);
-      if (service) {
-        // Set auto-connect.
-        SetAutoConnect(service->service_path, auto_connect);
-        // Now connect to that service.
-        ConnectToNetworkWithCertInfo(service->service_path,
-            password.empty() ? NULL : password.c_str(),
-            identity.empty() ? NULL : identity.c_str(),
-            certpath.empty() ? NULL : certpath.c_str());
-
-        // Clean up ServiceInfo object.
-        FreeServiceInfo(service);
-      } else {
-        LOG(WARNING) << "Cannot find hidden network: " << ssid;
-        // TODO(chocobo): Show error message.
-      }
-    }
-  }
-
-  virtual void ConnectToCellularNetwork(CellularNetwork network) {
-    if (EnsureCrosLoaded()) {
-      if (ConnectToNetwork(network.service_path().c_str(), NULL)) {
-        // Update local cache and notify listeners.
-        CellularNetwork* cellular = GetWirelessNetworkByPath(
-            cellular_networks_, network.service_path());
-        if (cellular) {
-          cellular->set_connecting(true);
-          cellular_ = *cellular;
-        }
-        NotifyNetworkChanged();
-      }
-    }
-  }
-
-  virtual void RefreshCellularDataPlans(const CellularNetwork& network) {
     if (!EnsureCrosLoaded())
       return;
-    RequestCellularDataPlanUpdate(network.service_path().c_str());
+
+    // First create a service from hidden network.
+    ServiceInfo* service = GetWifiService(ssid.c_str(),
+                                          SECURITY_UNKNOWN);
+    if (service) {
+      // Set auto-connect.
+      SetAutoConnect(service->service_path, auto_connect);
+      // Now connect to that service.
+      ConnectToNetworkWithCertInfo(service->service_path,
+          password.empty() ? NULL : password.c_str(),
+          identity.empty() ? NULL : identity.c_str(),
+          certpath.empty() ? NULL : certpath.c_str());
+
+      // Clean up ServiceInfo object.
+      FreeServiceInfo(service);
+    } else {
+      LOG(WARNING) << "Cannot find hidden network: " << ssid;
+      // TODO(chocobo): Show error message.
+    }
   }
 
-  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network) {
-    if (EnsureCrosLoaded()) {
-      if (DisconnectFromNetwork(network.service_path().c_str())) {
-        // Update local cache and notify listeners.
-        if (network.type() == TYPE_WIFI) {
-          WifiNetwork* wifi = GetWirelessNetworkByPath(
-              wifi_networks_, network.service_path());
-          if (wifi) {
-            wifi->set_connected(false);
-            wifi_ = WifiNetwork();
-          }
-        } else if (network.type() == TYPE_CELLULAR) {
-          CellularNetwork* cellular = GetWirelessNetworkByPath(
-              cellular_networks_, network.service_path());
-          if (cellular) {
-            cellular->set_connected(false);
-            cellular_ = CellularNetwork();
-          }
+  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {
+    DCHECK(network);
+    if (!EnsureCrosLoaded())
+      return;
+    if (network && ConnectToNetwork(network->service_path().c_str(), NULL)) {
+      // Update local cache and notify listeners.
+      CellularNetwork* cellular = GetWirelessNetworkByPath(
+          cellular_networks_, network->service_path());
+      if (cellular) {
+        cellular->set_connecting(true);
+        cellular_ = cellular;
+      }
+      NotifyNetworkChanged();
+    }
+  }
+
+  virtual void RefreshCellularDataPlans(const CellularNetwork* network) {
+    DCHECK(network);
+    if (!EnsureCrosLoaded() || !network)
+      return;
+    RequestCellularDataPlanUpdate(network->service_path().c_str());
+  }
+
+  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {
+    DCHECK(network);
+    if (!EnsureCrosLoaded() || !network)
+      return;
+    if (DisconnectFromNetwork(network->service_path().c_str())) {
+      // Update local cache and notify listeners.
+      if (network->type() == TYPE_WIFI) {
+        WifiNetwork* wifi = GetWirelessNetworkByPath(
+            wifi_networks_, network->service_path());
+        if (wifi) {
+          wifi->set_connected(false);
+          wifi_ = NULL;
         }
-        NotifyNetworkChanged();
+      } else if (network->type() == TYPE_CELLULAR) {
+        CellularNetwork* cellular = GetWirelessNetworkByPath(
+            cellular_networks_, network->service_path());
+        if (cellular) {
+          cellular->set_connected(false);
+          cellular_ = NULL;
+        }
       }
+      NotifyNetworkChanged();
     }
   }
 
-  virtual void SaveCellularNetwork(const CellularNetwork& network) {
-    // Update the wifi network in the local cache.
-    CellularNetwork* cellular = GetWirelessNetworkByPath(
-        cellular_networks_, network.service_path());
-    if (cellular)
-      *cellular = network;
-
+  virtual void SaveCellularNetwork(const CellularNetwork* network) {
+    DCHECK(network);
     // Update the cellular network with libcros.
-    if (EnsureCrosLoaded()) {
-      SetAutoConnect(network.service_path().c_str(), network.auto_connect());
-    }
+    if (!EnsureCrosLoaded() || !network)
+      return;
+
+    SetAutoConnect(network->service_path().c_str(), network->auto_connect());
   }
 
-  virtual void SaveWifiNetwork(const WifiNetwork& network) {
-    // Update the wifi network in the local cache.
-    WifiNetwork* wifi = GetWirelessNetworkByPath(
-        wifi_networks_, network.service_path());
-    if (wifi)
-      *wifi = network;
-
+  virtual void SaveWifiNetwork(const WifiNetwork* network) {
+    DCHECK(network);
     // Update the wifi network with libcros.
-    if (EnsureCrosLoaded()) {
-      SetPassphrase(
-          network.service_path().c_str(), network.passphrase().c_str());
-      SetIdentity(network.service_path().c_str(), network.identity().c_str());
-      SetCertPath(network.service_path().c_str(), network.cert_path().c_str());
-      SetAutoConnect(network.service_path().c_str(), network.auto_connect());
-    }
+    if (!EnsureCrosLoaded() || !network)
+      return;
+    SetPassphrase(
+        network->service_path().c_str(), network->passphrase().c_str());
+    SetIdentity(network->service_path().c_str(),
+        network->identity().c_str());
+    SetCertPath(network->service_path().c_str(),
+        network->cert_path().c_str());
+    SetAutoConnect(network->service_path().c_str(), network->auto_connect());
   }
 
-  virtual void ForgetWirelessNetwork(const std::string& service_path) {
-    if (EnsureCrosLoaded()) {
-      if (DeleteRememberedService(service_path.c_str())) {
-        // Update local cache and notify listeners.
-        remembered_wifi_networks_.erase(
-            std::remove_if(remembered_wifi_networks_.begin(),
-                           remembered_wifi_networks_.end(),
-                           WirelessNetwork::ServicePathEq(service_path)),
-            remembered_wifi_networks_.end());
-        remembered_cellular_networks_.erase(
-            std::remove_if(remembered_cellular_networks_.begin(),
-                           remembered_cellular_networks_.end(),
-                           WirelessNetwork::ServicePathEq(service_path)),
-            remembered_cellular_networks_.end());
-        NotifyNetworkChanged();
+  virtual void ForgetWifiNetwork(const std::string& service_path) {
+    if (!EnsureCrosLoaded())
+      return;
+    if (DeleteRememberedService(service_path.c_str())) {
+      // Update local cache and notify listeners.
+      for (WifiNetworkVector::iterator iter =
+               remembered_wifi_networks_.begin();
+          iter != remembered_wifi_networks_.end();
+          ++iter) {
+        if ((*iter)->service_path() == service_path) {
+          delete (*iter);
+          remembered_wifi_networks_.erase(iter);
+          break;
+        }
       }
+      NotifyNetworkChanged();
     }
   }
 
@@ -874,42 +915,33 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     output.append("<h3>Ethernet:</h3><table border=1>");
-    if (ethernet_enabled()) {
-      output.append("<tr>" + ToHtmlTableHeader(&ethernet_) + "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(&ethernet_) + "</tr>");
+    if (ethernet_ && ethernet_enabled()) {
+      output.append("<tr>" + ToHtmlTableHeader(ethernet_) + "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(ethernet_) + "</tr>");
     }
 
     output.append("</table><h3>Wifi:</h3><table border=1>");
     for (size_t i = 0; i < wifi_networks_.size(); ++i) {
       if (i == 0)
-        output.append("<tr>" + ToHtmlTableHeader(&wifi_networks_[i]) + "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(&wifi_networks_[i]) + "</tr>");
+        output.append("<tr>" + ToHtmlTableHeader(wifi_networks_[i]) + "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(wifi_networks_[i]) + "</tr>");
     }
 
     output.append("</table><h3>Cellular:</h3><table border=1>");
     for (size_t i = 0; i < cellular_networks_.size(); ++i) {
       if (i == 0)
-        output.append("<tr>" + ToHtmlTableHeader(&cellular_networks_[i]) +
+        output.append("<tr>" + ToHtmlTableHeader(cellular_networks_[i]) +
             "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(&cellular_networks_[i]) + "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(cellular_networks_[i]) + "</tr>");
     }
 
     output.append("</table><h3>Remembered Wifi:</h3><table border=1>");
     for (size_t i = 0; i < remembered_wifi_networks_.size(); ++i) {
       if (i == 0)
         output.append(
-            "<tr>" + ToHtmlTableHeader(&remembered_wifi_networks_[i]) +
+            "<tr>" + ToHtmlTableHeader(remembered_wifi_networks_[i]) +
             "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(&remembered_wifi_networks_[i]) +
-          "</tr>");
-    }
-
-    output.append("</table><h3>Remembered Cellular:</h3><table border=1>");
-    for (size_t i = 0; i < remembered_cellular_networks_.size(); ++i) {
-      if (i == 0)
-        output.append("<tr>" +
-            ToHtmlTableHeader(&remembered_cellular_networks_[i]) + "</tr>");
-      output.append("<tr>" + ToHtmlTableRow(&remembered_cellular_networks_[i]) +
+      output.append("<tr>" + ToHtmlTableRow(remembered_wifi_networks_[i]) +
           "</tr>");
     }
 
@@ -959,9 +991,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     const char* modem_service_path,
                                     const CellularDataPlanList* dataplan) {
     NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
-    DCHECK(network);
+    DCHECK(network && network->cellular_network());
     // Store data plan for currently connected cellular network.
-    if (network->cellular_network().service_path()
+    if (network->cellular_network()->service_path()
         .compare(modem_service_path) == 0) {
       if (dataplan != NULL) {
         network->UpdateCellularDataPlan(*dataplan);
@@ -970,54 +1002,59 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   static void ParseSystem(SystemInfo* system,
-      EthernetNetwork* ethernet,
+      EthernetNetwork** ethernet,
       WifiNetworkVector* wifi_networks,
       CellularNetworkVector* cellular_networks,
-      WifiNetworkVector* remembered_wifi_networks,
-      CellularNetworkVector* remembered_cellular_networks) {
+      WifiNetworkVector* remembered_wifi_networks) {
     DVLOG(1) << "ParseSystem:";
-    ethernet->Clear();
+    DCHECK(!(*ethernet));
     for (int i = 0; i < system->service_size; i++) {
-      const ServiceInfo service = *system->GetServiceInfo(i);
-      DVLOG(1) << "  (" << service.type << ") " << service.name
-               << " mode=" << service.mode
-               << " state=" << service.state
-               << " sec=" << service.security
-               << " req=" << service.passphrase_required
-               << " pass=" << service.passphrase
-               << " id=" << service.identity
-               << " certpath=" << service.cert_path
-               << " str=" << service.strength
-               << " fav=" << service.favorite
-               << " auto=" << service.auto_connect
-               << " error=" << service.error;
+      const ServiceInfo* service = system->GetServiceInfo(i);
+      DVLOG(1) << "  (" << service->type << ") " << service->name
+               << " mode=" << service->mode
+               << " state=" << service->state
+               << " sec=" << service->security
+               << " req=" << service->passphrase_required
+               << " pass=" << service->passphrase
+               << " id=" << service->identity
+               << " certpath=" << service->cert_path
+               << " str=" << service->strength
+               << " fav=" << service->favorite
+               << " auto=" << service->auto_connect
+               << " error=" << service->error;
       // Once a connected ethernet service is found, disregard other ethernet
       // services that are also found
-      if (service.type == TYPE_ETHERNET && !(ethernet->connected()))
-        ethernet->ConfigureFromService(service);
-      else if (service.type == TYPE_WIFI)
-        wifi_networks->push_back(WifiNetwork(service));
-      else if (service.type == TYPE_CELLULAR)
-        cellular_networks->push_back(CellularNetwork(service));
+      if (service->type == TYPE_ETHERNET)
+        (*ethernet) = new EthernetNetwork(service);
+      else if (service->type == TYPE_WIFI) {
+        wifi_networks->push_back(new WifiNetwork(service));
+      } else if (service->type == TYPE_CELLULAR) {
+        cellular_networks->push_back(new CellularNetwork(service));
+      }
     }
+
+    // Create placeholder network for ethernet even if the service is not
+    // detected at this moment.
+    if (!(*ethernet))
+      (*ethernet) = new EthernetNetwork();
+
     DVLOG(1) << "Remembered networks:";
     for (int i = 0; i < system->remembered_service_size; i++) {
-      const ServiceInfo& service = *system->GetRememberedServiceInfo(i);
+      const ServiceInfo* service = system->GetRememberedServiceInfo(i);
       // Only services marked as auto_connect are considered remembered
       // networks.
       // TODO(chocobo): Don't add to remembered service if currently available.
-      if (service.auto_connect) {
-        DVLOG(1) << "  (" << service.type << ") " << service.name
-                 << " mode=" << service.mode
-                 << " sec=" << service.security
-                 << " pass=" << service.passphrase
-                 << " id=" << service.identity
-                 << " certpath=" << service.cert_path
-                 << " auto=" << service.auto_connect;
-        if (service.type == TYPE_WIFI)
-          remembered_wifi_networks->push_back(WifiNetwork(service));
-        else if (service.type == TYPE_CELLULAR)
-          remembered_cellular_networks->push_back(CellularNetwork(service));
+      if (service->auto_connect) {
+        DVLOG(1) << "  (" << service->type << ") " << service->name
+                 << " mode=" << service->mode
+                 << " sec=" << service->security
+                 << " pass=" << service->passphrase
+                 << " id=" << service->identity
+                 << " certpath=" << service->cert_path
+                 << " auto=" << service->auto_connect;
+        if (service->type == TYPE_WIFI) {
+          remembered_wifi_networks->push_back(new WifiNetwork(service));
+        }
       }
     }
   }
@@ -1037,54 +1074,53 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void InitTestData() {
-    ethernet_.Clear();
-    ethernet_.set_connected(true);
-    ethernet_.set_service_path("eth1");
+    ethernet_ = new EthernetNetwork();
+    ethernet_->set_connected(true);
+    ethernet_->set_service_path("eth1");
 
+    STLDeleteElements(&wifi_networks_);
     wifi_networks_.clear();
-    WifiNetwork wifi1 = WifiNetwork();
-    wifi1.set_service_path("fw1");
-    wifi1.set_name("Fake Wifi 1");
-    wifi1.set_strength(90);
-    wifi1.set_connected(false);
-    wifi1.set_encryption(SECURITY_NONE);
+    WifiNetwork* wifi1 = new WifiNetwork();
+    wifi1->set_service_path("fw1");
+    wifi1->set_name("Fake Wifi 1");
+    wifi1->set_strength(90);
+    wifi1->set_connected(false);
+    wifi1->set_encryption(SECURITY_NONE);
     wifi_networks_.push_back(wifi1);
 
-    WifiNetwork wifi2 = WifiNetwork();
-    wifi2.set_service_path("fw2");
-    wifi2.set_name("Fake Wifi 2");
-    wifi2.set_strength(70);
-    wifi2.set_connected(true);
-    wifi2.set_encryption(SECURITY_WEP);
+    WifiNetwork* wifi2 = new WifiNetwork();
+    wifi2->set_service_path("fw2");
+    wifi2->set_name("Fake Wifi 2");
+    wifi2->set_strength(70);
+    wifi2->set_connected(true);
+    wifi2->set_encryption(SECURITY_WEP);
     wifi_networks_.push_back(wifi2);
 
-    WifiNetwork wifi3 = WifiNetwork();
-    wifi3.set_service_path("fw3");
-    wifi3.set_name("Fake Wifi 3");
-    wifi3.set_strength(50);
-    wifi3.set_connected(false);
-    wifi3.set_encryption(SECURITY_WEP);
+    WifiNetwork* wifi3 = new WifiNetwork();
+    wifi3->set_service_path("fw3");
+    wifi3->set_name("Fake Wifi 3");
+    wifi3->set_strength(50);
+    wifi3->set_connected(false);
+    wifi3->set_encryption(SECURITY_WEP);
     wifi_networks_.push_back(wifi3);
 
     wifi_ = wifi2;
 
+    STLDeleteElements(&cellular_networks_);
     cellular_networks_.clear();
 
-    CellularNetwork cellular1 = CellularNetwork();
-    cellular1.set_service_path("fc1");
-    cellular1.set_name("Fake Cellular 1");
-    cellular1.set_strength(70);
-    cellular1.set_connected(true);
-    cellular1.set_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
-    cellular1.set_payment_url(std::string("http://www.google.com"));
+    CellularNetwork* cellular1 = new CellularNetwork();
+    cellular1->set_service_path("fc1");
+    cellular1->set_name("Fake Cellular 1");
+    cellular1->set_strength(70);
+    cellular1->set_connected(true);
+    cellular1->set_activation_state(ACTIVATION_STATE_PARTIALLY_ACTIVATED);
+    cellular1->set_payment_url(std::string("http://www.google.com"));
     cellular_networks_.push_back(cellular1);
     cellular_ = cellular1;
 
     remembered_wifi_networks_.clear();
-    remembered_wifi_networks_.push_back(wifi2);
-
-    remembered_cellular_networks_.clear();
-    remembered_cellular_networks_.push_back(cellular1);
+    remembered_wifi_networks_.push_back(new WifiNetwork(*wifi2));
 
     int devices = (1 << TYPE_ETHERNET) | (1 << TYPE_WIFI) |
         (1 << TYPE_CELLULAR);
@@ -1108,7 +1144,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         base::Time::kMicrosecondsPerSecond;
     chromeos::CellularDataPlanList test_plans;
     test_plans.push_back(test_plan);
-    cellular_.SetDataPlans(test_plans);
+    cellular_->SetDataPlans(test_plans);
   }
 
   void UpdateSystemInfo() {
@@ -1119,28 +1155,28 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   WifiNetwork* GetWifiNetworkByName(const std::string& name) {
     for (size_t i = 0; i < wifi_networks_.size(); ++i) {
-      if (wifi_networks_[i].name().compare(name) == 0) {
-        return &wifi_networks_[i];
+      if (wifi_networks_[i]->name().compare(name) == 0) {
+        return wifi_networks_[i];
       }
     }
     return NULL;
   }
 
-  template<typename T> T* GetWirelessNetworkByPath(
+  template<typename T> T GetWirelessNetworkByPath(
       std::vector<T>& networks, const std::string& path) {
     typedef typename std::vector<T>::iterator iter_t;
     iter_t iter = std::find_if(networks.begin(), networks.end(),
                                WirelessNetwork::ServicePathEq(path));
-    return (iter != networks.end()) ? &(*iter) : NULL;
+    return (iter != networks.end()) ? *iter : NULL;
   }
 
   // const version
-  template<typename T> const T* GetWirelessNetworkByPath(
+  template<typename T> const T GetWirelessNetworkByPath(
       const std::vector<T>& networks, const std::string& path) const {
     typedef typename std::vector<T>::const_iterator iter_t;
     iter_t iter = std::find_if(networks.begin(), networks.end(),
                                WirelessNetwork::ServicePathEq(path));
-    return (iter != networks.end()) ? &(*iter) : NULL;
+    return (iter != networks.end()) ? *iter : NULL;
   }
 
   void EnableNetworkDeviceType(ConnectionType device, bool enable) {
@@ -1188,6 +1224,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
+  void ClearNetworks() {
+    if (ethernet_)
+      delete ethernet_;
+    ethernet_ = NULL;
+    wifi_ = NULL;
+    cellular_ = NULL;
+    STLDeleteElements(&wifi_networks_);
+    wifi_networks_.clear();
+    STLDeleteElements(&cellular_networks_);
+    cellular_networks_.clear();
+    STLDeleteElements(&remembered_wifi_networks_);
+    remembered_wifi_networks_.clear();
+  }
+
   void UpdateNetworkStatus() {
     // Make sure we run on UI thread.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -1202,31 +1252,33 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (!system)
       return;
 
-    wifi_networks_.clear();
-    cellular_networks_.clear();
-    remembered_wifi_networks_.clear();
-    remembered_cellular_networks_.clear();
-    ParseSystem(system, &ethernet_, &wifi_networks_, &cellular_networks_,
-                &remembered_wifi_networks_, &remembered_cellular_networks_);
 
-    wifi_ = WifiNetwork();
+    std::string prev_cellular_service_path = cellular_ ?
+        cellular_->service_path() : std::string();
+
+    ClearNetworks();
+
+    ParseSystem(system, &ethernet_, &wifi_networks_, &cellular_networks_,
+                &remembered_wifi_networks_);
+
+    wifi_ = NULL;
     for (size_t i = 0; i < wifi_networks_.size(); i++) {
-      if (wifi_networks_[i].connecting_or_connected()) {
+      if (wifi_networks_[i]->connecting_or_connected()) {
         wifi_ = wifi_networks_[i];
         break;  // There is only one connected or connecting wifi network.
       }
     }
-    std::string prev_service_path = cellular_.service_path();
-    cellular_ = CellularNetwork();
+    cellular_ = NULL;
     for (size_t i = 0; i < cellular_networks_.size(); i++) {
-      if (cellular_networks_[i].connecting_or_connected()) {
+      if (cellular_networks_[i]->connecting_or_connected()) {
+        cellular_ = cellular_networks_[i];
         // If new cellular, then update data plan list.
-        if (cellular_networks_[i].service_path() != prev_service_path) {
+        if (cellular_networks_[i]->service_path() !=
+                prev_cellular_service_path) {
           CellularDataPlanList list;
-          RetrieveCellularDataPlans(cellular_.service_path().c_str(), &list);
+          RetrieveCellularDataPlans(cellular_->service_path().c_str(), &list);
           UpdateCellularDataPlan(list);
         }
-        cellular_ = cellular_networks_[i];
         break;  // There is only one connected or connecting cellular network.
       }
     }
@@ -1241,7 +1293,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void UpdateCellularDataPlan(const CellularDataPlanList& data_plans) {
-    cellular_.SetDataPlans(data_plans);
+    DCHECK(cellular_);
+    cellular_->SetDataPlans(data_plans);
     NotifyCellularDataPlanChanged();
   }
 
@@ -1260,13 +1313,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   std::map<std::string, PropertyChangeMonitor> property_change_monitors_;
 
   // The ethernet network.
-  EthernetNetwork ethernet_;
+  EthernetNetwork* ethernet_;
 
   // The list of available wifi networks.
   WifiNetworkVector wifi_networks_;
 
   // The current connected (or connecting) wifi network.
-  WifiNetwork wifi_;
+  WifiNetwork* wifi_;
 
   // The remembered wifi networks.
   WifiNetworkVector remembered_wifi_networks_;
@@ -1275,10 +1328,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   CellularNetworkVector cellular_networks_;
 
   // The current connected (or connecting) cellular network.
-  CellularNetwork cellular_;
-
-  // The remembered cellular networks.
-  CellularNetworkVector remembered_cellular_networks_;
+  CellularNetwork* cellular_;
 
   // The current available network devices. Bitwise flag of ConnectionTypes.
   int available_devices_;
@@ -1296,24 +1346,29 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
 class NetworkLibraryStubImpl : public NetworkLibrary {
  public:
-  NetworkLibraryStubImpl() : ip_address_("1.1.1.1") {}
-  ~NetworkLibraryStubImpl() {}
+  NetworkLibraryStubImpl()
+      : ip_address_("1.1.1.1"),
+        ethernet_(new EthernetNetwork()),
+        wifi_(NULL),
+        cellular_(NULL) {
+  }
+  ~NetworkLibraryStubImpl() { if (ethernet_) delete ethernet_; }
   virtual void AddObserver(Observer* observer) {}
   virtual void RemoveObserver(Observer* observer) {}
   virtual void AddProperyObserver(const char* service_path,
                                   PropertyObserver* observer) {}
   virtual void RemoveProperyObserver(PropertyObserver* observer) {}
-  virtual const EthernetNetwork& ethernet_network() const {
+  virtual EthernetNetwork* ethernet_network() {
     return ethernet_;
   }
   virtual bool ethernet_connecting() const { return false; }
   virtual bool ethernet_connected() const { return true; }
-  virtual const WifiNetwork& wifi_network() const {
+  virtual WifiNetwork* wifi_network() {
     return wifi_;
   }
   virtual bool wifi_connecting() const { return false; }
   virtual bool wifi_connected() const { return false; }
-  virtual const CellularNetwork& cellular_network() const {
+  virtual CellularNetwork* cellular_network() {
     return cellular_;
   }
   virtual bool cellular_connecting() const { return false; }
@@ -1331,22 +1386,21 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual const CellularNetworkVector& cellular_networks() const {
     return cellular_networks_;
   }
-  virtual const CellularNetworkVector& remembered_cellular_networks() const {
-    return cellular_networks_;
+  virtual bool has_cellular_networks() const {
+    return cellular_networks_.begin() != cellular_networks_.end();
   }
-
   /////////////////////////////////////////////////////////////////////////////
 
-  virtual bool FindWifiNetworkByPath(
-      const std::string& path, WifiNetwork* result) const { return false; }
-  virtual bool FindCellularNetworkByPath(
-      const std::string& path, CellularNetwork* result) const { return false; }
+  virtual WifiNetwork* FindWifiNetworkByPath(
+      const std::string& path) { return NULL; }
+  virtual CellularNetwork* FindCellularNetworkByPath(
+      const std::string& path) { return NULL; }
   virtual void RequestWifiScan() {}
   virtual bool GetWifiAccessPoints(WifiAccessPointVector* result) {
     return false;
   }
 
-  virtual void ConnectToWifiNetwork(WifiNetwork network,
+  virtual void ConnectToWifiNetwork(const WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {}
@@ -1355,12 +1409,12 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {}
-  virtual void ConnectToCellularNetwork(CellularNetwork network) {}
-  virtual void RefreshCellularDataPlans(const CellularNetwork& network) {}
-  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork& network) {}
-  virtual void SaveCellularNetwork(const CellularNetwork& network) {}
-  virtual void SaveWifiNetwork(const WifiNetwork& network) {}
-  virtual void ForgetWirelessNetwork(const std::string& service_path) {}
+  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {}
+  virtual void RefreshCellularDataPlans(const CellularNetwork* network) {}
+  virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}
+  virtual void SaveCellularNetwork(const CellularNetwork* network) {}
+  virtual void SaveWifiNetwork(const WifiNetwork* network) {}
+  virtual void ForgetWifiNetwork(const std::string& service_path) {}
   virtual bool ethernet_available() const { return true; }
   virtual bool wifi_available() const { return false; }
   virtual bool cellular_available() const { return false; }
@@ -1382,9 +1436,9 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
 
  private:
   std::string ip_address_;
-  EthernetNetwork ethernet_;
-  WifiNetwork wifi_;
-  CellularNetwork cellular_;
+  EthernetNetwork* ethernet_;
+  WifiNetwork* wifi_;
+  CellularNetwork* cellular_;
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
 };

@@ -118,7 +118,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   // Returns the Icon for a network strength for CellularNetwork |cellular|.
   // This returns different colored bars depending on cellular data left.
-  static SkBitmap IconForNetworkStrength(CellularNetwork cellular);
+  static SkBitmap IconForNetworkStrength(const CellularNetwork* cellular);
 
   // This method will convert the |icon| bitmap to the correct size for display.
   // If the |badge| icon is not empty, it will draw that on top of the icon.
@@ -131,7 +131,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
   virtual bool ShouldOpenButtonOptions() const = 0;
 
   // Notify subclasses that connection to |network| was initiated.
-  virtual void OnConnectNetwork(const Network& network,
+  virtual void OnConnectNetwork(const Network* network,
                                 SkBitmap selected_icon_) {}
   // Update the menu (e.g. when the network list or status has changed).
   void UpdateMenu();
@@ -178,17 +178,17 @@ class NetworkMenu : public views::ViewMenuDelegate,
   void InitMenuItems();
 
   // Shows network details in DOM UI options window.
-  void ShowTabbedNetworkSettings(const Network& network) const;
+  void ShowTabbedNetworkSettings(const Network* network) const;
 
   // Show a NetworkConfigView modal dialog instance.
   // TODO(stevenjb): deprecate this once all of the UI is embedded in the menu.
   void ShowNetworkConfigView(NetworkConfigView* view, bool focus_login) const;
 
   // Wrappers for the ShowNetworkConfigView / ShowTabbedNetworkSettings.
-  void ShowWifi(const WifiNetwork& wifi, bool focus_login) const;
-  void ShowCellular(const CellularNetwork& cellular, bool focus_login) const;
-  void ActivateCellular(const CellularNetwork& cellular) const;
-  void ShowEthernet(const EthernetNetwork& ethernet) const;
+  void ShowWifi(const WifiNetwork* wifi, bool focus_login) const;
+  void ShowCellular(const CellularNetwork* cellular, bool focus_login) const;
+  void ActivateCellular(const CellularNetwork* cellular) const;
+  void ShowEthernet(const EthernetNetwork* ethernet) const;
   void ShowOther() const;
 
   // Set to true if we are currently refreshing the menu.

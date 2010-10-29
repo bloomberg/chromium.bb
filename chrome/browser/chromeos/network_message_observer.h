@@ -28,8 +28,8 @@ class NetworkMessageObserver : public NetworkLibrary::Observer {
   explicit NetworkMessageObserver(Profile* profile);
   virtual ~NetworkMessageObserver();
 
-  typedef std::map<std::string, WifiNetwork> ServicePathWifiMap;
-  typedef std::map<std::string, CellularNetwork> ServicePathCellularMap;
+  typedef std::map<std::string, WifiNetwork*> ServicePathWifiMap;
+  typedef std::map<std::string, CellularNetwork*> ServicePathCellularMap;
  private:
   virtual void CreateModalPopup(views::WindowDelegate* view);
   virtual void MobileSetup(const ListValue* args);

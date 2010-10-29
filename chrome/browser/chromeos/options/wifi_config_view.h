@@ -31,9 +31,9 @@ class WifiConfigView : public views::View,
                        public views::ButtonListener,
                        public SelectFileDialog::Listener {
  public:
-  WifiConfigView(NetworkConfigView* parent, WifiNetwork wifi);
+  WifiConfigView(NetworkConfigView* parent, const WifiNetwork* wifi);
   explicit WifiConfigView(NetworkConfigView* parent);
-  virtual ~WifiConfigView() {}
+  virtual ~WifiConfigView();
 
   // views::Textfield::Controller methods.
   virtual void ContentsChanged(views::Textfield* sender,
@@ -86,7 +86,7 @@ class WifiConfigView : public views::View,
   // contents change.
   bool can_login_;
 
-  WifiNetwork wifi_;
+  scoped_ptr<WifiNetwork> wifi_;
 
   views::Textfield* ssid_textfield_;
   views::Textfield* identity_textfield_;

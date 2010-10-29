@@ -85,10 +85,10 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
       }
       std::string network_name = cros->wifi_connecting() ?
-          cros->wifi_network().name() : cros->cellular_network().name();
+          cros->wifi_network()->name() : cros->cellular_network()->name();
       bool configuring = cros->wifi_connecting() ?
-          cros->wifi_network().configuring() :
-          cros->cellular_network().configuring();
+          cros->wifi_network()->configuring() :
+          cros->cellular_network()->configuring();
       SetTooltipText(
           l10n_util::GetStringF(configuring ?
               IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP :
@@ -107,13 +107,13 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
                 l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
       } else if (cros->wifi_connected()) {
         SetIcon(IconForNetworkStrength(
-            cros->wifi_network().strength(), false));
+            cros->wifi_network()->strength(), false));
         SetTooltipText(l10n_util::GetStringF(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cros->wifi_network().name())));
+            UTF8ToWide(cros->wifi_network()->name())));
       } else if (cros->cellular_connected()) {
-        const CellularNetwork& cellular = cros->cellular_network();
-        if (cellular.data_left() == CellularNetwork::DATA_NONE) {
+        const CellularNetwork* cellular = cros->cellular_network();
+        if (cellular->data_left() == CellularNetwork::DATA_NONE) {
           // If no data, then we show 0 bars.
           SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
         } else {
@@ -121,7 +121,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
         }
         SetTooltipText(l10n_util::GetStringF(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cellular.name())));
+            UTF8ToWide(cellular->name())));
       } else {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
         SetTooltipText(l10n_util::GetString(
@@ -138,7 +138,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
     } else if (cros->Connected()) {
       if (!cros->ethernet_connected() && !cros->wifi_connected() &&
           cros->cellular_connected()) {
-        switch (cros->cellular_network().data_left()) {
+        switch (cros->cellular_network()->data_left()) {
           case CellularNetwork::DATA_NONE:
           case CellularNetwork::DATA_VERY_LOW:
             id = IDR_STATUSBAR_NETWORK_3G_ERROR;

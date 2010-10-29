@@ -59,9 +59,6 @@ class Network {
   // Clear the fields.
   virtual void Clear();
 
-  // Configure the Network from a ServiceInfo object.
-  virtual void ConfigureFromService(const ServiceInfo& service);
-
   // Return a string representation of the state code.
   std::string GetStateString() const;
 
@@ -73,6 +70,8 @@ class Network {
       : type_(TYPE_UNKNOWN),
         state_(STATE_UNKNOWN),
         error_(ERROR_UNKNOWN) {}
+  explicit Network(const Network& network);
+  explicit Network(const ServiceInfo* service);
   virtual ~Network() {}
 
   std::string service_path_;
@@ -88,6 +87,15 @@ class EthernetNetwork : public Network {
   EthernetNetwork() : Network() {
     type_ = TYPE_ETHERNET;
   }
+
+  explicit EthernetNetwork(const EthernetNetwork& network)
+      : Network(network) {
+    type_ = TYPE_ETHERNET;
+  }
+
+  explicit EthernetNetwork(const ServiceInfo* service) : Network(service) {
+    type_ = TYPE_ETHERNET;
+  }
 };
 
 class WirelessNetwork : public Network {
@@ -100,8 +108,8 @@ class WirelessNetwork : public Network {
   // We frequently want to compare networks by service path.
   struct ServicePathEq {
     explicit ServicePathEq(const std::string& path_in) : path(path_in) {}
-    bool operator()(const WirelessNetwork& a) {
-      return a.service_path().compare(path) == 0;
+    bool operator()(const WirelessNetwork* a) {
+      return a->service_path().compare(path) == 0;
     }
     const std::string& path;
   };
@@ -118,7 +126,6 @@ class WirelessNetwork : public Network {
 
   // Network overrides.
   virtual void Clear();
-  virtual void ConfigureFromService(const ServiceInfo& service);
 
  protected:
   WirelessNetwork()
@@ -126,6 +133,8 @@ class WirelessNetwork : public Network {
         strength_(0),
         auto_connect_(false),
         favorite_(false) {}
+  explicit WirelessNetwork(const WirelessNetwork& network);
+  explicit WirelessNetwork(const ServiceInfo* service);
 
   std::string name_;
   int strength_;
@@ -143,10 +152,8 @@ class CellularNetwork : public WirelessNetwork {
   };
 
   CellularNetwork();
-  explicit CellularNetwork(const ServiceInfo& service)
-      : WirelessNetwork() {
-    ConfigureFromService(service);
-  }
+  explicit CellularNetwork(const CellularNetwork& network);
+  explicit CellularNetwork(const ServiceInfo* service);
 
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
@@ -184,7 +191,6 @@ class CellularNetwork : public WirelessNetwork {
 
   // WirelessNetwork overrides.
   virtual void Clear();
-  virtual void ConfigureFromService(const ServiceInfo& service);
 
   const CellularDataPlanList& GetDataPlans() const {
     return data_plans_;
@@ -204,6 +210,7 @@ class CellularNetwork : public WirelessNetwork {
   static std::string ActivationStateToString(ActivationState activation_state);
 
  protected:
+
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;
@@ -232,7 +239,8 @@ class CellularNetwork : public WirelessNetwork {
 class WifiNetwork : public WirelessNetwork {
  public:
   WifiNetwork();
-  explicit WifiNetwork(const ServiceInfo& service);
+  explicit WifiNetwork(const WifiNetwork& network);
+  explicit WifiNetwork(const ServiceInfo* service);
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }
@@ -255,7 +263,6 @@ class WifiNetwork : public WirelessNetwork {
 
   // WirelessNetwork overrides.
   virtual void Clear();
-  virtual void ConfigureFromService(const ServiceInfo& service);
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
@@ -271,8 +278,8 @@ class WifiNetwork : public WirelessNetwork {
   std::string cert_path_;
 };
 
-typedef std::vector<WifiNetwork> WifiNetworkVector;
-typedef std::vector<CellularNetwork> CellularNetworkVector;
+typedef std::vector<chromeos::WifiNetwork*> WifiNetworkVector;
+typedef std::vector<chromeos::CellularNetwork*> CellularNetworkVector;
 
 struct CellTower {
   enum RadioType {
@@ -355,17 +362,17 @@ class NetworkLibrary {
   virtual void RemoveProperyObserver(PropertyObserver* observer) = 0;
 
   // Return the active Ethernet network (or a default structure if inactive).
-  virtual const EthernetNetwork& ethernet_network() const = 0;
+  virtual EthernetNetwork* ethernet_network() = 0;
   virtual bool ethernet_connecting() const = 0;
   virtual bool ethernet_connected() const = 0;
 
   // Return the active Wifi network (or a default structure if none active).
-  virtual const WifiNetwork& wifi_network() const = 0;
+  virtual WifiNetwork* wifi_network() = 0;
   virtual bool wifi_connecting() const = 0;
   virtual bool wifi_connected() const = 0;
 
   // Return the active Cellular network (or a default structure if none active).
-  virtual const CellularNetwork& cellular_network() const = 0;
+  virtual CellularNetwork* cellular_network() = 0;
   virtual bool cellular_connecting() const = 0;
   virtual bool cellular_connected() const = 0;
 
@@ -376,7 +383,7 @@ class NetworkLibrary {
   virtual bool Connecting() const = 0;
 
   // Returns the current IP address if connected. If not, returns empty string.
-  virtual const std::string& IPAddress() const = 0;
+  // virtual const std::string& IPAddress() const = 0;
 
   // Returns the current list of wifi networks.
   virtual const WifiNetworkVector& wifi_networks() const = 0;
@@ -387,15 +394,12 @@ class NetworkLibrary {
   // Returns the current list of cellular networks.
   virtual const CellularNetworkVector& cellular_networks() const = 0;
 
-  // Returns the list of remembered cellular networks.
-  virtual const CellularNetworkVector& remembered_cellular_networks() const = 0;
-
   // Search the current list of networks by path and if the network
   // is available, copy the result and return true.
-  virtual bool FindWifiNetworkByPath(const std::string& path,
-                                     WifiNetwork* result) const = 0;
-  virtual bool FindCellularNetworkByPath(const std::string& path,
-                                         CellularNetwork* result) const = 0;
+  virtual WifiNetwork* FindWifiNetworkByPath(const std::string& path) = 0;
+  virtual CellularNetwork* FindCellularNetworkByPath(
+      const std::string& path) = 0;
+
 
   // Request a scan for new wifi networks.
   virtual void RequestWifiScan() = 0;
@@ -414,7 +418,7 @@ class NetworkLibrary {
   virtual void UpdateSystemInfo() = 0;
 
   // Connect to the specified wireless network with password.
-  virtual void ConnectToWifiNetwork(WifiNetwork network,
+  virtual void ConnectToWifiNetwork(const WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) = 0;
@@ -427,22 +431,22 @@ class NetworkLibrary {
                                     bool auto_connect) = 0;
 
   // Connect to the specified cellular network.
-  virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
+  virtual void ConnectToCellularNetwork(const CellularNetwork* network) = 0;
 
   // Initiates cellular data plan refresh. Plan data will be passed through
   // Network::Observer::CellularDataPlanChanged callback.
-  virtual void RefreshCellularDataPlans(const CellularNetwork& network) = 0;
+  virtual void RefreshCellularDataPlans(const CellularNetwork* network) = 0;
 
   // Disconnect from the specified wireless (either cellular or wifi) network.
   virtual void DisconnectFromWirelessNetwork(
-      const WirelessNetwork& network) = 0;
+      const WirelessNetwork* network) = 0;
 
   // Save network information including passwords (wifi) and auto-connect.
-  virtual void SaveCellularNetwork(const CellularNetwork& network) = 0;
-  virtual void SaveWifiNetwork(const WifiNetwork& network) = 0;
+  virtual void SaveCellularNetwork(const CellularNetwork* network) = 0;
+  virtual void SaveWifiNetwork(const WifiNetwork* network) = 0;
 
-  // Forget the passed in wireless (either cellular or wifi) network.
-  virtual void ForgetWirelessNetwork(const std::string& service_path) = 0;
+  // Forget the wifi network corresponding to service_path.
+  virtual void ForgetWifiNetwork(const std::string& service_path) = 0;
 
   virtual bool ethernet_available() const = 0;
   virtual bool wifi_available() const = 0;

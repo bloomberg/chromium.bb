@@ -40,7 +40,7 @@ struct PlanDetails {
 
 // TODO(xiyuan): Get real data from libcros when it's ready.
 // Get plan details at the time being called.
-void GetPlanDetails(const chromeos::CellularNetwork& cellular,
+void GetPlanDetails(const chromeos::CellularNetwork* cellular,
                     PlanDetails* details) {
   // Free 5M 30day plan.
   details->last_purchase_type = UNKNOWN;
@@ -56,9 +56,9 @@ void GetPlanDetails(const chromeos::CellularNetwork& cellular,
 namespace chromeos {
 
 CellularConfigView::CellularConfigView(NetworkConfigView* parent,
-                                       const CellularNetwork& cellular)
+                                       const CellularNetwork* cellular)
     : parent_(parent),
-      cellular_(cellular),
+      cellular_(new CellularNetwork(*cellular)),
       purchase_info_(NULL),
       purchase_more_button_(NULL),
       remaining_data_info_(NULL),
@@ -67,6 +67,9 @@ CellularConfigView::CellularConfigView(NetworkConfigView* parent,
       autoconnect_checkbox_(NULL),
       customer_support_link_(NULL) {
   Init();
+}
+
+CellularConfigView::~CellularConfigView() {
 }
 
 void CellularConfigView::ButtonPressed(views::Button* button,
@@ -85,9 +88,10 @@ void CellularConfigView::LinkActivated(views::Link* source, int event_flags) {
 bool CellularConfigView::Save() {
   // Save auto-connect here.
   bool auto_connect = autoconnect_checkbox_->checked();
-  if (auto_connect != cellular_.auto_connect()) {
-    cellular_.set_auto_connect(auto_connect);
-    CrosLibrary::Get()->GetNetworkLibrary()->SaveCellularNetwork(cellular_);
+  if (auto_connect != cellular_->auto_connect()) {
+    cellular_->set_auto_connect(auto_connect);
+    CrosLibrary::Get()->GetNetworkLibrary()->SaveCellularNetwork(
+        cellular_.get());
   }
   return true;
 }
@@ -157,10 +161,10 @@ void CellularConfigView::Init() {
 }
 
 void CellularConfigView::Update() {
-  autoconnect_checkbox_->SetChecked(cellular_.auto_connect());
+  autoconnect_checkbox_->SetChecked(cellular_->auto_connect());
 
   PlanDetails details;
-  GetPlanDetails(cellular_, &details);
+  GetPlanDetails(cellular_.get(), &details);
 
   switch (details.last_purchase_type) {
     case NO_PURCHASE:

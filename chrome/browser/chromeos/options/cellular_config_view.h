@@ -27,9 +27,9 @@ class CellularConfigView : public views::View,
                            public views::LinkController {
  public:
   CellularConfigView(NetworkConfigView* parent,
-                     const CellularNetwork& cellular);
+                     const CellularNetwork* cellular);
   explicit CellularConfigView(NetworkConfigView* parent);
-  virtual ~CellularConfigView() {}
+  virtual ~CellularConfigView();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* button, const views::Event& event);
@@ -50,7 +50,7 @@ class CellularConfigView : public views::View,
 
   NetworkConfigView* parent_;
 
-  CellularNetwork cellular_;
+  scoped_ptr<CellularNetwork> cellular_;
 
   views::Label* purchase_info_;
   views::NativeButton* purchase_more_button_;
