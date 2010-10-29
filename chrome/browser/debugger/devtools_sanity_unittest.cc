@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCachedResourceMimeType) {
 }
 
 // Tests profiler panel.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
