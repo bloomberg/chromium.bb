@@ -84,4 +84,5 @@ node = env.CommandTest('fake_browser_ppapi.out',
                               % (sel_ldr, log_file)),
                        extra_deps=[sel_ldr, ppapi_basic_object_nexe])
 
-env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')
+# TODO(polina): reenable the test when it starts faking URLLoading
+#env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')

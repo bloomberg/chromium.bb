@@ -13,8 +13,13 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/plugin.h"
+
+#include "ppapi/cpp/completion_callback.h"
+#include "ppapi/cpp/dev/file_io_dev.h"
+#include "ppapi/cpp/dev/url_loader_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
+
 
 struct NaClSrpcChannel;
 namespace ppapi_proxy {
@@ -59,6 +64,25 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // The browser will invoke the destructor via the pp::Instance
   // pointer to this object, not from base's Delete().
   virtual ~PluginPpapi();
+
+  // Nexe url loading support.
+  // Our goal is to have the browser download the file and give us an open
+  // file descriptor that we can pass to sel_ldr with the sandbox on.
+  // This is accomplished with a 3-step process:
+  // 1) Ask the browser to start streaming nexe as a file.
+  // 2) Ask the browser to finish streaming if headers indicate success.
+  // 3) Ask the browser to open the file, so we can get the file descriptor.
+  // Each step is done asynchronously using callbacks.
+  // We create callbacks through a factory to take advantage of ref-counting.
+  // TODO(polina): Add a file-download wrapper for all this to ppapi repo. This
+  // will remove the intermediate functions and member variables from our code.
+  void NexeURLLoadStartNotify(int32_t pp_error);
+  void NexeURLLoadFinishNotify(int32_t pp_error);
+  void NexeFileOpenNotify(int32_t pp_error);
+  pp::FileIO_Dev nexe_reader_;
+  pp::URLLoader_Dev nexe_loader_;
+  pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
+
   // A pointer to the browser (proxy) end of a Proxy pattern connecting the
   // plugin to the .nexe's PPP interface (InitializeModule, Shutdown, and
   // GetInterface).
