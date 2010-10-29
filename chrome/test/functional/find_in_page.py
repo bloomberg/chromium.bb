@@ -8,6 +8,7 @@ import unittest
 
 import pyauto_functional
 import pyauto
+import test_utils
 
 
 class FindMatchTests(pyauto.PyUITest):
@@ -74,6 +75,7 @@ class FindMatchTests(pyauto.PyUITest):
     """Verify search for text within special URLs such as chrome:history.
        chrome://history, chrome://downloads, pyAuto Data directory
     """
+    zip_file = 'a_zip_file.zip'
     self.NavigateToURL(self.GetFileURLForPath(self.DataDir()))
     # search in Data directory
     self.assertEqual(1,
@@ -86,35 +88,15 @@ class FindMatchTests(pyauto.PyUITest):
         expect_retval=1)
     self.assertEqual(1, self.FindInPage('data', tab_index=1)['match_count'])
     # search in Downloads page
-    self._DownloadZipFile()
+    test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
     self.AppendTab(pyauto.GURL('chrome://downloads'))
     # the contents in the downloads page load asynchronously after tab loads
     self.WaitUntil(
-        lambda: self.FindInPage('a_zip_file.zip', tab_index=2)['match_count'],
+        lambda: self.FindInPage(zip_file, tab_index=2)['match_count'],
         expect_retval=2)
     self.assertEqual(2,
-        self.FindInPage('a_zip_file.zip', tab_index=2)['match_count'])
-    self._RemoveZipFile()
-
-  def _DownloadZipFile(self):
-    """Download a zip file."""
-    zip_file = 'a_zip_file.zip'
-    download_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
-    file_path = os.path.join(download_dir, zip_file)
-    file_url = self.GetFileURLForPath(file_path)
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(), zip_file)
-    # Check if zip file already exists. If so then delete it.
-    if os.path.exists(downloaded_pkg):
-      self._RemoveZipFile()
-    self.DownloadAndWaitForStart(file_url)
-    # Wait for the download to finish
-    self.WaitForAllDownloadsToComplete()
-
-  def _RemoveZipFile(self):
-    """Delete a_zip_file.zip from the download directory."""
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  'a_zip_file.zip')
-    os.remove(downloaded_pkg)
+        self.FindInPage(zip_file, tab_index=2)['match_count'])
+    test_utils.RemoveDownloadedTestFile(self, zip_file)
 
 
 if __name__ == '__main__':
