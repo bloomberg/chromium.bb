@@ -800,6 +800,29 @@ a.leftNavSelected,.leftNavSelected a,a.leftNavSelected:visited,.leftNavSelected 
   background:#fff
 }
 
+#gc-toc .toggle {
+  background: url('../images/toggle_sprite.png') no-repeat 0px 0px;
+  width: 9px;
+  height: 9px;
+  overflow: hidden;
+  float: left;
+  text-decoration: none;
+  margin: 4px 1px 4px -13px;
+  cursor: pointer;
+}
+
+#gc-toc .toggle.selected {
+  background-position: 0 -9px;
+}
+
+#gc-toc .toggle:hover {
+  background-position: 0 -18px;
+}
+
+#gc-toc .toggle.selected:hover {
+  background-position: 0 -27px;
+}
+
 #toc h2 {
   font-weight:bold;
   font-size:100%;
