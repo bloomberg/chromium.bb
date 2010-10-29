@@ -483,9 +483,6 @@ const char kEnableSecureInfoBars[]          = "enable-secure-infobars";
 // Enables 0-RTT HTTPS handshakes.
 const char kEnableSnapStart[]               = "enable-snap-start";
 
-// Enables speech input.
-const char kEnableSpeechInput[]             = "enable-speech-input";
-
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 

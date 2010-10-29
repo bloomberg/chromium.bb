@@ -215,7 +215,7 @@ class RenderViewZoomer : public RenderViewVisitor {
 };
 
 bool IsSpeechInputEnabled(const CommandLine& command_line) {
-  return command_line.HasSwitch(switches::kEnableSpeechInput);
+  return !command_line.HasSwitch(switches::kDisableSpeechInput);
 }
 }  // namespace
 

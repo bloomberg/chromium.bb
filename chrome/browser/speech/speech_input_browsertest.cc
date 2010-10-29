@@ -93,10 +93,6 @@ class FakeSpeechInputManager : public SpeechInputManager {
 class SpeechInputBrowserTest : public InProcessBrowserTest {
  public:
   // InProcessBrowserTest methods
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableSpeechInput);
-  }
-
   GURL testUrl(const FilePath::CharType* filename) {
     const FilePath kTestDir(FILE_PATH_LITERAL("speech"));
     return ui_test_utils::GetTestUrl(kTestDir, FilePath(filename));
