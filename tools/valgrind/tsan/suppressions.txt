@@ -55,6 +55,13 @@
   fun:ThreadSanitizerStartThread
 }
 
+{
+  bug_61210
+  ThreadSanitizer:Race
+  ...
+  fun:linked_ptr<PluginGroup>*
+}
+
 ############################
 # Real races in third_party
 {
@@ -250,6 +257,16 @@
   ThreadSanitizer:Race
   fun:sqlite3_initialize
   fun:openDatabase
+}
+
+############################
+# Races in V8
+
+# http://code.google.com/p/v8/issues/detail?id=361
+{
+  Race on Locker::active_ in v8
+  ThreadSanitizer:Race
+  fun:v8::Locker::*
 }
 
 ############################
