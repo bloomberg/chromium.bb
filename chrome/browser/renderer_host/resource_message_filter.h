@@ -252,6 +252,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetWindowRect(gfx::NativeViewId window, IPC::Message* reply);
   void OnGetRootWindowRect(gfx::NativeViewId window, IPC::Message* reply);
 #endif
+
+  void OnRevealFolderInOS(const FilePath& path);
   void OnGetMimeTypeFromExtension(const FilePath::StringType& ext,
                                   std::string* mime_type);
   void OnGetMimeTypeFromFile(const FilePath& file_path,

@@ -1942,6 +1942,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
                       int /* request_id */)
 
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_RevealFolderInOS,
+                       FilePath /* path */)
+
   // Sent when the renderer has processed a DataDownloaded message.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DataDownloaded_ACK,
                       int /* request_id */)

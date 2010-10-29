@@ -37,6 +37,7 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -455,6 +456,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnCheckNotificationPermission)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
                           OnGetMimeTypeFromExtension)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromFile,
                           OnGetMimeTypeFromFile)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetPreferredExtensionForMimeType,
@@ -522,6 +524,26 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(msg.type(), handle());
 
   return handled;
+}
+
+void ResourceMessageFilter::OnRevealFolderInOS(const FilePath& path) {
+#if defined(OS_MACOSX)
+  const BrowserThread::ID kThreadID = BrowserThread::UI;
+#else
+  const BrowserThread::ID kThreadID = BrowserThread::FILE;
+#endif
+  if (!BrowserThread::CurrentlyOn(kThreadID)) {
+    // Only honor the request if appropriate persmissions are granted.
+    if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path))
+      BrowserThread::PostTask(
+          kThreadID, FROM_HERE,
+          NewRunnableMethod(
+              this, &ResourceMessageFilter::OnRevealFolderInOS, path));
+    return;
+  }
+
+  DCHECK(BrowserThread::CurrentlyOn(kThreadID));
+  platform_util::OpenItem(path);
 }
 
 void ResourceMessageFilter::OnDestruct() const {

@@ -16,6 +16,7 @@ class WebFileUtilitiesImpl : public WebKit::WebFileUtilities {
   virtual ~WebFileUtilitiesImpl();
 
   // WebFileUtilities methods:
+  virtual void revealFolderInOS(const WebKit::WebString& path);
   virtual bool fileExists(const WebKit::WebString& path);
   virtual bool deleteFile(const WebKit::WebString& path);
   virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
