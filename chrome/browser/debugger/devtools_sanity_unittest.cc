@@ -273,22 +273,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestEnableResourcesTab) {
 #define MAYBE_TestResourceContentLength TestResourceContentLength
 #endif  // defined(OS_LINUX)
 
-// Tests resources have correct sizes.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestResourceContentLength) {
-  RunTest("testResourceContentLength", kResourceContentLengthTestPage);
-}
-
-// Tests resource headers.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
-  RunTest("testResourceHeaders", kResourceTestPage);
-}
-
-// Tests cached resource mime type.
-// @see http://crbug.com/27364
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCachedResourceMimeType) {
-  RunTest("testCachedResourceMimeType", kResourceTestPage);
-}
-
 // Tests profiler panel.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FLAKY_TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
