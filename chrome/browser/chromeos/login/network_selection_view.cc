@@ -60,8 +60,11 @@ const int kPaddingColumnWidth = 55;
 const int kMediumPaddingColumnWidth = 20;
 const int kControlPaddingRow = 15;
 
+// Size to add to the welcome title font.
+const int kWelcomeTitleFontDelta = 5;
+
 // Fixed size for language/keyboard/network controls height.
-const int kSelectionBoxHeight = 29;
+const int kSelectionBoxHeight = 30;
 
 // Menu button is drawn using our custom icons in resources. See
 // TextButtonBorder::Paint() for details. So this offset compensate
@@ -83,6 +86,19 @@ static const int kProxySettingsDialogReasonableWidth = 750;
 static const int kProxySettingsDialogReasonableHeight = 460;
 static const int kProxySettingsDialogReasonableWidthRatio = 0.4;
 static const int kProxySettingsDialogReasonableHeightRatio = 0.4;
+
+// Initializes menu button default properties.
+static void InitMenuButtonProperties(views::MenuButton* menu_button) {
+  menu_button->SetFocusable(true);
+  menu_button->SetNormalHasBorder(true);
+  menu_button->SetEnabledColor(SK_ColorBLACK);
+  menu_button->SetHighlightColor(SK_ColorBLACK);
+  menu_button->SetHoverColor(SK_ColorBLACK);
+  menu_button->set_animate_on_state_change(false);
+  // Menu is positioned by bottom right corner of the MenuButton.
+  menu_button->set_menu_offset(kMenuHorizontalOffset, kMenuVerticalOffset);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -276,8 +292,8 @@ void NetworkSelectionView::Init() {
       views::Background::CreateBackgroundPainter(true, painter));
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font welcome_label_font =
-      rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD);
+  gfx::Font welcome_label_font = rb.GetFont(ResourceBundle::LargeFont).
+      DeriveFont(kWelcomeTitleFontDelta, gfx::Font::BOLD);
 
   welcome_label_ = new views::Label();
   welcome_label_->SetColor(kWelcomeColor);
@@ -289,12 +305,7 @@ void NetworkSelectionView::Init() {
 
   languages_menubutton_ = new NotifyingMenuButton(
       NULL, std::wstring(), delegate_->language_switch_menu(), true, delegate_);
-  languages_menubutton_->SetFocusable(true);
-  languages_menubutton_->SetNormalHasBorder(true);
-  languages_menubutton_->set_animate_on_state_change(false);
-  // Menu is positioned by bottom right corner of the MenuButton.
-  languages_menubutton_->set_menu_offset(kMenuHorizontalOffset,
-                                         kMenuVerticalOffset);
+  InitMenuButtonProperties(languages_menubutton_);
 
   select_keyboard_label_ = new views::Label();
   select_keyboard_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
@@ -302,11 +313,7 @@ void NetworkSelectionView::Init() {
   keyboards_menubutton_ = new views::MenuButton(
       NULL /* listener */, L"", delegate_->keyboard_switch_menu(),
       true /* show_menu_marker */);
-  keyboards_menubutton_->SetFocusable(true);
-  keyboards_menubutton_->SetNormalHasBorder(true);
-  keyboards_menubutton_->set_animate_on_state_change(false);
-  keyboards_menubutton_->set_menu_offset(kMenuHorizontalOffset,
-                                         kMenuVerticalOffset);
+  InitMenuButtonProperties(keyboards_menubutton_);
 
   select_network_label_ = new views::Label();
   select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
@@ -314,12 +321,7 @@ void NetworkSelectionView::Init() {
   network_dropdown_ = new NetworkControlReportOnActivate(false,
                                                          GetNativeWindow(),
                                                          delegate_);
-
-  network_dropdown_->set_menu_offset(kMenuHorizontalOffset,
-                                     kMenuVerticalOffset);
-  network_dropdown_->SetNormalHasBorder(true);
-  network_dropdown_->SetFocusable(true);
-  network_dropdown_->set_animate_on_state_change(false);
+  InitMenuButtonProperties(network_dropdown_);
 
   connecting_network_label_ = new views::Label();
   connecting_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
