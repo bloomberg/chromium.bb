@@ -29,7 +29,6 @@ Central roster: hosting all Google Talk chats in ChromeOS.
 <script>
   var MIN_RETRY_MILLISECONDS = 15 * 1000;
   var MAX_RETRY_MILLISECONDS = 4 * 60 * 1000;
-  var retryStartTime = 0;
   var retryTime;
   var retryTimer;
   var chatClient = null;
@@ -38,8 +37,9 @@ Central roster: hosting all Google Talk chats in ChromeOS.
     'protocol': 'https',
     'host': 'talkgadget.google.com',
     'jsmode': 'pre',
-    'hl': 'en',
+    'hl': chrome.i18n.getMessage('@@ui_locale'),
   };
+
   // Read args.
   var urlParts = window.location.href.split(/[?&#]/);
   for (var i = 1; i < urlParts.length; i++) {
@@ -63,11 +63,7 @@ Central roster: hosting all Google Talk chats in ChromeOS.
     document.body.appendChild(script);
   }
   function retryConnection() {
-    if (retryTimer) {
-      clearTimeout(retryTimer);
-      retryTimer = null;
-    }
-    runGTalkScript();
+    location.reload();
   }
   function retryConnectionCountdown() {
     var seconds = retryTime / 1000;
@@ -101,13 +97,14 @@ Central roster: hosting all Google Talk chats in ChromeOS.
             'isFullFrame': true
           }
       );
+      delete localStorage.retryStartTime;
     } else {
-      if (retryStartTime == 0) {
-        retryStartTime = MIN_RETRY_MILLISECONDS;
-      } else if (retryStartTime < MAX_RETRY_MILLISECONDS) {
-        retryStartTime = Math.min(retryStartTime * 2, MAX_RETRY_MILLISECONDS);
+      if (!localStorage.retryStartTime) {
+        localStorage.retryStartTime = MIN_RETRY_MILLISECONDS;
+      } else if (localStorage.retryStartTime < MAX_RETRY_MILLISECONDS) {
+        localStorage.retryStartTime = Math.min(localStorage.retryStartTime * 2, MAX_RETRY_MILLISECONDS);
       }
-      retryTime = retryStartTime;
+      retryTime = localStorage.retryStartTime;
       document.getElementById('retryInfo').style.display = 'inline';
       retryConnectionCountdown();
     }

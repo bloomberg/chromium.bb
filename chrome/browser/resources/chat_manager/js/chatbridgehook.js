@@ -43,10 +43,11 @@ function forwardChatEvent(event) {
 }
 
 /**
- * Triggered on opening/closing a central roster chat. Forward to extension.
+ * Forward mole events to extension.
+ * Triggered on opening/closing/focus a central roster chat.
  * @param {MessageEvent} event the opened/closed event.
  */
-function moleOpenedClosed(event) {
+function forwardMoleEvent(event) {
   var eventType = event.type;
   var chatJid = event.data;
   chrome.extension.sendRequest({msg: eventType, jid: chatJid});
@@ -132,10 +133,13 @@ function onPageLoaded() {
         setupCentralRosterJidListener, false);
     divRosterHandler.addEventListener(
         ChatBridgeEventTypes.OPENED_MOLE_INCOMING,
-        moleOpenedClosed, false);
+        forwardMoleEvent, false);
     divRosterHandler.addEventListener(
         ChatBridgeEventTypes.CLOSED_MOLE_INCOMING,
-        moleOpenedClosed, false);
+        forwardMoleEvent, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.MOLE_FOCUSED,
+        forwardMoleEvent, false);
   }
 }
 

@@ -18,5 +18,6 @@ var ChatBridgeEventTypes = {
   OPENED_MOLE_INCOMING: 'onMoleOpened',
   OPENED_MOLE_OUTGOING: 'onCentralMoleOpened',
   CLOSED_MOLE_INCOMING: 'onMoleClosed',
-  CLOSED_MOLE_OUTGOING: 'onCentralMoleClosed'
+  CLOSED_MOLE_OUTGOING: 'onCentralMoleClosed',
+  MOLE_FOCUSED: '*mfo'
 };
