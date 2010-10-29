@@ -167,16 +167,20 @@ struct drm_surface_data {
 	struct surface_data data;
 	EGLImageKHR image;
 	GLuint texture;
-	EGLDisplay dpy;
+	struct display *display;
 };
 
 static void
 drm_surface_data_destroy(void *p)
 {
 	struct drm_surface_data *data = p;
+	struct display *d = data->display;
 
+	cairo_device_acquire(d->device);
 	glDeleteTextures(1, &data->texture);
-	eglDestroyImageKHR(data->dpy, data->image);
+	cairo_device_release(d->device);
+
+	eglDestroyImageKHR(d->dpy, data->image);
 	wl_buffer_destroy(data->data.buffer);
 }
 
@@ -203,13 +207,17 @@ display_create_drm_surface(struct display *display,
 	if (data == NULL)
 		return NULL;
 
+	data->display = display;
+
 	image_attribs[1] = rectangle->width;
 	image_attribs[3] = rectangle->height;
 	data->image = eglCreateDRMImageMESA(dpy, image_attribs);
+
+	cairo_device_acquire(display->device);
 	glGenTextures(1, &data->texture);
-	data->dpy = dpy;
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
+	cairo_device_release(display->device);
 
 	eglExportDRMImageMESA(display->dpy, data->image, &name, NULL, &stride);
 
@@ -240,6 +248,7 @@ display_create_drm_surface_from_file(struct display *display,
 	GError *error = NULL;
 	int stride, i;
 	unsigned char *pixels, *p, *end;
+	struct drm_surface_data *data;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   rect->width, rect->height,
@@ -275,8 +284,13 @@ display_create_drm_surface_from_file(struct display *display,
 	}
 
 	surface = display_create_drm_surface(display, rect);
+	data = cairo_surface_get_user_data(surface, &surface_data_key);
+
+	cairo_device_acquire(display->device);
+	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rect->width, rect->height,
 			GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	cairo_device_release(display->device);
 
 	gdk_pixbuf_unref(pixbuf);
 
