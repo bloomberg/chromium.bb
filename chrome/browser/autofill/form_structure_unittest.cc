@@ -1285,4 +1285,264 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
             form_structure->field(4)->heuristic_type());
 }
 
+TEST(FormStructureTest, EncodeQueryRequest) {
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Name on Card"),
+                                               ASCIIToUTF16("name_on_card"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                               ASCIIToUTF16("billing_address"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Card Number"),
+                                               ASCIIToUTF16("card_number"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Expiration Date"),
+                                               ASCIIToUTF16("expiration_month"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Expiration Year"),
+                                               ASCIIToUTF16("expiration_year"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  ScopedVector<FormStructure> forms;
+  forms.push_back(new FormStructure(form));
+  std::vector<std::string> encoded_signatures;
+  std::string encoded_xml;
+  const char * const kSignature1 = "11337937696949187602";
+  const char * const kResponse1 =
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillquery "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\"><form signature=\""
+      "11337937696949187602\"><field signature=\"412125936\"/><field "
+      "signature=\"1917667676\"/><field signature=\"2226358947\"/><field "
+      "signature=\"747221617\"/><field signature=\"4108155786\"/></form>"
+      "</autofillquery>";
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_xml));
+  ASSERT_EQ(encoded_signatures.size(), 1U);
+  EXPECT_EQ(encoded_signatures[0], kSignature1);
+  EXPECT_EQ(encoded_xml, kResponse1);
+
+  // Add the same form, only one will be encoded, so EncodeQueryRequest() should
+  // return the same data.
+  forms.push_back(new FormStructure(form));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_xml));
+  ASSERT_EQ(encoded_signatures.size(), 1U);
+  EXPECT_EQ(encoded_signatures[0], kSignature1);
+  EXPECT_EQ(encoded_xml, kResponse1);
+  // Add 5 address fields - this should be still a valid form.
+  for (size_t i = 0; i < 5; ++i) {
+    form.fields.push_back(
+        webkit_glue::FormField(ASCIIToUTF16("Address"),
+                               ASCIIToUTF16("address"),
+                               string16(),
+                               ASCIIToUTF16("text"),
+                               0));
+  }
+
+  forms.push_back(new FormStructure(form));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_xml));
+  ASSERT_EQ(encoded_signatures.size(), 2U);
+  EXPECT_EQ(encoded_signatures[0], kSignature1);
+  const char * const kSignature2 = "8308881815906226214";
+  EXPECT_EQ(encoded_signatures[1], kSignature2);
+  const char * const kResponse2 =
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillquery "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\"><form signature=\""
+      "11337937696949187602\"><field signature=\"412125936\"/><field signature="
+      "\"1917667676\"/><field signature=\"2226358947\"/><field signature=\""
+      "747221617\"/><field signature=\"4108155786\"/></form><form signature=\""
+      "8308881815906226214\"><field signature=\"412125936\"/><field signature="
+      "\"1917667676\"/><field signature=\"2226358947\"/><field signature=\""
+      "747221617\"/><field signature=\"4108155786\"/><field signature=\""
+      "509334676\"/><field signature=\"509334676\"/><field signature=\""
+      "509334676\"/><field signature=\"509334676\"/><field signature=\""
+      "509334676\"/></form></autofillquery>";
+  EXPECT_EQ(encoded_xml, kResponse2);
+
+  // Add 50 address fields - the form is not valid anymore, but previous ones
+  // are. The result should be the same as in previous test.
+  for (size_t i = 0; i < 50; ++i) {
+    form.fields.push_back(
+        webkit_glue::FormField(ASCIIToUTF16("Address"),
+                               ASCIIToUTF16("address"),
+                               string16(),
+                               ASCIIToUTF16("text"),
+                               0));
+  }
+
+  forms.push_back(new FormStructure(form));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
+                                                &encoded_xml));
+  ASSERT_EQ(encoded_signatures.size(), 2U);
+  EXPECT_EQ(encoded_signatures[0], kSignature1);
+  EXPECT_EQ(encoded_signatures[1], kSignature2);
+  EXPECT_EQ(encoded_xml, kResponse2);
+
+  // Check that we fail if there are only bad form(s).
+  ScopedVector<FormStructure> bad_forms;
+  bad_forms.push_back(new FormStructure(form));
+  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_signatures,
+                                                 &encoded_xml));
+  EXPECT_EQ(encoded_signatures.size(), 0U);
+  EXPECT_EQ(encoded_xml, "");
+}
+
+TEST(FormStructureTest, EncodeUploadRequest) {
+  scoped_ptr<FormStructure> form_structure;
+  std::vector<FieldTypeSet> possible_field_types;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form_structure.reset(new FormStructure(form));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("First Name"),
+                        ASCIIToUTF16("firstname"),
+                        string16(),
+                        ASCIIToUTF16("text"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(NAME_FIRST);
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Last Name"),
+                        ASCIIToUTF16("lastname"),
+                        string16(),
+                        ASCIIToUTF16("text"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(NAME_LAST);
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("EMail"),
+                        ASCIIToUTF16("email"),
+                        string16(),
+                        ASCIIToUTF16("email"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(EMAIL_ADDRESS);
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Phone"),
+                        ASCIIToUTF16("phone"),
+                        string16(),
+                        ASCIIToUTF16("number"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(PHONE_HOME_WHOLE_NUMBER);
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Country"),
+                        ASCIIToUTF16("country"),
+                        string16(),
+                        ASCIIToUTF16("select-one"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Fax"),
+                        ASCIIToUTF16("fax"),
+                        string16(),
+                        ASCIIToUTF16("tel"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(PHONE_FAX_WHOLE_NUMBER);
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                        ASCIIToUTF16("address"),
+                        string16(),
+                        ASCIIToUTF16("radio"),
+                        0));
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(ADDRESS_HOME_LINE1);
+  form_structure.reset(new FormStructure(form));
+  std::string encoded_xml;
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->set_possible_types(i, possible_field_types[i]);
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
+  EXPECT_EQ(encoded_xml,
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
+      "8269229441054798720\" autofillused=\"false\" datapresent=\"\"><field "
+      "signature=\"3763331450\" autofilltype=\"3\"/><field signature=\""
+      "3494530716\" autofilltype=\"5\"/><field signature=\"1029417091\" "
+      "autofilltype=\"9\"/><field signature=\"466116101\" autofilltype="
+      "\"14\"/><field signature=\"2799270304\" autofilltype=\"36\"/><field "
+      "signature=\"1876771436\" autofilltype=\"24\"/><field signature="
+      "\"263446779\" autofilltype=\"30\"/></autofillupload>");
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(true, &encoded_xml));
+  EXPECT_EQ(encoded_xml,
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
+      "8269229441054798720\" autofillused=\"true\" datapresent=\"\"><field "
+      "signature=\"3763331450\" autofilltype=\"3\"/><field signature=\""
+      "3494530716\" autofilltype=\"5\"/><field signature=\"1029417091\" "
+      "autofilltype=\"9\"/><field signature=\"466116101\" autofilltype="
+      "\"14\"/><field signature=\"2799270304\" autofilltype=\"36\"/><field "
+      "signature=\"1876771436\" autofilltype=\"24\"/><field signature="
+      "\"263446779\" autofilltype=\"30\"/></autofillupload>");
+  // Add 5 address fields - this should be still a valid form.
+  for (size_t i = 0; i < 5; ++i) {
+    form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                                 ASCIIToUTF16("address"),
+                                                 string16(),
+                                                 ASCIIToUTF16("text"),
+                                                 0));
+    possible_field_types.push_back(FieldTypeSet());
+    possible_field_types.back().insert(ADDRESS_HOME_LINE1);
+    possible_field_types.back().insert(ADDRESS_HOME_LINE2);
+    possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
+    possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
+  }
+  form_structure.reset(new FormStructure(form));
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->set_possible_types(i, possible_field_types[i]);
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(false, &encoded_xml));
+  EXPECT_EQ(encoded_xml,
+      "<\?xml version=\"1.0\" encoding=\"UTF-8\"\?><autofillupload "
+      "clientversion=\"6.1.1715.1442/en (GGLL)\" formsignature=\""
+      "2027360543766157144\" autofillused=\"false\" datapresent=\"\"><field "
+      "signature=\"3763331450\" autofilltype=\"3\"/><field signature=\""
+      "3494530716\" autofilltype=\"5\"/><field signature=\"1029417091\" "
+      "autofilltype=\"9\"/><field signature=\"466116101\" autofilltype=\"14\"/>"
+      "<field signature=\"2799270304\" autofilltype=\"36\"/><field signature=\""
+      "1876771436\" autofilltype=\"24\"/><field signature=\"263446779\" "
+      "autofilltype=\"30\"/><field signature=\"509334676\" autofilltype="
+      "\"30\"/><field signature=\"509334676\" autofilltype=\"31\"/><field "
+      "signature=\"509334676\" autofilltype=\"37\"/><field signature="
+      "\"509334676\" autofilltype=\"38\"/><field signature=\"509334676\" "
+      "autofilltype=\"30\"/><field signature=\"509334676\" autofilltype="
+      "\"31\"/><field signature=\"509334676\" autofilltype=\"37\"/><field "
+      "signature=\"509334676\" autofilltype=\"38\"/><field signature=\""
+      "509334676\" autofilltype=\"30\"/><field signature=\"509334676\" "
+      "autofilltype=\"31\"/><field signature=\"509334676\" "
+      "autofilltype=\"37\"/><field signature=\"509334676\" autofilltype="
+      "\"38\"/><field signature=\"509334676\" autofilltype=\"30\"/><field "
+      "signature=\"509334676\" autofilltype=\"31\"/><field signature="
+      "\"509334676\" autofilltype=\"37\"/><field signature=\"509334676\" "
+      "autofilltype=\"38\"/><field signature=\"509334676\" autofilltype="
+      "\"30\"/><field signature=\"509334676\" autofilltype=\"31\"/><field "
+      "signature=\"509334676\" autofilltype=\"37\"/><field signature="
+      "\"509334676\" autofilltype=\"38\"/></autofillupload>");
+  // Add 50 address fields - now the form is invalid.
+  for (size_t i = 0; i < 50; ++i) {
+    form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                                 ASCIIToUTF16("address"),
+                                                 string16(),
+                                                 ASCIIToUTF16("text"),
+                                                 0));
+    possible_field_types.push_back(FieldTypeSet());
+    possible_field_types.back().insert(ADDRESS_HOME_LINE1);
+    possible_field_types.back().insert(ADDRESS_HOME_LINE2);
+    possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
+    possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
+  }
+  form_structure.reset(new FormStructure(form));
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->set_possible_types(i, possible_field_types[i]);
+  EXPECT_FALSE(form_structure->EncodeUploadRequest(false, &encoded_xml));
+  EXPECT_EQ(encoded_xml, "");
+}
+
 }  // namespace

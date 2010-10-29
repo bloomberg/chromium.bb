@@ -71,15 +71,10 @@ bool AutoFillDownloadManager::StartQueryRequest(
     return false;
   }
   std::string form_xml;
-  FormStructure::EncodeQueryRequest(forms, &form_xml);
-
   FormRequestData request_data;
-  request_data.form_signatures.reserve(forms.size());
-  for (ScopedVector<FormStructure>::const_iterator it = forms.begin();
-       it != forms.end();
-       ++it) {
-    request_data.form_signatures.push_back((*it)->FormSignature());
-  }
+  if (!FormStructure::EncodeQueryRequest(forms, &request_data.form_signatures,
+                                         &form_xml))
+    return false;
 
   request_data.request_type = AutoFillDownloadManager::REQUEST_QUERY;
 
@@ -102,7 +97,8 @@ bool AutoFillDownloadManager::StartUploadRequest(
     return false;
   }
   std::string form_xml;
-  form.EncodeUploadRequest(form_was_matched, &form_xml);
+  if (!form.EncodeUploadRequest(form_was_matched, &form_xml))
+    return false;
 
   FormRequestData request_data;
   request_data.form_signatures.push_back(form.FormSignature());

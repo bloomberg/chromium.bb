@@ -105,6 +105,8 @@ FormStructure::~FormStructure() {}
 
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
                                         std::string* encoded_xml) const {
+  DCHECK(encoded_xml);
+  encoded_xml->clear();
   bool auto_fillable = IsAutoFillable();
   DCHECK(auto_fillable);  // Caller should've checked for search pages.
   if (!auto_fillable)
@@ -129,7 +131,8 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
   // personaldata_manager_->GetDataPresent();
   autofil_request_xml.SetAttr(buzz::QName(kAttributeDataPresent), "");
 
-  EncodeFormRequest(FormStructure::UPLOAD, &autofil_request_xml);
+  if (!EncodeFormRequest(FormStructure::UPLOAD, &autofil_request_xml))
+    return false;  // Malformed form, skip it.
 
   // Obtain the XML structure as a string.
   *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -140,7 +143,13 @@ bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
 
 // static
 bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
-                                       std::string* encoded_xml) {
+    std::vector<std::string>* encoded_signatures,
+    std::string* encoded_xml) {
+  DCHECK(encoded_signatures);
+  DCHECK(encoded_xml);
+  encoded_xml->clear();
+  encoded_signatures->clear();
+  encoded_signatures->reserve(forms.size());
   buzz::XmlElement autofil_request_xml(buzz::QName("autofillquery"));
   // Attributes for the <autofillquery> element.
   //
@@ -148,18 +157,31 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
   // For now these values are hacked from the toolbar code.
   autofil_request_xml.SetAttr(buzz::QName(kAttributeClientVersion),
                               "6.1.1715.1442/en (GGLL)");
+  // Some badly formatted web sites repeat forms - detect that and encode only
+  // one form as returned data would be the same for all the repeated forms.
+  std::set<std::string> processed_forms;
   for (ScopedVector<FormStructure>::const_iterator it = forms.begin();
        it != forms.end();
        ++it) {
+    std::string signature((*it)->FormSignature());
+    if (processed_forms.find(signature) != processed_forms.end())
+      continue;
+    processed_forms.insert(signature);
     buzz::XmlElement* encompassing_xml_element =
         new buzz::XmlElement(buzz::QName("form"));
     encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
-                                      (*it)->FormSignature());
+                                      signature);
 
-    (*it)->EncodeFormRequest(FormStructure::QUERY, encompassing_xml_element);
+    if (!(*it)->EncodeFormRequest(FormStructure::QUERY,
+                                  encompassing_xml_element))
+      continue;  // Malformed form, skip it.
 
     autofil_request_xml.AddElement(encompassing_xml_element);
+    encoded_signatures->push_back(signature);
   }
+
+  if (!encoded_signatures->size())
+    return false;
 
   // Obtain the XML structure as a string.
   *encoded_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -392,8 +414,16 @@ bool FormStructure::EncodeFormRequest(
     buzz::XmlElement* encompassing_xml_element) const {
   if (!field_count())  // Nothing to add.
     return false;
+  // Some badly formatted web sites repeat fields - limit number of fields to
+  // 48, which is far larger than any valid form and XML still fits into 2K.
+  const size_t kMaxFieldsOnTheForm = 48;
+  if (field_count() > kMaxFieldsOnTheForm) {
+    // This is not a valid form, most certainly. Do not send request for the
+    // wrongly formatted forms.
+    return false;
+  }
   // Add the child nodes for the form fields.
-  for (size_t index = 0; index < field_count(); index++) {
+  for (size_t index = 0; index < field_count(); ++index) {
     const AutoFillField* field = fields_[index];
     if (request_type == FormStructure::UPLOAD) {
       FieldTypeSet types = field->possible_types();
