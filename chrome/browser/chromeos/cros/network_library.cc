@@ -715,8 +715,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return;
 
     // First create a service from hidden network.
-    ServiceInfo* service = GetWifiService(ssid.c_str(),
-                                          SECURITY_UNKNOWN);
+    ConnectionSecurity security = password.empty() ?
+        SECURITY_NONE : SECURITY_UNKNOWN;
+    ServiceInfo* service = GetWifiService(ssid.c_str(), security);
     if (service) {
       // Set auto-connect.
       SetAutoConnect(service->service_path, auto_connect);
