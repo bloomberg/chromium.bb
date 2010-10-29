@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenTest, IncognitoLogin) {
   controller()->set_observer(mock_screen_observer.get());
   NewUserView* login = controller()->GetLoginScreen()->view();
 
-  login->LinkActivated(login->browse_without_signin_link_, 0);
+  login->LinkActivated(login->guest_link_, 0);
   controller()->set_observer(NULL);
   Quit();
 }

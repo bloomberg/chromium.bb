@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
@@ -73,7 +74,7 @@ namespace chromeos {
 
 NewUserView::NewUserView(Delegate* delegate,
                          bool need_border,
-                         bool need_browse_without_signin)
+                         bool need_guest_link)
     : username_field_(NULL),
       password_field_(NULL),
       title_label_(NULL),
@@ -81,7 +82,7 @@ NewUserView::NewUserView(Delegate* delegate,
       splitter_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
-      browse_without_signin_link_(NULL),
+      guest_link_(NULL),
       languages_menubutton_(NULL),
       throbber_(NULL),
       accel_focus_pass_(views::Accelerator(app::VKEY_P, false, false, true)),
@@ -94,10 +95,12 @@ NewUserView::NewUserView(Delegate* delegate,
       focus_delayed_(false),
       login_in_process_(false),
       need_border_(need_border),
-      need_browse_without_signin_(need_browse_without_signin),
+      need_guest_link_(false),
       need_create_account_(false),
       languages_menubutton_order_(-1),
       sign_in_button_order_(-1) {
+  if (need_guest_link && UserCrosSettingsProvider::cached_allow_guest())
+    need_guest_link_ = true;
 }
 
 NewUserView::~NewUserView() {
@@ -154,8 +157,8 @@ void NewUserView::Init() {
   if (need_create_account_) {
     InitLink(&create_account_link_);
   }
-  if (need_browse_without_signin_) {
-    InitLink(&browse_without_signin_link_);
+  if (need_guest_link_) {
+    InitLink(&guest_link_);
   }
   AddChildView(languages_menubutton_);
 
@@ -254,8 +257,8 @@ void NewUserView::UpdateLocalizedStrings() {
     create_account_link_->SetText(
         l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
   }
-  if (need_browse_without_signin_) {
-    browse_without_signin_link_->SetText(
+  if (need_guest_link_) {
+    guest_link_->SetText(
         l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
   }
   delegate_->ClearErrors();
@@ -363,14 +366,14 @@ void NewUserView::Layout() {
   // Center align all other controls.
   int create_account_link_height = need_create_account_ ?
       create_account_link_->GetPreferredSize().height() : 0;
-  int browse_without_signin_link_height = need_browse_without_signin_ ?
-      browse_without_signin_link_->GetPreferredSize().height() : 0;
+  int guest_link_height = need_guest_link_ ?
+      guest_link_->GetPreferredSize().height() : 0;
 
   height = username_field_->GetPreferredSize().height() +
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
            create_account_link_height +
-           browse_without_signin_link_height +
+           guest_link_height +
            5 * kRowPad;
   y += (this->height() - y - height) / 2;
 
@@ -399,8 +402,8 @@ void NewUserView::Layout() {
     y += setViewBounds(create_account_link_, x, y, max_width, false);
   }
 
-  if (need_browse_without_signin_) {
-    y += setViewBounds(browse_without_signin_link_, x, y, max_width, false);
+  if (need_guest_link_) {
+    y += setViewBounds(guest_link_, x, y, max_width, false);
   }
   SchedulePaint();
 }
@@ -446,7 +449,7 @@ void NewUserView::ButtonPressed(views::Button* sender,
 void NewUserView::LinkActivated(views::Link* source, int event_flags) {
   if (source == create_account_link_) {
     delegate_->OnCreateAccount();
-  } else if (source == browse_without_signin_link_) {
+  } else if (source == guest_link_) {
     delegate_->OnLoginOffTheRecord();
   }
 }
@@ -515,8 +518,8 @@ void NewUserView::EnableInputControls(bool enabled) {
   if (need_create_account_) {
     create_account_link_->SetEnabled(enabled);
   }
-  if (need_browse_without_signin_) {
-    browse_without_signin_link_->SetEnabled(enabled);
+  if (need_guest_link_) {
+    guest_link_->SetEnabled(enabled);
   }
 }
 

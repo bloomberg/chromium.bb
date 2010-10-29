@@ -59,7 +59,7 @@ class NewUserView : public views::View,
   // If |need_border| is true, RoundedRect border and background are required.
   NewUserView(Delegate* delegate,
               bool need_border,
-              bool need_browse_without_signin);
+              bool need_guest_link);
 
   virtual ~NewUserView();
 
@@ -150,7 +150,7 @@ class NewUserView : public views::View,
   views::View* splitter_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
-  views::Link* browse_without_signin_link_;
+  views::Link* guest_link_;
   views::MenuButton* languages_menubutton_;
   views::Throbber* throbber_;
 
@@ -176,8 +176,8 @@ class NewUserView : public views::View,
   // If true, this view needs RoundedRect border and background.
   bool need_border_;
 
-  // Whether browse without signin is needed.
-  bool need_browse_without_signin_;
+  // Whether Guest Mode link is needed.
+  bool need_guest_link_;
 
   // Whether create account link is needed. Set to false for now but we may
   // need it back in near future.
