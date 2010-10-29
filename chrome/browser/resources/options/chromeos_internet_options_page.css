@@ -39,6 +39,10 @@
   position: relative;
 }
 
+.other-network > input {
+  width: 140px;
+}
+
 .network-item {
   -webkit-box-align: center;
   -webkit-padding-start: 30px;

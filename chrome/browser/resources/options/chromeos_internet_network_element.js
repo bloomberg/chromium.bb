@@ -319,11 +319,28 @@ cr.define('options.internet', function() {
       passwordDiv.appendChild(ssidInput);
       var passInput = this.ownerDocument.createElement('input');
       passInput.placeholder = localStrings.getString('inetPassPrompt');
+      passInput.type = 'password';
       passwordDiv.appendChild(passInput);
+
+      var togglePassLabel = this.ownerDocument.createElement('label');
+      togglePassLabel.style.display = 'inline';
+      var togglePassSpan = this.ownerDocument.createElement('span');
+      var togglePassCheckbox = this.ownerDocument.createElement('input');
+      togglePassCheckbox.type = 'checkbox';
+      togglePassCheckbox.checked = false;
+      togglePassCheckbox.target = passInput;
+      togglePassCheckbox.addEventListener('change', this.handleShowPass_);
+      togglePassSpan.textContent = localStrings.getString('inetShowPass');
+      togglePassLabel.appendChild(togglePassCheckbox);
+      togglePassLabel.appendChild(togglePassSpan);
+      passwordDiv.appendChild(togglePassLabel);
+
       var buttonEl = this.ownerDocument.createElement('button');
       buttonEl.textContent = localStrings.getString('inetLogin');
       buttonEl.buttonType = true;
       buttonEl.addEventListener('click', this.handleOtherLogin_);
+      buttonEl.style.right = '0';
+      buttonEl.style.position = 'absolute';
       buttonEl.style.visibility = 'visible';
       passwordDiv.appendChild(buttonEl);
       this.appendChild(passwordDiv);
