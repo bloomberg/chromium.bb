@@ -506,8 +506,8 @@ def TryChange(argv,
 
   group = optparse.OptionGroup(parser, "Try job options")
   group.add_option("-b", "--bot", action="append",
-                    help="Only use specifics build slaves, ex: '--bot win' to "
-                         "run the try job only on the 'win' slave; see the try "
+                    help="Only use specifics build slaves, ex: "
+                         "'--bot win,layout_mac'; see the try "
                          "server waterfall for the slave's name")
   group.add_option("-r", "--revision",
                     help="Revision to use for the try job; default: the "
@@ -557,9 +557,13 @@ def TryChange(argv,
                    help="Used as -pN parameter to patch")
   group.add_option("-s", "--sub_rep", action="append", default=[],
                    help="Subcheckout to use in addition. This is mainly "
-                        "useful for gclient-style checkouts. Use @rev or "
-                        "@branch or @branch1..branch2 to specify the "
-                        "revision/branch to diff against.")
+                        "useful for gclient-style checkouts. In git, checkout "
+                        "the branch with changes first. Use @rev or "
+                        "@branch to specify the "
+                        "revision/branch to diff against. If no @branch is "
+                        "given the diff will be against the upstream branch. "
+                        "If @branch then the diff is branch..HEAD. "
+                        "All edits must be checked in.")
   group.add_option("--no_gclient", action="store_true",
                    help="Disable automatic search for gclient checkout.")
   group.add_option("-E", "--exclude", action="append",
