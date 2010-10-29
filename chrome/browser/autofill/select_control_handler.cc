@@ -485,9 +485,9 @@ void FillSelectControl(const FormGroup* form_group,
   string16 value;
   string16 field_text = form_group->GetFieldText(type);
   for (size_t i = 0; i < field->option_strings().size(); ++i) {
-    if (form_group->GetFieldText(type) == field->option_strings()[i]) {
+    if (field_text == field->option_strings()[i]) {
       // An exact match, use it.
-      value = form_group->GetFieldText(type);
+      value = field_text;
       break;
     }
 

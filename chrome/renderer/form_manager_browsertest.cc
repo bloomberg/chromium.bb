@@ -1116,6 +1116,75 @@ TEST_F(FormManagerTest, LabelsInferredFromTableCellNested) {
             fields[2]);
 }
 
+TEST_F(FormManagerTest, LabelsInferredFromTableEmptyTDs) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "<TABLE>"
+           "  <TR>"
+           "    <TD>"
+           "      <SPAN>*</SPAN>"
+           "      <B>First Name</B>"
+           "    </TD>"
+           "    <TD></TD>"
+           "    <TD>"
+           "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+           "    </TD>"
+           "  </TR>"
+           "  <TR>"
+           "    <TD>"
+           "      <SPAN>*</SPAN>"
+           "      <B>Last Name</B>"
+           "    </TD>"
+           "    <TD></TD>"
+           "    <TD>"
+           "      <INPUT type=\"text\" id=\"lastname\" value=\"Milton\"/>"
+           "    </TD>"
+           "  </TR>"
+           "  <TR>"
+           "    <TD></TD>"
+           "    <TD>"
+           "      <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "    </TD>"
+           "  </TR>"
+           "</TABLE>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetFormsInFrame(web_frame, FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(ASCIIToUTF16("*First Name"),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("John"),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[0]);
+  EXPECT_EQ(FormField(ASCIIToUTF16("*Last Name"),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Milton"),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit"),
+                      0),
+            fields[2]);
+}
+
 TEST_F(FormManagerTest, LabelsInferredFromDefinitionList) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "<DL>"

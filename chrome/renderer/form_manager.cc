@@ -163,22 +163,27 @@ string16 InferLabelFromTable(
          !parent.to<WebElement>().hasTagName("td"))
     parent = parent.parentNode();
 
-  if (!parent.isNull() && parent.isElementNode()) {
-    WebElement element = parent.to<WebElement>();
-    if (element.hasTagName("td")) {
-      WebNode previous = parent.previousSibling();
+  if (parent.isNull() || !parent.isElementNode())
+    return string16();
 
-      // Skip by any intervening text nodes.
-      while (!previous.isNull() && previous.isTextNode())
-        previous = previous.previousSibling();
+  WebElement e = parent.to<WebElement>();
+  if (e.isNull() || !e.hasTagName("td"))
+    return string16();
 
-      if (!previous.isNull() && previous.isElementNode()) {
-        element = previous.to<WebElement>();
-        if (element.hasTagName("td")) {
-          inferred_label = FindChildText(element);
-        }
+  // Check all previous siblings, skipping non-element nodes, until we find a
+  // non-empty text block.
+  WebNode previous = parent.previousSibling();
+  while (!previous.isNull()) {
+    if (previous.isElementNode()) {
+      e = previous.to<WebElement>();
+      if (e.hasTagName("td")) {
+        inferred_label = FindChildText(e);
+        if (!inferred_label.empty())
+          break;
       }
     }
+
+    previous = previous.previousSibling();
   }
 
   return inferred_label;
