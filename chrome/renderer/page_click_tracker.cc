@@ -101,7 +101,9 @@ void PageClickTracker::RemoveListener(PageClickListener* listener) {
 void PageClickTracker::handleEvent(const WebDOMEvent& event) {
   last_node_clicked_.reset();
 
-  DCHECK(event.isMouseEvent());
+  if (!event.isMouseEvent())
+    return;
+
   const WebDOMMouseEvent mouse_event = event.toConst<WebDOMMouseEvent>();
   DCHECK(mouse_event.buttonDown());
   if (mouse_event.button() != 0)
