@@ -168,8 +168,6 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewDOMUI<MobileSetupUI>;
-  if (url.host() == chrome::kChromeUIPrintHost)
-    return &NewDOMUI<PrintPreviewUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
     return &NewDOMUI<RegisterPageUI>;
   if (url.host() == chrome::kChromeUISettingsHost)
