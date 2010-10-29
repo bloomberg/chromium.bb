@@ -55,6 +55,11 @@ class BrowserAccessibility {
   // than windows.
   virtual void ReleaseReference() = 0;
 
+  // Replace a child object. Used when updating the accessibility tree.
+  virtual void ReplaceChild(
+      BrowserAccessibility* old_acc,
+      BrowserAccessibility* new_acc);
+
   // Initialize this object
   void Initialize(BrowserAccessibilityManager* manager,
                   BrowserAccessibility* parent,
@@ -84,11 +89,6 @@ class BrowserAccessibility {
   // Return the next sibling of this object, or NULL if it's the last child
   // of its parent.
   BrowserAccessibility* GetNextSibling();
-
-  // Replace a child object. Used when updating the accessibility tree.
-  void ReplaceChild(
-      const BrowserAccessibility* old_acc,
-      BrowserAccessibility* new_acc);
 
   // Accessors
   const std::map<int32, string16>& attributes() const { return attributes_; }

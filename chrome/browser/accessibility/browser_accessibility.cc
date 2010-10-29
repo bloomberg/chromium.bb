@@ -20,6 +20,14 @@ BrowserAccessibility::BrowserAccessibility()
 BrowserAccessibility::~BrowserAccessibility() {
 }
 
+void BrowserAccessibility::ReplaceChild(
+    BrowserAccessibility* old_acc, BrowserAccessibility* new_acc) {
+  DCHECK_EQ(children_[old_acc->index_in_parent_], old_acc);
+
+  old_acc = children_[old_acc->index_in_parent_];
+  children_[old_acc->index_in_parent_] = new_acc;
+}
+
 void BrowserAccessibility::Initialize(
     BrowserAccessibilityManager* manager,
     BrowserAccessibility* parent,
@@ -101,12 +109,4 @@ BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
   }
 
   return NULL;
-}
-
-void BrowserAccessibility::ReplaceChild(
-    const BrowserAccessibility* old_acc, BrowserAccessibility* new_acc) {
-  DCHECK_EQ(children_[old_acc->index_in_parent_], old_acc);
-
-  old_acc = children_[old_acc->index_in_parent_];
-  children_[old_acc->index_in_parent_] = new_acc;
 }

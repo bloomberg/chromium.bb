@@ -19,6 +19,7 @@
 @interface BrowserAccessibilityCocoa : NSObject {
  @private
   BrowserAccessibility* browserAccessibility_;
+  scoped_nsobject<NSMutableArray> children_;
   id<BrowserAccessibilityDelegateCocoa> delegate_;
 }
 
@@ -28,6 +29,9 @@
 // parameters can be null.
 - (id)initWithObject:(BrowserAccessibility*)accessibility
             delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate;
+
+// Invalidate children for a non-ignored ancestor (including self).
+- (void)childrenChanged;
 
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.

@@ -51,6 +51,7 @@ class BrowserAccessibilityTest : public CocoaTest {
     root.location.y = 0;
     root.location.width = 500;
     root.location.height = 100;
+    root.role = WebAccessibility::ROLE_WEB_AREA;
     root.attributes[WebAccessibility::ATTR_HELP] = ASCIIToUTF16("HelpText");
 
     WebAccessibility child1;
@@ -59,12 +60,14 @@ class BrowserAccessibilityTest : public CocoaTest {
     child1.location.y = 0;
     child1.location.width = 250;
     child1.location.height = 100;
+    child1.role = WebAccessibility::ROLE_BUTTON;
 
     WebAccessibility child2;
     child2.location.x = 250;
     child2.location.y = 0;
     child2.location.width = 250;
     child2.location.height = 100;
+    child2.role = WebAccessibility::ROLE_HEADING;
 
     root.children.push_back(child1);
     root.children.push_back(child2);
