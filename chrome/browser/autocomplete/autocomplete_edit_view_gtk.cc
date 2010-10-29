@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/gtk_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -43,8 +42,6 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #endif
-
-using gfx::SkColorToGdkColor;
 
 namespace {
 
@@ -685,23 +682,28 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 #else
     background_color_ptr = &LocationBarViewGtk::kBackgroundColor;
 #endif
-    gtk_widget_modify_cursor(text_view_, &gfx::kGdkBlack, &gfx::kGdkGray);
+    gtk_widget_modify_cursor(
+        text_view_, &gtk_util::kGdkBlack, &gtk_util::kGdkGray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
 #if !defined(TOOLKIT_VIEWS)
     // Override the selected colors so we don't leak colors from the current
     // gtk theme into the chrome-theme.
     GdkColor c;
-    c = SkColorToGdkColor(theme_provider_->get_active_selection_bg_color());
+    c = gfx::SkColorToGdkColor(
+        theme_provider_->get_active_selection_bg_color());
     gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, &c);
 
-    c = SkColorToGdkColor(theme_provider_->get_active_selection_fg_color());
+    c = gfx::SkColorToGdkColor(
+        theme_provider_->get_active_selection_fg_color());
     gtk_widget_modify_text(text_view_, GTK_STATE_SELECTED, &c);
 
-    c = SkColorToGdkColor(theme_provider_->get_inactive_selection_bg_color());
+    c = gfx::SkColorToGdkColor(
+        theme_provider_->get_inactive_selection_bg_color());
     gtk_widget_modify_base(text_view_, GTK_STATE_ACTIVE, &c);
 
-    c = SkColorToGdkColor(theme_provider_->get_inactive_selection_fg_color());
+    c = gfx::SkColorToGdkColor(
+        theme_provider_->get_inactive_selection_fg_color());
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
 #endif
 
@@ -1056,7 +1058,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
 
   // Search Engine menu item.
   GtkWidget* search_engine_menuitem = gtk_menu_item_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_EDIT_SEARCH_ENGINES)).c_str());
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), search_engine_menuitem);
   g_signal_connect(search_engine_menuitem, "activate",
@@ -1076,7 +1078,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkWidget* sender,
 
   // Paste and Go menu item.
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(model_->is_paste_and_search() ?
               IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), paste_go_menuitem);

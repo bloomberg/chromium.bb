@@ -811,8 +811,8 @@ void LocationBarViewGtk::Observe(NotificationType type,
     gtk_util::SetRoundedWindowBorderColor(tab_to_search_box_,
                                           kKeywordBorderColor);
 
-    gtk_util::SetLabelColor(tab_to_search_full_label_, &gfx::kGdkBlack);
-    gtk_util::SetLabelColor(tab_to_search_partial_label_, &gfx::kGdkBlack);
+    gtk_util::SetLabelColor(tab_to_search_full_label_, &gtk_util::kGdkBlack);
+    gtk_util::SetLabelColor(tab_to_search_partial_label_, &gtk_util::kGdkBlack);
     gtk_util::SetLabelColor(tab_to_search_hint_leading_label_,
                             &kHintTextColor);
     gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,

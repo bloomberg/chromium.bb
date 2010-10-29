@@ -39,7 +39,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/gtk_preserve_window.h"
-#include "gfx/gtk_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
@@ -79,9 +78,9 @@ class RenderWidgetHostViewGtkWidget {
     gtk_widget_set_double_buffered(widget, FALSE);
     gtk_widget_set_redraw_on_allocate(widget, FALSE);
 #if defined(NDEBUG)
-    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gfx::kGdkWhite);
+    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gtk_util::kGdkWhite);
 #else
-    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gfx::kGdkGreen);
+    gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gtk_util::kGdkGreen);
 #endif
     // Allow the browser window to be resized freely.
     gtk_widget_set_size_request(widget, 0, 0);

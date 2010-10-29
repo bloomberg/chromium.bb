@@ -9,7 +9,6 @@
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/rounded_window.h"
-#include "gfx/gtk_util.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 
@@ -54,9 +53,10 @@ void FullscreenExitBubbleGtk::InitWidgets() {
                                            FALSE);
   signals_.Connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
 
-  GtkWidget* container = gtk_util::CreateGtkBorderBin(link, &gfx::kGdkBlack,
+  GtkWidget* container = gtk_util::CreateGtkBorderBin(
+      link, &gtk_util::kGdkBlack,
       kPaddingPixels, kPaddingPixels, kPaddingPixels, kPaddingPixels);
-  gtk_util::ActAsRoundedWindow(container, gfx::kGdkGreen, kPaddingPixels,
+  gtk_util::ActAsRoundedWindow(container, gtk_util::kGdkGreen, kPaddingPixels,
       gtk_util::ROUNDED_BOTTOM_LEFT | gtk_util::ROUNDED_BOTTOM_RIGHT,
       gtk_util::BORDER_NONE);
 

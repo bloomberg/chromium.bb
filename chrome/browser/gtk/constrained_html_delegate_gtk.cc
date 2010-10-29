@@ -4,16 +4,16 @@
 
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
 
-#include "gfx/gtk_util.h"
-#include "gfx/rect.h"
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
+#include "gfx/rect.h"
 #include "ipc/ipc_message.h"
 
 class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
@@ -37,7 +37,7 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
   virtual void OnDialogClose();
   virtual bool GetBackgroundColor(GdkColor* color) {
-    *color = gfx::kGdkWhite;
+    *color = gtk_util::kGdkWhite;
     return true;
   }
 

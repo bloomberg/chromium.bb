@@ -80,7 +80,6 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "gfx/skia_utils_gtk.h"
 #include "grit/app_resources.h"
@@ -1622,7 +1621,7 @@ void BrowserWindowGtk::InitWidgets() {
   // Set a white background so during startup the user sees white in the
   // content area before we get a TabContents in place.
   gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
-                       &gfx::kGdkWhite);
+                       &gtk_util::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(render_area_event_box_),
                     render_area_floating_container_);
   gtk_widget_show(render_area_event_box_);

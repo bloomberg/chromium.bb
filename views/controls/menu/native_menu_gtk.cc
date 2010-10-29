@@ -11,7 +11,6 @@
 #include "app/keyboard_code_conversion_gtk.h"
 #include "app/keyboard_codes.h"
 #include "app/menus/menu_model.h"
-#include "base/gtk_util.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/time.h"
@@ -308,7 +307,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
                                         GtkRadioMenuItem* radio_group,
                                         GtkAccelGroup* accel_group) {
   GtkWidget* menu_item = NULL;
-  std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
+  std::string label = gfx::ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
       model_->GetLabelAt(index)));
 
   menus::MenuModel::ItemType type = model_->GetTypeAt(index);

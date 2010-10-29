@@ -185,8 +185,8 @@ void InfoBar::AddLabelWithInlineLink(const string16& display_text,
   // TODO(joth): Unlike the AddLabalAndLink below, none of the label widgets
   // are set as shrinkable here, meaning the text will run under the close
   // button etc. when the width is restricted, rather than eliding.
-  gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-  gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
+  gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
 
   // We don't want any spacing between the elements, so we pack them into
   // this hbox that doesn't use kElementPadding.
@@ -226,7 +226,7 @@ void InfoBar::AddLabelAndLink(const string16& display_text,
   gtk_widget_set_size_request(label, 0, -1);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
   gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 }
 
@@ -386,7 +386,7 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
   GtkWidget* label = gtk_label_new(label_text.c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_util::CenterWidgetInHBox(confirm_hbox_, label, false, kEndOfLabelSpacing);
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
   g_signal_connect(label, "map",
                    G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                    NULL);

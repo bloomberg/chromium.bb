@@ -287,8 +287,8 @@ void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
 
     // Because the prelight state is a white image that doesn't change by the
     // theme, force the text color to black when it would be used.
-    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &gfx::kGdkBlack);
-    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &gfx::kGdkBlack);
+    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &gtk_util::kGdkBlack);
+    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &gtk_util::kGdkBlack);
   }
 }
 

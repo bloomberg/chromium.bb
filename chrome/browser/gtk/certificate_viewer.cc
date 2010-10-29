@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/gtk_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
+#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 
@@ -161,7 +161,7 @@ CertificateViewer::CertificateViewer(
       GTK_NOTEBOOK(notebook_),
       general_page_vbox_,
       gtk_label_new_with_mnemonic(
-          gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          gfx::ConvertAcceleratorsFromWindowsStyle(
               l10n_util::GetStringUTF8(
                   IDS_CERT_INFO_GENERAL_TAB_LABEL)).c_str()));
 
@@ -169,7 +169,7 @@ CertificateViewer::CertificateViewer(
       GTK_NOTEBOOK(notebook_),
       details_page_vbox_,
       gtk_label_new_with_mnemonic(
-          gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          gfx::ConvertAcceleratorsFromWindowsStyle(
               l10n_util::GetStringUTF8(
                   IDS_CERT_INFO_DETAILS_TAB_LABEL)).c_str()));
 
@@ -606,7 +606,7 @@ void CertificateViewer::InitDetailsPage() {
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), export_hbox,
                      FALSE, FALSE, 0);
   export_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(
               IDS_CERT_DETAILS_EXPORT_CERTIFICATE)).c_str());
   g_signal_connect(export_button_, "clicked",

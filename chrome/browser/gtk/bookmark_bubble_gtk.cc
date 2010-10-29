@@ -24,7 +24,6 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -78,7 +77,7 @@ void BookmarkBubbleGtk::Observe(NotificationType type,
   } else {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
-      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
     }
   }
 }

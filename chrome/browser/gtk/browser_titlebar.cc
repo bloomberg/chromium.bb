@@ -680,10 +680,10 @@ void BrowserTitlebar::UpdateTextColor() {
           BrowserThemeProvider::COLOR_FRAME_INACTIVE);
     }
     GdkColor text_color = PickLuminosityContrastingColor(
-        &frame_color, &gfx::kGdkWhite, &gfx::kGdkBlack);
+        &frame_color, &gtk_util::kGdkWhite, &gtk_util::kGdkBlack);
     gtk_util::SetLabelColor(app_mode_title_, &text_color);
   } else {
-    gtk_util::SetLabelColor(app_mode_title_, &gfx::kGdkWhite);
+    gtk_util::SetLabelColor(app_mode_title_, &gtk_util::kGdkWhite);
   }
 }
 

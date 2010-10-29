@@ -8,7 +8,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "gfx/gtk_util.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "testing/platform_test.h"
 
 namespace {

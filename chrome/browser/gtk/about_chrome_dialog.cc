@@ -22,7 +22,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -149,7 +148,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
 
   GtkWidget* text_vbox = gtk_vbox_new(FALSE, kExtraLineSpacing);
 
-  GdkColor black = gfx::kGdkBlack;
+  GdkColor black = gtk_util::kGdkBlack;
   GtkWidget* product_label = MakeMarkupLabel(
       "<span font_desc=\"18\" style=\"normal\">%s</span>",
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));

@@ -22,7 +22,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "gfx/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -191,7 +190,7 @@ void FirstRunDialog::ShowSearchEngineWindow() {
 
   GtkWidget* bubble_area_background = gtk_event_box_new();
   gtk_widget_modify_bg(bubble_area_background,
-                       GTK_STATE_NORMAL, &gfx::kGdkWhite);
+                       GTK_STATE_NORMAL, &gtk_util::kGdkWhite);
 
   GtkWidget* bubble_area_box = gtk_vbox_new(FALSE, 0);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_area_box),
@@ -203,7 +202,7 @@ void FirstRunDialog::ShowSearchEngineWindow() {
       l10n_util::GetStringFUTF8(IDS_FR_SEARCH_TEXT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
   gtk_misc_set_alignment(GTK_MISC(explanation), 0, 0.5);
-  gtk_util::SetLabelColor(explanation, &gfx::kGdkBlack);
+  gtk_util::SetLabelColor(explanation, &gtk_util::kGdkBlack);
   gtk_util::SetLabelWidth(explanation, kExplanationWidth);
   gtk_box_pack_start(GTK_BOX(bubble_area_box), explanation, FALSE, FALSE, 0);
 

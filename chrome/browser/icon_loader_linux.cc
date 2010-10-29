@@ -9,13 +9,13 @@
 #include <gtk/gtk.h>
 
 #include "base/file_util.h"
-#include "base/gtk_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/mime_util.h"
 #include "base/thread.h"
 #include "base/string_util.h"
 #include "gfx/codec/png_codec.h"
+#include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 static int SizeToInt(IconLoader::IconSize size) {
@@ -61,7 +61,7 @@ void IconLoader::ParseIcon() {
       LOG(WARNING) << "Got an image with no alpha channel, aborting load.";
     } else {
       uint8_t* BGRA_pixels =
-          gtk_util::BGRAToRGBA(pixels, width, height, stride);
+          gfx::BGRAToRGBA(pixels, width, height, stride);
       std::vector<unsigned char> pixel_vector;
       pixel_vector.resize(height * stride);
       memcpy(const_cast<unsigned char*>(pixel_vector.data()), BGRA_pixels,

@@ -38,7 +38,6 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
-#include "gfx/gtk_util.h"
 #include "gfx/insets.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
@@ -298,7 +297,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                               NotificationService::AllSources());
 
   // We don't do InitThemesFor() because it just forces a redraw.
-  gtk_util::ActAsRoundedWindow(frame_container_, gfx::kGdkBlack, 3,
+  gtk_util::ActAsRoundedWindow(frame_container_, gtk_util::kGdkBlack, 3,
                                gtk_util::ROUNDED_ALL,
                                gtk_util::BORDER_ALL);
 

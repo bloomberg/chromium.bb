@@ -9,7 +9,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "base/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/cookies_tree_model.h"
@@ -115,7 +114,7 @@ void CookiesView::Init(GtkWindow* parent) {
 
   remove_button_ = gtk_util::AddButtonToDialog(
       dialog_,
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_LABEL)).c_str(),
       GTK_STOCK_REMOVE,
       RESPONSE_REMOVE);
@@ -127,7 +126,7 @@ void CookiesView::Init(GtkWindow* parent) {
 
   remove_all_button_ = gtk_util::AddButtonToDialog(
       dialog_,
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_ALL_LABEL)).c_str(),
       GTK_STOCK_CLEAR,
       RESPONSE_REMOVE_ALL);
@@ -156,7 +155,7 @@ void CookiesView::Init(GtkWindow* parent) {
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_entry_,
                      TRUE, TRUE, 0);
   filter_clear_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_SEARCH_LABEL)).c_str());
   g_signal_connect(filter_clear_button_, "clicked",
                    G_CALLBACK(OnFilterClearButtonClickedThunk), this);

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "base/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
@@ -168,7 +167,7 @@ void KeywordEditorView::Init() {
   gtk_box_pack_start(GTK_BOX(hbox), button_box, FALSE, FALSE, 0);
 
   add_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(
               IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON)).c_str());
   g_signal_connect(add_button_, "clicked",
@@ -182,7 +181,7 @@ void KeywordEditorView::Init() {
   gtk_box_pack_start(GTK_BOX(button_box), edit_button_, FALSE, FALSE, 0);
 
   remove_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(
               IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON)).c_str());
   g_signal_connect(remove_button_, "clicked",

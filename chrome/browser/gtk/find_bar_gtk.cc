@@ -35,7 +35,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -43,11 +42,11 @@ namespace {
 
 // Used as the color of the text in the entry box and the text for the results
 // label for failure searches.
-const GdkColor kEntryTextColor = gfx::kGdkBlack;
+const GdkColor kEntryTextColor = gtk_util::kGdkBlack;
 
 // Used as the color of the background of the entry box and the background of
 // the find label for successful searches.
-const GdkColor kEntryBackgroundColor = gfx::kGdkWhite;
+const GdkColor kEntryBackgroundColor = gtk_util::kGdkWhite;
 const GdkColor kFindFailureBackgroundColor = GDK_COLOR_RGB(255, 102, 102);
 const GdkColor kFindSuccessTextColor = GDK_COLOR_RGB(178, 178, 178);
 
@@ -500,7 +499,8 @@ void FindBarGtk::Observe(NotificationType type,
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
-    gtk_widget_modify_cursor(text_entry_, &gfx::kGdkBlack, &gfx::kGdkGray);
+    gtk_widget_modify_cursor(
+        text_entry_, &gtk_util::kGdkBlack, &gtk_util::kGdkGray);
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
                            &kEntryBackgroundColor);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL,

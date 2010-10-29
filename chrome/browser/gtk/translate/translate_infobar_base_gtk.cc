@@ -15,7 +15,6 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "gfx/canvas.h"
-#include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -127,7 +126,7 @@ void TranslateInfoBarBase::AnimationProgressed(const Animation* animation) {
 
 GtkWidget* TranslateInfoBarBase::CreateLabel(const std::string& text) {
   GtkWidget* label = gtk_label_new(text.c_str());
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);
   return label;
 }
 

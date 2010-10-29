@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/gtk_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/third_party/icu/icu_utf.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -266,7 +266,7 @@ void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
   if (!show_input_method_menu)
     return;
 
-  std::string label = gtk_util::ConvertAcceleratorsFromWindowsStyle(
+  std::string label = gfx::ConvertAcceleratorsFromWindowsStyle(
       l10n_util::GetStringUTF8(IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU));
   GtkWidget* menuitem = gtk_menu_item_new_with_mnemonic(label.c_str());
   GtkWidget* submenu = gtk_menu_new();

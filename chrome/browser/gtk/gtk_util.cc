@@ -15,7 +15,6 @@
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
 #include "base/environment.h"
-#include "base/gtk_util.h"
 #include "base/i18n/rtl.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
+#include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -189,6 +189,11 @@ WindowOpenDisposition DispositionFromEventFlags(guint event_flags) {
 }  // namespace event_utils
 
 namespace gtk_util {
+
+const GdkColor kGdkWhite = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+const GdkColor kGdkGray  = GDK_COLOR_RGB(0x7f, 0x7f, 0x7f);
+const GdkColor kGdkBlack = GDK_COLOR_RGB(0x00, 0x00, 0x00);
+const GdkColor kGdkGreen = GDK_COLOR_RGB(0x00, 0xff, 0x00);
 
 GtkWidget* CreateLabeledControlsGroup(std::vector<GtkWidget*>* labels,
                                       const char* text, ...) {
@@ -620,7 +625,7 @@ GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
 GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
                              const gchar* stock_id) {
   GtkWidget* button = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(ids_id)).c_str());
   gtk_button_set_image(GTK_BUTTON(button),
                        gtk_image_new_from_stock(stock_id,

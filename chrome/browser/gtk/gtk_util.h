@@ -18,12 +18,21 @@
 #include "webkit/glue/window_open_disposition.h"
 
 typedef struct _cairo cairo_t;
+typedef struct _GdkColor GdkColor;
 typedef struct _GtkWidget GtkWidget;
 
 class GtkThemeProvider;
 class GURL;
 class Profile;
 struct RendererPreferences;  // from common/renderer_preferences.h
+
+const int kSkiaToGDKMultiplier = 257;
+
+// Define a macro for creating GdkColors from RGB values.  This is a macro to
+// allow static construction of literals, etc.  Use this like:
+//   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+#define GDK_COLOR_RGB(r, g, b) {0, r * kSkiaToGDKMultiplier, \
+        g * kSkiaToGDKMultiplier, b * kSkiaToGDKMultiplier}
 
 namespace event_utils {
 
@@ -35,6 +44,11 @@ WindowOpenDisposition DispositionFromEventFlags(guint state);
 }  // namespace event_utils
 
 namespace gtk_util {
+
+extern const GdkColor kGdkWhite;
+extern const GdkColor kGdkGray;
+extern const GdkColor kGdkBlack;
+extern const GdkColor kGdkGreen;
 
 // Constants relating to the layout of dialog windows:
 // (See http://library.gnome.org/devel/hig-book/stable/design-window.html.en)

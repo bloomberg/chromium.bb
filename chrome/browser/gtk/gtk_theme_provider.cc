@@ -15,6 +15,7 @@
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/hover_controller_gtk.h"
 #include "chrome/browser/gtk/meta_frames.h"
 #include "chrome/browser/metrics/user_metrics.h"

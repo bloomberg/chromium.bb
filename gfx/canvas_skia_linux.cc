@@ -10,7 +10,6 @@
 #include <pango/pangocairo.h>
 
 #include "base/logging.h"
-#include "base/gtk_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
@@ -166,7 +165,7 @@ static void SetupPangoLayout(PangoLayout* layout,
     g_free(escaped_text);
   } else if (flags & gfx::Canvas::HIDE_PREFIX) {
     // Remove the ampersand character.
-    utf8 = gtk_util::RemoveWindowsStyleAccelerators(utf8);
+    utf8 = gfx::RemoveWindowsStyleAccelerators(utf8);
     pango_layout_set_text(layout, utf8.data(), utf8.size());
   } else {
     pango_layout_set_text(layout, utf8.data(), utf8.size());

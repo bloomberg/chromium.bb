@@ -9,7 +9,6 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
-#include "base/gtk_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
@@ -277,21 +276,21 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
                    FALSE, FALSE, 0);
 
   startup_add_custom_page_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_ADD_BUTTON)).c_str());
   g_signal_connect(startup_add_custom_page_button_, "clicked",
                    G_CALLBACK(OnStartupAddCustomPageClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons), startup_add_custom_page_button_,
                      FALSE, FALSE, 0);
   startup_remove_custom_page_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_REMOVE_BUTTON)).c_str());
   g_signal_connect(startup_remove_custom_page_button_, "clicked",
                    G_CALLBACK(OnStartupRemoveCustomPageClickedThunk), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons),
                      startup_remove_custom_page_button_, FALSE, FALSE, 0);
   startup_use_current_page_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_USE_CURRENT)).c_str());
   g_signal_connect(startup_use_current_page_button_, "clicked",
                    G_CALLBACK(OnStartupUseCurrentPageClickedThunk), this);
