@@ -270,11 +270,11 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   }
 
   if (found)
-    LOG(INFO) << "CP_CUPS: Job details for: " << printer_name <<
-        " job_id: " << job_id << " job status: " << job_details->status;
+    VLOG(1) << "CP_CUPS: Job details for: " << printer_name
+            << " job_id: " << job_id << " job status: " << job_details->status;
   else
-    LOG(WARNING) << "CP_CUPS: Job not found for: " << printer_name <<
-        " job_id: " << job_id;
+    LOG(WARNING) << "CP_CUPS: Job not found for: " << printer_name
+                 << " job_id: " << job_id;
 
   cupsFreeJobs(num_jobs, jobs);
   return found;
@@ -284,7 +284,7 @@ bool PrintSystemCUPS::GetPrinterInfo(const std::string& printer_name,
                                      printing::PrinterBasicInfo* info) {
   DCHECK(info);
 
-  LOG(INFO) << "CP_CUPS: Getting printer info for: " << printer_name;
+  VLOG(1) << "CP_CUPS: Getting printer info for: " << printer_name;
 
   // This is not very efficient way to get specific printer info. CUPS 1.4
   // supports cupsGetNamedDest() function. However, CUPS 1.4 is not available
@@ -365,7 +365,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
     const std::string& print_data_mime_type,
     const std::string& printer_name,
     const std::string& job_title) {
-  LOG(INFO) << "CP_CUPS: Spooling print job for: " << printer_name;
+  VLOG(1) << "CP_CUPS: Spooling print job for: " << printer_name;
 
   // We need to store options as char* string for the duration of the
   // cupsPrintFile2 call. We'll use map here to store options, since
@@ -389,7 +389,7 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
                          cups_options.size(),
                          &(cups_options[0]));
 
-  LOG(INFO) << "CP_CUPS: Job spooled, id: " << job_id;
+  VLOG(1) << "CP_CUPS: Job spooled, id: " << job_id;
 
   return job_id;
 }

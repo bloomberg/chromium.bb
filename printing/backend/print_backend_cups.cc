@@ -137,7 +137,7 @@ void PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
 
   cupsFreeDests(num_dests, destinations);
 
-  LOG(INFO) << "CUPS: Enumerated " << printer_list->size() << " printers.";
+  VLOG(1) << "CUPS: Enumerated " << printer_list->size() << " printers.";
 }
 
 bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
@@ -145,7 +145,7 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
     PrinterCapsAndDefaults* printer_info) {
   DCHECK(printer_info);
 
-  LOG(INFO) << "CUPS: Getting Caps and Defaults for: " << printer_name;
+  VLOG(1) << "CUPS: Getting Caps and Defaults for: " << printer_name;
 
   FilePath ppd_path(GetPPD(printer_name.c_str()));
   // In some cases CUPS failed to get ppd file.
