@@ -2735,7 +2735,7 @@
               "title": {
                 "type": "string",
                 "optional": "true",
-                "description": "The text to be displayed in the item; this is <em>required</em> unless <em>type</em> is 'separator'. When the context is 'selection', you can use '%s' within the string to show the selected text. For example, if this parameter's value is \"Translate '%s' to Pig Latin\" and the user selects the word 'cool', the context menu item for the selection is \"Translate cool to Pig Latin\"."
+                "description": "The text to be displayed in the item; this is <em>required</em> unless <em>type</em> is 'separator'. When the context is 'selection', you can use <code>%s</code> within the string to show the selected text. For example, if this parameter's value is \"Translate '%s' to Pig Latin\" and the user selects the word \"cool\", the context menu item for the selection is \"Translate 'cool' to Pig Latin\"."
               },
               "checked": {
                 "type": "boolean",
