@@ -1230,6 +1230,10 @@ class NotificationType {
     // The detail of this notification is not used.
     POLICY_CHANGED,
 
+    // This notification is sent whenever the device token becomes available
+    // that the policy subsystem uses to fetch policy from the cloud.
+    DEVICE_TOKEN_AVAILABLE,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

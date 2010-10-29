@@ -1,0 +1,165 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_management;
+
+// Generic value container.
+message GenericValue {
+  enum ValueType {
+    VALUE_TYPE_BOOL = 1;
+    VALUE_TYPE_INT64 = 2;
+    VALUE_TYPE_STRING = 3;
+    VALUE_TYPE_DOUBLE = 4;
+    VALUE_TYPE_BYTES = 5;
+    VALUE_TYPE_BOOL_ARRAY = 6;
+    VALUE_TYPE_INT64_ARRAY_ = 7;
+    VALUE_TYPE_STRING_ARRAY = 8;
+    VALUE_TYPE_DOUBLE_ARRAY = 9;
+  }
+
+  optional ValueType value_type = 1 [default = VALUE_TYPE_STRING];
+
+  // basic value types
+  optional bool bool_value = 2;
+  optional int64 int64_value = 3;
+  optional string string_value = 4;
+  optional double double_value = 5;
+  optional bytes bytes_value = 6;
+  repeated bool bool_array = 7;
+  repeated int64 int64_array = 8;
+  repeated string string_array = 9;
+  repeated double double_array = 10;
+}
+
+// Generic name value pair container.
+message GenericNamedValue {
+  required string name = 1;
+  optional GenericValue value = 2;
+}
+
+// A setting is a set of generic name value pairs.
+message GenericSetting {
+  repeated GenericNamedValue named_value = 1;
+}
+
+// Identify a single device policy setting key/value pair.
+message DevicePolicySetting {
+  // key of the policy setting
+  required string policy_key = 1;
+  // value of the setting
+  optional GenericSetting policy_value = 2;
+  // watermark for setting value.
+  optional string watermark = 3;
+}
+
+// Request from device to server to register device.
+message DeviceRegisterRequest {
+  // reregister device without erasing server state.
+  // it can be used to refresh dmtoken etc.
+  optional bool reregister = 1;
+}
+
+// Response from server to device register request.
+message DeviceRegisterResponse {
+  // device mangement toke for this registration.
+  required string device_management_token = 1;
+}
+
+// Request from device to server to unregister device.
+message DeviceUnregisterRequest {
+}
+
+// Response from server to device unregister request.
+message DeviceUnregisterResponse {
+}
+
+// Request for a setting or with optional watermark on client side.
+message DevicePolicySettingRequest {
+  // setting key
+  required string key = 1;
+  // watermark last read from server if available.
+  optional string watermark = 2;
+}
+
+// Request from device to server to read device policies.
+message DevicePolicyRequest {
+  // identify request scope: CrOS settings or other type of settings.
+  optional string policy_scope = 1;
+  // identify key to the settings: proxy etc.
+  repeated DevicePolicySettingRequest setting_request = 2;
+}
+
+// Response from server to agent for reading policies.
+message DevicePolicyResponse {
+  // the result of the settings.
+  repeated DevicePolicySetting setting = 1;
+}
+
+// Request from the DMAgent on the device to the DMServer.
+// This is container for all requests from client.
+//
+// Authorization:
+// 1. If request is register_request, client must pass in GoogleLogin auth
+//    cookie in Authorization header:
+//      Authorization: GoogleLogin auth=<auth cookie>
+//    The response will contain an unique DMToken for future requests.
+//    Depending on domain policy, the request may need admin approval before
+//    DMToken is issued.
+// 2. For other requests, client must pass in DMToken in Authorization header:
+//    Authorization: GoogleDMToken token=<google dm token>
+//
+// Http Query parameters:
+// Query parameters contain the following information in each request:
+//   request: register/unregister/policy etc.
+//   devicetype: CrOS/Android/Iphone etc.
+//   apptype: CrOS/AndroidDM etc.
+//   deviceid: unique id that identify the device.
+//   agent: identify agent on device.
+message DeviceManagementRequest {
+  // Register request.
+  optional DeviceRegisterRequest register_request = 1;
+
+  // Unregister request.
+  optional DeviceUnregisterRequest unregister_request = 2;
+
+  // Data request.
+  optional DevicePolicyRequest policy_request = 3;
+}
+
+// Response from server to device.
+message DeviceManagementResponse {
+  // Error code to client.
+  enum ErrorCode {
+    SUCCESS = 0;
+    // Returned for register request when device management is not supported
+    // for the domain.
+    DEVICE_MANAGEMENT_NOT_SUPPORTED = 1;
+    // Returned when the device is not found.
+    DEVICE_NOT_FOUND  = 2;
+    // Returned when passed in device management token doesn't match the token
+    // on server side.
+    DEVICE_MANAGEMENT_TOKEN_INVALID  = 3;
+    // Returned when device registration is pending approval (if required).
+    ACTIVATION_PENDING = 4;
+  }
+
+  // Error code for this request.
+  required ErrorCode error = 1;
+
+  // Error message.
+  optional string error_message = 2;
+
+  // Register response
+  optional DeviceRegisterResponse register_response = 3;
+
+  // Unregister response
+  optional DeviceUnregisterResponse unregister_response = 4;
+
+  // Policy response.
+  optional DevicePolicyResponse policy_response = 5;
+}

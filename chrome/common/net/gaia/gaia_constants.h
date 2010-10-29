@@ -19,6 +19,7 @@ extern const char kTalkService[];
 extern const char kSyncService[];
 extern const char kRemotingService[];
 extern const char kCloudPrintService[];
+extern const char kDeviceManagementService[];
 
 }  // namespace GaiaConstants
 
