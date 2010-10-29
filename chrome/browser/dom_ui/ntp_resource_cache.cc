@@ -11,7 +11,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
 #include "base/string16.h"
@@ -197,16 +196,8 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
-  int new_tab_message_ids = IDS_NEW_TAB_OTR_MESSAGE;
-  int new_tab_html_idr = IDR_INCOGNITO_TAB_HTML;
-#if defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
-    new_tab_message_ids = IDS_NEW_TAB_GUEST_SESSION_MESSAGE;
-    new_tab_html_idr = IDR_GUEST_SESSION_TAB_HTML;
-  }
-#endif
   localized_strings.SetString("content",
-      l10n_util::GetStringFUTF16(new_tab_message_ids,
+      l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_MESSAGE,
                                  GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
   localized_strings.SetString("extensionsmessage",
       l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
@@ -221,7 +212,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 
   static const base::StringPiece incognito_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          new_tab_html_idr));
+          IDR_INCOGNITO_TAB_HTML));
 
   std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       incognito_tab_html, &localized_strings);

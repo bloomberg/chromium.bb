@@ -34,7 +34,6 @@ without changes to the corresponding grd file. ete -->
       </if>
       <include name="IDR_EXTENSIONS_UI_HTML" file="resources\extensions_ui.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_GUEST_SESSION_TAB_HTML" file="resources\guest_session_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_HISTORY2_HTML" file="resources\history2.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="BINDATA" />
