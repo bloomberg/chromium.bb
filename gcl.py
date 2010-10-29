@@ -20,9 +20,7 @@ import time
 from third_party import upload
 import urllib2
 
-__pychecker__ = 'unusednames=breakpad'
 import breakpad
-__pychecker__ = ''
 
 # gcl now depends on gclient.
 from scm import SVN
@@ -669,6 +667,7 @@ def defer_attributes(a, b):
 
 def need_change(function):
   """Converts args -> change_info."""
+  # pylint: disable=W0612,W0621
   def hook(args):
     if not len(args) == 1:
       ErrorExit("You need to pass a change list name")
@@ -682,6 +681,7 @@ def need_change(function):
 
 def need_change_and_args(function):
   """Converts args -> change_info."""
+  # pylint: disable=W0612,W0621
   def hook(args):
     if not args:
       ErrorExit("You need to pass a change list name")
@@ -694,6 +694,7 @@ def need_change_and_args(function):
 
 def no_args(function):
   """Make sure no args are passed."""
+  # pylint: disable=W0612,W0621
   def hook(args):
     if args:
       ErrorExit("Doesn't support arguments")
@@ -1041,8 +1042,8 @@ def CMDchange(args):
     filename = line[7:]
     new_cl_files.append((status, filename))
 
-  if (not len(change_info._files)) and (not change_info.issue) and \
-      (not len(new_description) and (not new_cl_files)):
+  if (not len(change_info.GetFiles()) and not change_info.issue and
+      not len(new_description) and not new_cl_files):
     ErrorExit("Empty changelist not saved")
 
   change_info._files = new_cl_files
@@ -1143,7 +1144,7 @@ def CMDdeleteempties():
   print "\n--- Deleting:"
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
-    if not len(change_info._files):
+    if not len(change_info.GetFiles()):
       print change_info.name
       change_info.Delete()
   return 0
@@ -1264,13 +1265,13 @@ def GenUsage(command):
   more = getattr(obj, 'usage', '')
   if command == 'help':
     display = '<command>'
-  need_change = ''
+  need_change_val = ''
   if getattr(obj, 'need_change', None):
-    need_change = ' <change_list>'
+    need_change_val = ' <change_list>'
   options = ' [options]'
   if getattr(obj, 'no_args', None):
     options = ''
-  res = 'Usage: gcl %s%s%s %s\n\n' % (display, need_change, options, more)
+  res = 'Usage: gcl %s%s%s %s\n\n' % (display, need_change_val, options, more)
   res += re.sub('\n  ', '\n', obj.__doc__)
   return res
 
