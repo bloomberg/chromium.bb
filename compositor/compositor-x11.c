@@ -16,6 +16,10 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,9 +156,22 @@ dri2_connect(struct x11_compositor *c)
 		return -1;
 	}
 
+#ifdef XCB_DRI2_CONNECT_DEVICE_NAME_BROKEN
+	{
+		char *driver_name, *device_name;
+
+		driver_name = xcb_dri2_connect_driver_name (connect);
+		device_name = driver_name +
+			((connect->driver_name_length + 3) & ~3);
+		snprintf(path, sizeof path, "%.*s",
+			 xcb_dri2_connect_device_name_length (connect),
+			 device_name);
+	}
+#else
 	snprintf(path, sizeof path, "%.*s",
 		 xcb_dri2_connect_device_name_length (connect),
 		 xcb_dri2_connect_device_name (connect));
+#endif
 	free(connect);
 
 	fd = open(path, O_RDWR);
