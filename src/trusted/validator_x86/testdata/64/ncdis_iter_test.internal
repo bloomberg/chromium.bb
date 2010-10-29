@@ -603,7 +603,7 @@ NaClExpVector[8] = {
 };
 0000000000000000: 0f 38 08 2c 25 00 00 00 00                   psignb %mmx5, [0x0]
   0f 38 08                    SSSE3 OpcodeUsesModRm
-    Psignb $G(mmx), $E(mmx)
+    Psignb $Pq, $Qq
       Mmx_G_Operand           OpUse OpSet OpDest
       Mmx_E_Operand           OpUse
 NaClExpVector[8] = {
@@ -618,7 +618,7 @@ NaClExpVector[8] = {
 };
 0000000000000000: 66 0f 38 08 2c 25 00 00 00 00                psignb %xmm5, [0x0]
   66 0f 38 08                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
-    Psignb $G(xmm), $E(xmm)
+    Psignb $Vdq, $Wdq
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
 NaClExpVector[8] = {
@@ -633,7 +633,7 @@ NaClExpVector[8] = {
 };
 0000000000000000: 66 44 0f 38 08 2c 00                         psignb %xmm13, [%rax+%rax*1]
   66 0f 38 08                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
-    Psignb $G(xmm), $E(xmm)
+    Psignb $Vdq, $Wdq
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
 NaClExpVector[8] = {

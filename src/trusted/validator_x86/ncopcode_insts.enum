@@ -20,6 +20,8 @@ Andnps
 Andpd
 Andps
 Arpl
+Blendvpd
+Blendvps
 Bound
 Bsf
 Bsr
@@ -66,6 +68,7 @@ Cpuid
 Comisd
 Comiss
 Cqo
+Crc32
 Cvtpd2dq
 Cvtdq2ps
 Cvtpd2pi
@@ -207,7 +210,9 @@ Into
 Int1
 Int3
 Invd
+Invept
 Invlpg
+Invvpid
 Iret
 Iretd
 Iretq
@@ -266,6 +271,7 @@ Minss
 Mov
 Movapd
 Movaps
+Movbe
 Movd
 Movddup
 Movdq
@@ -281,6 +287,7 @@ Movlps
 Movmskps
 Movmskpd
 Movntdq
+Movntdqa
 Movnti
 Movntpd
 Movntps

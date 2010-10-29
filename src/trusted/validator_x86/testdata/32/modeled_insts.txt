@@ -4414,46 +4414,1240 @@ Target: x86-32 bit mode
 
 *** Prefix0F38 ***
 
+  --- 00 ---
+  0f 38 00                    SSSE3 OpcodeUsesModRm
+    Pshufb $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 01 ---
+  0f 38 01                    SSSE3 OpcodeUsesModRm
+    Phaddw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 02 ---
+  0f 38 02                    SSSE3 OpcodeUsesModRm
+    Phaddd $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 03 ---
+  0f 38 03                    SSSE3 OpcodeUsesModRm
+    Phaddsw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 04 ---
+  0f 38 04                    SSSE3 OpcodeUsesModRm
+    Pmaddubsw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 05 ---
+  0f 38 05                    SSSE3 OpcodeUsesModRm
+    Phsubw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 06 ---
+  0f 38 06                    SSSE3 OpcodeUsesModRm
+    Phsubd $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 07 ---
+  0f 38 07                    SSSE3 OpcodeUsesModRm
+    Phsubsw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
   --- 08 ---
   0f 38 08                    SSSE3 OpcodeUsesModRm
-    Psignb $G(mmx), $E(mmx)
+    Psignb $Pq, $Qq
       Mmx_G_Operand           OpUse OpSet OpDest
       Mmx_E_Operand           OpUse
   --- 09 ---
   0f 38 09                    SSSE3 OpcodeUsesModRm
-    Psignw $G(mmx), $E(mmx)
+    Psignw $Pq, $Qq
       Mmx_G_Operand           OpUse OpSet OpDest
       Mmx_E_Operand           OpUse
   --- 0a ---
   0f 38 0a                    SSSE3 OpcodeUsesModRm
-    Psignd $G(mmx), $E(mmx)
+    Psignd $Pq, $Qq
       Mmx_G_Operand           OpUse OpSet OpDest
       Mmx_E_Operand           OpUse
+  --- 0b ---
+  0f 38 0b                    SSSE3 OpcodeUsesModRm
+    Pmulhrsw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 0c ---
+  0f 38 0c                    INVALID NaClIllegal
+  --- 0d ---
+  0f 38 0d                    INVALID NaClIllegal
+  --- 0e ---
+  0f 38 0e                    INVALID NaClIllegal
+  --- 0f ---
+  0f 38 0f                    INVALID NaClIllegal
+  --- 10 ---
+  0f 38 10                    INVALID NaClIllegal
+  --- 11 ---
+  0f 38 11                    INVALID NaClIllegal
+  --- 12 ---
+  0f 38 12                    INVALID NaClIllegal
+  --- 13 ---
+  0f 38 13                    INVALID NaClIllegal
+  --- 14 ---
+  0f 38 14                    INVALID NaClIllegal
+  --- 15 ---
+  0f 38 15                    INVALID NaClIllegal
+  --- 16 ---
+  0f 38 16                    INVALID NaClIllegal
+  --- 17 ---
+  0f 38 17                    INVALID NaClIllegal
+  --- 18 ---
+  0f 38 18                    INVALID NaClIllegal
+  --- 19 ---
+  0f 38 19                    INVALID NaClIllegal
+  --- 1a ---
+  0f 38 1a                    INVALID NaClIllegal
+  --- 1b ---
+  0f 38 1b                    INVALID NaClIllegal
+  --- 1c ---
+  0f 38 1c                    SSSE3 OpcodeUsesModRm
+    Pabsb $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 1d ---
+  0f 38 1d                    SSSE3 OpcodeUsesModRm
+    Pabsw $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 1e ---
+  0f 38 1e                    SSSE3 OpcodeUsesModRm
+    Pabsd $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 1f ---
+  0f 38 1f                    INVALID NaClIllegal
+  --- 20 ---
+  0f 38 20                    INVALID NaClIllegal
+  --- 21 ---
+  0f 38 21                    INVALID NaClIllegal
+  --- 22 ---
+  0f 38 22                    INVALID NaClIllegal
+  --- 23 ---
+  0f 38 23                    INVALID NaClIllegal
+  --- 24 ---
+  0f 38 24                    INVALID NaClIllegal
+  --- 25 ---
+  0f 38 25                    INVALID NaClIllegal
+  --- 26 ---
+  0f 38 26                    INVALID NaClIllegal
+  --- 27 ---
+  0f 38 27                    INVALID NaClIllegal
+  --- 28 ---
+  0f 38 28                    INVALID NaClIllegal
+  --- 29 ---
+  0f 38 29                    INVALID NaClIllegal
+  --- 2a ---
+  0f 38 2a                    INVALID NaClIllegal
+  --- 2b ---
+  0f 38 2b                    INVALID NaClIllegal
+  --- 2c ---
+  0f 38 2c                    INVALID NaClIllegal
+  --- 2d ---
+  0f 38 2d                    INVALID NaClIllegal
+  --- 2e ---
+  0f 38 2e                    INVALID NaClIllegal
+  --- 2f ---
+  0f 38 2f                    INVALID NaClIllegal
+  --- 30 ---
+  0f 38 30                    INVALID NaClIllegal
+  --- 31 ---
+  0f 38 31                    INVALID NaClIllegal
+  --- 32 ---
+  0f 38 32                    INVALID NaClIllegal
+  --- 33 ---
+  0f 38 33                    INVALID NaClIllegal
+  --- 34 ---
+  0f 38 34                    INVALID NaClIllegal
+  --- 35 ---
+  0f 38 35                    INVALID NaClIllegal
+  --- 36 ---
+  0f 38 36                    INVALID NaClIllegal
+  --- 37 ---
+  0f 38 37                    INVALID NaClIllegal
+  --- 38 ---
+  0f 38 38                    INVALID NaClIllegal
+  --- 39 ---
+  0f 38 39                    INVALID NaClIllegal
+  --- 3a ---
+  0f 38 3a                    INVALID NaClIllegal
+  --- 3b ---
+  0f 38 3b                    INVALID NaClIllegal
+  --- 3c ---
+  0f 38 3c                    INVALID NaClIllegal
+  --- 3d ---
+  0f 38 3d                    INVALID NaClIllegal
+  --- 3e ---
+  0f 38 3e                    INVALID NaClIllegal
+  --- 3f ---
+  0f 38 3f                    INVALID NaClIllegal
+  --- 40 ---
+  0f 38 40                    INVALID NaClIllegal
+  --- 41 ---
+  0f 38 41                    INVALID NaClIllegal
+  --- 42 ---
+  0f 38 42                    INVALID NaClIllegal
+  --- 43 ---
+  0f 38 43                    INVALID NaClIllegal
+  --- 44 ---
+  0f 38 44                    INVALID NaClIllegal
+  --- 45 ---
+  0f 38 45                    INVALID NaClIllegal
+  --- 46 ---
+  0f 38 46                    INVALID NaClIllegal
+  --- 47 ---
+  0f 38 47                    INVALID NaClIllegal
+  --- 48 ---
+  0f 38 48                    INVALID NaClIllegal
+  --- 49 ---
+  0f 38 49                    INVALID NaClIllegal
+  --- 4a ---
+  0f 38 4a                    INVALID NaClIllegal
+  --- 4b ---
+  0f 38 4b                    INVALID NaClIllegal
+  --- 4c ---
+  0f 38 4c                    INVALID NaClIllegal
+  --- 4d ---
+  0f 38 4d                    INVALID NaClIllegal
+  --- 4e ---
+  0f 38 4e                    INVALID NaClIllegal
+  --- 4f ---
+  0f 38 4f                    INVALID NaClIllegal
+  --- 50 ---
+  0f 38 50                    INVALID NaClIllegal
+  --- 51 ---
+  0f 38 51                    INVALID NaClIllegal
+  --- 52 ---
+  0f 38 52                    INVALID NaClIllegal
+  --- 53 ---
+  0f 38 53                    INVALID NaClIllegal
+  --- 54 ---
+  0f 38 54                    INVALID NaClIllegal
+  --- 55 ---
+  0f 38 55                    INVALID NaClIllegal
+  --- 56 ---
+  0f 38 56                    INVALID NaClIllegal
+  --- 57 ---
+  0f 38 57                    INVALID NaClIllegal
+  --- 58 ---
+  0f 38 58                    INVALID NaClIllegal
+  --- 59 ---
+  0f 38 59                    INVALID NaClIllegal
+  --- 5a ---
+  0f 38 5a                    INVALID NaClIllegal
+  --- 5b ---
+  0f 38 5b                    INVALID NaClIllegal
+  --- 5c ---
+  0f 38 5c                    INVALID NaClIllegal
+  --- 5d ---
+  0f 38 5d                    INVALID NaClIllegal
+  --- 5e ---
+  0f 38 5e                    INVALID NaClIllegal
+  --- 5f ---
+  0f 38 5f                    INVALID NaClIllegal
+  --- 60 ---
+  0f 38 60                    INVALID NaClIllegal
+  --- 61 ---
+  0f 38 61                    INVALID NaClIllegal
+  --- 62 ---
+  0f 38 62                    INVALID NaClIllegal
+  --- 63 ---
+  0f 38 63                    INVALID NaClIllegal
+  --- 64 ---
+  0f 38 64                    INVALID NaClIllegal
+  --- 65 ---
+  0f 38 65                    INVALID NaClIllegal
+  --- 66 ---
+  0f 38 66                    INVALID NaClIllegal
+  --- 67 ---
+  0f 38 67                    INVALID NaClIllegal
+  --- 68 ---
+  0f 38 68                    INVALID NaClIllegal
+  --- 69 ---
+  0f 38 69                    INVALID NaClIllegal
+  --- 6a ---
+  0f 38 6a                    INVALID NaClIllegal
+  --- 6b ---
+  0f 38 6b                    INVALID NaClIllegal
+  --- 6c ---
+  0f 38 6c                    INVALID NaClIllegal
+  --- 6d ---
+  0f 38 6d                    INVALID NaClIllegal
+  --- 6e ---
+  0f 38 6e                    INVALID NaClIllegal
+  --- 6f ---
+  0f 38 6f                    INVALID NaClIllegal
+  --- 70 ---
+  0f 38 70                    INVALID NaClIllegal
+  --- 71 ---
+  0f 38 71                    INVALID NaClIllegal
+  --- 72 ---
+  0f 38 72                    INVALID NaClIllegal
+  --- 73 ---
+  0f 38 73                    INVALID NaClIllegal
+  --- 74 ---
+  0f 38 74                    INVALID NaClIllegal
+  --- 75 ---
+  0f 38 75                    INVALID NaClIllegal
+  --- 76 ---
+  0f 38 76                    INVALID NaClIllegal
+  --- 77 ---
+  0f 38 77                    INVALID NaClIllegal
+  --- 78 ---
+  0f 38 78                    INVALID NaClIllegal
+  --- 79 ---
+  0f 38 79                    INVALID NaClIllegal
+  --- 7a ---
+  0f 38 7a                    INVALID NaClIllegal
+  --- 7b ---
+  0f 38 7b                    INVALID NaClIllegal
+  --- 7c ---
+  0f 38 7c                    INVALID NaClIllegal
+  --- 7d ---
+  0f 38 7d                    INVALID NaClIllegal
+  --- 7e ---
+  0f 38 7e                    INVALID NaClIllegal
+  --- 7f ---
+  0f 38 7f                    INVALID NaClIllegal
+  --- 80 ---
+  0f 38 80                    INVALID NaClIllegal
+  --- 81 ---
+  0f 38 81                    INVALID NaClIllegal
+  --- 82 ---
+  0f 38 82                    INVALID NaClIllegal
+  --- 83 ---
+  0f 38 83                    INVALID NaClIllegal
+  --- 84 ---
+  0f 38 84                    INVALID NaClIllegal
+  --- 85 ---
+  0f 38 85                    INVALID NaClIllegal
+  --- 86 ---
+  0f 38 86                    INVALID NaClIllegal
+  --- 87 ---
+  0f 38 87                    INVALID NaClIllegal
+  --- 88 ---
+  0f 38 88                    INVALID NaClIllegal
+  --- 89 ---
+  0f 38 89                    INVALID NaClIllegal
+  --- 8a ---
+  0f 38 8a                    INVALID NaClIllegal
+  --- 8b ---
+  0f 38 8b                    INVALID NaClIllegal
+  --- 8c ---
+  0f 38 8c                    INVALID NaClIllegal
+  --- 8d ---
+  0f 38 8d                    INVALID NaClIllegal
+  --- 8e ---
+  0f 38 8e                    INVALID NaClIllegal
+  --- 8f ---
+  0f 38 8f                    INVALID NaClIllegal
+  --- 90 ---
+  0f 38 90                    INVALID NaClIllegal
+  --- 91 ---
+  0f 38 91                    INVALID NaClIllegal
+  --- 92 ---
+  0f 38 92                    INVALID NaClIllegal
+  --- 93 ---
+  0f 38 93                    INVALID NaClIllegal
+  --- 94 ---
+  0f 38 94                    INVALID NaClIllegal
+  --- 95 ---
+  0f 38 95                    INVALID NaClIllegal
+  --- 96 ---
+  0f 38 96                    INVALID NaClIllegal
+  --- 97 ---
+  0f 38 97                    INVALID NaClIllegal
+  --- 98 ---
+  0f 38 98                    INVALID NaClIllegal
+  --- 99 ---
+  0f 38 99                    INVALID NaClIllegal
+  --- 9a ---
+  0f 38 9a                    INVALID NaClIllegal
+  --- 9b ---
+  0f 38 9b                    INVALID NaClIllegal
+  --- 9c ---
+  0f 38 9c                    INVALID NaClIllegal
+  --- 9d ---
+  0f 38 9d                    INVALID NaClIllegal
+  --- 9e ---
+  0f 38 9e                    INVALID NaClIllegal
+  --- 9f ---
+  0f 38 9f                    INVALID NaClIllegal
+  --- a0 ---
+  0f 38 a0                    INVALID NaClIllegal
+  --- a1 ---
+  0f 38 a1                    INVALID NaClIllegal
+  --- a2 ---
+  0f 38 a2                    INVALID NaClIllegal
+  --- a3 ---
+  0f 38 a3                    INVALID NaClIllegal
+  --- a4 ---
+  0f 38 a4                    INVALID NaClIllegal
+  --- a5 ---
+  0f 38 a5                    INVALID NaClIllegal
+  --- a6 ---
+  0f 38 a6                    INVALID NaClIllegal
+  --- a7 ---
+  0f 38 a7                    INVALID NaClIllegal
+  --- a8 ---
+  0f 38 a8                    INVALID NaClIllegal
+  --- a9 ---
+  0f 38 a9                    INVALID NaClIllegal
+  --- aa ---
+  0f 38 aa                    INVALID NaClIllegal
+  --- ab ---
+  0f 38 ab                    INVALID NaClIllegal
+  --- ac ---
+  0f 38 ac                    INVALID NaClIllegal
+  --- ad ---
+  0f 38 ad                    INVALID NaClIllegal
+  --- ae ---
+  0f 38 ae                    INVALID NaClIllegal
+  --- af ---
+  0f 38 af                    INVALID NaClIllegal
+  --- b0 ---
+  0f 38 b0                    INVALID NaClIllegal
+  --- b1 ---
+  0f 38 b1                    INVALID NaClIllegal
+  --- b2 ---
+  0f 38 b2                    INVALID NaClIllegal
+  --- b3 ---
+  0f 38 b3                    INVALID NaClIllegal
+  --- b4 ---
+  0f 38 b4                    INVALID NaClIllegal
+  --- b5 ---
+  0f 38 b5                    INVALID NaClIllegal
+  --- b6 ---
+  0f 38 b6                    INVALID NaClIllegal
+  --- b7 ---
+  0f 38 b7                    INVALID NaClIllegal
+  --- b8 ---
+  0f 38 b8                    INVALID NaClIllegal
+  --- b9 ---
+  0f 38 b9                    INVALID NaClIllegal
+  --- ba ---
+  0f 38 ba                    INVALID NaClIllegal
+  --- bb ---
+  0f 38 bb                    INVALID NaClIllegal
+  --- bc ---
+  0f 38 bc                    INVALID NaClIllegal
+  --- bd ---
+  0f 38 bd                    INVALID NaClIllegal
+  --- be ---
+  0f 38 be                    INVALID NaClIllegal
+  --- bf ---
+  0f 38 bf                    INVALID NaClIllegal
+  --- c0 ---
+  0f 38 c0                    INVALID NaClIllegal
+  --- c1 ---
+  0f 38 c1                    INVALID NaClIllegal
+  --- c2 ---
+  0f 38 c2                    INVALID NaClIllegal
+  --- c3 ---
+  0f 38 c3                    INVALID NaClIllegal
+  --- c4 ---
+  0f 38 c4                    INVALID NaClIllegal
+  --- c5 ---
+  0f 38 c5                    INVALID NaClIllegal
+  --- c6 ---
+  0f 38 c6                    INVALID NaClIllegal
+  --- c7 ---
+  0f 38 c7                    INVALID NaClIllegal
+  --- c8 ---
+  0f 38 c8                    INVALID NaClIllegal
+  --- c9 ---
+  0f 38 c9                    INVALID NaClIllegal
+  --- ca ---
+  0f 38 ca                    INVALID NaClIllegal
+  --- cb ---
+  0f 38 cb                    INVALID NaClIllegal
+  --- cc ---
+  0f 38 cc                    INVALID NaClIllegal
+  --- cd ---
+  0f 38 cd                    INVALID NaClIllegal
+  --- ce ---
+  0f 38 ce                    INVALID NaClIllegal
+  --- cf ---
+  0f 38 cf                    INVALID NaClIllegal
+  --- d0 ---
+  0f 38 d0                    INVALID NaClIllegal
+  --- d1 ---
+  0f 38 d1                    INVALID NaClIllegal
+  --- d2 ---
+  0f 38 d2                    INVALID NaClIllegal
+  --- d3 ---
+  0f 38 d3                    INVALID NaClIllegal
+  --- d4 ---
+  0f 38 d4                    INVALID NaClIllegal
+  --- d5 ---
+  0f 38 d5                    INVALID NaClIllegal
+  --- d6 ---
+  0f 38 d6                    INVALID NaClIllegal
+  --- d7 ---
+  0f 38 d7                    INVALID NaClIllegal
+  --- d8 ---
+  0f 38 d8                    INVALID NaClIllegal
+  --- d9 ---
+  0f 38 d9                    INVALID NaClIllegal
+  --- da ---
+  0f 38 da                    INVALID NaClIllegal
+  --- db ---
+  0f 38 db                    INVALID NaClIllegal
+  --- dc ---
+  0f 38 dc                    INVALID NaClIllegal
+  --- dd ---
+  0f 38 dd                    INVALID NaClIllegal
+  --- de ---
+  0f 38 de                    INVALID NaClIllegal
+  --- df ---
+  0f 38 df                    INVALID NaClIllegal
+  --- e0 ---
+  0f 38 e0                    INVALID NaClIllegal
+  --- e1 ---
+  0f 38 e1                    INVALID NaClIllegal
+  --- e2 ---
+  0f 38 e2                    INVALID NaClIllegal
+  --- e3 ---
+  0f 38 e3                    INVALID NaClIllegal
+  --- e4 ---
+  0f 38 e4                    INVALID NaClIllegal
+  --- e5 ---
+  0f 38 e5                    INVALID NaClIllegal
+  --- e6 ---
+  0f 38 e6                    INVALID NaClIllegal
+  --- e7 ---
+  0f 38 e7                    INVALID NaClIllegal
+  --- e8 ---
+  0f 38 e8                    INVALID NaClIllegal
+  --- e9 ---
+  0f 38 e9                    INVALID NaClIllegal
+  --- ea ---
+  0f 38 ea                    INVALID NaClIllegal
+  --- eb ---
+  0f 38 eb                    INVALID NaClIllegal
+  --- ec ---
+  0f 38 ec                    INVALID NaClIllegal
+  --- ed ---
+  0f 38 ed                    INVALID NaClIllegal
+  --- ee ---
+  0f 38 ee                    INVALID NaClIllegal
+  --- ef ---
+  0f 38 ef                    INVALID NaClIllegal
+  --- f0 ---
+  0f 38 f0                    MOVBE ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
+    Movbe $Gv, $Mv
+      G_Operand               OpSet OpDest
+      M_Operand               OpUse
+  --- f1 ---
+  0f 38 f1                    MOVBE ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v
+    Movbe $Mv, $Gv
+      M_Operand               OpSet OpDest
+      G_Operand               OpUse
+  --- f2 ---
+  0f 38 f2                    INVALID NaClIllegal
+  --- f3 ---
+  0f 38 f3                    INVALID NaClIllegal
+  --- f4 ---
+  0f 38 f4                    INVALID NaClIllegal
+  --- f5 ---
+  0f 38 f5                    INVALID NaClIllegal
+  --- f6 ---
+  0f 38 f6                    INVALID NaClIllegal
+  --- f7 ---
+  0f 38 f7                    INVALID NaClIllegal
+  --- f8 ---
+  0f 38 f8                    INVALID NaClIllegal
+  --- f9 ---
+  0f 38 f9                    INVALID NaClIllegal
+  --- fa ---
+  0f 38 fa                    INVALID NaClIllegal
+  --- fb ---
+  0f 38 fb                    INVALID NaClIllegal
+  --- fc ---
+  0f 38 fc                    INVALID NaClIllegal
+  --- fd ---
+  0f 38 fd                    INVALID NaClIllegal
+  --- fe ---
+  0f 38 fe                    INVALID NaClIllegal
+  --- ff ---
+  0f 38 ff                    INVALID NaClIllegal
 
 *** Prefix660F38 ***
 
+  --- 00 ---
+  66 0f 38 00                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Pshufb $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 01 ---
+  66 0f 38 01                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Phaddw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 02 ---
+  66 0f 38 02                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Phaddd $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 03 ---
+  66 0f 38 03                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Phaddsw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 04 ---
+  66 0f 38 04                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Pmaddubsw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 05 ---
+  66 0f 38 05                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Phsubw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 06 ---
+  66 0f 38 06                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Phsubd $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 07 ---
+  66 0f 38 07                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Phsubsw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
   --- 08 ---
   66 0f 38 08                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
-    Psignb $G(xmm), $E(xmm)
+    Psignb $Vdq, $Wdq
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 09 ---
   66 0f 38 09                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
-    Psignw $G(xmm), $E(xmm)
+    Psignw $Vdq, $Wdq
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 0a ---
   66 0f 38 0a                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
-    Psignd $G(xmm), $E(xmm)
+    Psignd $Vdq, $Wdq
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
+  --- 0b ---
+  66 0f 38 0b                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Pmulhrsw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 0c ---
+  66 0f 38 0c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 0d ---
+  66 0f 38 0d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 0e ---
+  66 0f 38 0e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 0f ---
+  66 0f 38 0f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 10 ---
+  66 0f 38 10                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pblendvb $Vdq, $Wdq, %xmm0
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+      RegXMM0                 OpUse
+  --- 11 ---
+  66 0f 38 11                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 12 ---
+  66 0f 38 12                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 13 ---
+  66 0f 38 13                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 14 ---
+  66 0f 38 14                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Blendvps $Vdq, $Wdq, %xmm0
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+      RegXMM0                 OpUse
+  --- 15 ---
+  66 0f 38 15                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Blendvpd $Vdq, $Wdq, %xmm0
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+      RegXMM0                 OpUse
+  --- 16 ---
+  66 0f 38 16                 INVALID OpcodeAllowsData16 NaClIllegal
   --- 17 ---
   66 0f 38 17                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
-    Ptest $G(xmm), $E(xmm)
+    Ptest $Vdq, $Wdq
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
+  --- 18 ---
+  66 0f 38 18                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 19 ---
+  66 0f 38 19                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 1a ---
+  66 0f 38 1a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 1b ---
+  66 0f 38 1b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 1c ---
+  66 0f 38 1c                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Pabsb $Vdq, $Wdq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 1d ---
+  66 0f 38 1d                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Pabsw $Vdq, $Wdq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 1e ---
+  66 0f 38 1e                 SSSE3 OpcodeUsesModRm OpcodeAllowsData16
+    Pabsd $Vdq, $Wdq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 1f ---
+  66 0f 38 1f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 20 ---
+  66 0f 38 20                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovsxbw $Vdq, $Udq/Mq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 21 ---
+  66 0f 38 21                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovsxbd $Vdq, $Udq/Md
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 22 ---
+  66 0f 38 22                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovsxbq $Vdq, $Udq/Mw
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 23 ---
+  66 0f 38 23                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovsxwd $Vdq, $Udq/Mq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 24 ---
+  66 0f 38 24                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovsxwq $Vdq, $Udq/Md
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 25 ---
+  66 0f 38 25                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovsxdq $Vdq, $Udq/Mq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 26 ---
+  66 0f 38 26                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 27 ---
+  66 0f 38 27                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 28 ---
+  66 0f 38 28                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmuldq $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 29 ---
+  66 0f 38 29                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pcmpeqq $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 2a ---
+  66 0f 38 2a                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Movntdqa $Vdq, $Wdq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 2b ---
+  66 0f 38 2b                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Packusdw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 2c ---
+  66 0f 38 2c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 2d ---
+  66 0f 38 2d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 2e ---
+  66 0f 38 2e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 2f ---
+  66 0f 38 2f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 30 ---
+  66 0f 38 30                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovzxbw $Vdq, $Udq/Mq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 31 ---
+  66 0f 38 31                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovzxbd $Vdq, $Udq/Md
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 32 ---
+  66 0f 38 32                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovzxbq $Vdq, $Udq/Mw
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 33 ---
+  66 0f 38 33                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovzxwd $Vdq, $Udq/Mq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 34 ---
+  66 0f 38 34                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovzxwq $Vdq, $Udq/Md
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 35 ---
+  66 0f 38 35                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmovzxdq $Vdq, $Udq/Mq
+      Xmm_G_Operand           OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 36 ---
+  66 0f 38 36                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 37 ---
+  66 0f 38 37                 SSE42 OpcodeUsesModRm OpcodeAllowsData16
+    Pcmpgtq $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 38 ---
+  66 0f 38 38                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pminsb $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 39 ---
+  66 0f 38 39                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pminsd $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 3a ---
+  66 0f 38 3a                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pminuw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 3b ---
+  66 0f 38 3b                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pminud $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 3c ---
+  66 0f 38 3c                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmaxsb $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 3d ---
+  66 0f 38 3d                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmaxsd $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 3e ---
+  66 0f 38 3e                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmaxuw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 3f ---
+  66 0f 38 3f                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmaxud $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 40 ---
+  66 0f 38 40                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Pmulld $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 41 ---
+  66 0f 38 41                 SSE41 OpcodeUsesModRm OpcodeAllowsData16
+    Phminposuw $Vdq, $Wdq
+      Xmm_G_Operand           OpUse OpSet OpDest
+      Xmm_E_Operand           OpUse
+  --- 42 ---
+  66 0f 38 42                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 43 ---
+  66 0f 38 43                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 44 ---
+  66 0f 38 44                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 45 ---
+  66 0f 38 45                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 46 ---
+  66 0f 38 46                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 47 ---
+  66 0f 38 47                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 48 ---
+  66 0f 38 48                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 49 ---
+  66 0f 38 49                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 4a ---
+  66 0f 38 4a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 4b ---
+  66 0f 38 4b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 4c ---
+  66 0f 38 4c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 4d ---
+  66 0f 38 4d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 4e ---
+  66 0f 38 4e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 4f ---
+  66 0f 38 4f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 50 ---
+  66 0f 38 50                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 51 ---
+  66 0f 38 51                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 52 ---
+  66 0f 38 52                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 53 ---
+  66 0f 38 53                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 54 ---
+  66 0f 38 54                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 55 ---
+  66 0f 38 55                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 56 ---
+  66 0f 38 56                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 57 ---
+  66 0f 38 57                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 58 ---
+  66 0f 38 58                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 59 ---
+  66 0f 38 59                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 5a ---
+  66 0f 38 5a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 5b ---
+  66 0f 38 5b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 5c ---
+  66 0f 38 5c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 5d ---
+  66 0f 38 5d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 5e ---
+  66 0f 38 5e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 5f ---
+  66 0f 38 5f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 60 ---
+  66 0f 38 60                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 61 ---
+  66 0f 38 61                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 62 ---
+  66 0f 38 62                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 63 ---
+  66 0f 38 63                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 64 ---
+  66 0f 38 64                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 65 ---
+  66 0f 38 65                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 66 ---
+  66 0f 38 66                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 67 ---
+  66 0f 38 67                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 68 ---
+  66 0f 38 68                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 69 ---
+  66 0f 38 69                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 6a ---
+  66 0f 38 6a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 6b ---
+  66 0f 38 6b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 6c ---
+  66 0f 38 6c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 6d ---
+  66 0f 38 6d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 6e ---
+  66 0f 38 6e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 6f ---
+  66 0f 38 6f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 70 ---
+  66 0f 38 70                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 71 ---
+  66 0f 38 71                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 72 ---
+  66 0f 38 72                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 73 ---
+  66 0f 38 73                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 74 ---
+  66 0f 38 74                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 75 ---
+  66 0f 38 75                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 76 ---
+  66 0f 38 76                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 77 ---
+  66 0f 38 77                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 78 ---
+  66 0f 38 78                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 79 ---
+  66 0f 38 79                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 7a ---
+  66 0f 38 7a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 7b ---
+  66 0f 38 7b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 7c ---
+  66 0f 38 7c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 7d ---
+  66 0f 38 7d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 7e ---
+  66 0f 38 7e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 7f ---
+  66 0f 38 7f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 80 ---
+  66 0f 38 80                 VMX ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 NaClIllegal
+    Invept $Gd, $Mdq
+      Gv_Operand              OpUse
+      Mdq_Operand             OpUse
+  --- 81 ---
+  66 0f 38 81                 VMX ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 NaClIllegal
+    Invvpid $Gd, $Mdq
+      Gv_Operand              OpUse
+      Mdq_Operand             OpUse
+  --- 82 ---
+  66 0f 38 82                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 83 ---
+  66 0f 38 83                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 84 ---
+  66 0f 38 84                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 85 ---
+  66 0f 38 85                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 86 ---
+  66 0f 38 86                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 87 ---
+  66 0f 38 87                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 88 ---
+  66 0f 38 88                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 89 ---
+  66 0f 38 89                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 8a ---
+  66 0f 38 8a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 8b ---
+  66 0f 38 8b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 8c ---
+  66 0f 38 8c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 8d ---
+  66 0f 38 8d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 8e ---
+  66 0f 38 8e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 8f ---
+  66 0f 38 8f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 90 ---
+  66 0f 38 90                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 91 ---
+  66 0f 38 91                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 92 ---
+  66 0f 38 92                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 93 ---
+  66 0f 38 93                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 94 ---
+  66 0f 38 94                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 95 ---
+  66 0f 38 95                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 96 ---
+  66 0f 38 96                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 97 ---
+  66 0f 38 97                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 98 ---
+  66 0f 38 98                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 99 ---
+  66 0f 38 99                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 9a ---
+  66 0f 38 9a                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 9b ---
+  66 0f 38 9b                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 9c ---
+  66 0f 38 9c                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 9d ---
+  66 0f 38 9d                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 9e ---
+  66 0f 38 9e                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- 9f ---
+  66 0f 38 9f                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a0 ---
+  66 0f 38 a0                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a1 ---
+  66 0f 38 a1                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a2 ---
+  66 0f 38 a2                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a3 ---
+  66 0f 38 a3                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a4 ---
+  66 0f 38 a4                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a5 ---
+  66 0f 38 a5                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a6 ---
+  66 0f 38 a6                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a7 ---
+  66 0f 38 a7                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a8 ---
+  66 0f 38 a8                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- a9 ---
+  66 0f 38 a9                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- aa ---
+  66 0f 38 aa                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ab ---
+  66 0f 38 ab                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ac ---
+  66 0f 38 ac                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ad ---
+  66 0f 38 ad                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ae ---
+  66 0f 38 ae                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- af ---
+  66 0f 38 af                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b0 ---
+  66 0f 38 b0                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b1 ---
+  66 0f 38 b1                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b2 ---
+  66 0f 38 b2                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b3 ---
+  66 0f 38 b3                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b4 ---
+  66 0f 38 b4                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b5 ---
+  66 0f 38 b5                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b6 ---
+  66 0f 38 b6                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b7 ---
+  66 0f 38 b7                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b8 ---
+  66 0f 38 b8                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- b9 ---
+  66 0f 38 b9                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ba ---
+  66 0f 38 ba                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- bb ---
+  66 0f 38 bb                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- bc ---
+  66 0f 38 bc                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- bd ---
+  66 0f 38 bd                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- be ---
+  66 0f 38 be                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- bf ---
+  66 0f 38 bf                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c0 ---
+  66 0f 38 c0                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c1 ---
+  66 0f 38 c1                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c2 ---
+  66 0f 38 c2                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c3 ---
+  66 0f 38 c3                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c4 ---
+  66 0f 38 c4                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c5 ---
+  66 0f 38 c5                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c6 ---
+  66 0f 38 c6                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c7 ---
+  66 0f 38 c7                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c8 ---
+  66 0f 38 c8                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- c9 ---
+  66 0f 38 c9                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ca ---
+  66 0f 38 ca                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- cb ---
+  66 0f 38 cb                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- cc ---
+  66 0f 38 cc                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- cd ---
+  66 0f 38 cd                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ce ---
+  66 0f 38 ce                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- cf ---
+  66 0f 38 cf                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d0 ---
+  66 0f 38 d0                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d1 ---
+  66 0f 38 d1                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d2 ---
+  66 0f 38 d2                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d3 ---
+  66 0f 38 d3                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d4 ---
+  66 0f 38 d4                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d5 ---
+  66 0f 38 d5                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d6 ---
+  66 0f 38 d6                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d7 ---
+  66 0f 38 d7                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d8 ---
+  66 0f 38 d8                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- d9 ---
+  66 0f 38 d9                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- da ---
+  66 0f 38 da                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- db ---
+  66 0f 38 db                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- dc ---
+  66 0f 38 dc                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- dd ---
+  66 0f 38 dd                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- de ---
+  66 0f 38 de                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- df ---
+  66 0f 38 df                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e0 ---
+  66 0f 38 e0                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e1 ---
+  66 0f 38 e1                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e2 ---
+  66 0f 38 e2                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e3 ---
+  66 0f 38 e3                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e4 ---
+  66 0f 38 e4                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e5 ---
+  66 0f 38 e5                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e6 ---
+  66 0f 38 e6                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e7 ---
+  66 0f 38 e7                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e8 ---
+  66 0f 38 e8                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- e9 ---
+  66 0f 38 e9                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ea ---
+  66 0f 38 ea                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- eb ---
+  66 0f 38 eb                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ec ---
+  66 0f 38 ec                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ed ---
+  66 0f 38 ed                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ee ---
+  66 0f 38 ee                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ef ---
+  66 0f 38 ef                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f2 ---
+  66 0f 38 f2                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f3 ---
+  66 0f 38 f3                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f4 ---
+  66 0f 38 f4                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f5 ---
+  66 0f 38 f5                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f6 ---
+  66 0f 38 f6                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f7 ---
+  66 0f 38 f7                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f8 ---
+  66 0f 38 f8                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- f9 ---
+  66 0f 38 f9                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- fa ---
+  66 0f 38 fa                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- fb ---
+  66 0f 38 fb                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- fc ---
+  66 0f 38 fc                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- fd ---
+  66 0f 38 fd                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- fe ---
+  66 0f 38 fe                 INVALID OpcodeAllowsData16 NaClIllegal
+  --- ff ---
+  66 0f 38 ff                 INVALID OpcodeAllowsData16 NaClIllegal
 
 *** PrefixF20F38 ***
+
+  --- f0 ---
+  f2 0f 38 f0                 SSE42 OpcodeUsesModRm OpcodeAllowsRepne OperandSize_b
+    Crc32 $Gd, $Eb
+      Gv_Operand              OpUse OpSet OpDest
+      E_Operand               OpUse
+  --- f1 ---
+  f2 0f 38 f1                 SSE42 OpcodeUsesModRm OpcodeAllowsRepne OpcodeAllowsData16 OperandSize_w OperandSize_v
+    Crc32 $Gd, $Ev
+      Gv_Operand              OpUse OpSet OpDest
+      E_Operand               OpUse
 
 *** Prefix0F3A ***
 

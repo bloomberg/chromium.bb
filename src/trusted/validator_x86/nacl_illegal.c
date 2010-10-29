@@ -160,6 +160,7 @@ void NaClAddNaClIllegalIfApplicable() {
     case NACLi_INVALID:
     case NACLi_SYSCALL:
     case NACLi_SYSENTER:
+    case NACLi_VMX:
       is_illegal = TRUE;
       break;
     default:

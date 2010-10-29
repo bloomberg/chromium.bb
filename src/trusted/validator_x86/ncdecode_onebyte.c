@@ -100,7 +100,7 @@ static void NaClDefXchgRegister() {
   /* Note: xchg is commutative, so order of operands is unimportant. */
   int i;
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, NULL);
-  for (i = 0; i < kMaxRegisterIndexInOpcode; ++i) {
+  for (i = 0; i <= kMaxRegisterIndexInOpcode; ++i) {
     NaClSymbolTablePutInt("i", i, st);
     NaClDefine("90+@i: Xchg $r8v, $rAXv", NACLi_386, st , Exchange);
   }
@@ -112,7 +112,7 @@ static void NaClDefXchgRegister() {
 static void NaClDefIncOrDec_00_07(const uint8_t base,
                                   const NaClMnemonic name,
                                   struct NaClSymbolTable* context_st) {
-  static char* reg[kMaxRegisterIndexInOpcode] = {
+  static char* reg[kMaxRegisterIndexInOpcode + 1] = {
     "rAXv",
     "rCXv",
     "rDXv",
@@ -126,7 +126,7 @@ static void NaClDefIncOrDec_00_07(const uint8_t base,
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
   int i;
   NaClSymbolTablePutText("name", NaClMnemonicName(name), st);
-  for (i = 0; i < kMaxRegisterIndexInOpcode; ++i) {
+  for (i = 0; i <= kMaxRegisterIndexInOpcode; ++i) {
     NaClSymbolTablePutByte("opcode", base + i, st);
     NaClSymbolTablePutText("reg", reg[i], st);
     /* Note: Since the following instructions are only defined in
@@ -149,7 +149,7 @@ static void NaClDefPushOrPop_00_07(const uint8_t base,
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
   NaClSymbolTablePutByte("base", base, st);
   NaClSymbolTablePutText("name", NaClMnemonicName(name), st);
-  for (i = 0; i < kMaxRegisterIndexInOpcode; ++i) {
+  for (i = 0; i <= kMaxRegisterIndexInOpcode; ++i) {
     NaClSymbolTablePutInt("i", i, st);
     NaClDefine("@base+@i: @name {%@sp}, $r8v", NACLi_386, st, cat);
   }

@@ -5,7 +5,13 @@
  */
 
 /*
- * Defines SSE instructions.
+ * Defines SSE instructions. Taken from:
+ * (1) Tables A-3 and A-4 of appendix "A2 - Opcode Encodings", in AMD
+ *     document 24594-Rev.3.14-September 2007: "AMD64 Architecture
+ *     Programmer's manual Volume 3: General-Purpose and System Instructions".
+ * (2) Table A-4 of "appendix A.3", in Intel Document 253667-030US (March 2009):
+ *     "Intel 64 and IA-32 Architectures Software Developer's Manual,
+ *     Volume 2g: Instruction Set Reference, N-Z."
  */
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
@@ -24,11 +30,78 @@
  * of these instructions.
  */
 
-static void NaClDefBinarySseInsts() {
-  DEF_BINST(Vdq, Wdq)(NACLi_SSSE3, 0x08, Prefix660F38, InstPsignb, Binary);
-  /* DefineVdqWdqInst(NACLi_SSSE3, 0x08, Prefix660F38, InstPsignb, Binary); */
-  DEF_BINST(Vdq, Wdq)(NACLi_SSSE3, 0x09, Prefix660F38, InstPsignw, Binary);
-  DEF_BINST(Vdq, Wdq)(NACLi_SSSE3, 0x0A, Prefix660F38, InstPsignd, Binary);
+static void NaClDefBinarySseInsts(struct NaClSymbolTable* st) {
+
+  NaClDefine("660f3800: Pshufb $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3801: Phaddw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3802: Phaddd $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3803: Phaddsw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3804: Pmaddubsw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3805: Phsubw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3806: Phsubd $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3807: Phsubsw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3808: Psignb $Vdq  $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f3809: Psignw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f380a: Psignd $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefine("660f380b: Pmulhrsw $Vdq, $Wdq", NACLi_SSSE3, st, Binary);
+  NaClDefIter("660f380C+@i: Invalid", 0, 3, NACLi_INVALID, st, Other);
+  NaClDefine("660f3810: Pblendvb $Vdq, $Wdq, %xmm0", NACLi_SSE41, st, Binary);
+  NaClDefIter("660f3811+@i: Invalid", 0, 2, NACLi_INVALID, st, Other);
+  NaClDefine("660f3814: Blendvps $Vdq, $Wdq, %xmm0", NACLi_SSE41, st, Binary);
+  NaClDefine("660f3815: Blendvpd $Vdq, $Wdq, %xmm0", NACLi_SSE41, st, Binary);
+  NaClDefine("660f3816: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("660f3817: Ptest $Vdq, $Wdq", NACLi_SSE41, st, Compare);
+  NaClDefIter("660f3818+@i: Invalid", 0, 3, NACLi_INVALID, st, Other);
+  NaClDefine("660f381c: Pabsb $Vdq, $Wdq", NACLi_SSSE3, st, Move);
+  NaClDefine("660f381d: Pabsw $Vdq, $Wdq", NACLi_SSSE3, st, Move);
+  NaClDefine("660f381e: Pabsd $Vdq, $Wdq", NACLi_SSSE3, st, Move);
+  NaClDefine("660f381f: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("660f3820: Pmovsxbw $Vdq, $Udq/Mq", NACLi_SSE41, st, Move);
+  NaClDefine("660f3821: Pmovsxbd $Vdq, $Udq/Md", NACLi_SSE41, st, Move);
+  NaClDefine("660f3822: Pmovsxbq $Vdq, $Udq/Mw", NACLi_SSE41, st, Move);
+  NaClDefine("660f3823: Pmovsxwd $Vdq, $Udq/Mq", NACLi_SSE41, st, Move);
+  NaClDefine("660f3824: Pmovsxwq $Vdq, $Udq/Md", NACLi_SSE41, st, Move);
+  NaClDefine("660f3825: Pmovsxdq $Vdq, $Udq/Mq", NACLi_SSE41, st, Move);
+  NaClDefIter("660f3826+@i: Invalid", 0, 1, NACLi_INVALID, st, Other);
+  NaClDefine("660f3828: Pmuldq $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f3829: Pcmpeqq $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f382a: Movntdqa $Vdq, $Wdq", NACLi_SSE41, st, Move);
+  NaClDefine("660f382b: Packusdw $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefIter("660f382c+@i: Invalid", 0, 3, NACLi_INVALID, st, Other);
+  NaClDefine("660f3830: Pmovzxbw $Vdq, $Udq/Mq", NACLi_SSE41, st, Move);
+  NaClDefine("660f3831: Pmovzxbd $Vdq, $Udq/Md", NACLi_SSE41, st, Move);
+  NaClDefine("660f3832: Pmovzxbq $Vdq, $Udq/Mw", NACLi_SSE41, st, Move);
+  NaClDefine("660f3833: Pmovzxwd $Vdq, $Udq/Mq", NACLi_SSE41, st, Move);
+  NaClDefine("660f3834: Pmovzxwq $Vdq, $Udq/Md", NACLi_SSE41, st, Move);
+  NaClDefine("660f3835: Pmovzxdq $Vdq, $Udq/Mq", NACLi_SSE41, st, Move);
+  NaClDefine("660f3836: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("660f3837: Pcmpgtq $Vdq, $Wdq", NACLi_SSE42, st, Binary);
+  NaClDefine("660f3838: Pminsb $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f3839: Pminsd $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f383a: Pminuw $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f383b: Pminud $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f383c: Pmaxsb $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f383d: Pmaxsd $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f383e: Pmaxuw $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f383f: Pmaxud $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f3840: Pmulld $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefine("660f3841: Phminposuw $Vdq, $Wdq", NACLi_SSE41, st, Binary);
+  NaClDefIter("660f3842+@i: Invalid", 0, 61, NACLi_INVALID, st, Other);
+  NaClDef_32("660f3880: Invept $Gd, $Mdq", NACLi_VMX, st, Uses);
+  NaClDef_64("660f3880: Invept $Gq, $Mdq", NACLi_VMX, st, Uses);
+  NaClDef_32("660f3881: Invvpid $Gd, $Mdq", NACLi_VMX, st, Uses);
+  NaClDef_64("660f3881: Invvpid $Gq, $Mdq", NACLi_VMX, st, Uses);
+  NaClDefIter("660f3882+@i: Invalid", 0, 109, NACLi_INVALID, st, Other);
+  /* Let 660f38f0 and 660f38f1 default to 0f38f0 and 0f38f1! */
+  /* TODO(karl): Verify that assumption above is true! */
+  NaClDefIter("660f38f2+@i: Invalid", 0, 13, NACLi_INVALID, st, Other);
+
+  /* Note: Since 0f38XX instructions don't allow a REPNE prefix, we
+   * can skip filling blank entries in the table. The corresponding
+   * 0f38XX instruction will be explicitly rejected.
+   */
+  NaClDefine("f20f38f0: Crc32 $Gd, $Eb", NACLi_SSE42, st, Binary);
+  NaClDefine("f20f38f1: Crc32 $Gd, $Ev", NACLi_SSE42, st, Binary);
 
   DEF_BINST(Vps, Wps)(NACLi_SSE, 0x10, Prefix0F, InstMovups, Move);
   DEF_BINST(Wps, Vps)(NACLi_SSE, 0x11, Prefix0F, InstMovups, Move);
@@ -572,10 +645,27 @@ static void NaClDefBinarySseInsts() {
   NaClDefInvalidIcode(PrefixF30F, 0xff);
 }
 
-static void NaClDefMmxInsts() {
-  DEF_BINST(Pq_, Qq_)(NACLi_SSSE3, 0x08, Prefix0F38, InstPsignb, Binary);
-  DEF_BINST(Pq_, Qq_)(NACLi_SSSE3, 0x09, Prefix0F38, InstPsignw, Binary);
-  DEF_BINST(Pq_, Qq_)(NACLi_SSSE3, 0x0A, Prefix0F38, InstPsignd, Binary);
+static void NaClDefMmxInsts(struct NaClSymbolTable* st) {
+  NaClDefine("0f3800: Pshufb $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3801: Phaddw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3802: Phaddd $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3803: Phaddsw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3804: Pmaddubsw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3805: Phsubw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3806: Phsubd $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3807: Phsubsw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3808: Psignb $Pq  $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f3809: Psignw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f380a: Psignd $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefine("0f380b: Pmulhrsw $Pq, $Qq", NACLi_SSSE3, st, Binary);
+  NaClDefIter("0f380c+@i: Invalid", 0, 15, NACLi_INVALID, st, Other);
+  NaClDefine("0f381c: Pabsb $Pq, $Qq", NACLi_SSSE3, st, Move);
+  NaClDefine("0f381d: Pabsw $Pq, $Qq", NACLi_SSSE3, st, Move);
+  NaClDefine("0f381e: Pabsd $Pq, $Qq", NACLi_SSSE3, st, Move);
+  NaClDefIter("0f381f+@i: Invalid", 0, 208, NACLi_INVALID, st, Other);
+  NaClDefine("0f38f0: Movbe $Gv, $Mv", NACLi_MOVBE, st, Move);
+  NaClDefine("0f38f1: Movbe $Mv, $Gv", NACLi_MOVBE, st, Move);
+  NaClDefIter("0f38f2+@i: Invalid", 0, 13, NACLi_INVALID, st, Other);
 
   DEF_BINST(Pq_, Qd_)(NACLi_MMX, 0x60, Prefix0F, InstPunpcklbw, Binary);
   DEF_BINST(Pq_, Qd_)(NACLi_MMX, 0x61, Prefix0F, InstPunpcklwd, Binary);
@@ -861,14 +951,6 @@ static void NaClDefNarySseInsts() {
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
-  NaClDefInstPrefix(Prefix660F38);
-  NaClDefInst(0x17,
-               NACLi_SSE41,
-               NACL_IFLAG(OpcodeUsesModRm),
-               InstPtest);
-  NaClDefOp(Xmm_G_Operand, NACL_OPFLAG(OpUse));
-  NaClDefOp(Xmm_E_Operand, NACL_OPFLAG(OpUse));
-
   /* f2 0f c2 /r ib  cmpsd xmm1, xmm2/m64, imm8  SSE2 RexR */
   NaClDefInstPrefix(PrefixF20F);
   NaClDefInst(0xc2,
@@ -890,9 +972,9 @@ static void NaClDefNarySseInsts() {
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 }
 
-void NaClDefSseInsts() {
+void NaClDefSseInsts(struct NaClSymbolTable* st) {
   NaClDefDefaultInstPrefix(NoPrefix);
   NaClDefNarySseInsts();
-  NaClDefBinarySseInsts();
-  NaClDefMmxInsts();
+  NaClDefBinarySseInsts(st);
+  NaClDefMmxInsts(st);
 }

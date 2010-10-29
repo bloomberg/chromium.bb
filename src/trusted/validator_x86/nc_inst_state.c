@@ -188,10 +188,11 @@ static void NaClConsume0F38XXNaClInstBytes(NaClInstState* state,
   }
 
   desc->opcode_byte = state->mpc[state->length++];
-  if (state->prefix_mask & kPrefixDATA16) {
-    desc->matched_prefix = Prefix660F38;
-  } else if (state->prefix_mask & kPrefixREPNE) {
+  if (state->prefix_mask & kPrefixREPNE) {
     desc->matched_prefix = PrefixF20F38;
+  }
+  else if (state->prefix_mask & kPrefixDATA16) {
+    desc->matched_prefix = Prefix660F38;
   } else if ((state->prefix_mask & ~kPrefixREX) == 0) {
     desc->matched_prefix = Prefix0F38;
   } else {
@@ -232,12 +233,12 @@ static void NaClConsume0F3AXXNaClInstBytes(NaClInstState* state,
  */
 static void NaClConsume0FXXNaClInstBytes(NaClInstState* state,
                                          NaClInstPrefixDescriptor* desc) {
-  if (state->prefix_mask & kPrefixDATA16) {
-    desc->matched_prefix = Prefix660F;
-  } else if (state->prefix_mask & kPrefixREPNE) {
+  if (state->prefix_mask & kPrefixREPNE) {
     desc->matched_prefix = PrefixF20F;
   } else if (state->prefix_mask & kPrefixREP) {
     desc->matched_prefix = PrefixF30F;
+  } else if (state->prefix_mask & kPrefixDATA16) {
+    desc->matched_prefix = Prefix660F;
   } else {
     desc->matched_prefix = Prefix0F;
   }

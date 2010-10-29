@@ -56,13 +56,24 @@ typedef void (*NCDecoderStats)(struct NCValidatorState *vstate);
 #define kPrefixSEGDS  0x0400  /* 0x3e - disallowed */
 #define kPrefixREX    0x1000  /* 0x40 - 0x4f Rex prefix */
 
-/* a new enumerated type for instructions */
+/* a new enumerated type for instructions.
+ * Note: Each enumerate type is marked with one of the following symbols,
+ * defining the validator it us used for:
+ *    32 - The x86-32 validator.
+ *    64 - The x86-64 validator.
+ *    Both - Both the x86-32 and the x86-64 validators.
+ * Note: The code for the x86-64 validator is being cleaned up, and there
+ * are still uses of the "32" tag for x86 instructions.
+ * TODO(karl) - Fix this comment when modeling for the x86-64 has been cleaned
+ * up.
+ */
 typedef enum {
-  NACLi_UNDEFINED = 0, /* uninitialized space; should never happen */
-  NACLi_ILLEGAL,      /* not allowed in NaCl */
-  NACLi_INVALID,      /* not valid on any known x86 */
-  NACLi_SYSTEM,       /* ring-0 instruction, not allowed in NaCl */
+  NACLi_UNDEFINED = 0, /* uninitialized space; should never happen */ /* Both */
+  NACLi_ILLEGAL,      /* not allowed in NaCl */                       /* Both */
+  NACLi_INVALID,      /* not valid on any known x86 */                /* Both */
+  NACLi_SYSTEM,       /* ring-0 instruction, not allowed in NaCl */   /* Both */
   NACLi_386,          /* an allowed instruction on all i386 implementations */
+                                                                      /* Both */
                       /* subset of i386 that allows LOCK prefix. NOTE:
                        * This is only used for the 32 bit validator. The new
                        * 64 bit validator uses "InstFlag(OpcodeLockable)"
@@ -71,49 +82,51 @@ typedef enum {
                        * Hopefully, in future releases, this enumerated type
                        * will be removed.
                        */
-  NACLi_386L,
-  NACLi_386R,         /* subset of i386 that allow REP prefix */
+  NACLi_386L,                                                         /* 32 */
+  NACLi_386R,         /* subset of i386 that allow REP prefix */      /* 32 */
   NACLi_386RE,        /* subset of i386 that allow REPE/REPZ prefixes */
-  NACLi_JMP8,
-  NACLi_JMPZ,
-  NACLi_INDIRECT,
-  NACLi_OPINMRM,
-  NACLi_RETURN,
-  NACLi_SFENCE_CLFLUSH,
-  NACLi_CMPXCHG8B,
-  NACLi_CMPXCHG16B,   /* 64-bit mode only, illegal for NaCl */
-  NACLi_CMOV,
-  NACLi_RDMSR,
-  NACLi_RDTSC,
-  NACLi_RDTSCP,  /* AMD only */
-  NACLi_SYSCALL, /* AMD only; equivalent to SYSENTER */
-  NACLi_SYSENTER,
-  NACLi_X87,
-  NACLi_MMX,
-  NACLi_MMXSSE2, /* MMX with no prefix, SSE2 with 0x66 prefix */
-  NACLi_3DNOW,   /* AMD only */
-  NACLi_EMMX,    /* Cyrix only; not supported yet */
-  NACLi_E3DNOW,  /* AMD only */
-  NACLi_SSE,
-  NACLi_SSE2,    /* no prefix => MMX; prefix 66 => SSE; */
+                                                                      /* 32 */
+  NACLi_JMP8,                                                         /* 32 */
+  NACLi_JMPZ,                                                         /* 32 */
+  NACLi_INDIRECT,                                                     /* 32 */
+  NACLi_OPINMRM,                                                      /* 32 */
+  NACLi_RETURN,                                                       /* 32 */
+  NACLi_SFENCE_CLFLUSH,                                               /* 32 */
+  NACLi_CMPXCHG8B,                                                    /* 32 */
+  NACLi_CMPXCHG16B,   /* 64-bit mode only, illegal for NaCl */        /* 32 */
+  NACLi_CMOV,                                                         /* 32 */
+  NACLi_RDMSR,                                                        /* 32 */
+  NACLi_RDTSC,                                                        /* 32 */
+  NACLi_RDTSCP,  /* AMD only */                                       /* 32 */
+  NACLi_SYSCALL, /* AMD only; equivalent to SYSENTER */               /* 32 */
+  NACLi_SYSENTER,                                                     /* 32 */
+  NACLi_X87,                                                          /* Both */
+  NACLi_MMX,                                                          /* Both */
+  NACLi_MMXSSE2, /* MMX with no prefix, SSE2 with 0x66 prefix */      /* Both */
+  NACLi_3DNOW,   /* AMD only */                                       /* Both */
+  NACLi_EMMX,    /* Cyrix only; not supported yet */                  /* Both */
+  NACLi_E3DNOW,  /* AMD only */                                       /* Both */
+  NACLi_SSE,                                                          /* Both */
+  NACLi_SSE2,    /* no prefix => MMX; prefix 66 => SSE; */            /* Both */
                  /* f2, f3 not allowed unless used for opcode selection */
-  NACLi_SSE2x,   /* SSE2; prefix 66 required!!! */
-  NACLi_SSE3,
-  NACLi_SSE4A,   /* AMD only */
-  NACLi_SSE41,
-  NACLi_SSE42,
-  NACLi_MOVBE,
-  NACLi_POPCNT,
-  NACLi_LZCNT,
-  NACLi_LONGMODE,/* AMD only? */
-  NACLi_SVM,     /* AMD only */
-  NACLi_SSSE3,
-  NACLi_3BYTE,
-  NACLi_FCMOV
+  NACLi_SSE2x,   /* SSE2; prefix 66 required!!! */                    /* Both */
+  NACLi_SSE3,                                                         /* Both */
+  NACLi_SSE4A,   /* AMD only */                                       /* Both */
+  NACLi_SSE41,                                                        /* Both */
+  NACLi_SSE42,                                                        /* Both */
+  NACLi_MOVBE,                                                        /* Both */
+  NACLi_POPCNT,                                                       /* 32 */
+  NACLi_LZCNT,                                                        /* 32 */
+  NACLi_LONGMODE,/* AMD only? */                                      /* 32 */
+  NACLi_SVM,     /* AMD only */                                       /* Both */
+  NACLi_SSSE3,                                                        /* Both */
+  NACLi_3BYTE,                                                        /* 32 */
+  NACLi_FCMOV,                                                        /* 32 */
+  NACLi_VMX                                                           /* 64 */
   /* NOTE: This enum must be kept consistent with kNaClInstTypeRange   */
-  /* (defined below) and with the string constants in ncdecode_table.c */
+  /* (defined below). */
 } NaClInstType;
-#define kNaClInstTypeRange 43
+#define kNaClInstTypeRange 44
 #ifdef NEEDSNACLINSTTYPESTRING
 static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_UNDEFINED",
@@ -159,6 +172,7 @@ static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_SSSE3",
   "NACLi_3BYTE",
   "NACLi_FCMOV",
+  "NACLi_VMX",
 };
 #define NaClInstTypeString(itype)  (kNaClInstTypeString[itype])
 #endif  /* ifdef NEEDSNACLINSTTYPESTRING */
@@ -198,9 +212,7 @@ typedef enum {
 /* Define the maximum register value that can be encoded into the opcode
  * byte.
  */
-#define kMaxRegisterIndexInOpcode 8
-
-
+#define kMaxRegisterIndexInOpcode 7
 
 /* information derived from the opcode, wherever it happens to be */
 typedef enum {

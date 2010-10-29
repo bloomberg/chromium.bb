@@ -433,6 +433,10 @@ void DEF_OPERAND(GdQ)() {
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
+void DEF_OPERAND(Gq_)() {
+  NaClDefOp(Go_Operand, NACL_EMPTY_OPFLAGS);
+}
+
 void DEF_OPERAND(Gv_)() {
   NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
@@ -575,6 +579,12 @@ void DEF_OPERAND(Ms_)() {
 
 void DEF_OPERAND(Mq_)() {
   NaClDefOp(Mo_Operand, NACL_EMPTY_OPFLAGS);
+}
+
+void DEF_OPERAND(Mv_)() {
+  NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
+                NACL_IFLAG(OperandSize_o));
 }
 
 void DEF_OPERAND(Mw_)() {
@@ -736,6 +746,27 @@ void DEF_OPERAND(Sw_)() {
 void DEF_OPERAND(Udq)() {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
+}
+
+void DEF_OPERAND(UdqMd)() {
+  /* TODO: how to define size, based on register (Udq) or
+   * memory (Md).
+   */
+  NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
+}
+
+void DEF_OPERAND(UdqMq)() {
+  /* TODO: how to define size, based on register (Udq) or
+   * memory (Mq).
+   */
+  NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
+}
+
+void DEF_OPERAND(UdqMw)() {
+  /* TODO: how to define size, based on register (Udq) or
+   * memory (Mw).
+   */
+  NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(Upd)() {
@@ -1142,6 +1173,8 @@ DEFINE_BINARY_OINST(Vdq, I__)
 
 #define MAX_DEFOPS 1000
 
+#define BUF_SIZE 1024
+
 /* The maximum number of symbol substitutions that can be applied to an
  * opcode description string. Used mainly to make sure that if a
  * substitution occurs, the code will not looop infinitely.
@@ -1321,9 +1354,6 @@ static void NaClParseOpcode(const char* opcode,
   if (NULL != marker) {
     *marker = '\0';
     reg_offset = buffer + strlen(base) + 1;
-    if (strlen(reg_offset) != 1) {
-      NaClDefFatal("register offset in opcode can only be a single digit");
-    }
   } else {
     marker = strchr(buffer, '/');
     if (NULL != marker) {
@@ -1344,12 +1374,16 @@ static void NaClParseOpcode(const char* opcode,
   opcode_value = NaClExtractByte(base + strlen(base) - 2);
 
   if (reg_offset != NULL) {
-    int reg;
-    if ((1 != strlen(reg_offset)) || (1 != strspn(reg_offset, "01234567"))) {
-      NaClDefFatal("invalid opcode register offset");
+    int reg = (int) STRTOULL(reg_offset, NULL, 10);
+    if (reg < 0) {
+      NaClDefFatal("can't add negative values to opcode");
+    } else if ((reg + opcode_value) >= NCDTABLESIZE) {
+      NaClDefFatal("opcode addition too large");
     }
-    reg = (int) STRTOULL(reg_offset, NULL, 10);
     if (NULL == NaClSymbolTableGet("add_reg?", st)) {
+      if ((1 != strlen(reg_offset)) || (1 != strspn(reg_offset, "01234567"))) {
+        NaClDefFatal("invalid opcode register offset");
+      }
       NaClDefInst(opcode_value + reg, insttype, NACL_IFLAG(OpcodePlusR), name);
       NaClDefOp(OpcodeBaseMinus0 + reg, NACL_IFLAG(OperandExtendsOpcode));
     }
@@ -1444,6 +1478,8 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Fvq",   DEF_OPERAND(Fvq),  defop_st);
     NaClSymbolTablePutDefOp("Fvw",   DEF_OPERAND(Fvw),  defop_st);
     NaClSymbolTablePutDefOp("Gb",    DEF_OPERAND(Gb_),  defop_st);
+    NaClSymbolTablePutDefOp("Gd",    DEF_OPERAND(Gd_),  defop_st);
+    NaClSymbolTablePutDefOp("Gq",    DEF_OPERAND(Gq_),  defop_st);
     NaClSymbolTablePutDefOp("Gv",    DEF_OPERAND(Gv_),  defop_st);
     NaClSymbolTablePutDefOp("Gw",    DEF_OPERAND(Gw_),  defop_st);
     NaClSymbolTablePutDefOp("Ib",    DEF_OPERAND(Ib_),  defop_st);
@@ -1459,9 +1495,11 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Ma",    DEF_OPERAND(Ma_),  defop_st);
     NaClSymbolTablePutDefOp("Mb",    DEF_OPERAND(Mb_),  defop_st);
     NaClSymbolTablePutDefOp("Md",    DEF_OPERAND(Md_),  defop_st);
+    NaClSymbolTablePutDefOp("Mdq",   DEF_OPERAND(Mdq),  defop_st);
     NaClSymbolTablePutDefOp("Mp",    DEF_OPERAND(Mp_),  defop_st);
     NaClSymbolTablePutDefOp("Mq",    DEF_OPERAND(Mq_),  defop_st);
     NaClSymbolTablePutDefOp("Ms",    DEF_OPERAND(Ms_),  defop_st);
+    NaClSymbolTablePutDefOp("Mv",    DEF_OPERAND(Mv_),  defop_st);
     NaClSymbolTablePutDefOp("Mw/Rv", DEF_OPERAND(MwSlRv), defop_st);
     NaClSymbolTablePutDefOp("Mw",    DEF_OPERAND(Mw_),  defop_st);
     NaClSymbolTablePutDefOp("Ob",    DEF_OPERAND(Ob_),  defop_st);
@@ -1482,6 +1520,11 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("r8b",   DEF_OPERAND(r8b),  defop_st);
     NaClSymbolTablePutDefOp("r8v",   DEF_OPERAND(r8v),  defop_st);
     NaClSymbolTablePutDefOp("Sw",    DEF_OPERAND(Sw_),  defop_st);
+    NaClSymbolTablePutDefOp("Udq/Md", DEF_OPERAND(UdqMd), defop_st);
+    NaClSymbolTablePutDefOp("Udq/Mq", DEF_OPERAND(UdqMq), defop_st);
+    NaClSymbolTablePutDefOp("Udq/Mw", DEF_OPERAND(UdqMw), defop_st);
+    NaClSymbolTablePutDefOp("Vdq",   DEF_OPERAND(Vdq),  defop_st);
+    NaClSymbolTablePutDefOp("Wdq",   DEF_OPERAND(Wdq),  defop_st);
     NaClSymbolTablePutDefOp("Xb",    DEF_OPERAND(Xb_),  defop_st);
     NaClSymbolTablePutDefOp("Xvd",   DEF_OPERAND(Xvd),  defop_st);
     NaClSymbolTablePutDefOp("Xvq",   DEF_OPERAND(Xvq),  defop_st);
@@ -1691,11 +1734,13 @@ void NaClDefinePlatform(NaClTargetPlatform platform,
 /* Generate an error message for the given instruction description,
  * if min <0 or max > 7.
  */
-static void NaClDefCheckRange(const char* desc, int min, int max) {
+static void NaClDefCheckRange(const char* desc, int min, int max, int cutoff) {
   if (min < 0) {
     NaClDefDescFatal(desc, "Minimum value must be >= 0");
-  } else if (max > 7) {
-    NaClDefDescFatal(desc, "Maximum value must be <= 7");
+  } else if (max > cutoff) {
+    char buffer[BUF_SIZE];
+    SNPRINTF(buffer, BUF_SIZE, "Maximum value must be <= %d", cutoff);
+    NaClDefDescFatal(desc, buffer);
   }
 }
 
@@ -1709,7 +1754,7 @@ void NaClDefReg(const char* desc, int min, int max,
                 NaClInstCat cat) {
   int i;
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
-  NaClDefCheckRange(desc, min, max);
+  NaClDefCheckRange(desc, min, max, kMaxRegisterIndexInOpcode);
   for (i = min; i <= max; ++i) {
     NaClSymbolTablePutInt("reg", i, st);
     NaClDefine(desc, insttype, st, cat);
@@ -1722,7 +1767,7 @@ void NaClDefIter(const char* desc, int min, int max,
                  NaClInstCat cat) {
   int i;
   struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
-  NaClDefCheckRange(desc, min, max);
+  NaClDefCheckRange(desc, min, max, NCDTABLESIZE);
   NaClSymbolTablePutInt("add_reg?", 1, st);
   for (i = min; i <= max; ++i) {
     NaClSymbolTablePutInt("i", i, st);

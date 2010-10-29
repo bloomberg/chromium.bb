@@ -574,6 +574,7 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *   R - General purpose register specified by the ModRM r/m field. The ModeRm
  *       mod field must be 11b.
  *   S - Segment register specified by the ModRM reg field.
+ *   U - The R/Mfield of the ModR/M byte selects a 128-bit XMM register.
  *   V - 128-bit XMM register specified by the ModRM reg field.
  *   VR - 128-bit XMM register specified by the ModRM r/m field. The ModRM mod
  *       field must be 11b.
@@ -772,7 +773,7 @@ void NaClDefIter(const char* desc, int min, int max,
 
 /* Defines a set of instructions, for all values of min <= reg <= max (bound
  * in a local symbol), using calls to NaClDefine on the remaining arguments.
- * In addition, the value of min and max must be between 0 and 7. Typically
+ * In addition, the value of min and max must be between 0 and 255. Typically
  * used to generate register values that are part of the opcode.
  * Parameters are:
  *   desc - the opcode description string.

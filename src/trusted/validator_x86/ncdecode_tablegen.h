@@ -201,7 +201,7 @@ void NaClDef0FInsts(struct NaClSymbolTable* context_st);
 void NaClDefDCInsts();
 
 /* Defines SSE instructions (i.e. instructions using MMX and XMM registers). */
-void NaClDefSseInsts();
+void NaClDefSseInsts(struct NaClSymbolTable* context_st);
 
 /* Define x87 instructions. */
 void NaClDefX87Insts(struct NaClSymbolTable* context_st);

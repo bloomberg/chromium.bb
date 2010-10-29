@@ -1760,7 +1760,7 @@ static void NaClBuildInstTables() {
   NaClDefPrefixBytes();
   NaClDefOneByteInsts(st);
   NaClDef0FInsts(st);
-  NaClDefSseInsts();
+  NaClDefSseInsts(st);
   NaClDefX87Insts(st);
   NaClDefNops();
 
