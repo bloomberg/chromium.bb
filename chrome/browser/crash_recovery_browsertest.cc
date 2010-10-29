@@ -31,12 +31,12 @@ class CrashRecoveryBrowserTest : public InProcessBrowserTest {
 // be fixed before it can be enabled to not cause the bots issues.
 #if defined(OS_MACOSX)
 #define MAYBE_Reload DISABLED_Reload
+#else
+#define MAYBE_Reload Reload
 #endif
 
 // Test that reload works after a crash.
-// Times out on all platforms after WebKit roll 70722:70770.
-// http://crbug.com/61097
-IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DISABLED_Reload) {
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, MAYBE_Reload) {
   // The title of the active tab should change each time this URL is loaded.
   GURL url(
       "data:text/html,<script>document.title=new Date().valueOf()</script>");
