@@ -35,4 +35,11 @@
 
 @end
 
+// A notification that a view may issue when it receives first responder status.
+// The name is |kViewDidBecomeFirstResponder|, the object is the view, and the
+// NSSelectionDirection is wrapped in an NSNumber under the key
+// |kSelectionDirection|.
+extern NSString* kViewDidBecomeFirstResponder;
+extern NSString* kSelectionDirection;
+
 #endif  // CHROME_BROWSER_COCOA_BASE_VIEW_H_

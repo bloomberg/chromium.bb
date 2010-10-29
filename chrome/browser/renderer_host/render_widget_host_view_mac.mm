@@ -1667,6 +1667,16 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // See http://crbug.com/47209
   [self cancelComposition];
 
+  NSNumber* direction = [NSNumber numberWithUnsignedInteger:
+      [[self window] keyViewSelectionDirection]];
+  NSDictionary* userInfo =
+      [NSDictionary dictionaryWithObject:direction
+                                  forKey:kSelectionDirection];
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kViewDidBecomeFirstResponder
+                    object:self
+                  userInfo:userInfo];
+
   return YES;
 }
 

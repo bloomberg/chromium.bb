@@ -47,7 +47,7 @@
 // TODO(jcampan): http://crbug.com/23683
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_MACOSX)
-// TODO(suzhe): http://crbug.com/49738 (following two tests)
+// TODO(suzhe): http://crbug.com/60973 (following two tests)
 #define MAYBE_FocusTraversal DISABLED_FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 // TODO(suzhe): http://crbug.com/49737

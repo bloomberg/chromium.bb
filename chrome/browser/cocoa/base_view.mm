@@ -4,6 +4,10 @@
 
 #include "chrome/browser/cocoa/base_view.h"
 
+NSString* kViewDidBecomeFirstResponder =
+    @"Chromium.kViewDidBecomeFirstResponder";
+NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
+
 @implementation BaseView
 
 - (id)initWithFrame:(NSRect)frame {

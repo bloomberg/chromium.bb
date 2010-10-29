@@ -56,6 +56,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
                        offset:(NSPoint)offset;
 - (void)cancelDeferredClose;
 - (void)closeTabAfterEvent;
+- (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 @end
 
 // static
@@ -346,6 +347,12 @@ void TabContentsViewMac::Observe(NotificationType type,
     // by TabContentsController, so we can't just override -viewID method to
     // return it.
     view_id_util::SetID(self, VIEW_ID_TAB_CONTAINER);
+
+    [[NSNotificationCenter defaultCenter]
+         addObserver:self
+            selector:@selector(viewDidBecomeFirstResponder:)
+                name:kViewDidBecomeFirstResponder
+              object:nil];
   }
   return self;
 }
@@ -358,6 +365,9 @@ void TabContentsViewMac::Observe(NotificationType type,
 
   // This probably isn't strictly necessary, but can't hurt.
   [self unregisterDraggedTypes];
+
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+
   [super dealloc];
 }
 
@@ -480,6 +490,21 @@ void TabContentsViewMac::Observe(NotificationType type,
 
 - (void)closeTabAfterEvent {
   tabContentsView_->CloseTab();
+}
+
+- (void)viewDidBecomeFirstResponder:(NSNotification*)notification {
+  NSView* view = [notification object];
+  if (![[self subviews] containsObject:view])
+    return;
+
+  NSSelectionDirection direction =
+      [[[notification userInfo] objectForKey:kSelectionDirection]
+        unsignedIntegerValue];
+  if (direction == NSDirectSelection)
+    return;
+
+  [self tabContents]->
+      FocusThroughTabTraversal(direction == NSSelectingPrevious);
 }
 
 @end
