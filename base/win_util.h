@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WIN_UTIL_H__
-#define BASE_WIN_UTIL_H__
+#ifndef BASE_WIN_UTIL_H_
+#define BASE_WIN_UTIL_H_
 #pragma once
 
 #include <windows.h>
@@ -16,35 +16,9 @@ struct IPropertyStore;
 struct _tagpropertykey;
 typedef _tagpropertykey PROPERTYKEY;
 
-// TODO(brettw) remove this once RLZ is updated to use the new version in
-// base/win/windows_version.h.
-#if defined(RLZ_WIN_LIB_LIB_MUTEX_H_) || defined(RLZ_WIN_LIB_USER_KEY_H_) \
-    || defined(RLZ_WIN_LIB_PROCESS_INFO_H_)
-#include "base/win/windows_version.h"
-#endif
-
 namespace win_util {
 
 void GetNonClientMetrics(NONCLIENTMETRICS* metrics);
-
-// TODO(brettw) remove this once RLZ is updated to use the new version in
-// base/win/windows_version.h.
-#if defined(RLZ_WIN_LIB_LIB_MUTEX_H_) || defined(RLZ_WIN_LIB_USER_KEY_H_) \
-    || defined(RLZ_WIN_LIB_PROCESS_INFO_H_)
-// These must match the values in base::win!
-enum WinVersion {
-  WINVERSION_PRE_2000 = 0,  // Not supported
-  WINVERSION_2000 = 1,      // Not supported
-  WINVERSION_XP = 2,
-  WINVERSION_SERVER_2003 = 3,
-  WINVERSION_VISTA = 4,
-  WINVERSION_2008 = 5,
-  WINVERSION_WIN7 = 6,
-};
-inline WinVersion GetWinVersion() {
-  return static_cast<WinVersion>(base::win::GetVersion());
-}
-#endif  // RLZ_*
 
 // Returns the string representing the current user sid.
 bool GetUserSidString(std::wstring* user_sid);
@@ -101,4 +75,4 @@ bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name);
 
 }  // namespace win_util
 
-#endif  // BASE_WIN_UTIL_H__
+#endif  // BASE_WIN_UTIL_H_
