@@ -84,7 +84,15 @@ std::wstring Accelerator::GetShortcutText() const {
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;
 #elif defined(OS_LINUX)
-    gchar* name = gdk_keyval_name(gdk_keyval_to_lower(key_code_));
+    const gchar* name = NULL;
+    switch (key_code_) {
+      case app::VKEY_OEM_2:
+        name = static_cast<const gchar*>("/");
+        break;
+      default:
+        name = gdk_keyval_name(gdk_keyval_to_lower(key_code_));
+        break;
+    }
     if (name) {
       if (name[0] != 0 && name[1] == 0)
         shortcut += static_cast<wchar_t>(g_ascii_toupper(name[0]));

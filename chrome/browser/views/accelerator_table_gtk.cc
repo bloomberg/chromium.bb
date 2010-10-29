@@ -13,7 +13,7 @@ namespace browser {
 // NOTE: Keep this list in the same (mostly-alphabetical) order as
 // the Windows accelerators in ../../app/chrome_dll.rc.
 const AcceleratorMapping kAcceleratorMap[] = {
-  // Keycode                   Shift  Ctrl   Alt    Command ID
+  // Keycode                  Shift  Ctrl   Alt    Command ID
   { app::VKEY_A,              true,  true,  false, IDC_AUTOFILL_DEFAULT },
   { app::VKEY_LEFT,           false, false, true,  IDC_BACK },
   { app::VKEY_BACK,           false, false, false, IDC_BACK },
@@ -80,6 +80,10 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #endif
 #if !defined(OS_CHROMEOS)
   { app::VKEY_F1,             false, false, false, IDC_HELP_PAGE },
+#endif
+#if defined(OS_CHROMEOS)
+  { app::VKEY_OEM_2,          false, true,  false, IDC_HELP_PAGE },
+  { app::VKEY_OEM_2,          true,  true,  false, IDC_HELP_PAGE },
 #endif
   { app::VKEY_I,              true,  true,  false, IDC_DEV_TOOLS },
   { app::VKEY_J,              true,  true,  false, IDC_DEV_TOOLS_CONSOLE },

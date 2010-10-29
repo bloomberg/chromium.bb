@@ -141,8 +141,13 @@ using base::TimeDelta;
 static const int kUIUpdateCoalescingTimeMS = 200;
 
 // The URL to be loaded to display Help.
+#if defined(OS_CHROMEOS)
+static const char* const kHelpContentUrl =
+    "chrome-extension://nifaohjgppdbmalmmgkmfdlodaggnbpe/main.html";
+#else
 static const char* const kHelpContentUrl =
     "http://www.google.com/support/chrome/";
+#endif
 
 // The URL to be loaded to display the "Report a broken page" form.
 static const std::string kBrokenPageUrl =
