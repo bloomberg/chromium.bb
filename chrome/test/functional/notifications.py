@@ -224,23 +224,29 @@ class NotificationsTest(pyauto.PyUITest):
     This canceling is done in the page that showed that notification and so
     follows a different path than closing a notification via the UI.
 
-    A notification can be canceled even if it has not been shown yet.
+    This function should NOT be called until |WaitForNotificationCount| has been
+    used to verify the notification is showing. This function cannot be used to
+    cancel a notification that is in the display queue.
+
     This will only work if the page is navigated to |TEST_PAGE_URL|.
 
     Args:
+      notification_id: id of the notification to cancel
       tab_index: index of the tab within the given window that created the
           notification
       windex: index of the window
     """
-    self._CallJavascriptFunc(
+    msg = self._CallJavascriptFunc(
         'cancelNotification', [notification_id], tab_index, windex)
+    # '1' signifies success.
+    self.assertEquals('1', msg)
 
   def testCreateSimpleNotification(self):
     """Creates a simple notification."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateSimpleNotification('no_such_file.png', 'My Title', 'My Body')
-    self.assertEquals(len(self.GetActiveNotifications()), 1)
+    self.assertEquals(1, len(self.GetActiveNotifications()))
     notification = self.GetActiveNotifications()[0]
     html_data = urllib.unquote(notification['content_url'])
     self.assertTrue('no_such_file.png' in html_data)
@@ -252,7 +258,7 @@ class NotificationsTest(pyauto.PyUITest):
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateHTMLNotification(self.NO_SUCH_URL)
-    self.assertEquals(len(self.GetActiveNotifications()), 1)
+    self.assertEquals(1, len(self.GetActiveNotifications()))
     notification = self.GetActiveNotifications()[0]
     self.assertEquals(self.NO_SUCH_URL, notification['content_url'])
     self.assertEquals('', notification['display_source'])
@@ -264,7 +270,7 @@ class NotificationsTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateHTMLNotification(self.NO_SUCH_URL)
     self.CloseNotification(0)
-    self.assertEquals(len(self.GetActiveNotifications()), 0)
+    self.assertFalse(self.GetActiveNotifications())
 
   def testCancelNotification(self):
     """Creates a notification and cancels it in the origin page."""
@@ -272,15 +278,16 @@ class NotificationsTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     note_id = self._CreateHTMLNotification(self.NO_SUCH_URL)
     self.assertNotEquals(-1, note_id)
+    self.WaitForNotificationCount(1)
     self._CancelNotification(note_id)
-    self.assertEquals(len(self.GetActiveNotifications()), 0)
+    self.assertFalse(self.GetActiveNotifications())
 
   def testPermissionInfobarAppears(self):
     """Requests notification privileges and verifies the infobar appears."""
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))
-    self.assertEquals(len(self.GetActiveNotifications()), 0)
+    self.assertFalse(self.GetActiveNotifications())
     self._VerifyInfobar('')  # file:/// origins are blank
 
   def testAllowOnPermissionInfobar(self):
@@ -288,7 +295,7 @@ class NotificationsTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     # This notification should not be shown because we don't have permission.
     self._CreateHTMLNotification(self.NO_SUCH_URL)
-    self.assertEquals(len(self.GetActiveNotifications()), 0)
+    self.assertFalse(self.GetActiveNotifications())
 
     self._RequestPermission()
     self.assertTrue(self.WaitForInfobarCount(1))

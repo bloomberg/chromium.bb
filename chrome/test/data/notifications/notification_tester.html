@@ -41,16 +41,19 @@ function createHTMLNotification(contentUrl, replaceId) {
   sendResultToTest(createNotificationHelper(note, replaceId));
 }
 
-// Cancels a notification with the given id. Returns 1 on success.
+// Cancels a notification with the given id. The notification must be showing,
+// as opposed to waiting to be shown in the display queue.
+// Returns '1' on success.
 function cancelNotification(id) {
   if (id < 0 || id > g_notifications.length) {
     var errorMsg = "Attempted to cancel notification with invalid ID.\n" +
         "ID: " + id + "\n# of notifications: " + g_notifications.length;
-    window.domAutomationController.send(errorMsg);
-    alert(errorMsg);
+    sendResultToTest(errorMsg);
+  }
+  g_notifications[id].onclose = function() {
+    sendResultToTest(1);
   }
   g_notifications[id].cancel();
-  sendResultToTest(1);
 }
 
 // Requests permission for this origin to create notifications.
