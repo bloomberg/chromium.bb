@@ -171,6 +171,14 @@ var OptionsPage = options.OptionsPage;
       AdvancedOptions.getInstance().showRestartRequiredAlert_();
   }
 
+  AdvancedOptions.SetMetricsReportingSettingVisibility = function(visible) {
+    if (visible) {
+      $('metricsReportingSetting').style.display = 'block';
+    } else {
+      $('metricsReportingSetting').style.display = 'none';
+    }
+  }
+
   // Set the default zoom level selected item.
   AdvancedOptions.SetDefaultZoomLevel = function(value) {
     var selectCtl = $('defaultZoomLevel');

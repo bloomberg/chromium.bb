@@ -188,6 +188,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 void AdvancedOptionsHandler::Initialize() {
   DCHECK(dom_ui_);
   SetupMetricsReportingCheckbox(false);
+  SetupMetricsReportingSettingVisibility();
   SetupDefaultZoomLevel();
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
@@ -501,6 +502,18 @@ void AdvancedOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
       disabled, user_has_changed);
+#endif
+}
+
+void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
+  // Don't show the reporting setting if we are in the guest mode.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+    FundamentalValue visible(false);
+    dom_ui_->CallJavascriptFunction(
+        L"options.AdvancedOptions.SetMetricsReportingSettingVisibility",
+        visible);
+  }
 #endif
 }
 
