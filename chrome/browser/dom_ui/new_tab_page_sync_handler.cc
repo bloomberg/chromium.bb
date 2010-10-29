@@ -163,7 +163,8 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
         sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::ACCOUNT_DISABLED ||
         sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+        GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
+        sync_service_->observed_passphrase_required()) {
       sync_service_->ShowLoginDialog(NULL);
       return;
     }
