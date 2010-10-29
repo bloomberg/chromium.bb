@@ -303,8 +303,9 @@ nacl_glibc_skiplist = [
     # Syscall wrappers not implemented yet.
     'run_sysbasic_test',
     'run_sysbrk_test',
-    # Depends on __kNaClSrpcHandlers being defined in crt1.o
+    # Depends on libav, and hence __kNaClSrpcHandlers being defined in crt1.o
     'run_earth',
+    'earth_browser_test',
     'run_life',
     'run_mandel',
     'run_mandel_nav',
