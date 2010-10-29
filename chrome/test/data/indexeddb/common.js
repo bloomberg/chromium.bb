@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 function debug(message)
 {
   document.getElementById('status').innerHTML += '<br/>' + message;
@@ -83,7 +87,7 @@ function shouldBe(_a, _b)
   else if (typeof(_av) == typeof(_bv))
     fail(_a + " should be " + _bv + ". Was " + stringify(_av) + ".");
   else
-    fail(_a + " should be " + _bv + " (of type " + typeof _bv + "). " + 
+    fail(_a + " should be " + _bv + " (of type " + typeof _bv + "). " +
          "Was " + _av + " (of type " + typeof _av + ").");
 }
 

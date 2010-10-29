@@ -108,3 +108,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ObjectStoreTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("object_store_test.html"))));
 }
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DatabaseTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("database_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
+}

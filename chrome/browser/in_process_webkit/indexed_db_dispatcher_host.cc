@@ -391,6 +391,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnName(
       &map_, object_id, reply_msg, &WebIDBDatabase::name);
 }
 
+// TODO(hans): Delete this?
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDescription(
     int32 object_id, IPC::Message* reply_msg) {
   parent_->SyncGetter<string16, ViewHostMsg_IDBDatabaseDescription>(
