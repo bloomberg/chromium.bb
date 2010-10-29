@@ -1184,48 +1184,24 @@
 }
 {
    bug_60556a
-   Memcheck:Addr4
+   Memcheck:Addr1
    ...
-   fun:sqlite3PagerAcquire2
-   fun:sqlite3PagerAcquire
-   fun:btreeGetPage
-   fun:getAndInitPage
-   fun:moveToRoot
-   fun:sqlite3BtreeFirst
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
    fun:_ZN11WebDatabase*
 }
 {
    bug_60556b
-   Memcheck:Addr1
-   fun:pager_wait_on_lock
-   fun:pager_write_pagelist
-   fun:sqlite3PagerCommitPhaseOne
-   fun:sqlite3BtreeCommitPhaseOne
-   fun:vdbeCommit
-   fun:sqlite3VdbeHalt
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:_ZN3sql9Statement3RunEv
-   fun:_ZN3sql10Connection17CommitTransactionEv
-   fun:_ZN3sql11Transaction6CommitEv
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_exec
+   fun:_ZN3sql10Connection7ExecuteEPKc
    fun:_ZN11WebDatabase*
 }
 {
    bug_60556c
-   Memcheck:Addr4
-   fun:pager_write_pagelist
-   fun:sqlite3PagerCommitPhaseOne
-   fun:sqlite3BtreeCommitPhaseOne
-   fun:vdbeCommit
-   fun:sqlite3VdbeHalt
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
+   Memcheck:Addr1
+   ...
    fun:sqlite3_step
    fun:_ZN3sql9Statement3RunEv
    fun:_ZN3sql10Connection17CommitTransactionEv
@@ -1236,13 +1212,6 @@
    bug_60556d
    Memcheck:Addr4
    ...
-   fun:sqlite3PcacheDirtyList
-   fun:sqlite3PagerCommitPhaseOne
-   fun:sqlite3BtreeCommitPhaseOne
-   fun:vdbeCommit
-   fun:sqlite3VdbeHalt
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
    fun:sqlite3_step
    fun:_ZN3sql9Statement3RunEv
    fun:_ZN3sql10Connection17CommitTransactionEv
@@ -1251,44 +1220,6 @@
 }
 {
    bug_60556e
-   Memcheck:Addr4
-   fun:pcacheRemoveFromDirtyList
-   fun:sqlite3PcacheRelease
-   fun:sqlite3PagerUnref
-   ...
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556f
-   Memcheck:Addr4
-   fun:pcacheAddToDirtyList
-   ...
-   fun:btreeCreateTable
-   fun:sqlite3BtreeCreateTable
-   fun:sqlite3VdbeExec
-   fun:sqlite3Step
-   fun:sqlite3_step
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556g
-   Memcheck:Addr1
-   fun:memset
-   fun:sqlite3PcacheFetch
-   ...
-   fun:sqlite3_exec
-   fun:_ZN3sql10Connection7ExecuteEPKc
-   fun:_ZN11WebDatabase*
-}
-{
-   bug_60556h
    Memcheck:Param
    read(buf)
    ...
