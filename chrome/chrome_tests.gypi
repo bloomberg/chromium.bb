@@ -615,6 +615,12 @@
             'test/ui/npapi_uitest.cc',
           ],
         }],
+        ['chromeos==1', {
+          'sources!': [
+              # TODO(thestig): Enable when print preview is ready for CrOS.
+             'browser/dom_ui/print_preview_ui_uitest.cc',
+          ],
+        }],
       ],
     },
     {
