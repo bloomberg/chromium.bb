@@ -22,8 +22,14 @@ namespace chromeos {
 // A window that uses BubbleFrameView as its frame.
 class BubbleWindow : public views::WindowGtk {
  public:
+  enum Style {
+    STYLE_GENERIC = 0, // Default style.
+    STYLE_XBAR = 1 << 0 // Show close button at the top right (left for RTL).
+  };
+
   static views::Window* Create(gfx::NativeWindow parent,
                                const gfx::Rect& bounds,
+                               Style style,
                                views::WindowDelegate* window_delegate);
 
   static const SkColor kBackgroundColor;
@@ -33,6 +39,8 @@ class BubbleWindow : public views::WindowGtk {
 
   // Overidden from views::WindowGtk:
   virtual void Init(GtkWindow* parent, const gfx::Rect& bounds);
+
+  Style style_;
 };
 
 }  // namespace chromeos

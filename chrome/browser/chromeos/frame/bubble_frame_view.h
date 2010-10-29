@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_FRAME_BUBBLE_FRAME_VIEW_H_
 #pragma once
 
+#include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "views/controls/button/button.h"
 #include "views/window/non_client_view.h"
 
 namespace gfx {
@@ -17,6 +19,7 @@ class Size;
 }
 
 namespace views {
+class ImageButton;
 class Label;
 class Window;
 }
@@ -24,9 +27,10 @@ class Window;
 namespace chromeos {
 
 // BubbleFrameView implements a BubbleBorder based window frame.
-class BubbleFrameView : public views::NonClientFrameView {
+class BubbleFrameView : public views::NonClientFrameView,
+                        public views::ButtonListener {
  public:
-  explicit BubbleFrameView(views::Window* frame);
+  BubbleFrameView(views::Window* frame, BubbleWindow::Style style);
   virtual ~BubbleFrameView();
 
   // Overridden from views::NonClientFrameView:
@@ -44,15 +48,25 @@ class BubbleFrameView : public views::NonClientFrameView {
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
 
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event);
+
  private:
   // The window that owns this view.
   views::Window* frame_;
+
+  // Allows to tweak appearance of the view.
+  BubbleWindow::Style style_;
 
   // Title label
   views::Label* title_;
 
   // The bounds of the client view, in this view's coordinates.
   gfx::Rect client_view_bounds_;
+
+  // Close button for STYLE_XBAR case.
+  views::ImageButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

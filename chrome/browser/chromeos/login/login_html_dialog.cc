@@ -45,11 +45,11 @@ LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
                                  const std::wstring& title,
                                  const GURL& url,
                                  Style style)
-    : style_(style),
-      delegate_(delegate),
+    : delegate_(delegate),
       parent_window_(parent_window),
       title_(title),
-      url_(url) {
+      url_(url),
+      style_(style) {
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
@@ -65,11 +65,16 @@ void LoginHtmlDialog::Show() {
                                            this);
   switch (style_) {
     case STYLE_BUBBLE:
-      chromeos::BubbleWindow::Create(parent_window_, gfx::Rect(), html_view);
+      chromeos::BubbleWindow::Create(parent_window_,
+                                     gfx::Rect(),
+                                     chromeos::BubbleWindow::STYLE_XBAR,
+                                     html_view);
       break;
     case STYLE_GENERIC:
     default:
-      views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
+      views::Window::CreateChromeWindow(parent_window_,
+                                        gfx::Rect(),
+                                        html_view);
       break;
   }
   html_view->InitDialog();

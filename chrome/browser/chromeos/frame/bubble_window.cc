@@ -32,9 +32,10 @@ void BubbleWindow::Init(GtkWindow* parent, const gfx::Rect& bounds) {
 views::Window* BubbleWindow::Create(
     gfx::NativeWindow parent,
     const gfx::Rect& bounds,
+    Style style,
     views::WindowDelegate* window_delegate) {
   BubbleWindow* window = new BubbleWindow(window_delegate);
-  window->GetNonClientView()->SetFrameView(new BubbleFrameView(window));
+  window->GetNonClientView()->SetFrameView(new BubbleFrameView(window, style));
   window->Init(parent, bounds);
 
   chromeos::WmIpc::instance()->SetWindowType(

@@ -17,7 +17,10 @@ views::Window* CreateViewsWindow(gfx::NativeWindow parent,
                                  const gfx::Rect& bounds,
                                  views::WindowDelegate* delegate) {
 #if defined(OS_CHROMEOS)
-  return chromeos::BubbleWindow::Create(parent, gfx::Rect(), delegate);
+  return chromeos::BubbleWindow::Create(parent,
+                                        gfx::Rect(),
+                                        chromeos::BubbleWindow::STYLE_GENERIC,
+                                        delegate);
 #else
   return views::Window::CreateChromeWindow(parent, gfx::Rect(), delegate);
 #endif
