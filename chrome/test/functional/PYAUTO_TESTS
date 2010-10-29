@@ -45,8 +45,6 @@
     'plugins',
     # 'popups',  crbug.com/59208
     'prefs',
-    # crbug.com/61126
-    '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
     'search_engines',
     'special_tabs',
     'test_basic.SimpleTest.testCanOpenGoogle',
@@ -54,8 +52,6 @@
     'translate',
     # This test fails due to crbug.com/35485
     '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
-    # crbug.com/61126
-    '-translate.TranslateTest.testSessionRestore',
     # This test fails due to crbug.com/50706
     '-translate.TranslateTest.testToggleTranslateOption',
   ],
