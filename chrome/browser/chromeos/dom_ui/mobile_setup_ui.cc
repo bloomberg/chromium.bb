@@ -335,7 +335,7 @@ MobileSetupHandler::~MobileSetupHandler() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveObserver(this);
   lib->RemoveProperyObserver(this);
-  net::SSLConfigService::AllowRevChecking();
+  // net::SSLConfigService::AllowRevChecking();
   ReEnableOtherConnections();
 }
 
@@ -608,11 +608,11 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
       // Fix for fix SSL for the walled gardens where cert chain verification
       // might not work.
-      net::SSLConfigService::DisallowRevChecking();
+      // net::SSLConfigService::DisallowRevChecking();
       break;
     case PLAN_ACTIVATION_DONE:
     case PLAN_ACTIVATION_ERROR: {
-      net::SSLConfigService::AllowRevChecking();
+      // net::SSLConfigService::AllowRevChecking();
       // Remove observers, we are done with this page.
       chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
           GetNetworkLibrary();
