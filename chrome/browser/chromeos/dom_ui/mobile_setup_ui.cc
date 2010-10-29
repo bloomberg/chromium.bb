@@ -624,7 +624,6 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
     }
     default:
       break;
-    }
   }
   DictionaryValue device_dict;
   if (network)
