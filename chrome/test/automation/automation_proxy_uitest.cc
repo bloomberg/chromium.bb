@@ -1384,8 +1384,7 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   EXPECT_FALSE(matches.empty());
 }
 
-// Flaky, see http://crbug.com/25039.
-TEST_F(AutomationProxyTest, FLAKY_AppModalDialogTest) {
+TEST_F(AutomationProxyTest, AppModalDialogTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<TabProxy> tab(browser->GetTab(0));
