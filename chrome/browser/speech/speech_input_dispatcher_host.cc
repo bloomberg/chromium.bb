@@ -141,14 +141,12 @@ void SpeechInputDispatcherHost::OnStartRecognition(
     int render_view_id,
     int request_id,
     const gfx::Rect& element_rect,
-    const std::string& language,
     const std::string& grammar) {
   int caller_id = callers_->CreateId(resource_message_filter_process_id_,
                                      render_view_id, request_id);
   manager()->StartRecognition(this, caller_id,
                               resource_message_filter_process_id_,
-                              render_view_id, element_rect,
-                              language, grammar);
+                              render_view_id, element_rect, grammar);
 }
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,

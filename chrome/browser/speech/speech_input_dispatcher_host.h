@@ -46,7 +46,6 @@ class SpeechInputDispatcherHost
 
   void OnStartRecognition(int render_view_id, int request_id,
                           const gfx::Rect& element_rect,
-                          const std::string& language,
                           const std::string& grammar);
   void OnCancelRecognition(int render_view_id, int request_id);
   void OnStopRecording(int render_view_id, int request_id);

@@ -39,13 +39,19 @@ bool SpeechInputDispatcher::startRecognition(
     const WebKit::WebRect& element_rect,
     const WebKit::WebString& language,
     const WebKit::WebString& grammar) {
+  return startRecognition(request_id, element_rect, grammar);
+}
+
+bool SpeechInputDispatcher::startRecognition(
+    int request_id,
+    const WebKit::WebRect& element_rect,
+    const WebKit::WebString& grammar) {
   VLOG(1) << "SpeechInputDispatcher::startRecognition enter";
   gfx::Size scroll = render_view_->webview()->mainFrame()->scrollOffset();
   gfx::Rect rect = element_rect;
   rect.Offset(-scroll.width(), -scroll.height());
   render_view_->Send(new ViewHostMsg_SpeechInput_StartRecognition(
-      render_view_->routing_id(), request_id, rect,
-      UTF16ToUTF8(language), UTF16ToUTF8(grammar)));
+      render_view_->routing_id(), request_id, rect, UTF16ToUTF8(grammar)));
   VLOG(1) << "SpeechInputDispatcher::startRecognition exit";
   return true;
 }

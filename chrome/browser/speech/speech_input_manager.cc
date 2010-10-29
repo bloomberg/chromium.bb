@@ -29,7 +29,6 @@ class SpeechInputManagerImpl : public SpeechInputManager,
                                 int render_process_id,
                                 int render_view_id,
                                 const gfx::Rect& element_rect,
-                                const std::string& language,
                                 const std::string& grammar);
   virtual void CancelRecognition(int caller_id);
   virtual void StopRecording(int caller_id);
@@ -107,7 +106,6 @@ void SpeechInputManagerImpl::StartRecognition(
     int render_process_id,
     int render_view_id,
     const gfx::Rect& element_rect,
-    const std::string& language,
     const std::string& grammar) {
   DCHECK(!HasPendingRequest(caller_id));
 
@@ -116,8 +114,7 @@ void SpeechInputManagerImpl::StartRecognition(
 
   SpeechInputRequest* request = &requests_[caller_id];
   request->delegate = delegate;
-  request->recognizer = new SpeechRecognizer(this, caller_id, language,
-                                             grammar);
+  request->recognizer = new SpeechRecognizer(this, caller_id, grammar);
   request->is_active = false;
 
   StartRecognitionForRequest(caller_id);

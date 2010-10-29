@@ -4,7 +4,6 @@
 
 #include "chrome/browser/speech/speech_recognition_request.h"
 
-#include "app/l10n_util.h"
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -118,20 +117,14 @@ SpeechRecognitionRequest::SpeechRecognitionRequest(
 
 SpeechRecognitionRequest::~SpeechRecognitionRequest() {}
 
-bool SpeechRecognitionRequest::Send(const std::string& language,
-                                    const std::string& grammar,
+bool SpeechRecognitionRequest::Send(const std::string& grammar,
                                     const std::string& content_type,
                                     const std::string& audio_data) {
   DCHECK(!url_fetcher_.get());
 
   std::vector<std::string> parts;
-  if (!language.empty()) {
-    parts.push_back("lang=" + EscapeQueryParamValue(language, true));
-  } else {
-    std::string app_locale = l10n_util::GetApplicationLocale("");
-    parts.push_back("lang=" + EscapeQueryParamValue(app_locale, true));
-  }
-
+  // TODO(leandro): Replace with the language tag given by WebKit.
+  parts.push_back("lang=en-us");
   if (!grammar.empty())
     parts.push_back("grammar=" + EscapeQueryParamValue(grammar, true));
   GURL url(std::string(kDefaultSpeechRecognitionUrl) + JoinString(parts, '&'));
