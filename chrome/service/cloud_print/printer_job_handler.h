@@ -13,12 +13,13 @@
 #include "base/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/thread.h"
+#include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "printing/backend/print_backend.h"
 
+class URLFetcher;
 // A class that handles cloud print jobs for a particular printer. This class
 // imlements a state machine that transitions from Start to various states. The
 // various states are shown in the below diagram.
@@ -58,10 +59,8 @@
 //                             Stop
 //               (If there are pending tasks go back to Start)
 
-typedef URLFetcher::Delegate URLFetcherDelegate;
-
 class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
-                          public URLFetcherDelegate,
+                          public CloudPrintURLFetcherDelegate,
                           public JobStatusUpdaterDelegate,
                           public cloud_print::PrinterWatcherDelegate,
                           public cloud_print::JobSpoolerDelegate {
@@ -120,12 +119,19 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // Begin Delegate implementations
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
+  // CloudPrintURLFetcher::Delegate implementation.
+  virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
+      const URLFetcher* source,
+      const GURL& url,
+      const std::string& data);
+  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+  virtual void OnRequestGiveUp();
+  virtual void OnRequestAuthError();
+
   // JobStatusUpdater::Delegate implementation
   virtual bool OnJobCompleted(JobStatusUpdater* updater);
   virtual void OnAuthError();
@@ -143,55 +149,57 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // End Delegate implementations
 
  private:
-  // Prototype for a response handler. The return value indicates whether the
-  // request should be retried, false means "retry", true means "do not retry"
-  typedef bool (PrinterJobHandler::*ResponseHandler)(
-      const URLFetcher* source, const GURL& url,
-      const URLRequestStatus& status, int response_code,
-      const ResponseCookies& cookies, const std::string& data);
-  // Prototype for a failure handler. This handler will be executed if all
-  // attempts to fetch url failed.
-  typedef void (PrinterJobHandler::*FailureHandler)();
+  // Prototype for a JSON data handler.
+  typedef CloudPrintURLFetcher::ResponseAction
+      (PrinterJobHandler::*JSONDataHandler)(const URLFetcher* source,
+                                            const GURL& url,
+                                            DictionaryValue* json_data,
+                                            bool succeeded);
+  // Prototype for a data handler.
+  typedef CloudPrintURLFetcher::ResponseAction
+      (PrinterJobHandler::*DataHandler)(const URLFetcher* source,
+                                        const GURL& url,
+                                        const std::string& data);
   // Begin request handlers for each state in the state machine
-  bool HandlePrinterUpdateResponse(const URLFetcher* source, const GURL& url,
-                                   const URLRequestStatus& status,
-                                   int response_code,
-                                   const ResponseCookies& cookies,
-                                   const std::string& data);
-  bool HandlePrinterDeleteResponse(const URLFetcher* source, const GURL& url,
-                                   const URLRequestStatus& status,
-                                   int response_code,
-                                   const ResponseCookies& cookies,
-                                   const std::string& data);
-  bool HandleJobMetadataResponse(const URLFetcher* source, const GURL& url,
-                                 const URLRequestStatus& status,
-                                 int response_code,
-                                 const ResponseCookies& cookies,
-                                 const std::string& data);
-  bool HandlePrintTicketResponse(const URLFetcher* source,
-                                 const GURL& url,
-                                 const URLRequestStatus& status,
-                                 int response_code,
-                                 const ResponseCookies& cookies,
-                                 const std::string& data);
-  bool HandlePrintDataResponse(const URLFetcher* source,
-                               const GURL& url,
-                               const URLRequestStatus& status,
-                               int response_code,
-                               const ResponseCookies& cookies,
-                               const std::string& data);
-  bool HandleSuccessStatusUpdateResponse(const URLFetcher* source,
-                                         const GURL& url,
-                                         const URLRequestStatus& status,
-                                         int response_code,
-                                         const ResponseCookies& cookies,
-                                         const std::string& data);
-  bool HandleFailureStatusUpdateResponse(const URLFetcher* source,
-                                         const GURL& url,
-                                         const URLRequestStatus& status,
-                                         int response_code,
-                                         const ResponseCookies& cookies,
-                                         const std::string& data);
+  CloudPrintURLFetcher::ResponseAction HandlePrinterUpdateResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandlePrinterDeleteResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandleJobMetadataResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandlePrintTicketResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      const std::string& data);
+
+  CloudPrintURLFetcher::ResponseAction HandlePrintDataResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      const std::string& data);
+
+  CloudPrintURLFetcher::ResponseAction HandleSuccessStatusUpdateResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandleFailureStatusUpdateResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
   // End request handlers for each state in the state machine
 
   // Start the state machine. Based on the flags set this could mean updating
@@ -208,16 +216,10 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   void Reset();
   void UpdateJobStatus(cloud_print::PrintJobStatus status, PrintJobError error);
 
-  // This function should be used to go from one state to another. It will
-  // retry to fetch url (up to a limit) if response handler will return false.
-  // Calling this function will zero failure counter.
-  void MakeServerRequest(const GURL& url,
-                         ResponseHandler response_handler,
-                         FailureHandler failure_handler);
-  // This function should be used ONLY from MakeServerRequest and
-  // HandleServerError. It is using stored handlers and failure counter
-  // to decide which handler to call.
-  void FetchURL(const GURL& url);
+  // Sets the next response handler to the specifed JSON data handler.
+  void SetNextJSONHandler(JSONDataHandler handler);
+  // Sets the next response handler to the specifed data handler.
+  void SetNextDataHandler(DataHandler handler);
 
   void JobFailed(PrintJobError error);
   void JobSpooled(cloud_print::PlatformJobId local_job_id);
@@ -230,7 +232,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   void DoPrint(const JobDetails& job_details,
                const std::string& printer_name);
 
-  scoped_ptr<URLFetcher> request_;
+  scoped_refptr<CloudPrintURLFetcher> request_;
   scoped_refptr<cloud_print::PrintSystem> print_system_;
   printing::PrinterBasicInfo printer_info_;
   PrinterInfoFromCloud printer_info_cloud_;
@@ -242,8 +244,11 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   // Once the job has been spooled to the local spooler, this specifies the
   // job id of the job on the local spooler.
   cloud_print::PlatformJobId local_job_id_;
-  ResponseHandler next_response_handler_;
-  FailureHandler next_failure_handler_;
+
+  // The next response handler can either be a JSONDataHandler or a
+  // DataHandler (depending on the current request being made).
+  JSONDataHandler next_json_data_handler_;
+  DataHandler next_data_handler_;
   // The number of consecutive times that connecting to the server failed.
   int server_error_count_;
   // The thread on which the actual print operation happens

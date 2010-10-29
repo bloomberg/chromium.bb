@@ -39,3 +39,7 @@ const char kCloudPrintPushNotificationsSource[] = "cloudprint.google.com";
 // certain requests.
 const char kChromeCloudPrintProxyHeader[] = "X-Google-CloudPrint-Proxy: Chrome";
 
+// The request retry policy names. These strings are not valid hostnames, they
+// are just string keys.
+const char kCloudPrintAPIRetryPolicy[] = "cloudprint.google.com/api";
+const char kJobDataRetryPolicy[] = "cloudprint.google.com/jobdata";

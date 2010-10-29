@@ -11,8 +11,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
+#include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/print_system.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
@@ -21,7 +21,7 @@
 // object releases the reference to itself which should cause it to
 // self-destruct.
 class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
-                         public URLFetcher::Delegate {
+                         public CloudPrintURLFetcherDelegate {
  public:
   class Delegate {
    public:
@@ -45,19 +45,20 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   void UpdateStatus();
   void Stop();
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
+  // CloudPrintURLFetcher::Delegate implementation.
+  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+  virtual void OnRequestAuthError();
 
  private:
   std::string printer_name_;
   std::string job_id_;
   cloud_print::PlatformJobId local_job_id_;
   cloud_print::PrintJobDetails last_job_details_;
-  scoped_ptr<URLFetcher> request_;
+  scoped_refptr<CloudPrintURLFetcher> request_;
   std::string auth_token_;
   GURL cloud_print_server_url_;
   scoped_refptr<cloud_print::PrintSystem> print_system_;

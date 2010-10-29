@@ -14,9 +14,10 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/net/http_return.h"
+#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
+#include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/service_process.h"
@@ -29,7 +30,7 @@
 // The real guts of CloudPrintProxyBackend, to keep the public client API clean.
 class CloudPrintProxyBackend::Core
     : public base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>,
-      public URLFetcherDelegate,
+      public CloudPrintURLFetcherDelegate,
       public cloud_print::PrintServerWatcherDelegate,
       public PrinterJobHandlerDelegate,
       public notifier::TalkMediator::Delegate {
@@ -62,12 +63,15 @@ class CloudPrintProxyBackend::Core
   void DoRegisterSelectedPrinters(
       const printing::PrinterList& printer_list);
 
-  // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
+  // CloudPrintURLFetcher::Delegate implementation.
+  virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+  virtual void OnRequestAuthError();
+
   // cloud_print::PrintServerWatcherDelegate implementation
   virtual void OnPrinterAdded();
   // PrinterJobHandler::Delegate implementation
@@ -82,24 +86,26 @@ class CloudPrintProxyBackend::Core
       const IncomingNotificationData& notification_data);
   virtual void OnOutgoingNotification();
 
- protected:
+ private:
   // Prototype for a response handler.
-  typedef void (CloudPrintProxyBackend::Core::*ResponseHandler)(
-      const URLFetcher* source, const GURL& url,
-      const URLRequestStatus& status, int response_code,
-      const ResponseCookies& cookies, const std::string& data);
+  typedef CloudPrintURLFetcher::ResponseAction
+      (CloudPrintProxyBackend::Core::*ResponseHandler)(
+          const URLFetcher* source,
+          const GURL& url,
+          DictionaryValue* json_data,
+          bool succeeded);
   // Begin response handlers
-  void HandlePrinterListResponse(const URLFetcher* source, const GURL& url,
-                                 const URLRequestStatus& status,
-                                 int response_code,
-                                 const ResponseCookies& cookies,
-                                 const std::string& data);
-  void HandleRegisterPrinterResponse(const URLFetcher* source,
-                                     const GURL& url,
-                                     const URLRequestStatus& status,
-                                     int response_code,
-                                     const ResponseCookies& cookies,
-                                     const std::string& data);
+  CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
+
+  CloudPrintURLFetcher::ResponseAction HandleRegisterPrinterResponse(
+      const URLFetcher* source,
+      const GURL& url,
+      DictionaryValue* json_data,
+      bool succeeded);
   // End response handlers
 
   // NotifyXXX is how the Core communicates with the frontend across
@@ -112,6 +118,8 @@ class CloudPrintProxyBackend::Core
     const std::string& email);
   void NotifyAuthenticationFailed();
 
+  URLFetcherProtectEntry* CreateDefaultRetryPolicy();
+
   // Starts a new printer registration process.
   void StartRegistration();
   // Ends the printer registration process.
@@ -122,7 +130,6 @@ class CloudPrintProxyBackend::Core
   // Retrieves the list of registered printers for this user/proxy combination
   // from the cloud print server.
   void GetRegisteredPrinters();
-  void HandleServerError(Task* task_to_retry);
   // Removes the given printer from the list. Returns false if the printer
   // did not exist in the list.
   bool RemovePrinterFromList(const std::string& printer_name);
@@ -152,16 +159,14 @@ class CloudPrintProxyBackend::Core
   // user a chance to further trim the list. When the frontend gives us the
   // final list we make a copy into this so that we can start registering.
   printing::PrinterList printer_list_;
-  // The URLFetcher instance for the current request
-  scoped_ptr<URLFetcher> request_;
+  // The CloudPrintURLFetcher instance for the current request.
+  scoped_refptr<CloudPrintURLFetcher> request_;
   // The index of the nex printer to be uploaded.
   size_t next_upload_index_;
   // The unique id for this proxy
   std::string proxy_id_;
   // The GAIA auth token
   std::string auth_token_;
-  // The number of consecutive times that connecting to the server failed.
-  int server_error_count_;
   // Cached info about the last printer that we tried to upload. We cache this
   // so we won't have to requery the printer if the upload fails and we need
   // to retry.
@@ -248,10 +253,13 @@ void CloudPrintProxyBackend::RegisterPrinters(
 CloudPrintProxyBackend::Core::Core(CloudPrintProxyBackend* backend,
                                    const GURL& cloud_print_server_url,
                                    const DictionaryValue* print_system_settings)
-    : backend_(backend), cloud_print_server_url_(cloud_print_server_url),
-      next_upload_index_(0), server_error_count_(0),
-      next_response_handler_(NULL), new_printers_available_(false),
-      notifications_enabled_(false), job_poll_scheduled_(false) {
+    : backend_(backend),
+      cloud_print_server_url_(cloud_print_server_url),
+      next_upload_index_(0),
+      next_response_handler_(NULL),
+      new_printers_available_(false),
+      notifications_enabled_(false),
+      job_poll_scheduled_(false) {
   if (print_system_settings) {
     // It is possible to have no print settings specified.
     print_system_settings_.reset(
@@ -342,14 +350,41 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   print_server_watcher_->StartWatching(this);
 
   proxy_id_ = proxy_id;
+
+  // Register the request retry policies for cloud print APIs and job data
+  // requests.
+  URLFetcherProtectManager::GetInstance()->Register(
+      kCloudPrintAPIRetryPolicy, CreateDefaultRetryPolicy());
+  URLFetcherProtectManager::GetInstance()->Register(
+      kJobDataRetryPolicy, CreateDefaultRetryPolicy())->SetMaxRetries(
+          kJobDataMaxRetryCount);
+
   StartRegistration();
+}
+
+URLFetcherProtectEntry*
+CloudPrintProxyBackend::Core::CreateDefaultRetryPolicy() {
+  // Times are in milliseconds.
+  const int kSlidingWindowPeriod = 2000;
+  const int kMaxSendThreshold = 20;
+  const int kMaxRetries = -1;
+  const int kInitialTimeout = 100;
+  const double kMultiplier = 2.0;
+  const int kConstantFactor = 100;
+  const int kMaximumTimeout = 5*60*1000;
+  return new URLFetcherProtectEntry(kSlidingWindowPeriod,
+                                    kMaxSendThreshold,
+                                    kMaxRetries,
+                                    kInitialTimeout,
+                                    kMultiplier,
+                                    kConstantFactor,
+                                    kMaximumTimeout);
 }
 
 void CloudPrintProxyBackend::Core::StartRegistration() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   printer_list_.clear();
   print_system_->GetPrintBackend()->EnumeratePrinters(&printer_list_);
-  server_error_count_ = 0;
   // Now we need to ask the server about printers that were registered on the
   // server so that we can trim this list.
   GetRegisteredPrinters();
@@ -357,7 +392,7 @@ void CloudPrintProxyBackend::Core::StartRegistration() {
 
 void CloudPrintProxyBackend::Core::EndRegistration() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  request_.reset();
+  request_ = NULL;
   if (new_printers_available_) {
     new_printers_available_ = false;
     StartRegistration();
@@ -380,7 +415,7 @@ void CloudPrintProxyBackend::Core::DoShutdown() {
   // Important to delete the TalkMediator on this thread.
   talk_mediator_.reset();
   notifications_enabled_ = false;
-  request_.reset();
+  request_ = NULL;
   MessageLoop::current()->QuitNow();
 }
 
@@ -389,7 +424,6 @@ void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   if (!print_system_.get())
     return;  // No print system available.
-  server_error_count_ = 0;
   printer_list_.assign(printer_list.begin(), printer_list.end());
   next_upload_index_ = 0;
   RegisterNextPrinter();
@@ -397,15 +431,14 @@ void CloudPrintProxyBackend::Core::DoRegisterSelectedPrinters(
 
 void CloudPrintProxyBackend::Core::GetRegisteredPrinters() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  request_.reset(
-      new URLFetcher(
-          CloudPrintHelpers::GetUrlForPrinterList(cloud_print_server_url_,
-                                                  proxy_id_),
-          URLFetcher::GET, this));
-  CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
+  GURL printer_list_url =
+      CloudPrintHelpers::GetUrlForPrinterList(cloud_print_server_url_,
+                                              proxy_id_);
   next_response_handler_ =
       &CloudPrintProxyBackend::Core::HandlePrinterListResponse;
-  request_->Start();
+  request_ = new CloudPrintURLFetcher;
+  request_->StartGetRequest(printer_list_url, this, auth_token_,
+                            kCloudPrintAPIRetryPolicy);
 }
 
 void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
@@ -465,16 +498,16 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
       post_data.append("--" + mime_boundary + "--\r\n");
       std::string mime_type("multipart/form-data; boundary=");
       mime_type += mime_boundary;
-      request_.reset(
-          new URLFetcher(
-              CloudPrintHelpers::GetUrlForPrinterRegistration(
-                  cloud_print_server_url_),
-              URLFetcher::POST, this));
-      CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
-      request_->set_upload_data(mime_type, post_data);
+      GURL register_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
+          cloud_print_server_url_);
+
       next_response_handler_ =
           &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
-      request_->Start();
+      request_ = new CloudPrintURLFetcher;
+      request_->StartPostRequest(register_url, this, auth_token_,
+                                 kCloudPrintAPIRetryPolicy, mime_type,
+                                 post_data);
+
     } else {
       LOG(ERROR) << "CP_PROXY: Failed to get printer info for: " <<
           info.printer_name;
@@ -521,23 +554,19 @@ void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
   }
 }
 
-// URLFetcher::Delegate implementation.
-void CloudPrintProxyBackend::Core::OnURLFetchComplete(
-    const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
-    int response_code, const ResponseCookies& cookies,
-    const std::string& data) {
-  DCHECK(source == request_.get());
-  // If we get an auth error, we need to give up right away and notify the
-  // frontend loop.
-  if (RC_FORBIDDEN == response_code) {
-    backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &Core::NotifyAuthenticationFailed));
-  } else {
-    // We need a next response handler
-    DCHECK(next_response_handler_);
-    (this->*next_response_handler_)(source, url, status, response_code,
-                                    cookies, data);
-  }
+// CloudPrintURLFetcher::Delegate implementation.
+CloudPrintURLFetcher::ResponseAction
+CloudPrintProxyBackend::Core::HandleJSONData(
+    const URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
+  DCHECK(next_response_handler_);
+  return (this->*next_response_handler_)(source, url, json_data, succeeded);
+}
+
+void CloudPrintProxyBackend::Core::OnRequestAuthError() {
+  OnAuthError();
 }
 
 void CloudPrintProxyBackend::Core::NotifyPrinterListAvailable(
@@ -560,53 +589,44 @@ void CloudPrintProxyBackend::Core::NotifyAuthenticationFailed() {
   backend_->frontend_->OnAuthenticationFailed();
 }
 
-void CloudPrintProxyBackend::Core::HandlePrinterListResponse(
-    const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
-    int response_code, const ResponseCookies& cookies,
-    const std::string& data) {
+CloudPrintURLFetcher::ResponseAction
+CloudPrintProxyBackend::Core::HandlePrinterListResponse(
+    const URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  bool succeeded = false;
-  if (status.is_success() && response_code == 200) {
-    server_error_count_ = 0;
-    // Parse the response JSON for the list of printers already registered.
-    DictionaryValue* response_dict_temp = NULL;
-    CloudPrintHelpers::ParseResponseJSON(data, &succeeded,
-                                         &response_dict_temp);
-    scoped_ptr<DictionaryValue> response_dict;
-    response_dict.reset(response_dict_temp);
-    if (succeeded) {
-      DCHECK(response_dict.get());
-      ListValue* printer_list = NULL;
-      response_dict->GetList(kPrinterListValue, &printer_list);
-      // There may be no "printers" value in the JSON
-      if (printer_list) {
-        for (size_t index = 0; index < printer_list->GetSize(); index++) {
-          DictionaryValue* printer_data = NULL;
-          if (printer_list->GetDictionary(index, &printer_data)) {
-            std::string printer_name;
-            printer_data->GetString(kNameValue, &printer_name);
-            RemovePrinterFromList(printer_name);
-            InitJobHandlerForPrinter(printer_data);
-          } else {
-            NOTREACHED();
-          }
-        }
-      }
-      MessageLoop::current()->DeleteSoon(FROM_HERE, request_.release());
-      if (!printer_list_.empty()) {
-        // Let the frontend know that we have a list of printers available.
-        backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-            &Core::NotifyPrinterListAvailable, printer_list_));
+  if (!succeeded) {
+    NOTREACHED();
+    return CloudPrintURLFetcher::RETRY_REQUEST;
+  }
+  ListValue* printer_list = NULL;
+  json_data->GetList(kPrinterListValue, &printer_list);
+  // There may be no "printers" value in the JSON
+  if (printer_list) {
+    for (size_t index = 0; index < printer_list->GetSize(); index++) {
+      DictionaryValue* printer_data = NULL;
+      if (printer_list->GetDictionary(index, &printer_data)) {
+        std::string printer_name;
+        printer_data->GetString(kNameValue, &printer_name);
+        RemovePrinterFromList(printer_name);
+        InitJobHandlerForPrinter(printer_data);
       } else {
-        // No more work to be done here.
-        MessageLoop::current()->PostTask(
-            FROM_HERE, NewRunnableMethod(this, &Core::EndRegistration));
+        NOTREACHED();
       }
     }
   }
-
-  if (!succeeded)
-    HandleServerError(NewRunnableMethod(this, &Core::GetRegisteredPrinters));
+  request_ = NULL;
+  if (!printer_list_.empty()) {
+    // Let the frontend know that we have a list of printers available.
+    backend_->frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &Core::NotifyPrinterListAvailable, printer_list_));
+  } else {
+    // No more work to be done here.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &Core::EndRegistration));
+  }
+  return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
 void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
@@ -655,46 +675,30 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
   }
 }
 
-void CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
-    const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
-    int response_code, const ResponseCookies& cookies,
-    const std::string& data) {
+CloudPrintURLFetcher::ResponseAction
+CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse(
+    const URLFetcher* source,
+    const GURL& url,
+    DictionaryValue* json_data,
+    bool succeeded) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  VLOG(1) << "CP_PROXY: Handle register printer response, code: "
-          << response_code;
-  Task* next_task =
-      NewRunnableMethod(this,
-                        &CloudPrintProxyBackend::Core::RegisterNextPrinter);
-  if (status.is_success() && (response_code == 200)) {
-    bool succeeded = false;
-    DictionaryValue* response_dict = NULL;
-    CloudPrintHelpers::ParseResponseJSON(data, &succeeded, &response_dict);
-    if (succeeded) {
-      DCHECK(response_dict);
-      ListValue* printer_list = NULL;
-      response_dict->GetList(kPrinterListValue, &printer_list);
-      // There should be a "printers" value in the JSON
-      DCHECK(printer_list);
-      if (printer_list) {
-        DictionaryValue* printer_data = NULL;
-        if (printer_list->GetDictionary(0, &printer_data))
-          InitJobHandlerForPrinter(printer_data);
-      }
+  if (succeeded) {
+    ListValue* printer_list = NULL;
+    json_data->GetList(kPrinterListValue, &printer_list);
+    // There should be a "printers" value in the JSON
+    DCHECK(printer_list);
+    if (printer_list) {
+      DictionaryValue* printer_data = NULL;
+      if (printer_list->GetDictionary(0, &printer_data))
+        InitJobHandlerForPrinter(printer_data);
     }
-    server_error_count_ = 0;
-    next_upload_index_++;
-    MessageLoop::current()->PostTask(FROM_HERE, next_task);
-  } else {
-    HandleServerError(next_task);
   }
-}
-
-void CloudPrintProxyBackend::Core::HandleServerError(Task* task_to_retry) {
-  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  VLOG(1) << "CP_PROXY: Server error.";
-  CloudPrintHelpers::HandleServerError(
-      &server_error_count_, -1, kMaxRetryInterval, kBaseRetryInterval,
-      task_to_retry, NULL);
+  next_upload_index_++;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &CloudPrintProxyBackend::Core::RegisterNextPrinter));
+  return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
 bool CloudPrintProxyBackend::Core::RemovePrinterFromList(

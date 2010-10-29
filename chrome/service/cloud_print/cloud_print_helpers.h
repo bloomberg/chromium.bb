@@ -40,28 +40,7 @@ class CloudPrintHelpers {
   // Returns the response as a dictionary value.
   static bool ParseResponseJSON(const std::string& response_data,
       bool* succeeded, DictionaryValue** response_dict);
-  // Sets up common parameters for a cloud print request
-  // (such as the GAIA auth token in the request headers, the request context
-  // etc).
-  static void PrepCloudPrintRequest(URLFetcher* request,
-                                    const std::string& auth_token);
-  // Strictly speaking, this helper method is not specific to cloud printing.
-  // It handles the logic to retry tasks when the server returns an error.
-  // The parameters are as below:
-  // |error_count| Contains the current number of consecutive failed attempts.
-  // This method increments it (in/out)
-  // |max_retry_count| Number of retries before giving up. -1 implies no limit.
-  // |max_retry_interval| Maximum amount of time (in ms) we are willing to
-  // wait between retries. -1 implies no limit.
-  // |base_retry_interval| Starting value of the retry interval. This
-  // method progressively increases the interval on each retry.
-  // |task_to_retry| The task to be retried.
-  // |task_on_give_up| Task to be performed when we give up. This is only
-  // valid when max_retry_count is not -1. It can be NULL.
-  static void HandleServerError(int* error_count, int max_retry_count,
-                                int64 max_retry_interval,
-                                int64 base_retry_interval,
-                                Task* task_to_retry, Task* task_on_give_up);
+
   // Prepares one value as part of a multi-part upload request.
   static void AddMultipartValueForUpload(
       const std::string& value_name, const std::string& value,
