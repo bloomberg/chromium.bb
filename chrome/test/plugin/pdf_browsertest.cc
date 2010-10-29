@@ -42,7 +42,10 @@ class PDFBrowserTest : public InProcessBrowserTest,
   virtual void SetUp() {
     FilePath pdf_path;
     PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+#if !defined(OS_MACOSX)
+    // http://crbug.com/61258: renderer always crashes on Mac.
     have_plugin_ = file_util::PathExists(pdf_path);
+#endif
     InProcessBrowserTest::SetUp();
   }
 
