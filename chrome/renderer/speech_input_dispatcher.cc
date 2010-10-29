@@ -36,8 +36,8 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
 
 bool SpeechInputDispatcher::startRecognition(
     int request_id,
-    const WebKit::WebString& language,
     const WebKit::WebRect& element_rect,
+    const WebKit::WebString& language,
     const WebKit::WebString& grammar) {
   return startRecognition(request_id, element_rect, grammar);
 }

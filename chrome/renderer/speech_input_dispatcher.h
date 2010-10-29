@@ -33,8 +33,9 @@ class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
   // WebKit::WebSpeechInputController.
   // TODO(leandro): this is a temporary fix for a two-sided patch.
   // https://bugs.webkit.org/show_bug.cgi?id=47089
-  bool startRecognition(int request_id, const WebKit::WebString& language,
+  bool startRecognition(int request_id,
                         const WebKit::WebRect& element_rect,
+                        const WebKit::WebString& language,
                         const WebKit::WebString& grammar);
 
   bool startRecognition(int request_id, const WebKit::WebRect& element_rect,
