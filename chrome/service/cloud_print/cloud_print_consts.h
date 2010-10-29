@@ -36,14 +36,11 @@ extern const char kCloudPrintGaiaServiceId[];
 extern const char kSyncGaiaServiceId[];
 extern const char kCloudPrintPushNotificationsSource[];
 extern const char kChromeCloudPrintProxyHeader[];
-extern const char kCloudPrintAPIRetryPolicy[];
-extern const char kJobDataRetryPolicy[];
-
-// Max retry count for job data fetch requests.
-const int kJobDataMaxRetryCount = 5;
-// Look at CloudPrintProxyBackend::Core::CreateDefaultRetryPolicy for default
-// values of the request retry policy.
-
+// Max interval between retrying connection to the server
+const int64 kMaxRetryInterval = 5*60*1000;  // 5 minutes in millseconds
+const int64 kBaseRetryInterval = 5*1000;  // 5 seconds
+const int kMaxRetryCount = 2;
+const int64 kJobStatusUpdateInterval = 10*1000;  // 10 seconds
 // When we don't have XMPP notifications available, we resort to polling for
 // print jobs. We choose a random interval in seconds between these 2 values.
 const int kMinJobPollIntervalSecs = 5*60;  // 5 minutes in seconds

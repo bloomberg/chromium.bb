@@ -58,36 +58,45 @@ void JobStatusUpdater::UpdateStatus() {
       }
     }
     if (need_update) {
-      request_ = new CloudPrintURLFetcher;
-      request_->StartGetRequest(
-          CloudPrintHelpers::GetUrlForJobStatusUpdate(
-              cloud_print_server_url_, job_id_, last_job_details_),
-          this, auth_token_, kCloudPrintAPIRetryPolicy);
+      GURL update_url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
+          cloud_print_server_url_, job_id_, last_job_details_);
+      request_.reset(new URLFetcher(update_url, URLFetcher::GET, this));
+      CloudPrintHelpers::PrepCloudPrintRequest(request_.get(), auth_token_);
+      request_->Start();
     }
   }
 }
 
 void JobStatusUpdater::Stop() {
-  request_ = NULL;
+  request_.reset();
   DCHECK(delegate_);
   stopped_ = true;
   delegate_->OnJobCompleted(this);
 }
 
-// CloudPrintURLFetcher::Delegate implementation.
-CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
-      const URLFetcher* source,
-      const GURL& url,
-      DictionaryValue* json_data,
-      bool succeeded) {
-  if (last_job_details_.status == cloud_print::PRINT_JOB_STATUS_COMPLETED) {
+// URLFetcher::Delegate implementation.
+void JobStatusUpdater::OnURLFetchComplete(const URLFetcher* source,
+                                          const GURL& url,
+                                          const URLRequestStatus& status,
+                                          int response_code,
+                                          const ResponseCookies& cookies,
+                                          const std::string& data) {
+  // If there was an auth error, we are done.
+  if (RC_FORBIDDEN == response_code) {
+    if (delegate_) {
+      delegate_->OnAuthError();
+    }
+    return;
+  }
+  int64 next_update_interval = kJobStatusUpdateInterval;
+  if (!status.is_success() || (response_code != 200)) {
+    next_update_interval *= 10;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, NewRunnableMethod(this, &JobStatusUpdater::UpdateStatus),
+        next_update_interval);
+  } else if (last_job_details_.status ==
+             cloud_print::PRINT_JOB_STATUS_COMPLETED) {
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &JobStatusUpdater::Stop));
   }
-  return CloudPrintURLFetcher::STOP_PROCESSING;
-}
-
-void JobStatusUpdater::OnRequestAuthError() {
-  if (delegate_)
-    delegate_->OnAuthError();
 }

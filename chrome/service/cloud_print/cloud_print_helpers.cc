@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
 
 std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
@@ -137,12 +138,14 @@ bool CloudPrintHelpers::ParseResponseJSON(
     const std::string& response_data, bool* succeeded,
     DictionaryValue** response_dict) {
   scoped_ptr<Value> message_value(base::JSONReader::Read(response_data, false));
-  if (!message_value.get())
+  if (!message_value.get()) {
+    NOTREACHED();
     return false;
-
-  if (!message_value->IsType(Value::TYPE_DICTIONARY))
+  }
+  if (!message_value->IsType(Value::TYPE_DICTIONARY)) {
+    NOTREACHED();
     return false;
-
+  }
   scoped_ptr<DictionaryValue> response_dict_local(
       static_cast<DictionaryValue*>(message_value.release()));
   if (succeeded)
@@ -150,6 +153,37 @@ bool CloudPrintHelpers::ParseResponseJSON(
   if (response_dict)
     *response_dict = response_dict_local.release();
   return true;
+}
+
+void CloudPrintHelpers::PrepCloudPrintRequest(URLFetcher* request,
+                                              const std::string& auth_token) {
+  DCHECK(g_service_process);
+  request->set_request_context(new ServiceURLRequestContextGetter());
+  std::string headers = "Authorization: GoogleLogin auth=";
+  headers += auth_token;
+  headers += "\r\n";
+  headers += kChromeCloudPrintProxyHeader;
+  request->set_extra_request_headers(headers);
+}
+
+void CloudPrintHelpers::HandleServerError(int* error_count, int max_retry_count,
+                                          int64 max_retry_interval,
+                                          int64 base_retry_interval,
+                                          Task* task_to_retry,
+                                          Task* task_on_give_up) {
+  (*error_count)++;
+  if ((-1 != max_retry_count) && (*error_count > max_retry_count)) {
+    if (task_on_give_up) {
+      MessageLoop::current()->PostTask(FROM_HERE, task_on_give_up);
+    }
+  } else {
+    int64 retry_interval = base_retry_interval * (*error_count);
+    if ((-1 != max_retry_interval) && (retry_interval > max_retry_interval)) {
+      retry_interval = max_retry_interval;
+    }
+    MessageLoop::current()->PostDelayedTask(FROM_HERE, task_to_retry,
+        retry_interval);
+  }
 }
 
 void CloudPrintHelpers::AddMultipartValueForUpload(
