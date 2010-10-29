@@ -910,27 +910,6 @@ def CommandSelLdrTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
 # ----------------------------------------------------------
-def CommandPosixOverSrpcTestNacl(env, name, command,
-                                 log_verbosity=2,
-                                 loader='sel_ldr',
-                                 size='medium',
-                                 **extra):
-  launcher = GetSelLdr(env, 'posix_over_srpc_launcher')
-  if not launcher:
-    print 'WARNING: no posix_over_srpc_launcher found. Skipping test %s' % name
-    return []
-
-  sel_ldr = GetSelLdr(env, 'sel_ldr');
-  if not sel_ldr:
-    print 'WARNING: no sel_ldr found. Skipping test %s' % name
-    return []
-
-  command = [launcher] + [sel_ldr.path] + command
-  return CommandTest(env, name, command, size, **extra)
-
-pre_base_env.AddMethod(CommandPosixOverSrpcTestNacl)
-
-# ----------------------------------------------------------
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
@@ -1151,8 +1130,6 @@ base_env.Append(
     # TODO: This file has an early out in case we are building for ARM
     #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',
-    'tests/posix_over_srpc/linux_lib/build.scons',
-    'tests/posix_over_srpc/build.scons',
     'tests/python_version/build.scons',
     'tests/selenium_self_test/build.scons',
     'tests/tools/build.scons',
@@ -1631,7 +1608,6 @@ nacl_env.Append(
     'tests/memcheck_test/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/nacl_log/nacl.scons',
-    'tests/posix_over_srpc/nacl.scons',
     'tests/nanosleep/nacl.scons',
     'tests/native_worker/nacl.scons',
     'tests/noop/nacl.scons',
@@ -1884,7 +1860,6 @@ nacl_extra_sdk_env.Append(
       'src/third_party/crt/nacl.scons',
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
-      'src/untrusted/posix_over_srpc/nacl.scons',
       ####  ALPHABETICALLY SORTED ####
    ],
 )
