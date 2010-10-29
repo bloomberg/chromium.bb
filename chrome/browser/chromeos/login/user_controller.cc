@@ -292,29 +292,9 @@ void UserController::IsActiveChanged(bool active) {
     delegate_->OnUserSelected(this);
     user_view_->SetRemoveButtonVisible(
         !is_new_user_ && !is_guest_ && !is_owner_);
-    // Background is NULL for inactive new user pod to make it transparent.
-    if (is_new_user_ && !border_window_->GetRootView()->background()) {
-      views::Painter* painter = CreateWizardPainter(
-          &BorderDefinition::kUserBorder);
-      border_window_->GetRootView()->set_background(
-          views::Background::CreateBackgroundPainter(true, painter));
-      border_window_->GetRootView()->SchedulePaint();
-    }
   } else {
     user_view_->SetRemoveButtonVisible(false);
     delegate_->ClearErrors();
-    if (is_new_user_) {
-      gfx::Rect controls_bounds;
-      controls_window_->GetBounds(&controls_bounds, true);
-      gfx::Rect screen_bounds =
-          views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
-      // The windows was moved out of screen so the pod was really deactivated,
-      // otherwise it just some dialog was shown and took focus.
-      if (!screen_bounds.Intersects(controls_bounds)) {
-        border_window_->GetRootView()->set_background(NULL);
-        border_window_->GetRootView()->SchedulePaint();
-      }
-    }
   }
 }
 
@@ -348,7 +328,7 @@ WidgetGtk* UserController::CreateControlsWindow(
   views::View* control_view;
   if (is_new_user_) {
     new_user_view_ =
-        new NewUserView(this, false, need_browse_without_signin);
+        new NewUserView(this, true, need_browse_without_signin);
     new_user_view_->Init();
     control_view = new_user_view_;
   } else if (is_guest_) {

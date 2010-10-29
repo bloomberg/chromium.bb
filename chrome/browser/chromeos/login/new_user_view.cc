@@ -106,9 +106,9 @@ NewUserView::~NewUserView() {
 void NewUserView::Init() {
   if (need_border_) {
     // Use rounded rect background.
-    set_border(CreateWizardBorder(&BorderDefinition::kScreenBorder));
+    set_border(CreateWizardBorder(&BorderDefinition::kUserBorder));
     views::Painter* painter = CreateWizardPainter(
-        &BorderDefinition::kScreenBorder);
+        &BorderDefinition::kUserBorder);
     set_background(views::Background::CreateBackgroundPainter(true, painter));
   }
 
