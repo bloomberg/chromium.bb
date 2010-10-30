@@ -619,6 +619,8 @@
         'browser/chromeos/login/screen_lock_view.cc',
         'browser/chromeos/login/screen_lock_view.h',
         'browser/chromeos/login/screen_observer.h',
+        'browser/chromeos/login/shutdown_button.cc',
+        'browser/chromeos/login/shutdown_button.h',
         'browser/chromeos/login/signed_settings.cc',
         'browser/chromeos/login/signed_settings.h',
         'browser/chromeos/login/signed_settings_helper.cc',

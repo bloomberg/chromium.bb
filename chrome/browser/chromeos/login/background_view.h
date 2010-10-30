@@ -10,13 +10,12 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#include "views/controls/button/button.h"
 #include "views/view.h"
 
 namespace views {
-class Widget;
 class Label;
 class TextButton;
+class Widget;
 }
 
 class DOMView;
@@ -26,23 +25,14 @@ class Profile;
 namespace chromeos {
 
 class OobeProgressBar;
+class ShutdownButton;
 class StatusAreaView;
 
 // View used to render the background during login. BackgroundView contains
 // StatusAreaView.
 class BackgroundView : public views::View,
-                       public StatusAreaHost,
-                       public views::ButtonListener {
+                       public StatusAreaHost {
  public:
-  // Delegate class to handle notificatoin from the view.
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Initializes incognito login.
-    virtual void OnGoIncognitoButton() = 0;
-  };
-
   enum LoginStep {
     SELECT_NETWORK,
 #if defined(OFFICIAL_BUILD)
@@ -60,6 +50,9 @@ class BackgroundView : public views::View,
   // Initializes the background view. It backgroun_url is given (non empty),
   // it creates a DOMView background area that renders a webpage.
   void Init(const GURL& background_url);
+
+  // Enable shutdown button.
+  void EnableShutdownButton();
 
   // Creates a window containing an instance of WizardContentsView as the root
   // view. The caller is responsible for showing (and closing) the returned
@@ -82,9 +75,6 @@ class BackgroundView : public views::View,
   // Sets current step on OOBE progress bar.
   void SetOobeProgress(LoginStep step);
 
-  // Toggles GoIncognito button visibility.
-  void SetGoIncognitoButtonVisible(bool visible, Delegate *delegate);
-
   // Shows screen saver.
   void ShowScreenSaver();
 
@@ -97,15 +87,11 @@ class BackgroundView : public views::View,
   // Tells if screen saver is enabled.
   bool ScreenSaverEnabled();
 
-  // Tells that owner has been changed.
-  void OnOwnerChanged();
-
  protected:
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ChildPreferredSizeChanged(View* child);
-  virtual void OnLocaleChanged();
 
   // Overridden from StatusAreaHost:
   virtual Profile* GetProfile() const { return NULL; }
@@ -117,9 +103,6 @@ class BackgroundView : public views::View,
   virtual bool IsBrowserMode() const;
   virtual bool IsScreenLockerMode() const;
 
-  // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
  private:
   // Creates and adds the status_area.
   void InitStatusArea();
@@ -127,11 +110,6 @@ class BackgroundView : public views::View,
   void InitInfoLabels();
   // Creates and add OOBE progress bar.
   void InitProgressBar();
-  // Creates and add GoIncoginito button.
-  void InitGoIncognitoButton();
-
-  // Updates string from the resources.
-  void UpdateLocalizedStrings();
 
   // Invokes SetWindowType for the window. This is invoked during startup and
   // after we've painted.
@@ -148,7 +126,7 @@ class BackgroundView : public views::View,
   views::Label* os_version_label_;
   views::Label* boot_times_label_;
   OobeProgressBar* progress_bar_;
-  views::TextButton* go_incognito_button_;
+  ShutdownButton* shutdown_button_;
 
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;
@@ -164,10 +142,6 @@ class BackgroundView : public views::View,
   // manager.
   // TODO(sky): nuke this when the wm knows when chrome has painted.
   bool did_paint_;
-
-  // NOTE: |delegate_| is assigned to NULL when the owner is changed. See
-  // 'OnOwnerChanged()' for more info.
-  Delegate *delegate_;
 
   // True if running official BUILD.
   bool is_official_build_;

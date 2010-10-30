@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
+#include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_switches.h"
@@ -224,6 +225,33 @@ class LockWindow : public views::WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(LockWindow);
 };
 
+// GrabWidget's root view to layout the ScreenLockView at the center
+// and the Shutdown button at the right bottom.
+class GrabWidgetRootView : public views::View {
+ public:
+  explicit GrabWidgetRootView(chromeos::ScreenLockView* screen_lock_view)
+      : screen_lock_view_(screen_lock_view),
+        shutdown_button_(new chromeos::ShutdownButton()) {
+    shutdown_button_->Init();
+    AddChildView(screen_lock_view_);
+    AddChildView(shutdown_button_);
+  }
+
+  // views::View implementation.
+  virtual void Layout() {
+    gfx::Size size = screen_lock_view_->GetPreferredSize();
+    screen_lock_view_->SetBounds(0, 0, size.width(), size.height());
+    shutdown_button_->LayoutIn(this);
+  }
+
+ private:
+  views::View* screen_lock_view_;
+
+  chromeos::ShutdownButton* shutdown_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(GrabWidgetRootView);
+};
+
 // A child widget that grabs both keyboard and pointer input.
 class GrabWidget : public views::WidgetGtk {
  public:
@@ -330,8 +358,10 @@ void GrabWidget::TryGrabAllInputs() {
 // addition to other background components.
 class ScreenLockerBackgroundView : public chromeos::BackgroundView {
  public:
-  explicit ScreenLockerBackgroundView(views::WidgetGtk* lock_widget)
-      : lock_widget_(lock_widget) {
+  ScreenLockerBackgroundView(views::WidgetGtk* lock_widget,
+                             views::View* screen_lock_view)
+      : lock_widget_(lock_widget),
+        screen_lock_view_(screen_lock_view) {
   }
 
   virtual bool IsScreenLockerMode() const {
@@ -341,16 +371,23 @@ class ScreenLockerBackgroundView : public chromeos::BackgroundView {
   virtual void Layout() {
     chromeos::BackgroundView::Layout();
     gfx::Rect screen = bounds();
-    gfx::Size size = lock_widget_->GetRootView()->GetPreferredSize();
-    lock_widget_->SetBounds(
-        gfx::Rect((screen.width() - size.width()) / 2,
-                  (screen.height() - size.height()) / 2,
-                  size.width(),
-                  size.height()));
+    if (screen_lock_view_) {
+      gfx::Size size = screen_lock_view_->GetPreferredSize();
+      gfx::Point origin((screen.width() - size.width()) / 2,
+                        (screen.height() - size.height()) / 2);
+      gfx::Size widget_size(screen.size());
+      widget_size.Enlarge(-origin.x(), -origin.y());
+      lock_widget_->SetBounds(gfx::Rect(origin, widget_size));
+    } else {
+      // No password entry. Move the lock widget to off screen.
+      lock_widget_->SetBounds(gfx::Rect(-100, -100, 1, 1));
+    }
   }
 
  private:
   views::WidgetGtk* lock_widget_;
+
+  views::View* screen_lock_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerBackgroundView);
 };
@@ -540,15 +577,19 @@ void ScreenLocker::Init() {
   lock_widget_ = new GrabWidget(this);
   lock_widget_->MakeTransparent();
   lock_widget_->InitWithWidget(lock_window_, gfx::Rect());
-  if (screen_lock_view_)
-    lock_widget_->SetContentsView(screen_lock_view_);
+  if (screen_lock_view_) {
+    lock_widget_->SetContentsView(
+        new GrabWidgetRootView(screen_lock_view_));
+  }
+
   lock_widget_->Show();
 
   // Configuring the background url.
   std::string url_string =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kScreenSaverUrl);
-  background_view_ = new ScreenLockerBackgroundView(lock_widget_);
+  background_view_ = new ScreenLockerBackgroundView(lock_widget_,
+                                                    screen_lock_view_);
   background_view_->Init(GURL(url_string));
   if (background_view_->ScreenSaverEnabled())
     StartScreenSaver();

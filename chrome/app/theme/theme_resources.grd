@@ -577,6 +577,7 @@
         <include name="IDR_SCROLL_THUMB" file="chromeos_scroll_thumb.png" type="BINDATA" />
         <include name="IDR_SCROLL_THUMB_H" file="chromeos_scroll_thumb_h.png" type="BINDATA" />
         <include name="IDR_SCROLL_THUMB_P" file="chromeos_scroll_thumb_p.png" type="BINDATA" />
+        <include name="IDR_SHUTDOWN_ICON" file="shutdown_icon.png" type="BINDATA" />
       </if>
     </includes>
   </release>
