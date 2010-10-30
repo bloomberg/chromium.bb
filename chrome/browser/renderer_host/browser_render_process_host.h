@@ -113,6 +113,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const std::string& event_name);
   void OnExtensionCloseChannel(int port_id);
+  void OnUserMetricsRecordAction(const std::string& action);
 
   // Initialize support for visited links. Send the renderer process its initial
   // set of visited links.

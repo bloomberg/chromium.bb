@@ -23,7 +23,6 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
-#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
@@ -841,8 +840,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnRequestUndockDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimePropertyChanged,
                         OnDevToolsRuntimePropertyChanged);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
-                        OnUserMetricsRecordAction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus);
     IPC_MESSAGE_HANDLER(ViewHostMsg_NonSandboxedPluginBlocked,
                         OnNonSandboxedPluginBlocked);
@@ -1583,10 +1580,6 @@ void RenderViewHost::OnDevToolsRuntimePropertyChanged(
     const std::string& value) {
   DevToolsManager::GetInstance()->
       RuntimePropertyChanged(this, name, value);
-}
-
-void RenderViewHost::OnUserMetricsRecordAction(const std::string& action) {
-  UserMetrics::RecordComputedAction(action, process()->profile());
 }
 
 bool RenderViewHost::PreHandleKeyboardEvent(

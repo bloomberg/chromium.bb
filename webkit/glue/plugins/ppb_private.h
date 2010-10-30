@@ -126,6 +126,9 @@ struct PPB_Private {
 
   // Use UMA so we know average pdf page count.
   void (*HistogramPDFPageCount)(int count);
+
+  // Notifies the browser that the given action has been performed.
+  void (*UserMetricsRecordAction)(PP_Var action);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_

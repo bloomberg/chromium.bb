@@ -47,6 +47,7 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -872,6 +873,8 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnExtensionRemoveListener)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionCloseChannel,
                           OnExtensionCloseChannel)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
+                          OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_RequestDictionary,
                           OnSpellCheckerRequestDictionary)
       IPC_MESSAGE_UNHANDLED_ERROR()
@@ -1090,6 +1093,11 @@ void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
   if (profile()->GetExtensionMessageService()) {
     profile()->GetExtensionMessageService()->CloseChannel(port_id);
   }
+}
+
+void BrowserRenderProcessHost::OnUserMetricsRecordAction(
+    const std::string& action) {
+  UserMetrics::RecordComputedAction(action, profile());
 }
 
 void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {

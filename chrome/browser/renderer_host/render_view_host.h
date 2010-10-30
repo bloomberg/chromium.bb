@@ -643,8 +643,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnRequestUndockDevToolsWindow();
   void OnDevToolsRuntimePropertyChanged(const std::string& name,
                                         const std::string& value);
-
-  void OnUserMetricsRecordAction(const std::string& action);
   void OnMissingPluginStatus(int status);
   void OnNonSandboxedPluginBlocked(const std::string& plugin,
                                    const string16& name);
