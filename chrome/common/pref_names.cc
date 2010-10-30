@@ -734,10 +734,6 @@ const char kBrowserWindowPlacement[] = "browser.window_placement";
 // manager window to restore on startup.
 const char kTaskManagerWindowPlacement[] = "task_manager.window_placement";
 
-// A collection of position, size, and other data relating to the page info
-// window to restore on startup.
-const char kPageInfoWindowPlacement[] = "page_info.window_placement";
-
 // A collection of position, size, and other data relating to the keyword
 // editor window to restore on startup.
 const char kKeywordEditorWindowPlacement[] = "keyword_editor.window_placement";

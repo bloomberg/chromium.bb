@@ -94,8 +94,6 @@ class PageInfoModel {
                              int count,
                              base::Time first_visit);
 
-  static void RegisterPrefs(PrefService* prefs);
-
  protected:
   // Testing constructor. DO NOT USE.
   PageInfoModel();

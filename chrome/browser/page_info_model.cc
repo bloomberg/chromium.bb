@@ -327,11 +327,6 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
   observer_->ModelChanged();
 }
 
-// static
-void PageInfoModel::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kPageInfoWindowPlacement);
-}
-
 PageInfoModel::PageInfoModel() : observer_(NULL) {
   Init();
 }

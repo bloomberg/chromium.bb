@@ -90,7 +90,6 @@ void RegisterLocalState(PrefService* local_state) {
   SafeBrowsingService::RegisterPrefs(local_state);
   browser_shutdown::RegisterPrefs(local_state);
   chrome_browser_net::RegisterPrefs(local_state);
-  PageInfoModel::RegisterPrefs(local_state);
 #if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
