@@ -33,8 +33,14 @@ void NativeButtonGtk::UpdateLabel() {
   if (!native_view())
     return;
 
-  gtk_button_set_label(GTK_BUTTON(native_view()),
+  GtkWidget* label = gtk_bin_get_child(GTK_BIN(native_view()));
+  if (!label) {
+    gtk_button_set_label(GTK_BUTTON(native_view()),
+                         WideToUTF8(native_button_->label()).c_str());
+  } else {
+    gtk_label_set_text(GTK_LABEL(label),
                        WideToUTF8(native_button_->label()).c_str());
+  }
   preferred_size_ = gfx::Size();
 }
 
@@ -42,10 +48,13 @@ void NativeButtonGtk::UpdateFont() {
   if (!native_view())
     return;
 
-  PangoFontDescription* pfd = native_button_->font().GetNativeFont();
-  gtk_widget_modify_font(native_view(), pfd);
-  pango_font_description_free(pfd);
-  preferred_size_ = gfx::Size();
+  GtkWidget* label = gtk_bin_get_child(GTK_BIN(native_view()));
+  if (label) {
+    PangoFontDescription* pfd = native_button_->font().GetNativeFont();
+    gtk_widget_modify_font(label, pfd);
+    pango_font_description_free(pfd);
+    preferred_size_ = gfx::Size();
+  }
 }
 
 void NativeButtonGtk::UpdateEnabled() {
@@ -93,7 +102,8 @@ gfx::Size NativeButtonGtk::GetPreferredSize() {
 }
 
 void NativeButtonGtk::CreateNativeControl() {
-  GtkWidget* widget = gtk_button_new();
+  GtkWidget* widget = gtk_button_new_with_label("");
+
   g_signal_connect(widget, "clicked",
                    G_CALLBACK(CallClickedThunk), this);
 
