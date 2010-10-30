@@ -38,7 +38,6 @@ const size_t kMaximumTextSizeForAutoFill = 1000;
 bool NodeIsAutoFilled(const WebKit::WebNode& node) {
   const WebFormControlElement& element =
       reinterpret_cast<const WebFormControlElement&>(node);
-  DCHECK(element.formControlType() == WebString::fromUTF8("text"));
 
   WebInputElement input_element =
       const_cast<WebFormControlElement&>(element).to<WebInputElement>();
