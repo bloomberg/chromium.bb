@@ -91,7 +91,7 @@ class TestableFileWriter : public WebFileWriterBase {
       DidFail(base::PLATFORM_FILE_ERROR_NOT_FOUND);  // truncate completion
       DidSucceed();  // cancel completion
     } else {
-      ASSERT_TRUE(false);
+      FAIL();
     }
   }
 
@@ -125,7 +125,7 @@ class TestableFileWriter : public WebFileWriterBase {
       DidWrite(1, true);  // write completion
       DidFail(base::PLATFORM_FILE_ERROR_FAILED);  // cancel completion
     } else {
-      ASSERT_TRUE(false);
+      FAIL();
     }
   }
 
