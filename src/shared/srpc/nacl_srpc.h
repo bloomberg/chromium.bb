@@ -512,32 +512,6 @@ struct NaClSrpcChannel {
    * maintaining reentrancy
    */
   void                        *server_instance_data;
-  /**
-   * A boolean value indicating execution timing is enabled on this channel
-   */
-  int                         timing_enabled;
-  /**
-   * The number of microseconds spent sending on this channel while
-   * timing_enabled is true.  Includes time reported in
-   * <code>imc_write_usec</code>
-   */
-  double                      send_usec;
-  /**
-   * The number of microseconds spent receiving on this channel while
-   * timing_enabled is true.  Includes time reported in
-   * <code>imc_read_usec</code>
-   */
-  double                      receive_usec;
-  /**
-   * The number of microseconds spent in IMC receives on this channel while
-   * timing_enabled is true
-   */
-  double                      imc_read_usec;
-  /**
-   * The number of microseconds spent in IMC sends on this channel while
-   * timing_enabled is true
-   */
-  double                      imc_write_usec;
 };
 #ifndef __cplusplus
 /**
@@ -732,50 +706,9 @@ extern NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel *channel,
                                         va_list           out_va);
 
 /**
- *  @eitherSrpc  Enables or disables timing of the specified channel.
- *  @param channel The channel descriptor whose timing to consult.
- *  @param enable_timing If zero, disable timing.  Otherwise, enable timing.
- *  @see NaClSrpcGetTimes()
- */
-void NaClSrpcToggleChannelTiming(NaClSrpcChannel* channel, int enable_timing);
-/**
- *  @eitherSrpc Gathers the microsecond-granularity timing results retained
- *  for the specified channel.  If timing is not enabled, this function sets
- *  all _time parameters to 0.0.
- *  @param channel A channel descriptor.
- *  @param send_time The time spent in sending via this channel.
- *  @param receive_time The time spent in receiving via this channel.
- *  @param imc_read_time The time spent waiting for IMC layer reads via
- *  this channel.
- *  @param imc_write_time The time spent waiting for IMC layer writes via
- *  this channel.
- *  @see NaclSrpcToggleChannelTiming()
- */
-void NaClSrpcGetTimes(NaClSrpcChannel *channel,
-                      double *send_time,
-                      double *receive_time,
-                      double *imc_read_time,
-                      double *imc_write_time);
-
-/**
- *  @serverSrpc  Initializes the SRPC system, setting up the command channel
- *  and preparing the graphics subsystem for embedding in the browser.
- */
-void srpc_init();
-
-/**
  * The current protocol (version) number used to send and receive RPCs.
  */
 static const uint32_t kNaClSrpcProtocolVersion = 0xc0da0002;
-
-/**
- * RPC number for "implicit" timing method.
- */
-#define NACL_SRPC_GET_TIMES_METHOD              0xfffffffe
-/**
- * RPC number for "implicit" timing control method.
- */
-#define NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD  0xfffffffd
 
 /**
  * Deserialize a message header from a buffer.
@@ -785,37 +718,12 @@ extern int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
 
 
 /**
- * Deserialize a request message from a buffer.
- */
-extern int NaClSrpcRequestGet(NaClSrpcImcBuffer* buffer,
-                              const NaClSrpcRpc* rpc,
-                              const char* arg_types,
-                              NaClSrpcArg* args[],
-                              const char* ret_types,
-                              NaClSrpcArg* rets[]);
-
-/**
  * Send an RPC request on the given channel.
  */
 extern int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
                                 NaClSrpcRpc* rpc,
                                 NaClSrpcArg* args[],
                                 NaClSrpcArg* rets[]);
-
-/**
- * Deserialize a response message from a buffer.
- */
-extern int NaClSrpcResponseGet(NaClSrpcImcBuffer* buffer,
-                               const NaClSrpcRpc* rpc,
-                               const char* ret_types,
-                               NaClSrpcArg* rets[]);
-
-/**
- * Send an RPC response on the given channel.
- */
-extern int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
-                                 NaClSrpcRpc* rpc,
-                                 NaClSrpcArg* rets[]);
 
 /**
  * Wait for a sent RPC to receive a response.
@@ -857,14 +765,6 @@ int NaClSrpcIsStandalone();
  * @return Returns zero on success, non-zero otherwise.
  */
 int NaClSrpcCommandLoopMain(const struct NaClSrpcHandlerDesc *methods);
-
-/**
- * This runs a main loop for a process providing SRPC services.  For a
- * process in standalone mode, this runs a text-based interpreter;
- * otherwise, it accepts socket connections.
- * @return Returns zero on success, non-zero otherwise.
- */
-int NaClSrpcMain(const struct NaClSrpcHandlerDesc *methods);
 
 EXTERN_C_END
 

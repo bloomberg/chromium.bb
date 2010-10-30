@@ -100,7 +100,7 @@ nacl_abi_size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
     buffer->next_byte += request_bytes;
     return n_elt;
   } else {
-    dprintf((SIDE "READ: insufficient bytes read to satisfy request.\n"));
+    dprintf((SIDE "SRPC: READ: insufficient bytes read to satisfy request.\n"));
     return -1;
   }
 }
@@ -170,7 +170,7 @@ nacl_abi_size_t __NaClSrpcImcWrite(const void* source,
    * Writes are not broken into multiple datagram sends for now either.
    */
   if (avail_bytes < request_bytes) {
-    dprintf((SIDE "WRITE: insufficient space available to satisfy.\n"));
+    dprintf((SIDE "SRPC: WRITE: insufficient space available to satisfy.\n"));
     return -1;
   } else {
     memcpy((void*)(buffer->bytes + buffer->next_byte), source, request_bytes);
@@ -203,15 +203,10 @@ int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
 NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
   NaClSrpcImcBuffer* buffer;
   ssize_t            retval;
-  double             start_usec = 0.0;
-  double             this_usec;
 
   buffer = &channel->receive_buf;
   buffer->iovec[0].base = buffer->bytes;
   buffer->iovec[0].length = sizeof(buffer->bytes);
-  if (channel->timing_enabled) {
-    start_usec = __NaClSrpcGetUsec();
-  }
   NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer) = SRPC_DESC_MAX;
 #ifdef __native_client__
   retval = imc_recvmsg(channel->imc_handle, &buffer->header, 0);
@@ -221,15 +216,11 @@ NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
                                    0);
 #endif
   buffer->next_desc = 0;
-  if (channel->timing_enabled) {
-    this_usec = __NaClSrpcGetUsec();
-    channel->imc_read_usec += this_usec;
-  }
   if (!NaClSSizeIsNegErrno(&retval)) {
     channel->receive_buf.next_byte = 0;
     channel->receive_buf.last_byte = nacl_abi_size_t_saturate(retval);
   } else {
-    dprintf((SIDE "READ: read failed.\n"));
+    dprintf((SIDE "SRPC: READ: read failed.\n"));
     return NULL;
   }
   return buffer;
@@ -241,12 +232,7 @@ NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
  */
 int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer, NaClSrpcChannel* channel) {
   ssize_t        retval;
-  double         start_usec = 0.0;
-  double         this_usec;
   buffer->iovec[0].length = buffer->next_byte;
-  if (channel->timing_enabled) {
-    start_usec = __NaClSrpcGetUsec();
-  }
 #ifdef __native_client__
   retval = imc_sendmsg(channel->imc_handle, &buffer->header, 0);
 #else
@@ -256,15 +242,11 @@ int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer, NaClSrpcChannel* channel) {
 #endif
   NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer) = 0;
   buffer->next_desc = 0;
-  if (channel->timing_enabled) {
-    this_usec = __NaClSrpcGetUsec();
-    channel->imc_write_usec += this_usec;
-  }
   buffer->next_byte = 0;
   if ((size_t) retval != buffer->iovec[0].length) {
-    dprintf((SIDE "FLUSH: send error.\n"));
+    dprintf((SIDE "SRPC: FLUSH: send error.\n"));
     return 0;
   }
-  dprintf((SIDE "FLUSH: complete send.\n"));
+  dprintf((SIDE "SRPC: FLUSH: complete send.\n"));
   return 1;
 }

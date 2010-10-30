@@ -40,12 +40,6 @@ typedef struct NaClSrpcMethodDesc NaClSrpcMethodDesc;
 static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
                                       NaClSrpcArg** in_args,
                                       NaClSrpcArg** out_args);
-static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
-                              NaClSrpcArg** in_args,
-                              NaClSrpcArg** out_args);
-static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** in_args,
-                                      NaClSrpcArg** out_args);
 
 /*
  * Get the next text element (name, input types, or output types).  These
@@ -243,7 +237,7 @@ int NaClSrpcServiceHandlerCtor(NaClSrpcService* service,
   return 1;
 }
 
-void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t rpc_count) {
+static void FreeMethods(NaClSrpcMethodDesc* methods, uint32_t rpc_count) {
   uint32_t i;
 
   if (NULL == methods) {
@@ -363,8 +357,8 @@ uint32_t NaClSrpcServiceMethodCount(const NaClSrpcService *service) {
   return service->rpc_count;
 }
 
-int SignatureMatches(NaClSrpcMethodDesc* method_desc,
-                     char const* signature) {
+static int SignatureMatches(NaClSrpcMethodDesc* method_desc,
+                            char const* signature) {
   struct {
     char const* field;
     char terminator;
@@ -409,15 +403,7 @@ int NaClSrpcServiceMethodNameAndTypes(const NaClSrpcService* service,
                                       const char** name,
                                       const char** input_types,
                                       const char** output_types) {
-  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
-    *name = "NACL_SRPC_GET_TIMES_METHOD";
-    *input_types = "";
-    *output_types = "dddd";
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
-    *name = "NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD";
-    *input_types = "";
-    *output_types = "i";
-  } else if (rpc_number >= service->rpc_count) {
+  if (rpc_number >= service->rpc_count) {
     /* This ensures that the method is in the user-defined set. */
     return 0;
   } else {
@@ -430,26 +416,13 @@ int NaClSrpcServiceMethodNameAndTypes(const NaClSrpcService* service,
 
 NaClSrpcMethod NaClSrpcServiceMethod(const NaClSrpcService* service,
                                      uint32_t rpc_number) {
-  if (NULL == service) {
-    return NULL;
-  } else if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
-    return GetTimes;
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
-    return SetTimingEnabled;
-  } else if (rpc_number >= service->rpc_count) {
+  if (NULL == service || rpc_number >= service->rpc_count) {
     return NULL;
   } else {
     return service->rpc_descr[rpc_number].handler;
   }
 }
 
-/*
- * "Built-in" methods.
- */
-
-/*
- * The service_discovery method.
- */
 static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
                                       NaClSrpcArg** in_args,
                                       NaClSrpcArg** out_args) {
@@ -467,27 +440,4 @@ static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
   } else {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-}
-
-/*
- * Timing the SRPC infrastructure.
- */
-static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
-                              NaClSrpcArg** in_args,
-                              NaClSrpcArg** out_args) {
-  UNREFERENCED_PARAMETER(in_args);
-  NaClSrpcGetTimes(channel,
-                   &out_args[0]->u.dval,
-                   &out_args[1]->u.dval,
-                   &out_args[2]->u.dval,
-                   &out_args[3]->u.dval);
-  return NACL_SRPC_RESULT_OK;
-}
-
-static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** in_args,
-                                      NaClSrpcArg** out_args) {
-  UNREFERENCED_PARAMETER(out_args);
-  NaClSrpcToggleChannelTiming(channel, in_args[0]->u.ival);
-  return NACL_SRPC_RESULT_OK;
 }

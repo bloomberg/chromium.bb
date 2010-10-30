@@ -20,22 +20,6 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 
-env.ComponentProgram('rpc_benchmarker',
-                     'rpc_benchmarker.c',
-                     EXTRA_LIBS=['nonnacl_util_c',
-                                 'nonnacl_srpc',
-                                 'nrd_xfer',
-                                 'nacl_base',
-                                 'platform',
-                                 'gio',
-                                 'google_nacl_imc_c',
-                                 ],
-                       FRAMEWORKS=['Cocoa'],
-                     )
-
-# NOTE: we need Cocoa because of the GetPluginDir() implementation
-#       on mac (nonnacl_util_c)
-
 env.ComponentProgram('sel_universal',
                      ['sel_universal.c',
                       ],

@@ -107,6 +107,25 @@ struct ArgsIoInterface {
 };
 static const ArgsIoInterface* GetArgsInterface(uint32_t protocol_version);
 
+/*
+ * Forward declarations.
+ */
+static int RequestGet(NaClSrpcImcBuffer* buffer,
+                      const NaClSrpcRpc* rpc,
+                      const char* arg_types,
+                      NaClSrpcArg* args[],
+                      const char* ret_types,
+                      NaClSrpcArg* rets[]);
+
+static int ResponseWrite(NaClSrpcChannel* channel,
+                         NaClSrpcRpc* rpc,
+                         NaClSrpcArg* rets[]);
+
+static int ResponseGet(NaClSrpcImcBuffer* buffer,
+                       const NaClSrpcRpc* rpc,
+                       const char* ret_types,
+                       NaClSrpcArg* rets[]);
+
 
 static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
                                                  NaClSrpcRpc* rpc_stack_top) {
@@ -120,24 +139,18 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   NaClSrpcMethod method;
   int retval;
   int return_break = 0;
-  double this_start_usec = 0.0;
-  double this_method_usec;
   const ArgsIoInterface* desc;
 
-  dprintf((SIDE "ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
-  /* If we are timing, get the start time. */
-  if (channel->timing_enabled) {
-    this_start_usec = __NaClSrpcGetUsec();
-  }
+  dprintf((SIDE "SRPC: ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
   /* Read a message from the channel. */
   buffer = __NaClSrpcImcFillbuf(channel);
   if (NULL == buffer) {
-    dprintf((SIDE "ReceiveAndDispatch: buffer read failed\n"));
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: buffer read failed\n"));
     return DISPATCH_EOF;
   }
   /* Deserialize the header (0 indicates failure) */
   if (!NaClSrpcRpcGet(buffer, &rpc)) {
-    dprintf((SIDE "ReceiveAndDispatch: rpc deserialize failed\n"));
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: rpc deserialize failed\n"));
     /* Drop the current request and continue */
     return DISPATCH_CONTINUE;
   }
@@ -177,20 +190,20 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
                                              &arg_types,
                                              &ret_types);
   if (!retval) {
-    dprintf(("RequestGet: bad rpc number in request\n"));
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: bad rpc number in request\n"));
     /* Drop the request with a bad rpc number and continue */
     return DISPATCH_CONTINUE;
   }
   /* Deserialize the request from the buffer. */
-  if (!NaClSrpcRequestGet(buffer, &rpc, arg_types, args, ret_types, rets)) {
-    dprintf((SIDE "ReceiveAndDispatch: receive message failed\n"));
+  if (!RequestGet(buffer, &rpc, arg_types, args, ret_types, rets)) {
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: receive message failed\n"));
     return DISPATCH_EOF;
   }
   desc = GetArgsInterface(rpc.protocol_version);
   /* Then we invoke the method, which computes a return code. */
   method = NaClSrpcServiceMethod(channel->server, rpc.rpc_number);
   if (NULL == method) {
-    dprintf((SIDE "ReceiveAndDispatch: bad rpc number %"NACL_PRIu32"\n",
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: bad rpc number %"NACL_PRIu32"\n",
              rpc.rpc_number));
     return DISPATCH_CONTINUE;
   }
@@ -200,22 +213,14 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     rpc.app_error = NACL_SRPC_RESULT_OK;
   }
   /* Then we return the rets. */
-  retval = NaClSrpcResponseWrite(channel, &rpc, rets);
+  retval = ResponseWrite(channel, &rpc, rets);
   /* Then we free the memory for the args and rets. */
   desc->free(desc, args);
   desc->free(desc, rets);
   if (!retval) {
     /* If the response write failed, drop request and continue. */
-    dprintf((SIDE "ReceiveAndDispatch: response write failed\n"));
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: response write failed\n"));
     return DISPATCH_CONTINUE;
-  }
-  /*
-   * If we are timing, collect the current time, compute the delta from
-   * the start, and update the cumulative counter.
-   */
-  if (channel->timing_enabled) {
-    this_method_usec = __NaClSrpcGetUsec();
-    channel->receive_usec += this_method_usec;
   }
   /* Return code to either continue or break out of the processing loop. */
   if (return_break) {
@@ -245,7 +250,7 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
     retval = NaClSrpcReceiveAndDispatch(channel, rpc);
   } while (DISPATCH_CONTINUE == retval);
   /* Process responses */
-  dprintf((SIDE "response to RpcWait: %p, %d\n", (void*) rpc, retval));
+  dprintf((SIDE "SRPC: response to RpcWait: %p, %d\n", (void*) rpc, retval));
   if (NULL != rpc &&
       DISPATCH_RESPONSE == retval) {
     NaClSrpcImcBuffer* buffer = rpc->buffer;
@@ -253,25 +258,26 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
     __NaClSrpcImcRefill(buffer);
     /* Deserialize the header (0 indicates failure) */
     if (!NaClSrpcRpcGet(buffer, rpc)) {
-      dprintf((SIDE "InvokeV: rpc deserialize failed\n"));
+      dprintf((SIDE "SRPC: InvokeV: rpc deserialize failed\n"));
       rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
     /* Paranoia: if the message is a request, return an error */
     if (rpc->is_request) {
-      dprintf(("Response: rpc is not response: %d\n", rpc->is_request));
+      dprintf((SIDE "SRPC: Response: rpc is not response: %d\n",
+               rpc->is_request));
       rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
-    if (!NaClSrpcResponseGet(buffer, rpc, rpc->ret_types, rpc->rets)) {
-      dprintf(("SRPC: response receive failed\n"));
+    if (!ResponseGet(buffer, rpc, rpc->ret_types, rpc->rets)) {
+      dprintf((SIDE "SRPC: response receive failed\n"));
       rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
   }
   if (NULL != rpc &&
       DISPATCH_EOF == retval) {
-    dprintf(("SRPC: EOF is received instead of response. "
+    dprintf((SIDE "SRPC: EOF is received instead of response. "
              "Probably, the other side "
              "(usually, nacl module or browser plugin) crashed."));
     rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
@@ -820,9 +826,9 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
   uint32_t rpc_num = 0;
   NaClSrpcError app_err = NACL_SRPC_RESULT_OK;
 
-  dprintf((SIDE "RpcGet starting\n"));
+  dprintf((SIDE "SRPC: RpcGet starting\n"));
   if (1 != __NaClSrpcImcRead(buffer, sizeof(protocol), 1, &protocol)) {
-    dprintf((SIDE "READ: protocol read fail\n"));
+    dprintf((SIDE "SRPC: READ: protocol read fail\n"));
     return 0;
   }
   rpc->protocol_version = protocol;
@@ -831,29 +837,29 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
    * would need to go here.
    */
   if (1 != __NaClSrpcImcRead(buffer, sizeof(request_id), 1, &request_id)) {
-    dprintf((SIDE "RpcGet: request_id read fail\n"));
+    dprintf((SIDE "SRPC: RpcGet: request_id read fail\n"));
     return 0;
   }
   rpc->request_id = request_id;
   if (1 != __NaClSrpcImcRead(buffer, sizeof(is_req), 1, &is_req)) {
-    dprintf((SIDE "RpcGet: is_request read fail\n"));
+    dprintf((SIDE "SRPC: RpcGet: is_request read fail\n"));
     return 0;
   }
   rpc->is_request = is_req;
   if (1 != __NaClSrpcImcRead(buffer, sizeof(rpc_num), 1, &rpc_num)) {
-    dprintf((SIDE "RpcGet: rpc_number read fail\n"));
+    dprintf((SIDE "SRPC: RpcGet: rpc_number read fail\n"));
     return 0;
   }
   rpc->rpc_number = rpc_num;
   if (!rpc->is_request) {
     /* Responses also need to read the app_error member */
     if (1 != __NaClSrpcImcRead(buffer, sizeof(app_err), 1, &app_err)) {
-      dprintf((SIDE "RpcGet: app_error read fail\n"));
+      dprintf((SIDE "SRPC: RpcGet: app_error read fail\n"));
       return 0;
     }
   }
   rpc->app_error = app_err;
-  dprintf((SIDE "RpcGet(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s) done\n",
+  dprintf((SIDE "SRPC: RpcGet(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s) done\n",
            rpc->protocol_version,
            (rpc->is_request == 0) ? "response" : "request",
            rpc->rpc_number,
@@ -866,7 +872,7 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
  * send the current protocol version.
  */
 static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
-  dprintf((SIDE "RpcWrite(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s)\n",
+  dprintf((SIDE "SRPC: RpcWrite(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s)\n",
            rpc->protocol_version,
            rpc->is_request ? "request" : "response",
            rpc->rpc_number,
@@ -909,7 +915,7 @@ static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
       return 0;
     }
   }
-  dprintf((SIDE "RpcWrite done\n"));
+  dprintf((SIDE "SRPC: RpcWrite done\n"));
   return 1;
 }
 
@@ -927,30 +933,30 @@ static void RpcLength(int is_request, uint32_t* bytes, uint32_t* handles) {
  * Deserialize a request from the buffer.  If successful, the input
  * arguments and the template of the returns is returned.
  */
-int NaClSrpcRequestGet(NaClSrpcImcBuffer* buffer,
-                       const NaClSrpcRpc* rpc,
-                       const char* arg_types,
-                       NaClSrpcArg* args[],
-                       const char* ret_types,
-                       NaClSrpcArg* rets[]) {
+static int RequestGet(NaClSrpcImcBuffer* buffer,
+                      const NaClSrpcRpc* rpc,
+                      const char* arg_types,
+                      NaClSrpcArg* args[],
+                      const char* ret_types,
+                      NaClSrpcArg* rets[]) {
   const ArgsIoInterface* desc;
 
-  dprintf((SIDE "RequestGet(%p, %"NACL_PRIu32"\n",
+  dprintf((SIDE "SRPC: RequestGet(%p, %"NACL_PRIu32"\n",
           (void*) buffer,
           rpc->rpc_number));
   /* Get the Args I/O descriptor for the protocol version read */
   desc = GetArgsInterface(rpc->protocol_version);
   if (!desc->get(desc, buffer, 1, 1, args, arg_types)) {
-    dprintf(("RequestGet: argument vector receive failed\n"));
+    dprintf((SIDE "SRPC: RequestGet: argument vector receive failed\n"));
     return 0; /* get frees memory on error. */
   }
   /* Construct the rets from the buffer. */
   if (!desc->get(desc, buffer, 1, 0, rets, ret_types)) {
-    dprintf(("RequestGet: rets template receive failed\n"));
+    dprintf((SIDE "SRPC: RequestGet: rets template receive failed\n"));
     desc->free(desc, args);
     return 0;
   }
-  dprintf((SIDE "RequestGet(%p, %"NACL_PRIu32") received\n",
+  dprintf((SIDE "SRPC: RequestGet(%p, %"NACL_PRIu32") received\n",
            (void*) buffer,
            rpc->rpc_number));
   return 1;
@@ -961,7 +967,7 @@ static int RequestPut(const ArgsIoInterface* desc,
                       NaClSrpcArg* args[],
                       NaClSrpcArg* rets[],
                       NaClSrpcImcBuffer* buffer) {
-  dprintf(("RequestPut(%p, %"NACL_PRIu32")\n",
+  dprintf((SIDE "SRPC: RequestPut(%p, %"NACL_PRIu32")\n",
            (void*) buffer,
            rpc->rpc_number));
   /* Set up and send rpc */
@@ -972,15 +978,15 @@ static int RequestPut(const ArgsIoInterface* desc,
   }
   /* Then send the args */
   if (!desc->put(desc, buffer, 1, args)) {
-    dprintf(("RequestPut: args send failed\n"));
+    dprintf((SIDE "SRPC: RequestPut: args send failed\n"));
     return 0;
   }
   /* And finally the rets template */
   if (!desc->put(desc, buffer, 0, rets)) {
-    dprintf(("RequestPut: rets template send failed\n"));
+    dprintf((SIDE "SRPC: RequestPut: rets template send failed\n"));
     return 0;
   }
-  dprintf(("RequestPut(%p, %"NACL_PRIu32") sent\n",
+  dprintf((SIDE "SRPC: RequestPut(%p, %"NACL_PRIu32") sent\n",
            (void*) buffer,
            rpc->rpc_number));
   return 1;
@@ -1029,7 +1035,7 @@ int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
   }
   if (!__NaClSrpcImcFlush(buffer, channel)) {
     /* Requests with bad handles could fail.  Report to the caller. */
-    dprintf(("NaClSrpcRequestWrite(%p, %"NACL_PRIu32") failed\n",
+    dprintf((SIDE "SRPC: NaClSrpcRequestWrite(%p, %"NACL_PRIu32") failed\n",
              (void*) buffer,
              rpc->rpc_number));
     return 0;
@@ -1041,28 +1047,29 @@ int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
  * Deserialize a response from the buffer.  If successful, the return
  * values are returned.
  */
-int NaClSrpcResponseGet(NaClSrpcImcBuffer* buffer,
-                        const NaClSrpcRpc* rpc,
-                        const char* ret_types,
-                        NaClSrpcArg* rets[]) {
+static int ResponseGet(NaClSrpcImcBuffer* buffer,
+                       const NaClSrpcRpc* rpc,
+                       const char* ret_types,
+                       NaClSrpcArg* rets[]) {
   const ArgsIoInterface* desc;
 
   /* Get the Args I/O descriptor for the protocol version read */
   desc = GetArgsInterface(rpc->protocol_version);
   /* Announce start of response processing */
-  dprintf((SIDE "ResponseGet: response, rpc %"NACL_PRIu32"\n",
+  dprintf((SIDE "SRPC: ResponseGet: response, rpc %"NACL_PRIu32"\n",
            rpc->rpc_number));
   if (NACL_SRPC_RESULT_OK != rpc->app_error) {
-    dprintf(("ResponseGet: method returned failure: %d\n", rpc->app_error));
+    dprintf((SIDE "SRPC: ResponseGet: method returned failure: %d\n",
+             rpc->app_error));
     return 1;
   }
-  dprintf((SIDE "ResponseGet: getting rets\n"));
+  dprintf((SIDE "SRPC: ResponseGet: getting rets\n"));
   if (!desc->get(desc, buffer, 0, 1, rets, ret_types)) {
-    dprintf(("ResponseGet: rets receive failed\n"));
+    dprintf((SIDE "SRPC: ResponseGet: rets receive failed\n"));
     /* get cleans up argument memory before returning */
     return 0;
   }
-  dprintf((SIDE "ResponseGet(%p, %"NACL_PRIu32") received\n",
+  dprintf((SIDE "SRPC: ResponseGet(%p, %"NACL_PRIu32") received\n",
            (void*) buffer, rpc->rpc_number));
   return 1;
 }
@@ -1071,17 +1078,17 @@ static int ResponsePut(const ArgsIoInterface* desc,
                        NaClSrpcRpc* rpc,
                        NaClSrpcArg* rets[],
                        NaClSrpcImcBuffer* buffer) {
-  dprintf((SIDE "ResponsePut(%p, %"NACL_PRIu32")\n",
+  dprintf((SIDE "SRPC: ResponsePut(%p, %"NACL_PRIu32")\n",
            (void*) buffer, rpc->rpc_number));
   rpc->is_request = 0;
   if (!RpcWrite(buffer, rpc)) {
     return 0;
   }
   if (!desc->put(desc, buffer, 1, rets)) {
-    dprintf(("SRPC: rets send failed\n"));
+    dprintf((SIDE "SRPC: rets send failed\n"));
     return 0;
   }
-  dprintf((SIDE "ResponsePut(%p, %"NACL_PRIu32", %d, %s): sent\n",
+  dprintf((SIDE "SRPC: ResponsePut(%p, %"NACL_PRIu32", %d, %s): sent\n",
            (void*) buffer, rpc->rpc_number, rpc->app_error,
            NaClSrpcErrorString(rpc->app_error)));
   return 1;
@@ -1107,12 +1114,12 @@ static int ResponseLength(const ArgsIoInterface* desc,
 }
 
 /*
- * NaClSrpcResponseWrite writes the header and the return values on the
- * specified channel.
+ * ResponseWrite writes the header and the return values on the specified
+ * channel.
  */
-int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
-                          NaClSrpcRpc* rpc,
-                          NaClSrpcArg* rets[]) {
+static int ResponseWrite(NaClSrpcChannel* channel,
+                         NaClSrpcRpc* rpc,
+                         NaClSrpcArg* rets[]) {
   uint32_t bytes;
   uint32_t handles;
   const ArgsIoInterface* desc = GetArgsInterface(rpc->protocol_version);
@@ -1130,7 +1137,7 @@ int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
   buffer = &channel->send_buf;
   /* Serialize into the buffer */
   if (!ResponsePut(desc, rpc, rets, buffer)) {
-    dprintf(("ResponseWrite: couldn't put rets\n"));
+    dprintf((SIDE "SRPC: ResponseWrite: couldn't put rets\n"));
     return 0;
   }
   /* Flush the buffer to the channel */
@@ -1140,15 +1147,16 @@ int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
      * doesn't send anything.  Therefore we need to return an error message
      * so that the client doesn't wait forever.
      */
-    dprintf(("ResponseWrite: flush failed -- sending internal error\n"));
+    dprintf((SIDE
+             "SRPC: ResponseWrite: flush failed -- sending internal error\n"));
     rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
     rpc->is_request = 0;
     if (!RpcWrite(buffer, rpc)) {
-      dprintf(("ResponseWrite: flush failed twice -- giving up\n"));
+      dprintf((SIDE "SRPC: ResponseWrite: flush failed twice -- giving up\n"));
       return 0;
     }
     __NaClSrpcImcFlush(buffer, channel);
   }
-  dprintf(("NaClSrpcResponseWrite: sent\n"));
+  dprintf((SIDE "SRPC: ResponseWrite: sent\n"));
   return 1;
 }

@@ -77,18 +77,10 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   const char*        rpc_name;
   const char*        arg_types;
   const char*        ret_types;
-  double             this_start_usec = 0.0;
-  double             this_method_usec;
 
-  dprintf(("InvokeV(channel %p, rpc number %"NACL_PRIu32")\n",
+  dprintf((SIDE "SRPC: InvokeV(channel %p, rpc number %"NACL_PRIu32")\n",
            (void*) channel,
            rpc_number));
-  /*
-   * If we are timing, get the start time.
-   */
-  if (channel->timing_enabled) {
-    this_start_usec = __NaClSrpcGetUsec();
-  }
 
   if (NaClSrpcServiceMethodNameAndTypes(channel->client,
                                         rpc_number,
@@ -104,10 +96,10 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
       return NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH;
     }
   } else {
-    dprintf((SIDE "InvokeV: bad rpc number\n"));
+    dprintf((SIDE "SRPC: InvokeV: bad rpc number\n"));
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
-  dprintf(("InvokeV(channel %p, rpc %"NACL_PRIu32" '%s')\n",
+  dprintf((SIDE "SRPC: InvokeV(channel %p, rpc %"NACL_PRIu32" '%s')\n",
            (void*) channel, rpc_number, rpc_name));
 
   /*
@@ -122,29 +114,20 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   rpc.ret_types = ret_types;
   retval = NaClSrpcRequestWrite(channel, &rpc, args, rets);
   if (!retval) {
-    dprintf(("InvokeV: rpc request send failed\n"));
+    dprintf((SIDE "SRPC: InvokeV: rpc request send failed\n"));
     return NACL_SRPC_RESULT_INTERNAL;
   }
 
-  dprintf(("InvokeV(channel %p, rpc %"NACL_PRIu32
+  dprintf((SIDE "SRPC: InvokeV(channel %p, rpc %"NACL_PRIu32
            " '%s') waiting for response...\n",
            (void*) channel,
            rpc_number,
            rpc_name));
   /* Then we wait for the response. */
   NaClSrpcRpcWait(channel, &rpc);
-  dprintf(("InvokeV: received response (%d, %s)\n",
+  dprintf((SIDE "SRPC: InvokeV: received response (%d, %s)\n",
            rpc.app_error,
            NaClSrpcErrorString(rpc.app_error)));
-
-  /*
-   * If we are timing, collect the current time, compute the delta from
-   * the start, and update the cumulative counter.
-   */
-  if (channel->timing_enabled) {
-    this_method_usec = __NaClSrpcGetUsec();
-    channel->send_usec += this_method_usec;
-  }
 
   return rpc.app_error;
 }

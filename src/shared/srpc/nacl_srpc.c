@@ -109,12 +109,6 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   /* Construct the buffers. */
   __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
   __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
-  /* Disable timing and initialize the timing counters. */
-  channel->timing_enabled = 0;
-  channel->send_usec = 0.0;
-  channel->receive_usec = 0.0;
-  channel->imc_read_usec = 0.0;
-  channel->imc_write_usec = 0.0;
   channel->next_outgoing_request_id = 0;
   /* Do service discovery to speed method invocation. */
   if (!BuildInterfaceDesc(channel)) {
@@ -146,12 +140,6 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
   __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
   /* Set the service to that passed in. */
   channel->server = service;
-  /* Disable timing and initialize the timing counters. */
-  channel->timing_enabled = 0;
-  channel->send_usec = 0.0;
-  channel->receive_usec = 0.0;
-  channel->imc_read_usec = 0.0;
-  channel->imc_write_usec = 0.0;
   channel->server_instance_data = server_instance_data;
   channel->next_outgoing_request_id = 0;
   /* Return success. */
@@ -173,24 +161,6 @@ void NaClSrpcDtor(NaClSrpcChannel *channel) {
   free(channel->client);
   NaClSrpcServiceDtor(channel->server);
   free(channel->server);
-}
-
-/*
- * Channel timing support.
- */
-void NaClSrpcToggleChannelTiming(NaClSrpcChannel* channel, int enable_timing) {
-  channel->timing_enabled = enable_timing;
-}
-
-void NaClSrpcGetTimes(NaClSrpcChannel* channel,
-                      double* send_time,
-                      double* receive_time,
-                      double* imc_read_time,
-                      double* imc_write_time) {
-  *send_time = channel->send_usec;
-  *receive_time = channel->receive_usec;
-  *imc_read_time = channel->imc_read_usec;
-  *imc_write_time = channel->imc_write_usec;
 }
 
 /*
