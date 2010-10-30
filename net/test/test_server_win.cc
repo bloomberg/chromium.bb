@@ -10,9 +10,12 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
+#include "base/thread.h"
 #include "base/utf_string_conversions.h"
 
 #pragma comment(lib, "crypt32.lib")
@@ -72,6 +75,17 @@ bool LaunchTestServerAsJob(const CommandLine& cmdline,
   return true;
 }
 
+void UnblockPipe(HANDLE handle, bool* unblocked) {
+  static const char kUnblock[] = "UNBLOCK";
+  // Unblock the ReadFile in TestServer::WaitToStart by writing to the pipe.
+  // Make sure the call succeeded, otherwise we are very likely to hang.
+  DWORD bytes_written = 0;
+  CHECK(WriteFile(handle, kUnblock, arraysize(kUnblock), &bytes_written,
+                  NULL));
+  CHECK_EQ(arraysize(kUnblock), bytes_written);
+  *unblocked = true;
+}
+
 }  // namespace
 
 namespace net {
@@ -96,8 +110,8 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
     PLOG(ERROR) << "Failed to create pipe";
     return false;
   }
-  child_fd_.Set(child_read);
-  ScopedHandle scoped_child_write(child_write);
+  child_read_fd_.Set(child_read);
+  child_write_fd_.Set(child_write);
 
   // Have the child inherit the write half.
   if (!SetHandleInformation(child_write, HANDLE_FLAG_INHERIT,
@@ -132,10 +146,29 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
+  base::Thread thread("test_server_watcher");
+  if (!thread.Start())
+    return false;
+
+  // Prepare a timeout in case the server fails to start.
+  bool unblocked = false;
+  thread.message_loop()->PostDelayedTask(FROM_HERE,
+      NewRunnableFunction(UnblockPipe, child_write_fd_.Get(), &unblocked),
+      TestTimeouts::action_max_timeout_ms());
+
   char buf[8];
   DWORD bytes_read;
-  BOOL result = ReadFile(child_fd_, buf, sizeof(buf), &bytes_read, NULL);
-  child_fd_.Close();
+  BOOL result = ReadFile(child_read_fd_.Get(), buf, sizeof(buf), &bytes_read,
+                         NULL);
+
+  thread.Stop();
+  child_read_fd_.Close();
+  child_write_fd_.Close();
+
+  // If we hit the timeout, fail.
+  if (unblocked)
+    return false;
+
   return result && bytes_read > 0;
 }
 
