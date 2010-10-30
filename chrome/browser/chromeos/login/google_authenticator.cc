@@ -145,23 +145,19 @@ bool GoogleAuthenticator::AuthenticateToLogin(
 
 bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
                                                const std::string& password) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   username_.assign(Canonicalize(username));
   ascii_hash_.assign(HashPassword(password));
   unlock_ = true;
-  LoadLocalaccount(kLocalaccountFile);
-  if (!localaccount_.empty() && localaccount_ == username) {
-    VLOG(1) << "Unlocking localaccount";
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this,
-                          &GoogleAuthenticator::OnLoginSuccess,
-                          GaiaAuthConsumer::ClientLoginResult(), false));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
-                          LoginFailure(LoginFailure::UNLOCK_FAILED)));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &GoogleAuthenticator::LoadLocalaccount,
+                        std::string(kLocalaccountFile)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
+                        LoginFailure(LoginFailure::UNLOCK_FAILED)));
   return true;
 }
 
