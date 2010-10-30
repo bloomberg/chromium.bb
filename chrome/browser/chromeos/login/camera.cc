@@ -152,6 +152,7 @@ Camera::~Camera() {
   DCHECK_EQ(-1, device_descriptor_) << "Don't forget to uninitialize camera.";
 }
 
+// If this method is called there's no need to call PostCameraThreadAck().
 void Camera::ReportFailure() {
   DCHECK(IsOnCameraThread());
   if (device_descriptor_ == -1) {
@@ -190,6 +191,7 @@ void Camera::DoInitialize(int desired_width, int desired_height) {
 
   if (device_descriptor_ != -1) {
     LOG(WARNING) << "Camera is initialized already.";
+    PostCameraThreadAck();
     return;
   }
 
@@ -245,10 +247,22 @@ void Camera::DoInitialize(int desired_width, int desired_height) {
   frame_height_ = frame_size.height();
   desired_width_ = desired_width;
   desired_height_ = desired_height;
+  // No need to call PostCameraThreadAck() back as this method
+  // is being posted instead.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(this, &Camera::OnInitializeSuccess));
+}
+
+void Camera::CameraThreadAck() {
+}
+
+void Camera::PostCameraThreadAck() {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(this, &Camera::CameraThreadAck));
 }
 
 void Camera::Uninitialize() {
@@ -260,6 +274,7 @@ void Camera::DoUninitialize() {
   DCHECK(IsOnCameraThread());
   if (device_descriptor_ == -1) {
     LOG(WARNING) << "Calling uninitialize for uninitialized camera.";
+    PostCameraThreadAck();
     return;
   }
   DoStopCapturing();
@@ -267,6 +282,8 @@ void Camera::DoUninitialize() {
   if (close(device_descriptor_) == -1)
     log_errno("Closing the device failed.");
   device_descriptor_ = -1;
+  // Maintain a reference so that camera object isn't deleted on wrong thread.
+  PostCameraThreadAck();
 }
 
 void Camera::StartCapturing() {
@@ -278,6 +295,7 @@ void Camera::DoStartCapturing() {
   DCHECK(IsOnCameraThread());
   if (is_capturing_) {
     LOG(WARNING) << "Capturing is already started.";
+    PostCameraThreadAck();
     return;
   }
 
@@ -298,6 +316,8 @@ void Camera::DoStartCapturing() {
     ReportFailure();
     return;
   }
+  // No need to post DidProcessCameraThreadMethod() as this method is
+  // being posted instead.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -315,6 +335,7 @@ void Camera::StopCapturing() {
 void Camera::DoStopCapturing() {
   DCHECK(IsOnCameraThread());
   if (!is_capturing_) {
+    PostCameraThreadAck();
     LOG(WARNING) << "Calling StopCapturing when capturing is not started.";
     return;
   }
@@ -323,6 +344,8 @@ void Camera::DoStopCapturing() {
   v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (xioctl(device_descriptor_, VIDIOC_STREAMOFF, &type) == -1)
     log_errno("VIDIOC_STREAMOFF failed.");
+  // Maintain a reference so that camera object isn't deleted on wrong thread.
+  PostCameraThreadAck();
 }
 
 void Camera::GetFrame(SkBitmap* frame) {
@@ -407,8 +430,11 @@ void Camera::UnmapVideoBuffers() {
 
 void Camera::OnCapture() {
   DCHECK(IsOnCameraThread());
-  if (!is_capturing_)
+  if (!is_capturing_) {
+    // Maintain a reference so that camera object isn't deleted on wrong thread.
+    PostCameraThreadAck();
     return;
+  }
 
   do {
     fd_set fds;

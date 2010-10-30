@@ -128,6 +128,12 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   void DoUninitialize();
   void DoStopCapturing();
 
+  // All methods on the camera thread need to call this to post back to the UI
+  // thread. Otherwise the camera object could be deleted on the camera thread
+  // which is not allowed.
+  void PostCameraThreadAck();
+  void CameraThreadAck();
+
   // Returns true if the code is executed on camera thread right now, false
   // otherwise.
   bool IsOnCameraThread() const;
