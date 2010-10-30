@@ -299,7 +299,8 @@ void NativeTextfieldGtk::SetHorizontalMargins(int left, int right) {
     gtk_text_view_set_left_margin(text_view, left);
     gtk_text_view_set_right_margin(text_view, right);
   } else {
-    GtkBorder border = { left, right, 0, 0 };
+    gfx::Insets insets = GetEntryInnerBorder(GTK_ENTRY(native_view()));
+    GtkBorder border = {left, right, insets.top(), insets.bottom()};
     gtk_entry_set_inner_border(GTK_ENTRY(native_view()), &border);
   }
 }
