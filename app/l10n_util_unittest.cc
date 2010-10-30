@@ -100,7 +100,17 @@ void SetICUDefaultLocale(const std::string& locale_string) {
 // The meaning of that API, on the Mac, is "the locale used by Cocoa's main
 // nib file", which clearly can't be stubbed by a test app that doesn't use
 // Cocoa.
+
+void SetDefaultLocaleForTest(const std::string& tag, base::Environment* env) {
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
+  env->SetVar("LANGUAGE", tag);
+#else
+  SetICUDefaultLocale(tag);
+#endif
+}
+
 TEST_F(L10nUtilTest, GetAppLocale) {
+  scoped_ptr<base::Environment> env;
   // Use a temporary locale dir so we don't have to actually build the locale
   // dlls for this test.
   FilePath orig_locale_dir;
@@ -140,7 +150,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   icu::Locale locale = icu::Locale::getDefault();
 
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
-  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env.reset(base::Environment::Create());
 
   // Test the support of LANGUAGE environment variable.
   SetICUDefaultLocale("en-US");
@@ -163,15 +173,25 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   env->SetVar("LANGUAGE", "/fr:zh_CN");
   EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(""));
 
-  // Make sure the follow tests won't be affected by LANGUAGE environment
-  // variable.
+  // Test prioritization of the different environment variables.
+  env->SetVar("LANGUAGE", "fr");
+  env->SetVar("LC_ALL", "es");
+  env->SetVar("LC_MESSAGES", "he");
+  env->SetVar("LANG", "nb");
+  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(""));
   env->UnSetVar("LANGUAGE");
+  EXPECT_EQ("es", l10n_util::GetApplicationLocale(""));
+  env->UnSetVar("LC_ALL");
+  EXPECT_EQ("he", l10n_util::GetApplicationLocale(""));
+  env->UnSetVar("LC_MESSAGES");
+  EXPECT_EQ("nb", l10n_util::GetApplicationLocale(""));
+  env->UnSetVar("LANG");
 #endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
-  SetICUDefaultLocale("en-US");
+  SetDefaultLocaleForTest("en-US", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("xx");
+  SetDefaultLocaleForTest("xx", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
 #if defined(OS_CHROMEOS)
@@ -184,31 +204,31 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-GB"));
 
 #else  // defined(OS_CHROMEOS)
-  SetICUDefaultLocale("en-GB");
+  SetDefaultLocaleForTest("en-GB", env.get());
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("fr-CA");
+  SetDefaultLocaleForTest("fr-CA", env.get());
   EXPECT_EQ("fr", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("es-MX");
+  SetDefaultLocaleForTest("es-MX", env.get());
   EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("es-AR");
+  SetDefaultLocaleForTest("es-AR", env.get());
   EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("es-ES");
+  SetDefaultLocaleForTest("es-ES", env.get());
   EXPECT_EQ("es", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("es");
+  SetDefaultLocaleForTest("es", env.get());
   EXPECT_EQ("es", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("zh-HK");
+  SetDefaultLocaleForTest("zh-HK", env.get());
   EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("zh-MK");
+  SetDefaultLocaleForTest("zh-MK", env.get());
   EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
 
-  SetICUDefaultLocale("zh-SG");
+  SetDefaultLocaleForTest("zh-SG", env.get());
   EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(""));
 #endif  // defined (OS_CHROMEOS)
 

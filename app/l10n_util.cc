@@ -4,6 +4,10 @@
 
 #include "app/l10n_util.h"
 
+#if defined(TOOLKIT_USES_GTK)
+#include <glib/gutils.h>
+#endif
+
 #include <cstdlib>
 
 #include "app/app_paths.h"
@@ -305,59 +309,6 @@ bool CheckAndResolveLocale(const std::string& locale,
 
   return false;
 }
-
-// Get the locale of the operating system.  The return value is of the form
-// language[-country] (e.g., en-US) where the language is the 2 letter code from
-// ISO-639.
-std::string GetSystemLocale() {
-  std::string language, region;
-  base::i18n::GetLanguageAndRegionFromOS(&language, &region);
-  std::string ret;
-  if (!language.empty())
-    ret.append(language);
-  if (!region.empty()) {
-    ret.append("-");
-    ret.append(region);
-  }
-  return ret;
-}
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-// Split and normalize the language list specified by LANGUAGE environment.
-// LANGUAGE environment specifies a priority list of user prefered locales for
-// application UI messages. Locales are separated by ':' character. The format
-// of a locale is: language[_territory[.codeset]][@modifier]
-//
-// This function splits the language list and normalizes each locale into
-// language[-territory] format, eg. fr, zh-CN, etc.
-void SplitAndNormalizeLanguageList(const std::string& env_language,
-                                   std::vector<std::string>* result) {
-  std::vector<std::string> langs;
-  base::SplitString(env_language, ':', &langs);
-  std::vector<std::string>::iterator i = langs.begin();
-  for (; i != langs.end(); ++i) {
-    size_t end_pos = i->find_first_of(".@");
-    // Erase encoding and modifier part.
-    if (end_pos != std::string::npos)
-      i->erase(end_pos);
-
-    if (!i->empty()) {
-      std::string locale;
-      size_t sep = i->find_first_of("_-");
-      if (sep != std::string::npos) {
-        // language part is always in lower case.
-        locale = StringToLowerASCII(i->substr(0, sep));
-        locale.append("-");
-        // territory part is always in upper case.
-        locale.append(StringToUpperASCII(i->substr(sep + 1)));
-      } else {
-        locale = StringToLowerASCII(*i);
-      }
-      result->push_back(locale);
-    }
-  }
-}
 #endif
 
 // On Linux, the text layout engine Pango determines paragraph directionality
@@ -379,43 +330,71 @@ void AdjustParagraphDirectionality(string16* paragraph) {
 namespace l10n_util {
 
 std::string GetApplicationLocale(const std::string& pref_locale) {
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+
+  // Use any override (Cocoa for the browser), otherwise use the preference
+  // passed to the function.
+  std::string app_locale = l10n_util::GetLocaleOverride();
+  if (app_locale.empty())
+    app_locale = pref_locale;
+
+  // The above should handle all of the cases Chrome normally hits, but for some
+  // unit tests, we need something to fall back too.
+  if (app_locale.empty())
+    app_locale = "en-US";
+
+  // Windows/Linux call SetICUDefaultLocale after determining the actual locale
+  // with CheckAndResolveLocal to make ICU APIs work in that locale.
+  // Mac doesn't use a locale directory tree of resources (it uses Mac style
+  // resources), so mirror the Windows/Linux behavior of calling
+  // SetICUDefaultLocale.
+  base::i18n::SetICUDefaultLocale(app_locale);
+  return app_locale;
+
+#else
+
   FilePath locale_path;
   PathService::Get(app::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
   std::vector<std::string> candidates;
-  const std::string system_locale = GetSystemLocale();
 
   // We only use --lang and the app pref on Windows.  On Linux, we only
   // look at the LC_*/LANG environment variables.  We do, however, pass --lang
   // to renderer and plugin processes so they know what language the parent
   // process decided to use.
+
 #if defined(OS_WIN)
+
   // First, try the preference value.
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
   // Next, try the system locale.
-  candidates.push_back(system_locale);
+  candidates.push_back(base::i18n::GetConfiguredLocale());
 
 #elif defined(OS_CHROMEOS)
+
   // On ChromeOS, use the application locale preference.
   if (!pref_locale.empty())
     candidates.push_back(pref_locale);
 
-#elif defined(OS_POSIX)
-  // On POSIX, we also check LANGUAGE environment variable, which is supported
-  // by gettext to specify a priority list of prefered languages.
-  const char* env_language = ::getenv("LANGUAGE");
-  if (env_language)
-    SplitAndNormalizeLanguageList(env_language, &candidates);
+#elif defined(OS_POSIX) && defined(TOOLKIT_USES_GTK)
 
-  // Only fallback to the system locale if LANGUAGE is not specified.
-  // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
-  // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
-  // then just fallback to the locale based on LC_ALL/LANG.
-  if (candidates.empty())
-    candidates.push_back(system_locale);
+  // GLib implements correct environment variable parsing with
+  // the precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG.
+  // We used to use our custom parsing code along with ICU for this purpose.
+  // If we have a port that does not depend on GTK, we have to
+  // restore our custom code for that port.
+  const char* const* languages = g_get_language_names();
+  DCHECK(languages);  // A valid pointer is guaranteed.
+  DCHECK(*languages);  // At least one entry, "C", is guaranteed.
+
+  for (; *languages != NULL; ++languages) {
+    candidates.push_back(base::i18n::GetCanonicalLocale(*languages));
+  }
+
+#else
+#error Unsupported platform, see build/build_config.h
 #endif
 
   std::vector<std::string>::const_iterator i = candidates.begin();
@@ -438,27 +417,7 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 
   return std::string();
 
-#else  // !defined(OS_MACOSX)
-
-  // Use any override (Cocoa for the browser), otherwise use the preference
-  // passed to the function.
-  std::string app_locale = l10n_util::GetLocaleOverride();
-  if (app_locale.empty())
-    app_locale = pref_locale;
-
-  // The above should handle all of the cases Chrome normally hits, but for some
-  // unit tests, we need something to fall back too.
-  if (app_locale.empty())
-    app_locale = "en-US";
-
-  // Windows/Linux call SetICUDefaultLocale after determining the actual locale
-  // with CheckAndResolveLocal to make ICU APIs work in that locale.
-  // Mac doesn't use a locale directory tree of resources (it uses Mac style
-  // resources), so mirror the Windows/Linux behavior of calling
-  // SetICUDefaultLocale.
-  base::i18n::SetICUDefaultLocale(app_locale);
-  return app_locale;
-#endif  // !defined(OS_MACOSX)
+#endif
 }
 
 string16 GetDisplayNameForLocale(const std::string& locale,
