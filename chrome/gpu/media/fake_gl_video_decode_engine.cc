@@ -108,7 +108,7 @@ void FakeGlVideoDecodeEngine::ConsumeVideoSample(
 
   // After we have filled the content upload the internal frame to the
   // VideoFrame allocated through VideoDecodeContext.
-  context_->UploadToVideoFrame(
+  context_->ConvertToVideoFrame(
       internal_frame_, frame,
       NewRunnableMethod(this, &FakeGlVideoDecodeEngine::UploadCompleteTask,
                         frame));

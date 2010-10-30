@@ -49,9 +49,8 @@ class GpuVideoDevice {
   // the GPU process.
   //
   // Return true if successful.
-  // TODO(hclam): Rename this to ConvertToVideoFrame().
-  virtual bool UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame) = 0;
+  virtual bool ConvertToVideoFrame(void* buffer,
+                                   scoped_refptr<media::VideoFrame> frame) = 0;
 };
 
 #endif  // CHROME_GPU_MEDIA_GPU_VIDEO_DEVICE_H_

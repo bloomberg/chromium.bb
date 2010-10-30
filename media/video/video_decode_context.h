@@ -67,9 +67,9 @@ class VideoDecodeContext {
   // Implementor should know how to handle it.
   //
   // |task| is executed if the operation was completed successfully.
-  // TODO(hclam): Rename this to ConvertToVideoFrame().
-  virtual void UploadToVideoFrame(void* buffer, scoped_refptr<VideoFrame> frame,
-                                  Task* task) = 0;
+  virtual void ConvertToVideoFrame(void* buffer,
+                                   scoped_refptr<VideoFrame> frame,
+                                   Task* task) = 0;
 
   // Destroy this context asynchronously. When the operation is done |task|
   // is called. It is safe to delete this object only after |task| is called.

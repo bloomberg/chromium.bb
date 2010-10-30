@@ -37,7 +37,7 @@ void FakeGlVideoDevice::ReleaseVideoFrame(
   // for the VideoFrame(s) generated.
 }
 
-bool FakeGlVideoDevice::UploadToVideoFrame(
+bool FakeGlVideoDevice::ConvertToVideoFrame(
     void* buffer, scoped_refptr<media::VideoFrame> frame) {
   // Assume we are in the right context and then upload the content to the
   // texture.

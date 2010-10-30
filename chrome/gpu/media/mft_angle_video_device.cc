@@ -43,7 +43,7 @@ void MftAngleVideoDevice::ReleaseVideoFrame(
   // for the VideoFrame(s) generated.
 }
 
-bool MftAngleVideoDevice::UploadToVideoFrame(
+bool MftAngleVideoDevice::ConvertToVideoFrame(
     void* buffer, scoped_refptr<media::VideoFrame> frame) {
   gl::Context* context = (gl::Context*)eglGetCurrentContext();
   // TODO(hclam): Connect ANGLE to upload the surface to texture when changes

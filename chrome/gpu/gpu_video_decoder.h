@@ -120,9 +120,9 @@ class GpuVideoDecoder
       int n, size_t width, size_t height, media::VideoFrame::Format format,
       std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task);
   virtual void ReleaseAllVideoFrames();
-  virtual void UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame,
-                                  Task* task);
+  virtual void ConvertToVideoFrame(void* buffer,
+                                   scoped_refptr<media::VideoFrame> frame,
+                                   Task* task);
   virtual void Destroy(Task* task);
 
   // These methods are used in unit test only.

@@ -199,9 +199,10 @@ void GpuVideoDecoder::ReleaseAllVideoFrames() {
   SendReleaseAllVideoFrames();
 }
 
-void GpuVideoDecoder::UploadToVideoFrame(void* buffer,
-                                         scoped_refptr<media::VideoFrame> frame,
-                                         Task* task) {
+void GpuVideoDecoder::ConvertToVideoFrame(
+    void* buffer,
+    scoped_refptr<media::VideoFrame> frame,
+    Task* task) {
   // This method is called by VideoDecodeEngine to upload a buffer to a
   // VideoFrame. We should just delegate this to GpuVideoDevice which contains
   // the actual implementation.
@@ -209,7 +210,7 @@ void GpuVideoDecoder::UploadToVideoFrame(void* buffer,
   DCHECK(ret) << "Failed to switch context";
 
   // Actually doing the upload on the main thread.
-  ret = video_device_->UploadToVideoFrame(buffer, frame);
+  ret = video_device_->ConvertToVideoFrame(buffer, frame);
   DCHECK(ret) << "Failed to upload video content to a VideoFrame.";
   task->Run();
   delete task;

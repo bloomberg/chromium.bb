@@ -37,7 +37,7 @@ class Context;
 //    bwith the GPU process). An additional step of uploading the content to
 //    video memory is needed. Since VideoDecodeEngine is unaware of the video
 //    memory, this upload operation is performed by calling
-//    UploadToVideoFrame().
+//    ConvertToVideoFrame().
 //
 //    After the content is uploaded to video memory, WebKit will see the video
 //    frame as textures and will perform the necessary operations for
@@ -86,9 +86,9 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
       media::VideoFrame::Format format,
       std::vector<scoped_refptr<media::VideoFrame> >* frames_out, Task* task);
   virtual void ReleaseAllVideoFrames();
-  virtual void UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame,
-                                  Task* task);
+  virtual void ConvertToVideoFrame(void* buffer,
+                                   scoped_refptr<media::VideoFrame> frame,
+                                   Task* task);
   virtual void Destroy(Task* task);
 
   // Accessor of the current mode of this decode context.

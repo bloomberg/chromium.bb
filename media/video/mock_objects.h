@@ -41,7 +41,7 @@ class MockVideoDecodeContext : public VideoDecodeContext {
       std::vector<scoped_refptr<VideoFrame> >* frames,
       Task* task));
   MOCK_METHOD0(ReleaseAllVideoFrames, void());
-  MOCK_METHOD3(UploadToVideoFrame,  void(
+  MOCK_METHOD3(ConvertToVideoFrame,  void(
       void* buffer, scoped_refptr<VideoFrame> frame, Task* task));
   MOCK_METHOD1(Destroy, void(Task* task));
 

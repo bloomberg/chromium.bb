@@ -36,7 +36,7 @@ class MockGpuVideoDevice : public GpuVideoDevice {
                     scoped_refptr<media::VideoFrame>*));
   MOCK_METHOD1(ReleaseVideoFrame,
                void(const scoped_refptr<media::VideoFrame>& frame));
-  MOCK_METHOD2(UploadToVideoFrame,
+  MOCK_METHOD2(ConvertToVideoFrame,
                bool(void* buffer, scoped_refptr<media::VideoFrame> frame));
 
  private:

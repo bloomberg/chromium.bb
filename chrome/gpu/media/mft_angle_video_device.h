@@ -32,8 +32,8 @@ class MftAngleVideoDevice : public GpuVideoDevice {
       scoped_refptr<media::VideoFrame>* frame);
   virtual void ReleaseVideoFrame(
       const scoped_refptr<media::VideoFrame>& frame);
-  virtual bool UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame);
+  virtual bool ConvertToVideoFrame(void* buffer,
+                                   scoped_refptr<media::VideoFrame> frame);
 
  private:
   ScopedComPtr<IDirect3DDevice9, &IID_IDirect3DDevice9> device_;

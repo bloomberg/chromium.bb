@@ -20,8 +20,8 @@ class FakeGlVideoDevice : public GpuVideoDevice {
       scoped_refptr<media::VideoFrame>* frame);
   virtual void ReleaseVideoFrame(
       const scoped_refptr<media::VideoFrame>& frame);
-  virtual bool UploadToVideoFrame(void* buffer,
-                                  scoped_refptr<media::VideoFrame> frame);
+  virtual bool ConvertToVideoFrame(void* buffer,
+                                   scoped_refptr<media::VideoFrame> frame);
 };
 
 #endif  // CHROME_GPU_MEDIA_FAKE_GL_VIDEO_DEVICE_H_

@@ -650,7 +650,7 @@ bool MftH264DecodeEngine::DoDecode() {
     // TODO(imcheng): Detect error.
     output_frames_[0]->SetTimestamp(TimeDelta::FromMicroseconds(timestamp));
     output_frames_[0]->SetDuration(TimeDelta::FromMicroseconds(duration));
-    context_->UploadToVideoFrame(
+    context_->ConvertToVideoFrame(
         surface.get(), output_frames_[0],
         NewRunnableMethod(this, &MftH264DecodeEngine::OnUploadVideoFrameDone,
                           surface, output_frames_[0]));

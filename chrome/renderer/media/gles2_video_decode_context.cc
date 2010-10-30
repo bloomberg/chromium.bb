@@ -98,7 +98,7 @@ void Gles2VideoDecodeContext::ReleaseAllVideoFrames() {
   frames_.clear();
 }
 
-void Gles2VideoDecodeContext::UploadToVideoFrame(
+void Gles2VideoDecodeContext::ConvertToVideoFrame(
     void* buffer, scoped_refptr<media::VideoFrame> frame, Task* task) {
   DCHECK(memory_mapped_);
   // TODO(hclam): Implement.
