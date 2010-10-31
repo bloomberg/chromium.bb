@@ -140,13 +140,13 @@ FilePath GenerateTimestampedName(const FilePath& base_path,
                                  base::Time timestamp) {
   base::Time::Exploded time_deets;
   timestamp.LocalExplode(&time_deets);
-  std::string suffix = StringPrintf("_%02d%02d%02d-%02d%02d%02d",
-                                    time_deets.year,
-                                    time_deets.month,
-                                    time_deets.day_of_month,
-                                    time_deets.hour,
-                                    time_deets.minute,
-                                    time_deets.second);
+  std::string suffix = base::StringPrintf("_%02d%02d%02d-%02d%02d%02d",
+                                          time_deets.year,
+                                          time_deets.month,
+                                          time_deets.day_of_month,
+                                          time_deets.hour,
+                                          time_deets.minute,
+                                          time_deets.second);
   return base_path.InsertBeforeExtension(suffix);
 }
 

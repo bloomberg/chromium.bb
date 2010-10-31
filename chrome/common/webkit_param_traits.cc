@@ -40,7 +40,8 @@ void ParamTraits<WebKit::WebRect>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
-void ParamTraits<WebKit::WebScreenInfo>::Write(Message* m, const param_type& p) {
+void ParamTraits<WebKit::WebScreenInfo>::Write(Message* m,
+                                               const param_type& p) {
   WriteParam(m, p.depth);
   WriteParam(m, p.depthPerComponent);
   WriteParam(m, p.isMonochrome);
@@ -101,8 +102,8 @@ void ParamTraits<WebKit::WebFindOptions>::Log(const param_type& p,
 
 void ParamTraits<WebKit::WebCache::ResourceTypeStat>::Log(
     const param_type& p, std::string* l) {
-  l->append(StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS,
-                         p.count, p.size, p.liveSize, p.decodedSize));
+  l->append(base::StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS,
+                               p.count, p.size, p.liveSize, p.decodedSize));
 }
 
 void ParamTraits<WebKit::WebMediaPlayerAction>::Write(Message* m,

@@ -289,10 +289,11 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
     std::string messages_file = WideToASCII(message_path.ToWStringHack());
     if (error.empty()) {
       // If file is missing, Deserialize will fail with empty error.
-      SetError(StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
-                            messages_file.c_str()));
+      SetError(base::StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
+                                  messages_file.c_str()));
     } else {
-      SetError(StringPrintf("%s: %s", messages_file.c_str(), error.c_str()));
+      SetError(base::StringPrintf("%s: %s", messages_file.c_str(),
+                                  error.c_str()));
     }
     return false;
   }

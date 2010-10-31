@@ -245,8 +245,8 @@ TEST_F(GaiaAuthenticator2Test, WorkingIssueAuthToken) {
 
 TEST_F(GaiaAuthenticator2Test, CheckTwoFactorResponse) {
   std::string response =
-      StringPrintf("Error=BadAuthentication\n%s\n",
-                   GaiaAuthenticator2::kSecondFactor);
+      base::StringPrintf("Error=BadAuthentication\n%s\n",
+                         GaiaAuthenticator2::kSecondFactor);
   EXPECT_TRUE(GaiaAuthenticator2::IsSecondFactorSuccess(response));
 }
 
@@ -256,7 +256,7 @@ TEST_F(GaiaAuthenticator2Test, CheckNormalErrorCode) {
 }
 
 TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
-  std::string response = StringPrintf("Error=BadAuthentication\n%s\n",
+  std::string response = base::StringPrintf("Error=BadAuthentication\n%s\n",
       GaiaAuthenticator2::kSecondFactor);
 
   GoogleServiceAuthError error =

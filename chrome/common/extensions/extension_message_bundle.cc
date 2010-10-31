@@ -48,8 +48,10 @@ const char* ExtensionMessageBundle::kBidiRightEdgeValue = "right";
 // Formats message in case we encounter a bad formed key in the JSON object.
 // Returns false and sets |error| to actual error message.
 static bool BadKeyMessage(const std::string& name, std::string* error) {
-  *error = StringPrintf("Name of a key \"%s\" is invalid. Only ASCII [a-z], "
-                        "[A-Z], [0-9] and \"_\" are allowed.", name.c_str());
+  *error = base::StringPrintf(
+      "Name of a key \"%s\" is invalid. Only ASCII [a-z], "
+      "[A-Z], [0-9] and \"_\" are allowed.",
+      name.c_str());
   return false;
 }
 
@@ -134,13 +136,13 @@ bool ExtensionMessageBundle::GetMessageValue(const std::string& key,
   // Get the top level tree for given key (name part).
   DictionaryValue* name_tree;
   if (!catalog.GetDictionaryWithoutPathExpansion(key, &name_tree)) {
-    *error = StringPrintf("Not a valid tree for key %s.", key.c_str());
+    *error = base::StringPrintf("Not a valid tree for key %s.", key.c_str());
     return false;
   }
   // Extract message from it.
   if (!name_tree->GetString(kMessageKey, value)) {
-    *error = StringPrintf("There is no \"%s\" element for key %s.", kMessageKey,
-                          key.c_str());
+    *error = base::StringPrintf(
+        "There is no \"%s\" element for key %s.", kMessageKey, key.c_str());
     return false;
   }
 
@@ -166,8 +168,8 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
 
   DictionaryValue* placeholders_tree;
   if (!name_tree.GetDictionary(kPlaceholdersKey, &placeholders_tree)) {
-    *error = StringPrintf("Not a valid \"%s\" element for key %s.",
-                          kPlaceholdersKey, name_key.c_str());
+    *error = base::StringPrintf("Not a valid \"%s\" element for key %s.",
+                                kPlaceholdersKey, name_key.c_str());
     return false;
   }
 
@@ -179,15 +181,15 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
       return BadKeyMessage(content_key, error);
     if (!placeholders_tree->GetDictionaryWithoutPathExpansion(content_key,
                                                               &placeholder)) {
-      *error = StringPrintf("Invalid placeholder %s for key %s",
-                            content_key.c_str(),
-                            name_key.c_str());
+      *error = base::StringPrintf("Invalid placeholder %s for key %s",
+                                  content_key.c_str(),
+                                  name_key.c_str());
       return false;
     }
     std::string content;
     if (!placeholder->GetString(kContentKey, &content)) {
-      *error = StringPrintf("Invalid \"%s\" element for key %s.",
-                            kContentKey, name_key.c_str());
+      *error = base::StringPrintf("Invalid \"%s\" element for key %s.",
+                                  kContentKey, name_key.c_str());
       return false;
     }
     (*placeholders)[StringToLowerASCII(content_key)] = content;
@@ -253,10 +255,10 @@ bool ExtensionMessageBundle::ReplaceVariables(
     SubstitutionMap::const_iterator it =
       variables.find(StringToLowerASCII(var_name));
     if (it == variables.end()) {
-      *error = StringPrintf("Variable %s%s%s used but not defined.",
-                            var_begin_delimiter.c_str(),
-                            var_name.c_str(),
-                            var_end_delimiter.c_str());
+      *error = base::StringPrintf("Variable %s%s%s used but not defined.",
+                                  var_begin_delimiter.c_str(),
+                                  var_name.c_str(),
+                                  var_end_delimiter.c_str());
       return false;
     }
 

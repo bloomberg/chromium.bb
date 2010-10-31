@@ -307,7 +307,7 @@ TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
     StringValue* p = new StringValue(name);
     permissions->Clear();
     permissions->Append(p);
-    std::string message_name = StringPrintf("permission-%s", name);
+    std::string message_name = base::StringPrintf("permission-%s", name);
     if (Extension::IsHostedAppPermission(name)) {
       scoped_refptr<Extension> extension;
       extension = LoadAndExpectSuccess(manifest.get(), message_name);

@@ -28,7 +28,7 @@ bool ParamTraits<GpuVideoDecoderInitParam>::Read(
 
 void ParamTraits<GpuVideoDecoderInitParam>::Log(
     const GpuVideoDecoderInitParam& p, std::string* l) {
-  l->append(StringPrintf("(%d, %d %d)", p.codec_id, p.width, p.height));
+  l->append(base::StringPrintf("(%d, %d %d)", p.codec_id, p.width, p.height));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ bool ParamTraits<GpuVideoDecoderInitDoneParam>::Read(
 
 void ParamTraits<GpuVideoDecoderInitDoneParam>::Log(
     const GpuVideoDecoderInitDoneParam& p, std::string* l) {
-  l->append(StringPrintf("(%d %d)", p.success, p.input_buffer_size));
+  l->append(base::StringPrintf("(%d %d)", p.success, p.input_buffer_size));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,9 +74,9 @@ bool ParamTraits<GpuVideoDecoderInputBufferParam>::Read(
 
 void ParamTraits<GpuVideoDecoderInputBufferParam>::Log(
     const GpuVideoDecoderInputBufferParam& p, std::string* l) {
-  l->append(StringPrintf("(%d %d %d)",
-                         static_cast<int>(p.timestamp),
-                         p.offset, p.size));
+  l->append(base::StringPrintf("(%d %d %d)",
+                               static_cast<int>(p.timestamp),
+                               p.offset, p.size));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,7 +95,7 @@ bool ParamTraits<GpuVideoDecoderErrorInfoParam>::Read(
 
 void ParamTraits<GpuVideoDecoderErrorInfoParam>::Log(
     const GpuVideoDecoderErrorInfoParam& p, std::string* l) {
-  l->append(StringPrintf("(%d)", p.error_id));
+  l->append(base::StringPrintf("(%d)", p.error_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ bool ParamTraits<GpuVideoDecoderFormatChangeParam>::Read(
 
 void ParamTraits<GpuVideoDecoderFormatChangeParam>::Log(
     const GpuVideoDecoderFormatChangeParam& p, std::string* l) {
-  l->append(StringPrintf("%d", p.input_buffer_size));
+  l->append(base::StringPrintf("%d", p.input_buffer_size));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

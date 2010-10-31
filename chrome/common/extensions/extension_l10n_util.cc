@@ -146,8 +146,8 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   if (chrome_locales.find(locale_name) == chrome_locales.end()) {
     // Warn if there is an extension locale that's not in the Chrome list,
     // but don't fail.
-    LOG(WARNING) << StringPrintf("Supplied locale %s is not supported.",
-                                 locale_name.c_str());
+    LOG(WARNING) << base::StringPrintf("Supplied locale %s is not supported.",
+                                       locale_name.c_str());
     return true;
   }
   // Check if messages file is actually present (but don't check content).
@@ -155,8 +155,8 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
       locale_folder.Append(Extension::kMessagesFilename))) {
     valid_locales->insert(locale_name);
   } else {
-    *error = StringPrintf("Catalog file is missing for locale %s.",
-                          locale_name.c_str());
+    *error = base::StringPrintf("Catalog file is missing for locale %s.",
+                                locale_name.c_str());
     return false;
   }
 
@@ -250,8 +250,8 @@ static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
   if (!dictionary && error->empty()) {
     // JSONFileValueSerializer just returns NULL if file cannot be found. It
     // doesn't set the error, so we have to do it.
-    *error = StringPrintf("Catalog file is missing for locale %s.",
-                          extension_locale.c_str());
+    *error = base::StringPrintf("Catalog file is missing for locale %s.",
+                                extension_locale.c_str());
   }
 
   return static_cast<DictionaryValue*>(dictionary);

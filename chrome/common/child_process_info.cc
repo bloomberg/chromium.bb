@@ -135,9 +135,9 @@ std::string ChildProcessInfo::GenerateRandomChannelID(void* instance) {
   // parent browser process, an identifier for the child instance, and a random
   // component. We use a random component so that a hacked child process can't
   // cause denial of service by causing future named pipe creation to fail.
-  return StringPrintf("%d.%p.%d",
-                      base::GetCurrentProcId(), instance,
-                      base::RandInt(0, std::numeric_limits<int>::max()));
+  return base::StringPrintf("%d.%p.%d",
+                            base::GetCurrentProcId(), instance,
+                            base::RandInt(0, std::numeric_limits<int>::max()));
 }
 
 // static

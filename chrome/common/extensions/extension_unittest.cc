@@ -427,9 +427,9 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
 
 TEST(ExtensionTest, LoadPageActionHelper) {
 #if defined(OS_WIN)
-    FilePath path(StringPrintf(L"c:\\extension"));
+    FilePath path(base::StringPrintf(L"c:\\extension"));
 #else
-    FilePath path(StringPrintf("/extension"));
+    FilePath path(base::StringPrintf("/extension"));
 #endif
   scoped_refptr<Extension> extension_ptr(new Extension(path,
                                                        Extension::INVALID));
@@ -661,9 +661,9 @@ TEST(ExtensionTest, UpdateUrls) {
 #if defined(OS_WIN)
     // (Why %Iu below?  This is the single file in the whole code base that
     // might make use of a WidePRIuS; let's not encourage any more.)
-    FilePath path(StringPrintf(L"c:\\extension%Iu", i));
+    FilePath path(base::StringPrintf(L"c:\\extension%Iu", i));
 #else
-    FilePath path(StringPrintf("/extension%" PRIuS, i));
+    FilePath path(base::StringPrintf("/extension%" PRIuS, i));
 #endif
     std::string error;
 
@@ -686,9 +686,9 @@ TEST(ExtensionTest, UpdateUrls) {
 #if defined(OS_WIN)
     // (Why %Iu below?  This is the single file in the whole code base that
     // might make use of a WidePRIuS; let's not encourage any more.)
-    FilePath path(StringPrintf(L"c:\\extension%Iu", i));
+    FilePath path(base::StringPrintf(L"c:\\extension%Iu", i));
 #else
-    FilePath path(StringPrintf("/extension%" PRIuS, i));
+    FilePath path(base::StringPrintf("/extension%" PRIuS, i));
 #endif
     std::string error;
     input_value.SetString(keys::kVersion, "1.0");

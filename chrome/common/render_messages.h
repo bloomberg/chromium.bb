@@ -316,7 +316,7 @@ struct ParamTraits<gfx::NativeView> {
   }
 
   static void Log(const param_type& p, std::string* l) {
-    l->append(StringPrintf("<gfx::NativeView>"));
+    l->append(base::StringPrintf("<gfx::NativeView>"));
   }
 };
 

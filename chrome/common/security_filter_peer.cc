@@ -53,7 +53,7 @@ SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
     webkit_glue::ResourceLoaderBridge::Peer* peer, int os_error) {
   // TODO(jcampan): use a different message when getting a phishing/malware
   // error.
-  std::string html = StringPrintf(
+  std::string html = base::StringPrintf(
       "<html><meta charset='UTF-8'>"
       "<body style='background-color:#990000;color:white;'>"
       "%s</body></html>",

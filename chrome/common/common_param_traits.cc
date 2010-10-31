@@ -138,7 +138,7 @@ bool ParamTraits<gfx::Point>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<gfx::Point>::Log(const gfx::Point& p, std::string* l) {
-  l->append(StringPrintf("(%d, %d)", p.x(), p.y()));
+  l->append(base::StringPrintf("(%d, %d)", p.x(), p.y()));
 }
 
 
@@ -164,8 +164,8 @@ bool ParamTraits<gfx::Rect>::Read(const Message* m, void** iter, gfx::Rect* r) {
 }
 
 void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
-  l->append(StringPrintf("(%d, %d, %d, %d)", p.x(), p.y(),
-                         p.width(), p.height()));
+  l->append(base::StringPrintf("(%d, %d, %d, %d)", p.x(), p.y(),
+                               p.width(), p.height()));
 }
 
 
@@ -185,7 +185,7 @@ bool ParamTraits<gfx::Size>::Read(const Message* m, void** iter, gfx::Size* r) {
 }
 
 void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::string* l) {
-  l->append(StringPrintf("(%d, %d)", p.width(), p.height()));
+  l->append(base::StringPrintf("(%d, %d)", p.width(), p.height()));
 }
 
 void ParamTraits<ContentSetting>::Write(Message* m, const param_type& p) {
@@ -435,8 +435,8 @@ bool ParamTraits<ThumbnailScore>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<ThumbnailScore>::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("(%f, %d, %d)",
-                         p.boring_score, p.good_clipping, p.at_top));
+  l->append(base::StringPrintf("(%f, %d, %d)",
+                               p.boring_score, p.good_clipping, p.at_top));
 }
 
 template <>
@@ -454,7 +454,7 @@ struct ParamTraits<Geoposition::ErrorCode> {
   }
   static void Log(const param_type& p, std::string* l)  {
     int error_code = p;
-    l->append(StringPrintf("<Geoposition::ErrorCode>%d", error_code));
+    l->append(base::StringPrintf("<Geoposition::ErrorCode>%d", error_code));
   }
 };
 
@@ -488,7 +488,7 @@ bool ParamTraits<Geoposition>::Read(
 
 void ParamTraits<Geoposition>::Log(const Geoposition& p, std::string* l) {
   l->append(
-      StringPrintf(
+      base::StringPrintf(
           "<Geoposition>"
           "%.6f %.6f %.6f %.6f "
           "%.6f %.6f %.6f ",

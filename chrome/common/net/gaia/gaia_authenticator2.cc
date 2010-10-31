@@ -149,24 +149,24 @@ std::string GaiaAuthenticator2::MakeClientLoginBody(
       kAccountTypeGoogle;
 
   if (login_token.empty() || login_captcha.empty()) {
-    return StringPrintf(kClientLoginFormat,
-                        encoded_username.c_str(),
-                        encoded_password.c_str(),
-                        kCookiePersistence,
-                        account_type,
-                        source.c_str(),
-                        service);
+    return base::StringPrintf(kClientLoginFormat,
+                              encoded_username.c_str(),
+                              encoded_password.c_str(),
+                              kCookiePersistence,
+                              account_type,
+                              source.c_str(),
+                              service);
   }
 
-  return StringPrintf(kClientLoginCaptchaFormat,
-                      encoded_username.c_str(),
-                      encoded_password.c_str(),
-                      kCookiePersistence,
-                      account_type,
-                      source.c_str(),
-                      service,
-                      encoded_login_token.c_str(),
-                      encoded_login_captcha.c_str());
+  return base::StringPrintf(kClientLoginCaptchaFormat,
+                            encoded_username.c_str(),
+                            encoded_password.c_str(),
+                            kCookiePersistence,
+                            account_type,
+                            source.c_str(),
+                            service,
+                            encoded_login_token.c_str(),
+                            encoded_login_captcha.c_str());
 
 }
 
@@ -178,16 +178,16 @@ std::string GaiaAuthenticator2::MakeIssueAuthTokenBody(
   std::string encoded_sid = UrlEncodeString(sid);
   std::string encoded_lsid = UrlEncodeString(lsid);
 
-  return StringPrintf(kIssueAuthTokenFormat,
-                      encoded_sid.c_str(),
-                      encoded_lsid.c_str(),
-                      service);
+  return base::StringPrintf(kIssueAuthTokenFormat,
+                            encoded_sid.c_str(),
+                            encoded_lsid.c_str(),
+                            service);
 }
 
 // static
 std::string GaiaAuthenticator2::MakeGetUserInfoBody(const std::string& lsid) {
   std::string encoded_lsid = UrlEncodeString(lsid);
-  return StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
+  return base::StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
 }
 
 // Helper method that extracts tokens from a successful reply.

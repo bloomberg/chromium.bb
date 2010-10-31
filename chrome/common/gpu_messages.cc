@@ -126,11 +126,11 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 }
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
-  l->append(StringPrintf("<GPUInfo> %x %x %ls %d",
-                         p.vendor_id(),
-                         p.device_id(),
-                         p.driver_version().c_str(),
-                         p.can_lose_context()));
+  l->append(base::StringPrintf("<GPUInfo> %x %x %ls %d",
+                               p.vendor_id(),
+                               p.device_id(),
+                               p.driver_version().c_str(),
+                               p.can_lose_context()));
 }
 
 void ParamTraits<DxDiagNode> ::Write(Message* m, const param_type& p) {
