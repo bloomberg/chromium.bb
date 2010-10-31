@@ -1,6 +1,10 @@
 noinst_PROGRAMS = compositor
 
-INCLUDES = -I$(top_srcdir)/wayland $(COMPOSITOR_CFLAGS)
+INCLUDES =					\
+	-I$(top_srcdir)/wayland			\
+	-I$(top_builddir)/wayland		\
+	$(COMPOSITOR_CFLAGS)
+
 AM_CPPFLAGS = -DDATADIR='"$(datadir)"'
 
 compositor_LDADD =					\

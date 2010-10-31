@@ -1,7 +1,10 @@
 noinst_PROGRAMS = gears flower screenshot terminal image view dnd smoke
 noinst_LTLIBRARIES = libtoytoolkit.la
 
-INCLUDES = -I$(top_srcdir)/wayland $(CLIENT_CFLAGS) $(POPPLER_CFLAGS)
+INCLUDES =					\
+	-I$(top_srcdir)/wayland			\
+	-I$(top_builddir)/wayland			\
+	$(CLIENT_CFLAGS) $(POPPLER_CFLAGS)
 
 LDADD = libtoytoolkit.la				\
 	$(top_builddir)/wayland/libwayland-client.la	\
