@@ -25,7 +25,7 @@ deps = {
     (Var("googlecode_url") % "google-url") + "/trunk@149",
 
   "src/seccompsandbox":
-    "http://seccompsandbox.googlecode.com/svn/trunk@141",
+    (Var("googlecode_url") % "seccompsandbox") + "/trunk@141",
 
   "src/sdch/open-vcdiff":
     (Var("googlecode_url") % "open-vcdiff") + "/trunk@28",
@@ -49,7 +49,7 @@ deps = {
    "/trunk/deps/third_party/hunspell_dictionaries@60756",
 
   "src/third_party/safe_browsing/testing":
-    "http://google-safe-browsing.googlecode.com/svn/trunk/testing@102",
+    (Var("googlecode_url") % "google-safe-browsing") + "/trunk/testing@102",
 
   "src/third_party/cacheinvalidation/files":
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@51",
@@ -276,8 +276,7 @@ deps_os = {
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
 
     "src/third_party/lss":
-      ("http://%s.googlecode.com/svn" % "linux-syscall-support") +
-      "/trunk/lss@3",
+      (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@3",
   },
 }
 
