@@ -43,11 +43,12 @@ PLATFORM_MAPPING = {
 
 def Retry(op, *args):
   if sys.platform == 'win32':
-    for i in range(0, 10):
+    for i in range(0, 5):
       try:
         op(*args)
         break
-      except WindowsError:
+      except:
+        print "RETRY: ", op.__name__, args
         time.sleep(pow(2, i))
   else:
     op(*args)
