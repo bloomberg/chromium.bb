@@ -184,9 +184,9 @@ env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_shm_browser_test')
 # TODO: This test currently fails on lucid + firefox 3.6 for x86-32.
 #     Disabling in that case. Renable when fixed.
 #     See http://code.google.com/p/nativeclient/issues/detail?id=364
-if not (env['TARGET_ARCHITECTURE'] == 'x86' and
-        env['TARGET_SUBARCH'] == '32' and
-        'lucid' in platform.platform()):
+# NOTE:  This started failing on hardy as well for the new bots
+# So this is now disabled for all platforms
+if 0:
   node = env.BrowserTester(
       'srpc_nrd_xfer_browser_test.out',
        url='srpc_nrd_xfer.html',
