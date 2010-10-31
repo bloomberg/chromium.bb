@@ -434,6 +434,8 @@ nouveau_bo_map_range(struct nouveau_bo *bo, uint32_t delta, uint32_t size,
 					      (flags & NOUVEAU_BO_NOWAIT), 0);
 			if (ret)
 				return ret;
+
+			nvbo->map_refcnt++;
 		}
 
 		bo->map = (char *)nvbo->map + delta;
@@ -458,13 +460,14 @@ nouveau_bo_unmap(struct nouveau_bo *bo)
 {
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 
-	if (bo->map && !nvbo->sysmem) {
+	if (bo->map && !nvbo->sysmem && nvbo->map_refcnt) {
 		struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
 		struct drm_nouveau_gem_cpu_fini req;
 
 		req.handle = nvbo->handle;
 		drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_CPU_FINI,
 				&req, sizeof(req));
+		nvbo->map_refcnt--;
 	}
 
 	bo->map = NULL;
