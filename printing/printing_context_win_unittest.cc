@@ -103,7 +103,8 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   return S_OK;
 }
 
-TEST_F(PrintingContextTest, Base) {
+// crbug.com/61509
+TEST_F(PrintingContextTest, FLAKY_Base) {
   printing::PrintSettings settings;
 
   settings.set_device_name(GetDefaultPrinter());
