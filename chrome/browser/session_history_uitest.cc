@@ -139,15 +139,7 @@ TEST_F(SessionHistoryTest, BasicBackForward) {
 }
 
 // Test that back/forward works when navigating in subframes.
-#if defined(OS_WIN)
-// Flaky on Windows. See crbug.com/48833
-#define MAYBE_FrameBackForward FLAKY_FrameBackForward
-#else
-#define MAYBE_FrameBackForward FrameBackForward
-#endif
-// Fails after WebKit r70723. WebKit bug 48513 is also related to this.
-// http://crbug.com/61092
-TEST_F(SessionHistoryTest, DISABLED_FrameBackForward) {
+TEST_F(SessionHistoryTest, FrameBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -211,9 +203,7 @@ TEST_F(SessionHistoryTest, DISABLED_FrameBackForward) {
 }
 
 // Test that back/forward preserves POST data and document state in subframes.
-// Fails after WebKit r70723. WebKit bug 48513 is also related to this.
-// http://crbug.com/61092
-TEST_F(SessionHistoryTest, DISABLED_FrameFormBackForward) {
+TEST_F(SessionHistoryTest, FrameFormBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
