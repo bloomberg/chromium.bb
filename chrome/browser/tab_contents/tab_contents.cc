@@ -684,7 +684,7 @@ bool TabContents::ShouldDisplayURL() {
   // Don't hide the url in view source mode and with interstitials.
   NavigationEntry* entry = controller_.GetActiveEntry();
   if (entry && (entry->IsViewSourceMode() ||
-                entry->page_type() == INTERSTITIAL_PAGE)) {
+                entry->page_type() == NavigationEntry::INTERSTITIAL_PAGE)) {
     return true;
   }
 

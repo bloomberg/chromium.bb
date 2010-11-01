@@ -611,8 +611,9 @@ IPC_BEGIN_MESSAGES(Automation)
   //   - int: handle of the tab
   // Response:
   //  - bool: whether the operation was successful.
-  //  - PageType: the type of the page currently displayed.
-  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetPageType, int, bool, PageType)
+  //  - NavigationEntry::PageType: the type of the page currently displayed.
+  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetPageType, int, bool,
+                             NavigationEntry::PageType)
 
   // This message simulates the user action on the SSL blocking page showing in
   // the specified tab.  This message is only effective if an interstitial page
@@ -951,7 +952,7 @@ IPC_BEGIN_MESSAGES(Automation)
                       int /* tab_handle */,
                       HANDLE /* source menu handle */,
                       int    /* align flags */,
-                      IPC::MiniContextMenuParams /* params */)
+                      IPC::ContextMenuParams /* params */)
 
   IPC_MESSAGE_ROUTED2(AutomationMsg_ForwardContextMenuCommandToChrome,
                       int /* tab_handle */,

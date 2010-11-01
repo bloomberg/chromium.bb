@@ -1476,7 +1476,7 @@ bool ChromeFrameNPAPI::PreProcessContextMenu(HMENU menu) {
 }
 
 bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd,
-    const IPC::MiniContextMenuParams& params) {
+    const IPC::ContextMenuParams& params) {
   if (cmd == IDC_ABOUT_CHROME_FRAME) {
     // TODO: implement "About Chrome Frame"
   }

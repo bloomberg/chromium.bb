@@ -9,7 +9,7 @@
 
 // #include "base/waitable_event.h"
 
-#include "chrome/common/automation_messages.h"
+#include "chrome/test/automation/automation_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -41,7 +41,7 @@ struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD3(OnMessageFromChromeFrame, void(const std::string& message,
       const std::string& origin, const std::string& target));
   MOCK_METHOD3(OnHandleContextMenu, void(HANDLE menu_handle, int align_flags,
-      const IPC::MiniContextMenuParams& params));
+      const IPC::ContextMenuParams& params));
   MOCK_METHOD1(OnHandleAccelerator, void(const MSG& accel_message));
   MOCK_METHOD1(OnTabbedOut, void(bool reverse));
   MOCK_METHOD1(OnGoToHistoryOffset, void(int offset));

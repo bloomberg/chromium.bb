@@ -13,8 +13,8 @@
 #include "base/lock.h"
 #include "base/time.h"         // for base::TimeDelta
 #include "base/file_path.h"
-#include "chrome/common/automation_constants.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/test/automation/automation_constants.h"
 
 enum FindInPageDirection { BACK = 0, FWD = 1 };
 enum FindInPageCase { IGNORE_CASE = 0, CASE_SENSITIVE = 1 };
@@ -34,7 +34,7 @@ namespace IPC {
   struct NavigationInfo;
   struct AutomationURLRequest;
   struct AttachExternalTabParams;
-  struct MiniContextMenuParams;
+  struct ContextMenuParams;
 };
 
 class GURL;
@@ -196,7 +196,7 @@ class ChromeProxyDelegate {
   // Misc. UI.
   virtual void HandleAccelerator(const MSG& accel_message) = 0;
   virtual void HandleContextMenu(HANDLE menu_handle, int align_flags,
-                                 const IPC::MiniContextMenuParams& params) = 0;
+                                 const IPC::ContextMenuParams& params) = 0;
   virtual void TabbedOut(bool reverse) = 0;
 
   // Tab related.

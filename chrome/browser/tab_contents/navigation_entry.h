@@ -10,9 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/common/page_type.h"
+#include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/page_transition_types.h"
-#include "chrome/common/security_style.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -131,6 +130,13 @@ class NavigationEntry {
     int content_status_;
 
     // Copy and assignment is explicitly allowed for this class.
+  };
+
+  // The type of the page an entry corresponds to.  Used by tests.
+  enum PageType {
+    NORMAL_PAGE = 0,
+    ERROR_PAGE,
+    INTERSTITIAL_PAGE
   };
 
   // Favicon -------------------------------------------------------------------

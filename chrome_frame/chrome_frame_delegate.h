@@ -13,7 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/lock.h"
-#include "chrome/common/automation_messages.h"
+#include "chrome/test/automation/automation_messages.h"
 #include "ipc/ipc_message.h"
 
 // A common interface supported by all the browser specific ChromeFrame
@@ -108,7 +108,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
                                         const std::string& target) {}
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
                                    int align_flags,
-                                   const IPC::MiniContextMenuParams& params) {}
+                                   const IPC::ContextMenuParams& params) {}
   virtual void OnRequestStart(int tab_handle, int request_id,
                               const IPC::AutomationURLRequest& request) {}
   virtual void OnRequestRead(int tab_handle, int request_id,

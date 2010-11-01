@@ -128,8 +128,7 @@ END_MSG_MAP()
   static void InitializeIdentifiers();
 
   bool PreProcessContextMenu(HMENU menu);
-  bool HandleContextMenuCommand(UINT cmd,
-                                const IPC::MiniContextMenuParams& params);
+  bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params);
  protected:
   // Handler for accelerator messages passed on from the hosted chrome
   // instance.

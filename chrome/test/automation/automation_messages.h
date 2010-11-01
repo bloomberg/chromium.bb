@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_AUTOMATION_MESSAGES_H__
-#define CHROME_COMMON_AUTOMATION_MESSAGES_H__
+#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__
+#define CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/automation_constants.h"
+#include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/common_param_traits.h"
-#include "chrome/common/page_type.h"
-#include "chrome/common/security_style.h"
+#include "chrome/test/automation/automation_constants.h"
 #include "gfx/rect.h"
 #include "net/base/upload_data.h"
+
 
 struct AutomationMsg_Find_Params {
   // Unused value, which exists only for backwards compat.
@@ -198,8 +199,8 @@ struct ParamTraits<SecurityStyle> {
 };
 
 template <>
-struct ParamTraits<PageType> {
-  typedef PageType param_type;
+struct ParamTraits<NavigationEntry::PageType> {
+  typedef NavigationEntry::PageType param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p);
   }
@@ -207,19 +208,19 @@ struct ParamTraits<PageType> {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
-    *p = static_cast<PageType>(type);
+    *p = static_cast<NavigationEntry::PageType>(type);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {
     std::string control;
     switch (p) {
-     case NORMAL_PAGE:
+     case NavigationEntry::NORMAL_PAGE:
       control = "NORMAL_PAGE";
       break;
-     case ERROR_PAGE:
+     case NavigationEntry::ERROR_PAGE:
       control = "ERROR_PAGE";
       break;
-     case INTERSTITIAL_PAGE:
+     case NavigationEntry::INTERSTITIAL_PAGE:
       control = "INTERSTITIAL_PAGE";
       break;
      default:
@@ -519,7 +520,7 @@ struct ParamTraits<NavigationInfo> {
 };
 
 // A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
-struct MiniContextMenuParams {
+struct ContextMenuParams {
   // The x coordinate for displaying the menu.
   int screen_x;
 
@@ -547,10 +548,10 @@ struct MiniContextMenuParams {
   GURL frame_url;
 };
 
-// Traits for MiniContextMenuParams structure to pack/unpack.
+// Traits for ContextMenuParams structure to pack/unpack.
 template <>
-struct ParamTraits<MiniContextMenuParams> {
-  typedef MiniContextMenuParams param_type;
+struct ParamTraits<ContextMenuParams> {
+  typedef ContextMenuParams param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.screen_x);
     WriteParam(m, p.screen_y);
@@ -638,7 +639,7 @@ struct ParamTraits<AttachExternalTabParams> {
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE \
-    "chrome/common/automation_messages_internal.h"
+    "chrome/test/automation/automation_messages_internal.h"
 #include "ipc/ipc_message_macros.h"
 
-#endif  // CHROME_COMMON_AUTOMATION_MESSAGES_H__
+#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__

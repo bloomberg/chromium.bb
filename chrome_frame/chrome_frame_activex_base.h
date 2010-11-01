@@ -358,7 +358,7 @@ END_MSG_MAP()
   }
 
   bool HandleContextMenuCommand(UINT cmd,
-                                const IPC::MiniContextMenuParams& params) {
+                                const IPC::ContextMenuParams& params) {
     if (cmd == IDC_ABOUT_CHROME_FRAME) {
       int tab_handle = automation_client_->tab()->handle();
       HostNavigate(GURL("about:version"), GURL(), NEW_WINDOW);
@@ -519,7 +519,7 @@ END_MSG_MAP()
 
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
                                    int align_flags,
-                                   const IPC::MiniContextMenuParams& params) {
+                                   const IPC::ContextMenuParams& params) {
     scoped_refptr<BasePlugin> ref(this);
     ChromeFramePlugin<T>::OnHandleContextMenu(tab_handle, menu_handle,
                                               align_flags, params);
