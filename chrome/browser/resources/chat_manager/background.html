@@ -73,6 +73,8 @@ to route both incoming and outgoing chats through this central roster.
     // Update with current central roster jid, and add to tracking array.
     if (port.name == 'centralJidListener') {
       centralJidListenerPorts.push(port);
+      port.postMessage({eventType: ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
+          jid: centralRosterJid});
 
       // Clear tracking array entry when content script closes.
       port.onDisconnect.addListener(function(port) {
