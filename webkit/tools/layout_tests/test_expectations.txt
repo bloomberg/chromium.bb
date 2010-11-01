@@ -18,10 +18,3 @@ BUGDIMICH MAC : fast/images/svg-as-background.html = CRASH
 BUG60651 : fast/canvas/webgl/gl-object-get-calls.html = TIMEOUT FAIL
 BUG60651 : fast/canvas/webgl/glsl-conformance.html = TIMEOUT FAIL
 BUG60671 : fast/canvas/webgl/uniform-location.html = TIMEOUT FAIL CRASH
-
-// Failures after WebKit roll 70949:71000
-BUG61406 : svg/dynamic-updates/SVGFEColorMatrixElement-svgdom-values-prop.html = IMAGE+TEXT
-BUG61406 : svg/dynamic-updates/SVGFEColorMatrixElement-svgdom-type-prop.html = IMAGE
-BUG61406 : svg/dynamic-updates/SVGFETurbulenceElement-svgdom-baseFrequency-prop.html = IMAGE
-BUG61406 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = IMAGE
-BUGWK71000 MAC : canvas/philip/tests/2d.imageData.get.source.negative.html = TEXT
