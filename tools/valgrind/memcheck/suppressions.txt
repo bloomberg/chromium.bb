@@ -1917,7 +1917,6 @@
    fun:_ZN7WebCore6WorkerC1EPNS_22ScriptExecutionContextE
    fun:_ZN7WebCore6Worker6createERKN3WTF6StringEPNS_22ScriptExecutionContextERi
    fun:_ZN7WebCore8V8Worker19constructorCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internal19HandleApiCallHelperILb1EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_*16BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
 }
 {
    bug_42942
