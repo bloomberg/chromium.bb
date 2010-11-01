@@ -104,48 +104,6 @@ ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(
   return ScopedComPtr<IInternetProtocolSink>(new_sink);
 }
 
-HRESULT ProtocolSinkWrap::ObtainServiceProvider() {
-  HRESULT hr = S_OK;
-  if (!delegate_service_provider_) {
-    hr = delegate_service_provider_.QueryFrom(delegate_);
-  }
-  return hr;
-}
-
-HRESULT ProtocolSinkWrap::ObtainHttpNegotiate() {
-  if (UserAgentAddOn::has_delegate())
-    return S_OK;
-
-  HRESULT hr = ObtainServiceProvider();
-  if (hr == S_OK) {
-    ScopedComPtr<IHttpNegotiate> http_negotiate;
-    hr = delegate_service_provider_->QueryService(
-        IID_IHttpNegotiate,
-        IID_IHttpNegotiate,
-        reinterpret_cast<void**>(http_negotiate.Receive()));
-    UserAgentAddOn::set_delegate(http_negotiate);
-  }
-  return hr;
-}
-
-STDMETHODIMP ProtocolSinkWrap::QueryService(REFGUID guidService, REFIID riid,
-                                            void** ppvObject) {
-  // We really insist to append "chromeframe" user-agent header, even in the
-  // very unlikely case when delegate does not support IServiceProvider and/or
-  // IHttpNegotiate.
-  if (guidService == IID_IHttpNegotiate && riid == IID_IHttpNegotiate) {
-    ObtainHttpNegotiate();
-    AddRef();
-    *ppvObject = reinterpret_cast<void**>(static_cast<IHttpNegotiate*>(this));
-    return S_OK;
-  }
-
-  HRESULT hr = ObtainServiceProvider();
-  if (hr == S_OK)
-    hr = delegate_service_provider_->QueryService(guidService, riid, ppvObject);
-  return hr;
-}
-
 // IInternetProtocolSink methods
 STDMETHODIMP ProtocolSinkWrap::Switch(PROTOCOLDATA* protocol_data) {
   HRESULT hr = E_FAIL;

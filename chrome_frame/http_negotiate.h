@@ -52,25 +52,12 @@ class HttpNegotiatePatch {
       IHttpNegotiate_BeginningTransaction_Fn original, IHttpNegotiate* me,
       LPCWSTR url, LPCWSTR headers, DWORD reserved, LPWSTR* additional_headers);
 
-  // IBindStatusCallback patch methods
-  static STDMETHODIMP StartBinding(IBindStatusCallback_StartBinding_Fn original,
-      IBindStatusCallback* me, DWORD reserved, IBinding *binding);
-
-  // IInternetProtocolSink patch methods
-  static STDMETHODIMP ReportProgress(
-      IInternetProtocolSink_ReportProgress_Fn original,
-      IInternetProtocolSink* me, ULONG status_code, LPCWSTR status_text);
-
  protected:
   static HRESULT PatchHttpNegotiate(IUnknown* to_patch);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpNegotiatePatch);
 };
-
-// Attempts to get to the associated browser service for an active request.
-HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
-                                          IBrowserService** browser_service);
 
 // From the latest urlmon.h. Symbol name prepended with LOCAL_ to
 // avoid conflict (and therefore build errors) for those building with
@@ -93,28 +80,5 @@ std::string AppendCFUserAgentString(LPCWSTR headers,
 // Arguments are the same as with AppendCFUserAgentString.
 std::string ReplaceOrAddUserAgent(LPCWSTR headers,
                                   const std::string& user_agent_value);
-
-// Simple class that wraps IHttpNegotiate interface and adds "chromeframe"
-// to User-agent Http header.
-class UserAgentAddOn : public IHttpNegotiate {
- public:
-  UserAgentAddOn() {}
-  ~UserAgentAddOn() {}
-  void set_delegate(IHttpNegotiate* delegate) {
-    delegate_ = delegate;
-  }
-
-  bool has_delegate() const {
-    return delegate_ != NULL;
-  }
-
- protected:
-  // IHttpNegotiate
-  STDMETHOD(BeginningTransaction)(LPCWSTR url, LPCWSTR headers, DWORD reserved,
-                                  LPWSTR* additional_headers);
-  STDMETHOD(OnResponse)(DWORD response_code, LPCWSTR response_headers,
-                        LPCWSTR request_headers, LPWSTR* additional_headers);
-  ScopedComPtr<IHttpNegotiate>  delegate_;
-};
 
 #endif  // CHROME_FRAME_HTTP_NEGOTIATE_H_

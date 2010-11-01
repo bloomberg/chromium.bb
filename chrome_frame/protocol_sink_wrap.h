@@ -57,13 +57,10 @@ class ProtData;
 // but delegate simply the QI.
 class ProtocolSinkWrap
     : public CComObjectRootEx<CComMultiThreadModel>,
-      public IServiceProvider,
-      public UserAgentAddOn,  // implements IHttpNegotiate
       public IInternetProtocolSink {
  public:
 
 BEGIN_COM_MAP(ProtocolSinkWrap)
-  COM_INTERFACE_ENTRY(IServiceProvider)
   COM_INTERFACE_ENTRY(IInternetProtocolSink)
   COM_INTERFACE_BLIND_DELEGATE()
 END_COM_MAP()
@@ -86,13 +83,6 @@ END_COM_MAP()
   STDMETHOD(ReportProgress)(ULONG status_code, LPCWSTR status_text);
   STDMETHOD(ReportData)(DWORD flags, ULONG progress, ULONG max_progress);
   STDMETHOD(ReportResult)(HRESULT result, DWORD error, LPCWSTR result_text);
-
-  // IServiceProvider - return our HttpNegotiate or forward to delegate
-  STDMETHOD(QueryService)(REFGUID guidService, REFIID riid, void** ppvObject);
-
-  // Helpers.
-  HRESULT ObtainHttpNegotiate();
-  HRESULT ObtainServiceProvider();
 
   // Remember original sink
   base::win::ScopedComPtr<IInternetProtocolSink> delegate_;

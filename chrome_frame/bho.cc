@@ -132,9 +132,6 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (is_top_level) {
     set_url(url->bstrVal);
     set_referrer("");
-    if (IsIBrowserServicePatchEnabled()) {
-      ProcessOptInUrls(web_browser2, url->bstrVal);
-    }
   }
   return S_OK;
 }
@@ -319,20 +316,9 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
   _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
 
   if (state_ == UNKNOWN) {
-    ProtocolPatchMethod patch_method = GetPatchMethod();
-    if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
-      g_trans_hooks.InstallHooks();
-      state_ = PATCH_PROTOCOL;
-    } else if (patch_method == PATCH_METHOD_IBROWSER) {
-      HttpNegotiatePatch::Initialize();
-      state_ =  PATCH_IBROWSER;
-    } else {
-      DCHECK(patch_method == PATCH_METHOD_MONIKER);
-      state_ = PATCH_MONIKER;
-      HttpNegotiatePatch::Initialize();
-      MonikerPatch::Initialize();
-    }
-
+    g_trans_hooks.InstallHooks();
+    HttpNegotiatePatch::Initialize();
+    state_ = PATCH_PROTOCOL;
     ret = true;
   }
 

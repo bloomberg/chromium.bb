@@ -193,10 +193,6 @@ TEST_P(FullTabUITest, FLAKY_CtrlW) {
 
 // Test address bar navigation with Alt+d and URL.
 TEST_P(FullTabUITest, FLAKY_AltD) {
-  if (IsIBrowserServicePatchEnabled()) {
-    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
-    return;
-  }
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
                                StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(

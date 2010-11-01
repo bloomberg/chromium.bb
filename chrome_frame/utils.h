@@ -42,20 +42,6 @@ extern const wchar_t kEnableGCFRendererByDefault[];
 extern const wchar_t kIexploreProfileName[];
 extern const wchar_t kRundllProfileName[];
 
-typedef enum ProtocolPatchMethod {
-  PATCH_METHOD_IBROWSER = 0,
-  PATCH_METHOD_INET_PROTOCOL,  // 1
-  PATCH_METHOD_MONIKER,  // 2
-};
-
-// A REG_DWORD config value that maps to the ProtocolPatchMethod enum.
-// To get the config value, call:
-// ProtocolPatchMethod patch_method =
-//     static_cast<ProtocolPatchMethod>(
-//          GetConfigInt(PATCH_METHOD_IBROWSER, kPatchProtocols));
-extern const wchar_t kPatchProtocols[];
-
-
 // This function is very similar to the AtlRegisterTypeLib function except
 // that it takes a parameter that specifies whether to register the typelib
 // for the current user only or on a machine-wide basis
@@ -497,13 +483,6 @@ bool IsTextHtmlMimeType(const wchar_t* mime_type);
 
 // Returns true iff the clipboard format is text/html.
 bool IsTextHtmlClipFormat(CLIPFORMAT cf);
-
-// Returns the desired patch method (moniker, http_equiv, protocol sink).
-// Defaults to moniker patch.
-ProtocolPatchMethod GetPatchMethod();
-
-// Returns true if the IMoniker patch is enabled.
-bool IsIBrowserServicePatchEnabled();
 
 // Returns true if we can detect that we are running as SYSTEM, false otherwise.
 bool IsSystemProcess();

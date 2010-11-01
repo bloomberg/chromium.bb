@@ -1180,18 +1180,6 @@ bool IsTextHtmlClipFormat(CLIPFORMAT cf) {
   return cf == GetTextHtmlClipboardFormat();
 }
 
-ProtocolPatchMethod GetPatchMethod() {
-  ProtocolPatchMethod patch_method =
-      static_cast<ProtocolPatchMethod>(
-          GetConfigInt(PATCH_METHOD_INET_PROTOCOL, kPatchProtocols));
-  return patch_method;
-}
-
-bool IsIBrowserServicePatchEnabled() {
-  ProtocolPatchMethod patch_method = GetPatchMethod();
-  return patch_method == PATCH_METHOD_IBROWSER;
-}
-
 bool IsSystemProcess() {
   bool is_system = false;
   CAccessToken process_token;

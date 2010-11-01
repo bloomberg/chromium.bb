@@ -921,22 +921,12 @@ const wchar_t kAnchorUrlNavigate[] =
     L"fulltab_anchor_url_navigate.html#chrome_frame";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AnchorUrlNavigateTest) {
-  if (IsIBrowserServicePatchEnabled()) {
-    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
-    return;
-  }
-
   SimpleBrowserTest(IE, kAnchorUrlNavigate);
 }
 
 // Test whether POST-ing a form from an mshtml page to a CF page will cause
 // the request to get reissued.  It should not.
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
-  if (IsIBrowserServicePatchEnabled()) {
-    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
-    return;
-  }
-
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
     L"full_tab_post_mshtml.html",
@@ -968,11 +958,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 // Test whether following a link from an mshtml page to a CF page will cause
 // multiple network requests.  It should not.
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
-  if (IsIBrowserServicePatchEnabled()) {
-    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
-    return;
-  }
-
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
     L"full_tab_get_mshtml.html",

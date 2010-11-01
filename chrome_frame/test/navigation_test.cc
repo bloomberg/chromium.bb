@@ -69,10 +69,6 @@ TEST_P(FullTabNavigationTest, TypeUrl) {
 
 // This tests navigation to a typed URL containing an fragment.
 TEST_P(FullTabNavigationTest, TypeAnchorUrl) {
-  if (IsIBrowserServicePatchEnabled()) {
-    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
-    return;
-  }
   MockAccEventObserver acc_observer;
   EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
   AccObjectMatcher address_matcher(L"Address", L"editable text");
@@ -284,10 +280,6 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
     LOG(ERROR) << "Test disabled for this configuration.";
     return;
   }
-  if (IsIBrowserServicePatchEnabled()) {
-    LOG(ERROR) << "Not running test. IBrowserServicePatch is in place.";
-    return;
-  }
   MockWindowObserver win_observer_mock;
 
   ScopedComPtr<IInternetSecurityManager> security_manager;
@@ -300,8 +292,6 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
   EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
   server_mock_.ExpectAndServeAnyRequests(GetParam());
 
-  ProtocolPatchMethod patch_method = GetPatchMethod();
-
   const char* kAlertDlgCaption = "Security Alert";
 
   EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
@@ -311,13 +301,11 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
     .Times(1)
     .WillOnce(WatchWindow(&win_observer_mock, kAlertDlgCaption, ""));
 
-  if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
-    EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
-        _,
-        testing::Field(&VARIANT::bstrVal, testing::HasSubstr(L"res://")),
-        _, _, _, _, _))
-        .Times(testing::AtMost(1));
-  }
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
+      _,
+      testing::Field(&VARIANT::bstrVal, testing::HasSubstr(L"res://")),
+      _, _, _, _, _))
+      .Times(testing::AtMost(1));
 
   EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
       testing::Field(&VARIANT::bstrVal, StrEq(GetSimplePageUrl()))))
