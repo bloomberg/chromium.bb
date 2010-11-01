@@ -1320,7 +1320,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # from there to the output_file for including.
     mkfile_rel_path = gyp.common.RelativePath(output_file,
                                               os.path.dirname(makefile_path))
-    include_list.add('include ' + mkfile_rel_path + '\n')
+    include_list.add(mkfile_rel_path)
 
   # Write out per-gyp (sub-project) Makefiles.
   depth_rel_path = gyp.common.RelativePath(options.depth, os.getcwd())
@@ -1345,8 +1345,17 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   # Write out the sorted list of includes.
   root_makefile.write('\n')
-  for include in sorted(include_list):
-    root_makefile.write(include)
+  for include_file in sorted(include_list):
+    # We wrap each .mk include in an if statement so users can tell make to
+    # not load a file by setting NO_LOAD.  The below make code says, only
+    # load the .mk file if the .mk filename doesn't start with a token in
+    # NO_LOAD.
+    root_makefile.write(
+        "ifeq ($(strip $(foreach prefix,$(NO_LOAD),\\\n"
+        "    $(findstring $(join ^,$(prefix)),\\\n"
+        "                 $(join ^," + include_file + ")))),)\n")
+    root_makefile.write("  include " + include_file + "\n")
+    root_makefile.write("endif\n")
   root_makefile.write('\n')
 
   # Write the target to regenerate the Makefile.
