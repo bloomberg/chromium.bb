@@ -1121,6 +1121,23 @@ static int drm_intel_fake_bo_unmap(drm_intel_bo *bo)
 	return ret;
 }
 
+static int
+drm_intel_fake_bo_subdata(drm_intel_bo *bo, unsigned long offset,
+			  unsigned long size, const void *data)
+{
+	int ret;
+
+	if (size == 0 || data == NULL)
+		return 0;
+
+	ret = drm_intel_bo_map(bo, 1);
+	if (ret)
+		return ret;
+	memcpy((unsigned char *)bo->virtual + offset, data, size);
+	drm_intel_bo_unmap(bo);
+	return 0;
+}
+
 static void
  drm_intel_fake_kick_all_locked(drm_intel_bufmgr_fake *bufmgr_fake)
 {
@@ -1599,6 +1616,7 @@ drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 	bufmgr_fake->bufmgr.bo_unreference = drm_intel_fake_bo_unreference;
 	bufmgr_fake->bufmgr.bo_map = drm_intel_fake_bo_map;
 	bufmgr_fake->bufmgr.bo_unmap = drm_intel_fake_bo_unmap;
+	bufmgr_fake->bufmgr.bo_subdata = drm_intel_fake_bo_subdata;
 	bufmgr_fake->bufmgr.bo_wait_rendering =
 	    drm_intel_fake_bo_wait_rendering;
 	bufmgr_fake->bufmgr.bo_emit_reloc = drm_intel_fake_emit_reloc;

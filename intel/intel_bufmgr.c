@@ -94,19 +94,7 @@ int
 drm_intel_bo_subdata(drm_intel_bo *bo, unsigned long offset,
 		     unsigned long size, const void *data)
 {
-	int ret;
-
-	if (bo->bufmgr->bo_subdata)
-		return bo->bufmgr->bo_subdata(bo, offset, size, data);
-	if (size == 0 || data == NULL)
-		return 0;
-
-	ret = drm_intel_bo_map(bo, 1);
-	if (ret)
-		return ret;
-	memcpy((unsigned char *)bo->virtual + offset, data, size);
-	drm_intel_bo_unmap(bo);
-	return 0;
+	return bo->bufmgr->bo_subdata(bo, offset, size, data);
 }
 
 int
