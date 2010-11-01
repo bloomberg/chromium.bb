@@ -107,7 +107,7 @@ class LoginHandlerWin : public LoginHandler,
 
     TabContents* tab_contents = GetTabContentsForLogin();
     bool should_focus_view = !tab_contents->delegate() ||
-        tab_contents->delegate()->ShouldFocusConstrainedWindow(tab_contents);
+        tab_contents->delegate()->ShouldFocusConstrainedWindow();
 
     LoginView* view = new LoginView(explanation, should_focus_view);
 

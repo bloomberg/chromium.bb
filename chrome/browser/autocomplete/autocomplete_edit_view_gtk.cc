@@ -23,6 +23,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_service.h"
@@ -176,7 +177,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       paste_clipboard_requested_(false),
       enter_was_inserted_(false),
       enable_tab_to_search_(true),
-      selection_suggested_(false) {
+      selection_suggested_(false),
+      going_to_focus_(NULL) {
   model_->SetPopupModel(popup_view_->GetModel());
 }
 
@@ -301,6 +303,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleWidgetDirectionChangedThunk), this);
   g_signal_connect(text_view_, "delete-from-cursor",
                    G_CALLBACK(&HandleDeleteFromCursorThunk), this);
+  g_signal_connect(text_view_, "hierarchy-changed",
+                   G_CALLBACK(&HandleHierarchyChangedThunk), this);
 #if GTK_CHECK_VERSION(2,20,0)
   g_signal_connect(text_view_, "preedit-changed",
                    G_CALLBACK(&HandlePreeditChangedThunk), this);
@@ -331,6 +335,17 @@ void AutocompleteEditViewGtk::Init() {
 #endif
 
   ViewIDUtil::SetID(GetNativeView(), VIEW_ID_AUTOCOMPLETE);
+}
+
+void AutocompleteEditViewGtk::HandleHierarchyChanged(
+    GtkWidget* sender, GtkWidget* old_toplevel) {
+  GtkWindow* new_toplevel = platform_util::GetTopLevel(sender);
+  if (!new_toplevel)
+    return;
+
+  // Use |signals_| to make sure we don't get called back after destruction.
+  signals_.Connect(new_toplevel, "set-focus",
+                   G_CALLBACK(&HandleWindowSetFocusThunk), this);
 }
 
 void AutocompleteEditViewGtk::SetFocus() {
@@ -962,9 +977,13 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusIn(GtkWidget* sender,
 
 gboolean AutocompleteEditViewGtk::HandleViewFocusOut(GtkWidget* sender,
                                                      GdkEventFocus* event) {
+  GtkWidget* view_getting_focus = NULL;
+  GtkWindow* toplevel = platform_util::GetTopLevel(sender);
+  if (gtk_window_is_active(toplevel))
+    view_getting_focus = going_to_focus_;
+
   // This must be invoked before ClosePopup.
-  // TODO: figure out who is getting focus.
-  controller_->OnAutocompleteLosingFocus(NULL);
+  controller_->OnAutocompleteLosingFocus(view_getting_focus);
 
   // Close the popup.
   ClosePopup();
@@ -1732,3 +1751,11 @@ void AutocompleteEditViewGtk::HandlePreeditChanged(GtkWidget* sender,
   OnAfterPossibleChange();
 }
 #endif
+
+void AutocompleteEditViewGtk::HandleWindowSetFocus(
+    GtkWindow* sender, GtkWidget* focus) {
+  // This is actually a guess. If the focused widget changes in "focus-out"
+  // event handler, then the window will respect that and won't focus
+  // |focus|. I doubt that is likely to happen however.
+  going_to_focus_ = focus;
+}

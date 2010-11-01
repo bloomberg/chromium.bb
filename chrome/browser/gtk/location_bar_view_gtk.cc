@@ -445,17 +445,9 @@ void LocationBarViewGtk::OnAutocompleteLosingFocus(
     gfx::NativeView view_gaining_focus) {
   SetSuggestedText(string16());
 
-  // TODO(estade): should the implementation of this function from here on be
-  // moved to InstantController?
   InstantController* instant = browser_->instant();
-  if (!instant)
-    return;
-
-  if (!instant->is_active() || !instant->GetPreviewContents())
-    return;
-
-  // TODO(estade): Determine correct instant commit type.
-  instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+  if (instant)
+    instant->OnAutocompleteLostFocus(view_gaining_focus);
 }
 
 void LocationBarViewGtk::OnAutocompleteWillAccept() {

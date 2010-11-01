@@ -18,7 +18,7 @@ TabContents* TabContentsDelegate::GetConstrainingContents(TabContents* source) {
   return source;
 }
 
-bool TabContentsDelegate::ShouldFocusConstrainedWindow(TabContents* source) {
+bool TabContentsDelegate::ShouldFocusConstrainedWindow() {
   return true;
 }
 

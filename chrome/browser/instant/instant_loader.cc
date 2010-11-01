@@ -402,7 +402,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual bool IsPopup(const TabContents* source) const {
     return false;
   }
-  virtual bool ShouldFocusConstrainedWindow(TabContents* source) {
+  virtual bool ShouldFocusConstrainedWindow() {
     // Return false so that constrained windows are not initially focused. If
     // we did otherwise the preview would prematurely get committed when focus
     // goes to the constrained window.

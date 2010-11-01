@@ -265,6 +265,10 @@ class RenderWidgetHostViewGtkWidget {
     if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
       return FALSE;
 
+    // If we don't have focus already, this mouse click will focus us.
+    if (!gtk_widget_is_focus(widget))
+      host_view->host_->OnMouseActivate();
+
     // Confirm existing composition text on mouse click events, to make sure
     // the input caret won't be moved with an ongoing composition session.
     host_view->im_context_->ConfirmComposition();

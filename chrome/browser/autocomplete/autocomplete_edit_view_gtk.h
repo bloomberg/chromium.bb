@@ -12,6 +12,7 @@
 #include <string>
 
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -209,12 +210,19 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        HandleWidgetDirectionChanged, GtkTextDirection);
   CHROMEGTK_CALLBACK_2(AutocompleteEditViewGtk, void,
                        HandleDeleteFromCursor, GtkDeleteType, gint);
+  // We connect to this so we can determine our toplevel window, so we can
+  // listen to focus change events on it.
+  CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandleHierarchyChanged,
+                       GtkWidget*);
   CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, gboolean,
                        HandleInstantViewButtonPress, GdkEventButton*);
 #if GTK_CHECK_VERSION(2,20,0)
   CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void, HandlePreeditChanged,
                        const gchar*);
 #endif
+
+  CHROMEG_CALLBACK_1(AutocompleteEditViewGtk, void, HandleWindowSetFocus,
+                     GtkWindow*, GtkWidget*);
 
   // Callback for the PRIMARY selection clipboard.
   static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
@@ -430,6 +438,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Stores the text being composed by the input method.
   std::wstring preedit_;
 #endif
+
+  // The view that is going to be focused next. Only valid while handling
+  // "focus-out" events.
+  GtkWidget* going_to_focus_;
+
+  GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };

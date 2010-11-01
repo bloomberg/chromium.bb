@@ -736,25 +736,8 @@ void LocationBarView::OnAutocompleteLosingFocus(
   SetSuggestedText(string16());
 
   InstantController* instant = delegate_->GetInstant();
-  if (!instant)
-    return;
-
-  if (!instant->is_active() || !instant->GetPreviewContents())
-    return;
-
-  switch (GetCommitType(view_gaining_focus)) {
-    case COMMIT_INSTANT_IMMEDIATELY:
-      instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
-      break;
-    case COMMIT_INSTANT_ON_MOUSE_UP:
-      instant->SetCommitOnMouseUp();
-      break;
-    case REVERT_INSTANT:
-      instant->DestroyPreviewContents();
-      break;
-    default:
-      NOTREACHED();
-  }
+  if (instant)
+    instant->OnAutocompleteLostFocus(view_gaining_focus);
 }
 
 void LocationBarView::OnAutocompleteWillAccept() {
@@ -1205,46 +1188,4 @@ void LocationBarView::OnTemplateURLModelChanged() {
   template_url_model_->RemoveObserver(this);
   template_url_model_ = NULL;
   ShowFirstRunBubble(bubble_type_);
-}
-
-LocationBarView::InstantCommitType LocationBarView::GetCommitType(
-    gfx::NativeView view_gaining_focus) {
-  // The InstantController is active. Destroy it if the user didn't click on the
-  // TabContents (or one of its children).
-#if defined(OS_WIN)
-  InstantController* instant = delegate_->GetInstant();
-  RenderWidgetHostView* rwhv =
-      instant->GetPreviewContents()->GetRenderWidgetHostView();
-  if (!view_gaining_focus || !rwhv)
-    return REVERT_INSTANT;
-
-  gfx::NativeView tab_view = instant->GetPreviewContents()->GetNativeView();
-  if (rwhv->GetNativeView() == view_gaining_focus ||
-      tab_view == view_gaining_focus) {
-    // Focus is going to the renderer. Only commit instant if the mouse is
-    // down. If the mouse isn't down it means someone else moved focus and we
-    // shouldn't commit.
-    if (instant->IsMouseDownFromActivate()) {
-      if (instant->IsShowingInstant()) {
-        // We're showing instant results. As instant results may shift when
-        // committing we commit on the mouse up. This way a slow click still
-        // works fine.
-        return COMMIT_INSTANT_ON_MOUSE_UP;
-      }
-      return COMMIT_INSTANT_IMMEDIATELY;
-    }
-    return REVERT_INSTANT;
-  }
-  gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;
-  while (view_gaining_focus_ancestor &&
-         view_gaining_focus_ancestor != tab_view) {
-    view_gaining_focus_ancestor = ::GetParent(view_gaining_focus_ancestor);
-  }
-  return view_gaining_focus_ancestor != NULL ?
-      COMMIT_INSTANT_IMMEDIATELY : REVERT_INSTANT;
-#else
-  // TODO: implement me.
-  NOTIMPLEMENTED();
-  return REVERT_INSTANT;
-#endif
 }

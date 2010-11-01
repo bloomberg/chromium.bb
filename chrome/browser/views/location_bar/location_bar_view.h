@@ -261,18 +261,6 @@ class LocationBarView : public LocationBar,
  private:
   typedef std::vector<ContentSettingImageView*> ContentSettingViews;
 
-  // Enumeration of what should happen to instant on focus lost.
-  enum InstantCommitType {
-    // The instant preview should be committed immediately.
-    COMMIT_INSTANT_IMMEDIATELY,
-
-    // The instant preview should be committed on mouse up.
-    COMMIT_INSTANT_ON_MOUSE_UP,
-
-    // The instant preview should be reverted.
-    REVERT_INSTANT
-  };
-
   friend class PageActionImageView;
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
@@ -314,10 +302,6 @@ class LocationBarView : public LocationBar,
 
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
-
-  // Returns what should happen to the InstantController as a result of focus
-  // being lost.
-  InstantCommitType GetCommitType(gfx::NativeView view_gaining_focus);
 
   // Current profile. Not owned by us.
   Profile* profile_;

@@ -104,7 +104,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual TabContents* GetConstrainingContents(TabContents* source);
 
   // Returns true if constrained windows should be focused. Default is true.
-  virtual bool ShouldFocusConstrainedWindow(TabContents* source);
+  virtual bool ShouldFocusConstrainedWindow();
 
   // Invoked prior to the TabContents showing a constrained window.
   virtual void WillShowConstrainedWindow(TabContents* source);

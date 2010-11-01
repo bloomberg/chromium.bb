@@ -137,7 +137,11 @@ void OpenExternal(const GURL& url) {
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
-  return GetAncestor(view, GA_ROOT);
+  return ::GetAncestor(view, GA_ROOT);
+}
+
+gfx::NativeView GetParent(gfx::NativeView view) {
+  return ::GetParent(view);
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {

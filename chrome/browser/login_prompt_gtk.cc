@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/notification_service.h"
@@ -173,15 +174,19 @@ void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
   GTK_WIDGET_SET_FLAGS(ok_, GTK_CAN_DEFAULT);
   gtk_widget_grab_default(ok_);
 
+  TabContents* contents = GetTabContentsForLogin();
+
   // The user may have focused another tab. In this case do not grab focus
   // until this tab is refocused.
-  if (gtk_util::IsWidgetAncestryVisible(username_entry_)) {
+  if ((!contents->delegate() ||
+          contents->delegate()->ShouldFocusConstrainedWindow()) &&
+      gtk_util::IsWidgetAncestryVisible(username_entry_)) {
     gtk_widget_grab_focus(username_entry_);
   } else {
   // TODO(estade): this define should not need to be here because this class
   // should not be used on linux/views.
 #if defined(TOOLKIT_GTK)
-    static_cast<TabContentsViewGtk*>(GetTabContentsForLogin()->view())->
+    static_cast<TabContentsViewGtk*>(contents->view())->
         SetFocusedWidget(username_entry_);
 #endif
   }

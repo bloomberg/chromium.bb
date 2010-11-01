@@ -16,6 +16,7 @@
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/page_transition_types.h"
+#include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
@@ -83,6 +84,10 @@ class InstantController : public InstantLoaderDelegate {
   // Returns true if the mouse is down as the result of activating the preview
   // content.
   bool IsMouseDownFromActivate();
+
+  // The autocomplete edit that was initiating the current instant session has
+  // lost focus. Commit or discard the preview accordingly.
+  void OnAutocompleteLostFocus(gfx::NativeView view_gaining_focus);
 
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does

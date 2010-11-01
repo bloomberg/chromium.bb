@@ -90,8 +90,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   DownloadShelfContextMenuGtk(BaseDownloadItemModel* model,
                               DownloadItemGtk* download_item)
       : DownloadShelfContextMenu(model),
-        download_item_(download_item),
-        method_factory_(this) {
+        download_item_(download_item) {
   }
 
   ~DownloadShelfContextMenuGtk() {
@@ -143,8 +142,6 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
 
   // The download item that created us.
   DownloadItemGtk* download_item_;
-
-  ScopedRunnableMethodFactory<DownloadShelfContextMenuGtk> method_factory_;
 };
 
 // DownloadItemGtk -------------------------------------------------------------

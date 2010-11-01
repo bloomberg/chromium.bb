@@ -64,6 +64,10 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL;
 }
 
+gfx::NativeView GetParent(gfx::NativeView view) {
+  return gtk_widget_get_parent(view);
+}
+
 bool IsWindowActive(gfx::NativeWindow window) {
   return gtk_window_is_active(window);
 }

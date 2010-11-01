@@ -9,8 +9,10 @@
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -136,6 +138,53 @@ bool InstantController::IsMouseDownFromActivate() {
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
   return loader_manager_->current_loader()->IsMouseDownFromActivate();
+}
+
+void InstantController::OnAutocompleteLostFocus(
+    gfx::NativeView view_gaining_focus) {
+  if (!is_active() || !GetPreviewContents())
+    return;
+
+  RenderWidgetHostView* rwhv =
+      GetPreviewContents()->GetRenderWidgetHostView();
+  if (!view_gaining_focus || !rwhv)
+    return DestroyPreviewContents();
+
+  gfx::NativeView tab_view = GetPreviewContents()->GetNativeView();
+  // Focus is going to the renderer.
+  if (rwhv->GetNativeView() == view_gaining_focus ||
+      tab_view == view_gaining_focus) {
+    if (!IsMouseDownFromActivate()) {
+      // If the mouse is not down, focus is not going to the renderer. Someone
+      // else moved focus and we shouldn't commit.
+      return DestroyPreviewContents();
+    }
+
+    if (IsShowingInstant()) {
+      // We're showing instant results. As instant results may shift when
+      // committing we commit on the mouse up. This way a slow click still
+      // works fine.
+      return SetCommitOnMouseUp();
+    }
+
+    return CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+  }
+
+  // Walk up the view hierarchy. If the view gaining focus is a subview of the
+  // TabContents view (such as a windowed plugin or http auth dialog), we want
+  // to keep the preview contents. Otherwise, focus has gone somewhere else,
+  // such as the JS inspector, and we want to cancel the preview.
+  gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;
+  while (view_gaining_focus_ancestor &&
+         view_gaining_focus_ancestor != tab_view) {
+    view_gaining_focus_ancestor =
+        platform_util::GetParent(view_gaining_focus_ancestor);
+  }
+
+  if (view_gaining_focus_ancestor)
+    return CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+
+  return DestroyPreviewContents();
 }
 
 TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {

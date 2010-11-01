@@ -564,7 +564,7 @@ views::NonClientFrameView* ConstrainedWindowWin::CreateFrameViewForWindow() {
 
 void ConstrainedWindowWin::FocusConstrainedWindow() {
   if ((!owner_->delegate() ||
-       owner_->delegate()->ShouldFocusConstrainedWindow(owner_)) &&
+       owner_->delegate()->ShouldFocusConstrainedWindow()) &&
       GetDelegate() && GetDelegate()->GetInitiallyFocusedView()) {
     GetDelegate()->GetInitiallyFocusedView()->RequestFocus();
   }
