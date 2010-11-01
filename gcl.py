@@ -274,22 +274,13 @@ class ChangeInfo(object):
     files: a list of 2 tuple containing (status, filename) of changed files,
            with paths being relative to the top repository directory.
     local_root: Local root directory
+    rietveld: rietveld server for this change
   """
-
+  # Kept for unit test support. This is for the old format, it's deprecated.
   _SEPARATOR = "\n-----\n"
-  # The info files have the following format:
-  # issue_id, patchset\n   (, patchset is optional)
-  # _SEPARATOR\n
-  # filepath1\n
-  # filepath2\n
-  # .
-  # .
-  # filepathn\n
-  # _SEPARATOR\n
-  # description
 
   def __init__(self, name, issue, patchset, description, files, local_root,
-               needs_upload=False):
+               rietveld, needs_upload=False):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
@@ -300,6 +291,10 @@ class ChangeInfo(object):
     self.patch = None
     self._local_root = local_root
     self.needs_upload = needs_upload
+    self.rietveld = rietveld
+    if not self.rietveld:
+      # Set the default value.
+      self.rietveld = GetCodeReviewSetting('CODE_REVIEW_SERVER')
 
   def NeedsUpload(self):
     return self.needs_upload
@@ -337,6 +332,7 @@ class ChangeInfo(object):
           'needs_upload': self.NeedsUpload(),
           'files': self.GetFiles(),
           'description': self.description,
+          'rietveld': self.rietveld,
         }, sort_keys=True, indent=2)
     gclient_utils.FileWrite(GetChangelistInfoFile(self.name), data)
 
@@ -348,13 +344,46 @@ class ChangeInfo(object):
     """Closes the Rietveld issue for this changelist."""
     data = [("description", self.description),]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    SendToRietveld("/%d/close" % self.issue, body, ctype)
+    self.SendToRietveld('/%d/close' % self.issue, body, ctype)
 
   def UpdateRietveldDescription(self):
     """Sets the description for an issue on Rietveld."""
     data = [("description", self.description),]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    SendToRietveld("/%d/description" % self.issue, body, ctype)
+    self.SendToRietveld('/%d/description' % self.issue, body, ctype)
+
+  def GetIssueDescription(self):
+    """Returns the issue description from Rietveld."""
+    return self.SendToRietveld('/%d/description' % self.issue)
+
+  def PrimeLint(self):
+    """Do background work on Rietveld to lint the file so that the results are
+    ready when the issue is viewed."""
+    if self.issue and self.patchset:
+      self.SendToRietveld('/lint/issue%s_%s' % (self.issue, self.patchset),
+          timeout=1)
+
+  def SendToRietveld(self, request_path, payload=None,
+                    content_type="application/octet-stream", timeout=None):
+    """Send a POST/GET to Rietveld.  Returns the response body."""
+    if not self.rietveld:
+      ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
+    def GetUserCredentials():
+      """Prompts the user for a username and password."""
+      email = upload.GetEmail('Email (login for uploading to %s)' %
+          self.rietveld)
+      password = getpass.getpass('Password for %s: ' % email)
+      return email, password
+    rpc_server = upload.HttpRpcServer(self.rietveld,
+                                      GetUserCredentials,
+                                      save_cookies=True)
+    try:
+      return rpc_server.Send(request_path, payload, content_type, timeout)
+    except urllib2.URLError:
+      if timeout is None:
+        ErrorExit('Error accessing url %s' % request_path)
+      else:
+        return None
 
   def MissingTests(self):
     """Returns True if the change looks like it needs unit tests but has none.
@@ -453,7 +482,7 @@ class ChangeInfo(object):
     if not os.path.exists(info_file):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
-      return ChangeInfo(changename, 0, 0, '', None, local_root,
+      return ChangeInfo(changename, 0, 0, '', None, local_root, rietveld=None,
                         needs_upload=False)
     content = gclient_utils.FileRead(info_file, 'r')
     save = False
@@ -484,13 +513,24 @@ class ChangeInfo(object):
           files[files.index(item)] = (status, item[1])
     change_info = ChangeInfo(changename, values['issue'], values['patchset'],
                              values['description'], files,
-                             local_root, values['needs_upload'])
+                             local_root, values.get('rietveld'),
+                             values['needs_upload'])
     if save:
       change_info.Save()
     return change_info
 
   @staticmethod
   def _LoadOldFormat(content):
+    # The info files have the following format:
+    # issue_id, patchset\n   (, patchset is optional)
+    # _SEPARATOR\n
+    # filepath1\n
+    # filepath2\n
+    # .
+    # .
+    # filepathn\n
+    # _SEPARATOR\n
+    # description
     split_data = content.split(ChangeInfo._SEPARATOR, 2)
     if len(split_data) != 3:
       raise ValueError('Bad change format')
@@ -534,7 +574,7 @@ def LoadChangelistInfoForMultiple(changenames, local_root, fail_on_not_found,
   """
   changes = changenames.split(',')
   aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None, local_root,
-                                     needs_upload=False)
+                                     rietveld=None, needs_upload=False)
   for change in changes:
     aggregate_change_info._files += ChangeInfo.Load(change,
                                                     local_root,
@@ -613,34 +653,6 @@ def GetFilesNotInCL():
   if "" not in modified_files:
     return []
   return modified_files[""]
-
-
-def SendToRietveld(request_path, payload=None,
-                   content_type="application/octet-stream", timeout=None):
-  """Send a POST/GET to Rietveld.  Returns the response body."""
-  server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
-  if not server:
-    ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
-  def GetUserCredentials():
-    """Prompts the user for a username and password."""
-    email = upload.GetEmail("Email (login for uploading to %s)" % server)
-    password = getpass.getpass("Password for %s: " % email)
-    return email, password
-  rpc_server = upload.HttpRpcServer(server,
-                                    GetUserCredentials,
-                                    save_cookies=True)
-  try:
-    return rpc_server.Send(request_path, payload, content_type, timeout)
-  except urllib2.URLError:
-    if timeout is None:
-      ErrorExit("Error accessing url %s" % request_path)
-    else:
-      return None
-
-
-def GetIssueDescription(issue):
-  """Returns the issue description from Rietveld."""
-  return SendToRietveld("/%d/description" % issue)
 
 
 def ListFiles(show_unknown_files):
@@ -783,10 +795,7 @@ def CMDupload(change_info, args):
     args.append("--send_mail")
 
   upload_arg = ["upload.py", "-y"]
-  server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
-  if not server:
-    ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
-  upload_arg.append("--server=%s" % server)
+  upload_arg.append("--server=%s" % change_info.rietveld)
   upload_arg.extend(args)
 
   desc_file = ""
@@ -837,7 +846,6 @@ def CMDupload(change_info, args):
   # shows the correct base.
   previous_cwd = os.getcwd()
   os.chdir(change_info.GetLocalRoot())
-
   # If we have a lot of files with long paths, then we won't be able to fit
   # the command to "svn diff".  Instead, we generate the diff manually for
   # each file and concatenate them before passing it to upload.py.
@@ -851,17 +859,9 @@ def CMDupload(change_info, args):
 
   if desc_file:
     os.remove(desc_file)
-
-  # Do background work on Rietveld to lint the file so that the results are
-  # ready when the issue is viewed.
-  SendToRietveld("/lint/issue%s_%s" % (issue, patchset), timeout=0.5)
-
-  # Move back before considering try, so GetCodeReviewSettings is
-  # consistent.
+  change_info.PrimeLint()
   os.chdir(previous_cwd)
-
   print "*** Upload does not submit a try; use gcl try to submit a try. ***"
-
   return 0
 
 
@@ -933,13 +933,11 @@ def CMDcommit(change_info, args):
   commit_cmd = ["svn", "commit"]
   if change_info.issue:
     # Get the latest description from Rietveld.
-    change_info.description = GetIssueDescription(change_info.issue)
+    change_info.description = change_info.GetIssueDescription()
 
   commit_message = change_info.description.replace('\r\n', '\n')
   if change_info.issue:
-    server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
-    if not server:
-      ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
+    server = change_info.rietveld
     if not server.startswith("http://") and not server.startswith("https://"):
       server = "http://" + server
     commit_message += ('\nReview URL: %s/%d' % (server, change_info.issue))
@@ -1006,7 +1004,7 @@ def CMDchange(args):
 
   if change_info.issue and not change_info.NeedsUpload():
     try:
-      description = GetIssueDescription(change_info.issue)
+      description = change_info.GetIssueDescription()
     except urllib2.HTTPError, err:
       if err.code == 404:
         # The user deleted the issue in Rietveld, so forget the old issue id.
@@ -1114,7 +1112,6 @@ def CMDlint(change_info, args):
   # shows the correct base.
   previous_cwd = os.getcwd()
   os.chdir(change_info.GetLocalRoot())
-
   # Process cpplints arguments if any.
   filenames = cpplint.ParseArguments(args + change_info.GetFileNames())
 

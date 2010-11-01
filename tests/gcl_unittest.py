@@ -24,6 +24,11 @@ class GclTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(gcl.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gcl.gclient_utils, 'FileWrite')
     gcl.REPOSITORY_ROOT = None
+    self.old_review_settings = gcl.CODEREVIEW_SETTINGS
+    self.assertEquals(gcl.CODEREVIEW_SETTINGS, {})
+
+  def tearDown(self):
+    gcl.CODEREVIEW_SETTINGS = self.old_review_settings
 
 
 class GclUnittest(GclTestsBase):
@@ -46,12 +51,11 @@ class GclUnittest(GclTestsBase):
         'GenerateChangeName', 'GenerateDiff', 'GetCLs', 'GetCacheDir',
         'GetCachedFile', 'GetChangelistInfoFile', 'GetChangesDir',
         'GetCodeReviewSetting', 'GetEditor', 'GetFilesNotInCL', 'GetInfoDir',
-        'GetIssueDescription', 'GetModifiedFiles', 'GetRepositoryRoot',
-        'ListFiles',
+        'GetModifiedFiles', 'GetRepositoryRoot', 'ListFiles',
         'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG',
         'OptionallyDoPresubmitChecks', 'REPOSITORY_ROOT',
         'RunShell', 'RunShellWithReturnCode', 'SVN',
-        'SendToRietveld', 'TryChange', 'UnknownFiles', 'Warn',
+        'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'gclient_utils', 'getpass',
         'json', 'main', 'need_change', 'need_change_and_args', 'no_args', 'os',
         'random', 're', 'string', 'subprocess', 'sys', 'tempfile',
@@ -137,20 +141,23 @@ class ChangeInfoUnittest(GclTestsBase):
   def testChangeInfoMembers(self):
     self.mox.ReplayAll()
     members = [
-      'CloseIssue', 'Delete', 'GetFiles', 'GetFileNames', 'GetLocalRoot',
-      'Exists', 'Load', 'MissingTests', 'NeedsUpload', 'Save',
-      'UpdateRietveldDescription', 'description', 'issue', 'name',
-      'needs_upload', 'patch', 'patchset',
+      'CloseIssue', 'Delete', 'Exists', 'GetFiles', 'GetFileNames',
+      'GetLocalRoot', 'GetIssueDescription', 'Load', 'MissingTests',
+      'NeedsUpload', 'PrimeLint', 'Save', 'SendToRietveld',
+      'UpdateRietveldDescription',
+      'description', 'issue', 'name',
+      'needs_upload', 'patch', 'patchset', 'rietveld',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir),
-                        members)
+    self.compareMembers(
+        gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir, 'foo'),
+        members)
 
   def testChangeInfoBase(self):
     files = [('M', 'foo'), ('A', 'bar')]
     self.mox.ReplayAll()
     o = gcl.ChangeInfo('name2', '42', '53', 'description2', files,
-                       self.fake_root_dir)
+                       self.fake_root_dir, 'foo')
     self.assertEquals(o.name, 'name2')
     self.assertEquals(o.issue, 42)
     self.assertEquals(o.patchset, 53)
@@ -161,11 +168,13 @@ class ChangeInfoUnittest(GclTestsBase):
     self.assertEquals(o.GetLocalRoot(), self.fake_root_dir)
 
   def testLoadWithIssue(self):
+    self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
     description = ["This is some description.", "force an extra separator."]
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
       gcl.ChangeInfo._SEPARATOR.join(["42, 53", "G      b.cc"] + description))
+    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('foo')
     # Does an upgrade.
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.gclient_utils.FileWrite('bleeeh', mox.IgnoreArg())
@@ -180,10 +189,12 @@ class ChangeInfoUnittest(GclTestsBase):
     self.assertEquals(change_info.GetFiles(), [('G      ', 'b.cc')])
 
   def testLoadEmpty(self):
+    self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
         gcl.ChangeInfo._SEPARATOR.join(["", "", ""]))
+    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('foo')
     # Does an upgrade.
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.gclient_utils.FileWrite('bleeeh', mox.IgnoreArg())
@@ -200,25 +211,25 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.GetChangelistInfoFile('').AndReturn('foo')
     values = {
         'description': '', 'patchset': 2, 'issue': 1,
-        'files': [], 'needs_upload': False}
+        'files': [], 'needs_upload': False, 'rietveld': 'foo'}
     gcl.gclient_utils.FileWrite(
         'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
 
-    change_info = gcl.ChangeInfo('', 1, 2, '', None, self.fake_root_dir)
+    change_info = gcl.ChangeInfo('', 1, 2, '', None, self.fake_root_dir, 'foo')
     change_info.Save()
 
   def testSaveDirty(self):
     gcl.GetChangelistInfoFile('n').AndReturn('foo')
     values = {
         'description': 'des', 'patchset': 0, 'issue': 0,
-        'files': [], 'needs_upload': True}
+        'files': [], 'needs_upload': True, 'rietveld': 'foo'}
     gcl.gclient_utils.FileWrite(
         'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo('n', 0, 0, 'des', None, self.fake_root_dir,
-                                 needs_upload=True)
+                                 'foo', needs_upload=True)
     change_info.Save()
 
 
@@ -230,7 +241,7 @@ class CMDuploadUnittest(GclTestsBase):
     self.mox.StubOutWithMock(gcl, 'GenerateDiff')
     self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
     self.mox.StubOutWithMock(gcl, 'GetRepositoryRoot')
-    self.mox.StubOutWithMock(gcl, 'SendToRietveld')
+    self.mox.StubOutWithMock(gcl.ChangeInfo, 'SendToRietveld')
     self.mox.StubOutWithMock(gcl, 'TryChange')
     self.mox.StubOutWithMock(gcl.ChangeInfo, 'Load')
 
@@ -242,9 +253,10 @@ class CMDuploadUnittest(GclTestsBase):
     change_info.description = 'deescription',
     change_info.files = [('A', 'aa'), ('M', 'bb')]
     change_info.patch = None
+    change_info.rietveld = 'my_server'
     files = [item[1] for item in change_info.files]
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
-    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    #gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
     change_info.GetFiles().AndReturn(change_info.files)
     change_info.GetLocalRoot().AndReturn('proout')
@@ -256,12 +268,12 @@ class CMDuploadUnittest(GclTestsBase):
                          '--message=\'\'', '--issue=1'],
                          change_info.patch).AndReturn(("1",
                                                                     "2"))
-    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    change_info.Save()
+    change_info.PrimeLint()
     gcl.os.chdir('somewhere')
     gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
                          " submit a try. ***")
     gcl.sys.stdout.write("\n")
-    change_info.Save()
     gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
     gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
         ).AndReturn(change_info)
@@ -275,11 +287,10 @@ class CMDuploadUnittest(GclTestsBase):
   def testServerOverride(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  [('A', 'aa'), ('M', 'bb')],
-                                self.fake_root_dir)
+                                self.fake_root_dir, 'my_server')
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
-    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
     gcl.os.close(42)
@@ -292,7 +303,7 @@ class CMDuploadUnittest(GclTestsBase):
         "--description_file=descfile",
         "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
-    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
     gcl.os.chdir('somewhere')
     gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
                          " submit a try. ***")
@@ -310,11 +321,10 @@ class CMDuploadUnittest(GclTestsBase):
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  [('A', 'aa'), ('M', 'bb')],
-                                 self.fake_root_dir)
+                                 self.fake_root_dir, 'my_server')
     self.mox.StubOutWithMock(change_info, 'Save')
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
-    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
     gcl.os.close(42)
@@ -327,7 +337,7 @@ class CMDuploadUnittest(GclTestsBase):
         "--description_file=descfile",
         "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
-    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    change_info.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=1)
     gcl.os.chdir('somewhere')
     gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
                          " submit a try. ***")
