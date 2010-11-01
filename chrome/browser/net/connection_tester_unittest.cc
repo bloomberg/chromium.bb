@@ -76,8 +76,8 @@ class ConnectionTesterTest : public PlatformTest {
       : test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
         message_loop_(MessageLoop::TYPE_IO) {
-    scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver =
-        new net::RuleBasedHostResolverProc(NULL);
+    scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver(
+        new net::RuleBasedHostResolverProc(NULL));
 
     catchall_resolver->AddRule("*", "127.0.0.1");
 

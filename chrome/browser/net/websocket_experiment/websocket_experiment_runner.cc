@@ -28,8 +28,8 @@ static scoped_refptr<WebSocketExperimentRunner> runner;
 void WebSocketExperimentRunner::Start() {
   DCHECK(!runner.get());
 
-  scoped_refptr<base::FieldTrial> trial =
-      new base::FieldTrial("WebSocketExperiment", 1000);
+  scoped_refptr<base::FieldTrial> trial(
+      new base::FieldTrial("WebSocketExperiment", 1000));
   trial->AppendGroup("active", 5);  // 0.5% in active group.
 
   bool run_experiment =

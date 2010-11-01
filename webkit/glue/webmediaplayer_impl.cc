@@ -267,12 +267,12 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       &WebMediaPlayerImpl::Proxy::NetworkEventCallback));
 
   // A simple data source that keeps all data in memory.
-  scoped_refptr<SimpleDataSource> simple_data_source =
-      new SimpleDataSource(MessageLoop::current(), bridge_factory_simple);
+  scoped_refptr<SimpleDataSource> simple_data_source(
+      new SimpleDataSource(MessageLoop::current(), bridge_factory_simple));
 
   // A sophisticated data source that does memory caching.
-  scoped_refptr<BufferedDataSource> buffered_data_source =
-      new BufferedDataSource(MessageLoop::current(), bridge_factory_buffered);
+  scoped_refptr<BufferedDataSource> buffered_data_source(
+      new BufferedDataSource(MessageLoop::current(), bridge_factory_buffered));
   proxy_->SetDataSource(buffered_data_source);
 
   if (use_simple_data_source) {
@@ -633,8 +633,8 @@ WebKit::WebVideoFrame* WebMediaPlayerImpl::getCurrentFrame() {
 void WebMediaPlayerImpl::putCurrentFrame(
     WebKit::WebVideoFrame* web_video_frame) {
   if (web_video_frame) {
-    scoped_refptr<media::VideoFrame> video_frame =
-        WebVideoFrameImpl::toVideoFrame(web_video_frame);
+    scoped_refptr<media::VideoFrame> video_frame(
+        WebVideoFrameImpl::toVideoFrame(web_video_frame));
     proxy_->PutCurrentFrame(video_frame);
     delete web_video_frame;
   }

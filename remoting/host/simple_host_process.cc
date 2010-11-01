@@ -133,12 +133,12 @@ int main(int argc, char** argv) {
   context.Start();
 
   // Construct a chromoting host.
-  scoped_refptr<remoting::ChromotingHost> host =
+  scoped_refptr<remoting::ChromotingHost> host(
       new remoting::ChromotingHost(&context,
                                    config,
                                    capturer.release(),
                                    encoder.release(),
-                                   event_handler.release());
+                                   event_handler.release()));
 
   // Let the chromoting host run until the shutdown task is executed.
   MessageLoop message_loop(MessageLoop::TYPE_UI);

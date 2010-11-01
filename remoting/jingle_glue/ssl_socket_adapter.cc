@@ -84,7 +84,7 @@ int SSLSocketAdapter::Send(const void* buf, size_t len) {
   if (ssl_state_ != SSLSTATE_CONNECTED) {
     return AsyncSocketAdapter::Send(buf, len);
   } else {
-    scoped_refptr<net::IOBuffer> transport_buf = new net::IOBuffer(len);
+    scoped_refptr<net::IOBuffer> transport_buf(new net::IOBuffer(len));
     memcpy(transport_buf->data(), buf, len);
 
     int result = ssl_socket_->Write(transport_buf, len, NULL);

@@ -30,8 +30,8 @@ void HttpListenSocket::Accept() {
   if (conn == ListenSocket::kInvalidSocket) {
     // TODO
   } else {
-    scoped_refptr<HttpListenSocket> sock =
-        new HttpListenSocket(conn, delegate_);
+    scoped_refptr<HttpListenSocket> sock(
+        new HttpListenSocket(conn, delegate_));
     // it's up to the delegate to AddRef if it wants to keep it around
     DidAccept(this, sock);
   }

@@ -172,7 +172,7 @@ class AppCacheResponseTest : public testing::Test {
     static const char kHttpHeaders[] =
         "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
     static const char* kHttpBody = "Hello";
-    scoped_refptr<IOBuffer> body = new WrappedIOBuffer(kHttpBody);
+    scoped_refptr<IOBuffer> body(new WrappedIOBuffer(kHttpBody));
     std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
     WriteResponse(MakeHttpResponseInfo(raw_headers), body, strlen(kHttpBody));
   }
@@ -456,8 +456,8 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   void WriteOneBlock(int block_number) {
-    scoped_refptr<IOBuffer> io_buffer =
-        new IOBuffer(kBlockSize);
+    scoped_refptr<IOBuffer> io_buffer(
+        new IOBuffer(kBlockSize));
     FillData(block_number, io_buffer->data(), kBlockSize);
     WriteResponseBody(io_buffer, kBlockSize);
   }

@@ -790,7 +790,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
 
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD, added_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
@@ -820,7 +820,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
 
   AutofillProfileChange change(AutofillProfileChange::ADD,
       added_profile.Label(), &added_profile, string16());
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
@@ -872,7 +872,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
       WillOnce(DoAll(SaveArg<0>(&relabelled_profile), Return(true)));
   EXPECT_CALL(*personal_data_manager_, Refresh());
 
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
@@ -911,7 +911,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::UPDATE,
                                    updated_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
@@ -950,7 +950,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
   AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                update_profile.Label(), &update_profile,
                                ASCIIToUTF16("Billing"));
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
@@ -990,7 +990,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
   AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                update_profile.Label(), &update_profile,
                                ASCIIToUTF16("Billing"));
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
@@ -1049,7 +1049,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
     AutofillProfileChange change(AutofillProfileChange::UPDATE,
                                  josephine_update.Label(), &josephine_update,
                                  josephine.Label());
-    scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+    scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
     notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                      Source<WebDataService>(web_data_service_.get()),
                      Details<AutofillProfileChange>(&change));
@@ -1087,7 +1087,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::REMOVE,
                                    original_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
@@ -1127,7 +1127,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
 
   AutofillProfileChange change(AutofillProfileChange::REMOVE,
                                sync_profile.Label(), NULL, string16());
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_PROFILE_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillProfileChange>(&change));
@@ -1155,7 +1155,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
   AutofillChangeList changes;
   changes.push_back(AutofillChange(AutofillChange::ADD,
                                    evil_entry.key()));
-  scoped_refptr<ThreadNotifier> notifier = new ThreadNotifier(&db_thread_);
+  scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&db_thread_));
   notifier->Notify(NotificationType::AUTOFILL_ENTRIES_CHANGED,
                    Source<WebDataService>(web_data_service_.get()),
                    Details<AutofillChangeList>(&changes));
@@ -1187,8 +1187,8 @@ TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
   // (true, false) means we have to reset after |Signal|, init to unsignaled.
   scoped_ptr<WaitableEvent> wait_for_start(new WaitableEvent(true, false));
   scoped_ptr<WaitableEvent> wait_for_syncapi(new WaitableEvent(true, false));
-  scoped_refptr<FakeServerUpdater> updater = new FakeServerUpdater(
-      service_.get(), &wait_for_start, &wait_for_syncapi);
+  scoped_refptr<FakeServerUpdater> updater(new FakeServerUpdater(
+      service_.get(), &wait_for_start, &wait_for_syncapi));
 
   // This server side update will stall waiting for CommitWaiter.
   updater->CreateNewEntry(MakeAutofillEntry("server", "entry", 1));

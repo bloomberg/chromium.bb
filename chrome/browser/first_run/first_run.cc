@@ -405,7 +405,7 @@ int FirstRun::ImportFromFile(Profile* profile, const CommandLine& cmdline) {
     NOTREACHED();
     return false;
   }
-  scoped_refptr<ImporterHost> importer_host = new ImporterHost();
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost());
   FirstRunImportObserver observer;
 
   importer_host->set_headless();

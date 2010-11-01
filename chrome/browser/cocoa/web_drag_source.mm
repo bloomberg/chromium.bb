@@ -307,13 +307,13 @@ void PromiseWriterTask::Run() {
 
   if (downloadURL_.is_valid()) {
     TabContents* tabContents = [contentsView_ tabContents];
-    scoped_refptr<DragDownloadFile> dragFileDownloader = new DragDownloadFile(
+    scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
         filePath,
         linked_ptr<net::FileStream>(fileStream),
         downloadURL_,
         tabContents->GetURL(),
         tabContents->encoding(),
-        tabContents);
+        tabContents));
 
     // The finalizer will take care of closing and deletion.
     dragFileDownloader->Start(

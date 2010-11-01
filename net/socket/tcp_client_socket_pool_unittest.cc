@@ -297,8 +297,8 @@ class TCPClientSocketPoolTest : public testing::Test {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
-    scoped_refptr<TCPSocketParams> params = new TCPSocketParams(
-        HostPortPair("www.google.com", 80), MEDIUM, GURL(), false);
+    scoped_refptr<TCPSocketParams> params(new TCPSocketParams(
+        HostPortPair("www.google.com", 80), MEDIUM, GURL(), false));
     return test_base_.StartRequestUsingPool(
         &pool_, group_name, priority, params);
   }
@@ -346,8 +346,8 @@ TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
   host_resolver_->rules()->AddSimulatedFailure("unresolvable.host.name");
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  scoped_refptr<TCPSocketParams> dest = new TCPSocketParams(
-          "unresolvable.host.name", 80, kDefaultPriority, GURL(), false);
+  scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
+          "unresolvable.host.name", 80, kDefaultPriority, GURL(), false));
   EXPECT_EQ(ERR_IO_PENDING,
             handle.Init("a", dest, kDefaultPriority, &callback, &pool_,
                         BoundNetLog()));
@@ -605,8 +605,8 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
         MessageLoop::current()->RunAllPending();
       }
       within_callback_ = true;
-      scoped_refptr<TCPSocketParams> dest = new TCPSocketParams(
-          HostPortPair("www.google.com", 80), LOWEST, GURL(), false);
+      scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
+          HostPortPair("www.google.com", 80), LOWEST, GURL(), false));
       int rv = handle_->Init("a", dest, LOWEST, this, pool_, BoundNetLog());
       EXPECT_EQ(OK, rv);
     }
@@ -626,8 +626,8 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
 TEST_F(TCPClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(&handle, &pool_);
-  scoped_refptr<TCPSocketParams> dest = new TCPSocketParams(
-      HostPortPair("www.google.com", 80), LOWEST, GURL(), false);
+  scoped_refptr<TCPSocketParams> dest(new TCPSocketParams(
+      HostPortPair("www.google.com", 80), LOWEST, GURL(), false));
   int rv = handle.Init("a", dest, LOWEST, &callback, &pool_,
                        BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);

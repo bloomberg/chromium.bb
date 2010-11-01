@@ -316,7 +316,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Make an 'unstored' cache for
     // us to load. The ctor should put it in the working set.
     int64 cache_id = storage()->NewCacheId();
-    scoped_refptr<AppCache> cache = new AppCache(service(), cache_id);
+    scoped_refptr<AppCache> cache(new AppCache(service(), cache_id));
 
     // Conduct the test.
     storage()->LoadCache(cache_id, delegate());

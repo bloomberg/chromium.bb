@@ -94,7 +94,7 @@ TEST(AudioMessageFilterTest, Basic) {
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
   const int kRouteId = 0;
-  scoped_refptr<AudioMessageFilter> filter = new AudioMessageFilter(kRouteId);
+  scoped_refptr<AudioMessageFilter> filter(new AudioMessageFilter(kRouteId));
 
   MockAudioDelegate delegate;
   int stream_id = filter->AddDelegate(&delegate);
@@ -151,7 +151,7 @@ TEST(AudioMessageFilterTest, Delegates) {
   MessageLoop message_loop(MessageLoop::TYPE_IO);
 
   const int kRouteId = 0;
-  scoped_refptr<AudioMessageFilter> filter = new AudioMessageFilter(kRouteId);
+  scoped_refptr<AudioMessageFilter> filter(new AudioMessageFilter(kRouteId));
 
   MockAudioDelegate delegate1;
   MockAudioDelegate delegate2;

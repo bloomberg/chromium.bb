@@ -602,8 +602,8 @@ void BrowserThemeProvider::SaveThemeID(const std::string& id) {
 }
 
 void BrowserThemeProvider::BuildFromExtension(const Extension* extension) {
-  scoped_refptr<BrowserThemePack> pack =
-      BrowserThemePack::BuildFromExtension(extension);
+  scoped_refptr<BrowserThemePack> pack(
+      BrowserThemePack::BuildFromExtension(extension));
   if (!pack.get()) {
     // TODO(erg): We've failed to install the theme; perhaps we should tell the
     // user? http://crbug.com/34780

@@ -1852,7 +1852,7 @@ TEST(CookieMonsterTest, BackingStoreCommunication) {
 
   // Create new cookies and flush them to the store.
   {
-    scoped_refptr<net::CookieMonster> cmout = new CookieMonster(store, NULL);
+    scoped_refptr<net::CookieMonster> cmout(new CookieMonster(store, NULL));
     for (const CookiesInputInfo* p = input_info;
          p < &input_info[ARRAYSIZE_UNSAFE(input_info)]; p++) {
       EXPECT_TRUE(cmout->SetCookieWithDetails(GURL(p->gurl), p->name, p->value,
@@ -1866,7 +1866,7 @@ TEST(CookieMonsterTest, BackingStoreCommunication) {
 
   // Create a new cookie monster and make sure that everything is correct
   {
-    scoped_refptr<net::CookieMonster> cmin = new CookieMonster(store, NULL);
+    scoped_refptr<net::CookieMonster> cmin(new CookieMonster(store, NULL));
     CookieMonster::CookieList cookies(cmin->GetAllCookies());
     ASSERT_EQ(2u, cookies.size());
     // Ordering is path length, then creation time.  So second cookie
@@ -1895,7 +1895,7 @@ TEST(CookieMonsterTest, BackingStoreCommunication) {
 TEST(CookieMonsterTest, CookieOrdering) {
   // Put a random set of cookies into a monster and make sure
   // they're returned in the right order.
-  scoped_refptr<net::CookieMonster> cm = new CookieMonster(NULL, NULL);
+  scoped_refptr<net::CookieMonster> cm(new CookieMonster(NULL, NULL));
   EXPECT_TRUE(cm->SetCookie(GURL("http://d.c.b.a.google.com/aa/x.html"),
                             "c=1"));
   EXPECT_TRUE(cm->SetCookie(GURL("http://b.a.google.com/aa/bb/cc/x.html"),
@@ -1957,8 +1957,8 @@ TEST(CookieMonsterTest, GarbageCollectionTriggers) {
   // First we check to make sure that a whole lot of recent cookies
   // doesn't get rid of anything after garbage collection is checked for.
   {
-    scoped_refptr<net::CookieMonster> cm =
-        CreateMonsterForGC(CookieMonster::kMaxCookies * 2);
+    scoped_refptr<net::CookieMonster> cm(
+        CreateMonsterForGC(CookieMonster::kMaxCookies * 2));
     EXPECT_EQ(CookieMonster::kMaxCookies * 2, cm->GetAllCookies().size());
     cm->SetCookie(GURL("http://newdomain.com"), "b=2");
     EXPECT_EQ(CookieMonster::kMaxCookies * 2 + 1, cm->GetAllCookies().size());
@@ -2016,10 +2016,10 @@ TEST(CookieMonsterTest, GarbageCollectionTriggers) {
          recent_scheme < static_cast<int>(ARRAYSIZE_UNSAFE(schemes));
          recent_scheme++) {
       const TestCase *test_case = &test_cases[ci];
-      scoped_refptr<net::CookieMonster> cm =
+      scoped_refptr<net::CookieMonster> cm(
           CreateMonsterFromStoreForGC(
               test_case->num_cookies, test_case->num_old_cookies,
-              CookieMonster::kSafeFromGlobalPurgeDays * 2);
+              CookieMonster::kSafeFromGlobalPurgeDays * 2));
       cm->SetExpiryAndKeyScheme(schemes[recent_scheme]);
       EXPECT_EQ(test_case->expected_initial_cookies,
                 static_cast<int>(cm->GetAllCookies().size()))

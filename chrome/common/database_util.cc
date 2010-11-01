@@ -18,8 +18,8 @@ WebKitClient::FileHandle DatabaseUtil::databaseOpenFile(
   IPC::PlatformFileForTransit file_handle =
       IPC::InvalidPlatformFileForTransit();
 
-  scoped_refptr<IPC::SyncMessageFilter> filter =
-      ChildThread::current()->sync_message_filter();
+  scoped_refptr<IPC::SyncMessageFilter> filter(
+      ChildThread::current()->sync_message_filter());
   filter->Send(new ViewHostMsg_DatabaseOpenFile(
       vfs_file_name, desired_flags, &file_handle));
 
@@ -29,8 +29,8 @@ WebKitClient::FileHandle DatabaseUtil::databaseOpenFile(
 int DatabaseUtil::databaseDeleteFile(
     const WebString& vfs_file_name, bool sync_dir) {
   int rv = SQLITE_IOERR_DELETE;
-  scoped_refptr<IPC::SyncMessageFilter> filter =
-      ChildThread::current()->sync_message_filter();
+  scoped_refptr<IPC::SyncMessageFilter> filter(
+      ChildThread::current()->sync_message_filter());
   filter->Send(new ViewHostMsg_DatabaseDeleteFile(
       vfs_file_name, sync_dir, &rv));
   return rv;
@@ -38,16 +38,16 @@ int DatabaseUtil::databaseDeleteFile(
 
 long DatabaseUtil::databaseGetFileAttributes(const WebString& vfs_file_name) {
   int32 rv = -1;
-  scoped_refptr<IPC::SyncMessageFilter> filter =
-      ChildThread::current()->sync_message_filter();
+  scoped_refptr<IPC::SyncMessageFilter> filter(
+      ChildThread::current()->sync_message_filter());
   filter->Send(new ViewHostMsg_DatabaseGetFileAttributes(vfs_file_name, &rv));
   return rv;
 }
 
 long long DatabaseUtil::databaseGetFileSize(const WebString& vfs_file_name) {
   int64 rv = 0LL;
-  scoped_refptr<IPC::SyncMessageFilter> filter =
-      ChildThread::current()->sync_message_filter();
+  scoped_refptr<IPC::SyncMessageFilter> filter(
+      ChildThread::current()->sync_message_filter());
   filter->Send(new ViewHostMsg_DatabaseGetFileSize(vfs_file_name, &rv));
   return rv;
 }

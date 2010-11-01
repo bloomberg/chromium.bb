@@ -46,8 +46,8 @@ bool HostMessageDispatcher::Initialize(
 
 void HostMessageDispatcher::OnControlMessageReceived(
     ClientControlMessage* message) {
-  scoped_refptr<RefCountedMessage<ClientControlMessage> > ref_msg =
-      new RefCountedMessage<ClientControlMessage>(message);
+  scoped_refptr<RefCountedMessage<ClientControlMessage> > ref_msg(
+      new RefCountedMessage<ClientControlMessage>(message));
   if (message->has_suggest_screen_resolution_request()) {
     control_message_handler_->OnSuggestScreenResolutionRequest(
         message->suggest_screen_resolution_request(),

@@ -94,8 +94,8 @@ void AccessTokenStore::RegisterPrefs(PrefService* prefs) {
 AccessTokenStore::Handle AccessTokenStore::LoadAccessTokens(
     CancelableRequestConsumerBase* consumer,
     LoadAccessTokensCallbackType* callback) {
-  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request =
-      new CancelableRequest<LoadAccessTokensCallbackType>(callback);
+  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request(
+      new CancelableRequest<LoadAccessTokensCallbackType>(callback));
   AddRequest(request, consumer);
   DCHECK(request->handle());
 

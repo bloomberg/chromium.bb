@@ -112,9 +112,9 @@ TEST_F(SSLHostStateTest, DidHostRunInsecureContent) {
 }
 
 TEST_F(SSLHostStateTest, QueryPolicy) {
-  scoped_refptr<net::X509Certificate> google_cert =
+  scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(google_der), sizeof(google_der));
+          reinterpret_cast<const char*>(google_der), sizeof(google_der)));
 
   SSLHostState state;
 

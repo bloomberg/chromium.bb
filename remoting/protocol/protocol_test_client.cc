@@ -125,7 +125,7 @@ void ProtocolTestConnection::Write(const std::string& str) {
   if (str.empty())
     return;
 
-  scoped_refptr<net::IOBuffer> buf = new net::IOBuffer(str.length());
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(str.length()));
   memcpy(buf->data(), str.c_str(), str.length());
   message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(
@@ -362,7 +362,7 @@ int main(int argc, char** argv) {
     usage(argv[0]);
   std::string auth_token(cmd_line->GetSwitchValueASCII("auth_token"));
 
-  scoped_refptr<ProtocolTestClient> client = new ProtocolTestClient();
+  scoped_refptr<ProtocolTestClient> client(new ProtocolTestClient());
 
   client->Run(username, auth_token, host_jid);
 

@@ -223,8 +223,8 @@ scoped_refptr<ChromotocolConnection> JingleChromotocolServer::Connect(
     CandidateChromotocolConfig* chromotocol_config,
     ChromotocolConnection::StateChangeCallback* state_change_callback) {
   // Can be called from any thread.
-  scoped_refptr<JingleChromotocolConnection> connection =
-      new JingleChromotocolConnection(this);
+  scoped_refptr<JingleChromotocolConnection> connection(
+      new JingleChromotocolConnection(this));
   connection->set_candidate_config(chromotocol_config);
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleChromotocolServer::DoConnect,

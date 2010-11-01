@@ -26,7 +26,7 @@ class CheckDerivedMemberAccess : public scoped_refptr<SelfAssign> {
 
 TEST(RefCountedUnitTest, TestSelfAssignment) {
   SelfAssign* p = new SelfAssign;
-  scoped_refptr<SelfAssign> var = p;
+  scoped_refptr<SelfAssign> var(p);
   var = var;
   EXPECT_EQ(var.get(), p);
 }

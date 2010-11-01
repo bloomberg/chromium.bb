@@ -15,8 +15,8 @@ RenderWidgetFullscreen* RenderWidgetFullscreen::Create(
     int32 opener_id, RenderThreadBase* render_thread,
     WebKit::WebPopupType popup_type) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
-  scoped_refptr<RenderWidgetFullscreen> widget = new RenderWidgetFullscreen(
-      render_thread, popup_type);
+  scoped_refptr<RenderWidgetFullscreen> widget(new RenderWidgetFullscreen(
+      render_thread, popup_type));
   widget->Init(opener_id);
   return widget.release();
 }

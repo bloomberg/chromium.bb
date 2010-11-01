@@ -210,14 +210,14 @@ void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
   // caches sub-resources.
   // This resource must have been loaded with no filtering because filtered
   // resouces aren't cachable.
-  scoped_refptr<SSLRequestInfo> info = new SSLRequestInfo(
+  scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details->url(),
       ResourceType::SUB_RESOURCE,
       details->frame_origin(),
       details->main_frame_origin(),
       details->pid(),
       details->ssl_cert_id(),
-      details->ssl_cert_status());
+      details->ssl_cert_status()));
 
   // Simulate loading this resource through the usual path.
   policy()->OnRequestStarted(info.get());
@@ -226,14 +226,14 @@ void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
 void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
   DCHECK(details);
 
-  scoped_refptr<SSLRequestInfo> info = new SSLRequestInfo(
+  scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details->url(),
       details->resource_type(),
       details->frame_origin(),
       details->main_frame_origin(),
       details->origin_child_id(),
       details->ssl_cert_id(),
-      details->ssl_cert_status());
+      details->ssl_cert_status()));
 
   // Notify our policy that we started a resource request.  Ideally, the
   // policy should have the ability to cancel the request, but we can't do

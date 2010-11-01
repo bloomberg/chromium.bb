@@ -176,8 +176,8 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
 scoped_refptr<base::MessageLoopProxy>
 BrowserThread::GetMessageLoopProxyForThread(
     ID identifier) {
-  scoped_refptr<base::MessageLoopProxy> proxy =
-      new BrowserThreadMessageLoopProxy(identifier);
+  scoped_refptr<base::MessageLoopProxy> proxy(
+      new BrowserThreadMessageLoopProxy(identifier));
   return proxy;
 }
 

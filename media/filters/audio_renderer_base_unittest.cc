@@ -149,7 +149,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   // Now satisfy the read requests.  Our callback should be executed after
   // exiting this loop.
   while (pending_reads_) {
-    scoped_refptr<DataBuffer> buffer = new DataBuffer(1024);
+    scoped_refptr<DataBuffer> buffer(new DataBuffer(1024));
     buffer->SetDataSize(1024);
     --pending_reads_;
     decoder_->consume_audio_samples_callback()->Run(buffer);
@@ -190,7 +190,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   const uint32 kDataSize = 1024;
   uint32 bytes_buffered = 0;
   while (pending_reads_) {
-    scoped_refptr<DataBuffer> buffer = new DataBuffer(kDataSize);
+    scoped_refptr<DataBuffer> buffer(new DataBuffer(kDataSize));
     buffer->SetDataSize(kDataSize);
     decoder_->consume_audio_samples_callback()->Run(buffer);
     --pending_reads_;
@@ -219,7 +219,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   EXPECT_EQ(kMaxQueueSize, pending_reads_);
 
   // Fulfill the read with an end-of-stream packet.
-  scoped_refptr<DataBuffer> last_buffer = new DataBuffer(0);
+  scoped_refptr<DataBuffer> last_buffer(new DataBuffer(0));
   decoder_->consume_audio_samples_callback()->Run(last_buffer);
   --pending_reads_;
 

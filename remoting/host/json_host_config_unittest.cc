@@ -54,8 +54,8 @@ TEST_F(JsonHostConfigTest, InvalidFile) {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   FilePath non_existent_file =
       test_dir_.path().AppendASCII("non_existent.json");
-  scoped_refptr<JsonHostConfig> target =
-      new JsonHostConfig(non_existent_file, message_loop_proxy_.get());
+  scoped_refptr<JsonHostConfig> target(
+      new JsonHostConfig(non_existent_file, message_loop_proxy_.get()));
   EXPECT_FALSE(target->Read());
 }
 
@@ -63,8 +63,8 @@ TEST_F(JsonHostConfigTest, Read) {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   FilePath test_file = test_dir_.path().AppendASCII("read.json");
   WriteTestFile(test_file);
-  scoped_refptr<JsonHostConfig> target =
-      new JsonHostConfig(test_file, message_loop_proxy_.get());
+  scoped_refptr<JsonHostConfig> target(
+      new JsonHostConfig(test_file, message_loop_proxy_.get()));
   ASSERT_TRUE(target->Read());
 
   std::string value;

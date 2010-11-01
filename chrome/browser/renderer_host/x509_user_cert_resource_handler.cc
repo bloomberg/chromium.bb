@@ -103,9 +103,9 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
   // TODO(gauravsh): Verify that 'request_id' was actually a keygen form post
   // and only then import the certificate.
   AssembleResource();
-  scoped_refptr<net::X509Certificate> cert =
+  scoped_refptr<net::X509Certificate> cert(
       net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
-                                            content_length_);
+                                            content_length_));
   // The handler will run the UI and delete itself when it's finished.
   new SSLAddCertHandler(request_, cert, render_process_host_id_,
                         render_view_id_);

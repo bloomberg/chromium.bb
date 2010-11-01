@@ -83,7 +83,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
     int read = std::min(size - i, read_sequence[i % sequence_size]);
 
     // And then prepare an IOBuffer for feeding it.
-    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(read);
+    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(read));
     memcpy(buffer->data(), test_data + i, read);
     decoder.ParseMessages(buffer, read, &message_list);
     i += read;

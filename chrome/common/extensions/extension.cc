@@ -288,7 +288,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
                                            const DictionaryValue& value,
                                            bool require_key,
                                            std::string* error) {
-  scoped_refptr<Extension> extension = new Extension(path, location);
+  scoped_refptr<Extension> extension(new Extension(path, location));
   if (!extension->InitFromValue(value, require_key, error))
     return NULL;
   return extension;

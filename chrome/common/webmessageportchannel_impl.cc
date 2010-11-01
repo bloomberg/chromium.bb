@@ -69,8 +69,8 @@ void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {
   // The message port ids might not be set up yet, if this channel wasn't
   // created on the main thread.  So need to wait until we're on the main thread
   // before getting the other message port id.
-  scoped_refptr<WebMessagePortChannelImpl> webchannel =
-      static_cast<WebMessagePortChannelImpl*>(channel);
+  scoped_refptr<WebMessagePortChannelImpl> webchannel(
+      static_cast<WebMessagePortChannelImpl*>(channel));
   Entangle(webchannel);
 }
 

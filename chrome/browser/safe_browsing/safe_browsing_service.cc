@@ -669,8 +669,8 @@ void SafeBrowsingService::Start() {
   }
 
   // We will issue network fetches using the default profile's request context.
-  scoped_refptr<URLRequestContextGetter> request_context_getter =
-      GetDefaultProfile()->GetRequestContext();
+  scoped_refptr<URLRequestContextGetter> request_context_getter(
+      GetDefaultProfile()->GetRequestContext());
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

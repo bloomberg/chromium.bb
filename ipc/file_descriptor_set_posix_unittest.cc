@@ -36,7 +36,7 @@ bool VerifyClosed(int fd) {
 static const int kFDBase = 50000;
 
 TEST(FileDescriptorSet, BasicAdd) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_EQ(set->size(), 0u);
   ASSERT_TRUE(set->empty());
@@ -50,7 +50,7 @@ TEST(FileDescriptorSet, BasicAdd) {
 }
 
 TEST(FileDescriptorSet, BasicAddAndClose) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_EQ(set->size(), 0u);
   ASSERT_TRUE(set->empty());
@@ -64,7 +64,7 @@ TEST(FileDescriptorSet, BasicAddAndClose) {
   ASSERT_TRUE(VerifyClosed(fd));
 }
 TEST(FileDescriptorSet, MaxSize) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   for (unsigned i = 0;
        i < FileDescriptorSet::MAX_DESCRIPTORS_PER_MESSAGE; ++i) {
@@ -77,7 +77,7 @@ TEST(FileDescriptorSet, MaxSize) {
 }
 
 TEST(FileDescriptorSet, SetDescriptors) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_TRUE(set->empty());
   set->SetDescriptors(NULL, 0);
@@ -95,7 +95,7 @@ TEST(FileDescriptorSet, SetDescriptors) {
 }
 
 TEST(FileDescriptorSet, GetDescriptors) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   set->GetDescriptors(NULL);
   ASSERT_TRUE(set->Add(kFDBase));
@@ -109,7 +109,7 @@ TEST(FileDescriptorSet, GetDescriptors) {
 }
 
 TEST(FileDescriptorSet, WalkInOrder) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_TRUE(set->Add(kFDBase));
   ASSERT_TRUE(set->Add(kFDBase + 1));
@@ -123,7 +123,7 @@ TEST(FileDescriptorSet, WalkInOrder) {
 }
 
 TEST(FileDescriptorSet, WalkWrongOrder) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_TRUE(set->Add(kFDBase));
   ASSERT_TRUE(set->Add(kFDBase + 1));
@@ -136,7 +136,7 @@ TEST(FileDescriptorSet, WalkWrongOrder) {
 }
 
 TEST(FileDescriptorSet, WalkCycle) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   ASSERT_TRUE(set->Add(kFDBase));
   ASSERT_TRUE(set->Add(kFDBase + 1));
@@ -156,7 +156,7 @@ TEST(FileDescriptorSet, WalkCycle) {
 }
 
 TEST(FileDescriptorSet, DontClose) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   const int fd = GetSafeFd();
   ASSERT_TRUE(set->Add(fd));
@@ -166,7 +166,7 @@ TEST(FileDescriptorSet, DontClose) {
 }
 
 TEST(FileDescriptorSet, DoClose) {
-  scoped_refptr<FileDescriptorSet> set = new FileDescriptorSet;
+  scoped_refptr<FileDescriptorSet> set(new FileDescriptorSet);
 
   const int fd = GetSafeFd();
   ASSERT_TRUE(set->AddAndAutoClose(fd));

@@ -627,8 +627,8 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  scoped_refptr<RefCountedBytes> html_bytes =
-      profile_->GetNTPResourceCache()->GetNewTabHTML(is_off_the_record);
+  scoped_refptr<RefCountedBytes> html_bytes(
+      profile_->GetNTPResourceCache()->GetNewTabHTML(is_off_the_record));
 
   SendResponse(request_id, html_bytes);
 }

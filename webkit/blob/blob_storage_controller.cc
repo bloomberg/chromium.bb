@@ -19,7 +19,7 @@ BlobStorageController::~BlobStorageController() {
 
 void BlobStorageController::RegisterBlobUrl(
     const GURL& url, const BlobData* blob_data) {
-  scoped_refptr<BlobData> target_blob_data = new BlobData();
+  scoped_refptr<BlobData> target_blob_data(new BlobData());
   target_blob_data->set_content_type(blob_data->content_type());
   target_blob_data->set_content_disposition(blob_data->content_disposition());
 

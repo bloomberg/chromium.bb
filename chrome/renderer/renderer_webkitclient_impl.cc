@@ -181,8 +181,8 @@ bool RendererWebKitClientImpl::SendSyncMessageFromAnyThread(
   if (render_thread)
     return render_thread->Send(msg);
 
-  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter =
-      ChildThread::current()->sync_message_filter();
+  scoped_refptr<IPC::SyncMessageFilter> sync_msg_filter(
+      ChildThread::current()->sync_message_filter());
   return sync_msg_filter->Send(msg);
 }
 

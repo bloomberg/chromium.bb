@@ -96,7 +96,7 @@ ACTION(Initialize) {
 }
 
 ACTION_P(SaveDecodeRequest, list) {
-  scoped_refptr<Buffer> buffer = arg0;
+  scoped_refptr<Buffer> buffer(arg0);
   list->push_back(buffer);
 }
 
@@ -120,11 +120,11 @@ ACTION(CompleteDemuxRequest) {
 //   \ ReadCallback() -> client
 TEST(DecoderBaseTest, FlowControl) {
   MessageLoop message_loop;
-  scoped_refptr<MockDecoderImpl> decoder = new MockDecoderImpl();
+  scoped_refptr<MockDecoderImpl> decoder(new MockDecoderImpl());
   MockDecoderCallback read_callback;
   decoder->set_consume_audio_samples_callback(
       NewCallback(&read_callback, &MockDecoderCallback::OnReadComplete));
-  scoped_refptr<MockDemuxerStream> demuxer_stream = new MockDemuxerStream();
+  scoped_refptr<MockDemuxerStream> demuxer_stream(new MockDemuxerStream());
   StrictMock<MockFilterCallback> callback;
   decoder->set_message_loop(&message_loop);
 

@@ -21,19 +21,19 @@ TEST(BlobStorageControllerTest, RegisterBlobUrl) {
   base::Time::FromString(L"Tue, 15 Nov 1994, 12:45:26 GMT", &time1);
   base::Time::FromString(L"Mon, 14 Nov 1994, 11:30:49 GMT", &time2);
 
-  scoped_refptr<BlobData> blob_data1 = new BlobData();
+  scoped_refptr<BlobData> blob_data1(new BlobData());
   blob_data1->AppendData("Data1");
   blob_data1->AppendData("Data2");
   blob_data1->AppendFile(FilePath(FILE_PATH_LITERAL("File1.txt")),
     10, 1024, time1);
 
-  scoped_refptr<BlobData> blob_data2 = new BlobData();
+  scoped_refptr<BlobData> blob_data2(new BlobData());
   blob_data2->AppendData("Data3");
   blob_data2->AppendBlob(GURL("blob://url_1"), 8, 100);
   blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File2.txt")),
       0, 20, time2);
 
-  scoped_refptr<BlobData> canonicalized_blob_data2 = new BlobData();
+  scoped_refptr<BlobData> canonicalized_blob_data2(new BlobData());
   canonicalized_blob_data2->AppendData("Data3");
   canonicalized_blob_data2->AppendData("Data2", 3, 2);
   canonicalized_blob_data2->AppendFile(FilePath(FILE_PATH_LITERAL("File1.txt")),
@@ -86,7 +86,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
   scoped_ptr<BlobStorageController> blob_storage_controller(
       new BlobStorageController());
 
-  scoped_refptr<BlobData> blob_data = new BlobData();
+  scoped_refptr<BlobData> blob_data(new BlobData());
 
   GURL blob_url0("blob://url_0");
   blob_storage_controller->RegisterBlobUrl(blob_url0, blob_data);
@@ -122,7 +122,7 @@ TEST(BlobStorageControllerTest, ResolveBlobReferencesInUploadData) {
       FilePath(FILE_PATH_LITERAL("foo1.txt")), 0, 20, time2);
 
   // Test no blob reference.
-  scoped_refptr<UploadData> upload_data = new UploadData();
+  scoped_refptr<UploadData> upload_data(new UploadData());
   upload_data->AppendBytes(
       &upload_element1.bytes().at(0),
       upload_element1.bytes().size());

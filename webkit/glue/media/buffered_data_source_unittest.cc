@@ -608,8 +608,8 @@ class BufferedDataSourceTest : public testing::Test {
     // There is no need to provide a message loop to data source.
     data_source_->set_host(&host_);
 
-    scoped_refptr<NiceMock<MockBufferedResourceLoader> > first_loader =
-        new NiceMock<MockBufferedResourceLoader>();
+    scoped_refptr<NiceMock<MockBufferedResourceLoader> > first_loader(
+        new NiceMock<MockBufferedResourceLoader>());
 
     // Creates the mock loader to be injected.
     loader_ = first_loader;

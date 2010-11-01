@@ -37,8 +37,8 @@ void HttpListenSocket::Accept() {
   if (conn == ListenSocket::kInvalidSocket) {
     // TODO
   } else {
-    scoped_refptr<HttpListenSocket> sock =
-        new HttpListenSocket(conn, delegate_);
+    scoped_refptr<HttpListenSocket> sock(
+        new HttpListenSocket(conn, delegate_));
 #if defined(OS_POSIX)
       sock->WatchSocket(WAITING_READ);
 #endif

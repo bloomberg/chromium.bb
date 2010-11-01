@@ -353,9 +353,9 @@ void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
           service_->storage()->CreateResponseWriter(manifest_url_),
           this, request);
       stored_response_ids_.push_back(info->response_writer_->response_id());
-      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
           new HttpResponseInfoIOBuffer(
-              new net::HttpResponseInfo(request->response_info()));
+              new net::HttpResponseInfo(request->response_info())));
       info->response_writer_->WriteInfo(io_buffer, &info->write_callback_);
     } else {
       ReadResponseData(request);
@@ -782,8 +782,8 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
       manifest_response_writer_.reset(
           service_->storage()->CreateResponseWriter(manifest_url_));
       stored_response_ids_.push_back(manifest_response_writer_->response_id());
-      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-          new HttpResponseInfoIOBuffer(manifest_response_info_.release());
+      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+          new HttpResponseInfoIOBuffer(manifest_response_info_.release()));
       manifest_response_writer_->WriteInfo(io_buffer,
                                            &manifest_info_write_callback_);
     }
@@ -798,8 +798,8 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
 
 void AppCacheUpdateJob::OnManifestInfoWriteComplete(int result) {
   if (result > 0) {
-    scoped_refptr<net::StringIOBuffer> io_buffer =
-        new net::StringIOBuffer(manifest_data_);
+    scoped_refptr<net::StringIOBuffer> io_buffer(
+        new net::StringIOBuffer(manifest_data_));
     manifest_response_writer_->WriteData(io_buffer, manifest_data_.length(),
                                          &manifest_data_write_callback_);
   } else {

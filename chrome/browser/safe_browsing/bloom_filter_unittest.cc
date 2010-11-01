@@ -30,8 +30,8 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
   int count = 1000;
 
   // Build up the bloom filter.
-  scoped_refptr<BloomFilter> filter =
-      new BloomFilter(count * BloomFilter::kBloomFilterSizeRatio);
+  scoped_refptr<BloomFilter> filter(
+      new BloomFilter(count * BloomFilter::kBloomFilterSizeRatio));
 
   typedef std::set<SBPrefix> Values;
   Values values;
@@ -44,8 +44,8 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
   // Check serialization works.
   char* data_copy = new char[filter->size()];
   memcpy(data_copy, filter->data(), filter->size());
-  scoped_refptr<BloomFilter> filter_copy =
-      new BloomFilter(data_copy, filter->size(), filter->hash_keys_);
+  scoped_refptr<BloomFilter> filter_copy(
+      new BloomFilter(data_copy, filter->size(), filter->hash_keys_));
 
   // Check no false negatives by ensuring that every time we inserted exists.
   for (Values::const_iterator i = values.begin(); i != values.end(); ++i)
@@ -82,8 +82,8 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
 TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
   // Create initial filter.
   const int kTestEntries = BloomFilter::kBloomFilterMinSize;
-  scoped_refptr<BloomFilter> filter_write =
-      new BloomFilter(kTestEntries * BloomFilter::kBloomFilterSizeRatio);
+  scoped_refptr<BloomFilter> filter_write(
+      new BloomFilter(kTestEntries * BloomFilter::kBloomFilterSizeRatio));
 
   for (int i = 0; i < kTestEntries; ++i)
     filter_write->Insert(GenHash());
@@ -99,7 +99,7 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
   // Create new empty filter and load from disk.
   BloomFilter* filter = BloomFilter::LoadFile(filter_path);
   ASSERT_TRUE(filter != NULL);
-  scoped_refptr<BloomFilter> filter_read = filter;
+  scoped_refptr<BloomFilter> filter_read(filter);
 
   // Check data consistency.
   EXPECT_EQ(filter_write->hash_keys_.size(), filter_read->hash_keys_.size());

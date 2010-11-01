@@ -277,17 +277,17 @@ void CloudPrintProxyBackend::Core::DoInitializeWithLsid(
   // the CloudPrintProxyCoreThread and we cannot really do anything else until
   // the GAIA signin is successful.
   std::string user_agent = "ChromiumBrowser";
-  scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_talk =
+  scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_talk(
       new ServiceGaiaAuthenticator(
           user_agent, kSyncGaiaServiceId, kGaiaUrl,
-          g_service_process->io_thread()->message_loop_proxy());
+          g_service_process->io_thread()->message_loop_proxy()));
   gaia_auth_for_talk->set_message_loop(MessageLoop::current());
   bool auth_succeeded = false;
   if (gaia_auth_for_talk->AuthenticateWithLsid(lsid)) {
-    scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print =
+    scoped_refptr<ServiceGaiaAuthenticator> gaia_auth_for_print(
         new ServiceGaiaAuthenticator(
             user_agent, kCloudPrintGaiaServiceId, kGaiaUrl,
-            g_service_process->io_thread()->message_loop_proxy());
+            g_service_process->io_thread()->message_loop_proxy()));
     gaia_auth_for_print->set_message_loop(MessageLoop::current());
     if (gaia_auth_for_print->AuthenticateWithLsid(lsid)) {
       auth_succeeded = true;

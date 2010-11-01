@@ -71,7 +71,7 @@ class DevToolsManagerTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
-  scoped_refptr<DevToolsManager> manager = new DevToolsManager();
+  scoped_refptr<DevToolsManager> manager(new DevToolsManager());
 
   DevToolsClientHost* host = manager->GetDevToolsClientHostFor(rvh());
   EXPECT_TRUE(NULL == host);
@@ -95,7 +95,7 @@ TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
 }
 
 TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
-  scoped_refptr<DevToolsManager> manager = new DevToolsManager();
+  scoped_refptr<DevToolsManager> manager(new DevToolsManager());
 
   TestDevToolsClientHost client_host;
   manager->RegisterDevToolsClientHostFor(rvh(), &client_host);

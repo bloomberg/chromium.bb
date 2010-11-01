@@ -86,7 +86,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   // |iq_request| is freed by HeartbeatSender.
   MockIqRequest* iq_request = new MockIqRequest(jingle_client_);
 
-  scoped_refptr<HeartbeatSender> heartbeat_sender = new HeartbeatSender();
+  scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
   ASSERT_TRUE(heartbeat_sender->Init(config_, jingle_client_));
 
   EXPECT_CALL(*jingle_client_, CreateIqRequest())
@@ -105,7 +105,7 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
 TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
   // This test validates format of the heartbeat stanza.
 
-  scoped_refptr<HeartbeatSender> heartbeat_sender = new HeartbeatSender();
+  scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
   ASSERT_TRUE(heartbeat_sender->Init(config_, jingle_client_));
 
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());

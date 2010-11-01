@@ -271,13 +271,13 @@ class BlobURLRequestJobTest : public testing::Test {
   // Test Cases ---------------------------------------------------------------
 
   void TestGetSimpleDataRequest() {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendData(kTestData1);
     TestSuccessRequest(blob_data, kTestData1);
   }
 
   void TestGetSimpleFileRequest() {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendFile(temp_file1_, 0, -1, base::Time());
     TestSuccessRequest(blob_data, kTestFileData1);
   }
@@ -285,13 +285,13 @@ class BlobURLRequestJobTest : public testing::Test {
   void TestGetNonExistentFileRequest() {
     FilePath non_existent_file =
         temp_file1_.InsertBeforeExtension(FILE_PATH_LITERAL("-na"));
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendFile(non_existent_file, 0, -1, base::Time());
     TestErrorRequest(blob_data, 404);
   }
 
   void TestGetChangedFileRequest() {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     base::Time old_time =
         temp_file_modification_time1_ - base::TimeDelta::FromSeconds(10);
     blob_data->AppendFile(temp_file1_, 0, 3, old_time);
@@ -299,21 +299,21 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
   void TestGetSlicedDataRequest() {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendData(kTestData2, 2, 4);
     std::string result(kTestData2 + 2, 4);
     TestSuccessRequest(blob_data, result);
   }
 
   void TestGetSlicedFileRequest() {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendFile(temp_file1_, 2, 4, temp_file_modification_time1_);
     std::string result(kTestFileData1 + 2, 4);
     TestSuccessRequest(blob_data, result);
   }
 
   scoped_refptr<BlobData> BuildComplicatedData(std::string* expected_result) {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->AppendData(kTestData1, 1, 2);
     blob_data->AppendFile(temp_file1_, 2, 3, temp_file_modification_time1_);
     blob_data->AppendData(kTestData2, 3, 4);
@@ -356,7 +356,7 @@ class BlobURLRequestJobTest : public testing::Test {
   }
 
   void TestExtraHeaders() {
-    scoped_refptr<BlobData> blob_data = new BlobData();
+    scoped_refptr<BlobData> blob_data(new BlobData());
     blob_data->set_content_type(kTestContentType);
     blob_data->set_content_disposition(kTestContentDisposition);
     blob_data->AppendData(kTestData1);

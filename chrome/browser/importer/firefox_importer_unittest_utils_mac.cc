@@ -178,8 +178,8 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   // the future and cancel it if an RPC message comes back earlier.
   // This relies on the IPC listener class to quit the message loop itself when
   // a message comes in.
-  scoped_refptr<CancellableQuitMsgLoop> quit_task =
-      new CancellableQuitMsgLoop();
+  scoped_refptr<CancellableQuitMsgLoop> quit_task(
+      new CancellableQuitMsgLoop());
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       NewRunnableMethod(quit_task.get(), &CancellableQuitMsgLoop::QuitNow),

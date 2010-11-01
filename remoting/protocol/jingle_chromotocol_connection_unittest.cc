@@ -118,10 +118,11 @@ class JingleChromotocolConnectionTest : public testing::Test {
                                    &MockServerCallback::OnIncomingConnection));
     client_server_ = new JingleChromotocolServer(&thread_);
     client_server_->set_allow_local_ips(true);
-    client_server_->Init(SessionManagerPair::kClientJid,
-                         session_manager_pair_->client_session_manager(),
-                         NewCallback(&client_server_callback_,
-                                     &MockServerCallback::OnIncomingConnection));
+    client_server_->Init(
+        SessionManagerPair::kClientJid,
+        session_manager_pair_->client_session_manager(),
+        NewCallback(&client_server_callback_,
+                    &MockServerCallback::OnIncomingConnection));
   }
 
   bool InitiateConnection() {
@@ -422,7 +423,7 @@ class UDPChannelTester : public ChannelTesterBase {
       return;
     }
 
-    scoped_refptr<net::IOBuffer> packet = new net::IOBuffer(kMessageSize);
+    scoped_refptr<net::IOBuffer> packet(new net::IOBuffer(kMessageSize));
     memset(packet->data(), 123, kMessageSize);
     sent_packets_[packets_sent_] = packet;
     // Put index of this packet in the beginning of the packet body.
@@ -551,9 +552,9 @@ TEST_F(JingleChromotocolConnectionTest, Connect) {
 TEST_F(JingleChromotocolConnectionTest, TestControlChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
-  scoped_refptr<TCPChannelTester> tester =
+  scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_);
+                           client_connection_));
   tester->Start(ChannelTesterBase::CONTROL);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -567,9 +568,9 @@ TEST_F(JingleChromotocolConnectionTest, TestControlChannel) {
 TEST_F(JingleChromotocolConnectionTest, TestVideoChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
-  scoped_refptr<TCPChannelTester> tester =
+  scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_);
+                           client_connection_));
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -582,9 +583,9 @@ TEST_F(JingleChromotocolConnectionTest, TestVideoChannel) {
 TEST_F(JingleChromotocolConnectionTest, TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
-  scoped_refptr<TCPChannelTester> tester =
+  scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_);
+                           client_connection_));
   tester->Start(ChannelTesterBase::EVENT);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
@@ -597,9 +598,9 @@ TEST_F(JingleChromotocolConnectionTest, TestEventChannel) {
 TEST_F(JingleChromotocolConnectionTest, TestVideoRtpChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
-  scoped_refptr<UDPChannelTester> tester =
+  scoped_refptr<UDPChannelTester> tester(
       new UDPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_);
+                           client_connection_));
   tester->Start(ChannelTesterBase::VIDEO_RTP);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();

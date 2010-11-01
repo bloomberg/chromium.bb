@@ -104,8 +104,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
 
     void ReadSome(URLRequest* request) {
       DCHECK(amount_received_ + kBlockSize <= kNumBlocks * kBlockSize);
-      scoped_refptr<IOBuffer> wrapped_buffer =
-          new net::WrappedIOBuffer(received_data_->data() + amount_received_);
+      scoped_refptr<IOBuffer> wrapped_buffer(
+          new net::WrappedIOBuffer(received_data_->data() + amount_received_));
       int bytes_read = 0;
       EXPECT_FALSE(request->Read(wrapped_buffer, kBlockSize, &bytes_read));
       EXPECT_EQ(0, bytes_read);
@@ -264,7 +264,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   // Wrappers to call AppCacheResponseReader/Writer Read and Write methods
 
   void WriteBasicResponse() {
-    scoped_refptr<IOBuffer> body = new WrappedIOBuffer(kHttpBasicBody);
+    scoped_refptr<IOBuffer> body(new WrappedIOBuffer(kHttpBasicBody));
     std::string raw_headers(kHttpBasicHeaders, arraysize(kHttpBasicHeaders));
     WriteResponse(MakeHttpResponseInfo(raw_headers), body,
                   strlen(kHttpBasicBody));
@@ -603,7 +603,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     // 3, 1k blocks
     static const char kHttpHeaders[] =
         "HTTP/1.0 200 OK\0Content-Length: 3072\0\0";
-    scoped_refptr<IOBuffer> body = new IOBuffer(kBlockSize * 3);
+    scoped_refptr<IOBuffer> body(new IOBuffer(kBlockSize * 3));
     char* p = body->data();
     for (int i = 0; i < 3; ++i, p += kBlockSize)
       FillData(i + 1, p, kBlockSize);

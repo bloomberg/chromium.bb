@@ -295,11 +295,11 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   file_util::AbsolutePath(&extension_path);
 
   std::string error;
-  scoped_refptr<const Extension> extension = extension_file_util::LoadExtension(
+  scoped_refptr<const Extension> extension(extension_file_util::LoadExtension(
       extension_path,
       Extension::LOAD,
       false,  // Don't require id
-      &error);
+      &error));
 
   if (!extension) {
     ReportExtensionLoadError(extension_path, error);

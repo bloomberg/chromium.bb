@@ -707,7 +707,7 @@ void ResourceDispatcherHost::BeginDownload(
 
   request_id_--;
 
-  scoped_refptr<ResourceHandler> handler =
+  scoped_refptr<ResourceHandler> handler(
       new DownloadResourceHandler(this,
                                   child_id,
                                   route_id,
@@ -716,7 +716,7 @@ void ResourceDispatcherHost::BeginDownload(
                                   download_file_manager_.get(),
                                   request,
                                   prompt_for_save_location,
-                                  save_info);
+                                  save_info));
 
   if (safe_browsing_->enabled()) {
     handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
@@ -757,11 +757,11 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
   // requests.  Does nothing if they are already loaded.
   PluginService::GetInstance()->LoadChromePlugins(this);
 
-  scoped_refptr<ResourceHandler> handler =
+  scoped_refptr<ResourceHandler> handler(
       new SaveFileResourceHandler(child_id,
                                   route_id,
                                   url,
-                                  save_file_manager_.get());
+                                  save_file_manager_.get()));
   request_id_--;
 
   bool known_proto = URLRequest::IsHandledURL(url);
@@ -1023,7 +1023,7 @@ void ResourceDispatcherHost::OnReceivedRedirect(URLRequest* request,
     return;
   }
 
-  scoped_refptr<ResourceResponse> response = new ResourceResponse;
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
   PopulateResourceResponse(request,
       info->replace_extension_localization_templates(), response);
   if (!info->resource_handler()->OnRequestRedirected(info->request_id(),
@@ -1123,7 +1123,7 @@ void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
 bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
 
-  scoped_refptr<ResourceResponse> response = new ResourceResponse;
+  scoped_refptr<ResourceResponse> response(new ResourceResponse);
   PopulateResourceResponse(request,
       info->replace_extension_localization_templates(), response);
 

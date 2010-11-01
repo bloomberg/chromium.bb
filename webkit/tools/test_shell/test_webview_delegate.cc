@@ -740,8 +740,8 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
           appcache_host ? appcache_host->host_id() : appcache::kNoHostId,
           0);
 
-  scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer =
-      new webkit_glue::VideoRendererImpl(false);
+  scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer(
+      new webkit_glue::VideoRendererImpl(false));
   collection.push_back(video_renderer);
 
   return new webkit_glue::WebMediaPlayerImpl(

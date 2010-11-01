@@ -277,8 +277,8 @@ void ConnectionTester::TestRunner::OnReadCompleted(URLRequest* request,
 
 void ConnectionTester::TestRunner::ReadBody(URLRequest* request) {
   // Read the response body |kReadBufferSize| bytes at a time.
-  scoped_refptr<net::IOBuffer> unused_buffer =
-      new net::IOBuffer(kReadBufferSize);
+  scoped_refptr<net::IOBuffer> unused_buffer(
+      new net::IOBuffer(kReadBufferSize));
   int num_bytes;
   if (request->Read(unused_buffer, kReadBufferSize, &num_bytes)) {
     OnReadCompleted(request, num_bytes);
@@ -299,8 +299,8 @@ void ConnectionTester::TestRunner::OnResponseCompleted(URLRequest* request) {
 
 void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
   // Try to create a URLRequestContext for this experiment.
-  scoped_refptr<ExperimentURLRequestContext> context =
-      new ExperimentURLRequestContext(tester_->io_thread_);
+  scoped_refptr<ExperimentURLRequestContext> context(
+      new ExperimentURLRequestContext(tester_->io_thread_));
   int rv = context->Init(experiment);
   if (rv != net::OK) {
     // Complete the experiment with a failure.

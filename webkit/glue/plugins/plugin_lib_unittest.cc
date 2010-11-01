@@ -25,7 +25,7 @@ TEST(PluginLibLoading, UnloadAllPlugins) {
       PluginLibTest::CreatePluginLib(FilePath()));
 
   // Try with a single plugin lib.
-  scoped_refptr<PluginLibTest> plugin_lib1 = new PluginLibTest();
+  scoped_refptr<PluginLibTest> plugin_lib1(new PluginLibTest());
   NPAPI::PluginLib::UnloadAllPlugins();
 
   // Need to create it again, it should have been destroyed above.
@@ -34,7 +34,7 @@ TEST(PluginLibLoading, UnloadAllPlugins) {
 
   // Try with two plugin libs.
   plugin_lib1 = new PluginLibTest();
-  scoped_refptr<PluginLibTest> plugin_lib2 = new PluginLibTest();
+  scoped_refptr<PluginLibTest> plugin_lib2(new PluginLibTest());
   NPAPI::PluginLib::UnloadAllPlugins();
 
   // Need to create it again, it should have been destroyed above.

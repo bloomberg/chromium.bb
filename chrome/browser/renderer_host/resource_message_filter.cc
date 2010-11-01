@@ -1478,7 +1478,7 @@ void ResourceMessageFilter::OnCacheableMetadataAvailable(
       http_transaction_factory()->GetCache();
   DCHECK(cache);
 
-  scoped_refptr<net::IOBuffer> buf = new net::IOBuffer(data.size());
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
   memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(
       url, base::Time::FromDoubleT(expected_response_time), buf, data.size());

@@ -970,7 +970,7 @@ void MetricsService::LogTransmissionTimerDone() {
   Task* task = log_sender_factory_.
       NewRunnableMethod(&MetricsService::OnMemoryDetailCollectionDone);
 
-  scoped_refptr<MetricsMemoryDetails> details = new MetricsMemoryDetails(task);
+  scoped_refptr<MetricsMemoryDetails> details(new MetricsMemoryDetails(task));
   details->StartFetch();
 
   // Collect WebCore cache information to put into a histogram.

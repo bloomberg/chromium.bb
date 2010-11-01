@@ -1549,9 +1549,9 @@ void TestingAutomationProvider::GetBookmarksAsJSON(
       if (!browser->profile()->GetBookmarkModel()->IsLoaded()) {
         return;
       }
-      scoped_refptr<BookmarkStorage> storage = new BookmarkStorage(
+      scoped_refptr<BookmarkStorage> storage(new BookmarkStorage(
           browser->profile(),
-          browser->profile()->GetBookmarkModel());
+          browser->profile()->GetBookmarkModel()));
       *success = storage->SerializeData(bookmarks_as_json);
     }
   }

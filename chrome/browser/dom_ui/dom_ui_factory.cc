@@ -242,8 +242,8 @@ void DOMUIFactory::GetFaviconForURL(Profile* profile,
       page_url.host() != extension_misc::kBookmarkManagerId) {
     ExtensionDOMUI::GetFaviconForURL(profile, request, page_url);
   } else {
-    scoped_refptr<RefCountedMemory> icon_data =
-        DOMUIFactory::GetFaviconResourceBytes(profile, page_url);
+    scoped_refptr<RefCountedMemory> icon_data(
+        DOMUIFactory::GetFaviconResourceBytes(profile, page_url));
     bool know_icon = icon_data.get() != NULL && icon_data->size() > 0;
     request->ForwardResultAsync(
         FaviconService::FaviconDataCallback::TupleType(request->handle(),

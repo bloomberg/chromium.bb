@@ -209,9 +209,9 @@ void DevToolsRemoteListenSocket::HandleMessage() {
 void DevToolsRemoteListenSocket::Accept() {
   SOCKET conn = ListenSocket::Accept(socket_);
   if (conn != INVALID_SOCKET) {
-    scoped_refptr<DevToolsRemoteListenSocket> sock =
+    scoped_refptr<DevToolsRemoteListenSocket> sock(
         new DevToolsRemoteListenSocket(conn,
-                                       message_listener_);
+                                       message_listener_));
     // it's up to the delegate to AddRef if it wants to keep it around
 #if defined(OS_POSIX)
     sock->WatchSocket(WAITING_READ);

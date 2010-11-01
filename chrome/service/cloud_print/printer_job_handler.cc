@@ -417,10 +417,10 @@ PrinterJobHandler::HandleSuccessStatusUpdateResponse(
           << printer_info_cloud_.printer_id;
   // The print job has been spooled locally. We now need to create an object
   // that monitors the status of the job and updates the server.
-  scoped_refptr<JobStatusUpdater> job_status_updater =
+  scoped_refptr<JobStatusUpdater> job_status_updater(
       new JobStatusUpdater(printer_info_.printer_name, job_details_.job_id_,
                            local_job_id_, auth_token_, cloud_print_server_url_,
-                           print_system_.get(), this);
+                           print_system_.get(), this));
   job_status_updater_list_.push_back(job_status_updater);
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableMethod(job_status_updater.get(),

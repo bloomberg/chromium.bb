@@ -997,8 +997,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Seed storage with expected manifest data.
     const std::string seed_data(kManifest1Contents);
-    scoped_refptr<net::StringIOBuffer> io_buffer =
-        new net::StringIOBuffer(seed_data);
+    scoped_refptr<net::StringIOBuffer> io_buffer(
+        new net::StringIOBuffer(seed_data));
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -1100,8 +1100,8 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Seed storage with expected manifest data different from manifest1.
     const std::string seed_data("different");
-    scoped_refptr<net::StringIOBuffer> io_buffer =
-        new net::StringIOBuffer(seed_data);
+    scoped_refptr<net::StringIOBuffer> io_buffer(
+        new net::StringIOBuffer(seed_data));
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -1162,8 +1162,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
     response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -1220,8 +1220,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
     response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -1278,8 +1278,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
     response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -1829,9 +1829,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = new AppCacheGroup(
         service_.get(), kManifestUrl,
         service_->storage()->NewGroupId());
-    scoped_refptr<AppCache> cache =
+    scoped_refptr<AppCache> cache(
         MakeCacheForGroup(service_->storage()->NewCacheId(),
-                          kManifestResponseId);
+                          kManifestResponseId));
 
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
@@ -2686,8 +2686,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         new net::HttpResponseHeaders(std::string(data, arraysize(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -2744,8 +2744,8 @@ class AppCacheUpdateJobTest : public testing::Test,
         new net::HttpResponseHeaders(std::string(data, arraysize(data)));
     net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
     response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        new HttpResponseInfoIOBuffer(response_info);  // adds ref to info
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
+        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
     write_callback_.reset(
         new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData));
@@ -2895,9 +2895,9 @@ class AppCacheUpdateJobTest : public testing::Test,
       const std::string& raw_headers) {
     net::HttpResponseInfo* http_info = new net::HttpResponseInfo();
     http_info->headers = new net::HttpResponseHeaders(raw_headers);
-    scoped_refptr<AppCacheResponseInfo> info =
+    scoped_refptr<AppCacheResponseInfo> info(
         new AppCacheResponseInfo(service_.get(), manifest_url,
-                                 response_id, http_info, 0);
+                                 response_id, http_info, 0));
     response_infos_.push_back(info);
     return info;
   }
@@ -3219,9 +3219,9 @@ base::WaitableEvent* AppCacheUpdateJobTest::io_thread_shutdown_event_ = NULL;
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group =
+  scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(&service, GURL("http://manifesturl.com"),
-                        service.storage()->NewGroupId());
+                        service.storage()->NewGroupId()));
 
   AppCacheUpdateJob update(&service, group);
 
@@ -3247,9 +3247,9 @@ TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
 
 TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group =
+  scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(&service, GURL("http://manifesturl.com"),
-                        service.storage()->NewGroupId());
+                        service.storage()->NewGroupId()));
 
   AppCacheUpdateJob update(&service, group);
 

@@ -128,7 +128,7 @@ bool RenderWidgetTest::ImageContainsColor(const SkBitmap& bitmap,
 
 void RenderWidgetTest::OutputBitmapToFile(const SkBitmap& bitmap,
                                           const FilePath& file_path) {
-  scoped_refptr<RefCountedBytes> bitmap_data = new RefCountedBytes();
+  scoped_refptr<RefCountedBytes> bitmap_data(new RefCountedBytes());
   SkAutoLockPixels lock(bitmap);
   ASSERT_TRUE(gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),

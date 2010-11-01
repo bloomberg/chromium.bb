@@ -40,8 +40,8 @@ class GeolocationExceptionsTableModelTest : public RenderViewHostTestHarness {
   }
 
   void CreateAllowedSamples() {
-    scoped_refptr<GeolocationContentSettingsMap> map =
-        profile()->GetGeolocationContentSettingsMap();
+    scoped_refptr<GeolocationContentSettingsMap> map(
+        profile()->GetGeolocationContentSettingsMap());
     map->SetContentSetting(kUrl0, kUrl0, CONTENT_SETTING_ALLOW);
     map->SetContentSetting(kUrl0, kUrl1, CONTENT_SETTING_ALLOW);
     map->SetContentSetting(kUrl0, kUrl2, CONTENT_SETTING_ALLOW);
@@ -57,8 +57,8 @@ class GeolocationExceptionsTableModelTest : public RenderViewHostTestHarness {
 TEST_F(GeolocationExceptionsTableModelTest, CanRemoveException) {
   EXPECT_EQ(0, model_->RowCount());
 
-  scoped_refptr<GeolocationContentSettingsMap> map =
-      profile()->GetGeolocationContentSettingsMap();
+  scoped_refptr<GeolocationContentSettingsMap> map(
+      profile()->GetGeolocationContentSettingsMap());
 
   // Ensure a single entry can be removed.
   map->SetContentSetting(kUrl0, kUrl0, CONTENT_SETTING_ALLOW);
@@ -86,8 +86,8 @@ TEST_F(GeolocationExceptionsTableModelTest, CanRemoveException) {
 
 TEST_F(GeolocationExceptionsTableModelTest, RemoveExceptions) {
   CreateAllowedSamples();
-  scoped_refptr<GeolocationContentSettingsMap> map =
-      profile()->GetGeolocationContentSettingsMap();
+  scoped_refptr<GeolocationContentSettingsMap> map(
+      profile()->GetGeolocationContentSettingsMap());
 
   // Test removing parent exception.
   GeolocationExceptionsTableModel::Rows rows;
@@ -113,8 +113,8 @@ TEST_F(GeolocationExceptionsTableModelTest, RemoveExceptions) {
 
 TEST_F(GeolocationExceptionsTableModelTest, RemoveAll) {
   CreateAllowedSamples();
-  scoped_refptr<GeolocationContentSettingsMap> map =
-      profile()->GetGeolocationContentSettingsMap();
+  scoped_refptr<GeolocationContentSettingsMap> map(
+      profile()->GetGeolocationContentSettingsMap());
 
   model_->RemoveAll();
   EXPECT_EQ(CONTENT_SETTING_ASK, map->GetContentSetting(kUrl0, kUrl0));

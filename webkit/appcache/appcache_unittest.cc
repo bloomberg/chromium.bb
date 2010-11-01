@@ -34,7 +34,7 @@ TEST(AppCacheTest, CleanupUnusedCache) {
 
 TEST(AppCacheTest, AddModifyRemoveEntry) {
   MockAppCacheService service;
-  scoped_refptr<AppCache> cache = new AppCache(&service, 111);
+  scoped_refptr<AppCache> cache(new AppCache(&service, 111));
 
   EXPECT_TRUE(cache->entries().empty());
   EXPECT_EQ(0L, cache->cache_size());
@@ -79,7 +79,7 @@ TEST(AppCacheTest, AddModifyRemoveEntry) {
 TEST(AppCacheTest, InitializeWithManifest) {
   MockAppCacheService service;
 
-  scoped_refptr<AppCache> cache = new AppCache(&service, 1234);
+  scoped_refptr<AppCache> cache(new AppCache(&service, 1234));
   EXPECT_TRUE(cache->fallback_namespaces_.empty());
   EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
   EXPECT_FALSE(cache->online_whitelist_all_);
@@ -144,7 +144,7 @@ TEST(AppCacheTest, FindResponseForRequest) {
       FallbackNamespace(kFallbackNamespaceUrl2, kFallbackEntryUrl2));
 
   // Create a cache with some namespaces and entries.
-  scoped_refptr<AppCache> cache = new AppCache(&service, 1234);
+  scoped_refptr<AppCache> cache(new AppCache(&service, 1234));
   cache->InitializeWithManifest(&manifest);
   cache->AddEntry(
       kFallbackEntryUrl1,

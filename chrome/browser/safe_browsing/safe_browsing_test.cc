@@ -526,8 +526,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   int server_port = SafeBrowsingTestServer::Port();
   ASSERT_TRUE(InitSafeBrowsingService());
 
-  scoped_refptr<SafeBrowsingServiceTestHelper> safe_browsing_helper =
-      new SafeBrowsingServiceTestHelper(this);
+  scoped_refptr<SafeBrowsingServiceTestHelper> safe_browsing_helper(
+      new SafeBrowsingServiceTestHelper(this));
   int last_step = 0;
   FilePath datafile_path = FilePath(kDataFile);
   SafeBrowsingTestServer test_server(datafile_path);

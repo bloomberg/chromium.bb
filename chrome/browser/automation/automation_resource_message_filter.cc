@@ -294,8 +294,8 @@ void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
     bool pending_view) {
   RendererId renderer_key(renderer_pid, renderer_id);
 
-  scoped_refptr<net::CookieStore> cookie_store =
-      new AutomationCookieStore(filter, tab_handle);
+  scoped_refptr<net::CookieStore> cookie_store(
+      new AutomationCookieStore(filter, tab_handle));
 
   RenderViewMap::iterator automation_details_iter(
       filtered_render_views_.Get().find(renderer_key));
@@ -350,8 +350,8 @@ bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
 
   DCHECK(automation_details_iter->second.is_pending_render_view);
 
-  scoped_refptr<net::CookieStore> cookie_store =
-      new AutomationCookieStore(filter, tab_handle);
+  scoped_refptr<net::CookieStore> cookie_store(
+      new AutomationCookieStore(filter, tab_handle));
 
   AutomationResourceMessageFilter* old_filter =
       automation_details_iter->second.filter;

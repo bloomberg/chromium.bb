@@ -57,7 +57,7 @@ struct TokenLoadClientForTest {
 
 void RunCancelTestInClientTread() {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(kExpectedClientThreadId));
-  scoped_refptr<AccessTokenStore> store = NewChromePrefsAccessTokenStore();
+  scoped_refptr<AccessTokenStore> store(NewChromePrefsAccessTokenStore());
   CancelableRequestConsumer consumer;
   TokenLoadClientForTest load_client;
 
@@ -117,8 +117,8 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
   }
 
   if (token_to_set_) {
-    scoped_refptr<AccessTokenStore> store =
-        NewChromePrefsAccessTokenStore();
+    scoped_refptr<AccessTokenStore> store(
+        NewChromePrefsAccessTokenStore());
     store->SaveAccessToken(ref_url_, *token_to_set_);
   }
   BrowserThread::PostTask(

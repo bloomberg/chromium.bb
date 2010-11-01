@@ -21,7 +21,7 @@ class AppCacheStorageTest : public testing::Test {
 
 TEST_F(AppCacheStorageTest, AddRemoveCache) {
   MockAppCacheService service;
-  scoped_refptr<AppCache> cache = new AppCache(&service, 111);
+  scoped_refptr<AppCache> cache(new AppCache(&service, 111));
 
   EXPECT_EQ(cache.get(),
             service.storage()->working_set()->GetCache(111));
@@ -37,7 +37,7 @@ TEST_F(AppCacheStorageTest, AddRemoveCache) {
 
 TEST_F(AppCacheStorageTest, AddRemoveGroup) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group = new AppCacheGroup(&service, GURL(), 111);
+  scoped_refptr<AppCacheGroup> group(new AppCacheGroup(&service, GURL(), 111));
 
   EXPECT_EQ(group.get(), service.storage()->working_set()->GetGroup(GURL()));
 
@@ -52,10 +52,10 @@ TEST_F(AppCacheStorageTest, AddRemoveGroup) {
 
 TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheResponseInfo> info =
+  scoped_refptr<AppCacheResponseInfo> info(
       new AppCacheResponseInfo(&service, GURL(),
                                111, new net::HttpResponseInfo,
-                               kUnkownResponseDataSize);
+                               kUnkownResponseDataSize));
 
   EXPECT_EQ(info.get(),
             service.storage()->working_set()->GetResponseInfo(111));

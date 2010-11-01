@@ -162,8 +162,8 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32 opener_id, RenderThreadBase* render_thread,
     pepper::PluginInstance* plugin) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
-  scoped_refptr<RenderWidgetFullscreenPepper> widget =
-      new RenderWidgetFullscreenPepper(render_thread, plugin);
+  scoped_refptr<RenderWidgetFullscreenPepper> widget(
+      new RenderWidgetFullscreenPepper(render_thread, plugin));
   widget->Init(opener_id);
   return widget.release();
 }

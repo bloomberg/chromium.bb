@@ -527,8 +527,8 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
   profile.set_off_the_record(true);
-  scoped_refptr<HostContentSettingsMap> otr_map =
-      new HostContentSettingsMap(&profile);
+  scoped_refptr<HostContentSettingsMap> otr_map(
+      new HostContentSettingsMap(&profile));
   profile.set_off_the_record(false);
 
   GURL host("http://example.com/");

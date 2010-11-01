@@ -594,8 +594,8 @@ RenderView* RenderView::Create(
     int64 session_storage_namespace_id,
     const string16& frame_name) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
-  scoped_refptr<RenderView> view = new RenderView(render_thread, webkit_prefs,
-                                                  session_storage_namespace_id);
+  scoped_refptr<RenderView> view(new RenderView(render_thread, webkit_prefs,
+                                                session_storage_namespace_id));
   view->Init(parent_hwnd,
              opener_id,
              renderer_prefs,
@@ -637,8 +637,8 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
       &info, &setting, &mime_type));
   if (!found || !info.enabled)
     return NULL;
-  scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(info.path);
+  scoped_refptr<pepper::PluginModule> pepper_module(
+      PepperPluginRegistry::GetInstance()->GetModule(info.path));
   if (pepper_module)
     return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
   else
@@ -2538,8 +2538,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   if (info.path.value() == kDefaultPluginLibraryName ||
       setting == CONTENT_SETTING_ALLOW) {
-    scoped_refptr<pepper::PluginModule> pepper_module =
-    PepperPluginRegistry::GetInstance()->GetModule(info.path);
+    scoped_refptr<pepper::PluginModule> pepper_module(
+    PepperPluginRegistry::GetInstance()->GetModule(info.path));
     if (pepper_module) {
       return CreatePepperPlugin(frame,
                                 params,
@@ -2658,14 +2658,14 @@ WebMediaPlayer* RenderView::createMediaPlayer(
 
   scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;
   if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
-    scoped_refptr<IPCVideoRenderer> renderer =
-        new IPCVideoRenderer(routing_id_);
+    scoped_refptr<IPCVideoRenderer> renderer(
+        new IPCVideoRenderer(routing_id_));
     collection.push_back(renderer);
     video_renderer = renderer;
   } else {
     bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
-    scoped_refptr<webkit_glue::VideoRendererImpl> renderer =
-        new webkit_glue::VideoRendererImpl(pts_logging);
+    scoped_refptr<webkit_glue::VideoRendererImpl> renderer(
+        new webkit_glue::VideoRendererImpl(pts_logging));
     collection.push_back(renderer);
     video_renderer = renderer;
   }

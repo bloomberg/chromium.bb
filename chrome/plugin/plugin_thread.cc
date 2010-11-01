@@ -97,8 +97,8 @@ PluginThread::PluginThread()
 
   ChromePluginLib::Create(plugin_path_, GetCPBrowserFuncsForPlugin());
 
-  scoped_refptr<NPAPI::PluginLib> plugin =
-      NPAPI::PluginLib::CreatePluginLib(plugin_path_);
+  scoped_refptr<NPAPI::PluginLib> plugin(
+      NPAPI::PluginLib::CreatePluginLib(plugin_path_));
   if (plugin.get()) {
     plugin->NP_Initialize();
 
@@ -150,8 +150,8 @@ void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
 
 void PluginThread::OnCreateChannel(int renderer_id,
                                    bool off_the_record) {
-  scoped_refptr<PluginChannel> channel = PluginChannel::GetPluginChannel(
-      renderer_id, ChildProcess::current()->io_message_loop());
+  scoped_refptr<PluginChannel> channel(PluginChannel::GetPluginChannel(
+      renderer_id, ChildProcess::current()->io_message_loop()));
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
     channel_handle.name = channel->channel_name();

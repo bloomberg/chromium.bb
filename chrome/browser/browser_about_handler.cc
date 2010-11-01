@@ -305,8 +305,8 @@ std::string AboutNetwork(const std::string& query) {
 class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
  public:
   static void Start(AboutSource* source, int request_id) {
-    scoped_refptr<AboutDnsHandler> handler =
-        new AboutDnsHandler(source, request_id);
+    scoped_refptr<AboutDnsHandler> handler(
+        new AboutDnsHandler(source, request_id));
     handler->StartOnUIThread();
   }
 

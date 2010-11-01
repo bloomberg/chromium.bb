@@ -18,7 +18,7 @@ scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
   // int32 of the serialized message size for framing.
   const int kExtraBytes = sizeof(int32);
   int size = msg.ByteSize() + kExtraBytes;
-  scoped_refptr<net::IOBufferWithSize> buffer = new net::IOBufferWithSize(size);
+  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
   talk_base::SetBE32(buffer->data(), msg.GetCachedSize());
   msg.SerializeWithCachedSizesToArray(
       reinterpret_cast<uint8*>(buffer->data()) + kExtraBytes);

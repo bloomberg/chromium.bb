@@ -417,9 +417,9 @@ SessionService::Handle SessionService::GetCurrentSession(
   if (pending_window_close_ids_.empty()) {
     // If there are no pending window closes, we can get the current session
     // from memory.
-    scoped_refptr<InternalSessionRequest> request = new InternalSessionRequest(
+    scoped_refptr<InternalSessionRequest> request(new InternalSessionRequest(
         NewCallback(this, &SessionService::OnGotSessionCommands),
-        callback);
+        callback));
     AddRequest(request, consumer);
     IdToRange tab_to_available_range;
     std::set<SessionID::id_type> windows_to_track;

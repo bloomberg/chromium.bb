@@ -308,8 +308,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
-    scoped_refptr<ExtensionUpdater> updater =
-        new ExtensionUpdater(&service, service.pref_service(), 60*60*24);
+    scoped_refptr<ExtensionUpdater> updater(
+        new ExtensionUpdater(&service, service.pref_service(), 60*60*24));
     updater->Start();
 
     // Tell the update that it's time to do update checks.
@@ -356,8 +356,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
-    scoped_refptr<ExtensionUpdater> updater =
-        new ExtensionUpdater(&service, service.pref_service(), 60*60*24);
+    scoped_refptr<ExtensionUpdater> updater(
+        new ExtensionUpdater(&service, service.pref_service(), 60*60*24));
     updater->Start();
 
     // Tell the updater that it's time to do update checks.
@@ -408,9 +408,9 @@ class ExtensionUpdaterTest : public testing::Test {
     service.set_extensions(tmp);
 
     MessageLoop message_loop;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
 
     // Check passing an empty list of parse results to DetermineUpdates
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
@@ -445,9 +445,9 @@ class ExtensionUpdaterTest : public testing::Test {
     service.set_pending_extensions(pending_extensions);
 
     MessageLoop message_loop;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
 
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     UpdateManifest::Results updates;
@@ -479,9 +479,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
 
     GURL url1("http://localhost/manifest1");
     GURL url2("http://localhost/manifest2");
@@ -543,9 +543,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
 
     GURL test_url("http://localhost/extension.crx");
 
@@ -606,9 +606,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForBlacklistTests service;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
     service.pref_service()->
       RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, "0");
     GURL test_url("http://localhost/extension.crx");
@@ -653,9 +653,9 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");
@@ -740,9 +740,9 @@ class ExtensionUpdaterTest : public testing::Test {
     }
 
     MessageLoop message_loop;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
       new ExtensionUpdater(&service, service.pref_service(),
-                           kUpdateFrequencySecs);
+                           kUpdateFrequencySecs));
     updater->set_blacklist_checks_enabled(false);
 
     // Make the updater do manifest fetching, and note the urls it tries to
@@ -792,9 +792,9 @@ class ExtensionUpdaterTest : public testing::Test {
   // >= 1 day for the extension.
   static void TestHandleManifestResults() {
     ServiceForManifestTests service;
-    scoped_refptr<ExtensionUpdater> updater =
+    scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
-                             kUpdateFrequencySecs);
+                             kUpdateFrequencySecs));
 
     GURL update_url("http://www.google.com/manifest");
     ExtensionList tmp;

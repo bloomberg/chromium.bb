@@ -297,14 +297,14 @@ bool BrowserRenderProcessHost::Init(
   // Construct the AudioRendererHost with the IO thread.
   audio_renderer_host_ = new AudioRendererHost();
 
-  scoped_refptr<ResourceMessageFilter> resource_message_filter =
+  scoped_refptr<ResourceMessageFilter> resource_message_filter(
       new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),
                                 id(),
                                 audio_renderer_host_.get(),
                                 PluginService::GetInstance(),
                                 g_browser_process->print_job_manager(),
                                 profile(),
-                                widget_helper_);
+                                widget_helper_));
 
   CommandLine::StringType renderer_prefix;
 #if defined(OS_POSIX)
@@ -335,8 +335,8 @@ bool BrowserRenderProcessHost::Init(
   // be doing.
   channel_->set_sync_messages_with_no_timeout_allowed(false);
 
-  scoped_refptr<PepperFileMessageFilter> pepper_file_message_filter =
-      new PepperFileMessageFilter(id(), profile());
+  scoped_refptr<PepperFileMessageFilter> pepper_file_message_filter(
+      new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(pepper_file_message_filter);
 
   if (run_renderer_in_process()) {

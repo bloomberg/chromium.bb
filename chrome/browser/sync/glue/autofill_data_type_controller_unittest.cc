@@ -191,8 +191,8 @@ TEST_F(AutofillDataTypeControllerTest, AbortWhileWDSStarting) {
       WillRepeatedly(Return(personal_data_manager_.get()));
   EXPECT_CALL(*(personal_data_manager_.get()), IsDataLoaded()).
       WillRepeatedly(Return(true));
-  scoped_refptr<WebDataServiceFake> web_data_service_not_loaded =
-      new WebDataServiceFake(false);
+  scoped_refptr<WebDataServiceFake> web_data_service_not_loaded(
+      new WebDataServiceFake(false));
   EXPECT_CALL(profile_, GetWebDataService(_)).
       WillOnce(Return(web_data_service_not_loaded.get()));
   autofill_dtc_->Start(NewCallback(&start_callback_, &StartCallback::Run));

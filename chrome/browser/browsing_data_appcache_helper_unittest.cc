@@ -34,8 +34,8 @@ TEST(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   GURL manifest2("http://example2.com/path1/manifest.xml");
   GURL manifest3("http://example2.com/path2/manifest.xml");
 
-  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper =
-      new CannedBrowsingDataAppCacheHelper(&profile);
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
+      new CannedBrowsingDataAppCacheHelper(&profile));
   helper->AddAppCache(manifest1);
   helper->AddAppCache(manifest2);
   helper->AddAppCache(manifest3);
@@ -67,8 +67,8 @@ TEST(CannedBrowsingDataAppCacheHelperTest, Unique) {
 
   GURL manifest("http://example.com/manifest.xml");
 
-  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper =
-      new CannedBrowsingDataAppCacheHelper(&profile);
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
+      new CannedBrowsingDataAppCacheHelper(&profile));
   helper->AddAppCache(manifest);
   helper->AddAppCache(manifest);
 
@@ -91,8 +91,8 @@ TEST(CannedBrowsingDataAppCacheHelperTest, Empty) {
 
   GURL manifest("http://example.com/manifest.xml");
 
-  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper =
-      new CannedBrowsingDataAppCacheHelper(&profile);
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
+      new CannedBrowsingDataAppCacheHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
   helper->AddAppCache(manifest);

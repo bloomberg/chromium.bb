@@ -249,7 +249,7 @@ class Writer : public Task {
       BookmarkFaviconFetcher::URLFaviconMap::iterator itr =
           favicons_map_->find(url_string);
       if (itr != favicons_map_->end()) {
-        scoped_refptr<RefCountedMemory> data = itr->second.get();
+        scoped_refptr<RefCountedMemory> data(itr->second.get());
         std::string favicon_data;
         favicon_data.assign(reinterpret_cast<const char*>(data->front()),
                             data->size());

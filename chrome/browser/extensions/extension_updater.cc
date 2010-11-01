@@ -518,8 +518,8 @@ void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
   if (status.status() == URLRequestStatus::SUCCESS && response_code == 200) {
-    scoped_refptr<SafeManifestParser> safe_parser =
-        new SafeManifestParser(data, current_manifest_fetch_.release(), this);
+    scoped_refptr<SafeManifestParser> safe_parser(
+        new SafeManifestParser(data, current_manifest_fetch_.release(), this));
     safe_parser->Start();
   } else {
     // TODO(asargent) Do exponential backoff here. (http://crbug.com/12546).

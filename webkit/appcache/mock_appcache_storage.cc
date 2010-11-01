@@ -171,7 +171,7 @@ void MockAppCacheStorage::ProcessLoadCache(
 
 void MockAppCacheStorage::ProcessLoadOrCreateGroup(
     const GURL& manifest_url, scoped_refptr<DelegateReference> delegate_ref) {
-  scoped_refptr<AppCacheGroup> group = working_set_.GetGroup(manifest_url);
+  scoped_refptr<AppCacheGroup> group(working_set_.GetGroup(manifest_url));
 
   // Newly created groups are not put in the stored_groups collection
   // until StoreGroupAndNewestCache is called.

@@ -410,8 +410,8 @@ TEST_F(BrowserThemePackTest, CanBuildAndReadPack) {
     ASSERT_TRUE(extension.get());
     ASSERT_EQ("", error);
 
-    scoped_refptr<BrowserThemePack> pack =
-        BrowserThemePack::BuildFromExtension(extension.get());
+    scoped_refptr<BrowserThemePack> pack(
+        BrowserThemePack::BuildFromExtension(extension.get()));
     ASSERT_TRUE(pack.get());
     ASSERT_TRUE(pack->WriteToDisk(file));
     VerifyStarGazing(pack.get());

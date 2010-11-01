@@ -280,7 +280,7 @@ extern "C" {
 
 // Allocates memory from the host's memory space.
 void* NPN_MemAlloc(uint32_t size) {
-  scoped_refptr<NPAPI::PluginHost> host = NPAPI::PluginHost::Singleton();
+  scoped_refptr<NPAPI::PluginHost> host(NPAPI::PluginHost::Singleton());
   if (host != NULL) {
     // Note: We must use the same allocator/deallocator
     // that is used by the javascript library, as some of the
@@ -293,7 +293,7 @@ void* NPN_MemAlloc(uint32_t size) {
 
 // Deallocates memory from the host's memory space
 void NPN_MemFree(void* ptr) {
-  scoped_refptr<NPAPI::PluginHost> host = NPAPI::PluginHost::Singleton();
+  scoped_refptr<NPAPI::PluginHost> host(NPAPI::PluginHost::Singleton());
   if (host != NULL) {
     if (ptr != NULL && ptr != reinterpret_cast<void*>(-1))
       free(ptr);
@@ -318,8 +318,8 @@ NPError NPN_RequestRead(NPStream* stream, NPByteRange* range_list) {
   if (!stream || !range_list)
     return NPERR_GENERIC_ERROR;
 
-  scoped_refptr<NPAPI::PluginInstance> plugin =
-      reinterpret_cast<NPAPI::PluginInstance*>(stream->ndata);
+  scoped_refptr<NPAPI::PluginInstance> plugin(
+      reinterpret_cast<NPAPI::PluginInstance*>(stream->ndata));
   if (!plugin.get())
     return NPERR_GENERIC_ERROR;
 
@@ -336,7 +336,7 @@ static NPError GetURLNotify(NPP id,
   if (!url)
     return NPERR_INVALID_URL;
 
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (!plugin.get()) {
     NOTREACHED();
     return NPERR_GENERIC_ERROR;
@@ -401,7 +401,7 @@ static NPError PostURLNotify(NPP id,
   if (!url)
     return NPERR_INVALID_URL;
 
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (!plugin.get()) {
     NOTREACHED();
     return NPERR_GENERIC_ERROR;
@@ -548,7 +548,7 @@ NPError NPN_DestroyStream(NPP id, NPStream* stream, NPReason reason) {
   //
   //
 
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin.get() == NULL) {
     NOTREACHED();
     return NPERR_GENERIC_ERROR;
@@ -610,7 +610,7 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
   // plug-ins at regularly timed intervals. To force a paint message, the
   // plug-in can call NPN_ForceRedraw after calling this method.
 
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   DCHECK(plugin.get() != NULL);
   if (plugin.get() && plugin->webplugin()) {
     if (invalidRect) {
@@ -644,7 +644,7 @@ void NPN_InvalidateRegion(NPP id, NPRegion invalidRegion) {
 
   // TODO: this is overkill--add platform-specific region handling (at the
   // very least, fetch the region's bounding box and pass it to InvalidateRect).
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   DCHECK(plugin.get() != NULL);
   if (plugin.get() && plugin->webplugin())
     plugin->webplugin()->Invalidate();
@@ -673,7 +673,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
 
   switch (static_cast<int>(variable)) {
     case NPNVWindowNPObject: {
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       NPObject *np_object = plugin->webplugin()->GetWindowScriptNPObject();
       // Return value is expected to be retained, as
       // described here:
@@ -689,7 +689,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       break;
     }
     case NPNVPluginElementNPObject: {
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       NPObject *np_object = plugin->webplugin()->GetPluginElement();
       // Return value is expected to be retained, as
       // described here:
@@ -743,7 +743,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     }
     case NPNVprivateModeBool: {
       NPBool* private_mode = reinterpret_cast<NPBool*>(value);
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       *private_mode = plugin->webplugin()->IsOffTheRecord();
       rv = NPERR_NO_ERROR;
       break;
@@ -758,7 +758,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       // we still need to worry about future standard change that may conflict
       // with the variable definition, in order to avoid duplicate case clauses
       // in this big switch statement.
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       if (plugin->plugin_lib()->plugin_info().path.value() ==
             kDefaultPluginLibraryName) {
         plugin->webplugin()->OnMissingPluginStatus(
@@ -769,7 +769,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   #if defined(OS_MACOSX)
     case NPNVpluginDrawingModel: {
       // return the drawing model that was negotiated when we initialized.
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       *reinterpret_cast<int*>(value) = plugin->drawing_model();
       rv = NPERR_NO_ERROR;
       break;
@@ -838,7 +838,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
 NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
   // Allows the plugin to set various modes
 
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   switch(variable) {
     case NPPVpluginWindowBool: {
       // Sets windowless mode for display of the plugin
@@ -923,13 +923,13 @@ void* NPN_GetJavaPeer(NPP) {
 }
 
 void NPN_PushPopupsEnabledState(NPP id, NPBool enabled) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin)
     plugin->PushPopupsEnabledState(enabled ? true : false);
 }
 
 void NPN_PopPopupsEnabledState(NPP id) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin)
     plugin->PopPopupsEnabledState();
 }
@@ -937,7 +937,7 @@ void NPN_PopPopupsEnabledState(NPP id) {
 void NPN_PluginThreadAsyncCall(NPP id,
                                void (*func)(void*),
                                void* user_data) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin)
     plugin->PluginThreadAsyncCall(func, user_data);
 }
@@ -965,7 +965,7 @@ NPError NPN_GetValueForURL(NPP id,
       break;
     }
     case NPNURLVCookie: {
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       if (!plugin)
         return NPERR_GENERIC_ERROR;
 
@@ -1005,7 +1005,7 @@ NPError NPN_SetValueForURL(NPP id,
 
   switch (variable) {
     case NPNURLVCookie: {
-      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
       if (!plugin)
         return NPERR_GENERIC_ERROR;
 
@@ -1051,7 +1051,7 @@ uint32_t NPN_ScheduleTimer(NPP id,
                            uint32_t interval,
                            NPBool repeat,
                            void (*func)(NPP id, uint32_t timer_id)) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (!plugin)
     return 0;
 
@@ -1059,7 +1059,7 @@ uint32_t NPN_ScheduleTimer(NPP id,
 }
 
 void NPN_UnscheduleTimer(NPP id, uint32_t timer_id) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin)
     plugin->UnscheduleTimer(timer_id);
 }
@@ -1068,7 +1068,7 @@ NPError NPN_PopUpContextMenu(NPP id, NPMenu* menu) {
   if (!menu)
     return NPERR_INVALID_PARAM;
 
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin.get()) {
     return plugin->PopUpContextMenu(menu);
   }
@@ -1080,7 +1080,7 @@ NPBool NPN_ConvertPoint(NPP id, double sourceX, double sourceY,
                         NPCoordinateSpace sourceSpace,
                         double *destX, double *destY,
                         NPCoordinateSpace destSpace) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (plugin.get()) {
     return plugin->ConvertPoint(sourceX, sourceY, sourceSpace,
                                 destX, destY, destSpace);

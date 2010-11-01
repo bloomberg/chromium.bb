@@ -294,9 +294,9 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
 #endif
 
-  scoped_refptr<PluginChannelHost> channel_host =
+  scoped_refptr<PluginChannelHost> channel_host(
       PluginChannelHost::GetPluginChannelHost(
-          channel_handle.name, ChildProcess::current()->io_message_loop());
+          channel_handle.name, ChildProcess::current()->io_message_loop()));
   if (!channel_host.get())
     return false;
 

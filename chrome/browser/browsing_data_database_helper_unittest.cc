@@ -46,8 +46,8 @@ TEST(CannedBrowsingDataDatabaseTest, AddDatabase) {
   const char db2[] = "db2";
   const char db3[] = "db3";
 
-  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper =
-      new CannedBrowsingDataDatabaseHelper(&profile);
+  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
+      new CannedBrowsingDataDatabaseHelper(&profile));
   helper->AddDatabase(origin1, db1, "");
   helper->AddDatabase(origin1, db2, "");
   helper->AddDatabase(origin2, db3, "");
@@ -76,8 +76,8 @@ TEST(CannedBrowsingDataDatabaseTest, Unique) {
   const char origin_str[] = "http_host1_1";
   const char db[] = "db1";
 
-  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper =
-      new CannedBrowsingDataDatabaseHelper(&profile);
+  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
+      new CannedBrowsingDataDatabaseHelper(&profile));
   helper->AddDatabase(origin, db, "");
   helper->AddDatabase(origin, db, "");
 
@@ -100,8 +100,8 @@ TEST(CannedBrowsingDataDatabaseTest, Empty) {
   const GURL origin("http://host1:1/");
   const char db[] = "db1";
 
-  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper =
-      new CannedBrowsingDataDatabaseHelper(&profile);
+  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper(
+      new CannedBrowsingDataDatabaseHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
   helper->AddDatabase(origin, db, "");

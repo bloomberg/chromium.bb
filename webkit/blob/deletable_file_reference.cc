@@ -42,8 +42,8 @@ scoped_refptr<DeletableFileReference> DeletableFileReference::GetOrCreate(
     return scoped_refptr<DeletableFileReference>(result.first->second);
 
   // Wasn't in the map, create a new reference and store the pointer.
-  scoped_refptr<DeletableFileReference> reference =
-      new DeletableFileReference(path, file_thread);
+  scoped_refptr<DeletableFileReference> reference(
+      new DeletableFileReference(path, file_thread));
   result.first->second = reference.get();
   return reference;
 }

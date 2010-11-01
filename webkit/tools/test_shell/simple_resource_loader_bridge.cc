@@ -855,7 +855,7 @@ void SimpleResourceLoaderBridge::SetCookie(const GURL& url,
     return;
   }
 
-  scoped_refptr<CookieSetter> cookie_setter = new CookieSetter();
+  scoped_refptr<CookieSetter> cookie_setter(new CookieSetter());
   g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       cookie_setter.get(), &CookieSetter::Set, url, cookie));
 }
@@ -870,7 +870,7 @@ std::string SimpleResourceLoaderBridge::GetCookies(
     return std::string();
   }
 
-  scoped_refptr<CookieGetter> getter = new CookieGetter();
+  scoped_refptr<CookieGetter> getter(new CookieGetter());
 
   g_io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       getter.get(), &CookieGetter::Get, url));

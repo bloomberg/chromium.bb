@@ -64,7 +64,7 @@ class TransportChannelSocketAdapterTest : public testing::Test {
 
 // Verify that Read() returns net::ERR_IO_PENDING.
 TEST_F(TransportChannelSocketAdapterTest, Read) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kBufferSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
 
   int result = target_->Read(buffer, kBufferSize, &callback_);
   ASSERT_EQ(net::ERR_IO_PENDING, result);
@@ -75,7 +75,7 @@ TEST_F(TransportChannelSocketAdapterTest, Read) {
 
 // Verify that Read() after Close() returns error.
 TEST_F(TransportChannelSocketAdapterTest, ReadClose) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kBufferSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
 
   int result = target_->Read(buffer, kBufferSize, &callback_);
   ASSERT_EQ(net::ERR_IO_PENDING, result);
@@ -89,7 +89,7 @@ TEST_F(TransportChannelSocketAdapterTest, ReadClose) {
 
 // Verify that Write sends the packet and returns correct result.
 TEST_F(TransportChannelSocketAdapterTest, Write) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kTestDataSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
   EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize))
       .WillOnce(Return(kTestDataSize));
@@ -101,7 +101,7 @@ TEST_F(TransportChannelSocketAdapterTest, Write) {
 // Verify that the message is still send if Write() is called while
 // socket is not open yet, and that the callback is called.
 TEST_F(TransportChannelSocketAdapterTest, WritePending) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kTestDataSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
   EXPECT_CALL(channel_, SendPacket(buffer->data(), kTestDataSize))
       .Times(2)

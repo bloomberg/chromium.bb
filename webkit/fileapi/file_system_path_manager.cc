@@ -216,9 +216,9 @@ void FileSystemPathManager::GetFileSystemRootPath(
                                         .AppendASCII(type_string);
   std::string name = storage_identifier + ":" + type_string;
 
-  scoped_refptr<GetFileSystemRootPathTask> task =
+  scoped_refptr<GetFileSystemRootPathTask> task(
       new GetFileSystemRootPathTask(file_message_loop_,
-                                    name, callback.release());
+                                    name, callback.release()));
   task->Start(origin_url, origin_base_path, create);
 }
 

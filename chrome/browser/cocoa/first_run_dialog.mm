@@ -77,7 +77,7 @@ void FirstRunShowBridge::ShowDialog() {
   // -[NSApplication runModalForWindow:] we will hang <http://crbug.com/54248>.
   // Therefore the main MessageLoop is run so things work.
 
-  scoped_refptr<FirstRunShowBridge> bridge = new FirstRunShowBridge(self);
+  scoped_refptr<FirstRunShowBridge> bridge(new FirstRunShowBridge(self));
   MessageLoop::current()->PostTask(
       FROM_HERE,
       NewRunnableMethod(bridge.get(),

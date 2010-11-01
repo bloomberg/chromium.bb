@@ -115,7 +115,7 @@ class ImporterTest : public testing::Test {
     profile_info.browser_type = FIREFOX3;
     profile_info.app_path = app_path_;
     profile_info.source_path = profile_path_;
-    scoped_refptr<ImporterHost> host = new ImporterHost();
+    scoped_refptr<ImporterHost> host(new ImporterHost());
     host->SetObserver(observer);
     int items = HISTORY | PASSWORDS | FAVORITES;
     if (import_search_plugins)
@@ -697,7 +697,7 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   ASSERT_TRUE(file_util::CopyDirectory(data_path, search_engine_path, false));
 
   MessageLoop* loop = MessageLoop::current();
-  scoped_refptr<ImporterHost> host = new ImporterHost();
+  scoped_refptr<ImporterHost> host(new ImporterHost());
   FirefoxObserver* observer = new FirefoxObserver();
   host->SetObserver(observer);
   ProfileInfo profile_info;
@@ -880,15 +880,15 @@ class Firefox3Observer : public ProfileWriter,
 };
 
 TEST_F(ImporterTest, MAYBE(Firefox30Importer)) {
-  scoped_refptr<Firefox3Observer> observer = new Firefox3Observer();
+  scoped_refptr<Firefox3Observer> observer(new Firefox3Observer());
   Firefox3xImporterTest("firefox3_profile", observer.get(), observer.get(),
                         true);
 }
 
 TEST_F(ImporterTest, MAYBE(Firefox35Importer)) {
   bool import_search_engines = false;
-  scoped_refptr<Firefox3Observer> observer =
-      new Firefox3Observer(import_search_engines);
+  scoped_refptr<Firefox3Observer> observer(
+      new Firefox3Observer(import_search_engines));
   Firefox3xImporterTest("firefox35_profile", observer.get(), observer.get(),
                         import_search_engines);
 }

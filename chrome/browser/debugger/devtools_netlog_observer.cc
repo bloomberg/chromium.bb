@@ -53,7 +53,7 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
                       "larger than expected, resetting";
       request_to_info_.clear();
     }
-    scoped_refptr<ResourceInfo> new_record = new ResourceInfo();
+    scoped_refptr<ResourceInfo> new_record(new ResourceInfo());
     request_to_info_.insert(std::make_pair(source.id, new_record));
     return;
   }

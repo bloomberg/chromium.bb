@@ -368,7 +368,7 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(
 scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     FilePath path, const std::string& expected_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_refptr<BrowserThemePack> pack = new BrowserThemePack;
+  scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
   pack->data_pack_.reset(new base::DataPack);
 
   if (!pack->data_pack_->Load(path)) {

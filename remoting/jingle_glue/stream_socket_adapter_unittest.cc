@@ -54,7 +54,7 @@ class StreamSocketAdapterTest : public testing::Test {
 
 // Verify that Read() calls Read() in stream.
 TEST_F(StreamSocketAdapterTest, Read) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kBufferSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
 
   EXPECT_CALL(*stream_, Read(buffer->data(), kBufferSize, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(kTestDataSize),
@@ -67,7 +67,7 @@ TEST_F(StreamSocketAdapterTest, Read) {
 
 // Verify that read callback is called for pending reads.
 TEST_F(StreamSocketAdapterTest, ReadPending) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kBufferSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
 
   EXPECT_CALL(*stream_, Read(buffer->data(), kBufferSize, _, _))
       .Times(2)
@@ -84,7 +84,7 @@ TEST_F(StreamSocketAdapterTest, ReadPending) {
 
 // Verify that Read() returns error after Close().
 TEST_F(StreamSocketAdapterTest, ReadClose) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kBufferSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
 
   EXPECT_CALL(*stream_, Read(buffer->data(), kBufferSize, _, _))
       .WillOnce(Return(talk_base::SR_BLOCK));
@@ -102,7 +102,7 @@ TEST_F(StreamSocketAdapterTest, ReadClose) {
 
 // Verify that Write() calls stream's Write() and returns result.
 TEST_F(StreamSocketAdapterTest, Write) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kTestDataSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
   EXPECT_CALL(*stream_, Write(buffer->data(), kTestDataSize, _, _))
       .WillOnce(DoAll(SetArgumentPointee<2>(kTestDataSize),
@@ -115,7 +115,7 @@ TEST_F(StreamSocketAdapterTest, Write) {
 
 // Verify that write callback is called for pending writes.
 TEST_F(StreamSocketAdapterTest, WritePending) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kTestDataSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
   EXPECT_CALL(*stream_, Write(buffer->data(), kTestDataSize, _, _))
       .Times(2)
@@ -132,7 +132,7 @@ TEST_F(StreamSocketAdapterTest, WritePending) {
 
 // Verify that Write() returns error after Close().
 TEST_F(StreamSocketAdapterTest, WriteClose) {
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kTestDataSize);
+  scoped_refptr<IOBuffer> buffer(new IOBuffer(kTestDataSize));
 
   EXPECT_CALL(*stream_, Write(buffer->data(), kTestDataSize, _, _))
       .WillOnce(Return(talk_base::SR_BLOCK));

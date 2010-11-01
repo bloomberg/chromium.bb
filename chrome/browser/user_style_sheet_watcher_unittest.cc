@@ -23,8 +23,8 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   ASSERT_TRUE(file_util::WriteFile(style_sheet_file,
               css_file_contents.data(), css_file_contents.length()));
 
-  scoped_refptr<UserStyleSheetWatcher> style_sheet_watcher =
-      new UserStyleSheetWatcher(dir.path());
+  scoped_refptr<UserStyleSheetWatcher> style_sheet_watcher(
+      new UserStyleSheetWatcher(dir.path()));
   MessageLoop loop;
   BrowserThread ui_thread(BrowserThread::UI, &loop);
   BrowserThread file_thread(BrowserThread::FILE, &loop);

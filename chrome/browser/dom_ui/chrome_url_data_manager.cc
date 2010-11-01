@@ -269,7 +269,7 @@ void ChromeURLDataManager::DataAvailable(
   if (i != pending_requests_.end()) {
     // We acquire a reference to the job so that it doesn't disappear under the
     // feet of any method invoked here (we could trigger a callback).
-    scoped_refptr<URLRequestChromeJob> job = i->second;
+    scoped_refptr<URLRequestChromeJob> job(i->second);
     pending_requests_.erase(i);
     job->DataAvailable(bytes);
   }

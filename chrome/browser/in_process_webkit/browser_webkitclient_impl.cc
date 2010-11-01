@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/browser_webkitclient_impl.h"
 
@@ -150,8 +150,8 @@ void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
   // TODO(bulach): we need to figure out a way to keep the utility process
   // running for longer, and shut it down when no longer used.
-  scoped_refptr<IndexedDBKeyUtilityClient> indexed_db_key_utility_client =
-      new IndexedDBKeyUtilityClient();
+  scoped_refptr<IndexedDBKeyUtilityClient> indexed_db_key_utility_client(
+      new IndexedDBKeyUtilityClient());
   indexed_db_key_utility_client->StartUtilityProcess();
 
   std::vector<SerializedScriptValue> std_values;

@@ -45,8 +45,8 @@ TEST(CannedBrowsingDataLocalStorageTest, AddLocalStorage) {
   const FilePath::CharType file2[] =
       FILE_PATH_LITERAL("http_host2_1.localstorage");
 
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper =
-      new CannedBrowsingDataLocalStorageHelper(&profile);
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
+      new CannedBrowsingDataLocalStorageHelper(&profile));
   helper->AddLocalStorage(origin1);
   helper->AddLocalStorage(origin2);
 
@@ -70,8 +70,8 @@ TEST(CannedBrowsingDataLocalStorageTest, Unique) {
   const FilePath::CharType file[] =
       FILE_PATH_LITERAL("http_host1_1.localstorage");
 
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper =
-      new CannedBrowsingDataLocalStorageHelper(&profile);
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
+      new CannedBrowsingDataLocalStorageHelper(&profile));
   helper->AddLocalStorage(origin);
   helper->AddLocalStorage(origin);
 
@@ -92,8 +92,8 @@ TEST(CannedBrowsingDataLocalStorageTest, Empty) {
 
   const GURL origin("http://host1:1/");
 
-  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper =
-      new CannedBrowsingDataLocalStorageHelper(&profile);
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
+      new CannedBrowsingDataLocalStorageHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
   helper->AddLocalStorage(origin);

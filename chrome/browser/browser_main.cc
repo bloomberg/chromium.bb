@@ -214,8 +214,8 @@ void BrowserMainParts::ConnectionFieldTrial() {
   const base::FieldTrial::Probability kConnectDivisor = 100;
   const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
 
-  scoped_refptr<base::FieldTrial> connect_trial =
-      new base::FieldTrial("ConnCountImpact", kConnectDivisor);
+  scoped_refptr<base::FieldTrial> connect_trial(
+      new base::FieldTrial("ConnCountImpact", kConnectDivisor));
 
   const int connect_5 = connect_trial->AppendGroup("conn_count_5",
                                                    kConnectProbability);
@@ -259,8 +259,8 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   // 1% probability for all experimental settings.
   const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
 
-  scoped_refptr<base::FieldTrial> socket_timeout_trial =
-      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor);
+  scoped_refptr<base::FieldTrial> socket_timeout_trial(
+      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor));
 
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("idle_timeout_5",
@@ -295,8 +295,8 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   // 25% probability
   const base::FieldTrial::Probability kProxyConnectionProbability = 1;
 
-  scoped_refptr<base::FieldTrial> proxy_connection_trial =
-      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor);
+  scoped_refptr<base::FieldTrial> proxy_connection_trial(
+      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor));
 
   // The number of max sockets per group cannot be greater than the max number
   // of sockets per proxy server.  We tried using 8, and it can easily
@@ -346,8 +346,8 @@ void BrowserMainParts::SpdyFieldTrial() {
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     // 10% to preclude SPDY.
     base::FieldTrial::Probability npnhttp_probability = 10;
-    scoped_refptr<base::FieldTrial> trial =
-        new base::FieldTrial("SpdyImpact", kSpdyDivisor);
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial("SpdyImpact", kSpdyDivisor));
     // npn with only http support, no spdy.
     int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
     // npn with spdy support.
@@ -384,8 +384,8 @@ void BrowserMainParts::PrefetchFieldTrial() {
   } else {
     const base::FieldTrial::Probability kPrefetchDivisor = 1000;
     const base::FieldTrial::Probability no_prefetch_probability = 500;
-    scoped_refptr<base::FieldTrial> trial =
-        new base::FieldTrial("Prefetch", kPrefetchDivisor);
+    scoped_refptr<base::FieldTrial> trial(
+        new base::FieldTrial("Prefetch", kPrefetchDivisor));
     trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
     const int yes_prefetch_grp =
         trial->AppendGroup("ContentPrefetchEnabled",
@@ -411,9 +411,9 @@ void BrowserMainParts::ConnectBackupJobsFieldTrial() {
     const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
     // 1% probability.
     const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
-    scoped_refptr<base::FieldTrial> trial =
+    scoped_refptr<base::FieldTrial> trial(
         new base::FieldTrial("ConnnectBackupJobs",
-                             kConnectBackupJobsDivisor);
+                             kConnectBackupJobsDivisor));
     trial->AppendGroup("ConnectBackupJobsDisabled",
                        kConnectBackupJobsProbability);
     const int connect_backup_jobs_enabled =
@@ -1084,8 +1084,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // for posting tasks via NewRunnableMethod. Its deleted when it goes out of
   // scope. Even though NewRunnableMethod does AddRef and Release, the object
   // will not be deleted after the Task is executed.
-  scoped_refptr<HistogramSynchronizer> histogram_synchronizer =
-      new HistogramSynchronizer();
+  scoped_refptr<HistogramSynchronizer> histogram_synchronizer(
+      new HistogramSynchronizer());
 
   // Initialize the prefs of the local state.
   browser::RegisterLocalState(local_state);
@@ -1388,8 +1388,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // layout globally.
   base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
   base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
-  scoped_refptr<base::FieldTrial> sdch_trial =
-      new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR);
+  scoped_refptr<base::FieldTrial> sdch_trial(
+      new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR));
 
   // Use default of "" so that all domains are supported.
   std::string sdch_supported_domain("");
