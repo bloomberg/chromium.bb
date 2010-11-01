@@ -10104,8 +10104,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROXY_FTP_PROXY" desc="Label for the ftp proxy box.">
         FTP proxy
       </message>
-      <message name="IDS_PROXY_SOCKS_HOST" desc="Label for the socks host box.">
-        Socks Host
+      <message name="IDS_PROXY_SOCKS_HOST" desc="Label for the SOCKS host box.">
+        SOCKS host
       </message>
       <message name="IDS_PROXY_AUTOMATIC" desc="Radio to select configuring from a URL.">
         Automatic proxy configuration
