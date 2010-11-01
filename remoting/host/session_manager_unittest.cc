@@ -19,9 +19,8 @@ namespace remoting {
 
 static const int kWidth = 640;
 static const int kHeight = 480;
-static const PixelFormat kFormat = PIXEL_FORMAT_RGB32;
-static const VideoPacketFormat::Encoding kEncoding =
-    VideoPacketFormat::ENCODING_VERBATIM;
+static const PixelFormat kFormat = PixelFormatRgb32;
+static const UpdateStreamEncoding kEncoding = EncodingNone;
 
 class SessionManagerTest : public testing::Test {
  public:
@@ -65,7 +64,10 @@ ACTION_P2(RunCallback, rects, data) {
 }
 
 ACTION_P(FinishEncode, msg) {
-  arg2->Run(msg);
+  Encoder::EncodingState state = (Encoder::EncodingStarting |
+                                  Encoder::EncodingInProgress |
+                                  Encoder::EncodingEnded);
+  arg2->Run(msg, state);
   delete arg2;
 }
 
@@ -96,12 +98,14 @@ TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
       .WillOnce(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
-  VideoPacket* packet = new VideoPacket();
+  ChromotingHostMessage* msg = new ChromotingHostMessage();
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
-      .WillOnce(FinishEncode(packet));
+      .WillOnce(FinishEncode(msg));
 
   // Expect the client be notified.
-  EXPECT_CALL(*client_, SendVideoPacket(_));
+  EXPECT_CALL(*client_, SendBeginUpdateStreamMessage());
+  EXPECT_CALL(*client_, SendUpdateStreamPacketMessage(_));
+  EXPECT_CALL(*client_, SendEndUpdateStreamMessage());
   EXPECT_CALL(*client_, GetPendingUpdateStreamMessages())
       .Times(AtLeast(0))
       .WillRepeatedly(Return(0));

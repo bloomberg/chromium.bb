@@ -328,16 +328,18 @@ void SessionManager::DoRateControl() {
   ScheduleNextRateControl();
 }
 
-void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
+void SessionManager::DoSendUpdate(ChromotingHostMessage* message,
+                                  Encoder::EncodingState state) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   TraceContext::tracer()->PrintString("DoSendUpdate");
 
   for (ClientConnectionList::const_iterator i = clients_.begin();
        i < clients_.end(); ++i) {
-    (*i)->SendVideoPacket(*packet);
+    (*i)->SendUpdateStreamPacketMessage(*message);
   }
-  delete packet;
+
+  delete message;
 
   TraceContext::tracer()->PrintString("DoSendUpdate done");
 }
@@ -397,10 +399,9 @@ void SessionManager::DoEncode(
   TraceContext::tracer()->PrintString("Encode Done");
 }
 
-void SessionManager::EncodeDataAvailableTask(VideoPacket* packet) {
+void SessionManager::EncodeDataAvailableTask(
+    ChromotingHostMessage* message, Encoder::EncodingState state) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
-
-  bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
 
   // Before a new encode task starts, notify clients a new update
   // stream is coming.
@@ -408,9 +409,9 @@ void SessionManager::EncodeDataAvailableTask(VideoPacket* packet) {
   // task. The ownership will eventually pass to the ClientConnections.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoSendVideoPacket, packet));
+      NewTracedMethod(this, &SessionManager::DoSendUpdate, message, state));
 
-  if (last) {
+  if (state & Encoder::EncodingEnded) {
     capture_loop_->PostTask(
         FROM_HERE, NewTracedMethod(this, &SessionManager::DoFinishEncode));
   }

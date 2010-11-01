@@ -26,7 +26,7 @@ class MockDecoder : public Decoder {
   MOCK_METHOD1(PartialDecode, bool(ChromotingHostMessage* message));
   MOCK_METHOD0(EndDecode, void());
 
-  MOCK_METHOD0(Encoding, VideoPacketFormat::Encoding());
+  MOCK_METHOD0(Encoding, UpdateStreamEncoding());
   MOCK_METHOD0(IsStarted, bool());
 
  private:
@@ -64,7 +64,7 @@ class FakeView : public ChromotingView {
   }
 
   // Testing wrappers for private setup/startup decoder routines.
-  bool setup_decoder(VideoPacketFormat::Encoding encoding) {
+  bool setup_decoder(UpdateStreamEncoding encoding) {
     return SetupDecoder(encoding);
   }
   bool begin_decoding(Task* partial_decode_done, Task* decode_done) {

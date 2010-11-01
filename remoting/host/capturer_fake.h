@@ -10,7 +10,8 @@
 
 namespace remoting {
 
-// A CapturerFake generates artificial image for testing purpose.
+// A CapturerFake always output an image of 640x480 in 24bit RGB. The image
+// is artificially generated for testing purpose.
 //
 // CapturerFake is doubled buffered as required by Capturer. See
 // remoting/host/capturer.h.
@@ -29,10 +30,8 @@ class CapturerFake : public Capturer {
   // Generates an image in the front buffer.
   void GenerateImage();
 
-  int box_pos_x_;
-  int box_pos_y_;
-  int box_speed_x_;
-  int box_speed_y_;
+  // The seed for generating the image.
+  int seed_;
 
   // We have two buffers for the screen images as required by Capturer.
   scoped_array<uint8> buffers_[kNumBuffers];

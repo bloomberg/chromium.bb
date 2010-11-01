@@ -13,7 +13,7 @@ namespace remoting {
 Capturer::Capturer()
     : width_(0),
       height_(0),
-      pixel_format_(PIXEL_FORMAT_INVALID),
+      pixel_format_(PixelFormatInvalid),
       bytes_per_row_(0),
       current_buffer_(0) {
 }

@@ -8,27 +8,13 @@
 
 namespace remoting {
 
-// CapturerFake generates a white picture of size kWidth x kHeight with a
-// rectangle of size kBoxWidth x kBoxHeight. The rectangle moves kSpeed pixels
-// per frame along both axes, and bounces off the sides of the screen.
-static const int kWidth = 800;
-static const int kHeight = 600;
-static const int kBoxWidth = 140;
-static const int kBoxHeight = 140;
-static const int kSpeed = 20;
-
-COMPILE_ASSERT(kBoxWidth < kWidth && kBoxHeight < kHeight, bad_box_size);
-COMPILE_ASSERT((kBoxWidth % kSpeed == 0) && (kWidth % kSpeed == 0) &&
-               (kBoxHeight % kSpeed == 0) && (kHeight % kSpeed == 0),
-               sizes_must_be_multiple_of_kSpeed);
-
+static const int kWidth = 320;
+static const int kHeight = 240;
 static const int kBytesPerPixel = 4;  // 32 bit RGB is 4 bytes per pixel.
+static const int kMaxColorChannelValue = 255;
 
 CapturerFake::CapturerFake()
-    : box_pos_x_(0),
-      box_pos_y_(0),
-      box_speed_x_(kSpeed),
-      box_speed_y_(kSpeed) {
+    : seed_(0) {
   ScreenConfigurationChanged();
 }
 
@@ -38,7 +24,7 @@ CapturerFake::~CapturerFake() {
 void CapturerFake::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
-  pixel_format_ = PIXEL_FORMAT_RGB32;
+  pixel_format_ = PixelFormatRgb32;
   bytes_per_row_ = width_ * kBytesPerPixel;
 
   // Create memory for the buffers.
@@ -68,36 +54,16 @@ void CapturerFake::CaptureRects(const InvalidRects& rects,
 }
 
 void CapturerFake::GenerateImage() {
-  memset(buffers_[current_buffer_].get(), 0xff,
-         width_ * height_ * kBytesPerPixel);
-
-  uint8* row = buffers_[current_buffer_].get() +
-      (box_pos_y_ * width_ + box_pos_x_) * kBytesPerPixel;
-
-  box_pos_x_ += box_speed_x_;
-  if (box_pos_x_ + kBoxWidth >= width_ || box_pos_x_ == 0)
-    box_speed_x_ = -box_speed_x_;
-
-  box_pos_y_ += box_speed_y_;
-  if (box_pos_y_ + kBoxHeight >= height_ || box_pos_y_ == 0)
-    box_speed_y_ = -box_speed_y_;
-
-  // Draw rectangle with the following colors in it's corners:
-  //     cyan....yellow
-  //     ..............
-  //     blue.......red
-  for (int y = 0; y < kBoxHeight; ++y) {
-    for (int x = 0; x < kBoxWidth; ++x) {
-      int r = x * 255 / kBoxWidth;
-      int g = y * 255 / kBoxHeight;
-      int b = 255 - (x * 255 / kBoxWidth);
-      row[x * kBytesPerPixel] = r;
-      row[x * kBytesPerPixel+1] = g;
-      row[x * kBytesPerPixel+2] = b;
-      row[x * kBytesPerPixel+3] = 0xff;
+  uint8* row = buffers_[current_buffer_].get();
+  for (int y = 0; y < height_; ++y) {
+    int offset = y % 3;
+    for (int x = 0; x < width_; ++x) {
+      row[x * kBytesPerPixel + offset] = seed_++;
+      seed_ &= kMaxColorChannelValue;
     }
     row += bytes_per_row_;
   }
+  ++seed_;
 }
 
 }  // namespace remoting

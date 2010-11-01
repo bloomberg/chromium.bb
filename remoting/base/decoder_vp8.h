@@ -14,34 +14,37 @@ namespace remoting {
 class DecoderVp8 : public Decoder {
  public:
   DecoderVp8();
-  virtual ~DecoderVp8();
+  ~DecoderVp8();
 
   // Decoder implementations.
-  virtual void Initialize(scoped_refptr<media::VideoFrame> frame,
-                          const gfx::Rect& clip, int bytes_per_src_pixel);
-
-  virtual void Reset();
-
-  // Feeds more data into the decoder.
-  virtual void DecodeBytes(const std::string& encoded_bytes);
-
-  // Returns true if decoder is ready to accept data via ProcessRectangleData.
-  virtual bool IsReadyForData();
-
-  virtual VideoPacketFormat::Encoding Encoding();
+  virtual bool BeginDecode(scoped_refptr<media::VideoFrame> frame,
+                           UpdatedRects* update_rects,
+                           Task* partial_decode_done,
+                           Task* decode_done);
+  virtual bool PartialDecode(ChromotingHostMessage* message);
+  virtual void EndDecode();
 
  private:
-  enum State {
-    kUninitialized,
-    kReady,
-    kError,
-  };
+  bool HandleBeginRect(ChromotingHostMessage* message);
+  bool HandleRectData(ChromotingHostMessage* message);
+  bool HandleEndRect(ChromotingHostMessage* message);
 
   // The internal state of the decoder.
   State state_;
 
+  // Keeps track of the updating rect.
+  int rect_x_;
+  int rect_y_;
+  int rect_width_;
+  int rect_height_;
+
+  // Tasks to call when decode is done.
+  scoped_ptr<Task> partial_decode_done_;
+  scoped_ptr<Task> decode_done_;
+
   // The video frame to write to.
   scoped_refptr<media::VideoFrame> frame_;
+  UpdatedRects* updated_rects_;
 
   vpx_codec_ctx_t* codec_;
 

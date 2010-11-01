@@ -6,7 +6,6 @@
 #include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
-#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/host_message_dispatcher.h"
 #include "remoting/protocol/host_control_message_handler.h"

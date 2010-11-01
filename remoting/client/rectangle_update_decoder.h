@@ -16,8 +16,8 @@ namespace remoting {
 
 class Decoder;
 class FrameConsumer;
-class VideoPacketFormat;
-class VideoPacket;
+class RectangleFormat;
+class RectangleUpdatePacket;
 
 // TODO(ajwong): Re-examine this API, especially with regards to how error
 // conditions on each step are reported.  Should they be CHECKs? Logs? Other?
@@ -34,14 +34,14 @@ class RectangleUpdateDecoder {
   //
   // TODO(ajwong): Should packet be a const pointer to make the lifetime
   // more clear?
-  void DecodePacket(const VideoPacket& packet, Task* done);
+  void DecodePacket(const RectangleUpdatePacket& packet, Task* done);
 
  private:
-  static bool IsValidPacket(const VideoPacket& packet);
+  static bool IsValidPacket(const RectangleUpdatePacket& packet);
 
-  void InitializeDecoder(const VideoPacketFormat& format, Task* done);
+  void InitializeDecoder(const RectangleFormat& format, Task* done);
 
-  void ProcessPacketData(const VideoPacket& packet, Task* done);
+  void ProcessPacketData(const RectangleUpdatePacket& packet, Task* done);
 
   // Pointers to infrastructure objects.  Not owned.
   MessageLoop* message_loop_;

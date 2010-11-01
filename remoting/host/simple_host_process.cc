@@ -25,18 +25,14 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/nss_util.h"
-#include "base/path_service.h"
 #include "base/thread.h"
-#include "media/base/media.h"
 #include "remoting/base/encoder_verbatim.h"
-#include "remoting/base/encoder_vp8.h"
 #include "remoting/base/encoder_zlib.h"
-#include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/json_host_config.h"
-#include "remoting/proto/video.pb.h"
+#include "remoting/base/tracer.h"
 
 #if defined(OS_WIN)
 #include "remoting/host/capturer_gdi.h"
@@ -66,7 +62,6 @@ void ShutdownTask(MessageLoop* message_loop) {
 const std::string kFakeSwitchName = "fake";
 const std::string kConfigSwitchName = "config";
 const std::string kVerbatimSwitchName = "verbatim";
-const std::string kVp8SwitchName = "vp8";
 
 int main(int argc, char** argv) {
   // Needed for the Mac, so we don't leak objects when threads are created.
@@ -97,15 +92,14 @@ int main(int argc, char** argv) {
   // Check the argument to see if we should use a fake capturer and encoder.
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
   bool verbatim = cmd_line->HasSwitch(kVerbatimSwitchName);
-  bool vp8 = cmd_line->HasSwitch(kVp8SwitchName);
 
 #if defined(OS_WIN)
-  std::wstring home_path = GetEnvironmentVar(kHomeDrive);
-  home_path += GetEnvironmentVar(kHomePath);
+  std::wstring path = GetEnvironmentVar(kHomeDrive);
+  path += GetEnvironmentVar(kHomePath);
 #else
-  std::string home_path = GetEnvironmentVar(base::env_vars::kHome);
+  std::string path = GetEnvironmentVar(base::env_vars::kHome);
 #endif
-  FilePath config_path(home_path);
+  FilePath config_path(path);
   config_path = config_path.Append(kDefaultConfigPath);
   if (cmd_line->HasSwitch(kConfigSwitchName)) {
     config_path = cmd_line->GetSwitchValuePath(kConfigSwitchName);
@@ -122,14 +116,6 @@ int main(int argc, char** argv) {
     encoder.reset(new remoting::EncoderVerbatim());
   }
 
-  // TODO(sergeyu): Enable VP8 on ARM builds.
-#if !defined(ARCH_CPU_ARM_FAMILY)
-  if (vp8) {
-    LOG(INFO) << "Using the verbatim encoder.";
-    encoder.reset(new remoting::EncoderVp8());
-  }
-#endif
-
   base::Thread file_io_thread("FileIO");
   file_io_thread.Start();
 
@@ -145,11 +131,6 @@ int main(int argc, char** argv) {
   // Allocate a chromoting context and starts it.
   remoting::ChromotingHostContext context;
   context.Start();
-
-  FilePath module_path;
-  PathService::Get(base::DIR_MODULE, &module_path);
-  CHECK(media::InitializeMediaLibrary(module_path))
-      << "Cannot load media library";
 
   // Construct a chromoting host.
   scoped_refptr<remoting::ChromotingHost> host(

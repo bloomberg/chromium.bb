@@ -46,8 +46,8 @@ class ClientConnectionTest : public testing::Test {
 
 TEST_F(ClientConnectionTest, SendUpdateStream) {
   // Then send the actual data.
-  VideoPacket packet;
-  viewer_->SendVideoPacket(packet);
+  ChromotingHostMessage message;
+  viewer_->SendUpdateStreamPacketMessage(message);
 
   // And then close the connection to ClientConnection.
   viewer_->Disconnect();
@@ -76,8 +76,8 @@ TEST_F(ClientConnectionTest, Close) {
   message_loop_.RunAllPending();
   EXPECT_TRUE(connection_->is_closed());
 
-  VideoPacket packet;
-  viewer_->SendVideoPacket(packet);
+  ChromotingHostMessage message;
+  viewer_->SendUpdateStreamPacketMessage(message);
   viewer_->Disconnect();
   message_loop_.RunAllPending();
 

@@ -55,20 +55,15 @@ void ClientConnection::SendInitClientMessage(int width, int height) {
   video_writer_.SendMessage(msg);
 }
 
-void ClientConnection::SendVideoPacket(const VideoPacket& packet) {
+void ClientConnection::SendUpdateStreamPacketMessage(
+    const ChromotingHostMessage& message) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If we are disconnected then return.
   if (!connection_)
     return;
 
-  ChromotingHostMessage* message = new ChromotingHostMessage();
-  // TODO(sergeyu): avoid memcopy here.
-  *message->mutable_video_packet() = packet;
-
-  video_writer_.SendMessage(*message);
-
-  delete message;
+  video_writer_.SendMessage(message);
 }
 
 int ClientConnection::GetPendingUpdateStreamMessages() {

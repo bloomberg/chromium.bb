@@ -317,7 +317,7 @@ class EncoderTester {
 scoped_refptr<CaptureData> PrepareEncodeData(PixelFormat format,
                                              uint8** memory) {
   // TODO(hclam): Support also YUV format.
-  CHECK(format == PIXEL_FORMAT_RGB32);
+  CHECK(format == PixelFormatRgb32);
   int size = kWidth * kHeight * kBytesPerPixel;
 
   *memory = new uint8[size];
@@ -360,7 +360,7 @@ void TestEncoder(Encoder* encoder, bool strict) {
 
   uint8* memory;
   scoped_refptr<CaptureData> data =
-      PrepareEncodeData(PIXEL_FORMAT_RGB32, &memory);
+      PrepareEncodeData(PixelFormatRgb32, &memory);
 
   TestEncodingRects(encoder, &tester, data, kTestRects, 1);
   TestEncodingRects(encoder, &tester, data, kTestRects + 1, 1);
@@ -412,7 +412,7 @@ void TestEncoderDecoder(Encoder* encoder, Decoder* decoder, bool strict) {
 
   uint8* memory;
   scoped_refptr<CaptureData> data =
-      PrepareEncodeData(PIXEL_FORMAT_RGB32, &memory);
+      PrepareEncodeData(PixelFormatRgb32, &memory);
   DecoderTester decoder_tester(decoder);
   decoder_tester.set_strict(strict);
   decoder_tester.set_capture_data(data);

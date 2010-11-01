@@ -25,12 +25,23 @@ class CaptureData;
 class Encoder {
  public:
 
+  // EncodingState is a bitfield that tracks the state of the encoding.
+  // An encoding that consists of a single block could concievably be starting
+  // inprogress and ended at the same time.
+  enum {
+    EncodingStarting = 1 << 0,
+    EncodingInProgress = 1 << 1,
+    EncodingEnded = 1 << 2
+  };
+  typedef int EncodingState;
+
   // DataAvailableCallback is called as blocks of data are made available
   // from the encoder. Data made available by the encoder is in the form
   // of HostMessage to reduce the amount of memory copies.
   // The callback takes ownership of the HostMessage and is responsible for
   // deleting it.
-  typedef Callback1<VideoPacket*>::Type DataAvailableCallback;
+  typedef Callback2<ChromotingHostMessage*,
+                    EncodingState>::Type DataAvailableCallback;
 
   virtual ~Encoder() {}
 

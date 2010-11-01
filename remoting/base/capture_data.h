@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "remoting/base/types.h"
-#include "remoting/proto/video.pb.h"
+#include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
