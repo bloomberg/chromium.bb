@@ -55,6 +55,10 @@ int CertStore::StoreCert(net::X509Certificate* cert, int process_id) {
   ReverseCertMap::iterator cert_iter = cert_to_id_.find(cert);
   if (cert_iter == cert_to_id_.end()) {
     cert_id = next_cert_id_++;
+    // We use 0 as an invalid cert_id value.  In the unlikely event that
+    // next_cert_id_ wraps around, we reset it to 1.
+    if (next_cert_id_ == 0)
+      next_cert_id_ = 1;
     cert->AddRef();
     id_to_cert_[cert_id] = cert;
     cert_to_id_[cert] = cert_id;
