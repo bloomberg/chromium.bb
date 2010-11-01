@@ -9,6 +9,7 @@
 #include "base/win/registry.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/autofill/crypto/rc4_decryptor.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/util/data_encryption.h"
@@ -21,23 +22,37 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
                                std::vector<CreditCard>* credit_cards);
 namespace {
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/autofill/internal/autofill_ie_toolbar_decryption.h"
-#else  // defined(GOOGLE_CHROME_BUILD)
-inline std::wstring DecryptCCNumber(const std::wstring& data) {
-  return std::wstring();
-}
-inline bool IsEmptySalt(const std::wstring& salt) {
-  return false;
-}
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 const wchar_t* const kProfileKey =
     L"Software\\Google\\Google Toolbar\\4.0\\Autofill\\Profiles";
 const wchar_t* const kCreditCardKey =
     L"Software\\Google\\Google Toolbar\\4.0\\Autofill\\Credit Cards";
 const wchar_t* const kPasswordHashValue = L"password_hash";
 const wchar_t* const kSaltValue = L"salt";
+
+// This is RC4 decryption for Toolbar credit card data. This is necessary
+// because it is not standard, so Crypto api cannot be used.
+std::wstring DecryptCCNumber(const std::wstring& data) {
+  const wchar_t* kEmptyKey =
+    L"\x3605\xCEE5\xCE49\x44F7\xCF4E\xF6CC\x604B\xFCBE\xC70A\x08FD";
+  const size_t kMacLen = 10;
+
+  if (data.length() <= kMacLen)
+    return std::wstring();
+
+  RC4Decryptor rc4_algorithm(kEmptyKey);
+  return rc4_algorithm.Run(data.substr(kMacLen));
+}
+
+bool IsEmptySalt(std::wstring const& salt) {
+  // Empty salt in IE Toolbar is \x1\x2...\x14
+  if (salt.length() != 20)
+    return false;
+  for (size_t i = 0; i < salt.length(); ++i) {
+    if (salt[i] != i + 1)
+      return false;
+  }
+  return true;
+}
 
 string16 ReadAndDecryptValue(RegKey* key, const wchar_t* value_name) {
   DWORD data_type = REG_BINARY;

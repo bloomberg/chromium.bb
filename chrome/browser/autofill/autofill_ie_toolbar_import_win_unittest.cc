@@ -198,8 +198,7 @@ TEST_F(AutofillIeToolbarImportTest, TestAutoFillImport) {
             L"5556666");
   EXPECT_EQ(profiles[0].GetFieldText(AutoFillType(PHONE_FAX_WHOLE_NUMBER)),
             L"27775556666");
-#if defined(GOOGLE_CHROME_BUILD)
-  // We have the ability to export credit cards only in chrome build.
+
   ASSERT_EQ(credit_cards.size(), 1);
   EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_NAME)),
             credit_card[0].value);
@@ -225,9 +224,5 @@ TEST_F(AutofillIeToolbarImportTest, TestAutoFillImport) {
   EXPECT_EQ(profiles.size(), 2);
   // Credit cards are.
   EXPECT_EQ(credit_cards.size(), 0);
-#else  // defined(GOOGLE_CHROME_BUILD)
-  // Cannot decrypt CC in non-chrome build.
-  EXPECT_EQ(credit_cards.size(), 0);
-#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
