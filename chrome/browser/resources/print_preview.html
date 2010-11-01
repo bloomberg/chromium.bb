@@ -9,18 +9,16 @@
 
 <script src="chrome://resources/js/local_strings.js"></script>
 <script src="chrome://resources/js/util.js"></script>
-
+<script src="print_preview.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div id="navbar-container">
   <div id="destination-container">
     <h1>Destination</h1>
-    <div id="destination-list">
-      LIST GOES HERE
-    </div>
-    <div id="print-buttons">
-      <button id="printButton">Print</button>
-      <button id="cancelButton">Cancel</button>
+    <select id="printer-list"></select>
+    <div id="buttons">
+      <button id="print-button">Print</button>
+      <button id="cancel-button">Cancel</button>
     </div>
   </div>
   <div id="options-container">

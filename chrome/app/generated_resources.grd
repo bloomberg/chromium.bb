@@ -5277,6 +5277,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_TITLE" desc="Title for print preview page ">
         Print Preview
       </message>
+      <message name="IDS_PRINT_PREVIEW_NO_PRINTER" desc="Select box entry when there is no printer.">
+        No printers found
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_IDLE"></message>

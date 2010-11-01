@@ -13,7 +13,9 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
+#include "chrome/browser/dom_ui/print_preview_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -27,6 +29,8 @@ namespace {
 void SetLocalizedStrings(DictionaryValue* localized_strings) {
   localized_strings->SetString(std::string("title"),
       l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_TITLE));
+  localized_strings->SetString(std::string("no-printer"),
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_NO_PRINTER));
 }
 
 }  // namespace
@@ -36,6 +40,22 @@ void SetLocalizedStrings(DictionaryValue* localized_strings) {
 // PrintPreviewUIHTMLSource
 //
 ////////////////////////////////////////////////////////////////////////////////
+
+class PrintPreviewUIHTMLSource : public ChromeURLDataManager::DataSource {
+ public:
+  PrintPreviewUIHTMLSource();
+  virtual ~PrintPreviewUIHTMLSource();
+
+  // Called when the network layer has requested a resource underneath
+  // the path we registered.
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_off_the_record,
+                                int request_id);
+  virtual std::string GetMimeType(const std::string&) const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PrintPreviewUIHTMLSource);
+};
 
 PrintPreviewUIHTMLSource::PrintPreviewUIHTMLSource()
     : DataSource(chrome::kChromeUIPrintHost, MessageLoop::current()) {
@@ -74,6 +94,10 @@ std::string PrintPreviewUIHTMLSource::GetMimeType(const std::string&) const {
 ////////////////////////////////////////////////////////////////////////////////
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents) : DOMUI(contents) {
+  // PrintPreviewUI owns |handler|.
+  PrintPreviewHandler* handler = new PrintPreviewHandler();
+  AddMessageHandler(handler->Attach(this));
+
   // Set up the chrome://print/ source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

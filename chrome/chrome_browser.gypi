@@ -1335,6 +1335,8 @@
         'browser/dom_ui/ntp_resource_cache.h',
         'browser/dom_ui/plugins_ui.cc',
         'browser/dom_ui/plugins_ui.h',
+        'browser/dom_ui/print_preview_handler.cc',
+        'browser/dom_ui/print_preview_handler.h',
         'browser/dom_ui/print_preview_ui.cc',
         'browser/dom_ui/print_preview_ui.h',
         'browser/dom_ui/remoting_ui.cc',
