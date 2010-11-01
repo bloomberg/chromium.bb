@@ -171,7 +171,8 @@ TEST_F(MiniInstallTest,
 }
 #endif
 
-TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
+// http://crbug.com/61497
+TEST_F(MiniInstallTest, FLAKY_InstallMiniInstallerSys) {
   sys_inst_->Install();
 }
 
