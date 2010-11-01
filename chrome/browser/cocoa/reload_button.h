@@ -20,9 +20,8 @@
   BOOL isMouseInside_;
   scoped_nsobject<NSTrackingArea> trackingArea_;
 
-  // Set when reload mode is requested, but not forced, and the mouse
-  // is hovering.
-  BOOL pendingReloadMode_;
+  // Timer used when setting reload mode while the mouse is hovered.
+  scoped_nsobject<NSTimer> pendingReloadTimer_;
 }
 
 // Returns YES if the mouse is currently inside the bounds.
@@ -32,13 +31,14 @@
 // |isLoading|.  If |force|, always sets the indicated mode.  If
 // |!force|, and the mouse is over the button, defer the transition
 // from stop button to reload button until the mouse has left the
-// button.  This prevents an inadvertent click _just_ as the state
-// changes.
+// button, or until |pendingReloadTimer_| fires.  This prevents an
+// inadvertent click _just_ as the state changes.
 - (void)setIsLoading:(BOOL)isLoading force:(BOOL)force;
 
 @end
 
 @interface ReloadButton (PrivateTestingMethods)
++ (void)setPendingReloadTimeout:(NSTimeInterval)seconds;
 - (NSTrackingArea*)trackingArea;
 @end
 

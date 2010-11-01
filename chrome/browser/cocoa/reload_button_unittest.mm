@@ -109,7 +109,7 @@ TEST_F(ReloadButtonTest, SetIsLoadingForce) {
 
 // Test that without force, stop mode is set immediately, but reload
 // is affected by the hover status.
-TEST_F(ReloadButtonTest, SetIsLoadingNoForce) {
+TEST_F(ReloadButtonTest, SetIsLoadingNoForceUnHover) {
   EXPECT_FALSE([button_ isMouseInside]);
   EXPECT_EQ([button_ tag], IDC_RELOAD);
 
@@ -140,6 +140,54 @@ TEST_F(ReloadButtonTest, SetIsLoadingNoForce) {
   [button_ mouseExited:nil];
   EXPECT_FALSE([button_ isMouseInside]);
   EXPECT_EQ([button_ tag], IDC_RELOAD);
+}
+
+// Test that without force, stop mode is set immediately, and reload
+// will be set after a timeout.
+// TODO(shess): Reenable, http://crbug.com/61485
+TEST_F(ReloadButtonTest, DISABLED_SetIsLoadingNoForceTimeout) {
+  // When the event loop first spins, some delayed tracking-area setup
+  // is done, which causes -mouseExited: to be called.  Spin it at
+  // least once, and dequeue any pending events.
+  // TODO(shess): It would be more reasonable to have an MockNSTimer
+  // factory for the class to use, which this code could fire
+  // directly.
+  while ([NSApp nextEventMatchingMask:NSAnyEventMask
+                            untilDate:nil
+                               inMode:NSDefaultRunLoopMode
+                              dequeue:YES]) {
+  }
+
+  const NSTimeInterval kShortTimeout = 0.1;
+  [ReloadButton setPendingReloadTimeout:kShortTimeout];
+
+  EXPECT_FALSE([button_ isMouseInside]);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
+
+  // Move the mouse into the button and press it.
+  [button_ mouseEntered:nil];
+  EXPECT_TRUE([button_ isMouseInside]);
+  [button_ setIsLoading:YES force:NO];
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
+
+  // Does not change to reload immediately when the mouse is hovered.
+  EXPECT_TRUE([button_ isMouseInside]);
+  [button_ setIsLoading:NO force:NO];
+  EXPECT_TRUE([button_ isMouseInside]);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
+  EXPECT_TRUE([button_ isMouseInside]);
+
+  // Spin event loop until the timeout passes.
+  NSDate* pastTimeout = [NSDate dateWithTimeIntervalSinceNow:2 * kShortTimeout];
+  [NSApp nextEventMatchingMask:NSAnyEventMask
+                     untilDate:pastTimeout
+                        inMode:NSDefaultRunLoopMode
+                       dequeue:NO];
+
+  // Mouse is still hovered, button is in reload mode.  If the mouse
+  // is no longer hovered, see comment at top of function.
+  EXPECT_TRUE([button_ isMouseInside]);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 }
 
 // Test that pressing stop after reload mode has been requested
