@@ -815,6 +815,12 @@ void ProfileSyncService::OnUserSubmittedAuth(
     signin_.SignOut();
   }
 
+  // The user has submitted credentials, which indicates they don't
+  // want to suppress start up anymore.
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(prefs::kSyncSuppressStart, false);
+  prefs->ScheduleSavePersistentPrefs();
+
   signin_.StartSignIn(username,
                       password,
                       last_auth_error_.captcha().token,
