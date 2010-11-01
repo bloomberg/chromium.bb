@@ -70,10 +70,14 @@ class ModuleSerializer {
   // Serializes a loaded Module object into a chunk of memory data and returns
   // the address of memory chunk.  If size != NULL, *size is set to the memory
   // size allocated for the serialized data.
+  // Caller takes the ownership of the memory chunk (allocated on heap), and
+  // should call delete instead of delete [] to free it.
   char* Serialize(const BasicSourceLineResolver::Module &module,
                   unsigned int *size = NULL);
 
   // Given the string format symbol_data, produces a chunk of serialized data.
+  // Caller takes ownership of the serialized data (on heap), and should call
+  // delete instead of delete [] to free it.
   char* SerializeSymbolFileData(const string &symbol_data,
                                 unsigned int *size = NULL);
 

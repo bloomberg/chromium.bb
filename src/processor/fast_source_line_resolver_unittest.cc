@@ -464,7 +464,7 @@ TEST_F(TestFastSourceLineResolver, CompareModule) {
     ASSERT_TRUE(SourceLineResolverBase::ReadSymbolFile(
         &symbol_data, symbol_file(module_index)));
     symbol_data_string = symbol_data;
-    delete symbol_data;
+    delete [] symbol_data;
     ASSERT_TRUE(module_comparer.Compare(symbol_data_string));
   }
 }

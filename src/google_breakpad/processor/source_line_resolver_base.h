@@ -60,6 +60,8 @@ class SourceLineResolverBase : public SourceLineResolverInterface {
   // Read the symbol_data from a file with given file_name.
   // The part of code was originally in BasicSourceLineResolver::Module's
   // LoadMap() method.
+  // Place dynamically allocated heap buffer in symbol_data. Caller has the
+  // ownership of the buffer, and should call delete [] to free the buffer.
   static bool ReadSymbolFile(char **symbol_data, const string &file_name);
 
  protected:
