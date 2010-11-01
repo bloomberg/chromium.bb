@@ -1,0 +1,19 @@
+    <p id="license">
+    Except as otherwise
+    <a href="http://code.google.com/policies.html#restrictions">noted</a>,
+    the content of this page is licensed under a
+    <a href="http://www.google.com/url?sa=D&amp;q=http%3A%2F%2Fcreativecommons.org/licenses/by/2.5/">Creative Commons
+    Attribution 2.5 license</a>.
+    </p>
+
+    <address>
+    &copy;2010 Google
+    </address>
+
+    <address>
+    Generated $date by
+    <a href="http://www.doxygen.org/index.html">doxygen</a> $doxygenversion
+    </address>
+
+  </body>
+</html>

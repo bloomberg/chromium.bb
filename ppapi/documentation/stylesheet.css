@@ -1,0 +1,101 @@
+@charset "utf-8";
+a:link { color: #0000cc; }
+body {
+  background: #fff; margin: 3px 8px;
+  font-family: arial, sans-serif;
+}
+
+body { font-size: 83%;}
+pre, code, p kbd { font-size: 120%;}
+
+h1 { font-size: x-large; }
+h2 { font-size: large; }
+h3 { font-size: medium; }
+h4 { font-size: small; }
+
+img { border: 1px solid #ccc; }
+
+pre {
+  margin-left: 2em;
+  padding: 0.5em;
+  border-left: 3px solid #ccc;
+}
+
+pre.no-bar {
+  padding: 0;
+  border-left: 0;
+}
+
+table {
+  border: 1px solid #999999;
+  border-collapse: collapse;
+}
+
+th {
+  border: 1px solid #999999;
+  padding: 0.25em 0.5em;
+  background: #ccc;
+}
+
+td {
+  border-bottom: 1px dotted #999999;
+  border-left: 1px dotted #999999;
+  text-align: left;
+  padding: 0.25em 0.5em;
+}
+
+td pre.listing {
+  margin: 0.25em 0.25em 0.25em 0;
+}
+
+pre.listing {
+  padding: 0;
+  background-color: #fff;
+  border: none;
+}
+
+div#toplink {
+  font-size: small;
+  text-align: right;
+  margin-bottom: -2em;
+}
+
+.caption {
+  font-weight:bold
+}
+
+#license {
+  color:gray;
+  font-size:small;
+  border-top:1px solid;
+  border-color:gray;
+  padding:1em;
+  margin-top:3em;
+  text-align:center;
+}
+
+.technote {
+  border:1px solid #999;
+  background:#ccc;
+  margin:0em 5em;
+  padding: 0.25em 0.5em;
+}
+
+.notapplicable {
+  color:lightgray;
+  font-style:italic;
+}
+
+pre kbd {
+  background:rgb(221, 248, 204);
+}
+
+table caption {
+  font-style:italic;
+  text-align:left;
+}
+
+.comment {
+  display:none; /* comment this line out if you want to see comments */
+  color:red; font-weight:bold;
+}

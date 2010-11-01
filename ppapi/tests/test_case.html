@@ -1,0 +1,74 @@
+<html><head>
+<link rel="stylesheet" href="test_page.css">
+<script>
+function AdjustHeight(frameWin) {
+  var div = frameWin.document.getElementsByTagName("div")[0];
+  var height = frameWin.getComputedStyle(div).height;
+  frameWin.frameElement.style.height = height;
+}
+
+function DidExecuteTests() {
+  if (window == top)
+    return;
+
+  // Otherwise, we are in a subframe, so we can use this opportunity to resize
+  // ourselves.
+  AdjustHeight(window);
+}
+
+function AppendFrame(testcase, i) {
+  var p = document.createElement("P");
+  p.setAttribute("class", "frame-container");
+
+  var title = document.createElement("H2");
+  title.appendChild(document.createTextNode(testcase));
+  p.appendChild(title);
+
+  var frame = document.createElement("IFRAME");
+  frame.setAttribute("src", "?" + testcase);
+  frame.setAttribute("onload", "LoadNext(" + (i + 1) + ")");
+  p.appendChild(frame);
+
+  document.body.appendChild(p);
+}
+
+function LoadNext(i) {
+  var links = document.links;
+  if (links.length > i)
+    AppendFrame(links[i].firstChild.nodeValue, i);
+}
+
+function RunAll() {
+  // Remove any existing frames.
+  var existing = document.getElementsByClassName("frame-container");
+  while (existing.length)
+    existing[0].parentNode.removeChild(existing[0]);
+
+  // Add new frames for each test, but do so one frame at a time.
+  LoadNext(0);
+}
+
+onload = function() {
+  var mimeType = "application/x-ppapi-tests";
+  if (mimeType in navigator.mimeTypes) {
+    var testcase = location.search.substring(1);
+    document.title = 'Test ' + testcase;
+
+    var obj = document.createElement("OBJECT");
+    obj.setAttribute("id", "plugin");
+    obj.setAttribute("type", mimeType);
+    obj.setAttribute("testcase", testcase);
+    document.getElementById("container").appendChild(obj);
+  } else {
+    document.getElementById("console").innerHTML =
+        '<span class="fail">FAIL</span>: ' +
+        '<span class="err_msg">Test plug-in is not registered.</span>';
+  }
+}
+</script>
+</head><body>
+<div>
+  <div id="container"></div>
+  <div id="console" /><span class="load_msg">loading...</span></div>
+</div>
+</body></html>
