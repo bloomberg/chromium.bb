@@ -621,8 +621,11 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 
     existing_tab->OpenURL(extension->GetFullLaunchURL(), existing_tab->GetURL(),
                           CURRENT_TAB, PageTransition::LINK);
-    if (params.add_types & TabStripModel::ADD_PINNED)
+    if (params.add_types & TabStripModel::ADD_PINNED) {
+      // Pin the tab and fetch its index, since it may move when being pinned.
       model->SetTabPinned(tab_index, true);
+      tab_index = model->GetIndexOfTabContents(existing_tab);
+    }
     if (params.add_types & TabStripModel::ADD_SELECTED)
       model->SelectTabContentsAt(tab_index, true);
 
