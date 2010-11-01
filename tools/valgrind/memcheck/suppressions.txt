@@ -2807,9 +2807,9 @@
   bug_57683
   Memcheck:Leak
   fun:_Znw*
-  fun:_ZN7logging17MakeCheckOpStringIPKcS2_EEPSsRKT_RKT0_S2_
-  fun:_ZN7logging11CheckNEImplIPKcS2_EEPSsRKT_RKT0_S2_
-  fun:_ZN7logging*LoggingTest_ChecksAreNotLazy_Test8TestBodyEv
+  fun:_ZN7logging17MakeCheckOpString*
+  fun:_ZN7logging11Check*Impl*
+  fun:_ZN7logging*LoggingTest_*_Test8TestBodyEv
 }
 {
    bug_57799

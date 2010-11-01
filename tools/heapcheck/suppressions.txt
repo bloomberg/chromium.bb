@@ -935,8 +935,8 @@
    Heapcheck:Leak
    ...
    fun:logging::MakeCheckOpString
-   fun:logging::CheckNEImpl
-   fun:logging::::LoggingTest_ChecksAreNotLazy_Test::TestBody
+   fun:logging::Check*Impl
+   fun:logging::::LoggingTest_*_Test::TestBody
 }
 {
    bug_57799
