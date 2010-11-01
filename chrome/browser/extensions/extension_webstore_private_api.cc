@@ -212,8 +212,10 @@ bool PromptBrowserLoginFunction::RunImpl() {
                  NotificationType::TOKEN_REQUEST_FAILED,
                  Source<TokenService>(token_service));
 
-  // TODO(johnnyg): Hook up preferred_email.
-  GetBrowserSignin(profile)->RequestSignin(tab, GetLoginMessage(), this);
+  GetBrowserSignin(profile)->RequestSignin(tab,
+                                           ASCIIToUTF16(preferred_email),
+                                           GetLoginMessage(),
+                                           this);
 
   // The response will be sent asynchronously in OnLoginSuccess/OnLoginFailure.
   return true;

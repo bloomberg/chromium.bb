@@ -56,6 +56,7 @@ class BrowserSignin : public NotificationObserver {
   // The delegate will eventually be called with OnLoginSuccess() or
   // OnLoginFailure(), but never both.  virtual for test override.
   virtual void RequestSignin(TabContents* tab_contents,
+                             const string16& suggested_email,
                              const string16& login_message,
                              SigninDelegate* delegate);
 
@@ -92,6 +93,9 @@ class BrowserSignin : public NotificationObserver {
 
   // Non-owned pointer to the profile (which owns this object).
   Profile* profile_;
+
+  // Suggested email for the current login prompt.
+  string16 suggested_email_;
 
   // Current login message.
   string16 login_message_;

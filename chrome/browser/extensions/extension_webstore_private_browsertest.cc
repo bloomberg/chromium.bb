@@ -73,6 +73,7 @@ class FakeBrowserSignin : public BrowserSignin {
   }
 
   virtual void RequestSignin(TabContents* tab_contents,
+                             const string16& preferred_email,
                              const string16& message,
                              SigninDelegate* delegate) {
     if (should_succeed_) {

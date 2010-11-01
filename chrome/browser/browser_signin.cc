@@ -78,6 +78,7 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
                           public DOMMessageHandler {
  public:
   BrowserSigninHtml(BrowserSignin* signin,
+                    string16 suggested_email,
                     string16 login_message);
   virtual ~BrowserSigninHtml() {}
 
@@ -127,14 +128,17 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
   // Nonowned pointer; |signin_| owns this object.
   BrowserSignin* signin_;
 
+  string16 suggested_email_;
   string16 login_message_;
 
   bool closed_;
 };
 
 BrowserSigninHtml::BrowserSigninHtml(BrowserSignin* signin,
+                                     string16 suggested_email,
                                      string16 login_message)
     : signin_(signin),
+      suggested_email_(suggested_email),
       login_message_(login_message),
       closed_(false) {
 }
@@ -171,6 +175,16 @@ void BrowserSigninHtml::HandleSigninInit(const ListValue* args) {
   std::wstring javascript(L"");
   SyncSetupFlow::GetArgsForGaiaLogin(signin_->GetProfileSyncService(),
                                      &json_args);
+
+  // Replace the suggested email, unless sync has already required a
+  // particular value.
+  bool is_editable;
+  std::string user;
+  json_args.GetBoolean("editable_user", &is_editable);
+  json_args.GetString("user", &user);
+  if (is_editable && user.empty() && !suggested_email_.empty())
+    json_args.SetString("user", suggested_email_);
+
   base::JSONWriter::Write(&json_args, false, &json);
   javascript += L"showGaiaLogin(" + UTF8ToWide(json) + L");";
   rvh->ExecuteJavascriptInWebFrame(L"//iframe[@id='login']", javascript);
@@ -213,6 +227,7 @@ BrowserSignin::~BrowserSignin() {
 }
 
 void BrowserSignin::RequestSignin(TabContents* tab_contents,
+                                  const string16& suggested_email,
                                   const string16& login_message,
                                   SigninDelegate* delegate) {
   CHECK(tab_contents);
@@ -221,6 +236,7 @@ void BrowserSignin::RequestSignin(TabContents* tab_contents,
   if (delegate_)
     Cancel();
   delegate_ = delegate;
+  suggested_email_ = suggested_email;
   login_message_ = login_message;
   RegisterAuthNotifications();
   ShowSigninTabModal(tab_contents);
@@ -282,7 +298,7 @@ ProfileSyncService* BrowserSignin::GetProfileSyncService() const {
 }
 
 BrowserSigninHtml* BrowserSignin::CreateHtmlDialogUI() {
-  return new BrowserSigninHtml(this, login_message_);
+  return new BrowserSigninHtml(this, suggested_email_, login_message_);
 }
 
 void BrowserSignin::RegisterAuthNotifications() {
