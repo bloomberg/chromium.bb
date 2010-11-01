@@ -150,7 +150,8 @@ bool UserCrosSettingsProvider::IsEmailInCachedWhitelist(
   return false;
 }
 
-void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
+void UserCrosSettingsProvider::DoSet(const std::string& path,
+                                     Value* in_value) {
   if (!UserManager::Get()->current_user_is_owner()) {
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
 

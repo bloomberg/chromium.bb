@@ -20,7 +20,6 @@ class MetricsCrosSettingsProvider : public CrosSettingsProvider {
   MetricsCrosSettingsProvider() {}
 
   // CrosSettingsProvider implementation.
-  virtual void Set(const std::string& path, Value* value);
   virtual bool Get(const std::string& path, Value** value) const;
   virtual bool HandlesSetting(const std::string& path);
 
@@ -31,6 +30,9 @@ class MetricsCrosSettingsProvider : public CrosSettingsProvider {
   static bool GetMetricsStatus();
 
  private:
+  // CrosSettingsProvider implementation.
+  virtual void DoSet(const std::string& path, Value* value);
+
   DISALLOW_COPY_AND_ASSIGN(MetricsCrosSettingsProvider);
 };
 

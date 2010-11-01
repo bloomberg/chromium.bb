@@ -15,8 +15,8 @@ namespace chromeos {
 
 CrosSettingsProviderProxy::CrosSettingsProviderProxy() { }
 
-void CrosSettingsProviderProxy::Set(const std::string& path,
-                                    Value* in_value) {
+void CrosSettingsProviderProxy::DoSet(const std::string& path,
+                                      Value* in_value) {
   if (!in_value) {
     return;
   }

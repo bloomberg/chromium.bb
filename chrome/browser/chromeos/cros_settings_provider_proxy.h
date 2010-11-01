@@ -16,11 +16,14 @@ namespace chromeos {
 class CrosSettingsProviderProxy : public CrosSettingsProvider {
  public:
   CrosSettingsProviderProxy();
-  virtual void Set(const std::string& path, Value* in_value);
+  // CrosSettingsProvider implementation.
   virtual bool Get(const std::string& path, Value** out_value) const;
   virtual bool HandlesSetting(const std::string& path);
 
  private:
+  // CrosSettingsProvider implementation.
+  virtual void DoSet(const std::string& path, Value* value);
+
   chromeos::ProxyConfigServiceImpl* GetConfigService() const;
 
   void AppendPortIfValid(

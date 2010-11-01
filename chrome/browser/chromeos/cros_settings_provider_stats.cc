@@ -17,7 +17,8 @@
 
 namespace chromeos {
 
-void MetricsCrosSettingsProvider::Set(const std::string& path, Value* value) {
+void MetricsCrosSettingsProvider::DoSet(const std::string& path,
+                                        Value* value) {
   DCHECK(path == kStatsReportingPref);
   bool enabled = false;
   CHECK(value->GetAsBoolean(&enabled));

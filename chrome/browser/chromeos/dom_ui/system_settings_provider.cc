@@ -67,7 +67,7 @@ SystemSettingsProvider::~SystemSettingsProvider() {
   STLDeleteElements(&timezones_);
 }
 
-void SystemSettingsProvider::Set(const std::string& path, Value* in_value) {
+void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
   if (path == kSystemTimezone) {
     string16 value;
     if (!in_value || !in_value->IsType(Value::TYPE_STRING) ||

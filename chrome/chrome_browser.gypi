@@ -410,6 +410,7 @@
         'browser/chromeos/cros_settings_names.cc',
         'browser/chromeos/cros_settings_names.h',
         'browser/chromeos/cros_settings_provider.h',
+        'browser/chromeos/cros_settings_provider.cc',
         'browser/chromeos/cros_settings_provider_proxy.cc',
         'browser/chromeos/cros_settings_provider_proxy.h',
         'browser/chromeos/cros_settings_provider_stats.cc',
