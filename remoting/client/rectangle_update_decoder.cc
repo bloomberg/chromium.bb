@@ -9,6 +9,7 @@
 #include "media/base/callback.h"
 #include "remoting/base/decoder.h"
 #include "remoting/base/decoder_row_based.h"
+#include "remoting/base/decoder_vp8.h"
 #include "remoting/base/tracer.h"
 #include "remoting/base/util.h"
 #include "remoting/client/frame_consumer.h"
@@ -46,7 +47,7 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
-void RectangleUpdateDecoder::DecodePacket(const RectangleUpdatePacket& packet,
+void RectangleUpdateDecoder::DecodePacket(const VideoPacket& packet,
                                           Task* done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
@@ -70,8 +71,8 @@ void RectangleUpdateDecoder::DecodePacket(const RectangleUpdatePacket& packet,
                       &RectangleUpdateDecoder::ProcessPacketData,
                       packet, done_runner.release());
 
-  if (packet.flags() | RectangleUpdatePacket::FIRST_PACKET) {
-    const RectangleFormat& format = packet.format();
+  if (packet.flags() | VideoPacket::FIRST_PACKET) {
+    const VideoPacketFormat& format = packet.format();
 
     InitializeDecoder(format, process_packet_data);
   } else {
@@ -81,8 +82,7 @@ void RectangleUpdateDecoder::DecodePacket(const RectangleUpdatePacket& packet,
 }
 
 void RectangleUpdateDecoder::ProcessPacketData(
-    const RectangleUpdatePacket& packet,
-    Task* done) {
+    const VideoPacket& packet, Task* done) {
   AutoTaskRunner done_runner(done);
 
   if (!decoder_->IsReadyForData()) {
@@ -92,9 +92,9 @@ void RectangleUpdateDecoder::ProcessPacketData(
   }
 
   TraceContext::tracer()->PrintString("Executing Decode.");
-  decoder_->DecodeBytes(packet.encoded_rect());
+  decoder_->DecodeBytes(packet.data());
 
-  if (packet.flags() | RectangleUpdatePacket::LAST_PACKET) {
+  if (packet.flags() | VideoPacket::LAST_PACKET) {
     decoder_->Reset();
 
     UpdatedRects* rects = new UpdatedRects();
@@ -109,39 +109,38 @@ void RectangleUpdateDecoder::ProcessPacketData(
 }
 
 // static
-bool RectangleUpdateDecoder::IsValidPacket(
-    const RectangleUpdatePacket& packet) {
+bool RectangleUpdateDecoder::IsValidPacket(const VideoPacket& packet) {
   if (!packet.IsInitialized()) {
     LOG(WARNING) << "Protobuf consistency checks fail.";
     return false;
   }
 
   // First packet must have a format.
-  if (packet.flags() | RectangleUpdatePacket::FIRST_PACKET) {
+  if (packet.flags() | VideoPacket::FIRST_PACKET) {
     if (!packet.has_format()) {
       LOG(WARNING) << "First packet must have format.";
       return false;
     }
 
     // TODO(ajwong): Verify that we don't need to whitelist encodings.
-    const RectangleFormat& format = packet.format();
+    const VideoPacketFormat& format = packet.format();
     if (!format.has_encoding() ||
-        format.encoding() == EncodingInvalid) {
+        format.encoding() == VideoPacketFormat::ENCODING_INVALID) {
       LOG(WARNING) << "Invalid encoding specified.";
       return false;
     }
   }
 
   // We shouldn't generate null packets.
-  if (!packet.has_encoded_rect()) {
-    LOG(WARNING) << "Packet w/o an encoded rectangle received.";
+  if (!packet.has_data()) {
+    LOG(WARNING) << "Packet w/o data received.";
     return false;
   }
 
   return true;
 }
 
-void RectangleUpdateDecoder::InitializeDecoder(const RectangleFormat& format,
+void RectangleUpdateDecoder::InitializeDecoder(const VideoPacketFormat& format,
                                                Task* done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
@@ -192,12 +191,15 @@ void RectangleUpdateDecoder::InitializeDecoder(const RectangleFormat& format,
     CHECK(decoder_->Encoding() == format.encoding());
   } else {
     // Initialize a new decoder based on this message encoding.
-    if (format.encoding() == EncodingNone) {
+    if (format.encoding() == VideoPacketFormat::ENCODING_VERBATIM) {
       TraceContext::tracer()->PrintString("Creating Verbatim decoder.");
       decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());
-    } else if (format.encoding() == EncodingZlib) {
+    } else if (format.encoding() == VideoPacketFormat::ENCODING_ZLIB) {
       TraceContext::tracer()->PrintString("Creating Zlib decoder");
       decoder_.reset(DecoderRowBased::CreateZlibDecoder());
+    } else if (format.encoding() == VideoPacketFormat::ENCODING_VP8) {
+      TraceContext::tracer()->PrintString("Creating VP8 decoder");
+      decoder_.reset(new DecoderVp8());
     } else {
       NOTREACHED() << "Invalid Encoding found: " << format.encoding();
     }

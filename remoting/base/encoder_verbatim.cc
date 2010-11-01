@@ -52,15 +52,14 @@ void EncoderVerbatim::EncodeRect(const gfx::Rect& rect, size_t rect_index) {
   const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
   const int row_size = bytes_per_pixel * rect.width();
 
-  ChromotingHostMessage* message = new ChromotingHostMessage();
-  RectangleUpdatePacket* update = message->mutable_rectangle_update();
-  PrepareUpdateStart(rect, update);
+  VideoPacket* packet = new VideoPacket();
+  PrepareUpdateStart(rect, packet);
 
   const uint8* in = capture_data_->data_planes().data[0] +
                     rect.y() * stride +
                     rect.x() * bytes_per_pixel;
   // TODO(hclam): Fill in the sequence number.
-  uint8* out = GetOutputBuffer(update, packet_size_);
+  uint8* out = GetOutputBuffer(packet, packet_size_);
   int total_bytes = 0;
   for (int y = 0; y < rect.height(); y++) {
     memcpy(out, in, row_size);
@@ -70,49 +69,36 @@ void EncoderVerbatim::EncodeRect(const gfx::Rect& rect, size_t rect_index) {
   }
 
   // We have reached the end of stream.
-  update->set_flags(update->flags() | RectangleUpdatePacket::LAST_PACKET);
+  packet->set_flags(packet->flags() | VideoPacket::LAST_PACKET);
 
   // If we have filled the message or we have reached the end of stream.
-  message->mutable_rectangle_update()->mutable_encoded_rect()->
-      resize(total_bytes);
-  SubmitMessage(message, rect_index);
+  packet->mutable_data()->resize(total_bytes);
+  SubmitMessage(packet, rect_index);
 }
 
 void EncoderVerbatim::PrepareUpdateStart(const gfx::Rect& rect,
-                                         RectangleUpdatePacket* update) {
+                                         VideoPacket* packet) {
 
-  update->set_flags(update->flags() | RectangleUpdatePacket::FIRST_PACKET);
-  RectangleFormat* format = update->mutable_format();
+  packet->set_flags(packet->flags() | VideoPacket::FIRST_PACKET);
+  VideoPacketFormat* format = packet->mutable_format();
 
   format->set_x(rect.x());
   format->set_y(rect.y());
   format->set_width(rect.width());
   format->set_height(rect.height());
-  format->set_encoding(EncodingNone);
+  format->set_encoding(VideoPacketFormat::ENCODING_VERBATIM);
   format->set_pixel_format(capture_data_->pixel_format());
 }
 
-uint8* EncoderVerbatim::GetOutputBuffer(RectangleUpdatePacket* update,
-                                        size_t size) {
-  update->mutable_encoded_rect()->resize(size);
+uint8* EncoderVerbatim::GetOutputBuffer(VideoPacket* packet, size_t size) {
+  packet->mutable_data()->resize(size);
   // TODO(ajwong): Is there a better way to do this at all???
   return const_cast<uint8*>(reinterpret_cast<const uint8*>(
-      update->mutable_encoded_rect()->data()));
+      packet->mutable_data()->data()));
 }
 
-void EncoderVerbatim::SubmitMessage(ChromotingHostMessage* message,
-                                    size_t rect_index) {
-  EncodingState state = EncodingInProgress;
-  const RectangleUpdatePacket& update = message->rectangle_update();
-  if (rect_index == 0 &&
-      (update.flags() | RectangleUpdatePacket::FIRST_PACKET)) {
-    state |= EncodingStarting;
-  }
-  if (rect_index == capture_data_->dirty_rects().size() - 1 &&
-      (update.flags() | RectangleUpdatePacket::LAST_PACKET)) {
-    state |= EncodingEnded;
-  }
-  callback_->Run(message, state);
+void EncoderVerbatim::SubmitMessage(VideoPacket* packet, size_t rect_index) {
+  callback_->Run(packet);
 }
 
 }  // namespace remoting

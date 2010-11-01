@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 #include "media/base/video_frame.h"
-#include "remoting/proto/event.pb.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
@@ -51,7 +51,7 @@ class Decoder {
   // Returns true if decoder is ready to accept data via ProcessRectangleData.
   virtual bool IsReadyForData() = 0;
 
-  virtual UpdateStreamEncoding Encoding() = 0;
+  virtual VideoPacketFormat::Encoding Encoding() = 0;
 };
 
 }  // namespace remoting

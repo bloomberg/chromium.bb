@@ -46,7 +46,7 @@ static void ReadString(MultipleArrayInputStream* input,
   scoped_array<char> buffer(new char[str.size() + 1]);
   buffer[str.size()] = '\0';
   EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
-  EXPECT_STREQ(str.c_str(), buffer.get());
+  EXPECT_STREQ(str.data(), buffer.get());
 }
 
 // Construct and prepare data in the |output_stream|.
@@ -69,7 +69,7 @@ static void PrepareData(scoped_ptr<MultipleArrayInputStream>* stream) {
   }
 
   MultipleArrayInputStream* mstream = new MultipleArrayInputStream();
-  const char* data = kTestData.c_str();
+  const char* data = kTestData.data();
   for (int i = 0; i < segments; ++i) {
     int size = i % 2 == 0 ? 1 : 2;
     mstream->AddBuffer(new net::StringIOBuffer(std::string(data, size)), size);

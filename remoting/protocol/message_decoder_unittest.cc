@@ -41,18 +41,8 @@ static void PrepareData(uint8** buffer, int* size) {
 
   // Then append 10 update sequences to the data.
   for (int i = 0; i < 10; ++i) {
-    msg.mutable_begin_update_stream();
-    AppendMessage(msg, &encoded_data);
-    msg.Clear();
-
-    msg.mutable_update_stream_packet()->mutable_rect_data()->
-        set_sequence_number(0);
-    msg.mutable_update_stream_packet()->mutable_rect_data()->
-        set_data(kTestData);
-    AppendMessage(msg, &encoded_data);
-    msg.Clear();
-
-    msg.mutable_end_update_stream();
+    msg.mutable_video_packet()->set_sequence_number(0);
+    msg.mutable_video_packet()->set_data(kTestData);
     AppendMessage(msg, &encoded_data);
     msg.Clear();
   }
@@ -90,30 +80,19 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   }
 
   // Then verify the decoded messages.
-  EXPECT_EQ(31u, message_list.size());
+  EXPECT_EQ(11u, message_list.size());
   EXPECT_TRUE(message_list.front()->has_init_client());
   delete message_list.front();
   message_list.pop_front();
 
-  int index = 0;
   for (std::list<ChromotingHostMessage*>::iterator it =
            message_list.begin();
        it != message_list.end(); ++it) {
     ChromotingHostMessage* message = *it;
-    int type = index % 3;
-    ++index;
-    if (type == 0) {
-      // Begin update stream.
-      EXPECT_TRUE(message->has_begin_update_stream());
-    } else if (type == 1) {
-      // Partial update stream.
-      EXPECT_TRUE(message->has_update_stream_packet());
-      EXPECT_EQ(kTestData,
-                message->update_stream_packet().rect_data().data());
-    } else if (type == 2) {
-      // End update stream.
-      EXPECT_TRUE(message->has_end_update_stream());
-    }
+    // Partial update stream.
+    EXPECT_TRUE(message->has_video_packet());
+    EXPECT_EQ(kTestData,
+              message->video_packet().data().data());
   }
   STLDeleteElements(&message_list);
 }

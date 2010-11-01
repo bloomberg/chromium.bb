@@ -48,6 +48,7 @@ bool EncoderVp8::Init(int width, int height) {
   vpx_codec_enc_cfg_t config;
   const vpx_codec_iface_t* algo =
       (const vpx_codec_iface_t*)media::GetVp8CxAlgoAddress();
+  CHECK(algo);
   vpx_codec_err_t ret = vpx_codec_enc_config_default(algo, &config, 0);
   if (ret != VPX_CODEC_OK)
     return false;
@@ -70,9 +71,19 @@ bool EncoderVp8::Init(int width, int height) {
   return true;
 }
 
+static int clip_byte(int x) {
+  if (x > 255)
+    return 255;
+  else if (x < 0)
+    return 0;
+  else
+    return x;
+}
+
 bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
+  const int plane_size = capture_data->width() * capture_data->height();
+
   if (!yuv_image_.get()) {
-    const int plane_size = capture_data->width() * capture_data->height();
 
     // YUV image size is 1.5 times of a plane. Multiplication is performed first
     // to avoid rounding error.
@@ -100,22 +111,36 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
 
   // And then do RGB->YUV conversion.
   // Currently we just produce the Y channel as the average of RGB. This will
-  // give a gray scale image after conversion.
-  // TODO(hclam): Implement the actual color space conversion.
-  DCHECK(capture_data->pixel_format() == PixelFormatRgb32)
+  // giv ae gray scale image after conversion.
+  // TODO(sergeyu): Move this code to a separate routine.
+  // TODO(sergeyu): Optimize this code.
+  DCHECK(capture_data->pixel_format() == PIXEL_FORMAT_RGB32)
       << "Only RGB32 is supported";
   uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
-  uint8* out = yuv_image_.get();
+  uint8* y_out = yuv_image_.get();
+  uint8* u_out = yuv_image_.get() + plane_size;
+  uint8* v_out = yuv_image_.get() + plane_size + plane_size / 4;
   const int out_stride = image_->stride[0];
   for (int i = 0; i < capture_data->height(); ++i) {
     for (int j = 0; j < capture_data->width(); ++j) {
       // Since the input pixel format is RGB32, there are 4 bytes per pixel.
       uint8* pixel = in + 4 * j;
-      out[j] = (pixel[0] + pixel[1] + pixel[2]) / 3;
+      y_out[j] = clip_byte(((pixel[0] * 66 + pixel[1] * 129 +
+                             pixel[2] * 25 + 128) >> 8) + 16);
+      if (i % 2 == 0 && j % 2 == 0) {
+        u_out[j / 2] = clip_byte(((pixel[0] * -38 + pixel[1] * -74 +
+                                   pixel[2] * 112 + 128) >> 8) + 128);
+        v_out[j / 2] = clip_byte(((pixel[0] * 112 + pixel[1] * -94 +
+                                   pixel[2] * -18 + 128) >> 8) + 128);
+      }
     }
     in += in_stride;
-    out += out_stride;
+    y_out += out_stride;
+    if (i % 2 == 0) {
+      u_out += out_stride / 2;
+      v_out += out_stride / 2;
+    }
   }
   return true;
 }
@@ -138,13 +163,10 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   vpx_codec_err_t ret = vpx_codec_encode(codec_.get(), image_.get(),
                                          last_timestamp_,
                                          1, 0, VPX_DL_REALTIME);
-  DCHECK(ret == VPX_CODEC_OK) << "Encoding error: "
-                              << vpx_codec_err_to_string(ret)
-                              << "\n"
-                              << "Details: "
-                              << vpx_codec_error(codec_.get())
-                              << "\n"
-                              << vpx_codec_error_detail(codec_.get());
+  DCHECK_EQ(ret, VPX_CODEC_OK)
+      << "Encoding error: " << vpx_codec_err_to_string(ret) << "\n"
+      << "Details: " << vpx_codec_error(codec_.get()) << "\n"
+      << vpx_codec_error_detail(codec_.get());
 
   // TODO(hclam): fix this.
   last_timestamp_ += 100;
@@ -155,16 +177,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
 
   // TODO(hclam): Make sure we get exactly one frame from the packet.
   // TODO(hclam): We should provide the output buffer to avoid one copy.
-  ChromotingHostMessage* message = new ChromotingHostMessage();
-  UpdateStreamPacketMessage* packet = message->mutable_update_stream_packet();
-
-  // Prepare the begin rect.
-  packet->mutable_begin_rect()->set_x(0);
-  packet->mutable_begin_rect()->set_y(0);
-  packet->mutable_begin_rect()->set_width(capture_data->width());
-  packet->mutable_begin_rect()->set_height(capture_data->height());
-  packet->mutable_begin_rect()->set_encoding(EncodingVp8);
-  packet->mutable_begin_rect()->set_pixel_format(PixelFormatYv12);
+  VideoPacket* message = new VideoPacket();
 
   while (!got_data) {
     const vpx_codec_cx_pkt_t* packet = vpx_codec_get_cx_data(codec_.get(),
@@ -175,7 +188,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     switch (packet->kind) {
       case VPX_CODEC_CX_FRAME_PKT:
         got_data = true;
-        message->mutable_update_stream_packet()->mutable_rect_data()->set_data(
+        message->set_data(
             packet->data.frame.buf, packet->data.frame.sz);
         break;
       default:
@@ -183,11 +196,15 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     }
   }
 
-  // Enter the end rect.
-  message->mutable_update_stream_packet()->mutable_end_rect();
-  data_available_callback->Run(
-      message,
-      EncodingStarting | EncodingInProgress | EncodingEnded);
+  message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
+  message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET);
+  message->mutable_format()->set_pixel_format(PIXEL_FORMAT_RGB32);
+  message->mutable_format()->set_x(0);
+  message->mutable_format()->set_y(0);
+  message->mutable_format()->set_width(capture_data->width());
+  message->mutable_format()->set_height(capture_data->height());
+
+  data_available_callback->Run(message);
   delete data_available_callback;
 }
 

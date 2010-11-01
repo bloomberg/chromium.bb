@@ -131,10 +131,10 @@ void ChromotingClient::DispatchMessage() {
     // TODO(ajwong): Change this to use a done callback.
     InitClient(msg->init_client(),
                NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
-  } else if (msg->has_rectangle_update()) {
+  } else if (msg->has_video_packet()) {
     ScopedTracer tracer("Handle Rectangle Update");
     rectangle_decoder_->DecodePacket(
-        msg->rectangle_update(),
+        msg->video_packet(),
         NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
   } else {
     NOTREACHED() << "Unknown message received";

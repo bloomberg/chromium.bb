@@ -47,7 +47,7 @@ void CapturerMac::ScreenConfigurationChanged() {
   width_ = CGDisplayPixelsWide(mainDevice);
   height_ = CGDisplayPixelsHigh(mainDevice);
   bytes_per_row_ = width_ * sizeof(uint32_t);
-  pixel_format_ = PixelFormatRgb32;
+  pixel_format_ = PIXEL_FORMAT_RGB32;
   size_t buffer_size = height() * bytes_per_row_;
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].reset(new uint8[buffer_size]);

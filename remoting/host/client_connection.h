@@ -64,8 +64,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   virtual void SendInitClientMessage(int width, int height);
 
   // Send encoded update stream data to the viewer.
-  virtual void SendUpdateStreamPacketMessage(
-      const ChromotingHostMessage& message);
+  virtual void SendVideoPacket(const VideoPacket& packet);
 
   // Gets the number of update stream messages not yet transmitted.
   // Note that the value returned is an estimate using average size of the

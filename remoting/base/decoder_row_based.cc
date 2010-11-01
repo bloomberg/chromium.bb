@@ -12,15 +12,17 @@
 namespace remoting {
 
 DecoderRowBased* DecoderRowBased::CreateZlibDecoder() {
-  return new DecoderRowBased(new DecompressorZlib(), EncodingZlib);
+  return new DecoderRowBased(new DecompressorZlib(),
+                             VideoPacketFormat::ENCODING_ZLIB);
 }
 
 DecoderRowBased* DecoderRowBased::CreateVerbatimDecoder() {
-  return new DecoderRowBased(new DecompressorVerbatim(), EncodingNone);
+  return new DecoderRowBased(new DecompressorVerbatim(),
+                             VideoPacketFormat::ENCODING_VERBATIM);
 }
 
 DecoderRowBased::DecoderRowBased(Decompressor* decompressor,
-                                 UpdateStreamEncoding encoding)
+                                 VideoPacketFormat::Encoding encoding)
     : state_(kUninitialized),
       decompressor_(decompressor),
       encoding_(encoding),
@@ -52,7 +54,7 @@ void DecoderRowBased::Initialize(scoped_refptr<media::VideoFrame> frame,
   // Make sure we are not currently initialized.
   CHECK_EQ(kUninitialized, state_);
 
-  if (static_cast<PixelFormat>(frame->format()) != PixelFormatRgb32) {
+  if (static_cast<PixelFormat>(frame->format()) != PIXEL_FORMAT_RGB32) {
     LOG(WARNING) << "DecoderRowBased only supports RGB32.";
     state_ = kError;
     return;

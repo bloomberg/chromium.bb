@@ -24,7 +24,7 @@ class DecoderRowBased : public Decoder {
   virtual void Initialize(scoped_refptr<media::VideoFrame> frame,
                           const gfx::Rect& clip, int bytes_per_src_pixel);
   virtual void DecodeBytes(const std::string& encoded_bytes);
-  virtual UpdateStreamEncoding Encoding() { return encoding_; }
+  virtual VideoPacketFormat::Encoding Encoding() { return encoding_; }
 
   // TODO(hclam): Should make this into the Decoder interface.
   // TODO(ajwong): Before putting into the interface, we should decide if the
@@ -32,7 +32,8 @@ class DecoderRowBased : public Decoder {
   void set_reverse_rows(bool reverse) { reverse_rows_ = reverse; }
 
  private:
-  DecoderRowBased(Decompressor* decompressor, UpdateStreamEncoding encoding);
+  DecoderRowBased(Decompressor* decompressor,
+                  VideoPacketFormat::Encoding encoding);
 
   enum State {
     kUninitialized,
@@ -53,7 +54,7 @@ class DecoderRowBased : public Decoder {
   scoped_ptr<Decompressor> decompressor_;
 
   // The encoding of the incoming stream.
-  UpdateStreamEncoding encoding_;
+  VideoPacketFormat::Encoding encoding_;
 
   // Number of bytes per pixel from source stream.
   int bytes_per_src_pixel_;
