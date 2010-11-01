@@ -33,8 +33,7 @@ namespace base {
 class ThreadRestrictions {
  public:
   // Constructing a ScopedAllowIO temporarily allows IO for the current
-  // thread.  Doing this is almost certainly always incorrect.  This object
-  // is available to temporarily work around bugs.
+  // thread.  Doing this is almost certainly always incorrect.
   class ScopedAllowIO {
    public:
     ScopedAllowIO() { previous_value_ = SetIOAllowed(true); }
