@@ -38,11 +38,6 @@ views::Window* BubbleWindow::Create(
   window->GetNonClientView()->SetFrameView(new BubbleFrameView(window, style));
   window->Init(parent, bounds);
 
-  chromeos::WmIpc::instance()->SetWindowType(
-      window->GetNativeView(),
-      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-      NULL);
-
   return window;
 }
 
