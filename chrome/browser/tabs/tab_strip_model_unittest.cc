@@ -1513,7 +1513,7 @@ TEST_F(TabStripModelTest, Apps) {
 #endif
   scoped_refptr<Extension> extension_app(new Extension(path,
                                                        Extension::INVALID));
-  extension_app->mutable_static_data_->launch_web_url = "http://www.google.com";
+  extension_app->launch_web_url_ = "http://www.google.com";
   TabContents* contents1 = CreateTabContents();
   contents1->SetExtensionApp(extension_app);
   TabContents* contents2 = CreateTabContents();
