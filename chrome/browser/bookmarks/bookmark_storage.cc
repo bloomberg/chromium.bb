@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/file_util_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
@@ -41,21 +42,6 @@ class BackupTask : public Task {
   const FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(BackupTask);
-};
-
-class FileDeleteTask : public Task {
- public:
-  explicit FileDeleteTask(const FilePath& path) : path_(path) {
-  }
-
-  virtual void Run() {
-    file_util::Delete(path_, true);
-  }
-
- private:
-  const FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileDeleteTask);
 };
 
 }  // namespace
@@ -244,8 +230,11 @@ void BookmarkStorage::OnLoadFinished(bool file_exists, const FilePath& path) {
     SaveNow();
 
     // Clean up after migration from history.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE, new FileDeleteTask(tmp_history_path_));
+    base::FileUtilProxy::Delete(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        tmp_history_path_,
+        false,
+        NULL);
   }
 }
 

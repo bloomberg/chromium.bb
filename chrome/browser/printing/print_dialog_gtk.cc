@@ -9,6 +9,7 @@
 #include <gtk/gtkpagesetupunixdialog.h>
 
 #include "base/file_util.h"
+#include "base/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
@@ -170,13 +171,11 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* job, GError* error) {
   if (job)
     g_object_unref(job);
 
-  {
-    // We should not be doing disk access from the UI thread!
-    // Temporarily allowing until we fix:
-    //   http://code.google.com/p/chromium/issues/detail?id=60988
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    file_util::Delete(path_to_pdf_, false);
-  }
+  base::FileUtilProxy::Delete(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      path_to_pdf_,
+      false,
+      NULL);
 
   delete this;
 }
