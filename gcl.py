@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -442,30 +442,16 @@ class ChangeInfo(object):
         ErrorExit("Changelist " + changename + " not found.")
       return ChangeInfo(changename, 0, 0, '', None, local_root,
                         needs_upload=False)
-    split_data = gclient_utils.FileRead(info_file, 'r').split(
-        ChangeInfo._SEPARATOR, 2)
-    if len(split_data) != 3:
+    content = gclient_utils.FileRead(info_file, 'r')
+    save = False
+    try:
+      values = ChangeInfo._LoadOldFormat(content)
+    except ValueError:
       ErrorExit(
           ('Changelist file %s is corrupt.\n'
            'Either run "gcl delete %s" or manually edit the file') % (
               info_file, changename))
-    items = split_data[0].split(', ')
-    issue = 0
-    patchset = 0
-    needs_upload = False
-    if items[0]:
-      issue = int(items[0])
-    if len(items) > 1:
-      patchset = int(items[1])
-    if len(items) > 2:
-      needs_upload = (items[2] == "dirty")
-    files = []
-    for line in split_data[1].splitlines():
-      status = line[:7]
-      filename = line[7:]
-      files.append((status, filename))
-    description = split_data[2]
-    save = False
+    files = values['files']
     if update_status:
       for item in files[:]:
         filename = os.path.join(local_root, item[1])
@@ -479,11 +465,37 @@ class ChangeInfo(object):
         if status != item[0]:
           save = True
           files[files.index(item)] = (status, item[1])
-    change_info = ChangeInfo(changename, issue, patchset, description, files,
-                             local_root, needs_upload)
+    change_info = ChangeInfo(changename, values['issue'], values['patchset'],
+                             values['description'], files,
+                             local_root, values['needs_upload'])
     if save:
       change_info.Save()
     return change_info
+
+  @staticmethod
+  def _LoadOldFormat(content):
+    split_data = content.split(ChangeInfo._SEPARATOR, 2)
+    if len(split_data) != 3:
+      raise ValueError('Bad change format')
+    values = {
+      'issue': 0,
+      'patchset': 0,
+      'needs_upload': False,
+      'files': [],
+    }
+    items = split_data[0].split(', ')
+    if items[0]:
+      values['issue'] = int(items[0])
+    if len(items) > 1:
+      values['patchset'] = int(items[1])
+    if len(items) > 2:
+      values['needs_upload'] = (items[2] == "dirty")
+    for line in split_data[1].splitlines():
+      status = line[:7]
+      filename = line[7:]
+      values['files'].append((status, filename))
+    values['description'] = split_data[2]
+    return values
 
 
 def GetChangelistInfoFile(changename):
