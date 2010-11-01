@@ -32,10 +32,14 @@ cr.define('options', function() {
         $('aboutPageMoreInfo').classList.remove('hidden');
       };
 
-      $('channelSelect').onchange = function(event) {
-        var channel = event.target.value;
-        chrome.send('SetReleaseTrack', [channel]);
-      };
+      if (cr.commandLine.options['--bwsi']) {
+        $('channelSelect').disabled = true;
+      } else {
+        $('channelSelect').onchange = function(event) {
+          var channel = event.target.value;
+          chrome.send('SetReleaseTrack', [channel]);
+        };
+      }
 
       // Notify the handler that the page is ready.
       chrome.send('PageReady');
