@@ -109,9 +109,11 @@ void SpeexEncoder::Encode(const short* samples,
 
 SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    int caller_id,
+                                   const std::string& language,
                                    const std::string& grammar)
     : delegate_(delegate),
       caller_id_(caller_id),
+      language_(language),
       grammar_(grammar),
       encoder_(new SpeexEncoder()),
       endpointer_(kAudioSampleRate),
@@ -210,10 +212,11 @@ void SpeechRecognizer::StopRecording() {
        it != audio_buffers_.end(); it++) {
     data.append(*(*it));
   }
+
   DCHECK(!request_.get());
   request_.reset(new SpeechRecognitionRequest(
       Profile::GetDefaultRequestContext(), this));
-  request_->Send(grammar_, kContentTypeSpeex, data);
+  request_->Send(language_, grammar_, kContentTypeSpeex, data);
   ReleaseAudioBuffers();  // No need to keep the audio anymore.
 }
 
