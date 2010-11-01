@@ -114,8 +114,15 @@ class OutputApi(object):
       if len(self._items) > 0:
         output_stream.write('  ' + ' \\\n  '.join(map(str, self._items)) + '\n')
       if self._long_text:
+        # Sometimes self._long_text is a ascii string, a codepage string
+        # (on windows), or a unicode object.
+        try:
+          long_text = self._long_text.decode()
+        except UnicodeDecodeError:
+          long_text = self._long_text.decode('ascii', 'replace')
+
         output_stream.write('\n***************\n%s\n***************\n' %
-                            self._long_text.encode('ascii', 'replace'))
+            long_text)
 
       if self.ShouldPrompt() and may_prompt:
         if not PromptYesNo(input_stream, output_stream,
