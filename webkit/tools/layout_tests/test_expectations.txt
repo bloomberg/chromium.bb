@@ -24,3 +24,4 @@ BUG61406 : svg/dynamic-updates/SVGFEColorMatrixElement-svgdom-values-prop.html =
 BUG61406 : svg/dynamic-updates/SVGFEColorMatrixElement-svgdom-type-prop.html = IMAGE
 BUG61406 : svg/dynamic-updates/SVGFETurbulenceElement-svgdom-baseFrequency-prop.html = IMAGE
 BUG61406 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = IMAGE
+BUGWK71000 MAC : canvas/philip/tests/2d.imageData.get.source.negative.html = TEXT
