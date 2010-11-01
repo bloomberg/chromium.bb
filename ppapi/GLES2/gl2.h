@@ -5,7 +5,7 @@
 #ifndef __gl2_h_
 #define __gl2_h_
 
-#include "../c/dev/ppb_opengles_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 /*
  * This document is licensed under the SGI Free Software B License Version
  * 2.0. For details, see http://oss.sgi.com/projects/FreeB/ .

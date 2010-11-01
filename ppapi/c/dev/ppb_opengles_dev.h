@@ -9,7 +9,7 @@
 #ifndef PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 #define PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 
-#include "../../GLES2/khrplatform.h"
+#include "ppapi/GLES2/khrplatform.h"
 
 #define PPB_OPENGLES_DEV_INTERFACE "PPB_OpenGLES(Dev);2.0"
 
