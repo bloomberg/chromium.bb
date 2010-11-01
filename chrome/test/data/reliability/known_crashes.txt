@@ -111,6 +111,3 @@ PREFIX: windowdragresponsetask::run___messageloop::runtask
 
 # 31936
 PREFIX: webcore::uniscribehelpertextrun::uniscribehelpertextrun___webcore::font::floatwidthforcomplextext___webcore::font::floatwidth___webcore::renderimage::setimagesizeforalttext
-
-# 59560
-PREFIX: v8::internal::gethiddenproperties___v8::object::gethiddenvalue___webcore::dateextension::setallowsleep
