@@ -55,6 +55,7 @@ class BasicSourceLineResolver : public SourceLineResolverBase {
   using SourceLineResolverBase::LoadModule;
   using SourceLineResolverBase::LoadModuleUsingMapBuffer;
   using SourceLineResolverBase::LoadModuleUsingMemoryBuffer;
+  using SourceLineResolverBase::ShouldDeleteMemoryBufferAfterLoadModule;
   using SourceLineResolverBase::UnloadModule;
   using SourceLineResolverBase::HasModule;
   using SourceLineResolverBase::FillSourceLineInfo;
@@ -72,16 +73,6 @@ class BasicSourceLineResolver : public SourceLineResolverBase {
   struct Function;
   // Module implements SourceLineResolverBase::Module interface.
   class Module;
-
-  // Helper methods to manage C-String format symbol data.
-  // See "google_breakpad/processor/source_line_resolver_base.h" for more
-  // comments about these helper methods.
-  virtual void DeleteDataAfterLoad(char *symbol_data);
-  // No-op helper methods.
-  virtual void DeleteDataUnload(const CodeModule *module) { }
-  virtual void ClearLocalMemory() { }
-  virtual void StoreDataBeforeLoad(const CodeModule *module,
-                                   char *symbol_data) { }
 
   // Disallow unwanted copy ctor and assignment operator
   BasicSourceLineResolver(const BasicSourceLineResolver&);

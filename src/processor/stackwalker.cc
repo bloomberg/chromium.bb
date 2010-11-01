@@ -116,6 +116,9 @@ bool Stackwalker::Walk(CallStack *stack) {
             case SymbolSupplier::INTERRUPT:
               return false;
           }
+          // Inform symbol supplier to free the unused data memory buffer.
+          if (resolver_->ShouldDeleteMemoryBufferAfterLoadModule())
+            supplier_->FreeSymbolData(module);
         }
         resolver_->FillSourceLineInfo(frame.get());
       }

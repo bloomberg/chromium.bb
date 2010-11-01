@@ -67,8 +67,14 @@ class SourceLineResolverInterface {
   // Add an interface to load symbol using C-String data insteading string.
   // This is useful in the optimization design for avoiding unnecessary copying
   // of symbol data, in order to improve memory efficiency.
+  // LoadModuleUsingMemoryBuffer() does NOT take ownership of memory_buffer.
   virtual bool LoadModuleUsingMemoryBuffer(const CodeModule *module,
                                            char *memory_buffer) = 0;
+
+  // Return true if the memory buffer should be deleted immediately after
+  // LoadModuleUsingMemoryBuffer(). Return false if the memory buffer has to be
+  // alive during the lifetime of the corresponding Module.
+  virtual bool ShouldDeleteMemoryBufferAfterLoadModule() = 0;
 
   // Request that the specified module be unloaded from this resolver.
   // A resolver may choose to ignore such a request.
@@ -79,7 +85,7 @@ class SourceLineResolverInterface {
 
   // Fills in the function_base, function_name, source_file_name,
   // and source_line fields of the StackFrame.  The instruction and
-  // module_name fields must already be filled in.  
+  // module_name fields must already be filled in.
   virtual void FillSourceLineInfo(StackFrame *frame) = 0;
 
   // If Windows stack walking information is available covering
@@ -87,7 +93,7 @@ class SourceLineResolverInterface {
   // describing it. If the information is not available, returns NULL.
   // A NULL return value does not indicate an error. The caller takes
   // ownership of any returned WindowsFrameInfo object.
-  virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) = 0; 
+  virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame) = 0;
 
   // If CFI stack walking information is available covering ADDRESS,
   // return a CFIFrameInfo structure describing it. If the information

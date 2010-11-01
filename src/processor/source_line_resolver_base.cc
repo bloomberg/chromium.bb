@@ -53,6 +53,7 @@ namespace google_breakpad {
 SourceLineResolverBase::SourceLineResolverBase(
     ModuleFactory *module_factory)
   : modules_(new ModuleMap),
+    memory_buffers_(new MemoryMap),
     module_factory_(module_factory) {
 }
 
@@ -65,19 +66,16 @@ SourceLineResolverBase::~SourceLineResolverBase() {
   }
   // Delete the map of modules.
   delete modules_;
+
+  MemoryMap::iterator iter = memory_buffers_->begin();
+  for (; iter != memory_buffers_->end(); ++iter) {
+    delete [] iter->second;
+  }
+  // Delete the map of memory buffers.
+  delete memory_buffers_;
+
   delete module_factory_;
-
-  // Helper method to be specified by subclasses.
-  ClearLocalMemory();
 }
-
-// Helper methods to be specified by subclasses.
-void SourceLineResolverBase::StoreDataBeforeLoad(const CodeModule *module,
-                                                 char *symbol_data) { }
-void SourceLineResolverBase::DeleteDataAfterLoad(char *symbol_data) { }
-void SourceLineResolverBase::DeleteDataUnload(const CodeModule *module) { }
-void SourceLineResolverBase::ClearLocalMemory() { }
-
 
 bool SourceLineResolverBase::ReadSymbolFile(char **symbol_data,
                                             const string &map_file) {
@@ -100,7 +98,7 @@ bool SourceLineResolverBase::ReadSymbolFile(char **symbol_data,
 
   // Allocate memory for file contents, plus a null terminator
   // since we may use strtok() on the contents.
-  *symbol_data = reinterpret_cast<char*>(operator new(file_size + 1));
+  *symbol_data = new char[file_size + 1];
 
   if (*symbol_data == NULL) {
     BPLOG(ERROR) << "Could not allocate memory for " << map_file;
@@ -115,7 +113,7 @@ bool SourceLineResolverBase::ReadSymbolFile(char **symbol_data,
     int error_code = ErrnoString(&error_string);
     BPLOG(ERROR) << "Could not open " << map_file <<
         ", error " << error_code << ": " << error_string;
-    delete (*symbol_data);
+    delete [] (*symbol_data);
     *symbol_data = NULL;
     return false;
   }
@@ -131,7 +129,7 @@ bool SourceLineResolverBase::ReadSymbolFile(char **symbol_data,
     int error_code = ErrnoString(&error_string);
     BPLOG(ERROR) << "Could not slurp " << map_file <<
         ", error " << error_code << ": " << error_string;
-    delete (*symbol_data);
+    delete [] (*symbol_data);
     *symbol_data = NULL;
     return false;
   }
@@ -161,59 +159,80 @@ bool SourceLineResolverBase::LoadModule(const CodeModule *module,
 
   BPLOG(INFO) << "Read symbol file " << map_file << " succeeded";
 
-  // Invoke helper method, let the concrete subclass decides its own action.
-  StoreDataBeforeLoad(module, memory_buffer);
+  bool load_result = LoadModuleUsingMemoryBuffer(module, memory_buffer);
 
-  return LoadModuleUsingMemoryBuffer(module, memory_buffer);
+  if (load_result && !ShouldDeleteMemoryBufferAfterLoadModule()) {
+    // memory_buffer has to stay alive as long as the module.
+    memory_buffers_->insert(make_pair(module->code_file(), memory_buffer));
+  } else {
+    delete [] memory_buffer;
+  }
+
+  return load_result;
 }
 
 bool SourceLineResolverBase::LoadModuleUsingMapBuffer(
     const CodeModule *module, const string &map_buffer) {
-  char *memory_buffer = reinterpret_cast<char*>(
-      operator new(map_buffer.size() + 1));
-  if (memory_buffer == NULL)
+  if (module == NULL)
     return false;
-
-  // Can't use strcpy, as the data may contain '\0's before the end.
-  memcpy(memory_buffer, map_buffer.c_str(), map_buffer.size());
-  memory_buffer[map_buffer.size()] = '\0';
-
-  // Invoke helper method, let the concrete subclass decides its own action.
-  StoreDataBeforeLoad(module, memory_buffer);
-
-  return LoadModuleUsingMemoryBuffer(module, memory_buffer);
-}
-
-bool SourceLineResolverBase::LoadModuleUsingMemoryBuffer(
-    const CodeModule *module, char *memory_buffer) {
-  if (!module) {
-    // Invoke helper method, let the concrete subclass decides its own action.
-    DeleteDataAfterLoad(memory_buffer);
-    return false;
-  }
 
   // Make sure we don't already have a module with the given name.
   if (modules_->find(module->code_file()) != modules_->end()) {
     BPLOG(INFO) << "Symbols for module " << module->code_file()
                 << " already loaded";
-    DeleteDataAfterLoad(memory_buffer);
+    return false;
+  }
+
+  char *memory_buffer = new char[map_buffer.size() + 1];
+  if (memory_buffer == NULL) {
+    BPLOG(ERROR) << "Could not allocate memory for " << module->code_file();
+    return false;
+  }
+
+  // Can't use strcpy, as the data may contain '\0's before the end.
+  memcpy(memory_buffer, map_buffer.c_str(), map_buffer.size());
+  memory_buffer[map_buffer.size()] = '\0';
+
+  bool load_result = LoadModuleUsingMemoryBuffer(module, memory_buffer);
+
+  if (load_result && !ShouldDeleteMemoryBufferAfterLoadModule()) {
+    // memory_buffer has to stay alive as long as the module.
+    memory_buffers_->insert(make_pair(module->code_file(), memory_buffer));
+  } else {
+    delete [] memory_buffer;
+  }
+
+  return load_result;
+}
+
+bool SourceLineResolverBase::LoadModuleUsingMemoryBuffer(
+    const CodeModule *module, char *memory_buffer) {
+  if (!module)
+    return false;
+
+  // Make sure we don't already have a module with the given name.
+  if (modules_->find(module->code_file()) != modules_->end()) {
+    BPLOG(INFO) << "Symbols for module " << module->code_file()
+                << " already loaded";
     return false;
   }
 
   BPLOG(INFO) << "Loading symbols for module " << module->code_file()
-             << " from buffer";
+             << " from memory buffer";
 
   Module *basic_module = module_factory_->CreateModule(module->code_file());
 
   // Ownership of memory is NOT transfered to Module::LoadMapFromMemory().
   if (!basic_module->LoadMapFromMemory(memory_buffer)) {
     delete basic_module;
-    DeleteDataAfterLoad(memory_buffer);
     return false;
   }
 
   modules_->insert(make_pair(module->code_file(), basic_module));
-  DeleteDataAfterLoad(memory_buffer);
+  return true;
+}
+
+bool SourceLineResolverBase::ShouldDeleteMemoryBufferAfterLoadModule() {
   return true;
 }
 
@@ -228,7 +247,16 @@ void SourceLineResolverBase::UnloadModule(const CodeModule *code_module) {
     modules_->erase(iter);
   }
 
-  DeleteDataUnload(code_module);
+  if (ShouldDeleteMemoryBufferAfterLoadModule()) {
+    // No-op.  Because we never store any memory buffers.
+  } else {
+    // There may be a buffer stored locally, we need to find and delete it.
+    MemoryMap::iterator iter = memory_buffers_->find(code_module->code_file());
+    if (iter != memory_buffers_->end()) {
+      delete [] iter->second;
+      memory_buffers_->erase(iter);
+    }
+  }
 }
 
 bool SourceLineResolverBase::HasModule(const CodeModule *module) {

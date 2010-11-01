@@ -107,11 +107,32 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetCStringSymbolData(
 
   if (s == FOUND) {
     unsigned int size = symbol_data_string.size() + 1;
-    *symbol_data = reinterpret_cast<char*>(operator new(size));
+    *symbol_data = new char[size];
+    if (*symbol_data == NULL) {
+      BPLOG(ERROR) << "Memory allocation for size " << size << " failed";
+      return INTERRUPT;
+    }
     memcpy(*symbol_data, symbol_data_string.c_str(), size - 1);
     (*symbol_data)[size - 1] = '\0';
+    memory_buffers_.insert(make_pair(module->code_file(), *symbol_data));
   }
   return s;
+}
+
+void SimpleSymbolSupplier::FreeSymbolData(const CodeModule *module) {
+  if (!module) {
+    BPLOG(INFO) << "Cannot free symbol data buffer for NULL module";
+    return;
+  }
+
+  map<string, char *>::iterator it = memory_buffers_.find(module->code_file());
+  if (it == memory_buffers_.end()) {
+    BPLOG(INFO) << "Cannot find symbol data buffer for module "
+                << module->code_file();
+    return;
+  }
+  delete [] it->second;
+  memory_buffers_.erase(it);
 }
 
 SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFileAtPathFromRoot(

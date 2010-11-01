@@ -54,26 +54,8 @@ namespace google_breakpad {
 FastSourceLineResolver::FastSourceLineResolver()
   : SourceLineResolverBase(new FastModuleFactory) { }
 
-void FastSourceLineResolver::ClearLocalMemory() {
-  for (MemoryMap::iterator it = memory_chunks_.begin();
-       it != memory_chunks_.end();
-       ++it) {
-    delete it->second;
-  }
-}
-
-void FastSourceLineResolver::DeleteDataUnload(const CodeModule *module) {
-  if (module) {
-    MemoryMap::iterator iter = memory_chunks_.find(module->code_file());
-    if (iter != memory_chunks_.end()) {
-      delete iter->second;
-    }
-  }
-}
-
-void FastSourceLineResolver::StoreDataBeforeLoad(const CodeModule *module,
-                                                 char *symbol_data) {
-  memory_chunks_.insert(make_pair(module->code_file(), symbol_data));
+bool FastSourceLineResolver::ShouldDeleteMemoryBufferAfterLoadModule() {
+  return false;
 }
 
 void FastSourceLineResolver::Module::LookupAddress(StackFrame *frame) const {

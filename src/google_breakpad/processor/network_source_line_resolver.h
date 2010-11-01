@@ -84,6 +84,10 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
   virtual bool LoadModuleUsingMemoryBuffer(const CodeModule *module,
                                            char *memory_buffer);
 
+  // It doesn't matter whether returns true or false, since no memory buffer
+  // will be allocated in GetCStringSymbolData().
+  virtual bool ShouldDeleteMemoryBufferAfterLoadModule() { return true; }
+
   void UnloadModule(const CodeModule *module);
 
   virtual bool HasModule(const CodeModule *module);
@@ -111,6 +115,11 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
                                             const SystemInfo *system_info,
                                             string *symbol_file,
                                             char **symbol_data);
+
+  // Delete the data buffer allocated in GetCStringSymbolData().
+  // Since the above GetCStringSymbolData() won't allocate any memory at all,
+  // this method is no-op.
+  virtual void FreeSymbolData(const CodeModule *module) { }
 
  private:
   int wait_milliseconds_;

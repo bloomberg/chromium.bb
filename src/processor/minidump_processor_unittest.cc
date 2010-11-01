@@ -36,6 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <utility>
 
 #include "breakpad_googletest_includes.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
@@ -118,11 +119,14 @@ class TestSymbolSupplier : public SymbolSupplier {
                                             string *symbol_file,
                                             char **symbol_data);
 
+  virtual void FreeSymbolData(const CodeModule *module);
+
   // When set to true, causes the SymbolSupplier to return INTERRUPT
   void set_interrupt(bool interrupt) { interrupt_ = interrupt; }
 
  private:
   bool interrupt_;
+  map<string, char *> memory_buffers_;
 };
 
 SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
@@ -181,11 +185,25 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetCStringSymbolData(
                                                  &symbol_data_string);
   if (s == FOUND) {
     unsigned int size = symbol_data_string.size() + 1;
-    *symbol_data = reinterpret_cast<char*>(operator new(size));
+    *symbol_data = new char[size];
+    if (*symbol_data == NULL) {
+      BPLOG(ERROR) << "Memory allocation failed for module: "
+                   << module->code_file() << " size: " << size;
+      return INTERRUPT;
+    }
     strcpy(*symbol_data, symbol_data_string.c_str());
+    memory_buffers_.insert(make_pair(module->code_file(), *symbol_data));
   }
 
   return s;
+}
+
+void TestSymbolSupplier::FreeSymbolData(const CodeModule *module) {
+  map<string, char *>::iterator it = memory_buffers_.find(module->code_file());
+  if (it != memory_buffers_.end()) {
+    delete [] it->second;
+    memory_buffers_.erase(it);
+  }
 }
 
 // A mock symbol supplier that always returns NOT_FOUND; one current
@@ -204,6 +222,7 @@ class MockSymbolSupplier : public SymbolSupplier {
                                                   const SystemInfo*,
                                                   string*,
                                                   char**));
+  MOCK_METHOD1(FreeSymbolData, void(const CodeModule*));
 };
 
 class MinidumpProcessorTest : public ::testing::Test {

@@ -73,34 +73,12 @@ class SourceLineResolverBase : public SourceLineResolverInterface {
                                         const string &map_buffer);
   virtual bool LoadModuleUsingMemoryBuffer(const CodeModule *module,
                                            char *memory_buffer);
+  virtual bool ShouldDeleteMemoryBufferAfterLoadModule();
   virtual void UnloadModule(const CodeModule *module);
   virtual bool HasModule(const CodeModule *module);
   virtual void FillSourceLineInfo(StackFrame *frame);
   virtual WindowsFrameInfo *FindWindowsFrameInfo(const StackFrame *frame);
   virtual CFIFrameInfo *FindCFIFrameInfo(const StackFrame *frame);
-
-  // Helper methods to manage C-String format symbol data.
-  // These methods are defined as no-op by default.
-  //
-  // StoreDataBeforeLoad() will be called in LoadModule() and
-  // LoadModuleUsingMapBuffer() to let subclass decide whether or how to store
-  // the dynamicly allocated memory data, before passing the data to
-  // LoadModuleUsingMemoryBuffer() which actually loads the module.
-  virtual void StoreDataBeforeLoad(const CodeModule *module, char *symbol_data);
-
-  // DeleteDataAfterLoad() will be called at the end of
-  // LoadModuleUsingMemoryBuffer() to let subclass decide whether to delete the
-  // allocated memory data or not (which depends on whether the subclass has
-  // ownership of the data or not).
-  virtual void DeleteDataAfterLoad(char *symbol_data);
-
-  // DeleteDataUnload() will be called in UnloadModule() to let subclass clean
-  // up dynamicly allocated data associated with the module, if there is any.
-  virtual void DeleteDataUnload(const CodeModule *module);
-
-  // ClearLocalMemory() will be called in destructor to let subclass clean up
-  // all local memory data it owns, if there is any.
-  virtual void ClearLocalMemory();
 
   // Nested structs and classes.
   struct Line;
@@ -113,9 +91,13 @@ class SourceLineResolverBase : public SourceLineResolverInterface {
   class Module;
   class AutoFileCloser;
 
-  // All of the modules we've loaded
+  // All of the modules that are loaded.
   typedef map<string, Module*, CompareString> ModuleMap;
   ModuleMap *modules_;
+
+  // All of heap-allocated buffers that are owned locally by resolver.
+  typedef std::map<string, char*, CompareString> MemoryMap;
+  MemoryMap *memory_buffers_;
 
   // Creates a concrete module at run-time.
   ModuleFactory *module_factory_;

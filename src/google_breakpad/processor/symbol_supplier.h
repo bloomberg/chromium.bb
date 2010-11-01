@@ -76,14 +76,21 @@ class SymbolSupplier {
                                      string *symbol_file,
                                      string *symbol_data) = 0;
 
-  // Same as above, except places symbol data into symbol_data as C-string in
-  // dynamically allocated memory. Using C-string as type of symbol data enables
-  // passing data by pointer, and thus avoids unncessary copying of data (to
-  // improve memory efficiency).
+  // Same as above, except allocates data buffer on heap and then places the
+  // symbol data into the buffer as C-string.
+  // SymbolSupplier is responsible for deleting the data buffer. After the call
+  // to GetCStringSymbolData(), the caller should call FreeSymbolData(const
+  // Module *module) once the data buffer is no longer needed.
+  // If symbol_data is not NULL, symbol supplier won't return FOUND unless it
+  // returns a valid buffer in symbol_data, e.g., returns INTERRUPT on memory
+  // allocation failure.
   virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
                                             const SystemInfo *system_info,
                                             string *symbol_file,
                                             char **symbol_data) = 0;
+
+  // Frees the data buffer allocated for the module in GetCStringSymbolData.
+  virtual void FreeSymbolData(const CodeModule *module) = 0;
 };
 
 }  // namespace google_breakpad

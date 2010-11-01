@@ -84,18 +84,10 @@ class FastSourceLineResolver : public SourceLineResolverBase {
   // Deserialize raw memory data to construct a WindowsFrameInfo object.
   static WindowsFrameInfo CopyWFI(const char *raw_memory);
 
-  // Helper methods to manage C-String format symbol data.
-  // See "google_breakpad/processor/source_line_resolver_base.h" for more
-  // comments about these helper methods.
-  virtual void StoreDataBeforeLoad(const CodeModule *module, char *symbol_data);
-  virtual void DeleteDataUnload(const CodeModule *module);
-  virtual void ClearLocalMemory();
-  // No-op helper method.
-  virtual void DeleteDataAfterLoad(char *symbol_data) { }
-
-  // Store memory data allocated in LoadModule and LoadModuleUsingMapBuffer.
-  typedef std::map<string, char*, CompareString> MemoryMap;
-  MemoryMap memory_chunks_;
+  // FastSourceLineResolver requires the memory buffer stays alive during the
+  // lifetime of a corresponding module, therefore it needs to redefine this
+  // virtual method.
+  virtual bool ShouldDeleteMemoryBufferAfterLoadModule();
 
   // Disallow unwanted copy ctor and assignment operator
   FastSourceLineResolver(const FastSourceLineResolver&);

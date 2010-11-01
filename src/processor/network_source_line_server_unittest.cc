@@ -93,6 +93,7 @@ public:
                                                   const SystemInfo *system_info,
                                                   string *symbol_file,
                                                   char **symbol_data));
+  MOCK_METHOD1(FreeSymbolData, void(const CodeModule *module));
 };
 
 class MockSourceLineResolver : public SourceLineResolverInterface {
@@ -106,6 +107,7 @@ class MockSourceLineResolver : public SourceLineResolverInterface {
                                               const string &map_buffer));
   MOCK_METHOD2(LoadModuleUsingMemoryBuffer, bool(const CodeModule *module,
                                                  char *memory_buffer));
+  MOCK_METHOD0(ShouldDeleteMemoryBufferAfterLoadModule, bool());
   MOCK_METHOD1(UnloadModule, void(const CodeModule *module));
   MOCK_METHOD1(HasModule, bool(const CodeModule *module));
   MOCK_METHOD1(FillSourceLineInfo, void(StackFrame *frame));

@@ -60,11 +60,6 @@ static const char *kWhitespace = " \r\n";
 BasicSourceLineResolver::BasicSourceLineResolver() :
     SourceLineResolverBase(new BasicModuleFactory) { }
 
-void BasicSourceLineResolver::DeleteDataAfterLoad(char *symbol_data) {
-  // Always delete allocated memory after loading symbol.
-  delete symbol_data;
-}
-
 bool BasicSourceLineResolver::Module::LoadMapFromMemory(char *memory_buffer) {
   linked_ptr<Function> cur_func;
   int line_number = 0;

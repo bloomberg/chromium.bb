@@ -32,6 +32,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <utility>
 
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/minidump.h"
@@ -49,7 +50,7 @@ using google_breakpad::PathnameStripper;
 using google_breakpad::SymbolSupplier;
 using google_breakpad::SystemInfo;
 
-OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir, 
+OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir,
                                                const string &symbol_search_dir)
   : search_dir_(search_dir) {
   NSFileManager *mgr = [NSFileManager defaultManager];
@@ -169,8 +170,25 @@ OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule *module,
                                                       system_info,
                                                       symbol_file,
                                                       &symbol_data_string);
-  strcpy(*symbol_data, symbol_data_string.c_str());
+  if (result == FOUND) {
+    unsigned int size = symbol_data_string.size() + 1;
+    *symbol_data = new char[size];
+    if (*symbol_data == NULL) {
+      // Should return INTERRUPT on memory allocation failure.
+      return INTERRUPT;
+    }
+    strcpy(*symbol_data, symbol_data_string.c_str());
+    memory_buffers_.insert(make_pair(module->code_file(), *symbol_data);
+  }
   return result;
+}
+
+void OnDemandSymbolSupplier::FreeSymbolData(const CodeModule *module) {
+  map<string, char *>::iterator it = memory_buffers_.find(module->code_file());
+  if (it != memory_buffers_.end()) {
+    delete [] it->second;
+    memory_buffers_.erase(it);
+  }
 }
 
 string OnDemandSymbolSupplier::GetLocalModulePath(const CodeModule *module) {
@@ -281,9 +299,9 @@ bool OnDemandSymbolSupplier::GenerateSymbolFile(const CodeModule *module,
         } else {
           printf("Unable to open %s (%d)\n", name.c_str(), errno);
           result = false;
-        } 
+        }
       } else {
-        printf("Architecture %s not available for %s\n", 
+        printf("Architecture %s not available for %s\n",
                system_info->cpu.c_str(), name.c_str());
         result = false;
       }
