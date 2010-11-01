@@ -2,7 +2,12 @@
 <head>
 <script>
 window.onload = function() {
-  chrome.extension.getBackgroundPage().relativePageLoaded();
+  chrome.extension.getViews({type:"tab"}).forEach(function(view) {
+    if (view.relativePageLoaded) {
+      view.relativePageLoaded();
+      break;
+    }
+  });
 }
 </script>
 </head>
