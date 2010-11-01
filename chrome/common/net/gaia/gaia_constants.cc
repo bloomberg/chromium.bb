@@ -12,6 +12,8 @@ namespace GaiaConstants {
 const char kChromeOSSource[] = "chromeos";
 const char kChromeSource[] = "ChromiumBrowser";
 
+// Service name for Gaia.  Used to convert to cookie auth.
+const char kGaiaService[] = "gaia";
 // Service name for Gaia Contacts API. API is used to get user's image.
 const char kContactsService[] = "cp";
 // Service name for sync.

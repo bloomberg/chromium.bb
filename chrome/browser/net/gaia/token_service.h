@@ -173,7 +173,7 @@ class TokenService : public GaiaAuthConsumer,
   GaiaAuthConsumer::ClientLoginResult credentials_;
 
   // Size of array of services (must be defined here).
-  static const int kNumServices = 3;
+  static const int kNumServices = 4;
   // List of services that we're performing operations for.
   static const char* kServices[kNumServices];
   // A bunch of fetchers suitable for token issuing. We don't care about

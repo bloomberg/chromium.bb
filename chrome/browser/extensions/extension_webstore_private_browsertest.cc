@@ -83,7 +83,7 @@ class FakeBrowserSignin : public BrowserSignin {
 
       // Fake a token available notification.
       TokenService* token_service = tab_contents->profile()->GetTokenService();
-      token_service->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+      token_service->IssueAuthTokenForTest(GaiaConstants::kGaiaService,
                                            "new_token");
     } else {
       delegate->OnLoginFailure(GoogleServiceAuthError(
@@ -131,7 +131,7 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
     token_service->ResetCredentialsInMemory();
     if (!initial_login.empty()) {
       // Initialize the token service with an existing token.
-      token_service->IssueAuthTokenForTest(GaiaConstants::kSyncService,
+      token_service->IssueAuthTokenForTest(GaiaConstants::kGaiaService,
                                            "existing_token");
     }
 

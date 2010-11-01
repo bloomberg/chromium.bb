@@ -66,10 +66,10 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
   dictionary->SetString(kLoginKey, username);
   if (!username.empty()) {
     TokenService* token_service = profile->GetTokenService();
-    if (token_service->HasTokenForService(GaiaConstants::kSyncService)) {
+    if (token_service->HasTokenForService(GaiaConstants::kGaiaService)) {
       dictionary->SetString(kTokenKey,
                             token_service->GetTokenForService(
-                                GaiaConstants::kSyncService));
+                                GaiaConstants::kGaiaService));
     }
   }
   return dictionary;
@@ -278,7 +278,7 @@ void PromptBrowserLoginFunction::Observe(NotificationType type,
     NOTREACHED();
   }
 
-  if (service != GaiaConstants::kSyncService) {
+  if (service != GaiaConstants::kGaiaService) {
     return;
   }
 

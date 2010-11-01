@@ -11,6 +11,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -42,7 +43,7 @@ const char GaiaAuthenticator2::kIssueAuthTokenFormat[] =
     "SID=%s&"
     "LSID=%s&"
     "service=%s&"
-    "Session=true";
+    "Session=%s";
 // static
 const char GaiaAuthenticator2::kGetUserInfoFormat[] =
     "LSID=%s";
@@ -178,10 +179,16 @@ std::string GaiaAuthenticator2::MakeIssueAuthTokenBody(
   std::string encoded_sid = UrlEncodeString(sid);
   std::string encoded_lsid = UrlEncodeString(lsid);
 
+  // All tokens should be session tokens except the gaia auth token.
+  bool session = true;
+  if (!strcmp(service, GaiaConstants::kGaiaService))
+    session = false;
+
   return base::StringPrintf(kIssueAuthTokenFormat,
                             encoded_sid.c_str(),
                             encoded_lsid.c_str(),
-                            service);
+                            service,
+                            session ? "true" : "false");
 }
 
 // static
