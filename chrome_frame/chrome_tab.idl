@@ -84,13 +84,23 @@ interface IChromeFrame : IDispatch {
 };
 
 [
+  uuid(851bedec-4b2c-4959-abc0-a53403117257)
+]
+// Internal implementation interface. Not intended as an API. May change
+// frequently, don't treat this as frozen.
+interface IChromeFrameInternal : IUnknown {
+  // This method is available only when the control is in privileged mode.
+  HRESULT getSessionId([out, retval] int* session_id);
+};
+
+[
   object,
   uuid(655A11E0-EF63-4fbe-9DF6-C182D2FCD6DC),
   oleautomation,
   nonextensible,
   hidden,
 ]
-interface IChromeFramePrivileged: IUnknown {
+interface IChromeFramePrivileged : IUnknown {
   // If the host returns false for wants_privileged, the control
   // won't enable privileged mode.
   HRESULT GetWantsPrivileged([out] boolean *wants_privileged);
