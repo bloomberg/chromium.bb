@@ -834,6 +834,7 @@ PluginObject *PluginObject::GetPluginProperty(HWND hWnd) {
 
 void PluginObject::ClearPluginProperty(HWND hWnd) {
   if (hWnd) {
+    // TODO: convert to using app::win::ScopedProp.
     RemoveProp(hWnd, kWindowPropertyName);
     ::DragAcceptFiles(hWnd, false);
   }

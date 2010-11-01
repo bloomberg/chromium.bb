@@ -700,6 +700,7 @@ void CleanupAllWindows(PluginObject *obj) {
         GetProp(obj->GetPluginHWnd(),
                 kOrigWndProcName));
     DCHECK(origWndProc != NULL);
+    // TODO: this leaks.
     RemoveProp(obj->GetPluginHWnd(), kOrigWndProcName);
     SetWindowLongPtr(obj->GetPluginHWnd(), GWLP_WNDPROC, origWndProc);
 

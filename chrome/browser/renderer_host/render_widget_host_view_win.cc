@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
+#include "app/win/scoped_prop.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -310,9 +311,10 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   // this window. Used by the GPU process to validate window handles it
   // receives from renderer processes.
   int renderer_id = render_widget_host_->process()->id();
-  SetProp(m_hWnd,
-          chrome::kChromiumRendererIdProperty,
-          reinterpret_cast<HANDLE>(renderer_id));
+  props_.push_back(
+      new app::win::ScopedProp(m_hWnd,
+                               chrome::kChromiumRendererIdProperty,
+                               reinterpret_cast<HANDLE>(renderer_id)));
 
   // Uncommenting this will enable experimental out-of-process painting.
   // Contact brettw for more,
@@ -840,12 +842,15 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   OnInputLangChange(0, 0);
   // Marks that window as supporting mouse-wheel messages rerouting so it is
   // scrolled when under the mouse pointer even if inactive.
-  views::SetWindowSupportsRerouteMouseWheel(m_hWnd);
+  props_.push_back(views::SetWindowSupportsRerouteMouseWheel(m_hWnd));
   // Save away our HWND in the parent window as a property so that the
   // accessibility code can find it.
-  ::SetProp(GetParent(), kViewsNativeHostPropForAccessibility, m_hWnd);
-  ::SetProp(m_hWnd, kRenderWidgetHostViewKey,
-            static_cast<RenderWidgetHostView*>(this));
+  props_.push_back(new app::win::ScopedProp(
+                       GetParent(), kViewsNativeHostPropForAccessibility,
+                       m_hWnd));
+  props_.push_back(new app::win::ScopedProp(
+                       m_hWnd, kRenderWidgetHostViewKey,
+                       static_cast<RenderWidgetHostView*>(this)));
   return 0;
 }
 
@@ -876,7 +881,7 @@ void RenderWidgetHostViewWin::OnDestroy() {
   // sequence as part of the usual cleanup when the plugin instance goes away.
   EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
 
-  ::RemoveProp(m_hWnd, kRenderWidgetHostViewKey);
+  props_.reset();
 
   ResetTooltip();
   TrackMouseLeave(false);

@@ -145,6 +145,8 @@ void TabContentsViewWin::OnDestroy() {
     RevokeDragDrop(GetNativeView());
     drop_target_ = NULL;
   }
+
+  WidgetWin::OnDestroy();
 }
 
 void TabContentsViewWin::SetPageTitle(const std::wstring& title) {

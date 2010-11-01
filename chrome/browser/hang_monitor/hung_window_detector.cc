@@ -101,6 +101,7 @@ bool HungWindowDetector::CheckChildWindow(HWND child_window) {
       HungWindowNotification::ActionOnHungWindow action =
           HungWindowNotification::HUNG_WINDOW_IGNORE;
 #pragma warning(disable:4312)
+      // TODO: this leaks.
       SetProp(child_window, kHungChildWindowTimeout,
               reinterpret_cast<HANDLE>(child_window_message_timeout));
 #pragma warning(default:4312)

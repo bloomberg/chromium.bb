@@ -1849,7 +1849,7 @@ void BrowserView::Init() {
   // Stow a pointer to this object onto the window handle so that we can get
   // at it later when all we have is a native view.
 #if defined(OS_WIN)
-  SetProp(GetWidget()->GetNativeView(), kBrowserViewKey, this);
+  GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
 #else
   g_object_set_data(G_OBJECT(GetWidget()->GetNativeView()),
                     kBrowserViewKey, this);

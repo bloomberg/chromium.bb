@@ -225,6 +225,8 @@
         'win/drop_target.h',
         'win/iat_patch_function.cc',
         'win/iat_patch_function.h',
+        'win/scoped_prop.cc',
+        'win/scoped_prop.h',
         'x11_util.cc',
         'x11_util.h',
         'x11_util_internal.h',

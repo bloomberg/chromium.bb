@@ -15,6 +15,7 @@
 
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
 #include "base/task.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/ime_input.h"
@@ -22,6 +23,12 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/glue/webcursor.h"
+
+namespace app {
+namespace win {
+class ScopedProp;
+}
+}
 
 namespace gfx {
 class Size;
@@ -342,6 +349,8 @@ class RenderWidgetHostViewWin
   // Stores the current text input type received by ImeUpdateTextInputState()
   // method.
   WebKit::WebTextInputType text_input_type_;
+
+  ScopedVector<app::win::ScopedProp> props_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

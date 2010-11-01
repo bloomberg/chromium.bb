@@ -27,6 +27,7 @@ NPError NPObjectLifetimeTest::SetWindow(NPWindow* pNPWindow) {
 
   HWND window_handle = reinterpret_cast<HWND>(pNPWindow->window);
   if (!::GetProp(window_handle, L"Plugin_Instance")) {
+    // TODO: this propery leaks.
     ::SetProp(window_handle, L"Plugin_Instance", this);
     // We attempt to retreive the NPObject for the plugin instance identified
     // by the NPObjectLifetimeTestInstance2 class as it may not have been

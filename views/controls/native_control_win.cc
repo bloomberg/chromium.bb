@@ -7,6 +7,7 @@
 #include <windowsx.h>
 
 #include "app/l10n_util_win.h"
+#include "app/win/scoped_prop.h"
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "views/focus/focus_manager.h"
@@ -129,8 +130,8 @@ void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
 void NativeControlWin::NativeControlCreated(HWND native_control) {
   // Associate this object with the control's HWND so that WidgetWin can find
   // this object when it receives messages from it.
-  // Note that we never unset this property. We don't have to.
-  SetProp(native_control, kNativeControlWinKey, this);
+  prop_.reset(
+      new app::win::ScopedProp(native_control, kNativeControlWinKey, this));
 
   // Subclass so we get WM_KEYDOWN and WM_SETFOCUS messages.
   original_wndproc_ =
@@ -210,6 +211,7 @@ LRESULT NativeControlWin::NativeControlWndProc(HWND window,
       NOTREACHED();
     }
   } else if (message == WM_DESTROY) {
+    native_control->prop_.reset();
     win_util::SetWindowProc(window, native_control->original_wndproc_);
   }
 

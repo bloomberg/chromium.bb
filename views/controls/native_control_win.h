@@ -6,8 +6,15 @@
 #define VIEWS_CONTROLS_NATIVE_CONTROL_WIN_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/native/native_view_host.h"
+
+namespace app {
+namespace win {
+class ScopedProp;
+}
+}
 
 namespace views {
 
@@ -85,6 +92,8 @@ class NativeControlWin : public NativeViewHost {
 
   // The window procedure before we subclassed.
   WNDPROC original_wndproc_;
+
+  scoped_ptr<app::win::ScopedProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeControlWin);
 };

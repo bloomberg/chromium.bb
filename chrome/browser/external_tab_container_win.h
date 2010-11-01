@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -28,6 +29,12 @@ class AutomationProvider;
 class Profile;
 class TabContentsContainer;
 class RenderViewContextMenuViews;
+
+namespace app {
+namespace win {
+class ScopedProp;
+}
+}
 
 namespace IPC {
 struct NavigationInfo;
@@ -331,6 +338,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   // in this page. This typically applies to hosts which would render the new
   // page without chrome frame.
   bool route_all_top_level_navigations_;
+
+  scoped_ptr<app::win::ScopedProp> prop_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

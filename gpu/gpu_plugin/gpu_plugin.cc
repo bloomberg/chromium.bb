@@ -27,6 +27,7 @@ class PluginObject {
 
  private:
   HWND hwnd_;
+
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };
 
@@ -41,6 +42,7 @@ PluginObject::~PluginObject() {
 void PluginObject::SetWindow(HWND hwnd) {
   hwnd_ = hwnd;
   if (hwnd_) {
+    // TODO: convert this to using app::win::ScopedProp.
     // Store plugin object in window property.
     SetProp(hwnd_, kPluginObject, reinterpret_cast<HANDLE>(this));
 

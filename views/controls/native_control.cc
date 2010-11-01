@@ -13,7 +13,9 @@
 #include "app/keyboard_code_conversion_win.h"
 #include "app/keyboard_codes.h"
 #include "app/l10n_util_win.h"
+#include "app/win/scoped_prop.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/win_util.h"
 #include "gfx/native_theme_win.h"
 #include "views/background.h"
@@ -24,11 +26,6 @@
 
 namespace views {
 
-// Maps to the original WNDPROC for the controller window before we subclassed
-// it.
-static const wchar_t* const kHandlerKey =
-    L"__CONTROL_ORIGINAL_MESSAGE_HANDLER__";
-
 // Maps to the NativeControl.
 static const wchar_t* const kNativeControlKey = L"__NATIVE_CONTROL__";
 
@@ -37,10 +34,14 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
                                CWinTraits<WS_CHILD | WS_CLIPSIBLINGS |
                                           WS_CLIPCHILDREN>> {
  public:
+  explicit NativeControlContainer(NativeControl* parent)
+      : parent_(parent),
+        control_(NULL),
+        original_handler_(NULL) {
+  }
 
-  explicit NativeControlContainer(NativeControl* parent) : parent_(parent),
-                                                           control_(NULL) {
-    Create(parent->GetWidget()->GetNativeView());
+  void Init() {
+    Create(parent_->GetWidget()->GetNativeView());
     ::ShowWindow(m_hWnd, SW_SHOW);
   }
 
@@ -78,17 +79,18 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
       parent_->NativeControlDestroyed();
     delete this;
   }
+
  private:
+  friend class NativeControl;
 
   LRESULT OnCreate(LPCREATESTRUCT create_struct) {
     control_ = parent_->CreateNativeControl(m_hWnd);
 
     // We subclass the control hwnd so we get the WM_KEYDOWN messages.
-    WNDPROC original_handler =
-        win_util::SetWindowProc(control_,
-                                &NativeControl::NativeControlWndProc);
-    SetProp(control_, kHandlerKey, original_handler);
-    SetProp(control_, kNativeControlKey , parent_);
+    original_handler_ = win_util::SetWindowProc(
+        control_, &NativeControl::NativeControlWndProc);
+    prop_.reset(
+        new app::win::ScopedProp(control_, kNativeControlKey , parent_));
 
     ::ShowWindow(control_, SW_SHOW);
     return 1;
@@ -160,6 +162,12 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
 
   NativeControl* parent_;
   HWND control_;
+
+  // Message handler that was set before we reset it.
+  WNDPROC original_handler_;
+
+  scoped_ptr<app::win::ScopedProp> prop_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeControlContainer);
 };
 
@@ -188,6 +196,7 @@ void NativeControl::ValidateNativeControl() {
 
   if (!container_ && IsVisible()) {
     container_ = new NativeControlContainer(this);
+    container_->Init();
     hwnd_view_->Attach(*container_);
     if (!enabled_)
       EnableWindow(GetNativeControlHWND(), enabled_);
@@ -350,14 +359,15 @@ DWORD NativeControl::GetAdditionalRTLStyle() const {
 }
 
 // static
-LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window, UINT message,
+LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window,
+                                                     UINT message,
                                                      WPARAM w_param,
                                                      LPARAM l_param) {
-  HANDLE original_handler = GetProp(window, kHandlerKey);
-  DCHECK(original_handler);
   NativeControl* native_control =
       static_cast<NativeControl*>(GetProp(window, kNativeControlKey));
   DCHECK(native_control);
+  WNDPROC original_handler = native_control->container_->original_handler_;
+  DCHECK(original_handler);
 
   if (message == WM_KEYDOWN &&
       native_control->OnKeyDown(app::KeyboardCodeForWindowsKeyCode(w_param))) {
@@ -373,8 +383,7 @@ LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window, UINT message,
   } else if (message == WM_DESTROY) {
     win_util::SetWindowProc(window,
                             reinterpret_cast<WNDPROC>(original_handler));
-    RemoveProp(window, kHandlerKey);
-    RemoveProp(window, kNativeControlKey);
+    native_control->container_->prop_.reset();
   }
 
   return CallWindowProc(reinterpret_cast<WNDPROC>(original_handler), window,

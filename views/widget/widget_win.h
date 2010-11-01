@@ -11,14 +11,22 @@
 #include <atlcrack.h>
 #include <atlmisc.h>
 
+#include <string>
 #include <vector>
 
 #include "base/message_loop.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_vector.h"
 #include "gfx/window_impl.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout_manager.h"
 #include "views/widget/widget.h"
+
+namespace app {
+namespace win {
+class ScopedProp;
+}
+}
 
 namespace gfx {
 class CanvasSkia;
@@ -34,7 +42,6 @@ class RootView;
 class TooltipManagerWin;
 class Window;
 
-bool SetRootViewForHWND(HWND hwnd, RootView* root_view);
 RootView* GetRootViewForHWND(HWND hwnd);
 
 // A Windows message reflected from other windows. This message is sent
@@ -480,6 +487,8 @@ class WidgetWin : public gfx::WindowImpl,
   bool is_window_;
 
  private:
+  typedef ScopedVector<app::win::ScopedProp> ScopedProps;
+
   // Implementation of GetWindow. Ascends the parents of |hwnd| returning the
   // first ancestor that is a Window.
   static Window* GetWindowImpl(HWND hwnd);
@@ -585,6 +594,10 @@ class WidgetWin : public gfx::WindowImpl,
   // The current position of the view events vector.  When incrementing,
   // we always mod this value with the max view events above .
   int accessibility_view_events_index_;
+
+  ScopedProps props_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetWin);
 };
 
 }  // namespace views

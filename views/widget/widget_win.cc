@@ -8,6 +8,7 @@
 #include "app/l10n_util_win.h"
 #include "app/system_monitor.h"
 #include "app/win_util.h"
+#include "app/win/scoped_prop.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "gfx/canvas_skia.h"
@@ -35,10 +36,6 @@ bool WidgetWin::screen_reader_active_ = false;
 // A custom MSAA object id used to determine if a screen reader is actively
 // listening for MSAA events.
 #define OBJID_CUSTOM 1
-
-bool SetRootViewForHWND(HWND hwnd, RootView* root_view) {
-  return SetProp(hwnd, kRootViewWindowProperty, root_view) ? true : false;
-}
 
 RootView* GetRootViewForHWND(HWND hwnd) {
   return reinterpret_cast<RootView*>(::GetProp(hwnd, kRootViewWindowProperty));
@@ -168,7 +165,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   default_theme_provider_.reset(new DefaultThemeProvider());
 
-  SetWindowSupportsRerouteMouseWheel(hwnd());
+  props_.push_back(SetWindowSupportsRerouteMouseWheel(hwnd()));
 
   drop_target_ = new DropTargetWin(root_view_.get());
 
@@ -183,7 +180,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   }
 
   // Sets the RootView as a property, so the automation can introspect windows.
-  SetRootViewForHWND(hwnd(), root_view_.get());
+  SetNativeWindowProperty(kRootViewWindowProperty, root_view_.get());
 
   MessageLoopForUI::current()->AddObserver(this);
 
@@ -421,12 +418,17 @@ const Window* WidgetWin::GetWindow() const {
   return GetWindowImpl(hwnd());
 }
 
-void WidgetWin::SetNativeWindowProperty(const std::wstring& name,
-                                        void* value) {
+void WidgetWin::SetNativeWindowProperty(const std::wstring& name, void* value) {
+  // Remove the existing property (if any).
+  for (ScopedProps::iterator i = props_.begin(); i != props_.end(); ++i) {
+    if ((*i)->key() == name) {
+      props_.erase(i);
+      break;
+    }
+  }
+
   if (value)
-    SetProp(hwnd(), name.c_str(), value);
-  else
-    RemoveProp(hwnd(), name.c_str());
+    props_.push_back(new app::win::ScopedProp(hwnd(), name, value));
 }
 
 void* WidgetWin::GetNativeWindowProperty(const std::wstring& name) {
@@ -583,14 +585,12 @@ LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
 }
 
 void WidgetWin::OnDestroy() {
-  SetNativeWindowProperty(kWidgetKey, NULL);
-
   if (drop_target_.get()) {
     RevokeDragDrop(hwnd());
     drop_target_ = NULL;
   }
 
-  RemoveProp(hwnd(), kRootViewWindowProperty);
+  props_.reset();
 }
 
 void WidgetWin::OnDisplayChange(UINT bits_per_pixel, CSize screen_size) {

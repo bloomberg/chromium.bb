@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "app/win/scoped_prop.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -129,9 +130,8 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   // TODO(jcampan): limit focus traversal to contents.
 
-  // We don't ever remove the prop because the lifetime of this object
-  // is the same as the lifetime of the window
-  SetProp(GetNativeView(), kWindowObjectKey, this);
+  prop_.reset(
+      new app::win::ScopedProp(GetNativeView(), kWindowObjectKey, this));
 
   if (existing_contents) {
     tab_contents_ = existing_contents;
@@ -793,6 +793,7 @@ LRESULT ExternalTabContainer::OnCreate(LPCREATESTRUCT create_struct) {
 }
 
 void ExternalTabContainer::OnDestroy() {
+  prop_.reset();
   Uninitialize();
   WidgetWin::OnDestroy();
   if (browser_.get()) {

@@ -6,6 +6,7 @@
 
 #include <windowsx.h>
 
+#include "app/win/scoped_prop.h"
 #include "base/auto_reset.h"
 #include "base/win_util.h"
 
@@ -52,9 +53,9 @@ static bool CanRedirectMouseWheelFrom(HWND window) {
   return true;
 }
 
-void SetWindowSupportsRerouteMouseWheel(HWND hwnd) {
-  SetProp(hwnd, kHWNDSupportMouseWheelRerouting,
-          reinterpret_cast<HANDLE>(true));
+app::win::ScopedProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd) {
+  return new app::win::ScopedProp(hwnd, kHWNDSupportMouseWheelRerouting,
+                                  reinterpret_cast<HANDLE>(true));
 }
 
 bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {

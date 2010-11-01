@@ -62,6 +62,7 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
         WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE ,
         0, 0, 100, 100, parent, 0, GetModuleHandle(NULL), 0);
     DCHECK(window_);
+    // TODO: this propery leaks.
     ::SetProp(window_, L"Plugin_Instance", this);
   }
 

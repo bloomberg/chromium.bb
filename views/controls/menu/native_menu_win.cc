@@ -9,6 +9,7 @@
 #include "app/l10n_util_win.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "base/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -55,18 +56,16 @@ class NativeMenuWin::MenuHostWindow {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
-    SetProp(hwnd_, kMenuHostWindowKey, this);
+    win_util::SetWindowUserData(hwnd_, this);
   }
 
   ~MenuHostWindow() {
-    RemoveProp(hwnd_, kMenuHostWindowKey);
     DestroyWindow(hwnd_);
   }
 
   HWND hwnd() const { return hwnd_; }
 
  private:
-  static const wchar_t* kMenuHostWindowKey;
   static const wchar_t* kWindowClassName;
 
   void RegisterClass() {
@@ -276,7 +275,8 @@ class NativeMenuWin::MenuHostWindow {
                                              WPARAM w_param,
                                              LPARAM l_param) {
     MenuHostWindow* host =
-        reinterpret_cast<MenuHostWindow*>(GetProp(window, kMenuHostWindowKey));
+        reinterpret_cast<MenuHostWindow*>(win_util::GetWindowUserData(window));
+    // host is null during initial construction.
     LRESULT l_result = 0;
     if (!host || !host->ProcessWindowMessage(window, message, w_param, l_param,
                                              &l_result)) {
@@ -293,10 +293,6 @@ class NativeMenuWin::MenuHostWindow {
 // static
 const wchar_t* NativeMenuWin::MenuHostWindow::kWindowClassName =
     L"ViewsMenuHostWindow";
-
-const wchar_t* NativeMenuWin::MenuHostWindow::kMenuHostWindowKey =
-    L"__MENU_HOST_WINDOW__";
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuWin, public:
