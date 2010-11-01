@@ -445,7 +445,10 @@ class ChangeInfo(object):
     split_data = gclient_utils.FileRead(info_file, 'r').split(
         ChangeInfo._SEPARATOR, 2)
     if len(split_data) != 3:
-      ErrorExit("Changelist file %s is corrupt" % info_file)
+      ErrorExit(
+          ('Changelist file %s is corrupt.\n'
+           'Either run "gcl delete %s" or manually edit the file') % (
+              info_file, changename))
     items = split_data[0].split(', ')
     issue = 0
     patchset = 0
@@ -464,7 +467,7 @@ class ChangeInfo(object):
     description = split_data[2]
     save = False
     if update_status:
-      for item in files:
+      for item in files[:]:
         filename = os.path.join(local_root, item[1])
         status_result = SVN.CaptureStatus(filename)
         if not status_result or not status_result[0][0]:
@@ -1193,10 +1196,11 @@ def CMDdescription(change_info):
   return 0
 
 
-@need_change
-def CMDdelete(change_info):
+def CMDdelete(args):
   """Deletes a changelist."""
-  change_info.Delete()
+  if not len(args) == 1:
+    ErrorExit('You need to pass a change list name')
+  os.remove(GetChangelistInfoFile(args[0]))
   return 0
 
 
