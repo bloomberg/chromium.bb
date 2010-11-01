@@ -46,6 +46,8 @@ void PushNotificationsThread::SendNotification(
 
 void PushNotificationsThread::ListenForPushNotifications() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  if (!base_task_.get())
+    return;
   PushNotificationsListenTask* listener =
       new PushNotificationsListenTask(base_task_, this);
   listener->Start();
@@ -53,6 +55,9 @@ void PushNotificationsThread::ListenForPushNotifications() {
 
 void PushNotificationsThread::SubscribeForPushNotifications(
     const std::vector<std::string>& subscribed_services_list) {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  if (!base_task_.get())
+    return;
   std::vector<PushNotificationsSubscribeTask::PushSubscriptionInfo>
       channels_list;
   for (std::vector<std::string>::const_iterator iter =
