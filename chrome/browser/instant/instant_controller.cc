@@ -32,23 +32,35 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 bool InstantController::IsEnabled(Profile* profile) {
-  static bool enabled = false;
-  static bool checked = false;
-  if (!checked) {
-    checked = true;
-    enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableMatchPreview);
-  }
-  PrefService* prefs = profile->GetPrefs();
-  return (enabled || (prefs && prefs->GetBoolean(prefs::kInstantEnabled)));
+  return IsEnabled(profile, PREDICTIVE_TYPE) ||
+      IsEnabled(profile, VERBATIM_TYPE);
 }
 
-InstantController::InstantController(InstantDelegate* delegate)
+// static
+bool InstantController::IsEnabled(Profile* profile, Type type) {
+  CommandLine* cl = CommandLine::ForCurrentProcess();
+  if (type == PREDICTIVE_TYPE) {
+    return (cl->HasSwitch(switches::kEnablePredictiveInstant) ||
+            (profile->GetPrefs() &&
+             profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled)));
+  }
+  return cl->HasSwitch(switches::kEnableVerbatimInstant);
+}
+
+static InstantController::Type GetType(Profile* profile) {
+  return InstantController::IsEnabled(profile,
+                                      InstantController::PREDICTIVE_TYPE) ?
+      InstantController::PREDICTIVE_TYPE : InstantController::VERBATIM_TYPE;
+}
+
+InstantController::InstantController(Profile* profile,
+                                     InstantDelegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL),
       is_active_(false),
       commit_on_mouse_up_(false),
-      last_transition_type_(PageTransition::LINK) {
+      last_transition_type_(PageTransition::LINK),
+      type_(GetType(profile)) {
 }
 
 InstantController::~InstantController() {
@@ -367,6 +379,16 @@ void InstantController::ClearBlacklist() {
 
 const TemplateURL* InstantController::GetTemplateURL(
     const AutocompleteMatch& match) {
+  if (type_ == VERBATIM_TYPE) {
+    // When using VERBATIM_TYPE we don't want to attempt to use the instant
+    // JavaScript API, otherwise the page would show predictive results. By
+    // returning NULL here we ensure we don't attempt to use the instant API.
+    //
+    // TODO: when the full search box API is in place we can lift this
+    // restriction and force the page to show verbatim results always.
+    return NULL;
+  }
+
   const TemplateURL* template_url = match.template_url;
   if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
       match.type == AutocompleteMatch::SEARCH_HISTORY ||

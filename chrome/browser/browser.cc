@@ -4310,6 +4310,6 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
 void Browser::CreateInstantIfNecessary() {
   if (type() == TYPE_NORMAL && InstantController::IsEnabled(profile()) &&
       !profile()->IsOffTheRecord()) {
-    instant_.reset(new InstantController(this));
+    instant_.reset(new InstantController(profile_, this));
   }
 }

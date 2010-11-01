@@ -99,10 +99,17 @@ const Experiment kExperiments[] = {
   },
   {
     "match-preview",  // Do not change; see above.
-    IDS_FLAGS_INSTANT_NAME,
-    IDS_FLAGS_INSTANT_DESCRIPTION,
+    IDS_FLAGS_PREDICTIVE_INSTANT_NAME,
+    IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION,
     kOsMac | kOsLinux,
-    switches::kEnableMatchPreview
+    switches::kEnablePredictiveInstant
+  },
+  {
+    "verbatim-instant",  // Do not change; see above.
+    IDS_FLAGS_VERBATIM_INSTANT_NAME,
+    IDS_FLAGS_VERBATIM_INSTANT_DESCRIPTION,
+    kOsMac | kOsLinux | kOsWin,
+    switches::kEnableVerbatimInstant
   },
   // FIXME(scheib): Add Flags entry for accelerated Compositing,
   // or pull it and the strings in generated_resources.grd by Dec 2010

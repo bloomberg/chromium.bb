@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_H_
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -48,6 +49,9 @@ class AutocompleteEditController {
   // Commits the suggested text. |typed_text| is the current text showing in the
   // autocomplete. Returns true if the text was committed.
   virtual bool OnCommitSuggestedText(const std::wstring& typed_text) = 0;
+
+  // Sets the suggested search text to |suggested_text|.
+  virtual void OnSetSuggestedSearchText(const string16& suggested_text) = 0;
 
   // Invoked when the popup is going to change its bounds to |bounds|.
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) = 0;
@@ -319,6 +323,9 @@ class AutocompleteEditModel : public NotificationObserver {
   // Invoked when the popup is going to change its bounds to |bounds|.
   void PopupBoundsChangedTo(const gfx::Rect& bounds);
 
+  // Invoked when the autocomplete results may have changed in some way.
+  void ResultsUpdated();
+
  private:
   enum PasteState {
     NONE,           // Most recent edit was not a paste that replaced all text.
@@ -367,6 +374,10 @@ class AutocompleteEditModel : public NotificationObserver {
   // nav URL, if |alternate_nav_url| is non-NULL and there is such a URL.
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
+
+  // Determines the suggested search text and invokes OnSetSuggestedSearchText
+  // on the controller.
+  void UpdateSuggestedSearchText();
 
   AutocompleteEditView* view_;
 

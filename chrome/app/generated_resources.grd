@@ -4034,11 +4034,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
         Uses an in-tab UI for the Settings (Options/Preferences) dialog instead of a stand-alone window.
       </message>
-      <message name="IDS_FLAGS_INSTANT_NAME" desc="Description of the 'Instant' lab.">
+      <message name="IDS_FLAGS_PREDICTIVE_INSTANT_NAME" desc="Description of the predictive 'Instant' lab.">
         Instant
       </message>
-      <message name="IDS_FLAGS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
-        Makes the address bar load urls as you type.
+      <message name="IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION" desc="Description of the predictive 'Instant' lab.">
+        Makes the address bar load urls as you type. Search results are shown for the best match.
+      </message>
+      <message name="IDS_FLAGS_VERBATIM_INSTANT_NAME" desc="Description of the verbatim 'Instant' lab.">
+        Verbatim Instant
+      </message>
+      <message name="IDS_FLAGS_VERBATIM_INSTANT_DESCRIPTION" desc="Description of the verbatim 'Instant' lab.">
+        Makes the address bar load urls as you type. Search results are shown exactly as you typed them.
       </message>
       <message name="IDS_FLAGS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
         Remoting

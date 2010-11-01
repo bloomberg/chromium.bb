@@ -38,14 +38,27 @@ class TemplateURL;
 // being invoked on the delegate.
 class InstantController : public InstantLoaderDelegate {
  public:
-  explicit InstantController(InstantDelegate* delegate);
+  // Variations of instant support.
+  enum Type {
+    // Search results are shown for the best guess of what we think the user was
+    // planning on typing.
+    PREDICTIVE_TYPE,
+
+    // Search results are shown for exactly what was typed.
+    VERBATIM_TYPE,
+  };
+
+  InstantController(Profile* profile, InstantDelegate* delegate);
   ~InstantController();
 
   // Registers instant related preferences.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Is InstantController enabled?
+  // Returns true if either type of instant is enabled.
   static bool IsEnabled(Profile* profile);
+
+  // Returns true if the specified type of instant is enabled.
+  static bool IsEnabled(Profile* profile, Type type);
 
   // Invoked as the user types in the omnibox with the url to navigate to.  If
   // the url is empty and there is a preview TabContents it is destroyed. If url
@@ -194,6 +207,8 @@ class InstantController : public InstantLoaderDelegate {
 
   // URL last pased to ScheduleUpdate.
   GURL scheduled_url_;
+
+  const Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

@@ -757,6 +757,10 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
   return true;
 }
 
+void LocationBarView::OnSetSuggestedSearchText(const string16& suggested_text) {
+  SetSuggestedText(suggested_text);
+}
+
 void LocationBarView::OnPopupBoundsChanged(const gfx::Rect& bounds) {
   InstantController* instant = delegate_->GetInstant();
   if (instant)

@@ -435,9 +435,6 @@ const char kEnableGPURendering[]            = "enable-gpu-rendering";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Is match preview enabled?
-const char kEnableMatchPreview[]            = "enable-match-preview";
-
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 
@@ -455,6 +452,9 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
+
+// Is the predictive varition of instant enabled?
+const char kEnablePredictiveInstant[]       = "enable-predictive-instant";
 
 // This applies only when the process type is "service". Enables the
 // Chromoting Host Process within the service process.
@@ -507,6 +507,9 @@ const char kEnableTopSites[]                = "enable-top-sites";
 
 // Whether or not the touch events API is exposed.
 const char kEnableTouch[]                   = "enable-touch";
+
+// Is verbatim instant enabled?
+const char kEnableVerbatimInstant[]         = "enable-verbatim-instant";
 
 // Enables the option to show tabs as a vertical stack down the side of the
 // browser window.

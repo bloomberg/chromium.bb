@@ -1026,7 +1026,7 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
       g_object_get(G_OBJECT(text_buffer_), "cursor-position", &cursor_pos,
                    NULL);
       if (cursor_pos == gtk_text_buffer_get_char_count(text_buffer_))
-        controller_->OnCommitSuggestedText(std::wstring());
+        controller_->OnCommitSuggestedText(GetText());
       else
         handled = false;
     } else {
