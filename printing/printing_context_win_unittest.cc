@@ -119,7 +119,8 @@ TEST_F(PrintingContextTest, Base) {
   EXPECT_TRUE(ModifyWorldTransform(context->context(), NULL, MWT_IDENTITY));
 }
 
-TEST_F(PrintingContextTest, PrintAll) {
+// http://crbug.com/61499
+TEST_F(PrintingContextTest, FLAKY_PrintAll) {
   printing::PrintingContextWin context;
   context.SetPrintDialog(&PrintDlgExMock);
   context.AskUserForSettings(
