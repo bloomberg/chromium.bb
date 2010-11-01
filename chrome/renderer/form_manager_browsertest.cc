@@ -467,7 +467,7 @@ TEST_F(FormManagerTest, FillForm) {
   form.fields[3].set_value(ASCIIToUTF16("Beta"));
   form.fields[4].set_value(ASCIIToUTF16("Gamma"));
   form.fields[5].set_value(ASCIIToUTF16("Delta"));
-  EXPECT_TRUE(form_manager.FillForm(form, WebNode()));
+  EXPECT_TRUE(form_manager.FillForm(form, input_element));
 
   // Verify the filled elements.
   WebDocument document = web_frame->document();
@@ -475,6 +475,8 @@ TEST_F(FormManagerTest, FillForm) {
       document.getElementById("firstname").to<WebInputElement>();
   EXPECT_TRUE(firstname.isAutofilled());
   EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
+  EXPECT_EQ(5, firstname.selectionStart());
+  EXPECT_EQ(5, firstname.selectionEnd());
 
   WebInputElement lastname =
       document.getElementById("lastname").to<WebInputElement>();
@@ -592,7 +594,7 @@ TEST_F(FormManagerTest, PreviewForm) {
   form.fields[3].set_value(ASCIIToUTF16("Beta"));
   form.fields[4].set_value(ASCIIToUTF16("Gamma"));
   form.fields[5].set_value(ASCIIToUTF16("Delta"));
-  EXPECT_TRUE(form_manager.PreviewForm(form));
+  EXPECT_TRUE(form_manager.PreviewForm(form, input_element));
 
   // Verify the previewed elements.
   WebDocument document = web_frame->document();
@@ -600,6 +602,8 @@ TEST_F(FormManagerTest, PreviewForm) {
       document.getElementById("firstname").to<WebInputElement>();
   EXPECT_TRUE(firstname.isAutofilled());
   EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.suggestedValue());
+  EXPECT_EQ(0, firstname.selectionStart());
+  EXPECT_EQ(5, firstname.selectionEnd());
 
   WebInputElement lastname =
       document.getElementById("lastname").to<WebInputElement>();
@@ -2320,6 +2324,10 @@ TEST_F(FormManagerTest, FillFormNonEmptyField) {
                       ASCIIToUTF16("submit"),
                       0),
                       fields2[2]);
+
+  // Verify that the cursor position has been updated.
+  EXPECT_EQ(5, input_element.selectionStart());
+  EXPECT_EQ(5, input_element.selectionEnd());
 }
 
 TEST_F(FormManagerTest, ClearFormWithNode) {
@@ -2406,6 +2414,10 @@ TEST_F(FormManagerTest, ClearFormWithNode) {
                 string16(),
                 ASCIIToUTF16("submit"),
                 0)));
+
+  // Verify that the cursor position has been updated.
+  EXPECT_EQ(0, firstname.selectionStart());
+  EXPECT_EQ(0, firstname.selectionEnd());
 }
 
 TEST_F(FormManagerTest, ClearFormWithNodeContainingSelectOne) {
@@ -2483,6 +2495,10 @@ TEST_F(FormManagerTest, ClearFormWithNodeContainingSelectOne) {
                 string16(),
                 ASCIIToUTF16("submit"),
                 0)));
+
+  // Verify that the cursor position has been updated.
+  EXPECT_EQ(0, firstname.selectionStart());
+  EXPECT_EQ(0, firstname.selectionEnd());
 }
 
 TEST_F(FormManagerTest, ClearPreviewedFormWithNode) {
@@ -2520,12 +2536,70 @@ TEST_F(FormManagerTest, ClearPreviewedFormWithNode) {
   email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
 
   // Clear the previewed fields.
-  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname));
+  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(lastname));
 
-  // Fields with non-empty values are not modified.
+  // Fields with empty suggestions suggestions are not modified.
   EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.value());
   EXPECT_TRUE(firstname.suggestedValue().isEmpty());
   EXPECT_TRUE(firstname.isAutofilled());
+
+  // Verify the previewed fields are cleared.
+  EXPECT_TRUE(lastname.value().isEmpty());
+  EXPECT_TRUE(lastname.suggestedValue().isEmpty());
+  EXPECT_FALSE(lastname.isAutofilled());
+  EXPECT_TRUE(email.value().isEmpty());
+  EXPECT_TRUE(email.suggestedValue().isEmpty());
+  EXPECT_FALSE(email.isAutofilled());
+
+  // Verify that the cursor position has been updated.
+  EXPECT_EQ(0, lastname.selectionStart());
+  EXPECT_EQ(0, lastname.selectionEnd());
+}
+
+TEST_F(FormManagerTest, ClearPreviewedFormWithNonEmptyInitiatingNode) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+           "  <INPUT type=\"text\" id=\"firstname\" value=\"W\"/>"
+           "  <INPUT type=\"text\" id=\"lastname\"/>"
+           "  <INPUT type=\"text\" id=\"email\"/>"
+           "  <INPUT type=\"submit\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetFormsInFrame(web_frame, FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Set the auto-filled attribute.
+  WebInputElement firstname =
+      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  firstname.setAutofilled(true);
+  WebInputElement lastname =
+      web_frame->document().getElementById("lastname").to<WebInputElement>();
+  lastname.setAutofilled(true);
+  WebInputElement email =
+      web_frame->document().getElementById("email").to<WebInputElement>();
+  email.setAutofilled(true);
+
+  // Set the suggested values on all of the elements.
+  firstname.setSuggestedValue(ASCIIToUTF16("Wyatt"));
+  lastname.setSuggestedValue(ASCIIToUTF16("Earp"));
+  email.setSuggestedValue(ASCIIToUTF16("wyatt@earp.com"));
+
+  // Clear the previewed fields.
+  EXPECT_TRUE(form_manager.ClearPreviewedFormWithNode(firstname));
+
+  // Fields with non-empty values are restored.
+  EXPECT_EQ(ASCIIToUTF16("W"), firstname.value());
+  EXPECT_TRUE(firstname.suggestedValue().isEmpty());
+  EXPECT_FALSE(firstname.isAutofilled());
+  EXPECT_EQ(1, firstname.selectionStart());
+  EXPECT_EQ(1, firstname.selectionEnd());
 
   // Verify the previewed fields are cleared.
   EXPECT_TRUE(lastname.value().isEmpty());

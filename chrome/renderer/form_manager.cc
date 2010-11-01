@@ -561,7 +561,7 @@ bool FormManager::FillForm(const FormData& form, const WebNode& node) {
   return true;
 }
 
-bool FormManager::PreviewForm(const FormData& form) {
+bool FormManager::PreviewForm(const FormData& form, const WebNode& node) {
   FormElement* form_element = NULL;
   if (!FindCachedFormElement(form, &form_element))
     return false;
@@ -569,7 +569,7 @@ bool FormManager::PreviewForm(const FormData& form) {
   RequirementsMask requirements = static_cast<RequirementsMask>(
       REQUIRE_AUTOCOMPLETE | REQUIRE_ENABLED | REQUIRE_EMPTY);
   ForEachMatchingFormField(form_element,
-                           WebNode(),
+                           node,
                            requirements,
                            form,
                            NewCallback(this, &FormManager::PreviewFormField));
@@ -594,6 +594,13 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
 
       input_element.setValue(string16());
       input_element.setAutofilled(false);
+
+      // Clearing the value in the focused node (above) can cause selection
+      // to be lost. We force selection range to restore the text cursor.
+      if (node == input_element) {
+        int length = input_element.value().length();
+        input_element.setSelectionRange(length, length);
+      }
     } else if (element.formControlType() == WebString::fromUTF8("select-one")) {
       WebSelectElement select_element = element.to<WebSelectElement>();
       select_element.setValue(form_element->control_values[i]);
@@ -621,20 +628,30 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node) {
     if (!input_element.isAutofilled())
       continue;
 
-    // If the user has completed the auto-fill and the values are filled in, we
-    // don't want to reset the auto-filled status.
-    if (!input_element.value().isEmpty())
+    // There might be unrelated elements in this form which have already been
+    // auto-filled. For example, the user might have already filled the address
+    // part of a form and now be dealing with the credit card section. We only
+    // want to reset the auto-filled status for fields that were previewed.
+    if (input_element.suggestedValue().isEmpty())
       continue;
 
+    // Clear the suggested value. For the initiating node, also restore the
+    // original value.
     input_element.setSuggestedValue(string16());
+    bool is_initiating_node = (node == input_element);
+    if (is_initiating_node) {
+      // Call |setValue()| to force the renderer to update the field's displayed
+      // value.
+      input_element.setValue(input_element.value());
+    }
     input_element.setAutofilled(false);
 
     // Clearing the suggested value in the focused node (above) can cause
     // selection to be lost. We force selection range to restore the text
     // cursor.
-    if (node == input_element) {
-      input_element.setSelectionRange(input_element.value().length(),
-                                      input_element.value().length());
+    if (is_initiating_node) {
+      int length = input_element.value().length();
+      input_element.setSelectionRange(length, length);
     }
   }
 
@@ -770,6 +787,8 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
 
     DCHECK_EQ(data.fields[k].name(), element_name);
 
+    bool is_initiating_node = false;
+
     // More than likely |requirements| will contain REQUIRE_AUTOCOMPLETE and/or
     // REQUIRE_EMPTY, which both require text form control elements, so special-
     // case this type of element.
@@ -782,11 +801,12 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
       if (requirements & REQUIRE_AUTOCOMPLETE && !input_element.autoComplete())
         continue;
 
+      is_initiating_node = (input_element == node);
       // Don't require the node that initiated the auto-fill process to be
       // empty.  The user is typing in this field and we should complete the
       // value when the user selects a value to fill out.
       if (requirements & REQUIRE_EMPTY &&
-          input_element != node &&
+          !is_initiating_node &&
           !input_element.value().isEmpty())
         continue;
     }
@@ -794,7 +814,7 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
     if (requirements & REQUIRE_ENABLED && !element->isEnabled())
       continue;
 
-    callback->Run(element, &data.fields[k]);
+    callback->Run(element, &data.fields[k], is_initiating_node);
 
     // We found a matching form field so move on to the next.
     ++j;
@@ -804,7 +824,8 @@ void FormManager::ForEachMatchingFormField(FormElement* form,
 }
 
 void FormManager::FillFormField(WebFormControlElement* field,
-                                const FormField* data) {
+                                const FormField* data,
+                                bool is_initiating_node) {
   // Nothing to fill.
   if (data->value().empty())
     return;
@@ -816,6 +837,10 @@ void FormManager::FillFormField(WebFormControlElement* field,
     // returns the default maxlength value.
     input_element.setValue(data->value().substr(0, input_element.maxLength()));
     input_element.setAutofilled(true);
+    if (is_initiating_node) {
+      int length = input_element.value().length();
+      input_element.setSelectionRange(length, length);
+    }
   } else if (field->formControlType() == WebString::fromUTF8("select-one")) {
     WebSelectElement select_element = field->to<WebSelectElement>();
     select_element.setValue(data->value());
@@ -823,7 +848,8 @@ void FormManager::FillFormField(WebFormControlElement* field,
 }
 
 void FormManager::PreviewFormField(WebFormControlElement* field,
-                                   const FormField* data) {
+                                   const FormField* data,
+                                   bool is_initiating_node) {
   // Nothing to preview.
   if (data->value().empty())
     return;
@@ -839,4 +865,6 @@ void FormManager::PreviewFormField(WebFormControlElement* field,
   input_element.setSuggestedValue(
       data->value().substr(0, input_element.maxLength()));
   input_element.setAutofilled(true);
+  if (is_initiating_node)
+    input_element.setSelectionRange(0, input_element.suggestedValue().length());
 }

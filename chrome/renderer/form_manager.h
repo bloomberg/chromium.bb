@@ -92,8 +92,10 @@ class FormManager {
   // store multiple forms with the same names from different frames.
   bool FillForm(const webkit_glue::FormData& form, const WebKit::WebNode& node);
 
-  // Previews the form represented by |form|.  Same conditions as FillForm.
-  bool PreviewForm(const webkit_glue::FormData& form);
+  // Previews the form represented by |form|. |node| is the form control element
+  // that initiated the preview process. Same conditions as FillForm.
+  bool PreviewForm(const webkit_glue::FormData& form,
+                   const WebKit::WebNode &node);
 
   // Clears the values of all input elements in the form that contains |node|.
   // Returns false if the form is not found.
@@ -123,8 +125,9 @@ class FormManager {
   typedef std::vector<FormElement*> FormElementList;
 
   // The callback type used by ForEachMatchingFormField().
-  typedef Callback2<WebKit::WebFormControlElement*,
-                    const webkit_glue::FormField*>::Type Callback;
+  typedef Callback3<WebKit::WebFormControlElement*,
+                    const webkit_glue::FormField*,
+                    bool>::Type Callback;
 
   // Infers corresponding label for |element| from surrounding context in the
   // DOM.  Contents of preceding <p> tag or preceding text element found in
@@ -155,13 +158,15 @@ class FormManager {
   // value in |data|.  This method also sets the autofill attribute, causing the
   // background to be yellow.
   void FillFormField(WebKit::WebFormControlElement* field,
-                     const webkit_glue::FormField* data);
+                     const webkit_glue::FormField* data,
+                     bool is_initiating_node);
 
   // A ForEachMatchingFormField() callback that sets |field|'s placeholder value
   // using the value in |data|, causing the test to be greyed-out.  This method
   // also sets the autofill attribute, causing the background to be yellow.
   void PreviewFormField(WebKit::WebFormControlElement* field,
-                        const webkit_glue::FormField* data);
+                        const webkit_glue::FormField* data,
+                        bool is_initiating_node);
 
   // The cached FormElement objects.
   FormElementList form_elements_;

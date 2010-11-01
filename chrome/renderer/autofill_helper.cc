@@ -159,7 +159,7 @@ void AutoFillHelper::FormDataFilled(int query_id,
       form_manager_.FillForm(form, autofill_query_node_);
       break;
     case AUTOFILL_PREVIEW:
-      form_manager_.PreviewForm(form);
+      form_manager_.PreviewForm(form, autofill_query_node_);
       break;
     default:
       NOTREACHED();
