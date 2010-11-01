@@ -1051,3 +1051,32 @@
    fun:_ZN6policy58ConfigurationPolicyProviderMacTest_TestNonForcedValue_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_61228_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15FilePathWatcherC2Ev
+   fun:_ZN15FilePathWatcherC1Ev
+   fun:_ZN6policy22FileBasedPolicyWatcherC2Ev
+   fun:_ZN6policy22FileBasedPolicyWatcherC1Ev
+   fun:_ZN6policy23FileBasedPolicyProviderC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEPNS0_8DelegateE
+   fun:_ZN6policy30ConfigurationPolicyProviderMacC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEP14MacPreferences
+   fun:_ZN6policy30ConfigurationPolicyProviderMacC1EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEP14MacPreferences
+   fun:_ZN6policy47ConfigurationPolicyProviderMacTest_Default_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+{
+   bug_61228_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15FilePathWatcherC2Ev
+   fun:_ZN15FilePathWatcherC1Ev
+   fun:_ZN6policy22FileBasedPolicyWatcherC2Ev
+   fun:_ZN6policy22FileBasedPolicyWatcherC1Ev
+   fun:_ZN6policy23FileBasedPolicyProviderC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEPNS0_8DelegateE
+   fun:_ZN6policy30ConfigurationPolicyProviderMacC2EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEP14MacPreferences
+   fun:_ZN6policy30ConfigurationPolicyProviderMacC1EPKNS_27ConfigurationPolicyProvider20PolicyDefinitionListEP14MacPreferences
+   fun:_ZN6policy49ConfigurationPolicyProviderMacTest_TestValue_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+
