@@ -42,7 +42,7 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &ThreadProxy::CacheHasPermissionIO,
-                          cache, url));
+                          make_scoped_refptr(cache), url));
     io_event_.Signal();
     ui_event_.Wait();  // Wait for IO thread to be done.
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

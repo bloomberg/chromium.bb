@@ -122,7 +122,7 @@ class ImporterTest : public testing::Test {
       items = items | SEARCH_ENGINES;
     loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
         &ImporterHost::StartImportSettings, profile_info,
-        static_cast<Profile*>(NULL), items, writer, true));
+        static_cast<Profile*>(NULL), items, make_scoped_refptr(writer), true));
     loop->Run();
   }
 
@@ -705,10 +705,14 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
   profile_info.app_path = app_path_;
   profile_info.source_path = profile_path_;
 
-  loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
-      &ImporterHost::StartImportSettings, profile_info,
+  loop->PostTask(FROM_HERE, NewRunnableMethod(
+      host.get(),
+      &ImporterHost::StartImportSettings,
+      profile_info,
       static_cast<Profile*>(NULL),
-      HISTORY | PASSWORDS | FAVORITES | SEARCH_ENGINES, observer, true));
+      HISTORY | PASSWORDS | FAVORITES | SEARCH_ENGINES,
+      make_scoped_refptr(observer),
+      true));
   loop->Run();
 }
 

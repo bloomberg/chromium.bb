@@ -44,7 +44,7 @@ class NotificationCollector
     loop_->PostTask(FROM_HERE,
                     NewRunnableMethod(this,
                                       &NotificationCollector::RecordChange,
-                                      delegate));
+                                      make_scoped_refptr(delegate)));
   }
 
   void Register(TestDelegate* delegate) {

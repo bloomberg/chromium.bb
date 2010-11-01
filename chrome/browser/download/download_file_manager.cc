@@ -176,7 +176,7 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
-                        info, manager));
+                        info, make_scoped_refptr(manager)));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle
