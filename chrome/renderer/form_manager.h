@@ -28,24 +28,27 @@ class FormManager {
  public:
   // A bit field mask for form requirements.
   enum RequirementsMask {
-    REQUIRE_NONE = 0x0,             // No requirements.
-    REQUIRE_AUTOCOMPLETE = 0x1,     // Require that autocomplete != off.
-    REQUIRE_ENABLED = 0x2,          // Require that disabled attribute is off.
-    REQUIRE_EMPTY = 0x4,            // Require that the fields are empty.
+    REQUIRE_NONE         = 0,       // No requirements.
+    REQUIRE_AUTOCOMPLETE = 1 << 0,  // Require that autocomplete != off.
+    REQUIRE_ENABLED      = 1 << 1,  // Require that disabled attribute is off.
+    REQUIRE_EMPTY        = 1 << 2,  // Require that the fields are empty.
+  };
+
+  // A bit field mask to extract data from WebFormControlElement.
+  enum ExtractMask {
+    EXTRACT_NONE    = 0,
+    EXTRACT_VALUE   = 1 << 0,  // Extract value from WebFormControlElement.
+    EXTRACT_OPTIONS = 1 << 1,  // Extract options from WebFormControlElement.
   };
 
   FormManager();
   virtual ~FormManager();
 
   // Fills out a FormField object from a given WebFormControlElement.
-  // If |get_value| is true, |field| will have the value set from |element|.
-  // If |get_options| is true, |field| will have the select options set from
-  // |element|.
-  // TODO(jhawkins): Use a bit-field instead of two parameters.
+  // |extract_mask|: See the enum ExtractMask above for details.
   static void WebFormControlElementToFormField(
       const WebKit::WebFormControlElement& element,
-      bool get_value,
-      bool get_options,
+      ExtractMask extract_mask,
       webkit_glue::FormField* field);
 
   // Returns the corresponding label for |element|.  WARNING: This method can
@@ -63,8 +66,7 @@ class FormManager {
   // private.
   static bool WebFormElementToFormData(const WebKit::WebFormElement& element,
                                        RequirementsMask requirements,
-                                       bool get_values,
-                                       bool get_options,
+                                       ExtractMask extract_mask,
                                        webkit_glue::FormData* form);
 
   // Scans the DOM in |frame| extracting and storing forms.

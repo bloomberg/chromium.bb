@@ -258,8 +258,7 @@ FormManager::~FormManager() {
 // static
 void FormManager::WebFormControlElementToFormField(
     const WebFormControlElement& element,
-    bool get_value,
-    bool get_options,
+    ExtractMask extract_mask,
     FormField* field) {
   DCHECK(field);
 
@@ -269,7 +268,7 @@ void FormManager::WebFormControlElementToFormField(
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
 
-  if (get_options) {
+  if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
     std::vector<string16> option_strings;
     GetOptionStringsFromElement(element, &option_strings);
@@ -281,7 +280,7 @@ void FormManager::WebFormControlElementToFormField(
     field->set_size(input_element.size());
   }
 
-  if (!get_value)
+  if (!(extract_mask & EXTRACT_VALUE))
     return;
 
   // TODO(jhawkins): In WebKit, move value() and setValue() to
@@ -333,8 +332,7 @@ string16 FormManager::LabelForElement(const WebFormControlElement& element) {
 // static
 bool FormManager::WebFormElementToFormData(const WebFormElement& element,
                                            RequirementsMask requirements,
-                                           bool get_values,
-                                           bool get_options,
+                                           ExtractMask extract_mask,
                                            FormData* form) {
   DCHECK(form);
 
@@ -386,8 +384,7 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
     // Create a new FormField, fill it out and map it to the field's name.
     FormField* field = new FormField;
-    WebFormControlElementToFormField(
-        control_element, get_values, get_options, field);
+    WebFormControlElementToFormField(control_element, extract_mask, field);
     form_fields.push_back(field);
     // TODO(jhawkins): A label element is mapped to a form control element's id.
     // field->name() will contain the id only if the name does not exist.  Add
@@ -509,7 +506,7 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
 
     FormData form;
     WebFormElementToFormData(
-        form_element->form_element, requirements, true, false, &form);
+        form_element->form_element, requirements, EXTRACT_VALUE, &form);
     if (form.fields.size() >= kRequiredAutoFillFields)
       forms->push_back(form);
   }
@@ -536,8 +533,10 @@ bool FormManager::FindFormWithFormControlElement(
              form_element->control_elements.begin();
          iter != form_element->control_elements.end(); ++iter) {
       if (iter->nameForAutofill() == element.nameForAutofill()) {
+        ExtractMask extract_mask = static_cast<ExtractMask>(
+            EXTRACT_VALUE | EXTRACT_OPTIONS);
         WebFormElementToFormData(
-            form_element->form_element, requirements, true, true, form);
+            form_element->form_element, requirements, extract_mask, form);
         return true;
       }
     }

@@ -55,8 +55,7 @@ TEST_F(FormManagerTest, WebFormElementToFormData) {
   FormData form;
   EXPECT_TRUE(FormManager::WebFormElementToFormData(forms[0],
                                                     FormManager::REQUIRE_NONE,
-                                                    true,
-                                                    false,
+                                                    FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(frame->url()), form.origin);
@@ -1332,8 +1331,7 @@ TEST_F(FormManagerTest, LabelsInferredWithImageTags) {
   FormData form;
   EXPECT_TRUE(FormManager::WebFormElementToFormData(forms[0],
                                                     FormManager::REQUIRE_NONE,
-                                                    true,
-                                                    false,
+                                                    FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(frame->url()), form.origin);
@@ -2111,8 +2109,7 @@ TEST_F(FormManagerTest, ThreePartPhone) {
   FormData form;
   EXPECT_TRUE(FormManager::WebFormElementToFormData(forms[0],
                                                     FormManager::REQUIRE_NONE,
-                                                    true,
-                                                    false,
+                                                    FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(frame->url()), form.origin);
@@ -2179,8 +2176,7 @@ TEST_F(FormManagerTest, SizeFields) {
   FormData form;
   EXPECT_TRUE(FormManager::WebFormElementToFormData(forms[0],
                                                     FormManager::REQUIRE_NONE,
-                                                    true,
-                                                    false,
+                                                    FormManager::EXTRACT_VALUE,
                                                     &form));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(frame->url()), form.origin);

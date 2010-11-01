@@ -2957,8 +2957,12 @@ void RenderView::willSubmitForm(WebFrame* frame, const WebFormElement& form) {
 
   FormData form_data;
   if (FormManager::WebFormElementToFormData(
-          form, FormManager::REQUIRE_AUTOCOMPLETE, true, false, &form_data))
+          form,
+          FormManager::REQUIRE_AUTOCOMPLETE,
+          FormManager::EXTRACT_VALUE,
+          &form_data)) {
     Send(new ViewHostMsg_FormSubmitted(routing_id_, form_data));
+  }
 }
 
 void RenderView::willPerformClientRedirect(

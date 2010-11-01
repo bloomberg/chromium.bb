@@ -61,7 +61,8 @@ void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node) {
 
   const WebFormControlElement& element = node.toConst<WebFormControlElement>();
   webkit_glue::FormField field;
-  FormManager::WebFormControlElementToFormField(element, true, false, &field);
+  FormManager::WebFormControlElementToFormField(
+      element, FormManager::EXTRACT_VALUE, &field);
 
   // WebFormControlElementToFormField does not scrape the DOM for the field
   // label, so find the label here.
@@ -300,7 +301,8 @@ void AutoFillHelper::SendForms(WebFrame* frame) {
 
     webkit_glue::FormData form;
     if (FormManager::WebFormElementToFormData(
-            web_form, FormManager::REQUIRE_NONE, false, false, &form)) {
+            web_form, FormManager::REQUIRE_NONE,
+            FormManager::EXTRACT_NONE, &form)) {
       forms.push_back(form);
     }
   }
