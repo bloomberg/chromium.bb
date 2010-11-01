@@ -150,23 +150,6 @@ FilePath GenerateTimestampedName(const FilePath& base_path,
   return base_path.InsertBeforeExtension(suffix);
 }
 
-FilePath GetSessionLogFile(const CommandLine& command_line) {
-  FilePath log_dir;
-  std::string log_dir_str;
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (env->GetVar(env_vars::kSessionLogDir, &log_dir_str) &&
-      !log_dir_str.empty()) {
-    log_dir = FilePath(log_dir_str);
-  } else {
-    PathService::Get(chrome::DIR_USER_DATA, &log_dir);
-    FilePath login_profile =
-        command_line.GetSwitchValuePath(switches::kLoginProfile);
-    log_dir = log_dir.Append(login_profile);
-  }
-  DCHECK(file_util::PathExists(log_dir));
-  return log_dir.Append(GetLogFileName().BaseName());
-}
-
 FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
   DCHECK(!symlink_path.empty());
 
@@ -210,13 +193,12 @@ void RemoveSymlinkAndLog(const FilePath& link_path,
 
 }  // anonymous namespace
 
-void RedirectChromeLogging(const CommandLine& command_line) {
+void RedirectChromeLogging(const FilePath& new_log_dir,
+                           const CommandLine& command_line) {
   DCHECK(!chrome_logging_redirected_) <<
     "Attempted to redirect logging when it was already initialized.";
-
-  // Redirect logs to the session log directory, if set.  Otherwise
-  // defaults to the profile dir.
-  FilePath log_path = GetSessionLogFile(command_line);
+  FilePath orig_log_path = GetLogFileName();
+  FilePath log_path = new_log_dir.Append(orig_log_path.BaseName());
 
   // Always force a new symlink when redirecting.
   FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
@@ -247,12 +229,6 @@ void InitChromeLogging(const CommandLine& command_line,
   FilePath log_path = GetLogFileName();
 
 #if defined(OS_CHROMEOS)
-  // For BWSI (Incognito) logins, we want to put the logs in the user
-  // profile directory that is created for the temporary session instead
-  // of in the system log directory, for privacy reasons.
-  if (command_line.HasSwitch(switches::kGuestSession))
-    log_path = GetSessionLogFile(command_line);
-
   // On ChromeOS we log to the symlink.  We force creation of a new
   // symlink if we've been asked to delete the old log, since that
   // indicates the start of a new session.
