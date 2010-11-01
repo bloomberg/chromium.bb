@@ -302,13 +302,11 @@ ACTION_P5(ValidateWindowSize, mock, left, top, width, height) {
   web_browser2->get_Width(reinterpret_cast<long*>(&actual_width));  // NOLINT
   web_browser2->get_Height(reinterpret_cast<long*>(&actual_height));  // NOLINT
 
-  EXPECT_EQ(actual_left, left);
-  EXPECT_EQ(actual_top, top);
+  EXPECT_GE(actual_left, left);
+  EXPECT_GE(actual_top, top);
 
-  EXPECT_LE(actual_width, width + 20);
-  EXPECT_GT(actual_width, width - 20);
-  EXPECT_LE(actual_height, height + 100);
-  EXPECT_GT(actual_height, height - 100);
+  EXPECT_GE(actual_width, width);
+  EXPECT_GE(actual_height, height);
 }
 
 ACTION_P(VerifyAddressBarUrlWithGcf, mock) {
