@@ -84,8 +84,16 @@ const int kWizardScreenHeight = 450;
 const int kScreenCornerRadius = 10;
 const int kUserCornerRadius = 5;
 
-
 }  // namespace login
+
+// Font size correction in points for login/oobe textfields/buttons/title.
+const int kFontSizeCorrectionDelta = 2;
+
+// New pod sizes.
+const int kNewUserPodFullWidth = 372;
+const int kNewUserPodFullHeight = 372;
+const int kNewUserPodSmallWidth = 360;
+const int kNewUserPodSmallHeight = 322;
 
 }  // namespace chromeos
 

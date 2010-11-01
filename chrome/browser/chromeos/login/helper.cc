@@ -20,9 +20,6 @@ namespace chromeos {
 
 namespace {
 
-// Font size correction in points for login/oobe textfields/buttons.
-const int kFontSizeCorrectionDelta = 2;
-
 // Time in ms per throbber frame.
 const int kThrobberFrameMs = 60;
 

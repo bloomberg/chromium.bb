@@ -139,6 +139,9 @@ class NewUserView : public views::View,
   // button is enabled, otherwise it's disabled.
   void UpdateSignInButtonState();
 
+  // Create view with specified solid background and add it as  child.
+  views::View* CreateSplitter(SkColor color);
+
   // Screen controls.
   // NOTE: sign_in_button_ and languages_menubutton_ are handled with
   // special care: they are recreated on any text/locale change
@@ -147,7 +150,10 @@ class NewUserView : public views::View,
   views::Textfield* password_field_;
   views::Label* title_label_;
   views::Label* title_hint_label_;
-  views::View* splitter_;
+  views::View* splitter_up1_;
+  views::View* splitter_up2_;
+  views::View* splitter_down1_;
+  views::View* splitter_down2_;
   views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
   views::Link* guest_link_;

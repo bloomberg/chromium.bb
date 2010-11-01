@@ -142,6 +142,7 @@ class UserController : public views::ButtonListener,
 
   // Max size needed when an entry is not selected.
   static const int kUnselectedSize;
+  static const int kNewUserUnselectedSize;
 
  private:
   // Invoked when the user wants to login. Forwards the call to the delegate.
@@ -154,11 +155,13 @@ class UserController : public views::ButtonListener,
                             chromeos::WmIpcWindowType type,
                             views::View* contents_view);
   views::WidgetGtk* CreateControlsWindow(int index,
-                                         int* height,
-                                         bool need_browse_without_signin);
+                                         int* width, int* height,
+                                         bool need_guest_link);
   views::WidgetGtk* CreateImageWindow(int index);
   views::WidgetGtk* CreateLabelWindow(int index, WmIpcWindowType type);
-  void CreateBorderWindow(int index, int total_user_count, int controls_height);
+  void CreateBorderWindow(int index,
+                          int total_user_count,
+                          int controls_width, int controls_height);
 
   // Sets specified image on the image window. If image's size is less than
   // 75% of window size, image size is preserved to avoid blur. Otherwise,

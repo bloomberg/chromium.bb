@@ -38,13 +38,21 @@ using views::View;
 
 namespace {
 
-const int kTextfieldWidth = 286;
+const int kTextfieldWidth = 230;
 const int kSplitterHeight = 1;
-const int kRowPad = 7;
+const int kTitlePad = 20;
+const int kRowPad = 13;
+const int kBottomPad = 33;
+const int kLeftPad = 33;
 const int kColumnPad = 7;
-const int kLanguagesMenuHeight = 30;
+const int kLanguagesMenuHeight = 25;
+const int kLanguagesMenuPad = 5;
 const SkColor kLanguagesMenuTextColor = 0xFF999999;
 const SkColor kErrorColor = 0xFF8F384F;
+const SkColor kSplitterUp1Color = 0xFFD0D2D3;
+const SkColor kSplitterUp2Color = 0xFFE1E3E4;
+const SkColor kSplitterDown1Color = 0xFFE3E6E8;
+const SkColor kSplitterDown2Color = 0xFFEAEDEE;
 const char kDefaultDomain[] = "@gmail.com";
 
 // Textfield that adds domain to the entered username if focus is lost and
@@ -79,7 +87,10 @@ NewUserView::NewUserView(Delegate* delegate,
       password_field_(NULL),
       title_label_(NULL),
       title_hint_label_(NULL),
-      splitter_(NULL),
+      splitter_up1_(NULL),
+      splitter_up2_(NULL),
+      splitter_down1_(NULL),
+      splitter_down2_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
       guest_link_(NULL),
@@ -117,7 +128,8 @@ void NewUserView::Init() {
 
   // Set up fonts.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont);
+  gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont).DeriveFont(
+      kFontSizeCorrectionDelta);
   gfx::Font title_hint_font = rb.GetFont(ResourceBundle::BoldFont);
 
   title_label_ = new views::Label();
@@ -133,10 +145,10 @@ void NewUserView::Init() {
   title_hint_label_->SetMultiLine(true);
   AddChildView(title_hint_label_);
 
-  splitter_ = new views::View();
-  splitter_->set_background(
-      views::Background::CreateSolidBackground(SK_ColorGRAY));
-  AddChildView(splitter_);
+  splitter_up1_ = CreateSplitter(kSplitterUp1Color);
+  splitter_up2_ = CreateSplitter(kSplitterUp2Color);
+  splitter_down1_ = CreateSplitter(kSplitterDown1Color);
+  splitter_down2_ = CreateSplitter(kSplitterDown2Color);
 
   username_field_ = new UsernameField();
   CorrectTextfieldFontSize(username_field_);
@@ -224,6 +236,13 @@ void NewUserView::UpdateSignInButtonState() {
   bool enabled = !username_field_->text().empty() &&
                  !password_field_->text().empty();
   sign_in_button_->SetEnabled(enabled);
+}
+
+views::View* NewUserView::CreateSplitter(SkColor color) {
+  views::View* splitter = new views::View();
+  splitter->set_background(views::Background::CreateSolidBackground(color));
+  AddChildView(splitter);
+  return splitter;
 }
 
 void NewUserView::AddChildView(View* view) {
@@ -344,72 +363,81 @@ void NewUserView::Layout() {
   int x = std::max(0,
       this->width() - insets.right() -
           languages_menubutton_->GetPreferredSize().width() - kColumnPad);
-  int y = insets.top() + kRowPad;
+  int y = insets.top() + kLanguagesMenuPad;
   int width = std::min(this->width() - insets.width() - 2 * kColumnPad,
                        languages_menubutton_->GetPreferredSize().width());
   int height = kLanguagesMenuHeight;
   languages_menubutton_->SetBounds(x, y, width, height);
-  y += height + kRowPad;
+  y += height + kTitlePad;
 
   width = std::min(this->width() - insets.width() - 2 * kColumnPad,
                    kTextfieldWidth);
-  x = (this->width() - width) / 2;
-  int max_width = this->width() - x - insets.right();
+  x = insets.left() + kLeftPad;
+  int max_width = this->width() - x - std::max(insets.right(), x);
   title_label_->SizeToFit(max_width);
   title_hint_label_->SizeToFit(max_width);
 
   // Top align title and title hint.
   y += setViewBounds(title_label_, x, y, max_width, false);
   y += setViewBounds(title_hint_label_, x, y, max_width, false);
-  int title_end = y;
+  int title_end = y + kTitlePad;
 
-  // Center align all other controls.
-  int create_account_link_height = need_create_account_ ?
-      create_account_link_->GetPreferredSize().height() : 0;
-  int guest_link_height = need_guest_link_ ?
-      guest_link_->GetPreferredSize().height() : 0;
+  splitter_up1_->SetBounds(0, title_end, this->width(), kSplitterHeight);
+  splitter_up2_->SetBounds(0, title_end + 1, this->width(), kSplitterHeight);
 
+  // Bottom controls.
+  int links_height = 0;
+  if (need_create_account_)
+    links_height += create_account_link_->GetPreferredSize().height();
+  if (need_guest_link_)
+    links_height += guest_link_->GetPreferredSize().height();
+  if (need_create_account_ && need_guest_link_)
+    links_height += kRowPad;
+  y = this->height() - insets.bottom() - kBottomPad;
+  if (links_height)
+    y -= links_height + kBottomPad;
+  int bottom_start = y;
+
+  splitter_down1_->SetBounds(0, y, this->width(), kSplitterHeight);
+  splitter_down2_->SetBounds(0, y + 1, this->width(), kSplitterHeight);
+
+  if (need_guest_link_) {
+    y -= setViewBounds(guest_link_,
+                       x, y + kBottomPad, max_width, false) + kRowPad;
+  }
+  if (need_create_account_) {
+    y += setViewBounds(create_account_link_, x, y, max_width, false);
+  }
+
+  // Center main controls.
   height = username_field_->GetPreferredSize().height() +
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
-           create_account_link_height +
-           guest_link_height +
-           5 * kRowPad;
-  y += (this->height() - y - height) / 2;
+           2 * kRowPad;
+  y = title_end + (bottom_start - title_end - height) / 2;
 
-  int corner_radius = need_border_ ? login::kScreenCornerRadius : 0;
-  splitter_->SetBounds(insets.left() - corner_radius / 2,
-                       title_end + (y - title_end) / 2,
-                       this->width() - insets.width() + corner_radius,
-                       kSplitterHeight);
-
-  y += (setViewBounds(username_field_, x, y, width, true) + kRowPad);
-  y += (setViewBounds(password_field_, x, y, width, true) + 3 * kRowPad);
+  y += setViewBounds(username_field_, x, y, width, true) + kRowPad;
+  y += setViewBounds(password_field_, x, y, width, true) + kRowPad;
 
   int throbber_y = y;
   int sign_in_button_width =
       std::max(login::kButtonMinWidth,
                sign_in_button_->GetPreferredSize().width());
-  y += (setViewBounds(sign_in_button_, x, y, sign_in_button_width,true) +
-      kRowPad);
+  setViewBounds(sign_in_button_, x, y, sign_in_button_width,true);
   setViewBounds(throbber_,
                 x + width - throbber_->GetPreferredSize().width(),
                 throbber_y + (sign_in_button_->GetPreferredSize().height() -
                               throbber_->GetPreferredSize().height()) / 2,
                 width,
                 false);
-  if (need_create_account_) {
-    y += setViewBounds(create_account_link_, x, y, max_width, false);
-  }
 
-  if (need_guest_link_) {
-    y += setViewBounds(guest_link_, x, y, max_width, false);
-  }
   SchedulePaint();
 }
 
 gfx::Size NewUserView::GetPreferredSize() {
-  return gfx::Size(width(), height());
+  return need_guest_link_ ?
+      gfx::Size(kNewUserPodFullWidth, kNewUserPodFullHeight) :
+      gfx::Size(kNewUserPodSmallWidth, kNewUserPodSmallHeight);
 }
 
 void NewUserView::SetUsername(const std::string& username) {

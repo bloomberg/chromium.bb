@@ -84,6 +84,7 @@ const int UserController::kPadding = 20;
 
 // Max size needed when an entry is not selected.
 const int UserController::kUnselectedSize = 100;
+const int UserController::kNewUserUnselectedSize = 42;
 
 UserController::UserController(Delegate* delegate, bool is_guest)
     : user_index_(-1),
@@ -162,10 +163,12 @@ void UserController::Init(int index,
                           int total_user_count,
                           bool need_browse_without_signin) {
   int controls_height = 0;
+  int controls_width = 0;
   controls_window_ =
-      CreateControlsWindow(index, &controls_height, need_browse_without_signin);
+      CreateControlsWindow(index, &controls_width, &controls_height,
+                           need_browse_without_signin);
   image_window_ = CreateImageWindow(index);
-  CreateBorderWindow(index, total_user_count, controls_height);
+  CreateBorderWindow(index, total_user_count, controls_width, controls_height);
   label_window_ = CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_LABEL);
   unselected_label_window_ =
       CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
@@ -323,7 +326,7 @@ void UserController::ConfigureLoginWindow(WidgetGtk* window,
 
 WidgetGtk* UserController::CreateControlsWindow(
     int index,
-    int* height,
+    int* width, int* height,
     bool need_browse_without_signin) {
   views::View* control_view;
   if (is_new_user_) {
@@ -342,14 +345,18 @@ WidgetGtk* UserController::CreateControlsWindow(
   }
 
   *height = kControlsHeight;
-  if (is_new_user_)
-    *height += kUserImageSize + kUserNameGap;
+  *width = kUserImageSize;
+  if (is_new_user_) {
+    DCHECK(new_user_view_);
+    gfx::Size size = new_user_view_->GetPreferredSize();
+    *width = size.width();
+    *height = size.height();
+  }
 
-  int width = kUserImageSize;
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   ConfigureLoginWindow(window,
                        index,
-                       gfx::Rect(width, *height),
+                       gfx::Rect(*width, *height),
                        WM_IPC_WINDOW_LOGIN_CONTROLS,
                        control_view);
   return window;
@@ -380,13 +387,15 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
 
 void UserController::CreateBorderWindow(int index,
                                         int total_user_count,
+                                        int controls_width,
                                         int controls_height) {
   // New user login controls window is much higher than existing user's controls
   // window so window manager will place the control instead of image window.
-  int width = kBorderSize * 2 + kUserImageSize;
+  int width = kBorderSize * 2 + controls_width;
   int height = kBorderSize * 2 + controls_height;
   if (!is_new_user_)
     height += kBorderSize + kUserImageSize;
+
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   border_window_->MakeTransparent();
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
@@ -409,7 +418,7 @@ void UserController::UpdateUserCount(int index, int total_user_count) {
   std::vector<int> params;
   params.push_back(index);
   params.push_back(total_user_count);
-  params.push_back(kUnselectedSize);
+  params.push_back(is_new_user_ ? kNewUserUnselectedSize : kUnselectedSize);
   params.push_back(kPadding);
   WmIpc::instance()->SetWindowType(
       border_window_->GetNativeView(),
@@ -456,6 +465,10 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
 
   int width = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       kUserImageSize : kUnselectedSize;
+  if (is_new_user_) {
+    // Make label as small as possible to don't show tooltip.
+    width = 0;
+  }
   int height = label->GetPreferredSize().height();
   WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
   ConfigureLoginWindow(window,
