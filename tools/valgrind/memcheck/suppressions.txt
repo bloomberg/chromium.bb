@@ -3175,6 +3175,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN13FormStructure18EncodeQueryRequestERK12ScopedVectorIS_EPSt6vectorISsSaISsEEPSs
-   fun:_ZN79_GLOBAL__N_chrome_browser_autofill_form_structure_unittest.cc_00000000_ED16FFB341FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
+   fun:*FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
    fun:_ZN7testing35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
