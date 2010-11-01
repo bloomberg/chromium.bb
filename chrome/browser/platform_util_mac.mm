@@ -132,6 +132,10 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return [view window];
 }
 
+gfx::NativeView GetParent(gfx::NativeView view) {
+  return nil;
+}
+
 bool IsWindowActive(gfx::NativeWindow window) {
   return [window isKeyWindow] || [window isMainWindow];
 }
