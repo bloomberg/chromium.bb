@@ -21,10 +21,10 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/test/automation/automation_messages.h"
 
 class AutocompleteEditModel;
 class AutomationProvider;

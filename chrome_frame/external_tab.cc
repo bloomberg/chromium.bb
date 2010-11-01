@@ -7,7 +7,7 @@
 #include "base/tracked.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/utils.h"
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
@@ -271,8 +271,10 @@ void ExternalTabProxy::HandleAccelerator(const MSG& accel_message) {
       &UIDelegate::OnHandleAccelerator, accel_message));
 }
 
-void ExternalTabProxy::HandleContextMenu(HANDLE menu_handle, int align_flags,
-                                         const IPC::ContextMenuParams& params) {
+void ExternalTabProxy::HandleContextMenu(
+    HANDLE menu_handle,
+    int align_flags,
+    const IPC::MiniContextMenuParams& params) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnHandleContextMenu, menu_handle, align_flags, params));
 }

@@ -1374,8 +1374,7 @@ TEST_F(NavigationControllerTest, Interstitial) {
   // Now navigate somewhere with an interstitial.
   const GURL url2("http://bar");
   controller().LoadURL(url1, GURL(), PageTransition::TYPED);
-  controller().pending_entry()->set_page_type(
-      NavigationEntry::INTERSTITIAL_PAGE);
+  controller().pending_entry()->set_page_type(INTERSTITIAL_PAGE);
 
   // At this point the interstitial will be displayed and the load will still
   // be pending. If the user continues, the load will commit.
@@ -1383,8 +1382,7 @@ TEST_F(NavigationControllerTest, Interstitial) {
 
   // The page should be a normal page again.
   EXPECT_EQ(url2, controller().GetLastCommittedEntry()->url());
-  EXPECT_EQ(NavigationEntry::NORMAL_PAGE,
-            controller().GetLastCommittedEntry()->page_type());
+  EXPECT_EQ(NORMAL_PAGE, controller().GetLastCommittedEntry()->page_type());
 }
 
 TEST_F(NavigationControllerTest, RemoveEntry) {
@@ -1674,7 +1672,7 @@ TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
 
   // Add an interstitial entry.  Should be deleted with controller.
   NavigationEntry* interstitial_entry = new NavigationEntry();
-  interstitial_entry->set_page_type(NavigationEntry::INTERSTITIAL_PAGE);
+  interstitial_entry->set_page_type(INTERSTITIAL_PAGE);
   controller().AddTransientEntry(interstitial_entry);
 
   scoped_ptr<TabContents> clone(controller().tab_contents()->Clone());

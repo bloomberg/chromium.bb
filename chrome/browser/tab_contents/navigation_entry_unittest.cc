@@ -134,10 +134,10 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(instance_, entry1_.get()->site_instance());
 
   // Page type
-  EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry1_.get()->page_type());
-  EXPECT_EQ(NavigationEntry::NORMAL_PAGE, entry2_.get()->page_type());
-  entry2_.get()->set_page_type(NavigationEntry::INTERSTITIAL_PAGE);
-  EXPECT_EQ(NavigationEntry::INTERSTITIAL_PAGE, entry2_.get()->page_type());
+  EXPECT_EQ(NORMAL_PAGE, entry1_.get()->page_type());
+  EXPECT_EQ(NORMAL_PAGE, entry2_.get()->page_type());
+  entry2_.get()->set_page_type(INTERSTITIAL_PAGE);
+  EXPECT_EQ(INTERSTITIAL_PAGE, entry2_.get()->page_type());
 
   // Referrer
   EXPECT_EQ(GURL(), entry1_.get()->referrer());

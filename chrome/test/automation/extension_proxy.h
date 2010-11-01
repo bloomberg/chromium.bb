@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/test/automation/automation_constants.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 
 class AutomationMessageSender;

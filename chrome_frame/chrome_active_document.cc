@@ -31,7 +31,6 @@
 #include "base/win/scoped_variant.h"
 #include "grit/generated_resources.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/page_zoom.h"
@@ -970,7 +969,7 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
 }
 
 bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
-    const IPC::ContextMenuParams& params) {
+    const IPC::MiniContextMenuParams& params) {
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 

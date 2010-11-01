@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 
 #define MESSAGES_INTERNAL_IMPL_FILE \
-  "chrome/test/automation/automation_messages_internal.h"
+  "chrome/common/automation_messages_internal.h"
 #include "ipc/ipc_message_impl_macros.h"

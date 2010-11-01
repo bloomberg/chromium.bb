@@ -8,8 +8,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "chrome/test/automation/automation_constants.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_constants.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"

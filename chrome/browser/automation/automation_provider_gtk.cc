@@ -13,7 +13,7 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/view_id_util.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 

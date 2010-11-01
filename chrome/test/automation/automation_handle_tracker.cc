@@ -4,7 +4,7 @@
 
 #include "chrome/test/automation/automation_handle_tracker.h"
 
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 
 AutomationResourceProxy::AutomationResourceProxy(

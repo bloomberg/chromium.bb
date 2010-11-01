@@ -6,7 +6,7 @@
 
 #include "base/tuple.h"
 #include "ipc/ipc_sync_message.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 
 CFProxy::CFProxy(CFProxyTraits* api) : ipc_thread_("ipc"),
                                        sync_dispatcher_(&tab2delegate_),

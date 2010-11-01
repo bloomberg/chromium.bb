@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/path_service.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 
 namespace {

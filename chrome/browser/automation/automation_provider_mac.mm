@@ -14,7 +14,7 @@
 #include "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/browser/view_ids.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"

@@ -5,7 +5,7 @@
 #include "chrome/test/automation/extension_proxy.h"
 
 #include "base/string_number_conversions.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"

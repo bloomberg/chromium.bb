@@ -5,8 +5,8 @@
 #include <string>
 #include "base/file_path.h"
 #include "base/waitable_event.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/cfproxy_private.h"
-#include "chrome/test/automation/automation_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -73,7 +73,7 @@ struct MockChromeProxyDelegate : public ChromeProxyDelegate {
   // Misc. UI.
   MOCK_METHOD1(HandleAccelerator, void(const MSG& accel_message));
   MOCK_METHOD3(HandleContextMenu, void(HANDLE menu_handle, int align_flags,
-      const IPC::ContextMenuParams& params));
+      const IPC::MiniContextMenuParams& params));
   MOCK_METHOD1(TabbedOut, void(bool reverse));
 
   //
@@ -472,7 +472,7 @@ TEST(Deserialize, DispatchTabMessage) {
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m9));
 
   // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
-  IPC::ContextMenuParams ctxmenu = { 711, 512, GURL("http://link_src"),
+  IPC::MiniContextMenuParams ctxmenu = { 711, 512, GURL("http://link_src"),
       GURL("http://unfiltered_link_url"), GURL("http://src_url"),
       GURL("http://page_url"), GURL("http://frame_url") };
   AutomationMsg_ForwardContextMenuToExternalHost m10(0, 1, HANDLE(7), 4,

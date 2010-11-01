@@ -8,7 +8,7 @@
 #include "base/json/string_escape.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/automation/automation_provider.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 
 namespace {
 

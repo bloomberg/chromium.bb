@@ -30,6 +30,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/page_info_bubble_view.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
@@ -37,7 +38,6 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
-#include "chrome/test/automation/automation_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/grid_layout.h"
@@ -618,7 +618,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   POINT screen_pt = { params.x, params.y };
   MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
 
-  IPC::ContextMenuParams ipc_params;
+  IPC::MiniContextMenuParams ipc_params;
   ipc_params.screen_x = screen_pt.x;
   ipc_params.screen_y = screen_pt.y;
   ipc_params.link_url = params.link_url;

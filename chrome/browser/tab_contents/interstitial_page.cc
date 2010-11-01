@@ -223,7 +223,7 @@ void InterstitialPage::Show() {
     NavigationEntry* entry = new NavigationEntry;
     entry->set_url(url_);
     entry->set_virtual_url(url_);
-    entry->set_page_type(NavigationEntry::INTERSTITIAL_PAGE);
+    entry->set_page_type(INTERSTITIAL_PAGE);
 
     // Give sub-classes a chance to set some states on the navigation entry.
     UpdateEntry(entry);

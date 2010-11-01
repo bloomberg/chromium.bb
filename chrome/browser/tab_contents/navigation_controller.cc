@@ -718,7 +718,7 @@ void NavigationController::RendererDidNavigateToNewPage(
     // Don't use the page type from the pending entry. Some interstitial page
     // may have set the type to interstitial. Once we commit, however, the page
     // type must always be normal.
-    new_entry->set_page_type(NavigationEntry::NORMAL_PAGE);
+    new_entry->set_page_type(NORMAL_PAGE);
   } else {
     new_entry = new NavigationEntry;
   }
@@ -1200,8 +1200,7 @@ void NavigationController::InsertEntriesFrom(
   size_t insert_index = 0;
   for (int i = 0; i < max_index; i++) {
     // When cloning a tab, copy all entries except interstitial pages
-    if (source.entries_[i].get()->page_type() !=
-        NavigationEntry::INTERSTITIAL_PAGE) {
+    if (source.entries_[i].get()->page_type() != INTERSTITIAL_PAGE) {
       entries_.insert(entries_.begin() + insert_index++,
                       linked_ptr<NavigationEntry>(
                           new NavigationEntry(*source.entries_[i])));

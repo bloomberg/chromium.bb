@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/page_type.h"
 
 class DictionaryValue;
 class TemplateURLModel;
@@ -197,8 +198,7 @@ class TestingAutomationProvider : public AutomationProvider,
                         int* insecure_content_status);
 
   // Gets the page type for the tab associated to the specified |handle|.
-  void GetPageType(int handle, bool* success,
-                   NavigationEntry::PageType* page_type);
+  void GetPageType(int handle, bool* success, PageType* page_type);
 
   // Gets the duration in ms of the last event matching |event_name|.
   // |duration_ms| is -1 if the event hasn't occurred yet.

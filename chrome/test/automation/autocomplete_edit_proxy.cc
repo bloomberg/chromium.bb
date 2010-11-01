@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "chrome/test/automation/automation_constants.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_constants.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 
 using base::TimeDelta;

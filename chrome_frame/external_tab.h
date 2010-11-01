@@ -14,8 +14,8 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/common//page_zoom.h"
-#include "chrome/test/automation/automation_constants.h"
+#include "chrome/common/automation_constants.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome_frame/cfproxy.h"
 #include "chrome_frame/task_marshaller.h"
 #include "googleurl/src/gurl.h"
@@ -29,7 +29,7 @@ namespace base {
 
 namespace IPC {
   struct NavigationInfo;
-  struct ContextMenuParams;
+  struct MiniContextMenuParams;
 }
 
 // This is the delegate/callback interface that has to be implemented
@@ -45,7 +45,7 @@ class UIDelegate {
   virtual void OnMessageFromChromeFrame(const std::string& message,
       const std::string& origin, const std::string& target) = 0;
   virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
-      const IPC::ContextMenuParams& params) = 0;
+      const IPC::MiniContextMenuParams& params) = 0;
   virtual void OnHandleAccelerator(const MSG& accel_message) = 0;
   virtual void OnTabbedOut(bool reverse) = 0;
   virtual void OnGoToHistoryOffset(int offset) = 0;
@@ -165,7 +165,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   // Misc. UI.
   virtual void HandleAccelerator(const MSG& accel_message);
   virtual void HandleContextMenu(HANDLE menu_handle, int align_flags,
-                                 const IPC::ContextMenuParams& params);
+                                 const IPC::MiniContextMenuParams& params);
   virtual void TabbedOut(bool reverse);
 
   // Other

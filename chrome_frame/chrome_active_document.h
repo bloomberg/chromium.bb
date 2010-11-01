@@ -344,7 +344,8 @@ END_EXEC_COMMAND_MAP()
 
   // Callbacks from ChromeFramePlugin<T>
   bool PreProcessContextMenu(HMENU menu);
-  bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params);
+  bool HandleContextMenuCommand(UINT cmd,
+                                const IPC::MiniContextMenuParams& params);
 
  // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
