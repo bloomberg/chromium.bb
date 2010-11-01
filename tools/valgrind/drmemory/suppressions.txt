@@ -212,6 +212,36 @@ UNINITIALIZED READ
 ...
 *!talk_base::CreateRandomString
 
+# http://code.google.com/p/drmemory/issues/detail?id=68
+UNINITIALIZED READ
+...
+WS2_32.dll!*
+
+UNINITIALIZED READ
+...
+ADVAPI32.dll!SetSecurityDescriptorDacl
+
+UNINITIALIZED READ
+...
+ADVAPI32.dll!Reg*Value*
+
+UNINITIALIZED READ
+...
+MSWSOCK.dll!WSPStartup
+
+UNADDRESSABLE ACCESS
+...
+MSWSOCK.dll!WSPStartup
+
+UNINITIALIZED READ
+...
+ntdll.dll!RtlValidateUnicodeString
+
+UNADDRESSABLE ACCESS
+...
+ntdll.dll!RtlValidateUnicodeString
+
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -277,10 +307,6 @@ UNINITIALIZED READ
 
 UNINITIALIZED READ
 ...
-WS2_32.dll!*
-
-UNINITIALIZED READ
-...
 *!*NSPRInitSingleton*
 
 UNINITIALIZED READ
@@ -289,18 +315,6 @@ UNINITIALIZED READ
 UNINITIALIZED READ
 ...
 *!NdrClientCall2
-
-UNINITIALIZED READ
-...
-*!SetSecurityDescriptorDacl
-
-UNINITIALIZED READ
-...
-MSWSOCK.dll!WSPStartup
-
-UNINITIALIZED READ
-...
-*!Reg*Value
 
 UNINITIALIZED READ
 ntdll.dll!RtlpNtOpenKey
