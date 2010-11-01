@@ -53,7 +53,7 @@ class GclUnittest(GclTestsBase):
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'gclient_utils', 'getpass',
-        'main', 'need_change', 'need_change_and_args', 'no_args', 'os',
+        'json', 'main', 'need_change', 'need_change_and_args', 'no_args', 'os',
         'random', 're', 'string', 'subprocess', 'sys', 'tempfile',
         'time', 'upload', 'urllib2',
     ]
@@ -166,6 +166,9 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
       gcl.ChangeInfo._SEPARATOR.join(["42, 53", "G      b.cc"] + description))
+    # Does an upgrade.
+    gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
+    gcl.gclient_utils.FileWrite('bleeeh', mox.IgnoreArg())
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo.Load('bleh', self.fake_root_dir, True, False)
@@ -181,6 +184,9 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.gclient_utils.FileRead('bleeeh', 'r').AndReturn(
         gcl.ChangeInfo._SEPARATOR.join(["", "", ""]))
+    # Does an upgrade.
+    gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
+    gcl.gclient_utils.FileWrite('bleeeh', mox.IgnoreArg())
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo.Load('bleh', self.fake_root_dir, True, False)
@@ -192,22 +198,26 @@ class ChangeInfoUnittest(GclTestsBase):
 
   def testSaveEmpty(self):
     gcl.GetChangelistInfoFile('').AndReturn('foo')
+    values = {
+        'description': '', 'patchset': 2, 'issue': 1,
+        'files': [], 'needs_upload': False}
     gcl.gclient_utils.FileWrite(
-        'foo',
-        gcl.ChangeInfo._SEPARATOR.join(['0, 0, clean', '', '']))
+        'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
 
-    change_info = gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir)
+    change_info = gcl.ChangeInfo('', 1, 2, '', None, self.fake_root_dir)
     change_info.Save()
 
   def testSaveDirty(self):
-    gcl.GetChangelistInfoFile('').AndReturn('foo')
+    gcl.GetChangelistInfoFile('n').AndReturn('foo')
+    values = {
+        'description': 'des', 'patchset': 0, 'issue': 0,
+        'files': [], 'needs_upload': True}
     gcl.gclient_utils.FileWrite(
-        'foo',
-        gcl.ChangeInfo._SEPARATOR.join(['0, 0, dirty', '', '']))
+        'foo', gcl.json.dumps(values, sort_keys=True, indent=2))
     self.mox.ReplayAll()
 
-    change_info = gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir,
+    change_info = gcl.ChangeInfo('n', 0, 0, 'des', None, self.fake_root_dir,
                                  needs_upload=True)
     change_info.Save()
 

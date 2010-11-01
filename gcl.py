@@ -20,6 +20,20 @@ import time
 from third_party import upload
 import urllib2
 
+try:
+  import simplejson as json
+except ImportError:
+  try:
+    import json
+    # Some versions of python2.5 have an incomplete json module.  Check to make
+    # sure loads exists.
+    # pylint: disable=W0104
+    json.loads
+  except (ImportError, AttributeError):
+    # Import the one included in depot_tools.
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
+    import simplejson as json
+
 import breakpad
 
 # gcl now depends on gclient.
@@ -317,14 +331,13 @@ class ChangeInfo(object):
 
   def Save(self):
     """Writes the changelist information to disk."""
-    if self.NeedsUpload():
-      needs_upload = "dirty"
-    else:
-      needs_upload = "clean"
-    data = ChangeInfo._SEPARATOR.join([
-        "%d, %d, %s" % (self.issue, self.patchset, needs_upload),
-        "\n".join([f[0] + f[1] for f in self.GetFiles()]),
-        self.description])
+    data = json.dumps({
+          'issue': self.issue,
+          'patchset': self.patchset,
+          'needs_upload': self.NeedsUpload(),
+          'files': self.GetFiles(),
+          'description': self.description,
+        }, sort_keys=True, indent=2)
     gclient_utils.FileWrite(GetChangelistInfoFile(self.name), data)
 
   def Delete(self):
@@ -445,12 +458,16 @@ class ChangeInfo(object):
     content = gclient_utils.FileRead(info_file, 'r')
     save = False
     try:
-      values = ChangeInfo._LoadOldFormat(content)
+      values = ChangeInfo._LoadNewFormat(content)
     except ValueError:
-      ErrorExit(
-          ('Changelist file %s is corrupt.\n'
-           'Either run "gcl delete %s" or manually edit the file') % (
-              info_file, changename))
+      try:
+        values = ChangeInfo._LoadOldFormat(content)
+        save = True
+      except ValueError:
+        ErrorExit(
+            ('Changelist file %s is corrupt.\n'
+            'Either run "gcl delete %s" or manually edit the file') % (
+                info_file, changename))
     files = values['files']
     if update_status:
       for item in files[:]:
@@ -496,6 +513,10 @@ class ChangeInfo(object):
       values['files'].append((status, filename))
     values['description'] = split_data[2]
     return values
+
+  @staticmethod
+  def _LoadNewFormat(content):
+    return json.loads(content)
 
 
 def GetChangelistInfoFile(changename):
