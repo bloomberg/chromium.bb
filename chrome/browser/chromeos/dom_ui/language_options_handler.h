@@ -84,8 +84,8 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // |args| will contain the language code as string (ex. "fr").
   void SpellCheckLanguageChangeCallback(const ListValue* args);
 
-  // Called when the restart button is clicked.
-  void RestartCallback(const ListValue* args);
+  // Called when the sign out button is clicked.
+  void SignOutCallback(const ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };

@@ -56,8 +56,8 @@ void LanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("ok_button", l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("remove_button",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
-  localized_strings->SetString("restart_button",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON));
+  localized_strings->SetString("sign_out_button",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON));
   localized_strings->SetString("add_language_instructions",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
@@ -84,7 +84,7 @@ void LanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
-  localized_strings->SetString("restart_required",
+  localized_strings->SetString("sign_out_required",
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED));
   localized_strings->SetString("this_language_is_currently_in_use",
       l10n_util::GetStringFUTF16(
@@ -130,8 +130,8 @@ void LanguageOptionsHandler::RegisterMessages() {
                   &LanguageOptionsHandler::SpellCheckLanguageChangeCallback));
   dom_ui_->RegisterMessageCallback("uiLanguageChange",
       NewCallback(this, &LanguageOptionsHandler::UiLanguageChangeCallback));
-  dom_ui_->RegisterMessageCallback("uiLanguageRestart",
-      NewCallback(this, &LanguageOptionsHandler::RestartCallback));
+  dom_ui_->RegisterMessageCallback("uiLanguageSignOut",
+      NewCallback(this, &LanguageOptionsHandler::SignOutCallback));
 }
 
 ListValue* LanguageOptionsHandler::GetInputMethodList(
@@ -303,13 +303,11 @@ void LanguageOptionsHandler::SpellCheckLanguageChangeCallback(
   UserMetrics::RecordComputedAction(action);
 }
 
-void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
-  UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_Restart"));
+void LanguageOptionsHandler::SignOutCallback(const ListValue* args) {
+  UserMetrics::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
 
   Browser* browser = Browser::GetBrowserForController(
       &dom_ui_->tab_contents()->controller(), NULL);
-  // TODO(kochi): For ChromiumOS, just exiting means browser restart.
-  // Implement browser restart for Chromium Win/Linux/Mac.
   if (browser)
     browser->ExecuteCommand(IDC_EXIT);
 }

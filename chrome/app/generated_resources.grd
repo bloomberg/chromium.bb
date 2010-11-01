@@ -9804,9 +9804,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the remove button for removing a language">
         Remove
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON"
-               desc="The label for the restart button for changing UI language">
-        Restart
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON"
+               desc="The label for the sign out button for changing UI language">
+        Sign out
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD"
                desc="Warning invoked when the user tries to remove the last input method">
