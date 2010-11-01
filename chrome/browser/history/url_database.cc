@@ -247,16 +247,29 @@ bool URLDatabase::IsFavIconUsed(FavIconID favicon_id) {
 
 void URLDatabase::AutocompleteForPrefix(const string16& prefix,
                                         size_t max_results,
+                                        bool typed_only,
                                         std::vector<history::URLRow>* results) {
   // NOTE: this query originally sorted by starred as the second parameter. But
   // as bookmarks is no longer part of the db we no longer include the order
   // by clause.
   results->clear();
-  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
-      "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls "
-      "WHERE url >= ? AND url < ? AND hidden = 0 "
-      "ORDER BY typed_count DESC, visit_count DESC, last_visit_time DESC "
-      "LIMIT ?"));
+  const char* sql;
+  int line;
+  if (typed_only) {
+    sql = "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls "
+        "WHERE url >= ? AND url < ? AND hidden = 0 AND typed_count > 0 "
+        "ORDER BY typed_count DESC, visit_count DESC, last_visit_time DESC "
+        "LIMIT ?";
+    line = __LINE__;
+  } else {
+    sql = "SELECT" HISTORY_URL_ROW_FIELDS "FROM urls "
+        "WHERE url >= ? AND url < ? AND hidden = 0 "
+        "ORDER BY typed_count DESC, visit_count DESC, last_visit_time DESC "
+        "LIMIT ?";
+    line = __LINE__;
+  }
+  sql::Statement statement(
+      GetDB().GetCachedStatement(sql::StatementID(__FILE__, line), sql));
   if (!statement)
     return;
 
@@ -327,7 +340,10 @@ bool URLDatabase::InitKeywordSearchTermsTable() {
         "term LONGVARCHAR NOT NULL)"))      // The actual search term.
       return false;
   }
+  return true;
+}
 
+void URLDatabase::CreateKeywordSearchTermsIndices() {
   // For searching.
   GetDB().Execute("CREATE INDEX keyword_search_terms_index1 ON "
                   "keyword_search_terms (keyword_id, lower_term)");
@@ -335,8 +351,6 @@ bool URLDatabase::InitKeywordSearchTermsTable() {
   // For deletion.
   GetDB().Execute("CREATE INDEX keyword_search_terms_index2 ON "
                   "keyword_search_terms (url_id)");
-
-  return true;
 }
 
 bool URLDatabase::DropKeywordSearchTermsTable() {

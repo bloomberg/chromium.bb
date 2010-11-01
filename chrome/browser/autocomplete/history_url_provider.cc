@@ -243,7 +243,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     // give us far more than enough to work with.  CullRedirects() will then
     // reduce the list to the best kMaxMatches results.
     db->AutocompleteForPrefix(WideToUTF16(i->prefix + params->input.text()),
-                              kMaxMatches * 2, &url_matches);
+                              kMaxMatches * 2, (backend == NULL), &url_matches);
     for (URLRowVector::const_iterator j(url_matches.begin());
          j != url_matches.end(); ++j) {
       const Prefix* best_prefix = BestPrefix(j->url(), std::wstring());

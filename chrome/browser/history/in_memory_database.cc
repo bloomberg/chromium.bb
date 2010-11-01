@@ -41,6 +41,13 @@ bool InMemoryDatabase::InitDB() {
     return false;
   }
 
+  // Create the keyword search terms table.
+  if (!InitKeywordSearchTermsTable()) {
+    NOTREACHED() << "Unable to create keyword search terms";
+    db_.Close();
+    return false;
+  }
+
   return true;
 }
 
@@ -51,6 +58,7 @@ bool InMemoryDatabase::InitFromScratch() {
   // InitDB doesn't create the index so in the disk-loading case, it can be
   // added afterwards.
   CreateMainURLIndex();
+  CreateKeywordSearchTermsIndices();
   return true;
 }
 
@@ -87,6 +95,36 @@ bool InMemoryDatabase::InitFromDisk(const FilePath& history_name) {
                              end_load - begin_load);
   UMA_HISTOGRAM_COUNTS("History.InMemoryDBItemCount", db_.GetLastChangeCount());
 
+  // Insert keyword search related URLs.
+  begin_load = base::TimeTicks::Now();
+  if (!db_.Execute(
+      "INSERT INTO urls SELECT u.id, u.url, u.title, u.visit_count, "
+      "u.typed_count, u.last_visit_time, u.hidden, u.favicon_id "
+      "FROM history.urls u JOIN history.keyword_search_terms kst "
+      "WHERE u.typed_count = 0 AND u.id = kst.url_id")) {
+    // Unable to get data from the history database. This is OK, the file may
+    // just not exist yet.
+  }
+  end_load = base::TimeTicks::Now();
+  UMA_HISTOGRAM_MEDIUM_TIMES("History.InMemoryDBKeywordURLPopulate",
+                             end_load - begin_load);
+  UMA_HISTOGRAM_COUNTS("History.InMemoryDBKeywordURLItemCount",
+                       db_.GetLastChangeCount());
+
+  // Copy search terms to memory.
+  begin_load = base::TimeTicks::Now();
+  if (!db_.Execute(
+      "INSERT INTO keyword_search_terms SELECT * FROM "
+      "history.keyword_search_terms")) {
+    // Unable to get data from the history database. This is OK, the file may
+    // just not exist yet.
+  }
+  end_load = base::TimeTicks::Now();
+  UMA_HISTOGRAM_MEDIUM_TIMES("History.InMemoryDBKeywordTermsPopulate",
+                             end_load - begin_load);
+  UMA_HISTOGRAM_COUNTS("History.InMemoryDBKeywordTermsCount",
+                       db_.GetLastChangeCount());
+
   // Detach from the history database on disk.
   if (!db_.Execute("DETACH history")) {
     NOTREACHED() << "Unable to detach from history database.";
@@ -96,6 +134,7 @@ bool InMemoryDatabase::InitFromDisk(const FilePath& history_name) {
   // Index the table, this is faster than creating the index first and then
   // inserting into it.
   CreateMainURLIndex();
+  CreateKeywordSearchTermsIndices();
 
   return true;
 }

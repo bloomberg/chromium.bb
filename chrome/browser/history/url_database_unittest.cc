@@ -52,6 +52,7 @@ class URLDatabaseTest : public testing::Test,
     CreateMainURLIndex();
     CreateSupplimentaryURLIndices();
     InitKeywordSearchTermsTable();
+    CreateKeywordSearchTermsIndices();
   }
   void TearDown() {
     db_.Close();

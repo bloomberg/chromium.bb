@@ -62,6 +62,7 @@ bool ArchivedDatabase::Init(const FilePath& file_name) {
     return false;
   }
   CreateMainURLIndex();
+  CreateKeywordSearchTermsIndices();
 
   if (EnsureCurrentVersion() != sql::INIT_OK) {
     db_.Close();

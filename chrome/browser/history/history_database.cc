@@ -119,6 +119,7 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
       !InitSegmentTables())
     return sql::INIT_FAILURE;
   CreateMainURLIndex();
+  CreateKeywordSearchTermsIndices();
   CreateSupplimentaryURLIndices();
 
   // Version check.
@@ -169,6 +170,7 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
   // over parts of the URL table that weren't automatically created when the
   // temporary URL table was
   CreateSupplimentaryURLIndices();
+  CreateKeywordSearchTermsIndices();
   return true;
 }
 
