@@ -216,7 +216,7 @@ void ImportProgressDialogGtk::ShowDialog() {
 
 
 void StartImportingWithUI(GtkWindow* parent,
-                          int16 items,
+                          uint16 items,
                           ImporterHost* importer_host,
                           const ProfileInfo& browser_profile,
                           Profile* profile,

@@ -154,7 +154,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
 @end
 
 void StartImportingWithUI(gfx::NativeWindow parent_window,
-                          int16 items,
+                          uint16 items,
                           ImporterHost* coordinator,
                           const importer::ProfileInfo& source_profile,
                           Profile* target_profile,

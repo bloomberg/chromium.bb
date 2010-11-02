@@ -514,7 +514,7 @@ class ImportObserver {
 // if there's nothing to parent to. first_run is true if it's invoked in the
 // first run UI.
 void StartImportingWithUI(gfx::NativeWindow parent_window,
-                          int16 items,
+                          uint16 items,
                           ImporterHost* coordinator,
                           const importer::ProfileInfo& source_profile,
                           Profile* target_profile,

@@ -174,9 +174,7 @@ bool importSettingsDialogVisible = false;
   const importer::ProfileInfo& sourceProfile =
       importerList_.get()->GetSourceProfileInfoAt([self sourceBrowserIndex]);
   uint16 items = sourceProfile.services_supported;
-  // ProfileInfo.services_supported is a uint16 while the call to
-  // StartImportingWithUI requires an int16.
-  int16 servicesToImport = static_cast<int16>(items & [self servicesToImport]);
+  uint16 servicesToImport = items & [self servicesToImport];
   if (servicesToImport) {
     if (profile_) {
       ImporterHost* importerHost = new ExternalProcessImporterHost;

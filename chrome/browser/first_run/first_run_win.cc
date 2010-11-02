@@ -561,7 +561,7 @@ int FirstRun::ImportFromBrowser(Profile* profile,
 
   StartImportingWithUI(
       parent_window,
-      items_to_import,
+      static_cast<uint16>(items_to_import),
       importer_host,
       importer_host->GetSourceProfileInfoForBrowserType(browser_type),
       profile,

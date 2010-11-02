@@ -290,7 +290,7 @@ void ImportingProgressView::InitControlLayout() {
 // StartImportingWithUI
 
 void StartImportingWithUI(HWND parent_window,
-                          int16 items,
+                          uint16 items,
                           ImporterHost* coordinator,
                           const ProfileInfo& source_profile,
                           Profile* target_profile,
