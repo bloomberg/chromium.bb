@@ -302,71 +302,72 @@
       #  }],
       #],
     },
-    {
-      'target_name': 'ppapi_example_skeleton',
-      'type': 'none',
-      'dependencies': [
-        'ppapi_cpp',
-      ],
-      'export_dependent_setting': ['ppapi_cpp'],
-      'direct_dependent_settings': {
-        'product_name': '>(_target_name)',
-        'conditions': [
-          ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-            'type': 'shared_library',
-            'cflags': ['-fvisibility=hidden'],
-            # -gstabs, used in the official builds, causes an ICE. Simply remove
-            # it.
-            'cflags!': ['-gstabs'],
-          }],
-          # TODO(ppapi authors):  Make the examples build on Windows & Mac
-          ['OS=="win"', {
-            'suppress_wildcard': 1,
-            'type': 'shared_library',
-          }],
-          ['OS=="mac"', {
-            'suppress_wildcard': 1,
-            'type': 'loadable_module',
-          }],
-        ],
-      },
-    },
-    {
-      'target_name': 'ppapi_example_c_stub',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/stub/stub.c',
-      ],
-    },
-    {
-      'target_name': 'ppapi_example_cc_stub',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/stub/stub.cc',
-      ],
-    },
-    {
-      'target_name': 'ppapi_example_audio',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/audio/audio.cc',
-      ],
-    },
-    {
-      'target_name': 'ppapi_example_file_chooser',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/file_chooser/file_chooser.cc',
-      ],
-    },
+#    {
+#      'target_name': 'ppapi_example_skeleton',
+#      'type': 'none',
+#      'dependencies': [
+#        'ppapi_cpp',
+#      ],
+#      'export_dependent_setting': ['ppapi_cpp'],
+#      'direct_dependent_settings': {
+#        'product_name': '>(_target_name)',
+#        'conditions': [
+#          ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+#            'type': 'shared_library',
+#            'cflags': ['-fvisibility=hidden'],
+#            # -gstabs, used in the official builds, causes an ICE. Simply remove
+#            # it.
+#            'cflags!': ['-gstabs'],
+#          }],
+#          # TODO(ppapi authors):  Make the examples build on Windows & Mac
+#          ['OS=="win"', {
+#            'suppress_wildcard': 1,
+#            'type': 'shared_library',
+#          }],
+#          ['OS=="mac"', {
+#            'suppress_wildcard': 1,
+#            'type': 'loadable_module',
+#          }],
+#        ],
+#      },
+#    },
+#    {
+#      'target_name': 'ppapi_example_c_stub',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/stub/stub.c',
+#      ],
+#    },
+#    {
+#      'target_name': 'ppapi_example_cc_stub',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/stub/stub.cc',
+#      ],
+#    },
+#    {
+#      'target_name': 'ppapi_example_audio',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/audio/audio.cc',
+#      ],
+#    },
+#    {
+#      'target_name': 'ppapi_example_file_chooser',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/file_chooser/file_chooser.cc',
+#      ],
+#    },
+
 #TODO(ppapi authors): Fix the C headers so that they are C compatible.
 #    {
 #      'target_name': 'ppapi_example_graphics_2d',
@@ -377,33 +378,34 @@
 #        'examples/2d/graphics_2d_example.c',
 #      ],
 #    },
-    {
-      'target_name': 'ppapi_example_paint_manager',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/2d/paint_manager_example.cc',
-      ],
-    },
-    {
-      'target_name': 'ppapi_example_scroll',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/2d/scroll.cc',
-      ],
-    },
-    {
-      'target_name': 'ppapi_example_simple_font',
-      'dependencies': [
-        'ppapi_example_skeleton',
-      ],
-      'sources': [
-        'examples/font/simple_font.cc',
-      ],
-    },
+
+#    {
+#      'target_name': 'ppapi_example_paint_manager',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/2d/paint_manager_example.cc',
+#      ],
+#    },
+#    {
+#      'target_name': 'ppapi_example_scroll',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/2d/scroll.cc',
+#      ],
+#    },
+#    {
+#      'target_name': 'ppapi_example_simple_font',
+#      'dependencies': [
+#        'ppapi_example_skeleton',
+#      ],
+#      'sources': [
+#        'examples/font/simple_font.cc',
+#      ],
+#    },
     {
       'target_name': 'ppapi_tests',
       'type': 'loadable_module',
