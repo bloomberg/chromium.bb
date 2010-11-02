@@ -50,7 +50,8 @@ class MockNetworkLibrary : public NetworkLibrary {
                                           const std::string&,
                                           const std::string&,
                                           const std::string&));
-  MOCK_METHOD5(ConnectToWifiNetwork, void(const std::string&,
+  MOCK_METHOD6(ConnectToWifiNetwork, void(ConnectionSecurity security,
+                                          const std::string&,
                                           const std::string&,
                                           const std::string&,
                                           const std::string&,

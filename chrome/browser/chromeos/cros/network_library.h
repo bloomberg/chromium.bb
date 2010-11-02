@@ -423,8 +423,9 @@ class NetworkLibrary {
                                     const std::string& identity,
                                     const std::string& certpath) = 0;
 
-  // Connect to the specified wifi ssid with password.
-  virtual void ConnectToWifiNetwork(const std::string& ssid,
+  // Connect to the specified network with security, ssid, and password.
+  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+                                    const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,

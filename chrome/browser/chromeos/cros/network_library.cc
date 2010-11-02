@@ -706,7 +706,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  virtual void ConnectToWifiNetwork(const std::string& ssid,
+  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+                                    const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,
@@ -715,8 +716,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       return;
 
     // First create a service from hidden network.
-    ConnectionSecurity security = password.empty() ?
-        SECURITY_NONE : SECURITY_UNKNOWN;
     ServiceInfo* service = GetWifiService(ssid.c_str(), security);
     if (service) {
       // Set auto-connect.
@@ -1405,7 +1404,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {}
-  virtual void ConnectToWifiNetwork(const std::string& ssid,
+  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+                                    const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,

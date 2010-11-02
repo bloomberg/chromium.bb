@@ -238,8 +238,9 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
     }
   } else if (flags & FLAG_OTHER_NETWORK) {
     bool favorite = remember == 0 ? false : true;  // default is true
-    cros->ConnectToWifiNetwork(ssid, passphrase, std::string(), std::string(),
-                               favorite);
+    cros->ConnectToWifiNetwork(
+        passphrase.empty() ? SECURITY_NONE : SECURITY_UNKNOWN,
+        ssid, passphrase, std::string(), std::string(), favorite);
   }
   return true;
 }

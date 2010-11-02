@@ -158,6 +158,26 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetShowPass",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD));
+  localized_strings->SetString("inetSecurityNone",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE)));
+  localized_strings->SetString("inetSecurityWEP",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP)));
+  localized_strings->SetString("inetSecurityWPA",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA)));
+  localized_strings->SetString("inetSecurityRSN",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT,
+          l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN)));
   localized_strings->SetString("inetPassPrompt",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD));
@@ -682,9 +702,9 @@ void InternetOptionsHandler::LoginCallback(const ListValue* args) {
     cros->ConnectToWifiNetwork(
         network, password, std::string(), std::string());
   } else {
-    // Must be an "other" login
-    cros->ConnectToWifiNetwork(
-        service_path, password, std::string(), std::string(), true);
+    // Network disappeared while the user is connecting to it.
+    // TODO(chocobo): Display error message.
+    LOG(WARNING) << "Cannot find network to connect " << service_path;
   }
 }
 
@@ -716,21 +736,34 @@ void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
+  std::string security;
   std::string ssid;
   std::string password;
 
-  if (args->GetSize() != 2 ||
-      !args->GetString(0, &ssid) ||
-      !args->GetString(1, &password)) {
+  if (args->GetSize() != 3 ||
+      !args->GetString(0, &security) ||
+      !args->GetString(1, &ssid) ||
+      !args->GetString(2, &password)) {
     NOTREACHED();
     return;
+  }
+
+  chromeos::ConnectionSecurity sec = chromeos::SECURITY_UNKNOWN;
+  if (security == "none") {
+    sec = chromeos::SECURITY_NONE;
+  } else if (security == "wep") {
+    sec = chromeos::SECURITY_WEP;
+  } else if (security == "wpa") {
+    sec = chromeos::SECURITY_WPA;
+  } else if (security == "rsn") {
+    sec = chromeos::SECURITY_RSN;
   }
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
 
-  cros->ConnectToWifiNetwork(
-      ssid, password, std::string(), std::string(), true);
+  cros->ConnectToWifiNetwork(sec, ssid, password, std::string(), std::string(),
+                             true);
 }
 
 void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
@@ -934,7 +967,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   if (cros->wifi_enabled()) {
     list->Append(GetNetwork(
         kOtherNetworksFakePath,
-        SkBitmap(),
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0_BLACK),
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
         false,
         false,

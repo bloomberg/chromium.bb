@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "app/combobox_model.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -16,6 +17,7 @@
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 
@@ -29,6 +31,7 @@ class NetworkConfigView;
 class WifiConfigView : public views::View,
                        public views::Textfield::Controller,
                        public views::ButtonListener,
+                       public views::Combobox::Listener,
                        public SelectFileDialog::Listener {
  public:
   WifiConfigView(NetworkConfigView* parent, const WifiNetwork* wifi);
@@ -43,6 +46,10 @@ class WifiConfigView : public views::View,
 
   // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // views::Combobox::Listener
+  virtual void ItemChanged(views::Combobox* combo_box,
+                           int prev_index, int new_index);
 
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -69,6 +76,16 @@ class WifiConfigView : public views::View,
   FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangeAutoConnectSaveTest);
   FRIEND_TEST_ALL_PREFIXES(WifiConfigViewTest, ChangePasswordSaveTest);
 
+  class SecurityComboboxModel : public ComboboxModel {
+   public:
+    SecurityComboboxModel() {}
+    virtual ~SecurityComboboxModel() {}
+    virtual int GetItemCount();
+    virtual string16 GetItemAt(int index);
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SecurityComboboxModel);
+  };
+
   // Initializes UI.
   void Init();
 
@@ -93,6 +110,7 @@ class WifiConfigView : public views::View,
   views::NativeButton* certificate_browse_button_;
   scoped_refptr<SelectFileDialog> select_file_dialog_;
   std::string certificate_path_;
+  views::Combobox* security_combobox_;
   views::Textfield* passphrase_textfield_;
   views::ImageButton* passphrase_visible_button_;
   views::Checkbox* autoconnect_checkbox_;

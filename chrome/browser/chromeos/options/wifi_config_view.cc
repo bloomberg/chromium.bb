@@ -27,6 +27,35 @@ namespace chromeos {
 // The width of the password field.
 const int kPasswordWidth = 150;
 
+enum SecurityComboboxIndex {
+  INDEX_NONE  = 0,
+  INDEX_WEP   = 1,
+  INDEX_WPA   = 2,
+  INDEX_RSN   = 3,
+  INDEX_COUNT = 4
+};
+
+int WifiConfigView::SecurityComboboxModel::GetItemCount() {
+  return INDEX_COUNT;
+}
+
+string16 WifiConfigView::SecurityComboboxModel::GetItemAt(int index) {
+  if (index == INDEX_NONE)
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE);
+  else if (index == INDEX_WEP)
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP);
+  else if (index == INDEX_WPA)
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA);
+  else if (index == INDEX_RSN)
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN);
+  NOTREACHED();
+  return string16();
+}
+
 WifiConfigView::WifiConfigView(NetworkConfigView* parent,
                                const WifiNetwork* wifi)
     : parent_(parent),
@@ -37,6 +66,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
       identity_textfield_(NULL),
       certificate_browse_button_(NULL),
       certificate_path_(),
+      security_combobox_(NULL),
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
       autoconnect_checkbox_(NULL) {
@@ -51,6 +81,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent)
       identity_textfield_(NULL),
       certificate_browse_button_(NULL),
       certificate_path_(),
+      security_combobox_(NULL),
       passphrase_textfield_(NULL),
       passphrase_visible_button_(NULL),
       autoconnect_checkbox_(NULL) {
@@ -63,9 +94,11 @@ WifiConfigView::~WifiConfigView() {
 void WifiConfigView::UpdateCanLogin(void) {
   bool can_login = true;
   if (other_network_) {
-    // Since the user can try to connect to a non-encrypted hidden network,
-    // only enforce ssid is non-empty.
-    can_login = !ssid_textfield_->text().empty();
+    // Enforce ssid is non empty.
+    // If security is not none, also enforce passphrase is non empty.
+    can_login = !ssid_textfield_->text().empty() &&
+        (security_combobox_->selected_item() == INDEX_NONE ||
+            !passphrase_textfield_->text().empty());
   } else {
     // Connecting to an encrypted network
     if (passphrase_textfield_ != NULL) {
@@ -132,6 +165,19 @@ void WifiConfigView::ButtonPressed(views::Button* sender,
   }
 }
 
+void WifiConfigView::ItemChanged(views::Combobox* combo_box,
+                                 int prev_index, int new_index) {
+  // If changed to no security, then disable combobox and clear it.
+  // Otherwise, enable it. Also, update can login.
+  if (new_index == INDEX_NONE) {
+    passphrase_textfield_->SetEnabled(false);
+    passphrase_textfield_->SetText(string16());
+  } else {
+    passphrase_textfield_->SetEnabled(true);
+  }
+  UpdateCanLogin();
+}
+
 void WifiConfigView::FileSelected(const FilePath& path,
                                    int index, void* params) {
   certificate_path_ = path.value();
@@ -146,8 +192,18 @@ bool WifiConfigView::Login() {
     identity_string = UTF16ToUTF8(identity_textfield_->text());
   }
   if (other_network_) {
+    ConnectionSecurity sec = SECURITY_UNKNOWN;
+    int index = security_combobox_->selected_item();
+    if (index == INDEX_NONE)
+      sec = SECURITY_NONE;
+    else if (index == INDEX_WEP)
+      sec = SECURITY_WEP;
+    else if (index == INDEX_WPA)
+      sec = SECURITY_WPA;
+    else if (index == INDEX_RSN)
+      sec = SECURITY_RSN;
     CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
-        GetSSID(), GetPassphrase(),
+        sec, GetSSID(), GetPassphrase(),
         identity_string, certificate_path_,
         autoconnect_checkbox_ ? autoconnect_checkbox_->checked() : true);
   } else {
@@ -226,6 +282,7 @@ void WifiConfigView::Init() {
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
 
+  // SSID input
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID)));
@@ -240,6 +297,7 @@ void WifiConfigView::Init() {
   }
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
+  // Certificate input
   // Loaded certificates (i.e. stored in a pkcs11 device) do not require
   // a passphrase.
   bool certificate_loaded = false;
@@ -287,6 +345,18 @@ void WifiConfigView::Init() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
+  // Security select
+  if (other_network_) {
+    layout->StartRow(0, column_view_set_id);
+    layout->AddView(new views::Label(l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY)));
+    security_combobox_ = new views::Combobox(new SecurityComboboxModel());
+    security_combobox_->set_listener(this);
+    layout->AddView(security_combobox_);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
+  // Passphrase input
   // Add passphrase if other_network or wifi is encrypted.
   if (other_network_ || (wifi_.get() && wifi_->encrypted() &&
                          !certificate_loaded)) {
@@ -303,6 +373,9 @@ void WifiConfigView::Init() {
     passphrase_textfield_->SetController(this);
     if (wifi_.get() && !wifi_->passphrase().empty())
       passphrase_textfield_->SetText(UTF8ToUTF16(wifi_->passphrase()));
+    // Disable passphrase input initially for other network.
+    if (other_network_)
+      passphrase_textfield_->SetEnabled(false);
     layout->AddView(passphrase_textfield_);
     // Password visible button.
     passphrase_visible_button_ = new views::ImageButton(this);
@@ -320,6 +393,7 @@ void WifiConfigView::Init() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
+  // Error label
   // If there's an error, add an error message label.
   // Right now, only displaying bad_passphrase and bad_wepkey errors.
   if (wifi_.get() && (wifi_->error() == ERROR_BAD_PASSPHRASE ||

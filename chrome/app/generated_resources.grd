@@ -9089,7 +9089,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Options...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
-        Add network...
+        Join other network...
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
         Allow browse without signing in.
@@ -9131,7 +9131,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
-        Network SSID:
+        SSID:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings internet options, the user identity for authentication.">
         Identity:
@@ -9142,17 +9142,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON" desc="In settings internet options, the prompt on the certificate-selection button.">
         Select certificate file
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY" desc="In settings internet options, the label for the security.">
+        Security:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD" desc="In settings internet options, the password protecting the certificate private key.">
         Private key password:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE" desc="In settings internet options, the label for the passphrase.">
-        Network key:
+        Password:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings internet options, the label for the bad passphrase.">
-        Incorrect network key.
+        Incorrect password.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY" desc="In settings internet options, the label for the bad WEP key.">
-        Network key format is incorrect.
+        Password format is incorrect.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings internet options, the label for the auto-connect checkbox.">
         Automatically connect to this network
@@ -9219,6 +9222,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
         Installed
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_SELECT" desc="In settings internet options, a string specifying the specific security.">
+        Security: <ph name="security">$1<ex>None</ex></ph>
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE" desc="In settings internet options, a string specifying security none.">
+        None
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WEP" desc="In settings internet options, a string specifying security WEP.">
+        WEP
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_WPA" desc="In settings internet options, a string specifying security WPA.">
+        WPA
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_RSN" desc="In settings internet options, a string specifying security RSN.">
+        RSN
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
         Password

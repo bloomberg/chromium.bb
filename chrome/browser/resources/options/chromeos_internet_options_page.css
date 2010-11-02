@@ -34,13 +34,8 @@
   position: relative;
 }
 
-.other-network {
-  left: 0px;
-  position: relative;
-}
-
-.other-network > input {
-  width: 140px;
+.network-password > input, select {
+  width: 200px;
 }
 
 .network-item {
@@ -76,6 +71,10 @@
   height: 60px;
   -webkit-box-align: start;
   display: block;
+}
+
+.network-item[connecting][other] {
+  height: 105px;
 }
 
 .network-item-text {
