@@ -1,0 +1,10 @@
+Name: iccjpeg
+URL: http://www.ijg.org
+License File: LICENSE
+
+Contain support for ICC color profile on top of jpeg6b (and up) library.
+Original author is Tom Lane, from the IJG group.
+We include the relevant part of the original IJG licensing term
+in the file LICENSE.
+
+Documentation for ICC profile can be found at: http://www.color.org
