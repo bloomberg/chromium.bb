@@ -73,10 +73,10 @@ class TestShellFileSystemCallbackDispatcher
   }
 
   virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>& entries,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more) {
     std::vector<WebFileSystemEntry> web_entries_vector;
-    for (std::vector<base::file_util_proxy::Entry>::const_iterator it =
+    for (std::vector<base::FileUtilProxy::Entry>::const_iterator it =
              entries.begin(); it != entries.end(); ++it) {
       WebFileSystemEntry entry;
       entry.name = webkit_glue::FilePathStringToWebString(it->name);

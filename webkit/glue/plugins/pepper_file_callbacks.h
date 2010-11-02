@@ -34,7 +34,7 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
   virtual void DidSucceed();
   virtual void DidReadMetadata(const base::PlatformFileInfo& file_info);
   virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>&, bool);
+      const std::vector<base::FileUtilProxy::Entry>&, bool);
   virtual void DidOpenFileSystem(const std::string&,
                                  const FilePath& root_path);
   virtual void DidFail(base::PlatformFileError error_code);

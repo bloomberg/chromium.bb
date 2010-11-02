@@ -1315,8 +1315,8 @@ struct ParamTraits<ViewHostMsg_DomMessage_Params> {
 };
 
 template <>
-struct ParamTraits<base::file_util_proxy::Entry> {
-  typedef base::file_util_proxy::Entry param_type;
+struct ParamTraits<base::FileUtilProxy::Entry> {
+  typedef base::FileUtilProxy::Entry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -87,7 +87,7 @@ class FileSystemDispatcher {
                        const base::PlatformFileInfo& file_info);
   void DidReadDirectory(
       int request_id,
-      const std::vector<base::file_util_proxy::Entry>& entries,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
   void DidFail(int request_id, base::PlatformFileError error_code);
   void DidWrite(int request_id, int64 bytes, bool complete);

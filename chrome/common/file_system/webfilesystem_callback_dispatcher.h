@@ -9,12 +9,6 @@
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
-namespace base {
-namespace file_util_proxy {
-struct Entry;
-}
-}
-
 namespace WebKit {
 class WebFileSystemCallbacks;
 }
@@ -29,7 +23,7 @@ class WebFileSystemCallbackDispatcher
   virtual void DidSucceed();
   virtual void DidReadMetadata(const base::PlatformFileInfo& file_info);
   virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>& entries,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
   virtual void DidOpenFileSystem(const std::string&,
                                  const FilePath&);

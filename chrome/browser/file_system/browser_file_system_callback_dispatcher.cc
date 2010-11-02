@@ -29,7 +29,7 @@ void BrowserFileSystemCallbackDispatcher::DidReadMetadata(
 }
 
 void BrowserFileSystemCallbackDispatcher::DidReadDirectory(
-    const std::vector<base::file_util_proxy::Entry>& entries, bool has_more) {
+    const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
   dispatcher_host_->Send(new ViewMsg_FileSystem_DidReadDirectory(
       request_id_, entries, has_more));
   dispatcher_host_->RemoveCompletedOperation(request_id_);

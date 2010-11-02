@@ -41,7 +41,7 @@ void WebFileSystemCallbackDispatcher::DidReadMetadata(
 }
 
 void WebFileSystemCallbackDispatcher::DidReadDirectory(
-    const std::vector<base::file_util_proxy::Entry>& entries, bool has_more) {
+    const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); i++) {
     file_system_entries[i].name =

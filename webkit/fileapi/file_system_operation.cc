@@ -256,8 +256,9 @@ void FileSystemOperation::DidDirectoryExists(
       dispatcher_->DidSucceed();
     else
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
-  } else
+  } else {
     dispatcher_->DidFail(rv);
+  }
 }
 
 void FileSystemOperation::DidFileExists(
@@ -268,8 +269,9 @@ void FileSystemOperation::DidFileExists(
       dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_FAILED);
     else
       dispatcher_->DidSucceed();
-  } else
+  } else {
     dispatcher_->DidFail(rv);
+  }
 }
 
 void FileSystemOperation::DidGetMetadata(
@@ -283,7 +285,7 @@ void FileSystemOperation::DidGetMetadata(
 
 void FileSystemOperation::DidReadDirectory(
     base::PlatformFileError rv,
-    const std::vector<base::file_util_proxy::Entry>& entries) {
+    const std::vector<base::FileUtilProxy::Entry>& entries) {
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadDirectory(entries, false /* has_more */);
   else

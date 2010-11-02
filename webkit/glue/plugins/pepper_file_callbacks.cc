@@ -55,7 +55,7 @@ void FileCallbacks::DidReadMetadata(
 }
 
 void FileCallbacks::DidReadDirectory(
-    const std::vector<base::file_util_proxy::Entry>&, bool) {
+    const std::vector<base::FileUtilProxy::Entry>&, bool) {
   NOTREACHED();
 }
 

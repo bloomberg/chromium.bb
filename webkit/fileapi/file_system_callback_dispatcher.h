@@ -33,7 +33,7 @@ class FileSystemCallbackDispatcher {
   // all contents (the subsets reported in any two calls are disjoint), and
   // |has_more| will be true, except for the last chunk.
   virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>& entries,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more) = 0;
 
   // Callback for opening a file system. Called with a name and root path for
@@ -48,6 +48,6 @@ class FileSystemCallbackDispatcher {
   virtual void DidWrite(int64 bytes, bool complete) = 0;
 };
 
-} // namespace fileapi
+}  // namespace fileapi
 
-#endif  //  WEBKIT_FILEAPI_FILE_SYSTEM_CALLBACK_DISPATCHER_H_
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_CALLBACK_DISPATCHER_H_

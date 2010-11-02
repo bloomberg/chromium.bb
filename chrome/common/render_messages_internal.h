@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 
 #include "base/file_path.h"
+#include "base/file_util_proxy.h"
 #include "base/nullable_string16.h"
 #include "base/platform_file.h"
 #include "base/sync_socket.h"
@@ -49,12 +50,6 @@ class SerializedScriptValue;
 class SkBitmap;
 struct ThumbnailScore;
 class WebCursor;
-
-namespace base {
-namespace file_util_proxy {
-struct Entry;
-}
-}
 
 namespace gfx {
 class Rect;
@@ -1095,7 +1090,7 @@ IPC_BEGIN_MESSAGES(View)
                        base::PlatformFileInfo)
   IPC_MESSAGE_CONTROL3(ViewMsg_FileSystem_DidReadDirectory,
                        int /* request_id */,
-                       std::vector<base::file_util_proxy::Entry> /* entries */,
+                       std::vector<base::FileUtilProxy::Entry> /* entries */,
                        bool /* has_more */)
 
   IPC_MESSAGE_CONTROL3(ViewMsg_FileSystem_DidWrite,

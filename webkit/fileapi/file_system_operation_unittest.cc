@@ -45,7 +45,7 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
   }
 
   virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>& entries,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
       bool /* has_more */) {
     entries_ = entries;
   }
@@ -62,7 +62,7 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
   int status() const { return status_; }
   int request_id() const { return request_id_; }
   const base::PlatformFileInfo& info() const { return info_; }
-  const std::vector<base::file_util_proxy::Entry>& entries() const {
+  const std::vector<base::FileUtilProxy::Entry>& entries() const {
     return entries_;
   }
 
@@ -70,7 +70,7 @@ class MockDispatcher : public FileSystemCallbackDispatcher {
   int status_;
   int request_id_;
   base::PlatformFileInfo info_;
-  std::vector<base::file_util_proxy::Entry> entries_;
+  std::vector<base::FileUtilProxy::Entry> entries_;
 };
 
 class FileSystemOperationTest : public testing::Test {

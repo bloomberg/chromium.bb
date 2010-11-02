@@ -104,7 +104,7 @@ class FileSystemOperation {
 
   void DidReadDirectory(
       base::PlatformFileError rv,
-      const std::vector<base::file_util_proxy::Entry>& entries);
+      const std::vector<base::FileUtilProxy::Entry>& entries);
 
   void DidWrite(
       base::PlatformFileError rv,

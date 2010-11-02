@@ -247,7 +247,7 @@ void FileSystemDispatcher::DidReadMetadata(
 
 void FileSystemDispatcher::DidReadDirectory(
     int request_id,
-    const std::vector<base::file_util_proxy::Entry>& entries,
+    const std::vector<base::FileUtilProxy::Entry>& entries,
     bool has_more) {
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);

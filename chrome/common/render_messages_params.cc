@@ -1873,14 +1873,14 @@ void ParamTraits<ViewHostMsg_DomMessage_Params>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<base::file_util_proxy::Entry>::Write(
+void ParamTraits<base::FileUtilProxy::Entry>::Write(
     Message* m,
     const param_type& p) {
   WriteParam(m, p.name);
   WriteParam(m, p.is_directory);
 }
 
-bool ParamTraits<base::file_util_proxy::Entry>::Read(
+bool ParamTraits<base::FileUtilProxy::Entry>::Read(
     const Message* m,
     void** iter,
     param_type* p) {
@@ -1889,7 +1889,7 @@ bool ParamTraits<base::file_util_proxy::Entry>::Read(
       ReadParam(m, iter, &p->is_directory);
 }
 
-void ParamTraits<base::file_util_proxy::Entry>::Log(
+void ParamTraits<base::FileUtilProxy::Entry>::Log(
     const param_type& p,
     std::string* l) {
   l->append("(");

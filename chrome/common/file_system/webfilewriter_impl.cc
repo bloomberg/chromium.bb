@@ -12,7 +12,6 @@ namespace {
 inline FileSystemDispatcher* GetFileSystemDispatcher() {
   return ChildThread::current()->file_system_dispatcher();
 }
-
 }
 
 class WebFileWriterImpl::CallbackDispatcher
@@ -28,7 +27,7 @@ class WebFileWriterImpl::CallbackDispatcher
     NOTREACHED();
   }
   virtual void DidReadDirectory(
-      const std::vector<base::file_util_proxy::Entry>& entries,
+      const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more) {
     NOTREACHED();
   }
@@ -78,4 +77,3 @@ void WebFileWriterImpl::DoCancel() {
   GetFileSystemDispatcher()->Cancel(request_id_,
                                     new CallbackDispatcher(AsWeakPtr()));
 }
-
