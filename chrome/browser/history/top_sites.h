@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_HISTORY_TOP_SITES_H_
 #pragma once
 
-#include <map>
+#include <list>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/lock.h"
+#include "base/time.h"
 #include "base/timer.h"
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
@@ -145,6 +145,9 @@ class TopSites
   friend class base::RefCountedThreadSafe<TopSites>;
   friend class TopSitesTest;
 
+  typedef std::pair<GURL, Images> TempImage;
+  typedef std::list<TempImage> TempImages;
+
   // Enumeration of the possible states history can be in.
   enum HistoryLoadState {
     // We're waiting for history to finish loading.
@@ -190,6 +193,10 @@ class TopSites
   // bitmap was successfully encoded.
   static bool EncodeBitmap(const SkBitmap& bitmap,
                            scoped_refptr<RefCountedBytes>* bytes);
+
+  // Removes the cached thumbnail for url. Does nothing if |url| if not cached
+  // in |temp_images_|.
+  void RemoveTemporaryThumbnailByURL(const GURL& url);
 
   // Add a thumbnail for an unknown url. See temp_thumbnails_map_.
   void AddTemporaryThumbnail(const GURL& url,
@@ -295,6 +302,9 @@ class TopSites
   // data stays in sync with history.
   base::OneShotTimer<TopSites> timer_;
 
+  // The time we started |timer_| at. Only valid if |timer_| is running.
+  base::TimeTicks timer_start_time_;
+
   NotificationRegistrar registrar_;
 
   // The number of URLs changed on the last update.
@@ -309,7 +319,7 @@ class TopSites
   // called, if we don't know about that URL yet and we don't have
   // enough Top Sites (new profile), we store it until the next
   // SetTopSites call.
-  URLToImagesMap temp_thumbnails_map_;
+  TempImages temp_images_;
 
   // Blacklisted and pinned URLs are stored in Preferences.
 

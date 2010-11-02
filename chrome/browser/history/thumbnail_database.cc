@@ -104,21 +104,10 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
   // Set the exceptional sqlite error handler.
   db->set_error_delegate(GetErrorHandlerForThumbnailDb());
 
-  // Set the database page size to something  larger to give us
-  // better performance (we're typically seek rather than bandwidth limited).
-  // This only has an effect before any tables have been created, otherwise
-  // this is a NOP. Must be a power of 2 and a max of 8192. We use a bigger
-  // one because we're storing larger data (4-16K) in it, so we want a few
-  // blocks per element.
-  db->set_page_size(4096);
-
-  // The UI is generally designed to work well when the thumbnail database is
-  // slow, so we can tolerate much less caching. The file is also very large
-  // and so caching won't save a significant percentage of it for us,
-  // reducing the benefit of caching in the first place. With the default cache
-  // size of 2000 pages, it will take >8MB of memory, so reducing it can be a
-  // big savings.
-  db->set_cache_size(64);
+  // Thumbnails db now only stores favicons, so we don't need that big a page
+  // size or cache.
+  db->set_page_size(2048);
+  db->set_cache_size(32);
 
   // Run the database in exclusive mode. Nobody else should be accessing the
   // database while we're running, and this will give somewhat improved perf.

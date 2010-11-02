@@ -2572,19 +2572,19 @@ void TabContents::UpdateTargetURL(int32 page_id, const GURL& url) {
 void TabContents::UpdateThumbnail(const GURL& url,
                                   const SkBitmap& bitmap,
                                   const ThumbnailScore& score) {
+  if (profile()->IsOffTheRecord())
+    return;
+
   // Tell History about this thumbnail
   if (history::TopSites::IsEnabled()) {
-    if (!profile()->IsOffTheRecord()) {
-      history::TopSites* ts = profile()->GetTopSites();
-      if (ts)
-        ts->SetPageThumbnail(url, bitmap, score);
-    }
+    history::TopSites* ts = profile()->GetTopSites();
+    if (ts)
+      ts->SetPageThumbnail(url, bitmap, score);
   } else {
-    HistoryService* hs;
-    if (!profile()->IsOffTheRecord() &&
-        (hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS))) {
+    HistoryService* hs =
+        profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+    if (hs)
       hs->SetPageThumbnail(url, bitmap, score);
-    }
   }
 }
 

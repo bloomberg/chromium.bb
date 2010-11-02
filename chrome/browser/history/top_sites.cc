@@ -39,6 +39,11 @@ namespace history {
 
 // How many top sites to store in the cache.
 static const size_t kTopSitesNumber = 20;
+
+// Max number of temporary images we'll cache. See comment above
+// temp_images_ for details.
+static const size_t kMaxTempTopImages = 8;
+
 static const size_t kTopSitesShown = 8;
 static const int kDaysOfHistory = 90;
 // Time from startup to first HistoryService query.
@@ -200,6 +205,9 @@ bool TopSites::SetPageThumbnail(const GURL& url,
     return false;
 
   if (add_temp_thumbnail) {
+    // Always remove the existing entry and then add it back. That way if we end
+    // up with too many temp thumbnails we'll prune the oldest first.
+    RemoveTemporaryThumbnailByURL(url);
     AddTemporaryThumbnail(url, thumbnail_data, score);
     return true;
   }
@@ -487,20 +495,42 @@ bool TopSites::EncodeBitmap(const SkBitmap& bitmap,
                             scoped_refptr<RefCountedBytes>* bytes) {
   *bytes = new RefCountedBytes();
   SkAutoLockPixels bitmap_lock(bitmap);
-  return gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(),
-      bitmap.height(),
-      static_cast<int>(bitmap.rowBytes()), 90,
-      &((*bytes)->data));
+  std::vector<unsigned char> data;
+  if (!gfx::JPEGCodec::Encode(
+          reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+          gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(),
+          bitmap.height(),
+          static_cast<int>(bitmap.rowBytes()), 90,
+          &data)) {
+    return false;
+  }
+  // As we're going to cache this data, make sure the vector is only as big as
+  // it needs to be.
+  (*bytes)->data = data;
+  return true;
+}
+
+void TopSites::RemoveTemporaryThumbnailByURL(const GURL& url) {
+  for (TempImages::iterator i = temp_images_.begin(); i != temp_images_.end();
+       ++i) {
+    if (i->first == url) {
+      temp_images_.erase(i);
+      return;
+    }
+  }
 }
 
 void TopSites::AddTemporaryThumbnail(const GURL& url,
                                      const RefCountedBytes* thumbnail,
                                      const ThumbnailScore& score) {
-  Images& img = temp_thumbnails_map_[url];
-  img.thumbnail = const_cast<RefCountedBytes*>(thumbnail);
-  img.thumbnail_score = score;
+  if (temp_images_.size() == kMaxTempTopImages)
+    temp_images_.erase(temp_images_.begin());
+
+  TempImage image;
+  image.first = url;
+  image.second.thumbnail = const_cast<RefCountedBytes*>(thumbnail);
+  image.second.thumbnail_score = score;
+  temp_images_.push_back(image);
 }
 
 void TopSites::StartQueryForMostVisited() {
@@ -703,10 +733,9 @@ void TopSites::Observe(NotificationType type,
         return;
       const GURL& url = load_details->entry->url();
       if (!cache_->IsKnownURL(url) && HistoryService::CanAddURL(url)) {
-        // Ideally we would just invoke StartQueryForMostVisited, but at the
-        // time this is invoked history hasn't been updated, which means if we
-        // invoked StartQueryForMostVisited now we could get stale data.
-        RestartQueryForTopSitesTimer(base::TimeDelta::FromMilliseconds(1));
+        // To avoid slamming history we throttle requests when the url updates.
+        // To do otherwise negatively impacts perf tests.
+        RestartQueryForTopSitesTimer(GetUpdateDelay());
       }
     }
   }
@@ -731,21 +760,19 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
   cache_->SetTopSites(top_sites);
 
   // See if we have any tmp thumbnails for the new sites.
-  if (!temp_thumbnails_map_.empty()) {
+  if (!temp_images_.empty()) {
     for (size_t i = 0; i < top_sites.size(); ++i) {
       const MostVisitedURL& mv = top_sites[i];
       GURL canonical_url = cache_->GetCanonicalURL(mv.url);
-      for (std::map<GURL, Images>::iterator it = temp_thumbnails_map_.begin();
-           it != temp_thumbnails_map_.end(); ++it) {
-        // Must map all temp URLs to canonical ones.
-        // temp_thumbnails_map_ contains non-canonical URLs, because
-        // when we add a temp thumbnail, redirect chain is not known.
-        // This is slow, but temp_thumbnails_map_ should have very few URLs.
+      // At the time we get the thumbnail redirects aren't known, so we have to
+      // iterate through all the images.
+      for (TempImages::iterator it = temp_images_.begin();
+           it != temp_images_.end(); ++it) {
         if (canonical_url == cache_->GetCanonicalURL(it->first)) {
           SetPageThumbnailEncoded(mv.url,
                                   it->second.thumbnail,
                                   it->second.thumbnail_score);
-          temp_thumbnails_map_.erase(it);
+          temp_images_.erase(it);
           break;
         }
       }
@@ -753,7 +780,7 @@ void TopSites::SetTopSites(const MostVisitedURLList& new_top_sites) {
   }
 
   if (top_sites.size() >= kTopSitesNumber)
-    temp_thumbnails_map_.clear();
+    temp_images_.clear();
 
   ResetThreadSafeCache();
   ResetThreadSafeImageCache();
@@ -810,6 +837,12 @@ void TopSites::ResetThreadSafeImageCache() {
 }
 
 void TopSites::RestartQueryForTopSitesTimer(base::TimeDelta delta) {
+  if (timer_.IsRunning() && ((timer_start_time_ + timer_.GetCurrentDelay()) <
+                             (base::TimeTicks::Now() + delta))) {
+    return;
+  }
+
+  timer_start_time_ = base::TimeTicks::Now();
   timer_.Stop();
   timer_.Start(delta, this, &TopSites::StartQueryForMostVisited);
 }
@@ -858,7 +891,7 @@ void TopSites::OnGotMostVisitedThumbnails(
       MoveStateToLoaded();
     } else {
       top_sites_state_ = TOP_SITES_LOADED_WAITING_FOR_HISTORY;
-      // Ask for history just in case it hasn't been load yet. When history
+      // Ask for history just in case it hasn't been loaded yet. When history
       // finishes loading we'll do migration and/or move to loaded.
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     }

@@ -132,7 +132,7 @@ std::string TopSitesDatabase::GetRedirects(const MostVisitedURL& url) {
 
 // static
 void TopSitesDatabase::SetRedirects(const std::string& redirects,
-                                        MostVisitedURL* url) {
+                                    MostVisitedURL* url) {
   std::vector<std::string> redirects_vector;
   SplitStringAlongWhitespace(redirects, &redirects_vector);
   for (size_t i = 0; i < redirects_vector.size(); i++)
@@ -366,7 +366,7 @@ sql::Connection* TopSitesDatabase::CreateDB(const FilePath& db_name) {
   // Settings copied from ThumbnailDatabase.
   db->set_error_delegate(GetErrorHandlerForThumbnailDb());
   db->set_page_size(4096);
-  db->set_cache_size(64);
+  db->set_cache_size(32);
 
   if (!db->Open(db_name)) {
     LOG(ERROR) << db->GetErrorMessage();

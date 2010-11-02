@@ -48,17 +48,17 @@ bool TopSitesCache::GetPageThumbnail(const GURL& url,
 }
 
 GURL TopSitesCache::GetCanonicalURL(const GURL& url) {
-  std::map<GURL, size_t>::const_iterator i = canonical_urls_.find(url);
-  return i == canonical_urls_.end() ? url : top_sites_[i->second].url;
+  CanonicalURLs::iterator i = TopSitesCache::GetCanonicalURLsIterator(url);
+  return i == canonical_urls_.end() ? url : i->first.first->url;
 }
 
 bool TopSitesCache::IsKnownURL(const GURL& url) {
-  return canonical_urls_.find(url) != canonical_urls_.end();
+  return GetCanonicalURLsIterator(url) != canonical_urls_.end();
 }
 
 size_t TopSitesCache::GetURLIndex(const GURL& url) {
   DCHECK(IsKnownURL(url));
-  return canonical_urls_[url];
+  return GetCanonicalURLsIterator(url)->second;
 }
 
 void TopSitesCache::RemoveUnreferencedThumbnails() {
@@ -88,9 +88,23 @@ void TopSitesCache::StoreRedirectChain(const RedirectList& redirects,
   // Map all the redirected URLs to the destination.
   for (size_t i = 0; i < redirects.size(); i++) {
     // If this redirect is already known, don't replace it with a new one.
-    if (canonical_urls_.find(redirects[i]) == canonical_urls_.end())
-      canonical_urls_[redirects[i]] = destination;
+    if (!IsKnownURL(redirects[i])) {
+      CanonicalURLEntry entry;
+      entry.first = &(top_sites_[destination]);
+      entry.second = i;
+      canonical_urls_[entry] = destination;
+    }
   }
+}
+
+TopSitesCache::CanonicalURLs::iterator TopSitesCache::GetCanonicalURLsIterator(
+    const GURL& url) {
+  MostVisitedURL most_visited_url;
+  most_visited_url.redirects.push_back(url);
+  CanonicalURLEntry entry;
+  entry.first = &most_visited_url;
+  entry.second = 0u;
+  return canonical_urls_.find(entry);
 }
 
 }  // namespace history

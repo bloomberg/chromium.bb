@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_HISTORY_TOP_SITES_CACHE_H_
 #pragma once
 
+#include <algorithm>
 #include <map>
+#include <string>
 
 #include "base/ref_counted.h"
 #include "chrome/browser/history/history_types.h"
@@ -56,11 +58,37 @@ class TopSitesCache {
   void RemoveUnreferencedThumbnails();
 
  private:
+  // The entries in CanonicalURLs, see CanonicalURLs for details. The second
+  // argument gives the index of the URL into MostVisitedURLs redirects.
+  typedef std::pair<MostVisitedURL*, size_t> CanonicalURLEntry;
+
+  // Comparator used for CanonicalURLs.
+  class CanonicalURLComparator {
+   public:
+    bool operator()(const CanonicalURLEntry& e1,
+                    const CanonicalURLEntry& e2) const {
+      return e1.first->redirects[e1.second] < e2.first->redirects[e2.second];
+    }
+  };
+
+  // This is used to map from redirect url to the MostVisitedURL the redirect is
+  // from. Ideally this would be map<GURL, size_t> (second param indexing into
+  // top_sites_), but this results in duplicating all redirect urls. As some
+  // sites have a lot of redirects, we instead use the MostVisitedURL* and the
+  // index of the redirect as the key, and the index into top_sites_ as the
+  // value. This way we aren't duplicating GURLs. CanonicalURLComparator
+  // enforces the ordering as if we were using GURLs.
+  typedef std::map<CanonicalURLEntry, size_t,
+                   CanonicalURLComparator> CanonicalURLs;
+
   // Generates the set of canonical urls from |top_sites_|.
   void GenerateCanonicalURLs();
 
   // Stores a set of redirects. This is used by GenerateCanonicalURLs.
   void StoreRedirectChain(const RedirectList& redirects, size_t destination);
+
+  // Returns the iterator into canconical_urls_ for the specified url.
+  CanonicalURLs::iterator GetCanonicalURLsIterator(const GURL& url);
 
   // The top sites.
   MostVisitedURLList top_sites_;
@@ -68,9 +96,9 @@ class TopSitesCache {
   // The images. These map from canonical url to image.
   URLToImagesMap images_;
 
-  // Generated from the redirects to and from the most visited pages, this maps
-  // the redirects to the index into top_sites_ that contains it.
-  std::map<GURL, size_t> canonical_urls_;
+  // Generated from the redirects to and from the most visited pages. See
+  // description above typedef for details.
+  CanonicalURLs canonical_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesCache);
 };
