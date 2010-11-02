@@ -25,7 +25,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "grit/locale_settings.h"
-#include "third_party/ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/dev/pp_video_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"

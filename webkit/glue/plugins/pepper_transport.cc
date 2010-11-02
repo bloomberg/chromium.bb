@@ -6,7 +6,7 @@
 
 #include "base/singleton.h"
 #include "base/thread_local.h"
-#include "third_party/ppapi/c/dev/ppb_transport_dev.h"
+#include "ppapi/c/dev/ppb_transport_dev.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 

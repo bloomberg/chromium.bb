@@ -7,7 +7,7 @@
 #include "webkit/glue/plugins/pepper_graphics_3d.h"
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "third_party/ppapi/c/dev/ppb_opengles_dev.h"
+#include "ppapi/c/dev/ppb_opengles_dev.h"
 
 namespace pepper {
 

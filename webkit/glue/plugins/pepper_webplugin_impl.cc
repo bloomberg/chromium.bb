@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/message_loop.h"
-#include "third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"

@@ -14,7 +14,7 @@
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/pepper_image_data.h"

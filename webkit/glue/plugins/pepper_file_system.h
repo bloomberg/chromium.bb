@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "third_party/ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/dev/pp_file_info_dev.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PPB_FileSystem_Dev;

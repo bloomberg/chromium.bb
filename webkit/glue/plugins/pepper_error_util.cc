@@ -4,7 +4,7 @@
 
 #include "webkit/glue/plugins/pepper_error_util.h"
 
-#include "third_party/ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_errors.h"
 
 namespace pepper {
 

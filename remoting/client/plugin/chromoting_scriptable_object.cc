@@ -4,10 +4,9 @@
 
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
+#include "ppapi/cpp/var.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/plugin/chromoting_instance.h"
-
-#include "third_party/ppapi/cpp/var.h"
 
 using pp::Var;
 

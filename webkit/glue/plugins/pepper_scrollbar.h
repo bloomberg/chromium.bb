@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "gfx/rect.h"
-#include "third_party/ppapi/c/dev/ppb_scrollbar_dev.h"
+#include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbarClient.h"
 #include "webkit/glue/plugins/pepper_widget.h"

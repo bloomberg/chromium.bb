@@ -5,9 +5,9 @@
 #include "webkit/glue/plugins/pepper_private2.h"
 
 #include "skia/ext/platform_canvas.h"
-#include "third_party/ppapi/c/pp_point.h"
-#include "third_party/ppapi/c/pp_rect.h"
-#include "third_party/ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_rect.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
