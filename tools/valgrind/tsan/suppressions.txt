@@ -145,6 +145,17 @@
   fun:__tcf_0
   fun:exit
 }
+
+{
+  bug_61585
+  ThreadSanitizer:UnlockForeign
+  fun:pthread_mutex_destroy
+  ...
+  fun:NSS_Shutdown
+  ...
+  fun:*AtExitManager*
+}
+
 ############################
 # Data races in tests
 
