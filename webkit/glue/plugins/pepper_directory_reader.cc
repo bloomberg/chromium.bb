@@ -5,9 +5,9 @@
 #include "webkit/glue/plugins/pepper_directory_reader.h"
 
 #include "base/logging.h"
-#include "third_party/ppapi/c/pp_completion_callback.h"
-#include "third_party/ppapi/c/dev/ppb_directory_reader_dev.h"
-#include "third_party/ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/dev/ppb_directory_reader_dev.h"
+#include "ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 

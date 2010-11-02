@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "third_party/ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_resource.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace pepper {

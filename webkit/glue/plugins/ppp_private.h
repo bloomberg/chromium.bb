@@ -5,9 +5,9 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PPP_PRIVATE_H_
 #define WEBKIT_GLUE_PLUGINS_PPP_PRIVATE_H_
 
-#include "third_party/ppapi/c/pp_instance.h"
-#include "third_party/ppapi/c/pp_point.h"
-#include "third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_var.h"
 
 #define PPP_PRIVATE_INTERFACE "PPP_Private;1"
 

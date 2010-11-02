@@ -30,7 +30,10 @@
       'type': 'none',
       'all_dependent_settings': {
         'include_dirs': [
-           '..',
+           # HOLEY (*#@$@ing #&$^@*&$^. ChromeOS depends on having
+           # "third_party" in the include path which the old version of this
+           # project did. This is a temporary hack to keep the build going.
+           '../third_party',
         ],
       },
       'sources': [

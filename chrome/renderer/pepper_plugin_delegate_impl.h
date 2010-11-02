@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "base/weak_ptr.h"
-#include "third_party/ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 

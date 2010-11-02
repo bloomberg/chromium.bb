@@ -57,7 +57,6 @@ class PPAPITest : public UITest {
   void RunTest(const std::string& test_case) {
     FilePath test_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
-    test_path = test_path.Append(FILE_PATH_LITERAL("third_party"));
     test_path = test_path.Append(FILE_PATH_LITERAL("ppapi"));
     test_path = test_path.Append(FILE_PATH_LITERAL("tests"));
     test_path = test_path.Append(FILE_PATH_LITERAL("test_case.html"));

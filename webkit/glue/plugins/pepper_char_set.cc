@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/i18n/icu_string_conversions.h"
-#include "third_party/ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "unicode/ucnv.h"
 #include "unicode/ucnv_cb.h"
 #include "unicode/ucnv_err.h"

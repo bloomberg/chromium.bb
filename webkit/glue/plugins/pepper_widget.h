@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_PLUGINS_PEPPER_WIDGET_H_
 
 #include "base/scoped_ptr.h"
-#include "third_party/ppapi/c/pp_rect.h"
+#include "ppapi/c/pp_rect.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PPB_Widget_Dev;

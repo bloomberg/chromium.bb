@@ -17,10 +17,10 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "media/base/video_frame.h"
+#include "ppapi/cpp/graphics_2d.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/client/rectangle_update_decoder.h"
-#include "third_party/ppapi/cpp/graphics_2d.h"
 
 namespace remoting {
 

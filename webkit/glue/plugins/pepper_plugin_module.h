@@ -12,8 +12,8 @@
 #include "base/native_library.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "third_party/ppapi/c/pp_module.h"
-#include "third_party/ppapi/c/ppb.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/ppb.h"
 
 class FilePath;
 typedef struct NPObject NPObject;

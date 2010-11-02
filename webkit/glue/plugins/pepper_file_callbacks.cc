@@ -6,9 +6,9 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "third_party/ppapi/c/dev/ppb_file_system_dev.h"
-#include "third_party/ppapi/c/dev/pp_file_info_dev.h"
-#include "third_party/ppapi/c/pp_errors.h"
+#include "ppapi/c/dev/ppb_file_system_dev.h"
+#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_error_util.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
 #include "webkit/fileapi/file_system_types.h"

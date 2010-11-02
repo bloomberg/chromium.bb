@@ -5,8 +5,8 @@
 #ifndef REMOTING_CLIENT_PLUGIN_PEPPER_ENTRYPOINTS_
 #define REMOTING_CLIENT_PLUGIN_PEPPER_ENTRYPOINTS_
 
-#include "third_party/ppapi/c/pp_module.h"
-#include "third_party/ppapi/c/ppb.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/ppb.h"
 
 namespace remoting {
 

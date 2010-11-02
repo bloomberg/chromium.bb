@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_PLUGINS_PEPPER_FONT_H_
 
 #include "base/scoped_ptr.h"
-#include "third_party/ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace WebKit {

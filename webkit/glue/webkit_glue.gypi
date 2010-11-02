@@ -152,7 +152,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
-        '<(DEPTH)/third_party/ppapi/ppapi.gyp:ppapi_c',
+        '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
         'webkit_resources',
         'webkit_strings',
         'webkit_user_agent',

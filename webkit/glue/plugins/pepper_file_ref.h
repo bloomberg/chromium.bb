@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "third_party/ppapi/c/dev/ppb_file_ref_dev.h"
+#include "ppapi/c/dev/ppb_file_ref_dev.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace pepper {
