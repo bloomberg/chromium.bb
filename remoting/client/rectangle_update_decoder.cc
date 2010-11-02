@@ -197,9 +197,12 @@ void RectangleUpdateDecoder::InitializeDecoder(const VideoPacketFormat& format,
     } else if (format.encoding() == VideoPacketFormat::ENCODING_ZLIB) {
       TraceContext::tracer()->PrintString("Creating Zlib decoder");
       decoder_.reset(DecoderRowBased::CreateZlibDecoder());
+// TODO(sergeyu): Enable VP8 on ARM builds.
+#if !defined(ARCH_CPU_ARM_FAMILY)
     } else if (format.encoding() == VideoPacketFormat::ENCODING_VP8) {
       TraceContext::tracer()->PrintString("Creating VP8 decoder");
       decoder_.reset(new DecoderVp8());
+#endif
     } else {
       NOTREACHED() << "Invalid Encoding found: " << format.encoding();
     }
