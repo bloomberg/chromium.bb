@@ -438,6 +438,7 @@ int main(int argc, char* argv[]) {
       // http://code.google.com/p/chromium/issues/detail?id=9500
       MessageLoop::current()->RunAllPending();
     } else {
+      webkit_glue::SetJavaScriptFlags(TestShell::GetJSFlagsForLoad(0));
       MessageLoop::current()->Run();
     }
 
