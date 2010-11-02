@@ -5,7 +5,7 @@
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 
 #include "base/logging.h"
-#include "ppapi/c/pp_var.h"
+#include "third_party/ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"

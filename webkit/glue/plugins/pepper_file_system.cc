@@ -5,8 +5,8 @@
 #include "webkit/glue/plugins/pepper_file_system.h"
 
 #include "base/ref_counted.h"
-#include "ppapi/c/dev/ppb_file_system_dev.h"
-#include "ppapi/c/pp_completion_callback.h"
+#include "third_party/ppapi/c/dev/ppb_file_system_dev.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

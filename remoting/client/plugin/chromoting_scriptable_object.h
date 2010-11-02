@@ -41,8 +41,8 @@
 #include <string>
 #include <vector>
 
-#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
-#include "ppapi/cpp/var.h"
+#include "third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "third_party/ppapi/cpp/var.h"
 
 namespace remoting {
 

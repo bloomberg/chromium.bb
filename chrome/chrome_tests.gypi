@@ -458,7 +458,7 @@
         # run time dependencies
         'chrome_mesa',
         'default_plugin/default_plugin.gyp:default_plugin',
-        '../ppapi/ppapi.gyp:ppapi_tests',
+        '../third_party/ppapi/ppapi.gyp:ppapi_tests',
         '../webkit/support/webkit_support.gyp:copy_npapi_layout_test_plugin',
       ],
       'include_dirs': [

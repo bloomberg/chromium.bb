@@ -8,10 +8,10 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "ppapi/c/dev/ppb_buffer_dev.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_resource.h"
+#include "third_party/ppapi/c/dev/ppb_buffer_dev.h"
+#include "third_party/ppapi/c/pp_instance.h"
+#include "third_party/ppapi/c/pp_module.h"
+#include "third_party/ppapi/c/pp_resource.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 

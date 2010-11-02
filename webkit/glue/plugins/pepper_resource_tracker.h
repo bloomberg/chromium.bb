@@ -12,9 +12,9 @@
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/pp_resource.h"
+#include "third_party/ppapi/c/pp_instance.h"
+#include "third_party/ppapi/c/pp_module.h"
+#include "third_party/ppapi/c/pp_resource.h"
 
 typedef struct NPObject NPObject;
 

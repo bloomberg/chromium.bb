@@ -127,12 +127,12 @@
       'type': 'static_library',
       'dependencies': [
         'gpu_demo_framework',
-        '../../ppapi/ppapi.gyp:ppapi_cpp',
-        '../../ppapi/ppapi.gyp:ppapi_cpp_objects'
+        '../../third_party/ppapi/ppapi.gyp:ppapi_cpp',
+        '../../third_party/ppapi/ppapi.gyp:ppapi_cpp_objects'
       ],
       'include_dirs': [
         '../..',
-        '../../ppapi',
+        '../../third_party/ppapi',
         '../../third_party/gles2_book/Common/Include',
       ],
       'sources': [
@@ -148,7 +148,7 @@
         'include_dirs': [
           '../../third_party',
           '../../third_party/gles2_book/Common/Include',
-          '../../ppapi',
+          '../../third_party/ppapi',
           '../..'
         ],
         'run_as': {
