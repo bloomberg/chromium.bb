@@ -222,7 +222,7 @@ static void RecordStatsDelayed(
 void BootTimesLoader::WriteLoginTimes(
     const std::vector<TimeMarker> login_times) {
   const int kMinTimeMillis = 1;
-  const int kMaxTimeMillis = 30;
+  const int kMaxTimeMillis = 30000;
   const int kNumBuckets = 100;
   const char kUmaPrefix[] = "BootTime.";
   const FilePath log_path(kLogPath);
