@@ -37,7 +37,7 @@ class ExtensionMenuManagerTest : public testing::Test {
   ExtensionMenuItem* CreateTestItem(Extension* extension) {
     ExtensionMenuItem::Type type = ExtensionMenuItem::NORMAL;
     ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::ALL);
-    ExtensionMenuItem::Id id(extension->id(), next_id_++);
+    ExtensionMenuItem::Id id(NULL, extension->id(), next_id_++);
     return new ExtensionMenuItem(id, "test", false, type, contexts);
   }
 
@@ -94,7 +94,7 @@ TEST_F(ExtensionMenuManagerTest, AddGetRemoveItems) {
   ASSERT_EQ(2u, manager_.MenuItems(extension_id)->size());
 
   // Make sure removing a non-existent item returns false.
-  ExtensionMenuItem::Id id(extension->id(), id3.second + 50);
+  ExtensionMenuItem::Id id(NULL, extension->id(), id3.uid + 50);
   ASSERT_FALSE(manager_.RemoveContextMenuItem(id));
 }
 
@@ -461,7 +461,7 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
 
   int tmp_id = 0;
   ASSERT_TRUE(info->GetInteger("menuItemId", &tmp_id));
-  ASSERT_EQ(id.second, tmp_id);
+  ASSERT_EQ(id.uid, tmp_id);
 
   std::string tmp;
   ASSERT_TRUE(info->GetString("mediaType", &tmp));

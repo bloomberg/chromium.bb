@@ -598,9 +598,10 @@ bool CreateTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kSelectedKey,
                                                  &selected));
 
-  // We can't load extension URLs into incognito windows. Special case to
-  // fall back to a normal window.
+  // We can't load extension URLs into incognito windows unless the extension
+  // uses split mode. Special case to fall back to a normal window.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
+      !GetExtension()->incognito_split_mode() &&
       browser->profile()->IsOffTheRecord()) {
     Profile* profile = browser->profile()->GetOriginalProfile();
     browser = BrowserList::FindBrowserWithType(profile,

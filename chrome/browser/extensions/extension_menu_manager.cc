@@ -389,9 +389,9 @@ void ExtensionMenuManager::ExecuteCommand(
   ListValue args;
 
   DictionaryValue* properties = new DictionaryValue();
-  properties->SetInteger("menuItemId", item->id().second);
+  properties->SetInteger("menuItemId", item->id().uid);
   if (item->parent_id())
-    properties->SetInteger("parentMenuItemId", item->parent_id()->second);
+    properties->SetInteger("parentMenuItemId", item->parent_id()->uid);
 
   switch (params.media_type) {
     case WebKit::WebContextMenuData::MediaTypeImage:
@@ -470,4 +470,37 @@ const SkBitmap& ExtensionMenuManager::GetIconForExtension(
 bool ExtensionMenuManager::HasAllowedScheme(const GURL& url) {
   URLPattern pattern(kAllowedSchemes);
   return pattern.SetScheme(url.scheme());
+}
+
+ExtensionMenuItem::Id::Id()
+    : profile(NULL), uid(0) {
+}
+
+ExtensionMenuItem::Id::Id(Profile* profile, std::string extension_id, int uid)
+    : profile(profile), extension_id(extension_id), uid(uid) {
+}
+
+ExtensionMenuItem::Id::~Id() {
+}
+
+bool ExtensionMenuItem::Id::operator==(const Id& other) const {
+  return (profile == other.profile &&
+          extension_id == other.extension_id &&
+          uid == other.uid);
+}
+
+bool ExtensionMenuItem::Id::operator!=(const Id& other) const {
+  return !(*this == other);
+}
+
+bool ExtensionMenuItem::Id::operator<(const Id& other) const {
+  if (profile < other.profile)
+    return true;
+  if (profile == other.profile) {
+    if (extension_id < other.extension_id)
+      return true;
+    if (extension_id == other.extension_id)
+      return uid < other.uid;
+  }
+  return false;
 }

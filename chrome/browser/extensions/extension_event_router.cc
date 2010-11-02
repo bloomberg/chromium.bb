@@ -33,17 +33,6 @@ static void DispatchEvent(RenderProcessHost* renderer,
       extension_id, kDispatchEvent, args, event_url));
 }
 
-static bool CanCrossIncognito(Profile* profile,
-                              const std::string& extension_id) {
-  // We allow the extension to see events and data from another profile iff it
-  // uses "spanning" behavior and it has incognito access. "split" mode
-  // extensions only see events for a matching profile.
-  const Extension* extension =
-      profile->GetExtensionsService()->GetExtensionById(extension_id, false);
-  return (profile->GetExtensionsService()->IsIncognitoEnabled(extension) &&
-          !extension->incognito_split_mode());
-}
-
 }  // namespace
 
 struct ExtensionEventRouter::EventListener {
@@ -62,6 +51,24 @@ struct ExtensionEventRouter::EventListener {
     return false;
   }
 };
+
+// static
+bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
+                                             const std::string& extension_id) {
+  const Extension* extension =
+      profile->GetExtensionsService()->GetExtensionById(extension_id, false);
+  return CanCrossIncognito(profile, extension);
+}
+
+// static
+bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
+                                             const Extension* extension) {
+  // We allow the extension to see events and data from another profile iff it
+  // uses "spanning" behavior and it has incognito access. "split" mode
+  // extensions only see events for a matching profile.
+  return (profile->GetExtensionsService()->IsIncognitoEnabled(extension) &&
+          !extension->incognito_split_mode());
+}
 
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
     : profile_(profile),

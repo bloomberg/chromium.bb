@@ -15,12 +15,19 @@
 #include "chrome/common/notification_registrar.h"
 
 class GURL;
+class Extension;
 class ExtensionDevToolsManager;
 class Profile;
 class RenderProcessHost;
 
 class ExtensionEventRouter : public NotificationObserver {
  public:
+  // Returns true if the given extension can see events and data from another
+  // sub-profile (incognito to original profile, or vice versa).
+  static bool CanCrossIncognito(Profile* profile,
+                                const std::string& extension_id);
+  static bool CanCrossIncognito(Profile* profile, const Extension* extension);
+
   explicit ExtensionEventRouter(Profile* profile);
   ~ExtensionEventRouter();
 

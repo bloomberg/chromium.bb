@@ -63,6 +63,8 @@ class ExtensionTestMessageListener : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  bool was_satisfied() const { return satisfied_; }
+
  private:
   NotificationRegistrar registrar_;
 

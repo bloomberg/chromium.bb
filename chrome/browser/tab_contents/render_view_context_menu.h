@@ -103,6 +103,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   // Used for recursively adding submenus of extension items.
   void RecursivelyAppendExtensionItems(
       const std::vector<ExtensionMenuItem*>& items,
+      bool can_cross_incognito,
       menus::SimpleMenuModel* menu_model,
       int *index);
   // This will set the icon on the most recently-added item in the menu_model_.

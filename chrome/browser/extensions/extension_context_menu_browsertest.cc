@@ -5,6 +5,7 @@
 #include "app/menus/menu_model.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -122,9 +123,16 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     return LoadExtension(extension_dir);
   }
 
-  TestRenderViewContextMenu* CreateMenu(const GURL& page_url,
+  bool LoadContextMenuExtensionIncognito(std::string subdirectory) {
+    FilePath extension_dir =
+        test_data_dir_.AppendASCII("context_menus").AppendASCII(subdirectory);
+    return LoadExtensionIncognito(extension_dir);
+  }
+
+  TestRenderViewContextMenu* CreateMenu(Browser* browser,
+                                        const GURL& page_url,
                                         const GURL& link_url) {
-    TabContents* tab_contents = browser()->GetSelectedTabContents();
+    TabContents* tab_contents = browser->GetSelectedTabContents();
     WebContextMenuData data;
     ContextMenuParams params(data);
     params.page_url = page_url;
@@ -173,7 +181,8 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   bool MenuHasItemWithLabel(const GURL& page_url,
                             const GURL& link_url,
                             const std::string& label) {
-    scoped_ptr<TestRenderViewContextMenu> menu(CreateMenu(page_url, link_url));
+    scoped_ptr<TestRenderViewContextMenu> menu(
+        CreateMenu(browser(), page_url, link_url));
     return menu->HasExtensionItemWithLabel(label);
   }
 };
@@ -190,7 +199,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Simple) {
   GURL page_url("http://www.google.com");
 
   // Create and build our test context menu.
-  scoped_ptr<TestRenderViewContextMenu> menu(CreateMenu(page_url, GURL()));
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateMenu(browser(), page_url, GURL()));
 
   // Look for the extension item in the menu, and execute it.
   int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
@@ -249,7 +259,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, LongTitle) {
   // Create a context menu, then find the item's label. It should be properly
   // truncated.
   GURL url("http://foo.com/");
-  scoped_ptr<TestRenderViewContextMenu> menu(CreateMenu(url, GURL()));
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateMenu(browser(), url, GURL()));
 
   string16 label;
   ASSERT_TRUE(menu->GetItemLabel(item->id(), &label));
@@ -313,7 +324,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   listener1.WaitUntilSatisfied();
 
   GURL url("http://www.google.com/");
-  scoped_ptr<TestRenderViewContextMenu> menu(CreateMenu(url, GURL()));
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateMenu(browser(), url, GURL()));
 
   // The top-level item should be an "automagic parent" with the extension's
   // name.
@@ -336,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   ui_test_utils::NavigateToURL(browser(),
                                GURL(extension->GetResourceURL("test2.html")));
   listener2.WaitUntilSatisfied();
-  menu.reset(CreateMenu(url, GURL()));
+  menu.reset(CreateMenu(browser(), url, GURL()));
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
       IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
   EXPECT_EQ(UTF8ToUTF16("parent"), model->GetLabelAt(index));
@@ -367,4 +379,51 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TargetURLs) {
   ASSERT_FALSE(MenuHasItemWithLabel(google_url,
                                     non_google_url,
                                     std::string("item1")));
+}
+
+// Tests adding a simple context menu item.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, IncognitoSplit) {
+  ExtensionTestMessageListener created("created item regular", false);
+  ExtensionTestMessageListener created_incognito("created item incognito",
+                                                 false);
+
+  ExtensionTestMessageListener onclick("onclick fired regular", false);
+  ExtensionTestMessageListener onclick_incognito("onclick fired incognito",
+                                                 false);
+
+  // Open an incognito window.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
+
+  ASSERT_TRUE(LoadContextMenuExtensionIncognito("incognito"));
+
+  // Wait for the extension's processes to tell us they've created an item.
+  ASSERT_TRUE(created.WaitUntilSatisfied());
+  ASSERT_TRUE(created_incognito.WaitUntilSatisfied());
+
+  GURL page_url("http://www.google.com");
+
+  // Create and build our test context menu.
+  Browser* browser_incognito = BrowserList::FindBrowserWithType(
+      browser()->profile()->GetOffTheRecordProfile(),
+      Browser::TYPE_NORMAL, false);
+  ASSERT_TRUE(browser_incognito);
+  scoped_ptr<TestRenderViewContextMenu> menu(
+      CreateMenu(browser(), page_url, GURL()));
+  scoped_ptr<TestRenderViewContextMenu> menu_incognito(
+      CreateMenu(browser_incognito, page_url, GURL()));
+
+  // Look for the extension item in the menu, and execute it.
+  int command_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST;
+  ASSERT_TRUE(menu->IsCommandIdEnabled(command_id));
+  menu->ExecuteCommand(command_id);
+
+  // Wait for the extension's script to tell us its onclick fired. Ensure
+  // that the incognito version doesn't fire until we explicitly click the
+  // incognito menu item.
+  ASSERT_TRUE(onclick.WaitUntilSatisfied());
+  EXPECT_FALSE(onclick_incognito.was_satisfied());
+
+  ASSERT_TRUE(menu_incognito->IsCommandIdEnabled(command_id));
+  menu_incognito->ExecuteCommand(command_id);
+  ASSERT_TRUE(onclick_incognito.WaitUntilSatisfied());
 }

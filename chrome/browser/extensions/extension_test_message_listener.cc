@@ -43,8 +43,8 @@ void ExtensionTestMessageListener::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   const std::string& content = *Details<std::string>(details).ptr();
-  function_ = Source<ExtensionTestSendMessageFunction>(source).ptr();
   if (!satisfied_ && content == expected_message_) {
+    function_ = Source<ExtensionTestSendMessageFunction>(source).ptr();
     satisfied_ = true;
     registrar_.RemoveAll();  // Stop listening for more messages.
     if (!will_reply_) {
