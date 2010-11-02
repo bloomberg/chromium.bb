@@ -100,7 +100,7 @@ void Preconnect::Connect(const GURL& url) {
   if (session->http_stream_factory()->next_protos())
     ssl_config_->next_protos = *session->http_stream_factory()->next_protos();
 
-  // All preconnects should be for main pages.
+  // All preconnects should perform EV certificate verification.
   ssl_config_->verify_ev_cert = true;
 
   proxy_info_.reset(new net::ProxyInfo());

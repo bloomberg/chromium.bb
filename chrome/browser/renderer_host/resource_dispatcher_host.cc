@@ -440,11 +440,13 @@ void ResourceDispatcherHost::BeginRequest(
   request->SetExtraRequestHeaders(headers);
 
   int load_flags = request_data.load_flags;
-  // EV certificate verification could be expensive.  We don't want to spend
-  // time performing EV certificate verification on all resources because
-  // EV status is irrelevant to sub-frames and sub-resources.
+  // Although EV status is irrelevant to sub-frames and sub-resources, we have
+  // to perform EV certificate verification on all resources because an HTTP
+  // keep-alive connection created to load a sub-frame or a sub-resource could
+  // be reused to load a main frame.
+  load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (request_data.resource_type == ResourceType::MAIN_FRAME) {
-    load_flags |= net::LOAD_VERIFY_EV_CERT | net::LOAD_MAIN_FRAME;
+    load_flags |= net::LOAD_MAIN_FRAME;
   } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
     load_flags |= net::LOAD_SUB_FRAME;
   }
