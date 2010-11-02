@@ -11,8 +11,6 @@ BUG60384 : fast/replaced/border-radius-clip.html = IMAGE TEXT IMAGE+TEXT
 
 BUG60393 MAC DEBUG : fast/selectors/001.html = TIMEOUT
 
-BUGDIMICH MAC : fast/images/svg-as-background.html = CRASH
-
 // Failures after Mesa 7.9 upgrade, already in upstream test_expectations.txt.
 // Need to investigate.
 BUG60651 : fast/canvas/webgl/gl-object-get-calls.html = TIMEOUT FAIL
