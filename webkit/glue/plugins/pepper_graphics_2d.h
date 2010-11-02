@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "third_party/ppapi/c/pp_completion_callback.h"
-#include "third_party/ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/ppb_graphics_2d.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 

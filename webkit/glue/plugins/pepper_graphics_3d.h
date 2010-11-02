@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "third_party/ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 

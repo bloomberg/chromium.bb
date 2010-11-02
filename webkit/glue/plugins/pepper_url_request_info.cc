@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_util.h"
-#include "third_party/ppapi/c/pp_var.h"
+#include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

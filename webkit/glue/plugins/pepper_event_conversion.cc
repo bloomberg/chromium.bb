@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/utf_string_conversion_utils.h"
-#include "third_party/ppapi/c/pp_input_event.h"
+#include "ppapi/c/pp_input_event.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 
 using WebKit::WebInputEvent;

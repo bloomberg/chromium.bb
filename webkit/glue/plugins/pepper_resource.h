@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "third_party/ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_resource.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 
 namespace pepper {
