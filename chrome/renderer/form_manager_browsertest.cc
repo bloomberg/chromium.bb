@@ -755,7 +755,9 @@ TEST_F(FormManagerTest, LabelsWithSpans) {
 // This test is different from FormManagerTest.Labels in that the label elements
 // for= attribute is set to the name of the form control element it is a label
 // for instead of the id of the form control element.  This is invalid because
-// the for= attribute must be set to the id of the form control element.
+// the for= attribute must be set to the id of the form control element;
+// however, current label parsing code will extract the text from the previous
+// label element and apply it to the following input field.
 TEST_F(FormManagerTest, InvalidLabels) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  <LABEL for=\"firstname\"> First name: </LABEL>"
@@ -782,21 +784,24 @@ TEST_F(FormManagerTest, InvalidLabels) {
 
   const std::vector<FormField>& fields = form.fields;
   ASSERT_EQ(3U, fields.size());
-  EXPECT_TRUE(fields[0].StrictlyEqualsHack(FormField(string16(),
-                                           ASCIIToUTF16("firstname"),
-                                           ASCIIToUTF16("John"),
-                                           ASCIIToUTF16("text"),
-                                           20)));
-  EXPECT_TRUE(fields[1].StrictlyEqualsHack(FormField(string16(),
-                                           ASCIIToUTF16("lastname"),
-                                           ASCIIToUTF16("Smith"),
-                                           ASCIIToUTF16("text"),
-                                           20)));
-  EXPECT_TRUE(fields[2].StrictlyEqualsHack(FormField(string16(),
-                                           ASCIIToUTF16("reply-send"),
-                                           string16(),
-                                           ASCIIToUTF16("submit"),
-                                           0)));
+  EXPECT_TRUE(fields[0].StrictlyEqualsHack(
+      FormField(ASCIIToUTF16("First name:"),
+                ASCIIToUTF16("firstname"),
+                ASCIIToUTF16("John"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[1].StrictlyEqualsHack(
+      FormField(ASCIIToUTF16("Last name:"),
+                ASCIIToUTF16("lastname"),
+                ASCIIToUTF16("Smith"),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("reply-send"),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
 }
 
 // This test has three form control elements, only one of which has a label
@@ -1177,6 +1182,62 @@ TEST_F(FormManagerTest, LabelsInferredFromTableEmptyTDs) {
   EXPECT_EQ(FormField(ASCIIToUTF16("*Last Name"),
                       ASCIIToUTF16("lastname"),
                       ASCIIToUTF16("Milton"),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[1]);
+  EXPECT_EQ(FormField(string16(),
+                      ASCIIToUTF16("reply-send"),
+                      ASCIIToUTF16("Send"),
+                      ASCIIToUTF16("submit"),
+                      0),
+            fields[2]);
+}
+
+TEST_F(FormManagerTest, LabelsInferredFromTableLabels) {
+  LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
+           "<TABLE>"
+           "  <TR>"
+           "    <TD>"
+           "      <LABEL>First Name:</LABEL>"
+           "      <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
+           "    </TD>"
+           "  </TR>"
+           "  <TR>"
+           "    <TD>"
+           "      <LABEL>Last Name:</LABEL>"
+           "      <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
+           "    </TD>"
+           "  </TR>"
+           "</TABLE>"
+           "<INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
+           "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  std::vector<FormData> forms;
+  form_manager.GetFormsInFrame(web_frame, FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  const FormData& form = forms[0];
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(GURL(web_frame->url()), form.origin);
+  EXPECT_EQ(GURL("http://cnn.com"), form.action);
+
+  const std::vector<FormField>& fields = form.fields;
+  ASSERT_EQ(3U, fields.size());
+  EXPECT_EQ(FormField(ASCIIToUTF16("First Name:"),
+                      ASCIIToUTF16("firstname"),
+                      ASCIIToUTF16("John"),
+                      ASCIIToUTF16("text"),
+                      20),
+            fields[0]);
+  EXPECT_EQ(FormField(ASCIIToUTF16("Last Name:"),
+                      ASCIIToUTF16("lastname"),
+                      ASCIIToUTF16("Smith"),
                       ASCIIToUTF16("text"),
                       20),
             fields[1]);

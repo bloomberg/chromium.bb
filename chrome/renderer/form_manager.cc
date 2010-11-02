@@ -97,54 +97,76 @@ string16 InferLabelFromPrevious(
     const WebFormControlElement& element) {
   string16 inferred_label;
   WebNode previous = element.previousSibling();
-  if (!previous.isNull()) {
-    // Eg. Some Text<input ...>
-    if (previous.isTextNode()) {
-      inferred_label = previous.nodeValue();
-      TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-    }
+  if (previous.isNull())
+    return string16();
 
-    // If we didn't find text, check for previous paragraph.
-    // Eg. <p>Some Text</p><input ...>
-    // Note the lack of whitespace between <p> and <input> elements.
-    if (inferred_label.empty()) {
-      if (previous.isElementNode()) {
-        WebElement element = previous.to<WebElement>();
-        if (element.hasTagName("p")) {
-          inferred_label = FindChildText(element);
-        }
+  if (previous.isTextNode()) {
+    inferred_label = previous.nodeValue();
+    TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+  }
+
+  // If we didn't find text, check for previous paragraph.
+  // Eg. <p>Some Text</p><input ...>
+  // Note the lack of whitespace between <p> and <input> elements.
+  if (inferred_label.empty()) {
+    if (previous.isElementNode()) {
+      WebElement element = previous.to<WebElement>();
+      if (element.hasTagName("p")) {
+        inferred_label = FindChildText(element);
       }
     }
+  }
 
-    // If we didn't find paragraph, check for previous paragraph to this.
-    // Eg. <p>Some Text</p>   <input ...>
-    // Note the whitespace between <p> and <input> elements.
-    if (inferred_label.empty()) {
+  // If we didn't find paragraph, check for previous paragraph to this.
+  // Eg. <p>Some Text</p>   <input ...>
+  // Note the whitespace between <p> and <input> elements.
+  if (inferred_label.empty()) {
+    previous = previous.previousSibling();
+    if (!previous.isNull() && previous.isElementNode()) {
+      WebElement element = previous.to<WebElement>();
+      if (element.hasTagName("p")) {
+        inferred_label = FindChildText(element);
+      }
+    }
+  }
+
+  // Look for text node prior to <img> tag.
+  // Eg. Some Text<img/><input ...>
+  if (inferred_label.empty()) {
+    while (inferred_label.empty() && !previous.isNull()) {
+      if (previous.isTextNode()) {
+        inferred_label = previous.nodeValue();
+        TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+      } else if (previous.isElementNode()) {
+        WebElement element = previous.to<WebElement>();
+        if (!element.hasTagName("img"))
+          break;
+      } else {
+        break;
+      }
       previous = previous.previousSibling();
-      if (!previous.isNull() && previous.isElementNode()) {
-        WebElement element = previous.to<WebElement>();
-        if (element.hasTagName("p")) {
-          inferred_label = FindChildText(element);
-        }
-      }
     }
+  }
 
-    // Look for text node prior to <img> tag.
-    // Eg. Some Text<img/><input ...>
-    if (inferred_label.empty()) {
-      while (inferred_label.empty() && !previous.isNull()) {
-        if (previous.isTextNode()) {
-          inferred_label = previous.nodeValue();
-          TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
-        } else if (previous.isElementNode()) {
-          WebElement element = previous.to<WebElement>();
-          if (!element.hasTagName("img"))
-            break;
+  // Look for label node prior to <input> tag.
+  // Eg. <label>Some Text</label><input ...>
+  if (inferred_label.empty()) {
+    while (inferred_label.empty() && !previous.isNull()) {
+      if (previous.isTextNode()) {
+        inferred_label = previous.nodeValue();
+        TrimWhitespace(inferred_label, TRIM_ALL, &inferred_label);
+      } else if (previous.isElementNode()) {
+        WebElement element = previous.to<WebElement>();
+        if (element.hasTagName("label")) {
+          inferred_label = FindChildText(element);
         } else {
           break;
         }
-        previous = previous.previousSibling();
+      } else {
+        break;
       }
+
+      previous = previous.previousSibling();
     }
   }
 
