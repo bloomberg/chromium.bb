@@ -5,7 +5,7 @@
 #ifndef REMOTING_BASE_UTIL_H_
 #define REMOTING_BASE_UTIL_H_
 
-#include "remoting/proto/event.pb.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 

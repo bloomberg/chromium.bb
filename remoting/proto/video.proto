@@ -1,0 +1,93 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Protocol for video messages.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package remoting;
+
+// A message that gets sent to the client after the client is connected to the
+// host. It contains information that the client needs to know about the host.
+// NEXT ID: 3
+// TODO(sergeyu): Move to the control channel.
+message InitClientMessage {
+  required int32 width = 1;
+  required int32 height = 2;
+}
+
+// Identifies the pixel format.
+// Note that this list should match exactly the same as
+// media::VideoFrame::Format in media/base/video_frame.h.
+enum PixelFormat {
+  PIXEL_FORMAT_INVALID = 0;
+  PIXEL_FORMAT_RGB555 = 1;
+  PIXEL_FORMAT_RGB565 = 2;
+  PIXEL_FORMAT_RGB24 = 3;
+  PIXEL_FORMAT_RGB32 = 4;
+  PIXEL_FORMAT_RGBA = 5; 
+  PIXEL_FORMAT_YV12 = 6;
+  PIXEL_FORMAT_YV16 = 7;
+  PIXEL_FORMAT_NV12 = 8;
+  PIXEL_FORMAT_EMPTY = 9;
+  PIXEL_FORMAT_ASCII = 10;
+}
+
+// TODO(ajwong): Determine if these fields should be optional or required.
+message VideoPacketFormat {
+  // Identifies how the image was encoded.
+  enum Encoding {
+    ENCODING_INVALID = -1;
+    ENCODING_VERBATIM = 0;
+    ENCODING_ZLIB = 1;
+    ENCODING_VP8 = 2;
+  };
+
+  // X,Y coordinates (in screen pixels) for origin of this update.
+  optional int32 x = 1;
+  optional int32 y = 2;
+
+  // Width, height (in screen pixels) for this update.
+  optional int32 width = 3;
+  optional int32 height = 4;
+
+  // The encoding used for this image update.
+  optional Encoding encoding = 5 [default = ENCODING_INVALID];
+
+  // The pixel format of this image.
+  optional PixelFormat pixel_format = 6 [default = PIXEL_FORMAT_RGB24];
+}
+
+message VideoPacket {
+  // Bitmasks for use in the flags field below.
+  //
+  // The encoder may fragment one update into multiple packets depending on
+  // how the encoder outputs data.  Thus, one update can logically consist of
+  // multiple packets.  The FIRST_PACKET and LAST_PACKET flags are used to
+  // indicate the start and end of a logical update.  Here are notable
+  // consequences:
+  //  * Both FIRST_PACKET and LAST_PACKET may be set if an update is only
+  //    one packet long.
+  //  * The VideoPacketFormat is only supplied in a FIRST_PACKET.
+  //  * An local update cannot change format between a FIRST_PACKET and
+  //    a LAST_PACKET.
+  //  * All packets in one logical update must be processed in order, and
+  //    packets may not be skipped.
+  enum Flags {
+    FIRST_PACKET = 1;
+    LAST_PACKET = 2;
+  }
+  optional int32 flags = 1 [default = 0];
+
+  // The sequence number of the partial data for updating a rectangle.
+  optional int32 sequence_number = 2 [default = 0];
+
+  // This is provided on the first packet of the rectangle data, when
+  // the flags has FIRST_PACKET set.
+  optional VideoPacketFormat format = 3;
+
+  optional bytes data = 4;
+}

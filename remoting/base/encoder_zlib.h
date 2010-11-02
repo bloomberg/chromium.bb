@@ -32,15 +32,14 @@ class EncoderZlib : public Encoder {
                   size_t rect_index);
 
   // Marks a packets as the first in a series of rectangle updates.
-  void PrepareUpdateStart(const gfx::Rect& rect,
-                          RectangleUpdatePacket* update);
+  void PrepareUpdateStart(const gfx::Rect& rect, VideoPacket* packet);
 
   // Retrieves a pointer to the output buffer in |update| used for storing the
   // encoded rectangle data.  Will resize the buffer to |size|.
-  uint8* GetOutputBuffer(RectangleUpdatePacket* update, size_t size);
+  uint8* GetOutputBuffer(VideoPacket* packet, size_t size);
 
   // Submit |message| to |callback_|.
-  void SubmitMessage(ChromotingHostMessage* message, size_t rect_index);
+  void SubmitMessage(VideoPacket* packet, size_t rect_index);
 
   scoped_refptr<CaptureData> capture_data_;
   scoped_ptr<DataAvailableCallback> callback_;

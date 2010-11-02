@@ -14,8 +14,7 @@
 #include "base/time.h"
 #include "remoting/base/encoder.h"
 #include "remoting/host/capturer.h"
-// TODO(hclam): This class should not know the internal protobuf types.
-#include "remoting/proto/internal.pb.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
@@ -126,8 +125,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void DoRateControl();
 
   // DoSendUpdate takes ownership of header and is responsible for deleting it.
-  void DoSendUpdate(ChromotingHostMessage* message,
-                    Encoder::EncodingState state);
+  void DoSendVideoPacket(VideoPacket* packet);
   void DoSendInit(scoped_refptr<ClientConnection> client,
                   int width, int height);
 
@@ -141,8 +139,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   // EncodeDataAvailableTask takes ownership of header and is responsible for
   // deleting it.
-  void EncodeDataAvailableTask(ChromotingHostMessage* message,
-                               Encoder::EncodingState state);
+  void EncodeDataAvailableTask(VideoPacket* packet);
 
   // Message loops used by this class.
   MessageLoop* capture_loop_;

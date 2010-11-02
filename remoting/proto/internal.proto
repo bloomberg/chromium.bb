@@ -1,13 +1,14 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // Internal messages as a unit for transmission in the wire.
 
 syntax = "proto2";
 
 import "control.proto";
 import "event.proto";
+import "video.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -18,10 +19,7 @@ package remoting;
 // NEXT ID: 5
 message ChromotingHostMessage {
   optional InitClientMessage init_client= 1;
-  optional BeginUpdateStreamMessage begin_update_stream = 2;
-  optional EndUpdateStreamMessage end_update_stream = 3;
-  optional UpdateStreamPacketMessage update_stream_packet = 4;
-  optional RectangleUpdatePacket rectangle_update = 5;
+  optional VideoPacket video_packet = 2;
 }
 
 // Defines the message that is sent from the client to the host.

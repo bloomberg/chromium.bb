@@ -16,6 +16,7 @@
         'control.proto',
         'event.proto',
         'internal.proto',
+        'video.proto',
       ],
       'rules': [
         {
@@ -71,6 +72,8 @@
         '<(out_dir)/event.pb.h',
         '<(out_dir)/internal.pb.cc',
         '<(out_dir)/internal.pb.h',
+        '<(out_dir)/video.pb.cc',
+        '<(out_dir)/video.pb.h',
       ],
     },
   ],
