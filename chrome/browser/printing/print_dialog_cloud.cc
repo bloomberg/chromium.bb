@@ -425,7 +425,7 @@ bool CloudPrintHtmlDialogDelegate::IsDialogModal() const {
 }
 
 std::wstring CloudPrintHtmlDialogDelegate::GetDialogTitle() const {
-  return l10n_util::GetString(IDS_CLOUD_PRINT_TITLE);
+  return std::wstring();
 }
 
 GURL CloudPrintHtmlDialogDelegate::GetDialogContentURL() const {
@@ -497,7 +497,7 @@ PrintDialogCloud::PrintDialogCloud(const FilePath& path_to_pdf)
   // contents, and take the screen size into account.
   HtmlDialogUIDelegate* dialog_delegate =
       new internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate(
-          path_to_pdf, 500, 400, std::string(), print_job_title);
+          path_to_pdf, 497, 354, std::string(), print_job_title);
   browser_->BrowserShowHtmlDialog(dialog_delegate, NULL);
 }
 
