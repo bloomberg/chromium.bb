@@ -8,7 +8,7 @@
 #include <deque>
 
 #include "base/scoped_ptr.h"
-#include "ppapi/c/pp_completion_callback.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/plugins/pepper_resource.h"

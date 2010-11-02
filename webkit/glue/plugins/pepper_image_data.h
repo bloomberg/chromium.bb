@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "ppapi/c/ppb_image_data.h"
+#include "third_party/ppapi/c/ppb_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 

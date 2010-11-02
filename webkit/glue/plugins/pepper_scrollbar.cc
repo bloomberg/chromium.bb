@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/ppapi/c/dev/ppp_scrollbar_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"

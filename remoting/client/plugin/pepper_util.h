@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 
-#include "ppapi/cpp/completion_callback.h"
+#include "third_party/ppapi/cpp/completion_callback.h"
 
 class Task;
 

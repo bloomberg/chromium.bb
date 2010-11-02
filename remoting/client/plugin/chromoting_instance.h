@@ -12,14 +12,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_rect.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/var.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
+#include "third_party/ppapi/c/pp_instance.h"
+#include "third_party/ppapi/c/pp_rect.h"
+#include "third_party/ppapi/c/pp_resource.h"
+#include "third_party/ppapi/cpp/instance.h"
+#include "third_party/ppapi/cpp/var.h"
 
 class MessageLoop;
 struct PP_InputEvent;

@@ -4,7 +4,7 @@
 
 #include "remoting/client/plugin/pepper_input_handler.h"
 
-#include "ppapi/c/pp_input_event.h"
+#include "third_party/ppapi/c/pp_input_event.h"
 
 namespace remoting {
 

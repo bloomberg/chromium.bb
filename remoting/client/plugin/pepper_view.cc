@@ -5,14 +5,14 @@
 #include "remoting/client/plugin/pepper_view.h"
 
 #include "base/message_loop.h"
-#include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/cpp/image_data.h"
-#include "ppapi/cpp/point.h"
-#include "ppapi/cpp/size.h"
 #include "remoting/base/tracer.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
+#include "third_party/ppapi/cpp/graphics_2d.h"
+#include "third_party/ppapi/cpp/image_data.h"
+#include "third_party/ppapi/cpp/point.h"
+#include "third_party/ppapi/cpp/size.h"
 
 namespace remoting {
 

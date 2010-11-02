@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "ppapi/c/pp_errors.h"
+#include "third_party/ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_file_callbacks.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"

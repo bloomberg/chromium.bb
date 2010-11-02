@@ -7,7 +7,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "base/singleton.h"
 #include "base/thread_local.h"
-#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "third_party/ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 namespace pepper {

@@ -5,13 +5,13 @@
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
 #include "base/message_loop.h"
-#include "ppapi/c/pp_errors.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_module.h"
-#include "ppapi/c/ppb_instance.h"
-#include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/module.h"
 #include "remoting/client/plugin/chromoting_instance.h"
+#include "third_party/ppapi/c/pp_errors.h"
+#include "third_party/ppapi/c/pp_instance.h"
+#include "third_party/ppapi/c/pp_module.h"
+#include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/cpp/instance.h"
+#include "third_party/ppapi/cpp/module.h"
 
 static pp::Module* g_module_singleton = NULL;
 

@@ -28,6 +28,11 @@
     {
       'target_name': 'ppapi_c',
       'type': 'none',
+      'all_dependent_settings': {
+        'include_dirs': [
+           '..',
+        ],
+      },
       'sources': [
         'c/pp_completion_callback.h',
         'c/pp_errors.h',

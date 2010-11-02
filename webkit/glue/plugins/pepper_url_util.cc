@@ -5,7 +5,7 @@
 #include "webkit/glue/plugins/pepper_url_util.h"
 
 #include "googleurl/src/gurl.h"
-#include "ppapi/c/dev/ppb_url_util_dev.h"
+#include "third_party/ppapi/c/dev/ppb_url_util_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ppapi/c/dev/ppb_url_response_info_dev.h"
+#include "third_party/ppapi/c/dev/ppb_url_response_info_dev.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace WebKit {
