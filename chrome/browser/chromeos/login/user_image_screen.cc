@@ -31,17 +31,22 @@ const int kMaxCaptureFailureCounter = 5;
 // Maximum number of camera initialization retries.
 const int kMaxCameraInitFailureCounter = 3;
 
+// Name for camera thread.
+const char kCameraThreadName[] = "Chrome_CameraThread";
+
 }  // namespace
 
 UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
     : ViewScreen<UserImageView>(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(camera_(new Camera(this, true))),
       capture_failure_counter_(0),
-      camera_init_failure_counter_(0) {
+      camera_init_failure_counter_(0),
+      camera_thread_(kCameraThreadName) {
   registrar_.Add(
       this,
       NotificationType::SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
+  camera_thread_.Start();
+  camera_ = new Camera(this, &camera_thread_, true);
   camera_->Initialize(kFrameWidth, kFrameHeight);
 }
 

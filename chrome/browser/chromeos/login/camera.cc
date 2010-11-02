@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/thread.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "gfx/size.h"
@@ -113,8 +114,6 @@ gfx::Size get_best_frame_size(int fd,
 
 // Default camera device name.
 const char kDeviceName[] = "/dev/video0";
-// Name for camera thread.
-const char kCameraThreadName[] = "Chrome_CameraThread";
 // Default width of each frame received from the camera.
 const int kFrameWidth = 640;
 // Default height of each frame received from the camera.
@@ -126,18 +125,12 @@ const long kSelectTimeout = 1 * base::Time::kMicrosecondsPerSecond;
 
 }  // namespace
 
-// static
-Lock Camera::image_lock_;
-
-// static
-Lock Camera::thread_lock_;
-
 ///////////////////////////////////////////////////////////////////////////////
 // Camera, public members:
 
-Camera::Camera(Delegate* delegate, bool mirrored)
+Camera::Camera(Delegate* delegate, base::Thread* thread, bool mirrored)
     : delegate_(delegate),
-      camera_thread_(kCameraThreadName),
+      thread_(thread),
       device_name_(kDeviceName),
       device_descriptor_(-1),
       is_capturing_(false),
@@ -152,7 +145,6 @@ Camera::~Camera() {
   DCHECK_EQ(-1, device_descriptor_) << "Don't forget to uninitialize camera.";
 }
 
-// If this method is called there's no need to call PostCameraThreadAck().
 void Camera::ReportFailure() {
   DCHECK(IsOnCameraThread());
   if (device_descriptor_ == -1) {
@@ -179,6 +171,7 @@ void Camera::ReportFailure() {
 void Camera::Initialize(int desired_width, int desired_height) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PostCameraTask(
+      FROM_HERE,
       NewRunnableMethod(this,
                         &Camera::DoInitialize,
                         desired_width,
@@ -187,11 +180,9 @@ void Camera::Initialize(int desired_width, int desired_height) {
 
 void Camera::DoInitialize(int desired_width, int desired_height) {
   DCHECK(IsOnCameraThread());
-  DCHECK(delegate_);
 
   if (device_descriptor_ != -1) {
     LOG(WARNING) << "Camera is initialized already.";
-    PostCameraThreadAck();
     return;
   }
 
@@ -247,34 +238,21 @@ void Camera::DoInitialize(int desired_width, int desired_height) {
   frame_height_ = frame_size.height();
   desired_width_ = desired_width;
   desired_height_ = desired_height;
-  // No need to call PostCameraThreadAck() back as this method
-  // is being posted instead.
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(this, &Camera::OnInitializeSuccess));
 }
 
-void Camera::CameraThreadAck() {
-}
-
-void Camera::PostCameraThreadAck() {
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      NewRunnableMethod(this, &Camera::CameraThreadAck));
-}
-
 void Camera::Uninitialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PostCameraTask(NewRunnableMethod(this, &Camera::DoUninitialize));
+  PostCameraTask(FROM_HERE, NewRunnableMethod(this, &Camera::DoUninitialize));
 }
 
 void Camera::DoUninitialize() {
   DCHECK(IsOnCameraThread());
   if (device_descriptor_ == -1) {
     LOG(WARNING) << "Calling uninitialize for uninitialized camera.";
-    PostCameraThreadAck();
     return;
   }
   DoStopCapturing();
@@ -282,20 +260,18 @@ void Camera::DoUninitialize() {
   if (close(device_descriptor_) == -1)
     log_errno("Closing the device failed.");
   device_descriptor_ = -1;
-  // Maintain a reference so that camera object isn't deleted on wrong thread.
-  PostCameraThreadAck();
 }
 
 void Camera::StartCapturing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PostCameraTask(NewRunnableMethod(this, &Camera::DoStartCapturing));
+  PostCameraTask(FROM_HERE,
+                 NewRunnableMethod(this, &Camera::DoStartCapturing));
 }
 
 void Camera::DoStartCapturing() {
   DCHECK(IsOnCameraThread());
   if (is_capturing_) {
     LOG(WARNING) << "Capturing is already started.";
-    PostCameraThreadAck();
     return;
   }
 
@@ -324,18 +300,19 @@ void Camera::DoStartCapturing() {
       NewRunnableMethod(this,
                         &Camera::OnStartCapturingSuccess));
   is_capturing_ = true;
-  PostCameraTask(NewRunnableMethod(this, &Camera::OnCapture));
+  PostCameraTask(FROM_HERE,
+                 NewRunnableMethod(this, &Camera::OnCapture));
 }
 
 void Camera::StopCapturing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PostCameraTask(NewRunnableMethod(this, &Camera::DoStopCapturing));
+  PostCameraTask(FROM_HERE,
+                 NewRunnableMethod(this, &Camera::DoStopCapturing));
 }
 
 void Camera::DoStopCapturing() {
   DCHECK(IsOnCameraThread());
   if (!is_capturing_) {
-    PostCameraThreadAck();
     LOG(WARNING) << "Calling StopCapturing when capturing is not started.";
     return;
   }
@@ -344,8 +321,6 @@ void Camera::DoStopCapturing() {
   v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (xioctl(device_descriptor_, VIDIOC_STREAMOFF, &type) == -1)
     log_errno("VIDIOC_STREAMOFF failed.");
-  // Maintain a reference so that camera object isn't deleted on wrong thread.
-  PostCameraThreadAck();
 }
 
 void Camera::GetFrame(SkBitmap* frame) {
@@ -430,11 +405,8 @@ void Camera::UnmapVideoBuffers() {
 
 void Camera::OnCapture() {
   DCHECK(IsOnCameraThread());
-  if (!is_capturing_) {
-    // Maintain a reference so that camera object isn't deleted on wrong thread.
-    PostCameraThreadAck();
+  if (!is_capturing_)
     return;
-  }
 
   do {
     fd_set fds;
@@ -461,7 +433,8 @@ void Camera::OnCapture() {
     // EAGAIN - continue select loop.
   } while (!ReadFrame());
 
-  PostCameraTask(NewRunnableMethod(this, &Camera::OnCapture));
+  PostCameraTask(FROM_HERE,
+                 NewRunnableMethod(this, &Camera::OnCapture));
 }
 
 bool Camera::ReadFrame() {
@@ -601,14 +574,16 @@ void Camera::OnCaptureFailure() {
 
 bool Camera::IsOnCameraThread() const {
   AutoLock lock(thread_lock_);
-  return MessageLoop::current() == camera_thread_.message_loop();
+  return thread_ && MessageLoop::current() == thread_->message_loop();
 }
 
-void Camera::PostCameraTask(Task* task) {
+void Camera::PostCameraTask(const tracked_objects::Location& from_here,
+                            Task* task) {
   AutoLock lock(thread_lock_);
-  if (!camera_thread_.IsRunning())
-    camera_thread_.Start();
-  camera_thread_.message_loop()->PostTask(FROM_HERE, task);
+  if (!thread_)
+    return;
+  DCHECK(thread_->IsRunning());
+  thread_->message_loop()->PostTask(from_here, task);
 }
 
 }  // namespace chromeos

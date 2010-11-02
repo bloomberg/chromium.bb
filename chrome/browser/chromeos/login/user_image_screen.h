@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_H_
 #pragma once
 
+#include "base/thread.h"
 #include "chrome/browser/chromeos/login/camera.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
@@ -57,6 +58,9 @@ class UserImageScreen: public ViewScreen<UserImageView>,
 
   // Counts how many times camera initialization failed.
   int camera_init_failure_counter_;
+
+  // Thread for camera to work on.
+  base::Thread camera_thread_;
 
   NotificationRegistrar registrar_;
 

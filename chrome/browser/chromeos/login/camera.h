@@ -16,7 +16,7 @@
 
 class Task;
 namespace base {
-class TimeDelta;
+class Thread;
 }  // namespace base
 
 namespace chromeos {
@@ -49,9 +49,10 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   };
 
   // Initializes object members. |delegate| is object that will receive
-  // notifications about success of async method calls. |mirrored|
-  // determines if the returned video image is mirrored horizontally.
-  Camera(Delegate* delegate, bool mirrored);
+  // notifications about success of async method calls. |thread| is a thread
+  // to post blocking tasks to. |mirrored| determines if the returned video
+  // image is mirrored horizontally.
+  Camera(Delegate* delegate, base::Thread* thread, bool mirrored);
 
   // Initializes camera device on camera thread. Corresponding delegate's
   // callback is called on UI thread to notify about success or failure. Does
@@ -111,6 +112,8 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   // See the corresponding methods without Do prefix for details.
   void DoInitialize(int desired_width, int desired_height);
   void DoStartCapturing();
+  void DoUninitialize();
+  void DoStopCapturing();
 
   // Helper method that reports failure to the delegate via method
   // corresponding to the current state of the object.
@@ -124,22 +127,13 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   void OnCaptureSuccess();
   void OnCaptureFailure();
 
-  // Camera thread routines that implement the corresponding public methods.
-  void DoUninitialize();
-  void DoStopCapturing();
-
-  // All methods on the camera thread need to call this to post back to the UI
-  // thread. Otherwise the camera object could be deleted on the camera thread
-  // which is not allowed.
-  void PostCameraThreadAck();
-  void CameraThreadAck();
-
   // Returns true if the code is executed on camera thread right now, false
   // otherwise.
   bool IsOnCameraThread() const;
 
   // Posts task to camera thread.
-  void PostCameraTask(Task* task);
+  void PostCameraTask(const tracked_objects::Location& from_here,
+                      Task* task);
 
   // Defines a buffer in memory where one frame from the camera is stored.
   struct VideoBuffer {
@@ -152,7 +146,7 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   Delegate* delegate_;
 
   // Thread where all work with the device is going on.
-  base::Thread camera_thread_;
+  base::Thread* thread_;
 
   // All the members below are accessed only on camera thread.
   // Name of the device file, i.e. "/dev/video0".
@@ -187,10 +181,10 @@ class Camera : public base::RefCountedThreadSafe<Camera> {
   SkBitmap frame_image_;
 
   // Lock that guards references to |frame_image_|.
-  static Lock image_lock_;
+  mutable Lock image_lock_;
 
   // Lock that guards references to |camera_thread_|.
-  static Lock thread_lock_;
+  mutable Lock thread_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(Camera);
 };
