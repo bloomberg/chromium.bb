@@ -175,22 +175,6 @@ bool TabHasUnloadListener(TabContents* contents) {
       !contents->render_view_host()->SuddenTerminationAllowed();
 }
 
-// Returns true if two URLs are equal ignoring their ref (hash fragment).
-bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
-  if (url == other)
-    return true;
-  // If neither has a ref than there is no point in stripping the refs and
-  // the URLs are different since the comparison failed in the previous if
-  // statement.
-  if (!url.has_ref() && !other.has_ref())
-    return false;
-  url_canon::Replacements<char> replacements;
-  replacements.ClearRef();
-  GURL url_no_ref = url.ReplaceComponents(replacements);
-  GURL other_no_ref = other.ReplaceComponents(replacements);
-  return url_no_ref == other_no_ref;
-}
-
 }  // namespace
 
 extern bool g_log_bug53991;
