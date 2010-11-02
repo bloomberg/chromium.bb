@@ -33,7 +33,9 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
   virtual views::View* GetContentsView() {
     return this;
   }
-  virtual void WindowClosing() {}
+  virtual void WindowClosing() {
+    html_delegate_->OnDialogClosed("");
+  }
 
   // HtmlDialogTabContentsDelegate interface.
   void MoveContents(TabContents* source, const gfx::Rect& pos) {}

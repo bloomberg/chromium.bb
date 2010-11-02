@@ -30,6 +30,7 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
     return tab_contents_container_.widget();
   }
   virtual void DeleteDelegate() {
+    html_delegate_->OnDialogClosed("");
     delete this;
   }
 

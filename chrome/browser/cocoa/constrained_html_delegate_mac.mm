@@ -29,7 +29,7 @@ class ConstrainedHtmlDelegateMac :
     // your delegate in this method."
     if (is_sheet_open())
       [NSApp endSheet:sheet()];
-
+    html_delegate_->OnDialogClosed("");
     delete this;
   }
 
