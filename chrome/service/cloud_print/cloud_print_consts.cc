@@ -43,3 +43,5 @@ const char kChromeCloudPrintProxyHeader[] = "X-Google-CloudPrint-Proxy: Chrome";
 // are just string keys.
 const char kCloudPrintAPIRetryPolicy[] = "cloudprint.google.com/api";
 const char kJobDataRetryPolicy[] = "cloudprint.google.com/jobdata";
+// The string to be appended to the user-agent for cloudprint requests.
+const char kCloudPrintUserAgent[] = "GoogleCloudPrintProxy";

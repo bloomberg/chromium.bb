@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher_protect.h"
@@ -141,6 +142,12 @@ void CloudPrintURLFetcher::StartRequestNow() {
 }
 
 URLRequestContextGetter* CloudPrintURLFetcher::GetRequestContextGetter() {
-  return new ServiceURLRequestContextGetter();
+  ServiceURLRequestContextGetter* getter =
+      new ServiceURLRequestContextGetter();
+  // Now set up the user agent for cloudprint.
+  std::string user_agent = getter->user_agent();
+  StringAppendF(&user_agent, " %s", kCloudPrintUserAgent);
+  getter->set_user_agent(user_agent);
+  return getter;
 }
 

@@ -31,12 +31,9 @@ class MessageLoopProxy;
 //
 class ServiceURLRequestContext : public URLRequestContext {
  public:
-  ServiceURLRequestContext();
+  explicit ServiceURLRequestContext(const std::string& user_agent);
   void set_cookie_policy(net::CookiePolicy* policy) {
     cookie_policy_ = policy;
-  }
-  void set_user_agent(const std::string& ua) {
-    user_agent_ = ua;
   }
 
   // URLRequestContext overrides
@@ -63,6 +60,9 @@ class ServiceURLRequestContextGetter : public URLRequestContextGetter {
 
   void set_user_agent(const std::string& ua) {
     user_agent_ = ua;
+  }
+  std::string user_agent() const {
+    return user_agent_;
   }
  private:
   virtual ~ServiceURLRequestContextGetter();
