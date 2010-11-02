@@ -184,7 +184,8 @@ bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   }
 
   // Show the full text if the text does not fit.
-  if (!is_multi_line_ && font_.GetStringWidth(text_) > width()) {
+  if (!is_multi_line_ &&
+      (font_.GetStringWidth(text_) > GetAvailableRect().width())) {
     *tooltip = text_;
     return true;
   }
@@ -423,8 +424,8 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
   if (url_set_) {
     // TODO(jungshik) : Figure out how to get 'intl.accept_languages'
     // preference and use it when calling ElideUrl.
-    *paint_text = UTF16ToWideHack(gfx::ElideUrl(url_, font_, width(),
-                                                std::wstring()));
+    *paint_text = UTF16ToWideHack(
+        gfx::ElideUrl(url_, font_, GetAvailableRect().width(), std::wstring()));
 
     // An URLs is always treated as an LTR text and therefore we should
     // explicitly mark it as such if the locale is RTL so that URLs containing
@@ -439,7 +440,7 @@ void Label::CalculateDrawStringParams(std::wstring* paint_text,
         WideToUTF16(*paint_text)));
   } else if (elide_in_middle_) {
     *paint_text = UTF16ToWideHack(gfx::ElideText(WideToUTF16Hack(text_),
-        font_, width(), true));
+        font_, GetAvailableRect().width(), true));
   } else {
     *paint_text = text_;
   }
