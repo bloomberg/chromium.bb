@@ -1596,6 +1596,40 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 
+  def CallJavascriptFunc(self, function, args=[], tab_index=0, windex=0):
+    """Executes a script which calls a given javascript function.
+
+    The invoked javascript function must send a result back via the
+    domAutomationController.send function, or this function will never return.
+
+    Defaults to first tab in first window.
+
+    Args:
+      function: name of the function
+      args: list of all the arguments to pass into the called function. These
+            should be able to be converted to a string using the |str| function.
+      tab_index: index of the tab within the given window
+      windex: index of the window
+
+    Returns:
+      a string that was sent back via the domAutomationController.send method
+    """
+    # Convert the given arguments for evaluation in a javascript statement.
+    converted_args = []
+    for arg in args:
+      # If it is a string argument, we need to quote and escape it properly.
+      if type(arg) == type('string') or type(arg) == type(u'unicode'):
+        # We must convert all " in the string to \", so that we don't try
+        # to evaluate invalid javascript like ""arg"".
+        converted_arg = '"' + arg.replace('"', '\\"') + '"'
+      else:
+        # Convert it to a string so that we can use |join| later.
+        converted_arg = str(arg)
+      converted_args += [converted_arg]
+    js = '%s(%s)' % (function, ', '.join(converted_args))
+    logging.debug('Executing javascript: ', js)
+    return self.ExecuteJavascript(js, windex, tab_index)
+
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""

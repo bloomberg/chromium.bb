@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import urllib
 
 import pyauto_functional
@@ -20,8 +21,8 @@ class NotificationsTest(pyauto.PyUITest):
     self.ASK_SETTING = 3
 
     # HTML page used for notification testing.
-    self.TEST_PAGE_URL = (
-        self.GetFileURLForDataPath('notifications/notification_tester.html'))
+    self.TEST_PAGE_URL = self.GetFileURLForDataPath(
+        os.path.join('notifications', 'notification_tester.html'))
 
   def Debug(self):
     """Test method for experimentation.
@@ -132,33 +133,6 @@ class NotificationsTest(pyauto.PyUITest):
     self.assertEqual('Allow', infobar['buttons'][0])
     self.assertEqual('Deny', infobar['buttons'][1])
 
-  def _CallJavascriptFunc(self, function, args=[], tab_index=0, windex=0):
-    """Helper function to execute a script that calls a given function.
-
-    Defaults to first tab in first window.
-
-    Args:
-      function: name of the function
-      args: list of all the arguments to pass into the called function. These
-            should be able to be converted to a string using the |str| function.
-      tab_index: index of the tab within the given window
-      windex: index of the window
-    """
-    # Convert the given arguments for evaluation in a javascript statement.
-    converted_args = []
-    for arg in args:
-      # If it is a string argument, we need to quote and escape it properly.
-      if type(arg) == type('string') or type(arg) == type(u'unicode'):
-        # We must convert all " in the string to \", so that we don't try
-        # to evaluate invalid javascript like ""arg"".
-        converted_arg = '"' + arg.replace('"', '\\"') + '"'
-      else:
-        # Convert it to a string so that we can use |join| later.
-        converted_arg = str(arg)
-      converted_args += [converted_arg]
-    js = '%s(%s)' % (function, ', '.join(converted_args))
-    return self.ExecuteJavascript(js, windex, tab_index)
-
   def _CreateSimpleNotification(self, img_url, title, text,
                                 replace_id='', tab_index=0, windex=0):
     """Creates a simple notification.
@@ -179,7 +153,7 @@ class NotificationsTest(pyauto.PyUITest):
       tab_index: index of the tab within the given window
       windex: index of the window
     """
-    return self._CallJavascriptFunc('createNotification',
+    return self.CallJavascriptFunc('createNotification',
                                     [img_url, title, text, replace_id],
                                     tab_index,
                                     windex);
@@ -202,7 +176,7 @@ class NotificationsTest(pyauto.PyUITest):
       tab_index: index of the tab within the given window
       windex: index of the window
     """
-    return self._CallJavascriptFunc('createHTMLNotification',
+    return self.CallJavascriptFunc('createHTMLNotification',
                                     [content_url, replace_id],
                                     tab_index,
                                     windex)
@@ -216,7 +190,7 @@ class NotificationsTest(pyauto.PyUITest):
       tab_index: index of the tab within the given window
       windex: index of the window
     """
-    self._CallJavascriptFunc('requestPermission', [], windex, tab_index)
+    self.CallJavascriptFunc('requestPermission', [], windex, tab_index)
 
   def _CancelNotification(self, notification_id, tab_index=0, windex=0):
     """Cancels a notification with the given id.
@@ -236,7 +210,7 @@ class NotificationsTest(pyauto.PyUITest):
           notification
       windex: index of the window
     """
-    msg = self._CallJavascriptFunc(
+    msg = self.CallJavascriptFunc(
         'cancelNotification', [notification_id], tab_index, windex)
     # '1' signifies success.
     self.assertEquals('1', msg)
@@ -293,7 +267,7 @@ class NotificationsTest(pyauto.PyUITest):
   def testAllowOnPermissionInfobar(self):
     """Tries to create a notification and clicks allow on the infobar."""
     self.NavigateToURL(self.TEST_PAGE_URL)
-    # This notification should not be shown because we don't have permission.
+    # This notification should not be shown because we do not have permission.
     self._CreateHTMLNotification(self.NO_SUCH_URL)
     self.assertFalse(self.GetActiveNotifications())
 

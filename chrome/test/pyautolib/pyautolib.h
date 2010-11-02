@@ -58,6 +58,10 @@ class PyUITestBase : public UITestBase {
   // Blocks until page loaded.
   void NavigateToURL(const char* url_string, int window_index, int tab_index);
 
+  // Reloads the active tab in the given window.
+  // Blocks until page reloaded.
+  void ReloadActiveTab(int window_index = 0);
+
   // Get the URL of the active tab.
   GURL GetActiveTabURL(int window_index = 0);
 

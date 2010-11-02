@@ -221,6 +221,11 @@ class PyUITestBase {
   void NavigateToURL(const char* url_string);
   void NavigateToURL(const char* url_string, int window_index, int tab_index);
 
+  %feature("docstring", "Reload the active tab in the given window (or first "
+           "window if index not given). Blocks until page has reloaded.")
+      ReloadActiveTab;
+  void ReloadActiveTab(int window_index = 0);
+
   // BrowserProxy methods
   %feature("docstring", "Apply the accelerator with given id "
            "(IDC_BACK, IDC_NEWTAB ...) to the given or first window. "

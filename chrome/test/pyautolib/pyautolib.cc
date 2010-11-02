@@ -80,6 +80,12 @@ void PyUITestBase::NavigateToURL(
   UITestBase::NavigateToURL(url, window_index, tab_index);
 }
 
+void PyUITestBase::ReloadActiveTab(int window_index) {
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_proxy->Reload());
+}
+
 bool PyUITestBase::AppendTab(const GURL& tab_url, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
