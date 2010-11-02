@@ -659,3 +659,128 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EscapeToDefaultMatch) {
   EXPECT_EQ(old_text, edit_view->GetText());
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
 }
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BasicTextOperations) {
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
+  browser()->FocusLocationBar();
+
+  AutocompleteEditView* edit_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+
+  std::wstring old_text = edit_view->GetText();
+  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL), old_text);
+  EXPECT_TRUE(edit_view->IsSelectAll());
+
+  std::wstring::size_type start, end;
+  edit_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(old_text.size(), end);
+
+  // Move the cursor to the end.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_END, false, false, false));
+  EXPECT_FALSE(edit_view->IsSelectAll());
+
+  // Make sure the cursor is placed correctly.
+  edit_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(old_text.size(), start);
+  EXPECT_EQ(old_text.size(), end);
+
+  // Insert one character at the end. Make sure we won't insert anything after
+  // the special ZWS mark used in gtk implementation.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_A, false, false, false));
+  EXPECT_EQ(old_text + L"a", edit_view->GetText());
+
+  // Delete one character from the end. Make sure we won't delete the special
+  // ZWS mark used in gtk implementation.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_BACK, false, false, false));
+  EXPECT_EQ(old_text, edit_view->GetText());
+
+  edit_view->SelectAll(true);
+  EXPECT_TRUE(edit_view->IsSelectAll());
+  edit_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(old_text.size(), end);
+
+  // Delete the content
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_DELETE, false, false, false));
+  EXPECT_TRUE(edit_view->IsSelectAll());
+  edit_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(0U, end);
+  EXPECT_TRUE(edit_view->GetText().empty());
+
+  // Check if RevertAll() can set text and cursor correctly.
+  edit_view->RevertAll();
+  EXPECT_FALSE(edit_view->IsSelectAll());
+  EXPECT_EQ(old_text, edit_view->GetText());
+  edit_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(old_text.size(), start);
+  EXPECT_EQ(old_text.size(), end);
+}
+
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, UndoRedoLinux) {
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
+  browser()->FocusLocationBar();
+
+  AutocompleteEditView* edit_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+
+  std::wstring old_text = edit_view->GetText();
+  EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL), old_text);
+  EXPECT_TRUE(edit_view->IsSelectAll());
+
+  // Undo should clear the omnibox.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, false, false));
+  EXPECT_TRUE(edit_view->GetText().empty());
+
+  // Nothing should happen if undo again.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, false, false));
+  EXPECT_TRUE(edit_view->GetText().empty());
+
+  // Redo should restore the original text.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, true, false));
+  EXPECT_EQ(old_text, edit_view->GetText());
+
+  // Looks like the undo manager doesn't support restoring selection.
+  EXPECT_FALSE(edit_view->IsSelectAll());
+
+  // The cursor should be at the end.
+  std::wstring::size_type start, end;
+  edit_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(old_text.size(), start);
+  EXPECT_EQ(old_text.size(), end);
+
+  // Delete two characters.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_BACK, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_BACK, false, false, false));
+  EXPECT_EQ(old_text.substr(0, old_text.size() - 2), edit_view->GetText());
+
+  // Undo delete.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, false, false));
+  EXPECT_EQ(old_text, edit_view->GetText());
+
+  // Redo delete.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, true, false));
+  EXPECT_EQ(old_text.substr(0, old_text.size() - 2), edit_view->GetText());
+
+  // Delete everything.
+  edit_view->SelectAll(true);
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_BACK, false, false, false));
+  EXPECT_TRUE(edit_view->GetText().empty());
+
+  // Undo delete everything.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, false, false));
+  EXPECT_EQ(old_text.substr(0, old_text.size() - 2), edit_view->GetText());
+
+  // Undo delete two characters.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, false, false));
+  EXPECT_EQ(old_text, edit_view->GetText());
+
+  // Undo again.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_Z, true, false, false));
+  EXPECT_TRUE(edit_view->GetText().empty());
+}
+#endif

@@ -150,6 +150,10 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       faded_text_tag_(NULL),
       secure_scheme_tag_(NULL),
       security_error_scheme_tag_(NULL),
+      normal_text_tag_(NULL),
+      instant_anchor_tag_(NULL),
+      instant_view_(NULL),
+      instant_mark_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
 #if defined(TOOLKIT_VIEWS)
       popup_view_(new AutocompletePopupContentsView(
@@ -218,6 +222,15 @@ void AutocompleteEditViewGtk::Init() {
   tag_table_ = gtk_text_tag_table_new();
   text_buffer_ = gtk_text_buffer_new(tag_table_);
   g_object_set_data(G_OBJECT(text_buffer_), kAutocompleteEditViewGtkKey, this);
+
+  // We need to run this two handlers before undo manager's handlers, so that
+  // text iterators modified by these handlers can be passed down to undo
+  // manager's handlers.
+  g_signal_connect(text_buffer_, "delete-range",
+                   G_CALLBACK(&HandleDeleteRangeThunk), this);
+  g_signal_connect(text_buffer_, "mark-set",
+                   G_CALLBACK(&HandleMarkSetAlwaysThunk), this);
+
   text_view_ = gtk_undo_view_new(text_buffer_);
   if (popup_window_mode_)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view_), false);
@@ -255,8 +268,6 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleBeginUserActionThunk), this);
   g_signal_connect(text_buffer_, "end-user-action",
                    G_CALLBACK(&HandleEndUserActionThunk), this);
-  g_signal_connect(text_buffer_, "insert-text",
-                   G_CALLBACK(&HandleInsertTextThunk), this);
   // We connect to key press and release for special handling of a few keys.
   g_signal_connect(text_view_, "key-press-event",
                    G_CALLBACK(&HandleKeyPressThunk), this);
@@ -305,23 +316,55 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleDeleteFromCursorThunk), this);
   g_signal_connect(text_view_, "hierarchy-changed",
                    G_CALLBACK(&HandleHierarchyChangedThunk), this);
-#if GTK_CHECK_VERSION(2,20,0)
+#if GTK_CHECK_VERSION(2, 20, 0)
   g_signal_connect(text_view_, "preedit-changed",
                    G_CALLBACK(&HandlePreeditChangedThunk), this);
 #endif
+  g_signal_connect(text_view_, "undo", G_CALLBACK(&HandleUndoRedoThunk), this);
+  g_signal_connect(text_view_, "redo", G_CALLBACK(&HandleUndoRedoThunk), this);
+  g_signal_connect_after(text_view_, "undo",
+                         G_CALLBACK(&HandleUndoRedoAfterThunk), this);
+  g_signal_connect_after(text_view_, "redo",
+                         G_CALLBACK(&HandleUndoRedoAfterThunk), this);
 
   // Setup for the Instant suggestion text view.
-  instant_view_ = gtk_text_view_new();
-  instant_buffer_ = gtk_text_view_get_buffer(GTK_TEXT_VIEW(instant_view_));
-  gtk_text_view_add_child_in_window(GTK_TEXT_VIEW(text_view_),
+  // GtkLabel is used instead of GtkTextView to get transparent background.
+  instant_view_ = gtk_label_new(NULL);
+
+  GtkTextIter end_iter;
+  gtk_text_buffer_get_end_iter(text_buffer_, &end_iter);
+
+  // Insert a Zero Width Space character just before the instant anchor.
+  // It's a hack to workaround a bug of GtkTextView which can not align the
+  // preedit string and a child anchor correctly when there is no other content
+  // around the preedit string.
+  gtk_text_buffer_insert(text_buffer_, &end_iter, "\342\200\213", -1);
+  GtkTextChildAnchor* instant_anchor =
+      gtk_text_buffer_create_child_anchor(text_buffer_, &end_iter);
+
+  gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW(text_view_),
                                     instant_view_,
-                                    GTK_TEXT_WINDOW_WIDGET,
-                                    0, 0);
-  instant_text_tag_ = gtk_text_buffer_create_tag(
-      instant_buffer_, NULL, "foreground", kTextBaseColor, NULL);
-  GTK_WIDGET_UNSET_FLAGS(instant_view_, GTK_CAN_FOCUS);
-  g_signal_connect(instant_view_, "button-press-event",
-                   G_CALLBACK(&HandleInstantViewButtonPressThunk), this);
+                                    instant_anchor);
+
+  instant_anchor_tag_ = gtk_text_buffer_create_tag(text_buffer_, NULL, NULL);
+
+  GtkTextIter anchor_iter;
+  gtk_text_buffer_get_iter_at_child_anchor(text_buffer_, &anchor_iter,
+                                           instant_anchor);
+  gtk_text_buffer_apply_tag(text_buffer_, instant_anchor_tag_,
+                            &anchor_iter, &end_iter);
+
+  GtkTextIter start_iter;
+  gtk_text_buffer_get_start_iter(text_buffer_, &start_iter);
+  instant_mark_ =
+      gtk_text_buffer_create_mark(text_buffer_, NULL, &start_iter, FALSE);
+
+  // Hooking up this handler after setting up above hacks for Instant view, so
+  // that we won't filter out the special ZWP mark itself.
+  g_signal_connect(text_buffer_, "insert-text",
+                   G_CALLBACK(&HandleInsertTextThunk), this);
+
+  AdjustVerticalAlignmentOfInstantView();
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -364,6 +407,9 @@ int AutocompleteEditViewGtk::TextWidth() {
   GtkTextIter start, end;
   GdkRectangle first_char_bounds, last_char_bounds;
   gtk_text_buffer_get_start_iter(text_buffer_, &start);
+
+  // Use the real end iterator here to take the width of instant suggestion
+  // text into account, so that location bar can layout its children correctly.
   gtk_text_buffer_get_end_iter(text_buffer_, &end);
   gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_),
                                   &start, &first_char_bounds);
@@ -445,12 +491,27 @@ void AutocompleteEditViewGtk::OpenURL(const GURL& url,
 }
 
 std::wstring AutocompleteEditViewGtk::GetText() const {
-  return GetTextFromBuffer(text_buffer_);
+  GtkTextIter start, end;
+  GetTextBufferBounds(&start, &end);
+  gchar* utf8 = gtk_text_buffer_get_text(text_buffer_, &start, &end, false);
+  std::wstring out(UTF8ToWide(utf8));
+  g_free(utf8);
+
+#if GTK_CHECK_VERSION(2, 20, 0)
+  // We need to treat the text currently being composed by the input method as
+  // part of the text content, so that omnibox can work correctly in the middle
+  // of composition.
+  if (preedit_.size()) {
+    GtkTextMark* mark = gtk_text_buffer_get_insert(text_buffer_);
+    gtk_text_buffer_get_iter_at_mark(text_buffer_, &start, mark);
+    out.insert(gtk_text_iter_get_offset(&start), preedit_);
+  }
+#endif
+  return out;
 }
 
 bool AutocompleteEditViewGtk::IsEditingOrEmpty() const {
-  return model_->user_input_in_progress() ||
-      (gtk_text_buffer_get_char_count(text_buffer_) == 0);
+  return model_->user_input_in_progress() || (GetTextLength() == 0);
 }
 
 int AutocompleteEditViewGtk::GetIcon() const {
@@ -497,7 +558,7 @@ bool AutocompleteEditViewGtk::IsSelectAll() {
   gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
 
   GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+  GetTextBufferBounds(&start, &end);
 
   // Returns true if the |text_buffer_| is empty.
   return gtk_text_iter_equal(&start, &sel_start) &&
@@ -530,10 +591,14 @@ void AutocompleteEditViewGtk::UpdatePopup() {
     return;
 
   // Don't inline autocomplete when the caret/selection isn't at the end of
-  // the text.
+  // the text, or in the middle of composition.
   CharRange sel = GetSelection();
-  model_->StartAutocomplete(sel.cp_min != sel.cp_max,
-                            std::max(sel.cp_max, sel.cp_min) < GetTextLength());
+  bool no_inline_autocomplete =
+      std::max(sel.cp_max, sel.cp_min) < GetTextLength();
+#if GTK_CHECK_VERSION(2, 20, 0)
+  no_inline_autocomplete = no_inline_autocomplete || preedit_.size();
+#endif
+  model_->StartAutocomplete(sel.cp_min != sel.cp_max, no_inline_autocomplete);
 }
 
 void AutocompleteEditViewGtk::ClosePopup() {
@@ -674,6 +739,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, NULL);
 
     gtk_util::UndoForceFontSize(text_view_);
+    gtk_util::UndoForceFontSize(instant_view_);
 
     // Grab the text colors out of the style and set our tags to use them.
     GtkStyle* style = gtk_rc_get_style(text_view_);
@@ -684,9 +750,11 @@ void AutocompleteEditViewGtk::SetBaseColor() {
         style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
 
     g_object_set(faded_text_tag_, "foreground-gdk", &average_color, NULL);
-    g_object_set(instant_text_tag_, "foreground-gdk", &average_color, NULL);
     g_object_set(normal_text_tag_, "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
+
+    // GtkLabel uses fg color instead of text color.
+    gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &average_color);
   } else {
     const GdkColor* background_color_ptr;
 #if defined(TOOLKIT_VIEWS)
@@ -701,10 +769,10 @@ void AutocompleteEditViewGtk::SetBaseColor() {
         text_view_, &gtk_util::kGdkBlack, &gtk_util::kGdkGray);
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, background_color_ptr);
 
+    GdkColor c;
 #if !defined(TOOLKIT_VIEWS)
     // Override the selected colors so we don't leak colors from the current
     // gtk theme into the chrome-theme.
-    GdkColor c;
     c = gfx::SkColorToGdkColor(
         theme_provider_->get_active_selection_bg_color());
     gtk_widget_modify_base(text_view_, GTK_STATE_SELECTED, &c);
@@ -722,16 +790,25 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     gtk_widget_modify_text(text_view_, GTK_STATE_ACTIVE, &c);
 #endif
 
+    gdk_color_parse(kTextBaseColor, &c);
+    gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &c);
+
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(text_view_,
         popup_window_mode_ ?
         browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
         browser_defaults::kAutocompleteEditFontPixelSize);
 
+    gtk_util::ForceFontSizePixels(instant_view_,
+        popup_window_mode_ ?
+        browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
+        browser_defaults::kAutocompleteEditFontPixelSize);
+
     g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
-    g_object_set(instant_text_tag_, "foreground", kTextBaseColor, NULL);
     g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
   }
+
+  AdjustVerticalAlignmentOfInstantView();
 }
 
 void AutocompleteEditViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
@@ -946,7 +1023,7 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
     // NOTE: This function doesn't seem to like a count of 0, looking at the
     // code it will skip an important loop.  Use -1 to achieve the same.
     GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+    GetTextBufferBounds(&start, &end);
     gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
   }
 #endif
@@ -1025,7 +1102,7 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
       gint cursor_pos;
       g_object_get(G_OBJECT(text_buffer_), "cursor-position", &cursor_pos,
                    NULL);
-      if (cursor_pos == gtk_text_buffer_get_char_count(text_buffer_))
+      if (cursor_pos == GetTextLength())
         controller_->OnCommitSuggestedText(GetText());
       else
         handled = false;
@@ -1203,8 +1280,8 @@ void AutocompleteEditViewGtk::HandleInsertText(
   filtered_text.reserve(len);
 
   // Filter out new line and tab characters.
-  // |text| is guaranteed to be a valid UTF-8 string, so it's safe here to
-  // filter byte by byte.
+  // |text| is guaranteed to be a valid UTF-8 string, so we don't need to
+  // validate it here.
   //
   // If there was only a single character, then it might be generated by a key
   // event. In this case, we save the single character to help our
@@ -1213,15 +1290,25 @@ void AutocompleteEditViewGtk::HandleInsertText(
   if (len == 1 && (text[0] == '\n' || text[0] == '\r'))
     enter_was_inserted_ = true;
 
-  for (gint i = 0; i < len; ++i) {
-    gchar c = text[i];
-    if (c == '\n' || c == '\r' || c == '\t')
-      continue;
+  const gchar* p = text;
+  while(*p) {
+    gunichar c = g_utf8_get_char(p);
+    const gchar* next = g_utf8_next_char(p);
 
-    filtered_text.push_back(c);
+    // 0x200B is Zero Width Space, which is inserted just before the instant
+    // anchor for working around the GtkTextView's misalignment bug.
+    // This character might be captured and inserted into the content by undo
+    // manager, so we need to filter it out here.
+    if (c != L'\n' && c != L'\r' && c != L'\t' && c != 0x200B)
+      filtered_text.append(p, next);
+
+    p = next;
   }
 
   if (filtered_text.length()) {
+    // Avoid inserting the text after the instant anchor.
+    ValidateTextBufferIter(location);
+
     // Call the default handler to insert filtered text.
     GtkTextBufferClass* klass = GTK_TEXT_BUFFER_GET_CLASS(buffer);
     klass->insert_text(buffer, location, filtered_text.data(),
@@ -1410,9 +1497,9 @@ void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
                                                 bool update_primary_selection) {
   GtkTextIter start, end;
   if (reversed) {
-    gtk_text_buffer_get_bounds(text_buffer_, &end, &start);
+    GetTextBufferBounds(&end, &start);
   } else {
-    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+    GetTextBufferBounds(&start, &end);
   }
   if (!update_primary_selection)
     StartUpdatingHighlightedText();
@@ -1459,6 +1546,11 @@ AutocompleteEditViewGtk::CharRange AutocompleteEditViewGtk::GetSelection() {
   mark = gtk_text_buffer_get_insert(text_buffer_);
   gtk_text_buffer_get_iter_at_mark(text_buffer_, &insert, mark);
 
+#if GTK_CHECK_VERSION(2, 20, 0)
+  // Nothing should be selected when we are in the middle of composition.
+  DCHECK(preedit_.empty() || gtk_text_iter_equal(&start, &insert));
+#endif
+
   return CharRange(gtk_text_iter_get_offset(&start),
                    gtk_text_iter_get_offset(&insert));
 }
@@ -1470,23 +1562,28 @@ void AutocompleteEditViewGtk::ItersFromCharRange(const CharRange& range,
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_max, range.cp_max);
 }
 
-int AutocompleteEditViewGtk::GetTextLength() {
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+int AutocompleteEditViewGtk::GetTextLength() const {
+  GtkTextIter end;
+  gtk_text_buffer_get_iter_at_mark(text_buffer_, &end, instant_mark_);
+#if GTK_CHECK_VERSION(2, 20, 0)
+  // We need to count the length of the text being composed, because we treat
+  // it as part of the content in GetText().
+  return gtk_text_iter_get_offset(&end) + preedit_.size();
+#else
   return gtk_text_iter_get_offset(&end);
-}
-
-std::wstring AutocompleteEditViewGtk::GetTextFromBuffer(
-    GtkTextBuffer* buffer) const {
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(buffer, &start, &end);
-  gchar* utf8 = gtk_text_buffer_get_text(buffer, &start, &end, false);
-  std::wstring out(UTF8ToWide(utf8));
-  g_free(utf8);
-  return out;
+#endif
 }
 
 void AutocompleteEditViewGtk::EmphasizeURLComponents() {
+#if GTK_CHECK_VERSION(2, 20, 0)
+  // We can't change the text style easily, if the preedit string (the text
+  // being composed by the input method) is not empty, which is not treated as
+  // a part of the text content inside GtkTextView. And it's ok to simply return
+  // in this case, as this method will be called again when the preedit string
+  // gets committed.
+  if (preedit_.size())
+    return;
+#endif
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
   // by Parse(), ask the model, which will check the desired page transition for
@@ -1501,7 +1598,7 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
 
   // Set the baseline emphasis.
   GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+  GetTextBufferBounds(&start, &end);
   gtk_text_buffer_remove_all_tags(text_buffer_, &start, &end);
   if (emphasize) {
     gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
@@ -1545,28 +1642,22 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
 
 void AutocompleteEditViewGtk::SetInstantSuggestion(
     const std::string& suggestion) {
+  gtk_label_set_text(GTK_LABEL(instant_view_), suggestion.c_str());
   if (suggestion.empty()) {
     gtk_widget_hide(instant_view_);
   } else {
-    gtk_text_buffer_set_text(instant_buffer_, suggestion.data(),
-                             suggestion.size());
-    GtkTextIter start, end;
-    gtk_text_buffer_get_bounds(instant_buffer_, &start, &end);
-    gtk_text_buffer_apply_tag(instant_buffer_, instant_text_tag_, &start, &end);
     gtk_widget_show(instant_view_);
+    AdjustVerticalAlignmentOfInstantView();
   }
 }
 
 bool AutocompleteEditViewGtk::CommitInstantSuggestion() {
-  if (!GTK_WIDGET_VISIBLE(instant_view_))
-    return false;
-
-  std::wstring suggest_text = GetTextFromBuffer(instant_buffer_);
-  if (suggest_text.empty())
+  const gchar* suggestion = gtk_label_get_text(GTK_LABEL(instant_view_));
+  if (!suggestion || !*suggestion)
     return false;
 
   OnBeforePossibleChange();
-  SetUserText(GetText() + suggest_text);
+  SetUserText(GetText() + UTF8ToWide(suggestion));
   OnAfterPossibleChange();
   return true;
 }
@@ -1574,16 +1665,6 @@ bool AutocompleteEditViewGtk::CommitInstantSuggestion() {
 void AutocompleteEditViewGtk::TextChanged() {
   EmphasizeURLComponents();
   controller_->OnChanged();
-
-  // Move the instant suggestion to the end of the text.
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
-  GdkRectangle rect;
-  gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_), &end, &rect);
-
-  // +1 so the cursor will show.
-  gtk_text_view_move_child(GTK_TEXT_VIEW(text_view_), instant_view_,
-                           rect.x + rect.width + 1, 0);
 }
 
 void AutocompleteEditViewGtk::SavePrimarySelection(
@@ -1672,12 +1753,40 @@ void AutocompleteEditViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
   AdjustTextJustification();
 }
 
-gboolean AutocompleteEditViewGtk::HandleInstantViewButtonPress(
-    GtkWidget* sender,
-    GdkEventButton* event) {
-  // Clicking on the view should have no effect; just stop propagation of the
-  // event.
-  return TRUE;
+void AutocompleteEditViewGtk::HandleDeleteRange(GtkTextBuffer* buffer,
+                                                GtkTextIter* start,
+                                                GtkTextIter* end) {
+  // Prevent the user from deleting the instant anchor. We can't simply set the
+  // instant anchor readonly by applying a tag with "editable" = FALSE, because
+  // it'll prevent the insert caret from blinking.
+  ValidateTextBufferIter(start);
+  ValidateTextBufferIter(end);
+  if (!gtk_text_iter_compare(start, end)) {
+    static guint signal_id =
+        g_signal_lookup("delete-range", GTK_TYPE_TEXT_BUFFER);
+    g_signal_stop_emission(buffer, signal_id, 0);
+  }
+}
+
+void AutocompleteEditViewGtk::HandleMarkSetAlways(GtkTextBuffer* buffer,
+                                                  GtkTextIter* location,
+                                                  GtkTextMark* mark) {
+  if (mark == instant_mark_)
+    return;
+
+  GtkTextIter new_iter = *location;
+  ValidateTextBufferIter(&new_iter);
+
+  // "mark-set" signal is actually emitted after the mark's location is already
+  // set, so if the location is beyond the instant anchor, we need to move the
+  // mark again, which will emit the signal again. In order to prevent other
+  // signal handlers from being called twice, we need to stop signal emission
+  // before moving the mark again.
+  if (gtk_text_iter_compare(&new_iter, location)) {
+    static guint signal_id = g_signal_lookup("mark-set", GTK_TYPE_TEXT_BUFFER);
+    g_signal_stop_emission(buffer, signal_id, 0);
+    gtk_text_buffer_move_mark(buffer, mark, &new_iter);
+  }
 }
 
 // static
@@ -1731,7 +1840,7 @@ void AutocompleteEditViewGtk::UpdatePrimarySelectionIfValidURL() {
   }
 }
 
-#if GTK_CHECK_VERSION(2,20,0)
+#if GTK_CHECK_VERSION(2, 20, 0)
 void AutocompleteEditViewGtk::HandlePreeditChanged(GtkWidget* sender,
                                                    const gchar* preedit) {
   // GtkTextView won't fire "begin-user-action" and "end-user-action" signals
@@ -1758,4 +1867,41 @@ void AutocompleteEditViewGtk::HandleWindowSetFocus(
   // event handler, then the window will respect that and won't focus
   // |focus|. I doubt that is likely to happen however.
   going_to_focus_ = focus;
+}
+
+void AutocompleteEditViewGtk::HandleUndoRedo(GtkWidget* sender) {
+  OnBeforePossibleChange();
+}
+
+void AutocompleteEditViewGtk::HandleUndoRedoAfter(GtkWidget* sender) {
+  OnAfterPossibleChange();
+}
+
+void AutocompleteEditViewGtk::GetTextBufferBounds(GtkTextIter* start,
+                                                  GtkTextIter* end) const {
+  gtk_text_buffer_get_start_iter(text_buffer_, start);
+  gtk_text_buffer_get_iter_at_mark(text_buffer_, end, instant_mark_);
+}
+
+void AutocompleteEditViewGtk::ValidateTextBufferIter(GtkTextIter* iter) const {
+  if (!instant_mark_)
+    return;
+
+  GtkTextIter end;
+  gtk_text_buffer_get_iter_at_mark(text_buffer_, &end, instant_mark_);
+  if (gtk_text_iter_compare(iter, &end) > 0)
+    *iter = end;
+}
+
+void AutocompleteEditViewGtk::AdjustVerticalAlignmentOfInstantView() {
+  // By default, GtkTextView layouts an anchored child widget just above the
+  // baseline, so we need to move the |instant_view_| down to make sure it
+  // has the same baseline as the |text_view_|.
+  PangoLayout* layout = gtk_label_get_layout(GTK_LABEL(instant_view_));
+  int height;
+  pango_layout_get_size(layout, NULL, &height);
+  PangoLayoutIter* iter = pango_layout_get_iter(layout);
+  int baseline = pango_layout_iter_get_baseline(iter);
+  pango_layout_iter_free(iter);
+  g_object_set(instant_anchor_tag_, "rise", baseline - height, NULL);
 }
