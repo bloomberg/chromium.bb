@@ -263,6 +263,15 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
           ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'conditions': [
