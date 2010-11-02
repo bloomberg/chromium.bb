@@ -9,3 +9,9 @@ ResourceDispatcherTest.CrossSiteOnunloadCookie
 ResourceDispatcherTest.CrossSiteNavigationErrorPage
 NewTabUITest.NTPHasThumbnails
 UnloadTest.CrossSiteInfiniteUnloadSync
+
+# These tests fail due to timeouts under TSan and hang the UI test runner,
+# http://crbug.com/61579
+LocaleTestsDa.TestStart
+LocaleTestsHe.TestStart
+LocaleTestsZhTw.TestStart
