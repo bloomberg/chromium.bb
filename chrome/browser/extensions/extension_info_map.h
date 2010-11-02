@@ -12,8 +12,10 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_extent.h"
 #include "googleurl/src/gurl.h"
+
+class Extension;
 
 // Contains extension data that needs to be accessed on the IO thread. It can
 // be created/destroyed on any thread, but all other methods must be called on
@@ -27,7 +29,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   ~ExtensionInfoMap();
 
   // Callback for when new extensions are loaded.
-  void AddExtension(const Extension::StaticData* data);
+  void AddExtension(const Extension* extension);
 
   // Callback for when an extension is unloaded.
   void RemoveExtension(const std::string& id);
@@ -63,8 +65,7 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
  private:
   // Map of extension info by extension id.
-  typedef std::map<std::string, scoped_refptr<const Extension::StaticData> >
-      Map;
+  typedef std::map<std::string, scoped_refptr<const Extension> > Map;
 
   Map extension_info_;
 };
