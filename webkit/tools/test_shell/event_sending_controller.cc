@@ -926,6 +926,7 @@ void EventSendingController::SendCurrentTouchEvent(
   WebTouchEvent touch_event;
   touch_event.type = type;
   touch_event.modifiers = touch_modifiers;
+  touch_event.timeStampSeconds = GetCurrentEventTimeSec();
   touch_event.touchPointsLength = touch_points.size();
   for (unsigned int i = 0; i < touch_points.size(); ++i) {
     touch_event.touchPoints[i] = touch_points[i];
