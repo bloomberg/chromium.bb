@@ -16,9 +16,9 @@
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif
 
-// Flaky on linux views. http://crbug.com/61592
+// Crashes on linux views. http://crbug.com/61592
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-#define MAYBE_Tabs FLAKY_Tabs
+#define MAYBE_Tabs DISABLED_Tabs
 #else
 #define MAYBE_Tabs Tabs
 #endif
