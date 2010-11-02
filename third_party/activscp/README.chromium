@@ -1,0 +1,14 @@
+URL: http://support.microsoft.com/kb/223389
+Version: August 8, 2000
+License: Scripting SDK license
+License File: EULA.txt
+
+Description:
+Scriptng.exe is a self-extracting executable that contains the headers
+and libraries necessary to create your own ActiveX Script hosts and
+engines. Its primary purpose is to provide the files required to add
+Active Debugging to a host or engine.
+
+Local Modifications:
+No Modifications - simply downloaded scriptng.exe, saved it to this
+directory, and ran it to extract its contents to the same directory.
