@@ -344,6 +344,40 @@ TEST_F(AddressFieldTest, ParseZipEcml) {
   EXPECT_EQ(ADDRESS_HOME_ZIP, field_type_map_[ASCIIToUTF16("zip1")]);
 }
 
+TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
+  list_.push_back(
+      new AutoFillField(
+          webkit_glue::FormField(
+              ASCIIToUTF16("State/Province, Zip/Postal Code"),
+              ASCIIToUTF16("state"),
+              string16(),
+              ASCIIToUTF16("text"),
+              0),
+          ASCIIToUTF16("state")));
+  list_.push_back(
+      new AutoFillField(
+          webkit_glue::FormField(
+              ASCIIToUTF16("State/Province, Zip/Postal Code"),
+              ASCIIToUTF16("zip"),
+              string16(),
+              ASCIIToUTF16("text"),
+              0),
+          ASCIIToUTF16("zip")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(AddressField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<AddressField*>(NULL), field_.get());
+  EXPECT_EQ(kGenericAddress, field_->FindType());
+  EXPECT_FALSE(field_->IsFullAddress());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("state")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_STATE, field_type_map_[ASCIIToUTF16("state")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("zip")) != field_type_map_.end());
+  EXPECT_EQ(ADDRESS_HOME_ZIP, field_type_map_[ASCIIToUTF16("zip")]);
+}
+
 TEST_F(AddressFieldTest, ParseCountry) {
   list_.push_back(
       new AutoFillField(webkit_glue::FormField(ASCIIToUTF16("Country"),

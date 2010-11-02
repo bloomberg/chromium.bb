@@ -108,12 +108,10 @@ string16 InferLabelFromPrevious(
   // If we didn't find text, check for previous paragraph.
   // Eg. <p>Some Text</p><input ...>
   // Note the lack of whitespace between <p> and <input> elements.
-  if (inferred_label.empty()) {
-    if (previous.isElementNode()) {
-      WebElement element = previous.to<WebElement>();
-      if (element.hasTagName("p")) {
-        inferred_label = FindChildText(element);
-      }
+  if (inferred_label.empty() && previous.isElementNode()) {
+    WebElement element = previous.to<WebElement>();
+    if (element.hasTagName("p")) {
+      inferred_label = FindChildText(element);
     }
   }
 
@@ -121,9 +119,9 @@ string16 InferLabelFromPrevious(
   // Eg. <p>Some Text</p>   <input ...>
   // Note the whitespace between <p> and <input> elements.
   if (inferred_label.empty()) {
-    previous = previous.previousSibling();
-    if (!previous.isNull() && previous.isElementNode()) {
-      WebElement element = previous.to<WebElement>();
+    WebNode sibling = previous.previousSibling();
+    if (!sibling.isNull() && sibling.isElementNode()) {
+      WebElement element = sibling.to<WebElement>();
       if (element.hasTagName("p")) {
         inferred_label = FindChildText(element);
       }
@@ -185,19 +183,12 @@ string16 InferLabelFromTable(
          !parent.to<WebElement>().hasTagName("td"))
     parent = parent.parentNode();
 
-  if (parent.isNull() || !parent.isElementNode())
-    return string16();
-
-  WebElement e = parent.to<WebElement>();
-  if (e.isNull() || !e.hasTagName("td"))
-    return string16();
-
   // Check all previous siblings, skipping non-element nodes, until we find a
   // non-empty text block.
-  WebNode previous = parent.previousSibling();
+  WebNode previous = parent;
   while (!previous.isNull()) {
     if (previous.isElementNode()) {
-      e = previous.to<WebElement>();
+      WebElement e = previous.to<WebElement>();
       if (e.hasTagName("td")) {
         inferred_label = FindChildText(e);
         if (!inferred_label.empty())

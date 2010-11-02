@@ -91,11 +91,9 @@ AddressField* AddressField::Parse(
     if (ParseCompany(&q, is_ecml, address_field.get()) ||
         ParseAddressLines(&q, is_ecml, address_field.get()) ||
         ParseCity(&q, is_ecml, address_field.get()) ||
+        ParseState(&q, is_ecml, address_field.get()) ||
         ParseZipCode(&q, is_ecml, address_field.get()) ||
         ParseCountry(&q, is_ecml, address_field.get())) {
-      continue;
-    } else if ((!address_field->state_ || address_field->state_->IsEmpty()) &&
-               address_field->ParseState(&q, is_ecml, address_field.get())) {
       continue;
     } else if (ParseText(&q, ASCIIToUTF16("attention|attn.")) ||
                ParseText(&q, ASCIIToUTF16("province|region|other"))) {
@@ -339,9 +337,13 @@ bool AddressField::ParseCity(
   return true;
 }
 
+// static
 bool AddressField::ParseState(
     std::vector<AutoFillField*>::const_iterator* iter,
     bool is_ecml, AddressField* address_field) {
+  if (address_field->state_)
+    return false;
+
   string16 pattern;
   if (is_ecml)
     pattern = GetEcmlPattern(kEcmlShipToStateProv, kEcmlBillToStateProv, '|');
