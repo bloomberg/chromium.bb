@@ -98,6 +98,10 @@ views::View* HtmlDialogView::GetInitiallyFocusedView() {
   return this;
 }
 
+bool HtmlDialogView::ShouldShowWindowTitle() const {
+  return ShouldShowDialogTitle();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogUIDelegate implementation:
 
@@ -148,6 +152,13 @@ void HtmlDialogView::OnCloseContents(TabContents* source,
                                      bool* out_close_dialog) {
   if (delegate_)
     delegate_->OnCloseContents(source, out_close_dialog);
+}
+
+bool HtmlDialogView::ShouldShowDialogTitle() const {
+  if (delegate_)
+    return delegate_->ShouldShowDialogTitle();
+  else
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

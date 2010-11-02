@@ -5260,11 +5260,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Something went wrong when trying to print.  Please check your printer and try again.
       </message>
 
-      <!-- Cloud Print dialog messages -->
-      <message name="IDS_CLOUD_PRINT_TITLE" desc="Title for the print dialog">
-        Print
-      </message>
-
       <!-- Cloud Print proxy strings -->
       <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
         Set up <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>

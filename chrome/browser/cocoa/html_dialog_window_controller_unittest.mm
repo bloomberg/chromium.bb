@@ -35,6 +35,7 @@ public:
   MOCK_METHOD1(OnDialogClosed, void(const std::string& json_retval));
   MOCK_METHOD2(OnCloseContents,
                void(TabContents* source, bool* out_close_dialog));
+  MOCK_CONST_METHOD0(ShouldShowDialogTitle, bool());
 };
 
 class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {

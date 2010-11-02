@@ -376,8 +376,10 @@ extern const char kGeolocationContentSettings[];
 
 extern const char kLoginDatabaseMigrated[];
 
-extern const char kCloudPrintProxyEnabled[];
 extern const char kCloudPrintServiceURL[];
+extern const char kCloudPrintDialogWidth[];
+extern const char kCloudPrintDialogHeight[];
+extern const char kCloudPrintProxyEnabled[];
 extern const char kCloudPrintProxyId[];
 extern const char kCloudPrintAuthToken[];
 extern const char kCloudPrintXMPPAuthToken[];

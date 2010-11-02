@@ -110,6 +110,7 @@ class BrowserSigninHtml : public HtmlDialogUIDelegate,
   }
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {
   }
+  virtual bool ShouldShowDialogTitle() const { return true; }
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();

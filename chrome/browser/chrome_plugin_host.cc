@@ -327,6 +327,7 @@ class ModelessHtmlDialogDelegate : public HtmlDialogUIDelegate {
         this, &ModelessHtmlDialogDelegate::ReportResults, json_retval));
   }
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
+  virtual bool ShouldShowDialogTitle() const { return true; }
 
  private:
   // Actually shows the dialog on the UI thread.

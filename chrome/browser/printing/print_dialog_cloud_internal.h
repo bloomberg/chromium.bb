@@ -114,6 +114,7 @@ class CloudPrintFlowHandler : public DOMMessageHandler,
 
   virtual void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
   void CancelAnyRunningTask();
+  void StoreDialogClientSize() const;
 
  private:
   // For unit testing.
@@ -150,6 +151,7 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
+  virtual bool ShouldShowDialogTitle() const;
 
  private:
   friend class ::CloudPrintHtmlDialogDelegateTest;

@@ -50,6 +50,7 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
     if (out_close_dialog)
       *out_close_dialog = true;
   }
+  virtual bool ShouldShowDialogTitle() const { return true; }
 };
 
 }  // namespace

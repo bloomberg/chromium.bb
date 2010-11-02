@@ -38,10 +38,12 @@ BubbleFrameView::BubbleFrameView(views::Window* frame,
       close_button_(NULL) {
   set_border(new BubbleBorder(BubbleBorder::NONE));
 
-  title_ = new views::Label(frame_->GetDelegate()->GetWindowTitle());
-  title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_->SetFont(title_->font().DeriveFont(1, gfx::Font::BOLD));
-  AddChildView(title_);
+  if (frame_->GetDelegate()->ShouldShowWindowTitle()) {
+    title_ = new views::Label(frame_->GetDelegate()->GetWindowTitle());
+    title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    title_->SetFont(title_->font().DeriveFont(1, gfx::Font::BOLD));
+    AddChildView(title_);
+  }
 
   if (style_ & BubbleWindow::STYLE_XBAR) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -66,16 +68,20 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
 gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Insets insets = GetInsets();
-  gfx::Size title_size = title_->GetPreferredSize();
+  gfx::Size title_size;
+  if (title_) {
+    title_size = title_->GetPreferredSize();
+  }
 
   gfx::Size close_button_size = gfx::Size();
   if (close_button_) {
     close_button_size = close_button_->GetPreferredSize();
   }
 
-  int top_height = insets.top() +
-      std::max(title_size.height(), close_button_size.height()) +
-      kTitleContentPadding;
+  int top_height = insets.top();
+  if (title_size.height() > 0 || close_button_size.height() > 0)
+    top_height += std::max(title_size.height(), close_button_size.height()) +
+        kTitleContentPadding;
   return gfx::Rect(std::max(0, client_bounds.x() - insets.left()),
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + insets.width(),
@@ -118,27 +124,33 @@ gfx::Size BubbleFrameView::GetPreferredSize() {
 void BubbleFrameView::Layout() {
   gfx::Insets insets = GetInsets();
 
-  gfx::Size title_size = title_->GetPreferredSize();
+  gfx::Size title_size;
+  if (title_) {
+    title_size = title_->GetPreferredSize();
+  }
 
   gfx::Size close_button_size = gfx::Size();
   if (close_button_) {
     close_button_size = close_button_->GetPreferredSize();
   }
 
-  title_->SetBounds(
-      insets.left(), insets.top(),
-      std::max(0, width() - insets.width() - close_button_size.width()),
-      title_size.height());
+  if (title_) {
+    title_->SetBounds(
+        insets.left(), insets.top(),
+        std::max(0, width() - insets.width() - close_button_size.width()),
+        title_size.height());
+  }
 
   if (close_button_) {
     close_button_->SetBounds(
-        width() - insets.right() - close_button_size.width(), insets.top(), 
+        width() - insets.right() - close_button_size.width(), insets.top(),
         close_button_size.width(), close_button_size.height());
   }
 
-  int top_height = insets.top() +
-      std::max(title_size.height(), close_button_size.height()) +
-      kTitleContentPadding;
+  int top_height = insets.top();
+  if (title_size.height() > 0 || close_button_size.height() > 0)
+    top_height += std::max(title_size.height(), close_button_size.height()) +
+        kTitleContentPadding;
   client_view_bounds_.SetRect(insets.left(), top_height,
       std::max(0, width() - insets.width()),
       std::max(0, height() - top_height - insets.bottom()));

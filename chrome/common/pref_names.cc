@@ -1018,6 +1018,10 @@ const char kLoginDatabaseMigrated[] = "login_database.migrated";
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 
+// The last requested size of the dialog as it was closed.
+const char kCloudPrintDialogWidth[] = "cloud_print.dialog_size.width";
+const char kCloudPrintDialogHeight[] = "cloud_print.dialog_size.height";
+
 const char kRemotingHasSetupCompleted[] = "remoting.has_setup_completed";
 
 // The list of BackgroundContents that should be loaded when the browser

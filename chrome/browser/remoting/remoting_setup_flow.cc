@@ -172,6 +172,10 @@ bool  RemotingSetupFlow::IsDialogModal() const {
   return true;
 }
 
+bool RemotingSetupFlow::ShouldShowDialogTitle() const {
+  return true;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GaiaAuthConsumer implementation.
 void RemotingSetupFlow::OnClientLoginFailure(

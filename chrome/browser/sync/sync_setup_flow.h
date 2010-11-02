@@ -106,6 +106,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   virtual bool IsDialogModal() const {
     return false;
   }
+  virtual bool ShouldShowDialogTitle() const { return true; }
 
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,

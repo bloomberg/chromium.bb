@@ -57,6 +57,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate {
   virtual std::string GetDialogArgs() const { return std::string(); }
   virtual void OnDialogClosed(const std::string& json_retval);
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
+  virtual bool ShouldShowDialogTitle() const { return true; }
 
  private:
   // Notifications receiver.
