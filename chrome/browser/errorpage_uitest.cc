@@ -163,7 +163,14 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
   EXPECT_TRUE(WaitForTitleMatching(L"Blah"));
 }
 
-TEST_F(ErrorPageTest, IFrame404) {
+#if defined(OS_WIN)
+// Might be related to http://crbug.com/60937
+#define MAYBE_IFrame404 FLAKY_IFrame404
+#else
+#define MAYBE_IFrame404 IFrame404
+#endif
+
+TEST_F(ErrorPageTest, MAYBE_IFrame404) {
   // iframes that have 404 pages should not trigger an alternate error page.
   // In this test, the iframe sets the title of the parent page to "SUCCESS"
   // when the iframe loads.  If the iframe fails to load (because an alternate
