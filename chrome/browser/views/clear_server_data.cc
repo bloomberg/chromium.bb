@@ -250,9 +250,7 @@ void ClearServerDataView::LinkActivated(views::Link* source,
                      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
     browser->window()->Show();
   } else {
-    browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_PRIVACY_DASHBOARD_URL)),
-                     GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-    browser->window()->Show();
+    browser->OpenPrivacyDashboardTabAndActivate();
   }
 }
 

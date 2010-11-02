@@ -550,11 +550,6 @@
         http://www.google.com/support/chrome/bin/answer.py?answer=142065&amp;hl=[GRITLANGCODE]
       </message>
 
-      <!-- The URL for the "Problems installing" page for the Plugins infobar -->
-      <message name="IDS_LEARN_MORE_PLUGININSTALLER_URL" translateable="false">
-	http://www.google.com/support/chrome/bin/answer.py?answer=95697&amp;topic=14687
-      </message>
-
       <!-- The width and height of the bookmark manager in characters and lines -->
       <!-- (See above). -->
       <message name="IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -577,11 +572,6 @@
       <!-- The URL for the themes gallery. -->
       <message name="IDS_THEMES_GALLERY_URL" translateable="false">
         https://tools.google.com/chrome/intl/[GRITLANGCODE]/themes/index.html
-      </message>
-
-      <!-- The URL for the privacy dashboard. -->
-      <message name="IDS_PRIVACY_DASHBOARD_URL" translateable="false">
-        https://www.google.com/dashboard
       </message>
 
       <!-- The URL for Google Chrome welcome page. This is used for the pre -->

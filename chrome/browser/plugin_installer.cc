@@ -14,6 +14,10 @@
 #include "grit/theme_resources.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
 
+// The URL for the "Problems installing" page for the Plugins infobar.
+static const char kLearnMorePluginInstallerUrl[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95697&amp;topic=14687";
+
 PluginInstaller::PluginInstaller(TabContents* tab_contents)
     : ConfirmInfoBarDelegate(tab_contents),
       tab_contents_(tab_contents) {
@@ -73,8 +77,7 @@ string16 PluginInstaller::GetLinkText() {
 
 bool PluginInstaller::LinkClicked(WindowOpenDisposition disposition) {
   // Ignore the click dispostion and always open in a new top level tab.
-  tab_contents_->OpenURL(
-      GURL(l10n_util::GetStringUTF8(IDS_LEARN_MORE_PLUGININSTALLER_URL)),
-      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  tab_contents_->OpenURL(GURL(kLearnMorePluginInstallerUrl), GURL(),
+                         NEW_FOREGROUND_TAB, PageTransition::LINK);
   return false;  // Do not dismiss the info bar.
 }

@@ -157,6 +157,9 @@ static const std::string kBrokenPageUrl =
 
 static const std::string kHashMark = "#";
 
+// The URL for the privacy dashboard.
+static const char kPrivacyDashboardUrl[] = "https://www.google.com/dashboard";
+
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -1847,8 +1850,8 @@ void Browser::OpenThemeGalleryTabAndActivate() {
 }
 
 void Browser::OpenPrivacyDashboardTabAndActivate() {
-  OpenURL(GURL(l10n_util::GetStringUTF8(IDS_PRIVACY_DASHBOARD_URL)),
-          GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  OpenURL(GURL(kPrivacyDashboardUrl), GURL(),
+          NEW_FOREGROUND_TAB, PageTransition::LINK);
   window_->Activate();
 }
 
