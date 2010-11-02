@@ -30,13 +30,15 @@ namespace notifier {
 // Redirect valid for 5 minutes.
 static const int kRedirectTimeoutMinutes = 5;
 
-Login::Login(const buzz::XmppClientSettings& user_settings,
+Login::Login(Delegate* delegate,
+             const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              net::HostResolver* host_resolver,
              ServerInformation* server_list,
              int server_count,
              bool try_ssltcp_first)
-    : login_settings_(new LoginSettings(user_settings,
+    : delegate_(delegate),
+      login_settings_(new LoginSettings(user_settings,
                                         options,
                                         host_resolver,
                                         server_list,
@@ -66,16 +68,16 @@ void Login::StartConnection() {
 
   VLOG(1) << "Starting connection...";
 
-  single_attempt_.reset(new SingleLoginAttempt(login_settings_.get()));
+  single_attempt_.reset(new SingleLoginAttempt(login_settings_.get(), this));
+}
 
-  // Do the signaling hook-ups.
-  single_attempt_->SignalNeedAutoReconnect.connect(
-      this,
-      &Login::TryReconnect);
-  single_attempt_->SignalRedirect.connect(this, &Login::OnRedirect);
-  single_attempt_->SignalConnect.connect(
-      this,
-      &Login::OnConnect);
+void Login::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
+  ResetReconnectState();
+  delegate_->OnConnect(base_task);
+}
+
+void Login::OnNeedReconnect() {
+  TryReconnect();
 }
 
 void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
@@ -87,11 +89,6 @@ void Login::OnRedirect(const std::string& redirect_server, int redirect_port) {
 
   // Drop the current connection, and start the login process again.
   StartConnection();
-}
-
-void Login::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
-  ResetReconnectState();
-  SignalConnect(base_task);
 }
 
 void Login::OnIPAddressChanged() {
@@ -116,7 +113,7 @@ void Login::TryReconnect() {
           << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
       reconnect_interval_, this, &Login::DoReconnect);
-  SignalDisconnect();
+  delegate_->OnDisconnect();
 }
 
 void Login::DoReconnect() {

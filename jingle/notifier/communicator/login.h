@@ -11,9 +11,8 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/weak_ptr.h"
+#include "jingle/notifier/communicator/single_login_attempt.h"
 #include "net/base/network_change_notifier.h"
-#include "talk/base/proxyinfo.h"
-#include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace buzz {
@@ -36,16 +35,25 @@ namespace notifier {
 class ConnectionOptions;
 class LoginSettings;
 struct ServerInformation;
-class SingleLoginAttempt;
 
 // Does the login, keeps it alive (with refreshing cookies and reattempting
 // login when disconnected), figures out what actions to take on the various
 // errors that may occur.
 class Login : public net::NetworkChangeNotifier::Observer,
-              public sigslot::has_slots<> {
+              public SingleLoginAttempt::Delegate {
  public:
-  // firewall may be NULL.
-  Login(const buzz::XmppClientSettings& user_settings,
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) = 0;
+    virtual void OnDisconnect() = 0;
+  };
+
+  // Does not take ownership of |delegate|, |host_resolver|, or
+  // |server_list|, none of which may be NULL.
+  Login(Delegate* delegate,
+        const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
         net::HostResolver* host_resolver,
         ServerInformation* server_list,
@@ -58,13 +66,14 @@ class Login : public net::NetworkChangeNotifier::Observer,
   // net::NetworkChangeNotifier::Observer implementation.
   virtual void OnIPAddressChanged();
 
-  sigslot::signal1<base::WeakPtr<talk_base::Task> > SignalConnect;
-  sigslot::signal0<> SignalDisconnect;
+  // SingleLoginAttempt::Delegate implementation.
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
+  virtual void OnNeedReconnect();
+  virtual void OnRedirect(const std::string& redirect_server,
+                          int redirect_port);
 
  private:
   void OnLogoff();
-  void OnRedirect(const std::string& redirect_server, int redirect_port);
-  void OnConnect(base::WeakPtr<talk_base::Task> parent);
 
   // Stops any existing reconnect timer and sets an initial reconnect
   // interval.
@@ -78,7 +87,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
   // reconnection.
   void DoReconnect();
 
-  talk_base::TaskParent* parent_;
+  Delegate* delegate_;
   scoped_ptr<LoginSettings> login_settings_;
   scoped_ptr<SingleLoginAttempt> single_attempt_;
 

@@ -28,16 +28,16 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
+#include "base/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/communicator/login.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 #include "talk/base/sigslot.h"
-#include "talk/xmpp/xmppclientsettings.h"
 
 class MessageLoop;
 
 namespace buzz {
-class XmppClient;
+class XmppClientSettings;
 }  // namespace buzz
 
 namespace net {
@@ -45,19 +45,9 @@ class HostResolver;
 }  // namespace net
 
 namespace notifier {
-class TaskPump;
-}  // namespace notifier
 
-namespace talk_base {
-class SocketServer;
-class Thread;
-}  // namespace talk_base
-
-namespace notifier {
-
-class MediatorThreadImpl
-    : public MediatorThread,
-      public sigslot::has_slots<> {
+class MediatorThreadImpl : public MediatorThread, public Login::Delegate,
+                           public sigslot::has_slots<> {
  public:
   explicit MediatorThreadImpl(const NotifierOptions& notifier_options);
   virtual ~MediatorThreadImpl();
@@ -77,11 +67,13 @@ class MediatorThreadImpl
       const std::vector<std::string>& subscribed_services_list);
   virtual void SendNotification(const OutgoingNotificationData& data);
 
+  // Login::Delegate implementation.
+  virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task);
+  virtual void OnDisconnect();
+
  protected:
   // Should only be called after Start().
   MessageLoop* worker_message_loop();
-
-  virtual void OnDisconnect();
 
   // These handle messages indicating an event happened in the outside
   // world.  These are all called from the worker thread. They are protected
@@ -89,7 +81,6 @@ class MediatorThreadImpl
   void OnIncomingNotification(
       const IncomingNotificationData& notification_data);
   void OnOutgoingNotification(bool success);
-  void OnConnect(base::WeakPtr<talk_base::Task> parent);
   void OnSubscriptionStateChange(bool success);
 
   scoped_refptr<ObserverListThreadSafe<Observer> > observers_;

@@ -10,7 +10,6 @@
 #include "base/scoped_ptr.h"
 #include "jingle/notifier/base/xmpp_connection.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
-#include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
 
 namespace talk_base {
@@ -29,7 +28,19 @@ class LoginSettings;
 class SingleLoginAttempt : public XmppConnection::Delegate,
                            public XmppConnectionGenerator::Delegate {
  public:
-  explicit SingleLoginAttempt(LoginSettings* login_settings);
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) = 0;
+    virtual void OnNeedReconnect() = 0;
+    virtual void OnRedirect(const std::string& redirect_server,
+                            int redirect_port) = 0;
+  };
+
+  // Does not take ownership of |login_settings| or |delegate|.
+  // Neither may be NULL.
+  SingleLoginAttempt(LoginSettings* login_settings, Delegate* delegate);
 
   virtual ~SingleLoginAttempt();
 
@@ -44,19 +55,9 @@ class SingleLoginAttempt : public XmppConnection::Delegate,
   virtual void OnExhaustedSettings(bool successfully_resolved_dns,
                                    int first_dns_error);
 
-  // Typically handled by storing the redirect for 5 seconds, and setting it
-  // into LoginSettings, then creating a new SingleLoginAttempt, and doing
-  // StartConnection.
-  //
-  // SignalRedirect(const std::string& redirect_server, int redirect_port);
-  sigslot::signal2<const std::string&, int> SignalRedirect;
-
-  sigslot::signal0<> SignalNeedAutoReconnect;
-
-  sigslot::signal1<base::WeakPtr<talk_base::Task> > SignalConnect;
-
  private:
   LoginSettings* login_settings_;
+  Delegate* delegate_;
   XmppConnectionGenerator connection_generator_;
   scoped_ptr<XmppConnection> xmpp_connection_;
 

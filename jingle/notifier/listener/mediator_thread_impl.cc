@@ -16,7 +16,6 @@
 #include "jingle/notifier/listener/subscribe_task.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
-#include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 // We manage the lifetime of notifier::MediatorThreadImpl ourselves.
@@ -150,17 +149,13 @@ void MediatorThreadImpl::DoLogin(
   // Autodetect proxy is on by default.
   notifier::ConnectionOptions options;
 
-  login_.reset(new notifier::Login(settings,
+  login_.reset(new notifier::Login(this,
+                                   settings,
                                    options,
                                    host_resolver_.get(),
                                    server_list,
                                    server_list_count,
                                    notifier_options_.try_ssltcp_first));
-
-  login_->SignalConnect.connect(
-      this, &MediatorThreadImpl::OnConnect);
-  login_->SignalDisconnect.connect(
-      this, &MediatorThreadImpl::OnDisconnect);
   login_->StartConnection();
 }
 

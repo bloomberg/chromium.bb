@@ -17,7 +17,6 @@
 #include "base/scoped_ptr.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 #include "jingle/notifier/listener/talk_mediator.h"
-#include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace notifier {

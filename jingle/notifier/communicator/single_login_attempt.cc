@@ -28,8 +28,10 @@ class NetLog;
 
 namespace notifier {
 
-SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings)
+SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings,
+                                       Delegate* delegate)
     : login_settings_(login_settings),
+      delegate_(delegate),
       connection_generator_(
           ALLOW_THIS_IN_INITIALIZER_LIST(this),
           login_settings_->host_resolver(),
@@ -43,7 +45,7 @@ SingleLoginAttempt::SingleLoginAttempt(LoginSettings* login_settings)
 SingleLoginAttempt::~SingleLoginAttempt() {}
 
 void SingleLoginAttempt::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
-  SignalConnect(base_task);
+  delegate_->OnConnect(base_task);
 }
 
 void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
@@ -81,7 +83,7 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
         if (redirect_port == 0) {
           redirect_port = kDefaultXmppPort;
         }
-        SignalRedirect(redirect_server, redirect_port);
+        delegate_->OnRedirect(redirect_server, redirect_port);
         // May be deleted at this point.
         return;
       }
@@ -122,7 +124,7 @@ void SingleLoginAttempt::OnExhaustedSettings(
   if (!successfully_resolved_dns)
     VLOG(1) << "Could not resolve DNS: " << first_dns_error;
   VLOG(1) << "Could not connect to any XMPP server";
-  SignalNeedAutoReconnect();
+  delegate_->OnNeedReconnect();
 }
 
 }  // namespace notifier
