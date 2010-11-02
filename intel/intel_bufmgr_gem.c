@@ -351,7 +351,6 @@ drm_intel_gem_bo_reference(drm_intel_bo *bo)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 
-	assert(atomic_read(&bo_gem->refcount) > 0);
 	atomic_inc(&bo_gem->refcount);
 }
 
