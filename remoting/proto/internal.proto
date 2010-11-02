@@ -6,7 +6,6 @@
 
 syntax = "proto2";
 
-import "control.proto";
 import "event.proto";
 import "video.proto";
 

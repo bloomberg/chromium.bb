@@ -8,15 +8,19 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 
 namespace remoting {
 
 class ChromotocolConnection;
-class ClientControlMessage;
-class ClientEventMessage;
-class HostControlMessageHandler;
-class HostEventMessageHandler;
+class EventMessage;
 class MessageReader;
+
+namespace protocol {
+
+class ControlMessage;
+class HostStub;
+class InputStub;
 
 // A message dispatcher used to listen for messages received in
 // ChromotocolConnection. It dispatches messages to the corresponding
@@ -39,35 +43,16 @@ class HostMessageDispatcher :
   // message handlers.
   // Return true if initalization was successful.
   bool Initialize(ChromotocolConnection* connection,
-                  HostControlMessageHandler* control_message_handler,
-                  HostEventMessageHandler* event_message_handler);
+                  HostStub* host_stub, InputStub* input_stub);
 
  private:
-  // A single protobuf can contain multiple messages that will be handled by
-  // different message handlers.  We use this wrapper to ensure that the
-  // protobuf is only deleted after all the handlers have finished executing.
-  template <typename T>
-  class RefCountedMessage : public base::RefCounted<RefCountedMessage<T> > {
-   public:
-    RefCountedMessage(T* message) : message_(message) { }
-
-    T* message() { return message_.get(); }
-
-   private:
-    scoped_ptr<T> message_;
-  };
-
   // This method is called by |control_channel_reader_| when a control
   // message is received.
-  void OnControlMessageReceived(ClientControlMessage* message);
+  void OnControlMessageReceived(ControlMessage* message);
 
   // This method is called by |event_channel_reader_| when a event
   // message is received.
-  void OnEventMessageReceived(ClientEventMessage* message);
-
-  // Dummy methods to destroy messages.
-  template <class T>
-  static void DeleteMessage(scoped_refptr<T> message) { }
+  void OnEventMessageReceived(EventMessage* message);
 
   // MessageReader that runs on the control channel. It runs a loop
   // that parses data on the channel and then delegates the message to this
@@ -77,12 +62,13 @@ class HostMessageDispatcher :
   // MessageReader that runs on the event channel.
   scoped_ptr<MessageReader> event_message_reader_;
 
-  // Event handlers for control channel and event channel respectively.
-  // Method calls to these objects are made on the message loop given.
-  scoped_ptr<HostControlMessageHandler> control_message_handler_;
-  scoped_ptr<HostEventMessageHandler> event_message_handler_;
+  // Stubs for host and input. These objects are not owned.
+  // They are called on the thread there data is received, i.e. jingle thread.
+  HostStub* host_stub_;
+  InputStub* input_stub_;
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_HOST_MESSAGE_DISPATCHER_H_

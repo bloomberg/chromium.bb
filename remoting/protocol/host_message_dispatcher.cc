@@ -9,13 +9,43 @@
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/host_message_dispatcher.h"
-#include "remoting/protocol/host_control_message_handler.h"
-#include "remoting/protocol/host_event_message_handler.h"
+#include "remoting/protocol/host_stub.h"
+#include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/message_reader.h"
 
-namespace remoting {
+namespace {
 
-HostMessageDispatcher::HostMessageDispatcher() {
+// A single protobuf can contain multiple messages that will be handled by
+// different message handlers.  We use this wrapper to ensure that the
+// protobuf is only deleted after all the handlers have finished executing.
+template <typename T>
+class RefCountedMessage : public base::RefCounted<RefCountedMessage<T> > {
+ public:
+  RefCountedMessage(T* message) : message_(message) { }
+
+  T* message() { return message_.get(); }
+
+ private:
+  scoped_ptr<T> message_;
+};
+
+// Dummy methods to destroy messages.
+template <class T>
+static void DeleteMessage(scoped_refptr<T> message) { }
+
+template <class T>
+static Task* NewDeleteTask(scoped_refptr<T> message) {
+  return NewRunnableFunction(&DeleteMessage<T>, message);
+}
+
+}  // namespace
+
+namespace remoting {
+namespace protocol {
+
+HostMessageDispatcher::HostMessageDispatcher() :
+    host_stub_(NULL),
+    input_stub_(NULL) {
 }
 
 HostMessageDispatcher::~HostMessageDispatcher() {
@@ -23,44 +53,40 @@ HostMessageDispatcher::~HostMessageDispatcher() {
 
 bool HostMessageDispatcher::Initialize(
     ChromotocolConnection* connection,
-    HostControlMessageHandler* control_message_handler,
-    HostEventMessageHandler* event_message_handler) {
-  if (!connection || !control_message_handler || !event_message_handler ||
+    HostStub* host_stub, InputStub* input_stub) {
+  if (!connection || !host_stub || !input_stub ||
       !connection->event_channel() || !connection->control_channel()) {
     return false;
   }
 
   control_message_reader_.reset(new MessageReader());
   event_message_reader_.reset(new MessageReader());
-  control_message_handler_.reset(control_message_handler);
-  event_message_handler_.reset(event_message_handler);
+  host_stub_ = host_stub;
+  input_stub_ = input_stub;
 
   // Initialize the readers on the sockets provided by channels.
-  event_message_reader_->Init<ClientEventMessage>(
+  event_message_reader_->Init<EventMessage>(
       connection->event_channel(),
       NewCallback(this, &HostMessageDispatcher::OnEventMessageReceived));
-  control_message_reader_->Init<ClientControlMessage>(
+  control_message_reader_->Init<ControlMessage>(
       connection->control_channel(),
       NewCallback(this, &HostMessageDispatcher::OnControlMessageReceived));
   return true;
 }
 
-void HostMessageDispatcher::OnControlMessageReceived(
-    ClientControlMessage* message) {
-  scoped_refptr<RefCountedMessage<ClientControlMessage> > ref_msg(
-      new RefCountedMessage<ClientControlMessage>(message));
-  if (message->has_suggest_screen_resolution_request()) {
-    control_message_handler_->OnSuggestScreenResolutionRequest(
-        message->suggest_screen_resolution_request(),
-        NewRunnableFunction(
-            &DeleteMessage<RefCountedMessage<ClientControlMessage> >,
-            ref_msg));
+void HostMessageDispatcher::OnControlMessageReceived(ControlMessage* message) {
+  scoped_refptr<RefCountedMessage<ControlMessage> > ref_msg =
+      new RefCountedMessage<ControlMessage>(message);
+  if (message->has_suggest_resolution()) {
+    host_stub_->SuggestResolution(
+        message->suggest_resolution(), NewDeleteTask(ref_msg));
   }
 }
 
 void HostMessageDispatcher::OnEventMessageReceived(
-    ClientEventMessage* message) {
+    EventMessage* message) {
   // TODO(hclam): Implement.
 }
 
+}  // namespace protocol
 }  // namespace remoting

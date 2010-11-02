@@ -90,14 +90,7 @@ message Event {
   optional MouseEvent mouse = 4;
 }
 
-// Defines the message that is sent from client to host.
-// Only one of the optional messages should be present.
-message ClientEventMessage {
-  repeated Event events = 1;
-}
-
-// Defines the message that is sent from host to client.
-// Only one of the optional messages should be present.
-message HostEventMessage {
-  // TODO(hclam): Define the message.
+// Message sent in the event channel.
+message EventMessage {
+  repeated Event event = 1;
 }
