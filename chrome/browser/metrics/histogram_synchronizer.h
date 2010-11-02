@@ -55,12 +55,12 @@ class HistogramSynchronizer : public
       int sequence_number, const std::vector<std::string>& histograms);
 
  private:
-  // Records that we have received the histograms from a renderer for the given
-  // sequence number. If we have received a response from all histograms, either
-  // signal the waiting process or call the callback function. Returns true when
-  // we receive histograms from the last of N renderers that were contacted for
-  // an update. This is called on IO Thread.
-  bool RecordRendererHistogram(int sequence_number);
+  // Records that we are waiting for one less histogram from a renderer for the
+  // given sequence number. If we have received a response from all histograms,
+  // either signal the waiting process or call the callback function. Returns
+  // true when we receive histograms from the last of N renderers that were
+  // contacted for an update.
+  bool DecrementPendingRenderers(int sequence_number);
 
   void SetCallbackTaskToCallAfterGettingHistograms(
       MessageLoop* callback_thread, Task* callback_task);
@@ -71,7 +71,10 @@ class HistogramSynchronizer : public
   void CallCallbackTaskAndResetData();
 
   // Gets a new sequence number to be sent to renderers from browser process.
-  // This will also reset the current pending renderers for the given type.
+  // This will also reset the count of pending renderers for the given type to
+  // 1.  After all calls to renderers have been made, a call to
+  // DecrementPendingRenderers() must be mode to make it possible for the
+  // counter to go to zero (after all renderers have responded).
   int GetNextAvailableSequenceNumber(RendererHistogramRequester requster);
 
   // Increments the count of the renderers we're waiting for for the request
@@ -84,8 +87,8 @@ class HistogramSynchronizer : public
   // singular IO thread and we don't need to worry about locks.
   bool IsOnIoThread();
 
-  // This lock_ protects access to sequence number and
-  // synchronous_renderers_pending_.
+  // This lock_ protects access to next_sequence_number_,
+  // synchronous_renderers_pending_, and synchronous_sequence_number_.
   Lock lock_;
 
   // This condition variable is used to block caller of the synchronous request
@@ -110,27 +113,27 @@ class HistogramSynchronizer : public
   // sure a response from a renderer is associated with the current round of
   // requests (and not merely a VERY belated prior response).
   // next_available_sequence_number_ is the next available number (used to
-  // avoid reuse for a long time).
+  // avoid reuse for a long time).  Access is protected by lock_.
   int next_available_sequence_number_;
 
   // The sequence number used by the most recent asynchronous update request to
-  // contact all renderers.
+  // contact all renderers.  Access is only permitted on the IO thread.
   int async_sequence_number_;
 
   // The number of renderers that have not yet responded to requests (as part of
-  // an asynchronous update).
+  // an asynchronous update).  Access is only permitted on the IO thread.
   int async_renderers_pending_;
 
   // The time when we were told to start the fetch histograms asynchronously
-  // from renderers.
+  // from renderers.  Access is only permitted on the IO thread.
   base::TimeTicks async_callback_start_time_;
 
   // The sequence number used by the most recent synchronous update request to
-  // contact all renderers.
+  // contact all renderers.  Protected by lock_.
   int synchronous_sequence_number_;
 
   // The number of renderers that have not yet responded to requests (as part of
-  // a synchronous update).
+  // a synchronous update).  Protected by lock_.
   int synchronous_renderers_pending_;
 
   // This singleton instance should be started during the single threaded
