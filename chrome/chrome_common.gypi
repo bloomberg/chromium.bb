@@ -473,8 +473,18 @@
       ],
       'conditions': [
         [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
-            'dependencies': [
-              '../build/linux/system.gyp:nss',
+            'conditions': [
+              ['use_openssl==1', {
+                 'dependencies': [
+                   '../build/linux/system.gyp:openssl',
+                 ],
+               },
+               { # else !use_openssl
+                'dependencies': [
+                  '../build/linux/system.gyp:nss',
+                ],
+               },
+              ],
             ],
           },
           {  # else: OS is not in the above list
