@@ -778,12 +778,12 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(
     const Extension* extension) {
   // AddRef to ensure the data lives until the other thread gets it. Balanced in
   // OnNewExtensions.
-  extension->AddRef();
+  extension->static_data()->AddRef();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
                         &ExtensionInfoMap::AddExtension,
-                        extension));
+                        extension->static_data()));
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(

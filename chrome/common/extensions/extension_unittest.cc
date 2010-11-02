@@ -549,7 +549,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // LoadExtensionActionHelper expects the extension member |extension_url|
   // to be set.
-  extension.extension_url_ =
+  extension.mutable_static_data_->extension_url =
       GURL(std::string(chrome::kExtensionScheme) +
            chrome::kStandardSchemeSeparator +
            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/");

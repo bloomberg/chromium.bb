@@ -7,7 +7,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,36 +73,37 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
 TEST_F(ExtensionInfoMapTest, RefCounting) {
   scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
 
-  // New extensions should have a single reference holding onto them.
+  // New extensions should have a single reference holding onto their static
+  // data.
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
   scoped_refptr<Extension> extension3(CreateExtension("extension3"));
-  EXPECT_TRUE(extension1->HasOneRef());
-  EXPECT_TRUE(extension2->HasOneRef());
-  EXPECT_TRUE(extension3->HasOneRef());
+  EXPECT_TRUE(extension1->static_data()->HasOneRef());
+  EXPECT_TRUE(extension2->static_data()->HasOneRef());
+  EXPECT_TRUE(extension3->static_data()->HasOneRef());
 
   // Add a ref to each extension and give it to the info map. The info map
   // expects the caller to add a ref for it, but then assumes ownership of that
   // reference.
-  extension1->AddRef();
-  info_map->AddExtension(extension1);
-  extension2->AddRef();
-  info_map->AddExtension(extension2);
-  extension3->AddRef();
-  info_map->AddExtension(extension3);
+  extension1->static_data()->AddRef();
+  info_map->AddExtension(extension1->static_data());
+  extension2->static_data()->AddRef();
+  info_map->AddExtension(extension2->static_data());
+  extension3->static_data()->AddRef();
+  info_map->AddExtension(extension3->static_data());
 
-  // Release extension1, and the info map should have the only ref.
-  const Extension* weak_extension1 = extension1;
+  // Delete extension1, and the info map should have the only ref.
+  const Extension::StaticData* data1 = extension1->static_data();
   extension1 = NULL;
-  EXPECT_TRUE(weak_extension1->HasOneRef());
+  EXPECT_TRUE(data1->HasOneRef());
 
   // Remove extension2, and the extension2 object should have the only ref.
   info_map->RemoveExtension(extension2->id());
-  EXPECT_TRUE(extension2->HasOneRef());
+  EXPECT_TRUE(extension2->static_data()->HasOneRef());
 
   // Delete the info map, and the extension3 object should have the only ref.
   info_map = NULL;
-  EXPECT_TRUE(extension3->HasOneRef());
+  EXPECT_TRUE(extension3->static_data()->HasOneRef());
 }
 
 // Tests that we can query a few extension properties from the ExtensionInfoMap.
@@ -113,10 +113,10 @@ TEST_F(ExtensionInfoMapTest, Properties) {
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
 
-  extension1->AddRef();
-  info_map->AddExtension(extension1);
-  extension2->AddRef();
-  info_map->AddExtension(extension2);
+  extension1->static_data()->AddRef();
+  info_map->AddExtension(extension1->static_data());
+  extension2->static_data()->AddRef();
+  info_map->AddExtension(extension2->static_data());
 
   EXPECT_EQ(extension1->name(),
             info_map->GetNameForExtension(extension1->id()));
@@ -142,10 +142,10 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   ASSERT_TRUE(app->is_app());
   ASSERT_TRUE(app->web_extent().ContainsURL(app_url));
 
-  app->AddRef();
-  info_map->AddExtension(app);
-  extension->AddRef();
-  info_map->AddExtension(extension);
+  app->static_data()->AddRef();
+  info_map->AddExtension(app->static_data());
+  extension->static_data()->AddRef();
+  info_map->AddExtension(extension->static_data());
 
   // The app should have the notifications permission, either from a
   // chrome-extension URL or from its web extent.

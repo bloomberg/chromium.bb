@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 
 #include "chrome/browser/browser_thread.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 
 namespace {
@@ -22,13 +21,13 @@ ExtensionInfoMap::ExtensionInfoMap() {
 ExtensionInfoMap::~ExtensionInfoMap() {
 }
 
-void ExtensionInfoMap::AddExtension(const Extension* extension) {
+void ExtensionInfoMap::AddExtension(const Extension::StaticData* data) {
   CheckOnValidThread();
-  extension_info_[extension->id()] = extension;
+  extension_info_[data->id] = data;
 
   // Our map has already added a reference. Balance the reference given at the
   // call-site.
-  extension->Release();
+  data->Release();
 }
 
 void ExtensionInfoMap::RemoveExtension(const std::string& id) {
@@ -49,7 +48,7 @@ void ExtensionInfoMap::RemoveExtension(const std::string& id) {
 std::string ExtensionInfoMap::GetNameForExtension(const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
   if (iter != extension_info_.end())
-    return iter->second->name();
+    return iter->second->name;
   else
     return std::string();
 }
@@ -57,22 +56,21 @@ std::string ExtensionInfoMap::GetNameForExtension(const std::string& id) const {
 FilePath ExtensionInfoMap::GetPathForExtension(const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
   if (iter != extension_info_.end())
-    return iter->second->path();
+    return iter->second->path;
   else
     return FilePath();
 }
 
 bool ExtensionInfoMap::ExtensionHasWebExtent(const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
-  return iter != extension_info_.end() &&
-      !iter->second->web_extent().is_empty();
+  return iter != extension_info_.end() && !iter->second->extent.is_empty();
 }
 
 bool ExtensionInfoMap::ExtensionCanLoadInIncognito(
     const std::string& id) const {
   Map::const_iterator iter = extension_info_.find(id);
   // Only split-mode extensions can load in incognito profiles.
-  return iter != extension_info_.end() && iter->second->incognito_split_mode();
+  return iter != extension_info_.end() && iter->second->incognito_split_mode;
 }
 
 std::string ExtensionInfoMap::GetDefaultLocaleForExtension(
@@ -80,7 +78,7 @@ std::string ExtensionInfoMap::GetDefaultLocaleForExtension(
   Map::const_iterator iter = extension_info_.find(id);
   std::string result;
   if (iter != extension_info_.end())
-    result = iter->second->default_locale();
+    result = iter->second->default_locale;
 
   return result;
 }
@@ -90,7 +88,7 @@ ExtensionExtent ExtensionInfoMap::GetEffectiveHostPermissionsForExtension(
   Map::const_iterator iter = extension_info_.find(id);
   ExtensionExtent result;
   if (iter != extension_info_.end())
-    result = iter->second->GetEffectiveHostPermissions();
+    result = iter->second->effective_host_permissions;
 
   return result;
 }
@@ -108,14 +106,15 @@ bool ExtensionInfoMap::CheckURLAccessToExtensionPermission(
     // disallowed, so only one will match.
     info = extension_info_.begin();
     while (info != extension_info_.end() &&
-           !info->second->web_extent().ContainsURL(url))
+           !info->second->extent.ContainsURL(url))
       ++info;
   }
 
   if (info == extension_info_.end())
     return false;
 
-  return info->second->api_permissions().count(permission_name) != 0;
+  const std::set<std::string>& api_permissions = info->second->api_permissions;
+  return api_permissions.count(permission_name) != 0;
 }
 
 bool ExtensionInfoMap::URLIsForExtensionIcon(const GURL& url) const {
@@ -128,5 +127,5 @@ bool ExtensionInfoMap::URLIsForExtensionIcon(const GURL& url) const {
   std::string path = url.path();
   DCHECK(path.length() > 0 && path[0] == '/');
   path = path.substr(1);
-  return iter->second->icons().ContainsPath(path);
+  return iter->second->icons.ContainsPath(path);
 }
