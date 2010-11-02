@@ -403,6 +403,10 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // of what window has focus.
   chromeos::WmMessageListener::instance();
 
+  // Create the SystemKeyEventListener so it can listen for system keyboard
+  // messages regardless of focus.
+  chromeos::SystemKeyEventListener::instance();
+
   // Create the WmOverviewController so it can register with the listener.
   chromeos::WmOverviewController::instance();
 
@@ -441,10 +445,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(
         chromeos::NetworkStateNotifier::Get());
-
-    // Creates the SystemKeyEventListener to listen for keypress messages
-    // regardless of what window has focus.
-    chromeos::SystemKeyEventListener::instance();
   }
 #endif
   return true;

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
 #include "chrome/browser/chromeos/login/shutdown_button.h"
+#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_switches.h"
@@ -610,6 +611,10 @@ void ScreenLocker::Init() {
   gdk_window_set_back_pixmap(lock_widget_->GetNativeView()->window,
                              NULL, false);
   lock_window->set_toplevel_focus_widget(lock_widget_->window_contents());
+
+  // Create the SystemKeyEventListener so it can listen for system keyboard
+  // messages regardless of focus while screen locked.
+  SystemKeyEventListener::instance();
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
