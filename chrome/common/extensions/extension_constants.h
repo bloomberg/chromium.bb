@@ -67,7 +67,6 @@ namespace extension_manifest_keys {
   extern const char* kType;
   extern const char* kUpdateURL;
   extern const char* kVersion;
-  extern const char* kWebLaunchUrl;
   extern const char* kWebURLs;
 }  // namespace extension_manifest_keys
 

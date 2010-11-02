@@ -1259,6 +1259,7 @@
         'browser/download/save_package_unittest.cc',
         'browser/encoding_menu_controller_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
+        'browser/extensions/convert_web_app_unittest.cc',
         'browser/extensions/default_apps_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_info_map_unittest.cc',

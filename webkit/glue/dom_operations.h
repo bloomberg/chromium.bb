@@ -10,6 +10,7 @@
 
 #include "gfx/size.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace WebKit {
 class WebDocument;
@@ -64,23 +65,32 @@ struct WebApplicationInfo {
     GURL url;
     int width;
     int height;
+    SkBitmap data;
   };
 
-  // Title of the application. This is set from the meta tag whose name is
-  // 'application-name'.
+  // URL to a manifest that defines the application. If specified, all other
+  // attributes are derived from this manifest, and the manifest is the unique
+  // ID of the application.
+  GURL manifest_url;
+
+  // Title of the application.
   string16 title;
 
-  // Description of the application. This is set from the meta tag whose name
-  // is 'description'.
+  // Description of the application.
   string16 description;
 
-  // URL for the app. This is set from the meta tag whose name is
-  // 'application-url'.
+  // The launch URL for the app.
   GURL app_url;
 
-  // Set of available icons. This is set for all link tags whose rel=icon. Only
-  // icons that have a non-zero (width and/or height) are added.
+  // Set of available icons.
   std::vector<IconInfo> icons;
+
+  // The permissions the app requests. Only supported with manifest-based apps.
+  std::vector<std::string> permissions;
+
+  // Set of URLs that comprise the app. Only supported with manifest-based apps.
+  // All these must be of the same origin as manifest_url.
+  std::vector<GURL> urls;
 };
 
 // Parses the icon's size attribute as defined in the HTML 5 spec. Returns true

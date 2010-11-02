@@ -19,6 +19,8 @@ class GURL;
 // should take ownership on success, or NULL and |error| on failure.
 //
 // NOTE: This function does file IO and should not be called on the UI thread.
+// NOTE: The caller takes ownership of the directory at extension->path() on the
+// returned object.
 scoped_refptr<Extension> ConvertUserScriptToExtension(
     const FilePath& user_script, const GURL& original_url, std::string* error);
 
