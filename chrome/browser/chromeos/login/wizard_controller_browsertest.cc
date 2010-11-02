@@ -214,7 +214,14 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorNetwork) {
   EXPECT_EQ(controller()->GetLoginScreen(), controller()->current_screen());
 }
 
-IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, Accelerators) {
+#if defined(OFFICIAL_BUILD)
+// This test is supposed to fail on official test.
+#define MAYBE_Accelerators DISABLED_Accelerators
+#else
+#define MAYBE_Accelerators Accelerators
+#endif
+
+IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, MAYBE_Accelerators) {
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
 
   views::FocusManager* focus_manager =
