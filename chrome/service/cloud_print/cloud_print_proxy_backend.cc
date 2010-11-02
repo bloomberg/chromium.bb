@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -647,8 +648,11 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     DCHECK(!printer_info.printer_name.empty());
     printer_data->GetString(kPrinterDescValue,
                             &printer_info.printer_description);
-    printer_data->GetInteger(kPrinterStatusValue,
-                             &printer_info.printer_status);
+    // Printer status is a string value which actually contains an integer.
+    std::string printer_status;
+    if (printer_data->GetString(kPrinterStatusValue, &printer_status)) {
+      base::StringToInt(printer_status, &printer_info.printer_status);
+    }
     printer_data->GetString(kPrinterCapsHashValue,
         &printer_info_cloud.caps_hash);
     ListValue* tags_list = NULL;
