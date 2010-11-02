@@ -17,11 +17,21 @@ G_DEFINE_TYPE(GtkViewsEntry, gtk_views_entry, GTK_TYPE_ENTRY)
 
 static gint gtk_views_entry_expose_event(GtkWidget *widget,
                                          GdkEventExpose *event) {
+  views::NativeTextfieldGtk* host = GTK_VIEWS_ENTRY(widget)->host;
+#if defined(OS_CHROMEOS)
+  // Draw textfield background over the default white rectangle.
+  if (event->window == widget->window) {
+    gfx::CanvasSkiaPaint canvas(event);
+    if (!canvas.is_empty() && host) {
+      host->textfield()->PaintBackground(&canvas);
+    }
+  }
+#endif
+
   gint result = GTK_WIDGET_CLASS(gtk_views_entry_parent_class)->expose_event(
       widget, event);
 
   GtkEntry* entry = GTK_ENTRY(widget);
-  views::NativeTextfieldGtk* host = GTK_VIEWS_ENTRY(widget)->host;
 
   // Internally GtkEntry creates an additional window (text_area) that the
   // text is drawn to. We only need paint after that window has painted.

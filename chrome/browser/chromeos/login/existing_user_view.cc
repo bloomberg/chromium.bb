@@ -10,10 +10,18 @@
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
+#include "views/background.h"
 #include "views/focus/focus_manager.h"
 #include "views/fill_layout.h"
 
 namespace chromeos {
+
+// Colors for gradient background. These should be consistent with border
+// window background so textfield border is not visible to the user.
+// The background is needed for password textfield to imitate its borders
+// transparency correctly.
+const SkColor kBackgroundColorTop = SkColorSetRGB(209, 213, 216);
+const SkColor kBackgroundColorBottom = SkColorSetRGB(205, 210, 213);
 
 // Textfield with custom processing for Tab/Shift+Tab to select entries.
 class UserEntryTextfield : public TextfieldWithMargin {
@@ -64,6 +72,9 @@ void ExistingUserView::RecreateFields() {
     SetLayoutManager(new views::FillLayout);
     password_field_ = new UserEntryTextfield(user_controller_,
                                              views::Textfield::STYLE_PASSWORD);
+    password_field_->set_background(
+        views::Background::CreateVerticalGradientBackground(
+            kBackgroundColorTop, kBackgroundColorBottom));
     CorrectTextfieldFontSize(password_field_);
     password_field_->SetFocusable(true);
     password_field_->SetController(user_controller_);
