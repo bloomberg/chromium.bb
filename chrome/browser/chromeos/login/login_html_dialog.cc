@@ -17,8 +17,8 @@ namespace chromeos {
 
 namespace {
 // Default width/height ratio of screen size.
-const float kDefaultWidthRatio = 0.8;
-const float kDefaultHeightRatio = 0.8;
+const double kDefaultWidthRatio = 0.6;
+const double kDefaultHeightRatio = 0.6;
 
 // Custom HtmlDialogView with disabled context menu.
 class HtmlDialogWithoutContextMenuView : public HtmlDialogView {
