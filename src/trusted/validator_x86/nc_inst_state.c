@@ -864,6 +864,29 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
               NaClConsumeDispBytes(state) &&
               NaClConsumeImmediateBytes(state) &&
               NaClValidatePrefixFlags(state)) {
+            if (state->inst->flags & NACL_IFLAG(Opcode0F0F) &&
+                /* Note: If all of the above code worked correctly,
+                 * there should be no need for the following test.
+                 * However, just to be safe, it is added.
+                 */
+                (state->num_imm_bytes == 1)) {
+              /* Special 3DNOW instructions where opcode is in parsed
+               * immediate byte at end of instruction. Look up in table,
+               * and replace if found. Otherwise, let the default 0F0F lookup
+               * act as the matching (invalid) instruction.
+               */
+              NaClInst* cand_inst;
+              uint8_t opcode_byte = state->mpc[state->first_imm_byte];
+              DEBUG(NaClLog(LOG_INFO,
+                            "NaClConsume immediate byte opcode char: %"
+                            NACL_PRIx8"\n", opcode_byte));
+              cand_inst = g_OpcodeTable[Prefix0F0F][opcode_byte];
+              if (NULL != cand_inst) {
+                state->inst = cand_inst;
+                DEBUG(NaClLog(LOG_INFO, "Replace with 3DNOW opcode:\n"));
+                DEBUG(NaClInstPrint(NaClLogGetGio(), state->inst));
+              }
+            }
             /* found a match, exit loop. */
             found_match = TRUE;
             continue_loop = FALSE;

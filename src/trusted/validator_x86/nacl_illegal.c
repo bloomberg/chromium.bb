@@ -83,10 +83,6 @@ static const NaClMnemonic kNaClIllegalOp[] = {
    */
   InstUd2,
   InstXlat,  /* ISE reviewers suggested this omision */
-  /* Note: Disallow 3DNow, since it is a placeholder for decoding 3DNOW
-   * instructions that we can detect, but not properly decode.
-   */
-  Inst3DNow
 };
 
 static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {

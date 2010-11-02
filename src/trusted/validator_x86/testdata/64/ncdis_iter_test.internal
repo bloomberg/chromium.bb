@@ -3579,9 +3579,9 @@ NaClExpVector[4] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %ecx, ExprUsed | ExprSize32 },
 };
-0000000000000000: 0f 0f 00 90                                  3dnow %mmx0, [%rax], 0x90
-  0f 0f                       3DNOW OpcodeUsesModRm OpcodeHasImmed_b NaClIllegal
-    3DNow $Pq, $Qq, $Ib
+0000000000000000: 0f 0f 00 00                                  invalid %mmx0, [%rax], 0x0
+  0f 0f                       3DNOW Opcode0F0F OpcodeUsesModRm OpcodeHasImmed_b
+    Invalid $Pq, $Qq, $Ib
       Mmx_G_Operand
       Mmx_E_Operand
       I_Operand
@@ -3595,23 +3595,20 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x90, ExprSize8 | ExprUnsignedHex },
+  { ExprConstant[0] , 0x0, ExprSize8 | ExprUnsignedHex },
 };
-0000000000000000: 0f 0f 00 90                                  3dnow %mmx0, [%rax], 0x90
-  0f 0f                       3DNOW OpcodeUsesModRm OpcodeHasImmed_b NaClIllegal
-    3DNow $Pq, $Qq, $Ib
-      Mmx_G_Operand
-      Mmx_E_Operand
-      I_Operand
-NaClExpVector[10] = {
+0000000000000000: 0f 0f 00 90                                  pfcmpge %mmx0, [%rax]
+  0f 0f 90                    3DNOW OpcodeUsesModRm
+    Pfcmpge $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+NaClExpVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprRegister[0] , %mmx0, 0 },
+  { ExprRegister[0] , %mmx0, ExprSet | ExprUsed | ExprDest },
   { OperandReference[1] , 1, 0 },
-  { ExprMemOffset[4] , 0, ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
-  { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x90, ExprSize8 | ExprUnsignedHex },
 };

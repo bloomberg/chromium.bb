@@ -347,6 +347,7 @@ Pand
 Pandn
 Pause
 Pavgb
+Pavgusb
 Pavgw
 Pblendvb
 Pblendw
@@ -366,6 +367,25 @@ Pextrb
 Pextrd
 Pextrq
 Pextrw
+Pfacc
+Pfadd
+Pfcmpeq
+Pfcmpge
+Pfcmpgt
+Pfmax
+Pfmin
+Pfmul
+Pfnacc
+Pfpnacc
+Pfrcp
+Pfrcpit1
+Pfrcpit2
+Pfrsqit1
+Pfrsqrt
+Pfsub
+Pfsubr
+Pf2id
+Pf2iw
 Phaddd
 Phaddsw
 Phaddw
@@ -377,6 +397,8 @@ Pinsrb
 Pinsrd
 Pinsrq
 Pinsrw
+Pi2fd
+Pi2fw
 Pmaddubsw
 Pmaddwd
 Pmaxsb
@@ -406,6 +428,7 @@ Pmovzxwq
 Pmovzxdq
 Pmuldq
 Pmulhrsw
+Pmulhrw
 Pmulhuw
 Pmulhw
 Pmulld
@@ -450,6 +473,7 @@ Psubsw
 Psubusb
 Psubusw
 Psubw
+Pswapd
 Ptest
 Punpckhbd
 Punpckhbq
@@ -559,7 +583,3 @@ Xlat
 Xor
 Xorpd
 Xorps
-# The following is just a place holder for instructions of the form:
-# 0f 0f [modrm] [sib] [displacement] imm8_opcode, which will be decoded
-# as: 0f0f: 3DNow $Pq, $Qq, $Ib
-3DNow

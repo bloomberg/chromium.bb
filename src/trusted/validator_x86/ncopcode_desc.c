@@ -152,10 +152,12 @@ void NaClInstPrint(struct Gio* f, NaClInst* inst) {
   if (inst->flags) NaClIFlagsPrint(f, inst->flags);
   gprintf(f, "\n");
 
-  /* If instruction type is invalid, then don't print additional
+  /* If instruction type is invalid, and doesn't have
+   * special translation purposes, then don't print additional
    * (ignored) information stored in the modeled instruction.
    */
-  if (NACLi_INVALID != inst->insttype) {
+  if ((NACLi_INVALID != inst->insttype) ||
+      ((inst->flags & NACL_IFLAG(Opcode0F0F)))) {
     gprintf(f, "    %s", NaClMnemonicName(inst->name));
     if ((NULL != inst->operands_desc) && inst->operands_desc[0]) {
       gprintf(f, " %s", inst->operands_desc);

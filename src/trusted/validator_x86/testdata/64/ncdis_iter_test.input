@@ -313,5 +313,5 @@
 -i=0f01de                                #0000000000000000: 0f 01 de                                     skinit
 -i=0f01df                                #0000000000000000: 0f 01 df                                     invlpga
 # 0f0f 3dnow example(s)
--i=0f0f0090                              #0000000000000000: 0f 0f 00 90                                  3dnow %mmx0, [%rax], 0x90
--i=0f0f0090                              #0000000000000000: 0f 0f 00 90                                  3dnow %mmx0, [%rax], 0x90
+-i=0f0f0000                              #0000000000000000: 0f 0f 00 00                                  invalid %mmx0, [%rax], 0x0
+-i=0f0f0090                              #0000000000000000: 0f 0f 00 90                                  pfcmpge %mmx0, [%rax]

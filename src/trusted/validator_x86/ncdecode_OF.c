@@ -84,6 +84,50 @@ static void NaClDefBswap() {
   }
 }
 
+static void NaCl3DNow0F0FInsts(struct NaClSymbolTable* st) {
+  /* All 3DNOW instructions of form: 0f 0f [modrm] [sib] [displacement]
+   *      imm8_opcode
+   *
+   * These instructions encode into "OP Pq, Qq", based on the value of
+   * imm8_opcode. We decode these instructions in two steps. The first
+   * step uses a OF0F instruction to read in the bytes of the instruction.
+   * These bytes are then inspected, and is replaced by the corresponding
+   * 3DNOW instruction in the OFOF prefix table. If no such entry is found,
+   * The original match is left so that the bytes are marked as an
+   * invalid 3dnow instruction.
+   *
+   * Note: 3DNow instructions are defined in document 21928G/0-March 2000:
+   * "3DNow!(TM) Technology Manual".
+   */
+  NaClBegDef("0f0f: Invalid $Pq, $Qq, $Ib", NACLi_3DNOW, st);
+  NaClAddIFlags(NACL_IFLAG(Opcode0F0F));
+  NaClEndDef(Other);
+  NaClDefine("0f0f..0c: Pi2fw $Pq, $Qq", NACLi_E3DNOW, st, Move);
+  NaClDefine("0f0f..0d: Pi2fd $Pq, $Qq", NACLi_3DNOW, st, Move);
+  NaClDefine("0f0f..1c: Pf2iw $Pq, $Qq", NACLi_E3DNOW, st, Move);
+  NaClDefine("0f0f..1d: Pf2id $Pq, $Qq", NACLi_3DNOW, st, Move);
+  NaClDefine("0f0f..8a: Pfnacc $Pq, $Qq", NACLi_E3DNOW, st, Binary);
+  NaClDefine("0f0f..8e: Pfpnacc $Pq, $Qq", NACLi_E3DNOW, st, Binary);
+  NaClDefine("0f0f..90: Pfcmpge $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..94: Pfmin $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..96: Pfrcp $Pq, $Qq", NACLi_3DNOW, st, Move);
+  NaClDefine("0f0f..97: Pfrsqrt $Pq, $Qq", NACLi_3DNOW, st, Move);
+  NaClDefine("0f0f..9a: Pfsub $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..9e: Pfadd $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..a0: Pfcmpgt $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..a4: Pfmax $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..a6: Pfrcpit1 $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..a7: Pfrsqit1 $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..aa: Pfsubr $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..ae: Pfacc $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..b0: Pfcmpeq $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..b4: Pfmul $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..b6: Pfrcpit2 $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..b7: Pmulhrw $Pq, $Qq", NACLi_3DNOW, st, Binary);
+  NaClDefine("0f0f..bb: Pswapd $Pq, $Qq", NACLi_E3DNOW, st, Move);
+  NaClDefine("0f0f..bf: Pavgusb $Pq, $Qq", NACLi_3DNOW, st, Binary);
+}
+
 void NaClDef0FInsts(struct NaClSymbolTable* st) {
   int i;
   NaClDefDefaultInstPrefix(Prefix0F);
@@ -148,17 +192,7 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("0f0d/6: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
   NaClDefine("0f0d/7: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
   NaClDefine("0f0e: Femms", NACLi_3DNOW, st, Other);
-
-  /* All 3DNOW instructions of form: 0f 0f [modrm] [sib] [displacement]
-   *      imm8_opcode
-   *
-   * These instructions encode into "OP Pq, Qq", based on the value of
-   * imm8_opcode. We will (poorly) decode these for now, making them
-   * illegal. However, by decoding this approximation, we at least
-   * recognize the instruction length.
-   * TODO(karl): Decide what (if anything) we should do besides this.
-   */
-  NaClDefine("0f0f: 3DNow $Pq, $Qq, $Ib", NACLi_3DNOW, st, Other);
+  NaCl3DNow0F0FInsts(st);
 
   /* Note: The SSE instructions that begin with 0F are not defined here. Look
    * at ncdecode_sse.c for the definitions of SSE instruction.

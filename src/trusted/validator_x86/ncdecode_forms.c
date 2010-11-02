@@ -1286,6 +1286,35 @@ static uint8_t NaClExtractByte(const char* base) {
   return (uint8_t) STRTOULL(base + strlen(base) - 2, NULL, 16);
 }
 
+/* Given a string of bytes describing a prefix, return the
+ * corresponding enumerated prefix value.
+ */
+static NaClInstPrefix NaClExtractPrefixValue(const char* prefix_name,
+                                             size_t prefix_size) {
+  if (prefix_size == 0) {
+    return NoPrefix;
+  } else {
+    size_t i;
+    NaClInstPrefix prefix;
+    char prefix_text[BUFSIZE];
+    char* text_ptr;
+    strcpy(prefix_text, "Prefix");
+    text_ptr = prefix_text + strlen("Prefix");
+    for (i = 0; i < prefix_size; ++i) {
+      text_ptr[i] = toupper(prefix_name[i]);
+    }
+    text_ptr[prefix_size] = '\0';
+    for (prefix = 0; prefix < NaClInstPrefixEnumSize; ++prefix) {
+      if (0 == strcmp(NaClInstPrefixName(prefix), prefix_text)) {
+        return prefix;
+      }
+    }
+  }
+  NaClDefFatal("Opcode prefix not understood");
+  /* NOT REACHED */
+  return NaClInstPrefixEnumSize;
+}
+
 /* Given a string of byte values, describing the opcode base
  * of an instruction, extract out the corresponding opcode
  * prefix (i.e. the prefix defined by all but the last byte in
@@ -1296,25 +1325,8 @@ static uint8_t NaClExtractByte(const char* base) {
  */
 NaClInstPrefix NaClExtractPrefix(const char* base) {
   size_t len = strlen(base);
-  if (len == 2) {
-    return NoPrefix;
-  } else {
-    size_t i;
-    NaClInstPrefix prefix;
-    char prefix_text[BUFSIZE];
-    char* text_ptr;
-    size_t prefix_size = len - 2;
-    strcpy(prefix_text, "Prefix");
-    text_ptr = prefix_text + strlen("Prefix");
-    for (i = 0; i < prefix_size; ++i) {
-      text_ptr[i] = toupper(base[i]);
-    }
-    text_ptr[prefix_size] = '\0';
-    for (prefix = 0; prefix < NaClInstPrefixEnumSize; ++prefix) {
-      if (0 == strcmp(NaClInstPrefixName(prefix), prefix_text)) {
-        return prefix;
-      }
-    }
+  if (len >= 2) {
+    return NaClExtractPrefixValue(base, len - 2);
   }
   NaClDefFatal("Opcode prefix not understood");
   /* NOT REACHED */
@@ -1343,6 +1355,7 @@ static void NaClParseOpcode(const char* opcode,
   const char* base = buffer;
   char* reg_offset = NULL;
   char* opcode_ext = NULL;
+  char* opcode_3d_ext = NULL;
   char* opcode_rm_ext = NULL;
   NaClInstPrefix prefix;
   uint8_t opcode_value;
@@ -1356,6 +1369,7 @@ static void NaClParseOpcode(const char* opcode,
     *marker = '\0';
     reg_offset = buffer + strlen(base) + 1;
   } else {
+    /* Try to recognize an opcode extension. */
     marker = strchr(buffer, '/');
     if (NULL != marker) {
       *marker = '\0';
@@ -1372,6 +1386,13 @@ static void NaClParseOpcode(const char* opcode,
       if (strlen(opcode_ext) != 1) {
         NaClDefFatal("modrm opcode extension can only be a single digit");
       }
+    } else {
+      /* Try to recognize a 3dnow extension. */
+      marker = strchr(buffer, '.');
+      if ((NULL != marker) && (0 == strncmp(marker, "..", 2))) {
+        *marker = '\0';
+        opcode_3d_ext = marker + 2;
+      }
     }
   }
 
@@ -1379,7 +1400,11 @@ static void NaClParseOpcode(const char* opcode,
    * Pull out the instruction prefix and opcode byte.
    */
   NaClVerifyByteBaseAssumptions(base);
-  prefix = NaClExtractPrefix(base);
+  if (NULL == opcode_3d_ext) {
+    prefix = NaClExtractPrefix(base);
+  } else {
+    prefix = NaClExtractPrefixValue(base, strlen(base));
+  }
   NaClDefInstPrefix(prefix);
   opcode_value = NaClExtractByte(base + strlen(base) - 2);
 
@@ -1413,7 +1438,11 @@ static void NaClParseOpcode(const char* opcode,
       NaClDefineOpcodeModRmRmExtension((int) STRTOULL(opcode_rm_ext, NULL, 10));
     }
   } else {
-    NaClDefInst(opcode_value, insttype, NACL_EMPTY_IFLAGS, name);
+    NaClIFlags flags = NACL_EMPTY_IFLAGS;
+    if (opcode_3d_ext != NULL) {
+      opcode_value = NaClExtractByte(opcode_3d_ext);
+    }
+    NaClDefInst(opcode_value, insttype, flags, name);
   }
 }
 

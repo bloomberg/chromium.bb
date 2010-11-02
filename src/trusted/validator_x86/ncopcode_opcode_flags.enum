@@ -21,6 +21,11 @@ OpcodeHasRexR
 # stored in the first operand, using a ModRmOpcode operand kind.
 OpcodeInModRm
 
+# Defines a special 3DNOW 0F0F format instruction, which is used
+# to parse all 3DNOW OFOF instructions, including the operands,
+# and the trailing opcode in the immediate byte following the instruction.
+Opcode0F0F
+
 # Defines instruction that uses opcode value 0-7 in the ModRm r/m field
 # as an operand (in addition to the ModRm reg field). Note: These
 # instructions also require the ModRm mod field to be 0x3. See

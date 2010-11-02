@@ -1943,8 +1943,8 @@ Target: x86-64 bit mode
   0f 0e                       3DNOW 
     Femms
   --- 0f ---
-  0f 0f                       3DNOW OpcodeUsesModRm OpcodeHasImmed_b NaClIllegal
-    3DNow $Pq, $Qq, $Ib
+  0f 0f                       3DNOW Opcode0F0F OpcodeUsesModRm OpcodeHasImmed_b
+    Invalid $Pq, $Qq, $Ib
       Mmx_G_Operand
       Mmx_E_Operand
       I_Operand
@@ -4440,6 +4440,127 @@ Target: x86-64 bit mode
   66 0f ff                    INVALID OpcodeAllowsData16
 
 *** Prefix0F0F ***
+
+  --- 0c ---
+  0f 0f 0c                    E3DNOW OpcodeUsesModRm
+    Pi2fw $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 0d ---
+  0f 0f 0d                    3DNOW OpcodeUsesModRm
+    Pi2fd $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 1c ---
+  0f 0f 1c                    E3DNOW OpcodeUsesModRm
+    Pf2iw $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 1d ---
+  0f 0f 1d                    3DNOW OpcodeUsesModRm
+    Pf2id $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 8a ---
+  0f 0f 8a                    E3DNOW OpcodeUsesModRm
+    Pfnacc $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 8e ---
+  0f 0f 8e                    E3DNOW OpcodeUsesModRm
+    Pfpnacc $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 90 ---
+  0f 0f 90                    3DNOW OpcodeUsesModRm
+    Pfcmpge $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 94 ---
+  0f 0f 94                    3DNOW OpcodeUsesModRm
+    Pfmin $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 96 ---
+  0f 0f 96                    3DNOW OpcodeUsesModRm
+    Pfrcp $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 97 ---
+  0f 0f 97                    3DNOW OpcodeUsesModRm
+    Pfrsqrt $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 9a ---
+  0f 0f 9a                    3DNOW OpcodeUsesModRm
+    Pfsub $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- 9e ---
+  0f 0f 9e                    3DNOW OpcodeUsesModRm
+    Pfadd $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- a0 ---
+  0f 0f a0                    3DNOW OpcodeUsesModRm
+    Pfcmpgt $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- a4 ---
+  0f 0f a4                    3DNOW OpcodeUsesModRm
+    Pfmax $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- a6 ---
+  0f 0f a6                    3DNOW OpcodeUsesModRm
+    Pfrcpit1 $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- a7 ---
+  0f 0f a7                    3DNOW OpcodeUsesModRm
+    Pfrsqit1 $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- aa ---
+  0f 0f aa                    3DNOW OpcodeUsesModRm
+    Pfsubr $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- ae ---
+  0f 0f ae                    3DNOW OpcodeUsesModRm
+    Pfacc $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- b0 ---
+  0f 0f b0                    3DNOW OpcodeUsesModRm
+    Pfcmpeq $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- b4 ---
+  0f 0f b4                    3DNOW OpcodeUsesModRm
+    Pfmul $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- b6 ---
+  0f 0f b6                    3DNOW OpcodeUsesModRm
+    Pfrcpit2 $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- b7 ---
+  0f 0f b7                    3DNOW OpcodeUsesModRm
+    Pmulhrw $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- bb ---
+  0f 0f bb                    E3DNOW OpcodeUsesModRm
+    Pswapd $Pq, $Qq
+      Mmx_G_Operand           OpSet OpDest
+      Mmx_E_Operand           OpUse
+  --- bf ---
+  0f 0f bf                    3DNOW OpcodeUsesModRm
+    Pavgusb $Pq, $Qq
+      Mmx_G_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse
 
 *** Prefix0F38 ***
 
