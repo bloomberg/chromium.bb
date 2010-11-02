@@ -1087,13 +1087,10 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	int ret = 0;
 
 	if (bo == NULL)
 		return 0;
-
-	assert(bo_gem->gtt_virtual != NULL);
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 	bo->virtual = NULL;
@@ -1111,8 +1108,6 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 
 	if (bo == NULL)
 		return 0;
-
-	assert(bo_gem->mem_virtual != NULL);
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 
