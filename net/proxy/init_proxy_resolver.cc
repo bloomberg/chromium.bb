@@ -169,8 +169,8 @@ int InitProxyResolver::DoFetchPacScript() {
 
   net_log_.BeginEvent(
       NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-      new NetLogStringParameter("url",
-                                effective_pac_url.possibly_invalid_spec()));
+      make_scoped_refptr(new NetLogStringParameter(
+          "url", effective_pac_url.possibly_invalid_spec())));
 
   if (!proxy_script_fetcher_) {
     net_log_.AddEvent(NetLog::TYPE_INIT_PROXY_RESOLVER_HAS_NO_FETCHER, NULL);
@@ -190,7 +190,7 @@ int InitProxyResolver::DoFetchPacScriptComplete(int result) {
   } else {
     net_log_.EndEvent(
         NetLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-        new NetLogIntegerParameter("net_error", result));
+        make_scoped_refptr(new NetLogIntegerParameter("net_error", result)));
     return TryToFallbackPacUrl(result);
   }
 
@@ -222,7 +222,7 @@ int InitProxyResolver::DoSetPacScriptComplete(int result) {
   if (result != OK) {
     net_log_.EndEvent(
         NetLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-        new NetLogIntegerParameter("net_error", result));
+        make_scoped_refptr(new NetLogIntegerParameter("net_error", result)));
     return TryToFallbackPacUrl(result);
   }
 

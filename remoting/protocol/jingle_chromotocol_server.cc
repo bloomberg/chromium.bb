@@ -270,7 +270,7 @@ void JingleChromotocolServer::OnSessionCreate(
   if (incoming) {
     JingleChromotocolConnection* connection =
         new JingleChromotocolConnection(this);
-    connections_.push_back(connection);
+    connections_.push_back(make_scoped_refptr(connection));
     connection->Init(session);
   }
 }

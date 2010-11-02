@@ -409,7 +409,7 @@ bool RemoveCookieFunction::RunImpl() {
   // should happen after this.
   bool rv = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      new RemoveCookieTask(url, name, store_context));
+      new RemoveCookieTask(url, name, make_scoped_refptr(store_context)));
   DCHECK(rv);
 
   return true;

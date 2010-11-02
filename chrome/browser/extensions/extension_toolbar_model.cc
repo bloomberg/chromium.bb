@@ -58,7 +58,7 @@ void ExtensionToolbarModel::MoveBrowserAction(const Extension* extension,
   bool inserted = false;
   for (ExtensionList::iterator iter = begin(); iter != end(); ++iter, ++i) {
     if (i == index) {
-      toolitems_.insert(iter, extension);
+      toolitems_.insert(iter, make_scoped_refptr(extension));
       inserted = true;
       break;
     }
@@ -68,7 +68,7 @@ void ExtensionToolbarModel::MoveBrowserAction(const Extension* extension,
     DCHECK_EQ(index, static_cast<int>(toolitems_.size()));
     index = toolitems_.size();
 
-    toolitems_.push_back(extension);
+    toolitems_.push_back(make_scoped_refptr(extension));
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, BrowserActionMoved(extension, index));
@@ -111,11 +111,12 @@ void ExtensionToolbarModel::AddExtension(const Extension* extension) {
 
   if (extension->id() == last_extension_removed_ &&
       last_extension_removed_index_ < toolitems_.size()) {
-    toolitems_.insert(begin() + last_extension_removed_index_, extension);
+    toolitems_.insert(begin() + last_extension_removed_index_,
+                      make_scoped_refptr(extension));
     FOR_EACH_OBSERVER(Observer, observers_,
         BrowserActionAdded(extension, last_extension_removed_index_));
   } else {
-    toolitems_.push_back(extension);
+    toolitems_.push_back(make_scoped_refptr(extension));
     FOR_EACH_OBSERVER(Observer, observers_,
                       BrowserActionAdded(extension, toolitems_.size() - 1));
   }
@@ -172,7 +173,7 @@ void ExtensionToolbarModel::InitializeExtensionList() {
       int index = std::distance(pref_order.begin(), pos);
       sorted[index] = extension;
     } else {
-      unsorted.push_back(extension);
+      unsorted.push_back(make_scoped_refptr(extension));
     }
   }
 

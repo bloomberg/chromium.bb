@@ -288,7 +288,7 @@ void ProtocolTestClient::OnStateChange(
           host_jid_, CandidateChromotocolConfig::CreateDefault(),
           NewCallback(connection,
                       &ProtocolTestConnection::OnStateChange)));
-      connections_.push_back(connection);
+      connections_.push_back(make_scoped_refptr(connection));
     }
   } else if (state == JingleClient::CLOSED) {
     std::cerr << "Connection closed" << std::endl;
@@ -309,7 +309,7 @@ void ProtocolTestClient::OnNewChromotocolConnection(
       NewCallback(test_connection, &ProtocolTestConnection::OnStateChange));
   test_connection->Init(connection);
   AutoLock auto_lock(connections_lock_);
-  connections_.push_back(test_connection);
+  connections_.push_back(make_scoped_refptr(test_connection));
 }
 
 void ProtocolTestClient::OnFinishedClosing() {

@@ -91,7 +91,7 @@ PluginStreamUrl* PluginInstance::CreateStream(unsigned long resource_id,
 }
 
 void PluginInstance::AddStream(PluginStream* stream) {
-  open_streams_.push_back(stream);
+  open_streams_.push_back(make_scoped_refptr(stream));
 }
 
 void PluginInstance::RemoveStream(PluginStream* stream) {

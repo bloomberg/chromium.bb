@@ -562,8 +562,9 @@ void TestingAutomationProvider::DeleteCookie(const GURL& url,
     NavigationController* tab = tab_tracker_->GetResource(handle);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        new DeleteCookieTask(url, cookie_name,
-                             tab->profile()->GetRequestContext()));
+        new DeleteCookieTask(
+            url, cookie_name,
+            make_scoped_refptr(tab->profile()->GetRequestContext())));
     *success = true;
   }
 }

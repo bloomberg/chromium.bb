@@ -422,7 +422,7 @@ class ExtensionsServiceTest
     switch (type.value) {
       case NotificationType::EXTENSION_LOADED: {
         const Extension* extension = Details<const Extension>(details).ptr();
-        loaded_.push_back(extension);
+        loaded_.push_back(make_scoped_refptr(extension));
         // The tests rely on the errors being in a certain order, which can vary
         // depending on how filesystem iteration works.
         std::stable_sort(loaded_.begin(), loaded_.end(), ExtensionsOrder());

@@ -2607,7 +2607,8 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // Add the chrome specific audio renderer.
-    collection.push_back(new AudioRendererImpl(audio_message_filter()));
+    collection.push_back(make_scoped_refptr(
+        new AudioRendererImpl(audio_message_filter())));
   }
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
@@ -2618,8 +2619,8 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     bool ret = frame->view()->graphicsContext3D()->makeContextCurrent();
     CHECK(ret) << "Failed to switch context";
 
-    collection.push_back(new IpcVideoDecoder(
-        MessageLoop::current(), ggl::GetCurrentContext()));
+    collection.push_back(make_scoped_refptr(new IpcVideoDecoder(
+        MessageLoop::current(), ggl::GetCurrentContext())));
   }
 
   WebApplicationCacheHostImpl* appcache_host =

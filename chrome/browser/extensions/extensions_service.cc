@@ -891,7 +891,7 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
   extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
 
   // Move it over to the enabled list.
-  extensions_.push_back(extension);
+  extensions_.push_back(make_scoped_refptr(extension));
   ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
                                            disabled_extensions_.end(),
                                            extension);
@@ -916,7 +916,7 @@ void ExtensionsService::DisableExtension(const std::string& extension_id) {
   extension_prefs_->SetExtensionState(extension, Extension::DISABLED);
 
   // Move it over to the disabled list.
-  disabled_extensions_.push_back(extension);
+  disabled_extensions_.push_back(make_scoped_refptr(extension));
   ExtensionList::iterator iter = std::find(extensions_.begin(),
                                            extensions_.end(),
                                            extension);

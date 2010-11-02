@@ -74,7 +74,7 @@ PluginLib::PluginLib(const WebPluginInfo& info,
       skip_unload_(false) {
   base::StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
-  g_loaded_libs->push_back(this);
+  g_loaded_libs->push_back(make_scoped_refptr(this));
 
   if (entry_points) {
     internal_ = true;

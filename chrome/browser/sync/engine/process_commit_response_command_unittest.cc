@@ -42,8 +42,10 @@ class ProcessCommitResponseCommandTestWithParam
     workers()->clear();
     mutable_routing_info()->clear();
 
-    workers()->push_back(new ModelSafeWorker());    // GROUP_PASSIVE worker.
-    workers()->push_back(new MockUIModelWorker());  // GROUP_UI worker.
+    // GROUP_PASSIVE worker.
+    workers()->push_back(make_scoped_refptr(new ModelSafeWorker()));
+    // GROUP_UI worker.
+    workers()->push_back(make_scoped_refptr(new MockUIModelWorker()));
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
     (*mutable_routing_info())[syncable::PREFERENCES] = GROUP_UI;
     (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_PASSIVE;

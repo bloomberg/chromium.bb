@@ -30,8 +30,8 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
   virtual void SetUp() {
     workers()->clear();
     mutable_routing_info()->clear();
-    workers()->push_back(new MockDBModelWorker());
-    workers()->push_back(new MockUIModelWorker());
+    workers()->push_back(make_scoped_refptr(new MockDBModelWorker()));
+    workers()->push_back(make_scoped_refptr(new MockUIModelWorker()));
     (*mutable_routing_info())[syncable::PREFERENCES] = GROUP_UI;
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
     (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_DB;

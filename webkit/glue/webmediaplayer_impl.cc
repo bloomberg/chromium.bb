@@ -284,10 +284,14 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   }
 
   // Add in the default filter factories.
-  filter_collection_.push_back(new media::FFmpegDemuxer());
-  filter_collection_.push_back(new media::FFmpegAudioDecoder());
-  filter_collection_.push_back(new media::FFmpegVideoDecoder(NULL));
-  filter_collection_.push_back(new media::NullAudioRenderer());
+  filter_collection_.push_back(make_scoped_refptr(
+      new media::FFmpegDemuxer()));
+  filter_collection_.push_back(make_scoped_refptr(
+      new media::FFmpegAudioDecoder()));
+  filter_collection_.push_back(make_scoped_refptr(
+      new media::FFmpegVideoDecoder(NULL)));
+  filter_collection_.push_back(make_scoped_refptr(
+      new media::NullAudioRenderer()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

@@ -22,7 +22,8 @@ MessageDecoder::~MessageDecoder() {}
 
 void MessageDecoder::AddBuffer(scoped_refptr<net::IOBuffer> data,
                                int data_size) {
-  buffer_list_.push_back(new net::DrainableIOBuffer(data, data_size));
+  buffer_list_.push_back(make_scoped_refptr(
+      new net::DrainableIOBuffer(data, data_size)));
   available_bytes_ += data_size;
 }
 

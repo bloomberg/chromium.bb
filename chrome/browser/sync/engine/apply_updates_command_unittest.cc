@@ -33,7 +33,8 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   virtual void SetUp() {
     workers()->clear();
     mutable_routing_info()->clear();
-    workers()->push_back(new ModelSafeWorker());  // GROUP_PASSIVE worker.
+    // GROUP_PASSIVE worker.
+    workers()->push_back(make_scoped_refptr(new ModelSafeWorker()));
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
     (*mutable_routing_info())[syncable::PASSWORDS] = GROUP_PASSIVE;
     (*mutable_routing_info())[syncable::NIGORI] = GROUP_PASSIVE;

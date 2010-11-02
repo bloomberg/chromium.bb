@@ -172,7 +172,7 @@ TraceContext::TraceContext() {}
 TraceContext::~TraceContext() {}
 
 void TraceContext::PushTracerInternal(Tracer* tracer) {
-  tracers_.push_back(tracer);
+  tracers_.push_back(make_scoped_refptr(tracer));
 }
 
 void TraceContext::PopTracerInternal() { tracers_.pop_back(); }

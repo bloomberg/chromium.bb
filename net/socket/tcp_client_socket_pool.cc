@@ -222,9 +222,9 @@ int TCPClientSocketPool::RequestSocket(
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
-        new NetLogStringParameter(
+        make_scoped_refptr(new NetLogStringParameter(
             "host_and_port",
-            casted_params->get()->destination().host_port_pair().ToString()));
+            casted_params->get()->destination().host_port_pair().ToString())));
   }
 
   return base_.RequestSocket(group_name, *casted_params, priority, handle,
@@ -243,9 +243,9 @@ void TCPClientSocketPool::RequestSockets(
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
-        new NetLogStringParameter(
+        make_scoped_refptr(new NetLogStringParameter(
             "host_and_port",
-            casted_params->get()->destination().host_port_pair().ToString()));
+            casted_params->get()->destination().host_port_pair().ToString())));
   }
 
   base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);

@@ -390,8 +390,10 @@ void MockAppCacheStorage::RunOnePendingTask() {
 
 void MockAppCacheStorage::AddStoredCache(AppCache* cache) {
   int64 cache_id = cache->cache_id();
-  if (stored_caches_.find(cache_id) == stored_caches_.end())
-    stored_caches_.insert(StoredCacheMap::value_type(cache_id, cache));
+  if (stored_caches_.find(cache_id) == stored_caches_.end()) {
+    stored_caches_.insert(
+        StoredCacheMap::value_type(cache_id, make_scoped_refptr(cache)));
+  }
 }
 
 void MockAppCacheStorage::RemoveStoredCache(AppCache* cache) {
@@ -411,8 +413,10 @@ void MockAppCacheStorage::RemoveStoredCaches(
 
 void MockAppCacheStorage::AddStoredGroup(AppCacheGroup* group) {
   const GURL& url = group->manifest_url();
-  if (stored_groups_.find(url) == stored_groups_.end())
-    stored_groups_.insert(StoredGroupMap::value_type(url, group));
+  if (stored_groups_.find(url) == stored_groups_.end()) {
+    stored_groups_.insert(
+        StoredGroupMap::value_type(url, make_scoped_refptr(group)));
+  }
 }
 
 void MockAppCacheStorage::RemoveStoredGroup(AppCacheGroup* group) {

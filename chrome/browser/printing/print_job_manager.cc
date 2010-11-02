@@ -61,7 +61,7 @@ void PrintJobManager::StopJobs(bool wait_for_finish) {
 void PrintJobManager::QueuePrinterQuery(PrinterQuery* job) {
   AutoLock lock(lock_);
   DCHECK(job);
-  queued_queries_.push_back(job);
+  queued_queries_.push_back(make_scoped_refptr(job));
   DCHECK(job->is_valid());
 }
 
@@ -116,7 +116,7 @@ void PrintJobManager::OnPrintJobEvent(
                                               current_jobs_.end(),
                                               print_job));
       // Causes a AddRef().
-      current_jobs_.push_back(print_job);
+      current_jobs_.push_back(make_scoped_refptr(print_job));
       break;
     }
     case JobEventDetails::JOB_DONE: {

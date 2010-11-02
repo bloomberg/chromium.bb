@@ -70,7 +70,7 @@ ChannelProxy::Context::Context(Channel::Listener* listener,
       peer_pid_(0),
       channel_connected_called_(false) {
   if (filter)
-    filters_.push_back(filter);
+    filters_.push_back(make_scoped_refptr(filter));
 }
 
 void ChannelProxy::Context::CreateChannel(const std::string& id,
@@ -190,7 +190,7 @@ void ChannelProxy::Context::OnSendMessage(Message* message) {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnAddFilter(MessageFilter* filter) {
-  filters_.push_back(filter);
+  filters_.push_back(make_scoped_refptr(filter));
 
   // If the channel has already been created, then we need to send this message
   // so that the filter gets access to the Channel.

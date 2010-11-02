@@ -80,7 +80,7 @@ void WebSocket::Send(const std::string& msg) {
   *p = '\0';
   memcpy(p + 1, msg.data(), msg.size());
   *(p + 1 + msg.size()) = '\xff';
-  pending_write_bufs_.push_back(buf);
+  pending_write_bufs_.push_back(make_scoped_refptr(buf));
   SendPending();
 }
 
@@ -172,7 +172,7 @@ void WebSocket::OnConnected(SocketStream* socket_stream,
   const std::string msg = handshake_->CreateClientHandshakeMessage();
   IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
   memcpy(buf->data(), msg.data(), msg.size());
-  pending_write_bufs_.push_back(buf);
+  pending_write_bufs_.push_back(make_scoped_refptr(buf));
   origin_loop_->PostTask(FROM_HERE,
                          NewRunnableMethod(this, &WebSocket::SendPending));
 }
@@ -430,7 +430,7 @@ void WebSocket::StartClosingHandshake() {
   client_closing_handshake_ = true;
   IOBufferWithSize* buf = new IOBufferWithSize(2);
   memcpy(buf->data(), kClosingFrame, 2);
-  pending_write_bufs_.push_back(buf);
+  pending_write_bufs_.push_back(make_scoped_refptr(buf));
   SendPending();
 }
 

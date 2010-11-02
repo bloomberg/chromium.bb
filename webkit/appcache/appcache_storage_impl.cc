@@ -48,7 +48,7 @@ class AppCacheStorageImpl::DatabaseTask
   virtual ~DatabaseTask() {}
 
   void AddDelegate(DelegateReference* delegate_reference) {
-    delegates_.push_back(delegate_reference);
+    delegates_.push_back(make_scoped_refptr(delegate_reference));
   }
 
   // Schedules a task to be Run() on the DB thread. Tasks

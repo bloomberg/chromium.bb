@@ -37,7 +37,8 @@ class PurgeMemoryIOHelper
       : safe_browsing_service_(safe_browsing_service) {
   }
 
-  void AddRequestContextGetter(URLRequestContextGetter* request_context_getter);
+  void AddRequestContextGetter(
+      scoped_refptr<URLRequestContextGetter> request_context_getter);
 
   void PurgeMemoryOnIOThread();
 
@@ -52,11 +53,8 @@ class PurgeMemoryIOHelper
 };
 
 void PurgeMemoryIOHelper::AddRequestContextGetter(
-    URLRequestContextGetter* request_context_getter) {
-  if (!request_context_getters_.count(request_context_getter)) {
-    request_context_getters_.insert(
-        RequestContextGetter(request_context_getter));
-  }
+    scoped_refptr<URLRequestContextGetter> request_context_getter) {
+  request_context_getters_.insert(request_context_getter);
 }
 
 void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
@@ -104,7 +102,7 @@ void MemoryPurger::PurgeBrowser() {
        i != profile_manager->end(); ++i) {
     Profile* profile = *i;
     purge_memory_io_helper->AddRequestContextGetter(
-        profile->GetRequestContext());
+        make_scoped_refptr(profile->GetRequestContext()));
 
     // NOTE: Some objects below may be duplicates across profiles.  We could
     // conceivably put all these in sets and then iterate over the sets.

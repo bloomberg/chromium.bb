@@ -109,8 +109,8 @@ bool DOMElementProxy::FindElements(const By& by,
     return false;
   }
   for (size_t i = 0; i < element_handles.size(); i++) {
-    elements->push_back(executor_->GetObjectProxy<DOMElementProxy>(
-        element_handles[i]));
+    elements->push_back(make_scoped_refptr(
+          executor_->GetObjectProxy<DOMElementProxy>(element_handles[i])));
   }
   return true;
 }
@@ -134,8 +134,8 @@ bool DOMElementProxy::WaitForVisibleElementCount(
   }
   if (static_cast<int>(element_handles.size()) == count) {
     for (size_t i = 0; i < element_handles.size(); i++) {
-      elements->push_back(executor_->GetObjectProxy<DOMElementProxy>(
-          element_handles[i]));
+      elements->push_back(make_scoped_refptr(
+            executor_->GetObjectProxy<DOMElementProxy>(element_handles[i])));
     }
   }
   return static_cast<int>(element_handles.size()) == count;

@@ -21,7 +21,8 @@ MultipleArrayInputStream::~MultipleArrayInputStream() {
 
 void MultipleArrayInputStream::AddBuffer(net::IOBuffer* buffer, int size) {
   DCHECK_EQ(position_, 0); // Haven't started reading.
-  buffers_.push_back(new net::DrainableIOBuffer(buffer, size));
+  buffers_.push_back(make_scoped_refptr(
+      new net::DrainableIOBuffer(buffer, size)));
 }
 
 bool MultipleArrayInputStream::Next(const void** data, int* size) {
