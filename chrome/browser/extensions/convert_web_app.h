@@ -17,7 +17,7 @@ class Time;
 }
 
 namespace webkit_glue {
-struct WebApplicationInfo;
+class WebApplicationInfo;
 }
 
 // Generates a version number for an extension from a time. The goal is to make
