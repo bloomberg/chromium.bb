@@ -753,6 +753,25 @@ void ExtensionsService::AddPendingExtensionInternal(
     Extension::Location install_source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // If a non-sync update is pending, a sync request should not
+  // overwrite it.  This is important for external extensions.
+  // If an external extension download is pending, and the user has
+  // the extension in their sync profile, the install should set the
+  // type to be external.  An external extension should not be
+  // rejected if it fails the safty checks for a syncable extension.
+  // TODO(skerner): Work out other potential overlapping conditions.
+  // (crbug/61000)
+  PendingExtensionMap::iterator it = pending_extensions_.find(id);
+  if (it != pending_extensions_.end()) {
+    VLOG(1) << "Extension id " << id
+            << " was entered for update more than once."
+            << "  old is_from_sync = " << it->second.is_from_sync
+            << "  new is_from_sync = " << is_from_sync;
+    if (!it->second.is_from_sync && is_from_sync)
+      return;
+  }
+
+
   pending_extensions_[id] =
       PendingExtensionInfo(update_url, expected_crx_type, is_from_sync,
                            install_silently, enable_on_install,

@@ -1663,6 +1663,45 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
   EXPECT_FALSE(service_->IsIncognitoEnabled(extension));
 }
 
+// Test updating a pending CRX as if the source is an external extension
+// with an update URL.  The external update should overwrite a sync update,
+// but a sync update should not overwrite a non-sync update.
+TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrxWinsOverSync) {
+  InitializeEmptyExtensionsService();
+
+  // Add a crx to be installed from the update mechanism.
+  service_->AddPendingExtensionFromSync(
+      kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
+      kGoodInstallSilently, kGoodInitialState,
+      kGoodInitialIncognitoEnabled);
+
+  // Check that there is a pending crx, with is_from_sync set to true.
+  PendingExtensionMap::const_iterator it;
+  it = service_->pending_extensions().find(kGoodId);
+  ASSERT_TRUE(it != service_->pending_extensions().end());
+  EXPECT_TRUE(it->second.is_from_sync);
+
+  // Add a crx to be updated, with the same ID, from a non-sync source.
+  service_->AddPendingExtensionFromExternalUpdateUrl(
+      kGoodId, GURL(kGoodUpdateURL));
+
+  // Check that there is a pending crx, with is_from_sync set to false.
+  it = service_->pending_extensions().find(kGoodId);
+  ASSERT_TRUE(it != service_->pending_extensions().end());
+  EXPECT_FALSE(it->second.is_from_sync);
+
+  // Add a crx to be installed from the update mechanism.
+  service_->AddPendingExtensionFromSync(
+      kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
+      kGoodInstallSilently, kGoodInitialState,
+      kGoodInitialIncognitoEnabled);
+
+  // Check that the external, non-sync update was not overridden.
+  it = service_->pending_extensions().find(kGoodId);
+  ASSERT_TRUE(it != service_->pending_extensions().end());
+  EXPECT_FALSE(it->second.is_from_sync);
+}
+
 // Updating a theme should fail if the updater is explicitly told that
 // the CRX is not a theme.
 TEST_F(ExtensionsServiceTest, UpdatePendingCrxThemeMismatch) {
