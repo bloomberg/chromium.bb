@@ -333,7 +333,7 @@ extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
 extern const char kForceStubLibcros[];
-extern const char kDisableDOMUIMenu[];
+extern const char kEnableDOMUIMenu[];
 #endif
 
 #if defined(OS_LINUX)

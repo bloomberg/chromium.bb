@@ -1173,8 +1173,8 @@ const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 // switch separates chrome code from the rest of ChromeOS.
 const char kForceStubLibcros[]        = "force-stub-libcros";
 
-// Disables DOMUI menu and use gtk menu instead.
-const char kDisableDOMUIMenu[]              = "disable-domui-menu";
+// Enables DOMUI menu.
+const char kEnableDOMUIMenu[]              = "enable-domui-menu";
 
 #endif
 
