@@ -16,10 +16,16 @@ OpcodeUsesRexW
 # Indicates that opcode has REX prefix and REX.R is set.
 OpcodeHasRexR
 
-# Defines instruction that uses opcode value 0-7 in the ModR/M.rm field
+# Defines instruction that uses opcode value 0-7 in the ModRm reg field
 # as an operand. Intel's notation is /digit. Note: This data will be
 # stored in the first operand, using a ModRmOpcode operand kind.
 OpcodeInModRm
+
+# Defines instruction that uses opcode value 0-7 in the ModRm r/m field
+# as an operand (in addition to the ModRm reg field). Note: These
+# instructions also require the ModRm mod field to be 0x3. See
+# section A.2.5 in the Intel manual (see ncdecode_tablegen.c for reference).
+OpcodeInModRmRm
 
 # Defines an OpcodeInModRm, where the value of ModRm must also be less
 # than 0xC0 (see x87 instructions for examples of this).

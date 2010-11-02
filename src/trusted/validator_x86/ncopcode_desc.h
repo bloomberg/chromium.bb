@@ -78,6 +78,11 @@ typedef struct NaClOp {
 /* Maxmimum number of opcode bytes per instruction. */
 #define NACL_MAX_OPCODE_BYTES 3
 
+/* Maximum number of opcode bytes used to model an instruction. Include
+ * opcodes in the modrm byte, and register values encoded in the opcode.
+ */
+#define NACL_MAX_ALL_OPCODE_BYTES 4
+
 /* Metadata about an instruction, defining a pattern. Note: Since the same
  * sequence of opcode bytes may define more than one pattern (depending on
  * other bytes in the parsed instruction), the patterns are
@@ -90,13 +95,16 @@ typedef struct NaClInst {
   uint8_t num_opcode_bytes;
   /* The actual opcode bytes. */
   /* The (last) byte value representing the (opcode) instruction.
-   * Note: If the instruction opcode continues in the modrm byte
+   * Note: If the instruction opcode continues in the modrm reg byte
    * (defined by flag OpcodeInModRm), or a register value is
    * encoded into the opcode byte (defined by flag OpcodePlusR),
    * then the corresponding value (0..7) is stored in byte
    * opcode[num_opcode_bytes];
+   * Note: If the instruction opcode continues in the modrm r/m byte
+   * (defined by flag OpcodeInModRmRm), then the corresponding
+   * value (0..7) is stored in byte opcode[num_opcodes_bytes+1];
    */
-  uint8_t opcode[NACL_MAX_OPCODE_BYTES];
+  uint8_t opcode[NACL_MAX_ALL_OPCODE_BYTES];
   /* Defines the origin of this instruction. */
   NaClInstType insttype;
   /* Flags defining additional facts about the instruction. */

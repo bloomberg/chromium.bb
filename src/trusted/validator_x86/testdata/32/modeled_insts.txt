@@ -1953,6 +1953,13 @@ Target: x86-32 bit mode
   0f 01 / 1                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
     Sidt $Ms
       M_Operand               OpSet OpDest
+  0f 01 / 1 / 0               SYSTEM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Monitor {%reax}, {%ecx}, {%edx}
+      RegREAX                 OpUse OpImplicit
+      RegECX                  OpUse OpImplicit
+      RegEDX                  OpUse OpImplicit
+  0f 01 / 1 / 1               SYSTEM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Mwait
   0f 01 / 1                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
   0f 01 / 2                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
     Lgdt $Ms
@@ -1960,6 +1967,26 @@ Target: x86-32 bit mode
   0f 01 / 3                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 OpcodeUsesModRm NaClIllegal
     Lidt $Ms
       M_Operand               OpUse
+  0f 01 / 3 / 1               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Vmmcall
+  0f 01 / 3 / 2               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Vmload {$rAXva}
+      RegREAXa                OpUse OpImplicit
+  0f 01 / 3 / 3               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Vmsave {$rAXva}
+      RegREAXa                OpUse OpImplicit
+  0f 01 / 3 / 4               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Stgi
+  0f 01 / 3 / 5               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Clgi
+  0f 01 / 3 / 6               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Skinit {%eip}, {%eax}
+      RegEIP                  OpSet OpImplicit
+      RegEAX                  OpUse OpImplicit
+  0f 01 / 3 / 7               SVM OpcodeInModRm OpcodeInModRmRm ModRmModIs0x3 OpcodeUsesModRm NaClIllegal
+    Invlpga {$rAXva}, {%ecx}
+      RegREAXa                OpUse OpImplicit
+      RegECX                  OpUse OpImplicit
   0f 01 / 3                   INVALID OpcodeInModRm OpcodeUsesModRm NaClIllegal
   0f 01 / 4                   SYSTEM OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v NaClIllegal
     Smsw $Mw/Rv

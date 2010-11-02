@@ -142,6 +142,11 @@ NaClInst* NaClGetDefInst();
  */
 void NaClDefOpcodeExtension(int opcode);
 
+/* Defines an opcode extension stored in the ModRm r/m field (must be
+ * in [0..7]).
+ */
+void NaClDefineOpcodeModRmRmExtension(int value);
+
 /* Define a register value embedded in the opcode value. */
 void NaClDefOpcodeRegisterValue(int r);
 

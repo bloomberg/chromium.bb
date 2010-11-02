@@ -452,6 +452,16 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
                     modrm_opcode(state->modrm)));
         return FALSE;
       }
+      if (state->inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
+        if (modrm_rm(state->modrm) !=
+            state->inst->opcode[state->inst->num_opcode_bytes+1]) {
+          DEBUG(NaClLog(LOG_INFO,
+                        "Discarding, opcode in mrm rm field (%02"NACL_PRIx8") "
+                        "does not match\n",
+                        modrm_rm(state->modrm)));
+          return FALSE;
+        }
+      }
     }
   }
   return TRUE;

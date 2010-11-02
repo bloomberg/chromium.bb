@@ -37,6 +37,7 @@ Cdqe
 Clc
 Cld
 Clflush
+Clgi
 Cli
 Clts
 Cmc
@@ -211,6 +212,7 @@ Int1
 Int3
 Invd
 Invept
+Invlpga
 Invlpg
 Invvpid
 Iret
@@ -268,6 +270,7 @@ Minpd
 Minps
 Minsd
 Minss
+Monitor
 Mov
 Movapd
 Movaps
@@ -313,6 +316,7 @@ Mulpd
 Mulps
 Mulsd
 Mulss
+Mwait
 Neg
 Nop
 Not
@@ -470,6 +474,7 @@ Rcpss
 Rcr
 Rdmsr
 Rdtsc
+Rdtscp
 Ret
 Rol
 Ror
@@ -507,6 +512,7 @@ Shr
 Shrd
 Shufpd
 Shufps
+Skinit
 Sidt
 Sldt
 Smsw
@@ -516,6 +522,7 @@ Sqrtsd
 Sqrtss
 Stc
 Std
+Stgi
 Sti
 Stosb
 Stosd
@@ -527,6 +534,7 @@ Subps
 Subpd
 Subsd
 Subss
+Swapgs
 Syscall
 Sysret
 Test
@@ -539,6 +547,10 @@ Unpcklpd
 Unpcklps
 Verr
 Verw
+Vmload
+Vmmcall
+Vmrun
+Vmsave
 Wbinvd
 Wrmsr
 Xadd

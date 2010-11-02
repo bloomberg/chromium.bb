@@ -137,6 +137,10 @@ void NaClInstPrint(struct Gio* f, NaClInst* inst) {
     gprintf(f, " - r%d", inst->opcode[inst->num_opcode_bytes]);
     count += 5;
   }
+  if (inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
+    gprintf(f, " / %d", inst->opcode[inst->num_opcode_bytes + 1]);
+    count += 4;
+  }
   while (count < 30) {
     gprintf(f, " ");
     ++count;

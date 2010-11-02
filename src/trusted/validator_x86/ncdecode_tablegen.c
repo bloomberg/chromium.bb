@@ -946,6 +946,26 @@ void NaClDefOpcodeExtension(int opcode) {
   current_inst->opcode[current_inst->num_opcode_bytes] = byte_opcode;
 }
 
+void NaClDefineOpcodeModRmRmExtension(int value) {
+  uint8_t byte_opcode = (uint8_t) value;
+  if ((value < 0) || (value > 7)) {
+    NaClFatalInst("Attempted to defined Opcode modrm rm extension "
+                  "not in range [0..7]");
+  }
+  if (NACL_EMPTY_IFLAGS ==
+      (current_inst->flags & NACL_IFLAG(OpcodeInModRm))) {
+    NaClFatalInst(
+        "Opcode modrm rm extension in [0..7], but not OpcodeInModRm");
+  }
+  DEBUG(NaClLog(LOG_INFO, "Defining modrm r/m opcode extension %d", value));
+  NaClAddIFlags(NACL_IFLAG(OpcodeInModRmRm));
+  if (current_inst->num_opcode_bytes + 1 < NACL_MAX_ALL_OPCODE_BYTES) {
+    current_inst->opcode[current_inst->num_opcode_bytes+1] = byte_opcode;
+  } else {
+    NaClFatalInst("No room for opcode modrm rm extension");
+  }
+}
+
 void NaClDefOpcodeRegisterValue(int r) {
   uint8_t byte_r;
   byte_r = (uint8_t) r;
@@ -978,6 +998,9 @@ void NaClDefOp(
    * so that we don't return registers.
    * If one specifies an operand that implies the use of a ModRm byte, add
    * the corresponding flag.
+   * Note: See section A.2.5 of Intel manual (above) for an explanation of the
+   * ModRm mod field being any value except 0x3, for values having an
+   * explicit memory operand.
    */
   switch (kind) {
     case M_Operand:
@@ -1128,7 +1151,7 @@ static void NaClDefBytes(uint8_t opcode) {
   current_inst->prefix = current_opcode_prefix;
 
   /* Start by clearing all entries. */
-  for (index = 0; index < NACL_MAX_OPCODE_BYTES; ++index) {
+  for (index = 0; index < NACL_MAX_ALL_OPCODE_BYTES; ++index) {
     current_inst->opcode[index] = 0x00;
   }
 
@@ -1523,6 +1546,12 @@ static void NaClRecheckIFlags() {
                              NACL_IFLAG(OpcodeHasImmed_z)))) {
     current_inst->flags |= NACL_IFLAG(OpcodeAllowsData16);
   }
+  /* If the instruction uses the modrm rm field as an opcode value,
+   * it also requires that the modrm mod field is 0x3.
+   */
+  if (current_inst->flags & NACL_IFLAG(OpcodeInModRmRm)) {
+    current_inst->flags |= NACL_IFLAG(ModRmModIs0x3);
+  }
   NaClApplySanityChecksToInst();
 }
 
@@ -1854,7 +1883,7 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
   gprintf(f, "  /* %d */\n", index);
   gprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
   gprintf(f, " %"NACL_PRIu8", {", inst->num_opcode_bytes);
-  for (i = 0; i < NACL_MAX_OPCODE_BYTES; ++i) {
+  for (i = 0; i < NACL_MAX_ALL_OPCODE_BYTES; ++i) {
     if (i > 0) gprintf(f, ",");
     gprintf(f," 0x%02x", inst->opcode[i]);
   }

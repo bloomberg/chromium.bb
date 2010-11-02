@@ -39,7 +39,7 @@ static const NaClMnemonic kLongModeOp[] = {
   InstPushfq,
   InstScasq,
   InstStosq,
-  /* InstSwapgs */
+  InstSwapgs
 };
 
 /* Add LongMode instruction flag if applicable. */

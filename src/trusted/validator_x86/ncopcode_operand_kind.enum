@@ -347,6 +347,13 @@ RegREBP
 RegRESI
 RegREDI
 
+# The following define the choice of register, based on address size, as in the
+# following table:
+#  Entry     16 bits   32 bits   64 bits
+#  -------------------------------------
+#  REAXa          AX       EAX       RAX
+RegREAXa
+
 # Use DS:(E)DI, like that specified in movsb, movsw, and movsd, and movsq instructions.
 RegDS_EDI
 # Use ES:(E)DI, like that specified in the insb, insw, and insd instructions.

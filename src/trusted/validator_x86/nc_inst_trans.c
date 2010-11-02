@@ -1543,6 +1543,23 @@ static NaClExp* NaClAppendBasedOnSize(NaClOpKind reg_2b,
   }
 }
 
+static NaClExp* NaClAppendBasedOnAddressSize(NaClOpKind reg_2b,
+                                             NaClOpKind reg_4b,
+                                             NaClOpKind reg_8b,
+                                             NaClInstState* state) {
+  switch (state->address_size) {
+    case 16:
+      return NaClAppendReg(reg_2b, &state->nodes);
+    case 32:
+      return NaClAppendReg(reg_4b, &state->nodes);
+    case 64:
+      return NaClAppendReg(reg_8b, &state->nodes);
+    default:
+      return NaClFatal("can't translate register group: address size not valid",
+                       state);
+  }
+}
+
 /* Compute the effect address using the Mod/Rm and SIB bytes. */
 static NaClExp* NaClAppendEffectiveAddress(
     NaClInstState* state, NaClOp* operand, NaClModRmRegKind modrm_reg_kind) {
@@ -1779,6 +1796,8 @@ static NaClExp* NaClAppendOperand(NaClInstState* state, NaClOp* operand) {
       return NaClAppendBasedOnSize(RegSI, RegESI, RegRSI, state);
     case RegREDI:
       return NaClAppendBasedOnSize(RegDI, RegEDI, RegRSI, state);
+    case RegREAXa:
+      return NaClAppendBasedOnAddressSize(RegAX, RegEAX, RegRAX, state);
 
     case RegDS_EDI:
       return NaClAppendDS_EDI(state);

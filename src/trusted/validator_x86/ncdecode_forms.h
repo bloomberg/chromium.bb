@@ -84,6 +84,7 @@ typedef enum NaClInstCat {
                * value of the Dest argument.
                */
   Uses,       /* All arguments are uses. */
+  Sets,       /* All arguments are set. */
   Lea,        /* Address calculation, and hence, operand 2 is neither used
                * nor set.
                */
@@ -623,6 +624,8 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *   ss - A scalar single-precision floating-point operand (scalar single).
  *   w - A word, irrespective of the effective operand size.
  *   v - A word, doubleword, or quadword, depending on the effective operand
+ *       size.
+ *   va - A word, doubleword, or quadword, depending on the effective address
  *       size.
  *   vw - A word only when the effective operand size matches.
  *   vd - A doubleword only when the effective operand size matches.

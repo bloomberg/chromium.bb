@@ -59,6 +59,7 @@ const char* NaClInstCatName(NaClInstCat cat) {
     { SysReturn, "SysReturn"},
     { Jump, "Jump" },
     { Uses, "Uses" },
+    { Sets, "Sets" },
     { Lea, "Lea" },
     { Other, "Other" },
   };
@@ -81,6 +82,7 @@ static NaClOpFlags NaClGetArg1Flags(NaClInstCat icat, int num_ops) {
     case Move:
     case Lea:
     case UnarySet:
+    case Sets:
       return NACL_OPFLAG(OpSet);
     case Exchange:
     case Call:
@@ -163,6 +165,7 @@ static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat,
       }
     case Pop:
     case SysCall:
+    case Sets:
       return NACL_OPFLAG(OpSet);
     case Call:
     case Return:
@@ -644,6 +647,10 @@ void DEF_OPERAND(rAXv)() {
   NaClDefOp(RegREAX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
+}
+
+void DEF_OPERAND(rAXva)() {
+  NaClDefOp(RegREAXa, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(rAXvd)() {
@@ -1314,6 +1321,12 @@ NaClInstPrefix NaClExtractPrefix(const char* base) {
   return NaClInstPrefixEnumSize;
 }
 
+static void NaClVerifyOctalDigit(const char* str, const char* message) {
+  if ((1 != strlen(str)) || (1 != strspn(str, "01234567"))) {
+    NaClDefFatal(message);
+  }
+}
+
 /*
  * Given a string describing an opcode, the type of the
  * instruction, and the mnemonic associated with the instruction,
@@ -1330,6 +1343,7 @@ static void NaClParseOpcode(const char* opcode,
   const char* base = buffer;
   char* reg_offset = NULL;
   char* opcode_ext = NULL;
+  char* opcode_rm_ext = NULL;
   NaClInstPrefix prefix;
   uint8_t opcode_value;
   strcpy(buffer, opcode);
@@ -1346,6 +1360,15 @@ static void NaClParseOpcode(const char* opcode,
     if (NULL != marker) {
       *marker = '\0';
       opcode_ext = buffer + strlen(base) + 1;
+      marker = strchr(opcode_ext, '/');
+      if (NULL != marker) {
+        *marker = '\0';
+        opcode_rm_ext = opcode_ext + strlen(opcode_ext) + 1;
+        if (strlen(opcode_rm_ext) != 1) {
+          NaClDefFatal("modrm r/m opcode extension can only be "
+                       "a single digit");
+        }
+      }
       if (strlen(opcode_ext) != 1) {
         NaClDefFatal("modrm opcode extension can only be a single digit");
       }
@@ -1368,9 +1391,7 @@ static void NaClParseOpcode(const char* opcode,
       NaClDefFatal("opcode addition too large");
     }
     if (NULL == NaClSymbolTableGet("add_reg?", st)) {
-      if ((1 != strlen(reg_offset)) || (1 != strspn(reg_offset, "01234567"))) {
-        NaClDefFatal("invalid opcode register offset");
-      }
+      NaClVerifyOctalDigit(reg_offset, "invalid opcode register offset");
       NaClDefInst(opcode_value + reg, insttype, NACL_IFLAG(OpcodePlusR), name);
       NaClDefOpcodeRegisterValue(reg);
     }
@@ -1382,12 +1403,14 @@ static void NaClParseOpcode(const char* opcode,
       NaClDefInst(opcode_value, insttype, NACL_IFLAG(OpcodeUsesModRm), name);
     } else {
       int ext;
-      if ((1 != strlen(opcode_ext)) || (1 != strspn(opcode_ext, "01234567"))) {
-        NaClDefFatal("invalid modrm opcode extension");
-      }
+      NaClVerifyOctalDigit(opcode_ext, "invalid modrm opcode extension");
       ext = (int) STRTOULL(opcode_ext, NULL, 10);
       NaClDefInst(opcode_value, insttype, NACL_IFLAG(OpcodeInModRm), name);
       NaClDefOpcodeExtension(ext);
+    }
+    if (opcode_rm_ext != NULL) {
+      NaClVerifyOctalDigit(opcode_rm_ext, "invalid modrm r/m opcode extension");
+      NaClDefineOpcodeModRmRmExtension((int) STRTOULL(opcode_rm_ext, NULL, 10));
     }
   } else {
     NaClDefInst(opcode_value, insttype, NACL_EMPTY_IFLAGS, name);
@@ -1494,6 +1517,7 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Pq",    DEF_OPERAND(Pq_),  defop_st);
     NaClSymbolTablePutDefOp("Qq",    DEF_OPERAND(Qq_),  defop_st);
     NaClSymbolTablePutDefOp("rAXv",  DEF_OPERAND(rAXv), defop_st);
+    NaClSymbolTablePutDefOp("rAXva", DEF_OPERAND(rAXva), defop_st);
     NaClSymbolTablePutDefOp("rAXvd", DEF_OPERAND(rAXvd), defop_st);
     NaClSymbolTablePutDefOp("rAXvq", DEF_OPERAND(rAXvq), defop_st);
     NaClSymbolTablePutDefOp("rAXvw", DEF_OPERAND(rAXvw), defop_st);

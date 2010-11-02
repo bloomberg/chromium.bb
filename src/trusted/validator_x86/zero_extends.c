@@ -64,11 +64,11 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstIdiv,           /* f7/7 */
   InstImul,           /* f7/5 , 0f af , 69 , 6b */
   InstIn,             /* E5 , ED */
-  /* InstLar,            ** 0F , 02 */
+  InstLar,            /* 0F , 02 */
   InstLea,            /* 8D */
   /* InstLfs,            ** 0f b4 */
   /* InstLgs,            ** 0f b5 */
-  /* InstLsl,            ** 0f 03 */
+  InstLsl,            /* 0f 03 */
   /* InstLss,            ** 0f b2 */
   /* InstLzcnt,          ** f3 0f bd */
   InstMov,            /* 89, 8b, c7, b8 through bf, a1 (moffset),
@@ -85,10 +85,10 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   /* InstPopcnt,         ** f3 0f b8 */
   InstRcl,            /* D1/2, D3/2, C1/2 */
   InstRcr,            /* D1/3, D3/3, c1/3 */
-  /* InstRdmsr,          ** 0f 32 */
+  InstRdmsr,          /* 0f 32 */
   /* InstRdpmc,          ** 0f 33 */
-  /* InstRdtsc           ** 0f 31 */
-  /* InstRdtscp          ** 0f 01 f9 */
+  InstRdtsc,          /* 0f 31 */
+  InstRdtscp,         /* 0f 01 f9 */
   InstRol,            /* D1/0, D3/0, C1/0 */
   InstRor,            /* D1/1, D3/1, C1/1 */
   InstSar,            /* D1/7, D3/7, C1/7 */
@@ -97,7 +97,7 @@ static const NaClMnemonic kZeroExtend32Op[] = {
   InstShld,           /* 0f a4, 0f a5 */
   InstShr,            /* D1/5, D3/5, C1/5 */
   InstShrd,           /* 0f ac, 0f ad */
-  /* InstSmsw,           ** 0f 01/4 */
+  InstSmsw,           /* 0f 01/4 */
   InstSub,            /* 29, 2b, 2d, 81/5, 83/5 */
   InstXadd,           /* 0f c1 */
   InstXchg,           /* 87, 90 through 97 */

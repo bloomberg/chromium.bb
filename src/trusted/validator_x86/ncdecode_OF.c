@@ -94,27 +94,35 @@ void NaClDef0FInsts(struct NaClSymbolTable* st) {
   NaClDefine("0f00/3: Ltr $Ew", NACLi_SYSTEM, st, Uses);
   NaClDefine("0f00/4: Verr $Ew", NACLi_SYSTEM, st, Other);
   NaClDefine("0f00/5: Verw $Ew", NACLi_SYSTEM, st, Other);
-  NaClDefine("0f00/6: Invalid", NACLi_INVALID, st, Other);
-  NaClDefine("0f00/7: Invalid", NACLi_INVALID, st, Other);
+  NaClDefIter("0f00/@i: Invalid", 6, 7, NACLi_INVALID, st, Other);
 
   NaClDefine("0f01/0: Sgdt $Ms", NACLi_SYSTEM, st, UnarySet);
-  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 1, 2);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 1, 4);
   NaClDefine("0f01/1: Sidt $Ms", NACLi_SYSTEM, st, UnarySet);
-  /* Disallows Monitor/mwait.*/
+  NaClDefine("0f01/1/0: Monitor {%reax}, {%ecx}, {%edx}",
+             NACLi_SYSTEM, st, Uses);
+  NaClDefine("0f01/1/1: Mwait", NACLi_SYSTEM, st, Other);
   NaClDefine("0f01/1: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("0f01/2: Lgdt $Ms", NACLi_SYSTEM, st, Uses);
-  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 3, 2);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 3, 9);
   NaClDefine("0f01/3: Lidt $Ms", NACLi_SYSTEM, st, Uses);
-  /* Disallows Vmrun, Vmmcall, Vmload, Vmsave, Stgi, Clgi, Skinit, Invlpga */
-  NaClDefine("0f01/3: Invalid", NACLi_INVALID, st, Other);
+  NaClDef_64("0f01/3/0: Vmrun {$rAXva}", NACLi_SVM, st, Uses);
+  NaClDefine("0f01/3/1: Vmmcall", NACLi_SVM, st, Other);
+  NaClDefine("0f01/3/2: Vmload {$rAXva}", NACLi_SVM, st, Uses);
+  NaClDefine("0f01/3/3: Vmsave {$rAXva}", NACLi_SVM, st, Uses);
+  NaClDefine("0f01/3/4: Stgi", NACLi_SVM, st, Other);
+  NaClDefine("0f01/3/5: Clgi", NACLi_SVM, st, Other);
+  NaClDefine("0f01/3/6: Skinit {%eip}, {%eax}", NACLi_SVM, st, Jump);
+  NaClDefine("0f01/3/7: Invlpga {$rAXva}, {%ecx}", NACLi_SVM, st, Uses);
+  NaClDef_32("0f01/3: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("0f01/4: Smsw $Mw/Rv", NACLi_SYSTEM, st, UnarySet);
   NaClDefine("0f01/5: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("0f01/6: Lmsw $Ew", NACLi_INVALID, st, Uses);
-  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, 7, 2);
+  NaClDefPrefixInstMrmChoices_32_64(Prefix0F, 0x01, 7, 2, 4);
   NaClDefine("0f01/7: Invlpg $Mb", NACLi_SYSTEM, st, Uses);
-  /* Disallows Swapgs, Rdtscp. */
+  NaClDef_64("0f01/7/0: Swapgs {%gs}", NACLi_SYSTEM, st, UnarySet);
+  NaClDef_64("0f01/7/1: Rdtscp {%rdx}, {%rax}, {%rcx}", NACLi_RDTSCP, st, Sets);
   NaClDefine("0f01/7: Invalid", NACLi_INVALID, st, Other);
-
   NaClDefine("0f02: Lar $Gv, $Ew", NACLi_SYSTEM, st, Other);
   NaClDefine("0f03: Lsl $Gv, $Ew", NACLi_SYSTEM, st, Other);
   NaClDefine("0f04: Invalid", NACLi_INVALID, st, Other);
