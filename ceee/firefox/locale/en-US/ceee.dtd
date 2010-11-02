@@ -1,0 +1,11 @@
+<!-- Copyright (c) 2010 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+
+     Defines string substitutions for the overlay.xul file.
+  -->
+<!ENTITY ceee.browser.label "Google Chrome Extensions Execution Environment">
+<!ENTITY ceee.browser.tooltip "Google Chrome Extensions Execution Environment">
+
+<!ENTITY ceee.toolstrip.label "Google Chrome Extensions Execution Environment">
+<!ENTITY ceee.toolstrip.accesskey "G">

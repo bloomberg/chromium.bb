@@ -1,0 +1,28 @@
+HKCR {
+NoRemove CLSID {
+    ForceRemove {E49EBDB7-CEC9-4014-A5F5-8D3C8F5997DC} = s 'Google Chrome Extensions Execution Environment Helper' {
+      InprocServer32 = s '%MODULE%' {
+        val ThreadingModel = s 'Apartment'
+      }
+      'TypeLib' = s '{7C09079D-F9CB-4E9E-9293-D224B071D8BA}'
+    }
+  }
+}
+
+HKLM {
+  NoRemove SOFTWARE {
+    NoRemove Microsoft {
+      NoRemove Windows {
+        NoRemove CurrentVersion {
+          NoRemove Explorer {
+            NoRemove 'Browser Helper Objects' {
+              ForceRemove '{E49EBDB7-CEC9-4014-A5F5-8D3C8F5997DC}' = s 'Google Chrome Extensions Execution Environment Helper' {
+                val 'NoExplorer' = d '1'
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

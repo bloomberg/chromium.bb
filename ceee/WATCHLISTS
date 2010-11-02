@@ -1,0 +1,14 @@
+# Watchlist Rules
+# Refer: http://dev.chromium.org/developers/contributing-code/watchlists
+
+{
+  'WATCHLIST_DEFINITIONS': {
+    'ceee': {
+      'filepath': '.*',
+    },
+  },
+
+  'WATCHLISTS': {
+    'ceee': ['ceee-reviews@google.com'],
+  },
+}

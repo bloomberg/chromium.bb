@@ -1,0 +1,20 @@
+HKCR {
+  NoRemove CLSID {
+    ForceRemove '{2F1A2D6B-55F6-4B63-8C37-F698D28FDC2B}' = s 'Google Chrome Extensions Execution Environment' {
+      InprocServer32 = s '%MODULE%' {
+        val ThreadingModel = s 'Apartment'
+      }
+    }
+  }
+}
+HKLM {
+  NoRemove Software {
+    NoRemove Microsoft {
+      NoRemove 'Internet Explorer' {
+        NoRemove Toolbar {
+          val '{2F1A2D6B-55F6-4B63-8C37-F698D28FDC2B}' = s 'Google Chrome Extensions Execution Environment'
+        }
+      }
+    }
+  }
+}
