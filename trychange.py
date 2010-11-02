@@ -395,6 +395,9 @@ def _SendChangeSVN(options):
         exe = "svn"
       command = [exe, 'import', '-q', temp_dir, options.svn_repo, '--file',
                  temp_file.name]
+      if scm.SVN.AssertVersion("1.5")[0]:
+        command.append('--no-ignore')
+
       gclient_utils.CheckCall(command)
     except gclient_utils.CheckCallError, e:
       out = e.stdout
