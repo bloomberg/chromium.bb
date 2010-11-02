@@ -57,9 +57,9 @@ class GclUnittest(GclTestsBase):
         'RunShell', 'RunShellWithReturnCode', 'SVN',
         'TryChange', 'UnknownFiles', 'Warn',
         'attrs', 'breakpad', 'defer_attributes', 'gclient_utils', 'getpass',
-        'json', 'main', 'need_change', 'need_change_and_args', 'no_args', 'os',
-        'random', 're', 'string', 'subprocess', 'sys', 'tempfile',
-        'time', 'upload', 'urllib2',
+        'json', 'main', 'need_change', 'need_change_and_args', 'no_args',
+        'optparse', 'os', 'random', 're', 'string', 'subprocess', 'sys',
+        'tempfile', 'time', 'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)

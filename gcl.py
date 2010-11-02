@@ -9,6 +9,7 @@ of files.
 """
 
 import getpass
+import optparse
 import os
 import random
 import re
@@ -865,22 +866,27 @@ def CMDupload(change_info, args):
   return 0
 
 
-@need_change
-def CMDpresubmit(change_info):
+@need_change_and_args
+@attrs(usage='[--upload]')
+def CMDpresubmit(change_info, args):
   """Runs presubmit checks on the change.
 
   The actual presubmit code is implemented in presubmit_support.py and looks
   for PRESUBMIT.py files."""
   if not change_info.GetFiles():
-    print "Nothing to presubmit check, changelist is empty."
+    print('Nothing to presubmit check, changelist is empty.')
     return 0
-
-  print "*** Presubmit checks for UPLOAD would report: ***"
-  result = DoPresubmitChecks(change_info, False, False)
-
-  print "\n*** Presubmit checks for COMMIT would report: ***"
-  result &= DoPresubmitChecks(change_info, True, False)
-  return not result
+  parser = optparse.OptionParser()
+  parser.add_option('--upload', action='store_true')
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % args)
+  if options.upload:
+    print('*** Presubmit checks for UPLOAD would report: ***')
+    return not DoPresubmitChecks(change_info, False, False)
+  else:
+    print('*** Presubmit checks for COMMIT would report: ***')
+    return not DoPresubmitChecks(change_info, True, False)
 
 
 def TryChange(change_info, args, swallow_exception):
