@@ -266,38 +266,44 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           'annotations': {'platforms': ['eee']}
         },
       ]
+    },{
+      'name': 'SinglePolicy',
+      'type': 'int',
+      'annotations': {'platforms': ['eee']}
     }]
+    # This writer accumulates the list of policies it is asked to write.
+    # This list is stored in the result_list member variable and can
+    # be used later for assertions.
     class LocalMockWriter(mock_writer.MockWriter):
-      def __init__(self, platforms, expected_list):
+      def __init__(self, platforms):
         self.platforms = platforms
-        self.expected_list = expected_list
         self.policy_name = None
         self.result_list = []
       def BeginPolicyGroup(self, group):
         self.group = group;
         self.result_list.append('begin_' + group['name'])
       def EndPolicyGroup(self):
+        self.result_list.append('end_group')
         self.group = None
       def WritePolicy(self, policy):
-        self.tester.assertEquals(policy['name'][0:6], self.group['name'])
         self.result_list.append(policy['name'])
       def IsPolicySupported(self, policy):
         # Call the original (non-mock) implementation of this method.
         return template_writer.TemplateWriter.IsPolicySupported(self, policy)
-      def Test(self):
-        self.tester.assertEquals(
-          self.result_list,
-          self.expected_list)
-    self.do_test(
-        MessagesMock(),
-        policy_defs_mock,
-        LocalMockWriter(['eee'], ['begin_Group2', 'Group2Policy3']))
-    self.do_test(
-        MessagesMock(),
-        policy_defs_mock,
-        LocalMockWriter(
-            ['ddd', 'bbb'],
-            ['begin_Group1', 'Group1Policy1', 'Group1Policy2']))
+
+    local_mock_writer = LocalMockWriter(['eee'])
+    self.do_test(MessagesMock(), policy_defs_mock, local_mock_writer)
+    # Test that only policies of platform 'eee' were written:
+    self.assertEquals(
+        local_mock_writer.result_list,
+        ['begin_Group2', 'Group2Policy3', 'end_group', 'SinglePolicy'])
+
+    local_mock_writer = LocalMockWriter(['ddd', 'bbb'])
+    self.do_test(MessagesMock(), policy_defs_mock, local_mock_writer)
+    # Test that only policies of platforms 'ddd' and 'bbb' were written:
+    self.assertEquals(
+        local_mock_writer.result_list,
+        ['begin_Group1', 'Group1Policy1', 'Group1Policy2', 'end_group'])
 
   def testSorting(self):
     # Tests that policies are sorted correctly.

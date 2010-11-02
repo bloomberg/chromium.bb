@@ -90,7 +90,7 @@ class TemplateWriter(object):
             # Nesting of groups is currently not supported.
             self.WritePolicy(child_policy)
           self.EndPolicyGroup()
-      else:
+      elif self.IsPolicySupported(policy):
         self.WritePolicy(policy)
     self.EndTemplate()
     return self.GetTemplateText()
