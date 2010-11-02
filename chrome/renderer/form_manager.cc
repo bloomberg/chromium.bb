@@ -190,6 +190,26 @@ string16 InferLabelFromTable(
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
+// a surrounding div table.
+// Eg. <div>Some Text<span><input ...></span></div>
+string16 InferLabelFromDivTable(
+    const WebFormControlElement& element) {
+  WebNode parent = element.parentNode();
+  while (!parent.isNull() && parent.isElementNode() &&
+         !parent.to<WebElement>().hasTagName("div"))
+    parent = parent.parentNode();
+
+  if (parent.isNull() || !parent.isElementNode())
+    return string16();
+
+  WebElement e = parent.to<WebElement>();
+  if (e.isNull() || !e.hasTagName("div"))
+    return string16();
+
+  return FindChildText(e);
+}
+
+// Helper for |InferLabelForElement()| that infers a label, if possible, from
 // a surrounding definition list.
 // Eg. <dl><dt>Some Text</dt><dd><input ...></dd></dl>
 // Eg. <dl><dt><b>Some Text</b></dt><dd><b><input ...></b></dd></dl>
@@ -702,14 +722,16 @@ string16 FormManager::InferLabelForElement(
   string16 inferred_label = InferLabelFromPrevious(element);
 
   // If we didn't find a label, check for table cell case.
-  if (inferred_label.empty()) {
+  if (inferred_label.empty())
     inferred_label = InferLabelFromTable(element);
-  }
+
+  // If we didn't find a label, check for div table case.
+  if (inferred_label.empty())
+    inferred_label = InferLabelFromDivTable(element);
 
   // If we didn't find a label, check for definition list case.
-  if (inferred_label.empty()) {
+  if (inferred_label.empty())
     inferred_label = InferLabelFromDefinitionList(element);
-  }
 
   return inferred_label;
 }

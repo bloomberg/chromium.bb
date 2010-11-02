@@ -126,7 +126,7 @@ class FormField {
   // Checkout field name limitation. All ECML compliant web forms will be
   // recognized correctly as such however the restrictions on having exactly
   // ECML compliant names have been loosened to only require that field names
-  // be prefixed with an ECML compiant name in order to accommodate checkout.
+  // be prefixed with an ECML compliant name in order to accommodate checkout.
   // Additionally we allow the use of '.' as a word delimiter in addition to the
   // ECML standard '_' (see FormField::FormField for details).
   static string16 GetEcmlPattern(const char* ecml_name);
