@@ -70,9 +70,8 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event,
               tab_contents, profile_,
               content_setting_image_model_->get_content_settings_type()),
           profile_, tab_contents);
-  info_bubble_ =
-      InfoBubble::Show(GetWidget(), screen_bounds, BubbleBorder::TOP_LEFT,
-                       bubble_contents, this);
+  info_bubble_ = InfoBubble::Show(GetWidget(), screen_bounds,
+      BubbleBorder::TOP_RIGHT, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);
 }
 
