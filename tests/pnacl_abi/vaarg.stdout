@@ -1,0 +1,35 @@
+target triple = "armv7-none-linux-gnueabi"
+
+define i32 @foo(i8 zeroext %fmt, ...) nounwind {
+entry:
+  %ap = alloca [24 x i8], align 1
+  %ap1 = getelementptr inbounds [24 x i8]* %ap, i32 0, i32 0
+  call void @llvm.va_start(i8* %ap1)
+  switch i8 %fmt, label %bb9 [
+    i8 112, label %bb
+    i8 105, label %bb4
+    i8 100, label %bb7
+  ]
+
+bb:                                               ; preds = %entry
+  %0 = va_arg i8* %ap1, i32*
+  %1 = load i32* %0, align 4
+  ret i32 %1
+
+bb4:                                              ; preds = %entry
+  %2 = va_arg i8* %ap1, i32
+  ret i32 %2
+
+bb7:                                              ; preds = %entry
+  %3 = va_arg i8* %ap1, double
+  %4 = fptosi double %3 to i32
+  ret i32 %4
+
+bb9:                                              ; preds = %entry
+  call void @llvm.va_end(i8* %ap1)
+  ret i32 -1
+}
+
+declare void @llvm.va_start(i8*) nounwind
+
+declare void @llvm.va_end(i8*) nounwind

@@ -1618,6 +1618,7 @@ nacl_env.Append(
     'tests/null/nacl.scons',
     'tests/nullptr/nacl.scons',
     'tests/pepper_plugin/nacl.scons',
+    'tests/pnacl_abi/nacl.scons',
     'tests/ppapi_proxy/nacl.scons',
     'tests/ppapi/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',

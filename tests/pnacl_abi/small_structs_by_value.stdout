@@ -1,0 +1,25 @@
+target triple = "armv7-none-linux-gnueabi"
+
+define arm_aapcs_vfpcc void @bar_chars(i16 %z.0) nounwind {
+entry:
+  tail call arm_aapcs_vfpcc  void @foo_chars(i16 %z.0) nounwind
+  ret void
+}
+
+define arm_aapcs_vfpcc void @bar_ints(i32 %z.0.0, i32 %z.0.1) nounwind {
+entry:
+  tail call arm_aapcs_vfpcc  void @foo_ints(i32 %z.0.0, i32 %z.0.1) nounwind
+  ret void
+}
+
+declare arm_aapcs_vfpcc void @foo_ints(i32, i32)
+
+define arm_aapcs_vfpcc void @bar_shorts(i32 %z.0.0) nounwind {
+entry:
+  tail call arm_aapcs_vfpcc  void @foo_shorts(i32 %z.0.0) nounwind
+  ret void
+}
+
+declare arm_aapcs_vfpcc void @foo_shorts(i32)
+
+declare arm_aapcs_vfpcc void @foo_chars(i16)

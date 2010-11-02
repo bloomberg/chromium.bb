@@ -1,0 +1,11 @@
+target triple = "armv7-none-linux-gnueabi"
+
+@size_c = global i32 1
+@size_i = global i32 4
+@size_l = global i32 4
+@size_p = global i32 4
+@size_f = global i32 4
+@size_d = global i32 8
+@size_vl = global i32 24
+@size_sb = global i32 92
+@size_ue = global i32 56
