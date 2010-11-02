@@ -16,9 +16,11 @@
 #include "base/hash_tables.h"
 #include "base/singleton.h"
 #include "base/waitable_event_watcher.h"
+#include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_channel_handle.h"
 
 #if defined(OS_WIN)
 #include "base/scoped_ptr.h"
@@ -36,7 +38,6 @@ class Message;
 }
 
 class MessageLoop;
-class PluginProcessHost;
 class Profile;
 class ResourceDispatcherHost;
 class ResourceMessageFilter;
@@ -82,10 +83,9 @@ class PluginService
   // Opens a channel to a plugin process for the given mime type, starting
   // a new plugin process if necessary.  This must be called on the IO thread
   // or else a deadlock can occur.
-  void OpenChannelToPlugin(ResourceMessageFilter* renderer_msg_filter,
-                           const GURL& url,
+  void OpenChannelToPlugin(const GURL& url,
                            const std::string& mime_type,
-                           IPC::Message* reply_msg);
+                           PluginProcessHost::Client* client);
 
   // Gets the first allowed plugin in the list of plugins that matches
   // the given url and mime type.  Must be called on the FILE thread.
@@ -126,18 +126,15 @@ class PluginService
 
   // Helper so we can do the plugin lookup on the FILE thread.
   void GetAllowedPluginForOpenChannelToPlugin(
-      ResourceMessageFilter* renderer_msg_filter,
       const GURL& url,
       const std::string& mime_type,
-      IPC::Message* reply_msg);
+      PluginProcessHost::Client* client);
 
   // Helper so we can finish opening the channel after looking up the
   // plugin.
   void FinishOpenChannelToPlugin(
-      ResourceMessageFilter* renderer_msg_filter,
-      const std::string& mime_type,
       const FilePath& plugin_path,
-      IPC::Message* reply_msg);
+      PluginProcessHost::Client* client);
 
   // mapping between plugin path and PluginProcessHost
   typedef base::hash_map<FilePath, PluginProcessHost*> PluginMap;

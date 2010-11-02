@@ -17,12 +17,15 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
-#include "ipc/ipc_channel_handle.h"
+#include "gfx/native_widget_types.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
 namespace gfx {
 class Rect;
+}
+
+namespace IPC {
+struct ChannelHandle;
 }
 
 class URLRequestContext;
@@ -40,6 +43,21 @@ class GURL;
 class PluginProcessHost : public BrowserChildProcessHost,
                           public ResolveProxyMsgHelper::Delegate {
  public:
+  class Client {
+   public:
+    // Returns a opaque unique identifier for the process requesting
+    // the channel.
+    virtual int ID() = 0;
+    virtual bool OffTheRecord() = 0;
+    virtual void SetPluginInfo(const WebPluginInfo& info) = 0;
+    // The client should delete itself when one of these methods is called.
+    virtual void OnChannelOpened(const IPC::ChannelHandle& handle) = 0;
+    virtual void OnError() = 0;
+
+   protected:
+    virtual ~Client() {}
+  };
+
   PluginProcessHost();
   virtual ~PluginProcessHost();
 
@@ -61,17 +79,8 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   // Tells the plugin process to create a new channel for communication with a
   // renderer.  When the plugin process responds with the channel name,
-  // reply_msg is used to send the name to the renderer.
-  void OpenChannelToPlugin(ResourceMessageFilter* renderer_message_filter,
-                           const std::string& mime_type,
-                           IPC::Message* reply_msg);
-
-  // Sends the reply to an open channel request to the renderer with the given
-  // channel name.
-  static void ReplyToRenderer(ResourceMessageFilter* renderer_message_filter,
-                              const IPC::ChannelHandle& channel,
-                              const WebPluginInfo& info,
-                              IPC::Message* reply_msg);
+  // OnChannelOpened in the client is called.
+  void OpenChannelToPlugin(Client* client);
 
   // This function is called on the IO thread once we receive a reply from the
   // modal HTML dialog (in the form of a JSON string). This function forwards
@@ -102,9 +111,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   // Sends a message to the plugin process to request creation of a new channel
   // for the given mime type.
-  void RequestPluginChannel(ResourceMessageFilter* renderer_message_filter,
-                            const std::string& mime_type,
-                            IPC::Message* reply_msg);
+  void RequestPluginChannel(Client* client);
 
   virtual void OnProcessLaunched();
 
@@ -139,23 +146,15 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   virtual bool CanShutdown() { return sent_requests_.empty(); }
 
-  struct ChannelRequest {
-    ChannelRequest(ResourceMessageFilter* renderer_message_filter,
-                   const std::string& m, IPC::Message* r);
-    ~ChannelRequest();
-
-    std::string mime_type;
-    IPC::Message* reply_msg;
-    scoped_refptr<ResourceMessageFilter> renderer_message_filter_;
-  };
+  void CancelRequests();
 
   // These are channel requests that we are waiting to send to the
   // plugin process once the channel is opened.
-  std::vector<ChannelRequest> pending_requests_;
+  std::vector<Client*> pending_requests_;
 
   // These are the channel requests that we have already sent to
   // the plugin process, but haven't heard back about yet.
-  std::queue<ChannelRequest> sent_requests_;
+  std::queue<Client*> sent_requests_;
 
   // Information about the plugin.
   WebPluginInfo info_;

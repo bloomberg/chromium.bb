@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chrome_plugin_host.h"
 #include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -250,24 +249,22 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
 }
 
 void PluginService::OpenChannelToPlugin(
-    ResourceMessageFilter* renderer_msg_filter,
     const GURL& url,
     const std::string& mime_type,
-    IPC::Message* reply_msg) {
+    PluginProcessHost::Client* client) {
   // The PluginList::GetFirstAllowedPluginInfo may need to load the
   // plugins.  Don't do it on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
-          make_scoped_refptr(renderer_msg_filter), url, mime_type, reply_msg));
+          url, mime_type, client));
 }
 
 void PluginService::GetAllowedPluginForOpenChannelToPlugin(
-    ResourceMessageFilter* renderer_msg_filter,
     const GURL& url,
     const std::string& mime_type,
-    IPC::Message* reply_msg) {
+    PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WebPluginInfo info;
   bool found = GetFirstAllowedPluginInfo(url, mime_type, &info, NULL);
@@ -280,24 +277,19 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &PluginService::FinishOpenChannelToPlugin,
-          make_scoped_refptr(renderer_msg_filter), mime_type, plugin_path,
-          reply_msg));
+          plugin_path, client));
 }
 
 void PluginService::FinishOpenChannelToPlugin(
-    ResourceMessageFilter* renderer_msg_filter,
-    const std::string& mime_type,
     const FilePath& plugin_path,
-    IPC::Message* reply_msg) {
+    PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   PluginProcessHost* plugin_host = FindOrStartPluginProcess(plugin_path);
-  if (plugin_host) {
-    plugin_host->OpenChannelToPlugin(renderer_msg_filter, mime_type, reply_msg);
-  } else {
-    PluginProcessHost::ReplyToRenderer(
-        renderer_msg_filter, IPC::ChannelHandle(), WebPluginInfo(), reply_msg);
-  }
+  if (plugin_host)
+    plugin_host->OpenChannelToPlugin(client);
+  else
+    client->OnError();
 }
 
 bool PluginService::GetFirstAllowedPluginInfo(

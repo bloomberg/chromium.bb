@@ -39,6 +39,7 @@
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profile.h"
@@ -64,6 +65,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
+#include "ipc/ipc_channel_handle.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
@@ -191,6 +193,48 @@ class ClearCacheCompletion : public net::CompletionCallback {
  private:
   IPC::Message* reply_msg_;
   scoped_refptr<ResourceMessageFilter> filter_;
+};
+
+class OpenChannelToPluginCallback : public PluginProcessHost::Client {
+ public:
+  OpenChannelToPluginCallback(ResourceMessageFilter* filter,
+                              IPC::Message* reply_msg)
+      : filter_(filter),
+        reply_msg_(reply_msg) {
+  }
+
+  virtual int ID() {
+    return filter_->id();
+  }
+
+  virtual bool OffTheRecord() {
+    return filter_->off_the_record();
+  }
+
+  virtual void SetPluginInfo(const WebPluginInfo& info) {
+    info_ = info;
+  }
+
+  virtual void OnChannelOpened(const IPC::ChannelHandle& handle) {
+    WriteReply(handle);
+  }
+
+  virtual void OnError() {
+    WriteReply(IPC::ChannelHandle());
+  }
+
+ private:
+  void WriteReply(const IPC::ChannelHandle& handle) {
+    ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg_,
+                                                      handle,
+                                                      info_);
+    filter_->Send(reply_msg_);
+    delete this;
+  }
+
+  scoped_refptr<ResourceMessageFilter> filter_;
+  IPC::Message* reply_msg_;
+  WebPluginInfo info_;
 };
 
 }  // namespace
@@ -827,7 +871,10 @@ void ResourceMessageFilter::OnGotPluginInfo(bool found,
 void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
                                                   const std::string& mime_type,
                                                   IPC::Message* reply_msg) {
-  plugin_service_->OpenChannelToPlugin(this, url, mime_type, reply_msg);
+  plugin_service_->OpenChannelToPlugin(
+      url,
+      mime_type,
+      new OpenChannelToPluginCallback(this, reply_msg));
 }
 
 void ResourceMessageFilter::OnLaunchNaCl(

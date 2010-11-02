@@ -144,6 +144,8 @@ PluginProcessHost::~PluginProcessHost() {
     }
   }
 #endif
+  // Cancel all pending and sent requests.
+  CancelRequests();
 }
 
 bool PluginProcessHost::Init(const WebPluginInfo& info,
@@ -307,49 +309,40 @@ void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
 void PluginProcessHost::OnChannelConnected(int32 peer_pid) {
   for (size_t i = 0; i < pending_requests_.size(); ++i) {
-    RequestPluginChannel(pending_requests_[i].renderer_message_filter_.get(),
-                         pending_requests_[i].mime_type,
-                         pending_requests_[i].reply_msg);
+    RequestPluginChannel(pending_requests_[i]);
   }
 
   pending_requests_.clear();
 }
 
 void PluginProcessHost::OnChannelError() {
-  for (size_t i = 0; i < pending_requests_.size(); ++i) {
-    ReplyToRenderer(pending_requests_[i].renderer_message_filter_.get(),
-                    IPC::ChannelHandle(),
-                    info_,
-                    pending_requests_[i].reply_msg);
-  }
+  CancelRequests();
+}
 
+void PluginProcessHost::CancelRequests() {
+  for (size_t i = 0; i < pending_requests_.size(); ++i)
+    pending_requests_[i]->OnError();
   pending_requests_.clear();
 
   while (!sent_requests_.empty()) {
-    ReplyToRenderer(sent_requests_.front().renderer_message_filter_.get(),
-                    IPC::ChannelHandle(),
-                    info_,
-                    sent_requests_.front().reply_msg);
+    sent_requests_.front()->OnError();
     sent_requests_.pop();
   }
 }
 
-void PluginProcessHost::OpenChannelToPlugin(
-    ResourceMessageFilter* renderer_message_filter,
-    const std::string& mime_type,
-    IPC::Message* reply_msg) {
+void PluginProcessHost::OpenChannelToPlugin(Client* client) {
   InstanceCreated();
+  client->SetPluginInfo(info_);
   if (opening_channel()) {
     // The channel is already in the process of being opened.  Put
     // this "open channel" request into a queue of requests that will
     // be run once the channel is open.
-    pending_requests_.push_back(
-        ChannelRequest(renderer_message_filter, mime_type, reply_msg));
+    pending_requests_.push_back(client);
     return;
   }
 
   // We already have an open channel, send a request right away to plugin.
-  RequestPluginChannel(renderer_message_filter, mime_type, reply_msg);
+  RequestPluginChannel(client);
 }
 
 void PluginProcessHost::OnGetCookies(uint32 request_context,
@@ -402,52 +395,34 @@ void PluginProcessHost::OnResolveProxyCompleted(IPC::Message* reply_msg,
   Send(reply_msg);
 }
 
-void PluginProcessHost::ReplyToRenderer(
-    ResourceMessageFilter* renderer_message_filter,
-    const IPC::ChannelHandle& channel,
-    const WebPluginInfo& info,
-    IPC::Message* reply_msg) {
-  ViewHostMsg_OpenChannelToPlugin::WriteReplyParams(reply_msg, channel, info);
-  renderer_message_filter->Send(reply_msg);
-}
-
 URLRequestContext* PluginProcessHost::GetRequestContext(
     uint32 request_id,
     const ViewHostMsg_Resource_Request& request_data) {
   return CPBrowsingContextManager::Instance()->ToURLRequestContext(request_id);
 }
 
-void PluginProcessHost::RequestPluginChannel(
-    ResourceMessageFilter* renderer_message_filter,
-    const std::string& mime_type, IPC::Message* reply_msg) {
+void PluginProcessHost::RequestPluginChannel(Client* client) {
   // We can't send any sync messages from the browser because it might lead to
   // a hang.  However this async messages must be answered right away by the
   // plugin process (i.e. unblocks a Send() call like a sync message) otherwise
   // a deadlock can occur if the plugin creation request from the renderer is
   // a result of a sync message by the plugin process.
-  PluginProcessMsg_CreateChannel* msg = new PluginProcessMsg_CreateChannel(
-      renderer_message_filter->id(),
-      renderer_message_filter->off_the_record());
+  PluginProcessMsg_CreateChannel* msg =
+      new PluginProcessMsg_CreateChannel(client->ID(),
+                                         client->OffTheRecord());
   msg->set_unblock(true);
   if (Send(msg)) {
-    sent_requests_.push(ChannelRequest(
-        renderer_message_filter, mime_type, reply_msg));
+    sent_requests_.push(client);
   } else {
-    ReplyToRenderer(renderer_message_filter,
-                    IPC::ChannelHandle(),
-                    info_,
-                    reply_msg);
+    client->OnError();
   }
 }
 
 void PluginProcessHost::OnChannelCreated(
     const IPC::ChannelHandle& channel_handle) {
-  const ChannelRequest& request = sent_requests_.front();
+  Client* client = sent_requests_.front();
 
-  ReplyToRenderer(request.renderer_message_filter_.get(),
-                  channel_handle,
-                  info_,
-                  request.reply_msg);
+  client->OnChannelOpened(channel_handle);
   sent_requests_.pop();
 }
 
@@ -473,14 +448,3 @@ void PluginProcessHost::OnPluginMessage(
     chrome_plugin->functions().on_message(data_ptr, data_len);
   }
 }
-
-PluginProcessHost::ChannelRequest::ChannelRequest(
-    ResourceMessageFilter* renderer_message_filter,
-    const std::string& m,
-    IPC::Message* r)
-    : mime_type(m),
-      reply_msg(r),
-      renderer_message_filter_(renderer_message_filter) {
-}
-
-PluginProcessHost::ChannelRequest::~ChannelRequest() {}
