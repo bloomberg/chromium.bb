@@ -5661,23 +5661,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_TITLE_LOAD_FAILED" desc="Title of the error page when we can't load a page.">
         <ph name="URL">$1<ex>http://some-unreliable-site.com/</ex></ph> failed to load
       </message>
-      <message name="IDS_ERRORPAGES_TITLE_PROXY_CONNECTION_FAILED" desc="Title of the error page when we can't connect to the proxy server.">
-        Could not connect to the proxy server
-      </message>
-      <message name="IDS_ERRORPAGES_TITLE_INTERNET_DISCONNECTED" desc="Title of the error page when the network connection failed.">
-        Could not connect to the internet
-      </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
         This webpage is not available.
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_NETWORK_ACCESS_DENIED" desc="Heading of the error page when we're not being allowed to access the network.">
+        Unable to access the network.
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
+        Unable to connect to the proxy server.
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
+        Unable to connect to the internet.
       </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404 or 410.">
         This webpage is not found.
       </message>
       <message name="IDS_ERRORPAGES_HEADING_TOO_MANY_REDIRECTS" desc="Heading in the error page when there are too many URL redirects.">
         This webpage has a redirect loop.
-      </message>
-      <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
-        Unable to connect to the proxy server.
       </message>
       <message name="IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Heading of the error page when the server has a weak Diffie-Hellman public key. Diffie-Hellman is a technical term and the conjuction of two names so may be best left untranslated. 'key' here is used as the technical name for a large number with certain mathematical properties that allow it to be used to encrypt and decrypt data. 'weak' here means that the number is too small to resist an exhaustive attempt to find certain mathematical structures in it, the secrecy of which is critical.">
         Server has a weak ephemeral Diffie-Hellman public key
@@ -5688,21 +5688,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_NETNANNY_SSL_INTERCEPTION" desc="Heading of the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated.">
         Cannot make secure connection because of NetNanny
       </message>
-      <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
-        Unable to connect to the internet.
-      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
       </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
-        No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED" desc="Summary in the error page when we're not being allowed to access the network.">
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        is having trouble accessing the network.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        This may be because your firewall or antivirus software wrongly thinks
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        is an intruder on your computer and is blocking it from connecting to the Internet.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        To fix this problem, try adding
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        as a permitted program in your firewall or antivirus software's settings. If it is
+        already a permitted program, try deleting it from the list of permitted programs
+        and adding it again.
       </message>
-      <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
-        The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
-        too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
-        not, it is possibly a server configuration issue and not a problem with your
-        computer.
-      </message>
+
       <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
         A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -5742,32 +5746,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           and uncheck &quot;Use a proxy server for your LAN.&quot;
         </message>
       </if>
-      <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
-        This error can occur when connecting to a secure (HTTPS) server. It
-        means that the server is trying to setup a secure connection but, due to
-        a disastrous misconfiguration, the connection wouldn’t be secure at all!
-        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph> In this case the
-        server needs to be fixed. Chrome won’t use insecure connections in order
-        to protect your privacy.
-      </message>
-
-      <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
-        an ESET product is intercepting secure connections. This is typically
-        not a security issue as the ESET software is usually running on the same
-        computer. However, due to an intolerance to specific aspects of Chrome's
-        secure connections, ESET products have to be configured to not perform
-        this interception. Click the 'Learn more' link for instructions.
-      </message>
-
-      <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
-        NetNanny is intercepting secure connections. This is typically
-        not a security issue as the NetNanny software is usually running on the
-        same computer. However, due to an intolerance to specific aspects of
-        Chrome's secure connections, NetNanny has to be configured to not
-        perform this interception. Click the 'Learn more' link for instructions.
-      </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
@@ -5819,6 +5797,42 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
+        No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
+        The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> has resulted in
+        too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
+        not, it is possibly a server configuration issue and not a problem with your
+        computer.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
+        This error can occur when connecting to a secure (HTTPS) server. It
+        means that the server is trying to setup a secure connection but, due to
+        a disastrous misconfiguration, the connection wouldn’t be secure at all!
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph> In this case the
+        server needs to be fixed. Chrome won’t use insecure connections in order
+        to protect your privacy.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+        an ESET product is intercepting secure connections. This is typically
+        not a security issue as the ESET software is usually running on the same
+        computer. However, due to an intolerance to specific aspects of Chrome's
+        secure connections, ESET products have to be configured to not perform
+        this interception. Click the 'Learn more' link for instructions.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+        NetNanny is intercepting secure connections. This is typically
+        not a security issue as the NetNanny software is usually running on the
+        same computer. However, due to an intolerance to specific aspects of
+        Chrome's secure connections, NetNanny has to be configured to not
+        perform this interception. Click the 'Learn more' link for instructions.
+      </message>
+
       <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
         Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
       </message>
@@ -5835,17 +5849,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
         The server could not be found.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
-        The file or directory could not be found.
-      </message>
-      <message name="IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS" desc="The error message displayed when there are too many redirects.">
-        There were too many redirects.
+      <message name="IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED" desc="The error message displayed when we're not being allowed to access the network.">
+        Unable to access the network.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
         Proxy server connection failed.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no internet access.">
         The internet connection has been lost.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
+        The file or directory could not be found.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS" desc="The error message displayed when there are too many redirects.">
+        There were too many redirects.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.
