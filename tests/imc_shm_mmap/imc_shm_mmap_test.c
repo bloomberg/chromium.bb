@@ -12,6 +12,8 @@
 #include <sys/nacl_imc_api.h>
 #include <sys/nacl_syscalls.h>
 
+#include "native_client/tests/inbrowser_test_runner/test_runner.h"
+
 int verbosity = 0;
 int fail_count = 0;
 
@@ -162,20 +164,7 @@ void test_map_private_is_not_supported() {
   assert(rc == 0);
 }
 
-int main(int ac, char **av) {
-  int opt;
-
-  while (EOF != (opt = getopt(ac, av, "v"))) {
-    switch (opt) {
-      case 'v':
-        ++verbosity;
-        break;
-      default:
-        fprintf(stderr, "Usage: sel_ldr -- imc_shm_mmap_test.nexe [-v]\n");
-        return 1;
-    }
-  }
-
+int TestMain() {
   fail_count += imc_shm_mmap(65536, PROT_READ|PROT_WRITE, MAP_SHARED,
                              0, 0, 0);
   fail_count += imc_shm_mmap(4096, PROT_READ|PROT_WRITE, MAP_SHARED,
@@ -208,4 +197,21 @@ int main(int ac, char **av) {
   else failed("imc_shm_mmap: some test(s) failed\n");
 
   return fail_count;
+}
+
+int main(int ac, char **av) {
+  int opt;
+
+  while (EOF != (opt = getopt(ac, av, "v"))) {
+    switch (opt) {
+      case 'v':
+        ++verbosity;
+        break;
+      default:
+        fprintf(stderr, "Usage: sel_ldr -- imc_shm_mmap_test.nexe [-v]\n");
+        return 1;
+    }
+  }
+
+  return RunTests(TestMain);
 }

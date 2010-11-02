@@ -6,9 +6,15 @@
 Import('env')
 
 env.ComponentProgram('imc_shm_mmap_test.nexe',
-                     'imc_shm_mmap_test.c')
+                     'imc_shm_mmap_test.c',
+                     EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
 
 node = env.CommandSelLdrTestNacl(
     'imc_shm_mmap_test.out',
-    command=[env.File('imc_shm_mmap_test.nexe')])
+    command=[env.File('imc_shm_mmap_test.nexe')],
+    # We need to set this because the test needs to behave
+    # differently in the plugin, but the plugin does not provide a
+    # way to distinguish itself.  TODO(mseaborn): Fix that.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=889
+    osenv='NACL_SRPC_STANDALONE=1')
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_imc_shm_mmap_test')

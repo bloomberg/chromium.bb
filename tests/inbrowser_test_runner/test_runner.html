@@ -1,0 +1,119 @@
+<!--
+  Copyright 2010 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can
+  be found in the LICENSE file.
+-->
+
+<div id="scratch_space"></div>
+
+<div id="results">
+Javascript has failed to load.
+</div>
+
+<script type="text/javascript">
+
+// tools/selenium_tester.py polls nacllib.getStatus() to find out when
+// the test has completed.
+var selenium_status = 'WAIT';
+var log_text = '';
+nacllib = {
+  getMessage: function() {
+    return log_text;
+  },
+  getStatus: function() {
+    return selenium_status;
+  },
+};
+
+function log(message) {
+  log_text += message + '\n';
+  var node = document.createElement('div');
+  node.appendChild(document.createTextNode(message));
+  var results = document.getElementById('results');
+  results.appendChild(node);
+}
+
+// Returns a unique identifier.
+// This is a workaround for the way the plugin only supports an onload
+// string, which is eval'd in the global environment.
+// TODO(mseaborn): Add a better interface for launching processes
+// programmatically to the plugin.
+// See http://code.google.com/p/nativeclient/issues/detail?id=746
+var next_id = 0;
+function generateId() {
+  next_id += 1;
+  return 'tmp' + next_id;
+}
+
+function startProcess(url, callback) {
+  var onload_id = generateId();
+  function onload() {
+    window[onload_id] = null;
+    callback(plugin);
+  }
+  window[onload_id] = onload;
+
+  // Using createElement() + innerHTML is a very kludgy way of launching
+  // a process.  TODO(mseaborn): Add a better interface for launching
+  // processes to the plugin.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=746
+  var node = document.createElement('div');
+  document.getElementById('scratch_space').appendChild(node);
+  node.innerHTML = '<embed name=foo width=0 height=0 ' +
+    'type="application/x-nacl-srpc" onload="'+onload_id+'()" />';
+  var plugin = node.childNodes[0];
+  plugin.src = url;
+}
+
+function runTest(url, callback) {
+  log(url + ': running...');
+  startProcess(url, function(plugin) {
+    log(url + ': process has started...');
+    try {
+      var result = plugin.run_tests();
+      log(url + ': ' + result);
+      callback(result == "passed");
+    } catch(e) {
+      log(url + ': failed with exception: ' + result);
+      callback(false);
+    }
+  });
+}
+
+function runAllTests() {
+  // Remove the "failed to load" message.
+  document.getElementById('results').innerHTML = '';
+  log('Starting NaCl test runner...');
+
+  var test_count = 0;
+  var failed_count = 0;
+  var finished_count = 0;
+
+  function onCompletion(passed) {
+    finished_count++;
+    if (!passed) {
+      failed_count++;
+    }
+    if (finished_count == test_count) {
+      log('Ran ' + test_count + ' tests');
+      if (failed_count == 0) {
+        log('PASSED');
+        selenium_status = 'SUCCESS';
+      } else {
+        log(failed_count + ' FAILURE(S)');
+        selenium_status = 'FAILED';
+      }
+    }
+  }
+  function addTest(url) {
+    test_count++;
+    runTest(url, onCompletion);
+  }
+
+  addTest('dynamic_load_test.nexe');
+  addTest('imc_shm_mmap_test.nexe');
+}
+
+window.onload = runAllTests;
+
+</script>

@@ -35,7 +35,8 @@ template_obj = env.ComponentObject(GetTemplate(env))
 
 env.ComponentProgram('dynamic_load_test.nexe',
                      ['dynamic_load_test.c',
-                      template_obj])
+                      template_obj],
+                     EXTRA_LIBS=['testrunner', 'srpc', 'pthread'])
 
 # Uncomment once the toolchain gets the new syscalls:
 #env.ComponentProgram('dynamic_modify_test.nexe',
@@ -56,6 +57,11 @@ tests = [
     env.CommandSelLdrTestNacl(
         'dynamic_load_test.out',
         command=[env.File('dynamic_load_test.nexe')],
+        # We need to set this because the test needs to behave
+        # differently in the plugin, but the plugin does not provide a
+        # way to distinguish itself.  TODO(mseaborn): Fix that.
+        # See http://code.google.com/p/nativeclient/issues/detail?id=889
+        osenv='NACL_SRPC_STANDALONE=1',
         ),
     env.CommandSelLdrTestNacl(
         'write_to_dyncode.out',

@@ -15,6 +15,7 @@
 #include <sys/nacl_syscalls.h>
 
 #include "native_client/tests/dynamic_code_loading/templates.h"
+#include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 #define NACL_BUNDLE_SIZE  32
 /*
@@ -323,10 +324,7 @@ void run_test(const char *test_name, void (*test_func)(void)) {
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int main() {
-  /* Turn off stdout buffering to aid debugging in case of a crash. */
-  setvbuf(stdout, NULL, _IONBF, 0);
-
+int TestMain() {
   RUN_TEST(test_loading_code);
   RUN_TEST(test_loading_code_non_page_aligned);
   RUN_TEST(test_loading_large_chunk);
@@ -345,4 +343,8 @@ int main() {
   RUN_TEST(test_loading_code);
 
   return 0;
+}
+
+int main() {
+  return RunTests(TestMain);
 }

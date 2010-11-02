@@ -1,0 +1,32 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+
+env.ComponentLibrary('testrunner', ['test_runner.c'])
+
+
+if ARGUMENTS.get('bitcode'):
+  # The test is disabled for ARM/PNaCl because dynamic_load_test.nexe
+  # was disabled for ARM/PNaCl.  TODO(mseaborn): Re-enable both.
+  Return()
+
+dest_copy = env.Replicate('$STAGING_DIR', 'test_runner.html')
+test_executables = [
+    env.File('$STAGING_DIR/dynamic_load_test.nexe'),
+    env.File('$STAGING_DIR/imc_shm_mmap_test.nexe'),
+    ]
+# These are not true dependencies: They are not needed for
+# test_runner.html to be replicated to "staging", but they are needed
+# for test_runner.html to work when run.
+env.Depends(dest_copy, test_executables)
+env.Alias('test_runner.html', dest_copy)
+
+node = env.BrowserTester(
+    'my_browser_test.out', url='test_runner.html',
+    files=[env.File('test_runner.html')] + test_executables,
+    browser='*firefox')
+env.AddNodeToTestSuite(node, ['browser_tests'], 'run_inbrowser_test_runner')
