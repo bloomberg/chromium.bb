@@ -839,6 +839,8 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         'chrome_frame_launcher.gyp:chrome_frame_helper',
         'chrome_frame_launcher.gyp:chrome_frame_helper_dll',
+        '../chrome/chrome.gyp:chrome',
+        '../chrome/chrome.gyp:chrome_dll',
         '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
