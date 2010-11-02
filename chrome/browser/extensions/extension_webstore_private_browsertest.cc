@@ -4,11 +4,13 @@
 
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_signin.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,7 +84,11 @@ class FakeBrowserSignin : public BrowserSignin {
       delegate->OnLoginSuccess();
 
       // Fake a token available notification.
-      TokenService* token_service = tab_contents->profile()->GetTokenService();
+      Profile* profile = tab_contents->profile();
+      if (profile->IsOffTheRecord()) {
+        profile = g_browser_process->profile_manager()->GetDefaultProfile();
+      }
+      TokenService* token_service = profile->GetTokenService();
       token_service->IssueAuthTokenForTest(GaiaConstants::kGaiaService,
                                            "new_token");
     } else {
@@ -122,10 +128,11 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
     return base_url.ReplaceComponents(replacements);
   }
 
-  void RunLoginTest(const std::string& relative_path,
-                    const std::string& initial_login,
-                    bool login_succeeds,
-                    const std::string& login_result) {
+  void RunLoginTestImpl(bool incognito,
+                        const std::string& relative_path,
+                        const std::string& initial_login,
+                        bool login_succeeds,
+                        const std::string& login_result) {
     // Clear the token service so previous tests don't affect things.
     TokenService* token_service = browser()->profile()->GetTokenService();
     token_service->ResetCredentialsInMemory();
@@ -142,11 +149,31 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
 
     ExtensionTestMessageListener listener("success", false);
     GURL url = GetUrl(relative_path);
-    ui_test_utils::NavigateToURL(browser(), url);
+    if (incognito) {
+      ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
+    } else {
+      ui_test_utils::NavigateToURL(browser(), url);
+    }
     EXPECT_TRUE(listener.WaitUntilSatisfied());
 
     WebstorePrivateApi::SetTestingBrowserSignin(NULL);
     WebstorePrivateApi::SetTestingProfileSyncService(NULL);
+  }
+
+  void RunLoginTest(const std::string& relative_path,
+                    const std::string& initial_login,
+                    bool login_succeeds,
+                    const std::string& login_result) {
+    RunLoginTestImpl(true,
+                     relative_path,
+                     initial_login,
+                     login_succeeds,
+                     login_result);
+    RunLoginTestImpl(false,
+                     relative_path,
+                     initial_login,
+                     login_succeeds,
+                     login_result);
   }
 
  protected:
