@@ -37,8 +37,11 @@ void InitChromeLogging(const CommandLine& command_line,
                        OldFileDeletionState delete_old_log_file);
 
 #if defined(OS_CHROMEOS)
-void RedirectChromeLogging(const FilePath& new_log_dir,
-                           const CommandLine& command_line);
+// Get the log file location.
+FilePath GetSessionLogFile(const CommandLine& command_line);
+
+// Redirects chrome logging to the appropriate session log dir.
+void RedirectChromeLogging(const CommandLine& command_line);
 #endif
 
 // Call when done using logging for Chrome.

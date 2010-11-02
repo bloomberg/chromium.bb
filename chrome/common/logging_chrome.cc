@@ -158,12 +158,13 @@ FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
   // starting a new log, then delete the old symlink and make a new
   // one to a fresh log file.
   FilePath target_path;
-  if (new_log || !file_util::PathExists(symlink_path)) {
+  bool symlink_exists = file_util::PathExists(symlink_path);
+  if (new_log || !symlink_exists) {
     target_path = GenerateTimestampedName(symlink_path, base::Time::Now());
 
     // We don't care if the unlink fails; we're going to continue anyway.
     if (unlink(symlink_path.value().c_str()) == -1) {
-      if (new_log) // only warn if we might expect it to succeed.
+      if (symlink_exists) // only warn if we might expect it to succeed.
         PLOG(WARNING) << "Unable to unlink " << symlink_path.value();
     }
     if (symlink(target_path.value().c_str(),
@@ -193,12 +194,29 @@ void RemoveSymlinkAndLog(const FilePath& link_path,
 
 }  // anonymous namespace
 
-void RedirectChromeLogging(const FilePath& new_log_dir,
-                           const CommandLine& command_line) {
+FilePath GetSessionLogFile(const CommandLine& command_line) {
+  FilePath log_dir;
+  std::string log_dir_str;
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (env->GetVar(env_vars::kSessionLogDir, &log_dir_str) &&
+      !log_dir_str.empty()) {
+    log_dir = FilePath(log_dir_str);
+  } else {
+    PathService::Get(chrome::DIR_USER_DATA, &log_dir);
+    FilePath login_profile =
+        command_line.GetSwitchValuePath(switches::kLoginProfile);
+    log_dir = log_dir.Append(login_profile);
+  }
+  return log_dir.Append(GetLogFileName().BaseName());
+}
+
+void RedirectChromeLogging(const CommandLine& command_line) {
   DCHECK(!chrome_logging_redirected_) <<
     "Attempted to redirect logging when it was already initialized.";
-  FilePath orig_log_path = GetLogFileName();
-  FilePath log_path = new_log_dir.Append(orig_log_path.BaseName());
+
+  // Redirect logs to the session log directory, if set.  Otherwise
+  // defaults to the profile dir.
+  FilePath log_path = GetSessionLogFile(command_line);
 
   // Always force a new symlink when redirecting.
   FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
@@ -215,6 +233,8 @@ void RedirectChromeLogging(const FilePath& new_log_dir,
     chrome_logging_redirected_ = true;
   }
 }
+
+
 #endif
 
 void InitChromeLogging(const CommandLine& command_line,
@@ -229,6 +249,12 @@ void InitChromeLogging(const CommandLine& command_line,
   FilePath log_path = GetLogFileName();
 
 #if defined(OS_CHROMEOS)
+  // For BWSI (Incognito) logins, we want to put the logs in the user
+  // profile directory that is created for the temporary session instead
+  // of in the system log directory, for privacy reasons.
+  if (command_line.HasSwitch(switches::kGuestSession))
+    log_path = GetSessionLogFile(command_line);
+
   // On ChromeOS we log to the symlink.  We force creation of a new
   // symlink if we've been asked to delete the old log, since that
   // indicates the start of a new session.

@@ -1223,16 +1223,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
     VLOG(1) << "Relaunching browser for user: " << username;
     chromeos::UserManager::Get()->UserLoggedIn(username);
 
-    // Redirect logs.
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    // The default profile will have been changed because the ProfileManager
-    // will process the notification that the UserManager sends out.
-
-    logging::RedirectChromeLogging(
-        user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
-        *(CommandLine::ForCurrentProcess()));
+    // Redirects Chrome logging to the user data dir.
+    logging::RedirectChromeLogging(parsed_command_line);
   }
 #endif
 

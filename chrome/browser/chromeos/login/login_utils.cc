@@ -143,9 +143,7 @@ void LoginUtilsImpl::CompleteLogin(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Switch log file as soon as possible.
-  logging::RedirectChromeLogging(
-      user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
-      *(CommandLine::ForCurrentProcess()));
+  logging::RedirectChromeLogging(*(CommandLine::ForCurrentProcess()));
   btl->AddLoginTimeMarker("LoggingRedirected", false);
 
   // The default profile will have been changed because the ProfileManager

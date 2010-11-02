@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
@@ -190,6 +191,10 @@ void InProcessBrowserTest::SetUp() {
 
 #if defined(OS_CHROMEOS)
   chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+
+  // Make sure that the log directory exists.
+  FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
+  file_util::CreateDirectory(log_dir);
 #endif  // defined(OS_CHROMEOS)
 
   SandboxInitWrapper sandbox_wrapper;

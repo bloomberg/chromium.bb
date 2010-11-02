@@ -14,6 +14,9 @@ const char kHeadless[] = "CHROME_HEADLESS";
 // The name of the log file.
 const char kLogFileName[] = "CHROME_LOG_FILE";
 
+// The name of the session log directory when logged in to ChromeOS.
+const char kSessionLogDir[] = "CHROMEOS_SESSION_LOG_DIR";
+
 // If this environment variable is set, Chrome on Windows will log
 // to Event Tracing for Windows.
 const char kEtwLogging[] = "CHROME_ETW_LOGGING";
