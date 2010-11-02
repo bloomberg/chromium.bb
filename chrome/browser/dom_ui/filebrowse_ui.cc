@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
@@ -696,14 +697,16 @@ void FilebrowseHandler::OpenNewWindow(const ListValue* args, bool popup) {
   Browser* browser = popup ?
       Browser::CreateForType(Browser::TYPE_APP_PANEL, profile_) :
       BrowserList::GetLastActive();
-  Browser::AddTabWithURLParams params(GURL(url), PageTransition::LINK);
-  browser->AddTabWithURL(&params);
+  browser::NavigateParams params(browser, GURL(url), PageTransition::LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  browser::Navigate(&params);
+  // TODO(beng): The following two calls should be automatic by Navigate().
   if (popup) {
     // TODO(dhg): Remove these from being hardcoded. Allow javascript
     // to specify.
-    params.target->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
+    params.browser->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
   }
-  params.target->window()->Show();
+  params.browser->window()->Show();
 }
 
 void FilebrowseHandler::SendPicasawebRequest() {
@@ -1061,14 +1064,16 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
       url.append(hashArgument);
     }
 
-    Browser::AddTabWithURLParams params(GURL(url), PageTransition::LINK);
-    browser->AddTabWithURL(&params);
-    params.target->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                                 kPopupTop,
-                                                 width,
-                                                 height));
+    browser::NavigateParams params(browser, GURL(url), PageTransition::LINK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    browser::Navigate(&params);
+    // TODO(beng): The following two calls should be automatic by Navigate().
+    params.browser->window()->SetBounds(gfx::Rect(kPopupLeft,
+                                                  kPopupTop,
+                                                  width,
+                                                  height));
 
-    params.target->window()->Show();
+    params.browser->window()->Show();
   } else {
     browser->window()->Show();
   }

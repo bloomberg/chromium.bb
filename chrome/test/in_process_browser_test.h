@@ -10,6 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/common/page_transition_types.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +67,17 @@ class InProcessBrowserTest : public testing::Test {
  protected:
   // Returns the browser created by CreateBrowser.
   Browser* browser() const { return browser_; }
+
+  // Convenience methods for adding tabs to a Browser.
+  void AddTabAtIndexToBrowser(Browser* browser,
+                              int index,
+                              const GURL& url,
+                              PageTransition::Type transition);
+  void AddTabAtIndex(int index, const GURL& url,
+                     PageTransition::Type transition);
+
+  // Adds a selected tab at |index| to |url| with the specified |transition|.
+  void AddTabAt(int index, const GURL& url, PageTransition::Type transition);
 
   // Override this rather than TestBody.
   virtual void RunTestOnMainThread() = 0;

@@ -9,6 +9,7 @@
 #endif  // defined(OS_WIN)
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -60,10 +61,11 @@ TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  params.index = 0;
-  TabContents* contents = browser->AddTabWithURL(&params);
-  CommitPendingLoad(&contents->controller());
+  browser::NavigateParams params(browser, url, PageTransition::TYPED);
+  params.tabstrip_index = 0;
+  params.disposition = NEW_FOREGROUND_TAB;
+  browser::Navigate(&params);
+  CommitPendingLoad(&params.target_contents->controller());
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(

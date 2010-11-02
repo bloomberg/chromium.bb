@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -102,10 +103,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  params.index = 0;
-  browser()->AddTabWithURL(&params);
-  EXPECT_EQ(browser(), params.target);
+  AddTabAtIndex(0, url, PageTransition::TYPED);
   WaitForResourceChange(3);
 
   // Close the tab and verify that we notice.
@@ -251,9 +249,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  params.index = 0;
-  browser()->AddTabWithURL(&params);
+  AddTabAtIndex(0, url, PageTransition::TYPED);
   WaitForResourceChange(3);
 
   // Check that we get some value for the cache columns.

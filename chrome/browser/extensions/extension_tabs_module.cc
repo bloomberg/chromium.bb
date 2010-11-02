@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -406,11 +407,8 @@ bool CreateWindowFunction::RunImpl() {
   }
 
   Browser* new_window = Browser::CreateForType(window_type, window_profile);
-  for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
-    Browser::AddTabWithURLParams addTabParams =
-        Browser::AddTabWithURLParams(*i, PageTransition::LINK);
-    new_window->AddTabWithURL(&addTabParams);
-  }
+  for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i)
+    new_window->AddSelectedTabWithURL(*i, PageTransition::LINK);
   if (urls.size() == 0)
     new_window->NewTab();
   new_window->SelectNumberedTab(0);
@@ -626,20 +624,23 @@ bool CreateTabFunction::RunImpl() {
   int add_types = selected ? TabStripModel::ADD_SELECTED :
                              TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
-  Browser::AddTabWithURLParams params(url, PageTransition::LINK);
-  params.index = index;
-  params.add_types = add_types;
-  TabContents* contents = browser->AddTabWithURL(&params);
-  index = browser->tabstrip_model()->GetIndexOfTabContents(contents);
+  browser::NavigateParams params(browser, url, PageTransition::LINK);
+  params.disposition = selected ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+  params.tabstrip_index = index;
+  params.tabstrip_add_types = add_types;
+  browser::Navigate(&params);
 
   if (selected)
-    contents->view()->SetInitialFocus();
+    params.target_contents->view()->SetInitialFocus();
 
   // Return data about the newly created tab.
-  if (has_callback())
-    result_.reset(ExtensionTabUtil::CreateTabValue(contents,
-                                                   browser->tabstrip_model(),
-                                                   index));
+  if (has_callback()) {
+    result_.reset(ExtensionTabUtil::CreateTabValue(
+        params.target_contents,
+        params.browser->tabstrip_model(),
+        params.browser->tabstrip_model()->GetIndexOfTabContents(
+            params.target_contents)));
+  }
 
   return true;
 }

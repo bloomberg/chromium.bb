@@ -16,6 +16,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -1697,11 +1698,12 @@ private:
     case NEW_FOREGROUND_TAB: {
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
                                 browser_->profile());
-      Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-      params.index = index;
-      params.add_types =
+      browser::NavigateParams params(browser_, url, PageTransition::TYPED);
+      params.disposition = disposition;
+      params.tabstrip_index = index;
+      params.tabstrip_add_types =
           TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX;
-      browser_->AddTabWithURL(&params);
+      browser::Navigate(&params);
       break;
     }
     case CURRENT_TAB:

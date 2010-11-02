@@ -13,6 +13,7 @@
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_thread.h"
@@ -267,6 +268,24 @@ void InProcessBrowserTest::TearDown() {
 
   *CommandLine::ForCurrentProcessMutable() = *original_command_line_;
   RenderProcessHost::set_run_renderer_in_process(original_single_process_);
+}
+
+void InProcessBrowserTest::AddTabAtIndexToBrowser(
+    Browser* browser,
+    int index,
+    const GURL& url,
+    PageTransition::Type transition) {
+  browser::NavigateParams params(browser, url, transition);
+  params.tabstrip_index = index;
+  params.disposition = NEW_FOREGROUND_TAB;
+  browser::Navigate(&params);
+}
+
+void InProcessBrowserTest::AddTabAtIndex(
+    int index,
+    const GURL& url,
+    PageTransition::Type transition) {
+  AddTabAtIndexToBrowser(browser(), index, url, transition);
 }
 
 // Creates a browser with a single tab (about:blank), waits for the tab to

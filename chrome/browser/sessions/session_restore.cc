@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -552,10 +553,12 @@ class SessionRestoreImpl : public NotificationObserver {
       if (i == 0)
         add_types |= TabStripModel::ADD_SELECTED;
       int index = browser->GetIndexForInsertionDuringRestore(i);
-      Browser::AddTabWithURLParams params(urls[i], PageTransition::START_PAGE);
-      params.index = index;
-      params.add_types = add_types;
-      browser->AddTabWithURL(&params);
+      browser::NavigateParams params(browser, urls[i],
+                                     PageTransition::START_PAGE);
+      params.disposition = i == 0 ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+      params.tabstrip_index = index;
+      params.tabstrip_add_types = add_types;
+      browser::Navigate(&params);
     }
   }
 

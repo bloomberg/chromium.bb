@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
@@ -823,9 +824,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   EXPECT_EQ(1, FindInPageWchar(tab1, L"Default", kFwd, kIgnoreCase, &ordinal));
 
   // Create a second tab.
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  browser()->AddTabWithURL(&params);
-  EXPECT_EQ(browser(), params.target);
+  // For some reason we can't use AddSelectedTabWithURL here on ChromeOS. It
+  // could be some delicate assumption about the tab starting off unselected or
+  // something relating to user gesture.
+  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  params.disposition = NEW_BACKGROUND_TAB;
+  params.tabstrip_add_types = TabStripModel::ADD_NONE;
+  browser::Navigate(&params);
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -899,10 +904,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
 
   // Now create a second tab and load the same page.
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  browser()->AddTabWithURL(&params);
-  EXPECT_EQ(browser(), params.target);
-  browser()->SelectTabContentsAt(1, false);
+  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
 
@@ -944,9 +946,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       FindBarController::kKeepSelection);
 
   // Now create a second tab and load the same page.
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  browser()->AddTabWithURL(&params);
-  EXPECT_EQ(browser(), params.target);
+  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  params.disposition = NEW_BACKGROUND_TAB;
+  params.tabstrip_add_types = TabStripModel::ADD_NONE;
+  browser::Navigate(&params);
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -1018,9 +1021,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = Browser::Create(incognito_profile);
-  Browser::AddTabWithURLParams params1(url, PageTransition::START_PAGE);
-  incognito_browser->AddTabWithURL(&params1);
-  EXPECT_EQ(incognito_browser, params1.target);
+  incognito_browser->AddSelectedTabWithURL(url, PageTransition::START_PAGE);
   ui_test_utils::WaitForNavigation(
       &incognito_browser->GetSelectedTabContents()->controller());
   incognito_browser->window()->Show();
@@ -1040,10 +1041,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
       FindBarController::kKeepSelection);
 
   // Now open a new tab in the original (non-incognito) browser.
-  Browser::AddTabWithURLParams params2(url, PageTransition::TYPED);
-  browser()->AddTabWithURL(&params2);
-  EXPECT_EQ(browser(), params2.target);
-  browser()->SelectTabContentsAt(1, false);
+  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
 

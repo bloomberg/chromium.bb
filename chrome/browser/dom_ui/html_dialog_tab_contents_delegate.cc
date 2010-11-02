@@ -5,7 +5,7 @@
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -40,11 +40,11 @@ void HtmlDialogTabContentsDelegate::OpenURLFromTab(
     // disposition. This is a tabless, modal dialog so we can't just
     // open it in the current frame.  Code adapted from
     // Browser::OpenURLFromTab() with disposition == NEW_WINDOW.
-    Browser* browser = CreateBrowser();
-    Browser::AddTabWithURLParams params(url, transition);
+    browser::NavigateParams params(CreateBrowser(), url, transition);
     params.referrer = referrer;
-    browser->AddTabWithURL(&params);
-    browser->window()->Show();
+    params.disposition = NEW_FOREGROUND_TAB;
+    params.show_window = true;
+    browser::Navigate(&params);
   }
 }
 
@@ -59,13 +59,14 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
   if (profile_) {
-    // Force this to open in a new window, too.  Code adapted from
-    // Browser::AddNewContents() with disposition == NEW_WINDOW.
-    Browser* browser = CreateBrowser();
-    static_cast<TabContentsDelegate*>(browser)->
-        AddNewContents(source, new_contents, NEW_FOREGROUND_TAB,
-                       initial_pos, user_gesture);
-    browser->window()->Show();
+    // Force this to open in a new window so that it appears at the top
+    // of the z-index.
+    browser::NavigateParams params(CreateBrowser(), new_contents);
+    params.source_contents = source;
+    params.disposition = NEW_FOREGROUND_TAB;
+    params.window_bounds = initial_pos;
+    params.show_window = true;
+    browser::Navigate(&params);
   }
 }
 

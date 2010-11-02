@@ -343,40 +343,6 @@ class Browser : public TabHandlerDelegate,
   TabContents* AddSelectedTabWithURL(const GURL& url,
                                      PageTransition::Type transition);
 
-  // Parameters for AddTabWithURL.
-  struct AddTabWithURLParams {
-    AddTabWithURLParams(const GURL& a_url, PageTransition::Type a_transition);
-    ~AddTabWithURLParams();
-
-    // Basic configuration.
-    GURL url;
-    GURL referrer;
-    PageTransition::Type transition;
-
-    // The index to open the tab at. This could be ignored by the tabstrip
-    // depending on the combination of |add_types| specified.
-    int index;
-
-    // A bitmask of values defined in TabStripModel::AddTabTypes.
-    // The default is ADD_SELECTED.
-    int add_types;
-
-    // If non-NULL, used to render the tab.
-    SiteInstance* instance;
-
-    // If non-empty, the new tab is an app tab.
-    std::string extension_app_id;
-
-    // The browser where the tab was added.
-    Browser* target;
-
-   private:
-    AddTabWithURLParams();
-  };
-
-  // Adds a tab to the browser (or another) and returns the created TabContents.
-  TabContents* AddTabWithURL(AddTabWithURLParams* params);
-
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
   TabContents* AddTab(TabContents* tab_contents, PageTransition::Type type);
@@ -927,20 +893,6 @@ class Browser : public TabHandlerDelegate,
                                 const GURL& referrer,
                                 WindowOpenDisposition *disposition,
                                 PageTransition::Type transition);
-
-  // The low-level function that other OpenURL...() functions call.  This
-  // determines the appropriate SiteInstance to pass to AddTabWithURL(), focuses
-  // the newly created tab as needed, and does other miscellaneous housekeeping.
-  // |add_types| is a bitmask of TabStripModel::AddTabTypes and may be used to
-  // pass specific flags to the TabStripModel. |add_types| is only used if
-  // the disposition is NEW_WINDOW or SUPPRESS_OPEN.
-  void OpenURLAtIndex(TabContents* source,
-                      const GURL& url,
-                      const GURL& referrer,
-                      WindowOpenDisposition disposition,
-                      PageTransition::Type transition,
-                      int index,
-                      int add_types);
 
   // Shows the Find Bar, optionally selecting the next entry that matches the
   // existing search string for that Tab. |forward_direction| controls the

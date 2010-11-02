@@ -14,6 +14,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/defaults.h"
@@ -206,10 +207,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  params.index = 0;
-  browser()->AddTabWithURL(&params);
-  EXPECT_EQ(browser(), params.target);
+  AddTabAtIndex(0, url, PageTransition::TYPED);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, browser()->selected_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
@@ -233,12 +231,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
                                      FilePath(kTitle2File)));
 
   // There is one initial tab.
-  for (int ix = 0; ix != 33; ++ix) {
-    Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-    params.index = 0;
-    browser()->AddTabWithURL(&params);
-    EXPECT_EQ(browser(), params.target);
-  }
+  for (int ix = 0; ix != 33; ++ix)
+    browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
   EXPECT_EQ(34, browser()->tab_count());
 
   // See browser\renderer_host\render_process_host.cc for the algorithm to

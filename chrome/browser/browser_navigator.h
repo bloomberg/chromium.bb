@@ -47,13 +47,15 @@ struct NavigateParams {
   NavigateParams(Browser* browser, TabContents* a_target_contents);
   ~NavigateParams();
 
-  // The URL/referrer to be loaded. Can be empty if |contents| is specified
-  // non-NULL.
+  // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
   GURL url;
   GURL referrer;
 
   // [in]  A TabContents to be navigated or inserted into the target Browser's
-  //       tabstrip. If NULL, |url| or the homepage will be used instead.
+  //       tabstrip. If NULL, |url| or the homepage will be used instead. When
+  //       non-NULL, Navigate() assumes it has already been navigated to its
+  //       intended destination and will not load any URL in it (i.e. |url| is
+  //       ignored).
   //       Default is NULL.
   // [out] The TabContents in which the navigation occurred or that was
   //       inserted. Guaranteed non-NULL except for note below:
@@ -70,7 +72,18 @@ struct NavigateParams {
   TabContents* source_contents;
 
   // The disposition requested by the navigation source. Default is
-  // CURRENT_TAB.
+  // CURRENT_TAB. What follows is a set of coercions that happen to this value
+  // when other factors are at play:
+  //
+  // [in]:                Condition:                        [out]:
+  // NEW_BACKGROUND_TAB   target browser tabstrip is empty  NEW_FOREGROUND_TAB
+  // CURRENT_TAB          "     "     "                     NEW_FOREGROUND_TAB
+  // OFF_THE_RECORD       target browser profile is incog.  NEW_FOREGROUND_TAB
+  //
+  // If disposition is NEW_WINDOW or NEW_POPUP, |show_window| is set to true
+  // automatically.
+  // If disposition is NEW_BACKGROUND_TAB, TabStripModel::ADD_SELECTED is
+  // removed from |tabstrip_add_types| automatically.
   WindowOpenDisposition disposition;
 
   // The transition type of the navigation. Default is PageTransition::LINK
@@ -99,7 +112,8 @@ struct NavigateParams {
   gfx::Rect window_bounds;
 
   // True if the target window should be made visible at the end of the call
-  // to Navigate(). Default is false.
+  // to Navigate(). This activates the window if it was already visible.
+  // Default is false.
   bool show_window;
 
   // [in]  Specifies a Browser object where the navigation could occur or the

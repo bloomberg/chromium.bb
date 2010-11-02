@@ -217,11 +217,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Create several tabs.
-  for (int i = 0; i < 4; ++i) {
-    Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-    browser()->AddTabWithURL(&params);
-    EXPECT_EQ(browser(), params.target);
-  }
+  for (int i = 0; i < 4; ++i)
+    browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
 
   // Alternate focus for the tab.
   const bool kFocusPage[3][5] = {
@@ -296,9 +293,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   browser()->FocusLocationBar();
 
   // Create a 2nd tab.
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  browser()->AddTabWithURL(&params);
-  EXPECT_EQ(browser(), params.target);
+  browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
 
   // Focus should be on the recently opened tab page.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));

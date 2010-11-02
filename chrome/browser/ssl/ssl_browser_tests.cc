@@ -5,6 +5,7 @@
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
@@ -464,10 +465,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   // Create a new tab.
   GURL url = https_server_.GetURL(
       "files/ssl/page_displays_insecure_content.html");
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  params.index = 0;
-  params.instance = tab1->GetSiteInstance();
-  TabContents* tab2 = browser()->AddTabWithURL(&params);
+  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.tabstrip_index = 0;
+  params.source_contents = tab1;
+  browser::Navigate(&params);
+  TabContents* tab2 = params.target_contents;
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has insecure content.
@@ -495,9 +498,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   // Create a new tab.
   GURL url =
       https_server_.GetURL("files/ssl/page_runs_insecure_content.html");
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  params.instance = tab1->GetSiteInstance();
-  TabContents* tab2 = browser()->AddTabWithURL(&params);
+  browser::NavigateParams params(browser(), url, PageTransition::TYPED);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.source_contents = tab1;
+  browser::Navigate(&params);
+  TabContents* tab2 = params.target_contents;
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has insecure content.
@@ -639,12 +644,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.
   GURL url = test_server()->GetURL("files/ssl/google.html");
-  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
-  TabContents* tab2 = browser()->AddTabWithURL(&params);
+  TabContents* tab2 =
+      browser()->AddSelectedTabWithURL(url, PageTransition::TYPED);
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
-
-  // Ensure that the tab was created in the correct browser.
-  EXPECT_EQ(browser(), params.target);
 
   // Close the first tab.
   browser()->CloseTabContents(tab1);

@@ -77,14 +77,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
 
   // Add and navigate three tabs.
   ui_test_utils::NavigateToURL(browser(), url1);
-  Browser::AddTabWithURLParams params1(url2, PageTransition::LINK);
-  browser()->AddTabWithURL(&params1);
-  EXPECT_EQ(browser(), params1.target);
+  browser()->AddSelectedTabWithURL(url2, PageTransition::LINK);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
-  Browser::AddTabWithURLParams params2(url3, PageTransition::LINK);
-  browser()->AddTabWithURL(&params2);
-  EXPECT_EQ(browser(), params2.target);
+  browser()->AddSelectedTabWithURL(url3, PageTransition::LINK);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
 
   TabRestoreService* service = browser()->profile()->GetTabRestoreService();

@@ -11,6 +11,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/cocoa/applescript/constants_applescript.h"
@@ -185,13 +186,15 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  Browser::AddTabWithURLParams params(GURL(chrome::kChromeUINewTabURL),
-                                      PageTransition::TYPED);
-  params.index = index;
-  TabContents* contents = browser_->AddTabWithURL(&params);
-  contents->set_new_tab_start_time(newTabStartTime);
+  browser::NavigateParams params(browser_,
+                                 GURL(chrome::kChromeUINewTabURL),
+                                 PageTransition::TYPED);
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.tabstrip_index = index;
+  browser::Navigate(&params);
+  params.target_contents->set_new_tab_start_time(newTabStartTime);
 
-  [aTab setTabContent:contents];
+  [aTab setTabContent:params.target_contents];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {

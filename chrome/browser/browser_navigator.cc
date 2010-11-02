@@ -22,6 +22,9 @@ namespace {
 // Returns the SiteInstance for |source_contents| if it represents the same
 // website as |url|, or NULL otherwise. |source_contents| cannot be NULL.
 SiteInstance* GetSiteInstance(TabContents* source_contents, const GURL& url) {
+  if (!source_contents)
+    return NULL;
+
   // Don't use this logic when "--process-per-tab" is specified.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab) &&
       SiteInstance::IsSameWebSite(source_contents->profile(),
@@ -149,7 +152,8 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
 void NormalizeDisposition(browser::NavigateParams* params) {
   // Calculate the WindowOpenDisposition if necessary.
   if (params->browser->tabstrip_model()->empty() &&
-      params->disposition == NEW_BACKGROUND_TAB) {
+      (params->disposition == NEW_BACKGROUND_TAB ||
+       params->disposition == CURRENT_TAB)) {
     params->disposition = NEW_FOREGROUND_TAB;
   }
   if (params->browser->profile()->IsOffTheRecord() &&
@@ -162,6 +166,13 @@ void NormalizeDisposition(browser::NavigateParams* params) {
   // background.
   if (params->disposition == NEW_BACKGROUND_TAB)
     params->tabstrip_add_types &= ~TabStripModel::ADD_SELECTED;
+
+  // Code that wants to open a new window typically expects it to be shown
+  // automatically.
+  if (params->disposition == NEW_WINDOW || params->disposition == NEW_POPUP) {
+    params->show_window = true;
+    params->tabstrip_add_types |= TabStripModel::ADD_SELECTED;
+  }
 }
 
 // This class makes sure the Browser object held in |params| is made visible
@@ -266,6 +277,13 @@ void Navigate(NavigateParams* params) {
   // Some dispositions need coercion to base types.
   NormalizeDisposition(params);
 
+  // Determine if the navigation was user initiated. If it was, we need to
+  // inform the target TabContents, and we may need to update the UI.
+  PageTransition::Type base_transition =
+      PageTransition::StripQualifier(params->transition);
+  bool user_initiated = base_transition == PageTransition::TYPED ||
+                        base_transition == PageTransition::AUTO_BOOKMARK;
+
   // If no target TabContents was specified, we need to construct one if we are
   // supposed to target a new tab.
   if (!params->target_contents) {
@@ -293,25 +311,23 @@ void Navigate(NavigateParams* params) {
       // same as the source.
       params->target_contents = params->source_contents;
     }
-  }
 
-  // Determine if the navigation was user initiated. If it was, we need to
-  // inform the target TabContents, and we may need to update the UI.
-  PageTransition::Type base_transition =
-      PageTransition::StripQualifier(params->transition);
-  bool user_initiated = base_transition == PageTransition::TYPED ||
-                        base_transition == PageTransition::AUTO_BOOKMARK;
-  if (user_initiated) {
-    RenderViewHostDelegate::BrowserIntegration* integration =
-        params->target_contents;
-    integration->OnUserGesture();
-  }
+    if (user_initiated) {
+      RenderViewHostDelegate::BrowserIntegration* integration =
+          params->target_contents;
+      integration->OnUserGesture();
+    }
 
-  // Perform the actual navigation.
-  GURL url = params->url.is_empty() ? params->browser->GetHomePage()
-                                    : params->url;
-  params->target_contents->controller().LoadURL(url, params->referrer,
-                                                params->transition);
+    // Perform the actual navigation.
+    GURL url = params->url.is_empty() ? params->browser->GetHomePage()
+                                      : params->url;
+    params->target_contents->controller().LoadURL(url, params->referrer,
+                                                  params->transition);
+  } else {
+    // |target_contents| was specified non-NULL, and so we assume it has already
+    // been navigated appropriately. We need to do nothing more other than
+    // add it to the appropriate tabstrip.
+  }
 
   if (params->source_contents == params->target_contents) {
     // The navigation occurred in the source tab, so update the UI.
@@ -325,6 +341,11 @@ void Navigate(NavigateParams* params) {
       // The navigation should re-select an existing tab in the target Browser.
       params->browser->SelectTabContentsAt(singleton_index, user_initiated);
     } else {
+      // If some non-default value is set for the index, we should tell the
+      // TabStripModel to respect it.
+      if (params->tabstrip_index != -1)
+        params->tabstrip_add_types |= TabStripModel::ADD_FORCE_INDEX;
+
       // The navigation should insert a new tab into the target Browser.
       params->browser->tabstrip_model()->AddTabContents(
           params->target_contents,

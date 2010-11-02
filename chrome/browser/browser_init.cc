@@ -22,6 +22,7 @@
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "chrome/browser/automation/testing_automation_provider.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_window.h"
@@ -765,16 +766,17 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
       add_types |= TabStripModel::ADD_PINNED;
     int index = browser->GetIndexForInsertionDuringRestore(i);
 
-    Browser::AddTabWithURLParams params(tabs[i].url,
-                                        PageTransition::START_PAGE);
-    params.index = index;
-    params.add_types = add_types;
+    browser::NavigateParams params(browser, tabs[i].url,
+                                   PageTransition::START_PAGE);
+    params.disposition = first_tab ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+    params.tabstrip_index = index;
+    params.tabstrip_add_types = add_types;
     params.extension_app_id = tabs[i].app_id;
-    TabContents* tab = browser->AddTabWithURL(&params);
+    browser::Navigate(&params);
 
     if (profile_ && first_tab && process_startup) {
-      AddCrashedInfoBarIfNecessary(tab);
-      AddBadFlagsInfoBarIfNecessary(tab);
+      AddCrashedInfoBarIfNecessary(params.target_contents);
+      AddBadFlagsInfoBarIfNecessary(params.target_contents);
     }
 
     first_tab = false;
