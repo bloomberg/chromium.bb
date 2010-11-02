@@ -165,13 +165,15 @@ HRESULT ChromeFrameHost::GetEnabledExtensions() {
   }
 }
 
-HRESULT ChromeFrameHost::GetSessionId(int *session_id) {
+HRESULT ChromeFrameHost::GetSessionId(int* session_id) {
   if (chrome_frame_) {
     CComQIPtr<IChromeFrameInternal> chrome_frame_internal_(chrome_frame_);
-    if (chrome_frame_internal_)
+    if (chrome_frame_internal_) {
       return chrome_frame_internal_->getSessionId(session_id);
-    else
-      return kInvalidChromeSessionId;
+    } else {
+      *session_id = kInvalidChromeSessionId;
+      return S_OK;
+    }
   }
   NOTREACHED();
   return E_UNEXPECTED;
