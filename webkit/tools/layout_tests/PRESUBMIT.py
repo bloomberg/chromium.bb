@@ -11,7 +11,7 @@ details on the presubmit API built into gcl.
 TEST_EXPECTATIONS = 'test_expectations.txt'
 
 def LintTestFiles(input_api, output_api):
-  current_dir = input_api.PresubmitLocalPath()
+  current_dir = str(input_api.PresubmitLocalPath())
   # Set 'webkit/tools/layout_tests' in include path.
   python_paths = [
       current_dir,
