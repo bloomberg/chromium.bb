@@ -35,6 +35,11 @@ found in the LICENSE file.
                 document.body.appendChild(iframe);
                 iframe.contentWindow.onOpenedInViewer();
               }
+            } else {
+              // Could not locate central roster. Close this blank window.
+              // Workaround since Chrome extensions cannot be singletons.
+              // Reference: http://crbug.com/45816
+              window.close();
             }
           }
         }
