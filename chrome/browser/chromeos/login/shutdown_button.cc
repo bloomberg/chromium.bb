@@ -17,9 +17,23 @@
 
 namespace {
 
-// Bottom/Right Padding for Shutdown button.
+// Style parameters for Shutdown button.
+
+// Bottom/Right padding to locale the shutdown button.
 const int kBottomPadding = 12;
 const int kRightPadding = 12;
+
+// Normal/Hover colors.
+const SkColor kButtonColor = 0xFF242A35;
+const SkColor kHoverColor = 0xFF353E4E;
+
+// Padding inside button.
+const int kVerticalPadding = 13;
+const int kIconTextPadding = 10;
+const int kHorizontalPadding = 13;
+
+// Rounded corner radious.
+const int kCornerRadius = 4;
 
 class HoverBackground : public views::Background {
  public:
@@ -53,13 +67,6 @@ ShutdownButton::ShutdownButton()
 }
 
 void ShutdownButton::Init() {
-  SkColor kButtonColor = 0xFF242A35;
-  SkColor kHoverColor = 0xFF353E4E;
-  int kVerticalPadding = 13;
-  int kIconTextPadding = 10;
-  int kHorizontalPadding = 13;
-  int kCornerRadius = 4;
-
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(*rb.GetBitmapNamed(IDR_SHUTDOWN_ICON));
   set_icon_text_spacing(kIconTextPadding);
