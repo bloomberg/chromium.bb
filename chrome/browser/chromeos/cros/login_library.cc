@@ -31,13 +31,27 @@ class LoginLibraryImpl : public LoginLibrary {
 
   bool CheckWhitelist(const std::string& email,
                       std::vector<uint8>* OUT_signature) {
-    return chromeos::CheckWhitelist(email.c_str(), OUT_signature);
+    CryptoBlob* sig = NULL;
+    if (chromeos::CheckWhitelistSafe(email.c_str(), &sig)) {
+      OUT_signature->assign(sig->data, sig->data + sig->length);
+      chromeos::FreeCryptoBlob(sig);
+      return true;
+    }
+    return false;
   }
 
   bool RetrieveProperty(const std::string& name,
                         std::string* OUT_value,
                         std::vector<uint8>* OUT_signature) {
-    return chromeos::RetrieveProperty(name.c_str(), OUT_value, OUT_signature);
+    Property* prop = NULL;
+    if (chromeos::RetrievePropertySafe(name.c_str(), &prop)) {
+      OUT_value->assign(prop->value);
+      CryptoBlob* sig = prop->signature;
+      OUT_signature->assign(sig->data, sig->data + sig->length);
+      chromeos::FreeProperty(prop);
+      return true;
+    }
+    return false;
   }
 
   bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
@@ -46,7 +60,11 @@ class LoginLibraryImpl : public LoginLibrary {
     if (set_owner_key_callback_)
       return false;
     set_owner_key_callback_ =  callback;
-    return chromeos::SetOwnerKey(public_key_der);
+    CryptoBlob* key = chromeos::CreateCryptoBlob(&public_key_der[0],
+                                                 public_key_der.size());
+    bool rv = chromeos::SetOwnerKeySafe(key);
+    chromeos::FreeCryptoBlob(key);
+    return rv;
   }
 
   bool StorePropertyAsync(const std::string& name,
@@ -57,7 +75,13 @@ class LoginLibraryImpl : public LoginLibrary {
     if (property_op_callback_)
       return false;
     property_op_callback_ = callback;
-    return chromeos::StoreProperty(name.c_str(), value.c_str(), signature);
+    Property* prop = chromeos::CreateProperty(name.c_str(),
+                                              value.c_str(),
+                                              &signature[0],
+                                              signature.size());
+    bool rv = chromeos::StorePropertySafe(prop);
+    chromeos::FreeProperty(prop);
+    return rv;
   }
 
   bool UnwhitelistAsync(const std::string& email,
@@ -67,7 +91,11 @@ class LoginLibraryImpl : public LoginLibrary {
     if (whitelist_op_callback_)
       return false;
     whitelist_op_callback_ =  callback;
-    return chromeos::Unwhitelist(email.c_str(), signature);
+    CryptoBlob* sig = chromeos::CreateCryptoBlob(&signature[0],
+                                                 signature.size());
+    bool rv = chromeos::UnwhitelistSafe(email.c_str(), sig);
+    chromeos::FreeCryptoBlob(sig);
+    return rv;
   }
 
   bool WhitelistAsync(const std::string& email,
@@ -77,11 +105,22 @@ class LoginLibraryImpl : public LoginLibrary {
     if (whitelist_op_callback_)
       return false;
     whitelist_op_callback_ =  callback;
-    return chromeos::Whitelist(email.c_str(), signature);
+    CryptoBlob* sig = chromeos::CreateCryptoBlob(&signature[0],
+                                                 signature.size());
+    bool rv = chromeos::WhitelistSafe(email.c_str(), sig);
+    chromeos::FreeCryptoBlob(sig);
+    return rv;
   }
 
   bool EnumerateWhitelisted(std::vector<std::string>* whitelisted) {
-    return chromeos::EnumerateWhitelisted(whitelisted);
+    UserList* list = NULL;
+    if (chromeos::EnumerateWhitelistedSafe(&list)) {
+      for (int i = 0; i < list->num_users; i++)
+        whitelisted->push_back(std::string(list->users[i]));
+      chromeos::FreeUserList(list);
+      return true;
+    }
+    return false;
   }
 
   bool StartSession(const std::string& user_email,
