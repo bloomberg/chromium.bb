@@ -434,9 +434,6 @@ class RenderView : public RenderWidget,
       WebKit::WebAccessibilityNotification notification);
   virtual void didUpdateInspectorSetting(const WebKit::WebString& key,
                                          const WebKit::WebString& value);
-  virtual void queryAutofillSuggestions(const WebKit::WebNode& node,
-                                        const WebKit::WebString& name,
-                                        const WebKit::WebString& value);
   virtual void removeAutofillSuggestions(const WebKit::WebString& name,
                                          const WebKit::WebString& value);
   virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,

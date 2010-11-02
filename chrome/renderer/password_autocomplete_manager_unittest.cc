@@ -152,26 +152,9 @@ class PasswordAutocompleteManagerTest : public RenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PasswordAutocompleteManagerTest);
 };
 
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
-#define MAYBE_InitialAutocomplete InitialAutocomplete
-#define MAYBE_NoInitialAutocompleteForReadOnly NoInitialAutocompleteForReadOnly
-#define MAYBE_PasswordClearOnEdit PasswordClearOnEdit
-#define MAYBE_WaitUsername WaitUsername
-#define MAYBE_InlineAutocomplete InlineAutocomplete
-#define MAYBE_SuggestionSelect SuggestionSelect
-#else
-#define MAYBE_InitialAutocomplete DISABLED_InitialAutocomplete
-#define MAYBE_NoInitialAutocompleteForReadOnly \
-    DISABLED_NoInitialAutocompleteForReadOnly
-#define MAYBE_PasswordClearOnEdit DISABLED_PasswordClearOnEdit
-#define MAYBE_WaitUsername DISABLED_WaitUsername
-#define MAYBE_InlineAutocomplete DISABLED_InlineAutocomplete
-#define MAYBE_SuggestionSelect DISABLED_SuggestionSelect
-#endif
-
 // Tests that the password login is autocompleted as expected when the browser
 // sends back the password info.
-TEST_F(PasswordAutocompleteManagerTest, MAYBE_InitialAutocomplete) {
+TEST_F(PasswordAutocompleteManagerTest, InitialAutocomplete) {
   /*
    * Right now we are not sending the message to the browser because we are
    * loading a data URL and the security origin canAccessPasswordManager()
@@ -203,8 +186,7 @@ TEST_F(PasswordAutocompleteManagerTest, MAYBE_InitialAutocomplete) {
 }
 
 // Tests that changing the username does not fill a read-only password field.
-TEST_F(PasswordAutocompleteManagerTest,
-       MAYBE_NoInitialAutocompleteForReadOnly) {
+TEST_F(PasswordAutocompleteManagerTest, NoInitialAutocompleteForReadOnly) {
   password_element_.setAttribute(WebString::fromUTF8("readonly"),
                                  WebString::fromUTF8("true"));
 
@@ -218,7 +200,7 @@ TEST_F(PasswordAutocompleteManagerTest,
 }
 
 // Tests that editing the password clears the autocompleted password field.
-TEST_F(PasswordAutocompleteManagerTest, MAYBE_PasswordClearOnEdit) {
+TEST_F(PasswordAutocompleteManagerTest, PasswordClearOnEdit) {
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
@@ -232,7 +214,7 @@ TEST_F(PasswordAutocompleteManagerTest, MAYBE_PasswordClearOnEdit) {
 
 // Tests that we only autocomplete on focus lost and with a full username match
 // when |wait_for_username| is true.
-TEST_F(PasswordAutocompleteManagerTest, MAYBE_WaitUsername) {
+TEST_F(PasswordAutocompleteManagerTest, WaitUsername) {
   // Simulate the browser sending back the login info.
   fill_data_.wait_for_username = true;
   SimulateOnFillPasswordForm(fill_data_);
@@ -265,7 +247,7 @@ TEST_F(PasswordAutocompleteManagerTest, MAYBE_WaitUsername) {
 }
 
 // Tests that inline autocompletion works properly.
-TEST_F(PasswordAutocompleteManagerTest, MAYBE_InlineAutocomplete) {
+TEST_F(PasswordAutocompleteManagerTest, InlineAutocomplete) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -311,7 +293,7 @@ TEST_F(PasswordAutocompleteManagerTest, MAYBE_InlineAutocomplete) {
 }
 
 // Tests that selecting and item in the suggestion drop-down works.
-TEST_F(PasswordAutocompleteManagerTest, MAYBE_SuggestionSelect) {
+TEST_F(PasswordAutocompleteManagerTest, SuggestionSelect) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 

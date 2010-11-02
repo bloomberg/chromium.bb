@@ -21,13 +21,6 @@ class WebView;
 // A collection of operations that access the underlying WebKit DOM directly.
 namespace webkit_glue {
 
-struct PasswordFormFillData;
-
-// Fill matching password forms and trigger autocomplete in the case of multiple
-// matching logins.
-void FillPasswordForm(WebKit::WebView* view,
-                      const PasswordFormFillData& data);
-
 // Structure for storage the result of getting all savable resource links
 // for current page. The consumer of the SavableResourcesResult is responsible
 // for keeping these pointers valid for the lifetime of the

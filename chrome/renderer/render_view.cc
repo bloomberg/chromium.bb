@@ -2025,13 +2025,10 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
 
 void RenderView::textFieldDidEndEditing(
     const WebKit::WebInputElement& element) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
   password_autocomplete_manager_->TextFieldDidEndEditing(element);
-#endif
 }
 
 void RenderView::textFieldDidChange(const WebKit::WebInputElement& element) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
   // We post a task for doing the AutoFill as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
@@ -2040,7 +2037,6 @@ void RenderView::textFieldDidChange(const WebKit::WebInputElement& element) {
         FROM_HERE,
         autofill_method_factory_.NewRunnableMethod(
             &RenderView::TextFieldDidChangeImpl, element));
-#endif
 }
 
 void RenderView::TextFieldDidChangeImpl(
@@ -2079,9 +2075,7 @@ void RenderView::SendPendingAccessibilityNotifications() {
 void RenderView::textFieldDidReceiveKeyDown(
     const WebKit::WebInputElement& element,
     const WebKit::WebKeyboardEvent& event) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
   password_autocomplete_manager_->TextFieldHandlingKeyDown(element, event);
-#endif
 }
 
 bool RenderView::handleCurrentKeyboardEvent() {
@@ -2375,12 +2369,6 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
                                               value.utf8()));
 }
 
-void RenderView::queryAutofillSuggestions(const WebNode& node,
-                                          const WebString& name,
-                                          const WebString& value) {
-  autofill_helper_->QueryAutoFillSuggestions(node);
-}
-
 void RenderView::removeAutofillSuggestions(const WebString& name,
                                            const WebString& value) {
   autofill_helper_->RemoveAutocompleteSuggestion(name, value);
@@ -2407,12 +2395,10 @@ void RenderView::didClearAutoFillSelection(const WebKit::WebNode& node) {
 
 void RenderView::didAcceptAutocompleteSuggestion(
     const WebKit::WebInputElement& user_element) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
   bool result = password_autocomplete_manager_->FillPassword(user_element);
   // Since this user name was selected from a suggestion list, we should always
   // have password for it.
   DCHECK(result);
-#endif
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -4456,12 +4442,8 @@ void RenderView::OnDragSourceSystemDragEnded() {
 
 void RenderView::OnFillPasswordForm(
     const webkit_glue::PasswordFormFillData& form_data) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
   password_autocomplete_manager_->ReceivedPasswordFormFillData(webview(),
                                                               form_data);
-#else
-  webkit_glue::FillPasswordForm(this->webview(), form_data);
-#endif
 }
 
 void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
