@@ -11,6 +11,7 @@ extern "C" {
 
 #include "base/file_util.h"
 #include "base/file_path.h"
+#include "base/hash_tables.h"
 #include "base/test/multiprocess_test.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -22,9 +23,18 @@ extern "C" {
 
 namespace sandbox {
 
+typedef base::hash_map<std::string, SandboxSubstring>
+    SandboxVariableSubstitions;
+
 bool QuotePlainString(const std::string& str_utf8, std::string* dst);
 bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst);
-NSString* BuildAllowDirectoryAccessSandboxString(const FilePath& allowed_dir);
+NSString* BuildAllowDirectoryAccessSandboxString(
+    const FilePath& allowed_dir,
+    SandboxVariableSubstitions* substitutions);
+bool PostProcessSandboxProfile(NSString* in_sandbox_data,
+                               NSArray* comments_to_remove,
+                               SandboxVariableSubstitions& substitutions,
+                               std::string *final_sandbox_profile_str);
 
 }  // namespace sandbox
 
@@ -195,20 +205,28 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
       ";ENABLE_DIRECTORY_ACCESS";
 
   std::string allowed_dir(sandbox_allowed_dir);
-  std::string allowed_dir_escaped;
-  if (!sandbox::QuoteStringForRegex(allowed_dir, &allowed_dir_escaped)) {
-    LOG(ERROR) << "Regex string quoting failed " << allowed_dir;
-    return -1;
-  }
+  sandbox::SandboxVariableSubstitions substitutions;
   NSString* allow_dir_sandbox_code =
       sandbox::BuildAllowDirectoryAccessSandboxString(
-          FilePath(sandbox_allowed_dir));
+          FilePath(sandbox_allowed_dir),
+          &substitutions);
   sandbox_profile = [sandbox_profile
       stringByReplacingOccurrencesOfString:@";ENABLE_DIRECTORY_ACCESS"
                                 withString:allow_dir_sandbox_code];
+
+  std::string final_sandbox_profile_str;
+  if (!PostProcessSandboxProfile(sandbox_profile,
+                                 [NSArray array],
+                                 substitutions,
+                                 &final_sandbox_profile_str)) {
+    LOG(ERROR) << "Call to PostProcessSandboxProfile() failed";
+    return -1;
+  }
+
+
   // Enable Sandbox.
   char* error_buff = NULL;
-  int error = sandbox_init([sandbox_profile UTF8String], 0, &error_buff);
+  int error = sandbox_init(final_sandbox_profile_str.c_str(), 0, &error_buff);
   if (error == -1) {
     LOG(ERROR) << "Failed to Initialize Sandbox: " << error_buff;
     return -1;

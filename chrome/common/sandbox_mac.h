@@ -6,6 +6,8 @@
 #define CHROME_COMMON_SANDBOX_MAC_H_
 #pragma once
 
+#include <string>
+
 class FilePath;
 
 namespace sandbox {
@@ -52,6 +54,35 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
 // expects i.e. one without symlinks.
 // This path is not necessarily unique e.g. in the face of hardlinks.
 void GetCanonicalSandboxPath(FilePath* path);
+
+// Exposed for testing.
+
+// Class representing a substring of the sandbox profile tagged with its type.
+class SandboxSubstring {
+ public:
+  enum SandboxSubstringType {
+    PLAIN,    // Just a plain string, no escaping necessary.
+    LITERAL,  // Escape for use in (literal ...) expression.
+    REGEX,    // Escape for use in (regex ...) expression.
+  };
+
+  SandboxSubstring() {}
+
+  explicit SandboxSubstring(const std::string& value)
+      : value_(value),
+        type_(PLAIN) {}
+
+  SandboxSubstring(const std::string& value, SandboxSubstringType type)
+      : value_(value),
+        type_(type) {}
+
+  const std::string& value() { return value_; }
+  SandboxSubstringType type() { return type_; }
+
+ private:
+  std::string value_;
+  SandboxSubstringType type_;
+};
 
 }  // namespace sandbox
 
