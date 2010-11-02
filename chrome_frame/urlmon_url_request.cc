@@ -591,9 +591,9 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   // identify chromeframe as the user agent. This also ensures that the user
   // agent reported in scripts in chrome frame is consistent with that sent
   // in outgoing requests.
-  new_headers += ReplaceOrAddUserAgent(current_headers,
-                                       http_utils::GetChromeUserAgent());
-  new_headers += AppendCFUserAgentString(UTF8ToWide(new_headers).c_str(), NULL);
+  std::string user_agent = http_utils::AddChromeFrameToUserAgentValue(
+      http_utils::GetChromeUserAgent());
+  new_headers += ReplaceOrAddUserAgent(current_headers, user_agent);
 
   if (!new_headers.empty()) {
     *additional_headers = reinterpret_cast<wchar_t*>(
