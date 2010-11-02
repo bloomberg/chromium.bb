@@ -2515,7 +2515,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                      params.mimeType.utf8(),
                                      &found,
                                      &info,
-                                     &setting,
+                                     &plugin_setting,
                                      &actual_mime_type));
 
   if (!found)
