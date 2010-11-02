@@ -7,7 +7,6 @@ include_rules = [
   "+media/ffmpeg",
   "+media/filters",
   "+media/video",
-  "+ppapi/c",
   "+sandbox/src",
   "+skia/include",
   "+webkit/extensions",

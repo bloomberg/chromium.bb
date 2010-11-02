@@ -10,9 +10,6 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "ppapi/c/pp_input_event.h"
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/rect.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_util.h"
 #include "remoting/client/chromoting_client.h"
@@ -23,6 +20,9 @@
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "third_party/ppapi/c/pp_input_event.h"
+#include "third_party/ppapi/cpp/completion_callback.h"
+#include "third_party/ppapi/cpp/rect.h"
 
 namespace remoting {
 

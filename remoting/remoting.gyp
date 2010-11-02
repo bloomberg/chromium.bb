@@ -73,7 +73,7 @@
         'chromoting_base',
         'chromoting_client',
         'chromoting_jingle_glue',
-        '../ppapi/ppapi.gyp:ppapi_cpp_objects',
+        '../third_party/ppapi/ppapi.gyp:ppapi_cpp_objects',
       ],
       'sources': [
         'client/plugin/chromoting_instance.cc',

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "ppapi/c/dev/ppb_url_request_info_dev.h"
+#include "third_party/ppapi/c/dev/ppb_url_request_info_dev.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
