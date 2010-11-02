@@ -13,7 +13,7 @@ cr.define('mobile', function() {
   MobileSetup.PLAN_ACTIVATION_LOADING = -1;
   MobileSetup.PLAN_ACTIVATION_START = 0;
   MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION = 1;
-  MobileSetup.PLAN_ACTIVATION_ACTIVATING = 2;
+  MobileSetup.PLAN_ACTIVATION_RECONNECTING = 2;
   MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT = 3;
   MobileSetup.PLAN_ACTIVATION_DONE = 4;
   MobileSetup.PLAN_ACTIVATION_ERROR = 5;
@@ -40,6 +40,7 @@ cr.define('mobile', function() {
           self.onMessageReceived_(e);
       });
       $('cheat').addEventListener('click', function(e) {
+        $('paymentForm').classList.add('hidden');
         chrome.send('setTransactionStatus', ['OK']);
       });
       $(frame_name).addEventListener('load', function(e) {
@@ -75,6 +76,7 @@ cr.define('mobile', function() {
       if (e.data.type == 'requestDeviceInfoMsg') {
         this.sendDeviceInfo_();
       } else if (e.data.type == 'reportTransactionStatusMsg') {
+        $('paymentForm').classList.add('hidden');
         chrome.send('setTransactionStatus', [e.data.status]);
       }
     },
@@ -97,7 +99,7 @@ cr.define('mobile', function() {
           $('systemStatus').classList.remove('hidden');
           break;
         case MobileSetup.PLAN_ACTIVATION_INITIATING_ACTIVATION:
-        case MobileSetup.PLAN_ACTIVATION_ACTIVATING:
+        case MobileSetup.PLAN_ACTIVATION_RECONNECTING:
           $('statusHeader').textContent =
               MobileSetup.localStrings_.getString('activating_header');
           $('errorMessage').textContent = '';
@@ -111,7 +113,7 @@ cr.define('mobile', function() {
           break;
         case MobileSetup.PLAN_ACTIVATION_DONE:
           $('statusHeader').textContent = '';
-          $('paymentForm').classList.add('hidden');
+          $('paymentForm').classList.remove('hidden');
           $('finalMessage').classList.remove('hidden');
           $('errorMessage').classList.add('hidden');
           $('systemStatus').classList.add('hidden');

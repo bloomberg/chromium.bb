@@ -27,15 +27,17 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/ssl_config_service.h"
 
 namespace {
 
@@ -46,16 +48,6 @@ const char kJsApiSetTransactionStatus[] = "setTransactionStatus";
 
 const wchar_t kJsDeviceStatusChangedHandler[] =
     L"mobile.MobileSetup.deviceStateChanged";
-
-// Collular device states that are reported to DOM UI layer.
-const char kStateUnknown[] = "unknown";
-const char kStateConnecting[] = "connecting";
-const char kStateError[] = "error";
-const char kStateNeedsPayment[] = "payment";
-const char kStateActivating[] = "activating";
-const char kStateDisconnected[] = "disconnected";
-const char kStateConnected[] = "connected";
-const char kFailedPayment[] = "failed_payment";
 
 // Error codes matching codes defined in the cellular config file.
 const char kErrorDefault[] = "default";
@@ -159,7 +151,7 @@ class MobileSetupHandler : public DOMMessageHandler,
     PLAN_ACTIVATION_PAGE_LOADING = -1,
     PLAN_ACTIVATION_START = 0,
     PLAN_ACTIVATION_INITIATING_ACTIVATION = 1,
-    PLAN_ACTIVATION_ACTIVATING = 2,
+    PLAN_ACTIVATION_RECONNECTING = 2,
     PLAN_ACTIVATION_SHOWING_PAYMENT = 3,
     PLAN_ACTIVATION_DONE = 4,
     PLAN_ACTIVATION_ERROR = 5,
@@ -174,18 +166,21 @@ class MobileSetupHandler : public DOMMessageHandler,
   void SendDeviceInfo();
 
   // Verify the state of cellular network and modify internal state.
-  void EvaluateCellularNetwork(const chromeos::CellularNetwork* network);
+  void EvaluateCellularNetwork(chromeos::CellularNetwork* network);
   // Check the current cellular network for error conditions.
   bool GotActivationError(const chromeos::CellularNetwork* network,
                           std::string* error);
-  void ChangeState(const chromeos::CellularNetwork* network,
+  void ChangeState(chromeos::CellularNetwork* network,
                    PlanActivationState new_state,
                    const std::string& error_description);
-
+  // Prepares network devices for cellular activation process.
+  void SetupActivationProcess(chromeos::CellularNetwork* network);
+  // Resets network devices after cellular activation process.
+  // |network| should be NULL if the activation process failed.
+  void CompleteActivation(chromeos::CellularNetwork* network);
   // Control routines for handling other types of connections during
   // cellular activation.
   void ReEnableOtherConnections();
-  void DisableOtherConnections();
 
   // Converts the currently active CellularNetwork device into a JS object.
   static void GetDeviceInfo(const chromeos::CellularNetwork* network,
@@ -215,6 +210,7 @@ class MobileSetupHandler : public DOMMessageHandler,
   // after the activation of cellular network.
   bool reenable_wifi_;
   bool reenable_ethernet_;
+  bool reenable_cert_check_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -325,7 +321,8 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       state_(PLAN_ACTIVATION_PAGE_LOADING),
       service_path_(service_path),
       reenable_wifi_(false),
-      reenable_ethernet_(false) {
+      reenable_ethernet_(false),
+      reenable_cert_check_(false) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -333,7 +330,6 @@ MobileSetupHandler::~MobileSetupHandler() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   lib->RemoveObserver(this);
   lib->RemoveProperyObserver(this);
-  // net::SSLConfigService::AllowRevChecking();
   ReEnableOtherConnections();
 }
 
@@ -344,6 +340,7 @@ DOMMessageHandler* MobileSetupHandler::Attach(DOMUI* dom_ui) {
 void MobileSetupHandler::Init(TabContents* contents) {
   tab_contents_ = contents;
   LoadCellularConfig();
+  SetupActivationProcess(GetCellularNetwork(service_path_));
 }
 
 void MobileSetupHandler::RegisterMessages() {
@@ -408,7 +405,7 @@ void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
   lib->AddObserver(this);
   lib->AddProperyObserver(network->service_path().c_str(),
                           this);
-  state_ = PLAN_ACTIVATION_START;
+  ChangeState(network, PLAN_ACTIVATION_START, std::string());
   EvaluateCellularNetwork(network);
 }
 
@@ -424,18 +421,15 @@ void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
 
   // The payment is received, try to reconnect and check the status all over
   // again.
-  if (LowerCaseEqualsASCII(status, "OK")) {
-    chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
-        GetNetworkLibrary();
-    ChangeState(
-        lib->cellular_network(),
-        PLAN_ACTIVATION_START, std::string());
+  if (LowerCaseEqualsASCII(status, "ok")) {
+    ChangeState(GetCellularNetwork(), PLAN_ACTIVATION_START, std::string());
+    EvaluateCellularNetwork(GetCellularNetwork());
   }
 }
 
 
 void MobileSetupHandler::EvaluateCellularNetwork(
-    const chromeos::CellularNetwork* network) {
+    chromeos::CellularNetwork* network) {
   if (!dom_ui_)
     return;
 
@@ -454,17 +448,20 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     case PLAN_ACTIVATION_START:
       if (network) {
         switch (network->activation_state()) {
-          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
           case chromeos::ACTIVATION_STATE_ACTIVATED:
             if (network->failed_or_disconnected()) {
-              new_state = PLAN_ACTIVATION_ACTIVATING;
+              new_state = PLAN_ACTIVATION_RECONNECTING;
             } else if (network->connection_state() == chromeos::STATE_READY) {
-              new_state = network->restricted_pool() ?
-                  PLAN_ACTIVATION_SHOWING_PAYMENT : PLAN_ACTIVATION_DONE;
+              if (network->restricted_pool()) {
+                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+              } else {
+                new_state = PLAN_ACTIVATION_DONE;
+              }
             }
             break;
           case chromeos::ACTIVATION_STATE_UNKNOWN:
           case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
+          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
             if (network->failed_or_disconnected()) {
               new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
             } else if (network->connected()) {
@@ -485,7 +482,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         switch (network->activation_state()) {
           case chromeos::ACTIVATION_STATE_ACTIVATED:
             if (network->failed_or_disconnected()) {
-              new_state = PLAN_ACTIVATION_ACTIVATING;
+              new_state = PLAN_ACTIVATION_RECONNECTING;
             } else if (network->connection_state() == chromeos::STATE_READY) {
               if (network->restricted_pool()) {
                 new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
@@ -498,7 +495,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
             if (network->connected())
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             else
-              new_state = PLAN_ACTIVATION_ACTIVATING;
+              new_state = PLAN_ACTIVATION_RECONNECTING;
             break;
           case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
             // Wait in this state until activation state changes.
@@ -510,7 +507,7 @@ void MobileSetupHandler::EvaluateCellularNetwork(
         }
       }
       break;
-    case PLAN_ACTIVATION_ACTIVATING:
+    case PLAN_ACTIVATION_RECONNECTING:
       // Wait until the service shows up and gets activated.
       if (network) {
         switch (network->activation_state()) {
@@ -561,8 +558,8 @@ const char* MobileSetupHandler::GetStateDescription(
       return "ACTIVATION_START";
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       return "INITIATING_ACTIVATION";
-    case PLAN_ACTIVATION_ACTIVATING :
-      return "ACTIVATING";
+    case PLAN_ACTIVATION_RECONNECTING:
+      return "RECONNECTING";
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
       return "SHOWING_PAYMENT";
     case PLAN_ACTIVATION_DONE:
@@ -573,7 +570,26 @@ const char* MobileSetupHandler::GetStateDescription(
   return "UNKNOWN";
 }
 
-void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
+
+void MobileSetupHandler::CompleteActivation(
+    chromeos::CellularNetwork* network) {
+  // Remove observers, we are done with this page.
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
+  // If we have successfully activated the connection, set autoconnect flag.
+  if (network) {
+    network->set_auto_connect(true);
+    lib->SaveCellularNetwork(network);
+  }
+  lib->RemoveObserver(this);
+  lib->RemoveProperyObserver(this);
+  // Reactivate other types of connections if we have
+  // shut them down previously.
+  ReEnableOtherConnections();
+}
+
+
+void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
                                      PlanActivationState new_state,
                                      const std::string& error_description) {
   static bool first_time = true;
@@ -586,7 +602,6 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
   state_ = new_state;
   switch (new_state) {
     case PLAN_ACTIVATION_START:
-      DisableOtherConnections();
       break;
     case PLAN_ACTIVATION_INITIATING_ACTIVATION:
       DCHECK(network);
@@ -594,7 +609,7 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
       if (!network->StartActivation())
         new_state = PLAN_ACTIVATION_ERROR;
       break;
-    case PLAN_ACTIVATION_ACTIVATING: {
+    case PLAN_ACTIVATION_RECONNECTING: {
       DCHECK(network);
       if (network) {
         chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
@@ -607,19 +622,13 @@ void MobileSetupHandler::ChangeState(const chromeos::CellularNetwork* network,
     case PLAN_ACTIVATION_SHOWING_PAYMENT:
       // Fix for fix SSL for the walled gardens where cert chain verification
       // might not work.
-      // net::SSLConfigService::DisallowRevChecking();
       break;
     case PLAN_ACTIVATION_DONE:
+      DCHECK(network);
+      CompleteActivation(network);
+      break;
     case PLAN_ACTIVATION_ERROR: {
-      // net::SSLConfigService::AllowRevChecking();
-      // Remove observers, we are done with this page.
-      chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
-          GetNetworkLibrary();
-      lib->RemoveObserver(this);
-      lib->RemoveProperyObserver(this);
-      // Reactivate other types of connections if we have
-      // shut them down previously.
-      ReEnableOtherConnections();
+      CompleteActivation(NULL);
       break;
     }
     default:
@@ -646,11 +655,38 @@ void MobileSetupHandler::ReEnableOtherConnections() {
     reenable_wifi_ = false;
     lib->EnableCellularNetworkDevice(true);
   }
+
+  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  if (reenable_cert_check_) {
+    reenable_cert_check_ = false;
+    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled,
+                      reenable_cert_check_);
+  }
 }
 
-void MobileSetupHandler::DisableOtherConnections() {
+
+void MobileSetupHandler::SetupActivationProcess(
+    chromeos::CellularNetwork* network) {
+  if (!network)
+    return;
+
+  // Disable SSL cert checks since we will be doing this in
+  // restricted pool.
+  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  if (!reenable_cert_check_ &&
+      prefs->GetBoolean(
+          prefs::kCertRevocationCheckingEnabled)) {
+    reenable_cert_check_ = true;
+    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, false);
+  }
+
   chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
       GetNetworkLibrary();
+  // Disable autoconnect to cellular network.
+  network->set_auto_connect(false);
+  lib->SaveCellularNetwork(network);
+
+  // Disable ethernet and wifi.
   if (!reenable_ethernet_ && lib->ethernet_enabled()) {
     reenable_ethernet_ = true;
     lib->EnableEthernetNetworkDevice(false);
@@ -660,6 +696,7 @@ void MobileSetupHandler::DisableOtherConnections() {
     lib->EnableCellularNetworkDevice(false);
   }
 }
+
 
 bool MobileSetupHandler::GotActivationError(
     const chromeos::CellularNetwork* network, std::string* error) {
