@@ -2505,7 +2505,7 @@ void RenderView::runModal() {
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
   bool found = false;
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   WebPluginInfo info;
   GURL url(params.url);
@@ -2520,7 +2520,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   if (!found)
     return NULL;
-  DCHECK(setting != CONTENT_SETTING_DEFAULT);
+  DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
   scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
   group->AddPlugin(info, 0);
@@ -2536,10 +2536,13 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return NULL;
   }
 
+  ContentSetting host_setting =
+      current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS];
   if (info.path.value() == kDefaultPluginLibraryName ||
-      setting == CONTENT_SETTING_ALLOW) {
+      plugin_setting == CONTENT_SETTING_ALLOW ||
+      host_setting == CONTENT_SETTING_ALLOW) {
     scoped_refptr<pepper::PluginModule> pepper_module(
-    PepperPluginRegistry::GetInstance()->GetModule(info.path));
+        PepperPluginRegistry::GetInstance()->GetModule(info.path));
     if (pepper_module) {
       return CreatePepperPlugin(frame,
                                 params,
@@ -2554,7 +2557,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   int resource_id;
   int message_id;
-  if (setting == CONTENT_SETTING_ASK) {
+  if (plugin_setting == CONTENT_SETTING_ASK) {
     resource_id = IDR_BLOCKED_PLUGIN_HTML;
     message_id = IDS_PLUGIN_LOAD;
   } else {
@@ -4527,6 +4530,8 @@ void RenderView::OnInstallMissingPlugin() {
 }
 
 void RenderView::OnLoadBlockedPlugins() {
+  current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
+      CONTENT_SETTING_ALLOW;
   NotificationService::current()->Notify(NotificationType::SHOULD_LOAD_PLUGINS,
                                          Source<RenderView>(this),
                                          NotificationService::NoDetails());

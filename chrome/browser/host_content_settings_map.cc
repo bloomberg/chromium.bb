@@ -328,12 +328,14 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
 
   AutoLock auto_lock(lock_);
 
-  // Make the remaining defaults explicit.
-  for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
-    if (output.settings[j] == CONTENT_SETTING_DEFAULT ||
-        RequiresResourceIdentifier(ContentSettingsType(j)))
+  // If we require a resource identifier, set the content settings to default,
+  // otherwise make the defaults explicit.
+  for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
+    if (RequiresResourceIdentifier(ContentSettingsType(j)))
+      output.settings[j] = CONTENT_SETTING_DEFAULT;
+    else if (output.settings[j] == CONTENT_SETTING_DEFAULT)
       output.settings[j] = default_content_settings_.settings[j];
-
+  }
   return output;
 }
 
