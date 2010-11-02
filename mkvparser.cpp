@@ -4425,7 +4425,6 @@ short BlockGroup::GetNextTimeCode() const
 //}
 
 
-
 Block::Block(long long start, long long size_, IMkvReader* pReader) :
     m_start(start),
     m_size(size_)
@@ -4447,26 +4446,234 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
     pos += 2;
     assert((stop - pos) >= 1);
 
-    const long hr = pReader->Read(pos, 1, &m_flags);
-    assert(hr == 0L);
+    long status = pReader->Read(pos, 1, &m_flags);
+    assert(status == 0);
 
-    const int invisible = int(m_flags & 0x08);
+    const int invisible = int(m_flags & 0x08) >> 3;
     invisible;
-    assert(!invisible);
+    assert(!invisible);  //TODO
 
-    const int lacing = int(m_flags & 0x06);
-    lacing;
-    assert(!lacing);
+    const int lacing = int(m_flags & 0x06) >> 1;
 
-    ++pos;
+    ++pos;  //consume flags byte
     assert(pos <= stop);
 
-    m_frameOff = pos;
+    if (lacing == 0)  //no lacing
+    {
+        m_frame_count = 1;
+        m_frames = new Frame[m_frame_count];
 
-    const long long frame_size = stop - pos;
-    assert(frame_size <= LONG_MAX);
+        Frame& f = m_frames[0];
+        f.pos = pos;
 
-    m_frameSize = static_cast<long>(frame_size);
+        const long long frame_size = stop - pos;
+        assert(frame_size <= LONG_MAX);
+
+        f.len = static_cast<long>(frame_size);
+
+        return;
+    }
+
+    assert(pos < stop);
+
+    unsigned char count;
+
+    status = pReader->Read(pos, 1, &count);
+    assert(status == 0);
+
+    ++pos;  //consume frame count
+    assert(pos <= stop);
+
+    m_frame_count = ++count;
+    m_frames = new Frame[m_frame_count];
+
+    if (lacing == 1)  //Xiph
+    {
+        Frame* pf = m_frames;
+        Frame* const pf_end = pf + m_frame_count;
+
+        long size = 0;
+
+        while (count > 1)
+        {
+            long frame_size = 0;
+
+            for (;;)
+            {
+                unsigned char val;
+
+                status = pReader->Read(pos, 1, &val);
+                assert(status == 0);
+
+                ++pos;  //consume xiph size byte
+
+                frame_size += val;
+
+                if (val < 255)
+                    break;
+            }
+
+            Frame& f = *pf++;
+            assert(pf < pf_end);
+
+            f.len = frame_size;
+            size += frame_size;  //contribution of this frame
+
+            --count;
+        }
+
+        assert(pf < pf_end);
+        assert(pos < stop);
+
+        {
+            Frame& f = *pf++;
+            assert(pf == pf_end);
+
+            const long long total_size = stop - pos;
+            assert(total_size > size);
+
+            const long long frame_size = total_size - size;
+            assert(frame_size <= LONG_MAX);
+
+            f.len = static_cast<long>(frame_size);
+        }
+
+        pf = m_frames;
+        while (pf != pf_end)
+        {
+            Frame& f = *pf++;
+            assert((pos + f.len) <= stop);
+
+            f.pos = pos;
+            pos += f.len;
+        }
+
+        assert(pos == stop);
+    }
+    else if (lacing == 2)  //fixed-size lacing
+    {
+        const long long total_size = stop - pos;
+        assert((total_size % m_frame_count) == 0);
+
+        const long long frame_size = total_size / m_frame_count;
+        assert(frame_size <= LONG_MAX);
+
+        Frame* pf = m_frames;
+        Frame* const pf_end = pf + m_frame_count;
+
+        while (pf != pf_end)
+        {
+            assert((pos + frame_size) <= stop);
+
+            Frame& f = *pf++;
+
+            f.pos = pos;
+            f.len = static_cast<long>(frame_size);
+
+            pos += frame_size;
+        }
+
+        assert(pos == stop);
+    }
+    else
+    {
+        assert(lacing == 3);  //EBML lacing
+        assert(pos < stop);
+
+        long size = 0;
+
+        long long frame_size = ReadUInt(pReader, pos, len);
+        assert(frame_size > 0);
+        assert(frame_size <= LONG_MAX);
+        assert((pos + len) <= stop);
+
+        pos += len; //consume length of size of first frame
+        assert((pos + frame_size) <= stop);
+
+        Frame* pf = m_frames;
+        Frame* const pf_end = pf + m_frame_count;
+
+        {
+            Frame& curr = *pf;
+
+            curr.len = static_cast<long>(frame_size);
+            size += curr.len;  //contribution of this frame
+        }
+
+        --count;
+
+        while (count > 1)
+        {
+            assert(pos < stop);
+            assert(pf < pf_end);
+
+            const Frame& prev = *pf++;
+            assert(pf < pf_end);
+            assert(prev.len == frame_size);
+
+            Frame& curr = *pf;
+
+            const long long delta_size_ = ReadUInt(pReader, pos, len);
+            assert(delta_size_ >= 0);
+            assert((pos + len) <= stop);
+
+            pos += len;  //consume length of (delta) size
+            assert(pos <= stop);
+
+            const int exp = 7*len - 1;
+            const long long bias = (1LL << exp) - 1LL;
+            const long long delta_size = delta_size_ - bias;
+
+            frame_size += delta_size;
+            assert(frame_size > 0);
+            assert(frame_size <= LONG_MAX);
+
+            curr.len = static_cast<long>(frame_size);
+            size += curr.len;  //contribution of this frame
+
+            --count;
+        }
+
+        {
+            assert(pos < stop);
+            assert(pf < pf_end);
+
+            const Frame& prev = *pf++;
+            assert(pf < pf_end);
+            assert(prev.len == frame_size);
+
+            Frame& curr = *pf++;
+            assert(pf == pf_end);
+
+            const long long total_size = stop - pos;
+            assert(total_size > 0);
+            assert(total_size > size);
+
+            frame_size = total_size - size;
+            assert(frame_size > 0);
+            assert(frame_size <= LONG_MAX);
+
+            curr.len = static_cast<long>(frame_size);
+        }
+
+        pf = m_frames;
+        while (pf != pf_end)
+        {
+            Frame& f = *pf++;
+            assert((pos + f.len) <= stop);
+
+            f.pos = pos;
+            pos += f.len;
+        }
+
+        assert(pos == stop);
+    }
+}
+
+
+Block::~Block()
+{
+    delete[] m_frames;
 }
 
 
@@ -4524,6 +4731,7 @@ void Block::SetKey(bool bKey)
 }
 
 
+#if 0
 long long Block::GetOffset() const
 {
   return m_frameOff;
@@ -4535,10 +4743,8 @@ long Block::GetSize() const
     return m_frameSize;
 }
 
-
 long Block::Read(IMkvReader* pReader, unsigned char* buf) const
 {
-
     assert(pReader);
     assert(buf);
 
@@ -4546,6 +4752,35 @@ long Block::Read(IMkvReader* pReader, unsigned char* buf) const
 
     return hr;
 }
+#else
+int Block::GetFrameCount() const
+{
+    return m_frame_count;
+}
+
+
+const Block::Frame& Block::GetFrame(int idx) const
+{
+    assert(idx >= 0);
+    assert(idx < m_frame_count);
+
+    const Frame& f = m_frames[idx];
+    assert(f.pos > 0);
+    assert(f.len > 0);
+
+    return f;
+}
+
+
+long Block::Frame::Read(IMkvReader* pReader, unsigned char* buf) const
+{
+    assert(pReader);
+    assert(buf);
+
+    const long status = pReader->Read(pos, len, buf);
+    return status;
+}
+#endif
 
 
 }  //end namespace mkvparser

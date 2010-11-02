@@ -73,6 +73,7 @@ public:
     const long long m_size;
 
     Block(long long start, long long size, IMkvReader*);
+    ~Block();
 
     long long GetTrackNumber() const;
     long long GetTimeCode(Cluster*) const;  //absolute, but not scaled
@@ -80,16 +81,36 @@ public:
     bool IsKey() const;
     void SetKey(bool);
 
+    int GetFrameCount() const;  //to index frames: [0, count)
+
+    struct Frame
+    {
+        long long pos;  //absolute offset
+        long len;
+
+        long Read(IMkvReader*, unsigned char*) const;
+    };
+
+#if 0
     long long GetOffset() const;
     long GetSize() const;
     long Read(IMkvReader*, unsigned char*) const;
+#else
+    const Frame& GetFrame(int frame_index) const;
+#endif
 
 private:
     long long m_track;   //Track::Number()
     short m_timecode;  //relative to cluster
     unsigned char m_flags;
+
+#if 0
     long long m_frameOff;
     long m_frameSize;
+#else
+    Frame* m_frames;
+    int m_frame_count;
+#endif
 
 };
 
