@@ -8,9 +8,9 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 
-class GPUTest : public UITest {
+class GPUUITest : public UITest {
  protected:
-  GPUTest() {
+  GPUUITest() {
   }
 
   virtual void SetUp() {
@@ -21,14 +21,13 @@ class GPUTest : public UITest {
   FilePath gpu_test_dir_;
 };
 
-// TODO(apatrick): Other pending changes will fix this for mac.
-#if defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_UITestLaunchedWithOSMesa DISABLED_UITestLaunchedWithOSMesa
 #else
 #define MAYBE_UITestLaunchedWithOSMesa UITestLaunchedWithOSMesa
 #endif
 
-TEST_F(GPUTest, MAYBE_UITestLaunchedWithOSMesa) {
+TEST_F(GPUUITest, MAYBE_UITestLaunchedWithOSMesa) {
   // Check the webgl test reports success and that the renderer was OSMesa.
   // We use OSMesa for tests in order to get consistent results across a
   // variety of boxes.
