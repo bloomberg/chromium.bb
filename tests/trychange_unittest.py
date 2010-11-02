@@ -40,7 +40,7 @@ class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'EPILOG', 'EscapeDot', 'GIT', 'GuessVCS', 'GetMungedDiff', 'HELP_STRING',
+      'EPILOG', 'Escape', 'GIT', 'GuessVCS', 'GetMungedDiff', 'HELP_STRING',
       'InvalidScript', 'NoTryServerAccess', 'PrintSuccess', 'SCM', 'SVN',
       'TryChange', 'USAGE',
       'breakpad', 'datetime', 'errno', 'gcl', 'gclient_utils', 'getpass',

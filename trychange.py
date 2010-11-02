@@ -85,8 +85,11 @@ class NoTryServerAccess(Exception):
     return self.args[0] + '\n' + HELP_STRING
 
 
-def EscapeDot(name):
-  return name.replace('.', '-')
+def Escape(name):
+  """Escapes characters that could interfere with the file system or try job
+  parsing.
+  """
+  return re.sub(r'[^\w#-]', '_', name)
 
 
 class SCM(object):
@@ -378,7 +381,7 @@ def _SendChangeSVN(options):
 
       # Diff file
       current_time = str(datetime.datetime.now()).replace(':', '.')
-      file_name = (EscapeDot(options.user) + '.' + EscapeDot(options.name) +
+      file_name = (Escape(options.user) + '.' + Escape(options.name) +
                    '.%s.diff' % current_time)
       full_path = os.path.join(temp_dir, file_name)
       gclient_utils.FileWrite(full_path, options.diff, 'wb')
