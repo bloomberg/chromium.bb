@@ -12,6 +12,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
+#include "native_client/src/trusted/plugin/nexe_arch.h"
 #include "native_client/src/trusted/plugin/ppapi/browser_interface_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
@@ -25,8 +26,14 @@
 #include "ppapi/cpp/module.h"
 
 namespace {
-const char* kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
-const char* kNexesAttribute = "nexes";  // The "nexes" attr of the <embed> tag.
+const char* const kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
+// The "nacl" attribute of the <embed> tag.  The value is expected to be either
+// a URL or URI pointing to the manifest file (which is expeceted to contain
+// JSON matching ISAs with .nexe URLs).
+const char* const kNaclManifestAttribute = "nacl";
+// The "nexes" attr of the <embed> tag, and the key used to find the dicitonary
+// of nexe URLs in the manifest file.
+const char* const kNexesAttribute = "nexes";
 const int32_t kHttpStatusOk = 200;
 }  // namespace
 
@@ -78,12 +85,23 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
     if (src_attr != NULL) {
       status = SetSrcPropertyImpl(src_attr);
     } else {
-      // If there was no "src" attribute, then look for a "nexes" attribute
+      // If there was no "src" attribute, then look for a "nacl" attribute
       // and try to load the ISA defined for this particular sandbox.
-      const char* nexes_attr = LookupArgument(kNexesAttribute);
-      PLUGIN_PRINTF(("PluginPpapi::Init (nexes_attr=%s)\n", nexes_attr));
-      if (nexes_attr != NULL) {
-        status = SetNexesPropertyImpl(nexes_attr);
+      const char* nacl_attr = LookupArgument(kNaclManifestAttribute);
+      PLUGIN_PRINTF(("PluginPpapi::Init (nacl_attr=%s)\n", nacl_attr));
+      if (nacl_attr != NULL) {
+        // TODO(dspringer): if this is a data URI, then grab the JSON from it,
+        // otherwise, issue a GET for the URL.
+      } else {
+        // If there was no "src" or "nacl" attributes, then look for a "nexes"
+        // attribute and try to load the ISA defined for this particular
+        // sandbox.
+        // TODO(dspringer): deprecate this.
+        const char* nexes_attr = LookupArgument(kNexesAttribute);
+        PLUGIN_PRINTF(("PluginPpapi::Init (nexes_attr=%s)\n", nexes_attr));
+        if (nexes_attr != NULL) {
+          status = SetNexesPropertyImpl(nexes_attr);
+        }
       }
     }
   }
@@ -317,4 +335,40 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
   }
 }
 
+bool PluginPpapi::SelectNexeURLFromManifest(
+    const nacl::string& nexe_manifest_json, nacl::string* result) {
+  const nacl::string sandbox_isa(GetSandboxISA());
+  PLUGIN_PRINTF(
+      ("GetNexeURLFromManifest(): sandbox='%s' nexe_manifest_json='%s'.\n",
+       sandbox_isa.c_str(), nexe_manifest_json.c_str()));
+  if (result == NULL)
+    return false;
+  // Eval the JSON via the browser.
+  pp::Var window_object = GetWindowObject();
+  if (!window_object.is_object()) {
+    return false;
+  }
+  nacl::string eval_string("(");
+  eval_string += nexe_manifest_json;
+  eval_string += ")";
+  pp::Var manifest_root = window_object.Call("eval", eval_string);
+  if (!manifest_root.is_object()) {
+    return false;
+  }
+  // Look for the 'nexes' key.
+  if (!manifest_root.HasProperty(kNexesAttribute)) {
+    return false;
+  }
+  pp::Var nexes_dict = manifest_root.GetProperty(kNexesAttribute);
+  // Look for a key with the same name as the ISA string.
+  if (!nexes_dict.HasProperty(sandbox_isa)) {
+    return false;
+  }
+  pp::Var nexe_url = nexes_dict.GetProperty(sandbox_isa);
+  if (!nexe_url.is_string()) {
+    return false;
+  }
+  *result = nexe_url.AsString();
+  return true;
+}
 }  // namespace plugin

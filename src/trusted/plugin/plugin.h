@@ -60,7 +60,7 @@ class Plugin : public PortableHandle {
                             SrpcParams* params);
 
   // The unique identifier for this plugin instance.
-  InstanceIdentifier instance_id() { return instance_id_; }
+  InstanceIdentifier instance_id() const { return instance_id_; }
 
   // The embed/object tag argument list.
   int argc() const { return argc_; }

@@ -101,7 +101,6 @@ else:
   print "Unrecognized architecture: %s" % env['TARGET_ARCHITECTURE']
   Return()
 
-
 common_objs = plugin_env.ComponentObject(common_inputs)
 
 # The common libraries are those used by both the NPAPI and PPAPI plugins.

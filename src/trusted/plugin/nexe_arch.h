@@ -29,14 +29,6 @@ namespace plugin {
 // <platform>/nexe_arch.cc
 const char* GetSandboxISA();
 
-// Parses the JSON pointed at by |nexe_manifest_json| and determines the URL of
-// the nexe module appropriate for the NaCl sandbox implemented by the installed
-// sel_ldr.  On success, |true| is returned and |*result| is updated with the
-// URL taken out of the JSON.  On failure, |false| is returned, and |*result|
-// is updated with an informative error message.
-bool GetNexeURLFromManifest(const nacl::string& nexe_manifest_json,
-                            nacl::string* result);
-
 // Parses the deprecated <embed nexes="..."> attribute and determines the URL
 // of the nexe module appropriate for the NaCl sandbox implemented by the
 // installed sel_ldr.  On success, |true| is returned and |*result| is updated
@@ -52,8 +44,6 @@ bool GetNexeURL(const char* nexes_attr, nacl::string* result);
 // harness directly, and get rid of these wrappers.
 EXTERN_C_BEGIN
 DLLEXPORT const char* NaClPluginGetSandboxISA();
-DLLEXPORT bool NaClPluginGetNexeURLFromManifest(
-    const nacl::string& nexe_manifest_json, nacl::string* result);
 EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NEXE_ARCH_H_

@@ -71,16 +71,6 @@ bool FindNexeForSandbox(const nacl::string& nexes_attr,
 }  // namespace
 
 namespace plugin {
-bool GetNexeURLFromManifest(const nacl::string& nexe_manifest_json,
-                            nacl::string* result) {
-  const nacl::string sandbox_isa(GetSandboxISA());
-  PLUGIN_PRINTF(
-      ("GetNexeURLFromManifest(): sandbox='%s' nexe_manifest_json='%s'.\n",
-       sandbox_isa.c_str(), nexe_manifest_json.c_str()));
-  *result = "Selecting a .nexe ISA from a manifest is not supported yet.";
-  return false;
-}
-
 // TODO(dspringer): deprecate the "nexes" attribute of the <embed> tag and
 // migrate this code to use a JSON parser, per issue:
 //   http://code.google.com/p/nativeclient/issues/detail?id=1040
@@ -93,17 +83,11 @@ bool GetNexeURL(const char* nexes_attr, nacl::string* result) {
       + " sandbox.";
   return false;
 }
-
 }  // namespace plugin
 
 EXTERN_C_BEGIN
 const char* NaClPluginGetSandboxISA() {
   return plugin::GetSandboxISA();
-}
-
-bool NaClPluginGetNexeURLFromManifest(const nacl::string& nexe_manifest,
-                                      nacl::string* result) {
-  return plugin::GetNexeURLFromManifest(nexe_manifest, result);
 }
 EXTERN_C_END
 

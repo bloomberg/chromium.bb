@@ -83,6 +83,29 @@ class PluginPpapi : public pp::Instance, public Plugin {
   pp::URLLoader_Dev nexe_loader_;
   pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
 
+  // Parses the JSON pointed at by |nexe_manifest_json| and determines the URL
+  // of the nexe module appropriate for the NaCl sandbox implemented by the
+  // installed sel_ldr.  The URL is determined from the JSON in
+  // |nexe_manifest_json|, see issue:
+  //   http://code.google.com/p/nativeclient/issues/detail?id=1040
+  // for more details.  The JSON for a .nexe with base name 'hello' that has
+  // builds for x86-32, x86-64 and ARM (for example) is expected to look like
+  // this:
+  // {
+  //   "nexes": {
+  //     "x86-64": "hello-x86-64.nexe",
+  //     "x86-32": "hello-x86-32.nexe",
+  //     "ARM": "hello-arm.nexe"
+  //   }
+  // }
+  // On success, |true| is returned and |*result| is updated with the URL from
+  // the JSON.  On failure, |false| is returned, and |*result| is unchanged.
+  // TODO(dspringer): Note that this routine uses the 'eval' routine on the
+  // browser's window object, and can potentially expose security issues.  See
+  // bug http://code.google.com/p/nativeclient/issues/detail?id=1038.
+  bool SelectNexeURLFromManifest(const nacl::string& nexe_manifest_json,
+                                 nacl::string* result);
+
   // A pointer to the browser (proxy) end of a Proxy pattern connecting the
   // plugin to the .nexe's PPP interface (InitializeModule, Shutdown, and
   // GetInterface).
