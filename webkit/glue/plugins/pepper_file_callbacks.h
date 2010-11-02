@@ -7,7 +7,7 @@
 
 #include "base/platform_file.h"
 #include "base/weak_ptr.h"
-#include "third_party/ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 struct PP_FileInfo_Dev;

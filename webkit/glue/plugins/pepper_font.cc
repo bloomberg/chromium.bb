@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/ppapi/c/dev/ppb_font_dev.h"
-#include "third_party/ppapi/c/pp_rect.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
+#include "ppapi/c/pp_rect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFont.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFontDescription.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"

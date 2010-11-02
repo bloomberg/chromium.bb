@@ -5,8 +5,8 @@
 #include "remoting/client/plugin/pepper_util.h"
 
 #include "base/task.h"
-#include "third_party/ppapi/c/pp_completion_callback.h"
-#include "third_party/ppapi/cpp/module.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/cpp/module.h"
 
 namespace remoting {
 

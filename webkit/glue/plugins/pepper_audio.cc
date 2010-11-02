@@ -5,8 +5,8 @@
 #include "webkit/glue/plugins/pepper_audio.h"
 
 #include "base/logging.h"
-#include "third_party/ppapi/c/dev/ppb_audio_dev.h"
-#include "third_party/ppapi/c/dev/ppb_audio_trusted_dev.h"
+#include "ppapi/c/dev/ppb_audio_dev.h"
+#include "ppapi/c/dev/ppb_audio_trusted_dev.h"
 
 namespace pepper {
 

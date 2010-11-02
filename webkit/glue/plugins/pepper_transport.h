@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_PLUGINS_PEPPER_TRANSPORT_H_
 
 #include "base/scoped_ptr.h"
-#include "third_party/ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 

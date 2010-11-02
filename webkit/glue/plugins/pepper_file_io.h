@@ -9,9 +9,9 @@
 #include "base/platform_file.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
-#include "third_party/ppapi/c/dev/pp_file_info_dev.h"
-#include "third_party/ppapi/c/pp_completion_callback.h"
-#include "third_party/ppapi/c/pp_time.h"
+#include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_time.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 

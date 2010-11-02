@@ -6,8 +6,8 @@
 #define WEBKIT_GLUE_PLUGINS_PEPPER_PRIVATE2_H_
 
 #include "build/build_config.h"
-#include "third_party/ppapi/c/pp_point.h"
-#include "third_party/ppapi/c/pp_rect.h"
+#include "ppapi/c/pp_point.h"
+#include "ppapi/c/pp_rect.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PP_FontDescription_Dev;

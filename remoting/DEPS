@@ -5,6 +5,7 @@ include_rules = [
   "+media/base",
   "+net",
   "+jingle",
+  "+ppapi",
   "+talk",
   "+third_party/npapi"
   "+third_party/protobuf2",
