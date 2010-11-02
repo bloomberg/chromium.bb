@@ -16,7 +16,14 @@
 #define MAYBE_TabOnRemoved TabOnRemoved
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
+// Flaky on linux views. http://crbug.com/61592
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#define MAYBE_Tabs FLAKY_Tabs
+#else
+#define MAYBE_Tabs Tabs
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(test_server()->Start());
 
   // The test creates a tab and checks that the URL of the new tab
