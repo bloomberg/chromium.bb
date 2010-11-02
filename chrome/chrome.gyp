@@ -1189,7 +1189,7 @@
                   '-lgcrypt',
                 ],
               },
-            }],              
+            }],
           ],
         }],
         ['remoting==1', {
@@ -1615,6 +1615,7 @@
             'installer/mini_installer.gyp:*',
             '../app/app.gyp:*',
             '../base/base.gyp:*',
+            '../ceee/ceee.gyp:*',
             '../chrome_frame/chrome_frame.gyp:*',
             '../gfx/gfx.gyp:*',
             '../ipc/ipc.gyp:*',
