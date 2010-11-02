@@ -52,32 +52,16 @@ void RendererHistogramSnapshots::UploadAllHistrograms(int sequence_number) {
           sequence_number, pickled_histograms));
 }
 
-// Extract snapshot data, remember what we've seen so far, and then send off the
-// delta to the browser.
+// Extract snapshot data and then send it off the the Browser process
+// to save it.
 void RendererHistogramSnapshots::UploadHistrogram(
     const Histogram& histogram,
     HistogramPickledList* pickled_histograms) {
+
   // Get up-to-date snapshot of sample stats.
   Histogram::SampleSet snapshot;
   histogram.SnapshotSample(&snapshot);
   const std::string& histogram_name = histogram.histogram_name();
-
-  int corruption = histogram.FindCorruption(snapshot);
-  if (corruption) {
-    NOTREACHED();
-    // Don't send corrupt data to the browser.
-    UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesRenderer",
-                              corruption, Histogram::NEVER_EXCEEDED_VALUE);
-    typedef std::map<std::string, int> ProblemMap;
-    static ProblemMap* inconsistencies = new ProblemMap;
-    int old_corruption = (*inconsistencies)[histogram_name];
-    if (old_corruption == (corruption | old_corruption))
-      return;  // We've already seen this corruption for this histogram.
-    (*inconsistencies)[histogram_name] |= corruption;
-    UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesRendererUnique",
-                              corruption, Histogram::NEVER_EXCEEDED_VALUE);
-    return;
-  }
 
   // Find the already sent stats, or create an empty set.
   LoggedSampleMap::iterator it = logged_samples_.find(histogram_name);
@@ -105,6 +89,7 @@ void RendererHistogramSnapshots::UploadHistogramDelta(
     const Histogram& histogram,
     const Histogram::SampleSet& snapshot,
     HistogramPickledList* pickled_histograms) {
+
   DCHECK(0 != snapshot.TotalCount());
   snapshot.CheckSize(histogram);
 
