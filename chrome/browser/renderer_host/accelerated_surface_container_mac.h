@@ -76,8 +76,11 @@ class AcceleratedSurfaceContainerMac {
   // time the drawing context has changed.
   void ForceTextureReload() { texture_needs_upload_ = true; }
 
-  // Notifies the surface that it was painted to.
+  // Notifies the the container that its surface was painted to.
   void set_was_painted_to(uint64 surface_id);
+
+  // Notifies the container that its surface is invalid.
+  void set_surface_invalid() { was_painted_to_ = false; }
 
   // Returns if the surface should be shown.
   bool should_be_visible() const { return visible_ && was_painted_to_; }

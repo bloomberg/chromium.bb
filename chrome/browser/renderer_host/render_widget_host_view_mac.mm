@@ -450,7 +450,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       text_input_type_(WebKit::WebTextInputTypeNone),
       is_loading_(false),
       is_hidden_(false),
-      shutdown_factory_(this) {
+      shutdown_factory_(this),
+      needs_gpu_visibility_update_after_repaint_(false) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
   // Since we autorelease it, our caller must put |native_view()| into the view
   // hierarchy right after calling us.
@@ -686,45 +687,53 @@ void RenderWidgetHostViewMac::ImeCancelComposition() {
 void RenderWidgetHostViewMac::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
-  if (is_hidden_)
-    return;
+  if (!is_hidden_) {
+    std::vector<gfx::Rect> rects(copy_rects);
 
-  std::vector<gfx::Rect> rects(copy_rects);
+    // Because the findbar might be open, we cannot use scrollRect:by: here.  For
+    // now, simply mark all of scroll rect as dirty.
+    if (!scroll_rect.IsEmpty())
+      rects.push_back(scroll_rect);
 
-  // Because the findbar might be open, we cannot use scrollRect:by: here.  For
-  // now, simply mark all of scroll rect as dirty.
-  if (!scroll_rect.IsEmpty())
-    rects.push_back(scroll_rect);
+    for (size_t i = 0; i < rects.size(); ++i) {
+      NSRect ns_rect = [cocoa_view_ flipRectToNSRect:rects[i]];
 
-  for (size_t i = 0; i < rects.size(); ++i) {
-    NSRect ns_rect = [cocoa_view_ flipRectToNSRect:rects[i]];
-
-    if (about_to_validate_and_paint_) {
-      // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
-      // We're in the middle of executing a -drawRect:, and as soon as it
-      // returns Cocoa will clear its record of what needs display. We instead
-      // use |performSelector:| to call |setNeedsDisplayInRect:| after returning
-      // to the main loop, at which point |drawRect:| is no longer on the stack.
-      DCHECK([NSThread isMainThread]);
-      if (!call_set_needs_display_in_rect_pending_) {
-        [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect)
-                     withObject:nil
-                     afterDelay:0];
-        call_set_needs_display_in_rect_pending_ = true;
-        invalid_rect_ = ns_rect;
+      if (about_to_validate_and_paint_) {
+        // As much as we'd like to use -setNeedsDisplayInRect: here, we can't.
+        // We're in the middle of executing a -drawRect:, and as soon as it
+        // returns Cocoa will clear its record of what needs display. We
+        // instead use |performSelector:| to call |setNeedsDisplayInRect:|
+        // after returning to the main loop, at which point |drawRect:| is no
+        // longer on the stack.
+        DCHECK([NSThread isMainThread]);
+        if (!call_set_needs_display_in_rect_pending_) {
+          [cocoa_view_ performSelector:@selector(callSetNeedsDisplayInRect)
+                       withObject:nil
+                       afterDelay:0];
+          call_set_needs_display_in_rect_pending_ = true;
+          invalid_rect_ = ns_rect;
+        } else {
+          // The old invalid rect is probably invalid now, since the view has
+          // most likely been resized, but there's no harm in dirtying the
+          // union.  In the limit, this becomes equivalent to dirtying the
+          // whole view.
+          invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
+        }
       } else {
-        // The old invalid rect is probably invalid now, since the view has most
-        // likely been resized, but there's no harm in dirtying the union.  In
-        // the limit, this becomes equivalent to dirtying the whole view.
-        invalid_rect_ = NSUnionRect(invalid_rect_, ns_rect);
+        [cocoa_view_ setNeedsDisplayInRect:ns_rect];
       }
-    } else {
-      [cocoa_view_ setNeedsDisplayInRect:ns_rect];
     }
+
+    if (!about_to_validate_and_paint_)
+      [cocoa_view_ displayIfNeeded];
   }
 
+  // If |about_to_validate_and_paint_| is set, then -drawRect: is on the stack
+  // and it's not allowed to call -setHidden on the accelerated view.  In that
+  // case, -callSetNeedsDisplayInRect: will hide it later.
+  // If |about_to_validate_and_paint_| is not set, do it now.
   if (!about_to_validate_and_paint_)
-    [cocoa_view_ displayIfNeeded];
+    HandleDelayedGpuViewHiding();
 }
 
 void RenderWidgetHostViewMac::RenderViewGone() {
@@ -942,16 +951,15 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   [view setSurfaceWasSwapped:YES];
 }
 
-void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
+    bool show_gpu_widget) {
   // Plugins are destroyed on page navigate. The compositor layer on the other
   // hand is created on demand and then stays alive until its renderer process
   // dies (usually on cross-domain navigation). Instead, only a flag
   // |is_gpu_rendering_active()| is flipped when the compositor output should be
   // shown/hidden.
   // Show/hide the view belonging to the compositor here.
-  plugin_container_manager_.set_gpu_rendering_active(
-      GetRenderWidgetHost()->is_gpu_rendering_active());
+  plugin_container_manager_.set_gpu_rendering_active(show_gpu_widget);
 
   gfx::PluginWindowHandle root_handle =
       plugin_container_manager_.root_container_handle();
@@ -963,7 +971,25 @@ void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
     }
     bool visible =
         plugin_container_manager_.SurfaceShouldBeVisible(root_handle);
+    [[it->second window] disableScreenUpdatesUntilFlush];
     [it->second setHidden:!visible];
+  }
+}
+
+void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
+  if (needs_gpu_visibility_update_after_repaint_) {
+    UpdateRootGpuViewVisibility(false);
+    needs_gpu_visibility_update_after_repaint_ = false;
+  }
+}
+
+void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (GetRenderWidgetHost()->is_gpu_rendering_active()) {
+    UpdateRootGpuViewVisibility(
+        GetRenderWidgetHost()->is_gpu_rendering_active());
+  } else {
+    needs_gpu_visibility_update_after_repaint_ = true;
   }
 }
 
@@ -1497,6 +1523,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   [self setNeedsDisplayInRect:renderWidgetHostView_->invalid_rect_];
   renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
   renderWidgetHostView_->invalid_rect_ = NSZeroRect;
+
+  renderWidgetHostView_->HandleDelayedGpuViewHiding();
 }
 
 // Fills with white the parts of the area to the right and bottom for |rect|

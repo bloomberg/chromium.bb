@@ -266,6 +266,14 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   const std::string& selected_text() const { return selected_text_; }
 
+  void UpdateRootGpuViewVisibility(bool show_gpu_widget);
+
+  // When rendering transitions from gpu to software, the gpu widget can't be
+  // hidden until the software backing store has been updated. This method
+  // checks if the GPU view needs to be hidden and hides it if necessary. It
+  // should be called after the software backing store has been painted to.
+  void HandleDelayedGpuViewHiding();
+
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
 
@@ -340,6 +348,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // selected text on the renderer.
   std::string selected_text_;
+
+  // When rendering transitions from gpu to software, the gpu widget can't be
+  // hidden until the software backing store has been updated. This variable is
+  // set when the gpu widget needs to be hidden once a paint is completed.
+  bool needs_gpu_visibility_update_after_repaint_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

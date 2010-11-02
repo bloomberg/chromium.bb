@@ -46,7 +46,7 @@ class AcceleratedSurfaceContainerManagerMac {
   }
 
   // Informs the manager if gpu rendering is active.
-  void set_gpu_rendering_active(bool active) { gpu_rendering_active_ = active; }
+  void set_gpu_rendering_active(bool active);
 
   // Sets the size and backing store of the plugin instance.  There are two
   // versions: the IOSurface version is used on systems where the IOSurface
@@ -75,6 +75,9 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Notifies a surface that it has been painted to.
   void SetSurfaceWasPaintedTo(gfx::PluginWindowHandle id, uint64 surface_id);
+
+  // Notifies the root container that its surface is invalid.
+  void SetRootSurfaceInvalid();
 
   // Returns if a given surface should be shown.
   bool SurfaceShouldBeVisible(gfx::PluginWindowHandle id) const;

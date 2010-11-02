@@ -53,6 +53,13 @@ bool AcceleratedSurfaceContainerManagerMac::IsRootContainer(
       root_container_handle_ == id;
 }
 
+void AcceleratedSurfaceContainerManagerMac::
+    set_gpu_rendering_active(bool active) {
+  if (gpu_rendering_active_ && !active)
+    SetRootSurfaceInvalid();
+  gpu_rendering_active_ = active;
+}
+
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
     gfx::PluginWindowHandle id,
     int32 width,
@@ -130,6 +137,12 @@ void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container)
     container->set_was_painted_to(surface_id);
+}
+
+void AcceleratedSurfaceContainerManagerMac::SetRootSurfaceInvalid() {
+  AutoLock lock(lock_);
+  if (root_container_)
+    root_container_->set_surface_invalid();
 }
 
 bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(
