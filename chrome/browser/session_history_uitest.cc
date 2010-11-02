@@ -80,7 +80,14 @@ class SessionHistoryTest : public UITest {
   net::TestServer test_server_;
 };
 
-TEST_F(SessionHistoryTest, BasicBackForward) {
+#if defined(OS_WIN)
+// See http://crbug.com/61619
+#define MAYBE_BasicBackForward FLAKY_BasicBackForward
+#else
+#define MAYBE_BasicBackForward BasicBackForward
+#endif
+
+TEST_F(SessionHistoryTest, MAYBE_BasicBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -138,8 +145,15 @@ TEST_F(SessionHistoryTest, BasicBackForward) {
   EXPECT_EQ(L"bot3", GetTabTitle());
 }
 
+#if defined(OS_WIN)
+// See http://crbug.com/61619
+#define MAYBE_FrameBackForward FLAKY_FrameBackForward
+#else
+#define MAYBE_FrameBackForward FrameBackForward
+#endif
+
 // Test that back/forward works when navigating in subframes.
-TEST_F(SessionHistoryTest, FrameBackForward) {
+TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -202,8 +216,15 @@ TEST_F(SessionHistoryTest, FrameBackForward) {
   EXPECT_EQ(frames, GetTabURL());
 }
 
+#if defined(OS_WIN)
+// See http://crbug.com/61619
+#define MAYBE_FrameFormBackForward FLAKY_FrameFormBackForward
+#else
+#define MAYBE_FrameFormBackForward FrameFormBackForward
+#endif
+
 // Test that back/forward preserves POST data and document state in subframes.
-TEST_F(SessionHistoryTest, FrameFormBackForward) {
+TEST_F(SessionHistoryTest, MAYBE_FrameFormBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -305,9 +326,17 @@ TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
   EXPECT_EQ(frames, GetTabURL());
 }
 
+
+#if defined(OS_WIN)
+// See http://crbug.com/61619
+#define MAYBE_FragmentBackForward FLAKY_FragmentBackForward
+#else
+#define MAYBE_FragmentBackForward FragmentBackForward
+#endif
+
 // Test that back/forward entries are created for reference fragment
 // navigations. Bug 730379.
-TEST_F(SessionHistoryTest, FragmentBackForward) {
+TEST_F(SessionHistoryTest, MAYBE_FragmentBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
@@ -485,7 +514,14 @@ TEST_F(SessionHistoryTest, FLAKY_HistorySearchXSS) {
   EXPECT_EQ(L"History", GetTabTitle());
 }
 
-TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
+#if defined(OS_WIN)
+// See http://crbug.com/61619
+#define MAYBE_LocationChangeInSubframe FLAKY_LocationChangeInSubframe
+#else
+#define MAYBE_LocationChangeInSubframe LocationChangeInSubframe
+#endif
+
+TEST_F(SessionHistoryTest, MAYBE_LocationChangeInSubframe) {
   ASSERT_TRUE(test_server_.Start());
 
   ASSERT_TRUE(tab_->NavigateToURL(test_server_.GetURL(
