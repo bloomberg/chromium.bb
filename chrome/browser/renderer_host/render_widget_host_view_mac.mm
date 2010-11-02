@@ -409,6 +409,17 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   [self setCachedSize:newSize];
   [super setFrameSize:newSize];
 }
+
+- (BOOL)acceptsFirstResponder {
+  // Accept first responder if the first responder isn't the RWHVMac.
+  return [[self window] firstResponder] != [self superview];
+}
+
+- (BOOL)becomeFirstResponder {
+  // Delegate first responder to the RWHVMac.
+  [[self window] makeFirstResponder:[self superview]];
+  return YES;
+}
 @end
 
 // RenderWidgetHostView --------------------------------------------------------
