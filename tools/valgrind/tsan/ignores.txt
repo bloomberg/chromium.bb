@@ -101,3 +101,6 @@ fun_r:threadLockingTest
 # There is a benign race which is hard to suppress properly,
 # see http://crbug.com/44580
 fun_r:*BrowserThread*GetCurrentThreadIdentifier*
+
+# zlib is smarter than we are, see http://www.zlib.net/zlib_faq.html#faq36
+fun_r:inflate
