@@ -467,5 +467,78 @@
         }],
       ],
     },
+    {
+      'target_name': 'ppapi_proxy',
+      'type': 'static_library',
+      'dependencies': [
+        '../ipc/ipc.gyp:ipc',
+        'ppapi_c',
+      ],
+      'all_dependent_settings': {
+        'include_dirs': [
+           '..',
+        ],
+      },
+      'include_dirs': [
+        '..',
+        '../..',  # For nacl includes to work.
+      ],
+      'sources': [
+        'proxy/callback_tracker.cc',
+        'proxy/callback_tracker.h',
+        'proxy/dispatcher.cc',
+        'proxy/dispatcher.h',
+        'proxy/host_dispatcher.cc',
+        'proxy/host_dispatcher.h',
+        'proxy/host_var_serialization_rules.cc',
+        'proxy/host_var_serialization_rules.h',
+        'proxy/interface_proxy.cc',
+        'proxy/interface_proxy.h',
+        'proxy/plugin_dispatcher.cc',
+        'proxy/plugin_dispatcher.h',
+        'proxy/plugin_resource.cc',
+        'proxy/plugin_resource.h',
+        'proxy/plugin_resource_tracker.cc',
+        'proxy/plugin_resource_tracker.h',
+        'proxy/plugin_var_serialization_rules.cc',
+        'proxy/plugin_var_serialization_rules.h',
+        'proxy/plugin_var_tracker.cc',
+        'proxy/plugin_var_tracker.h',
+        'proxy/ppapi_messages.cc',
+        'proxy/ppapi_messages.h',
+        'proxy/ppapi_messages_internal.h',
+        'proxy/ppapi_param_traits.cc',
+        'proxy/ppapi_param_traits.h',
+        'proxy/ppb_core_proxy.cc',
+        'proxy/ppb_core_proxy.h',
+        'proxy/ppb_graphics_2d_proxy.cc',
+        'proxy/ppb_graphics_2d_proxy.h',
+        'proxy/ppb_image_data_proxy.cc',
+        'proxy/ppb_image_data_proxy.h',
+        'proxy/ppb_instance_proxy.cc',
+        'proxy/ppb_instance_proxy.h',
+        'proxy/ppb_url_loader_proxy.cc',
+        'proxy/ppb_url_loader_proxy.h',
+        'proxy/ppb_var_deprecated_proxy.cc',
+        'proxy/ppb_var_deprecated_proxy.h',
+        'proxy/ppp_class_proxy.cc',
+        'proxy/ppp_class_proxy.h',
+        'proxy/ppp_instance_proxy.cc',
+        'proxy/ppp_instance_proxy.h',
+        'proxy/serialized_var.cc',
+        'proxy/serialized_var.h',
+        'proxy/var_serialization_rules.h',
+      ],
+      'defines': [
+      ],
+      'conditions': [
+        ['OS=="win"', {
+        }],
+        ['OS=="linux"', {
+        }],
+        ['OS=="mac"', {
+        }]
+      ],
+    },
   ],
 }
