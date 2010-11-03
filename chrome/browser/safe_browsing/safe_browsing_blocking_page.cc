@@ -44,7 +44,7 @@ static const char* const kSbDiagnosticUrl =
 static const char* const kSbReportPhishingUrl =
     "http://www.google.com/safebrowsing/report_error/";
 
-// URL for the "Learn more" link on the malware blocking page.
+// URL for the "Learn more" link on the multi threat malware blocking page.
 static const char* const kLearnMoreMalwareUrl =
     "http://www.google.com/support/bin/answer.py?answer=45449&topic=360"
     "&sa=X&oi=malwarewarninglink&resnum=1&ct=help";
@@ -54,8 +54,12 @@ static const char* const kLearnMorePhishingUrl =
     "http://www.google.com/support/bin/answer.py?answer=106318";
 
 static const wchar_t* const kSbDiagnosticHtml =
-    L"<a href=\"\" onClick=\"sendCommand('showDiagnostic'); return false;\" "
-    L"onMouseDown=\"return false;\">%ls</a>";
+    L"<a href=\"\" onclick=\"sendCommand('showDiagnostic'); return false;\" "
+    L"onmousedown=\"return false;\">%ls</a>";
+
+static const wchar_t* const kPLinkHtml =
+    L"<a href=\"\" onclick=\"sendCommand('proceed'); return false;\" "
+    L"onmousedown=\"return false;\">%ls</a>";
 
 // The commands returned by the page when the user performs an action.
 static const char* const kShowDiagnosticCommand = "showDiagnostic";
@@ -209,7 +213,7 @@ void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
         l10n_util::GetStringF(IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION1,
                               UTF8ToWide(tab()->GetURL().host())),
         l10n_util::GetString(IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION2),
-        l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3));
+        l10n_util::GetString(IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION3));
   } else {
     // Just phishing.
     PopulateStringDictionary(
@@ -222,9 +226,11 @@ void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
   }
 
   strings->SetString("confirm_text",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION_AGREE));
+                     l10n_util::GetStringUTF16(
+                         IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION_AGREE));
   strings->SetString("continue_button",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_PROCEED_BUTTON));
+                     l10n_util::GetStringUTF16(
+                         IDS_SAFE_BROWSING_MULTI_MALWARE_PROCEED_BUTTON));
   strings->SetString("back_button",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
   strings->SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
@@ -232,41 +238,50 @@ void SafeBrowsingBlockingPage::PopulateMultipleThreatStringDictionary(
 
 void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
     DictionaryValue* strings) {
-  std::wstring link = StringPrintf(kSbDiagnosticHtml,
+  std::wstring diagnostic_link = StringPrintf(kSbDiagnosticHtml,
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_DIAGNOSTIC_PAGE).c_str());
 
   strings->SetString("badURL", url().host());
   // Check to see if we're blocking the main page, or a sub-resource on the
   // main page.
-  std::wstring description1, description2;
+  std::wstring description1, description3, description5;
   if (is_main_frame_) {
     description1 = l10n_util::GetStringF(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION1,
-                                         UTF8ToWide(url().host()));
-    description2 = l10n_util::GetStringF(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION2,
-                                         link,
                                          UTF8ToWide(url().host()));
   } else {
     description1 = l10n_util::GetStringF(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION4,
                                          UTF8ToWide(tab()->GetURL().host()),
                                          UTF8ToWide(url().host()));
-    description2 = l10n_util::GetStringF(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION5,
-                                         link,
-                                         UTF8ToWide(url().host()));
   }
+
+  std::wstring proceed_link = StringPrintf(kPLinkHtml,
+      l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK).c_str());
+  description3 = l10n_util::GetStringF(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3,
+                                       proceed_link);
 
   PopulateStringDictionary(
       strings,
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_TITLE),
       l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_HEADLINE),
-      description1, description2,
-      l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION3));
+      description1,
+      l10n_util::GetString(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION2),
+      description3);
 
-  strings->SetString("confirm_text",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION_AGREE));
-  strings->SetString("continue_button",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_PROCEED_BUTTON));
+  description5 = l10n_util::GetStringF(IDS_SAFE_BROWSING_MALWARE_DESCRIPTION5,
+                                       UTF8ToWide(url().host()),
+                                       UTF8ToWide(url().host()),
+                                       diagnostic_link);
+
+  strings->SetString("description5", WideToUTF16Hack(description5));
+
   strings->SetString("back_button",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
+  strings->SetString("more_info_button",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_MORE_INFO_BUTTON));
+  strings->SetString("less_info_button",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_LESS_INFO_BUTTON));
+  strings->SetString("proceed_link",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK));
   strings->SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
