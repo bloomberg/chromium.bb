@@ -19,6 +19,11 @@
           'HAVE_STRNLEN',
         ],
       }],
+      ['OS=="linux"', {
+        'cflags': [
+          '-fPIC',
+        ],
+      }],
     ],
     'defines': [
       # For Mesa
