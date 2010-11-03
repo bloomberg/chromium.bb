@@ -46,7 +46,11 @@ class HostResolver;
 
 namespace notifier {
 
-class MediatorThreadImpl : public MediatorThread, public Login::Delegate,
+// Workaround for MSVS 2005 bug that fails to handle inheritance from a nested
+// class properly if it comes directly on a base class list.
+typedef Login::Delegate LoginDelegate;
+
+class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
                            public sigslot::has_slots<> {
  public:
   explicit MediatorThreadImpl(const NotifierOptions& notifier_options);

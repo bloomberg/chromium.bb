@@ -36,11 +36,15 @@ class ConnectionOptions;
 class LoginSettings;
 struct ServerInformation;
 
+// Workaround for MSVS 2005 bug that fails to handle inheritance from a nested
+// class properly if it comes directly on a base class list.
+typedef SingleLoginAttempt::Delegate SingleLoginAttemptDelegate;
+
 // Does the login, keeps it alive (with refreshing cookies and reattempting
 // login when disconnected), figures out what actions to take on the various
 // errors that may occur.
 class Login : public net::NetworkChangeNotifier::Observer,
-              public SingleLoginAttempt::Delegate {
+              public SingleLoginAttemptDelegate {
  public:
   class Delegate {
    public:
