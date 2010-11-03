@@ -192,7 +192,11 @@ html[os='mac'] input[type='submit'] {
   function checkAllDataTypeCheckboxes() {
     var checkboxes = document.getElementsByName("dataTypeCheckbox");
     for (var i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].checked = true;
+      // Only check the visible ones (since there's no way to uncheck
+      // the invisible ones).
+      if (checkboxes[i].parentElement.className == "sync-item-show") {
+        checkboxes[i].checked = true;
+      }
     }
   }
 
@@ -302,7 +306,8 @@ html[os='mac'] input[type='submit'] {
     var atLeastOneChecked = false;
     var atLeastOneEnabled = false;
     for (var i = 0; i < checkboxes.length; i++) {
-      if (!checkboxes[i].disabled && checkboxes[i].style.display != 'none') {
+      if (!checkboxes[i].disabled &&
+          checkboxes[i].parentElement.className == "sync-item-show") {
         atLeastOneEnabled = true;
         if (checkboxes[i].checked) {
           atLeastOneChecked = true;
