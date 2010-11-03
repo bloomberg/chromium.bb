@@ -53,3 +53,7 @@ NewTabUITest.NTPHasLoginName
 # Mac: See http://crbug.com/30661, Linux/CrOS: http://crbug.com/49576.
 LayoutPluginTester.NPObjectReleasedOnDestruction
 LayoutPluginTester.NPObjectSetException
+
+# Fails on valgrind
+# http://crbug.com/61601
+GPUUITest.UITestLaunchedWithOSMesa
