@@ -128,12 +128,6 @@ class BrowserView : public BrowserBubbleHost,
   // BrowserView's parent.
   gfx::Rect GetClientAreaBounds() const;
 
-  // Returns true if the Find Bar should be rendered such that it appears to
-  // blend with the Bookmarks Bar. False if it should appear to blend with the
-  // main Toolbar. The return value will vary depending on whether or not the
-  // Bookmark Bar is always shown.
-  bool ShouldFindBarBlendWithBookmarksBar() const;
-
   // Returns the constraining bounding box that should be used to lay out the
   // FindBar within. This is _not_ the size of the find bar, just the bounding
   // box it should be laid out within. The coordinate system of the returned

@@ -555,12 +555,6 @@ gfx::Rect BrowserView::GetClientAreaBounds() const {
   return container_bounds;
 }
 
-bool BrowserView::ShouldFindBarBlendWithBookmarksBar() const {
-  if (bookmark_bar_view_.get())
-    return bookmark_bar_view_->IsAlwaysShown();
-  return false;
-}
-
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
   return GetBrowserViewLayout()->GetFindBarBoundingBox();
 }
