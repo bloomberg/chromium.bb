@@ -22,10 +22,12 @@ BUGJEREMY WIN LINUX : fast/block/basic/truncation-rtl.html = IMAGE+TEXT
 BUGJEREMY MAC : fast/block/basic/truncation-rtl.html = IMAGE
 BUGPFELDMAN WIN : inspector/console-log-syntax-error.html = TEXT
 BUGPKASTING WIN : fast/images/gif-loop-count.html = IMAGE
-BUG61411 WIN : inspector/styles-source-lines-inline.html = TEXT
 
 // Was already marked as flaky on Win, seems to fail on Mac too.
 BUG31342 MAC WIN RELEASE : security/block-test-no-port.html = TEXT PASS
 
 BUGDIMICH MAC : fast/canvas/canvas-zoom.html = IMAGE
 BUGDIMICH MAC : fast/repaint/selection-rl.html = IMAGE
+
+// probably due to WK r71198
+BUGROLANDSTEINER MAC : fast/events/remove-event-listener.html = CRASH
