@@ -483,7 +483,7 @@ void HandleTestParameters(const CommandLine& command_line) {
 void RunUIMessageLoop(BrowserProcess* browser_process) {
   TRACE_EVENT_BEGIN("BrowserMain:MESSAGE_LOOP", 0, "");
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
   // TODO(evanm): turn this on for all platforms.

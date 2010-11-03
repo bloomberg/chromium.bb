@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/singleton.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -79,6 +80,11 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
 
 std::string SharedResourcesDataSource::GetMimeType(
     const std::string& path) const {
+  // Requests should not block on the disk!  On Windows this goes to the
+  // registry.
+  //   http://code.google.com/p/chromium/issues/detail?id=59849
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   std::string mime_type;
   net::GetMimeTypeFromFile(FilePath().AppendASCII(path), &mime_type);
   return mime_type;
