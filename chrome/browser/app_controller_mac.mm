@@ -27,6 +27,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
+#import "chrome/browser/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/cocoa/history_menu_bridge.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
@@ -242,6 +243,12 @@ void RecordLastRunAppBundlePath() {
   // them in, but I'm not sure about UX; we'd also want to disable other things
   // though.) http://crbug.com/40861
 
+  // Check if the user really wants to quit by employing the confirm-to-quit
+  // mechanism.
+  if (!browser_shutdown::IsTryingToQuit() &&
+      [self applicationShouldTerminate:app] != NSTerminateNow)
+    return NO;
+
   size_t num_browsers = BrowserList::size();
 
   // Give any print jobs in progress time to finish.
@@ -265,6 +272,92 @@ void RecordLastRunAppBundlePath() {
     // TODO(viettrungluu): Were we to remove Apple Event handlers above, we
     // would have to reinstall them here. http://crbug.com/40861
   }
+}
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
+  // Check if the experiment is enabled.
+  const CommandLine* commandLine(CommandLine::ForCurrentProcess());
+  if (!commandLine->HasSwitch(switches::kEnableConfirmToQuit))
+    return NSTerminateNow;
+
+  // If the application is going to terminate as the result of a Cmd+Q
+  // invocation, use the special sauce to prevent accidental quitting.
+  // http://dev.chromium.org/developers/design-documents/confirm-to-quit-experiment
+  NSEvent* currentEvent = [app currentEvent];
+  if ([currentEvent type] == NSKeyDown) {
+    ConfirmQuitPanelController* quitPanel =
+        [[ConfirmQuitPanelController alloc] init];  // Releases self.
+    // Show the info panel that explains what the user must to do confirm quit.
+    [quitPanel showWindow:self];
+
+    // How long the user must hold down Cmd+Q to confirm the quit.
+    const NSTimeInterval kTimeToConfirmQuit = 1.5;
+    // Leeway between the |targetDate| and the current time that will confirm a
+    // quit.
+    const NSTimeInterval kTimeDeltaFuzzFactor = 1.0;
+    // Duration of the window fade out animation.
+    const NSTimeInterval kWindowFadeAnimationDuration = 0.2;
+
+    // Spin a nested run loop until the |targetDate| is reached or a KeyUp event
+    // is sent.
+    NSDate* targetDate =
+        [NSDate dateWithTimeIntervalSinceNow:kTimeToConfirmQuit];
+    BOOL willQuit = NO;
+    NSEvent* nextEvent = nil;
+    do {
+      // Dequeue events until a key up is received.
+      nextEvent = [app nextEventMatchingMask:NSKeyUpMask
+                                   untilDate:nil
+                                      inMode:NSEventTrackingRunLoopMode
+                                     dequeue:YES];
+
+      // Wait for the time expiry to happen. Once past the hold threshold,
+      // commit to quitting and hide all the open windows.
+      if (!willQuit) {
+        NSDate* now = [NSDate date];
+        NSTimeInterval difference = [targetDate timeIntervalSinceDate:now];
+        if (difference < kTimeDeltaFuzzFactor) {
+          willQuit = YES;
+
+          // At this point, the quit has been confirmed and windows should all
+          // fade out to convince the user to release the key combo to finalize
+          // the quit.
+          [NSAnimationContext beginGrouping];
+          [[NSAnimationContext currentContext] setDuration:
+              kWindowFadeAnimationDuration];
+          for (NSWindow* aWindow in [app windows]) {
+            // Windows that are set to animate and have a delegate do not
+            // expect to be animated by other things and could result in an
+            // invalid state. If a window is set up like so, just force the
+            // alpha value to 0. Otherwise, animate all pretty and stuff.
+            if (![[aWindow animationForKey:@"alphaValue"] delegate]) {
+              [[aWindow animator] setAlphaValue:0.0];
+            } else {
+              [aWindow setAlphaValue:0.0];
+            }
+          }
+          [NSAnimationContext endGrouping];
+        }
+      }
+    } while (!nextEvent);
+
+    // The user has released the key combo. Discard any events (i.e. the
+    // repeated KeyDown Cmd+Q).
+    [app discardEventsMatchingMask:NSAnyEventMask beforeEvent:nextEvent];
+    if (willQuit) {
+      // The user held down the combination long enough that quitting should
+      // happen.
+      return NSTerminateNow;
+    } else {
+      // Slowly fade the confirm window out in case the user doesn't
+      // understand what they have to do to quit.
+      [quitPanel dismissPanel];
+      return NSTerminateCancel;
+    }
+  }  // if event type is KeyDown
+
+  // Default case: terminate.
+  return NSTerminateNow;
 }
 
 // Called when the app is shutting down. Clean-up as appropriate.

@@ -1138,6 +1138,7 @@
         'browser/cocoa/cocoa_test_helper.mm',
         'browser/cocoa/collected_cookies_mac_unittest.mm',
         'browser/cocoa/command_observer_bridge_unittest.mm',
+        'browser/cocoa/confirm_quit_panel_controller_unittest.mm',
         'browser/cocoa/content_exceptions_window_controller_unittest.mm',
         'browser/cocoa/content_setting_bubble_cocoa_unittest.mm',
         'browser/cocoa/content_settings_dialog_controller_unittest.mm',

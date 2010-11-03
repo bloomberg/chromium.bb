@@ -121,6 +121,7 @@ extern const char kEnableBenchmarking[];
 extern const char kEnableClearServerData[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCloudPrint[];
+extern const char kEnableConfirmToQuit[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableContentPrefetch[];
 extern const char kEnableDefaultApps[];

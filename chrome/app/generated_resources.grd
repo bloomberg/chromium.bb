@@ -4100,6 +4100,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DNS_SERVER_DESCRIPTION" desc="">
         User specified DNS server, which Chrome will use for DNS resolutions rather than the system defaults.
       </message>
+      <message name="IDS_FLAGS_CONFIRM_TO_QUIT_NAME" desc="Name of the 'Confirm to Quit' lab.">
+        Confirm to Quit
+      </message>
+      <message name="IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Description of the 'Confirm to Quit' lab.">
+        Receive a prompt before quitting to confirm the action.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">
@@ -4629,6 +4635,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cancel Anyway
       </message>
 
+      <!-- Confirm to quit panel -->
+      <message name="IDS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Instructions for how the user should confirm quitting.">
+        Hold ⌘Q to Quit.
+      </message>
 
       <!-- Importer Lock Dialog -->
       <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">

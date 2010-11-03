@@ -150,6 +150,13 @@ const Experiment kExperiments[] = {
     kOsLinux,
     switches::kDnsServer
   },
+  {
+    "confirm-to-quit",   // Do not change; see above.
+    IDS_FLAGS_CONFIRM_TO_QUIT_NAME,
+    IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION,
+    kOsMac,
+    switches::kEnableConfirmToQuit
+  },
 };
 
 const Experiment* experiments = kExperiments;
