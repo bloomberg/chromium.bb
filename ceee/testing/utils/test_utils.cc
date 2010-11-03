@@ -58,13 +58,17 @@ HRESULT GetConnectionCount(IUnknown* container,
 }
 
 
+bool LogDisabler::DropMessageHandler(int severity, const std::string& str) {
+  return true;
+}
+
 LogDisabler::LogDisabler() {
-  initial_log_level_ = logging::GetMinLogLevel();
-  logging::SetMinLogLevel(logging::LOG_FATAL + 1);
+  old_handler_ = logging::GetLogMessageHandler();
+  logging::SetLogMessageHandler(DropMessageHandler);
 }
 
 LogDisabler::~LogDisabler() {
-  logging::SetMinLogLevel(initial_log_level_);
+  logging::SetLogMessageHandler(old_handler_);
 }
 
 PathServiceOverrider::PathServiceOverrider(int key, const FilePath& path) {
