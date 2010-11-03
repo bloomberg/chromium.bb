@@ -26,22 +26,60 @@ const int kCornerRadius = 3;
 // Progress bar's border width
 const int kBorderWidth = 1;
 
+static void AddRoundRectPathWithPadding(int x, int y,
+                                        int w, int h,
+                                        int corner_radius,
+                                        SkScalar padding,
+                                        SkPath* path) {
+  DCHECK(path);
+  if (path == NULL)
+    return;
+  SkRect rect;
+  rect.set(
+      SkIntToScalar(x) + padding, SkIntToScalar(y) + padding,
+      SkIntToScalar(x + w) - padding, SkIntToScalar(y + h) - padding);
+  path->addRoundRect(
+      rect,
+      SkIntToScalar(corner_radius - padding),
+      SkIntToScalar(corner_radius - padding));
+}
+
 static void AddRoundRectPath(int x, int y,
                              int w, int h,
                              int corner_radius,
                              SkPath* path) {
-  DCHECK(path);
-  if (path == NULL)
-    return;
-  SkScalar half = SkIntToScalar(1) / 2;
-  SkRect rect;
-  rect.set(
-      SkIntToScalar(x) + half, SkIntToScalar(y) + half,
-      SkIntToScalar(x + w) - half, SkIntToScalar(y + h) - half);
-  path->addRoundRect(
-      rect,
-      SkIntToScalar(corner_radius - half),
-      SkIntToScalar(corner_radius - half));
+  static const SkScalar half = SkIntToScalar(1) / 2;
+  AddRoundRectPathWithPadding(x, y, w, h, corner_radius, half, path);
+}
+
+static void FillRoundRect(gfx::Canvas* canvas,
+                          int x, int y,
+                          int w, int h,
+                          int corner_radius,
+                          const SkColor colors[],
+                          const SkScalar points[],
+                          int count,
+                          bool gradient_horizontal) {
+  SkPath path;
+  AddRoundRectPath(x, y, w, h, corner_radius, &path);
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setFlags(SkPaint::kAntiAlias_Flag);
+
+  SkPoint p[2];
+  p[0].set(SkIntToScalar(x), SkIntToScalar(y));
+  if (gradient_horizontal) {
+    p[1].set(SkIntToScalar(x + w), SkIntToScalar(y));
+  } else {
+    p[1].set(SkIntToScalar(x), SkIntToScalar(y + h));
+  }
+  SkShader* s = SkGradientShader::CreateLinear(
+      p, colors, points, count, SkShader::kClamp_TileMode, NULL);
+  paint.setShader(s);
+  // Need to unref shader, otherwise never deleted.
+  s->unref();
+
+  canvas->AsCanvasSkia()->drawPath(path, paint);
 }
 
 static void FillRoundRect(gfx::Canvas* canvas,
@@ -51,29 +89,19 @@ static void FillRoundRect(gfx::Canvas* canvas,
                           SkColor gradient_start_color,
                           SkColor gradient_end_color,
                           bool gradient_horizontal) {
-  SkPath path;
-  AddRoundRectPath(x, y, w, h, corner_radius, &path);
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
   if (gradient_start_color != gradient_end_color) {
-    SkPoint p[2];
-    p[0].set(SkIntToScalar(x), SkIntToScalar(y));
-    if (gradient_horizontal) {
-      p[1].set(SkIntToScalar(x + w), SkIntToScalar(y));
-    } else {
-      p[1].set(SkIntToScalar(x), SkIntToScalar(y + h));
-    }
     SkColor colors[2] = { gradient_start_color, gradient_end_color };
-    SkShader* s = SkGradientShader::CreateLinear(
-        p, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
-    paint.setShader(s);
-    // Need to unref shader, otherwise never deleted.
-    s->unref();
+    FillRoundRect(canvas, x, y, w, h, corner_radius,
+                  colors, NULL, 2, gradient_horizontal);
   } else {
+    SkPath path;
+    AddRoundRectPath(x, y, w, h, corner_radius, &path);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
     paint.setColor(gradient_start_color);
+    canvas->AsCanvasSkia()->drawPath(path, paint);
   }
-  canvas->AsCanvasSkia()->drawPath(path, paint);
 }
 
 static void StrokeRoundRect(gfx::Canvas* canvas,
@@ -114,6 +142,103 @@ gfx::Size ProgressBar::GetPreferredSize() {
 }
 
 void ProgressBar::Paint(gfx::Canvas* canvas) {
+#if defined(OS_CHROMEOS)
+  const SkColor background_colors[] = {
+    SkColorSetRGB(0xBB, 0xBB, 0xBB),
+    SkColorSetRGB(0xE7, 0xE7, 0xE7),
+    SkColorSetRGB(0xFE, 0xFE, 0xFE)
+  };
+
+  const SkScalar background_points[] = {
+    SkDoubleToScalar(0),
+    SkDoubleToScalar(0.1),
+    SkDoubleToScalar(1)
+  };
+  const SkColor background_border_color = SkColorSetRGB(0xA1, 0xA1, 0xA1);
+
+  // Draw background.
+  FillRoundRect(canvas,
+                0, 0, width(), height(),
+                kCornerRadius,
+                background_colors,
+                background_points,
+                arraysize(background_colors),
+                false);
+  StrokeRoundRect(canvas,
+                  0, 0,
+                  width(), height(),
+                  kCornerRadius,
+                  background_border_color,
+                  kBorderWidth);
+
+  if (progress_ * width() > 1) {
+    int progress_width = progress_ * width() / kMaxProgress;
+
+    bool enabled = IsEnabled();
+
+    const SkColor bar_color_start = enabled ?
+        SkColorSetRGB(100, 116, 147) :
+        SkColorSetRGB(229, 232, 237);
+    const SkColor bar_color_end = enabled ?
+        SkColorSetRGB(65, 73, 87) :
+        SkColorSetRGB(224, 225, 227);
+
+    const SkColor bar_outer_color = enabled ?
+        SkColorSetRGB(0x4A, 0x4A, 0x4A) :
+        SkColorSetARGB(0x80, 0x4A, 0x4A, 0x4A);
+
+    const SkColor bar_inner_border_color =
+        SkColorSetARGB(0x3F, 0xFF, 0xFF, 0xFF);  // 0.25 white
+    const SkColor bar_inner_shadow_color =
+        SkColorSetARGB(0x54, 0xFF, 0xFF, 0xFF);  // 0.33 white
+
+    // Draw bar background
+    FillRoundRect(canvas,
+                  0, 0, progress_width, height(),
+                  kCornerRadius,
+                  bar_color_start,
+                  bar_color_end,
+                  false);
+
+    // Draw inner stroke and shadow if wide enough.
+    if (progress_width > 2 * kBorderWidth) {
+      canvas->AsCanvasSkia()->save();
+
+      SkPath inner_path;
+      AddRoundRectPathWithPadding(
+          0, 0, progress_width, height(),
+          kCornerRadius,
+          SkIntToScalar(kBorderWidth),
+          &inner_path);
+      canvas->AsCanvasSkia()->clipPath(inner_path);
+
+      // Draw bar inner stroke
+      StrokeRoundRect(canvas,
+                      kBorderWidth, kBorderWidth,
+                      progress_width - 2 * kBorderWidth,
+                      height() - 2 * kBorderWidth,
+                      kCornerRadius - kBorderWidth,
+                      bar_inner_border_color,
+                      kBorderWidth);
+
+      // Draw bar inner shadow
+      StrokeRoundRect(canvas,
+                      0, kBorderWidth, progress_width, height(),
+                      kCornerRadius,
+                      bar_inner_shadow_color,
+                      kBorderWidth);
+
+      canvas->AsCanvasSkia()->restore();
+    }
+
+    // Draw bar stroke
+    StrokeRoundRect(canvas,
+                    0, 0, progress_width, height(),
+                    kCornerRadius,
+                    bar_outer_color,
+                    kBorderWidth);
+  }
+#else
   SkColor bar_color_start = SkColorSetRGB(81, 138, 223);
   SkColor bar_color_end = SkColorSetRGB(51, 103, 205);
   SkColor background_color_start = SkColorSetRGB(212, 212, 212);
@@ -141,6 +266,7 @@ void ProgressBar::Paint(gfx::Canvas* canvas) {
                   kCornerRadius,
                   border_color,
                   kBorderWidth);
+#endif
 }
 
 std::string ProgressBar::GetClassName() const {
