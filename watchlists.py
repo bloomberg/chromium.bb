@@ -106,9 +106,11 @@ class Watchlists(object):
     for path in paths:
       path = path.replace(os.sep, '/')
       for name, rule in self._defns.iteritems():
-        if name not in self._watchlists: continue
+        if name not in self._watchlists:
+          continue
         rex_str = rule.get('filepath')
-        if not rex_str: continue
+        if not rex_str:
+          continue
         if re.search(rex_str, path):
           map(watchers.add, self._watchlists[name])
     return list(watchers)

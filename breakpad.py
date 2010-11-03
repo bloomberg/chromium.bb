@@ -46,9 +46,9 @@ def SendStack(last_tb, stack, url=None):
       params['exception'] = str(last_tb)
     except:
       pass
-    print '\n'.join('  %s: %s' % (k, v[0:50]) for k,v in params.iteritems())
+    print('\n'.join('  %s: %s' % (k, v[0:50]) for k, v in params.iteritems()))
     request = urllib.urlopen(url, urllib.urlencode(params))
-    print request.read()
+    print(request.read())
     request.close()
   except IOError:
     print('There was a failure while trying to send the stack trace. Too bad.')

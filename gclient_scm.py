@@ -8,7 +8,6 @@ import logging
 import os
 import posixpath
 import re
-import sys
 import time
 
 import scm

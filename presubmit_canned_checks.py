@@ -275,11 +275,11 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
     return []
 
 
-def CheckLicense(input_api, output_api, license, source_file_filter=None,
+def CheckLicense(input_api, output_api, license_re, source_file_filter=None,
     accept_empty_files=True):
   """Verifies the license header.
   """
-  license_re = input_api.re.compile(license, input_api.re.MULTILINE)
+  license_re = input_api.re.compile(license_re, input_api.re.MULTILINE)
   bad_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
     contents = input_api.ReadFile(f, 'rb')
@@ -483,7 +483,7 @@ def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
   for platform in platforms:
     values.setdefault(platform, ['not started', ''])
   message = None
-  non_success = [k.upper() for k,v in values.iteritems() if v[0] != 'success']
+  non_success = [k.upper() for k, v in values.iteritems() if v[0] != 'success']
   if 'failure' in [v[0] for v in values.itervalues()]:
     message = 'Try job failures on %s!\n' % ', '.join(non_success)
   elif non_success:

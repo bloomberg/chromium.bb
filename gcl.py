@@ -35,7 +35,7 @@ except ImportError:
     sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
     import simplejson as json
 
-import breakpad
+import breakpad  # pylint: disable=W0611
 
 # gcl now depends on gclient.
 from scm import SVN

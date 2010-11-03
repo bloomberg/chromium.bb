@@ -9,7 +9,7 @@ import re
 import subprocess
 import sys
 
-import breakpad
+import breakpad  # pylint: disable=W0611
 
 import gclient_utils
 

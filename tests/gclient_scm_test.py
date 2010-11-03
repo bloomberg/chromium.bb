@@ -17,6 +17,7 @@ import __builtin__
 # Fixes include path.
 from super_mox import mox, StdoutCheck, TestCaseUtils, SuperMoxTestBase
 
+import sys
 import gclient_scm
 
 # Shortcut since this function is used often
@@ -789,11 +790,11 @@ from :3
     end = ('] test\n 1 files changed, 1 insertions(+), '
          '1 deletions(-)\n\n_____ . at refs/heads/master\n'
          'Attempting rebase onto refs/remotes/origin/master...\n')
-    self.assertTrue(gclient_scm.sys.stdout.getvalue().startswith(start))
-    self.assertTrue(gclient_scm.sys.stdout.getvalue().endswith(end))
-    self.assertEquals(len(gclient_scm.sys.stdout.getvalue()),
+    self.assertTrue(sys.stdout.getvalue().startswith(start))
+    self.assertTrue(sys.stdout.getvalue().endswith(end))
+    self.assertEquals(len(sys.stdout.getvalue()),
                       len(start) + len(end) + 7)
-    gclient_scm.sys.stdout.close()
+    sys.stdout.close()
 
   def testUpdateNotGit(self):
     if not self.enabled:

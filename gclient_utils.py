@@ -14,7 +14,6 @@
 
 """Generic utils."""
 
-import copy
 import errno
 import logging
 import os
@@ -300,7 +299,8 @@ def SoftClone(obj):
   """Clones an object. copy.copy() doesn't work on 'file' objects."""
   if obj.__class__.__name__ == 'SoftCloned':
     return obj
-  class SoftCloned(object): pass
+  class SoftCloned(object):
+    pass
   new_obj = SoftCloned()
   for member in dir(obj):
     if member.startswith('_'):
@@ -389,7 +389,7 @@ def MakeFileAnnotated(fileobj):
     try:
       # Detect threads no longer existing.
       indexes = (getattr(t, 'index', None) for t in threading.enumerate())
-      indexed = filter(None, indexes)
+      indexes = filter(None, indexes)
       for index in new_fileobj.output_buffers:
         if not index in indexes:
           orphans.append((index, new_fileobj.output_buffers[index][0]))
@@ -480,7 +480,7 @@ def FindGclientRoot(from_dir, filename='.gclient'):
       # might have failed. In that case, we cannot verify that the .gclient
       # is the one we want to use. In order to not to cause too much trouble,
       # just issue a warning and return the path anyway.
-      print >>sys.stderr, ("%s file in parent directory %s might not be the "
+      print >> sys.stderr, ("%s file in parent directory %s might not be the "
           "file you want to use" % (filename, path))
       return path
     scope = {}

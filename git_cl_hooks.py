@@ -3,11 +3,10 @@
 # found in the LICENSE file.
 
 import os
-import re
 import subprocess
 import sys
 
-import breakpad
+import breakpad  # pylint: disable=W0611
 
 from git_cl_repo import git_cl
 from git_cl_repo import upload
@@ -25,11 +24,11 @@ def Backquote(cmd, cwd=None):
                           cwd=cwd,
                           stdout=subprocess.PIPE).communicate()[0].strip()
 
-def ConvertToInteger(input):
+def ConvertToInteger(inputval):
   """Convert a string to integer, but returns either an int or None."""
   try:
-    return int(input)
-  except TypeError, ValueError:
+    return int(inputval)
+  except (TypeError, ValueError):
     return None
 
 

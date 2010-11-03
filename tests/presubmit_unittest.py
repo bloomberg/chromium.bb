@@ -37,7 +37,7 @@ def GetPreferredTrySlaves():
   def setUp(self):
     SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(presubmit, 'random')
-    self.mox.StubOutWithMock(presubmit, 'warnings')
+    self.mox.StubOutWithMock(presubmit, 'warn')
     presubmit._ASKED_FOR_FEEDBACK = False
     self.fake_root_dir = self.RootDir()
     # Special mocks.
@@ -69,11 +69,11 @@ class PresubmitUnittest(PresubmitTestsBase):
       'NotImplementedException', 'OutputApi', 'ParseFiles',
       'PresubmitExecuter', 'PromptYesNo', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
-      'exceptions', 'fnmatch', 'gcl', 'gclient_utils', 'glob', 'json',
+      'exceptions', 'fnmatch', 'gclient_utils', 'glob', 'json',
       'logging', 'marshal', 'normpath', 'optparse', 'os', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'scm', 'subprocess',
       'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
-      'warnings',
+      'warn',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -898,8 +898,7 @@ class InputApiUnittest(PresubmitTestsBase):
                        normpath(join(self.fake_root_dir, 'isdir', 'blat.cc')))
 
   def testDeprecated(self):
-    presubmit.warnings.warn(mox.IgnoreArg(), category=mox.IgnoreArg(),
-                            stacklevel=2)
+    presubmit.warn(mox.IgnoreArg(), category=mox.IgnoreArg(), stacklevel=2)
     self.mox.ReplayAll()
 
     change = presubmit.Change('mychange', '', self.fake_root_dir, [], 0, 0)

@@ -30,7 +30,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'ParseXML', 'Popen',
         'PrintableObject', 'RemoveDirectory', 'SoftClone', 'SplitUrlRevision',
         'SyntaxErrorToError', 'WorkItem',
-        'copy', 'errno', 'logging', 'os', 'Queue', 're', 'stat', 'subprocess',
+        'errno', 'logging', 'os', 'Queue', 're', 'stat', 'subprocess',
         'sys','threading', 'time', 'xml',
     ]
     # If this test fails, you should add the relevant test.

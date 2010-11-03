@@ -15,9 +15,9 @@ COMPILE_URL = BASE_URL + 'slave/compile.py'
 UTILS_URL = BASE_URL + 'common/chromium_utils.py'
 
 
-def Fetch(url, file):
-  if not os.path.exists(file):
-    urllib.urlretrieve(url, file)
+def Fetch(url, filename):
+  if not os.path.exists(filename):
+    urllib.urlretrieve(url, filename)
 
 
 def GetLastestRevision():
@@ -53,10 +53,10 @@ def DoUpdate(chrome_root):
 
 def DoBuild(chrome_root, args):
   """Download compile.py and run it."""
-  compile = os.path.join(chrome_root, 'compile.py')
-  Fetch(COMPILE_URL, compile)
+  compile_path = os.path.join(chrome_root, 'compile.py')
+  Fetch(COMPILE_URL, compile_path)
   Fetch(UTILS_URL, os.path.join(chrome_root, 'chromium_utils.py'))
-  cmd = ['python', compile] + args
+  cmd = ['python', compile_path] + args
   return subprocess.call(cmd, cwd=chrome_root, shell=IS_WIN)
 
 

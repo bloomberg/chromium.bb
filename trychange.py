@@ -2,6 +2,7 @@
 # Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Client-side script to send a try job to the try server. It communicates to
 the try server by either writting to a svn repository or by directly connecting
 to the server by HTTP.
@@ -29,7 +30,7 @@ except ImportError:
     json = None
 
 try:
-  import breakpad
+  import breakpad  # pylint: disable=W0611
 except ImportError:
   pass
 
@@ -205,11 +206,9 @@ class SVN(SCM):
       return data
 
     # Try to search on the subversion repository for the file.
-    try:
-      from gcl import GetCachedFile
-    except ImportError:
+    if not gcl:
       return None
-    data = GetCachedFile(filename)
+    data = gcl.GetCachedFile(filename)
     logging.debug('%s:\n%s' % (filename, data))
     return data
 

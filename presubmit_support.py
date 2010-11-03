@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,7 +32,7 @@ import traceback  # Exposed through the API.
 import types
 import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
-import warnings
+from warnings import warn
 
 try:
   import simplejson as json
@@ -48,7 +48,6 @@ except ImportError:
     import simplejson as json
 
 # Local imports.
-import gcl
 import gclient_utils
 import presubmit_canned_checks
 import scm
@@ -75,10 +74,22 @@ def normpath(path):
   path = path.replace(os.sep, '/')
   return os.path.normpath(path)
 
+
 def PromptYesNo(input_stream, output_stream, prompt):
   output_stream.write(prompt)
   response = input_stream.readline().strip().lower()
   return response == 'y' or response == 'yes'
+
+
+def _RightHandSideLinesImpl(affected_files):
+  """Implements RightHandSideLines for InputApi and GclChange."""
+  for af in affected_files:
+    lines = af.NewContents()
+    line_number = 0
+    for line in lines:
+      line_number += 1
+      yield (af, line_number, line)
+
 
 class OutputApi(object):
   """This class (more like a module) gets passed to presubmit scripts so that
@@ -158,7 +169,8 @@ class OutputApi(object):
   class MailTextResult(PresubmitResult):
     """A warning that should be included in the review request email."""
     def __init__(self, *args, **kwargs):
-      raise NotImplementedException()  # TODO(joi) Implement.
+      super(OutputApi.MailTextResult, self).__init__()
+      raise NotImplementedException()
 
 
 class InputApi(object):
@@ -309,10 +321,10 @@ class InputApi(object):
     thereof.
     """
     if include_deletes is not None:
-      warnings.warn("AffectedTextFiles(include_deletes=%s)"
-                        " is deprecated and ignored" % str(include_deletes),
-                    category=DeprecationWarning,
-                    stacklevel=2)
+      warn("AffectedTextFiles(include_deletes=%s)"
+               " is deprecated and ignored" % str(include_deletes),
+           category=DeprecationWarning,
+           stacklevel=2)
     return filter(lambda x: x.IsTextFile(),
                   self.AffectedFiles(include_dirs=False, include_deletes=False))
 
@@ -327,8 +339,8 @@ class InputApi(object):
 
     Note: Copy-paste this function to suit your needs or use a lambda function.
     """
-    def Find(affected_file, list):
-      for item in list:
+    def Find(affected_file, items):
+      for item in items:
         local_path = affected_file.LocalPath()
         if self.re.match(item, local_path):
           logging.debug("%s matched %s" % (item, local_path))
@@ -364,7 +376,7 @@ class InputApi(object):
     Note: The cariage return (LF or CR) is stripped off.
     """
     files = self.AffectedSourceFiles(source_file_filter)
-    return InputApi._RightHandSideLinesImpl(files)
+    return _RightHandSideLinesImpl(files)
 
   def ReadFile(self, file_item, mode='r'):
     """Reads an arbitrary file.
@@ -376,16 +388,6 @@ class InputApi(object):
     if not file_item.startswith(self.change.RepositoryRoot()):
       raise IOError('Access outside the repository root is denied.')
     return gclient_utils.FileRead(file_item, mode)
-
-  @staticmethod
-  def _RightHandSideLinesImpl(affected_files):
-    """Implements RightHandSideLines for InputApi and GclChange."""
-    for af in affected_files:
-      lines = af.NewContents()
-      line_number = 0
-      for line in lines:
-        line_number += 1
-        yield (af, line_number, line)
 
 
 class AffectedFile(object):
@@ -665,10 +667,10 @@ class Change(object):
   def AffectedTextFiles(self, include_deletes=None):
     """Return a list of the existing text files in a change."""
     if include_deletes is not None:
-      warnings.warn("AffectedTextFiles(include_deletes=%s)"
-                        " is deprecated and ignored" % str(include_deletes),
-                    category=DeprecationWarning,
-                    stacklevel=2)
+      warn("AffectedTextFiles(include_deletes=%s)"
+               " is deprecated and ignored" % str(include_deletes),
+           category=DeprecationWarning,
+           stacklevel=2)
     return filter(lambda x: x.IsTextFile(),
                   self.AffectedFiles(include_dirs=False, include_deletes=False))
 
@@ -698,9 +700,9 @@ class Change(object):
         integer line number (1-based); and
         the contents of the line as a string.
     """
-    return InputApi._RightHandSideLinesImpl(
-        filter(lambda x: x.IsTextFile(),
-               self.AffectedFiles(include_deletes=False)))
+    return _RightHandSideLinesImpl(
+        x for x in self.AffectedFiles(include_deletes=False)
+        if x.IsTextFile())
 
 
 class SvnChange(Change):
@@ -716,6 +718,8 @@ class SvnChange(Change):
     if self._changelists == None:
       previous_cwd = os.getcwd()
       os.chdir(self.RepositoryRoot())
+      # Need to import here to avoid circular dependency.
+      import gcl
       self._changelists = gcl.GetModifiedFiles()
       os.chdir(previous_cwd)
     return self._changelists
@@ -792,7 +796,8 @@ def ListRelevantPresubmitFiles(files, root):
 
 
 class GetTrySlavesExecuter(object):
-  def ExecPresubmitScript(self, script_text):
+  @staticmethod
+  def ExecPresubmitScript(script_text):
     """Executes GetPreferredTrySlaves() from a single presubmit script.
 
     Args:

@@ -58,22 +58,21 @@ import os
 import posixpath
 import pprint
 import re
-import subprocess
 import sys
 import urlparse
 import urllib
 
-import breakpad
+import breakpad  # pylint: disable=W0611
 
 import gclient_scm
 import gclient_utils
 from third_party.repo.progress import Progress
 
 
-def attr(attr, data):
+def attr(attribute, data):
   """Sets an attribute on a function."""
   def hook(fn):
-    setattr(fn, attr, data)
+    setattr(fn, attribute, data)
     return fn
   return hook
 
