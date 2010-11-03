@@ -484,8 +484,24 @@ void MetricsServiceBase::RecordHistogram(const Histogram& histogram) {
   // Get up-to-date snapshot of sample stats.
   Histogram::SampleSet snapshot;
   histogram.SnapshotSample(&snapshot);
-
   const std::string& histogram_name = histogram.histogram_name();
+
+  int corruption = histogram.FindCorruption(snapshot);
+  if (corruption) {
+    NOTREACHED();
+    // Don't send corrupt data to metrics survices.
+    UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser",
+                              corruption, Histogram::NEVER_EXCEEDED_VALUE);
+    typedef std::map<std::string, int> ProblemMap;
+    static ProblemMap* inconsistencies = new ProblemMap;
+    int old_corruption = (*inconsistencies)[histogram_name];
+    if (old_corruption == (corruption | old_corruption))
+      return;  // We've already seen this corruption for this histogram.
+    (*inconsistencies)[histogram_name] |= corruption;
+    UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique",
+                              corruption, Histogram::NEVER_EXCEEDED_VALUE);
+    return;
+  }
 
   // Find the already sent stats, or create an empty set.
   LoggedSampleMap::iterator it = logged_samples_.find(histogram_name);
