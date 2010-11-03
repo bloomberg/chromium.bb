@@ -55,24 +55,6 @@ void PanelBrowserView::LimitBounds(gfx::Rect* bounds) const {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserView overrides.
 
-void PanelBrowserView::Init() {
-  ::BrowserView::Init();
-  // The visibility of toolbar is controlled in
-  // the BrowserView::IsToolbarVisible method.
-
-  views::Window* window = frame()->GetWindow();
-  gfx::NativeWindow native_window = window->GetNativeWindow();
-  // The window manager needs the min size for popups.
-  gfx::Rect bounds = window->GetBounds();
-  LimitBounds(&bounds);
-  gtk_widget_set_size_request(
-      GTK_WIDGET(native_window), bounds.width(), bounds.height());
-  // If we don't explicitly resize here there is a race condition between
-  // the X Server and the window manager. Windows will appear with a default
-  // size of 200x200 if this happens.
-  gtk_window_resize(native_window, bounds.width(), bounds.height());
-}
-
 void PanelBrowserView::Show() {
   if (panel_controller_.get() == NULL) {
     panel_controller_.reset(new PanelController(this, GetNativeHandle()));

@@ -26,7 +26,6 @@ class PanelBrowserView : public ::BrowserView,
   explicit PanelBrowserView(Browser* browser);
 
   // BrowserView overrides.
-  virtual void Init();
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void Close();
