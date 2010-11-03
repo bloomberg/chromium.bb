@@ -3183,3 +3183,17 @@
    fun:_ZN12_GLOBAL__N_141FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_61685
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:gtk_text_buffer_select_range
+   fun:_ZN23AutocompleteEditViewGtk16SetSelectedRangeERKNS_9CharRangeE
+   fun:_ZN23AutocompleteEditViewGtk23SetTextAndSelectedRangeERKSbIwSt11char_traitsIwESaIwEERKNS_9CharRangeE
+   fun:_ZN23AutocompleteEditViewGtk24SetWindowTextAndCaretPosERKSbIwSt11char_traitsIwESaIwEEj
+   fun:_ZN21AutocompleteEditModel6RevertEv
+   fun:_ZN23AutocompleteEditViewGtk9RevertAllEv
+   fun:_ZN23AutocompleteEditViewGtk6UpdateEPK11TabContents
+   fun:_ZN15LocationBarView6UpdateEPK11TabContents
+}
