@@ -1098,4 +1098,23 @@
    fun:_ZN2v88internal9ParserApi15PartialPreParseENS0_6HandleINS0_6StringEEEPN7unibrow15CharacterStreamEPNS_9ExtensionE
    fun:_ZN2v88internal8Compiler7CompileENS0_6HandleINS0_6StringEEENS2_INS0_6ObjectEEEiiPNS_9ExtensionEPNS0_14ScriptDataImplES6_NS0_11NativesFlagE
 }
-
+{
+   bug_61816
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:utOpenActivateAllSelectedIMInDoc
+   fun:MyActivateTSMDocument
+   fun:ActivateTSMDocument
+   fun:CallMyActivateTSMDocument
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:RunCurrentEventLoopInMode
+   fun:ReceiveNextEventCommon
+   fun:BlockUntilNextEventMatchingListInMode
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:_ZN9CocoaTest8TearDownEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
