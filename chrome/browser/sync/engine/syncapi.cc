@@ -89,6 +89,10 @@ typedef GoogleServiceAuthError AuthError;
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
 
+#if defined(OS_CHROMEOS)
+static const int kChromeOSNetworkChangeReactionDelayHackMsec = 5000;
+#endif  // OS_CHROMEOS
+
 // We manage the lifetime of sync_api::SyncManager::SyncInternal ourselves.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(sync_api::SyncManager::SyncInternal);
 
@@ -1169,6 +1173,9 @@ class SyncManager::SyncInternal
   // decryption.  Otherwise, the cryptographer is made ready (is_ready()).
   void BootstrapEncryption(const std::string& restored_key_for_bootstrapping);
 
+  // Checks for server reachabilty and requests a nudge.
+  void OnIPAddressChangedImpl();
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
@@ -1718,6 +1725,19 @@ void SyncManager::SyncInternal::Shutdown() {
 
 void SyncManager::SyncInternal::OnIPAddressChanged() {
   VLOG(1) << "IP address change detected";
+#if defined (OS_CHROMEOS)
+  // TODO(tim): This is a hack to intentionally lose a race with flimflam at
+  // shutdown, so we don't cause shutdown to wait for our http request.
+  // http://crosbug.com/8429
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&SyncInternal::OnIPAddressChangedImpl),
+      kChromeOSNetworkChangeReactionDelayHackMsec);
+#else
+  OnIPAddressChangedImpl();
+#endif  // defined(OS_CHROMEOS)
+}
+
+void SyncManager::SyncInternal::OnIPAddressChangedImpl() {
   // TODO(akalin): CheckServerReachable() can block, which may cause
   // jank if we try to shut down sync.  Fix this.
   connection_manager()->CheckServerReachable();
