@@ -100,28 +100,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool is_public;  // False if only this extension can load this plugin.
   };
 
-  // Contains the subset of the extension's (private) data that can be modified
-  // after initialization. This class should only be accessed on the UI thread.
-  struct RuntimeData {
-    // We keep a cache of images loaded from extension resources based on their
-    // path and a string representation of a size that may have been used to
-    // scale it (or the empty string if the image is at its original size).
-    typedef std::pair<FilePath, std::string> ImageCacheKey;
-    typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
-
-    RuntimeData();
-    ~RuntimeData();
-
-    // True if the background page is ready.
-    bool background_page_ready;
-
-    // True while the extension is being upgraded.
-    bool being_upgraded;
-
-    // Cached images for this extension.
-    ImageCache image_cache_;
-  };
-
   // A permission is defined by its |name| (what is used in the manifest),
   // and the |message_id| that's used by install/update UI.
   struct Permission {
@@ -361,10 +339,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
       int size, ExtensionIconSet::MatchType match_type) const;
   GURL GetIconURL(int size, ExtensionIconSet::MatchType match_type) const;
 
-
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
-
   // Image cache related methods. These are only valid on the UI thread and
   // not maintained by this class. See ImageLoadingTracker for usage. The
   // |original_size| parameter should be the size of the image at |source|
@@ -440,21 +416,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return theme_display_properties_.get();
   }
 
-  // Whether the background page, if any, is ready. We don't load other
-  // components until then. If there is no background page, we consider it to
-  // be ready.
-  bool GetBackgroundPageReady() const;
-  void SetBackgroundPageReady() const;
-
-  // Getter and setter for the flag that specifies whether the extension is
-  // being upgraded.
-  bool being_upgraded() const { return GetRuntimeData()->being_upgraded; }
-  void set_being_upgraded(bool value) const {
-    GetRuntimeData()->being_upgraded = value;
-  }
-
  private:
   friend class base::RefCountedThreadSafe<Extension>;
+
+  // We keep a cache of images loaded from extension resources based on their
+  // path and a string representation of a size that may have been used to
+  // scale it (or the empty string if the image is at its original size).
+  typedef std::pair<FilePath, std::string> ImageCacheKey;
+  typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
 
   // Normalize the path for use by the extension. On Windows, this will make
   // sure the drive letter is uppercase.
@@ -532,12 +501,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // this extension.
   string16 GetHostPermissionMessage() const;
 
-  // Returns a mutable pointer to our runtime data. Can only be called on
-  // the UI thread.
-  RuntimeData* GetRuntimeData() const;
-
-  // Runtime data.
-  const RuntimeData runtime_data_;
+  // Cached images for this extension. This should only be touched on the UI
+  // thread.
+  mutable ImageCache image_cache_;
 
   // A persistent, globally unique ID. An extension's ID is used in things
   // like directory structures and URLs, and is expected to not change across

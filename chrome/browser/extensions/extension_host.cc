@@ -238,7 +238,8 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
 
   url_ = url;
 
-  if (!is_background_page() && !extension_->GetBackgroundPageReady()) {
+  if (!is_background_page() &&
+      !profile_->GetExtensionsService()->IsBackgroundPageReady(extension_)) {
     // Make sure the background page loads before any others.
     registrar_.Add(this, NotificationType::EXTENSION_BACKGROUND_PAGE_READY,
                    Source<Extension>(extension_));
@@ -253,7 +254,8 @@ void ExtensionHost::Observe(NotificationType type,
                             const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_BACKGROUND_PAGE_READY:
-      DCHECK(extension_->GetBackgroundPageReady());
+      DCHECK(profile_->GetExtensionsService()->
+           IsBackgroundPageReady(extension_));
       NavigateToURL(url_);
       break;
     case NotificationType::RENDERER_PROCESS_CREATED:
@@ -397,7 +399,7 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
 
   document_element_available_ = true;
   if (is_background_page()) {
-    extension_->SetBackgroundPageReady();
+    profile_->GetExtensionsService()->SetBackgroundPageReady(extension_);
   } else {
     switch (extension_host_type_) {
       case ViewType::EXTENSION_INFOBAR:

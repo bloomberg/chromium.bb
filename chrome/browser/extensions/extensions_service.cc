@@ -150,6 +150,15 @@ PendingExtensionInfo::PendingExtensionInfo()
       enable_incognito_on_install(false),
       install_source(Extension::INVALID) {}
 
+
+ExtensionsService::ExtensionRuntimeData::ExtensionRuntimeData()
+    : background_page_ready(false),
+      being_upgraded(false) {
+}
+
+ExtensionsService::ExtensionRuntimeData::~ExtensionRuntimeData() {
+}
+
 // ExtensionsService.
 
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
@@ -1386,6 +1395,9 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // Clean up if the extension is meant to be enabled after a reload.
   disabled_extension_paths_.erase(extension->id());
 
+  // Clean up runtime data.
+  extension_runtime_data_.erase(extension_id);
+
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
@@ -1413,6 +1425,7 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
 void ExtensionsService::UnloadAllExtensions() {
   extensions_.clear();
   disabled_extensions_.clear();
+  extension_runtime_data_.clear();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has been disabled
@@ -1485,8 +1498,8 @@ void ExtensionsService::OnExtensionLoaded(const Extension* extension,
       // Extensions get upgraded if silent upgrades are allowed, otherwise
       // they get disabled.
       if (allow_silent_upgrade) {
-        old->set_being_upgraded(true);
-        extension->set_being_upgraded(true);
+        SetBeingUpgraded(old, true);
+        SetBeingUpgraded(extension, true);
       }
 
       // To upgrade an extension in place, unload the old one and
@@ -1524,7 +1537,7 @@ void ExtensionsService::OnExtensionLoaded(const Extension* extension,
     }
   }
 
-  extension->set_being_upgraded(false);
+  SetBeingUpgraded(extension, false);
 
   UpdateActiveExtensionsInCrashReporter();
 
@@ -1903,4 +1916,27 @@ ExtensionIdSet ExtensionsService::GetAppIds() const {
   }
 
   return result;
+}
+
+bool ExtensionsService::IsBackgroundPageReady(const Extension* extension) {
+  return (extension->background_url().is_empty() ||
+          extension_runtime_data_[extension->id()].background_page_ready);
+}
+
+void ExtensionsService::SetBackgroundPageReady(const Extension* extension) {
+  DCHECK(!extension->background_url().is_empty());
+  extension_runtime_data_[extension->id()].background_page_ready = true;
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_BACKGROUND_PAGE_READY,
+      Source<const Extension>(extension),
+      NotificationService::NoDetails());
+}
+
+bool ExtensionsService::IsBeingUpgraded(const Extension* extension) {
+  return extension_runtime_data_[extension->id()].being_upgraded;
+}
+
+void ExtensionsService::SetBeingUpgraded(const Extension* extension,
+                                         bool value) {
+  extension_runtime_data_[extension->id()].being_upgraded = value;
 }

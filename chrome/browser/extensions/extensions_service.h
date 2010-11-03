@@ -189,6 +189,17 @@ class ExtensionsService
   bool AllowFileAccess(const Extension* extension);
   void SetAllowFileAccess(const Extension* extension, bool allow);
 
+  // Whether the background page, if any, is ready. We don't load other
+  // components until then. If there is no background page, we consider it to
+  // be ready.
+  bool IsBackgroundPageReady(const Extension* extension);
+  void SetBackgroundPageReady(const Extension* extension);
+
+  // Getter and setter for the flag that specifies whether the extension is
+  // being upgraded.
+  bool IsBeingUpgraded(const Extension* extension);
+  void SetBeingUpgraded(const Extension* extension, bool value);
+
   // Initialize and start all installed extensions.
   void Init();
 
@@ -408,9 +419,24 @@ class ExtensionsService
   ExtensionIdSet GetAppIds() const;
 
  private:
-  virtual ~ExtensionsService();
   friend class BrowserThread;
   friend class DeleteTask<ExtensionsService>;
+
+  // Contains Extension data that can change during the life of the process,
+  // but does not persist across restarts.
+  struct ExtensionRuntimeData {
+    // True if the background page is ready.
+    bool background_page_ready;
+
+    // True while the extension is being upgraded.
+    bool being_upgraded;
+
+    ExtensionRuntimeData();
+    ~ExtensionRuntimeData();
+  };
+  typedef std::map<std::string, ExtensionRuntimeData> ExtensionRuntimeDataMap;
+
+  virtual ~ExtensionsService();
 
   // Clear all persistent data that may have been stored by the extension.
   void ClearExtensionData(const GURL& extension_url);
@@ -462,6 +488,9 @@ class ExtensionsService
 
   // The set of pending extensions.
   PendingExtensionMap pending_extensions_;
+
+  // The map of extension IDs to their runtime data.
+  ExtensionRuntimeDataMap extension_runtime_data_;
 
   // The full path to the directory where extensions are installed.
   FilePath install_directory_;

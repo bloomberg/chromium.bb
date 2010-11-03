@@ -249,18 +249,6 @@ const size_t Extension::kNumHostedAppPermissions =
 const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
 //
-// Extension::RuntimeData
-//
-
-Extension::RuntimeData::RuntimeData()
-    : background_page_ready(false),
-      being_upgraded(false) {
-}
-
-Extension::RuntimeData::~RuntimeData() {
-}
-
-//
 // Extension
 //
 
@@ -270,7 +258,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
                                            const DictionaryValue& value,
                                            bool require_key,
                                            std::string* error) {
-  scoped_refptr<Extension> extension(new Extension(path, location));
+  scoped_refptr<Extension> extension = new Extension(path, location);
   if (!extension->InitFromValue(value, require_key, error))
     return NULL;
   return extension;
@@ -1000,10 +988,8 @@ Extension::Extension(const FilePath& path, Location location)
   DCHECK(path.IsAbsolute());
   path_ = MaybeNormalizePath(path);
 }
-
 Extension::~Extension() {
 }
-
 ExtensionResource Extension::GetResource(
     const std::string& relative_path) const {
 #if defined(OS_POSIX)
@@ -1929,20 +1915,6 @@ GURL Extension::GetFullLaunchURL() const {
     return GURL(launch_web_url());
 }
 
-bool Extension::GetBackgroundPageReady() const {
-  return (GetRuntimeData()->background_page_ready ||
-          background_url().is_empty());
-}
-
-void Extension::SetBackgroundPageReady() const {
-  DCHECK(!background_url().is_empty());
-  GetRuntimeData()->background_page_ready = true;
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_BACKGROUND_PAGE_READY,
-      Source<Extension>(this),
-      NotificationService::NoDetails());
-}
-
 static std::string SizeToString(const gfx::Size& max_size) {
   return base::IntToString(max_size.width()) + "x" +
          base::IntToString(max_size.height());
@@ -1968,11 +1940,9 @@ void Extension::SetCachedImage(const ExtensionResource& source,
   const FilePath& path = source.relative_path();
   gfx::Size actual_size(image.width(), image.height());
   if (actual_size == original_size) {
-    GetRuntimeData()->image_cache_[
-        RuntimeData::ImageCacheKey(path, std::string())] = image;
+    image_cache_[ImageCacheKey(path, std::string())] = image;
   } else {
-    GetRuntimeData()->image_cache_[
-        RuntimeData::ImageCacheKey(path, SizeToString(actual_size))] = image;
+    image_cache_[ImageCacheKey(path, SizeToString(actual_size))] = image;
   }
 }
 
@@ -1996,16 +1966,15 @@ SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
   const FilePath& path = source.relative_path();
 
   // Look for exact size match.
-  RuntimeData::ImageCache::iterator i = GetRuntimeData()->image_cache_.find(
-      RuntimeData::ImageCacheKey(path, SizeToString(max_size)));
-  if (i != GetRuntimeData()->image_cache_.end())
+  ImageCache::iterator i = image_cache_.find(
+      ImageCacheKey(path, SizeToString(max_size)));
+  if (i != image_cache_.end())
     return &(i->second);
 
   // If we have the original size version cached, return that if it's small
   // enough.
-  i = GetRuntimeData()->image_cache_.find(
-      RuntimeData::ImageCacheKey(path, std::string()));
-  if (i != GetRuntimeData()->image_cache_.end()) {
+  i = image_cache_.find(ImageCacheKey(path, std::string()));
+  if (i != image_cache_.end()) {
     SkBitmap& image = i->second;
     if (image.width() <= max_size.width() &&
         image.height() <= max_size.height())
@@ -2222,12 +2191,6 @@ bool Extension::CanExecuteScriptEverywhere() const {
   }
 
   return false;
-}
-
-Extension::RuntimeData* Extension::GetRuntimeData() const {
-  // TODO(mpcomplete): it would be nice if I could verify we were on the UI
-  // thread, but we're in common and don't have access to BrowserThread.
-  return const_cast<Extension::RuntimeData*>(&runtime_data_);
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

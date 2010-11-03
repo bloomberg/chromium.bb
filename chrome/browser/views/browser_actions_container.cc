@@ -915,7 +915,8 @@ void BrowserActionsContainer::BrowserActionAdded(const Extension* extension,
 
   // Enlarge the container if it was already at maximum size and we're not in
   // the middle of upgrading.
-  if ((model_->GetVisibleIconCount() < 0) && !extension->being_upgraded()) {
+  if ((model_->GetVisibleIconCount() < 0) &&
+      !profile_->GetExtensionsService()->IsBeingUpgraded(extension)) {
     suppress_chevron_ = true;
     SaveDesiredSizeAndAnimate(Tween::LINEAR, visible_actions + 1);
   } else {
@@ -940,7 +941,7 @@ void BrowserActionsContainer::BrowserActionRemoved(const Extension* extension) {
 
       // If the extension is being upgraded we don't want the bar to shrink
       // because the icon is just going to get re-added to the same location.
-      if (extension->being_upgraded())
+      if (profile_->GetExtensionsService()->IsBeingUpgraded(extension))
         return;
 
       if (browser_action_views_.size() > visible_actions) {
