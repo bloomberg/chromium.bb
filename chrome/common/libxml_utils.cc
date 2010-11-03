@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 #include "libxml/xmlreader.h"
 
@@ -35,7 +35,7 @@ void XmlReader::GenericErrorCallback(void* context, const char* msg, ...) {
   va_start(args, msg);
 
   XmlReader* reader = static_cast<XmlReader*>(context);
-  reader->errors_.append(StringPrintV(msg, args));
+  reader->errors_.append(base::StringPrintV(msg, args));
   va_end(args);
 }
 
