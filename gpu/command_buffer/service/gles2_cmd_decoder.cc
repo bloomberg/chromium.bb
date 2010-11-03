@@ -203,6 +203,10 @@ class Texture {
   // destroying this object.
   void Destroy();
 
+  // Invalidate the texture. This can be used when a context is lost and it is
+  // not possible to make it current in order to free the resource.
+  void Invalidate();
+
   GLuint id() const {
     return id_;
   }
@@ -233,6 +237,10 @@ class RenderBuffer {
   // Destroy the render buffer. This must be explicitly called before destroying
   // this object.
   void Destroy();
+
+  // Invalidate the render buffer. This can be used when a context is lost and
+  // it is not possible to make it current in order to free the resource.
+  void Invalidate();
 
   GLuint id() const {
     return id_;
@@ -266,6 +274,10 @@ class FrameBuffer {
   // Destroy the frame buffer. This must be explicitly called before destroying
   // this object.
   void Destroy();
+
+  // Invalidate the frame buffer. This can be used when a context is lost and it
+  // is not possible to make it current in order to free the resource.
+  void Invalidate();
 
   // See glCheckFramebufferStatusEXT.
   GLenum CheckStatus();
@@ -1369,6 +1381,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // used as the destination for multi-sample resolves.
   scoped_ptr<FrameBuffer> offscreen_saved_frame_buffer_;
   scoped_ptr<Texture> offscreen_saved_color_texture_;
+  GLenum offscreen_saved_color_format_;
 
   scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
@@ -1540,6 +1553,10 @@ void Texture::Destroy() {
   }
 }
 
+void Texture::Invalidate() {
+  id_ = 0;
+}
+
 RenderBuffer::RenderBuffer(GLES2DecoderImpl* decoder)
     : decoder_(decoder),
       id_(0) {
@@ -1591,6 +1608,10 @@ void RenderBuffer::Destroy() {
     glDeleteRenderbuffersEXT(1, &id_);
     id_ = 0;
   }
+}
+
+void RenderBuffer::Invalidate() {
+  id_ = 0;
 }
 
 FrameBuffer::FrameBuffer(GLES2DecoderImpl* decoder)
@@ -1649,6 +1670,10 @@ void FrameBuffer::Destroy() {
   }
 }
 
+void FrameBuffer::Invalidate() {
+  id_ = 0;
+}
+
 GLenum FrameBuffer::CheckStatus() {
   DCHECK_NE(id_, 0u);
   ScopedGLErrorSuppressor suppressor(decoder_);
@@ -1688,6 +1713,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       offscreen_target_depth_format_(0),
       offscreen_target_stencil_format_(0),
       offscreen_target_samples_(0),
+      offscreen_saved_color_format_(0),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
       validators_(group_->feature_info()->validators()),
@@ -1839,6 +1865,9 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
             GL_STENCIL_INDEX : 0;
       }
     }
+
+    offscreen_saved_color_format_ = attrib_parser.alpha_size_ > 0 ?
+        GL_RGBA : GL_RGB;
 
     // Create the target frame buffer. This is the one that the client renders
     // directly to.
@@ -2276,8 +2305,9 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   }
 
   if (parent_ || IsOffscreenBufferMultisampled()) {
-    offscreen_saved_color_texture_->AllocateStorage(pending_offscreen_size_,
-                                                    GL_RGBA);
+    DCHECK(offscreen_saved_color_format_);
+    offscreen_saved_color_texture_->AllocateStorage(
+        pending_offscreen_size_, offscreen_saved_color_format_);
 
     offscreen_saved_frame_buffer_->AttachRenderTexture(
         offscreen_saved_color_texture_.get());
@@ -2343,7 +2373,10 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32 client_texture_id,
 
 void GLES2DecoderImpl::Destroy() {
   bool have_context = context_.get() && MakeCurrent();
-  group_->set_have_context(have_context);
+
+  if (group_.get())
+    group_->set_have_context(have_context);
+
   if (have_context) {
     if (attrib_0_buffer_id_) {
       glDeleteBuffersARB(1, &attrib_0_buffer_id_);
@@ -2364,40 +2397,20 @@ void GLES2DecoderImpl::Destroy() {
       glDeleteFramebuffersEXT(1, &copy_texture_to_parent_texture_fb_);
     }
 
-    if (offscreen_target_frame_buffer_.get()) {
+    if (offscreen_target_frame_buffer_.get())
       offscreen_target_frame_buffer_->Destroy();
-      offscreen_target_frame_buffer_.reset();
-    }
-
-    if (offscreen_target_color_texture_.get()) {
+    if (offscreen_target_color_texture_.get())
       offscreen_target_color_texture_->Destroy();
-      offscreen_target_color_texture_.reset();
-    }
-
-    if (offscreen_target_color_render_buffer_.get()) {
+    if (offscreen_target_color_render_buffer_.get())
       offscreen_target_color_render_buffer_->Destroy();
-      offscreen_target_color_render_buffer_.reset();
-    }
-
-    if (offscreen_target_depth_render_buffer_.get()) {
+    if (offscreen_target_depth_render_buffer_.get())
       offscreen_target_depth_render_buffer_->Destroy();
-      offscreen_target_depth_render_buffer_.reset();
-    }
-
-    if (offscreen_target_stencil_render_buffer_.get()) {
+    if (offscreen_target_stencil_render_buffer_.get())
       offscreen_target_stencil_render_buffer_->Destroy();
-      offscreen_target_stencil_render_buffer_.reset();
-    }
-
-    if (offscreen_saved_frame_buffer_.get()) {
+    if (offscreen_saved_frame_buffer_.get())
       offscreen_saved_frame_buffer_->Destroy();
-      offscreen_saved_frame_buffer_.reset();
-    }
-
-    if (offscreen_saved_color_texture_.get()) {
+    if (offscreen_saved_color_texture_.get())
       offscreen_saved_color_texture_->Destroy();
-      offscreen_saved_color_texture_.reset();
-    }
 
     // must release the ContextGroup before destroying the context as its
     // destructor uses GL.
@@ -2405,7 +2418,30 @@ void GLES2DecoderImpl::Destroy() {
 
     context_->Destroy();
     context_.reset();
+  } else {
+    if (offscreen_target_frame_buffer_.get())
+      offscreen_target_frame_buffer_->Invalidate();
+    if (offscreen_target_color_texture_.get())
+      offscreen_target_color_texture_->Invalidate();
+    if (offscreen_target_color_render_buffer_.get())
+      offscreen_target_color_render_buffer_->Invalidate();
+    if (offscreen_target_depth_render_buffer_.get())
+      offscreen_target_depth_render_buffer_->Invalidate();
+    if (offscreen_target_stencil_render_buffer_.get())
+      offscreen_target_stencil_render_buffer_->Invalidate();
+    if (offscreen_saved_frame_buffer_.get())
+      offscreen_saved_frame_buffer_->Invalidate();
+    if (offscreen_saved_color_texture_.get())
+      offscreen_saved_color_texture_->Invalidate();
   }
+
+  offscreen_target_frame_buffer_.reset();
+  offscreen_target_color_texture_.reset();
+  offscreen_target_color_render_buffer_.reset();
+  offscreen_target_depth_render_buffer_.reset();
+  offscreen_target_stencil_render_buffer_.reset();
+  offscreen_saved_frame_buffer_.reset();
+  offscreen_saved_color_texture_.reset();
 }
 
 void GLES2DecoderImpl::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
