@@ -101,7 +101,7 @@ const Experiment kExperiments[] = {
     "match-preview",  // Do not change; see above.
     IDS_FLAGS_PREDICTIVE_INSTANT_NAME,
     IDS_FLAGS_PREDICTIVE_INSTANT_DESCRIPTION,
-    kOsMac | kOsLinux,
+    kOsMac,
     switches::kEnablePredictiveInstant
   },
   {

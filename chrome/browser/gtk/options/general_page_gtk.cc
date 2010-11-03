@@ -9,20 +9,25 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/url_picker_dialog_gtk.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/show_options_url.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -68,6 +73,7 @@ bool IsNewTabUIURLString(const GURL& url) {
 GeneralPageGtk::GeneralPageGtk(Profile* profile)
     : OptionsPageBase(profile),
       template_url_model_(NULL),
+      instant_checkbox_(NULL),
       default_search_initializing_(true),
       initializing_(true),
       default_browser_worker_(
@@ -102,6 +108,8 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       profile->GetPrefs(), this);
   homepage_.Init(prefs::kHomePage, profile->GetPrefs(), this);
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
+
+  instant_.Init(prefs::kInstantEnabled, profile->GetPrefs(), this);
 
   // Load initial values
   NotifyPrefChanged(NULL);
@@ -184,6 +192,13 @@ void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
     gtk_widget_set_sensitive(
         homepage_show_home_button_checkbox_,
         !show_home_button_.IsManaged());
+  }
+
+  if ((!pref_name || *pref_name == prefs::kInstantEnabled) &&
+      instant_checkbox_) {
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(instant_checkbox_),
+        instant_.GetValue());
   }
 
   initializing_ = false;
@@ -336,7 +351,9 @@ GtkWidget* GeneralPageGtk::InitHomepageGroup() {
 }
 
 GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* search_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(vbox), search_hbox, FALSE, FALSE, 0);
 
   default_search_engines_model_ = gtk_list_store_new(SEARCH_ENGINES_COL_COUNT,
                                                      G_TYPE_UINT,
@@ -346,7 +363,8 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
   g_object_unref(default_search_engines_model_);
   g_signal_connect(default_search_engine_combobox_, "changed",
                    G_CALLBACK(OnDefaultSearchEngineChangedThunk), this);
-  gtk_container_add(GTK_CONTAINER(hbox), default_search_engine_combobox_);
+  gtk_container_add(GTK_CONTAINER(search_hbox),
+                    default_search_engine_combobox_);
   accessible_widget_helper_->SetWidgetName(
       default_search_engine_combobox_, IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME);
 
@@ -370,10 +388,46 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
           IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK).c_str());
   g_signal_connect(default_search_manage_engines_button_, "clicked",
                    G_CALLBACK(OnDefaultSearchManageEnginesClickedThunk), this);
-  gtk_box_pack_end(GTK_BOX(hbox), default_search_manage_engines_button_,
-                   FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(search_hbox),
+                     default_search_manage_engines_button_, FALSE, FALSE, 0);
 
-  return hbox;
+  // When the instant lab is on, add some options for instant. We want the
+  // warning text and link to align with the pref's checkbox's label.
+  // Need a new vbox as we don't want any spacing between these labels.
+  GtkWidget* instant_vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), instant_vbox, FALSE, FALSE, 0);
+
+  instant_checkbox_ = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_INSTANT_PREF).c_str());
+  g_signal_connect(instant_checkbox_, "toggled",
+                   G_CALLBACK(OnInstantToggledThunk), this);
+  gtk_box_pack_start(GTK_BOX(instant_vbox), instant_checkbox_, FALSE, FALSE, 0);
+
+  // Relies on knowledge of GTK+ internals to find the checkbox's label child
+  // and then make the indent below match its vertical spacing.
+  GtkWidget* instant_label = gtk_bin_get_child(GTK_BIN(instant_checkbox_));
+  if (instant_label && GTK_IS_LABEL(instant_label)) {
+    g_signal_connect(instant_label, "size-allocate",
+                     G_CALLBACK(OnInstantLabelSizeAllocateThunk), this);
+  }
+
+  instant_indent_ = gtk_fixed_new();
+  GtkWidget* explanation_box = gtk_hbox_new(FALSE, 0);
+  GtkWidget* explanation = gtk_label_new((
+      l10n_util::GetStringUTF8(IDS_INSTANT_PREF_WARNING) + " ").c_str());
+  GtkWidget* learn_more_link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
+  g_signal_connect(learn_more_link, "clicked",
+                   G_CALLBACK(OnSearchLearnMoreClickedThunk), this);
+  gtk_box_pack_start(GTK_BOX(explanation_box), instant_indent_,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(explanation_box), explanation,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(explanation_box), learn_more_link,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(instant_vbox), explanation_box, FALSE, FALSE, 0);
+
+  return vbox;
 }
 
 GtkWidget* GeneralPageGtk::InitDefaultBrowserGroup() {
@@ -485,6 +539,17 @@ void GeneralPageGtk::OnShowHomeButtonToggled(GtkWidget* toggle_button) {
         UserMetricsAction("Options_Homepage_HideHomeButton"),
         profile()->GetPrefs());
   }
+}
+
+void GeneralPageGtk::OnInstantToggled(GtkWidget* toggle_button) {
+  if (initializing_)
+    return;
+
+  // TODO(estade): show confirm dialog.
+  bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button));
+  instant_.SetValue(enabled);
+
+  // TODO(estade): UMA?
 }
 
 void GeneralPageGtk::OnDefaultSearchEngineChanged(GtkWidget* combo_box) {
@@ -717,4 +782,17 @@ void GeneralPageGtk::SetDefaultBrowserUIState(
 
   gtk_widget_set_sensitive(default_browser_use_as_default_button_,
                            state == ShellIntegration::STATE_NOT_DEFAULT);
+}
+
+void GeneralPageGtk::OnInstantLabelSizeAllocate(GtkWidget* sender,
+                                                GtkAllocation* allocation) {
+  int desired_width = allocation->x - sender->parent->allocation.x;
+  GtkRequisition req;
+  gtk_widget_size_request(instant_indent_, &req);
+  if (req.width != desired_width)
+    gtk_widget_set_size_request(instant_indent_, desired_width, -1);
+}
+
+void GeneralPageGtk::OnSearchLearnMoreClicked(GtkWidget* sender) {
+  browser::ShowOptionsURL(profile(), GURL(browser::kInstantLearnMoreURL));
 }
