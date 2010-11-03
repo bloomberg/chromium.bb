@@ -562,7 +562,8 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     std::string content_type;
     info.headers->EnumerateHeader(NULL, "content-type", &content_type);
 
-    std::string boundary = net::GetHeaderParamValue(content_type, "boundary");
+    std::string boundary = net::GetHeaderParamValue(
+        content_type, "boundary", net::QuoteRule::REMOVE_OUTER_QUOTES);
     TrimString(boundary, " \"", &boundary);
 
     // If there's no boundary, just handle the request normally.  In the gecko
