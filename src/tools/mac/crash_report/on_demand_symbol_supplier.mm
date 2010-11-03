@@ -171,14 +171,13 @@ OnDemandSymbolSupplier::GetCStringSymbolData(const CodeModule *module,
                                                       symbol_file,
                                                       &symbol_data_string);
   if (result == FOUND) {
-    unsigned int size = symbol_data_string.size() + 1;
-    *symbol_data = new char[size];
+    *symbol_data = new char[symbol_data_string.size() + 1];
     if (*symbol_data == NULL) {
       // Should return INTERRUPT on memory allocation failure.
       return INTERRUPT;
     }
     strcpy(*symbol_data, symbol_data_string.c_str());
-    memory_buffers_.insert(make_pair(module->code_file(), *symbol_data);
+    memory_buffers_.insert(make_pair(module->code_file(), *symbol_data));
   }
   return result;
 }
