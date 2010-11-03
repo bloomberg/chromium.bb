@@ -450,8 +450,7 @@ void ExtensionFunctionDispatcher::HandleRequest(
   DCHECK(service);
   const Extension* extension = service->GetExtensionById(extension_id(), false);
   DCHECK(extension);
-  function->set_include_incognito(service->IsIncognitoEnabled(extension) &&
-                                  !extension->incognito_split_mode());
+  function->set_include_incognito(service->CanCrossIncognito(extension));
 
   if (!service->ExtensionBindingsAllowed(function->source_url()) ||
       !extension->HasApiPermission(function->name())) {

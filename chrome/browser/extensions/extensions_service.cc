@@ -1336,6 +1336,13 @@ void ExtensionsService::SetIsIncognitoEnabled(const Extension* extension,
   }
 }
 
+bool ExtensionsService::CanCrossIncognito(const Extension* extension) {
+  // We allow the extension to see events and data from another profile iff it
+  // uses "spanning" behavior and it has incognito access. "split" mode
+  // extensions only see events for a matching profile.
+  return IsIncognitoEnabled(extension) && !extension->incognito_split_mode();
+}
+
 bool ExtensionsService::AllowFileAccess(const Extension* extension) {
   return (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableExtensionsFileAccessCheck) ||

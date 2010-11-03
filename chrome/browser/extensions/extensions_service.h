@@ -181,6 +181,10 @@ class ExtensionsService
   bool IsIncognitoEnabled(const Extension* extension);
   void SetIsIncognitoEnabled(const Extension* extension, bool enabled);
 
+  // Returns true if the given extension can see events and data from another
+  // sub-profile (incognito to original profile, or vice versa).
+  bool CanCrossIncognito(const Extension* extension);
+
   // Whether this extension can inject scripts into pages with file URLs.
   bool AllowFileAccess(const Extension* extension);
   void SetAllowFileAccess(const Extension* extension, bool allow);

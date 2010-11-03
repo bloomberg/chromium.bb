@@ -221,6 +221,15 @@ bool AutocompletePopupModel::GetKeywordForMatch(const AutocompleteMatch& match,
   if (!TemplateURL::SupportsReplacement(template_url))
     return false;
 
+  // Don't provide a hint if this is an extension keyword not enabled for
+  // incognito mode (and if this is an incognito profile).
+  if (template_url->IsExtensionKeyword() && profile_->IsOffTheRecord()) {
+    const Extension* extension = profile_->GetExtensionsService()->
+        GetExtensionById(template_url->GetExtensionId(), false);
+    if (!profile_->GetExtensionsService()->IsIncognitoEnabled(extension))
+      return false;
+  }
+
   keyword->assign(keyword_hint);
   return true;
 }

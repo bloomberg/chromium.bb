@@ -168,6 +168,7 @@ void ExtensionEventRouter::DispatchEventImpl(
     return;
 
   std::set<EventListener>& listeners = it->second;
+  ExtensionsService* service = profile_->GetExtensionsService();
 
   // Send the event only to renderers that are listening for it.
   for (std::set<EventListener>::iterator listener = listeners.begin();
@@ -185,7 +186,9 @@ void ExtensionEventRouter::DispatchEventImpl(
     // incognito tab event sent to a normal process, or vice versa).
     bool cross_incognito = restrict_to_profile &&
         listener->process->profile() != restrict_to_profile;
-    if (cross_incognito && !CanCrossIncognito(profile_, listener->extension_id))
+    const Extension* extension = service->GetExtensionById(
+        listener->extension_id, false);
+    if (cross_incognito && !service->CanCrossIncognito(extension))
       continue;
 
     DispatchEvent(listener->process, listener->extension_id,

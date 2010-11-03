@@ -168,6 +168,26 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   std::vector<std::wstring> keyword_matches;
   model->FindMatchingKeywords(keyword, !remaining_input.empty(),
                               &keyword_matches);
+
+  // Prune any extension keywords that are disallowed in incognito mode (if
+  // we're incognito), or disabled.
+  for (std::vector<std::wstring>::iterator i(keyword_matches.begin());
+       i != keyword_matches.end(); ) {
+    const TemplateURL* template_url(model->GetTemplateURLForKeyword(*i));
+    if (profile_ &&
+        !input.synchronous_only() && template_url->IsExtensionKeyword()) {
+      ExtensionsService* service = profile_->GetExtensionsService();
+      const Extension* extension = service->GetExtensionById(
+          template_url->GetExtensionId(), false);
+      bool enabled = extension && (!profile_->IsOffTheRecord() ||
+                                   service->IsIncognitoEnabled(extension));
+      if (!enabled) {
+        i = keyword_matches.erase(i);
+        continue;
+      }
+    }
+    ++i;
+  }
   if (keyword_matches.empty())
     return;
   std::sort(keyword_matches.begin(), keyword_matches.end(), CompareQuality());
@@ -180,23 +200,16 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     const TemplateURL* template_url(model->GetTemplateURLForKeyword(keyword));
     // TODO(pkasting): We should probably check that if the user explicitly
     // typed a scheme, that scheme matches the one in |template_url|.
+    matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
+                                               keyword.length(),
+                                               remaining_input, -1));
 
     if (profile_ &&
         !input.synchronous_only() && template_url->IsExtensionKeyword()) {
-      // If this extension keyword is disabled, make sure we don't add any
-      // matches (including the synchronous one below).
-      ExtensionsService* service = profile_->GetExtensionsService();
-      const Extension* extension = service->GetExtensionById(
-          template_url->GetExtensionId(), false);
-      bool enabled = extension && (!profile_->IsOffTheRecord() ||
-                                   service->IsIncognitoEnabled(extension));
-      if (!enabled)
-        return;
-
-      if (extension->id() != current_keyword_extension_id_)
+      if (template_url->GetExtensionId() != current_keyword_extension_id_)
         MaybeEndExtensionKeywordMode();
       if (current_keyword_extension_id_.empty())
-        EnterExtensionKeywordMode(extension->id());
+        EnterExtensionKeywordMode(template_url->GetExtensionId());
       keyword_mode_toggle.StayInKeywordMode();
 
       if (minimal_changes) {
@@ -221,10 +234,6 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           done_ = false;
       }
     }
-
-    matches_.push_back(CreateAutocompleteMatch(model, keyword, input,
-                                               keyword.length(),
-                                               remaining_input, -1));
   } else {
     if (keyword_matches.size() > kMaxMatches) {
       keyword_matches.erase(keyword_matches.begin() + kMaxMatches,
