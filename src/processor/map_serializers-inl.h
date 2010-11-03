@@ -102,8 +102,7 @@ char *StdMapSerializer<Key, Value>::Serialize(
   // Compute size of memory to be allocated.
   unsigned int size_to_alloc = SizeOf(m);
   // Allocate memory.
-  char *serialized_data =
-      reinterpret_cast<char*>(operator new(size_to_alloc));
+  char *serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(INFO) << "StdMapSerializer memory allocation failed.";
     if (size) *size = 0;
@@ -172,8 +171,7 @@ char *RangeMapSerializer<Address, Entry>::Serialize(
   // Compute size of memory to be allocated.
   unsigned int size_to_alloc = SizeOf(m);
   // Allocate memory.
-  char *serialized_data =
-      reinterpret_cast<char*>(operator new(size_to_alloc));
+  char *serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(INFO) << "RangeMapSerializer memory allocation failed.";
     if (size) *size = 0;
@@ -252,7 +250,7 @@ char *ContainedRangeMapSerializer<AddrType, EntryType>::Serialize(
     const ContainedRangeMap<AddrType, EntryType> *m, unsigned int *size) const {
   unsigned int size_to_alloc = SizeOf(m);
   // Allocating memory.
-  char *serialized_data = reinterpret_cast<char*>(operator new(size_to_alloc));
+  char *serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(INFO) << "ContainedRangeMapSerializer memory allocation failed.";
     if (size) *size = 0;

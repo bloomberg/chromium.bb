@@ -53,33 +53,28 @@
 namespace google_breakpad {
 
 bool ModuleComparer::Compare(const string &symbol_data) {
-  // Empty CodeModule with only a name "test":
-  BasicCodeModule code_module(0, 0, "test", "", "", "", "");
+  scoped_ptr<BasicModule> basic_module(new BasicModule("test_module"));
+  scoped_ptr<FastModule> fast_module(new FastModule("test_module"));
 
-  // Load BasicSourceLineResolver::Module.
-  BPLOG(INFO) << "Unserialized size = " << symbol_data.size() << " Bytes";
-  basic_resolver_->LoadModuleUsingMapBuffer(&code_module, symbol_data);
-  BasicModule *old_module = dynamic_cast<BasicModule*>(
-        basic_resolver_->modules_->at("test"));
+  // Load symbol data into basic_module
+  scoped_array<char> buffer(new char[symbol_data.size() + 1]);
+  strcpy(buffer.get(), symbol_data.c_str());
+  ASSERT_TRUE(basic_module->LoadMapFromMemory(buffer.get()));
+  buffer.reset();
 
   // Serialize BasicSourceLineResolver::Module.
   unsigned int serialized_size = 0;
-  char *mem = serializer_.Serialize(*old_module, &serialized_size);
-  ASSERT_TRUE(mem);
+  scoped_array<char> serialized_data(
+      serializer_.Serialize(*(basic_module.get()), &serialized_size));
+  ASSERT_TRUE(serialized_data.get());
   BPLOG(INFO) << "Serialized size = " << serialized_size << " Bytes";
 
   // Load FastSourceLineResolver::Module using serialized data.
-  ASSERT_TRUE(fast_resolver_->LoadModuleUsingMemoryBuffer(&code_module, mem));
-  FastModule *new_module = dynamic_cast<FastModule*>(
-      fast_resolver_->modules_->at("test"));
+  ASSERT_TRUE(fast_module->LoadMapFromMemory(serialized_data.get()));
 
   // Compare FastSourceLineResolver::Module with
   // BasicSourceLineResolver::Module.
-  ASSERT_TRUE(CompareModule(old_module, new_module));
-
-  // Clean up.
-  basic_resolver_->UnloadModule(&code_module);
-  fast_resolver_->UnloadModule(&code_module);
+  ASSERT_TRUE(CompareModule(basic_module.get(), fast_module.get()));
 
   return true;
 }

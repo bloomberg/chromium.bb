@@ -100,7 +100,7 @@ char* ModuleSerializer::Serialize(
   unsigned int size_to_alloc = SizeOf(module);
 
   // Allocate memory for serialized data.
-  char *serialized_data = reinterpret_cast<char*>(operator new(size_to_alloc));
+  char *serialized_data = new char[size_to_alloc];
   if (!serialized_data) {
     BPLOG(ERROR) << "ModuleSerializer: memory allocation failed, "
                  << "size to alloc: " << size_to_alloc;
@@ -134,7 +134,7 @@ bool ModuleSerializer::SerializeModuleAndLoadIntoFastResolver(
       dynamic_cast<BasicSourceLineResolver::Module*>(iter->second);
 
   unsigned int size = 0;
-  scoped_ptr<char> symbol_data(Serialize(*basic_module, &size));
+  scoped_array<char> symbol_data(Serialize(*basic_module, &size));
   if (!symbol_data.get()) {
     BPLOG(ERROR) << "Serialization failed for module: " << basic_module->name_;
     return false;
@@ -193,6 +193,7 @@ char* ModuleSerializer::SerializeSymbolFileData(
   if (!module->LoadMapFromMemory(buffer.get())) {
     return NULL;
   }
+  buffer.reset(NULL);
   return Serialize(*(module.get()), size);
 }
 

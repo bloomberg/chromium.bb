@@ -65,6 +65,7 @@ class StdMapSerializer {
   // described in "StaticMap.h" comment.
   // Returns a pointer to the serialized data.  If size != NULL, *size is set
   // to the size of serialized data, i.e., SizeOf(m).
+  // Caller has the ownership of memory allocated as "new char[]".
   char* Serialize(const std::map<Key, Value> &m, unsigned int *size) const;
 
  private:
@@ -92,6 +93,7 @@ class AddressMapSerializer {
   // Serializes an AddressMap object into a chunk of memory data.
   // Returns a pointer to the serialized data.  If size != NULL, *size is set
   // to the size of serialized data, i.e., SizeOf(m).
+  // Caller has the ownership of memory allocated as "new char[]".
   char* Serialize(const AddressMap<Addr, Entry> &m, unsigned int *size) const {
     return std_map_serializer_.Serialize(m.map_, size);
   }
@@ -118,6 +120,7 @@ class RangeMapSerializer {
   // Serializes a RangeMap object into a chunk of memory data.
   // Returns a pointer to the serialized data.  If size != NULL, *size is set
   // to the size of serialized data, i.e., SizeOf(m).
+  // Caller has the ownership of memory allocated as "new char[]".
   char* Serialize(const RangeMap<Address, Entry> &m, unsigned int *size) const;
 
  private:
@@ -147,6 +150,7 @@ class ContainedRangeMapSerializer {
   // Serializes a ContainedRangeMap object into a chunk of memory data.
   // Returns a pointer to the serialized data.  If size != NULL, *size is set
   // to the size of serialized data, i.e., SizeOf(m).
+  // Caller has the ownership of memory allocated as "new char[]".
   char* Serialize(const ContainedRangeMap<AddrType, EntryType> *m,
                   unsigned int *size) const;
 

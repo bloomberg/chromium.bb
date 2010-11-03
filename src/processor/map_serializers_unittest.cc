@@ -59,7 +59,7 @@ class TestStdMapSerializer : public ::testing::Test {
   }
 
   void TearDown() {
-    delete serialized_data_;
+    delete [] serialized_data_;
   }
 
   std::map<AddrType, EntryType> std_map_;
