@@ -81,10 +81,11 @@ PREFIX : `anonymous namespace'::purecall____purecall___browserclosednotification
 PREFIX : `anonymous namespace'::invalidparameter____purecall___browserclosednotificationobserver::observe___notificationservice::notify
 
 # 57041
-PREFIX: `anonymous namespace'::purecall____purecall___`anonymous namespace'::do_malloc___base::threadlocalplatform::getvaluefromslot___notificationservice::current
-PREFIX: `anonymous namespace'::invalidparameter____purecall___`anonymous namespace'::do_malloc___base::threadlocalplatform::getvaluefromslot___notificationservice::current
+PREFIX: `anonymous namespace'::purecall____purecall___`anonymous namespace'::do_malloc___base::threadlocalplatform::getvaluefromslot___notificationservice::currentPREFIX: `anonymous namespace'::invalidparameter____purecall___`anonymous namespace'::do_malloc___base::threadlocalplatform::getvaluefromslot___notificationservice::current
 PREFIX: `anonymous namespace'::purecall____purecall___`anonymous namespace'::do_free_with_callback___notificationservice::notify___browserlist::removebrowser___browser::~browser
 PREFIX: `anonymous namespace'::invalidparameter____purecall___`anonymous namespace'::do_free_with_callback___notificationservice::notify___browserlist::removebrowser___browser::~browser
+PREFIX: `anonymous namespace'::invalidparameter____purecall___notificationservice::notify___browserlist::removebrowser___browser::~browser___browse
+PREFIX: `anonymous namespace'::invalidparameter____purecall___notificationservice::current___views::widgetwin::onwndproc___gfx::windowimpl::wndproc___renderviewhost::onmessagereceived
 
 # 57185
 PREFIX: `anonymous namespace'::purecall____purecall___lockimpl::unlock___`anonymous namespace'::rolloverprotectednow___lockimpl::lock___conditionvariable::signal___watchdog::armsometimedeltaago___`anonymous namespace'::jankobserverhelper::startprocessingtimers___`anonymous namespace'::uijankobserver::willprocesstask
@@ -114,4 +115,3 @@ PREFIX: webcore::uniscribehelpertextrun::uniscribehelpertextrun___webcore::font:
 
 # 61593
 PREFIX: webcore::font::glyphdataforcharacter___webcore::widthiterator::advance___webcore::font::floatwidthforsimpletext___webcore::font::floatwidth___webcore::renderimage::setimagesizeforalttext___webcore::renderimage::imagechanged
-
