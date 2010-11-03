@@ -236,7 +236,7 @@ class ImageTest : public testing::Test {
     // Hack for a quick lowercase. We assume all the tests names are ASCII.
     std::string tmp(WideToASCII(test_dir_.ToWStringHack()));
     for (size_t i = 0; i < tmp.size(); ++i)
-      tmp[i] = ToLowerASCII(tmp[i]);
+      tmp[i] = base::ToLowerASCII(tmp[i]);
     test_dir_ = FilePath::FromWStringHack(ASCIIToWide(tmp));
 
     if (action_ == GENERATE) {
@@ -255,7 +255,7 @@ class ImageTest : public testing::Test {
     std::string tmp(filename);
 #endif
     for (size_t i = 0; i < tmp.size(); ++i)
-      tmp[i] = ToLowerASCII(tmp[i]);
+      tmp[i] = base::ToLowerASCII(tmp[i]);
 
     return test_dir_.AppendASCII(tmp);
   }

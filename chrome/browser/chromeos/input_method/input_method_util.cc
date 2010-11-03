@@ -372,7 +372,7 @@ std::string NormalizeLanguageCode(
     copied_language_code[2] = '-';
     // Downcase the language code part.
     for (size_t i = 0; i < 2; ++i) {
-      copied_language_code[i] = ToLowerASCII(copied_language_code[i]);
+      copied_language_code[i] = base::ToLowerASCII(copied_language_code[i]);
     }
     // Upcase the country code part.
     for (size_t i = 3; i < copied_language_code.size(); ++i) {
