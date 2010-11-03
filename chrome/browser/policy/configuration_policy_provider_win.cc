@@ -145,7 +145,9 @@ void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
 void ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::
     OnObjectSignaled(HANDLE object) {
   DCHECK(object == user_policy_changed_event_.handle() ||
-         object == machine_policy_changed_event_.handle());
+         object == machine_policy_changed_event_.handle())
+      << "unexpected object signaled policy reload, obj = "
+      << std::showbase << std::hex << object;
   Reload();
 }
 
@@ -168,7 +170,7 @@ ConfigurationPolicyProviderWin::~ConfigurationPolicyProviderWin() {
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
-    const string16& name, string16* result) {
+    const string16& name, string16* result) const {
   string16 path = string16(kRegistrySubKey);
   RegKey policy_key;
   // First try the global policy.
@@ -184,7 +186,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(
-    const string16& key, ListValue* result) {
+    const string16& key, ListValue* result) const {
   string16 path = string16(kRegistrySubKey);
   path += ASCIIToUTF16("\\") + key;
   RegKey policy_key;
@@ -204,7 +206,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
-    const string16& value_name, bool* result) {
+    const string16& value_name, bool* result) const {
   DWORD value;
   RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
@@ -221,7 +223,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
-    const string16& value_name, uint32* result) {
+    const string16& value_name, uint32* result) const {
   DWORD value;
   RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
@@ -238,7 +240,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
 }
 
 bool ConfigurationPolicyProviderWin::Provide(
-    ConfigurationPolicyStore* store) {
+    ConfigurationPolicyStoreInterface* store) {
   const PolicyDefinitionList* policy_list(policy_definition_list());
   for (const PolicyDefinitionList::Entry* current = policy_list->begin;
        current != policy_list->end; ++current) {

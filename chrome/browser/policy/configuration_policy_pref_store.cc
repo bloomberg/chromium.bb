@@ -35,8 +35,7 @@ class ConfigurationPolicyProviderKeeper {
  public:
   ConfigurationPolicyProviderKeeper()
       : managed_provider_(CreateManagedProvider()),
-        recommended_provider_(CreateRecommendedProvider()) {
-  }
+        recommended_provider_(CreateRecommendedProvider()) {}
   virtual ~ConfigurationPolicyProviderKeeper() {}
 
   ConfigurationPolicyProvider* managed_provider() const {
@@ -51,117 +50,125 @@ class ConfigurationPolicyProviderKeeper {
   scoped_ptr<ConfigurationPolicyProvider> managed_provider_;
   scoped_ptr<ConfigurationPolicyProvider> recommended_provider_;
 
-  static ConfigurationPolicyProvider* CreateManagedProvider() {
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_WIN)
-    return new ConfigurationPolicyProviderWin(policy_list);
-#elif defined(OS_MACOSX)
-    return new ConfigurationPolicyProviderMac(policy_list);
-#elif defined(OS_POSIX)
-    FilePath config_dir_path;
-    if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-      return new ConfigDirPolicyProvider(policy_list,
-          config_dir_path.Append(FILE_PATH_LITERAL("managed")));
-    } else {
-      return new DummyConfigurationPolicyProvider(policy_list);
-    }
-#else
-    return new DummyConfigurationPolicyProvider(policy_list);
-#endif
-  }
-
-  static ConfigurationPolicyProvider* CreateRecommendedProvider() {
-    const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-    FilePath config_dir_path;
-    if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-      return new ConfigDirPolicyProvider(policy_list,
-          config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
-    } else {
-      return new DummyConfigurationPolicyProvider(policy_list);
-    }
-#else
-    return new DummyConfigurationPolicyProvider(policy_list);
-#endif
-  }
+  static ConfigurationPolicyProvider* CreateManagedProvider();
+  static ConfigurationPolicyProvider* CreateRecommendedProvider();
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderKeeper);
 };
 
+
+ConfigurationPolicyProvider*
+    ConfigurationPolicyProviderKeeper::CreateManagedProvider() {
+  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+#if defined(OS_WIN)
+  return new ConfigurationPolicyProviderWin(policy_list);
+#elif defined(OS_MACOSX)
+  return new ConfigurationPolicyProviderMac(policy_list);
+#elif defined(OS_POSIX)
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+    return new ConfigDirPolicyProvider(
+        policy_list,
+        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
+  } else {
+    return new DummyConfigurationPolicyProvider(policy_list);
+  }
+#else
+  return new DummyConfigurationPolicyProvider(policy_list);
+#endif
+}
+
+ConfigurationPolicyProvider*
+    ConfigurationPolicyProviderKeeper::CreateRecommendedProvider() {
+  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
+      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  FilePath config_dir_path;
+  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+    return new ConfigDirPolicyProvider(
+        policy_list,
+        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
+  } else {
+    return new DummyConfigurationPolicyProvider(policy_list);
+  }
+#else
+  return new DummyConfigurationPolicyProvider(policy_list);
+#endif
+}
+
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
-    ConfigurationPolicyPrefStore::simple_policy_map_[] = {
+    ConfigurationPolicyPrefStore::kSimplePolicyMap[] = {
   { Value::TYPE_STRING, kPolicyHomePage,  prefs::kHomePage },
   { Value::TYPE_BOOLEAN, kPolicyHomepageIsNewTabPage,
-      prefs::kHomePageIsNewTabPage },
+    prefs::kHomePageIsNewTabPage },
   { Value::TYPE_INTEGER, kPolicyRestoreOnStartup,
-      prefs::kRestoreOnStartup},
+    prefs::kRestoreOnStartup},
   { Value::TYPE_LIST, kPolicyURLsToRestoreOnStartup,
-      prefs::kURLsToRestoreOnStartup },
+    prefs::kURLsToRestoreOnStartup },
   { Value::TYPE_BOOLEAN, kPolicyAlternateErrorPagesEnabled,
-      prefs::kAlternateErrorPagesEnabled },
+    prefs::kAlternateErrorPagesEnabled },
   { Value::TYPE_BOOLEAN, kPolicySearchSuggestEnabled,
-      prefs::kSearchSuggestEnabled },
+    prefs::kSearchSuggestEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDnsPrefetchingEnabled,
-      prefs::kDnsPrefetchingEnabled },
+    prefs::kDnsPrefetchingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyDisableSpdy,
-      prefs::kDisableSpdy },
+    prefs::kDisableSpdy },
   { Value::TYPE_BOOLEAN, kPolicySafeBrowsingEnabled,
-      prefs::kSafeBrowsingEnabled },
+    prefs::kSafeBrowsingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyPasswordManagerEnabled,
-      prefs::kPasswordManagerEnabled },
+    prefs::kPasswordManagerEnabled },
   { Value::TYPE_BOOLEAN, kPolicyPasswordManagerAllowShowPasswords,
-      prefs::kPasswordManagerAllowShowPasswords },
+    prefs::kPasswordManagerAllowShowPasswords },
   { Value::TYPE_BOOLEAN, kPolicyPrintingEnabled,
-      prefs::kPrintingEnabled },
+    prefs::kPrintingEnabled },
   { Value::TYPE_BOOLEAN, kPolicyMetricsReportingEnabled,
-      prefs::kMetricsReportingEnabled },
+    prefs::kMetricsReportingEnabled },
   { Value::TYPE_STRING, kPolicyApplicationLocale,
-      prefs::kApplicationLocale},
+    prefs::kApplicationLocale},
   { Value::TYPE_LIST, kPolicyExtensionInstallAllowList,
-      prefs::kExtensionInstallAllowList},
+    prefs::kExtensionInstallAllowList},
   { Value::TYPE_LIST, kPolicyExtensionInstallDenyList,
-      prefs::kExtensionInstallDenyList},
+    prefs::kExtensionInstallDenyList},
   { Value::TYPE_LIST, kPolicyDisabledPlugins,
-      prefs::kPluginsPluginsBlacklist},
+    prefs::kPluginsPluginsBlacklist},
   { Value::TYPE_BOOLEAN, kPolicyShowHomeButton,
-      prefs::kShowHomeButton },
+    prefs::kShowHomeButton },
   { Value::TYPE_BOOLEAN, kPolicyJavascriptEnabled,
-      prefs::kWebKitJavascriptEnabled },
+    prefs::kWebKitJavascriptEnabled },
   { Value::TYPE_BOOLEAN, kPolicySavingBrowserHistoryDisabled,
-      prefs::kSavingBrowserHistoryDisabled },
+    prefs::kSavingBrowserHistoryDisabled },
   { Value::TYPE_BOOLEAN, kPolicyDeveloperToolsDisabled,
-      prefs::kDevToolsDisabled },
+    prefs::kDevToolsDisabled },
   { Value::TYPE_BOOLEAN, kPolicyBlockThirdPartyCookies,
-      prefs::kBlockThirdPartyCookies},
+    prefs::kBlockThirdPartyCookies},
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
-      prefs::kEnableScreenLock },
+    prefs::kEnableScreenLock },
 #endif
 };
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
-    ConfigurationPolicyPrefStore::default_search_policy_map_[] = {
+    ConfigurationPolicyPrefStore::kDefaultSearchPolicyMap[] = {
   { Value::TYPE_BOOLEAN, kPolicyDefaultSearchProviderEnabled,
-      prefs::kDefaultSearchProviderEnabled },
+    prefs::kDefaultSearchProviderEnabled },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderName,
-      prefs::kDefaultSearchProviderName },
+    prefs::kDefaultSearchProviderName },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderKeyword,
-      prefs::kDefaultSearchProviderKeyword },
+    prefs::kDefaultSearchProviderKeyword },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderSearchURL,
-      prefs::kDefaultSearchProviderSearchURL },
+    prefs::kDefaultSearchProviderSearchURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderSuggestURL,
-      prefs::kDefaultSearchProviderSuggestURL },
+    prefs::kDefaultSearchProviderSuggestURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderIconURL,
-      prefs::kDefaultSearchProviderIconURL },
+    prefs::kDefaultSearchProviderIconURL },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderEncodings,
-      prefs::kDefaultSearchProviderEncodings },
+    prefs::kDefaultSearchProviderEncodings },
 };
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
-    ConfigurationPolicyPrefStore::proxy_policy_map_[] = {
+    ConfigurationPolicyPrefStore::kProxyPolicyMap[] = {
   { Value::TYPE_STRING, kPolicyProxyServer, prefs::kProxyServer },
   { Value::TYPE_STRING, kPolicyProxyPacUrl, prefs::kProxyPacUrl },
   { Value::TYPE_STRING, kPolicyProxyBypassList, prefs::kProxyBypassList }
@@ -171,82 +178,69 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
 ConfigurationPolicyProvider::PolicyDefinitionList*
 ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
   static ConfigurationPolicyProvider::PolicyDefinitionList::Entry entries[] = {
-    { ConfigurationPolicyStore::kPolicyHomePage,
-        Value::TYPE_STRING, key::kHomepageLocation },
-    { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
-        Value::TYPE_BOOLEAN, key::kHomepageIsNewTabPage },
-    { ConfigurationPolicyStore::kPolicyRestoreOnStartup,
-        Value::TYPE_INTEGER, key::kRestoreOnStartup },
-    { ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
-        Value::TYPE_LIST, key::kURLsToRestoreOnStartup },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
-        Value::TYPE_BOOLEAN, key::kDefaultSearchProviderEnabled },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
-        Value::TYPE_STRING, key::kDefaultSearchProviderName },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
-        Value::TYPE_STRING, key::kDefaultSearchProviderKeyword },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
-        Value::TYPE_STRING, key::kDefaultSearchProviderSearchURL },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
-        Value::TYPE_STRING, key::kDefaultSearchProviderSuggestURL },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
-        Value::TYPE_STRING, key::kDefaultSearchProviderIconURL },
-    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
-        Value::TYPE_STRING, key::kDefaultSearchProviderEncodings },
-    { ConfigurationPolicyStore::kPolicyProxyServerMode,
-        Value::TYPE_INTEGER, key::kProxyServerMode },
-    { ConfigurationPolicyStore::kPolicyProxyServer,
-        Value::TYPE_STRING, key::kProxyServer },
-    { ConfigurationPolicyStore::kPolicyProxyPacUrl,
-        Value::TYPE_STRING, key::kProxyPacUrl },
-    { ConfigurationPolicyStore::kPolicyProxyBypassList,
-        Value::TYPE_STRING, key::kProxyBypassList },
-    { ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
-        Value::TYPE_BOOLEAN, key::kAlternateErrorPagesEnabled },
-    { ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
-        Value::TYPE_BOOLEAN, key::kSearchSuggestEnabled },
-    { ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
-        Value::TYPE_BOOLEAN, key::kDnsPrefetchingEnabled },
-    { ConfigurationPolicyStore::kPolicyDisableSpdy,
-        Value::TYPE_BOOLEAN, key::kDisableSpdy },
-    { ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
-        Value::TYPE_BOOLEAN, key::kSafeBrowsingEnabled },
-    { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
-        Value::TYPE_BOOLEAN, key::kMetricsReportingEnabled },
-    { ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
-        Value::TYPE_BOOLEAN, key::kPasswordManagerEnabled },
-    { ConfigurationPolicyStore::kPolicyPasswordManagerAllowShowPasswords,
-        Value::TYPE_BOOLEAN, key::kPasswordManagerAllowShowPasswords },
-    { ConfigurationPolicyStore::kPolicyAutoFillEnabled,
-        Value::TYPE_BOOLEAN, key::kAutoFillEnabled },
-    { ConfigurationPolicyStore::kPolicyDisabledPlugins,
-        Value::TYPE_LIST, key::kDisabledPlugins },
-    { ConfigurationPolicyStore::kPolicyApplicationLocale,
-        Value::TYPE_STRING, key::kApplicationLocaleValue },
-    { ConfigurationPolicyStore::kPolicySyncDisabled,
-        Value::TYPE_BOOLEAN, key::kSyncDisabled },
-    { ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
-        Value::TYPE_LIST, key::kExtensionInstallAllowList },
-    { ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
-        Value::TYPE_LIST, key::kExtensionInstallDenyList },
-    { ConfigurationPolicyStore::kPolicyExtensionInstallForceList,
-        Value::TYPE_LIST, key::kExtensionInstallForceList },
-    { ConfigurationPolicyStore::kPolicyShowHomeButton,
-        Value::TYPE_BOOLEAN, key::kShowHomeButton },
-    { ConfigurationPolicyStore::kPolicyPrintingEnabled,
-        Value::TYPE_BOOLEAN, key::kPrintingEnabled },
-    { ConfigurationPolicyStore::kPolicyJavascriptEnabled,
-        Value::TYPE_BOOLEAN, key::kJavascriptEnabled },
-    { ConfigurationPolicyStore::kPolicySavingBrowserHistoryDisabled,
-        Value::TYPE_BOOLEAN, key::kSavingBrowserHistoryDisabled },
-    { ConfigurationPolicyStore::kPolicyDeveloperToolsDisabled,
-        Value::TYPE_BOOLEAN, key::kDeveloperToolsDisabled },
-    { ConfigurationPolicyStore::kPolicyBlockThirdPartyCookies,
-        Value::TYPE_BOOLEAN, key::kBlockThirdPartyCookies },
+    { kPolicyHomePage, Value::TYPE_STRING, key::kHomepageLocation },
+    { kPolicyHomepageIsNewTabPage, Value::TYPE_BOOLEAN,
+      key::kHomepageIsNewTabPage },
+    { kPolicyRestoreOnStartup, Value::TYPE_INTEGER, key::kRestoreOnStartup },
+    { kPolicyURLsToRestoreOnStartup, Value::TYPE_LIST,
+      key::kURLsToRestoreOnStartup },
+    { kPolicyDefaultSearchProviderEnabled, Value::TYPE_BOOLEAN,
+      key::kDefaultSearchProviderEnabled },
+    { kPolicyDefaultSearchProviderName, Value::TYPE_STRING,
+      key::kDefaultSearchProviderName },
+    { kPolicyDefaultSearchProviderKeyword, Value::TYPE_STRING,
+      key::kDefaultSearchProviderKeyword },
+    { kPolicyDefaultSearchProviderSearchURL, Value::TYPE_STRING,
+      key::kDefaultSearchProviderSearchURL },
+    { kPolicyDefaultSearchProviderSuggestURL, Value::TYPE_STRING,
+      key::kDefaultSearchProviderSuggestURL },
+    { kPolicyDefaultSearchProviderIconURL, Value::TYPE_STRING,
+      key::kDefaultSearchProviderIconURL },
+    { kPolicyDefaultSearchProviderEncodings, Value::TYPE_STRING,
+      key::kDefaultSearchProviderEncodings },
+    { kPolicyProxyServerMode, Value::TYPE_INTEGER, key::kProxyServerMode },
+    { kPolicyProxyServer, Value::TYPE_STRING, key::kProxyServer },
+    { kPolicyProxyPacUrl, Value::TYPE_STRING, key::kProxyPacUrl },
+    { kPolicyProxyBypassList, Value::TYPE_STRING, key::kProxyBypassList },
+    { kPolicyAlternateErrorPagesEnabled, Value::TYPE_BOOLEAN,
+      key::kAlternateErrorPagesEnabled },
+    { kPolicySearchSuggestEnabled, Value::TYPE_BOOLEAN,
+      key::kSearchSuggestEnabled },
+    { kPolicyDnsPrefetchingEnabled, Value::TYPE_BOOLEAN,
+      key::kDnsPrefetchingEnabled },
+    { kPolicyDisableSpdy, Value::TYPE_BOOLEAN, key::kDisableSpdy },
+    { kPolicySafeBrowsingEnabled, Value::TYPE_BOOLEAN,
+      key::kSafeBrowsingEnabled },
+    { kPolicyMetricsReportingEnabled, Value::TYPE_BOOLEAN,
+      key::kMetricsReportingEnabled },
+    { kPolicyPasswordManagerEnabled, Value::TYPE_BOOLEAN,
+      key::kPasswordManagerEnabled },
+    { kPolicyPasswordManagerAllowShowPasswords, Value::TYPE_BOOLEAN,
+      key::kPasswordManagerAllowShowPasswords },
+    { kPolicyAutoFillEnabled, Value::TYPE_BOOLEAN, key::kAutoFillEnabled },
+    { kPolicyDisabledPlugins, Value::TYPE_LIST, key::kDisabledPlugins },
+    { kPolicyApplicationLocale, Value::TYPE_STRING,
+      key::kApplicationLocaleValue },
+    { kPolicySyncDisabled, Value::TYPE_BOOLEAN, key::kSyncDisabled },
+    { kPolicyExtensionInstallAllowList, Value::TYPE_LIST,
+      key::kExtensionInstallAllowList },
+    { kPolicyExtensionInstallDenyList, Value::TYPE_LIST,
+      key::kExtensionInstallDenyList },
+    { kPolicyExtensionInstallForceList, Value::TYPE_LIST,
+      key::kExtensionInstallForceList },
+    { kPolicyShowHomeButton, Value::TYPE_BOOLEAN, key::kShowHomeButton },
+    { kPolicyPrintingEnabled, Value::TYPE_BOOLEAN, key::kPrintingEnabled },
+    { kPolicyJavascriptEnabled, Value::TYPE_BOOLEAN, key::kJavascriptEnabled },
+    { kPolicySavingBrowserHistoryDisabled, Value::TYPE_BOOLEAN,
+      key::kSavingBrowserHistoryDisabled },
+    { kPolicyDeveloperToolsDisabled, Value::TYPE_BOOLEAN,
+      key::kDeveloperToolsDisabled },
+    { kPolicyBlockThirdPartyCookies, Value::TYPE_BOOLEAN,
+      key::kBlockThirdPartyCookies },
 
 #if defined(OS_CHROMEOS)
-    { ConfigurationPolicyStore::kPolicyChromeOsLockOnIdleSuspend,
-        Value::TYPE_BOOLEAN, key::kChromeOsLockOnIdleSuspend },
+    { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,
+      key::kChromeOsLockOnIdleSuspend },
 #endif
   };
 
@@ -267,21 +261,19 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
       use_system_proxy_(false) {
 }
 
-ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
-}
-
 PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   proxy_disabled_ = false;
   proxy_configuration_specified_ = false;
   lower_priority_proxy_settings_overridden_ = false;
 
-  bool success = (provider_ == NULL || provider_->Provide(this));
+  const bool success = (provider_ == NULL || provider_->Provide(this));
   FinalizeDefaultSearchPolicySettings();
   return success ? PrefStore::PREF_READ_ERROR_NONE :
-                   PrefStore::PREF_READ_ERROR_OTHER;
+      PrefStore::PREF_READ_ERROR_OTHER;
 }
 
-void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
+void ConfigurationPolicyPrefStore::Apply(ConfigurationPolicyType policy,
+                                         Value* value) {
   if (ApplyProxyPolicy(policy, value))
     return;
 
@@ -291,12 +283,12 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
   if (ApplyAutoFillPolicy(policy, value))
     return;
 
-  if (ApplyPolicyFromMap(policy, value, default_search_policy_map_,
-                         arraysize(default_search_policy_map_)))
+  if (ApplyPolicyFromMap(policy, value, kDefaultSearchPolicyMap,
+                         arraysize(kDefaultSearchPolicyMap)))
     return;
 
-  if (ApplyPolicyFromMap(policy, value, simple_policy_map_,
-                         arraysize(simple_policy_map_)))
+  if (ApplyPolicyFromMap(policy, value, kSimplePolicyMap,
+                         arraysize(kSimplePolicyMap)))
     return;
 
   // Other policy implementations go here.
@@ -324,16 +316,18 @@ ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
 void ConfigurationPolicyPrefStore::GetProxyPreferenceSet(
     ProxyPreferenceSet* proxy_pref_set) {
   proxy_pref_set->clear();
-  for (size_t current = 0; current < arraysize(proxy_policy_map_); ++current) {
-    proxy_pref_set->insert(proxy_policy_map_[current].preference_path);
+  for (size_t current = 0; current < arraysize(kProxyPolicyMap); ++current) {
+    proxy_pref_set->insert(kProxyPolicyMap[current].preference_path);
   }
   proxy_pref_set->insert(prefs::kNoProxyServer);
   proxy_pref_set->insert(prefs::kProxyAutoDetect);
 }
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry*
-ConfigurationPolicyPrefStore::FindPolicyInMap(PolicyType policy,
-    const PolicyToPreferenceMapEntry* map, int table_size) {
+ConfigurationPolicyPrefStore::FindPolicyInMap(
+    ConfigurationPolicyType policy,
+    const PolicyToPreferenceMapEntry* map,
+    int table_size) const {
   for (int i = 0; i < table_size; ++i) {
     if (map[i].policy_type == policy)
       return map + i;
@@ -343,36 +337,41 @@ ConfigurationPolicyPrefStore::FindPolicyInMap(PolicyType policy,
 
 bool ConfigurationPolicyPrefStore::RemovePreferencesOfMap(
     const PolicyToPreferenceMapEntry* map, int table_size) {
-  bool found_one = false;
+  bool found_any = false;
   for (int i = 0; i < table_size; ++i) {
     if (prefs_->Remove(map[i].preference_path, NULL))
-      found_one = true;
+      found_any = true;
   }
-  return found_one;
+  return found_any;
 }
 
-bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
-    Value* value, const PolicyToPreferenceMapEntry map[], int size) {
-  const PolicyToPreferenceMapEntry* end = map + size;
-  for (const PolicyToPreferenceMapEntry* current = map;
-       current != end; ++current) {
-    if (current->policy_type == policy) {
-      DCHECK(current->value_type == value->GetType());
-      prefs_->Set(current->preference_path, value);
+bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(
+    ConfigurationPolicyType policy,
+    Value* value,
+    const PolicyToPreferenceMapEntry* map,
+    int size) {
+  for (int current = 0; current < size; ++current) {
+    if (map[current].policy_type == policy) {
+      DCHECK_EQ(map[current].value_type, value->GetType())
+          << "mismatch in provided and expected policy value for preferences"
+          << map[current].preference_path << ". expected = "
+          << map[current].value_type << ", actual = "<< value->GetType();
+      prefs_->Set(map[current].preference_path, value);
       return true;
     }
   }
   return false;
 }
 
-bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
-                                                    Value* value) {
+bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(
+    ConfigurationPolicyType policy,
+    Value* value) {
   bool result = false;
   bool warn_about_proxy_disable_config = false;
   bool warn_about_proxy_system_config = false;
 
   const PolicyToPreferenceMapEntry* match_entry =
-      FindPolicyInMap(policy, proxy_policy_map_, arraysize(proxy_policy_map_));
+      FindPolicyInMap(policy, kProxyPolicyMap, arraysize(kProxyPolicyMap));
 
   // When the first proxy-related policy is applied, ALL proxy-related
   // preferences that have been set by command-line switches, extensions,
@@ -383,7 +382,7 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
   // policy.
   if (!lower_priority_proxy_settings_overridden_ &&
       (match_entry ||
-       policy == ConfigurationPolicyPrefStore::kPolicyProxyServerMode)) {
+       policy == kPolicyProxyServerMode)) {
     ProxyPreferenceSet proxy_preference_set;
     GetProxyPreferenceSet(&proxy_preference_set);
     for (ProxyPreferenceSet::const_iterator i = proxy_preference_set.begin();
@@ -394,25 +393,25 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
   }
 
   // Translate the proxy policy into preferences.
-  if (policy == ConfigurationPolicyStore::kPolicyProxyServerMode) {
+  if (policy == kPolicyProxyServerMode) {
     int int_value;
     bool proxy_auto_detect = false;
     if (value->GetAsInteger(&int_value)) {
       result = true;
       switch (int_value) {
-        case ConfigurationPolicyStore::kPolicyNoProxyServerMode:
+        case kPolicyNoProxyServerMode:
           if (!proxy_disabled_) {
             if (proxy_configuration_specified_)
               warn_about_proxy_disable_config = true;
             proxy_disabled_ = true;
           }
           break;
-        case ConfigurationPolicyStore::kPolicyAutoDetectProxyMode:
+        case kPolicyAutoDetectProxyMode:
           proxy_auto_detect = true;
           break;
-        case ConfigurationPolicyStore::kPolicyManuallyConfiguredProxyMode:
+        case kPolicyManuallyConfiguredProxyMode:
           break;
-        case ConfigurationPolicyStore::kPolicyUseSystemProxyMode:
+        case kPolicyUseSystemProxyMode:
           if (!use_system_proxy_) {
             if (proxy_configuration_specified_)
               warn_about_proxy_system_config = true;
@@ -469,9 +468,9 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
   return result;
 }
 
-bool ConfigurationPolicyPrefStore::ApplySyncPolicy(PolicyType policy,
-                                                   Value* value) {
-  if (policy == ConfigurationPolicyStore::kPolicySyncDisabled) {
+bool ConfigurationPolicyPrefStore::ApplySyncPolicy(
+    ConfigurationPolicyType policy, Value* value) {
+  if (policy == kPolicySyncDisabled) {
     bool disable_sync;
     if (value->GetAsBoolean(&disable_sync) && disable_sync)
       prefs_->Set(prefs::kSyncManaged, value);
@@ -482,9 +481,9 @@ bool ConfigurationPolicyPrefStore::ApplySyncPolicy(PolicyType policy,
   return false;
 }
 
-bool ConfigurationPolicyPrefStore::ApplyAutoFillPolicy(PolicyType policy,
-                                                       Value* value) {
-  if (policy == ConfigurationPolicyStore::kPolicyAutoFillEnabled) {
+bool ConfigurationPolicyPrefStore::ApplyAutoFillPolicy(
+    ConfigurationPolicyType policy, Value* value) {
+  if (policy == kPolicyAutoFillEnabled) {
     bool auto_fill_enabled;
     if (value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
       prefs_->Set(prefs::kAutoFillEnabled, Value::CreateBooleanValue(false));
@@ -501,6 +500,8 @@ void ConfigurationPolicyPrefStore::EnsureStringPrefExists(
     prefs_->SetString(path, value);
 }
 
+namespace {
+
 // Implementation of SearchTermsData just for validation.
 class SearchTermsDataForValidation : public SearchTermsData {
  public:
@@ -515,25 +516,26 @@ class SearchTermsDataForValidation : public SearchTermsData {
   }
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   virtual std::wstring GetRlzParameterValue() const {
-    return L"";
+    return std::wstring();
   }
 #endif
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataForValidation);
 };
 
+}  // namepsace
 
 void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
   bool enabled = true;
   if (prefs_->GetBoolean(prefs::kDefaultSearchProviderEnabled, &enabled) &&
       !enabled) {
     // If default search is disabled, we ignore the other fields.
-    prefs_->SetString(prefs::kDefaultSearchProviderName, "");
-    prefs_->SetString(prefs::kDefaultSearchProviderSearchURL, "");
-    prefs_->SetString(prefs::kDefaultSearchProviderSuggestURL, "");
-    prefs_->SetString(prefs::kDefaultSearchProviderIconURL, "");
-    prefs_->SetString(prefs::kDefaultSearchProviderEncodings, "");
-    prefs_->SetString(prefs::kDefaultSearchProviderKeyword, "");
+    prefs_->SetString(prefs::kDefaultSearchProviderName, std::string());
+    prefs_->SetString(prefs::kDefaultSearchProviderSearchURL, std::string());
+    prefs_->SetString(prefs::kDefaultSearchProviderSuggestURL, std::string());
+    prefs_->SetString(prefs::kDefaultSearchProviderIconURL, std::string());
+    prefs_->SetString(prefs::kDefaultSearchProviderEncodings, std::string());
+    prefs_->SetString(prefs::kDefaultSearchProviderKeyword, std::string());
     return;
   }
   std::string search_url;
@@ -541,7 +543,7 @@ void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
   if (prefs_->GetString(prefs::kDefaultSearchProviderSearchURL, &search_url) &&
       !search_url.empty()) {
     SearchTermsDataForValidation search_terms_data;
-    TemplateURLRef search_url_ref(search_url, 0, 0);
+    const TemplateURLRef search_url_ref(search_url, 0, 0);
     // It must support replacement (which implies it is valid).
     if (search_url_ref.SupportsReplacementUsingTermsData(search_terms_data)) {
       // The other entries are optional.  Just make sure that they are all
@@ -559,14 +561,15 @@ void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
                           GURL(search_url).host());
 
       // And clear the IDs since these are not specified via policy.
-      prefs_->SetString(prefs::kDefaultSearchProviderID, "");
-      prefs_->SetString(prefs::kDefaultSearchProviderPrepopulateID, "");
+      prefs_->SetString(prefs::kDefaultSearchProviderID, std::string());
+      prefs_->SetString(prefs::kDefaultSearchProviderPrepopulateID,
+                        std::string());
       return;
     }
   }
   // Required entries are not there.  Remove any related entries.
-  RemovePreferencesOfMap(default_search_policy_map_,
-                         arraysize(default_search_policy_map_));
+  RemovePreferencesOfMap(kDefaultSearchPolicyMap,
+                         arraysize(kDefaultSearchPolicyMap));
 }
 
 }  // namespace policy

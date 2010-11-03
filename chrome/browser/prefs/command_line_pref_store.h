@@ -22,7 +22,7 @@ class CommandLinePrefStore : public PrefStore {
 
   // PrefStore methods:
   virtual PrefReadError ReadPrefs();
-  virtual DictionaryValue* prefs();
+  virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
  protected:
   // Logs a message and returns false if the proxy switches are
@@ -30,16 +30,10 @@ class CommandLinePrefStore : public PrefStore {
   bool ValidateProxySwitches();
 
  private:
-  // Weak reference.
-  const CommandLine* command_line_;
-
-  scoped_ptr<DictionaryValue> prefs_;
-
   struct StringSwitchToPreferenceMapEntry {
     const char* switch_name;
     const char* preference_path;
   };
-  static const StringSwitchToPreferenceMapEntry string_switch_map_[];
 
   // |set_value| indicates what the preference should be set to if the switch
   // is present.
@@ -53,6 +47,13 @@ class CommandLinePrefStore : public PrefStore {
   // Using the string and boolean maps, apply command-line switches to their
   // corresponding preferences in this pref store.
   void ApplySimpleSwitches();
+
+  // Weak reference.
+  const CommandLine* command_line_;
+
+  scoped_ptr<DictionaryValue> prefs_;
+
+  static const StringSwitchToPreferenceMapEntry string_switch_map_[];
 
   DISALLOW_COPY_AND_ASSIGN(CommandLinePrefStore);
 };

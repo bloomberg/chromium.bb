@@ -50,7 +50,7 @@ class MockPolicyProvider : public ConfigurationPolicyProvider,
           ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()) {
   }
 
-  virtual bool Provide(ConfigurationPolicyStore* store) {
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store) {
     return true;
   }
 

@@ -18,31 +18,17 @@ namespace policy {
 // values for polices.
 class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
  public:
-  MockConfigurationPolicyProvider()
-      : ConfigurationPolicyProvider(
-          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()) {
-  }
-  ~MockConfigurationPolicyProvider() {
-    STLDeleteValues(&policy_map_);
-  }
+  MockConfigurationPolicyProvider();
+  virtual ~MockConfigurationPolicyProvider();
 
-  typedef std::map<ConfigurationPolicyStore::PolicyType, Value*> PolicyMap;
-
-  void AddPolicy(ConfigurationPolicyStore::PolicyType policy, Value* value) {
-    std::swap(policy_map_[policy], value);
-    delete value;
-  }
+  void AddPolicy(ConfigurationPolicyType policy, Value* value);
 
   // ConfigurationPolicyProvider method overrides.
-  virtual bool Provide(ConfigurationPolicyStore* store) {
-    for (PolicyMap::const_iterator current = policy_map_.begin();
-         current != policy_map_.end(); ++current) {
-      store->Apply(current->first, current->second->DeepCopy());
-    }
-    return true;
-  }
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store);
 
  private:
+  typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
+
   PolicyMap policy_map_;
 };
 

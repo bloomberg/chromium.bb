@@ -32,7 +32,7 @@ class ConfigDirPolicyProviderTestBase : public BASE {
     std::string data;
     JSONStringValueSerializer serializer(&data);
     serializer.Serialize(dict);
-    FilePath file_path(test_dir().AppendASCII(file_name));
+    const FilePath file_path(test_dir().AppendASCII(file_name));
     ASSERT_TRUE(file_util::WriteFile(file_path, data.c_str(), data.size()));
   }
 
@@ -104,7 +104,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
 class ValueTestParams {
  public:
   // Assumes ownership of |test_value|.
-  ValueTestParams(ConfigurationPolicyStore::PolicyType type,
+  ValueTestParams(ConfigurationPolicyType type,
                   const char* policy_key,
                   Value* test_value)
       : type_(type),
@@ -129,28 +129,28 @@ class ValueTestParams {
     test_value_.swap(other.test_value_);
   }
 
-  ConfigurationPolicyStore::PolicyType type() const { return type_; }
+  ConfigurationPolicyType type() const { return type_; }
   const char* policy_key() const { return policy_key_; }
   const Value* test_value() const { return test_value_.get(); }
 
   // Factory methods that create parameter objects for different value types.
   static ValueTestParams ForStringPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* policy_key) {
     return ValueTestParams(type, policy_key, Value::CreateStringValue("test"));
   }
   static ValueTestParams ForBooleanPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* policy_key) {
     return ValueTestParams(type, policy_key, Value::CreateBooleanValue(true));
   }
   static ValueTestParams ForIntegerPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* policy_key) {
     return ValueTestParams(type, policy_key, Value::CreateIntegerValue(42));
   }
   static ValueTestParams ForListPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* policy_key) {
     ListValue* value = new ListValue();
     value->Set(0U, Value::CreateStringValue("first"));
@@ -159,7 +159,7 @@ class ValueTestParams {
   }
 
  private:
-  ConfigurationPolicyStore::PolicyType type_;
+  ConfigurationPolicyType type_;
   const char* policy_key_;
   scoped_ptr<Value> test_value_;
 };
@@ -225,94 +225,94 @@ INSTANTIATE_TEST_CASE_P(
     ConfigDirPolicyProviderValueTest,
     testing::Values(
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyHomePage,
+            kPolicyHomePage,
             key::kHomepageLocation),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
+            kPolicyHomepageIsNewTabPage,
             key::kHomepageIsNewTabPage),
         ValueTestParams::ForIntegerPolicy(
-            ConfigurationPolicyStore::kPolicyRestoreOnStartup,
+            kPolicyRestoreOnStartup,
             key::kRestoreOnStartup),
         ValueTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
+            kPolicyURLsToRestoreOnStartup,
             key::kURLsToRestoreOnStartup),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+            kPolicyDefaultSearchProviderEnabled,
             key::kDefaultSearchProviderEnabled),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
+            kPolicyDefaultSearchProviderName,
             key::kDefaultSearchProviderName),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
+            kPolicyDefaultSearchProviderKeyword,
             key::kDefaultSearchProviderKeyword),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
+            kPolicyDefaultSearchProviderSearchURL,
             key::kDefaultSearchProviderSearchURL),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
+            kPolicyDefaultSearchProviderSuggestURL,
             key::kDefaultSearchProviderSuggestURL),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
+            kPolicyDefaultSearchProviderIconURL,
             key::kDefaultSearchProviderIconURL),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
+            kPolicyDefaultSearchProviderEncodings,
             key::kDefaultSearchProviderEncodings),
         ValueTestParams::ForIntegerPolicy(
-            ConfigurationPolicyStore::kPolicyProxyServerMode,
+            kPolicyProxyServerMode,
             key::kProxyServerMode),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyProxyServer,
+            kPolicyProxyServer,
             key::kProxyServer),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyProxyPacUrl,
+            kPolicyProxyPacUrl,
             key::kProxyPacUrl),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyProxyBypassList,
+            kPolicyProxyBypassList,
             key::kProxyBypassList),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
+            kPolicyAlternateErrorPagesEnabled,
             key::kAlternateErrorPagesEnabled),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
+            kPolicySearchSuggestEnabled,
             key::kSearchSuggestEnabled),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
+            kPolicyDnsPrefetchingEnabled,
             key::kDnsPrefetchingEnabled),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
+            kPolicySafeBrowsingEnabled,
             key::kSafeBrowsingEnabled),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
+            kPolicyMetricsReportingEnabled,
             key::kMetricsReportingEnabled),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
+            kPolicyPasswordManagerEnabled,
             key::kPasswordManagerEnabled),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyPasswordManagerAllowShowPasswords,
+            kPolicyPasswordManagerAllowShowPasswords,
             key::kPasswordManagerAllowShowPasswords),
         ValueTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyDisabledPlugins,
+            kPolicyDisabledPlugins,
             key::kDisabledPlugins),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyAutoFillEnabled,
+            kPolicyAutoFillEnabled,
             key::kAutoFillEnabled),
         ValueTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyApplicationLocale,
+            kPolicyApplicationLocale,
             key::kApplicationLocaleValue),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicySyncDisabled,
+            kPolicySyncDisabled,
             key::kSyncDisabled),
         ValueTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
+            kPolicyExtensionInstallAllowList,
             key::kExtensionInstallAllowList),
         ValueTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
+            kPolicyExtensionInstallDenyList,
             key::kExtensionInstallDenyList),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyShowHomeButton,
+            kPolicyShowHomeButton,
             key::kShowHomeButton),
         ValueTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyPrintingEnabled,
+            kPolicyPrintingEnabled,
             key::kPrintingEnabled)));
 
 }  // namespace policy

@@ -82,5 +82,4 @@ ConfigDirPolicyProvider::ConfigDirPolicyProvider(
                               new ConfigDirPolicyLoader(config_dir)) {
 }
 
-
 }  // namespace policy

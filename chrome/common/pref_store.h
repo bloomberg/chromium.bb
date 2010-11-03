@@ -55,7 +55,7 @@ class PrefStore {
   // DictionaryValue. Instead, it should have getters that return a
   // richer set of information for a pref, including if the store
   // wants to return the default value for a preference.
-  virtual DictionaryValue* prefs() = 0;
+  virtual DictionaryValue* prefs() const = 0;
 
   virtual PrefReadError ReadPrefs() = 0;
 

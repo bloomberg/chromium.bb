@@ -20,7 +20,7 @@ namespace policy {
 class PolicyTestParams {
  public:
   // Takes ownership of |test_value|.
-  PolicyTestParams(ConfigurationPolicyStore::PolicyType type,
+  PolicyTestParams(ConfigurationPolicyType type,
                    const char* policy_name,
                    Value* test_value)
       : type_(type),
@@ -45,7 +45,7 @@ class PolicyTestParams {
     test_value_.swap(other.test_value_);
   }
 
-  ConfigurationPolicyStore::PolicyType type() const { return type_; }
+  ConfigurationPolicyType type() const { return type_; }
   const char* policy_name() const { return policy_name_; }
   const Value* test_value() const { return test_value_.get(); }
 
@@ -96,22 +96,22 @@ class PolicyTestParams {
 
   // Factory methods that create parameter objects for different value types.
   static PolicyTestParams ForStringPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* name) {
     return PolicyTestParams(type, name, Value::CreateStringValue("test"));
   }
   static PolicyTestParams ForBooleanPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* name) {
     return PolicyTestParams(type, name, Value::CreateBooleanValue(true));
   }
   static PolicyTestParams ForIntegerPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* name) {
     return PolicyTestParams(type, name, Value::CreateIntegerValue(42));
   }
   static PolicyTestParams ForListPolicy(
-      ConfigurationPolicyStore::PolicyType type,
+      ConfigurationPolicyType type,
       const char* name) {
     ListValue* value = new ListValue;
     value->Set(0U, Value::CreateStringValue("first"));
@@ -120,7 +120,7 @@ class PolicyTestParams {
   }
 
  private:
-  ConfigurationPolicyStore::PolicyType type_;
+  ConfigurationPolicyType type_;
   const char* policy_name_;
   scoped_ptr<Value> test_value_;
 };
@@ -200,94 +200,94 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationPolicyProviderMacTest,
     testing::Values(
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyHomePage,
+            kPolicyHomePage,
             key::kHomepageLocation),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
+            kPolicyHomepageIsNewTabPage,
             key::kHomepageIsNewTabPage),
         PolicyTestParams::ForIntegerPolicy(
-            ConfigurationPolicyStore::kPolicyRestoreOnStartup,
+            kPolicyRestoreOnStartup,
             key::kRestoreOnStartup),
         PolicyTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
+            kPolicyURLsToRestoreOnStartup,
             key::kURLsToRestoreOnStartup),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+            kPolicyDefaultSearchProviderEnabled,
             key::kDefaultSearchProviderEnabled),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
+            kPolicyDefaultSearchProviderName,
             key::kDefaultSearchProviderName),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
+            kPolicyDefaultSearchProviderKeyword,
             key::kDefaultSearchProviderKeyword),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
+            kPolicyDefaultSearchProviderSearchURL,
             key::kDefaultSearchProviderSearchURL),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderSuggestURL,
+            kPolicyDefaultSearchProviderSuggestURL,
             key::kDefaultSearchProviderSuggestURL),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderIconURL,
+            kPolicyDefaultSearchProviderIconURL,
             key::kDefaultSearchProviderIconURL),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyDefaultSearchProviderEncodings,
+            kPolicyDefaultSearchProviderEncodings,
             key::kDefaultSearchProviderEncodings),
         PolicyTestParams::ForIntegerPolicy(
-            ConfigurationPolicyStore::kPolicyProxyServerMode,
+            kPolicyProxyServerMode,
             key::kProxyServerMode),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyProxyServer,
+            kPolicyProxyServer,
             key::kProxyServer),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyProxyPacUrl,
+            kPolicyProxyPacUrl,
             key::kProxyPacUrl),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyProxyBypassList,
+            kPolicyProxyBypassList,
             key::kProxyBypassList),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
+            kPolicyAlternateErrorPagesEnabled,
             key::kAlternateErrorPagesEnabled),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
+            kPolicySearchSuggestEnabled,
             key::kSearchSuggestEnabled),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
+            kPolicyDnsPrefetchingEnabled,
             key::kDnsPrefetchingEnabled),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
+            kPolicySafeBrowsingEnabled,
             key::kSafeBrowsingEnabled),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
+            kPolicyMetricsReportingEnabled,
             key::kMetricsReportingEnabled),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
+            kPolicyPasswordManagerEnabled,
             key::kPasswordManagerEnabled),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyPasswordManagerAllowShowPasswords,
+            kPolicyPasswordManagerAllowShowPasswords,
             key::kPasswordManagerAllowShowPasswords),
         PolicyTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyDisabledPlugins,
+            kPolicyDisabledPlugins,
             key::kDisabledPlugins),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyAutoFillEnabled,
+            kPolicyAutoFillEnabled,
             key::kAutoFillEnabled),
         PolicyTestParams::ForStringPolicy(
-            ConfigurationPolicyStore::kPolicyApplicationLocale,
+            kPolicyApplicationLocale,
             key::kApplicationLocaleValue),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicySyncDisabled,
+            kPolicySyncDisabled,
             key::kSyncDisabled),
         PolicyTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
+            kPolicyExtensionInstallAllowList,
             key::kExtensionInstallAllowList),
         PolicyTestParams::ForListPolicy(
-            ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
+            kPolicyExtensionInstallDenyList,
             key::kExtensionInstallDenyList),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyShowHomeButton,
+            kPolicyShowHomeButton,
             key::kShowHomeButton),
         PolicyTestParams::ForBooleanPolicy(
-            ConfigurationPolicyStore::kPolicyPrintingEnabled,
+            kPolicyPrintingEnabled,
             key::kPrintingEnabled)));
 
 }  // namespace policy

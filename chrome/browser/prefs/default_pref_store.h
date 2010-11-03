@@ -18,7 +18,7 @@ class DefaultPrefStore : public PrefStore {
   virtual ~DefaultPrefStore();
 
   // PrefStore methods:
-  virtual DictionaryValue* prefs();
+  virtual DictionaryValue* prefs() const;
   virtual PrefStore::PrefReadError ReadPrefs();
 
  private:

@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/policy/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store_interface.h"
 
 namespace policy {
 
@@ -25,7 +25,7 @@ class ConfigurationPolicyProvider {
   // instance of the ConfigurationPolicyProvider.
   struct PolicyDefinitionList {
     struct Entry {
-      ConfigurationPolicyStore::PolicyType policy_type;
+      ConfigurationPolicyType policy_type;
       Value::ValueType value_type;
       const char* name;
     };
@@ -45,7 +45,7 @@ class ConfigurationPolicyProvider {
   // the |ConfigurationPolicyProvider| must make calls to the
   // |Apply| method of |store| to apply specific policies.
   // Returns true if the policy could be provided, otherwise false.
-  virtual bool Provide(ConfigurationPolicyStore* store) = 0;
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store) = 0;
 
   // Called by the subclass provider at any time to indicate that the currently
   // applied policy is not longer current. A policy refresh will be initiated as

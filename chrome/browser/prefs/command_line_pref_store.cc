@@ -36,8 +36,6 @@ PrefStore::PrefReadError CommandLinePrefStore::ReadPrefs() {
   return PrefStore::PREF_READ_ERROR_NONE;
 }
 
-DictionaryValue* CommandLinePrefStore::prefs() { return prefs_.get(); }
-
 void CommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.
   for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {

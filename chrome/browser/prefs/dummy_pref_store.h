@@ -17,10 +17,9 @@ class DictionaryValue;
 class DummyPrefStore : public PrefStore {
  public:
   DummyPrefStore();
-
   virtual ~DummyPrefStore() {}
 
-  virtual DictionaryValue* prefs() { return prefs_.get(); }
+  virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
   virtual PrefStore::PrefReadError ReadPrefs();
 

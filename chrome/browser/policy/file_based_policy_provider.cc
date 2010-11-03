@@ -50,7 +50,8 @@ FileBasedPolicyProvider::~FileBasedPolicyProvider() {
   loader_->Stop();
 }
 
-bool FileBasedPolicyProvider::Provide(ConfigurationPolicyStore* store) {
+bool FileBasedPolicyProvider::Provide(
+    ConfigurationPolicyStoreInterface* store) {
   scoped_ptr<DictionaryValue> policy(loader_->GetPolicy());
   DCHECK(policy.get());
   DecodePolicyValueTree(policy.get(), store);
@@ -59,7 +60,7 @@ bool FileBasedPolicyProvider::Provide(ConfigurationPolicyStore* store) {
 
 void FileBasedPolicyProvider::DecodePolicyValueTree(
     DictionaryValue* policies,
-    ConfigurationPolicyStore* store) {
+    ConfigurationPolicyStoreInterface* store) {
   const PolicyDefinitionList* policy_list(policy_definition_list());
   for (const PolicyDefinitionList::Entry* i = policy_list->begin;
        i != policy_list->end; ++i) {

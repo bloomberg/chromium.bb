@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/common/pref_store.h"
 
 namespace policy {
@@ -21,19 +21,21 @@ namespace policy {
 // An implementation of the |PrefStore| that holds a Dictionary
 // created through applied policy.
 class ConfigurationPolicyPrefStore : public PrefStore,
-                                     public ConfigurationPolicyStore {
+                                     public ConfigurationPolicyStoreInterface {
  public:
+  typedef std::set<const char*> ProxyPreferenceSet;
+
   // The ConfigurationPolicyPrefStore does not take ownership of the
   // passed-in |provider|.
   explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
-  virtual ~ConfigurationPolicyPrefStore();
+  virtual ~ConfigurationPolicyPrefStore() {}
 
   // PrefStore methods:
   virtual PrefReadError ReadPrefs();
-  virtual DictionaryValue* prefs() { return prefs_.get(); }
+  virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
   // ConfigurationPolicyStore methods:
-  virtual void Apply(PolicyType setting, Value* value);
+  virtual void Apply(ConfigurationPolicyType setting, Value* value);
 
   // Creates a ConfigurationPolicyPrefStore that reads managed policy.
   static ConfigurationPolicyPrefStore* CreateManagedPolicyPrefStore();
@@ -45,8 +47,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   static ConfigurationPolicyProvider::PolicyDefinitionList*
       GetChromePolicyDefinitionList();
 
-  typedef std::set<const char*> ProxyPreferenceSet;
-
   // Returns the set of preference paths that can be affected by a proxy
   // policy.
   static void GetProxyPreferenceSet(ProxyPreferenceSet* proxy_pref_set);
@@ -57,15 +57,15 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // has an entry in |simple_policy_map_| with the following type.
   struct PolicyToPreferenceMapEntry {
     Value::ValueType value_type;
-    PolicyType policy_type;
+    ConfigurationPolicyType policy_type;
     const char* preference_path;  // A DictionaryValue path, not a file path.
   };
 
-  static const PolicyToPreferenceMapEntry simple_policy_map_[];
-  static const PolicyToPreferenceMapEntry proxy_policy_map_[];
-  static const PolicyToPreferenceMapEntry default_search_policy_map_[];
+  static const PolicyToPreferenceMapEntry kSimplePolicyMap[];
+  static const PolicyToPreferenceMapEntry kProxyPolicyMap[];
+  static const PolicyToPreferenceMapEntry kDefaultSearchPolicyMap[];
   static const ConfigurationPolicyProvider::PolicyDefinitionList
-      policy_definition_list_;
+      kPolicyDefinitionList;
 
   ConfigurationPolicyProvider* provider_;
   scoped_ptr<DictionaryValue> prefs_;
@@ -89,29 +89,33 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   bool use_system_proxy_;
 
   // Returns the map entry that corresponds to |policy| in the map.
-  const PolicyToPreferenceMapEntry* FindPolicyInMap(PolicyType policy,
-      const PolicyToPreferenceMapEntry* map, int size);
+  const PolicyToPreferenceMapEntry* FindPolicyInMap(
+      ConfigurationPolicyType policy,
+      const PolicyToPreferenceMapEntry* map,
+      int size) const;
 
   // Remove the preferences found in the map from |prefs_|.  Returns true if
   // any such preferences were found and removed.
   bool RemovePreferencesOfMap(const PolicyToPreferenceMapEntry* map,
                               int table_size);
 
-  bool ApplyPolicyFromMap(PolicyType policy, Value* value,
-                          const PolicyToPreferenceMapEntry map[], int size);
+  bool ApplyPolicyFromMap(ConfigurationPolicyType policy,
+                          Value* value,
+                          const PolicyToPreferenceMapEntry* map,
+                          int size);
 
   // Processes proxy-specific policies. Returns true if the specified policy
   // is a proxy-related policy. ApplyProxyPolicy assumes the ownership
   // of |value| in the case that the policy is proxy-specific.
-  bool ApplyProxyPolicy(PolicyType policy, Value* value);
+  bool ApplyProxyPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Handles sync-related policies. Returns true if the policy was handled.
   // Assumes ownership of |value| in that case.
-  bool ApplySyncPolicy(PolicyType policy, Value* value);
+  bool ApplySyncPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Handles policies that affect AutoFill. Returns true if the policy was
   // handled and assumes ownership of |value| in that case.
-  bool ApplyAutoFillPolicy(PolicyType policy, Value* value);
+  bool ApplyAutoFillPolicy(ConfigurationPolicyType policy, Value* value);
 
   // Make sure that the |path| if present in |prefs_|.  If not, set it to
   // a blank string.

@@ -31,6 +31,8 @@ using testing::Mock;
 using testing::Pointee;
 using testing::Property;
 
+namespace {
+
 class TestPrefObserver : public NotificationObserver {
  public:
   TestPrefObserver(const PrefService* prefs,
@@ -39,17 +41,16 @@ class TestPrefObserver : public NotificationObserver {
       : observer_fired_(false),
         prefs_(prefs),
         pref_name_(pref_name),
-        new_pref_value_(new_pref_value) {
-  }
+        new_pref_value_(new_pref_value) {}
   virtual ~TestPrefObserver() {}
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     EXPECT_EQ(type.value, NotificationType::PREF_CHANGED);
-    PrefService* prefs_in = Source<PrefService>(source).ptr();
+    const PrefService* prefs_in = Source<PrefService>(source).ptr();
     EXPECT_EQ(prefs_in, prefs_);
-    std::string* pref_name_in = Details<std::string>(details).ptr();
+    const std::string* pref_name_in = Details<std::string>(details).ptr();
     EXPECT_EQ(*pref_name_in, pref_name_);
     EXPECT_EQ(new_pref_value_, prefs_in->GetString("homepage"));
     observer_fired_ = true;
@@ -68,6 +69,8 @@ class TestPrefObserver : public NotificationObserver {
   const std::string pref_name_;
   std::string new_pref_value_;
 };
+
+}  // namespace
 
 // TODO(port): port this test to POSIX.
 #if defined(OS_WIN)
@@ -98,7 +101,7 @@ TEST(PrefServiceTest, NoObserverFire) {
   TestingPrefService prefs;
 
   const char pref_name[] = "homepage";
-  prefs.RegisterStringPref(pref_name, "");
+  prefs.RegisterStringPref(pref_name, std::string());
 
   const std::string new_pref_value("http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
@@ -119,12 +122,12 @@ TEST(PrefServiceTest, NoObserverFire) {
   EXPECT_FALSE(obs.observer_fired());
 
   // Clearing the pref should cause the pref to fire.
-  obs.Reset("");
+  obs.Reset(std::string());
   prefs.ClearPref(pref_name);
   EXPECT_TRUE(obs.observer_fired());
 
   // Clearing the pref again should not cause the pref to fire.
-  obs.Reset("");
+  obs.Reset(std::string());
   prefs.ClearPref(pref_name);
   EXPECT_FALSE(obs.observer_fired());
 }
@@ -152,7 +155,7 @@ TEST(PrefServiceTest, Observers) {
 
   TestingPrefService prefs;
   prefs.SetUserPref(pref_name, Value::CreateStringValue("http://www.cnn.com"));
-  prefs.RegisterStringPref(pref_name, "");
+  prefs.RegisterStringPref(pref_name, std::string());
 
   const std::string new_pref_value("http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
@@ -177,7 +180,7 @@ TEST(PrefServiceTest, Observers) {
 
   // Make sure obs2 still works after removing obs.
   registrar.Remove(pref_name, &obs);
-  obs.Reset("");
+  obs.Reset(std::string());
   obs2.Reset(new_pref_value);
   // This should only fire the observer in obs2.
   prefs.SetString(pref_name, new_pref_value);
@@ -205,19 +208,14 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
   Value* mode_value = Value::CreateIntegerValue(
-      policy::ConfigurationPolicyStore::kPolicyManuallyConfiguredProxyMode);
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
-      mode_value);
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue("abc"));
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyPacUrl,
-      Value::CreateStringValue("def"));
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyServer,
-      Value::CreateStringValue("ghi"));
+      policy::kPolicyManuallyConfiguredProxyMode);
+  provider->AddPolicy(policy::kPolicyProxyServerMode, mode_value);
+  provider->AddPolicy(policy::kPolicyProxyBypassList,
+                      Value::CreateStringValue("abc"));
+  provider->AddPolicy(policy::kPolicyProxyPacUrl,
+                      Value::CreateStringValue("def"));
+  provider->AddPolicy(policy::kPolicyProxyServer,
+                      Value::CreateStringValue("ghi"));
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -249,10 +247,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
   Value* mode_value = Value::CreateIntegerValue(
-      policy::ConfigurationPolicyStore::kPolicyUseSystemProxyMode);
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
-      mode_value);
+      policy::kPolicyUseSystemProxyMode);
+  provider->AddPolicy(policy::kPolicyProxyServerMode, mode_value);
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -272,9 +268,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyServer));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyBypassList));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyBypassList));
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
@@ -283,10 +279,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
   Value* mode_value = Value::CreateIntegerValue(
-      policy::ConfigurationPolicyStore::kPolicyAutoDetectProxyMode);
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
-      mode_value);
+      policy::kPolicyAutoDetectProxyMode);
+  provider->AddPolicy(policy::kPolicyProxyServerMode, mode_value);
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -294,9 +288,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   browser::RegisterUserPrefs(&prefs);
   EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_TRUE(prefs.GetBoolean(prefs::kNoProxyServer));
-  EXPECT_EQ("", prefs.GetString(prefs::kProxyServer));
-  EXPECT_EQ("", prefs.GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("", prefs.GetString(prefs::kProxyBypassList));
+  EXPECT_EQ(std::string(), prefs.GetString(prefs::kProxyServer));
+  EXPECT_EQ(std::string(), prefs.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ(std::string(), prefs.GetString(prefs::kProxyBypassList));
 
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
@@ -305,9 +299,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_TRUE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyServer));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyBypassList));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyBypassList));
 }
 
 TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
@@ -316,10 +310,8 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
   Value* mode_value = Value::CreateIntegerValue(
-      policy::ConfigurationPolicyStore::kPolicyNoProxyServerMode);
-  provider->AddPolicy(
-      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
-      mode_value);
+      policy::kPolicyNoProxyServerMode);
+  provider->AddPolicy(policy::kPolicyProxyServerMode, mode_value);
 
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.
@@ -327,9 +319,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   browser::RegisterUserPrefs(&prefs);
   EXPECT_TRUE(prefs.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
-  EXPECT_EQ("", prefs.GetString(prefs::kProxyServer));
-  EXPECT_EQ("", prefs.GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("", prefs.GetString(prefs::kProxyBypassList));
+  EXPECT_EQ(std::string(), prefs.GetString(prefs::kProxyServer));
+  EXPECT_EQ(std::string(), prefs.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ(std::string(), prefs.GetString(prefs::kProxyBypassList));
 
   // Try a second time time with the managed PrefStore in place, the
   // auto-detect should be overridden. The default pref store must be
@@ -338,18 +330,18 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   browser::RegisterUserPrefs(&prefs2);
   EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
   EXPECT_TRUE(prefs2.GetBoolean(prefs::kNoProxyServer));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyServer));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyPacUrl));
-  EXPECT_EQ("", prefs2.GetString(prefs::kProxyBypassList));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ(std::string(), prefs2.GetString(prefs::kProxyBypassList));
 }
 
 class PrefServiceSetValueTest : public testing::Test {
  protected:
-  static const char name_[];
-  static const char value_[];
+  static const char kName[];
+  static const char kValue[];
 
   PrefServiceSetValueTest()
-      : name_string_(name_),
+      : name_string_(kName),
         null_value_(Value::CreateNullValue()) {}
 
   void SetExpectNoNotification() {
@@ -369,97 +361,98 @@ class PrefServiceSetValueTest : public testing::Test {
   NotificationObserverMock observer_;
 };
 
-const char PrefServiceSetValueTest::name_[] = "name";
-const char PrefServiceSetValueTest::value_[] = "value";
+const char PrefServiceSetValueTest::kName[] = "name";
+const char PrefServiceSetValueTest::kValue[] = "value";
 
 TEST_F(PrefServiceSetValueTest, SetStringValue) {
   const char default_string[] = "default";
-  scoped_ptr<Value> default_value(Value::CreateStringValue(default_string));
-  prefs_.RegisterStringPref(name_, default_string);
+  const scoped_ptr<Value> default_value(
+      Value::CreateStringValue(default_string));
+  prefs_.RegisterStringPref(kName, default_string);
 
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
-  registrar.Add(name_, &observer_);
+  registrar.Add(kName, &observer_);
 
   // Changing the controlling store from default to user triggers notification.
   SetExpectPrefChanged();
-  prefs_.Set(name_, *default_value);
+  prefs_.Set(kName, *default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
   SetExpectNoNotification();
-  prefs_.Set(name_, *default_value);
+  prefs_.Set(kName, *default_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
-  scoped_ptr<Value> new_value(Value::CreateStringValue(value_));
+  const scoped_ptr<Value> new_value(Value::CreateStringValue(kValue));
   SetExpectPrefChanged();
-  prefs_.Set(name_, *new_value);
-  EXPECT_EQ(value_, prefs_.GetString(name_));
+  prefs_.Set(kName, *new_value);
+  EXPECT_EQ(kValue, prefs_.GetString(kName));
 }
 
 TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
-  prefs_.RegisterDictionaryPref(name_);
+  prefs_.RegisterDictionaryPref(kName);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
-  registrar.Add(name_, &observer_);
+  registrar.Add(kName, &observer_);
 
   // Dictionary values are special: setting one to NULL is the same as clearing
   // the user value, allowing the NULL default to take (or keep) control.
   SetExpectNoNotification();
-  prefs_.Set(name_, *null_value_);
+  prefs_.Set(kName, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
 
   DictionaryValue new_value;
-  new_value.SetString(name_, value_);
+  new_value.SetString(kName, kValue);
   SetExpectPrefChanged();
-  prefs_.Set(name_, new_value);
+  prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
-  DictionaryValue* dict = prefs_.GetMutableDictionary(name_);
+  DictionaryValue* dict = prefs_.GetMutableDictionary(kName);
   EXPECT_EQ(1U, dict->size());
   std::string out_value;
-  dict->GetString(name_, &out_value);
-  EXPECT_EQ(value_, out_value);
+  dict->GetString(kName, &out_value);
+  EXPECT_EQ(kValue, out_value);
 
   SetExpectNoNotification();
-  prefs_.Set(name_, new_value);
+  prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
   SetExpectPrefChanged();
-  prefs_.Set(name_, *null_value_);
+  prefs_.Set(kName, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
-  dict = prefs_.GetMutableDictionary(name_);
+  dict = prefs_.GetMutableDictionary(kName);
   EXPECT_EQ(0U, dict->size());
 }
 
 TEST_F(PrefServiceSetValueTest, SetListValue) {
-  prefs_.RegisterListPref(name_);
+  prefs_.RegisterListPref(kName);
   PrefChangeRegistrar registrar;
   registrar.Init(&prefs_);
-  registrar.Add(name_, &observer_);
+  registrar.Add(kName, &observer_);
 
   // List values are special: setting one to NULL is the same as clearing the
   // user value, allowing the NULL default to take (or keep) control.
   SetExpectNoNotification();
-  prefs_.Set(name_, *null_value_);
+  prefs_.Set(kName, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
 
   ListValue new_value;
-  new_value.Append(Value::CreateStringValue(value_));
+  new_value.Append(Value::CreateStringValue(kValue));
   SetExpectPrefChanged();
-  prefs_.Set(name_, new_value);
+  prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
-  ListValue* list = prefs_.GetMutableList(name_);
+  const ListValue* list = prefs_.GetMutableList(kName);
   ASSERT_EQ(1U, list->GetSize());
   std::string out_value;
   list->GetString(0, &out_value);
-  EXPECT_EQ(value_, out_value);
+  EXPECT_EQ(kValue, out_value);
 
   SetExpectNoNotification();
-  prefs_.Set(name_, new_value);
+  prefs_.Set(kName, new_value);
   Mock::VerifyAndClearExpectations(&observer_);
 
   SetExpectPrefChanged();
-  prefs_.Set(name_, *null_value_);
+  prefs_.Set(kName, *null_value_);
   Mock::VerifyAndClearExpectations(&observer_);
-  list = prefs_.GetMutableList(name_);
+  list = prefs_.GetMutableList(kName);
   EXPECT_EQ(0U, list->GetSize());
 }

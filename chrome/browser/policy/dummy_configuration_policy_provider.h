@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_POLICY_DUMMY_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
-#include "chrome/browser/policy/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace policy {
@@ -19,7 +19,7 @@ class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   }
   virtual ~DummyConfigurationPolicyProvider() {}
 
-  virtual bool Provide(ConfigurationPolicyStore* store) {
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store) {
     return true;
   }
 

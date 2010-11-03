@@ -64,12 +64,12 @@ class FileBasedPolicyProvider
   virtual ~FileBasedPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual bool Provide(ConfigurationPolicyStore* store);
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store);
 
  private:
   // Decodes the value tree and writes the configuration to the given |store|.
   void DecodePolicyValueTree(DictionaryValue* policies,
-                             ConfigurationPolicyStore* store);
+                             ConfigurationPolicyStoreInterface* store);
 
   // Watches for changes to the configuration directory.
   scoped_refptr<FileBasedPolicyWatcher> watcher_;

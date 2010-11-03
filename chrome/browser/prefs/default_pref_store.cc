@@ -12,7 +12,7 @@ DefaultPrefStore::DefaultPrefStore() : prefs_(new DictionaryValue()) {
 DefaultPrefStore::~DefaultPrefStore() {
 }
 
-DictionaryValue* DefaultPrefStore::prefs() {
+DictionaryValue* DefaultPrefStore::prefs() const {
   return prefs_.get();
 }
 

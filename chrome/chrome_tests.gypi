@@ -1387,6 +1387,7 @@
         'browser/policy/device_token_fetcher_unittest.cc',
         'browser/policy/file_based_policy_provider_unittest.cc',
         'browser/policy/managed_prefs_banner_base_unittest.cc',
+        'browser/policy/mock_configuration_policy_provider.cc',
         'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/mock_configuration_policy_store.h',
         'browser/preferences_mock_mac.cc',

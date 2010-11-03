@@ -33,6 +33,16 @@ class Value;
 class ExtensionPrefStore : public PrefStore,
                            public NotificationObserver {
  public:
+  // Maps preference paths to their values.
+  typedef std::map<const char*, Value*> PrefValueMap;
+
+  // The type passed as Details for an EXTENSION_PREF_CHANGED notification.
+  // The nested pairs are <extension, <pref_path, pref_value> >. This is here,
+  // rather than in (say) notification_type.h, to keep the dependency on
+  // std::pair out of the many places that include notification_type.h.
+  typedef std::pair<const Extension*, std::pair<const char*, Value*> >
+      ExtensionPrefDetails;
+
   ExtensionPrefStore(Profile* profile, PrefNotifier::PrefStoreType type);
   virtual ~ExtensionPrefStore();
 
@@ -48,16 +58,9 @@ class ExtensionPrefStore : public PrefStore,
   virtual void UninstallExtension(const Extension* extension);
 
   // PrefStore methods:
-  virtual DictionaryValue* prefs() { return prefs_.get(); }
+  virtual DictionaryValue* prefs() const { return prefs_.get(); }
 
   virtual PrefReadError ReadPrefs() { return PREF_READ_ERROR_NONE; }
-
-  // The type passed as Details for an EXTENSION_PREF_CHANGED notification.
-  // The nested pairs are <extension, <pref_path, pref_value> >. This is here,
-  // rather than in (say) notification_type.h, to keep the dependency on
-  // std::pair out of the many places that include notification_type.h.
-  typedef std::pair<const Extension*, std::pair<const char*, Value*> >
-      ExtensionPrefDetails;
 
  protected:
   // Returns a vector of the extension IDs in the extension_stack_.
@@ -70,8 +73,18 @@ class ExtensionPrefStore : public PrefStore,
   virtual PrefService* GetPrefService();
 
  private:
-  // Maps preference paths to their values.
-  typedef std::map<const char*, Value*> PrefValueMap;
+  // Associates an extension with the prefs it sets. Owns the pref values.
+  struct ExtensionPrefs {
+    ExtensionPrefs(const Extension* extension, PrefValueMap* values);
+    ~ExtensionPrefs();
+
+    const Extension* extension;
+    PrefValueMap* pref_values;
+  };
+
+  // A pseudo-stack of extensions and their preferences. Extensions are always
+  // added to the head, but may be removed from the middle.
+  typedef std::list<ExtensionPrefs*> ExtensionStack;
 
   // Applies the highest-priority extension's setting for the given preference
   // path to the |prefs_| store, or clears the setting there if no extensions
@@ -93,18 +106,6 @@ class ExtensionPrefStore : public PrefStore,
   // extension is controlling, for quick read access. Owns the stored values.
   scoped_ptr<DictionaryValue> prefs_;
 
-  // Associates an extension with the prefs it sets. Owns the pref values.
-  struct ExtensionPrefs {
-    ExtensionPrefs(const Extension* extension, PrefValueMap* values);
-    ~ExtensionPrefs();
-
-    const Extension* extension;
-    PrefValueMap* pref_values;
-  };
-
-  // A pseudo-stack of extensions and their preferences. Extensions are always
-  // added to the head, but may be removed from the middle.
-  typedef std::list<ExtensionPrefs*> ExtensionStack;
   ExtensionStack extension_stack_;
 
   NotificationRegistrar notification_registrar_;

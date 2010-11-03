@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/policy/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store_interface.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace base {
@@ -88,7 +88,7 @@ class ConfigurationPolicyProviderWin
   virtual ~ConfigurationPolicyProviderWin();
 
   // ConfigurationPolicyProvider method overrides:
-  virtual bool Provide(ConfigurationPolicyStore* store);
+  virtual bool Provide(ConfigurationPolicyStoreInterface* store);
 
  protected:
   // The sub key path for Chromium's Group Policy information in the
@@ -103,12 +103,14 @@ class ConfigurationPolicyProviderWin
 
   // Reads a string registry value |name| at the specified |key| and puts the
   // resulting string in |result|.
-
-  bool GetRegistryPolicyString(const string16& name, string16* result);
+  bool GetRegistryPolicyString(const string16& name, string16* result) const;
   // Gets a list value contained under |key| one level below the policy root.
-  bool GetRegistryPolicyStringList(const string16& key, ListValue* result);
-  bool GetRegistryPolicyBoolean(const string16& value_name, bool* result);
-  bool GetRegistryPolicyInteger(const string16& value_name, uint32* result);
+  bool GetRegistryPolicyStringList(const string16& key,
+                                   ListValue* result) const;
+  bool GetRegistryPolicyBoolean(const string16& value_name,
+                                bool* result) const;
+  bool GetRegistryPolicyInteger(const string16& value_name,
+                                uint32* result) const;
 };
 
 }  // namespace policy

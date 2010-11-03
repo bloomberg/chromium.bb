@@ -10,30 +10,31 @@
 #include <utility>
 
 #include "base/stl_util-inl.h"
-#include "chrome/browser/policy/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store_interface.h"
 
 namespace policy {
 
 // Mock ConfigurationPolicyStore implementation that records values for policy
 // settings as they get set.
-class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
+class MockConfigurationPolicyStore : public ConfigurationPolicyStoreInterface {
  public:
+  typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
+
   MockConfigurationPolicyStore() {}
   ~MockConfigurationPolicyStore() {
     STLDeleteValues(&policy_map_);
   }
 
-  typedef std::map<ConfigurationPolicyStore::PolicyType, Value*> PolicyMap;
-  const PolicyMap& policy_map() { return policy_map_; }
+  const PolicyMap& policy_map() const { return policy_map_; }
 
   // Get a value for the given policy. Returns NULL if that key doesn't exist.
-  const Value* Get(ConfigurationPolicyStore::PolicyType type) const {
+  const Value* Get(ConfigurationPolicyType type) const {
     PolicyMap::const_iterator entry(policy_map_.find(type));
     return entry == policy_map_.end() ? NULL : entry->second;
   }
 
   // ConfigurationPolicyStore implementation.
-  virtual void Apply(PolicyType policy, Value* value) {
+  virtual void Apply(ConfigurationPolicyType policy, Value* value) {
     std::swap(policy_map_[policy], value);
     delete value;
   }
