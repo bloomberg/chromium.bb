@@ -808,6 +808,8 @@ TEST_F(IPCSyncChannelTest, QueuedReply) {
 
 namespace {
 
+void DropAssert(const std::string&) {}
+
 class BadServer : public Worker {
  public:
   explicit BadServer(bool pump_during_send)
@@ -822,12 +824,11 @@ class BadServer : public Worker {
     if (pump_during_send_)
       msg->EnableMessagePumping();
 
-    // Temporarily set the minimum logging very high so that the assertion
-    // in ipc_message_utils doesn't fire.
-    int log_level = logging::GetMinLogLevel();
-    logging::SetMinLogLevel(kint32max);
+    // Temporarily ignore asserts so that the assertion in
+    // ipc_message_utils doesn't cause termination.
+    logging::SetLogAssertHandler(&DropAssert);
     bool result = Send(msg);
-    logging::SetMinLogLevel(log_level);
+    logging::SetLogAssertHandler(NULL);
     DCHECK(!result);
 
     // Need to send another message to get the client to call Done().
