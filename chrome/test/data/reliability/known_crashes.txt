@@ -115,3 +115,6 @@ PREFIX: webcore::uniscribehelpertextrun::uniscribehelpertextrun___webcore::font:
 
 # 61593
 PREFIX: webcore::font::glyphdataforcharacter___webcore::widthiterator::advance___webcore::font::floatwidthforsimpletext___webcore::font::floatwidth___webcore::renderimage::setimagesizeforalttext___webcore::renderimage::imagechanged
+
+# 61800
+PREFIX: icu_4_2::unicodestring::toutf8___normalizetext___detectlanguageofunicodetext___determinetextlanguage___renderview::capturepageinfo
