@@ -644,7 +644,7 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandNewTab:
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_NewTab"),
                                 profile_);
-      delegate()->AddBlankTab(true);
+      delegate()->AddBlankTabAt(context_index + 1, true);
       break;
     case CommandReload:
       UserMetrics::RecordAction(UserMetricsAction("TabContextMenu_Reload"),
