@@ -1004,11 +1004,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRConditionalHeaderTest) {
 const wchar_t kWindowCloseTestUrl[] =
     L"window_close.html";
 
-// This test causes IE to display an infobar on IE7 and IE8 on Vista and
-// Windows 7 at least which causes this test to fail. Disabling it for
-// now.
-// http://code.google.com/p/chromium/issues/detail?id=61011
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowClose) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowClose) {
   SimpleBrowserTest(IE, kWindowCloseTestUrl);
 }
 
