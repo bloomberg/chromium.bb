@@ -176,7 +176,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
   NotifyAccessibilityEvent(
       ViewHostMsg_AccessibilityNotification_Params::
           NOTIFICATION_TYPE_VALUE_CHANGED,
-      root_);
+      new_browser_acc);
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectTextChange(
@@ -188,7 +188,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectTextChange(
   NotifyAccessibilityEvent(
       ViewHostMsg_AccessibilityNotification_Params::
           NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED,
-      root_);
+      new_browser_acc);
 }
 
 void BrowserAccessibilityManager::GotFocus() {
