@@ -201,7 +201,7 @@ class RegistryEntry {
       found = (key.ReadValue(_name.c_str(), &read_value)) &&
               (read_value.size() == _value.size()) &&
               (std::equal(_value.begin(), _value.end(), read_value.begin(),
-                          CaseInsensitiveCompare<wchar_t>()));
+                          base::CaseInsensitiveCompare<wchar_t>()));
     } else {
       DWORD read_value;
       found = key.ReadValueDW(_name.c_str(), &read_value) &&
@@ -365,8 +365,9 @@ bool AnotherUserHasDefaultBrowser(const std::wstring& chrome_exe) {
   if ((registry_chrome_exe.size() == chrome_exe.size()) &&
       (std::equal(chrome_exe.begin(), chrome_exe.end(),
                   registry_chrome_exe.begin(),
-                  CaseInsensitiveCompare<wchar_t>())))
+                  base::CaseInsensitiveCompare<wchar_t>()))) {
     return false;
+  }
 
   std::vector<std::wstring> v1, v2;
   base::SplitString(registry_chrome_exe, L'\\', &v1);
@@ -383,7 +384,7 @@ bool AnotherUserHasDefaultBrowser(const std::wstring& chrome_exe) {
     std::wstring s2 = *itr2;
     if ((s1.size() != s2.size()) ||
         (!std::equal(s1.begin(), s1.end(),
-                     s2.begin(), CaseInsensitiveCompare<wchar_t>()))) {
+                     s2.begin(), base::CaseInsensitiveCompare<wchar_t>()))) {
       if (one_mismatch)
         return false;
       else

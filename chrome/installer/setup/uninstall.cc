@@ -94,7 +94,7 @@ bool CurrentUserHasDefaultBrowser(bool system_uninstall) {
     reg_exe = reg_exe.substr(1, reg_exe.length() - 2);
     if ((reg_exe.size() == chrome_exe.size()) &&
         (std::equal(chrome_exe.begin(), chrome_exe.end(),
-                    reg_exe.begin(), CaseInsensitiveCompare<wchar_t>())))
+                    reg_exe.begin(), base::CaseInsensitiveCompare<wchar_t>())))
       return true;
   }
 

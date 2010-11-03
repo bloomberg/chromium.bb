@@ -278,7 +278,7 @@ class ArgumentFilter : public base::ProcessFilter {
                       command_line.end(),
                       argument_to_find_.begin(),
                       argument_to_find_.end(),
-          CaseInsensitiveCompareASCII<wchar_t>());
+          base::CaseInsensitiveCompareASCII<wchar_t>());
       found = (it != command_line.end());
     }
     return found;
