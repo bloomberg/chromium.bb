@@ -108,7 +108,7 @@ TEST_F(OptionsUITest, MAYBE_CommandAgainGoesBackToOptionsTab) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 #define MAYBE_TwoCommandsOneTab DISABLED_TwoCommandsOneTab
 #else
-#define MAYBE_TwoComamndsOneTab FLAKY_TwoCommandsOneTab
+#define MAYBE_TwoCommandsOneTab FLAKY_TwoCommandsOneTab
 #endif
 
 TEST_F(OptionsUITest, MAYBE_TwoCommandsOneTab) {
