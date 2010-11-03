@@ -195,6 +195,12 @@ class SortHelper {
   [tableView_ sizeToFit];
 }
 
+- (void)dealloc {
+  [tableView_ setDelegate:nil];
+  [tableView_ setDataSource:nil];
+  [super dealloc];
+}
+
 // Adds a column which has the given string id as title. |isVisible| specifies
 // if the column is initially visible.
 - (NSTableColumn*)addColumnWithId:(int)columnId visible:(BOOL)isVisible {
