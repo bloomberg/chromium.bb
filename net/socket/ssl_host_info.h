@@ -10,6 +10,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/ssl_client_socket.h"
@@ -89,6 +90,10 @@ class SSLHostInfo {
   // verification.
   int WaitForCertVerification(CompletionCallback* callback);
 
+  base::TimeTicks verification_start_time() const {
+    return verification_start_time_;
+  }
+
  protected:
   // Parse parses an opaque blob of data and fills out the public member fields
   // of this object. It returns true iff the parse was successful. The public
@@ -110,6 +115,7 @@ class SSLHostInfo {
   // These two members are taken from the SSLConfig.
   bool rev_checking_enabled_;
   bool verify_ev_cert_;
+  base::TimeTicks verification_start_time_;
   CertVerifyResult cert_verify_result_;
   scoped_ptr<CertVerifier> verifier_;
   scoped_refptr<X509Certificate> cert_;

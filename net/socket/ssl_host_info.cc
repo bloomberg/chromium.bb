@@ -4,6 +4,7 @@
 
 #include "net/socket/ssl_host_info.h"
 
+#include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/ssl_config_service.h"
@@ -110,6 +111,7 @@ bool SSLHostInfo::Parse(const std::string& data) {
         flags |= X509Certificate::VERIFY_REV_CHECKING_ENABLED;
       verifier_.reset(new CertVerifier);
       VLOG(1) << "Kicking off verification for " << hostname_;
+      verification_start_time_ = base::TimeTicks::Now();
       if (verifier_->Verify(cert_.get(), hostname_, flags,
                             &cert_verify_result_, callback_) == OK) {
         VerifyCallback(OK);
@@ -156,6 +158,11 @@ int SSLHostInfo::WaitForCertVerification(CompletionCallback* callback) {
 }
 
 void SSLHostInfo::VerifyCallback(int rv) {
+  DCHECK(!verification_start_time_.is_null());
+  base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta duration = now - verification_start_time();
+  UMA_HISTOGRAM_TIMES("Net.SSLHostInfoVerificationTimeMs", duration);
+  VLOG(1) << "Verification took " << duration.InMilliseconds() << "ms";
   cert_verification_complete_ = true;
   cert_verification_result_ = rv;
   if (cert_verification_callback_) {

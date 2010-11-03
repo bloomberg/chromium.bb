@@ -1053,6 +1053,8 @@ ssl3_ResetForSnapStartRecovery(sslSocket *ss, SSL3Opaque *b, PRUint32 length)
         ss->ssl3.hs.snapStartType = snap_start_resume_recovery;
     }
 
+    ss->ssl3.nextProtoState = SSL_NEXT_PROTO_NO_SUPPORT;
+
     ssl3_DestroyCipherSpec(ss->ssl3.pwSpec, PR_TRUE/*freeSrvName*/);
 
     return SECSuccess;
