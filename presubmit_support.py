@@ -41,6 +41,8 @@ except ImportError:
     import json
     # Some versions of python2.5 have an incomplete json module.  Check to make
     # sure loads exists.
+    # Statement seems to have no effect
+    # pylint: disable=W0104
     json.loads
   except (ImportError, AttributeError):
     # Import the one included in depot_tools.
@@ -95,7 +97,8 @@ class OutputApi(object):
   """This class (more like a module) gets passed to presubmit scripts so that
   they can specify various types of results.
   """
-
+  # Method could be a function
+  # pylint: disable=R0201
   class PresubmitResult(object):
     """Base class for result objects."""
 
@@ -177,6 +180,8 @@ class InputApi(object):
   """An instance of this object is passed to presubmit scripts so they can
   know stuff about the change they're looking at.
   """
+  # Method could be a function
+  # pylint: disable=R0201
 
   # File extensions that are considered source files from a style guide
   # perspective. Don't modify this list from a presubmit script!
@@ -392,7 +397,8 @@ class InputApi(object):
 
 class AffectedFile(object):
   """Representation of a file in a change."""
-
+  # Method could be a function
+  # pylint: disable=R0201
   def __init__(self, path, action, repository_root=''):
     self._path = path
     self._action = action
@@ -480,6 +486,8 @@ class AffectedFile(object):
 
 class SvnAffectedFile(AffectedFile):
   """Representation of a file in a change out of a Subversion checkout."""
+  # Method 'NNN' is abstract in class 'NNN' but is not overridden
+  # pylint: disable=W0223
 
   def __init__(self, *args, **kwargs):
     AffectedFile.__init__(self, *args, **kwargs)
@@ -526,6 +534,8 @@ class SvnAffectedFile(AffectedFile):
 
 class GitAffectedFile(AffectedFile):
   """Representation of a file in a change out of a git checkout."""
+  # Method 'NNN' is abstract in class 'NNN' but is not overridden
+  # pylint: disable=W0223
 
   def __init__(self, *args, **kwargs):
     AffectedFile.__init__(self, *args, **kwargs)
@@ -996,6 +1006,8 @@ def DoPresubmitChecks(change,
     if items:
       output_stream.write('** Presubmit %s **\n' % name)
       for item in items:
+        # Access to a protected member XXX of a client class
+        # pylint: disable=W0212
         if not item._Handle(output_stream, input_stream,
                             may_prompt=False):
           error_count += 1

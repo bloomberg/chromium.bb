@@ -41,6 +41,8 @@ def SendStack(last_tb, stack, url=None):
         'host': socket.getfqdn(),
         'cwd': os.getcwd(),
     }
+    # No exception type(s) specified
+    # pylint: disable=W0702
     try:
       # That may not always work.
       params['exception'] = str(last_tb)

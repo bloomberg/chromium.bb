@@ -36,6 +36,10 @@ load-plugins=
 # C0111: Missing docstring
 # C0302: Too many lines in module (N)
 # I0011: Locally disabling WNNNN
+#
+# It's a problem but not something we can fix right now.
+# R0401: Cyclic import
+#
 # R0801: Similar lines in N files
 # R0901: Too many ancestors (8/7)
 # R0902: Too many instance attributes (N/7)
@@ -53,7 +57,7 @@ load-plugins=
 # W0603: Using the global statement
 # W0613: Unused argument ''
 # W6501: Specify string format arguments as logging function parameters
-disable=C0103,C0111,C0302,I0011,R0801,R0901,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0402,W0511,W0603,W0613,W6501
+disable=C0103,C0111,C0302,I0011,R0401,R0801,R0901,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0402,W0511,W0603,W0613,W6501
 
 
 [REPORTS]

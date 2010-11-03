@@ -332,6 +332,8 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
           None, should_process))
     logging.debug('Loaded: %s' % str(self))
 
+  # Arguments number differs from overridden method
+  # pylint: disable=W0221
   def run(self, revision_overrides, command, args, work_queue, options):
     """Runs 'command' before parsing the DEPS in case it's a initial checkout
     or a revert."""
@@ -1190,6 +1192,8 @@ def Main(argv):
     # Make stdout annotated with the thread ids.
     sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
     # Do it late so all commands are listed.
+    # Unused variable 'usage'
+    # pylint: disable=W0612
     CMDhelp.usage = ('\n\nCommands are:\n' + '\n'.join([
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
         for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))

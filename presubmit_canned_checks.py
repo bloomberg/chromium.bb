@@ -81,6 +81,8 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
 
   # Initialize cpplint.
   import cpplint
+  # Access to a protected member _XX of a client class
+  # pylint: disable=W0212
   cpplint._cpplint_state.ResetErrorCounts()
 
   # Justifications for each filter:

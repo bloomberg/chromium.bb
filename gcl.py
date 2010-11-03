@@ -1129,6 +1129,8 @@ def CMDlint(change_info, args):
   if not black_list:
     black_list = DEFAULT_LINT_IGNORE_REGEX
   black_regex = re.compile(black_list)
+  # Access to a protected member _XX of a client class
+  # pylint: disable=W0212
   for filename in filenames:
     if white_regex.match(filename):
       if black_regex.match(filename):
