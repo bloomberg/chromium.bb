@@ -27,4 +27,5 @@ BUG61411 WIN : inspector/styles-source-lines-inline.html = TEXT
 // Was already marked as flaky on Win, seems to fail on Mac too.
 BUG31342 MAC WIN RELEASE : security/block-test-no-port.html = TEXT PASS
 
+BUGDIMICH MAC : fast/canvas/canvas-zoom.html = IMAGE
 BUGDIMICH MAC : fast/repaint/selection-rl.html = IMAGE
