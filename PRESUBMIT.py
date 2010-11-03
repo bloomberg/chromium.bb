@@ -57,15 +57,18 @@ def RunPylint(input_api, output_api):
   # It uses non-standard pylint exceptions that makes pylint always fail.
   files.remove('cpplint.py')
   try:
-    proc = input_api.subprocess.Popen(['pylint', '-E'] + files)
-  except OSError:
+    proc = input_api.subprocess.Popen(['pylint', '-E'] + sorted(files))
+    proc.communicate()
+    if proc.returncode:
+      return [output_api.PresubmitError('Fix pylint errors first.')]
+    return []
+  except OSError, e:
     if input_api.platform == 'win32':
-      # It's windows, give up.
-      return []
-    else:
-      return [output_api.PresubmitError(
-          'Please install pylint with "easy_install pylint"')]
-  proc.communicate()
-  if proc.returncode:
-    return [output_api.PresubmitError('Fix pylint errors first.')]
-  return []
+        return [output_api.PresubmitNotifyResult(
+          'Warning: Can\'t run pylint because it is not installed. Please '
+          'install manually\n'
+          'Cannot do static analysis of python files.')]
+    return [output_api.PresubmitError(
+        'Please install pylint with "sudo apt-get install python-setuptools; '
+        'sudo easy_install pylint"\n'
+        'Cannot do static analysis of python files.')]
