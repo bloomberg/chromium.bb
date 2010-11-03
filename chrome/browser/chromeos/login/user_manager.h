@@ -17,6 +17,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+class FilePath;
 class PrefService;
 
 namespace chromeos {
@@ -83,7 +84,7 @@ class UserManager : public UserImageLoader::Delegate,
 
   // Saves image to file and saves image path in local state preferences.
   void SaveUserImage(const std::string& username,
-                             const SkBitmap& image);
+                     const SkBitmap& image);
 
   // Sets one of the default images to the specified user and saves this
   // setting in local state.
@@ -109,6 +110,9 @@ class UserManager : public UserImageLoader::Delegate,
  protected:
   UserManager();
   virtual ~UserManager();
+
+  // Returns image filepath for the given user.
+  FilePath GetImagePathForUser(const std::string& username);
 
  private:
   // Notifies on new user session.

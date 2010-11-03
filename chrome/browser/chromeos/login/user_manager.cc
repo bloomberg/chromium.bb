@@ -99,6 +99,15 @@ void SaveImageToFile(const SkBitmap& image,
                           username, image_path.value()));
 }
 
+// Deletes user's image file. Runs on FILE thread.
+void DeleteUserImage(const FilePath& image_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  if (!file_util::Delete(image_path, false)) {
+    LOG(ERROR) << "Failed to remove user image.";
+    return;
+  }
+}
+
 // Checks if given path is one of the default ones. If it is, returns true
 // and its index in kDefaultImageNames through |image_id|. If not, returns
 // false.
@@ -262,6 +271,7 @@ void UserManager::RemoveUser(const std::string& email) {
   // Clear the prefs view of the users.
   PrefService* prefs = g_browser_process->local_state();
   ListValue* prefs_users = prefs->GetMutableList(kLoggedInUsers);
+  DCHECK(prefs_users);
   prefs_users->Clear();
 
   for (std::vector<User>::iterator it = users.begin();
@@ -272,7 +282,24 @@ void UserManager::RemoveUser(const std::string& email) {
     if (email != user_email)
       prefs_users->Append(Value::CreateStringValue(user_email));
   }
+
+  DictionaryValue* prefs_images = prefs->GetMutableDictionary(kUserImages);
+  DCHECK(prefs_images);
+  std::string image_path_string;
+  prefs_images->GetStringWithoutPathExpansion(email, &image_path_string);
+  prefs_images->RemoveWithoutPathExpansion(email, NULL);
+
   prefs->SavePersistentPrefs();
+
+  size_t default_image_id;
+  if (!IsDefaultImagePath(image_path_string, &default_image_id)) {
+    FilePath image_path(image_path_string);
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        NewRunnableFunction(&DeleteUserImage,
+                            image_path));
+  }
 }
 
 bool UserManager::IsKnownUser(const std::string& email) {
@@ -297,10 +324,7 @@ void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
 void UserManager::SaveUserImage(const std::string& username,
                                 const SkBitmap& image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::string filename = username + ".png";
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  FilePath image_path = user_data_dir.AppendASCII(filename);
+  FilePath image_path = GetImagePathForUser(username);
   DVLOG(1) << "Saving user image to " << image_path.value();
 
   BrowserThread::PostTask(
@@ -376,6 +400,13 @@ UserManager::UserManager()
 
 UserManager::~UserManager() {
   image_loader_->set_delegate(NULL);
+}
+
+FilePath UserManager::GetImagePathForUser(const std::string& username) {
+  std::string filename = username + ".png";
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  return user_data_dir.AppendASCII(filename);
 }
 
 void UserManager::NotifyOnLogin() {
