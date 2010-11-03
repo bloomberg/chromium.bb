@@ -91,8 +91,23 @@ class JankObserverHelper {
   void StartProcessingTimers(const TimeDelta& queueing_time);
   void EndProcessingTimers();
 
+  // Indicate if we will bother to measuer this message.
+  bool MessageWillBeMeasured();
+
+  static void SetDefaultMessagesToSkip(int count) { discard_count_ = count; }
+
  private:
   const TimeDelta max_message_delay_;
+
+  // Indicate if we'll bother measuring this message.
+  bool measure_current_message_;
+
+  // Down counter which will periodically hit 0, and only then bother to measure
+  // the corresponding message.
+  int events_till_measurement_;
+
+  // The value to re-initialize events_till_measurement_ after it reaches 0.
+  static int discard_count_;
 
   // Time at which the current message processing began.
   TimeTicks begin_process_message_;
@@ -116,6 +131,8 @@ JankObserverHelper::JankObserverHelper(
     const TimeDelta& excessive_duration,
     bool watchdog_enable)
     : max_message_delay_(excessive_duration),
+      measure_current_message_(true),
+      events_till_measurement_(0),
       slow_processing_counter_(std::string("Chrome.SlowMsg") + thread_name),
       queueing_delay_counter_(std::string("Chrome.DelayMsg") + thread_name),
       total_time_watchdog_(excessive_duration, thread_name, watchdog_enable) {
@@ -125,6 +142,11 @@ JankObserverHelper::JankObserverHelper(
   total_times_ = base::Histogram::FactoryGet(
       std::string("Chrome.TotalMsgL ") + thread_name,
       1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag);
+  if (discard_count_ > 0) {
+    // Select a vaguely random sample-start-point.
+    events_till_measurement_ =
+        (TimeTicks::Now() - TimeTicks()).InSeconds() % (discard_count_ + 1);
+  }
 }
 
 JankObserverHelper::~JankObserverHelper() {}
@@ -132,6 +154,7 @@ JankObserverHelper::~JankObserverHelper() {}
 // Called when a message has just begun processing, initializes
 // per-message variables and timers.
 void JankObserverHelper::StartProcessingTimers(const TimeDelta& queueing_time) {
+  DCHECK(measure_current_message_);
   begin_process_message_ = TimeTicks::Now();
   queueing_time_ = queueing_time;
 
@@ -150,6 +173,8 @@ void JankObserverHelper::StartProcessingTimers(const TimeDelta& queueing_time) {
 // Called when a message has just finished processing, finalizes
 // per-message variables and timers.
 void JankObserverHelper::EndProcessingTimers() {
+  if (!measure_current_message_)
+    return;
   total_time_watchdog_.Disarm();
   TimeTicks now = TimeTicks::Now();
   if (begin_process_message_ != TimeTicks()) {
@@ -171,6 +196,18 @@ void JankObserverHelper::EndProcessingTimers() {
   begin_process_message_ = base::TimeTicks();
   queueing_time_ = base::TimeDelta();
 }
+
+bool JankObserverHelper::MessageWillBeMeasured() {
+  measure_current_message_ = events_till_measurement_ <= 0;
+  if (!measure_current_message_)
+    --events_till_measurement_;
+  else
+    events_till_measurement_ = discard_count_;
+  return measure_current_message_;
+}
+
+// static
+int JankObserverHelper::discard_count_ = 99;  // Measure only 1 in 100.
 
 //------------------------------------------------------------------------------
 class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
@@ -199,6 +236,8 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
   }
 
   virtual void WillProcessIOEvent() {
+    if (!helper_.MessageWillBeMeasured())
+      return;
     helper_.StartProcessingTimers(base::TimeDelta());
   }
 
@@ -207,6 +246,8 @@ class IOJankObserver : public base::RefCountedThreadSafe<IOJankObserver>,
   }
 
   virtual void WillProcessTask(const Task* task) {
+    if (!helper_.MessageWillBeMeasured())
+      return;
     base::TimeTicks now = base::TimeTicks::Now();
     const base::TimeDelta queueing_time = now - task->tracked_birth_time();
     helper_.StartProcessingTimers(queueing_time);
@@ -251,6 +292,8 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   }
 
   virtual void WillProcessTask(const Task* task) {
+    if (!helper_.MessageWillBeMeasured())
+      return;
     base::TimeTicks now = base::TimeTicks::Now();
     const base::TimeDelta queueing_time = now - task->tracked_birth_time();
     helper_.StartProcessingTimers(queueing_time);
@@ -262,6 +305,8 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
 
 #if defined(OS_WIN)
   virtual void WillProcessMessage(const MSG& msg) {
+    if (!helper_.MessageWillBeMeasured())
+      return;
     // GetMessageTime returns a LONG (signed 32-bit) and GetTickCount returns
     // a DWORD (unsigned 32-bit). They both wrap around when the time is longer
     // than they can hold. I'm not sure if GetMessageTime wraps around to 0,
@@ -284,6 +329,8 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   }
 #elif defined(TOOLKIT_USES_GTK)
   virtual void WillProcessEvent(GdkEvent* event) {
+    if (!helper_.MessageWillBeMeasured())
+      return;
     // TODO(evanm): we want to set queueing_time_ using
     // gdk_event_get_time, but how do you convert that info
     // into a delta?
@@ -329,6 +376,9 @@ void InstallJankometer(const CommandLine& parsed_command_line) {
     if (list.npos != list.find("io"))
       io_watchdog_enabled = true;
   }
+
+  if (ui_watchdog_enabled || io_watchdog_enabled)
+    JankObserverHelper::SetDefaultMessagesToSkip(0);  // Watch everything.
 
   // Install on the UI thread.
   ui_observer = new scoped_refptr<UIJankObserver>(
