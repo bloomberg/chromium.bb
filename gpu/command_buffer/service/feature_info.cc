@@ -95,6 +95,10 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     AddExtensionString("GL_CHROMIUM_map_sub");
   }
 
+  if (ext.Desire("GL_CHROMIUM_copy_texture_to_parent_texture")) {
+    AddExtensionString("GL_CHROMIUM_copy_texture_to_parent_texture");
+  }
+
   // Only turn this feature on if it is requested. Not by default.
   if (desired_features && ext.Desire("GL_CHROMIUM_strict_attribs")) {
     AddExtensionString("GL_CHROMIUM_strict_attribs");
