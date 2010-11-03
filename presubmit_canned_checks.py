@@ -275,13 +275,16 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
     return []
 
 
-def CheckLicense(input_api, output_api, license, source_file_filter=None):
+def CheckLicense(input_api, output_api, license, source_file_filter=None,
+    accept_empty_files=True):
   """Verifies the license header.
   """
   license_re = input_api.re.compile(license, input_api.re.MULTILINE)
   bad_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
     contents = input_api.ReadFile(f, 'rb')
+    if accept_empty_files and not contents:
+      continue
     if not license_re.search(contents):
       bad_files.append(f.LocalPath())
   if bad_files:

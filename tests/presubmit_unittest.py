@@ -1386,7 +1386,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          'svn:eol-style', 'LF', '', False,
                          presubmit.OutputApi.PresubmitNotifyResult, True)
 
-  def _LicenseCheck(self, text, license, committing, expected_result):
+  def _LicenseCheck(self, text, license, committing, expected_result, **kwargs):
     change = self.mox.CreateMock(presubmit.SvnChange)
     change.scm = 'svn'
     input_api = self.MockInputApi(change, committing)
@@ -1398,7 +1398,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     self.mox.ReplayAll()
     result = presubmit_canned_checks.CheckLicense(
-                 input_api, presubmit.OutputApi, license, 42)
+                 input_api, presubmit.OutputApi, license, source_file_filter=42,
+                 **kwargs)
     if expected_result:
       self.assertEqual(len(result), 1)
       self.assertEqual(result[0].__class__, expected_result)
@@ -1445,6 +1446,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
     )
     self._LicenseCheck(text, license, False,
                        presubmit.OutputApi.PresubmitNotifyResult)
+
+  def testCheckLicenseEmptySuccess(self):
+    text = ''
+    license = (
+        r".*? Copyright \(c\) 2037 Nobody." "\n"
+        r".*? All Rights Reserved\." "\n"
+    )
+    self._LicenseCheck(text, license, True, None, accept_empty_files=True)
 
   def testCannedCheckSvnAccidentalSubmission(self):
     modified_dir_file = 'foo/'
