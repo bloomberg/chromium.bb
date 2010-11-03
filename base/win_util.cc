@@ -17,7 +17,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/thread_restrictions.h"
 #include "base/win/windows_version.h"
 
 namespace win_util {
@@ -128,11 +127,6 @@ std::wstring GetClassName(HWND window) {
 }
 
 bool UserAccountControlIsEnabled() {
-  // This can be slow if Windows ends up going to disk.  Should watch this key
-  // for changes and only read it once, preferably on the file thread.
-  //   http://code.google.com/p/chromium/issues/detail?id=61644
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
   base::win::RegKey key(HKEY_LOCAL_MACHINE,
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
       KEY_READ);

@@ -376,19 +376,13 @@ void Browser::CreateBrowserWindow() {
   window_ = BrowserWindow::CreateBrowserWindow(this);
 
 #if defined(OS_WIN)
-  {
-    // TODO: This might hit the disk
-    //   http://code.google.com/p/chromium/issues/detail?id=61638
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-    // Set the app user model id for this application to that of the application
-    // name.  See http://crbug.com/7028.
-    win_util::SetAppIdForWindow(
-        type_ & TYPE_APP ?
-        ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
-        ShellIntegration::GetChromiumAppId(profile_->GetPath()),
-        window()->GetNativeHandle());
-  }
+  // Set the app user model id for this application to that of the application
+  // name.  See http://crbug.com/7028.
+  win_util::SetAppIdForWindow(
+      type_ & TYPE_APP ?
+      ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
+      ShellIntegration::GetChromiumAppId(profile_->GetPath()),
+      window()->GetNativeHandle());
 #endif
 
   NotificationService::current()->Notify(
