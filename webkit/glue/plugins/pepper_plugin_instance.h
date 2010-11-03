@@ -100,6 +100,11 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // invalidate the entire plugin.
   void InvalidateRect(const gfx::Rect& rect);
 
+  // Schedules a scroll of the plugin.  This uses optimized scrolling only for
+  // full-frame plugins, as otherwise there could be other elements on top.  The
+  // slow path can also be triggered if there is an overlapping frame.
+  void ScrollRect(int dx, int dy, const gfx::Rect& rect);
+
   // PPB_Instance implementation.
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();

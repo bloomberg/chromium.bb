@@ -358,6 +358,20 @@ void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
   }
 }
 
+void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
+  if (fullscreen_container_) {
+    fullscreen_container_->ScrollRect(dx, dy, rect);
+  } else {
+    if (full_frame_) {
+      container_->scrollRect(dx, dy, rect);
+    } else {
+      // Can't do optimized scrolling since there could be other elements on top
+      // of us.
+      InvalidateRect(rect);
+    }
+  }
+}
+
 PP_Var PluginInstance::GetWindowObject() {
   if (!container_)
     return PP_MakeUndefined();

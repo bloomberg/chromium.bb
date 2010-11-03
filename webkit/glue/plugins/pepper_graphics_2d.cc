@@ -334,7 +334,7 @@ int32_t Graphics2D::Flush(const PP_CompletionCallback& callback) {
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
-  gfx::Rect changed_rect;
+  bool nothing_visible = true;
   for (size_t i = 0; i < queued_operations_.size(); i++) {
     QueuedOperation& operation = queued_operations_[i];
     gfx::Rect op_rect;
@@ -354,26 +354,34 @@ int32_t Graphics2D::Flush(const PP_CompletionCallback& callback) {
         ExecuteReplaceContents(operation.replace_image, &op_rect);
         break;
     }
-    changed_rect = changed_rect.Union(op_rect);
+
+    // We need the rect to be in terms of the current clip rect of the plugin
+    // since that's what will actually be painted. If we issue an invalidate
+    // for a clipped-out region, WebKit will do nothing and we won't get any
+    // ViewInitiatedPaint/ViewFlushedPaint calls, leaving our callback stranded.
+    gfx::Rect visible_changed_rect;
+    if (bound_instance_ && !op_rect.IsEmpty())
+      visible_changed_rect = bound_instance_->clip().Intersect(op_rect);
+
+    if (bound_instance_ && !visible_changed_rect.IsEmpty()) {
+      if (operation.type == QueuedOperation::SCROLL) {
+        bound_instance_->ScrollRect(operation.scroll_dx, operation.scroll_dy,
+                                    visible_changed_rect);
+      } else {
+        bound_instance_->InvalidateRect(visible_changed_rect);
+      }
+      nothing_visible = false;
+    }
   }
   queued_operations_.clear();
   flushed_any_data_ = true;
 
-  // We need the rect to be in terms of the current clip rect of the plugin
-  // since that's what will actually be painted. If we issue an invalidate
-  // for a clipped-out region, WebKit will do nothing and we won't get any
-  // ViewInitiatedPaint/ViewFlushedPaint calls, leaving our callback stranded.
-  gfx::Rect visible_changed_rect;
-  if (bound_instance_ && !changed_rect.IsEmpty())
-    visible_changed_rect = bound_instance_->clip().Intersect(changed_rect);
-
-  if (bound_instance_ && !visible_changed_rect.IsEmpty()) {
-    unpainted_flush_callback_.Set(callback);
-    bound_instance_->InvalidateRect(visible_changed_rect);
-  } else {
+  if (nothing_visible) {
     // There's nothing visible to invalidate so just schedule the callback to
     // execute in the next round of the message loop.
     ScheduleOffscreenCallback(FlushCallbackData(callback));
+  } else {
+    unpainted_flush_callback_.Set(callback);
   }
   return PP_ERROR_WOULDBLOCK;
 }

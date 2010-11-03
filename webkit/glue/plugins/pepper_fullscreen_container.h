@@ -23,6 +23,9 @@ class FullscreenContainer {
   // Invalidates a partial region of the plugin.
   virtual void InvalidateRect(const WebKit::WebRect&) = 0;
 
+  // Scrolls a partial region of the plugin in the given direction.
+  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect&) = 0;
+
   // Destroys the fullscreen window. This also destroys the FullscreenContainer
   // instance.
   virtual void Destroy() = 0;

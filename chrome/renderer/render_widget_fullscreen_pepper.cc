@@ -145,6 +145,10 @@ class WidgetFullscreenContainer : public pepper::FullscreenContainer {
     widget_->didInvalidateRect(rect);
   }
 
+  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect& rect) {
+    widget_->didScrollRect(dx, dy, rect);
+  }
+
   virtual void Destroy() {
     widget_->SendClose();
   }
