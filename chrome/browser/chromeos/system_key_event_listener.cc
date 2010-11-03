@@ -9,6 +9,7 @@
 
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 
 namespace chromeos {
 
@@ -25,6 +26,8 @@ SystemKeyEventListener* SystemKeyEventListener::instance() {
 
 SystemKeyEventListener::SystemKeyEventListener()
     : audio_handler_(AudioHandler::instance()) {
+  WmMessageListener::instance()->AddObserver(this);
+
   key_volume_mute_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioMute);
   key_volume_down_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioLowerVolume);
   key_volume_up_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioRaiseVolume);
@@ -45,7 +48,30 @@ SystemKeyEventListener::SystemKeyEventListener()
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
+  WmMessageListener::instance()->RemoveObserver(this);
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
+}
+
+void SystemKeyEventListener::ProcessWmMessage(const WmIpc::Message& message,
+                                              GdkWindow* window) {
+  if (message.type() != WM_IPC_MESSAGE_CHROME_NOTIFY_SYSKEY_PRESSED)
+    return;
+
+  switch (message.param(0)) {
+    case WM_IPC_SYSTEM_KEY_VOLUME_MUTE:
+      OnVolumeMute();
+      break;
+    case WM_IPC_SYSTEM_KEY_VOLUME_DOWN:
+      OnVolumeDown();
+      break;
+    case WM_IPC_SYSTEM_KEY_VOLUME_UP:
+      OnVolumeUp();
+      break;
+    default:
+      DLOG(ERROR) << "SystemKeyEventListener: Unexpected message "
+                  << message.param(0)
+                  << " received";
+  }
 }
 
 // static

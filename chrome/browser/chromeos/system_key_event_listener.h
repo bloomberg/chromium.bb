@@ -9,6 +9,7 @@
 #include <gdk/gdk.h>
 
 #include "base/singleton.h"
+#include "chrome/browser/chromeos/wm_message_listener.h"
 
 namespace chromeos {
 
@@ -18,9 +19,16 @@ class AudioHandler;
 // tells the AudioHandler to adjust volume accordingly.  Start by just calling
 // instance() to get it going.
 
-class SystemKeyEventListener {
+// TODO(davej): Remove WmMessageListener::Observer once volume key handling has
+// been removed from the window manager since those keys take precedence.
+
+class SystemKeyEventListener : public WmMessageListener::Observer {
  public:
   static SystemKeyEventListener* instance();
+
+  // WmMessageListener::Observer:
+  virtual void ProcessWmMessage(const WmIpc::Message& message,
+                                GdkWindow* window);
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
