@@ -1,0 +1,18 @@
+# -*- python -*-
+# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# There is no stat64 in newlib
+if not env.Bit('nacl_glibc'):
+  Return()
+
+test_stat_nexe = env.ComponentProgram('test_stat.nexe', 'test_stat.c')
+
+test_stat = env.CommandSelLdrTestNacl(
+    'test_stat.out',
+     command=[env.File('test_stat.nexe'), env.File('test_stat_data')])
+
+env.AddNodeToTestSuite(test_stat, ['small_tests'], 'run_stat_test')
