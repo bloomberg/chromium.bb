@@ -329,8 +329,9 @@ void NetworkMenu::ActivatedAt(int index) {
       // TODO(stevenjb): Show notification.
     } else if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED) {
       ActivateCellular(cellular);
-    } else if (cellular->service_path() ==
-               cros->cellular_network()->service_path()) {
+    } else if (cros->cellular_network() &&
+               (cellular->service_path() ==
+                cros->cellular_network()->service_path())) {
       // Show the config settings for the cellular network.
       ShowCellular(cellular, false);
     } else {
