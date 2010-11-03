@@ -5,16 +5,16 @@
 #include "remoting/protocol/protobuf_video_reader.h"
 
 #include "base/task.h"
-#include "remoting/protocol/chromotocol_connection.h"
+#include "remoting/protocol/session.h"
 
 namespace remoting {
 
 ProtobufVideoReader::ProtobufVideoReader() { }
 ProtobufVideoReader::~ProtobufVideoReader() { }
 
-void ProtobufVideoReader::Init(ChromotocolConnection* connection,
+void ProtobufVideoReader::Init(protocol::Session* session,
                                VideoStub* video_stub) {
-  reader_.Init<VideoPacket>(connection->video_channel(),
+  reader_.Init<VideoPacket>(session->video_channel(),
                             NewCallback(this, &ProtobufVideoReader::OnNewData));
   video_stub_ = video_stub;
 }

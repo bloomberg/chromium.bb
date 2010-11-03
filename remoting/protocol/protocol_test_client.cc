@@ -24,11 +24,13 @@ extern "C" {
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/protocol/jingle_chromotocol_server.h"
+#include "remoting/protocol/jingle_session_manager.h"
 
 using remoting::kChromotingTokenServiceName;
 
 namespace remoting {
+
+namespace protocol {
 
 namespace {
 const int kBufferSize = 4096;
@@ -42,7 +44,7 @@ class ProtocolTestConnection
   ProtocolTestConnection(ProtocolTestClient* client, MessageLoop* message_loop)
       : client_(client),
         message_loop_(message_loop),
-        connection_(NULL),
+        session_(NULL),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             write_cb_(this, &ProtocolTestConnection::OnWritten)),
         pending_write_(false),
@@ -51,13 +53,13 @@ class ProtocolTestConnection
         closed_event_(true, false) {
   }
 
-  void Init(ChromotocolConnection* connection);
+  void Init(Session* session);
   void Write(const std::string& str);
   void Read();
   void Close();
 
-  // ChromotocolConnection::Callback interface.
-  virtual void OnStateChange(ChromotocolConnection::State state);
+  // Session::Callback interface.
+  virtual void OnStateChange(Session::State state);
  private:
   void DoWrite(scoped_refptr<net::IOBuffer> buf, int size);
   void DoRead();
@@ -71,7 +73,7 @@ class ProtocolTestConnection
 
   ProtocolTestClient* client_;
   MessageLoop* message_loop_;
-  scoped_refptr<ChromotocolConnection> connection_;
+  scoped_refptr<Session> session_;
   net::CompletionCallbackImpl<ProtocolTestConnection> write_cb_;
   bool pending_write_;
   net::CompletionCallbackImpl<ProtocolTestConnection> read_cb_;
@@ -97,10 +99,10 @@ class ProtocolTestClient
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
-  // callback for JingleChromotocolServer interface.
-  virtual void OnNewChromotocolConnection(
-      ChromotocolConnection* connection,
-      ChromotocolServer::IncomingConnectionResponse* response);
+  // callback for JingleSessionManager interface.
+  virtual void OnNewSession(
+      Session* session,
+      SessionManager::IncomingSessionResponse* response);
 
  private:
   typedef std::list<scoped_refptr<ProtocolTestConnection> > ConnectionsList;
@@ -110,15 +112,15 @@ class ProtocolTestClient
 
   std::string host_jid_;
   scoped_refptr<JingleClient> client_;
-  scoped_refptr<JingleChromotocolServer> server_;
+  scoped_refptr<JingleSessionManager> session_manager_;
   ConnectionsList connections_;
   Lock connections_lock_;
   base::WaitableEvent closed_event_;
 };
 
 
-void ProtocolTestConnection::Init(ChromotocolConnection* connection) {
-  connection_ = connection;
+void ProtocolTestConnection::Init(Session* session) {
+  session_ = session;
 }
 
 void ProtocolTestConnection::Write(const std::string& str) {
@@ -139,7 +141,7 @@ void ProtocolTestConnection::DoWrite(
     return;
   }
 
-  net::Socket* channel = connection_->event_channel();
+  net::Socket* channel = session_->event_channel();
   if (channel != NULL) {
     int result = channel->Write(buf, size, &write_cb_);
     if (result < 0) {
@@ -162,7 +164,7 @@ void ProtocolTestConnection::Read() {
 void ProtocolTestConnection::DoRead() {
   read_buffer_ = new net::IOBuffer(kBufferSize);
   while (true) {
-    int result = connection_->event_channel()->Read(
+    int result = session_->event_channel()->Read(
         read_buffer_, kBufferSize, &read_cb_);
     if (result < 0) {
       if (result != net::ERR_IO_PENDING)
@@ -175,7 +177,7 @@ void ProtocolTestConnection::DoRead() {
 }
 
 void ProtocolTestConnection::Close() {
-  connection_->Close(
+  session_->Close(
       NewRunnableMethod(this, &ProtocolTestConnection::OnFinishedClosing));
   closed_event_.Wait();
 }
@@ -184,14 +186,13 @@ void ProtocolTestConnection::OnFinishedClosing() {
   closed_event_.Signal();
 }
 
-void ProtocolTestConnection::OnStateChange(
-    ChromotocolConnection::State state) {
-  LOG(INFO) << "State of " << connection_->jid() << " changed to " << state;
-  if (state == ChromotocolConnection::CONNECTED) {
+void ProtocolTestConnection::OnStateChange(Session::State state) {
+  LOG(INFO) << "State of " << session_->jid() << " changed to " << state;
+  if (state == Session::CONNECTED) {
     // Start reading after we've connected.
     Read();
-  } else if (state == ChromotocolConnection::CLOSED) {
-    std::cerr << "Connection to " << connection_->jid()
+  } else if (state == Session::CLOSED) {
+    std::cerr << "Connection to " << session_->jid()
               << " closed" << std::endl;
     client_->OnConnectionClosed(this);
   }
@@ -212,7 +213,7 @@ void ProtocolTestConnection::HandleReadResult(int result) {
   if (result > 0) {
     std::string str(reinterpret_cast<const char*>(read_buffer_->data()),
                     result);
-    std::cout << "(" << connection_->jid() << "): " << str << std::endl;
+    std::cout << "(" << session_->jid() << "): " << str << std::endl;
   } else {
     LOG(ERROR) << "Read() returned error " << result;
   }
@@ -226,7 +227,7 @@ void ProtocolTestClient::Run(const std::string& username,
   client_ = new JingleClient(&jingle_thread);
   client_->Init(username, auth_token, kChromotingTokenServiceName, this);
 
-  server_ = new JingleChromotocolServer(&jingle_thread);
+  session_manager_ = new JingleSessionManager(&jingle_thread);
 
   host_jid_ = host_jid;
 
@@ -253,8 +254,8 @@ void ProtocolTestClient::Run(const std::string& username,
     connections_.pop_front();
   }
 
-  if (server_) {
-    server_->Close(
+  if (session_manager_) {
+    session_manager_->Close(
         NewRunnableMethod(this, &ProtocolTestClient::OnFinishedClosing));
     closed_event_.Wait();
   }
@@ -276,15 +277,15 @@ void ProtocolTestClient::OnStateChange(
   if (state == JingleClient::CONNECTED) {
     std::cerr << "Connected as " << client->GetFullJid() << std::endl;
 
-    server_->Init(
+    session_manager_->Init(
         client_->GetFullJid(), client_->session_manager(),
-        NewCallback(this, &ProtocolTestClient::OnNewChromotocolConnection));
-    server_->set_allow_local_ips(true);
+        NewCallback(this, &ProtocolTestClient::OnNewSession));
+    session_manager_->set_allow_local_ips(true);
 
     if (host_jid_ != "") {
       ProtocolTestConnection* connection =
           new ProtocolTestConnection(this, client_->message_loop());
-      connection->Init(server_->Connect(
+      connection->Init(session_manager_->Connect(
           host_jid_, CandidateChromotocolConfig::CreateDefault(),
           NewCallback(connection,
                       &ProtocolTestConnection::OnStateChange)));
@@ -295,19 +296,19 @@ void ProtocolTestClient::OnStateChange(
   }
 }
 
-void ProtocolTestClient::OnNewChromotocolConnection(
-    ChromotocolConnection* connection,
-    ChromotocolServer::IncomingConnectionResponse* response) {
-  std::cerr << "Accepting connection from " << connection->jid() << std::endl;
+void ProtocolTestClient::OnNewSession(
+    Session* session,
+    SessionManager::IncomingSessionResponse* response) {
+  std::cerr << "Accepting connection from " << session->jid() << std::endl;
 
-  connection->set_config(ChromotocolConfig::CreateDefault());
-  *response = ChromotocolServer::ACCEPT;
+  session->set_config(ChromotocolConfig::CreateDefault());
+  *response = SessionManager::ACCEPT;
 
   ProtocolTestConnection* test_connection =
       new ProtocolTestConnection(this, client_->message_loop());
-  connection->SetStateChangeCallback(
+  session->SetStateChangeCallback(
       NewCallback(test_connection, &ProtocolTestConnection::OnStateChange));
-  test_connection->Init(connection);
+  test_connection->Init(session);
   AutoLock auto_lock(connections_lock_);
   connections_.push_back(make_scoped_refptr(test_connection));
 }
@@ -329,9 +330,11 @@ void ProtocolTestClient::DestroyConnection(
   }
 }
 
+}  // namespace protocol
+
 }  // namespace remoting
 
-using remoting::ProtocolTestClient;
+using remoting::protocol::ProtocolTestClient;
 
 void usage(char* command) {
   std::cerr << "Usage: " << command << "--username=<username>" << std::endl

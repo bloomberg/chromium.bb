@@ -26,8 +26,8 @@
 #include "remoting/client/host_connection.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/chromotocol_connection.h"
-#include "remoting/protocol/chromotocol_server.h"
+#include "remoting/protocol/session.h"
+#include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/stream_writer.h"
 #include "remoting/protocol/video_reader.h"
 
@@ -35,8 +35,9 @@ class MessageLoop;
 
 namespace remoting {
 
-class JingleThread;
+namespace protocol {
 class VideoStub;
+}  // namespace protocol
 
 struct ClientConfig;
 
@@ -56,13 +57,13 @@ class JingleHostConnection : public HostConnection,
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
-  // Callback for ChromotocolServer.
-  void OnNewChromotocolConnection(
-      ChromotocolConnection* connection,
-      ChromotocolServer::IncomingConnectionResponse* response);
+  // Callback for chromotocol SessionManager.
+  void OnNewSession(
+      protocol::Session* connection,
+      protocol::SessionManager::IncomingSessionResponse* response);
 
-  // Callback for ChromotocolConnection.
-  void OnConnectionStateChange(ChromotocolConnection::State state);
+  // Callback for chromotocol Session.
+  void OnSessionStateChange(protocol::Session::State state);
 
  private:
   // The message loop for the jingle thread this object works on.
@@ -70,7 +71,7 @@ class JingleHostConnection : public HostConnection,
 
   // Called on the jingle thread after we've successfully to XMPP server. Starts
   // P2P connection to the host.
-  void InitConnection();
+  void InitSession();
 
   // Callback for |control_reader_|.
   void OnControlMessage(ChromotingHostMessage* msg);
@@ -86,8 +87,8 @@ class JingleHostConnection : public HostConnection,
   ClientContext* context_;
 
   scoped_refptr<JingleClient> jingle_client_;
-  scoped_refptr<ChromotocolServer> chromotocol_server_;
-  scoped_refptr<ChromotocolConnection> connection_;
+  scoped_refptr<protocol::SessionManager> session_manager_;
+  scoped_refptr<protocol::Session> session_;
 
   MessageReader control_reader_;
   EventStreamWriter event_writer_;

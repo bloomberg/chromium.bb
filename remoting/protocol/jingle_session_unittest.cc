@@ -9,8 +9,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
-#include "remoting/protocol/jingle_chromotocol_connection.h"
-#include "remoting/protocol/jingle_chromotocol_server.h"
+#include "remoting/protocol/jingle_session.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_manager_pair.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -27,12 +27,16 @@ using testing::SetArgumentPointee;
 using testing::WithArg;
 
 namespace remoting {
-class JingleChromotocolConnectionTest;
+namespace protocol {
+class JingleSessionTest;
+}  // namespace protocol
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::JingleChromotocolConnectionTest);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::protocol::JingleSessionTest);
 
 namespace remoting {
+
+namespace protocol {
 
 namespace {
 // Send 100 messages 1024 bytes each. UDP messages are sent with 10ms delay
@@ -43,29 +47,29 @@ const int kTestDataSize = kMessages * kMessageSize;
 const int kUdpWriteDelayMs = 10;
 }  // namespace
 
-class MockServerCallback {
+class MockSessionManagerCallback {
  public:
-  MOCK_METHOD2(OnIncomingConnection,
-               void(ChromotocolConnection*,
-                    ChromotocolServer::IncomingConnectionResponse*));
+  MOCK_METHOD2(OnIncomingSession,
+               void(Session*,
+                    SessionManager::IncomingSessionResponse*));
 };
 
-class MockConnectionCallback {
+class MockSessionCallback {
  public:
-  MOCK_METHOD1(OnStateChange, void(ChromotocolConnection::State));
+  MOCK_METHOD1(OnStateChange, void(Session::State));
 };
 
-class JingleChromotocolConnectionTest : public testing::Test {
+class JingleSessionTest : public testing::Test {
  public:
   // Helper method to copy to set value of client_connection_.
-  void SetHostConnection(ChromotocolConnection* connection) {
-    DCHECK(connection);
-    host_connection_ = connection;
-    host_connection_->SetStateChangeCallback(
+  void SetHostSession(Session* session) {
+    DCHECK(session);
+    host_session_ = session;
+    host_session_->SetStateChangeCallback(
         NewCallback(&host_connection_callback_,
-                    &MockConnectionCallback::OnStateChange));
+                    &MockSessionCallback::OnStateChange));
 
-    connection->set_config(ChromotocolConfig::CreateDefault());
+    session->set_config(ChromotocolConfig::CreateDefault());
   }
 
  protected:
@@ -74,15 +78,15 @@ class JingleChromotocolConnectionTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    CloseConnections();
+    CloseSessions();
 
     if (host_server_) {
       host_server_->Close(NewRunnableFunction(
-          &JingleChromotocolConnectionTest::DoNothing));
+          &JingleSessionTest::DoNothing));
     }
     if (client_server_) {
       client_server_->Close(NewRunnableFunction(
-          &JingleChromotocolConnectionTest::DoNothing));
+          &JingleSessionTest::DoNothing));
     }
     thread_.Stop();
   }
@@ -91,18 +95,18 @@ class JingleChromotocolConnectionTest : public testing::Test {
     // SessionManagerPair must be initialized on the jingle thread.
     thread_.message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(
-            this, &JingleChromotocolConnectionTest::DoCreateServerPair));
+            this, &JingleSessionTest::DoCreateServerPair));
     SyncWithJingleThread();
   }
 
-  void CloseConnections() {
-    if (host_connection_) {
-      host_connection_->Close(NewRunnableFunction(
-          &JingleChromotocolConnectionTest::DoNothing));
+  void CloseSessions() {
+    if (host_session_) {
+      host_session_->Close(NewRunnableFunction(
+          &JingleSessionTest::DoNothing));
     }
-    if (client_connection_) {
-      client_connection_->Close(NewRunnableFunction(
-          &JingleChromotocolConnectionTest::DoNothing));
+    if (client_session_) {
+      client_session_->Close(NewRunnableFunction(
+          &JingleSessionTest::DoNothing));
     }
     SyncWithJingleThread();
   }
@@ -110,61 +114,62 @@ class JingleChromotocolConnectionTest : public testing::Test {
   void DoCreateServerPair() {
     session_manager_pair_ = new SessionManagerPair(&thread_);
     session_manager_pair_->Init();
-    host_server_ = new JingleChromotocolServer(&thread_);
+    host_server_ = new JingleSessionManager(&thread_);
     host_server_->set_allow_local_ips(true);
     host_server_->Init(SessionManagerPair::kHostJid,
                        session_manager_pair_->host_session_manager(),
                        NewCallback(&host_server_callback_,
-                                   &MockServerCallback::OnIncomingConnection));
-    client_server_ = new JingleChromotocolServer(&thread_);
+                           &MockSessionManagerCallback::OnIncomingSession));
+
+    client_server_ = new JingleSessionManager(&thread_);
     client_server_->set_allow_local_ips(true);
     client_server_->Init(
         SessionManagerPair::kClientJid,
         session_manager_pair_->client_session_manager(),
         NewCallback(&client_server_callback_,
-                    &MockServerCallback::OnIncomingConnection));
+                    &MockSessionManagerCallback::OnIncomingSession));
   }
 
   bool InitiateConnection() {
-    EXPECT_CALL(host_server_callback_, OnIncomingConnection(_, _))
+    EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
         .WillOnce(DoAll(
             WithArg<0>(Invoke(
-                this, &JingleChromotocolConnectionTest::SetHostConnection)),
-            SetArgumentPointee<1>(ChromotocolServer::ACCEPT)));
+                this, &JingleSessionTest::SetHostSession)),
+            SetArgumentPointee<1>(protocol::SessionManager::ACCEPT)));
 
     base::WaitableEvent host_connected_event(false, false);
     EXPECT_CALL(host_connection_callback_,
-                OnStateChange(ChromotocolConnection::CONNECTING))
+                OnStateChange(Session::CONNECTING))
         .Times(1);
     EXPECT_CALL(host_connection_callback_,
-                OnStateChange(ChromotocolConnection::CONNECTED))
+                OnStateChange(Session::CONNECTED))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&host_connected_event,
                                     &base::WaitableEvent::Signal));
     // Expect that the connection will be closed eventually.
     EXPECT_CALL(host_connection_callback_,
-                OnStateChange(ChromotocolConnection::CLOSED))
+                OnStateChange(Session::CLOSED))
         .Times(1);
 
     base::WaitableEvent client_connected_event(false, false);
     EXPECT_CALL(client_connection_callback_,
-                OnStateChange(ChromotocolConnection::CONNECTING))
+                OnStateChange(Session::CONNECTING))
         .Times(1);
     EXPECT_CALL(client_connection_callback_,
-                OnStateChange(ChromotocolConnection::CONNECTED))
+                OnStateChange(Session::CONNECTED))
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&client_connected_event,
                                     &base::WaitableEvent::Signal));
     // Expect that the connection will be closed eventually.
     EXPECT_CALL(client_connection_callback_,
-                OnStateChange(ChromotocolConnection::CLOSED))
+                OnStateChange(Session::CLOSED))
         .Times(1);
 
-    client_connection_ = client_server_->Connect(
+    client_session_ = client_server_->Connect(
         SessionManagerPair::kHostJid,
         CandidateChromotocolConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
-                    &MockConnectionCallback::OnStateChange));
+                    &MockSessionCallback::OnStateChange));
 
     return host_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
             TestTimeouts::action_max_timeout_ms())) &&
@@ -187,15 +192,15 @@ class JingleChromotocolConnectionTest : public testing::Test {
 
   JingleThread thread_;
   scoped_refptr<SessionManagerPair> session_manager_pair_;
-  scoped_refptr<JingleChromotocolServer> host_server_;
-  MockServerCallback host_server_callback_;
-  scoped_refptr<JingleChromotocolServer> client_server_;
-  MockServerCallback client_server_callback_;
+  scoped_refptr<JingleSessionManager> host_server_;
+  MockSessionManagerCallback host_server_callback_;
+  scoped_refptr<JingleSessionManager> client_server_;
+  MockSessionManagerCallback client_server_callback_;
 
-  scoped_refptr<ChromotocolConnection> host_connection_;
-  MockConnectionCallback host_connection_callback_;
-  scoped_refptr<ChromotocolConnection> client_connection_;
-  MockConnectionCallback client_connection_callback_;
+  scoped_refptr<Session> host_session_;
+  MockSessionCallback host_connection_callback_;
+  scoped_refptr<Session> client_session_;
+  MockSessionCallback client_connection_callback_;
 };
 
 class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
@@ -209,11 +214,11 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   };
 
   ChannelTesterBase(MessageLoop* message_loop,
-                    ChromotocolConnection* host_connection,
-                    ChromotocolConnection* client_connection)
+                    Session* host_session,
+                    Session* client_session)
       : message_loop_(message_loop),
-        host_connection_(host_connection),
-        client_connection_(client_connection),
+        host_session_(host_session),
+        client_session_(client_session),
         done_event_(true, false) {
   }
 
@@ -234,8 +239,8 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
 
  protected:
   void DoStart(ChannelType channel)  {
-    socket_1_ = SelectChannel(host_connection_, channel);
-    socket_2_ = SelectChannel(client_connection_, channel);
+    socket_1_ = SelectChannel(host_session_, channel);
+    socket_2_ = SelectChannel(client_session_, channel);
 
     InitBuffers();
     DoRead();
@@ -246,19 +251,19 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   virtual void DoWrite() = 0;
   virtual void DoRead() = 0;
 
-  net::Socket* SelectChannel(ChromotocolConnection* connection,
+  net::Socket* SelectChannel(Session* session,
                              ChannelType channel) {
     switch (channel) {
       case CONTROL:
-        return connection->control_channel();
+        return session->control_channel();
       case EVENT:
-        return connection->event_channel();
+        return session->event_channel();
       case VIDEO:
-        return connection->video_channel();
+        return session->video_channel();
       case VIDEO_RTP:
-        return connection->video_rtp_channel();
+        return session->video_rtp_channel();
       case VIDEO_RTCP:
-        return connection->video_rtcp_channel();
+        return session->video_rtcp_channel();
       default:
         NOTREACHED();
         return NULL;
@@ -266,8 +271,8 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   }
 
   MessageLoop* message_loop_;
-  scoped_refptr<ChromotocolConnection> host_connection_;
-  scoped_refptr<ChromotocolConnection> client_connection_;
+  scoped_refptr<Session> host_session_;
+  scoped_refptr<Session> client_session_;
   net::Socket* socket_1_;
   net::Socket* socket_2_;
   base::WaitableEvent done_event_;
@@ -276,9 +281,9 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
 class TCPChannelTester : public ChannelTesterBase {
  public:
   TCPChannelTester(MessageLoop* message_loop,
-                   ChromotocolConnection* host_connection,
-                   ChromotocolConnection* client_connection)
-      : ChannelTesterBase(message_loop, host_connection, client_connection),
+                   Session* host_session,
+                   Session* client_session)
+      : ChannelTesterBase(message_loop, host_session, client_session),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             write_cb_(this, &TCPChannelTester::OnWritten)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -385,9 +390,9 @@ class TCPChannelTester : public ChannelTesterBase {
 class UDPChannelTester : public ChannelTesterBase {
  public:
   UDPChannelTester(MessageLoop* message_loop,
-                   ChromotocolConnection* host_connection,
-                   ChromotocolConnection* client_connection)
-      : ChannelTesterBase(message_loop, host_connection, client_connection),
+                   Session* host_session,
+                   Session* client_session)
+      : ChannelTesterBase(message_loop, host_session, client_session),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             write_cb_(this, &UDPChannelTester::OnWritten)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -509,33 +514,33 @@ class UDPChannelTester : public ChannelTesterBase {
 };
 
 // Verify that we can create and destory server objects without a connection.
-TEST_F(JingleChromotocolConnectionTest, CreateAndDestoy) {
+TEST_F(JingleSessionTest, CreateAndDestoy) {
   CreateServerPair();
 }
 
-// Verify that incoming connection can be rejected, and that the status
+// Verify that incoming session can be rejected, and that the status
 // of the connection is set to CLOSED in this case.
-TEST_F(JingleChromotocolConnectionTest, RejectConnection) {
+TEST_F(JingleSessionTest, RejectConnection) {
   CreateServerPair();
 
-  // Reject incoming connection.
-  EXPECT_CALL(host_server_callback_, OnIncomingConnection(_, _))
-      .WillOnce(SetArgumentPointee<1>(ChromotocolServer::DECLINE));
+  // Reject incoming session.
+  EXPECT_CALL(host_server_callback_, OnIncomingSession(_, _))
+      .WillOnce(SetArgumentPointee<1>(protocol::SessionManager::DECLINE));
 
   base::WaitableEvent done_event(false, false);
   EXPECT_CALL(client_connection_callback_,
-              OnStateChange(ChromotocolConnection::CONNECTING))
+              OnStateChange(Session::CONNECTING))
       .Times(1);
   EXPECT_CALL(client_connection_callback_,
-              OnStateChange(ChromotocolConnection::CLOSED))
+              OnStateChange(Session::CLOSED))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
 
-  client_connection_ = client_server_->Connect(
+  client_session_ = client_server_->Connect(
       SessionManagerPair::kHostJid,
       CandidateChromotocolConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,
-                  &MockConnectionCallback::OnStateChange));
+                  &MockSessionCallback::OnStateChange));
 
   ASSERT_TRUE(
       done_event.TimedWait(base::TimeDelta::FromMilliseconds(
@@ -543,70 +548,72 @@ TEST_F(JingleChromotocolConnectionTest, RejectConnection) {
 }
 
 // Verify that we can connect two endpoints.
-TEST_F(JingleChromotocolConnectionTest, Connect) {
+TEST_F(JingleSessionTest, Connect) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
 }
 
 // Verify that data can be transmitted over the event channel.
-TEST_F(JingleChromotocolConnectionTest, TestControlChannel) {
+TEST_F(JingleSessionTest, TestControlChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
-      new TCPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_));
+      new TCPChannelTester(thread_.message_loop(), host_session_,
+                           client_session_));
   tester->Start(ChannelTesterBase::CONTROL);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
 
   // Connections must be closed while |tester| still exists.
-  CloseConnections();
+  CloseSessions();
 }
 
 
 // Verify that data can be transmitted over the video channel.
-TEST_F(JingleChromotocolConnectionTest, TestVideoChannel) {
+TEST_F(JingleSessionTest, TestVideoChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
-      new TCPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_));
+      new TCPChannelTester(thread_.message_loop(), host_session_,
+                           client_session_));
   tester->Start(ChannelTesterBase::VIDEO);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
 
   // Connections must be closed while |tester| still exists.
-  CloseConnections();
+  CloseSessions();
 }
 
 // Verify that data can be transmitted over the event channel.
-TEST_F(JingleChromotocolConnectionTest, TestEventChannel) {
+TEST_F(JingleSessionTest, TestEventChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
-      new TCPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_));
+      new TCPChannelTester(thread_.message_loop(), host_session_,
+                           client_session_));
   tester->Start(ChannelTesterBase::EVENT);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
 
   // Connections must be closed while |tester| still exists.
-  CloseConnections();
+  CloseSessions();
 }
 
 // Verify that data can be transmitted over the video RTP channel.
-TEST_F(JingleChromotocolConnectionTest, TestVideoRtpChannel) {
+TEST_F(JingleSessionTest, TestVideoRtpChannel) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<UDPChannelTester> tester(
-      new UDPChannelTester(thread_.message_loop(), host_connection_,
-                           client_connection_));
+      new UDPChannelTester(thread_.message_loop(), host_session_,
+                           client_session_));
   tester->Start(ChannelTesterBase::VIDEO_RTP);
   ASSERT_TRUE(tester->WaitFinished());
   tester->CheckResults();
 
   // Connections must be closed while |tester| still exists.
-  CloseConnections();
+  CloseSessions();
 }
+
+}  // namespace protocol
 
 }  // namespace remoting

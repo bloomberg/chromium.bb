@@ -29,23 +29,23 @@ ClientConnection::~ClientConnection() {
   // connection.
 }
 
-void ClientConnection::Init(ChromotocolConnection* connection) {
-  DCHECK_EQ(connection->message_loop(), MessageLoop::current());
+void ClientConnection::Init(protocol::Session* session) {
+  DCHECK_EQ(session->message_loop(), MessageLoop::current());
 
-  connection_ = connection;
-  connection_->SetStateChangeCallback(
-      NewCallback(this, &ClientConnection::OnConnectionStateChange));
+  session_ = session;
+  session_->SetStateChangeCallback(
+      NewCallback(this, &ClientConnection::OnSessionStateChange));
 }
 
-ChromotocolConnection* ClientConnection::connection() {
-  return connection_;
+protocol::Session* ClientConnection::session() {
+  return session_;
 }
 
 void ClientConnection::SendInitClientMessage(int width, int height) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If we are disconnected then return.
-  if (!connection_)
+  if (!session_)
     return;
 
   ChromotingHostMessage msg;
@@ -59,7 +59,7 @@ void ClientConnection::SendVideoPacket(const VideoPacket& packet) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If we are disconnected then return.
-  if (!connection_)
+  if (!session_)
     return;
 
   video_writer_->SendPacket(packet);
@@ -74,23 +74,23 @@ void ClientConnection::Disconnect() {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If there is a channel then close it and release the reference.
-  if (connection_) {
-    connection_->Close(NewRunnableMethod(this, &ClientConnection::OnClosed));
-    connection_ = NULL;
+  if (session_) {
+    session_->Close(NewRunnableMethod(this, &ClientConnection::OnClosed));
+    session_ = NULL;
   }
 }
 
 ClientConnection::ClientConnection() {}
 
-void ClientConnection::OnConnectionStateChange(
-    ChromotocolConnection::State state) {
-  if (state == ChromotocolConnection::CONNECTED) {
-    control_writer_.Init(connection_->control_channel());
+void ClientConnection::OnSessionStateChange(
+    protocol::Session::State state) {
+  if (state == protocol::Session::CONNECTED) {
+    control_writer_.Init(session_->control_channel());
     event_reader_.Init<ChromotingClientMessage>(
-        connection_->event_channel(),
+        session_->event_channel(),
         NewCallback(this, &ClientConnection::OnMessageReceived));
-    video_writer_.reset(VideoWriter::Create(connection_->config()));
-    video_writer_->Init(connection_);
+    video_writer_.reset(VideoWriter::Create(session_->config()));
+    video_writer_->Init(session_);
   }
 
   loop_->PostTask(FROM_HERE,
@@ -103,21 +103,21 @@ void ClientConnection::OnMessageReceived(ChromotingClientMessage* message) {
                         message));
 }
 
-void ClientConnection::StateChangeTask(ChromotocolConnection::State state) {
+void ClientConnection::StateChangeTask(protocol::Session::State state) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   DCHECK(handler_);
   switch(state) {
-    case ChromotocolConnection::CONNECTING:
+    case protocol::Session::CONNECTING:
       break;
     // Don't care about this message.
-    case ChromotocolConnection::CONNECTED:
+    case protocol::Session::CONNECTED:
       handler_->OnConnectionOpened(this);
       break;
-    case ChromotocolConnection::CLOSED:
+    case protocol::Session::CLOSED:
       handler_->OnConnectionClosed(this);
       break;
-    case ChromotocolConnection::FAILED:
+    case protocol::Session::FAILED:
       handler_->OnConnectionFailed(this);
       break;
     default:
@@ -132,7 +132,7 @@ void ClientConnection::MessageReceivedTask(ChromotingClientMessage* message) {
   handler_->HandleMessage(this, message);
 }
 
-// OnClosed() is used as a callback for ChromotocolConnection::Close().
+// OnClosed() is used as a callback for protocol::Session::Close().
 void ClientConnection::OnClosed() {
 }
 

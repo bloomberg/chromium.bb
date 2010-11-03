@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/fake_connection.h"
+#include "remoting/protocol/fake_session.h"
 
 #include "base/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
 namespace remoting {
+
+namespace protocol {
 
 const char kTestJid[] = "host1@gmail.com/chromoting123";
 
@@ -69,66 +71,68 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
   return false;
 }
 
-FakeChromotocolConnection::FakeChromotocolConnection()
+FakeSession::FakeSession()
     : candidate_config_(CandidateChromotocolConfig::CreateDefault()),
       config_(ChromotocolConfig::CreateDefault()),
       message_loop_(NULL),
       jid_(kTestJid) {
 }
 
-FakeChromotocolConnection::~FakeChromotocolConnection() { }
+FakeSession::~FakeSession() { }
 
-void FakeChromotocolConnection::SetStateChangeCallback(
+void FakeSession::SetStateChangeCallback(
     StateChangeCallback* callback) {
   callback_.reset(callback);
 }
 
-FakeSocket* FakeChromotocolConnection::control_channel() {
+FakeSocket* FakeSession::control_channel() {
   return &control_channel_;
 }
 
-FakeSocket* FakeChromotocolConnection::event_channel() {
+FakeSocket* FakeSession::event_channel() {
   return &event_channel_;
 }
 
-FakeSocket* FakeChromotocolConnection::video_channel() {
+FakeSocket* FakeSession::video_channel() {
   return &video_channel_;
 }
 
-FakeSocket* FakeChromotocolConnection::video_rtp_channel() {
+FakeSocket* FakeSession::video_rtp_channel() {
   return &video_rtp_channel_;
 }
 
-FakeSocket* FakeChromotocolConnection::video_rtcp_channel() {
+FakeSocket* FakeSession::video_rtcp_channel() {
   return &video_rtcp_channel_;
 }
 
-const std::string& FakeChromotocolConnection::jid() {
+const std::string& FakeSession::jid() {
   return jid_;
 }
 
-MessageLoop* FakeChromotocolConnection::message_loop() {
+MessageLoop* FakeSession::message_loop() {
   return message_loop_;
 }
 
 const CandidateChromotocolConfig*
-FakeChromotocolConnection::candidate_config() {
+FakeSession::candidate_config() {
   return candidate_config_.get();
 }
 
-const ChromotocolConfig* FakeChromotocolConnection::config() {
+const ChromotocolConfig* FakeSession::config() {
   CHECK(config_.get());
   return config_.get();
 }
 
-void FakeChromotocolConnection::set_config(const ChromotocolConfig* config) {
+void FakeSession::set_config(const ChromotocolConfig* config) {
   config_.reset(config);
 }
 
-void FakeChromotocolConnection::Close(Task* closed_task) {
+void FakeSession::Close(Task* closed_task) {
   closed_ = true;
   closed_task->Run();
   delete closed_task;
 }
+
+}  // namespace protocol
 
 }  // namespace remoting

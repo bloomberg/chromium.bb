@@ -10,7 +10,7 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/protocol/jingle_chromotocol_server.h"
+#include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
 
@@ -52,8 +52,8 @@ void JingleHostConnection::Disconnect() {
   event_writer_.Close();
   video_reader_->Close();
 
-  if (connection_) {
-    connection_->Close(
+  if (session_) {
+    session_->Close(
         NewRunnableMethod(this, &JingleHostConnection::OnDisconnected));
   } else {
     OnDisconnected();
@@ -64,36 +64,36 @@ void JingleHostConnection::OnControlMessage(ChromotingHostMessage* msg) {
   event_callback_->HandleMessage(this, msg);
 }
 
-void JingleHostConnection::InitConnection() {
+void JingleHostConnection::InitSession() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
-  // Initialize |chromotocol_server_|.
-  JingleChromotocolServer* chromotocol_server =
-      new JingleChromotocolServer(context_->jingle_thread());
+  // Initialize chromotocol |session_manager_|.
+  protocol::JingleSessionManager* session_manager =
+      new protocol::JingleSessionManager(context_->jingle_thread());
   // TODO(ajwong): Make this a command switch when we're more stable.
-  chromotocol_server->set_allow_local_ips(true);
-  chromotocol_server->Init(
+  session_manager->set_allow_local_ips(true);
+  session_manager->Init(
       jingle_client_->GetFullJid(),
       jingle_client_->session_manager(),
-      NewCallback(this, &JingleHostConnection::OnNewChromotocolConnection));
-  chromotocol_server_ = chromotocol_server;
+      NewCallback(this, &JingleHostConnection::OnNewSession));
+  session_manager_ = session_manager;
 
   CandidateChromotocolConfig* candidate_config =
       CandidateChromotocolConfig::CreateDefault();
   // TODO(sergeyu): Set resolution in the |candidate_config| to the desired
   // resolution.
 
-  // Initialize |connection_|.
-  connection_ = chromotocol_server_->Connect(
+  // Initialize |session_|.
+  session_ = session_manager_->Connect(
       host_jid_, candidate_config,
-      NewCallback(this, &JingleHostConnection::OnConnectionStateChange));
+      NewCallback(this, &JingleHostConnection::OnSessionStateChange));
 }
 
 void JingleHostConnection::OnDisconnected() {
-  connection_ = NULL;
+  session_ = NULL;
 
-  if (chromotocol_server_) {
-    chromotocol_server_->Close(
+  if (session_manager_) {
+    session_manager_->Close(
         NewRunnableMethod(this, &JingleHostConnection::OnServerClosed));
   } else {
     OnServerClosed();
@@ -101,7 +101,7 @@ void JingleHostConnection::OnDisconnected() {
 }
 
 void JingleHostConnection::OnServerClosed() {
-  chromotocol_server_ = NULL;
+  session_manager_ = NULL;
   if (jingle_client_) {
     jingle_client_->Close();
     jingle_client_ = NULL;
@@ -122,43 +122,42 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
 
   if (state == JingleClient::CONNECTED) {
     VLOG(1) << "Connected as: " << client->GetFullJid();
-    InitConnection();
+    InitSession();
   } else if (state == JingleClient::CLOSED) {
     VLOG(1) << "Connection closed.";
     event_callback_->OnConnectionClosed(this);
   }
 }
 
-void JingleHostConnection::OnNewChromotocolConnection(
-    ChromotocolConnection* connection,
-    ChromotocolServer::IncomingConnectionResponse* response) {
+void JingleHostConnection::OnNewSession(protocol::Session* session,
+    protocol::SessionManager::IncomingSessionResponse* response) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
-  // Client always rejects incoming connections.
-  *response = ChromotocolServer::DECLINE;
+  // Client always rejects incoming sessions.
+  *response = protocol::SessionManager::DECLINE;
 }
 
-void JingleHostConnection::OnConnectionStateChange(
-    ChromotocolConnection::State state) {
+void JingleHostConnection::OnSessionStateChange(
+    protocol::Session::State state) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(event_callback_);
 
   switch (state) {
-    case ChromotocolConnection::FAILED:
+    case protocol::Session::FAILED:
       event_callback_->OnConnectionFailed(this);
       break;
 
-    case ChromotocolConnection::CLOSED:
+    case protocol::Session::CLOSED:
       event_callback_->OnConnectionClosed(this);
       break;
 
-    case ChromotocolConnection::CONNECTED:
+    case protocol::Session::CONNECTED:
       // Initialize reader and writer.
       control_reader_.Init<ChromotingHostMessage>(
-          connection_->control_channel(),
+          session_->control_channel(),
           NewCallback(this, &JingleHostConnection::OnControlMessage));
-      event_writer_.Init(connection_->event_channel());
-      video_reader_.reset(VideoReader::Create(connection_->config()));
-      video_reader_->Init(connection_, video_stub_);
+      event_writer_.Init(session_->event_channel());
+      video_reader_.reset(VideoReader::Create(session_->config()));
+      video_reader_->Init(session_, video_stub_);
       event_callback_->OnConnectionOpened(this);
       break;
 

@@ -10,13 +10,17 @@
 
 namespace remoting {
 
+namespace protocol {
+class Session;
+}  // namespace protocol
+
 class RtpVideoReader : public VideoReader {
  public:
   RtpVideoReader();
   virtual ~RtpVideoReader();
 
   // VideoReader interface.
-  virtual void Init(ChromotocolConnection* connection, VideoStub* video_stub);
+  virtual void Init(protocol::Session* session, VideoStub* video_stub);
   virtual void Close();
 
  private:

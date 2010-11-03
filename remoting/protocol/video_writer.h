@@ -15,6 +15,10 @@
 
 namespace remoting {
 
+namespace protocol {
+class Session;
+}  // namespace protocol
+
 class ChromotocolConfig;
 class ChromotocolConnection;
 
@@ -26,7 +30,7 @@ class VideoWriter {
   static VideoWriter* Create(const ChromotocolConfig* config);
 
   // Initializes the writer.
-  virtual void Init(ChromotocolConnection* connection) = 0;
+  virtual void Init(protocol::Session* session) = 0;
 
   // Sends the |packet|.
   virtual void SendPacket(const VideoPacket& packet) = 0;

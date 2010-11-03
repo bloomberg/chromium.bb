@@ -4,7 +4,7 @@
 
 #include "remoting/protocol/rtp_video_writer.h"
 
-#include "remoting/protocol/chromotocol_connection.h"
+#include "remoting/protocol/session.h"
 #include "remoting/protocol/rtp_writer.h"
 
 namespace remoting {
@@ -13,9 +13,9 @@ RtpVideoWriter::RtpVideoWriter() { }
 
 RtpVideoWriter::~RtpVideoWriter() { }
 
-void RtpVideoWriter::Init(ChromotocolConnection* connection) {
-  rtp_writer_.Init(connection->video_rtp_channel(),
-                   connection->video_rtcp_channel());
+void RtpVideoWriter::Init(protocol::Session* session) {
+  rtp_writer_.Init(session->video_rtp_channel(),
+                   session->video_rtcp_channel());
 }
 
 void RtpVideoWriter::SendPacket(const VideoPacket& packet) {

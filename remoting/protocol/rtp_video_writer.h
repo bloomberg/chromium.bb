@@ -10,13 +10,17 @@
 
 namespace remoting {
 
+namespace protocol {
+class Session;
+}  // namespace protocol
+
 class RtpVideoWriter : public VideoWriter {
  public:
   RtpVideoWriter();
   virtual ~RtpVideoWriter();
 
   // VideoWriter interface.
-  virtual void Init(ChromotocolConnection* connection);
+  virtual void Init(protocol::Session* session);
   virtual void SendPacket(const VideoPacket& packet);
   virtual int GetPendingPackets();
   virtual void Close();

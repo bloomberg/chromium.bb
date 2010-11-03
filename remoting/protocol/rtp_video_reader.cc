@@ -5,16 +5,16 @@
 #include "remoting/protocol/rtp_video_reader.h"
 
 #include "base/task.h"
-#include "remoting/protocol/chromotocol_connection.h"
+#include "remoting/protocol/session.h"
 
 namespace remoting {
 
 RtpVideoReader::RtpVideoReader() { }
 RtpVideoReader::~RtpVideoReader() { }
 
-void RtpVideoReader::Init(ChromotocolConnection* connection,
+void RtpVideoReader::Init(protocol::Session* session,
                           VideoStub* video_stub) {
-  rtp_reader_.Init(connection->video_rtp_channel(),
+  rtp_reader_.Init(session->video_rtp_channel(),
                    NewCallback(this, &RtpVideoReader::OnRtpPacket));
   video_stub_ = video_stub;
 }

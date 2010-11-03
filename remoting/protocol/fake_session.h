@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_FAKE_CONNECTION_H_
-#define REMOTING_PROTOCOL_FAKE_CONNECTION_H_
+#ifndef REMOTING_PROTOCOL_FAKE_SESSION_H_
+#define REMOTING_PROTOCOL_FAKE_SESSION_H_
 
 #include <vector>
 
 #include "base/scoped_ptr.h"
 #include "net/socket/socket.h"
-#include "remoting/protocol/chromotocol_connection.h"
+#include "remoting/protocol/session.h"
 
 namespace remoting {
+
+namespace protocol {
 
 extern const char kTestJid[];
 
@@ -50,12 +52,12 @@ class FakeSocket : public net::Socket {
   int input_pos_;
 };
 
-// FakeChromotocolConnection is a dummy ChromotocolConnection that uses
-// FakeSocket for all channels.
-class FakeChromotocolConnection : public ChromotocolConnection {
+// FakeSession is a dummy protocol::Session that uses FakeSocket for all
+// channels.
+class FakeSession : public Session {
  public:
-  FakeChromotocolConnection();
-  virtual ~FakeChromotocolConnection();
+  FakeSession();
+  virtual ~FakeSession();
 
   StateChangeCallback* state_change_callback() { return callback_.get(); }
 
@@ -97,6 +99,8 @@ class FakeChromotocolConnection : public ChromotocolConnection {
   bool closed_;
 };
 
+}  // namespace protocol
+
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_FAKE_CONNECTION_H_
+#endif  // REMOTING_PROTOCOL_FAKE_SESSION_H_

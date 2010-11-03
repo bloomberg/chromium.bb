@@ -6,12 +6,11 @@
 #include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
-#include "remoting/proto/video.pb.h"
-#include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/host_message_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/session.h"
 
 namespace {
 
@@ -52,10 +51,10 @@ HostMessageDispatcher::~HostMessageDispatcher() {
 }
 
 bool HostMessageDispatcher::Initialize(
-    ChromotocolConnection* connection,
+    protocol::Session* session,
     HostStub* host_stub, InputStub* input_stub) {
-  if (!connection || !host_stub || !input_stub ||
-      !connection->event_channel() || !connection->control_channel()) {
+  if (!session || !host_stub || !input_stub ||
+      !session->event_channel() || !session->control_channel()) {
     return false;
   }
 
@@ -66,10 +65,10 @@ bool HostMessageDispatcher::Initialize(
 
   // Initialize the readers on the sockets provided by channels.
   event_message_reader_->Init<EventMessage>(
-      connection->event_channel(),
+      session->event_channel(),
       NewCallback(this, &HostMessageDispatcher::OnEventMessageReceived));
   control_message_reader_->Init<ControlMessage>(
-      connection->control_channel(),
+      session->control_channel(),
       NewCallback(this, &HostMessageDispatcher::OnControlMessageReceived));
   return true;
 }

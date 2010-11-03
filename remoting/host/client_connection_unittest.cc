@@ -6,7 +6,7 @@
 #include "remoting/base/mock_objects.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/mock_objects.h"
-#include "remoting/protocol/fake_connection.h"
+#include "remoting/protocol/fake_session.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -22,15 +22,15 @@ class ClientConnectionTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    connection_ = new FakeChromotocolConnection();
-    connection_->set_message_loop(&message_loop_);
+    session_ = new protocol::FakeSession();
+    session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
     viewer_ = new ClientConnection(&message_loop_, &handler_);
-    viewer_->Init(connection_);
+    viewer_->Init(session_);
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
-    connection_->state_change_callback()->Run(
-        ChromotocolConnection::CONNECTED);
+    session_->state_change_callback()->Run(
+        protocol::Session::CONNECTED);
     message_loop_.RunAllPending();
   }
 
@@ -38,7 +38,7 @@ class ClientConnectionTest : public testing::Test {
   MockClientConnectionEventHandler handler_;
   scoped_refptr<ClientConnection> viewer_;
 
-  scoped_refptr<FakeChromotocolConnection> connection_;
+  scoped_refptr<protocol::FakeSession> session_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionTest);
@@ -56,16 +56,16 @@ TEST_F(ClientConnectionTest, SendUpdateStream) {
 
   // Verify that something has been written.
   // TODO(sergeyu): Verify that the correct data has been written.
-  EXPECT_GT(connection_->video_channel()->written_data().size(), 0u);
+  EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
 }
 
 TEST_F(ClientConnectionTest, StateChange) {
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get()));
-  connection_->state_change_callback()->Run(ChromotocolConnection::CLOSED);
+  session_->state_change_callback()->Run(protocol::Session::CLOSED);
   message_loop_.RunAllPending();
 
   EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get()));
-  connection_->state_change_callback()->Run(ChromotocolConnection::FAILED);
+  session_->state_change_callback()->Run(protocol::Session::FAILED);
   message_loop_.RunAllPending();
 }
 
@@ -74,7 +74,7 @@ TEST_F(ClientConnectionTest, StateChange) {
 TEST_F(ClientConnectionTest, Close) {
   viewer_->Disconnect();
   message_loop_.RunAllPending();
-  EXPECT_TRUE(connection_->is_closed());
+  EXPECT_TRUE(session_->is_closed());
 
   VideoPacket packet;
   viewer_->SendVideoPacket(packet);
@@ -82,7 +82,7 @@ TEST_F(ClientConnectionTest, Close) {
   message_loop_.RunAllPending();
 
   // Verify that nothing has been written.
-  EXPECT_EQ(connection_->video_channel()->written_data().size(), 0u);
+  EXPECT_EQ(session_->video_channel()->written_data().size(), 0u);
 }
 
 }  // namespace remoting

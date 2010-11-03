@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "remoting/protocol/buffered_socket_writer.h"
-#include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {

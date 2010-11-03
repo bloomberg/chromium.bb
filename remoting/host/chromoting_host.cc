@@ -17,8 +17,8 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
-#include "remoting/protocol/jingle_chromotocol_server.h"
 #include "remoting/protocol/chromotocol_config.h"
+#include "remoting/protocol/jingle_session_manager.h"
 
 namespace remoting {
 
@@ -116,9 +116,9 @@ void ChromotingHost::Shutdown() {
     heartbeat_sender_->Stop();
   }
 
-  // Stop chromotocol server.
-  if (chromotocol_server_) {
-    chromotocol_server_->Close(
+  // Stop chromotocol session manager.
+  if (session_manager_) {
+    session_manager_->Close(
         NewRunnableMethod(this, &ChromotingHost::OnServerClosed));
   }
 
@@ -143,7 +143,7 @@ void ChromotingHost::OnClientConnected(ClientConnection* client) {
     // it should run on.
     DCHECK(capturer_.get());
 
-    Encoder* encoder = CreateEncoder(client->connection()->config());
+    Encoder* encoder = CreateEncoder(client->session()->config());
 
     session_ = new SessionManager(context_->capture_message_loop(),
                                   context_->encode_message_loop(),
@@ -217,15 +217,15 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     DCHECK_EQ(jingle_client_.get(), jingle_client);
     VLOG(1) << "Host connected as " << jingle_client->GetFullJid();
 
-    // Create and start |chromotocol_server_|.
-    JingleChromotocolServer* server =
-        new JingleChromotocolServer(context_->jingle_thread());
+    // Create and start session manager.
+    protocol::JingleSessionManager* server =
+        new protocol::JingleSessionManager(context_->jingle_thread());
     // TODO(ajwong): Make this a command switch when we're more stable.
     server->set_allow_local_ips(true);
     server->Init(jingle_client->GetFullJid(),
                  jingle_client->session_manager(),
-                 NewCallback(this, &ChromotingHost::OnNewClientConnection));
-    chromotocol_server_ = server;
+                 NewCallback(this, &ChromotingHost::OnNewClientSession));
+    session_manager_ = server;
 
     // Start heartbeating.
     heartbeat_sender_->Start();
@@ -241,19 +241,19 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
   }
 }
 
-void ChromotingHost::OnNewClientConnection(
-    ChromotocolConnection* connection,
-    ChromotocolServer::IncomingConnectionResponse* response) {
+void ChromotingHost::OnNewClientSession(
+    protocol::Session* session,
+    protocol::SessionManager::IncomingSessionResponse* response) {
   AutoLock auto_lock(lock_);
   // TODO(hclam): Allow multiple clients to connect to the host.
   if (client_.get() || state_ != kStarted) {
-    *response = ChromotocolServer::DECLINE;
+    *response = protocol::SessionManager::DECLINE;
     return;
   }
 
   // Check that the user has access to the host.
-  if (!access_verifier_.VerifyPermissions(connection->jid())) {
-    *response = ChromotocolServer::DECLINE;
+  if (!access_verifier_.VerifyPermissions(session->jid())) {
+    *response = protocol::SessionManager::DECLINE;
     return;
   }
 
@@ -263,26 +263,26 @@ void ChromotingHost::OnNewClientConnection(
       ScreenResolution(capturer_->width(), capturer_->height()));
   // TODO(sergeyu): Respect resolution requested by the client if supported.
   ChromotocolConfig* config =
-      local_config->Select(connection->candidate_config(),
+      local_config->Select(session->candidate_config(),
                            true /* force_host_resolution */);
 
   if (!config) {
-    LOG(WARNING) << "Rejecting connection from " << connection->jid()
-                 << " because no compartible configuration has been found.";
-    *response = ChromotocolServer::INCOMPATIBLE;
+    LOG(WARNING) << "Rejecting connection from " << session->jid()
+                 << " because no compatible configuration has been found.";
+    *response = protocol::SessionManager::INCOMPATIBLE;
     return;
   }
 
-  connection->set_config(config);
+  session->set_config(config);
 
-  *response = ChromotocolServer::ACCEPT;
+  *response = protocol::SessionManager::ACCEPT;
 
-  VLOG(1) << "Client connected: " << connection->jid();
+  VLOG(1) << "Client connected: " << session->jid();
 
   // If we accept the connected then create a client object and set the
   // callback.
   client_ = new ClientConnection(context_->main_message_loop(), this);
-  client_->Init(connection);
+  client_->Init(session);
 }
 
 void ChromotingHost::OnServerClosed() {

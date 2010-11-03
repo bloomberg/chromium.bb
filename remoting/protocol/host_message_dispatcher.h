@@ -12,7 +12,6 @@
 
 namespace remoting {
 
-class ChromotocolConnection;
 class EventMessage;
 class MessageReader;
 
@@ -21,14 +20,15 @@ namespace protocol {
 class ControlMessage;
 class HostStub;
 class InputStub;
+class Session;
 
 // A message dispatcher used to listen for messages received in
-// ChromotocolConnection. It dispatches messages to the corresponding
+// protocol::Session. It dispatches messages to the corresponding
 // handler.
 //
 // Internally it contains an EventStreamReader that decodes data on
 // communications channels into protocol buffer messages.
-// EventStreamReader is registered with ChromotocolConnection given to it.
+// EventStreamReader is registered with protocol::Session given to it.
 //
 // Object of this class is owned by ChromotingHost to dispatch messages
 // to itself.
@@ -42,7 +42,7 @@ class HostMessageDispatcher :
   // Initialize the message dispatcher with the given connection and
   // message handlers.
   // Return true if initalization was successful.
-  bool Initialize(ChromotocolConnection* connection,
+  bool Initialize(protocol::Session* session,
                   HostStub* host_stub, InputStub* input_stub);
 
  private:

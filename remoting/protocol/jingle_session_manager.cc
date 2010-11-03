@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/jingle_chromotocol_server.h"
+#include "remoting/protocol/jingle_session_manager.h"
 
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -14,12 +14,12 @@
 
 using cricket::ContentDescription;
 using cricket::SessionDescription;
-using cricket::Session;
-using cricket::SessionManager;
 using buzz::QName;
 using buzz::XmlElement;
 
 namespace remoting {
+
+namespace protocol {
 
 namespace {
 
@@ -150,62 +150,62 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 
 }  // namespace
 
-ChromotocolContentDescription::ChromotocolContentDescription(
+ContentDescription::ContentDescription(
     const CandidateChromotocolConfig* config)
     : candidate_config_(config) {
 }
 
-ChromotocolContentDescription::~ChromotocolContentDescription() { }
+ContentDescription::~ContentDescription() { }
 
-JingleChromotocolServer::JingleChromotocolServer(
+JingleSessionManager::JingleSessionManager(
     JingleThread* jingle_thread)
     : jingle_thread_(jingle_thread),
-      session_manager_(NULL),
+      cricket_session_manager_(NULL),
       allow_local_ips_(false),
       closed_(false) {
   DCHECK(jingle_thread_);
 }
 
-void JingleChromotocolServer::Init(
+void JingleSessionManager::Init(
     const std::string& local_jid,
-    cricket::SessionManager* session_manager,
-    IncomingConnectionCallback* incoming_connection_callback) {
+    cricket::SessionManager* cricket_session_manager,
+    IncomingSessionCallback* incoming_session_callback) {
   if (MessageLoop::current() != message_loop()) {
     message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(
-            this, &JingleChromotocolServer::Init,
-            local_jid, session_manager, incoming_connection_callback));
+            this, &JingleSessionManager::Init,
+            local_jid, cricket_session_manager, incoming_session_callback));
     return;
   }
 
-  DCHECK(session_manager);
-  DCHECK(incoming_connection_callback);
+  DCHECK(cricket_session_manager);
+  DCHECK(incoming_session_callback);
 
   local_jid_ = local_jid;
-  incoming_connection_callback_.reset(incoming_connection_callback);
-  session_manager_ = session_manager;
-  session_manager_->AddClient(kChromotingXmlNamespace, this);
+  incoming_session_callback_.reset(incoming_session_callback);
+  cricket_session_manager_ = cricket_session_manager;
+  cricket_session_manager_->AddClient(kChromotingXmlNamespace, this);
 }
 
-JingleChromotocolServer::~JingleChromotocolServer() {
+JingleSessionManager::~JingleSessionManager() {
   DCHECK(closed_);
 }
 
-void JingleChromotocolServer::Close(Task* closed_task) {
+void JingleSessionManager::Close(Task* closed_task) {
   if (MessageLoop::current() != message_loop()) {
     message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JingleChromotocolServer::Close,
+        FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::Close,
                                      closed_task));
     return;
   }
 
   if (!closed_) {
     // Close all connections.
-    session_manager_->RemoveClient(kChromotingXmlNamespace);
-    while (!connections_.empty()) {
-      Session* session = connections_.front()->ReleaseSession();
-      session_manager_->DestroySession(session);
-      connections_.pop_front();
+    cricket_session_manager_->RemoveClient(kChromotingXmlNamespace);
+    while (!sessions_.empty()) {
+      cricket::Session* session = sessions_.front()->ReleaseSession();
+      cricket_session_manager_->DestroySession(session);
+      sessions_.pop_front();
     }
     closed_ = true;
   }
@@ -214,125 +214,125 @@ void JingleChromotocolServer::Close(Task* closed_task) {
   delete closed_task;
 }
 
-void JingleChromotocolServer::set_allow_local_ips(bool allow_local_ips) {
+void JingleSessionManager::set_allow_local_ips(bool allow_local_ips) {
   allow_local_ips_ = allow_local_ips;
 }
 
-scoped_refptr<ChromotocolConnection> JingleChromotocolServer::Connect(
+scoped_refptr<protocol::Session> JingleSessionManager::Connect(
     const std::string& jid,
     CandidateChromotocolConfig* chromotocol_config,
-    ChromotocolConnection::StateChangeCallback* state_change_callback) {
+    protocol::Session::StateChangeCallback* state_change_callback) {
   // Can be called from any thread.
-  scoped_refptr<JingleChromotocolConnection> connection(
-      new JingleChromotocolConnection(this));
-  connection->set_candidate_config(chromotocol_config);
+  scoped_refptr<JingleSession> jingle_session(
+      new JingleSession(this));
+  jingle_session->set_candidate_config(chromotocol_config);
   message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleChromotocolServer::DoConnect,
-                                   connection, jid,
+      FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::DoConnect,
+                                   jingle_session, jid,
                                    state_change_callback));
-  return connection;
+  return jingle_session;
 }
 
-void JingleChromotocolServer::DoConnect(
-    scoped_refptr<JingleChromotocolConnection> connection,
+void JingleSessionManager::DoConnect(
+    scoped_refptr<JingleSession> jingle_session,
     const std::string& jid,
-    ChromotocolConnection::StateChangeCallback* state_change_callback) {
+    protocol::Session::StateChangeCallback* state_change_callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
-  Session* session = session_manager_->CreateSession(
+  cricket::Session* cricket_session = cricket_session_manager_->CreateSession(
       local_jid_, kChromotingXmlNamespace);
 
   // Initialize connection object before we send initiate stanza.
-  connection->SetStateChangeCallback(state_change_callback);
-  connection->Init(session);
-  connections_.push_back(connection);
+  jingle_session->SetStateChangeCallback(state_change_callback);
+  jingle_session->Init(cricket_session);
+  sessions_.push_back(jingle_session);
 
-  session->Initiate(
-      jid, CreateSessionDescription(connection->candidate_config()->Clone()));
+  cricket_session->Initiate(
+      jid,
+      CreateSessionDescription(jingle_session->candidate_config()->Clone()));
 }
 
-JingleThread* JingleChromotocolServer::jingle_thread() {
+JingleThread* JingleSessionManager::jingle_thread() {
   return jingle_thread_;
 }
 
-MessageLoop* JingleChromotocolServer::message_loop() {
+MessageLoop* JingleSessionManager::message_loop() {
   return jingle_thread_->message_loop();
 }
 
-void JingleChromotocolServer::OnSessionCreate(
-    Session* session, bool incoming) {
+void JingleSessionManager::OnSessionCreate(
+    cricket::Session* cricket_session, bool incoming) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Allow local connections if neccessary.
-  session->set_allow_local_ips(allow_local_ips_);
+  cricket_session->set_allow_local_ips(allow_local_ips_);
 
   // If this is an outcoming session the connection object is already
   // created.
   if (incoming) {
-    JingleChromotocolConnection* connection =
-        new JingleChromotocolConnection(this);
-    connections_.push_back(make_scoped_refptr(connection));
-    connection->Init(session);
+    JingleSession* jingle_session = new JingleSession(this);
+    sessions_.push_back(make_scoped_refptr(jingle_session));
+    jingle_session->Init(cricket_session);
   }
 }
 
-void JingleChromotocolServer::OnSessionDestroy(Session* session) {
+void JingleSessionManager::OnSessionDestroy(cricket::Session* cricket_session) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
-  std::list<scoped_refptr<JingleChromotocolConnection> >::iterator it;
-  for (it = connections_.begin(); it != connections_.end(); ++it) {
-    if ((*it)->HasSession(session)) {
+  std::list<scoped_refptr<JingleSession> >::iterator it;
+  for (it = sessions_.begin(); it != sessions_.end(); ++it) {
+    if ((*it)->HasSession(cricket_session)) {
       (*it)->ReleaseSession();
-      connections_.erase(it);
+      sessions_.erase(it);
       return;
     }
   }
 }
 
-void JingleChromotocolServer::AcceptConnection(
-    JingleChromotocolConnection* connection,
-    Session* session) {
+void JingleSessionManager::AcceptConnection(
+    JingleSession* jingle_session,
+    cricket::Session* cricket_session) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Reject connection if we are closed.
   if (closed_) {
-    session->Reject(cricket::STR_TERMINATE_DECLINE);
+    cricket_session->Reject(cricket::STR_TERMINATE_DECLINE);
     return;
   }
 
   const cricket::SessionDescription* session_description =
-      session->remote_description();
+      cricket_session->remote_description();
   const cricket::ContentInfo* content =
       session_description->FirstContentByType(kChromotingXmlNamespace);
 
   CHECK(content);
 
-  const ChromotocolContentDescription* content_description =
-      static_cast<const ChromotocolContentDescription*>(content->description);
-  connection->set_candidate_config(content_description->config()->Clone());
+  const ContentDescription* content_description =
+      static_cast<const ContentDescription*>(content->description);
+  jingle_session->set_candidate_config(content_description->config()->Clone());
 
-  IncomingConnectionResponse response = ChromotocolServer::DECLINE;
+  IncomingSessionResponse response = protocol::SessionManager::DECLINE;
 
   // Always reject connection if there is no callback.
-  if (incoming_connection_callback_.get())
-    incoming_connection_callback_->Run(connection, &response);
+  if (incoming_session_callback_.get())
+    incoming_session_callback_->Run(jingle_session, &response);
 
   switch (response) {
-    case ChromotocolServer::ACCEPT: {
+    case protocol::SessionManager::ACCEPT: {
       // Connection must be configured by the callback.
-      DCHECK(connection->config());
+      DCHECK(jingle_session->config());
       CandidateChromotocolConfig* candidate_config =
-          CandidateChromotocolConfig::CreateFrom(connection->config());
-      session->Accept(CreateSessionDescription(candidate_config));
+          CandidateChromotocolConfig::CreateFrom(jingle_session->config());
+      cricket_session->Accept(CreateSessionDescription(candidate_config));
       break;
     }
 
-    case ChromotocolServer::INCOMPATIBLE: {
-      session->Reject(cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS);
+    case protocol::SessionManager::INCOMPATIBLE: {
+      cricket_session->Reject(cricket::STR_TERMINATE_INCOMPATIBLE_PARAMETERS);
       break;
     }
 
-    case ChromotocolServer::DECLINE: {
-      session->Reject(cricket::STR_TERMINATE_DECLINE);
+    case protocol::SessionManager::DECLINE: {
+      cricket_session->Reject(cricket::STR_TERMINATE_DECLINE);
       break;
     }
 
@@ -343,7 +343,7 @@ void JingleChromotocolServer::AcceptConnection(
 }
 
 // Parse content description generated by WriteContent().
-bool JingleChromotocolServer::ParseContent(
+bool JingleSessionManager::ParseContent(
     cricket::SignalingProtocol protocol,
     const XmlElement* element,
     const cricket::ContentDescription** content,
@@ -405,7 +405,7 @@ bool JingleChromotocolServer::ParseContent(
 
     config->SetInitialResolution(resolution);
 
-    *content = new ChromotocolContentDescription(config.release());
+    *content = new ContentDescription(config.release());
     return true;
   }
   LOG(ERROR) << "Invalid description: " << element->Str();
@@ -421,13 +421,13 @@ bool JingleChromotocolServer::ParseContent(
 //     <initial-resolution width="800" height="600" />
 //   </description>
 //
-bool JingleChromotocolServer::WriteContent(
+bool JingleSessionManager::WriteContent(
     cricket::SignalingProtocol protocol,
     const cricket::ContentDescription* content,
     XmlElement** elem,
     cricket::WriteError* error) {
-  const ChromotocolContentDescription* desc =
-      static_cast<const ChromotocolContentDescription*>(content);
+  const ContentDescription* desc =
+      static_cast<const ContentDescription*>(content);
 
   XmlElement* root = new XmlElement(
       QName(kChromotingXmlNamespace, kDescriptionTag), true);
@@ -464,13 +464,15 @@ bool JingleChromotocolServer::WriteContent(
   return true;
 }
 
-SessionDescription* JingleChromotocolServer::CreateSessionDescription(
+SessionDescription* JingleSessionManager::CreateSessionDescription(
     const CandidateChromotocolConfig* config) {
   SessionDescription* desc = new SessionDescription();
-  desc->AddContent(JingleChromotocolConnection::kChromotingContentName,
+  desc->AddContent(JingleSession::kChromotingContentName,
                    kChromotingXmlNamespace,
-                   new ChromotocolContentDescription(config));
+                   new ContentDescription(config));
   return desc;
 }
+
+}  // namespace protocol
 
 }  // namespace remoting

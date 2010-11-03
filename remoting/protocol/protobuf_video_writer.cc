@@ -4,8 +4,8 @@
 
 #include "remoting/protocol/protobuf_video_writer.h"
 
-#include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/rtp_writer.h"
+#include "remoting/protocol/session.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
@@ -14,10 +14,10 @@ ProtobufVideoWriter::ProtobufVideoWriter() { }
 
 ProtobufVideoWriter::~ProtobufVideoWriter() { }
 
-void ProtobufVideoWriter::Init(ChromotocolConnection* connection) {
+void ProtobufVideoWriter::Init(protocol::Session* session) {
   buffered_writer_ = new BufferedSocketWriter();
   // TODO(sergeyu): Provide WriteFailedCallback for the buffered writer.
-  buffered_writer_->Init(connection->video_channel(), NULL);
+  buffered_writer_->Init(session->video_channel(), NULL);
 }
 
 void ProtobufVideoWriter::SendPacket(const VideoPacket& packet) {

@@ -12,8 +12,8 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/message_reader.h"
+#include "remoting/protocol/session.h"
 #include "remoting/protocol/stream_writer.h"
 #include "remoting/protocol/video_writer.h"
 
@@ -56,10 +56,10 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
 
   virtual ~ClientConnection();
 
-  virtual void Init(ChromotocolConnection* connection);
+  virtual void Init(protocol::Session* session);
 
   // Returns the connection in use.
-  virtual ChromotocolConnection* connection();
+  virtual protocol::Session* session();
 
   // Send information to the client for initialization.
   virtual void SendInitClientMessage(int width, int height);
@@ -84,14 +84,14 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   ClientConnection();
 
  private:
-  // Callback for ChromotocolConnection.
-  void OnConnectionStateChange(ChromotocolConnection::State state);
+  // Callback for protocol Session.
+  void OnSessionStateChange(protocol::Session::State state);
 
   // Callback for MessageReader.
   void OnMessageReceived(ChromotingClientMessage* message);
 
   // Process a libjingle state change event on the |loop_|.
-  void StateChangeTask(ChromotocolConnection::State state);
+  void StateChangeTask(protocol::Session::State state);
 
   // Process a data buffer received from libjingle.
   void MessageReceivedTask(ChromotingClientMessage* message);
@@ -99,7 +99,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   void OnClosed();
 
   // The libjingle channel used to send and receive data from the remote client.
-  scoped_refptr<ChromotocolConnection> connection_;
+  scoped_refptr<protocol::Session> session_;
 
   ControlStreamWriter control_writer_;
   MessageReader event_reader_;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_CHROMOTOCOL_CONNECTION_H_
-#define REMOTING_PROTOCOL_CHROMOTOCOL_CONNECTION_H_
+#ifndef REMOTING_PROTOCOL_SESSION_H_
+#define REMOTING_PROTOCOL_SESSION_H_
 
 #include <string>
 
@@ -19,12 +19,14 @@ class Socket;
 
 namespace remoting {
 
+namespace protocol {
+
 // Generic interface for Chromotocol connection used by both client and host.
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
 // TODO(sergeyu): Remove refcounting?
-class ChromotocolConnection
-    : public base::RefCountedThreadSafe<ChromotocolConnection> {
+class Session
+    : public base::RefCountedThreadSafe<Session> {
  public:
   enum State {
     INITIALIZING,
@@ -80,15 +82,17 @@ class ChromotocolConnection
   virtual void Close(Task* closed_task) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<ChromotocolConnection>;
+  friend class base::RefCountedThreadSafe<Session>;
 
-  ChromotocolConnection() { }
-  virtual ~ChromotocolConnection() { }
+  Session() { }
+  virtual ~Session() { }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromotocolConnection);
+  DISALLOW_COPY_AND_ASSIGN(Session);
 };
+
+}  // namespace protocol
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CHROMOTOCOL_CONNECTION_H_
+#endif  // REMOTING_PROTOCOL_SESSION_H_

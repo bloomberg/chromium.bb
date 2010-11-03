@@ -16,7 +16,7 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/protocol/chromotocol_server.h"
+#include "remoting/protocol/session_manager.h"
 
 class Task;
 
@@ -96,9 +96,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
 
   // Callback for ChromotingServer.
-  void OnNewClientConnection(
-      ChromotocolConnection* connection,
-      ChromotocolServer::IncomingConnectionResponse* response);
+  void OnNewClientSession(
+      protocol::Session* session,
+      protocol::SessionManager::IncomingSessionResponse* response);
 
  private:
   enum State {
@@ -111,7 +111,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // connections.
   void DoStart(Task* shutdown_task);
 
-  // Callback for ChromotocolServer::Close().
+  // Callback for protocol::SessionManager::Close().
   void OnServerClosed();
 
   // Creates encoder for the specified configuration.
@@ -136,7 +136,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // receive connection requests from chromoting client.
   scoped_refptr<JingleClient> jingle_client_;
 
-  scoped_refptr<ChromotocolServer> chromotocol_server_;
+  scoped_refptr<protocol::SessionManager> session_manager_;
 
   // Objects that takes care of sending heartbeats to the chromoting bot.
   scoped_refptr<HeartbeatSender> heartbeat_sender_;

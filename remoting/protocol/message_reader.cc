@@ -10,7 +10,6 @@
 #include "net/socket/socket.h"
 #include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/chromotocol_connection.h"
 
 namespace remoting {
 
