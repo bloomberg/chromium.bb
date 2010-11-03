@@ -237,7 +237,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
-        AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(),
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
+        GURL(), AppCacheEntry(),
         1, GURL("http://blah/manifest/"));
 
     job_ = handler_->MaybeLoadResource(request_.get());
@@ -277,7 +278,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(handler_.get());
 
     mock_storage()->SimulateFindMainResource(
-        AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
+        AppCacheEntry(),
+        GURL("http://blah/fallbackurl"),
+        AppCacheEntry(AppCacheEntry::EXPLICIT, 1),
         1, GURL("http://blah/manifest/"));
 
     job_ = handler_->MaybeLoadResource(request_.get());
@@ -310,6 +313,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     handler_->GetExtraResponseInfo(&cache_id, &manifest_url);
     EXPECT_EQ(1, cache_id);
     EXPECT_EQ(GURL("http://blah/manifest/"), manifest_url);
+    EXPECT_TRUE(host_->main_resource_was_fallback_);
+    EXPECT_EQ(GURL("http://blah/fallbackurl"), host_->fallback_url_);
 
     TestFinished();
   }

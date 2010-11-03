@@ -58,6 +58,9 @@ class AppCache : public base::RefCounted<AppCache> {
 
   const EntryMap& entries() const { return entries_; }
 
+  // Returns the URL of the resource used as the fallback for 'namespace_url'.
+  GURL GetFallbackEntryUrl(const GURL& namespace_url) const;
+
   AppCacheHosts& associated_hosts() { return associated_hosts_; }
 
   bool IsNewerThan(AppCache* cache) const {

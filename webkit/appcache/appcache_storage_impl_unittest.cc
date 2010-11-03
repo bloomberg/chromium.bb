@@ -108,11 +108,13 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     void OnMainResponseFound(const GURL& url, const AppCacheEntry& entry,
+                             const GURL& fallback_url,
                              const AppCacheEntry& fallback_entry,
                              int64 cache_id, const GURL& manifest_url,
                              bool was_blocked_by_policy) {
       found_url_ = url;
       found_entry_ = entry;
+      found_fallback_url_ = fallback_url;
       found_fallback_entry_ = fallback_entry;
       found_cache_id_ = cache_id;
       found_manifest_url_ = manifest_url;
@@ -132,6 +134,7 @@ class AppCacheStorageImplTest : public testing::Test {
     bool obsoleted_success_;
     GURL found_url_;
     AppCacheEntry found_entry_;
+    GURL found_fallback_url_;
     AppCacheEntry found_fallback_entry_;
     int64 found_cache_id_;
     GURL found_manifest_url_;
@@ -739,6 +742,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
     EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
     EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_fallback_url_.is_empty());
     EXPECT_EQ(0, delegate()->found_entry_.types());
     EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
     TestFinished();
@@ -858,6 +862,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(1, delegate()->found_cache_id_);
     EXPECT_FALSE(delegate()->found_entry_.has_response_id());
     EXPECT_EQ(2, delegate()->found_fallback_entry_.response_id());
+    EXPECT_EQ(kEntryUrl2, delegate()->found_fallback_url_);
     EXPECT_TRUE(delegate()->found_fallback_entry_.IsFallback());
     TestFinished();
   }
@@ -954,6 +959,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(kNoCacheId, delegate()->found_cache_id_);
     EXPECT_EQ(kNoResponseId, delegate()->found_entry_.response_id());
     EXPECT_EQ(kNoResponseId, delegate()->found_fallback_entry_.response_id());
+    EXPECT_TRUE(delegate()->found_fallback_url_.is_empty());
     EXPECT_EQ(0, delegate()->found_entry_.types());
     EXPECT_EQ(0, delegate()->found_fallback_entry_.types());
 

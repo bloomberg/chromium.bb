@@ -70,6 +70,16 @@ AppCacheEntry* AppCache::GetEntry(const GURL& url) {
   return (it != entries_.end()) ? &(it->second) : NULL;
 }
 
+GURL AppCache::GetFallbackEntryUrl(const GURL& namespace_url) const {
+  size_t count = fallback_namespaces_.size();
+  for (size_t i = 0; i < count; ++i) {
+    if (fallback_namespaces_[i].first == namespace_url)
+      return fallback_namespaces_[i].second;
+  }
+  NOTREACHED();
+  return GURL();
+}
+
 namespace {
 bool SortByLength(
     const FallbackNamespace& lhs, const FallbackNamespace& rhs) {

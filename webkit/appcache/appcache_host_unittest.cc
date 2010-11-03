@@ -164,8 +164,14 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   mock_frontend_.last_host_id_ = -333;
   mock_frontend_.last_status_ = OBSOLETE;
 
+  // Precondition, a cache with an entry that is not marked as foreign.
+  const int kCacheId = 22;
+  const GURL kDocumentURL("http://origin/document");
+  scoped_refptr<AppCache> cache = new AppCache(&service_, kCacheId);
+  cache->AddEntry(kDocumentURL, AppCacheEntry(AppCacheEntry::EXPLICIT));
+
   AppCacheHost host(1, &mock_frontend_, &service_);
-  host.MarkAsForeignEntry(GURL("http://whatever/"), 22);
+  host.MarkAsForeignEntry(kDocumentURL, kCacheId);
 
   // We should have received an OnCacheSelected msg for kNoCacheId.
   EXPECT_EQ(1, mock_frontend_.last_host_id_);
@@ -178,6 +184,34 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   EXPECT_EQ(&mock_frontend_, host.frontend());
   EXPECT_EQ(NULL, host.associated_cache());
   EXPECT_FALSE(host.is_selection_pending());
+
+  // See that the entry was marked as foreign.
+  EXPECT_TRUE(cache->GetEntry(kDocumentURL)->IsForeign());
+}
+
+TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
+  // Reset our mock frontend
+  mock_frontend_.last_cache_id_ = -333;
+  mock_frontend_.last_host_id_ = -333;
+  mock_frontend_.last_status_ = OBSOLETE;
+
+  // Precondition, a cache with a fallback entry that is not marked as foreign.
+  const int kCacheId = 22;
+  const GURL kFallbackURL("http://origin/fallback_resource");
+  scoped_refptr<AppCache> cache = new AppCache(&service_, kCacheId);
+  cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
+
+  AppCacheHost host(1, &mock_frontend_, &service_);
+  host.NotifyMainResourceFallback(kFallbackURL);
+  host.MarkAsForeignEntry(GURL("http://origin/missing_document"), kCacheId);
+
+  // We should have received an OnCacheSelected msg for kNoCacheId.
+  EXPECT_EQ(1, mock_frontend_.last_host_id_);
+  EXPECT_EQ(kNoCacheId, mock_frontend_.last_cache_id_);
+  EXPECT_EQ(UNCACHED, mock_frontend_.last_status_);
+
+  // See that the fallback entry was marked as foreign.
+  EXPECT_TRUE(cache->GetEntry(kFallbackURL)->IsForeign());
 }
 
 TEST_F(AppCacheHostTest, FailedCacheLoad) {

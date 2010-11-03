@@ -119,11 +119,13 @@ class MockAppCacheStorage : public AppCacheStorage {
   // unaffected.
   void SimulateFindMainResource(
       const AppCacheEntry& entry,
+      const GURL& fallback_url,
       const AppCacheEntry& fallback_entry,
       int64 cache_id, const GURL& manifest_url) {
     simulate_find_main_resource_ = true;
     simulate_find_sub_resource_ = false;
     simulated_found_entry_ = entry;
+    simulated_found_fallback_url_ = fallback_url;
     simulated_found_fallback_entry_ = fallback_entry;
     simulated_found_cache_id_ = cache_id;
     simulated_found_manifest_url_ = manifest_url,
@@ -157,6 +159,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   AppCacheEntry simulated_found_entry_;
   AppCacheEntry simulated_found_fallback_entry_;
   int64 simulated_found_cache_id_;
+  GURL simulated_found_fallback_url_;
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;
 

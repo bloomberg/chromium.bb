@@ -107,8 +107,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
       scoped_refptr<DelegateReference> delegate_ref);
 
   void CheckPolicyAndCallOnMainResponseFound(
-      DelegateReferenceVector* delegates, const GURL& url,
-      const AppCacheEntry& entry, const AppCacheEntry& fallback_entry,
+      DelegateReferenceVector* delegates,
+      const GURL& url, const AppCacheEntry& entry,
+      const GURL& fallback_url, const AppCacheEntry& fallback_entry,
       int64 cache_id, const GURL& manifest_url);
 
   AppCacheDiskCache* disk_cache();

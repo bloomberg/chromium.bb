@@ -63,7 +63,7 @@ class AppCacheStorage {
     // containing cache and group are also returned.
     virtual void OnMainResponseFound(
         const GURL& url, const AppCacheEntry& entry,
-        const AppCacheEntry& fallback_entry,
+        const GURL& fallback_url, const AppCacheEntry& fallback_entry,
         int64 cache_id, const GURL& mainfest_url,
         bool was_blocked_by_policy) {}
   };

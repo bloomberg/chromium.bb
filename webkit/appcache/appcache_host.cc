@@ -39,7 +39,8 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
       frontend_(frontend), service_(service),
       pending_get_status_callback_(NULL), pending_start_update_callback_(NULL),
       pending_swap_cache_callback_(NULL), pending_callback_param_(NULL),
-      main_resource_blocked_(false), associated_cache_info_pending_(false) {
+      main_resource_was_fallback_(false), main_resource_blocked_(false),
+      associated_cache_info_pending_(false) {
 }
 
 AppCacheHost::~AppCacheHost() {
@@ -144,8 +145,10 @@ void AppCacheHost::SelectCacheForSharedWorker(int64 appcache_id) {
 // TODO(michaeln): change method name to MarkEntryAsForeign for consistency
 void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64 cache_document_was_loaded_from) {
+  // The document url is not the resource url in the fallback case.
   service_->storage()->MarkEntryAsForeign(
-      document_url, cache_document_was_loaded_from);
+      main_resource_was_fallback_ ? fallback_url_ : document_url,
+      cache_document_was_loaded_from);
   SelectCache(document_url, kNoCacheId, GURL());
 }
 
@@ -450,6 +453,11 @@ void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
   }
   pending_main_resource_cache_id_ = cache_id;
   service_->storage()->LoadCache(cache_id, this);
+}
+
+void AppCacheHost::NotifyMainResourceFallback(const GURL& fallback_url) {
+  main_resource_was_fallback_ = true;
+  fallback_url_ = fallback_url;
 }
 
 void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {

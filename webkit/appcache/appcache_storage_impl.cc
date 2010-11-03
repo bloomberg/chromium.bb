@@ -553,6 +553,7 @@ class AppCacheStorageImpl::FindMainResponseTask : public DatabaseTask {
   std::set<int64> cache_ids_in_use_;
   AppCacheEntry entry_;
   AppCacheEntry fallback_entry_;
+  GURL fallback_url_;
   int64 cache_id_;
   GURL manifest_url_;
 };
@@ -631,12 +632,15 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
       if (take_new_candidate &&
           database_->FindEntry(iter->cache_id, iter->fallback_entry_url,
                                &entry_record)) {
+        if (entry_record.flags & AppCacheEntry::FOREIGN)
+          continue;
         AppCacheDatabase::GroupRecord group_record;
         if (!database_->FindGroupForCache(iter->cache_id, &group_record)) {
           NOTREACHED() << "A cache without a group is not expected.";
           continue;
         }
         cache_id_ = iter->cache_id;
+        fallback_url_ = iter->fallback_entry_url;
         manifest_url_ = group_record.manifest_url;
         fallback_entry_ = AppCacheEntry(
             entry_record.flags, entry_record.response_id);
@@ -651,7 +655,8 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
 
 void AppCacheStorageImpl::FindMainResponseTask::RunCompleted() {
   storage_->CheckPolicyAndCallOnMainResponseFound(
-      &delegates_, url_, entry_, fallback_entry_, cache_id_, manifest_url_);
+      &delegates_, url_, entry_, fallback_url_, fallback_entry_,
+      cache_id_, manifest_url_);
 }
 
 // MarkEntryAsForeignTask -------
@@ -1047,15 +1052,17 @@ void AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse(
   if (delegate_ref->delegate) {
     DelegateReferenceVector delegates(1, delegate_ref);
     CheckPolicyAndCallOnMainResponseFound(
-        &delegates, url, found_entry, AppCacheEntry(),
+        &delegates, url, found_entry,
+        GURL(), AppCacheEntry(),
         cache.get() ? cache->cache_id() : kNoCacheId,
         group.get() ? group->manifest_url() : GURL());
   }
 }
 
 void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
-    DelegateReferenceVector* delegates, const GURL& url,
-    const AppCacheEntry& entry, const AppCacheEntry& fallback_entry,
+    DelegateReferenceVector* delegates,
+    const GURL& url, const AppCacheEntry& entry,
+    const GURL& fallback_url, const AppCacheEntry& fallback_entry,
     int64 cache_id, const GURL& manifest_url) {
   if (!manifest_url.is_empty()) {
     // Check the policy prior to returning a main resource from the appcache.
@@ -1063,7 +1070,8 @@ void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
     if (policy && !policy->CanLoadAppCache(manifest_url)) {
       FOR_EACH_DELEGATE(
           (*delegates),
-          OnMainResponseFound(url, AppCacheEntry(), AppCacheEntry(),
+          OnMainResponseFound(url, AppCacheEntry(),
+                              GURL(), AppCacheEntry(),
                               kNoCacheId, manifest_url, true));
       return;
     }
@@ -1071,7 +1079,8 @@ void AppCacheStorageImpl::CheckPolicyAndCallOnMainResponseFound(
 
   FOR_EACH_DELEGATE(
       (*delegates),
-      OnMainResponseFound(url, entry, fallback_entry,
+      OnMainResponseFound(url, entry,
+                          fallback_url, fallback_entry,
                           cache_id, manifest_url, false));
 }
 

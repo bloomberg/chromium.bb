@@ -218,6 +218,8 @@ TEST(AppCacheTest, FindResponseForRequest) {
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_EQ(kFallbackResponseId1, fallback_entry.response_id());
+  EXPECT_EQ(kFallbackEntryUrl1,
+            cache->GetFallbackEntryUrl(fallback_namespace));
   EXPECT_FALSE(network_namespace);
 
   fallback_entry = AppCacheEntry();  // reset
@@ -227,6 +229,8 @@ TEST(AppCacheTest, FindResponseForRequest) {
   EXPECT_TRUE(found);
   EXPECT_FALSE(entry.has_response_id());
   EXPECT_EQ(kFallbackResponseId2, fallback_entry.response_id());
+  EXPECT_EQ(kFallbackEntryUrl2,
+            cache->GetFallbackEntryUrl(fallback_namespace));
   EXPECT_FALSE(network_namespace);
 }
 

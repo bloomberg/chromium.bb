@@ -104,22 +104,13 @@ class AppCacheService {
   class GetInfoHelper;
 
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
+  typedef std::map<int, AppCacheBackendImpl*> BackendMap;
 
   AppCachePolicy* appcache_policy_;
-
-  // Deals with persistence.
   scoped_ptr<AppCacheStorage> storage_;
-
   PendingAsyncHelpers pending_helpers_;
-
-  // Track current processes.  One 'backend' per child process.
-  typedef std::map<int, AppCacheBackendImpl*> BackendMap;
-  BackendMap backends_;
-
-  // Context for use during cache updates.
-  URLRequestContext* request_context_;
-
-  // TODO(jennb): service state: e.g. reached quota?
+  BackendMap backends_;  // One 'backend' per child process.
+  URLRequestContext* request_context_;  // Context for use during cache updates.
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);
 };

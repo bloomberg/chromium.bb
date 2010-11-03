@@ -53,7 +53,8 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   // Helpers to instruct a waiting job with what response to
   // deliver for the request we're handling.
   void DeliverAppCachedResponse(const AppCacheEntry& entry, int64 cache_id,
-                                const GURL& manifest_url, bool is_fallback);
+                                const GURL& manifest_url, bool is_fallback,
+                                const GURL& fallback_url);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
 
@@ -72,7 +73,7 @@ class AppCacheRequestHandler : public URLRequest::UserData,
   // AppCacheStorage::Delegate methods
   virtual void OnMainResponseFound(
       const GURL& url, const AppCacheEntry& entry,
-      const AppCacheEntry& fallback_entry,
+      const GURL& fallback_url, const AppCacheEntry& fallback_entry,
       int64 cache_id, const GURL& mainfest_url,
       bool was_blocked_by_policy);
 
@@ -98,9 +99,10 @@ class AppCacheRequestHandler : public URLRequest::UserData,
 
   // Info about the type of response we found for delivery.
   // These are relevant for both main and subresource requests.
+  int64 found_cache_id_;
   AppCacheEntry found_entry_;
   AppCacheEntry found_fallback_entry_;
-  int64 found_cache_id_;
+  GURL found_fallback_url_;
   GURL found_manifest_url_;
   bool found_network_namespace_;
 
