@@ -23,8 +23,7 @@ namespace chromeos {
 // The network message observer displays a system notification for network
 // messages.
 
-class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
-                               public NetworkLibrary::CellularDataPlanObserver {
+class NetworkMessageObserver : public NetworkLibrary::Observer {
  public:
   explicit NetworkMessageObserver(Profile* profile);
   virtual ~NetworkMessageObserver();
@@ -35,10 +34,9 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
   virtual void CreateModalPopup(views::WindowDelegate* view);
   virtual void MobileSetup(const ListValue* args);
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
-  // NetworkLibrary::CellularDataPlanObserver implementation.
-  virtual void OnCellularDataPlanChanged(NetworkLibrary* obj);
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(NetworkLibrary* obj);
+  virtual void CellularDataPlanChanged(NetworkLibrary* obj);
 
   bool initialized_;
   // Wifi networks by service path.
@@ -64,3 +62,4 @@ class NetworkMessageObserver : public NetworkLibrary::NetworkManagerObserver,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_NETWORK_MESSAGE_OBSERVER_H_
+

@@ -124,12 +124,10 @@ class MobileSetupUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "register" view.
-class MobileSetupHandler
-    : public DOMMessageHandler,
-      public chromeos::NetworkLibrary::NetworkManagerObserver,
-      public chromeos::NetworkLibrary::NetworkObserver,
-      public base::SupportsWeakPtr<MobileSetupHandler> {
-
+class MobileSetupHandler : public DOMMessageHandler,
+                           public chromeos::NetworkLibrary::Observer,
+                           public chromeos::NetworkLibrary::PropertyObserver,
+                           public base::SupportsWeakPtr<MobileSetupHandler> {
  public:
   explicit MobileSetupHandler(const std::string& service_path);
   virtual ~MobileSetupHandler();
@@ -141,11 +139,12 @@ class MobileSetupHandler
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* obj);
-  // NetworkLibrary::NetworkObserver implementation.
-  virtual void OnNetworkChanged(chromeos::NetworkLibrary* obj,
-                                const chromeos::Network* network);
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(chromeos::NetworkLibrary* obj);
+  // NetworkLibrary::PropertyObserver implementation.
+  virtual void PropertyChanged(const char* service_path,
+                               const char* key,
+                               const Value* value);
 
  private:
   typedef enum PlanActivationState {
@@ -329,8 +328,8 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
 MobileSetupHandler::~MobileSetupHandler() {
   chromeos::NetworkLibrary* lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  lib->RemoveNetworkManagerObserver(this);
-  lib->RemoveObserverForAllNetworks(this);
+  lib->RemoveObserver(this);
+  lib->RemoveProperyObserver(this);
   ReEnableOtherConnections();
 }
 
@@ -353,25 +352,34 @@ void MobileSetupHandler::RegisterMessages() {
       NewCallback(this, &MobileSetupHandler::HandleSetTransactionStatus));
 }
 
-void MobileSetupHandler::OnNetworkManagerChanged(
-    chromeos::NetworkLibrary* cros) {
+void MobileSetupHandler::NetworkChanged(chromeos::NetworkLibrary* lib) {
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
-  // Note that even though we get here when the service has
-  // reappeared after disappearing earlier in the activation
-  // process, there's no need to re-establish the NetworkObserver,
-  // because the service path remains the same.
   EvaluateCellularNetwork(GetCellularNetwork(service_path_));
 }
 
-void MobileSetupHandler::OnNetworkChanged(chromeos::NetworkLibrary* cros,
-                                          const chromeos::Network* network) {
+void MobileSetupHandler::PropertyChanged(const char* service_path,
+                                         const char* key,
+                                         const Value* value) {
+
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
-  DCHECK(network && network->type() == chromeos::TYPE_CELLULAR);
-  EvaluateCellularNetwork(
-      static_cast<chromeos::CellularNetwork*>(
-          const_cast<chromeos::Network*>(network)));
+  chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
+  if (!network) {
+    EvaluateCellularNetwork(NULL);
+    return;
+  }
+  if (network->service_path() != service_path) {
+    NOTREACHED();
+    return;
+  }
+  std::string value_string;
+  LOG(INFO) << "Cellular property change: " << key << " = " <<
+      value_string.c_str();
+
+  // TODO(zelidrag, ers): Remove this once we flip the notification machanism.
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->UpdateSystemInfo();
+  EvaluateCellularNetwork(network);
 }
 
 void MobileSetupHandler::HandleCloseTab(const ListValue* args) {
@@ -389,12 +397,14 @@ void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR, std::string());
     return;
   }
-  // Start monitoring network property changes.
-  chromeos::NetworkLibrary* lib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  lib->AddNetworkManagerObserver(this);
-  lib->RemoveObserverForAllNetworks(this);
-  lib->AddNetworkObserver(network->service_path(), this);
+  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
+      GetNetworkLibrary();
+  lib->RemoveObserver(this);
+  lib->RemoveProperyObserver(this);
+  // Start monitoring network and service property changes.
+  lib->AddObserver(this);
+  lib->AddProperyObserver(network->service_path().c_str(),
+                          this);
   ChangeState(network, PLAN_ACTIVATION_START, std::string());
   EvaluateCellularNetwork(network);
 }
@@ -571,8 +581,8 @@ void MobileSetupHandler::CompleteActivation(
     network->set_auto_connect(true);
     lib->SaveCellularNetwork(network);
   }
-  lib->RemoveNetworkManagerObserver(this);
-  lib->RemoveObserverForAllNetworks(this);
+  lib->RemoveObserver(this);
+  lib->RemoveProperyObserver(this);
   // Reactivate other types of connections if we have
   // shut them down previously.
   ReEnableOtherConnections();

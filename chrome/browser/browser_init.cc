@@ -441,13 +441,11 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 
     static chromeos::NetworkMessageObserver* network_message_observer =
         new chromeos::NetworkMessageObserver(profile);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(network_message_observer);
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddCellularDataPlanObserver(network_message_observer);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(
+        network_message_observer);
 
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(chromeos::NetworkStateNotifier::Get());
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(
+        chromeos::NetworkStateNotifier::Get());
   }
 #endif
   return true;

@@ -301,7 +301,7 @@ class WirelessSection : public NetworkSection {
                           bool connected, int connection_type);
 
   WifiNetworkVector wifi_networks_;
-  CellularNetworkVector cellular_networks_;
+  CellularNetworkVector celluar_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(WirelessSection);
 };
@@ -334,34 +334,36 @@ void WirelessSection::InitSection() {
   }
 
   // Cellular
-  cellular_networks_ = cros->cellular_networks();
-  for (size_t i = 0; i < cellular_networks_.size(); ++i) {
-    std::wstring name = ASCIIToWide(cellular_networks_[i]->name());
+  celluar_networks_ = cros->cellular_networks();
+  // Cellular networks ssids.
+  for (size_t i = 0; i < celluar_networks_.size(); ++i) {
+    std::wstring name = ASCIIToWide(celluar_networks_[i]->name());
 
     SkBitmap icon = NetworkMenu::IconForNetworkStrength(
-        cellular_networks_[i]->strength(), true);
-    SkBitmap badge =
-        NetworkMenu::BadgeForNetworkTechnology(cellular_networks_[i]);
+        celluar_networks_[i]->strength(), true);
+    // TODO(chocobo): Check cellular network 3g/edge.
+    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
+//    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
     icon = NetworkMenu::IconForDisplay(icon, badge);
 
-    bool connecting = cellular_networks_[i]->connecting();
-    bool connected = cellular_networks_[i]->connected();
+    bool connecting = celluar_networks_[i]->connecting();
+    bool connected = celluar_networks_[i]->connected();
     AddWirelessNetwork(i, icon, name, connecting, connected, TYPE_CELLULAR);
   }
 }
 
 void WirelessSection::ButtonClicked(int button, int connection_type, int id) {
   if (connection_type == TYPE_CELLULAR) {
-    if (static_cast<int>(cellular_networks_.size()) > id) {
+    if (static_cast<int>(celluar_networks_.size()) > id) {
       if (button == CONNECT_BUTTON) {
         // Connect to cellular network.
         CrosLibrary::Get()->GetNetworkLibrary()->ConnectToCellularNetwork(
-            cellular_networks_[id]);
+            celluar_networks_[id]);
       } else if (button == DISCONNECT_BUTTON) {
         CrosLibrary::Get()->GetNetworkLibrary()->DisconnectFromWirelessNetwork(
-            cellular_networks_[id]);
+            celluar_networks_[id]);
       } else {
-        CreateModalPopup(new NetworkConfigView(cellular_networks_[id]));
+        CreateModalPopup(new NetworkConfigView(celluar_networks_[id]));
       }
     }
   } else if (connection_type == TYPE_WIFI) {
@@ -426,6 +428,7 @@ class RememberedSection : public NetworkSection {
 
  private:
   WifiNetworkVector wifi_networks_;
+  CellularNetworkVector celluar_networks_;
 
   DISALLOW_COPY_AND_ASSIGN(RememberedSection);
 };
@@ -567,14 +570,14 @@ InternetPageView::InternetPageView(Profile* profile)
       scroll_view_(new views::ScrollView) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->UpdateSystemInfo();
-  cros->AddNetworkManagerObserver(this);
+  cros->AddObserver(this);
 }
 
 InternetPageView::~InternetPageView() {
-  CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
 }
 
-void InternetPageView::OnNetworkManagerChanged(NetworkLibrary* obj) {
+void InternetPageView::NetworkChanged(NetworkLibrary* obj) {
   // Refresh wired, wireless, and remembered networks.
   // Remember the current scroll region, and try to scroll back afterwards.
   gfx::Rect rect = scroll_view_->GetVisibleRect();

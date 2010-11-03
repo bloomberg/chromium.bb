@@ -12,129 +12,11 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
-
-namespace {
-// TODO(ers) These string constants and Parse functions are copied
-// straight out of libcros:chromeos_network.cc. Fix this by moving
-// all handling of properties into libcros.
-// Network service properties we are interested in monitoring
-static const char* kIsActiveProperty = "IsActive";
-static const char* kStateProperty = "State";
-static const char* kSignalStrengthProperty = "Strength";
-static const char* kActivationStateProperty = "Cellular.ActivationState";
-static const char* kNetworkTechnologyProperty = "Cellular.NetworkTechnology";
-static const char* kPaymentURLProperty = "Cellular.OlpUrl";
-static const char* kRestrictedPoolProperty = "Cellular.RestrictedPool";
-static const char* kRoamingStateProperty = "Cellular.RoamingState";
-
-// Connman state options.
-static const char* kStateIdle = "idle";
-static const char* kStateCarrier = "carrier";
-static const char* kStateAssociation = "association";
-static const char* kStateConfiguration = "configuration";
-static const char* kStateReady = "ready";
-static const char* kStateDisconnect = "disconnect";
-static const char* kStateFailure = "failure";
-static const char* kStateActivationFailure = "activation-failure";
-
-// Connman activation state options
-static const char* kActivationStateActivated = "activated";
-static const char* kActivationStateActivating = "activating";
-static const char* kActivationStateNotActivated = "not-activated";
-static const char* kActivationStatePartiallyActivated = "partially-activated";
-static const char* kActivationStateUnknown = "unknown";
-
-// Connman network technology options.
-static const char* kNetworkTechnology1Xrtt = "1xRTT";
-static const char* kNetworkTechnologyEvdo = "EVDO";
-static const char* kNetworkTechnologyGprs = "GPRS";
-static const char* kNetworkTechnologyEdge = "EDGE";
-static const char* kNetworkTechnologyUmts = "UMTS";
-static const char* kNetworkTechnologyHspa = "HSPA";
-static const char* kNetworkTechnologyHspaPlus = "HSPA+";
-static const char* kNetworkTechnologyLte = "LTE";
-static const char* kNetworkTechnologyLteAdvanced = "LTE Advanced";
-
-// Connman roaming state options
-static const char* kRoamingStateHome = "home";
-static const char* kRoamingStateRoaming = "roaming";
-static const char* kRoamingStateUnknown = "unknown";
-
-static ConnectionState ParseState(const std::string& state) {
-  if (state == kStateIdle)
-    return STATE_IDLE;
-  if (state == kStateCarrier)
-    return STATE_CARRIER;
-  if (state == kStateAssociation)
-    return STATE_ASSOCIATION;
-  if (state == kStateConfiguration)
-    return STATE_CONFIGURATION;
-  if (state == kStateReady)
-    return STATE_READY;
-  if (state == kStateDisconnect)
-    return STATE_DISCONNECT;
-  if (state == kStateFailure)
-    return STATE_FAILURE;
-  if (state == kStateActivationFailure)
-    return STATE_ACTIVATION_FAILURE;
-  return STATE_UNKNOWN;
-}
-
-static ActivationState ParseActivationState(
-    const std::string& activation_state) {
-  if (activation_state == kActivationStateActivated)
-    return ACTIVATION_STATE_ACTIVATED;
-  if (activation_state == kActivationStateActivating)
-    return ACTIVATION_STATE_ACTIVATING;
-  if (activation_state == kActivationStateNotActivated)
-    return ACTIVATION_STATE_NOT_ACTIVATED;
-  if (activation_state == kActivationStateUnknown)
-    return ACTIVATION_STATE_UNKNOWN;
-  if (activation_state == kActivationStatePartiallyActivated)
-    return ACTIVATION_STATE_PARTIALLY_ACTIVATED;
-  return ACTIVATION_STATE_UNKNOWN;
-}
-
-static NetworkTechnology ParseNetworkTechnology(
-    const std::string& technology) {
-    if (technology == kNetworkTechnology1Xrtt)
-    return NETWORK_TECHNOLOGY_1XRTT;
-  if (technology == kNetworkTechnologyEvdo)
-    return NETWORK_TECHNOLOGY_EVDO;
-  if (technology == kNetworkTechnologyGprs)
-    return NETWORK_TECHNOLOGY_GPRS;
-  if (technology == kNetworkTechnologyEdge)
-    return NETWORK_TECHNOLOGY_EDGE;
-  if (technology == kNetworkTechnologyUmts)
-    return NETWORK_TECHNOLOGY_UMTS;
-  if (technology == kNetworkTechnologyHspa)
-    return NETWORK_TECHNOLOGY_HSPA;
-  if (technology == kNetworkTechnologyHspaPlus)
-    return NETWORK_TECHNOLOGY_HSPA_PLUS;
-  if (technology == kNetworkTechnologyLte)
-    return NETWORK_TECHNOLOGY_LTE;
-  if (technology == kNetworkTechnologyLteAdvanced)
-    return NETWORK_TECHNOLOGY_LTE_ADVANCED;
-  return NETWORK_TECHNOLOGY_UNKNOWN;
-}
-static NetworkRoamingState ParseRoamingState(
-    const std::string& roaming_state) {
-    if (roaming_state == kRoamingStateHome)
-    return ROAMING_STATE_HOME;
-  if (roaming_state == kRoamingStateRoaming)
-    return ROAMING_STATE_ROAMING;
-  if (roaming_state == kRoamingStateUnknown)
-    return ROAMING_STATE_UNKNOWN;
-  return ROAMING_STATE_UNKNOWN;
-}
-
-}
 
 // Helper function to wrap Html with <th> tag.
 static std::string WrapWithTH(std::string text) {
@@ -217,7 +99,6 @@ void Network::Clear() {
   service_path_.clear();
   device_path_.clear();
   ip_address_.clear();
-  is_active_ = false;
 }
 
 Network::Network(const ServiceInfo* service) {
@@ -226,7 +107,6 @@ Network::Network(const ServiceInfo* service) {
   error_ = service->error;
   service_path_ = SafeString(service->service_path);
   device_path_ = SafeString(service->device_path);
-  is_active_ = service->is_active;
   ip_address_.clear();
   // If connected, get ip config.
   if (EnsureCrosLoaded() && connected() && service->device_path) {
@@ -630,7 +510,7 @@ bool WifiNetwork::IsCertificateLoaded() const {
 class NetworkLibraryImpl : public NetworkLibrary  {
  public:
   NetworkLibraryImpl()
-      : network_manager_monitor_(NULL),
+      : network_status_connection_(NULL),
         data_plan_monitor_(NULL),
         ethernet_(NULL),
         wifi_(NULL),
@@ -641,96 +521,66 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         offline_mode_(false) {
     if (EnsureCrosLoaded()) {
       Init();
-      network_manager_monitor_ =
-          MonitorNetworkManager(&NetworkManagerStatusChangedHandler,
-                                this);
-      data_plan_monitor_ = MonitorCellularDataPlan(&DataPlanUpdateHandler,
-                                                   this);
     } else {
       InitTestData();
     }
   }
 
   ~NetworkLibraryImpl() {
-    DCHECK(!network_manager_observers_.size());
-    DCHECK(network_manager_monitor_);
-    DisconnectPropertyChangeMonitor(network_manager_monitor_);
-    DCHECK(!data_plan_observers_.size());
-    DCHECK(data_plan_monitor_);
-    DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
-    DCHECK(!network_observers_.size());
-    STLDeleteValues(&network_observers_);
+    if (network_status_connection_) {
+      DisconnectMonitorNetwork(network_status_connection_);
+    }
+    if (data_plan_monitor_) {
+      DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
+    }
+    // DCHECK(!observers_.size());
+    DCHECK(!property_observers_.size());
+    STLDeleteValues(&property_observers_);
     ClearNetworks();
   }
 
-  virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) {
-    network_manager_observers_.AddObserver(observer);
+  void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
   }
 
-  virtual void RemoveNetworkManagerObserver(NetworkManagerObserver* observer) {
-    if (!network_manager_observers_.HasObserver(observer))
-      network_manager_observers_.RemoveObserver(observer);
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
   }
 
-  virtual void AddNetworkObserver(const std::string& service_path,
-                                  NetworkObserver* observer) {
+  virtual void AddProperyObserver(const char* service_path,
+                                  PropertyObserver* observer) {
+    DCHECK(service_path);
     DCHECK(observer);
     if (!EnsureCrosLoaded())
       return;
     // First, add the observer to the callback map.
-    NetworkObserverMap::iterator iter = network_observers_.find(service_path);
-    NetworkObserverList* oblist;
-    if (iter != network_observers_.end()) {
-      oblist = iter->second;
+    PropertyChangeObserverMap::iterator iter = property_observers_.find(
+        std::string(service_path));
+    if (iter != property_observers_.end()) {
+      iter->second->AddObserver(observer);
     } else {
-      std::pair<NetworkObserverMap::iterator, bool> inserted =
-        network_observers_.insert(
-            std::make_pair<std::string, NetworkObserverList*>(
-                service_path,
-                new NetworkObserverList(this, service_path)));
-      oblist = inserted.first->second;
-    }
-    if (!oblist->HasObserver(observer))
-      oblist->AddObserver(observer);
-  }
-
-  virtual void RemoveNetworkObserver(const std::string& service_path,
-                                     NetworkObserver* observer) {
-    DCHECK(observer);
-    DCHECK(service_path.size());
-    NetworkObserverMap::iterator map_iter = network_observers_.find(
-        service_path);
-    if (map_iter != network_observers_.end()) {
-      map_iter->second->RemoveObserver(observer);
-      if (!map_iter->second->size()) {
-        delete map_iter->second;
-        network_observers_.erase(map_iter++);
-      }
+      std::pair<PropertyChangeObserverMap::iterator, bool> inserted =
+        property_observers_.insert(
+            std::pair<std::string, PropertyObserverList*>(
+                std::string(service_path),
+                new PropertyObserverList(this, service_path)));
+      inserted.first->second->AddObserver(observer);
     }
   }
 
-  virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) {
+  virtual void RemoveProperyObserver(PropertyObserver* observer) {
     DCHECK(observer);
-    NetworkObserverMap::iterator map_iter = network_observers_.begin();
-    while (map_iter != network_observers_.end()) {
+    PropertyChangeObserverMap::iterator map_iter =
+          property_observers_.begin();
+    while (map_iter != property_observers_.end()) {
       map_iter->second->RemoveObserver(observer);
       if (!map_iter->second->size()) {
         delete map_iter->second;
-        network_observers_.erase(map_iter++);
+        property_observers_.erase(map_iter++);
       } else {
         ++map_iter;
       }
     }
-  }
-
-  virtual void AddCellularDataPlanObserver(CellularDataPlanObserver* observer) {
-    if (!data_plan_observers_.HasObserver(observer))
-      data_plan_observers_.AddObserver(observer);
-  }
-
-  virtual void RemoveCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) {
-    data_plan_observers_.RemoveObserver(observer);
   }
 
   virtual EthernetNetwork* ethernet_network() { return ethernet_; }
@@ -766,14 +616,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   const std::string& IPAddress() const {
-    // Returns IP address for the active network.
-    const Network* active = active_network();
-    if (active != NULL)
-      return active->ip_address();
-    if (ethernet_)
+    // Returns highest priority IP address.
+    if (ethernet_connected())
       return ethernet_->ip_address();
-    static std::string null_address("0.0.0.0");
-    return null_address;
+    if (wifi_connected())
+      return wifi_->ip_address();
+    if (cellular_connected())
+      return cellular_->ip_address();
+    return ethernet_->ip_address();
   }
 
   virtual const WifiNetworkVector& wifi_networks() const {
@@ -838,7 +688,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     DCHECK(network);
     if (!EnsureCrosLoaded())
       return;
-    // TODO(ers) make wifi the highest priority service type
     if (ConnectToNetworkWithCertInfo(network->service_path().c_str(),
         password.empty() ? NULL : password.c_str(),
         identity.empty() ? NULL : identity.c_str(),
@@ -853,7 +702,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi->set_connecting(true);
         wifi_ = wifi;
       }
-      NotifyNetworkManagerChanged();
+      NotifyNetworkChanged();
     }
   }
 
@@ -872,7 +721,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       // Set auto-connect.
       SetAutoConnect(service->service_path, auto_connect);
       // Now connect to that service.
-      // TODO(ers) make wifi the highest priority service type
       ConnectToNetworkWithCertInfo(service->service_path,
           password.empty() ? NULL : password.c_str(),
           identity.empty() ? NULL : identity.c_str(),
@@ -890,7 +738,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     DCHECK(network);
     if (!EnsureCrosLoaded())
       return;
-    // TODO(ers) make cellular the highest priority service type
     if (network && ConnectToNetwork(network->service_path().c_str(), NULL)) {
       // Update local cache and notify listeners.
       CellularNetwork* cellular = GetWirelessNetworkByPath(
@@ -899,7 +746,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         cellular->set_connecting(true);
         cellular_ = cellular;
       }
-      NotifyNetworkManagerChanged();
+      NotifyNetworkChanged();
     }
   }
 
@@ -914,7 +761,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     DCHECK(network);
     if (!EnsureCrosLoaded() || !network)
       return;
-    // TODO(ers) restore default service type priority ordering?
     if (DisconnectFromNetwork(network->service_path().c_str())) {
       // Update local cache and notify listeners.
       if (network->type() == TYPE_WIFI) {
@@ -932,7 +778,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           cellular_ = NULL;
         }
       }
-      NotifyNetworkManagerChanged();
+      NotifyNetworkChanged();
     }
   }
 
@@ -974,7 +820,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
           break;
         }
       }
-      NotifyNetworkManagerChanged();
+      NotifyNetworkChanged();
     }
   }
 
@@ -999,16 +845,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   virtual bool offline_mode() const { return offline_mode_; }
-
-  virtual const Network* active_network() const {
-    if (ethernet_ && ethernet_->is_active())
-      return ethernet_;
-    if (wifi_ && wifi_->is_active())
-      return wifi_;
-    if (cellular_ && cellular_->is_active())
-      return cellular_;
-    return NULL;
-  }
 
   virtual void EnableEthernetNetworkDevice(bool enable) {
     EnableNetworkDeviceType(TYPE_ETHERNET, enable);
@@ -1115,53 +951,52 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
  private:
 
-  class NetworkObserverList : public ObserverList<NetworkObserver> {
+  class PropertyObserverList : public ObserverList<PropertyObserver> {
    public:
-    NetworkObserverList(NetworkLibraryImpl* library,
-                        const std::string& service_path) {
-      network_monitor_ = MonitorNetworkService(&NetworkStatusChangedHandler,
-                                               service_path.c_str(),
-                                               library);
+    PropertyObserverList(NetworkLibraryImpl* library,
+                         const char* service_path) {
+      DCHECK(service_path);
+      property_change_monitor_ = MonitorNetworkService(&PropertyChangeHandler,
+                                                       service_path,
+                                                       library);
     }
 
-    virtual ~NetworkObserverList() {
-      if (network_monitor_)
-        DisconnectPropertyChangeMonitor(network_monitor_);
+    virtual ~PropertyObserverList() {
+      if (property_change_monitor_)
+        DisconnectPropertyChangeMonitor(property_change_monitor_);
     }
 
    private:
-    static void NetworkStatusChangedHandler(void* object,
-                                            const char* path,
-                                            const char* key,
-                                            const Value* value) {
-      NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
-      DCHECK(networklib);
-      networklib->UpdateNetworkStatus(path, key, value);
+    static void PropertyChangeHandler(void* object,
+                                      const char* path,
+                                      const char* key,
+                                      const Value* value) {
+      NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
+      DCHECK(network);
+      network->NotifyPropertyChange(path, key, value);
     }
-    PropertyChangeMonitor network_monitor_;
+    PropertyChangeMonitor property_change_monitor_;
   };
 
-  typedef std::map<std::string, NetworkObserverList*> NetworkObserverMap;
+  typedef std::map<std::string, PropertyObserverList*>
+      PropertyChangeObserverMap;
 
-  static void NetworkManagerStatusChangedHandler(void* object,
-                                                 const char* path,
-                                                 const char* key,
-                                                 const Value* value) {
-    NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
-    DCHECK(networklib);
-    networklib->UpdateNetworkManagerStatus();
+  static void NetworkStatusChangedHandler(void* object) {
+    NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
+    DCHECK(network);
+    network->UpdateNetworkStatus();
   }
 
   static void DataPlanUpdateHandler(void* object,
                                     const char* modem_service_path,
                                     const CellularDataPlanList* dataplan) {
-    NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
-    DCHECK(networklib && networklib->cellular_network());
+    NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
+    DCHECK(network && network->cellular_network());
     // Store data plan for currently connected cellular network.
-    if (networklib->cellular_network()->service_path()
+    if (network->cellular_network()->service_path()
         .compare(modem_service_path) == 0) {
       if (dataplan != NULL) {
-        networklib->UpdateCellularDataPlan(*dataplan);
+        network->UpdateCellularDataPlan(*dataplan);
       }
     }
   }
@@ -1186,7 +1021,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                << " str=" << service->strength
                << " fav=" << service->favorite
                << " auto=" << service->auto_connect
-               << " is_active=" << service->is_active
                << " error=" << service->error;
       // Once a connected ethernet service is found, disregard other ethernet
       // services that are also found
@@ -1226,10 +1060,17 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void Init() {
-    // First, get the currently available networks. This data is cached
+    // First, get the currently available networks.  This data is cached
     // on the connman side, so the call should be quick.
     VLOG(1) << "Getting initial CrOS network info.";
     UpdateSystemInfo();
+
+    VLOG(1) << "Registering for network status updates.";
+    // Now, register to receive updates on network status.
+    network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
+                                                this);
+    VLOG(1) << "Registering for cellular data plan updates.";
+    data_plan_monitor_ = MonitorCellularDataPlan(&DataPlanUpdateHandler, this);
   }
 
   void InitTestData() {
@@ -1308,7 +1149,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void UpdateSystemInfo() {
     if (EnsureCrosLoaded()) {
-      UpdateNetworkManagerStatus();
+      UpdateNetworkStatus();
     }
   }
 
@@ -1357,40 +1198,53 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     EnableNetworkDevice(device, enable);
   }
 
-  void NotifyNetworkManagerChanged() {
-    FOR_EACH_OBSERVER(NetworkManagerObserver,
-                      network_manager_observers_,
-                      OnNetworkManagerChanged(this));
-  }
-
-  void NotifyNetworkChanged(Network* network) {
-    DCHECK(network);
-    NetworkObserverMap::const_iterator iter = network_observers_.find(
-        network->service_path());
-    if (iter != network_observers_.end()) {
-      FOR_EACH_OBSERVER(NetworkObserver,
-                        *(iter->second),
-                        OnNetworkChanged(this, network));
-    } else {
-      NOTREACHED() <<
-          "There weren't supposed to be any property change observers of " <<
-           network->service_path();
-    }
+  void NotifyNetworkChanged() {
+    FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
   }
 
   void NotifyCellularDataPlanChanged() {
-    FOR_EACH_OBSERVER(CellularDataPlanObserver,
-                      data_plan_observers_,
-                      OnCellularDataPlanChanged(this));
+    FOR_EACH_OBSERVER(Observer, observers_, CellularDataPlanChanged(this));
   }
 
-  void UpdateNetworkManagerStatus() {
+  void NotifyPropertyChange(const char* service_path,
+                            const char* key,
+                            const Value* value) {
+    DCHECK(service_path);
+    DCHECK(key);
+    DCHECK(value);
+    PropertyChangeObserverMap::const_iterator iter = property_observers_.find(
+        std::string(service_path));
+    if (iter != property_observers_.end()) {
+      FOR_EACH_OBSERVER(PropertyObserver, *(iter->second),
+          PropertyChanged(service_path, key, value));
+    } else {
+      NOTREACHED() <<
+          "There weren't supposed to be any property change observers of " <<
+          service_path;
+    }
+  }
+
+  void ClearNetworks() {
+    if (ethernet_)
+      delete ethernet_;
+    ethernet_ = NULL;
+    wifi_ = NULL;
+    cellular_ = NULL;
+    STLDeleteElements(&wifi_networks_);
+    wifi_networks_.clear();
+    STLDeleteElements(&cellular_networks_);
+    cellular_networks_.clear();
+    STLDeleteElements(&remembered_wifi_networks_);
+    remembered_wifi_networks_.clear();
+  }
+
+  void UpdateNetworkStatus() {
     // Make sure we run on UI thread.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,
-                            &NetworkLibraryImpl::UpdateNetworkManagerStatus));
+                            &NetworkLibraryImpl::UpdateNetworkStatus));
       return;
     }
 
@@ -1434,77 +1288,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     connected_devices_ = system->connected_technologies;
     offline_mode_ = system->offline_mode;
 
-    NotifyNetworkManagerChanged();
+    NotifyNetworkChanged();
     FreeSystemInfo(system);
-  }
-
-  void UpdateNetworkStatus(const char* path,
-                           const char* key,
-                           const Value* value) {
-    if (key == NULL || value == NULL)
-      return;
-    // Make sure we run on UI thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &NetworkLibraryImpl::UpdateNetworkStatus,
-                            path, key, value));
-      return;
-    }
-
-    bool boolval = false;
-    int intval = 0;
-    std::string stringval;
-    Network* network;
-    if (ethernet_->service_path() == path) {
-      network = ethernet_;
-    } else {
-      CellularNetwork* cellular =
-          GetWirelessNetworkByPath(cellular_networks_, path);
-      WifiNetwork* wifi =
-          GetWirelessNetworkByPath(wifi_networks_, path);
-      if (cellular == NULL && wifi == NULL)
-        return;
-
-      WirelessNetwork* wireless;
-      if (wifi != NULL)
-        wireless = static_cast<WirelessNetwork*>(wifi);
-      else
-        wireless = static_cast<WirelessNetwork*>(cellular);
-
-      if (strcmp(key, kSignalStrengthProperty) == 0) {
-        if (value->GetAsInteger(&intval))
-          wireless->set_strength(intval);
-      } else if (cellular != NULL) {
-        if (strcmp(key, kRestrictedPoolProperty) == 0) {
-          if (value->GetAsBoolean(&boolval))
-            cellular->set_restricted_pool(boolval);
-        } else if (strcmp(key, kActivationStateProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_activation_state(ParseActivationState(stringval));
-        } else if (strcmp(key, kPaymentURLProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_payment_url(stringval);
-        } else if (strcmp(key, kNetworkTechnologyProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_network_technology(
-                ParseNetworkTechnology(stringval));
-        } else if (strcmp(key, kRoamingStateProperty) == 0) {
-          if (value->GetAsString(&stringval))
-            cellular->set_roaming_state(ParseRoamingState(stringval));
-        }
-      }
-      network = wireless;
-    }
-    if (strcmp(key, kIsActiveProperty) == 0) {
-      if (value->GetAsBoolean(&boolval))
-        network->set_active(boolval);
-    } else if (strcmp(key, kStateProperty) == 0) {
-      if (value->GetAsString(&stringval))
-        network->set_state(ParseState(stringval));
-    }
-    NotifyNetworkChanged(network);
   }
 
   void UpdateCellularDataPlan(const CellularDataPlanList& data_plans) {
@@ -1513,34 +1298,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NotifyCellularDataPlanChanged();
   }
 
-  void ClearNetworks() {
-    if (ethernet_)
-      delete ethernet_;
-    ethernet_ = NULL;
-    wifi_ = NULL;
-    cellular_ = NULL;
-    STLDeleteElements(&wifi_networks_);
-    wifi_networks_.clear();
-    STLDeleteElements(&cellular_networks_);
-    cellular_networks_.clear();
-    STLDeleteElements(&remembered_wifi_networks_);
-    remembered_wifi_networks_.clear();
-  }
+  ObserverList<Observer> observers_;
 
-  // Network manager observer list
-  ObserverList<NetworkManagerObserver> network_manager_observers_;
+  // Property change observer map
+  PropertyChangeObserverMap  property_observers_;
 
-  // Cellular data plan observer list
-  ObserverList<CellularDataPlanObserver> data_plan_observers_;
-
-  // Network observer map
-  NetworkObserverMap network_observers_;
-
-  // For monitoring network manager status changes.
-  PropertyChangeMonitor network_manager_monitor_;
+  // The network status connection for monitoring network status changes.
+  MonitorNetworkConnection network_status_connection_;
 
   // For monitoring data plan changes to the connected cellular network.
   DataPlanUpdateMonitor data_plan_monitor_;
+
+  // The property change connection for monitoring service property changes.
+  std::map<std::string, PropertyChangeMonitor> property_change_monitors_;
 
   // The ethernet network.
   EthernetNetwork* ethernet_;
@@ -1583,17 +1353,11 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
         cellular_(NULL) {
   }
   ~NetworkLibraryStubImpl() { if (ethernet_) delete ethernet_; }
-  virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) {}
-  virtual void RemoveNetworkManagerObserver(NetworkManagerObserver* observer) {}
-  virtual void AddNetworkObserver(const std::string& service_path,
-                                  NetworkObserver* observer) {}
-  virtual void RemoveNetworkObserver(const std::string& service_path,
-                                     NetworkObserver* observer) {}
-  virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) {}
-  virtual void AddCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) {}
-  virtual void RemoveCellularDataPlanObserver(
-      CellularDataPlanObserver* observer) {}
+  virtual void AddObserver(Observer* observer) {}
+  virtual void RemoveObserver(Observer* observer) {}
+  virtual void AddProperyObserver(const char* service_path,
+                                  PropertyObserver* observer) {}
+  virtual void RemoveProperyObserver(PropertyObserver* observer) {}
   virtual EthernetNetwork* ethernet_network() {
     return ethernet_;
   }
@@ -1658,7 +1422,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual bool ethernet_enabled() const { return true; }
   virtual bool wifi_enabled() const { return false; }
   virtual bool cellular_enabled() const { return false; }
-  virtual const Network* active_network() const { return NULL; }
   virtual bool offline_mode() const { return false; }
   virtual void EnableEthernetNetworkDevice(bool enable) {}
   virtual void EnableWifiNetworkDevice(bool enable) {}

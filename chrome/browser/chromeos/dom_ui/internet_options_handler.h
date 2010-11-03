@@ -16,12 +16,8 @@ class WindowDelegate;
 }
 
 // ChromeOS internet options page UI handler.
-class InternetOptionsHandler
-  : public OptionsPageUIHandler,
-    public chromeos::NetworkLibrary::NetworkManagerObserver,
-    public chromeos::NetworkLibrary::NetworkObserver,
-    public chromeos::NetworkLibrary::CellularDataPlanObserver {
-
+class InternetOptionsHandler : public OptionsPageUIHandler,
+                               public chromeos::NetworkLibrary::Observer {
  public:
   InternetOptionsHandler();
   virtual ~InternetOptionsHandler();
@@ -32,13 +28,9 @@ class InternetOptionsHandler
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* network_lib);
-  // NetworkLibrary::NetworkObserver implementation.
-  virtual void OnNetworkChanged(chromeos::NetworkLibrary* network_lib,
-                                const chromeos::Network* network);
-  // NetworkLibrary::CellularDataPlanObserver implementation.
-  virtual void OnCellularDataPlanChanged(chromeos::NetworkLibrary* network_lib);
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(chromeos::NetworkLibrary* obj);
+  virtual void CellularDataPlanChanged(chromeos::NetworkLibrary* obj);
 
  private:
   // Passes data needed to show details overlay for network.
@@ -89,13 +81,6 @@ class InternetOptionsHandler
   ListValue* GetWirelessList();
   // Creates the map of remembered networks
   ListValue* GetRememberedList();
-  // Refresh the display of network information
-  void RefreshNetworkData(chromeos::NetworkLibrary* cros);
-  // Monitor the active network, if any
-  void MonitorActiveNetwork(chromeos::NetworkLibrary* cros);
-
-  // If any network is currently active, this is its service path
-  std::string active_network_;
 
   DISALLOW_COPY_AND_ASSIGN(InternetOptionsHandler);
 };

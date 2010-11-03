@@ -19,13 +19,13 @@ class InternetPageContentView;
 
 // Internet settings page for Chrome OS
 class InternetPageView : public SettingsPageView,
-                         public NetworkLibrary::NetworkManagerObserver {
+                         public NetworkLibrary::Observer {
  public:
   explicit InternetPageView(Profile* profile);
   virtual ~InternetPageView();
 
-  // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
+  // NetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(NetworkLibrary* obj);
 
   // views::View overrides:
   virtual void Layout();

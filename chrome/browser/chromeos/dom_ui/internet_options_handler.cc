@@ -56,19 +56,11 @@ std::string FormatHardwareAddress(const std::string& address) {
 }  // namespace
 
 InternetOptionsHandler::InternetOptionsHandler() {
-  chromeos::NetworkLibrary* netlib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  netlib->AddNetworkManagerObserver(this);
-  netlib->AddCellularDataPlanObserver(this);
-  MonitorActiveNetwork(netlib);
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
 
 InternetOptionsHandler::~InternetOptionsHandler() {
-  chromeos::NetworkLibrary *netlib =
-      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-  netlib->RemoveNetworkManagerObserver(this);
-  netlib->RemoveCellularDataPlanObserver(this);
-  netlib->RemoveObserverForAllNetworks(this);
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
 }
 
 void InternetOptionsHandler::GetLocalizedValues(
@@ -365,8 +357,10 @@ void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
     browser->OpenMobilePlanTabAndActivate();
 }
 
-void InternetOptionsHandler::RefreshNetworkData(
-    chromeos::NetworkLibrary* cros) {
+void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
+  if (!dom_ui_)
+    return;
+
   DictionaryValue dictionary;
   dictionary.Set("wiredList", GetWiredList());
   dictionary.Set("wirelessList", GetWirelessList());
@@ -379,45 +373,7 @@ void InternetOptionsHandler::RefreshNetworkData(
       L"options.InternetOptions.refreshNetworkData", dictionary);
 }
 
-void InternetOptionsHandler::OnNetworkManagerChanged(
-    chromeos::NetworkLibrary* cros) {
-  if (!dom_ui_)
-    return;
-  MonitorActiveNetwork(cros);
-  RefreshNetworkData(cros);
-}
-
-void InternetOptionsHandler::OnNetworkChanged(
-    chromeos::NetworkLibrary* cros,
-    const chromeos::Network* network) {
-  if (dom_ui_)
-    RefreshNetworkData(cros);
-}
-
-// Add an observer for the active network, if any, so
-// that we can dynamically display the correct icon for
-// that network's signal strength.
-// TODO(ers) Ideally, on this page we'd monitor all networks for
-// signal strength changes, not just the active network.
-void InternetOptionsHandler::MonitorActiveNetwork(
-    chromeos::NetworkLibrary* cros) {
-  const chromeos::Network* network = cros->active_network();
-  if (active_network_.empty() || network == NULL ||
-      active_network_ != network->service_path()) {
-    if (!active_network_.empty()) {
-      cros->RemoveNetworkObserver(active_network_, this);
-    }
-    if (network != NULL) {
-      cros->AddNetworkObserver(network->service_path(), this);
-    }
-  }
-  if (network != NULL)
-    active_network_ = network->service_path();
-  else
-    active_network_ = "";
-}
-
-void InternetOptionsHandler::OnCellularDataPlanChanged(
+void InternetOptionsHandler::CellularDataPlanChanged(
     chromeos::NetworkLibrary* obj) {
   if (!dom_ui_)
     return;
@@ -994,7 +950,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
     SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(
         (*it)->strength(), true);
-    SkBitmap badge = chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
+    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
     icon = chromeos::NetworkMenu::IconForDisplay(icon, badge);
     list->Append(GetNetwork(
         (*it)->service_path(),

@@ -83,7 +83,7 @@ class NetworkList  {
   NetworkList::NetworkItem* GetNetworkAt(int index);
 
   // Callback from NetworkLibrary.
-  void OnNetworkManagerChanged(chromeos::NetworkLibrary* network_lib);
+  void NetworkChanged(chromeos::NetworkLibrary* network_lib);
 
  private:
   typedef std::vector<NetworkItem> NetworkItemVector;

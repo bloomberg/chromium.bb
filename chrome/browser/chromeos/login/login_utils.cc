@@ -296,20 +296,20 @@ bool LoginUtilsImpl::IsBrowserLaunchEnabled() const {
 // We use a special class for this so that it can be safely leaked if we
 // never connect. At shutdown the order is not well defined, and it's possible
 // for the infrastructure needed to unregister might be unstable and crash.
-class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
+class WarmingObserver : public NetworkLibrary::Observer {
  public:
   WarmingObserver() {
-    NetworkLibrary *netlib = CrosLibrary::Get()->GetNetworkLibrary();
-    netlib->AddNetworkManagerObserver(this);
+    NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
+    network->AddObserver(this);
   }
 
   // If we're now connected, prewarm the auth url.
-  void OnNetworkManagerChanged(NetworkLibrary* netlib) {
-    if (netlib->Connected()) {
+  void NetworkChanged(NetworkLibrary* network) {
+    if (network->Connected()) {
       chrome_browser_net::Preconnect::PreconnectOnUIThread(
           GURL(GaiaAuthenticator2::kClientLoginUrl),
           chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED);
-      netlib->RemoveNetworkManagerObserver(this);
+      network->RemoveObserver(this);
       delete this;
     }
   }

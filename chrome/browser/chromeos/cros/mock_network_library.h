@@ -17,12 +17,10 @@ class MockNetworkLibrary : public NetworkLibrary {
  public:
   MockNetworkLibrary() {}
   virtual ~MockNetworkLibrary() {}
-  MOCK_METHOD1(AddNetworkManagerObserver, void(NetworkManagerObserver*));
-  MOCK_METHOD1(RemoveNetworkManagerObserver, void(NetworkManagerObserver*));
-  MOCK_METHOD2(AddNetworkObserver, void(const char*, NetworkObserver*));
-  MOCK_METHOD1(RemoveNetworkObserver, void(NetworkObserver*));
-  MOCK_METHOD1(AddCellularDataPlanObserver, void(NetworkManagerObserver*));
-  MOCK_METHOD1(RemoveCellularDataPlanObserver, void(NetworkManagerObserver*));
+  MOCK_METHOD1(AddObserver, void(Observer*));
+  MOCK_METHOD1(RemoveObserver, void(Observer*));
+  MOCK_METHOD2(AddProperyObserver, void(const char*, PropertyObserver*));
+  MOCK_METHOD1(RemoveProperyObserver, void(PropertyObserver*));
   MOCK_METHOD0(ethernet_network, EthernetNetwork*(void));
   MOCK_CONST_METHOD0(ethernet_connecting, bool(void));
   MOCK_CONST_METHOD0(ethernet_connected, bool(void));

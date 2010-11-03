@@ -273,7 +273,7 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(1)
       .RetiresOnSaturation();
 
-  // NetworkDropdownButton::OnNetworkManagerChanged() calls:
+  // NetworkDropdownButton::NetworkChanged() calls:
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
       .Times(1)
       .WillRepeatedly((Return(false)))
