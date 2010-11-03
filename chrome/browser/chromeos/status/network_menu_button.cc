@@ -35,12 +35,16 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(Tween::EASE_IN_OUT);
-  NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
-  CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+  OnNetworkManagerChanged(CrosLibrary::Get()->GetNetworkLibrary());
+  CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->AddCellularDataPlanObserver(this);
 }
 
 NetworkMenuButton::~NetworkMenuButton() {
-  CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+  NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+  netlib->RemoveNetworkManagerObserver(this);
+  netlib->RemoveObserverForAllNetworks(this);
+  netlib->RemoveCellularDataPlanObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -73,11 +77,27 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, NetworkLibrary::Observer implementation:
+// NetworkMenuButton, NetworkLibrary::NetworkManagerObserver implementation:
 
-void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
+void NetworkMenuButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (CrosLibrary::Get()->EnsureLoaded()) {
+    // Add an observer for the active network, if any
+    const Network* network = cros->active_network();
+    if (active_network_.empty() || network == NULL ||
+        active_network_ != network->service_path()) {
+      if (!active_network_.empty()) {
+        cros->RemoveNetworkObserver(active_network_, this);
+      }
+      if (network != NULL) {
+        cros->AddNetworkObserver(network->service_path(), this);
+      }
+    }
+    if (network)
+      active_network_ = network->service_path();
+    else
+      active_network_ = "";
+
     if (cros->wifi_connecting() || cros->cellular_connecting()) {
       // Start the connecting animation if not running.
       if (!animation_connecting_.is_animating()) {
@@ -98,68 +118,15 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
     } else {
       // Stop connecting animation since we are not connecting.
       animation_connecting_.Stop();
-
-      // Always show the higher priority connection first. Ethernet then wifi.
-      if (cros->ethernet_connected()) {
-        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
-        SetTooltipText(
-            l10n_util::GetStringF(
-                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
-      } else if (cros->wifi_connected()) {
-        SetIcon(IconForNetworkStrength(
-            cros->wifi_network()->strength(), false));
-        SetTooltipText(l10n_util::GetStringF(
-            IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cros->wifi_network()->name())));
-      } else if (cros->cellular_connected()) {
-        const CellularNetwork* cellular = cros->cellular_network();
-        if (cellular->data_left() == CellularNetwork::DATA_NONE) {
-          // If no data, then we show 0 bars.
-          SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
-        } else {
-          SetIcon(IconForNetworkStrength(cellular));
-        }
-        SetTooltipText(l10n_util::GetStringF(
-            IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cellular->name())));
-      } else {
+      if (!cros->Connected()) {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
         SetTooltipText(l10n_util::GetString(
             IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
+      } else {
+        SetNetworkIcon(network);
       }
     }
-
-    // Figure out whether or not to show a badge.
-    int id = -1;
-    if (cros->Connecting()) {
-      if (cros->cellular_connecting()) {
-        id = IDR_STATUSBAR_NETWORK_3G;
-      }
-    } else if (cros->Connected()) {
-      if (!cros->ethernet_connected() && !cros->wifi_connected() &&
-          cros->cellular_connected()) {
-        switch (cros->cellular_network()->data_left()) {
-          case CellularNetwork::DATA_NONE:
-          case CellularNetwork::DATA_VERY_LOW:
-            id = IDR_STATUSBAR_NETWORK_3G_ERROR;
-            break;
-          case CellularNetwork::DATA_LOW:
-            id = IDR_STATUSBAR_NETWORK_3G_WARN;
-            break;
-          case CellularNetwork::DATA_NORMAL:
-            id = IDR_STATUSBAR_NETWORK_3G;
-            break;
-        }
-      }
-    } else {
-      id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
-    }
-    if (id != -1) {
-      SetBadge(*rb.GetBitmapNamed(id));
-    } else {
-      SetBadge(SkBitmap());
-    }
+    SetNetworkBadge(cros, network);
   } else {
     SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
     SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
@@ -171,9 +138,29 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   UpdateMenu();
 }
 
-void NetworkMenuButton::CellularDataPlanChanged(NetworkLibrary* cros) {
-  // Call NetworkChanged which will update the icon.
-  NetworkChanged(cros);
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, NetworkLibrary::NetworkObserver implementation:
+void NetworkMenuButton::OnNetworkChanged(NetworkLibrary* cros,
+                                         const Network* network) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (CrosLibrary::Get()->EnsureLoaded()) {
+    // Always show the active network connection, if any.
+    SetNetworkIcon(network);
+    SetNetworkBadge(cros, network);
+  } else {
+    SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
+    SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
+    SetTooltipText(l10n_util::GetString(
+        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
+  }
+
+  SchedulePaint();
+  UpdateMenu();
+}
+
+void NetworkMenuButton::OnCellularDataPlanChanged(NetworkLibrary* cros) {
+  // Call OnNetworkManagerChanged which will update the icon.
+  OnNetworkManagerChanged(cros);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +180,56 @@ void NetworkMenuButton::OpenButtonOptions() const {
 
 bool NetworkMenuButton::ShouldOpenButtonOptions() const {
   return host_->ShouldOpenButtonOptions(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, private methods
+
+void NetworkMenuButton::SetNetworkIcon(const Network* network) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (network && network->is_active()) {
+    if (network->type() == TYPE_ETHERNET) {
+      SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
+      SetTooltipText(
+          l10n_util::GetStringF(
+              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+              l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
+    } else if (network->type() == TYPE_WIFI) {
+      const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
+      SetIcon(IconForNetworkStrength(wifi->strength(), false));
+      SetTooltipText(l10n_util::GetStringF(
+          IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+          UTF8ToWide(wifi->name())));
+    } else if (network->type() == TYPE_CELLULAR) {
+      const CellularNetwork* cellular =
+          static_cast<const CellularNetwork*>(network);
+      if (cellular->data_left() == CellularNetwork::DATA_NONE) {
+        // If no data, then we show 0 bars.
+        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
+      } else {
+        SetIcon(IconForNetworkStrength(cellular));
+      }
+      SetTooltipText(l10n_util::GetStringF(
+          IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+          UTF8ToWide(cellular->name())));
+    }
+  }
+}
+
+void NetworkMenuButton::SetNetworkBadge(NetworkLibrary* cros,
+                                        const Network* network) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  // Figure out whether or not to show a badge.
+  if (network && network->type() == TYPE_CELLULAR &&
+      (network->is_active() || network->connecting())) {
+    const CellularNetwork* cellular
+        = static_cast<const CellularNetwork*>(network);
+    SetBadge(BadgeForNetworkTechnology(cellular));
+  } else if (!cros->Connected() && !cros->Connecting()) {
+    SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+  } else {
+    SetBadge(SkBitmap());
+  }
 }
 
 }  // namespace chromeos

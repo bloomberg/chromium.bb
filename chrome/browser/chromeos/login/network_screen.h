@@ -47,8 +47,8 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // NetworkLibrary::Observer implementation:
-  virtual void NetworkChanged(NetworkLibrary* network_lib);
+  // NetworkLibrary::NetworkManagerObserver implementation:
+  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib);
 
  protected:
   // Subscribes NetworkScreen to the network change notification,

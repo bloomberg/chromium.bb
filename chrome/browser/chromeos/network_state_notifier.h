@@ -42,10 +42,10 @@ class NetworkStateDetails {
 };
 
 // NetworkStateNotifier sends notification when network state has
-// chagned. Notificatio is sent in UI thread.
+// chagned. Notification is sent in UI thread.
 // TODO(oshima): port this to other platform. merge with
 // NetworkChangeNotifier if possible.
-class NetworkStateNotifier : public NetworkLibrary::Observer {
+class NetworkStateNotifier : public NetworkLibrary::NetworkManagerObserver {
  public:
   // Returns the singleton instance of the network state notifier;
   static NetworkStateNotifier* Get();
@@ -59,8 +59,8 @@ class NetworkStateNotifier : public NetworkLibrary::Observer {
     return Get()->state_ == NetworkStateDetails::CONNECTED;
   }
 
-  // NetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(NetworkLibrary* cros);
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(NetworkLibrary* cros);
 
  private:
   friend struct DefaultSingletonTraits<NetworkStateNotifier>;
@@ -69,7 +69,7 @@ class NetworkStateNotifier : public NetworkLibrary::Observer {
   static NetworkStateDetails::State RetrieveState();
 
   NetworkStateNotifier();
-  virtual ~NetworkStateNotifier() {}
+  virtual ~NetworkStateNotifier();
 
   // Update the current state and sends notification to observers.
   // This should be invoked in UI thread.

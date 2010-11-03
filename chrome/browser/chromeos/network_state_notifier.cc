@@ -34,9 +34,17 @@ NetworkStateNotifier::NetworkStateNotifier()
     : ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
       state_(RetrieveState()),
       offline_start_time_(Time::Now()) {
+  DCHECK(CrosLibrary::Get()->EnsureLoaded());
+  // Note that this gets added as a NetworkManagerObserver
+  // in browser_init.cc
 }
 
-void NetworkStateNotifier::NetworkChanged(NetworkLibrary* cros) {
+NetworkStateNotifier::~NetworkStateNotifier() {
+  DCHECK(CrosLibrary::Get()->EnsureLoaded());
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
+}
+
+void NetworkStateNotifier::OnNetworkManagerChanged(NetworkLibrary* cros) {
   DCHECK(CrosLibrary::Get()->EnsureLoaded());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

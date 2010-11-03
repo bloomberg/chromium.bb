@@ -35,11 +35,19 @@ NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
       notification_no_data_(profile, "network_no_data.chromeos",
           IDR_NOTIFICATION_BARS_EMPTY,
           l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE)) {
-  NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
+  NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+  OnNetworkManagerChanged(netlib);
+  // Note that this gets added as a NetworkManagerObserver and a
+  // CellularDataPlanObserver in browser_init.cc
+  netlib->AddNetworkManagerObserver(this);
+  netlib->AddCellularDataPlanObserver(this);
   initialized_ = true;
 }
 
 NetworkMessageObserver::~NetworkMessageObserver() {
+  NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+  netlib->RemoveNetworkManagerObserver(this);
+  netlib->RemoveCellularDataPlanObserver(this);
   notification_connection_error_.Hide();
   notification_low_data_.Hide();
   notification_no_data_.Hide();
@@ -65,7 +73,7 @@ void NetworkMessageObserver::MobileSetup(const ListValue* args) {
   BrowserList::GetLastActive()->OpenMobilePlanTabAndActivate();
 }
 
-void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
+void NetworkMessageObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   const WifiNetworkVector& wifi_networks = obj->wifi_networks();
   const CellularNetworkVector& cellular_networks = obj->cellular_networks();
 
@@ -150,7 +158,7 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
     CreateModalPopup(view);
 }
 
-void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
+void NetworkMessageObserver::OnCellularDataPlanChanged(NetworkLibrary* obj) {
   const CellularNetwork* cellular = obj->cellular_network();
   if (!cellular)
     return;

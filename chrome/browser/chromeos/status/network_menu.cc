@@ -389,6 +389,47 @@ SkBitmap NetworkMenu::IconForNetworkStrength(const CellularNetwork* cellular) {
 }
 
 // static
+// TODO(ers) update for GSM when we have the necessary images
+SkBitmap NetworkMenu::BadgeForNetworkTechnology(
+    const CellularNetwork* cellular) {
+
+    int id;
+    if (cellular->network_technology() == NETWORK_TECHNOLOGY_EVDO) {
+      switch (cellular->data_left()) {
+        case CellularNetwork::DATA_NONE:
+        case CellularNetwork::DATA_VERY_LOW:
+          id = IDR_STATUSBAR_NETWORK_3G_ERROR;
+          break;
+        case CellularNetwork::DATA_LOW:
+          id = IDR_STATUSBAR_NETWORK_3G_WARN;
+          break;
+        case CellularNetwork::DATA_NORMAL:
+          id = IDR_STATUSBAR_NETWORK_3G;
+          break;
+      }
+    } else if (cellular->network_technology() == NETWORK_TECHNOLOGY_1XRTT) {
+      switch (cellular->data_left()) {
+        case CellularNetwork::DATA_NONE:
+        case CellularNetwork::DATA_VERY_LOW:
+          id = IDR_STATUSBAR_NETWORK_1X_ERROR;
+          break;
+        case CellularNetwork::DATA_LOW:
+          id = IDR_STATUSBAR_NETWORK_1X_WARN;
+          break;
+        case CellularNetwork::DATA_NORMAL:
+          id = IDR_STATUSBAR_NETWORK_1X;
+          break;
+      }
+    } else {
+      id = -1;
+    }
+    if (id == -1)
+      return SkBitmap();
+    else
+      return *ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
+}
+
+// static
 SkBitmap NetworkMenu::IconForDisplay(SkBitmap icon, SkBitmap badge) {
   // Draw badge at (14,14).
   static const int kBadgeX = 14;
@@ -529,9 +570,7 @@ void NetworkMenu::InitMenuItems() {
       }
       SkBitmap icon = IconForNetworkStrength(cell_networks[i]->strength(),
                                              true);
-      // TODO(chocobo): Check cellular network 3g/edge.
-      SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
-      // SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
+      SkBitmap badge = BadgeForNetworkTechnology(cell_networks[i]);
       int flag = FLAG_CELLULAR;
       if (active_cellular &&
           cell_networks[i]->service_path() ==
