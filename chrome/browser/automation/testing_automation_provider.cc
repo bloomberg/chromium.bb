@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -2113,6 +2114,15 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["WaitForNotificationCount"] =
       &TestingAutomationProvider::WaitForNotificationCount;
 
+  handler_map["SignInToSync"] = &TestingAutomationProvider::SignInToSync;
+  handler_map["GetSyncInfo"] = &TestingAutomationProvider::GetSyncInfo;
+  handler_map["AwaitSyncCycleCompletion"] =
+      &TestingAutomationProvider::AwaitSyncCycleCompletion;
+  handler_map["EnableSyncForDatatypes"] =
+      &TestingAutomationProvider::EnableSyncForDatatypes;
+  handler_map["DisableSyncForDatatypes"] =
+      &TestingAutomationProvider::DisableSyncForDatatypes;
+
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(browser, dict_value, reply_message);
   } else {
@@ -3828,6 +3838,219 @@ void TestingAutomationProvider::FillAutoFillProfile(
     return;
   }
   reply.SendSuccess(NULL);
+}
+
+// Sample json output: { "success": true }
+void TestingAutomationProvider::SignInToSync(Browser* browser,
+                                             DictionaryValue* args,
+                                             IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string username;
+  std::string password;
+  if (!args->GetString("username", &username) ||
+      !args->GetString("password", &password)) {
+      reply.SendError("Invalid or missing args");
+      return;
+  }
+  if (sync_waiter_.get() == NULL) {
+    sync_waiter_.reset(new ProfileSyncServiceHarness(
+        browser->profile(), username, password, 0));
+  } else {
+    sync_waiter_->SetCredentials(username, password);
+  }
+  if (sync_waiter_->SetupSync()) {
+    DictionaryValue* return_value = new DictionaryValue;
+    return_value->SetBoolean("success", true);
+    reply.SendSuccess(return_value);
+  } else {
+    reply.SendError("Signing in to sync was unsuccessful");
+  }
+}
+
+// Sample json output:
+// {u'summary': u'SYNC DISABLED'}
+//
+// { u'authenticated': True,
+//   u'last synced': u'Just now',
+//   u'summary': u'READY',
+//   u'sync url': u'clients4.google.com',
+//   u'synced datatypes': [ u'Bookmarks',
+//                          u'Preferences',
+//                          u'Passwords',
+//                          u'Autofill',
+//                          u'Themes',
+//                          u'Extensions',
+//                          u'Apps']}
+void TestingAutomationProvider::GetSyncInfo(Browser* browser,
+                                            DictionaryValue* args,
+                                            IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  DictionaryValue* sync_info = new DictionaryValue;
+  DictionaryValue* return_value = new DictionaryValue;
+  if (sync_waiter_.get() == NULL) {
+    sync_waiter_.reset(
+        ProfileSyncServiceHarness::CreateAndAttach(browser->profile()));
+  }
+  if (!sync_waiter_->IsSyncAlreadySetup()) {
+    sync_info->SetString("summary", "SYNC DISABLED");
+  } else {
+    ProfileSyncService* service = sync_waiter_->service();
+    ProfileSyncService::Status status = sync_waiter_->GetStatus();
+    sync_info->SetString("summary",
+        ProfileSyncService::BuildSyncStatusSummaryText(status.summary));
+    sync_info->SetString("sync url", service->sync_service_url().host());
+    sync_info->SetBoolean("authenticated", status.authenticated);
+    sync_info->SetString("last synced", service->GetLastSyncedTimeString());
+    ListValue* synced_datatype_list = new ListValue;
+    syncable::ModelTypeSet synced_datatypes;
+    service->GetPreferredDataTypes(&synced_datatypes);
+    for (syncable::ModelTypeSet::iterator it = synced_datatypes.begin();
+         it != synced_datatypes.end(); ++it) {
+      synced_datatype_list->Append(
+          new StringValue(syncable::ModelTypeToString(*it)));
+    }
+    sync_info->Set("synced datatypes", synced_datatype_list);
+  }
+  return_value->Set("sync_info", sync_info);
+  reply.SendSuccess(return_value);
+}
+
+// Sample json output: { "success": true }
+void TestingAutomationProvider::AwaitSyncCycleCompletion(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  if (sync_waiter_.get() == NULL) {
+    sync_waiter_.reset(
+        ProfileSyncServiceHarness::CreateAndAttach(browser->profile()));
+  }
+  if (!sync_waiter_->IsSyncAlreadySetup()) {
+    reply.SendError("Not signed in to sync");
+    return;
+  }
+  sync_waiter_->AwaitSyncCycleCompletion("Waiting for sync cycle");
+  ProfileSyncService::Status status = sync_waiter_->GetStatus();
+  if (status.summary == ProfileSyncService::Status::READY) {
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetBoolean("success", true);
+    reply.SendSuccess(return_value.get());
+  } else {
+    reply.SendError("Wait for sync cycle was unsuccessful");
+  }
+}
+
+// Refer to EnableSyncForDatatypes() in chrome/test/pyautolib/pyauto.py for
+// sample json input. Sample json output: { "success": true }
+void TestingAutomationProvider::EnableSyncForDatatypes(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  if (sync_waiter_.get() == NULL) {
+    sync_waiter_.reset(
+        ProfileSyncServiceHarness::CreateAndAttach(browser->profile()));
+  }
+  if (!sync_waiter_->IsSyncAlreadySetup()) {
+    reply.SendError("Not signed in to sync");
+    return;
+  }
+  ListValue* datatypes = NULL;
+  if (!args->GetList("datatypes", &datatypes)) {
+    reply.SendError("Invalid or missing args");
+    return;
+  }
+  std::string first_datatype;
+  datatypes->GetString(0, &first_datatype);
+  if (first_datatype == "All") {
+    sync_waiter_->EnableSyncForAllDatatypes();
+  } else {
+    int num_datatypes = datatypes->GetSize();
+    for (int i = 0; i < num_datatypes; ++i) {
+      std::string datatype_string;
+      datatypes->GetString(i, &datatype_string);
+      syncable::ModelType datatype =
+          syncable::ModelTypeFromString(datatype_string);
+      if (datatype == syncable::UNSPECIFIED) {
+        AutomationJSONReply(this, reply_message).SendError(StringPrintf(
+            "Invalid datatype string: %s.", datatype_string.c_str()));
+        return;
+      }
+      sync_waiter_->EnableSyncForDatatype(datatype);
+      sync_waiter_->AwaitSyncCycleCompletion(StringPrintf(
+          "Enabling datatype: %s", datatype_string.c_str()));
+    }
+  }
+  ProfileSyncService::Status status = sync_waiter_->GetStatus();
+  if (status.summary == ProfileSyncService::Status::READY ||
+      status.summary == ProfileSyncService::Status::SYNCING) {
+    DictionaryValue* return_value = new DictionaryValue;
+    return_value->SetBoolean("success", true);
+    reply.SendSuccess(return_value);
+  } else {
+    reply.SendError("Enabling sync for given datatypes was unsuccessful");
+  }
+}
+
+// Refer to DisableSyncForDatatypes() in chrome/test/pyautolib/pyauto.py for
+// sample json input. Sample json output: { "success": true }
+void TestingAutomationProvider::DisableSyncForDatatypes(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  if (sync_waiter_.get() == NULL) {
+    sync_waiter_.reset(
+        ProfileSyncServiceHarness::CreateAndAttach(browser->profile()));
+  }
+  if (!sync_waiter_->IsSyncAlreadySetup()) {
+    reply.SendError("Not signed in to sync");
+    return;
+  }
+  ListValue* datatypes = NULL;
+  if (!args->GetList("datatypes", &datatypes)) {
+    reply.SendError("Invalid or missing args");
+    return;
+  }
+  std::string first_datatype;
+  datatypes->GetString(0, &first_datatype);
+  if (first_datatype == "All") {
+    sync_waiter_->DisableSyncForAllDatatypes();
+    ProfileSyncService::Status status = sync_waiter_->GetStatus();
+    if (status.summary != ProfileSyncService::Status::READY &&
+        status.summary != ProfileSyncService::Status::SYNCING) {
+      DictionaryValue* return_value = new DictionaryValue;
+      return_value->SetBoolean("success", true);
+      reply.SendSuccess(return_value);
+    } else {
+      reply.SendError("Disabling all sync datatypes was unsuccessful");
+    }
+  } else {
+    int num_datatypes = datatypes->GetSize();
+    for (int i = 0; i < num_datatypes; i++) {
+      std::string datatype_string;
+      datatypes->GetString(i, &datatype_string);
+      syncable::ModelType datatype =
+          syncable::ModelTypeFromString(datatype_string);
+      if (datatype == syncable::UNSPECIFIED) {
+        AutomationJSONReply(this, reply_message).SendError(StringPrintf(
+            "Invalid datatype string: %s.", datatype_string.c_str()));
+        return;
+      }
+      sync_waiter_->DisableSyncForDatatype(datatype);
+      sync_waiter_->AwaitSyncCycleCompletion(StringPrintf(
+          "Disabling datatype: %s", datatype_string.c_str()));
+    }
+    ProfileSyncService::Status status = sync_waiter_->GetStatus();
+    if (status.summary == ProfileSyncService::Status::READY ||
+        status.summary == ProfileSyncService::Status::SYNCING) {
+      DictionaryValue* return_value = new DictionaryValue;
+      return_value->SetBoolean("success", true);
+      reply.SendSuccess(return_value);
+    } else {
+      reply.SendError("Disabling sync for given datatypes was unsuccessful");
+    }
+  }
 }
 
 /* static */

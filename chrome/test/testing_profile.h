@@ -240,6 +240,9 @@ class TestingProfile : public Profile {
   virtual bool HasSessionService() const {
     return (session_service_.get() != NULL);
   }
+  virtual bool HasProfileSyncService() const {
+    return (profile_sync_service_.get() != NULL);
+  }
   virtual std::wstring GetName() { return std::wstring(); }
   virtual void SetName(const std::wstring& name) {}
   virtual std::wstring GetID() { return id_; }

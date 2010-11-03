@@ -89,7 +89,11 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 // prefer using GetModelType where possible.
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 
+// Returns a string that represents the name of |model_type|.
 std::string ModelTypeToString(ModelType model_type);
+
+// Returns the ModelType corresponding to the name |model_type_string|.
+ModelType ModelTypeFromString(const std::string& model_type_string);
 
 // Convert a real model type to a notification type (used for
 // subscribing to server-issued notifications).  Returns true iff

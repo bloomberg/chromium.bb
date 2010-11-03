@@ -1630,6 +1630,124 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     logging.debug('Executing javascript: ', js)
     return self.ExecuteJavascript(js, windex, tab_index)
 
+  def SignInToSync(self, username, password):
+    """Signs in to sync using the given username and password.
+
+    Args:
+      username: The account with which to sign in. Example: "user@gmail.com".
+      password: Password for the above account. Example: "pa$$w0rd".
+
+    Returns:
+      True, on success.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'SignInToSync',
+      'username': username,
+      'password': password,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['success']
+
+  def GetSyncInfo(self):
+    """Returns info about sync.
+
+    Returns:
+      A dictionary of info about sync.
+      Example dictionaries:
+        {u'summary': u'SYNC DISABLED'}
+
+        { u'authenticated': True,
+          u'last synced': u'Just now',
+          u'summary': u'READY',
+          u'sync url': u'clients4.google.com',
+          u'synced datatypes': [ u'Bookmarks',
+                                 u'Preferences',
+                                 u'Passwords',
+                                 u'Autofill',
+                                 u'Themes',
+                                 u'Extensions',
+                                 u'Apps']}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'GetSyncInfo',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['sync_info']
+
+  def AwaitSyncCycleCompletion(self):
+    """Waits for the ongoing sync cycle to complete. Must be signed in to sync
+       before calling this method.
+
+    Returns:
+      True, on success.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'AwaitSyncCycleCompletion',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['success']
+
+  def EnableSyncForDatatypes(self, datatypes):
+    """Enables sync for a given list of sync datatypes. Must be signed in to
+       sync before calling this method.
+
+    Args:
+      datatypes: A list of strings indicating the datatypes for which to enable
+                 sync. Strings that can be in the list are:
+                 Bookmarks, Preferences, Passwords, Autofill, Themes,
+                 Typed URLs, Extensions, Encryption keys, Sessions, Apps, All.
+                 For an updated list of valid sync datatypes, refer to the
+                 function ModelTypeToString() in the file
+                 chrome/browser/sync/syncable/model_type.cc.
+                 Examples:
+                   ['Bookmarks', 'Preferences', 'Passwords']
+                   ['All']
+
+    Returns:
+      True, on success.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'EnableSyncForDatatypes',
+      'datatypes': datatypes,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['success']
+
+  def DisableSyncForDatatypes(self, datatypes):
+    """Disables sync for a given list of sync datatypes. Must be signed in to
+       sync before calling this method.
+
+    Args:
+      datatypes: A list of strings indicating the datatypes for which to
+                 disable sync. Strings that can be in the list are:
+                 Bookmarks, Preferences, Passwords, Autofill, Themes,
+                 Typed URLs, Extensions, Encryption keys, Sessions, Apps, All.
+                 For an updated list of valid sync datatypes, refer to the
+                 function ModelTypeToString() in the file
+                 chrome/browser/sync/syncable/model_type.cc.
+                 Examples:
+                   ['Bookmarks', 'Preferences', 'Passwords']
+                   ['All']
+
+    Returns:
+      True, on success.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'DisableSyncForDatatypes',
+      'datatypes': datatypes,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['success']
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""

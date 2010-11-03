@@ -73,8 +73,12 @@
 /* BEGIN GOOGLE MODIFICATIONS */
 /* On Linux and Mac, be sure to set Mozilla-specific macros. */
 #if defined(USE_X11)
+#if !defined(XP_UNIX)
 #define XP_UNIX 1
+#endif
+#if !defined(MOZ_X11)
 #define MOZ_X11 1
+#endif
 #endif
 /* END GOOGLE MODIFICATIONS */
 

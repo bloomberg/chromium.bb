@@ -47,6 +47,7 @@
     'prefs',
     'search_engines',
     'special_tabs',
+    # 'sync',  crbug.com/60970
     'test_basic.SimpleTest.testCanOpenGoogle',
     'themes',
     'translate',

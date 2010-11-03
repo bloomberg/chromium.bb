@@ -7,9 +7,11 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/common/notification_registrar.h"
 
 class DictionaryValue;
@@ -612,6 +614,36 @@ class TestingAutomationProvider : public AutomationProvider,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
 
+  // Signs in to sync using the given username and password.
+  // Uses the JSON interface for input/output.
+  void SignInToSync(Browser* browser,
+                    DictionaryValue* args,
+                    IPC::Message* reply_message);
+
+  // Returns info about sync.
+  // Uses the JSON interface for input/output.
+  void GetSyncInfo(Browser* browser,
+                   DictionaryValue* args,
+                   IPC::Message* reply_message);
+
+  // Waits for the ongoing sync cycle to complete.
+  // Uses the JSON interface for input/output.
+  void AwaitSyncCycleCompletion(Browser* browser,
+                                DictionaryValue* args,
+                                IPC::Message* reply_message);
+
+  // Enables sync for one or more sync datatypes.
+  // Uses the JSON interface for input/output.
+  void EnableSyncForDatatypes(Browser* browser,
+                              DictionaryValue* args,
+                              IPC::Message* reply_message);
+
+  // Disables sync for one or more sync datatypes.
+  // Uses the JSON interface for input/output.
+  void DisableSyncForDatatypes(Browser* browser,
+                               DictionaryValue* args,
+                               IPC::Message* reply_message);
+
   // Translate DictionaryValues of autofill profiles and credit cards to the
   // data structure used in the browser.
   // Args:
@@ -701,6 +733,9 @@ class TestingAutomationProvider : public AutomationProvider,
   // A temporary object that receives a notification when a popup menu opens.
   PopupMenuWaiter* popup_menu_waiter_;
 #endif  // defined(TOOLKIT_VIEWS)
+
+  // Used to wait on various browser sync events.
+  scoped_ptr<ProfileSyncServiceHarness> sync_waiter_;
 
   // Handle for an in-process redirect query. We expect only one redirect query
   // at a time (we should have only one caller, and it will block while waiting

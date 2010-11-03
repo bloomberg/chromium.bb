@@ -1089,6 +1089,10 @@ bool ProfileImpl::HasSessionService() const {
   return (session_service_.get() != NULL);
 }
 
+bool ProfileImpl::HasProfileSyncService() const {
+  return (sync_service_.get() != NULL);
+}
+
 bool ProfileImpl::DidLastSessionExitCleanly() {
   // last_session_exited_cleanly_ is set when the preferences are loaded. Force
   // it to be set by asking for the prefs.

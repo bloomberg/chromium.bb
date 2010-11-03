@@ -379,6 +379,9 @@ class Profile {
   // Returns true if this profile has a session service.
   virtual bool HasSessionService() const = 0;
 
+  // Returns true if this profile has a profile sync service.
+  virtual bool HasProfileSyncService() const = 0;
+
   // Returns true if the last time this profile was open it was exited cleanly.
   virtual bool DidLastSessionExitCleanly() = 0;
 

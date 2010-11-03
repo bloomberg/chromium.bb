@@ -20,17 +20,26 @@ class Profile;
 // automation purposes. It harnesses the ProfileSyncService member of the
 // profile passed to it on construction and automates certain things like setup
 // and authentication. It provides ways to "wait" adequate periods of time for
-// several clients to get to the same state. In order to use this class for
-// automation, derived classes must implement 2 methods: SignalStateComplete()
-// and AwaitStatusChange().
+// several clients to get to the same state.
 class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
  public:
-  ProfileSyncServiceHarness(Profile* p,
+  ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
                             const std::string& password,
                             int id);
 
   virtual ~ProfileSyncServiceHarness() {}
+
+  // Creates a ProfileSyncServiceHarness object and attaches it to |profile|, a
+  // profile that is assumed to have been signed into sync in the past. Caller
+  // takes ownership.
+  static ProfileSyncServiceHarness* CreateAndAttach(Profile* profile);
+
+  // Sets the GAIA credentials with which to sign in to sync.
+  void SetCredentials(const std::string& username, const std::string& password);
+
+  // Returns true if sync has been enabled on |profile_|.
+  bool IsSyncAlreadySetup();
 
   // Creates a ProfileSyncService for the profile passed at construction and
   // enables sync for all available datatypes. Returns true only after sync has
@@ -109,8 +118,11 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   friend class StateChangeTimeoutEvent;
 
   enum WaitState {
+    // The sync client has just been initialized.
+    INITIAL_WAIT_STATE = 0,
+
     // The sync client awaits the OnBackendInitialized() callback.
-    WAITING_FOR_ON_BACKEND_INITIALIZED = 0,
+    WAITING_FOR_ON_BACKEND_INITIALIZED,
 
     // The sync client is waiting for the first sync cycle to complete.
     WAITING_FOR_INITIAL_SYNC,
@@ -139,10 +151,8 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Called from the observer when the current wait state has been completed.
   void SignalStateCompleteWithNextState(WaitState next_state);
 
-  // Indicates that the operation being waited on is complete. Derived classes
-  // may implement this either by quitting the UI message loop, or by signaling
-  // a WaitableEvent object.
-  virtual void SignalStateComplete() = 0;
+  // Indicates that the operation being waited on is complete.
+  void SignalStateComplete();
 
   // Finite state machine for controlling state.  Returns true only if a state
   // change has taken place.
@@ -152,25 +162,20 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
                                     const std::string& reason);
 
-  // Waits until the sync client's status changes. Derived classes may implement
-  // this either by running the UI message loop, or by waiting on a
-  // WaitableEvent object.
-  virtual void AwaitStatusChange() = 0;
-
   // Returns true if the sync client has no unsynced items.
   bool IsSynced();
 
   // Logs message with relevant info about client's sync state (if available).
   void LogClientInfo(std::string message);
 
+  // Updates |last_timestamp_| with the timestamp of the current sync session.
+  // Returns the new value of |last_timestamp_|.
+  int64 GetUpdatedTimestamp();
+
   WaitState wait_state_;
 
   Profile* profile_;
   ProfileSyncService* service_;
-
-  // Updates |last_timestamp_| with the timestamp of the current sync session.
-  // Returns the new value of |last_timestamp_|.
-  int64 GetUpdatedTimestamp();
 
   // This value tracks the max sync timestamp (e.g. synced-to revision) inside
   // the sync engine.  It gets updated when a sync cycle ends and the session

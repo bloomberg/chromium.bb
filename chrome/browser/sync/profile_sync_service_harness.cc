@@ -84,18 +84,44 @@ bool StateChangeTimeoutEvent::Abort() {
 }
 
 ProfileSyncServiceHarness::ProfileSyncServiceHarness(
-    Profile* p,
+    Profile* profile,
     const std::string& username,
     const std::string& password,
     int id)
-    : wait_state_(WAITING_FOR_ON_BACKEND_INITIALIZED),
-      profile_(p),
+    : wait_state_(INITIAL_WAIT_STATE),
+      profile_(profile),
       service_(NULL),
       last_timestamp_(0),
       min_timestamp_needed_(kMinTimestampNeededNone),
       username_(username),
       password_(password),
-      id_(id) {}
+      id_(id) {
+  if (IsSyncAlreadySetup()) {
+    service_ = profile_->GetProfileSyncService();
+    service_->AddObserver(this);
+    wait_state_ = FULLY_SYNCED;
+  }
+}
+
+// static
+ProfileSyncServiceHarness* ProfileSyncServiceHarness::CreateAndAttach(
+    Profile* profile) {
+  if (!profile->HasProfileSyncService()) {
+    NOTREACHED() << "Profile has never signed into sync.";
+    return NULL;
+  }
+  return new ProfileSyncServiceHarness(profile, "", "", 0);
+}
+
+void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
+                                               const std::string& password) {
+  username_ = username;
+  password_ = password;
+}
+
+bool ProfileSyncServiceHarness::IsSyncAlreadySetup() {
+  return profile_->HasProfileSyncService();
+}
 
 bool ProfileSyncServiceHarness::SetupSync() {
   syncable::ModelTypeSet synced_datatypes;
@@ -109,7 +135,7 @@ bool ProfileSyncServiceHarness::SetupSync() {
 bool ProfileSyncServiceHarness::SetupSync(
     const syncable::ModelTypeSet& synced_datatypes) {
   // Initialize the sync client's profile sync service object.
-  service_ = profile_->GetProfileSyncService("");
+  service_ = profile_->GetProfileSyncService();
   if (service_ == NULL) {
     LOG(ERROR) << "SetupSync(): service_ is null.";
     return false;
@@ -123,7 +149,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   service_->signin()->StartSignIn(username_, password_, "", "");
 
   // Wait for the OnBackendInitialized() callback.
-  DCHECK_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
+  wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
   if (!AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
       "Waiting for OnBackendInitialized().")) {
     LOG(ERROR) << "OnBackendInitialized() not seen after "
@@ -148,6 +174,9 @@ bool ProfileSyncServiceHarness::SetupSync(
     return false;
   }
 
+  // Indicate to the browser that sync setup is complete.
+  service()->SetSyncSetupCompleted();
+
   return true;
 }
 
@@ -155,6 +184,10 @@ void ProfileSyncServiceHarness::SignalStateCompleteWithNextState(
     WaitState next_state) {
   wait_state_ = next_state;
   SignalStateComplete();
+}
+
+void ProfileSyncServiceHarness::SignalStateComplete() {
+  MessageLoop::current()->Quit();
 }
 
 bool ProfileSyncServiceHarness::RunStateChangeMachine() {
@@ -353,13 +386,16 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
   }
   scoped_refptr<StateChangeTimeoutEvent> timeout_signal(
       new StateChangeTimeoutEvent(this, reason));
-  MessageLoopForUI* loop = MessageLoopForUI::current();
+  MessageLoop* loop = MessageLoop::current();
+  bool did_allow_nestable_tasks = loop->NestableTasksAllowed();
+  loop->SetNestableTasksAllowed(true);
   loop->PostDelayedTask(
       FROM_HERE,
       NewRunnableMethod(timeout_signal.get(),
                         &StateChangeTimeoutEvent::Callback),
       timeout_milliseconds);
-  AwaitStatusChange();
+  loop->Run();
+  loop->SetNestableTasksAllowed(did_allow_nestable_tasks);
   LogClientInfo("AwaitStatusChangeWithTimeout succeeded");
   return timeout_signal->Abort();
 }
@@ -370,11 +406,12 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
 }
 
 bool ProfileSyncServiceHarness::IsSynced() {
+  if (service() == NULL)
+    return false;
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
   // snap->unsynced_count once http://crbug.com/48989 is fixed.
-  return (service() &&
-          snap &&
+  return (snap &&
           ServiceIsPushingChanges() &&
           GetStatus().notifications_enabled &&
           !service()->backend()->HasUnsyncedItems() &&
@@ -478,19 +515,24 @@ int64 ProfileSyncServiceHarness::GetUpdatedTimestamp() {
 }
 
 void ProfileSyncServiceHarness::LogClientInfo(std::string message) {
-  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-  if (snap) {
-    VLOG(1) << "Client " << id_ << ": " << message
-            << ": max_local_timestamp: " << snap->max_local_timestamp
-            << ", has_more_to_sync: " << snap->has_more_to_sync
-            << ", unsynced_count: " << snap->unsynced_count
-            << ", has_unsynced_items: "
-            << service()->backend()->HasUnsyncedItems()
-            << ", notifications_enabled: "
-            << GetStatus().notifications_enabled
-            << ", service_is_pushing_changes: " << ServiceIsPushingChanges();
+  if (service()) {
+    const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+    if (snap) {
+      VLOG(1) << "Client " << id_ << ": " << message
+              << ": max_local_timestamp: " << snap->max_local_timestamp
+              << ", has_more_to_sync: " << snap->has_more_to_sync
+              << ", unsynced_count: " << snap->unsynced_count
+              << ", has_unsynced_items: "
+              << service()->backend()->HasUnsyncedItems()
+              << ", notifications_enabled: "
+              << GetStatus().notifications_enabled
+              << ", service_is_pushing_changes: " << ServiceIsPushingChanges();
+    } else {
+      VLOG(1) << "Client " << id_ << ": " << message
+              << ": Sync session snapshot not available.";
+    }
   } else {
     VLOG(1) << "Client " << id_ << ": " << message
-            << ": Sync session snapshot not available.";
+            << ": Sync service not available.";
   }
 }

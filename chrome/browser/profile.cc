@@ -424,6 +424,11 @@ class OffTheRecordProfileImpl : public Profile,
     return false;
   }
 
+  virtual bool HasProfileSyncService() const {
+    // We never have a profile sync service.
+    return false;
+  }
+
   virtual bool DidLastSessionExitCleanly() {
     return profile_->DidLastSessionExitCleanly();
   }

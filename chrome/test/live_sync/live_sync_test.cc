@@ -86,30 +86,6 @@ class SetProxyConfigTask : public Task {
   net::ProxyConfig proxy_config_;
 };
 
-// This is a our notion of a sync client for automation purposes. It is a helper
-// class that specializes ProfileSyncServiceHarness, and is used to wait on
-// various sync operations.
-class SyncClient : public ProfileSyncServiceHarness {
- public:
-  SyncClient(Profile* profile,
-             const std::string& username,
-             const std::string& password, int id)
-      : ProfileSyncServiceHarness(profile, username, password, id) {}
-
-  virtual ~SyncClient() {}
-
-  // Indicates that the sync operation being waited on is complete. Overrides
-  // ProfileSyncServiceHarness::SignalStateComplete().
-  virtual void SignalStateComplete() { MessageLoopForUI::current()->Quit(); }
-
-  // Waits until the sync client's status changes. Overrides
-  // ProfileSyncServiceHarness::AwaitStatusChange().
-  virtual void AwaitStatusChange() { ui_test_utils::RunMessageLoop(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncClient);
-};
-
 void LiveSyncTest::SetUp() {
   // At this point, the browser hasn't been launched, and no services are
   // available.  But we can verify our command line parameters and fail
@@ -205,7 +181,8 @@ bool LiveSyncTest::SetupClients() {
     profiles_.push_back(MakeProfile(
         StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
     EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
-    clients_.push_back(new SyncClient(GetProfile(i), username_, password_, i));
+    clients_.push_back(
+        new ProfileSyncServiceHarness(GetProfile(i), username_, password_, i));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
   }
 

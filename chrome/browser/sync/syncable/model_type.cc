@@ -150,6 +150,33 @@ std::string ModelTypeToString(ModelType model_type) {
   }
 }
 
+ModelType ModelTypeFromString(const std::string& model_type_string) {
+  if (model_type_string == "Bookmarks")
+    return BOOKMARKS;
+  else if (model_type_string == "Preferences")
+    return PREFERENCES;
+  else if (model_type_string == "Passwords")
+    return PASSWORDS;
+  else if (model_type_string == "Autofill")
+    return AUTOFILL;
+  else if (model_type_string == "Themes")
+    return THEMES;
+  else if (model_type_string == "Typed URLs")
+    return TYPED_URLS;
+  else if (model_type_string == "Extensions")
+    return EXTENSIONS;
+  else if (model_type_string == "Encryption keys")
+    return NIGORI;
+  else if (model_type_string == "Sessions")
+    return SESSIONS;
+  else if (model_type_string == "Apps")
+    return APPS;
+  else
+    NOTREACHED() << "No known model type corresponding to "
+                 << model_type_string << ".";
+  return UNSPECIFIED;
+}
+
 // TODO(akalin): Figure out a better way to do these mappings.
 
 namespace {
@@ -247,8 +274,7 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
   } else if (notification_type == kSessionNotificationType) {
     *model_type = SESSIONS;
     return true;
-  }
-  else if (notification_type == kUnknownNotificationType) {
+  } else if (notification_type == kUnknownNotificationType) {
     // TODO(akalin): This is a hack to make new sync data types work with
     // server-issued notifications.  Remove this when it's not needed
     // anymore.
