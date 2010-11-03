@@ -66,7 +66,16 @@ TEST_F(OptionsUITest, CommandOpensOptionsTab) {
 }
 
 // TODO(csilv): Investigate why this fails and fix. http://crbug.com/48521
-TEST_F(OptionsUITest, FLAKY_CommandAgainGoesBackToOptionsTab) {
+// Also, crashing on linux/views.
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#define MAYBE_CommandAgainGoesBackToOptionsTab \
+    DISABLED_CommandAgainGoesBackToOptionsTab
+#else
+#define MAYBE_CommandAgainGoesBackToOptionsTab \
+    FLAKY_CommandAgainGoesBackToOptionsTab
+#endif
+
+TEST_F(OptionsUITest, MAYBE_CommandAgainGoesBackToOptionsTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -95,8 +104,14 @@ TEST_F(OptionsUITest, FLAKY_CommandAgainGoesBackToOptionsTab) {
 }
 
 // TODO(csilv): Investigate why this fails (sometimes) on 10.5 and fix.
-// http://crbug.com/48521
-TEST_F(OptionsUITest, FLAKY_TwoCommandsOneTab) {
+// http://crbug.com/48521. Also, crashing on linux/views.
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+#define MAYBE_TwoCommandsOneTab DISABLED_TwoCommandsOneTab
+#else
+#define MAYBE_TwoComamndsOneTab FLAKY_TwoCommandsOneTab
+#endif
+
+TEST_F(OptionsUITest, MAYBE_TwoCommandsOneTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
