@@ -13,8 +13,9 @@
 #include "base/message_loop.h"
 #include "base/mime_util.h"
 #include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/shell_dialogs.h"
@@ -95,6 +96,17 @@ class SelectFileDialogImpl : public SelectFileDialog {
   void SelectSingleFileHelper(GtkWidget* dialog,
                               gint response_id,
                               bool allow_folder);
+
+  // Common function for CreateFileOpenDialog and CreateMultiFileOpenDialog.
+  GtkWidget* CreateFileOpenHelper(const std::string& title,
+                                  const FilePath& default_path,
+                                  gfx::NativeWindow parent);
+
+  // Wrapper for file_util::DirectoryExists() that allow access on the UI
+  // thread. Use this only in the file dialog functions, where it's ok
+  // because the file dialog has to do many stats anyway. One more won't
+  // hurt too badly and it's likely already cached.
+  bool CallDirectoryExistsOnUIThread(const FilePath& path);
 
   // Callback for when the user responds to a Save As or Open File dialog.
   CHROMEGTK_CALLBACK_1(SelectFileDialogImpl, void,
@@ -329,6 +341,40 @@ void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
   gtk_widget_destroy(dialog);
 }
 
+bool SelectFileDialogImpl::CallDirectoryExistsOnUIThread(const FilePath& path) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  return file_util::DirectoryExists(path);
+}
+
+GtkWidget* SelectFileDialogImpl::CreateFileOpenHelper(
+    const std::string& title,
+    const FilePath& default_path,
+    gfx::NativeWindow parent) {
+  GtkWidget* dialog =
+      gtk_file_chooser_dialog_new(title.c_str(), parent,
+                                  GTK_FILE_CHOOSER_ACTION_OPEN,
+                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                  NULL);
+  AddFilters(GTK_FILE_CHOOSER(dialog));
+
+  if (!default_path.empty()) {
+    if (CallDirectoryExistsOnUIThread(default_path)) {
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                          default_path.value().c_str());
+    } else {
+      // If the file doesn't exist, this will just switch to the correct
+      // directory. That's good enough.
+      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+                                    default_path.value().c_str());
+    }
+  } else if (!last_opened_path_->empty()) {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                        last_opened_path_->value().c_str());
+  }
+  return dialog;
+}
+
 GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
     const std::string& title,
     const FilePath& default_path,
@@ -356,33 +402,13 @@ GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
   return dialog;
 }
 
-GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
-    const FilePath& default_path, gfx::NativeWindow parent) {
+GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(
+    const std::string& title,
+    const FilePath& default_path,
+    gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_OPEN_FILE_DIALOG_TITLE);
-
-  GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
-                                  GTK_FILE_CHOOSER_ACTION_OPEN,
-                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                                  NULL);
-
-  AddFilters(GTK_FILE_CHOOSER(dialog));
-  if (!default_path.empty()) {
-    if (file_util::DirectoryExists(default_path)) {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
-                                          default_path.value().c_str());
-    } else {
-      // If the file doesn't exist, this will just switch to the correct
-      // directory. That's good enough.
-      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
-                                    default_path.value().c_str());
-    }
-  } else if (!last_opened_path_->empty()) {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
-                                        last_opened_path_->value().c_str());
-  }
+  GtkWidget* dialog = CreateFileOpenHelper(title_string, default_path, parent);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
   g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectSingleFileDialogResponseThunk), this);
@@ -395,29 +421,7 @@ GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
     gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_OPEN_FILES_DIALOG_TITLE);
-
-  GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
-                                  GTK_FILE_CHOOSER_ACTION_OPEN,
-                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                                  NULL);
-
-  AddFilters(GTK_FILE_CHOOSER(dialog));
-  if (!default_path.empty()) {
-    if (file_util::DirectoryExists(default_path)) {
-      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
-                                          default_path.value().c_str());
-    } else {
-      // If the file doesn't exist, this will just switch to the correct
-      // directory. That's good enough.
-      gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
-                                    default_path.value().c_str());
-    }
-  } else if (!last_opened_path_->empty()) {
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
-                                        last_opened_path_->value().c_str());
-  }
+  GtkWidget* dialog = CreateFileOpenHelper(title_string, default_path, parent);
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
   g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectMultiFileDialogResponseThunk), this);
@@ -515,10 +519,7 @@ void SelectFileDialogImpl::SelectSingleFileHelper(GtkWidget* dialog,
     return;
   }
 
-  // We're accessing the disk from the UI thread here, but in this case it's
-  // ok because we may have just done lots of stats in the file selection
-  // dialog. One more won't hurt too badly.
-  if (file_util::DirectoryExists(path))
+  if (CallDirectoryExistsOnUIThread(path))
     FileNotSelected(dialog);
   else
     FileSelected(dialog, path);
@@ -551,7 +552,7 @@ void SelectFileDialogImpl::OnSelectMultiFileDialogResponse(
   for (GSList* iter = filenames; iter != NULL; iter = g_slist_next(iter)) {
     FilePath path(static_cast<char*>(iter->data));
     g_free(iter->data);
-    if (file_util::DirectoryExists(path))
+    if (CallDirectoryExistsOnUIThread(path))
       continue;
     filenames_fp.push_back(path);
   }
