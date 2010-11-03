@@ -166,6 +166,16 @@
   fun:*WorkerThreadTickerTest_LongCallback_Test*TestBody*
 }
 
+{
+  bug_61731
+  ThreadSanitizer:Race
+  fun:*Log*
+  ...
+  fun:*Worker*
+  ...
+  obj:*ipc_tests
+}
+
 # TODO(timurrrr): bug item
 {
   Data race on bool in AssertReporter [test-only]
