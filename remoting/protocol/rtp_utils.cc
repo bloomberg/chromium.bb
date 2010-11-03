@@ -48,13 +48,10 @@ void PackRtpHeader(uint8* buffer, int buffer_size,
 }
 
 static inline uint8 ExtractBits(uint8 byte, int bits_count, int shift) {
-  return (byte >> shift) && ((1 << bits_count) - 1);
+  return (byte >> shift) & ((1 << bits_count) - 1);
 }
 
 int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header) {
-  DCHECK_LT(header->sources, 1 << 4);
-  DCHECK_LT(header->payload_type, 1 << 7);
-
   if (buffer_size < kRtpBaseHeaderSize) {
     return -1;
   }
@@ -69,13 +66,13 @@ int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header) {
   header->sources = ExtractBits(buffer[0], 4, 0);
 
   header->marker = ExtractBits(buffer[1], 1, 7) != 0;
-  header->sources = ExtractBits(buffer[1], 7, 0);
+  header->payload_type = ExtractBits(buffer[1], 7, 0);
 
   header->sequence_number = GetBE16(buffer + 2);
   header->timestamp = GetBE32(buffer + 4);
   header->sync_source_id = GetBE32(buffer + 8);
 
-  DCHECK_LE(header->sources, 16);
+  DCHECK_LT(header->sources, 16);
 
   if (buffer_size < GetRtpHeaderSize(header->sources)) {
     return -1;

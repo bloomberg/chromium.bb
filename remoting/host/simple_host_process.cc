@@ -28,9 +28,6 @@
 #include "base/path_service.h"
 #include "base/thread.h"
 #include "media/base/media.h"
-#include "remoting/base/encoder_verbatim.h"
-#include "remoting/base/encoder_vp8.h"
-#include "remoting/base/encoder_zlib.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -65,8 +62,6 @@ void ShutdownTask(MessageLoop* message_loop) {
 
 const std::string kFakeSwitchName = "fake";
 const std::string kConfigSwitchName = "config";
-const std::string kVerbatimSwitchName = "verbatim";
-const std::string kVp8SwitchName = "vp8";
 
 int main(int argc, char** argv) {
   // Needed for the Mac, so we don't leak objects when threads are created.
@@ -80,7 +75,6 @@ int main(int argc, char** argv) {
   base::EnsureNSPRInit();
 
   scoped_ptr<remoting::Capturer> capturer;
-  scoped_ptr<remoting::Encoder> encoder;
   scoped_ptr<remoting::EventExecutor> event_handler;
 #if defined(OS_WIN)
   capturer.reset(new remoting::CapturerGdi());
@@ -92,12 +86,9 @@ int main(int argc, char** argv) {
   capturer.reset(new remoting::CapturerMac());
   event_handler.reset(new remoting::EventExecutorMac(capturer.get()));
 #endif
-  encoder.reset(new remoting::EncoderZlib());
 
-  // Check the argument to see if we should use a fake capturer and encoder.
+  // Check the argument to see if we should use a fake capturer.
   bool fake = cmd_line->HasSwitch(kFakeSwitchName);
-  bool verbatim = cmd_line->HasSwitch(kVerbatimSwitchName);
-  bool vp8 = cmd_line->HasSwitch(kVp8SwitchName);
 
 #if defined(OS_WIN)
   std::wstring home_path = GetEnvironmentVar(kHomeDrive);
@@ -116,19 +107,6 @@ int main(int argc, char** argv) {
     LOG(INFO) << "Using a fake capturer.";
     capturer.reset(new remoting::CapturerFake());
   }
-
-  if (verbatim) {
-    LOG(INFO) << "Using the verbatim encoder.";
-    encoder.reset(new remoting::EncoderVerbatim());
-  }
-
-  // TODO(sergeyu): Enable VP8 on ARM builds.
-#if !defined(ARCH_CPU_ARM_FAMILY)
-  if (vp8) {
-    LOG(INFO) << "Using the verbatim encoder.";
-    encoder.reset(new remoting::EncoderVp8());
-  }
-#endif
 
   base::Thread file_io_thread("FileIO");
   file_io_thread.Start();
@@ -156,7 +134,6 @@ int main(int argc, char** argv) {
       new remoting::ChromotingHost(&context,
                                    config,
                                    capturer.release(),
-                                   encoder.release(),
                                    event_handler.release()));
 
   // Let the chromoting host run until the shutdown task is executed.

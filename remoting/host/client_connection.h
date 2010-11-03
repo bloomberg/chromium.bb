@@ -15,6 +15,7 @@
 #include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/stream_writer.h"
+#include "remoting/protocol/video_writer.h"
 
 namespace remoting {
 
@@ -100,8 +101,9 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<ChromotocolConnection> connection_;
 
+  ControlStreamWriter control_writer_;
   MessageReader event_reader_;
-  VideoStreamWriter video_writer_;
+  scoped_ptr<VideoWriter> video_writer_;
 
   // The message loop that this object runs on.
   MessageLoop* loop_;

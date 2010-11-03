@@ -85,9 +85,11 @@ message VideoPacket {
   // The sequence number of the partial data for updating a rectangle.
   optional int32 sequence_number = 2 [default = 0];
 
+  optional int32 timestamp = 3 [default = 0];
+
   // This is provided on the first packet of the rectangle data, when
   // the flags has FIRST_PACKET set.
-  optional VideoPacketFormat format = 3;
+  optional VideoPacketFormat format = 4;
 
-  optional bytes data = 4;
+  optional bytes data = 5;
 }

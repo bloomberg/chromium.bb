@@ -32,7 +32,7 @@ void RtpWriter::Init(net::Socket* rtp_socket, net::Socket* rtcp_socket) {
   rtcp_socket_ = rtcp_socket;
 }
 
-void RtpWriter::SendPacket(const char* data, int packet_size,
+void RtpWriter::SendPacket(const char* payload, int payload_size,
                            uint32 timestamp) {
   RtpHeader header;
   header.padding = false;
@@ -49,15 +49,15 @@ void RtpWriter::SendPacket(const char* data, int packet_size,
   // TODO(sergeyu): Add VP8 payload header.
 
   int position = 0;
-  while (position < packet_size) {
+  while (position < payload_size) {
     // Allocate buffer.
-    int size = std::max(kMtu, packet_size - position);
-    int header_size = GetRtpHeaderSize(header.sources) + size;
+    int size = std::min(kMtu, payload_size - position);
+    int header_size = GetRtpHeaderSize(header.sources);
     int total_size = size + header_size;
     net::IOBufferWithSize* buffer = new net::IOBufferWithSize(total_size);
 
     // Set marker if this is the last frame.
-    header.marker = (position + size) == packet_size;
+    header.marker = (position + size) == payload_size;
 
     // TODO(sergeyu): Handle sequence number wrapping.
     header.sequence_number = last_packet_number_;
@@ -68,7 +68,7 @@ void RtpWriter::SendPacket(const char* data, int packet_size,
                   header);
 
     // Copy data to the buffer.
-    memcpy(buffer->data() + header_size, data + position, size);
+    memcpy(buffer->data() + header_size, payload + position, size);
 
     // Send it.
     buffered_rtp_writer_->Write(buffer);
@@ -76,7 +76,11 @@ void RtpWriter::SendPacket(const char* data, int packet_size,
     position += size;
   }
 
-  DCHECK_EQ(position, packet_size);
+  DCHECK_EQ(position, payload_size);
+}
+
+int RtpWriter::GetPendingPackets() {
+  return buffered_rtp_writer_->GetBufferChunks();
 }
 
 // Stop writing and drop pending data. Must be called from the same thread as

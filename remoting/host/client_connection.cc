@@ -52,7 +52,7 @@ void ClientConnection::SendInitClientMessage(int width, int height) {
   msg.mutable_init_client()->set_width(width);
   msg.mutable_init_client()->set_height(height);
   DCHECK(msg.IsInitialized());
-  video_writer_.SendMessage(msg);
+  control_writer_.SendMessage(msg);
 }
 
 void ClientConnection::SendVideoPacket(const VideoPacket& packet) {
@@ -62,18 +62,12 @@ void ClientConnection::SendVideoPacket(const VideoPacket& packet) {
   if (!connection_)
     return;
 
-  ChromotingHostMessage* message = new ChromotingHostMessage();
-  // TODO(sergeyu): avoid memcopy here.
-  *message->mutable_video_packet() = packet;
-
-  video_writer_.SendMessage(*message);
-
-  delete message;
+  video_writer_->SendPacket(packet);
 }
 
 int ClientConnection::GetPendingUpdateStreamMessages() {
   DCHECK_EQ(loop_, MessageLoop::current());
-  return video_writer_.GetPendingMessages();
+  return video_writer_->GetPendingPackets();
 }
 
 void ClientConnection::Disconnect() {
@@ -91,10 +85,12 @@ ClientConnection::ClientConnection() {}
 void ClientConnection::OnConnectionStateChange(
     ChromotocolConnection::State state) {
   if (state == ChromotocolConnection::CONNECTED) {
+    control_writer_.Init(connection_->control_channel());
     event_reader_.Init<ChromotingClientMessage>(
         connection_->event_channel(),
         NewCallback(this, &ClientConnection::OnMessageReceived));
-    video_writer_.Init(connection_->video_channel());
+    video_writer_.reset(VideoWriter::Create(connection_->config()));
+    video_writer_->Init(connection_);
   }
 
   loop_->PostTask(FROM_HERE,

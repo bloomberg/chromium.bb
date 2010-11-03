@@ -5,12 +5,16 @@
 #ifndef REMOTING_PROTOCOL_STREAM_WRITER_H_
 #define REMOTING_PROTOCOL_STREAM_WRITER_H_
 
+#include "base/ref_counted.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/buffered_socket_writer.h"
+
+namespace net {
+class Socket;
+}  // namespace net
 
 namespace remoting {
 
-class ChromotingConnection;
+class BufferedSocketWriter;
 
 class StreamWriterBase {
  public:
@@ -41,7 +45,7 @@ class EventStreamWriter : public StreamWriterBase {
   bool SendMessage(const ChromotingClientMessage& message);
 };
 
-class VideoStreamWriter : public StreamWriterBase {
+class ControlStreamWriter : public StreamWriterBase {
  public:
   // Sends the |message| or returns false if called before Init().
   // Can be called on any thread.

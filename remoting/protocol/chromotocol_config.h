@@ -25,8 +25,9 @@ struct ChannelConfig {
 
   enum Codec {
     CODEC_UNDEFINED,  // Used for event and control channels.
-    CODEC_VP8,
+    CODEC_VERBATIM,
     CODEC_ZIP,
+    CODEC_VP8,
   };
 
   ChannelConfig();

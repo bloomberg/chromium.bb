@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "google/protobuf/message_lite.h"
+#include "remoting/base/multiple_array_input_stream.h"
 
 namespace net {
 class DrainableIOBuffer;
@@ -25,7 +26,6 @@ class ClientControlMessage;
 class ClientEventMessage;
 class HostControlMessage;
 class HostEventMessage;
-class MultipleArrayInputStream;
 
 // MessageDecoder uses MultipleArrayInputStream to decode bytes into
 // protocol buffer messages. This can be used to decode bytes received from

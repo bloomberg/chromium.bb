@@ -5,6 +5,7 @@
 #include "remoting/protocol/stream_writer.h"
 
 #include "base/message_loop.h"
+#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/util.h"
 
@@ -34,13 +35,11 @@ void StreamWriterBase::Close() {
   buffered_writer_->Close();
 }
 
-bool EventStreamWriter::SendMessage(
-    const ChromotingClientMessage& message) {
+bool EventStreamWriter::SendMessage(const ChromotingClientMessage& message) {
   return buffered_writer_->Write(SerializeAndFrameMessage(message));
 }
 
-bool VideoStreamWriter::SendMessage(
-    const ChromotingHostMessage& message) {
+bool ControlStreamWriter::SendMessage(const ChromotingHostMessage& message) {
   return buffered_writer_->Write(SerializeAndFrameMessage(message));
 }
 

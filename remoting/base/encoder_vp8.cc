@@ -188,8 +188,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
     switch (packet->kind) {
       case VPX_CODEC_CX_FRAME_PKT:
         got_data = true;
-        message->set_data(
-            packet->data.frame.buf, packet->data.frame.sz);
+        message->set_data(packet->data.frame.buf, packet->data.frame.sz);
         break;
       default:
         break;

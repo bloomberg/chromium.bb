@@ -29,12 +29,14 @@
 #include "remoting/protocol/chromotocol_connection.h"
 #include "remoting/protocol/chromotocol_server.h"
 #include "remoting/protocol/stream_writer.h"
+#include "remoting/protocol/video_reader.h"
 
 class MessageLoop;
 
 namespace remoting {
 
 class JingleThread;
+class VideoStub;
 
 struct ClientConfig;
 
@@ -45,7 +47,8 @@ class JingleHostConnection : public HostConnection,
   virtual ~JingleHostConnection();
 
   virtual void Connect(const ClientConfig& config,
-                       HostEventCallback* event_callback);
+                       HostEventCallback* event_callback,
+                       VideoStub* video_stub);
   virtual void Disconnect();
 
   virtual void SendEvent(const ChromotingClientMessage& msg);
@@ -69,9 +72,11 @@ class JingleHostConnection : public HostConnection,
   // P2P connection to the host.
   void InitConnection();
 
+  // Callback for |control_reader_|.
+  void OnControlMessage(ChromotingHostMessage* msg);
+
   // Callback for |video_reader_|.
-  // TODO(sergeyu): This should be replaced with RTP/RTCP handler.
-  void OnVideoMessage(ChromotingHostMessage* msg);
+  void OnVideoPacket(VideoPacket* packet);
 
   // Used by Disconnect() to disconnect chromoting connection, stop chromoting
   // server, and then disconnect XMPP connection.
@@ -84,10 +89,12 @@ class JingleHostConnection : public HostConnection,
   scoped_refptr<ChromotocolServer> chromotocol_server_;
   scoped_refptr<ChromotocolConnection> connection_;
 
+  MessageReader control_reader_;
   EventStreamWriter event_writer_;
-  MessageReader video_reader_;
+  scoped_ptr<VideoReader> video_reader_;
 
   HostEventCallback* event_callback_;
+  VideoStub* video_stub_;
 
   std::string host_jid_;
 

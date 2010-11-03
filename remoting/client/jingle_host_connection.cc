@@ -11,6 +11,7 @@
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_chromotocol_server.h"
+#include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
@@ -24,8 +25,10 @@ JingleHostConnection::~JingleHostConnection() {
 }
 
 void JingleHostConnection::Connect(const ClientConfig& config,
-                                   HostEventCallback* event_callback) {
+                                   HostEventCallback* event_callback,
+                                   VideoStub* video_stub) {
   event_callback_ = event_callback;
+  video_stub_ = video_stub;
 
   // Initialize |jingle_client_|.
   jingle_client_ = new JingleClient(context_->jingle_thread());
@@ -45,8 +48,9 @@ void JingleHostConnection::Disconnect() {
     return;
   }
 
+  control_reader_.Close();
   event_writer_.Close();
-  video_reader_.Close();
+  video_reader_->Close();
 
   if (connection_) {
     connection_->Close(
@@ -56,8 +60,7 @@ void JingleHostConnection::Disconnect() {
   }
 }
 
-void JingleHostConnection::OnVideoMessage(
-    ChromotingHostMessage* msg) {
+void JingleHostConnection::OnControlMessage(ChromotingHostMessage* msg) {
   event_callback_->HandleMessage(this, msg);
 }
 
@@ -150,10 +153,12 @@ void JingleHostConnection::OnConnectionStateChange(
 
     case ChromotocolConnection::CONNECTED:
       // Initialize reader and writer.
+      control_reader_.Init<ChromotingHostMessage>(
+          connection_->control_channel(),
+          NewCallback(this, &JingleHostConnection::OnControlMessage));
       event_writer_.Init(connection_->event_channel());
-      video_reader_.Init<ChromotingHostMessage>(
-          connection_->video_channel(),
-          NewCallback(this, &JingleHostConnection::OnVideoMessage));
+      video_reader_.reset(VideoReader::Create(connection_->config()));
+      video_reader_->Init(connection_, video_stub_);
       event_callback_->OnConnectionOpened(this);
       break;
 

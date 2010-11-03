@@ -45,7 +45,7 @@ class MockClientConnection : public ClientConnection {
  public:
   MockClientConnection(){}
 
-  MOCK_METHOD1(Init, void(ChromotingConnection* connection));
+  MOCK_METHOD1(Init, void(ChromotocolConnection* connection));
   MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
   MOCK_METHOD1(SendVideoPacket, void(const VideoPacket& packet));
   MOCK_METHOD0(GetPendingUpdateStreamMessages, int());

@@ -28,7 +28,7 @@ class RtpReader : public SocketReaderBase {
 
   // The OnMessageCallback is called whenever a new message is received.
   // Ownership of the message is passed the callback.
-  typedef Callback1<RtpPacket*>::Type OnMessageCallback;
+  typedef Callback1<const RtpPacket&>::Type OnMessageCallback;
 
   // Initialize the reader and start reading. Must be called on the thread
   // |socket| belongs to. The callback will be called when a new message is

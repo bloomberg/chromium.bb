@@ -19,8 +19,11 @@ class RtpWriter {
   // to.
   void Init(net::Socket* rtp_socket, net::Socket* rtcp_socket);
 
-  void SendPacket(const char* buffer, int packet_size,
-                  uint32 timestamp);
+  // Sends next packet.
+  void SendPacket(const char* payload, int payload_size, uint32 timestamp);
+
+  // Returns number of packets queued in the buffer.
+  int GetPendingPackets();
 
   // Stop writing and drop pending data. Must be called from the same thread as
   // Init().

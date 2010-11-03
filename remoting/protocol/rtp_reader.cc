@@ -34,7 +34,7 @@ void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
   packet.payload = buffer->data() + header_size;
   packet.payload_size = data_size - header_size;
 
-  on_message_callback_->Run(&packet);
+  on_message_callback_->Run(packet);
 }
 
 }  // namespace remoting

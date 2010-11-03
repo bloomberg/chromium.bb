@@ -63,8 +63,6 @@ void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
     }
   }
 
-  LOG(WARNING) << "Decoding " <<  encoded_bytes.size();
-
   // Do the actual decoding.
   vpx_codec_err_t ret = vpx_codec_decode(
       codec_, reinterpret_cast<const uint8*>(encoded_bytes.data()),
@@ -73,6 +71,7 @@ void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
     LOG(INFO) << "Decoding failed:" << vpx_codec_err_to_string(ret) << "\n"
               << "Details: " << vpx_codec_error(codec_) << "\n"
               << vpx_codec_error_detail(codec_);
+    return;
   }
 
   // Gets the decoded data.
@@ -80,6 +79,7 @@ void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
   vpx_image_t* image = vpx_codec_get_frame(codec_, &iter);
   if (!image) {
     LOG(INFO) << "No video frame decoded";
+    return;
   }
 
   // Perform YUV conversion.

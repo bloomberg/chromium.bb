@@ -12,6 +12,8 @@
 
 namespace remoting {
 
+class VideoStub;
+
 struct ClientConfig;
 
 class HostConnection {
@@ -39,7 +41,8 @@ class HostConnection {
 
   // TODO(ajwong): We need to generalize this API.
   virtual void Connect(const ClientConfig& config,
-                       HostEventCallback* event_callback) = 0;
+                       HostEventCallback* event_callback,
+                       VideoStub* video_stub) = 0;
   virtual void Disconnect() = 0;
 
   // Send an input event to the host.

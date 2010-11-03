@@ -10,6 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
 #include "remoting/protocol/message_decoder.h"
 
 namespace net {

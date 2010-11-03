@@ -9,24 +9,26 @@
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/encoder.h"
+#include "remoting/base/encoder_verbatim.h"
+#include "remoting/base/encoder_vp8.h"
+#include "remoting/base/encoder_zlib.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/protocol/jingle_chromotocol_server.h"
+#include "remoting/protocol/chromotocol_config.h"
 
 namespace remoting {
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
                                Capturer* capturer,
-                               Encoder* encoder,
                                EventExecutor* executor)
     : context_(context),
       config_(config),
       capturer_(capturer),
-      encoder_(encoder),
       executor_(executor),
       state_(kInitial) {
 }
@@ -140,12 +142,14 @@ void ChromotingHost::OnClientConnected(ClientConnection* client) {
     // Then we create a SessionManager passing the message loops that
     // it should run on.
     DCHECK(capturer_.get());
-    DCHECK(encoder_.get());
+
+    Encoder* encoder = CreateEncoder(client->connection()->config());
+
     session_ = new SessionManager(context_->capture_message_loop(),
                                   context_->encode_message_loop(),
                                   context_->main_message_loop(),
-                                  capturer_.get(),
-                                  encoder_.get());
+                                  capturer_.release(),
+                                  encoder);
   }
 
   // Immediately add the client and start the session.
@@ -284,5 +288,25 @@ void ChromotingHost::OnNewClientConnection(
 void ChromotingHost::OnServerClosed() {
   // Don't need to do anything here.
 }
+
+// TODO(sergeyu): Move this to SessionManager?
+Encoder* ChromotingHost::CreateEncoder(const ChromotocolConfig* config) {
+  const ChannelConfig& video_config = config->video_config();
+
+  if (video_config.codec == ChannelConfig::CODEC_VERBATIM) {
+    return new remoting::EncoderVerbatim();
+  } else if (video_config.codec == ChannelConfig::CODEC_ZIP) {
+    return new remoting::EncoderZlib();
+  }
+  // TODO(sergeyu): Enable VP8 on ARM builds.
+#if !defined(ARCH_CPU_ARM_FAMILY)
+  else if (video_config.codec == ChannelConfig::CODEC_VP8) {
+    return new remoting::EncoderVp8();
+  }
+#endif
+
+  return NULL;
+}
+
 
 }  // namespace remoting

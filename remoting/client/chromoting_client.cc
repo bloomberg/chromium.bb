@@ -30,7 +30,7 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
       input_handler_(input_handler),
       client_done_(client_done),
       state_(CREATED),
-      message_being_processed_(false) {
+      packet_being_processed_(false) {
 }
 
 ChromotingClient::~ChromotingClient() {
@@ -44,7 +44,7 @@ void ChromotingClient::Start() {
     return;
   }
 
-  connection_->Connect(config_, this);
+  connection_->Connect(config_, this, this);
 
   if (!view_->Initialize()) {
     ClientDone();
@@ -103,51 +103,47 @@ void ChromotingClient::HandleMessage(HostConnection* conn,
     return;
   }
 
-  // Put all messages in the queue.
-  received_messages_.push_back(msg);
-
-  if (!message_being_processed_) {
-    DispatchMessage();
-  }
-}
-
-void ChromotingClient::DispatchMessage() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  CHECK(!message_being_processed_);
-
-  if (received_messages_.empty()) {
-    // Nothing to do!
-    return;
-  }
-
-  ChromotingHostMessage* msg = received_messages_.front();
-  received_messages_.pop_front();
-  message_being_processed_ = true;
-
   // TODO(ajwong): Consider creating a macro similar to the IPC message
   // mappings.  Also reconsider the lifetime of the message object.
   if (msg->has_init_client()) {
     ScopedTracer tracer("Handle Init Client");
-    // TODO(ajwong): Change this to use a done callback.
-    InitClient(msg->init_client(),
-               NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
-  } else if (msg->has_video_packet()) {
-    ScopedTracer tracer("Handle Rectangle Update");
-    rectangle_decoder_->DecodePacket(
-        msg->video_packet(),
-        NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
+    InitClient(msg->init_client());
+    delete msg;
   } else {
     NOTREACHED() << "Unknown message received";
+  }
+}
 
-    // We have an unknown message. Drop it, and schedule another dispatch.
-    // Call DispatchMessage as a continuation to avoid growing the stack.
-    delete msg;
-    message_being_processed_ = false;
+void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
+                                          Task* done) {
+  if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &ChromotingClient::DispatchMessage));
+        NewRunnableMethod(this, &ChromotingClient::ProcessVideoPacket,
+                          packet, done));
     return;
   }
+
+  received_packets_.push_back(QueuedVideoPacket(packet, done));
+  if (!packet_being_processed_)
+    DispatchPacket();
+}
+
+void ChromotingClient::DispatchPacket() {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+  CHECK(!packet_being_processed_);
+
+  if (received_packets_.empty()) {
+    // Nothing to do!
+    return;
+  }
+
+  const VideoPacket* packet = received_packets_.front().packet;
+  packet_being_processed_ = true;
+
+  ScopedTracer tracer("Handle video packet");
+  rectangle_decoder_->DecodePacket(
+      *packet, NewTracedMethod(this, &ChromotingClient::OnPacketDone));
 }
 
 void ChromotingClient::OnConnectionOpened(HostConnection* conn) {
@@ -185,23 +181,26 @@ void ChromotingClient::SetConnectionState(ConnectionState s) {
   Repaint();
 }
 
-void ChromotingClient::OnMessageDone(ChromotingHostMessage* message) {
+void ChromotingClient::OnPacketDone() {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &ChromotingClient::OnMessageDone, message));
+        NewTracedMethod(this, &ChromotingClient::OnPacketDone));
     return;
   }
 
-  TraceContext::tracer()->PrintString("Message done");
+  TraceContext::tracer()->PrintString("Packet done");
 
-  message_being_processed_ = false;
-  delete message;
-  DispatchMessage();
+  received_packets_.front().done->Run();
+  delete received_packets_.front().done;
+  received_packets_.pop_front();
+
+  packet_being_processed_ = false;
+
+  DispatchPacket();
 }
 
-void ChromotingClient::InitClient(const InitClientMessage& init_client,
-                                  Task* done) {
+void ChromotingClient::InitClient(const InitClientMessage& init_client) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   TraceContext::tracer()->PrintString("Init received");
 
@@ -217,9 +216,6 @@ void ChromotingClient::InitClient(const InitClientMessage& init_client,
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();
-
-  done->Run();
-  delete done;
 }
 
 }  // namespace remoting

@@ -24,6 +24,7 @@ namespace remoting {
 
 class Capturer;
 class ChromotingHostContext;
+class ChromotocolConfig;
 class Encoder;
 class EventExecutor;
 class MutableHostConfig;
@@ -59,7 +60,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public JingleClient::Callback {
  public:
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
-                 Capturer* capturer, Encoder* encoder, EventExecutor* executor);
+                 Capturer* capturer, EventExecutor* executor);
   virtual ~ChromotingHost();
 
   // Asynchronously start the host process.
@@ -113,6 +114,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Callback for ChromotocolServer::Close().
   void OnServerClosed();
 
+  // Creates encoder for the specified configuration.
+  Encoder* CreateEncoder(const ChromotocolConfig* config);
+
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
 
@@ -122,7 +126,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // constructed this is set to NULL.
   scoped_ptr<Capturer> capturer_;
 
-  // Encoder to be used by the SessionManager. Once the SessionManager is
   // constructed this is set to NULL.
   scoped_ptr<Encoder> encoder_;
 

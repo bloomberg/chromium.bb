@@ -13,6 +13,7 @@
 #include "remoting/client/host_connection.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_view.h"
+#include "remoting/protocol/video_stub.h"
 
 class MessageLoop;
 
@@ -24,7 +25,9 @@ class InitClientMessage;
 class InputHandler;
 class RectangleUpdateDecoder;
 
-class ChromotingClient : public HostConnection::HostEventCallback {
+// TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
+class ChromotingClient : public HostConnection::HostEventCallback,
+                         public VideoStub {
  public:
   // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
@@ -58,20 +61,31 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   virtual void OnConnectionClosed(HostConnection* conn);
   virtual void OnConnectionFailed(HostConnection* conn);
 
+  // VideoStub implementation.
+  virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
+
  private:
+  struct QueuedVideoPacket {
+    QueuedVideoPacket(const VideoPacket* packet, Task* done)
+        : packet(packet), done(done) {
+    }
+    const VideoPacket* packet;
+    Task* done;
+  };
+
   MessageLoop* message_loop();
 
   // Convenience method for modifying the state on this object's message loop.
   void SetConnectionState(ConnectionState s);
 
-  // If a message is not being processed, dispatches a single message from the
-  // |received_messages_| queue.
-  void DispatchMessage();
+  // If a packet is not being processed, dispatches a single message from the
+  // |received_packets_| queue.
+  void DispatchPacket();
 
-  void OnMessageDone(ChromotingHostMessage* msg);
+  void OnPacketDone();
 
   // Handles for chromotocol messages.
-  void InitClient(const InitClientMessage& msg, Task* done);
+  void InitClient(const InitClientMessage& msg);
 
   // The following are not owned by this class.
   ClientConfig config_;
@@ -86,15 +100,15 @@ class ChromotingClient : public HostConnection::HostEventCallback {
 
   ConnectionState state_;
 
-  // Contains all messages that have been received, but have not yet been
+  // Contains all video packets that have been received, but have not yet been
   // processed.
   //
   // Used to serialize sending of messages to the client.
-  std::list<ChromotingHostMessage*> received_messages_;
+  std::list<QueuedVideoPacket> received_packets_;
 
   // True if a message is being processed. Can be used to determine if it is
   // safe to dispatch another message.
-  bool message_being_processed_;
+  bool packet_being_processed_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

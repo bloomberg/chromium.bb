@@ -25,7 +25,6 @@
 
 #if defined(ENABLE_REMOTING)
 #include "remoting/base/constants.h"
-#include "remoting/base/encoder_zlib.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/json_host_config.h"
@@ -282,10 +281,9 @@ bool ServiceProcess::StartChromotingHost() {
   chromoting_context_.reset(new remoting::ChromotingHostContext());
   chromoting_context_->Start();
 
-  // Create capturer, encoder and executor. The ownership will be transfered
+  // Create capturer and executor. The ownership will be transfered
   // to the chromoting host.
   scoped_ptr<remoting::Capturer> capturer;
-  scoped_ptr<remoting::Encoder> encoder;
   scoped_ptr<remoting::EventExecutor> executor;
 
 #if defined(OS_WIN)
@@ -298,13 +296,11 @@ bool ServiceProcess::StartChromotingHost() {
   capturer.reset(new remoting::CapturerMac());
   executor.reset(new remoting::EventExecutorMac(capturer.get()));
 #endif
-  encoder.reset(new remoting::EncoderZlib());
 
   // Create a chromoting host object.
   chromoting_host_ = new remoting::ChromotingHost(chromoting_context_.get(),
                                                   chromoting_config_,
                                                   capturer.release(),
-                                                  encoder.release(),
                                                   executor.release());
 
   // Then start the chromoting host.
