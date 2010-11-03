@@ -490,10 +490,10 @@ bool OSMesaViewGLContext::SwapBuffers() {
   info.bV4Planes = 1;
   info.bV4BitCount = 32;
   info.bV4V4Compression = BI_BITFIELDS;
-  info.bV4RedMask = 0xFF000000;
-  info.bV4GreenMask = 0x00FF0000;
-  info.bV4BlueMask = 0x0000FF00;
-  info.bV4AlphaMask = 0x000000FF;
+  info.bV4RedMask = 0x000000FF;
+  info.bV4GreenMask = 0x0000FF00;
+  info.bV4BlueMask = 0x00FF0000;
+  info.bV4AlphaMask = 0xFF000000;
 
   // Copy the back buffer to the window's device context.
   return StretchDIBits(device_context_,
@@ -522,7 +522,9 @@ void OSMesaViewGLContext::SetSwapInterval(int interval) {
 void OSMesaViewGLContext::UpdateSize() {
   // Change back buffer size to that of window.
   RECT rect;
-  GetClientRect(window_, &rect);
+  if (!GetClientRect(window_, &rect))
+    return;
+
   gfx::Size window_size = gfx::Size(
     std::max(1, static_cast<int>(rect.right - rect.left)),
     std::max(1, static_cast<int>(rect.bottom - rect.top)));
