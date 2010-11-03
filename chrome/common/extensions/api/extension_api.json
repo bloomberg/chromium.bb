@@ -4034,10 +4034,6 @@
             "description": "Whether it is currently enabled or disabled.",
             "type": "boolean"
           },
-          "enabled": {
-            "description": "Whether it is currently enabled or disabled.",
-            "type": "boolean"
-          },
           "isApp": {
             "description": "True if this is an app.",
             "type": "boolean"
