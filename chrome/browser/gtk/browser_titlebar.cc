@@ -438,6 +438,7 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
       browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
     GtkWidget* spy_guy = gtk_image_new_from_pixbuf(GetOTRAvatar());
     gtk_misc_set_alignment(GTK_MISC(spy_guy), 0.0, 1.0);
+    gtk_widget_set_size_request(spy_guy, -1, 0);
     gtk_widget_show(spy_guy);
 
     // Remove previous state.
