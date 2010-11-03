@@ -41,10 +41,11 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 bool FileSystemDispatcher::OpenFileSystem(
     const GURL& origin_url, fileapi::FileSystemType type,
-    long long size, fileapi::FileSystemCallbackDispatcher* dispatcher) {
+    long long size, bool create,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   if (!ChildThread::current()->Send(new ViewHostMsg_OpenFileSystemRequest(
-          request_id, origin_url, type, size))) {
+          request_id, origin_url, type, size, create))) {
     dispatchers_.Remove(request_id);  // destroys |dispatcher|
     return false;
   }

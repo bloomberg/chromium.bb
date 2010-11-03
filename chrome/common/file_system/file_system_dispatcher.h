@@ -35,6 +35,7 @@ class FileSystemDispatcher {
   bool OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,
                       long long size,
+                      bool create,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool Move(const FilePath& src_path,
             const FilePath& dest_path,

@@ -689,7 +689,7 @@ bool PepperPluginDelegateImpl::OpenFileSystem(
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
   return file_system_dispatcher->OpenFileSystem(
-      url, type, size, dispatcher);
+      url, type, size, true /* create */, dispatcher);
 }
 
 bool PepperPluginDelegateImpl::MakeDirectory(

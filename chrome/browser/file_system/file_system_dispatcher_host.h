@@ -48,7 +48,8 @@ class FileSystemDispatcherHost
   void OnOpenFileSystem(int request_id,
                         const GURL& origin_url,
                         fileapi::FileSystemType type,
-                        int64 requested_size);
+                        int64 requested_size,
+                        bool create);
   void OnMove(int request_id,
               const FilePath& src_path,
               const FilePath& dest_path);

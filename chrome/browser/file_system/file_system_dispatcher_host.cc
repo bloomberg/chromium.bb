@@ -31,9 +31,11 @@ class FileSystemDispatcherHost::OpenFileSystemTask {
       int request_id,
       const GURL& origin_url,
       fileapi::FileSystemType type,
+      bool create,
       FileSystemDispatcherHost* dispatcher_host) {
     // The task is self-destructed.
-    new OpenFileSystemTask(request_id, origin_url, type, dispatcher_host);
+    new OpenFileSystemTask(
+        request_id, origin_url, type, create, dispatcher_host);
   }
 
  private:
@@ -54,12 +56,13 @@ class FileSystemDispatcherHost::OpenFileSystemTask {
       int request_id,
       const GURL& origin_url,
       fileapi::FileSystemType type,
+      bool create,
       FileSystemDispatcherHost* dispatcher_host)
     : request_id_(request_id),
       dispatcher_host_(dispatcher_host),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     dispatcher_host->context_->path_manager()->GetFileSystemRootPath(
-        origin_url, type, true /* create */,
+        origin_url, type, create,
         callback_factory_.NewCallback(&OpenFileSystemTask::DidGetRootPath));
   }
 
@@ -138,7 +141,7 @@ bool FileSystemDispatcherHost::OnMessageReceived(
 
 void FileSystemDispatcherHost::OnOpenFileSystem(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
-    int64 requested_size) {
+    int64 requested_size, bool create) {
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
           origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
@@ -153,7 +156,7 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
     return;
   }
 
-  OpenFileSystemTask::Start(request_id, origin_url, type, this);
+  OpenFileSystemTask::Start(request_id, origin_url, type, create, this);
 }
 
 void FileSystemDispatcherHost::OnMove(

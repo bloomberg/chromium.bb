@@ -1122,7 +1122,7 @@ bool TestWebViewDelegate::allowScript(WebFrame* frame,
 }
 
 void TestWebViewDelegate::openFileSystem(
-    WebFrame* frame, WebFileSystem::Type type, long long size,
+    WebFrame* frame, WebFileSystem::Type type, long long size, bool create,
     WebFileSystemCallbacks* callbacks) {
   if (shell_->file_system_root().empty()) {
     // The FileSystem temp directory was not initialized successfully.

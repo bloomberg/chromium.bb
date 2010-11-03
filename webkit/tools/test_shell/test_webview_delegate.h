@@ -232,6 +232,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame* frame,
       WebKit::WebFileSystem::Type type,
       long long size,
+      bool create,
       WebKit::WebFileSystemCallbacks* callbacks);
 
   // webkit_glue::WebPluginPageDelegate

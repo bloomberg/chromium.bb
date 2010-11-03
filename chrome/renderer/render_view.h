@@ -589,6 +589,7 @@ class RenderView : public RenderWidget,
   virtual void openFileSystem(WebKit::WebFrame* frame,
                               WebKit::WebFileSystem::Type type,
                               long long size,
+                              bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
 
   // WebKit::WebPageSerializerClient implementation ----------------------------

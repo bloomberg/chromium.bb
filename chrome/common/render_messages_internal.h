@@ -2909,11 +2909,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // These are messages sent from the renderer to the browser process.
 
   // WebFrameClient::openFileSystem() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_OpenFileSystemRequest,
+  IPC_MESSAGE_CONTROL5(ViewHostMsg_OpenFileSystemRequest,
                        int /* request_id */,
                        GURL /* origin_url */,
                        fileapi::FileSystemType /* type */,
-                       int64 /* requested_size */)
+                       int64 /* requested_size */,
+                       bool /* create */)
 
   // WebFileSystem::move() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Move,

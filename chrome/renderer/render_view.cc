@@ -3688,6 +3688,7 @@ void RenderView::openFileSystem(
     WebFrame* frame,
     WebFileSystem::Type type,
     long long size,
+    bool create,
     WebFileSystemCallbacks* callbacks) {
   DCHECK(callbacks);
 
@@ -3700,7 +3701,7 @@ void RenderView::openFileSystem(
 
   ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
       GURL(origin.toString()), static_cast<fileapi::FileSystemType>(type),
-      size, new WebFileSystemCallbackDispatcher(callbacks));
+      size, create, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------

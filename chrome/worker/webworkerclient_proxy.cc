@@ -130,7 +130,7 @@ void WebWorkerClientProxy::openFileSystem(
     WebKit::WebFileSystemCallbacks* callbacks) {
   ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
       stub_->url().GetOrigin(), static_cast<fileapi::FileSystemType>(type),
-      size, new WebFileSystemCallbackDispatcher(callbacks));
+      size, true /* create */, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
 bool WebWorkerClientProxy::Send(IPC::Message* message) {
