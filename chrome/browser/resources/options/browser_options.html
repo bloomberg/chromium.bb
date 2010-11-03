@@ -64,13 +64,27 @@
   </section>
   <section>
     <h3 i18n-content="defaultSearchGroupName"></h3>
-    <div id="defaultSearchEngineGroup">
-      <select id="defaultSearchEngine"
-          onchange="BrowserOptions.getInstance().setDefaultSearchEngine()">
-      </select>
-      <button id="defaultSearchManageEnginesButton"
-          i18n-content="defaultSearchManageEnginesLink"></button>
-    </div>
+      <div id="defaultSearchEngineGroup">
+        <div>
+          <select id="defaultSearchEngine"
+              onchange="BrowserOptions.getInstance().setDefaultSearchEngine()">
+          </select>
+          <button id="defaultSearchManageEnginesButton"
+              i18n-content="defaultSearchManageEnginesLink"></button>
+        </div>
+        <!-- TODO(estade): toggling this needs to launch the warning dialog -->
+        <label class="checkbox" id="instantOption">
+          <!-- TODO(estade): metric? -->
+          <input type="checkbox" id="instantEnableCheckbox"
+                 pref="instant.enabled">
+          <span i18n-content="instantName"></span>
+        </label>
+        <div class="suboption">
+          <span i18n-content="instantWarningText"></span>
+          <a target="_blank" i18n-values="href:instantLearnMoreLink"
+             i18n-content="learnMore"></a>
+        </div>
+      </div>
   </section>
 <if expr="not pp_ifdef('chromeos')">
   <section>

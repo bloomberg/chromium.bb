@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/options_window.h"
@@ -71,6 +72,12 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
   localized_strings->SetString("defaultSearchManageEnginesLink",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK));
+  localized_strings->SetString("instantName",
+      l10n_util::GetStringUTF16(IDS_INSTANT_PREF));
+  localized_strings->SetString("instantWarningText",
+      l10n_util::GetStringUTF16(IDS_INSTANT_PREF_WARNING));
+  localized_strings->SetString("instantLearnMoreLink",
+      ASCIIToUTF16(browser::kInstantLearnMoreURL));
   localized_strings->SetString("defaultBrowserGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME));
   localized_strings->SetString("defaultBrowserUnknown",

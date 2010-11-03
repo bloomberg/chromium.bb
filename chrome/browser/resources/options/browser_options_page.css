@@ -9,6 +9,12 @@
 
 #defaultSearchEngineGroup {
   display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+#defaultSearchEngineGroup > div {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
 }
 
 #defaultSearchEngine {
@@ -19,6 +25,10 @@
 #defaultSearchManageEnginesButton {
   margin-top: 0px;
   -webkit-margin-start: 10px;
+}
+
+#instantOption {
+  margin-bottom: 0px;
 }
 
 #defaultBrowserState {

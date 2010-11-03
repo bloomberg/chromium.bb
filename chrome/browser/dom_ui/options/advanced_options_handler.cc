@@ -58,8 +58,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("privacyLearnMoreURL",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL));
-  localized_strings->SetString("privacyLearnMoreLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_LEARN_MORE_LABEL));
   localized_strings->SetString("downloadLocationGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME));
   localized_strings->SetString("downloadLocationBrowseButton",
@@ -145,8 +143,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("chromeAppsEnableBackgroundMode",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE));
-  localized_strings->SetString("chromeAppsLearnMoreBackgroundModeLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_LEARN_MORE_LABEL));
   localized_strings->SetString("chromeAppsLearnMoreBackgroundModeURL",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL));
 #if !defined(OS_CHROMEOS)

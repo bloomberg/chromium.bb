@@ -197,11 +197,6 @@ html[dir=rtl] .item {
   max-width: 300px;
 }
 
-.hbox {
-  display: -webkit-box;
-  -webkit-box-orient: horizontal;
-}
-
 .foreign-session-client {
   float: left;
   max-width: 114px; /* Selected so that we can fit 5 items in EN-US */
