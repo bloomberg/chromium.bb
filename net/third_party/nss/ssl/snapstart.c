@@ -48,10 +48,6 @@
 
 /* TODO(agl): Add support for snap starting with compression. */
 
-/* TODO(agl): Free snapStartApplicationData as soon as the handshake has
-** completed.
-*/
-
 #include "pk11pub.h"
 #include "ssl.h"
 #include "sslimpl.h"
@@ -821,6 +817,7 @@ ssl3_SendSnapStartXtn(sslSocket *ss, PRBool append, PRUint32 maxBytes)
         rv = ssl3_AppendSnapStartApplicationData(
                  ss, ss->ssl3.snapStartApplicationData.data,
                  ss->ssl3.snapStartApplicationData.len);
+        SECITEM_FreeItem(&ss->ssl3.snapStartApplicationData, PR_FALSE);
         if (rv != SECSuccess)
             goto loser;
     }
