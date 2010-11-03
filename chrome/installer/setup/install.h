@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
@@ -41,7 +42,7 @@ std::wstring GetInstallerPathUnderChrome(const std::wstring& install_path,
 installer_util::InstallStatus InstallOrUpdateChrome(
     const std::wstring& exe_path, const std::wstring& archive_path,
     const std::wstring& install_temp_path, const std::wstring& prefs_path,
-    const DictionaryValue* prefs, const Version& new_version,
+    const installer_util::MasterPreferences& prefs, const Version& new_version,
     const Version* installed_version);
 }
 

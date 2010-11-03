@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
@@ -117,6 +118,12 @@ class InstallUtil {
   // given by reg_root.
   static bool DeleteRegistryValue(HKEY reg_root, const std::wstring& key_path,
                                   const std::wstring& value_name);
+
+  // Returns a static preference object that has been initialized with the
+  // CommandLine object for the current process.
+  // NOTE: Must not be called before CommandLine::Init() is called!
+  static const installer_util::MasterPreferences&
+      GetMasterPreferencesForCurrentProcess();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);

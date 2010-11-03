@@ -38,6 +38,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -217,10 +218,11 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
 }
 
 installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
-    const installer::Version* installed_version, const DictionaryValue* prefs) {
+    const installer::Version* installed_version,
+    const installer_util::MasterPreferences& prefs) {
   bool system_level = false;
-  installer_util::GetDistroBooleanPreference(prefs,
-      installer_util::master_preferences::kSystemLevel, &system_level);
+  prefs.GetBool(installer_util::master_preferences::kSystemLevel,
+                &system_level);
   installer_util::InstallStatus install_status = installer_util::UNKNOWN_STATUS;
   if (!CheckPreInstallConditions(installed_version,
                                  system_level, install_status))
@@ -325,7 +327,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         }
 
         bool value = false;
-        installer_util::GetDistroBooleanPreference(prefs,
+        prefs.GetBool(
             installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
             &value);
         bool write_chrome_launch_string = (!value) &&
@@ -338,9 +340,8 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
           VLOG(1) << "First install successful.";
           // We never want to launch Chrome in system level install mode.
           bool do_not_launch_chrome = false;
-          installer_util::GetDistroBooleanPreference(prefs,
-              installer_util::master_preferences::kDoNotLaunchChrome,
-              &do_not_launch_chrome);
+          prefs.GetBool(installer_util::master_preferences::kDoNotLaunchChrome,
+                        &do_not_launch_chrome);
           if (!system_level && !do_not_launch_chrome)
             installer::LaunchChrome(system_level);
         } else if ((install_status == installer_util::NEW_VERSION_UPDATED) ||
@@ -631,19 +632,19 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
   installer::InitInstallerLogging(parsed_command_line);
-  scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
-      parsed_command_line));
+  const installer_util::MasterPreferences& prefs =
+      InstallUtil::GetMasterPreferencesForCurrentProcess();
   bool value = false;
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-          installer_util::master_preferences::kVerboseLogging, &value) &&
-      value)
+  if (prefs.GetBool(installer_util::master_preferences::kVerboseLogging,
+                    &value) && value) {
     logging::SetMinLogLevel(logging::LOG_INFO);
+  }
 
   VLOG(1) << "Command Line: " << parsed_command_line.command_line_string();
 
   bool system_install = false;
-  installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel, &system_install);
+  prefs.GetBool(installer_util::master_preferences::kSystemLevel,
+                &system_install);
   VLOG(1) << "system install is " << system_install;
 
   // Check to make sure current system is WinXP or later. If not, log
@@ -723,9 +724,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
                                      system_install);
   // If --uninstall option is not specified, we assume it is install case.
   } else {
-    install_status = InstallChrome(parsed_command_line,
-                                   installed_version.get(),
-                                   prefs.get());
+    install_status = InstallChrome(parsed_command_line, installed_version.get(),
+                                   prefs);
   }
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();

@@ -18,54 +18,37 @@
 
 namespace installer_util {
 
-bool GetDistroBooleanPreference(const DictionaryValue* prefs,
-                                const std::string& name,
-                                bool* value) {
+MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
+    : distribution_(NULL), preferences_read_from_file_(false) {
+}
+
+MasterPreferences::MasterPreferences(const FilePath& prefs_path)
+    : distribution_(NULL), preferences_read_from_file_(false) {
+}
+
+MasterPreferences::~MasterPreferences() {
+}
+
+bool MasterPreferences::GetBool(const std::string& name, bool* value) const {
   // This function is called by InstallUtil::IsChromeFrameProcess()
   // We return false because GetInstallPreferences returns an empty value below.
   return false;
 }
 
-bool GetDistroIntegerPreference(const DictionaryValue* prefs,
-                                const std::string& name,
-                                int* value) {
+bool MasterPreferences::GetInt(const std::string& name, int* value) const {
   NOTREACHED();
   return false;
 }
 
-DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
-  // This function is called by InstallUtil::IsChromeFrameProcess()
-  // so we cannot make it NOTREACHED()
-  return new DictionaryValue();;
-}
-
-DictionaryValue* ParseDistributionPreferences(
-    const FilePath& master_prefs_path) {
+bool MasterPreferences::GetString(const std::string& name,
+                                  std::string* value) const {
   NOTREACHED();
-  return NULL;
+  return false;
 }
 
-std::vector<GURL> GetFirstRunTabs(const DictionaryValue* prefs) {
+std::vector<GURL> MasterPreferences::GetFirstRunTabs() const {
   NOTREACHED();
   return std::vector<GURL>();
-}
-
-std::vector<GURL> GetDefaultBookmarks(const DictionaryValue* prefs) {
-  NOTREACHED();
-  return std::vector<GURL>();
-}
-
-bool SetDistroBooleanPreference(DictionaryValue* prefs,
-                                const std::string& name,
-                                bool value) {
-  NOTREACHED();
-  return false;
-}
-
-bool HasExtensionsBlock(const DictionaryValue* prefs,
-                        DictionaryValue** extensions) {
-  NOTREACHED();
-  return false;
 }
 
 }

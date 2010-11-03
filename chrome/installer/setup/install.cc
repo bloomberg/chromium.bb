@@ -20,7 +20,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -729,11 +729,11 @@ std::wstring installer::GetInstallerPathUnderChrome(
 installer_util::InstallStatus installer::InstallOrUpdateChrome(
     const std::wstring& exe_path, const std::wstring& archive_path,
     const std::wstring& install_temp_path, const std::wstring& prefs_path,
-    const DictionaryValue* prefs, const Version& new_version,
+    const installer_util::MasterPreferences& prefs, const Version& new_version,
     const Version* installed_version) {
   bool system_install = false;
-  installer_util::GetDistroBooleanPreference(prefs,
-      installer_util::master_preferences::kSystemLevel, &system_install);
+  prefs.GetBool(installer_util::master_preferences::kSystemLevel,
+                &system_install);
   std::wstring install_path(GetChromeInstallPath(system_install));
   if (install_path.empty()) {
     LOG(ERROR) << "Could not get installation destination path.";
@@ -757,27 +757,25 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       CopyPreferenceFileForFirstRun(system_install, prefs_path);
 
     bool value = false;
-    if (!installer_util::GetDistroBooleanPreference(prefs,
-        installer_util::master_preferences::kDoNotCreateShortcuts, &value) ||
-        !value) {
+    if (!prefs.GetBool(
+            installer_util::master_preferences::kDoNotCreateShortcuts,
+            &value) || !value) {
       bool create_all_shortcut = false;
-      installer_util::GetDistroBooleanPreference(prefs,
-          installer_util::master_preferences::kCreateAllShortcuts,
-          &create_all_shortcut);
+      prefs.GetBool(installer_util::master_preferences::kCreateAllShortcuts,
+                    &create_all_shortcut);
       bool alt_shortcut = false;
-      installer_util::GetDistroBooleanPreference(prefs,
-          installer_util::master_preferences::kAltShortcutText,
-          &alt_shortcut);
+      prefs.GetBool(installer_util::master_preferences::kAltShortcutText,
+                    &alt_shortcut);
       if (!CreateOrUpdateChromeShortcuts(exe_path, install_path,
                                          new_version.GetString(), result,
                                          system_install, create_all_shortcut,
-                                         alt_shortcut))
+                                         alt_shortcut)) {
         LOG(WARNING) << "Failed to create/update start menu shortcut.";
+      }
 
       bool make_chrome_default = false;
-      installer_util::GetDistroBooleanPreference(prefs,
-          installer_util::master_preferences::kMakeChromeDefault,
-          &make_chrome_default);
+      prefs.GetBool(installer_util::master_preferences::kMakeChromeDefault,
+                    &make_chrome_default);
 
       // If this is not the user's first Chrome install, but they have chosen
       // Chrome to become their default browser on the download page, we must
@@ -786,7 +784,7 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       bool force_chrome_default_for_user = false;
       if (result == installer_util::NEW_VERSION_UPDATED ||
           result == installer_util::INSTALL_REPAIRED) {
-        installer_util::GetDistroBooleanPreference(prefs,
+        prefs.GetBool(
             installer_util::master_preferences::kMakeChromeDefaultForUser,
             &force_chrome_default_for_user);
       }

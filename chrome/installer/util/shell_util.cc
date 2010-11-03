@@ -30,6 +30,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 
 #include "installer_util_strings.h"
 
@@ -783,12 +784,10 @@ bool ShellUtil::UpdateChromeShortcut(const std::wstring& chrome_exe,
 
   FilePath prefs_path(chrome_path);
   prefs_path = prefs_path.AppendASCII(installer_util::kDefaultMasterPrefs);
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_path));
+  installer_util::MasterPreferences prefs(prefs_path);
   int icon_index = dist->GetIconIndex();
-  installer_util::GetDistroIntegerPreference(prefs.get(),
-      installer_util::master_preferences::kChromeShortcutIconIndex,
-      &icon_index);
+  prefs.GetInt(installer_util::master_preferences::kChromeShortcutIconIndex,
+               &icon_index);
   if (create_new) {
     return file_util::CreateShortcutLink(
         chrome_exe.c_str(),                // target

@@ -25,11 +25,17 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/l10n_string_util.h"
-#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
 using base::win::RegKey;
+using installer_util::MasterPreferences;
+
+const MasterPreferences& InstallUtil::GetMasterPreferencesForCurrentProcess() {
+  static MasterPreferences prefs(*CommandLine::ForCurrentProcess());
+  return prefs;
+}
 
 bool InstallUtil::ExecuteExeAsAdmin(const std::wstring& exe,
                                     const std::wstring& params,
@@ -132,20 +138,13 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
 }
 
 bool InstallUtil::IsChromeFrameProcess() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  DCHECK(command_line)
-      << "IsChromeFrameProcess() called before ComamandLine::Init()";
-
   FilePath module_path;
   PathService::Get(base::FILE_MODULE, &module_path);
   std::wstring module_name(module_path.BaseName().value());
 
-  scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
-                                    *command_line));
-  DCHECK(prefs.get());
+  const MasterPreferences& prefs = GetMasterPreferencesForCurrentProcess();
   bool is_cf = false;
-  installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kChromeFrame, &is_cf);
+  prefs.GetBool(installer_util::master_preferences::kChromeFrame, &is_cf);
 
   // Also assume this to be a ChromeFrame process if we are running inside
   // the Chrome Frame DLL.
@@ -175,18 +174,13 @@ bool InstallUtil::IsMSIProcess(bool system_level) {
   static bool is_msi_ = false;
   static bool msi_checked_ = false;
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  CHECK(command_line);
-
   if (!msi_checked_) {
     msi_checked_ = true;
 
-    scoped_ptr<DictionaryValue> prefs(installer_util::GetInstallPreferences(
-                                      *command_line));
-    DCHECK(prefs.get());
+    const MasterPreferences& prefs = GetMasterPreferencesForCurrentProcess();
+
     bool is_msi = false;
-    installer_util::GetDistroBooleanPreference(prefs.get(),
-        installer_util::master_preferences::kMsi, &is_msi);
+    prefs.GetBool(installer_util::master_preferences::kMsi, &is_msi);
 
     if (!is_msi) {
       // We didn't find it in the preferences, try looking in the registry.

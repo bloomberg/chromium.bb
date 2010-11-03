@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,6 +30,13 @@ class MasterPreferencesTest : public testing::Test {
  private:
   FilePath prefs_file_;
 };
+
+// Used to specify an expected value for a set boolean preference variable.
+struct ExpectedBooleans {
+  const char* name;
+  bool expected_value;
+};
+
 }  // namespace
 
 TEST_F(MasterPreferencesTest, ParseDistroParams) {
@@ -61,76 +69,48 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "} \n";
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file()));
-  EXPECT_TRUE(prefs.get() != NULL);
-  bool value = true;
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroShowWelcomePage, &value) &&
-      value);
+  installer_util::MasterPreferences prefs(prefs_file());
 
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportSearchPref, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHistoryPref, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportBookmarksPref, &value) &&
-      value);
+  const char* expected_true[] = {
+    installer_util::master_preferences::kDistroSkipFirstRunPref,
+    installer_util::master_preferences::kDistroShowWelcomePage,
+    installer_util::master_preferences::kDistroImportSearchPref,
+    installer_util::master_preferences::kDistroImportHistoryPref,
+    installer_util::master_preferences::kDistroImportBookmarksPref,
+    installer_util::master_preferences::kDistroImportHomePagePref,
+    installer_util::master_preferences::kCreateAllShortcuts,
+    installer_util::master_preferences::kDoNotLaunchChrome,
+    installer_util::master_preferences::kMakeChromeDefault,
+    installer_util::master_preferences::kMakeChromeDefaultForUser,
+    installer_util::master_preferences::kSystemLevel,
+    installer_util::master_preferences::kVerboseLogging,
+    installer_util::master_preferences::kRequireEula,
+    installer_util::master_preferences::kAltShortcutText,
+    installer_util::master_preferences::kAltFirstRunBubble,
+    installer_util::master_preferences::kSearchEngineExperimentPref,
+  };
+
+  for (int i = 0; i < arraysize(expected_true); ++i) {
+    bool value = false;
+    EXPECT_TRUE(prefs.GetBool(expected_true[i], &value));
+    EXPECT_TRUE(value) << expected_true[i];
+  }
+
   std::string str_value;
-  EXPECT_TRUE(installer_util::GetDistroStringPreference(prefs.get(),
+  EXPECT_TRUE(prefs.GetString(
       installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
   EXPECT_STREQ("c:\\foo", str_value.c_str());
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHomePagePref, &value) &&
-      value);
 
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefault, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
-      value);
-
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kVerboseLogging, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kRequireEula, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltShortcutText, &value) &&
-      value);
-
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltFirstRunBubble, &value) &&
-      value);
   int icon_index = 0;
-  EXPECT_TRUE(installer_util::GetDistroIntegerPreference(prefs.get(),
+  EXPECT_TRUE(prefs.GetInt(
       installer_util::master_preferences::kChromeShortcutIconIndex,
       &icon_index));
   EXPECT_EQ(icon_index, 1);
   int ping_delay = 90;
-  EXPECT_TRUE(installer_util::GetDistroIntegerPreference(prefs.get(),
-      installer_util::master_preferences::kDistroPingDelay, &ping_delay));
+  EXPECT_TRUE(prefs.GetInt(installer_util::master_preferences::kDistroPingDelay,
+                           &ping_delay));
   EXPECT_EQ(ping_delay, 40);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-    installer_util::master_preferences::kSearchEngineExperimentPref, &value) &&
-    value);
 }
 
 TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
@@ -148,52 +128,48 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     "} \n";
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file()));
-  EXPECT_TRUE(prefs.get() != NULL);
-  bool value = false;
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) &&
-      value);
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroShowWelcomePage, &value));
+  installer_util::MasterPreferences prefs(prefs_file());
 
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportSearchPref, &value) &&
-      value);
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHistoryPref, &value));
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportBookmarksPref, &value));
-  EXPECT_FALSE(value);
+  ExpectedBooleans expected_bool[] = {
+    { installer_util::master_preferences::kDistroSkipFirstRunPref, true },
+    { installer_util::master_preferences::kDistroImportSearchPref, true },
+    { installer_util::master_preferences::kDistroImportBookmarksPref, false },
+    { installer_util::master_preferences::kCreateAllShortcuts, true },
+    { installer_util::master_preferences::kDoNotLaunchChrome, true },
+  };
+
+  bool value = false;
+  for (int i = 0; i < arraysize(expected_bool); ++i) {
+    EXPECT_TRUE(prefs.GetBool(expected_bool[i].name, &value));
+    EXPECT_EQ(value, expected_bool[i].expected_value) << expected_bool[i].name;
+  }
+
+  const char* missing_bools[] = {
+    installer_util::master_preferences::kDistroShowWelcomePage,
+    installer_util::master_preferences::kDistroImportHistoryPref,
+    installer_util::master_preferences::kDistroImportHomePagePref,
+    installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
+    installer_util::master_preferences::kMakeChromeDefault,
+    installer_util::master_preferences::kMakeChromeDefaultForUser,
+  };
+
+  for (int i = 0; i < arraysize(missing_bools); ++i) {
+    EXPECT_FALSE(prefs.GetBool(missing_bools[i], &value)) << missing_bools[i];
+  }
+
   std::string str_value;
-  EXPECT_FALSE(installer_util::GetDistroStringPreference(prefs.get(),
+  EXPECT_FALSE(prefs.GetString(
       installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHomePagePref, &value));
-
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
-      value);
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
-      &value));
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefault, &value));
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefaultForUser, &value));
 
   int icon_index = 0;
-  EXPECT_FALSE(installer_util::GetDistroIntegerPreference(prefs.get(),
+  EXPECT_FALSE(prefs.GetInt(
       installer_util::master_preferences::kChromeShortcutIconIndex,
       &icon_index));
   EXPECT_EQ(icon_index, 0);
+
   int ping_delay = 90;
-  EXPECT_FALSE(installer_util::GetDistroIntegerPreference(prefs.get(),
+  EXPECT_FALSE(prefs.GetInt(
       installer_util::master_preferences::kDistroPingDelay, &ping_delay));
   EXPECT_EQ(ping_delay, 90);
 }
@@ -212,12 +188,9 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
     "} \n";
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file()));
-  EXPECT_TRUE(prefs.get() != NULL);
-
+  installer_util::MasterPreferences prefs(prefs_file());
   typedef std::vector<GURL> TabsVector;
-  TabsVector tabs = installer_util::GetFirstRunTabs(prefs.get());
+  TabsVector tabs = prefs.GetFirstRunTabs();
   ASSERT_EQ(3, tabs.size());
   EXPECT_EQ(GURL("http://google.com/f1"), tabs[0]);
   EXPECT_EQ(GURL("https://google.com/f2"), tabs[1]);
@@ -234,11 +207,9 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
   prefs_path = prefs_path.AppendASCII("extensions")
       .AppendASCII("good").AppendASCII("Preferences");
 
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_path));
-  ASSERT_TRUE(prefs.get() != NULL);
+  installer_util::MasterPreferences prefs(prefs_path);
   DictionaryValue* extensions = NULL;
-  EXPECT_TRUE(installer_util::HasExtensionsBlock(prefs.get(), &extensions));
+  EXPECT_TRUE(prefs.GetExtensionsBlock(&extensions));
   int location = 0;
   EXPECT_TRUE(extensions->GetInteger(
       "behllobkkfkfnphdnhnkndlbkcpglgmj.location", &location));
@@ -283,34 +254,24 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   cmd_str.append(L" --do-not-launch-chrome");
   cmd_str.append(L" --alt-desktop-shortcut");
   CommandLine cmd_line = CommandLine::FromString(cmd_str);
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::GetInstallPreferences(cmd_line));
-  EXPECT_TRUE(prefs.get() != NULL);
+  installer_util::MasterPreferences prefs(cmd_line);
 
   // Check prefs that do not have any equivalent command line option.
-  bool value = false;
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) &&
-      value);
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroShowWelcomePage, &value));
+  ExpectedBooleans expected_bool[] = {
+    { installer_util::master_preferences::kDistroSkipFirstRunPref, true },
+    { installer_util::master_preferences::kCreateAllShortcuts, true },
+    { installer_util::master_preferences::kDoNotLaunchChrome, true },
+    { installer_util::master_preferences::kAltShortcutText, true },
+    { installer_util::master_preferences::kSystemLevel, true },
+    { installer_util::master_preferences::kVerboseLogging, false },
+  };
 
   // Now check that prefs got merged correctly.
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltShortcutText, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kVerboseLogging, &value));
-  EXPECT_FALSE(value);
+  bool value = false;
+  for (int i = 0; i < arraysize(expected_bool); ++i) {
+    EXPECT_TRUE(prefs.GetBool(expected_bool[i].name, &value));
+    EXPECT_EQ(value, expected_bool[i].expected_value) << expected_bool[i].name;
+  }
 
   // Delete temporary prefs file.
   EXPECT_TRUE(file_util::Delete(prefs_file, false));
@@ -320,19 +281,21 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   cmd_str = L"setup.exe --create-all-shortcuts --do-not-launch-chrome"
             L" --alt-desktop-shortcut";
   cmd_line.ParseFromString(cmd_str);
-  prefs.reset(installer_util::GetInstallPreferences(cmd_line));
-  EXPECT_TRUE(prefs.get() != NULL);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kCreateAllShortcuts, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDoNotLaunchChrome, &value) &&
-      value);
-  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltShortcutText, &value) &&
-      value);
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
+  installer_util::MasterPreferences prefs2(cmd_line);
+  ExpectedBooleans expected_bool2[] = {
+    { installer_util::master_preferences::kCreateAllShortcuts, true },
+    { installer_util::master_preferences::kDoNotLaunchChrome, true },
+    { installer_util::master_preferences::kAltShortcutText, true },
+  };
+
+  for (int i = 0; i < arraysize(expected_bool2); ++i) {
+    EXPECT_TRUE(prefs2.GetBool(expected_bool2[i].name, &value));
+    EXPECT_EQ(value, expected_bool2[i].expected_value)
+        << expected_bool2[i].name;
+  }
+
+  EXPECT_FALSE(prefs2.GetBool(
       installer_util::master_preferences::kSystemLevel, &value));
-  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
+  EXPECT_FALSE(prefs2.GetBool(
       installer_util::master_preferences::kVerboseLogging, &value));
 }
