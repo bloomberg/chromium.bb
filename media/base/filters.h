@@ -24,7 +24,6 @@
 #define MEDIA_BASE_FILTERS_H_
 
 #include <limits>
-#include <list>
 #include <string>
 
 #include "base/callback.h"
@@ -59,11 +58,6 @@ enum FilterType {
 
 // Used for completing asynchronous methods.
 typedef Callback0::Type FilterCallback;
-
-// This is a list of MediaFilter objects. Objects in this list is used to
-// form a media playback pipeline. See src/media/base/pipeline.h for more
-// information.
-typedef std::list<scoped_refptr<MediaFilter> > MediaFilterCollection;
 
 class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
  public:
@@ -147,6 +141,7 @@ class DataSource : public MediaFilter {
 
   virtual bool IsUrlSupported(const std::string& url);
 
+  static FilterType static_filter_type() { return FILTER_DATA_SOURCE; }
   virtual FilterType filter_type() const;
 
   // Initialize a DataSource for the given URL, executing the callback upon
@@ -173,6 +168,7 @@ class DataSource : public MediaFilter {
 
 class Demuxer : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_DEMUXER; }
   virtual FilterType filter_type() const;
 
   // Initialize a Demuxer with the given DataSource, executing the callback upon
@@ -228,6 +224,7 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
 class VideoDecoder : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_VIDEO_DECODER; }
   virtual FilterType filter_type() const;
 
   virtual const char* major_mime_type() const;
@@ -272,6 +269,7 @@ class VideoDecoder : public MediaFilter {
 
 class AudioDecoder : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_AUDIO_DECODER; }
   virtual FilterType filter_type() const;
 
   virtual const char* major_mime_type() const;
@@ -311,6 +309,7 @@ class AudioDecoder : public MediaFilter {
 
 class VideoRenderer : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_VIDEO_RENDERER; }
   virtual FilterType filter_type() const;
 
   virtual const char* major_mime_type() const;
@@ -327,6 +326,7 @@ class VideoRenderer : public MediaFilter {
 
 class AudioRenderer : public MediaFilter {
  public:
+  static FilterType static_filter_type() { return FILTER_AUDIO_RENDERER; }
   virtual FilterType filter_type() const;
 
   virtual const char* major_mime_type() const;

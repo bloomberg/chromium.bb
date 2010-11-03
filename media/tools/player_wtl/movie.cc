@@ -54,25 +54,25 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   }
 
   // Create filter collection.
-  MediaFilterCollection collection;
-  collection.push_back(new FileDataSource());
-  collection.push_back(new FFmpegAudioDecoder());
-  collection.push_back(new FFmpegDemuxer());
-  collection.push_back(new FFmpegVideoDecoder(NULL));
+  scoped_ptr<MediaFilterCollection> collection(new MediaFilterCollection());
+  collection->AddFilter(new FileDataSource());
+  collection->AddFilter(new FFmpegAudioDecoder());
+  collection->AddFilter(new FFmpegDemuxer());
+  collection->AddFilter(new FFmpegVideoDecoder(NULL));
 
   if (enable_audio_) {
-    collection.push_back(new AudioRendererImpl());
+    collection->AddFilter(new AudioRendererImpl());
   } else {
-    collection.push_back(new media::NullAudioRenderer());
+    collection->AddFilter(new media::NullAudioRenderer());
   }
-  collection.push_back(video_renderer);
+  collection->AddFilter(video_renderer);
 
   thread_.reset(new base::Thread("PipelineThread"));
   thread_->Start();
   pipeline_ = new PipelineImpl(thread_->message_loop());
 
   // Create and start our pipeline.
-  pipeline_->Start(collection, WideToUTF8(std::wstring(url)), NULL);
+  pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)), NULL);
   while (true) {
     PlatformThread::Sleep(100);
     if (pipeline_->IsInitialized())

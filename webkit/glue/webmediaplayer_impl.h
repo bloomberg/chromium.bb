@@ -169,7 +169,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // |collection| before calling this method.
   //
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     const media::MediaFilterCollection& collection,
+                     media::MediaFilterCollection* collection,
                      MediaResourceLoaderBridgeFactory* bridge_factory_simple,
                      MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
                      bool use_simple_data_source,
@@ -280,7 +280,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   MessageLoop* main_loop_;
 
   // A collection of filters.
-  media::MediaFilterCollection filter_collection_;
+  scoped_ptr<media::MediaFilterCollection> filter_collection_;
 
   // The actual pipeline and the thread it runs on.
   scoped_refptr<media::PipelineImpl> pipeline_;

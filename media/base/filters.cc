@@ -86,15 +86,15 @@ bool DataSource::IsUrlSupported(const std::string& url) {
 }
 
 FilterType DataSource::filter_type() const {
-  return FILTER_DATA_SOURCE;
+  return static_filter_type();
 }
 
 FilterType Demuxer::filter_type() const {
-  return FILTER_DEMUXER;
+  return static_filter_type();
 }
 
 FilterType AudioDecoder::filter_type() const {
-  return FILTER_AUDIO_DECODER;
+  return static_filter_type();
 }
 
 const char* AudioDecoder::major_mime_type() const {
@@ -102,7 +102,7 @@ const char* AudioDecoder::major_mime_type() const {
 }
 
 FilterType AudioRenderer::filter_type() const {
-  return FILTER_AUDIO_RENDERER;
+  return static_filter_type();
 }
 
 const char* AudioRenderer::major_mime_type() const {
@@ -110,7 +110,7 @@ const char* AudioRenderer::major_mime_type() const {
 }
 
 FilterType VideoDecoder::filter_type() const {
-  return FILTER_VIDEO_DECODER;
+  return static_filter_type();
 }
 
 const char* VideoDecoder::major_mime_type() const {
@@ -118,7 +118,7 @@ const char* VideoDecoder::major_mime_type() const {
 }
 
 FilterType VideoRenderer::filter_type() const {
-  return FILTER_VIDEO_RENDERER;
+  return static_filter_type();
 }
 
 const char* VideoRenderer::major_mime_type() const {

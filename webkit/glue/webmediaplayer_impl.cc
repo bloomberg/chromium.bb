@@ -224,7 +224,7 @@ void WebMediaPlayerImpl::Proxy::PutCurrentFrame(
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
-    const media::MediaFilterCollection& collection,
+    media::MediaFilterCollection* collection,
     MediaResourceLoaderBridgeFactory* bridge_factory_simple,
     MediaResourceLoaderBridgeFactory* bridge_factory_buffered,
     bool use_simple_data_source,
@@ -276,22 +276,18 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   proxy_->SetDataSource(buffered_data_source);
 
   if (use_simple_data_source) {
-    filter_collection_.push_back(simple_data_source);
-    filter_collection_.push_back(buffered_data_source);
+    filter_collection_->AddFilter(simple_data_source);
+    filter_collection_->AddFilter(buffered_data_source);
   } else {
-    filter_collection_.push_back(buffered_data_source);
-    filter_collection_.push_back(simple_data_source);
+    filter_collection_->AddFilter(buffered_data_source);
+    filter_collection_->AddFilter(simple_data_source);
   }
 
   // Add in the default filter factories.
-  filter_collection_.push_back(make_scoped_refptr(
-      new media::FFmpegDemuxer()));
-  filter_collection_.push_back(make_scoped_refptr(
-      new media::FFmpegAudioDecoder()));
-  filter_collection_.push_back(make_scoped_refptr(
-      new media::FFmpegVideoDecoder(NULL)));
-  filter_collection_.push_back(make_scoped_refptr(
-      new media::NullAudioRenderer()));
+  filter_collection_->AddFilter(new media::FFmpegDemuxer());
+  filter_collection_->AddFilter(new media::FFmpegAudioDecoder());
+  filter_collection_->AddFilter(new media::FFmpegVideoDecoder(NULL));
+  filter_collection_->AddFilter(new media::NullAudioRenderer());
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -315,7 +311,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   SetNetworkState(WebKit::WebMediaPlayer::Loading);
   SetReadyState(WebKit::WebMediaPlayer::HaveNothing);
   pipeline_->Start(
-      filter_collection_,
+      filter_collection_.release(),
       url.spec(),
       NewCallback(proxy_.get(),
                   &WebMediaPlayerImpl::Proxy::PipelineInitializationCallback));

@@ -2601,14 +2601,14 @@ WebSharedWorker* RenderView::createSharedWorker(
 
 WebMediaPlayer* RenderView::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  media::MediaFilterCollection collection;
+  scoped_ptr<media::MediaFilterCollection> collection(
+      new media::MediaFilterCollection());
 
   // Add in any custom filter factories first.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(switches::kDisableAudio)) {
     // Add the chrome specific audio renderer.
-    collection.push_back(make_scoped_refptr(
-        new AudioRendererImpl(audio_message_filter())));
+    collection->AddFilter(new AudioRendererImpl(audio_message_filter()));
   }
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
@@ -2619,8 +2619,8 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     bool ret = frame->view()->graphicsContext3D()->makeContextCurrent();
     CHECK(ret) << "Failed to switch context";
 
-    collection.push_back(make_scoped_refptr(new IpcVideoDecoder(
-        MessageLoop::current(), ggl::GetCurrentContext())));
+    collection->AddFilter(new IpcVideoDecoder(
+        MessageLoop::current(), ggl::GetCurrentContext()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =
@@ -2650,18 +2650,19 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
     scoped_refptr<IPCVideoRenderer> renderer(
         new IPCVideoRenderer(routing_id_));
-    collection.push_back(renderer);
+    collection->AddFilter(renderer);
     video_renderer = renderer;
   } else {
     bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
     scoped_refptr<webkit_glue::VideoRendererImpl> renderer(
         new webkit_glue::VideoRendererImpl(pts_logging));
-    collection.push_back(renderer);
+    collection->AddFilter(renderer);
     video_renderer = renderer;
   }
 
   return new webkit_glue::WebMediaPlayerImpl(
-      client, collection, bridge_factory_simple, bridge_factory_buffered,
+      client, collection.release(), bridge_factory_simple,
+      bridge_factory_buffered,
       cmd_line->HasSwitch(switches::kSimpleDataSource),video_renderer);
 }
 

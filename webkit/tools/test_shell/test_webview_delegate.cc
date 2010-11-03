@@ -716,7 +716,8 @@ WebWorker* TestWebViewDelegate::createWorker(
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
-  media::MediaFilterCollection collection;
+  scoped_ptr<media::MediaFilterCollection> collection(
+      new media::MediaFilterCollection());
 
   appcache::WebApplicationCacheHostImpl* appcache_host =
       appcache::WebApplicationCacheHostImpl::FromFrame(frame);
@@ -742,11 +743,11 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
 
   scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer(
       new webkit_glue::VideoRendererImpl(false));
-  collection.push_back(video_renderer);
+  collection->AddFilter(video_renderer);
 
   return new webkit_glue::WebMediaPlayerImpl(
-      client, collection, bridge_factory_simple, bridge_factory_buffered,
-      false, video_renderer);
+      client, collection.release(), bridge_factory_simple,
+      bridge_factory_buffered, false, video_renderer);
 }
 
 WebApplicationCacheHost* TestWebViewDelegate::createApplicationCacheHost(
