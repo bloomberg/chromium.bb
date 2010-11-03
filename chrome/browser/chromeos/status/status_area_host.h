@@ -33,7 +33,7 @@ class StatusAreaHost {
       const views::View* button_view) const = 0;
 
   // Opens options dialog related to the button specified.
-  virtual void OpenButtonOptions(const views::View* button_view) const = 0;
+  virtual void OpenButtonOptions(const views::View* button_view) = 0;
 
   // Executes browser command.
   virtual void ExecuteBrowserCommand(int id) const = 0;

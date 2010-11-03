@@ -602,8 +602,13 @@ void NetworkMenu::InitMenuItems() {
     // Separator.
     menu_items_.push_back(MenuItem());
 
-    label =
-        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);
+    if (IsBrowserMode()) {
+      label = l10n_util::GetStringUTF16(
+          IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);
+    } else {
+      label = l10n_util::GetStringUTF16(
+          IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG);
+    }
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
                                    SkBitmap(), std::string(), FLAG_OPTIONS));
   }

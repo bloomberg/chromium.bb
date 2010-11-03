@@ -37,8 +37,8 @@ class NetworkDropdownButton : public views::MenuButton,
   // NetworkMenu implementation:
   virtual bool IsBrowserMode() const { return browser_mode_; }
   virtual gfx::NativeWindow GetNativeWindow() const { return parent_window_; }
-  virtual void OpenButtonOptions() const {}
-  virtual bool ShouldOpenButtonOptions() const {return false; }
+  virtual void OpenButtonOptions() {}
+  virtual bool ShouldOpenButtonOptions() const { return false; }
 
  private:
   bool browser_mode_;

@@ -127,7 +127,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
  protected:
   virtual bool IsBrowserMode() const = 0;
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
-  virtual void OpenButtonOptions() const = 0;
+  virtual void OpenButtonOptions() = 0;
   virtual bool ShouldOpenButtonOptions() const = 0;
 
   // Notify subclasses that connection to |network| was initiated.

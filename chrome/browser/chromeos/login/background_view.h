@@ -8,6 +8,7 @@
 
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/view.h"
@@ -31,7 +32,8 @@ class StatusAreaView;
 // View used to render the background during login. BackgroundView contains
 // StatusAreaView.
 class BackgroundView : public views::View,
-                       public StatusAreaHost {
+                       public StatusAreaHost,
+                       public chromeos::LoginHtmlDialog::Delegate {
  public:
   enum LoginStep {
     SELECT_NETWORK,
@@ -92,6 +94,7 @@ class BackgroundView : public views::View,
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual void ChildPreferredSizeChanged(View* child);
+  virtual void OnLocaleChanged();
 
   // Overridden from StatusAreaHost:
   virtual Profile* GetProfile() const { return NULL; }
@@ -99,9 +102,12 @@ class BackgroundView : public views::View,
   virtual void ExecuteBrowserCommand(int id) const {}
   virtual bool ShouldOpenButtonOptions(
       const views::View* button_view) const;
-  virtual void OpenButtonOptions(const views::View* button_view) const;
+  virtual void OpenButtonOptions(const views::View* button_view);
   virtual bool IsBrowserMode() const;
   virtual bool IsScreenLockerMode() const;
+
+  // Overridden from LoginHtmlDialog::Delegate:
+  virtual void OnDialogClosed() {}
 
  private:
   // Creates and adds the status_area.
@@ -148,6 +154,9 @@ class BackgroundView : public views::View,
 
   // DOMView for rendering a webpage as a background.
   DOMView* background_area_;
+
+  // Proxy settings dialog that can be invoked from network menu.
+  scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundView);
 };

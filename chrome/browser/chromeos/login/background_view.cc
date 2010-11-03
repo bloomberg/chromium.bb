@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_progress_bar.h"
+#include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -262,17 +263,25 @@ gfx::NativeWindow BackgroundView::GetNativeWindow() const {
 
 bool BackgroundView::ShouldOpenButtonOptions(
     const views::View* button_view) const {
+  if (button_view == status_area_->network_view()) {
+    return true;
+  }
   if (button_view == status_area_->clock_view() ||
       button_view == status_area_->feedback_view() ||
-      button_view == status_area_->input_method_view() ||
-      button_view == status_area_->network_view()) {
+      button_view == status_area_->input_method_view()) {
     return false;
   }
   return true;
 }
 
-void BackgroundView::OpenButtonOptions(const views::View* button_view) const {
-  // TODO(avayvod): Add some dialog for options or remove them completely.
+void BackgroundView::OpenButtonOptions(const views::View* button_view) {
+  if (button_view == status_area_->network_view()) {
+    if (proxy_settings_dialog_.get() == NULL) {
+      proxy_settings_dialog_.reset(new ProxySettingsDialog(
+          this, GetNativeWindow()));
+    }
+    proxy_settings_dialog_->Show();
+  }
 }
 
 bool BackgroundView::IsBrowserMode() const {
@@ -281,6 +290,12 @@ bool BackgroundView::IsBrowserMode() const {
 
 bool BackgroundView::IsScreenLockerMode() const {
   return false;
+}
+
+// Overridden from LoginHtmlDialog::Delegate:
+void BackgroundView::OnLocaleChanged() {
+  // Proxy settings dialog contains localized strings.
+  proxy_settings_dialog_.reset();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

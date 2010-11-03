@@ -187,7 +187,7 @@ gfx::NativeWindow NetworkMenuButton::GetNativeWindow() const {
   return host_->GetNativeWindow();
 }
 
-void NetworkMenuButton::OpenButtonOptions() const {
+void NetworkMenuButton::OpenButtonOptions() {
   host_->OpenButtonOptions(this);
 }
 

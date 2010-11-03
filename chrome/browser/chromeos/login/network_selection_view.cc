@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/keyboard_switch_menu.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
+#include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
@@ -80,12 +81,6 @@ const int kMenuVerticalOffset = -1;
 const int kMenuWidthOffset = 6;
 
 const SkColor kWelcomeColor = 0xFFCDD3D6;
-
-// Hints for size of proxy settings dialog.
-static const int kProxySettingsDialogReasonableWidth = 750;
-static const int kProxySettingsDialogReasonableHeight = 460;
-static const int kProxySettingsDialogReasonableWidthRatio = 0.4;
-static const int kProxySettingsDialogReasonableHeightRatio = 0.4;
 
 // Initializes menu button default properties.
 static void InitMenuButtonProperties(views::MenuButton* menu_button) {
@@ -439,26 +434,8 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 void NetworkSelectionView::LinkActivated(views::Link* source, int) {
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
-      static const char kProxySettingsURL[] =
-          "chrome://settings/proxy?menu=off";
-      proxy_settings_dialog_.reset(new LoginHtmlDialog(
-          this,
-          GetNativeWindow(),
-          std::wstring(),
-          GURL(kProxySettingsURL),
-          LoginHtmlDialog::STYLE_BUBBLE));
-      gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-      proxy_settings_dialog_->SetDialogSize(
-          std::min(
-              screen_bounds.width(),
-              std::max(kProxySettingsDialogReasonableWidth, static_cast<int>(
-                  kProxySettingsDialogReasonableWidthRatio *
-                      screen_bounds.width()))),
-          std::min(
-              screen_bounds.height(),
-              std::max(kProxySettingsDialogReasonableHeight, static_cast<int>(
-                  kProxySettingsDialogReasonableHeightRatio *
-                      screen_bounds.height()))));
+      proxy_settings_dialog_.reset(
+          new ProxySettingsDialog(this, GetNativeWindow()));
     }
     proxy_settings_dialog_->Show();
   }

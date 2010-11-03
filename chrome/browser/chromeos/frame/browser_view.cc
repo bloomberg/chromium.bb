@@ -318,7 +318,7 @@ void BrowserView::ExecuteBrowserCommand(int id) const {
   browser()->ExecuteCommand(id);
 }
 
-void BrowserView::OpenButtonOptions(const views::View* button_view) const {
+void BrowserView::OpenButtonOptions(const views::View* button_view) {
   if (button_view == status_area_->network_view()) {
     browser()->OpenInternetOptionsDialog();
   } else if (button_view == status_area_->input_method_view()) {

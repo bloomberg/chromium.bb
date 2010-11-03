@@ -611,6 +611,8 @@
         'browser/chromeos/login/parallel_authenticator.h',
         'browser/chromeos/login/password_changed_view.cc',
         'browser/chromeos/login/password_changed_view.h',
+        'browser/chromeos/login/proxy_settings_dialog.cc',
+        'browser/chromeos/login/proxy_settings_dialog.h',
         'browser/chromeos/login/registration_screen.cc',
         'browser/chromeos/login/registration_screen.h',
         'browser/chromeos/login/rounded_rect_painter.cc',

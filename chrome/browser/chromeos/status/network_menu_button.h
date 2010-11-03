@@ -69,7 +69,7 @@ class NetworkMenuButton : public StatusAreaButton,
   // NetworkMenu implementation:
   virtual bool IsBrowserMode() const;
   virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual void OpenButtonOptions() const;
+  virtual void OpenButtonOptions();
   virtual bool ShouldOpenButtonOptions() const;
 
  private:
