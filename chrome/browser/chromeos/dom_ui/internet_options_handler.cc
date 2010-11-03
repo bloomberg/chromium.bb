@@ -143,9 +143,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetCertPass",
       l10n_util::GetStringUTF16(
            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD));
-  localized_strings->SetString("inetPass",
+  localized_strings->SetString("inetPassProtected",
       l10n_util::GetStringUTF16(
-           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE));
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED));
   localized_strings->SetString("inetRememberNetwork",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
@@ -505,19 +505,8 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
     return;
   bool changed = false;
   if (network->encrypted()) {
-    std::string password;
-
-    if (args->GetSize() != 5 ||
-        !args->GetString(4, &password)) {
-      NOTREACHED();
-      return;
-    }
-    if (password != network->passphrase()) {
-      network->set_passphrase(password);
-      changed = true;
-    }
-
-    if (network->encryption() == chromeos::SECURITY_8021X) {
+    if (network->encrypted() &&
+        network->encryption() == chromeos::SECURITY_8021X) {
       std::string ident;
       std::string certpath;
 
@@ -613,7 +602,6 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
           dictionary.SetString("certPass",wireless->passphrase());
         } else {
           dictionary.SetBoolean("certNeeded", false);
-          dictionary.SetString("pass", wireless->passphrase());
         }
       } else {
         dictionary.SetBoolean("encrypted", false);
@@ -640,6 +628,8 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
             l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL) :
             l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
       dictionary.SetString("errorState", cellular->GetErrorString());
+      dictionary.SetString("supportUrl",
+                           cellular->payment_url());
       // Device settings.
       dictionary.SetString("manufacturer", cellular->manufacturer());
       dictionary.SetString("modelId", cellular->model_id());
@@ -677,7 +667,6 @@ void InternetOptionsHandler::PopupWirelessPassword(
     dictionary.SetString("cert", network->cert_path());
   } else {
     dictionary.SetBoolean("certNeeded", false);
-    dictionary.SetString("pass", network->passphrase());
   }
   dom_ui_->CallJavascriptFunction(
       L"options.InternetOptions.showPasswordEntry", dictionary);
@@ -713,26 +702,26 @@ void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
   std::string service_path;
   std::string identity;
   std::string certpath;
-  std::string password;
-
-  if (args->GetSize() != 4 ||
+  if (args->GetSize() < 3 ||
       !args->GetString(0, &service_path) ||
       !args->GetString(1, &certpath) ||
-      !args->GetString(2, &identity) ||
-      !args->GetString(3, &password)) {
-    NOTREACHED();
+      !args->GetString(2, &identity)) {
     return;
   }
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   chromeos::WifiNetwork* network =
       cros->FindWifiNetworkByPath(service_path);
-  if (network) {
-    cros->ConnectToWifiNetwork(
-        network, password, identity, certpath);
-  } else {
-    // TODO(dhg): Send error back to UI
+  if (!network)
+    return;
+  // If password does not come from the input, use one saved with the
+  // network details.
+  std::string password;
+  if (args->GetSize() != 4 || !args->GetString(3, &password)) {
+    password = network->passphrase();
   }
+  cros->ConnectToWifiNetwork(
+      network, password, identity, certpath);
 }
 
 void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {

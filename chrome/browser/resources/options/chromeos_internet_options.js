@@ -97,8 +97,7 @@ cr.define('options', function() {
     if (data.certinpkcs) {
       chrome.send('loginToCertNetwork',[String(servicePath),
                                         String(data.certPath),
-                                        String(data.ident),
-                                        String(data.certPass)]);
+                                        String(data.ident)]);
     } else {
       chrome.send('loginToCertNetwork',[String(servicePath),
                                         String($('inetCert').value),
@@ -114,16 +113,10 @@ cr.define('options', function() {
       var newinfo = [];
       newinfo.push(data.servicePath);
       newinfo.push($('rememberNetwork').checked ? "true" : "false");
-      if (data.encrypted) {
-        if (data.certneeded) {
-          newinfo.push($('inetIdent').value);
-          newinfo.push($('inetCert').value);
-          newinfo.push($('inetCertPass').value);
-        } else {
-          newinfo.push('');
-          newinfo.push('');
-          newinfo.push($('inetPass').value);
-        }
+      if (data.encrypted && data.certNeeded) {
+        newinfo.push($('inetIdent').value);
+        newinfo.push($('inetCert').value);
+        newinfo.push($('inetCertPass').value);
       }
       chrome.send('setDetails', newinfo);
     }
@@ -243,32 +236,21 @@ cr.define('options', function() {
       page.removeAttribute('gsm');
       $('inetSsid').textContent = data.ssid;
       $('rememberNetwork').checked = data.autoConnect;
-      page.removeAttribute('cert');
       page.removeAttribute('password');
+      page.removeAttribute('cert');
+      page.removeAttribute('certPkcs');
       if (data.encrypted) {
         if (data.certNeeded) {
-          page.setAttribute('cert', true);
           if (data.certInPkcs) {
             page.setAttribute('certPkcs', true);
             $('inetIdentPkcs').value = data.ident;
           } else {
-            page.removeAttribute('certPkcs');
+            page.setAttribute('cert', true);
             $('inetIdent').value = data.ident;
             $('inetCert').value = data.certPath;
-            $('inetCertPass').value = data.certPass;
           }
         } else {
           page.setAttribute('password', true);
-          var passfield = $('inetPass');
-          passfield.value = data.pass;
-          passfield.type = 'password';
-          $('inetShowPass').addEventListener('change', function(e) {
-            if ($('inetShowPass').checked) {
-              passfield.type = 'text';
-            } else {
-              passfield.type = 'password';
-            }
-          });
         }
       }
     } else if(data.type == 5) {
@@ -284,6 +266,7 @@ cr.define('options', function() {
       $('roamingState').textContent = data.roamingState;
       $('restrictedPool').textContent = data.restrictedPool;
       $('errorState').textContent = data.errorState;
+      $('customerSupport').href = data.supportUrl;
       $('manufacturer').textContent = data.manufacturer;
       $('modelId').textContent = data.modelId;
       $('firmwareRevision').textContent = data.firmwareRevision;

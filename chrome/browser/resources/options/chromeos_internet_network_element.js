@@ -226,7 +226,7 @@ cr.define('options.internet', function() {
         }
       } else {
         // Put "Forget this network" button.
-        var button = this.createButton_('forget_button',
+        var button = this.createButton_('forget_button', 'forget',
                                         function(e) {
                        chrome.send('buttonClickCallback',
                                    [String(self.data.networkType),
