@@ -12,12 +12,15 @@
 
 #include "base/ref_counted.h"
 
+#include "printing/backend/print_backend.h"
+
 class DictionaryValue;
 class FilePath;
 
 namespace printing {
 class PrintBackend;
 struct PrinterBasicInfo;
+struct PrinterCapsAndDefaults;
 }
 
 // This is the interface for platform-specific code for cloud print
@@ -128,8 +131,20 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
 
   virtual ~PrintSystem();
 
-  // Get the printing backend.
-  virtual printing::PrintBackend* GetPrintBackend() = 0;
+  // Initialize print system. This need to be called before any other function
+  // of PrintSystem.
+  virtual void Init() = 0;
+
+  // Enumerates the list of installed local and network printers.
+  virtual void EnumeratePrinters(printing::PrinterList* printer_list) = 0;
+
+  // Gets the capabilities and defaults for a specific printer.
+  virtual bool GetPrinterCapsAndDefaults(
+      const std::string& printer_name,
+      printing::PrinterCapsAndDefaults* printer_info) = 0;
+
+  // Returns true if printer_name points to a valid printer.
+  virtual bool IsValidPrinter(const std::string& printer_name) = 0;
 
   // Returns true if ticket is valid.
   virtual bool ValidatePrintTicket(const std::string& printer_name,

@@ -45,7 +45,7 @@ PrinterJobHandler::PrinterJobHandler(
 }
 
 bool PrinterJobHandler::Initialize() {
-  if (print_system_->GetPrintBackend()->IsValidPrinter(
+  if (print_system_->IsValidPrinter(
       printer_info_.printer_name)) {
     printer_watcher_ = print_system_->CreatePrinterWatcher(
         printer_info_.printer_name);
@@ -145,7 +145,7 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   std::string post_data;
   std::string mime_boundary;
   CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
-  if (print_system_->GetPrintBackend()->GetPrinterCapsAndDefaults(
+  if (print_system_->GetPrinterCapsAndDefaults(
       printer_info.printer_name, &printer_caps)) {
     std::string caps_hash = MD5String(printer_caps.printer_capabilities);
     if (caps_hash != printer_info_cloud_.caps_hash) {

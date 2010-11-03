@@ -239,7 +239,15 @@ class PrintSystemWin : public PrintSystem {
   PrintSystemWin();
 
   // PrintSystem implementation.
-  virtual printing::PrintBackend* GetPrintBackend();
+  virtual void Init();
+
+  virtual void EnumeratePrinters(printing::PrinterList* printer_list);
+
+  virtual bool GetPrinterCapsAndDefaults(
+      const std::string& printer_name,
+      printing::PrinterCapsAndDefaults* printer_info);
+
+  virtual bool IsValidPrinter(const std::string& printer_name);
 
   virtual bool ValidatePrintTicket(const std::string& printer_name,
                                    const std::string& print_ticket_data);
@@ -508,21 +516,28 @@ class PrintSystemWin : public PrintSystem {
   virtual PrintSystem::JobSpooler* CreateJobSpooler();
 
  private:
-  void Init();
-
   scoped_refptr<printing::PrintBackend> print_backend_;
 };
 
 PrintSystemWin::PrintSystemWin() {
-  Init();
-}
-
-void PrintSystemWin::Init() {
   print_backend_ = printing::PrintBackend::CreateInstance(NULL);
 }
 
-printing::PrintBackend* PrintSystemWin::GetPrintBackend() {
-  return print_backend_;
+void PrintSystemWin::Init() {
+}
+
+void PrintSystemWin::EnumeratePrinters(printing::PrinterList* printer_list) {
+  print_backend_->EnumeratePrinters(printer_list);
+}
+
+bool PrintSystemWin::GetPrinterCapsAndDefaults(
+    const std::string& printer_name,
+    printing::PrinterCapsAndDefaults* printer_info) {
+  return print_backend_->GetPrinterCapsAndDefaults(printer_name, printer_info);
+}
+
+bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
+  return print_backend_->IsValidPrinter(printer_name);
 }
 
 bool PrintSystemWin::ValidatePrintTicket(

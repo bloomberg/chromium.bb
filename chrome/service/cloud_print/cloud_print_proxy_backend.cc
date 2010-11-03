@@ -327,6 +327,8 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
     return;  // No print system available, fail initalization.
   }
 
+  print_system_->Init();
+
   // TODO(sanjeevr): Validate the tokens.
   auth_token_ = cloud_print_token;
 
@@ -385,7 +387,7 @@ CloudPrintProxyBackend::Core::CreateDefaultRetryPolicy() {
 void CloudPrintProxyBackend::Core::StartRegistration() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   printer_list_.clear();
-  print_system_->GetPrintBackend()->EnumeratePrinters(&printer_list_);
+  print_system_->EnumeratePrinters(&printer_list_);
   // Now we need to ask the server about printers that were registered on the
   // server so that we can trim this list.
   GetRegisteredPrinters();
@@ -454,7 +456,7 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
     // and defaults again.
     if (info.printer_name != last_uploaded_printer_name_) {
       have_printer_info =
-          print_system_->GetPrintBackend()->GetPrinterCapsAndDefaults(
+          print_system_->GetPrinterCapsAndDefaults(
               info.printer_name.c_str(), &last_uploaded_printer_info_);
     }
     if (have_printer_info) {
