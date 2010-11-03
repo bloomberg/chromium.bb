@@ -119,7 +119,7 @@ void ExtensionPortContainer::OnExtensionMessageInvoke(
     if (args.GetString(0, &message) && args.GetInteger(1, &source_port_id))
       OnExtensionHandleMessage(message, source_port_id);
   } else if (function_name == ExtensionMessageService::kDispatchOnDisconnect) {
-    DCHECK_EQ(args.GetSize(), 1u);
+    DCHECK_EQ(args.GetSize(), 2u);
     int port_id;
     if (args.GetInteger(0, &port_id))
       OnExtensionPortDisconnected(port_id);
