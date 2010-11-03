@@ -51,7 +51,6 @@ namespace chromeos {
 
 namespace {
 
-
 // Prefix for Auth token received from ClientLogin request.
 const char kAuthPrefix[] = "Auth=";
 // Suffix for Auth token received from ClientLogin request.
@@ -237,6 +236,16 @@ void LoginUtilsImpl::CompleteLogin(
       btl->AddLoginTimeMarker("IMESTarted", false);
     }
   }
+
+  // We suck. This is a hack since we do not have the enterprise feature
+  // done yet to pull down policies from the domain admin. We'll take this
+  // out when we get that done properly.
+  // TODO(xiyuan): Remove this once enterprise feature is ready.
+  if (EndsWith(username, "@google.com", true)) {
+    PrefService* pref_service = profile->GetPrefs();
+    pref_service->SetBoolean(prefs::kEnableScreenLock, true);
+  }
+
   DoBrowserLaunch(profile);
 }
 
