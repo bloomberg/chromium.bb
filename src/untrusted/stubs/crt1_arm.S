@@ -68,7 +68,7 @@ _start:
     /* record the eviron pointer for getenv, etc. */
     movw r3, #:lower16:environ
     movt r3, #:upper16:environ
-    bic r3, r3, #0xC0000000
+    bic r3, r3, #NACL_DATA_FLOW_MASK
     str r2, [r3]
 
     bic r3, sp, #7 /* aligned stack value in r3 */
