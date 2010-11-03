@@ -2400,6 +2400,8 @@
         'browser/policy/configuration_policy_provider_win.h',
         'browser/policy/configuration_policy_store_interface.h',
         'browser/policy/device_management_backend.h',
+        'browser/policy/device_management_backend_impl.cc',
+        'browser/policy/device_management_backend_impl.h',
         'browser/policy/device_token_fetcher.cc',
         'browser/policy/device_token_fetcher.h',
         'browser/policy/dummy_configuration_policy_provider.h',
