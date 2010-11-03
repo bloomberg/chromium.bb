@@ -15,7 +15,6 @@
 #include "gfx/native_widget_types.h"
 #include "webkit/glue/webaccessibility.h"
 
-
 class BrowserAccessibility;
 #if defined(OS_WIN)
 class BrowserAccessibilityManagerWin;
@@ -30,6 +29,7 @@ class BrowserAccessibilityDelegate {
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
   virtual bool HasFocus() = 0;
+  virtual gfx::Rect GetViewBounds() const = 0;
 };
 
 class BrowserAccessibilityFactory {
@@ -80,6 +80,9 @@ class BrowserAccessibilityManager {
 
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
+
+  // Retrieve the bounds of the parent View in screen coordinates.
+  gfx::Rect GetViewBounds();
 
   // Called when the renderer process has notified us of about tree changes.
   // Send a notification to MSAA clients of the change.

@@ -53,15 +53,31 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left, LONG y_top,
-                                                 VARIANT* child) {
+STDMETHODIMP BrowserAccessibilityWin::accHitTest(
+    LONG x_left, LONG y_top, VARIANT* child) {
   if (!instance_active_)
     return E_FAIL;
 
   if (!child)
     return E_INVALIDARG;
 
-  return E_NOTIMPL;
+  gfx::Point point(x_left, y_top);
+  if (!GetBoundsRect().Contains(point)) {
+    // Return S_FALSE and VT_EMPTY when the outside the object's boundaries.
+    child->vt = VT_EMPTY;
+    return S_FALSE;
+  }
+
+  BrowserAccessibility* result = BrowserAccessibilityForPoint(point);
+  if (result == this) {
+    // Point is within this object.
+    child->vt = VT_I4;
+    child->lVal = CHILDID_SELF;
+  } else {
+    child->vt = VT_DISPATCH;
+    child->pdispVal = result->toBrowserAccessibilityWin()->NewReference();
+  }
+  return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left, LONG* y_top,
@@ -77,16 +93,11 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left, LONG* y_top,
   if (!target)
     return E_INVALIDARG;
 
-  // Find the top left corner of the containing window in screen coords, and
-  // adjust the output position by this amount.
-  HWND parent_hwnd = manager_->GetParentView();
-  POINT top_left = {0, 0};
-  ::ClientToScreen(parent_hwnd, &top_left);
-
-  *x_left = target->location_.x + top_left.x;
-  *y_top  = target->location_.y + top_left.y;
-  *width  = target->location_.width;
-  *height = target->location_.height;
+  gfx::Rect bounds = target->GetBoundsRect();
+  *x_left = bounds.x();
+  *y_top  = bounds.y();
+  *width  = bounds.width();
+  *height = bounds.height();
 
   return S_OK;
 }
@@ -1156,22 +1167,6 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
   return manager_->GetFromChildID(child_id)->toBrowserAccessibilityWin();
 }
 
-bool BrowserAccessibilityWin::HasAttribute(
-    WebAccessibility::Attribute attribute) {
-  return (attributes_.find(attribute) != attributes_.end());
-}
-
-bool BrowserAccessibilityWin::GetAttribute(
-    WebAccessibility::Attribute attribute, string16* value) {
-  std::map<int32, string16>::iterator iter = attributes_.find(attribute);
-  if (iter != attributes_.end()) {
-    *value = iter->second;
-    return true;
-  }
-
-  return false;
-}
-
 HRESULT BrowserAccessibilityWin::GetAttributeAsBstr(
     WebAccessibility::Attribute attribute, BSTR* value_bstr) {
   string16 str;
@@ -1186,19 +1181,6 @@ HRESULT BrowserAccessibilityWin::GetAttributeAsBstr(
   DCHECK(*value_bstr);
 
   return S_OK;
-}
-
-bool BrowserAccessibilityWin::GetAttributeAsInt(
-    WebAccessibility::Attribute attribute, int* value_int) {
-  string16 value_str;
-
-  if (!GetAttribute(attribute, &value_str))
-    return false;
-
-  if (!base::StringToInt(value_str, value_int))
-    return false;
-
-  return true;
 }
 
 string16 BrowserAccessibilityWin::Escape(string16 str) {

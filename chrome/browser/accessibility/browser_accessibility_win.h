@@ -457,25 +457,11 @@ class BrowserAccessibilityWin
   // bitmasks defined in webkit/glue/webaccessibility.h.
   void InitRoleAndState();
 
-  // Return true if this attribute is in the attributes map.
-  bool HasAttribute(WebAccessibility::Attribute attribute);
-
-  // Retrieve the string value of an attribute from the attribute map and
-  // returns true if found.
-  bool GetAttribute(WebAccessibility::Attribute attribute, string16* value);
-
   // Retrieve the string value of an attribute from the attribute map and
   // if found and nonempty, allocate a new BSTR (with SysAllocString)
   // and return S_OK. If not found or empty, return S_FALSE.
   HRESULT GetAttributeAsBstr(
       WebAccessibility::Attribute attribute, BSTR* value_bstr);
-
-  // Retrieve the value of an attribute from the attribute map and
-  // if found and nonempty, try to convert it to an integer.
-  // Returns true only if both the attribute was found and it was successfully
-  // converted to an integer.
-  bool GetAttributeAsInt(
-      WebAccessibility::Attribute attribute, int* value_int);
 
   // Escape a string like it would be escaped for a URL or HTML form.
   string16 Escape(string16 str);

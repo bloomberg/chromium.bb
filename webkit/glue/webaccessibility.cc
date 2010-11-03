@@ -19,6 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNamedNodeMap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebAccessibilityCache;
@@ -366,6 +367,10 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     const WebKit::WebDocumentType& doctype = document.doctype();
     if (!doctype.isNull())
       attributes[ATTR_DOC_DOCTYPE] = doctype.name();
+
+    const gfx::Size& scroll_offset = document.frame()->scrollOffset();
+    attributes[ATTR_DOC_SCROLLX] = base::IntToString16(scroll_offset.width());
+    attributes[ATTR_DOC_SCROLLY] = base::IntToString16(scroll_offset.height());
   }
 
   // Add the source object to the cache and store its id.

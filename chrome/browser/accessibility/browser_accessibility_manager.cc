@@ -226,6 +226,12 @@ void BrowserAccessibilityManager::DoDefaultAction(
     delegate_->AccessibilityDoDefaultAction(node.renderer_id());
 }
 
+gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
+  if (delegate_)
+    return delegate_->GetViewBounds();
+  return gfx::Rect();
+}
+
 bool BrowserAccessibilityManager::CanModifyTreeInPlace(
     BrowserAccessibility* current_root,
     const WebAccessibility& new_root) {

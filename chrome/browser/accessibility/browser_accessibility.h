@@ -90,6 +90,12 @@ class BrowserAccessibility {
   // of its parent.
   BrowserAccessibility* GetNextSibling();
 
+  // Returns the bounds of this object in screen coordinates.
+  gfx::Rect GetBoundsRect();
+
+  // Returns the deepest descendant that contains the specified point.
+  BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);
+
   // Accessors
   const std::map<int32, string16>& attributes() const { return attributes_; }
   int32 child_id() const { return child_id_; }
@@ -117,6 +123,20 @@ class BrowserAccessibility {
 
  protected:
   BrowserAccessibility();
+
+  // Return true if this attribute is in the attributes map.
+  bool HasAttribute(WebAccessibility::Attribute attribute);
+
+  // Retrieve the string value of an attribute from the attribute map and
+  // returns true if found.
+  bool GetAttribute(WebAccessibility::Attribute attribute, string16* value);
+
+  // Retrieve the value of an attribute from the attribute map and
+  // if found and nonempty, try to convert it to an integer.
+  // Returns true only if both the attribute was found and it was successfully
+  // converted to an integer.
+  bool GetAttributeAsInt(
+      WebAccessibility::Attribute attribute, int* value_int);
 
   // The manager of this tree of accessibility objects; needed for
   // global operations like focus tracking.

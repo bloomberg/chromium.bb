@@ -162,6 +162,8 @@ struct WebAccessibility {
     ATTR_DOC_TITLE,
     ATTR_DOC_MIMETYPE,
     ATTR_DOC_DOCTYPE,
+    ATTR_DOC_SCROLLX,
+    ATTR_DOC_SCROLLY,
 
     // Editable text attributes
     ATTR_TEXT_SEL_START,
