@@ -38,7 +38,7 @@ fi
 
 cat > vlayout-wrapper.sh <<"_EOF_"
 #!/bin/sh
-valgrind --suppressions=tools/valgrind/memcheck/suppressions.txt --tool=memcheck --smc-check=all --num-callers=30 --trace-children=yes --leak-check=full --show-possible=no --log-file=vlayout-%p.log --gen-suppressions=all --track-origins=yes "$@"
+valgrind --suppressions=tools/valgrind/memcheck/suppressions.txt --tool=memcheck --smc-check=all --num-callers=30 --trace-children=yes --leak-check=full --show-possibly-lost=no --log-file=vlayout-%p.log --gen-suppressions=all --track-origins=yes "$@"
 _EOF_
 chmod +x vlayout-wrapper.sh
 

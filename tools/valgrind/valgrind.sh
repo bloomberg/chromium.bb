@@ -97,7 +97,7 @@ export VALGRIND_LIB_INNER="$CHROME_VALGRIND/lib/valgrind"
 # GTEST_DEATH_TEST_USE_FORK=1: make gtest death tests valgrind-friendly
 #
 # When everyone has the latest valgrind, we might want to add
-#  --show-possible=no
+#  --show-possibly-lost=no
 # to ignore possible but not definite leaks.
 
 G_SLICE=always-malloc \
