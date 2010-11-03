@@ -30,4 +30,4 @@ BUGDIMICH MAC : fast/canvas/canvas-zoom.html = IMAGE
 BUGDIMICH MAC : fast/repaint/selection-rl.html = IMAGE
 
 // probably due to WK r71198
-BUGROLANDSTEINER MAC : fast/events/remove-event-listener.html = CRASH
+BUGROLANDSTEINER WIN MAC : fast/events/remove-event-listener.html = CRASH
