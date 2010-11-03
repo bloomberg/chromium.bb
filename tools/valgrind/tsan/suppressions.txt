@@ -156,6 +156,13 @@
   fun:*AtExitManager*
 }
 
+{
+  bug_61753
+  ThreadSanitizer:Race
+  ...
+  fun:*AtExitManager*
+}
+
 ############################
 # Data races in tests
 
