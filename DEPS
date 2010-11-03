@@ -163,16 +163,13 @@ deps = {
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
+  "src/third_party/libvpx":
+    "/trunk/deps/third_party/libvpx@" +
+    Var("libvpx_revision"),
+
   "src/third_party/ffmpeg":
     "/trunk/deps/third_party/ffmpeg/source@" +
     Var("ffmpeg_revision"),
-
-  "src/third_party/libvpx/include":
-    "/trunk/deps/third_party/libvpx/include@" +
-    Var("libvpx_revision"),
-  "src/third_party/libvpx/lib":
-    "/trunk/deps/third_party/libvpx/lib@" +
-    Var("libvpx_revision"),
 
   "src/third_party/libjingle/source":
     (Var("googlecode_url") % "libjingle") + "/trunk@" +
