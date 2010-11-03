@@ -161,7 +161,6 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       this.personalTab = new CertificateManagerTab('personalCertsTab');
-      this.emailTab = new CertificateManagerTab('emailCertsTab');
       this.serverTab = new CertificateManagerTab('serverCertsTab');
       this.caTab = new CertificateManagerTab('caCertsTab');
       this.otherTab = new CertificateManagerTab('otherCertsTab');

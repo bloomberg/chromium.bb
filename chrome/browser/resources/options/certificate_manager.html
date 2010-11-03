@@ -9,8 +9,6 @@
   <div class="subpages-nav-tabs">
     <span i18n-content="personalCertsTabTitle" id="personal-certs-nav-tab"
         class="inactive-tab" tab-contents="personalCertsTab"></span><span
-        i18n-content="emailCertsTabTitle" id="email-certs-nav-tab"
-        class="inactive-tab" tab-contents="emailCertsTab"></span><span
         i18n-content="serverCertsTabTitle" id="server-certs-nav-tab"
         class="inactive-tab" tab-contents="serverCertsTab"></span><span
         i18n-content="caCertsTabTitle" id="ca-certs-nav-tab"
@@ -43,32 +41,6 @@
         <button id="personalCertsTab-import" i18n-content="import_certificate"
           ></button>
         <button id="personalCertsTab-delete" i18n-content="delete_certificate"
-          disabled></button>
-      </td></tr>
-    </table>
-  </div>
-
-  <div id="emailCertsTab" class="subpages-tab-contents">
-    <table class="certificate-tree-table">
-      <tr><td>
-        <span i18n-content="emailCertsTabDescription"></span>
-      </td></tr>
-      <tr><td>
-        <tree id="emailCertsTab-tree" class="certificate-tree"></tree>
-      </td></tr>
-      <tr><td>
-        <button id="emailCertsTab-view" i18n-content="view_certificate"
-          disabled></button>
-        <!--  We don't really care about email certificates, so not much point
-        bothering to implement these...
-        <button id="emailCertsTab-edit" i18n-content="edit_certificate"
-          disabled></button>
-        <button id="emailCertsTab-import" i18n-content="import_certificate"
-          ></button>
-        -->
-        <button id="emailCertsTab-export" i18n-content="export_certificate"
-          disabled></button>
-        <button id="emailCertsTab-delete" i18n-content="delete_certificate"
           disabled></button>
       </td></tr>
     </table>

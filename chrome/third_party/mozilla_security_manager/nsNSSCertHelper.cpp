@@ -1039,12 +1039,8 @@ net::CertType GetCertType(CERTCertificate *cert) {
     return net::CA_CERT;
   if (trust.HasPeer(PR_TRUE, PR_FALSE, PR_FALSE))
     return net::SERVER_CERT;
-  if (trust.HasPeer(PR_FALSE, PR_TRUE, PR_FALSE) && cert->emailAddr)
-    return net::EMAIL_CERT;
   if (CERT_IsCACert(cert, NULL))
     return net::CA_CERT;
-  if (cert->emailAddr)
-    return net::EMAIL_CERT;
   return net::UNKNOWN_CERT;
 }
 

@@ -250,9 +250,6 @@ void CertificateManagerHandler::GetLocalizedValues(
   // Tabs.
   localized_strings->SetString("personalCertsTabTitle",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL));
-  localized_strings->SetString("emailCertsTabTitle",
-      l10n_util::GetStringUTF16(
-          IDS_CERT_MANAGER_OTHER_PEOPLES_CERTS_TAB_LABEL));
   localized_strings->SetString("serverCertsTabTitle",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL));
   localized_strings->SetString("caCertsTabTitle",
@@ -263,9 +260,6 @@ void CertificateManagerHandler::GetLocalizedValues(
   // Tab descriptions.
   localized_strings->SetString("personalCertsTabDescription",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_USER_TREE_DESCRIPTION));
-  localized_strings->SetString("emailCertsTabDescription",
-      l10n_util::GetStringUTF16(
-          IDS_CERT_MANAGER_OTHER_PEOPLE_TREE_DESCRIPTION));
   localized_strings->SetString("serverCertsTabDescription",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION));
   localized_strings->SetString("caCertsTabDescription",
@@ -282,8 +276,6 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_SERIAL_NUMBER_COLUMN_LABEL));
   localized_strings->SetString("certExpiresColumn",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EXPIRES_COLUMN_LABEL));
-  localized_strings->SetString("certEmailColumn",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EMAIL_ADDRESS_COLUMN_LABEL));
 
   // Buttons.
   localized_strings->SetString("view_certificate",
@@ -304,11 +296,6 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_USER_FORMAT));
   localized_strings->SetString("personalCertsTabDeleteImpact",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_USER_DESCRIPTION));
-  // For now, use the "unknown" strings for email certs too.  Maybe we should
-  // just get rid of the email tab.
-  localized_strings->SetString("emailCertsTabDeleteConfirm",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_UNKNOWN_FORMAT));
-  localized_strings->SetString("emailCertsTabDeleteImpact", "");
   localized_strings->SetString("serverCertsTabDeleteConfirm",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DELETE_SERVER_FORMAT));
   localized_strings->SetString("serverCertsTabDeleteImpact",
@@ -403,7 +390,6 @@ void CertificateManagerHandler::RegisterMessages() {
 
 void CertificateManagerHandler::CertificatesRefreshed() {
   PopulateTree("personalCertsTab", net::USER_CERT);
-  PopulateTree("emailCertsTab", net::EMAIL_CERT);
   PopulateTree("serverCertsTab", net::SERVER_CERT);
   PopulateTree("caCertsTab", net::CA_CERT);
   PopulateTree("otherCertsTab", net::UNKNOWN_CERT);

@@ -27,7 +27,6 @@ class CertificateManagerModel {
     COL_CERTIFICATE_STORE,
     COL_SERIAL_NUMBER,
     COL_EXPIRES_ON,
-    COL_EMAIL_ADDRESS,
   };
 
   class Observer {

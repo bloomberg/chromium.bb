@@ -70,10 +70,6 @@ string16 CertificateManagerModel::GetColumnText(
             base::TimeFormatShortDateNumeric(cert.valid_expiry()));
       }
       break;
-    case COL_EMAIL_ADDRESS:
-        rv = UTF8ToUTF16(
-            x509_certificate_model::GetEmailAddress(cert.os_cert_handle()));
-      break;
     default:
       NOTREACHED();
   }
