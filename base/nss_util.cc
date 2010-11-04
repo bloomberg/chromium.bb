@@ -14,7 +14,7 @@
 #include <secmod.h>
 
 #if defined(OS_LINUX)
-#include <linux/magic.h>
+#include <linux/nfs_fs.h>
 #include <sys/vfs.h>
 #endif
 
