@@ -80,8 +80,10 @@ void IntranetRedirectDetector::StartFetchesIfPossible() {
   if (in_sleep_ || !request_context_available_)
     return;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableBackgroundNetworking))
+  // The detector is not needed in Chrome Frame since we have no omnibox there.
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableBackgroundNetworking) ||
+      cmd_line->HasSwitch(switches::kChromeFrame))
     return;
 
   DCHECK(fetchers_.empty() && resulting_origins_.empty());
