@@ -273,6 +273,11 @@ cr.define('options', function() {
             self.managed = (event.value && event.value['managed'] != undefined) ?
                 event.value['managed'] : false;
             self.disabled = self.managed;
+            // Honor manually_disabled property, so options pages can
+            // disable preferences manually when needed.
+            if (self.manually_disabled) {
+              self.disabled = true;
+            }
             for (var i = 0; i < self.options.length; i++) {
               if (self.options[i].value == value) {
                 self.selectedIndex = i;
