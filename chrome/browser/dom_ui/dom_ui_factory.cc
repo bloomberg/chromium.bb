@@ -40,6 +40,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
+#include "chrome/browser/chromeos/dom_ui/keyboard_overlay_ui.h"
 #include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 #include "chrome/browser/chromeos/dom_ui/mobile_setup_ui.h"
 #include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
@@ -164,6 +165,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<FileBrowseUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewDOMUI<ImageBurnUI>;
+  if (url.host() == chrome::kChromeUIKeyboardOverlayHost)
+    return &NewDOMUI<KeyboardOverlayUI>;
   if (url.host() == chrome::kChromeUIMediaplayerHost)
     return &NewDOMUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)

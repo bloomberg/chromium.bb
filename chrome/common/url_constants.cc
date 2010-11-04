@@ -93,6 +93,7 @@ const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 #if defined(OS_CHROMEOS)
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
+const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
 const char kChromeUIMediaplayerURL[] = "chrome://mediaplayer/";
 const char kChromeUIMobileSetupURL[] = "chrome://mobilesetup/";
 const char kChromeUIRegisterPageURL[] = "chrome://register/";
@@ -130,6 +131,7 @@ const char kChromeUIThumbnailPath[] = "thumb";
 #if defined(OS_CHROMEOS)
 const char kChromeUIFileBrowseHost[] = "filebrowse";
 const char kChromeUIImageBurnerHost[] = "imageburner";
+const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
 const char kChromeUIMediaplayerHost[] = "mediaplayer";
 const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIRegisterPageHost[] = "register";

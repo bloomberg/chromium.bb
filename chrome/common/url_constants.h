@@ -84,6 +84,7 @@ extern const char kChromeUITextfieldsURL[];
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIImageBurnerURL[];
+extern const char kChromeUIKeyboardOverlayURL[];
 extern const char kChromeUIMediaplayerURL[];
 extern const char kChromeUIMobileSetupURL[];
 extern const char kChromeUIRegisterPageURL[];
@@ -121,6 +122,7 @@ extern const char kChromeUIThumbnailPath[];
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIImageBurnerHost[];
+extern const char kChromeUIKeyboardOverlayHost[];
 extern const char kChromeUIMediaplayerHost[];
 extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUIRegisterPageHost[];
