@@ -901,7 +901,8 @@ bool BrowserHelperObject::BrowserContainsChromeFrame(IWebBrowser2* browser) {
   if (document_persist != NULL) {
     CLSID clsid = {};
     hr = document_persist->GetClassID(&clsid);
-    if (SUCCEEDED(hr) && clsid == CLSID_ChromeFrame) {
+    if (SUCCEEDED(hr) && (clsid == CLSID_ChromeFrame ||
+                          clsid == CLSID_ChromeActiveDocument)) {
       return true;
     }
   }
