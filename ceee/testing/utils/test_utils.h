@@ -68,7 +68,8 @@ class LogDisabler {
 
  private:
   logging::LogMessageHandlerFunction old_handler_;
-  static bool DropMessageHandler(int severity, const std::string& str);
+  static bool DropMessageHandler(int severity, const char* file, int line,
+      size_t message_start, const std::string& str);
 };
 
 // Overrides a path in the PathService singleton, replacing the

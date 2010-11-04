@@ -64,8 +64,9 @@ static bool chrome_logging_redirected_ = false;
 
 #if defined(OS_WIN)
 // {7FE69228-633E-4f06-80C1-527FEA23E3A7}
-DEFINE_GUID(kChromeTraceProviderName,
-  0x7fe69228, 0x633e, 0x4f06, 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7);
+static const GUID kChromeTraceProviderName = {
+    0x7fe69228, 0x633e, 0x4f06,
+        { 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7 } };
 #endif
 
 // Assertion handler for logging errors that occur when dialogs are

@@ -51,7 +51,8 @@ class ScopedLogMessageIgnorer {
   }
 
  private:
-  static bool LogMessageIgnorer(int severity, const std::string& str) {
+  static bool LogMessageIgnorer(int severity, const char* file, int line,
+      size_t message_start, const std::string& str) {
     // Intercept FATAL, strip the stack backtrace, and log it without
     // the crash part.
     if (severity == logging::LOG_FATAL) {

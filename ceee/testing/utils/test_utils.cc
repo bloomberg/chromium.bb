@@ -57,8 +57,9 @@ HRESULT GetConnectionCount(IUnknown* container,
   return E_UNEXPECTED;
 }
 
-
-bool LogDisabler::DropMessageHandler(int severity, const std::string& str) {
+bool LogDisabler::DropMessageHandler(int severity, const char* file, int line,
+    size_t message_start, const std::string& str) {
+  // Message is handled, no further processing.
   return true;
 }
 
