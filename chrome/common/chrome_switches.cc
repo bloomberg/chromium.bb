@@ -144,9 +144,6 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
-// Disable support for cached byte-ranges.
-const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
-
 // Disable click-to-play for blocked plug-ins.
 const char kDisableClickToPlay[]            = "disable-click-to-play";
 

@@ -171,10 +171,6 @@ RenderProcessImpl::RenderProcessImpl()
   }
 #endif
 
-  if (!command_line.HasSwitch(switches::kDisableByteRangeSupport)) {
-    webkit_glue::SetMediaCacheEnabled(true);
-  }
-
 #if defined(OS_MACOSX)
   FilePath bundle_path = mac_util::MainAppBundlePath();
 

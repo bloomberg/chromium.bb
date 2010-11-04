@@ -286,9 +286,6 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          io_thread_globals->net_log.get(),
                          backend);
 
-  if (command_line.HasSwitch(switches::kDisableByteRangeSupport))
-    cache->set_enable_range_support(false);
-
   bool record_mode = chrome::kRecordModeEnabled &&
                      command_line.HasSwitch(switches::kRecordMode);
   bool playback_mode = command_line.HasSwitch(switches::kPlaybackMode);
@@ -420,10 +417,6 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
       new ChromeCookiePolicy(host_content_settings_map_));
   context->set_http_transaction_factory(cache);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableByteRangeSupport))
-    cache->set_enable_range_support(false);
-
   context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(context->host_resolver()));
 
@@ -511,10 +504,6 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
                                io_thread_globals->net_log.get(),
                                backend);
   }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableByteRangeSupport))
-    cache->set_enable_range_support(false);
 
   context->set_http_transaction_factory(cache);
   context->set_net_log(io_thread_globals->net_log.get());

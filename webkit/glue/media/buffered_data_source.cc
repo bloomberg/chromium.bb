@@ -127,7 +127,7 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
   bridge_.reset(
       bridge_factory_->CreateBridge(
           url_,
-          IsMediaCacheEnabled() ? net::LOAD_NORMAL : net::LOAD_BYPASS_CACHE,
+          net::LOAD_NORMAL,
           first_byte_position_,
           last_byte_position_));
 
