@@ -1158,7 +1158,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                     const char* modem_service_path,
                                     const CellularDataPlanList* dataplan) {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
-    DCHECK(networklib && networklib->cellular_network());
+    if (!networklib || !networklib->cellular_network()) {
+      // This might happen if an update is received as we are shutting down.
+      return;
+    }
     // Store data plan for currently connected cellular network.
     if (networklib->cellular_network()->service_path()
         .compare(modem_service_path) == 0) {
