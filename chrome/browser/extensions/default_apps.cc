@@ -19,10 +19,12 @@ void DefaultApps::RegisterUserPrefs(PrefService* prefs) {
 
 DefaultApps::DefaultApps(PrefService* prefs)
     : prefs_(prefs) {
+#if !defined(OS_CHROMEOS)
   // gmail, calendar, docs
   ids_.insert("pjkljhegncpnkpknbcohdijeoejaedia");
   ids_.insert("ejjicmeblgpmajnghnpcppodonldlgfn");
   ids_.insert("apdfllckaahabafndbhieahigkjlhalf");
+#endif  // OS_CHROMEOS
 }
 
 DefaultApps::~DefaultApps() {}
