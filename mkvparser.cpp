@@ -707,6 +707,7 @@ long long EBMLHeader::Parse(
 
     if ((total -  pos) < len)
         return E_FILE_FORMAT_INVALID;
+
     if ((available - pos) < len)
         return pos + len;  //try again later
 
@@ -769,7 +770,6 @@ long long EBMLHeader::Parse(
     }
 
     assert(pos == end);
-
     return 0;
 }
 
@@ -1029,17 +1029,15 @@ long long Segment::ParseHeaders()
 }
 
 
-#if 0
-long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
+long Segment::ParseCluster(long long& off, long long& new_pos) const
 {
-    pCluster = NULL;
-    pos_ = -1;
+    off = -1;
+    new_pos = -1;
 
     const long long stop = m_start + m_size;
     assert(m_pos <= stop);
 
     long long pos = m_pos;
-    long long off = -1;
 
     while (pos < stop)
     {
@@ -1089,8 +1087,8 @@ long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
 
     if (off < 0)  //we did not found any more clusters
     {
-        pos_ = stop;  //pos_ >= 0 here means EOF (cluster is NULL)
-        return 0;     //TODO: confirm this return value
+        new_pos = stop;  //pos >= 0 here means EOF (cluster is NULL)
+        return 0;        //TODO: confirm this return value
     }
 
     //We found a cluster.  Now read something, to ensure that it is
@@ -1122,7 +1120,7 @@ long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
         const int result = m_pReader->Read(pos - 1, 1, &b);
         assert(result == 0);
 
-        pos_ = stop;
+        new_pos = stop;
     }
     else
     {
@@ -1145,33 +1143,26 @@ long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
         if (size < 0)  //error
             return static_cast<long>(size);
 
-        pos_ = idpos;
+        new_pos = idpos;
     }
-
-    //We found a cluster, and it has been completely loaded into the
-    //network cache.  (We can guarantee this because we actually read
-    //the EBML tag that follows the cluster, or, if we reached EOF,
-    //because we actually read the last byte of the cluster).
-
-    Segment* const this_ = const_cast<Segment*>(this);
-
-    pCluster = Cluster::Parse(this_, m_clusterCount, off);
-    assert(pCluster);
-    assert(pCluster->m_index == m_clusterCount);
 
     return 0;
 }
 
 
-bool Segment::AddCluster(Cluster* pCluster, long long pos)
+bool Segment::AddCluster(long long off, long long pos)
 {
     assert(pos >= m_start);
 
     const long long stop = m_start + m_size;
     assert(pos <= stop);
 
-    if (pCluster)
+    if (off >= 0)
     {
+        Cluster* const pCluster = Cluster::Parse(this, m_clusterCount, off);
+        assert(pCluster);
+        assert(pCluster->m_index == m_clusterCount);
+
         AppendCluster(pCluster);
         assert(m_clusters);
         assert(m_clusterSize > pCluster->m_index);
@@ -1182,7 +1173,6 @@ bool Segment::AddCluster(Cluster* pCluster, long long pos)
 
     return (pos >= stop);
 }
-#endif
 
 
 long Segment::LoadCluster()
@@ -2408,7 +2398,7 @@ long long Segment::Unparsed() const
 }
 
 
-Cluster* Segment::GetFirst()
+const Cluster* Segment::GetFirst() const
 {
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
        return &m_eos;
@@ -2420,7 +2410,7 @@ Cluster* Segment::GetFirst()
 }
 
 
-Cluster* Segment::GetLast()
+const Cluster* Segment::GetLast() const
 {
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
         return &m_eos;
@@ -2440,7 +2430,7 @@ unsigned long Segment::GetCount() const
 }
 
 
-Cluster* Segment::GetNext(const Cluster* pCurr)
+const Cluster* Segment::GetNext(const Cluster* pCurr)
 {
     assert(pCurr);
     assert(pCurr != &m_eos);
@@ -2596,7 +2586,7 @@ Cluster* Segment::GetNext(const Cluster* pCurr)
 }
 
 
-Cluster* Segment::FindCluster(long long time_ns)
+const Cluster* Segment::FindCluster(long long time_ns) const
 {
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
         return &m_eos;
@@ -2656,7 +2646,7 @@ Cluster* Segment::FindCluster(long long time_ns)
 
 const BlockEntry* Segment::Seek(
     long long time_ns,
-    const Track* pTrack)
+    const Track* pTrack) const
 {
     assert(pTrack);
 
@@ -3068,7 +3058,7 @@ bool Track::GetLacing() const
 
 long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 {
-    Cluster* pCluster = m_pSegment->GetFirst();
+    const Cluster* pCluster = m_pSegment->GetFirst();
 
     //If Segment::GetFirst returns NULL, then this must be a network
     //download, and we haven't loaded any clusters yet.  In this case,
@@ -3129,7 +3119,7 @@ long Track::GetNext(
     const Block* const pCurrBlock = pCurrEntry->GetBlock();
     assert(pCurrBlock->GetTrackNumber() == m_info.number);
 
-    Cluster* pCluster = pCurrEntry->GetCluster();
+    const Cluster* pCluster = pCurrEntry->GetCluster();
     assert(pCluster);
     assert(!pCluster->EOS());
 
@@ -3633,7 +3623,7 @@ Tracks::~Tracks()
 }
 
 
-Track* Tracks::GetTrackByNumber(unsigned long tn_) const
+const Track* Tracks::GetTrackByNumber(unsigned long tn_) const
 {
     const long long tn = tn_;
 
@@ -3655,7 +3645,7 @@ Track* Tracks::GetTrackByNumber(unsigned long tn_) const
 }
 
 
-Track* Tracks::GetTrackByIndex(unsigned long idx) const
+const Track* Tracks::GetTrackByIndex(unsigned long idx) const
 {
     const ptrdiff_t count = m_trackEntriesEnd - m_trackEntries;
 
@@ -3666,7 +3656,7 @@ Track* Tracks::GetTrackByIndex(unsigned long idx) const
 }
 
 
-void Cluster::Load()
+void Cluster::Load() const
 {
     assert(m_pSegment);
     assert(m_pos);
@@ -3808,7 +3798,7 @@ bool Cluster::EOS() const
 }
 
 
-void Cluster::LoadBlockEntries()
+void Cluster::LoadBlockEntries() const
 {
     if (m_entries)
         return;
@@ -3936,14 +3926,14 @@ void Cluster::LoadBlockEntries()
 
 
 
-long long Cluster::GetTimeCode()
+long long Cluster::GetTimeCode() const
 {
     Load();
     return m_timecode;
 }
 
 
-long long Cluster::GetTime()
+long long Cluster::GetTime() const
 {
     const long long tc = GetTimeCode();
     assert(tc >= 0);
@@ -3960,7 +3950,7 @@ long long Cluster::GetTime()
 }
 
 
-long long Cluster::GetFirstTime()
+long long Cluster::GetFirstTime() const
 {
     const BlockEntry* const pEntry = GetFirst();
 
@@ -3974,7 +3964,7 @@ long long Cluster::GetFirstTime()
 }
 
 
-long long Cluster::GetLastTime()
+long long Cluster::GetLastTime() const
 {
     const BlockEntry* const pEntry = GetLast();
 
@@ -3988,40 +3978,40 @@ long long Cluster::GetLastTime()
 }
 
 
-void Cluster::ParseBlockGroup(long long start, long long size, size_t index)
+void Cluster::ParseBlockGroup(long long st, long long sz, size_t idx) const
 {
     assert(m_entries);
     assert(m_entriesCount);
-    assert(index < m_entriesCount);
+    assert(idx < m_entriesCount);
 
-    BlockGroup* const pGroup =
-        new (std::nothrow) BlockGroup(this, index, start, size);
-    assert(pGroup);  //TODO
+    Cluster* const this_ = const_cast<Cluster*>(this);
 
-    m_entries[index] = pGroup;
+    BlockGroup* const e = new (std::nothrow) BlockGroup(this_, idx, st, sz);
+    assert(e);  //TODO
+
+    m_entries[idx] = e;
 }
 
 
 
-void Cluster::ParseSimpleBlock(long long start, long long size, size_t index)
+void Cluster::ParseSimpleBlock(long long st, long long sz, size_t idx) const
 {
     assert(m_entries);
     assert(m_entriesCount);
-    assert(index < m_entriesCount);
+    assert(idx < m_entriesCount);
 
-    SimpleBlock* const pSimpleBlock =
-        new (std::nothrow) SimpleBlock(this, index, start, size);
-    assert(pSimpleBlock);  //TODO
+    Cluster* const this_ = const_cast<Cluster*>(this);
 
-    m_entries[index] = pSimpleBlock;
+    SimpleBlock* const e = new (std::nothrow) SimpleBlock(this_, idx, st, sz);
+    assert(e);  //TODO
+
+    m_entries[idx] = e;
 }
 
 
-const BlockEntry* Cluster::GetFirst()
+const BlockEntry* Cluster::GetFirst() const
 {
     LoadBlockEntries();
-    //assert(m_entries);
-    //assert(m_entriesCount >= 1);
 
     if ((m_entries == NULL) || (m_entriesCount == 0))
         return NULL;
@@ -4033,11 +4023,9 @@ const BlockEntry* Cluster::GetFirst()
 }
 
 
-const BlockEntry* Cluster::GetLast()
+const BlockEntry* Cluster::GetLast() const
 {
     LoadBlockEntries();
-    //assert(m_entries);
-    //assert(m_entriesCount >= 1);
 
     if ((m_entries == NULL) || (m_entriesCount == 0))
         return NULL;
@@ -4070,7 +4058,7 @@ const BlockEntry* Cluster::GetNext(const BlockEntry* pEntry) const
 }
 
 
-const BlockEntry* Cluster::GetEntry(const Track* pTrack)
+const BlockEntry* Cluster::GetEntry(const Track* pTrack) const
 {
     assert(pTrack);
 
@@ -4110,7 +4098,7 @@ const BlockEntry* Cluster::GetEntry(const Track* pTrack)
 const BlockEntry*
 Cluster::GetEntry(
     const CuePoint& cp,
-    const CuePoint::TrackPosition& tp)
+    const CuePoint::TrackPosition& tp) const
 {
     assert(m_pSegment);
 
@@ -4200,7 +4188,7 @@ Cluster::GetEntry(
 }
 
 
-const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack)
+const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack) const
 {
     assert(pTrack);
 
@@ -4208,7 +4196,6 @@ const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack)
         return pTrack->GetEOS();
 
     LoadBlockEntries();
-    //assert(m_entries);
 
     BlockEntry** i = m_entries + m_entriesCount;
     BlockEntry** const j = m_entries;
@@ -4262,7 +4249,7 @@ bool SimpleBlock::EOS() const
 }
 
 
-Cluster* SimpleBlock::GetCluster() const
+const Cluster* SimpleBlock::GetCluster() const
 {
     return m_pCluster;
 }
@@ -4389,7 +4376,7 @@ bool BlockGroup::EOS() const
 }
 
 
-Cluster* BlockGroup::GetCluster() const
+const Cluster* BlockGroup::GetCluster() const
 {
     return m_pCluster;
 }
@@ -4677,7 +4664,7 @@ Block::~Block()
 }
 
 
-long long Block::GetTimeCode(Cluster* pCluster) const
+long long Block::GetTimeCode(const Cluster* pCluster) const
 {
     assert(pCluster);
 
@@ -4691,7 +4678,7 @@ long long Block::GetTimeCode(Cluster* pCluster) const
 }
 
 
-long long Block::GetTime(Cluster* pCluster) const
+long long Block::GetTime(const Cluster* pCluster) const
 {
     assert(pCluster);
 

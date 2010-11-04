@@ -76,8 +76,8 @@ public:
     ~Block();
 
     long long GetTrackNumber() const;
-    long long GetTimeCode(Cluster*) const;  //absolute, but not scaled
-    long long GetTime(Cluster*) const;      //absolute, and scaled (ns units)
+    long long GetTimeCode(const Cluster*) const;  //absolute, but not scaled
+    long long GetTime(const Cluster*) const;      //absolute, and scaled (ns)
     bool IsKey() const;
     void SetKey(bool);
 
@@ -123,7 +123,7 @@ class BlockEntry
 public:
     virtual ~BlockEntry();
     virtual bool EOS() const = 0;
-    virtual Cluster* GetCluster() const = 0;
+    virtual const Cluster* GetCluster() const = 0;
     virtual size_t GetIndex() const = 0;
     virtual const Block* GetBlock() const = 0;
     //virtual bool IsBFrame() const = 0;
@@ -143,7 +143,7 @@ public:
     SimpleBlock(Cluster*, size_t, long long start, long long size);
 
     bool EOS() const;
-    Cluster* GetCluster() const;
+    const Cluster* GetCluster() const;
     size_t GetIndex() const;
     const Block* GetBlock() const;
     //bool IsBFrame() const;
@@ -166,7 +166,7 @@ public:
     ~BlockGroup();
 
     bool EOS() const;
-    Cluster* GetCluster() const;
+    const Cluster* GetCluster() const;
     size_t GetIndex() const;
     const Block* GetBlock() const;
     //bool IsBFrame() const;
@@ -318,8 +318,8 @@ public:
     Tracks(Segment*, long long start, long long size);
     virtual ~Tracks();
 
-    Track* GetTrackByNumber(unsigned long tn) const;
-    Track* GetTrackByIndex(unsigned long idx) const;
+    const Track* GetTrackByNumber(unsigned long tn) const;
+    const Track* GetTrackByIndex(unsigned long idx) const;
 
 private:
     Track** m_trackEntries;
@@ -429,7 +429,6 @@ public:
 
     const CuePoint* GetFirst() const;
     const CuePoint* GetLast() const;
-
     const CuePoint* GetNext(const CuePoint*) const;
 
     const BlockEntry* GetBlock(
@@ -465,19 +464,19 @@ public:
 
     bool EOS() const;
 
-    long long GetTimeCode();   //absolute, but not scaled
-    long long GetTime();       //absolute, and scaled (nanosecond units)
-    long long GetFirstTime();  //time (ns) of first (earliest) block
-    long long GetLastTime();   //time (ns) of last (latest) block
+    long long GetTimeCode() const;   //absolute, but not scaled
+    long long GetTime() const;       //absolute, and scaled (nanosecond units)
+    long long GetFirstTime() const;  //time (ns) of first (earliest) block
+    long long GetLastTime() const;   //time (ns) of last (latest) block
 
-    const BlockEntry* GetFirst();
-    const BlockEntry* GetLast();
+    const BlockEntry* GetFirst() const;
+    const BlockEntry* GetLast() const;
     const BlockEntry* GetNext(const BlockEntry*) const;
-    const BlockEntry* GetEntry(const Track*);
+    const BlockEntry* GetEntry(const Track*) const;
     const BlockEntry* GetEntry(
         const CuePoint&,
-        const CuePoint::TrackPosition&);
-    const BlockEntry* GetMaxKey(const VideoTrack*);
+        const CuePoint::TrackPosition&) const;
+    const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
 protected:
     Cluster(Segment*, long, long long off);
@@ -485,18 +484,18 @@ protected:
 public:
     //TODO: these should all be private, with public selector functions
     long m_index;
-    long long m_pos;
-    long long m_size;
+    mutable long long m_pos;
+    mutable long long m_size;
 
 private:
-    long long m_timecode;
-    BlockEntry** m_entries;
-    size_t m_entriesCount;
+    mutable long long m_timecode;
+    mutable BlockEntry** m_entries;
+    mutable size_t m_entriesCount;
 
-    void Load();
-    void LoadBlockEntries();
-    void ParseBlockGroup(long long, long long, size_t);
-    void ParseSimpleBlock(long long, long long, size_t);
+    void Load() const;
+    void LoadBlockEntries() const;
+    void ParseBlockGroup(long long, long long, size_t) const;
+    void ParseSimpleBlock(long long, long long, size_t) const;
 
 };
 
@@ -527,12 +526,10 @@ public:
     long long ParseHeaders();  //stops when first cluster is found
     long LoadCluster();        //loads one cluster
 
-#if 0
     //This pair parses one cluster, but only changes the state of the
     //segment object when the cluster is actually added to the index.
-    long ParseCluster(Cluster*&, long long& newpos) const;
-    bool AddCluster(Cluster*, long long);
-#endif
+    long ParseCluster(long long& cluster_pos, long long& new_pos) const;
+    bool AddCluster(long long cluster_pos, long long new_pos);
 
     Tracks* GetTracks() const;
     const SegmentInfo* GetInfo() const;
@@ -541,12 +538,12 @@ public:
     long long GetDuration() const;
 
     unsigned long GetCount() const;
-    Cluster* GetFirst();
-    Cluster* GetLast();
-    Cluster* GetNext(const Cluster*);
+    const Cluster* GetFirst() const;
+    const Cluster* GetLast() const;
+    const Cluster* GetNext(const Cluster*);
 
-    Cluster* FindCluster(long long time_nanoseconds);
-    const BlockEntry* Seek(long long time_nanoseconds, const Track*);
+    const Cluster* FindCluster(long long time_nanoseconds) const;
+    const BlockEntry* Seek(long long time_nanoseconds, const Track*) const;
 
 private:
 
