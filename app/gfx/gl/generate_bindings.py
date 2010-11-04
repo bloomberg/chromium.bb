@@ -546,8 +546,6 @@ def GenerateSource(file, functions, set_name):
     for name in names:
       file.write('  if (!g_debug_%s) {\n' % names[0])
       file.write('    g_debug_%s = g_%s;\n' % (names[0], names[0]))
-      #file.write('    g_%s = reinterpret_cast<%sProc>(Debug_%s);\n' %
-      #    (names[0], names[0], names[0]))
       file.write('    g_%s = Debug_%s;\n' % (names[0], names[0]))
       file.write('  }\n')
   file.write('}\n')
