@@ -63,35 +63,39 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // Minimal set of expectations needed on NetworkScreen initialization.
     // Status bar expectations are defined with RetiresOnSaturation() so
     // these mocks will be active once status bar is initialized.
+    EXPECT_CALL(*mock_network_library_, active_network())
+        .Times(2)
+        .WillRepeatedly((Return((const Network*)(NULL))))
+        .RetiresOnSaturation();
     EXPECT_CALL(*mock_network_library_, ethernet_connected())
-        .Times(3)
+        .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, ethernet_connecting())
         .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, wifi_connected())
-        .Times(3)
+        .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, wifi_connecting())
         .Times(3)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, cellular_connected())
-        .Times(3)
+        .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, cellular_connecting())
         .Times(3)
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, Connected())
-        .Times(4)
-        .WillRepeatedly(Return(false));
-    // Add a Connecting for prewarming auth url check.
     EXPECT_CALL(*mock_network_library_, Connecting())
         .Times(2)
         .WillRepeatedly(Return(false));
-    // Add an AddObserver for prewarming auth url check.
-    EXPECT_CALL(*mock_network_library_, AddObserver(_))
+    // Add a Connected for prewarming auth url check.
+    EXPECT_CALL(*mock_network_library_, Connected())
+        .Times(4)
+        .WillRepeatedly(Return(false));
+    // Add an Observer for prewarming auth url check.
+    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
         .Times(3);
-    EXPECT_CALL(*mock_network_library_, RemoveObserver(_))
+    EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(_))
         .Times(2);
 
     cros_mock_->SetStatusAreaMocksExpectations();
@@ -147,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
   EXPECT_CALL(*mock_network_library_, ethernet_connecting())
       .WillOnce((Return(true)));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
 
@@ -156,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
   EXPECT_CALL(*mock_network_library_, Connected())
       .WillOnce(Return(true));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_TRUE(network_view->IsContinueEnabled());
 
   EmulateContinueButtonExit(network_screen);
@@ -186,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   EXPECT_CALL(*mock_network_library_, wifi_network())
       .WillOnce(Return(wifi.get()));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
 
@@ -195,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   EXPECT_CALL(*mock_network_library_, Connected())
       .WillOnce(Return(true));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_TRUE(network_view->IsContinueEnabled());
 
   EmulateContinueButtonExit(network_screen);
@@ -227,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .WillOnce(Return(cellular.get()));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
 
@@ -236,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   EXPECT_CALL(*mock_network_library_, Connected())
       .WillOnce(Return(true));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_TRUE(network_view->IsContinueEnabled());
 
   EmulateContinueButtonExit(network_screen);
@@ -268,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   EXPECT_CALL(*mock_network_library_, Connected())
       .WillOnce(Return(false));
 
-  network_screen->NetworkChanged(mock_network_library_);
+  network_screen->OnNetworkManagerChanged(mock_network_library_);
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
 

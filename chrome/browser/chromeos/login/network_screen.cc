@@ -77,9 +77,9 @@ void NetworkScreen::ButtonPressed(views::Button* sender,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkLibrary::Observer implementation:
+// NetworkLibrary::NetworkManagerObserver implementation:
 
-void NetworkScreen::NetworkChanged(NetworkLibrary* network_lib) {
+void NetworkScreen::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
   UpdateStatus(network_lib);
 }
 
@@ -110,7 +110,7 @@ void NetworkScreen::OnHelpLinkActivated() {
 void NetworkScreen::Refresh() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     SubscribeNetworkNotification();
-    NetworkChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
+    OnNetworkManagerChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
   }
 }
 
@@ -120,14 +120,16 @@ void NetworkScreen::Refresh() {
 void NetworkScreen::SubscribeNetworkNotification() {
   if (!is_network_subscribed_) {
     is_network_subscribed_ = true;
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
+        ->AddNetworkManagerObserver(this);
   }
 }
 
 void NetworkScreen::UnsubscribeNetworkNotification() {
   if (is_network_subscribed_) {
     is_network_subscribed_ = false;
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
+        ->RemoveNetworkManagerObserver(this);
   }
 }
 

@@ -22,7 +22,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   UpdateScreenTest() : WizardInProcessBrowserTest("update"),
                        mock_login_library_(NULL),
                        mock_update_library_(NULL),
-                       mock_network_library_(NULL){}
+                       mock_network_library_(NULL) {}
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
@@ -55,7 +55,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
         .Times(1)  // also called by NetworkMenu::InitMenuItems()
         .WillRepeatedly((Return(false)))
         .RetiresOnSaturation();
-    EXPECT_CALL(*mock_network_library_, AddObserver(_))
+    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
         .Times(1)
         .RetiresOnSaturation();
   }

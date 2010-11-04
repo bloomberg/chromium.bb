@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_BUTTON_H_
 #pragma once
 
+#include <string>
+
 #include "app/throb_animation.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -46,7 +48,9 @@ class StatusAreaHost;
 // The label will be BOLD if the network is currently connected.
 class NetworkMenuButton : public StatusAreaButton,
                           public NetworkMenu,
-                          public NetworkLibrary::Observer {
+                          public NetworkLibrary::NetworkManagerObserver,
+                          public NetworkLibrary::NetworkObserver,
+                          public NetworkLibrary::CellularDataPlanObserver {
  public:
   explicit NetworkMenuButton(StatusAreaHost* host);
   virtual ~NetworkMenuButton();
@@ -54,9 +58,12 @@ class NetworkMenuButton : public StatusAreaButton,
   // AnimationDelegate implementation.
   virtual void AnimationProgressed(const Animation* animation);
 
-  // NetworkLibrary::Observer implementation.
-  virtual void NetworkChanged(NetworkLibrary* obj);
-  virtual void CellularDataPlanChanged(NetworkLibrary* obj);
+  // NetworkLibrary::NetworkManagerObserver implementation.
+  virtual void OnNetworkManagerChanged(NetworkLibrary* cros);
+  // NetworkLibrary::NetworkObserver implementation.
+  virtual void OnNetworkChanged(NetworkLibrary* cros, const Network* network);
+  // NetworkLibrary::CellularDataPlanObserver implementation.
+  virtual void OnCellularDataPlanChanged(NetworkLibrary* cros);
 
   // Sets the badge icon.
   void SetBadge(const SkBitmap& badge) { badge_ = badge; }
@@ -73,6 +80,9 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual bool ShouldOpenButtonOptions() const;
 
  private:
+  void SetNetworkIcon(const Network* network);
+  void SetNetworkBadge(NetworkLibrary* cros, const Network* network);
+
   // The status area host,
   StatusAreaHost* host_;
 
@@ -84,6 +94,10 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // The duration of the icon throbbing in milliseconds.
   static const int kThrobDuration;
+
+  // If any network is currently active, this is the service path of the one
+  // whose status is displayed in the network menu button.
+  std::string active_network_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };

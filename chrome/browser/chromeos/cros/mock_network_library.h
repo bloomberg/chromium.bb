@@ -17,10 +17,14 @@ class MockNetworkLibrary : public NetworkLibrary {
  public:
   MockNetworkLibrary() {}
   virtual ~MockNetworkLibrary() {}
-  MOCK_METHOD1(AddObserver, void(Observer*));
-  MOCK_METHOD1(RemoveObserver, void(Observer*));
-  MOCK_METHOD2(AddProperyObserver, void(const char*, PropertyObserver*));
-  MOCK_METHOD1(RemoveProperyObserver, void(PropertyObserver*));
+  MOCK_METHOD1(AddNetworkManagerObserver, void(NetworkManagerObserver*));
+  MOCK_METHOD1(RemoveNetworkManagerObserver, void(NetworkManagerObserver*));
+  MOCK_METHOD2(AddNetworkObserver, void(const std::string&, NetworkObserver*));
+  MOCK_METHOD2(RemoveNetworkObserver, void(const std::string&,
+                                           NetworkObserver*));
+  MOCK_METHOD1(RemoveObserverForAllNetworks, void(NetworkObserver*));
+  MOCK_METHOD1(AddCellularDataPlanObserver, void(CellularDataPlanObserver*));
+  MOCK_METHOD1(RemoveCellularDataPlanObserver, void(CellularDataPlanObserver*));
   MOCK_METHOD0(ethernet_network, EthernetNetwork*(void));
   MOCK_CONST_METHOD0(ethernet_connecting, bool(void));
   MOCK_CONST_METHOD0(ethernet_connected, bool(void));
@@ -72,6 +76,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_enabled, bool(void));
   MOCK_CONST_METHOD0(cellular_enabled, bool(void));
 
+  MOCK_CONST_METHOD0(active_network, const Network*(void));
   MOCK_CONST_METHOD0(offline_mode, bool(void));
 
   MOCK_METHOD1(EnableEthernetNetworkDevice, void(bool));

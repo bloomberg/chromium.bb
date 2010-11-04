@@ -48,13 +48,10 @@ class Network {
       state_ == STATE_IDLE; }
   ConnectionError error() const { return error_; }
   ConnectionState state() const { return state_; }
-
-  void set_service_path(const std::string& service_path) {
-      service_path_ = service_path; }
-  void set_connecting(bool connecting) { state_ = (connecting ?
-      STATE_ASSOCIATION : STATE_IDLE); }
-  void set_connected(bool connected) { state_ = (connected ?
-      STATE_READY : STATE_IDLE); }
+  // Is this the active network, i.e, the one through which
+  // network traffic is being routed? A network can be connected,
+  // but not be carrying traffic.
+  bool is_active() const { return is_active_; }
 
   // Clear the fields.
   virtual void Clear();
@@ -69,7 +66,8 @@ class Network {
   Network()
       : type_(TYPE_UNKNOWN),
         state_(STATE_UNKNOWN),
-        error_(ERROR_UNKNOWN) {}
+        error_(ERROR_UNKNOWN),
+        is_active_(false) {}
   explicit Network(const Network& network);
   explicit Network(const ServiceInfo* service);
   virtual ~Network() {}
@@ -80,6 +78,19 @@ class Network {
   ConnectionType type_;
   ConnectionState state_;
   ConnectionError error_;
+  bool is_active_;
+
+ private:
+  void set_service_path(const std::string& service_path) {
+      service_path_ = service_path; }
+  void set_connecting(bool connecting) { state_ = (connecting ?
+      STATE_ASSOCIATION : STATE_IDLE); }
+  void set_connected(bool connected) { state_ = (connected ?
+      STATE_READY : STATE_IDLE); }
+  void set_state(ConnectionState state) { state_ = state; }
+  void set_active(bool is_active) { is_active_ = is_active; }
+
+  friend class NetworkLibraryImpl;
 };
 
 class EthernetNetwork : public Network {
@@ -119,8 +130,6 @@ class WirelessNetwork : public Network {
   bool auto_connect() const { return auto_connect_; }
   bool favorite() const { return favorite_; }
 
-  void set_name(const std::string& name) { name_ = name; }
-  void set_strength(int strength) { strength_ = strength; }
   void set_auto_connect(bool auto_connect) { auto_connect_ = auto_connect; }
   void set_favorite(bool favorite) { favorite_ = favorite; }
 
@@ -140,6 +149,12 @@ class WirelessNetwork : public Network {
   int strength_;
   bool auto_connect_;
   bool favorite_;
+
+ private:
+  void set_name(const std::string& name) { name_ = name; }
+  void set_strength(int strength) { strength_ = strength; }
+
+  friend class NetworkLibraryImpl;
 };
 
 class CellularDataPlan {
@@ -185,9 +200,6 @@ class CellularNetwork : public WirelessNetwork {
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
-  void set_activation_state(ActivationState state) {
-    activation_state_ = state;
-  }
   const ActivationState activation_state() const { return activation_state_; }
   const NetworkTechnology network_technology() const {
     return network_technology_;
@@ -198,9 +210,6 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& payment_url() const { return payment_url_; }
-  void set_payment_url(const std::string& url) {
-    payment_url_ = url;
-  }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
   const std::string& imsi() const { return imsi_; }
@@ -265,6 +274,25 @@ class CellularNetwork : public WirelessNetwork {
   std::string last_update_;
   unsigned int prl_version_;
   CellularDataPlanVector data_plans_;
+
+ private:
+  void set_activation_state(ActivationState state) {
+    activation_state_ = state;
+  }
+  void set_payment_url(const std::string& url) {
+    payment_url_ = url;
+  }
+  void set_network_technology(NetworkTechnology technology) {
+    network_technology_ = technology;
+  }
+  void set_roaming_state(NetworkRoamingState state) {
+    roaming_state_ = state;
+  }
+  void set_restricted_pool(bool restricted_pool) {
+    restricted_pool_ = restricted_pool;
+  }
+
+  friend class NetworkLibraryImpl;
 };
 
 class WifiNetwork : public WirelessNetwork {
@@ -370,27 +398,47 @@ typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
 // library like this: chromeos::CrosLibrary::Get()->GetNetworkLibrary()
 class NetworkLibrary {
  public:
-  class Observer {
+  class NetworkManagerObserver {
    public:
-    // Called when the network has changed. (wifi networks, and ethernet)
-    virtual void NetworkChanged(NetworkLibrary* obj) = 0;
-    // Called when the cellular data plan has changed.
-    virtual void CellularDataPlanChanged(NetworkLibrary* obj) {}
+    // Called when the state of the network manager has changed,
+    // for example, networks have appeared or disappeared.
+    virtual void OnNetworkManagerChanged(NetworkLibrary* obj) = 0;
   };
 
-  class PropertyObserver {
+  class NetworkObserver {
    public:
-    virtual void PropertyChanged(const char* service_path,
-                                 const char* key,
-                                 const Value* value) = 0;
+    // Called when the state of a single network has changed,
+    // for example signal strength or connection state.
+    virtual void OnNetworkChanged(NetworkLibrary* cros,
+                                  const Network* network) = 0;
+  };
+
+  class CellularDataPlanObserver {
+   public:
+    // Called when the cellular data plan has changed.
+    virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) = 0;
   };
 
   virtual ~NetworkLibrary() {}
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
-  virtual void AddProperyObserver(const char* service_path,
-                                  PropertyObserver* observer) = 0;
-  virtual void RemoveProperyObserver(PropertyObserver* observer) = 0;
+
+  virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) = 0;
+  virtual void RemoveNetworkManagerObserver(
+      NetworkManagerObserver* observer) = 0;
+
+  // An attempt to add an observer that has already been added for a
+  // give service path will be ignored.
+  virtual void AddNetworkObserver(const std::string& service_path,
+                                  NetworkObserver* observer) = 0;
+  // Remove an observer of a single network
+  virtual void RemoveNetworkObserver(const std::string& service_path,
+                                     NetworkObserver* observer) = 0;
+  // Stop |observer| from observing any networks
+  virtual void RemoveObserverForAllNetworks(NetworkObserver* observer) = 0;
+
+  virtual void AddCellularDataPlanObserver(
+      CellularDataPlanObserver* observer) = 0;
+  virtual void RemoveCellularDataPlanObserver(
+      CellularDataPlanObserver* observer) = 0;
 
   // Return the active Ethernet network (or a default structure if inactive).
   virtual EthernetNetwork* ethernet_network() = 0;
@@ -487,6 +535,8 @@ class NetworkLibrary {
   virtual bool ethernet_enabled() const = 0;
   virtual bool wifi_enabled() const = 0;
   virtual bool cellular_enabled() const = 0;
+
+  virtual const Network* active_network() const = 0;
 
   virtual bool offline_mode() const = 0;
 

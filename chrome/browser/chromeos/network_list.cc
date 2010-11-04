@@ -49,7 +49,8 @@ bool NetworkList::IsNetworkConnecting(NetworkType type,
   return IsInNetworkList(connecting_networks_, type, id);
 }
 
-void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
+void NetworkList::OnNetworkManagerChanged(
+    chromeos::NetworkLibrary* network_lib) {
   networks_.clear();
   connected_networks_.clear();
   connecting_networks_.clear();

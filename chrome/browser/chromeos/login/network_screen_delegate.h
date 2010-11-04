@@ -22,7 +22,7 @@ class LanguageSwitchMenu;
 
 // Interface that NetworkScreen exposes to the NetworkSelectionView.
 class NetworkScreenDelegate : public views::ButtonListener,
-                              public NetworkLibrary::Observer {
+                              public NetworkLibrary::NetworkManagerObserver {
  public:
   // Cleares all error notifications.
   virtual void ClearErrors() = 0;

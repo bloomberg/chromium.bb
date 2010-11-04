@@ -29,6 +29,7 @@
 namespace chromeos {
 
 using ::testing::AnyNumber;
+using ::testing::AtMost;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
@@ -269,24 +270,19 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
 }
 
 void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
-  EXPECT_CALL(*mock_network_library_, AddObserver(_))
+  EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_network_library_, AddCellularDataPlanObserver(_))
       .Times(1)
       .RetiresOnSaturation();
 
-  // NetworkDropdownButton::NetworkChanged() calls:
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  // NetworkMenuButton::OnNetworkManagerChanged() calls:
+  EXPECT_CALL(*mock_network_library_, active_network())
       .Times(1)
-      .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, wifi_connected())
-      .Times(1)
-      .WillRepeatedly((Return(false)))
+      .WillRepeatedly((Return((const Network*)(NULL))))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, wifi_connecting())
-      .Times(1)
-      .WillRepeatedly((Return(false)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, cellular_connected())
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
@@ -295,7 +291,7 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, Connected())
-      .Times(1)
+      .Times(2)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, Connecting())
@@ -325,7 +321,13 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*mock_network_library_, RemoveObserver(_))
+  EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_network_library_, RemoveObserverForAllNetworks(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_network_library_, RemoveCellularDataPlanObserver(_))
       .Times(1)
       .RetiresOnSaturation();
 }

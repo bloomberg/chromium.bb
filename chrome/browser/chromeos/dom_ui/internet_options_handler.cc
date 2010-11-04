@@ -56,11 +56,19 @@ std::string FormatHardwareAddress(const std::string& address) {
 }  // namespace
 
 InternetOptionsHandler::InternetOptionsHandler() {
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
+  chromeos::NetworkLibrary* netlib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  netlib->AddNetworkManagerObserver(this);
+  netlib->AddCellularDataPlanObserver(this);
+  MonitorActiveNetwork(netlib);
 }
 
 InternetOptionsHandler::~InternetOptionsHandler() {
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+  chromeos::NetworkLibrary *netlib =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  netlib->RemoveNetworkManagerObserver(this);
+  netlib->RemoveCellularDataPlanObserver(this);
+  netlib->RemoveObserverForAllNetworks(this);
 }
 
 void InternetOptionsHandler::GetLocalizedValues(
@@ -267,7 +275,7 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)));
- localized_strings->SetString("enableCellular",
+  localized_strings->SetString("enableCellular",
       l10n_util::GetStringFUTF16(
           IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
@@ -357,10 +365,8 @@ void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
     browser->OpenMobilePlanTabAndActivate();
 }
 
-void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
-  if (!dom_ui_)
-    return;
-
+void InternetOptionsHandler::RefreshNetworkData(
+    chromeos::NetworkLibrary* cros) {
   DictionaryValue dictionary;
   dictionary.Set("wiredList", GetWiredList());
   dictionary.Set("wirelessList", GetWirelessList());
@@ -373,7 +379,45 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
       L"options.InternetOptions.refreshNetworkData", dictionary);
 }
 
-void InternetOptionsHandler::CellularDataPlanChanged(
+void InternetOptionsHandler::OnNetworkManagerChanged(
+    chromeos::NetworkLibrary* cros) {
+  if (!dom_ui_)
+    return;
+  MonitorActiveNetwork(cros);
+  RefreshNetworkData(cros);
+}
+
+void InternetOptionsHandler::OnNetworkChanged(
+    chromeos::NetworkLibrary* cros,
+    const chromeos::Network* network) {
+  if (dom_ui_)
+    RefreshNetworkData(cros);
+}
+
+// Add an observer for the active network, if any, so
+// that we can dynamically display the correct icon for
+// that network's signal strength.
+// TODO(ers) Ideally, on this page we'd monitor all networks for
+// signal strength changes, not just the active network.
+void InternetOptionsHandler::MonitorActiveNetwork(
+    chromeos::NetworkLibrary* cros) {
+  const chromeos::Network* network = cros->active_network();
+  if (active_network_.empty() || network == NULL ||
+      active_network_ != network->service_path()) {
+    if (!active_network_.empty()) {
+      cros->RemoveNetworkObserver(active_network_, this);
+    }
+    if (network != NULL) {
+      cros->AddNetworkObserver(network->service_path(), this);
+    }
+  }
+  if (network != NULL)
+    active_network_ = network->service_path();
+  else
+    active_network_ = "";
+}
+
+void InternetOptionsHandler::OnCellularDataPlanChanged(
     chromeos::NetworkLibrary* obj) {
   if (!dom_ui_)
     return;
@@ -580,7 +624,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       LOG(WARNING) << "Cannot find network " << net->service_path();
     } else {
       dictionary.SetString("ssid", wireless->name());
-      dictionary.SetBoolean("autoConnect",wireless->auto_connect());
+      dictionary.SetBoolean("autoConnect", wireless->auto_connect());
       if (wireless->encrypted()) {
         dictionary.SetBoolean("encrypted", true);
         if (wireless->encryption() == chromeos::SECURITY_8021X) {
@@ -591,10 +635,10 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
           } else {
             dictionary.SetBoolean("certInPkcs", false);
           }
-          dictionary.SetString("certPath",wireless->cert_path());
-          dictionary.SetString("ident",wireless->identity());
+          dictionary.SetString("certPath", wireless->cert_path());
+          dictionary.SetString("ident", wireless->identity());
           dictionary.SetBoolean("certNeeded", true);
-          dictionary.SetString("certPass",wireless->passphrase());
+          dictionary.SetString("certPass", wireless->passphrase());
         } else {
           dictionary.SetBoolean("certNeeded", false);
         }
@@ -655,7 +699,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
 void InternetOptionsHandler::PopupWirelessPassword(
     const chromeos::WifiNetwork* network) {
   DictionaryValue dictionary;
-  dictionary.SetString("servicePath",network->service_path());
+  dictionary.SetString("servicePath", network->service_path());
   if (network->encryption() == chromeos::SECURITY_8021X) {
     dictionary.SetBoolean("certNeeded", true);
     dictionary.SetString("ident", network->identity());
@@ -668,7 +712,6 @@ void InternetOptionsHandler::PopupWirelessPassword(
 }
 
 void InternetOptionsHandler::LoginCallback(const ListValue* args) {
-
   std::string service_path;
   std::string password;
 
@@ -693,7 +736,6 @@ void InternetOptionsHandler::LoginCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
-
   std::string service_path;
   std::string identity;
   std::string certpath;
@@ -934,7 +976,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
     SkBitmap icon = chromeos::NetworkMenu::IconForNetworkStrength(
         (*it)->strength(), true);
-    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
+    SkBitmap badge = chromeos::NetworkMenu::BadgeForNetworkTechnology(*it);
     icon = chromeos::NetworkMenu::IconForDisplay(icon, badge);
     list->Append(GetNetwork(
         (*it)->service_path(),
