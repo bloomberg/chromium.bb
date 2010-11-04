@@ -449,7 +449,8 @@ bool WebProgressNotifier::InOnLoadEvent(IWebBrowser2* browser) {
     return false;
 
   CComBSTR type;
-  if (FAILED(event_obj->get_type(&type)) || wcscmp(type, L"load") != 0)
+  if (FAILED(event_obj->get_type(&type)) ||
+      wcscmp(com::ToString(type), L"load") != 0)
     return false;
   else
     return true;
