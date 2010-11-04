@@ -64,10 +64,13 @@ void ProgramManager::ProgramInfo::Reset() {
 }
 
 void ProgramManager::ProgramInfo::UpdateLogInfo() {
+  GLint max_len = 0;
+  glGetProgramiv(service_id_, GL_INFO_LOG_LENGTH, &max_len);
+  scoped_array<char> temp(new char[max_len]);
   GLint len = 0;
-  glGetProgramiv(service_id_, GL_INFO_LOG_LENGTH, &len);
-  scoped_array<char> temp(new char[len]);
-  glGetProgramInfoLog(service_id_, len, &len, temp.get());
+  glGetProgramInfoLog(service_id_, max_len, &len, temp.get());
+  DCHECK(max_len == 0 || len < max_len);
+  DCHECK(len == 0 || temp[len] == '\0');
   set_log_info(std::string(temp.get(), len));
 }
 
@@ -81,11 +84,13 @@ void ProgramManager::ProgramInfo::Update() {
   // TODO(gman): Should we check for error?
   scoped_array<char> name_buffer(new char[max_len]);
   for (GLint ii = 0; ii < num_attribs; ++ii) {
-    GLsizei length;
-    GLsizei size;
-    GLenum type;
+    GLsizei length = 0;
+    GLsizei size = 0;
+    GLenum type = 0;
     glGetActiveAttrib(
         service_id_, ii, max_len, &length, &size, &type, name_buffer.get());
+    DCHECK(max_len == 0 || length < max_len);
+    DCHECK(length == 0 || name_buffer[length] == '\0');
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
       // TODO(gman): Should we check for error?
       GLint location = glGetAttribLocation(service_id_, name_buffer.get());
@@ -116,11 +121,13 @@ void ProgramManager::ProgramInfo::Update() {
   max_location = -1;
   int index = 0;  // this index tracks valid uniforms.
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
-    GLsizei length;
-    GLsizei size;
-    GLenum type;
+    GLsizei length = 0;
+    GLsizei size = 0;
+    GLenum type = 0;
     glGetActiveUniform(
         service_id_, ii, max_len, &length, &size, &type, name_buffer.get());
+    DCHECK(max_len == 0 || length < max_len);
+    DCHECK(length == 0 || name_buffer[length] == '\0');
     // TODO(gman): Should we check for error?
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
       GLint location =  glGetUniformLocation(service_id_, name_buffer.get());

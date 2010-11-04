@@ -453,10 +453,6 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffers(
   }
   const GLuint* buffers = GetSharedMemoryAs<const GLuint*>(
       c.buffers_shm_id, c.buffers_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers: n < 0");
-    return error::kNoError;
-  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -473,10 +469,6 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
   }
   const GLuint* buffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers: n < 0");
-    return error::kNoError;
-  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -493,10 +485,6 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffers(
   }
   const GLuint* framebuffers = GetSharedMemoryAs<const GLuint*>(
       c.framebuffers_shm_id, c.framebuffers_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers: n < 0");
-    return error::kNoError;
-  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -513,10 +501,6 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
   }
   const GLuint* framebuffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers: n < 0");
-    return error::kNoError;
-  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -533,10 +517,6 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffers(
   }
   const GLuint* renderbuffers = GetSharedMemoryAs<const GLuint*>(
       c.renderbuffers_shm_id, c.renderbuffers_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers: n < 0");
-    return error::kNoError;
-  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -553,10 +533,6 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
   }
   const GLuint* renderbuffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers: n < 0");
-    return error::kNoError;
-  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -573,10 +549,6 @@ error::Error GLES2DecoderImpl::HandleDeleteTextures(
   }
   const GLuint* textures = GetSharedMemoryAs<const GLuint*>(
       c.textures_shm_id, c.textures_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteTextures: n < 0");
-    return error::kNoError;
-  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -593,10 +565,6 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
   }
   const GLuint* textures = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteTextures: n < 0");
-    return error::kNoError;
-  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -693,7 +661,7 @@ error::Error GLES2DecoderImpl::HandleEnableVertexAttribArray(
 
 error::Error GLES2DecoderImpl::HandleFinish(
     uint32 immediate_data_size, const gles2::Finish& c) {
-  glFlush();
+  glFinish();
   return error::kNoError;
 }
 
@@ -777,10 +745,6 @@ error::Error GLES2DecoderImpl::HandleGenBuffers(
   }
   GLuint* buffers = GetSharedMemoryAs<GLuint*>(
       c.buffers_shm_id, c.buffers_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenBuffers: n < 0");
-    return error::kNoError;
-  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -799,10 +763,6 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
   }
   GLuint* buffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenBuffers: n < 0");
-    return error::kNoError;
-  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -832,10 +792,6 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffers(
   }
   GLuint* framebuffers = GetSharedMemoryAs<GLuint*>(
       c.framebuffers_shm_id, c.framebuffers_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenFramebuffers: n < 0");
-    return error::kNoError;
-  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -854,10 +810,6 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   }
   GLuint* framebuffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenFramebuffers: n < 0");
-    return error::kNoError;
-  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -876,10 +828,6 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffers(
   }
   GLuint* renderbuffers = GetSharedMemoryAs<GLuint*>(
       c.renderbuffers_shm_id, c.renderbuffers_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers: n < 0");
-    return error::kNoError;
-  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -898,10 +846,6 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   }
   GLuint* renderbuffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers: n < 0");
-    return error::kNoError;
-  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -920,10 +864,6 @@ error::Error GLES2DecoderImpl::HandleGenTextures(
   }
   GLuint* textures = GetSharedMemoryAs<GLuint*>(
       c.textures_shm_id, c.textures_shm_offset, data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenTextures: n < 0");
-    return error::kNoError;
-  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -942,10 +882,6 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   }
   GLuint* textures = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
-  if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenTextures: n < 0");
-    return error::kNoError;
-  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -1921,15 +1857,11 @@ error::Error GLES2DecoderImpl::HandleUniform1fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 1, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform1fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1942,7 +1874,7 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 1, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 1, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -1950,10 +1882,6 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
   }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform1fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1974,15 +1902,11 @@ error::Error GLES2DecoderImpl::HandleUniform1iv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 1, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform1iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1995,7 +1919,7 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 1, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 1, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2003,10 +1927,6 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
   }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform1iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2029,15 +1949,11 @@ error::Error GLES2DecoderImpl::HandleUniform2fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 2, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 2, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform2fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2050,7 +1966,7 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 2, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 2, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2058,10 +1974,6 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
   }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform2fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2083,15 +1995,11 @@ error::Error GLES2DecoderImpl::HandleUniform2iv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 2, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 2, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform2iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2104,7 +2012,7 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 2, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 2, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2112,10 +2020,6 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
   }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform2iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2139,15 +2043,11 @@ error::Error GLES2DecoderImpl::HandleUniform3fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 3, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 3, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform3fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2160,7 +2060,7 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 3, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 3, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2168,10 +2068,6 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
   }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform3fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2194,15 +2090,11 @@ error::Error GLES2DecoderImpl::HandleUniform3iv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 3, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 3, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform3iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2215,7 +2107,7 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 3, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 3, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2223,10 +2115,6 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
   }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform3iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2251,15 +2139,11 @@ error::Error GLES2DecoderImpl::HandleUniform4fv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform4fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2272,7 +2156,7 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2280,10 +2164,6 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
   }
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform4fv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2307,15 +2187,11 @@ error::Error GLES2DecoderImpl::HandleUniform4iv(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 4, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 4, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform4iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2328,7 +2204,7 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLint), 4, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLint), 4, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2336,10 +2212,6 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
   }
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform4iv: count < 0");
-    return error::kNoError;
-  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -2353,15 +2225,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv: count < 0");
-    return error::kNoError;
-  }
   if (!validators_->false_only.IsValid(transpose)) {
     SetGLError(
         GL_INVALID_VALUE, "glUniformMatrix2fv: transpose GL_INVALID_VALUE");
@@ -2380,7 +2248,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 4, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 4, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2388,10 +2256,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
   }
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv: count < 0");
-    return error::kNoError;
-  }
   if (!validators_->false_only.IsValid(transpose)) {
     SetGLError(
         GL_INVALID_VALUE, "glUniformMatrix2fv: transpose GL_INVALID_VALUE");
@@ -2410,15 +2274,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 9, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 9, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv: count < 0");
-    return error::kNoError;
-  }
   if (!validators_->false_only.IsValid(transpose)) {
     SetGLError(
         GL_INVALID_VALUE, "glUniformMatrix3fv: transpose GL_INVALID_VALUE");
@@ -2437,7 +2297,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 9, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 9, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2445,10 +2305,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
   }
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv: count < 0");
-    return error::kNoError;
-  }
   if (!validators_->false_only.IsValid(transpose)) {
     SetGLError(
         GL_INVALID_VALUE, "glUniformMatrix3fv: transpose GL_INVALID_VALUE");
@@ -2467,15 +2323,11 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 16, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 16, &data_size)) {
     return error::kOutOfBounds;
   }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv: count < 0");
-    return error::kNoError;
-  }
   if (!validators_->false_only.IsValid(transpose)) {
     SetGLError(
         GL_INVALID_VALUE, "glUniformMatrix4fv: transpose GL_INVALID_VALUE");
@@ -2494,7 +2346,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
   GLsizei count = static_cast<GLsizei>(c.count);
   GLboolean transpose = static_cast<GLboolean>(c.transpose);
   uint32 data_size;
-  if (!ComputeDataSize(1, sizeof(GLfloat), 16, &data_size)) {
+  if (!ComputeDataSize(count, sizeof(GLfloat), 16, &data_size)) {
     return error::kOutOfBounds;
   }
   if (data_size > immediate_data_size) {
@@ -2502,10 +2354,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
   }
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv: count < 0");
-    return error::kNoError;
-  }
   if (!validators_->false_only.IsValid(transpose)) {
     SetGLError(
         GL_INVALID_VALUE, "glUniformMatrix4fv: transpose GL_INVALID_VALUE");

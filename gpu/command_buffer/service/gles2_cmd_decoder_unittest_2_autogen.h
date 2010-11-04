@@ -751,8 +751,8 @@ TEST_F(GLES2DecoderTest2, Uniform1fvInvalidArgs1_0) {
   SpecializedSetup<Uniform1fv, 0>(false);
   Uniform1fv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform1fvInvalidArgs2_0) {
@@ -813,8 +813,8 @@ TEST_F(GLES2DecoderTest2, Uniform2fvInvalidArgs1_0) {
   SpecializedSetup<Uniform2fv, 0>(false);
   Uniform2fv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform2fvInvalidArgs2_0) {
@@ -872,8 +872,8 @@ TEST_F(GLES2DecoderTest2, Uniform2ivInvalidArgs1_0) {
   SpecializedSetup<Uniform2iv, 0>(false);
   Uniform2iv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform2ivInvalidArgs2_0) {
@@ -931,8 +931,8 @@ TEST_F(GLES2DecoderTest2, Uniform3fvInvalidArgs1_0) {
   SpecializedSetup<Uniform3fv, 0>(false);
   Uniform3fv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3fvInvalidArgs2_0) {
@@ -990,8 +990,8 @@ TEST_F(GLES2DecoderTest2, Uniform3ivInvalidArgs1_0) {
   SpecializedSetup<Uniform3iv, 0>(false);
   Uniform3iv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3ivInvalidArgs2_0) {
@@ -1049,8 +1049,8 @@ TEST_F(GLES2DecoderTest2, Uniform4fvInvalidArgs1_0) {
   SpecializedSetup<Uniform4fv, 0>(false);
   Uniform4fv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4fvInvalidArgs2_0) {
@@ -1108,8 +1108,8 @@ TEST_F(GLES2DecoderTest2, Uniform4ivInvalidArgs1_0) {
   SpecializedSetup<Uniform4iv, 0>(false);
   Uniform4iv cmd;
   cmd.Init(1, -1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4ivInvalidArgs2_0) {
@@ -1159,8 +1159,8 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvInvalidArgs1_0) {
   SpecializedSetup<UniformMatrix2fv, 0>(false);
   UniformMatrix2fv cmd;
   cmd.Init(1, -1, false, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvInvalidArgs2_0) {
@@ -1232,8 +1232,8 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvInvalidArgs1_0) {
   SpecializedSetup<UniformMatrix3fv, 0>(false);
   UniformMatrix3fv cmd;
   cmd.Init(1, -1, false, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvInvalidArgs2_0) {
@@ -1305,8 +1305,8 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvInvalidArgs1_0) {
   SpecializedSetup<UniformMatrix4fv, 0>(false);
   UniformMatrix4fv cmd;
   cmd.Init(1, -1, false, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvInvalidArgs2_0) {

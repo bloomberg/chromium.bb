@@ -4072,10 +4072,13 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
     // All translated shaders must compile.
     LOG_IF(ERROR, use_shader_translator_)
         << "Shader translator allowed/produced an invalid shader.";
+    GLint max_len = 0;
+    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &max_len);
+    scoped_array<char> temp(new char[max_len]);
     GLint len = 0;
-    glGetShaderiv(info->service_id(), GL_INFO_LOG_LENGTH, &len);
-    scoped_array<char> temp(new char[len]);
-    glGetShaderInfoLog(info->service_id(), len, &len, temp.get());
+    glGetShaderInfoLog(info->service_id(), max_len, &len, temp.get());
+    DCHECK(max_len == 0 || len < max_len);
+    DCHECK(len ==0 || temp[len] == '\0');
     info->SetStatus(false, std::string(temp.get(), len));
   }
 };

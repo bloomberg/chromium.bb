@@ -171,7 +171,7 @@ void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
     SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers: n < 0");
     return;
   }
-  framebuffer_id_handler_->FreeIds(n, framebuffers);
+framebuffer_id_handler_->FreeIds(n, framebuffers);
   helper_->DeleteFramebuffersImmediate(n, framebuffers);
 }
 
@@ -185,7 +185,7 @@ void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
     SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers: n < 0");
     return;
   }
-  renderbuffer_id_handler_->FreeIds(n, renderbuffers);
+renderbuffer_id_handler_->FreeIds(n, renderbuffers);
   helper_->DeleteRenderbuffersImmediate(n, renderbuffers);
 }
 
@@ -199,7 +199,7 @@ void DeleteTextures(GLsizei n, const GLuint* textures) {
     SetGLError(GL_INVALID_VALUE, "glDeleteTextures: n < 0");
     return;
   }
-  texture_id_handler_->FreeIds(n, textures);
+texture_id_handler_->FreeIds(n, textures);
   helper_->DeleteTexturesImmediate(n, textures);
 }
 
@@ -640,6 +640,10 @@ void Uniform1f(GLint location, GLfloat x) {
 }
 
 void Uniform1fv(GLint location, GLsizei count, const GLfloat* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform1fv: count < 0");
+    return;
+  }
   helper_->Uniform1fvImmediate(location, count, v);
 }
 
@@ -648,6 +652,10 @@ void Uniform1i(GLint location, GLint x) {
 }
 
 void Uniform1iv(GLint location, GLsizei count, const GLint* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform1iv: count < 0");
+    return;
+  }
   helper_->Uniform1ivImmediate(location, count, v);
 }
 
@@ -656,6 +664,10 @@ void Uniform2f(GLint location, GLfloat x, GLfloat y) {
 }
 
 void Uniform2fv(GLint location, GLsizei count, const GLfloat* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform2fv: count < 0");
+    return;
+  }
   helper_->Uniform2fvImmediate(location, count, v);
 }
 
@@ -664,6 +676,10 @@ void Uniform2i(GLint location, GLint x, GLint y) {
 }
 
 void Uniform2iv(GLint location, GLsizei count, const GLint* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform2iv: count < 0");
+    return;
+  }
   helper_->Uniform2ivImmediate(location, count, v);
 }
 
@@ -672,6 +688,10 @@ void Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) {
 }
 
 void Uniform3fv(GLint location, GLsizei count, const GLfloat* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform3fv: count < 0");
+    return;
+  }
   helper_->Uniform3fvImmediate(location, count, v);
 }
 
@@ -680,6 +700,10 @@ void Uniform3i(GLint location, GLint x, GLint y, GLint z) {
 }
 
 void Uniform3iv(GLint location, GLsizei count, const GLint* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform3iv: count < 0");
+    return;
+  }
   helper_->Uniform3ivImmediate(location, count, v);
 }
 
@@ -688,6 +712,10 @@ void Uniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
 }
 
 void Uniform4fv(GLint location, GLsizei count, const GLfloat* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform4fv: count < 0");
+    return;
+  }
   helper_->Uniform4fvImmediate(location, count, v);
 }
 
@@ -696,21 +724,37 @@ void Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
 }
 
 void Uniform4iv(GLint location, GLsizei count, const GLint* v) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniform4iv: count < 0");
+    return;
+  }
   helper_->Uniform4ivImmediate(location, count, v);
 }
 
 void UniformMatrix2fv(
     GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv: count < 0");
+    return;
+  }
   helper_->UniformMatrix2fvImmediate(location, count, transpose, value);
 }
 
 void UniformMatrix3fv(
     GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv: count < 0");
+    return;
+  }
   helper_->UniformMatrix3fvImmediate(location, count, transpose, value);
 }
 
 void UniformMatrix4fv(
     GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv: count < 0");
+    return;
+  }
   helper_->UniformMatrix4fvImmediate(location, count, transpose, value);
 }
 
