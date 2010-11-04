@@ -10,7 +10,7 @@ vars = {
   "swig_revision": "40423",
   "nacl_revision": "3365",
   "libjingle_revision": "33",
-  "libvpx_revision": "64931",
+  "libvpx_revision": "64932",
   "ffmpeg_revision": "64326",
 }
 
