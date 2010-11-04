@@ -553,8 +553,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// DISABLED crbug.com/61849
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationValueChanged) {
+                       DISABLED_TestNotificationValueChanged) {
   GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"
       "</body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
