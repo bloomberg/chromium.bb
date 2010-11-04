@@ -261,6 +261,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   // Global host resolver for the context.
   context->set_host_resolver(io_thread_globals->host_resolver.get());
+  context->set_dnsrr_resolver(io_thread_globals->dnsrr_resolver.get());
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 

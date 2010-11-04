@@ -10,6 +10,7 @@
 
 namespace net {
 
+class DnsRRResolver;
 class SSLHostInfo;
 
 // Creates SSLClientSocketNSS objects.
@@ -17,7 +18,8 @@ SSLClientSocket* SSLClientSocketNSSFactory(
     ClientSocketHandle* transport_socket,
     const std::string& hostname,
     const SSLConfig& ssl_config,
-    SSLHostInfo* ssl_host_info);
+    SSLHostInfo* ssl_host_info,
+    DnsRRResolver* dnsrr_resolver);
 
 }  // namespace net
 

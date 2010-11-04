@@ -403,6 +403,11 @@ const char kEnableDefaultApps[]             = "enable-default-apps";
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
+// Enable DNS side checking of certificates. Still experimental, should only
+// be used by developers at the current time.
+const char kEnableDNSCertProvenanceChecking[] =
+     "enable-dns-cert-provenance-checking";
+
 const char kEnableDNSSECCerts[]             = "enable-dnssec-certs";
 
 // Enables extension APIs that are in development.

@@ -197,6 +197,10 @@ void BrowserMainParts::EarlyInitialization() {
     net::SSLConfigService::AllowMITMProxies();
   if (parsed_command_line().HasSwitch(switches::kEnableSnapStart))
     net::SSLConfigService::EnableSnapStart();
+  if (parsed_command_line().HasSwitch(
+          switches::kEnableDNSCertProvenanceChecking)) {
+    net::SSLConfigService::EnableDNSCertProvenanceChecking();
+  }
 
   if (parsed_command_line().HasSwitch(switches::kEnableTcpFastOpen))
     net::set_tcp_fastopen_enabled(true);
