@@ -81,7 +81,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
-        '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
         'gfx_resources',
       ],
