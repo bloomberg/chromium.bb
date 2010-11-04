@@ -19,7 +19,6 @@
 #include "views/focus/focus_util_win.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
-#include "views/widget/child_window_message_processor.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_win.h"
 #include "views/widget/root_view.h"
@@ -40,6 +39,11 @@ bool WidgetWin::screen_reader_active_ = false;
 
 RootView* GetRootViewForHWND(HWND hwnd) {
   return reinterpret_cast<RootView*>(::GetProp(hwnd, kRootViewWindowProperty));
+}
+
+NativeControlWin* GetNativeControlWinForHWND(HWND hwnd) {
+  return reinterpret_cast<NativeControlWin*>(
+      GetProp(hwnd, NativeControlWin::kNativeControlWinKey));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1169,9 +1173,7 @@ RootView* WidgetWin::GetFocusedViewRootView() {
 
 // Get the source HWND of the specified message. Depending on the message, the
 // source HWND is encoded in either the WPARAM or the LPARAM value.
-static HWND GetControlHWNDForMessage(UINT message,
-                                     WPARAM w_param,
-                                     LPARAM l_param) {
+HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
   // Each of the following messages can be sent by a child HWND and must be
   // forwarded to its associated NativeControlWin for handling.
   switch (message) {
@@ -1194,26 +1196,25 @@ HICON WidgetWin::GetDefaultWindowIcon() const {
   return NULL;
 }
 
-// Some messages may be sent to us by a child HWND. If this is the case, this
-// function will forward those messages on to the object associated with the
-// source HWND and return true, in which case the window procedure must not do
-// any further processing of the message. If there is no associated
-// ChildWindowMessageProcessor, the return value will be false and the WndProc
-// can continue processing the message normally.  |l_result| contains the result
-// of the message processing by the control and must be returned by the WndProc
-// if the return value is true.
-static bool ProcessChildWindowMessage(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param,
-                                      LRESULT* l_result) {
+// Some messages may be sent to us by a child HWND managed by
+// NativeControlWin. If this is the case, this function will forward those
+// messages on to the object associated with the source HWND and return true,
+// in which case the window procedure must not do any further processing of
+// the message. If there is no associated NativeControlWin, the return value
+// will be false and the WndProc can continue processing the message normally.
+// |l_result| contains the result of the message processing by the control and
+// must be returned by the WndProc if the return value is true.
+bool ProcessNativeControlMessage(UINT message,
+                                 WPARAM w_param,
+                                 LPARAM l_param,
+                                 LRESULT* l_result) {
   *l_result = 0;
 
   HWND control_hwnd = GetControlHWNDForMessage(message, w_param, l_param);
   if (IsWindow(control_hwnd)) {
-    ChildWindowMessageProcessor* processor =
-        ChildWindowMessageProcessor::Get(control_hwnd);
-    if (processor)
-      return processor->ProcessMessage(message, w_param, l_param, l_result);
+    NativeControlWin* wrapper = GetNativeControlWinForHWND(control_hwnd);
+    if (wrapper)
+      return wrapper->ProcessMessage(message, w_param, l_param, l_result);
   }
 
   return false;
@@ -1226,7 +1227,7 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   // First allow messages sent by child controls to be processed directly by
   // their associated views. If such a view is present, it will handle the
   // message *instead of* this WidgetWin.
-  if (ProcessChildWindowMessage(message, w_param, l_param, &result))
+  if (ProcessNativeControlMessage(message, w_param, l_param, &result))
     return result;
 
   // Otherwise we handle everything else.
