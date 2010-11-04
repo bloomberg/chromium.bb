@@ -1118,3 +1118,25 @@
    fun:_ZN9CocoaTest8TearDownEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_61929
+   Memcheck:Leak
+   fun:calloc
+   fun:IOAlloc
+   fun:CMOpenOrNewAccess
+   fun:CMOpenProfile
+   fun:_CMGetProfileOfSuite
+   fun:CMGetProfileByAVID
+   fun:CMSCreateDisplayProfile
+   fun:create
+   fun:CMSTransformCreate
+   fun:createBase
+   fun:initialize
+   fun:createColorTransform
+   fun:CGColorTransformCreateMutable
+   fun:CGBitmapColorTransformCreate
+   fun:__CGBitmapContextDelegateCreate
+   fun:__CGBitmapContextDelegateCreate
+   fun:createBitmapContext
+   fun:CGBitmapContextCreate
+}
