@@ -24,6 +24,8 @@ cr.define('mobile', function() {
     // Mobile device information.
     deviceInfo_: null,
     frameName_ : '',
+    initialized_ : false,
+    faked_transaction_ : false,
     // UI states.
     state_ : -1,
     STATE_UNKNOWN_: "unknown",
@@ -34,14 +36,23 @@ cr.define('mobile', function() {
     STATE_CONNECTED_: "connected",
 
     initialize: function(frame_name) {
+      if (this.initialized_) {
+        console.log('calling initialize() again?');
+        return;
+      }
+      this.initialized_ = true;
       self = this;
       this.frameName_ = frame_name;
       window.addEventListener('message', function(e) {
           self.onMessageReceived_(e);
       });
       $('cheat').addEventListener('click', function(e) {
+        console.log('calling setTransactionStatus from cheat.onclick');
+        if (self.faked_transaction_)
+          return;
         $('paymentForm').classList.add('hidden');
         chrome.send('setTransactionStatus', ['OK']);
+        self.faked_transaction_ = true;
       });
       $(frame_name).addEventListener('load', function(e) {
         // Flip the visibility of the payment page only after the frame is
@@ -76,6 +87,7 @@ cr.define('mobile', function() {
       if (e.data.type == 'requestDeviceInfoMsg') {
         this.sendDeviceInfo_();
       } else if (e.data.type == 'reportTransactionStatusMsg') {
+        console.log('calling setTransactionStatus from onMessageReceived_');
         $('paymentForm').classList.add('hidden');
         chrome.send('setTransactionStatus', [e.data.status]);
       }

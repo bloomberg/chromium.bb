@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,10 +157,35 @@ class MobileSetupHandler : public DOMMessageHandler,
     PLAN_ACTIVATION_ERROR = 5,
   } PlanActivationState;
 
+  class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
+   public:
+    explicit TaskProxy(const base::WeakPtr<MobileSetupHandler>& handler)
+        : handler_(handler) {
+    }
+    TaskProxy(const base::WeakPtr<MobileSetupHandler>& handler,
+              const std::string& status)
+        : handler_(handler), status_(status) {
+    }
+    void HandleStartActivation() {
+      if (handler_)
+        handler_->StartActivation();
+    }
+    void HandleSetTransactionStatus() {
+      if (handler_)
+        handler_->SetTransactionStatus(status_);
+    }
+   private:
+    base::WeakPtr<MobileSetupHandler> handler_;
+    std::string status_;
+    DISALLOW_COPY_AND_ASSIGN(TaskProxy);
+  };
+
   // Handlers for JS DOMUI messages.
-  void HandleStartActivation(const ListValue* args);
   void HandleCloseTab(const ListValue* args);
   void HandleSetTransactionStatus(const ListValue* args);
+  void HandleStartActivation(const ListValue* args);
+  void SetTransactionStatus(const std::string& status);
+  void StartActivation();
 
   // Sends message to host registration page with system/user info data.
   void SendDeviceInfo();
@@ -211,6 +236,7 @@ class MobileSetupHandler : public DOMMessageHandler,
   bool reenable_wifi_;
   bool reenable_ethernet_;
   bool reenable_cert_check_;
+  bool transaction_complete_signalled_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -322,7 +348,8 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       service_path_(service_path),
       reenable_wifi_(false),
       reenable_ethernet_(false),
-      reenable_cert_check_(false) {
+      reenable_cert_check_(false),
+      transaction_complete_signalled_(false) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -364,6 +391,9 @@ void MobileSetupHandler::PropertyChanged(const char* service_path,
 
   if (state_ == PLAN_ACTIVATION_PAGE_LOADING)
     return;
+  // TODO(zelidrag, ers): Remove this once we flip the notification machanism.
+  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->UpdateSystemInfo();
+
   chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
   if (!network) {
     EvaluateCellularNetwork(NULL);
@@ -377,8 +407,6 @@ void MobileSetupHandler::PropertyChanged(const char* service_path,
   LOG(INFO) << "Cellular property change: " << key << " = " <<
       value_string.c_str();
 
-  // TODO(zelidrag, ers): Remove this once we flip the notification machanism.
-  chromeos::CrosLibrary::Get()->GetNetworkLibrary()->UpdateSystemInfo();
   EvaluateCellularNetwork(network);
 }
 
@@ -392,6 +420,26 @@ void MobileSetupHandler::HandleCloseTab(const ListValue* args) {
 }
 
 void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
+  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(task.get(), &TaskProxy::HandleStartActivation));
+}
+
+void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
+  const size_t kSetTransactionStatusParamCount = 1;
+  if (args->GetSize() != kSetTransactionStatusParamCount)
+    return;
+  // Get change callback function name.
+  std::string status;
+  if (!args->GetString(0, &status))
+    return;
+  scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), status);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(task.get(), &TaskProxy::HandleSetTransactionStatus));
+}
+
+void MobileSetupHandler::StartActivation() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chromeos::CellularNetwork* network = GetCellularNetwork(service_path_);
   if (!network) {
     ChangeState(NULL, PLAN_ACTIVATION_ERROR, std::string());
@@ -405,28 +453,25 @@ void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
   lib->AddObserver(this);
   lib->AddProperyObserver(network->service_path().c_str(),
                           this);
-  ChangeState(network, PLAN_ACTIVATION_START, std::string());
+  state_ = PLAN_ACTIVATION_START;
   EvaluateCellularNetwork(network);
 }
 
-void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
-  const size_t kSetTransactionStatusParamCount = 1;
-  if (args->GetSize() != kSetTransactionStatusParamCount)
-    return;
-
-  // Get change callback function name.
-  std::string status;
-  if (!args->GetString(0, &status))
-    return;
-
+void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // The payment is received, try to reconnect and check the status all over
   // again.
-  if (LowerCaseEqualsASCII(status, "ok")) {
-    ChangeState(GetCellularNetwork(), PLAN_ACTIVATION_START, std::string());
+  if (LowerCaseEqualsASCII(status, "ok") &&
+      state_ == PLAN_ACTIVATION_SHOWING_PAYMENT) {
+    if (transaction_complete_signalled_) {
+      LOG(WARNING) << "Transaction completion signaled more than once!?";
+      return;
+    }
+    transaction_complete_signalled_ = true;
+    state_ = PLAN_ACTIVATION_START;
     EvaluateCellularNetwork(GetCellularNetwork());
   }
 }
-
 
 void MobileSetupHandler::EvaluateCellularNetwork(
     chromeos::CellularNetwork* network) {
@@ -469,6 +514,9 @@ void MobileSetupHandler::EvaluateCellularNetwork(
                   network->service_path().c_str();
               chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
                   DisconnectFromWirelessNetwork(network);
+              // Disconnect will force networks to be reevaluated, so
+              // we don't want to continue processing on this path anymore.
+              return;
             }
             break;
           default:
@@ -600,6 +648,18 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
           GetStateDescription(new_state);
   first_time = false;
   state_ = new_state;
+  DictionaryValue device_dict;
+
+  // Signal to JS layer that the state is changing.
+  if (network)
+    GetDeviceInfo(network, &device_dict);
+  device_dict.SetInteger("state", new_state);
+  if (error_description.length())
+    device_dict.SetString("error", error_description);
+  dom_ui_->CallJavascriptFunction(
+      kJsDeviceStatusChangedHandler, device_dict);
+
+  // Decide what to do with network object as a result of the new state.
   switch (new_state) {
     case PLAN_ACTIVATION_START:
       break;
@@ -634,14 +694,6 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
     default:
       break;
   }
-  DictionaryValue device_dict;
-  if (network)
-    GetDeviceInfo(network, &device_dict);
-  device_dict.SetInteger("state", new_state);
-  if (error_description.length())
-    device_dict.SetString("error", error_description);
-  dom_ui_->CallJavascriptFunction(
-      kJsDeviceStatusChangedHandler, device_dict);
 }
 
 void MobileSetupHandler::ReEnableOtherConnections() {
