@@ -168,9 +168,9 @@ void TopSitesDatabase::UpdatePageThumbnail(
     return;
 
   statement.BindString16(0, url.title);
-  if (thumbnail.thumbnail.get()) {
-    statement.BindBlob(1, &thumbnail.thumbnail->data.front(),
-                       static_cast<int>(thumbnail.thumbnail->data.size()));
+  if (thumbnail.thumbnail.get() && thumbnail.thumbnail->front()) {
+    statement.BindBlob(1, thumbnail.thumbnail->front(),
+                       static_cast<int>(thumbnail.thumbnail->size()));
   }
   statement.BindString(2, GetRedirects(url));
   const ThumbnailScore& score = thumbnail.thumbnail_score;
@@ -200,9 +200,9 @@ void TopSitesDatabase::AddPageThumbnail(const MostVisitedURL& url,
   statement.BindString(0, url.url.spec());
   statement.BindInt(1, count);  // Make it the last url.
   statement.BindString16(2, url.title);
-  if (thumbnail.thumbnail.get()) {
-    statement.BindBlob(3, &thumbnail.thumbnail->data.front(),
-                       static_cast<int>(thumbnail.thumbnail->data.size()));
+  if (thumbnail.thumbnail.get() && thumbnail.thumbnail->front()) {
+    statement.BindBlob(3, thumbnail.thumbnail->front(),
+                       static_cast<int>(thumbnail.thumbnail->size()));
   }
   statement.BindString(4, GetRedirects(url));
   const ThumbnailScore& score = thumbnail.thumbnail_score;
