@@ -2319,6 +2319,8 @@
         'browser/ntp_background_util.h',
         'browser/omnibox_search_hint.cc',
         'browser/omnibox_search_hint.h',
+        'browser/oom_priority_manager.cc',
+        'browser/oom_priority_manager.h',
         'browser/options_page_base.cc',
         'browser/options_page_base.h',
         'browser/options_util.cc',
@@ -3384,6 +3386,8 @@
             ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
             ['exclude', 'browser/dom_ui/slideshow_ui.cc'],
             ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
+            ['exclude', 'browser/oom_priority_manager.cc'],
+            ['exclude', 'browser/oom_priority_manager.h'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.h'],
           ],
@@ -4257,7 +4261,7 @@
     {
       # Protobuf compiler / generate rule for google apps policy
       # TODO(danno): This rule shares a lot with the user feedback proto rule
-      # and probably should be generalized to handle both 
+      # and probably should be generalized to handle both
       'target_name': 'device_management_backend_proto',
       'type': 'none',
       'sources': [

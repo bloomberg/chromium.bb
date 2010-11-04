@@ -274,7 +274,7 @@ struct RunnableMethodTraits {
 //   };
 //   }  // namespace foo
 //
-//   DISABLE_RUNNABLE_METHOD_REFCOUNT(foo::Bar)
+//   DISABLE_RUNNABLE_METHOD_REFCOUNT(foo::Bar);
 //
 // This is different from DISALLOW_COPY_AND_ASSIGN which is declared inside the
 // class.
