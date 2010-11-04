@@ -33,7 +33,9 @@ using base::Time;
 using base::TimeDelta;
 
 static int expected_load_flags =
-    net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+    net::LOAD_DO_NOT_SEND_COOKIES |
+    net::LOAD_DO_NOT_SAVE_COOKIES |
+    net::LOAD_DISABLE_CACHE;
 
 // Base class for further specialized test classes.
 class MockService : public ExtensionUpdateService {

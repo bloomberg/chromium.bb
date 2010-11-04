@@ -833,7 +833,8 @@ void ExtensionUpdater::StartUpdateCheck(ManifestFetchData* fetch_data) {
                            URLFetcher::GET, this));
     manifest_fetcher_->set_request_context(Profile::GetDefaultRequestContext());
     manifest_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                      net::LOAD_DO_NOT_SAVE_COOKIES);
+                                      net::LOAD_DO_NOT_SAVE_COOKIES |
+                                      net::LOAD_DISABLE_CACHE);
     manifest_fetcher_->Start();
   }
 }
@@ -860,7 +861,8 @@ void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
     extension_fetcher_->set_request_context(
         Profile::GetDefaultRequestContext());
     extension_fetcher_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                       net::LOAD_DO_NOT_SAVE_COOKIES);
+                                       net::LOAD_DO_NOT_SAVE_COOKIES |
+                                       net::LOAD_DISABLE_CACHE);
     extension_fetcher_->Start();
     current_extension_fetch_ = ExtensionFetch(id, url, hash, version);
   }
