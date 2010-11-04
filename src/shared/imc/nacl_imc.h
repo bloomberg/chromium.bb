@@ -253,6 +253,28 @@ const size_t kMapPageSize = 64 * 1024;
 
 /**
  *  @nacl
+ *  Type of function supplied to SetCreateMemoryObjectFunc().  Such a
+ *  function creates a memory object of length bytes.
+ *  @param length The size of the memory object to create. It must be a multiple
+ *                of allocation granularity given by kMapPageSize.
+ *  @param executable Whether the memory object needs to be mappable with
+ *                    PROT_EXEC.  On Mac OS X, FDs created with shm_open()
+ *                    are not mappable with PROT_EXEC, so this flag indicates
+ *                    whether an alternative FD type must be used.
+ *  @return A handle of the newly created memory object on success, and
+ *          kInvalidHandle on failure.
+ */
+typedef Handle (*CreateMemoryObjectFunc)(size_t length, bool executable);
+
+/**
+ *  @nacl
+ *  This allows an alternative implementation of CreateMemoryObject()
+ *  to be provided that works in an outer sandbox.
+ */
+void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func);
+
+/**
+ *  @nacl
  *  Creates a memory object of length bytes.
  *  @param length The size of the memory object to create. It must be a multiple
  *                of allocation granularity given by kMapPageSize.

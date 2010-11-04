@@ -105,11 +105,25 @@ static int TryShmOrTempOpen(size_t length, bool use_temp) {
   }
 }
 
+static CreateMemoryObjectFunc g_create_memory_object_func = NULL;
+
+void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func) {
+  g_create_memory_object_func = func;
+}
+
 Handle CreateMemoryObject(size_t length) {
   if (0 == length) {
     return -1;
   }
   int fd;
+
+  if (g_create_memory_object_func != NULL) {
+    // TODO(mseaborn): Plumb in the second argument, which will be
+    // true for nacl_text.c.
+    fd = g_create_memory_object_func(length, false);
+    if (fd >= 0)
+      return fd;
+  }
 
   // On Mac OS X, shm_open() gives us file descriptors that the OS
   // won't mmap() with PROT_EXEC, which is no good for the dynamic
@@ -139,9 +153,9 @@ Handle CreateMemoryObject(size_t length) {
   // As a temporary measure, we try shm_open() as well as calling
   // the unsandboxed browser process.  This code runs in the
   // context of both the renderer and (Chromium's compiled-in)
-  // sel_ldr.  Currently sel_ldr is not sandboxed and doesn't have
-  // the appropriate socket FD set up for talking to the browser.
-  // TODO(mseaborn): Move this to be the first method tried.
+  // sel_ldr.
+  // TODO(mseaborn): Remove this once g_create_memory_object_func
+  // is set when in Chromium's sandbox.
   return renderer_sandbox_support::MakeSharedMemorySegmentViaIPC(length);
 #endif
 
