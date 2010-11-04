@@ -3197,3 +3197,11 @@
    fun:_ZN23AutocompleteEditViewGtk6UpdateEPK11TabContents
    fun:_ZN15LocationBarView6UpdateEPK11TabContents
 }
+{
+   bug_61988
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN14TestingProfile20CreateWebDataServiceEb
+   fun:_ZN23PersonalDataManagerTest5SetUpEv
+}
