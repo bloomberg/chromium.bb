@@ -1,7 +1,7 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDrlwvcbUtVrbQvI7EPV1BTa63N8YkbBToHzxlMl0IzSBwOV+TUOsHE8vRq0HZWuwMAGeH8WdWVC3HRNdES8lScjlzxb1TsTQJAsF+hLXgcjgCUSSSGCfFzypvuvKsRQTx0d02yfWKJa47o0Ws5wL72NVtc7c51HujwWYg+Mz01wIDAQAB",
-  "name": "Google Talk",
-  "version": "1.0.16",
+  "name": "__MSG_CHAT_MANAGER_NAME__",
+  "version": "1.0.17",
   "icons": {
     "128": "128.png",
     "16": "16.png",
@@ -9,7 +9,7 @@
     "32": "32.png",
     "48": "48.png"
   },
-  "description": "Google Talk",
+  "description": "__MSG_CHAT_MANAGER_DESCRIPTION__",
   "default_locale": "en",
   "background_page": "background.html",
   "options_page": "options.html",

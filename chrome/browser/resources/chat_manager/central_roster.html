@@ -70,8 +70,10 @@ Central roster: hosting all Google Talk chats in ChromeOS.
     var minutes = Math.floor(seconds / 60);
     seconds -= minutes * 60;
 
-    document.getElementById('retryStatus').textContent =
-        'Retrying in ' + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    document.getElementById('retryStatus').textContent = 
+        chrome.i18n.getMessage('CHAT_MANAGER_RETRYING_IN', 
+            [minutes, (seconds < 10 ? '0' : '') + seconds]);
+        
     if (retryTime <= 0) {
       retryConnection();
     } else {
@@ -102,7 +104,8 @@ Central roster: hosting all Google Talk chats in ChromeOS.
       if (!localStorage.retryStartTime) {
         localStorage.retryStartTime = MIN_RETRY_MILLISECONDS;
       } else if (localStorage.retryStartTime < MAX_RETRY_MILLISECONDS) {
-        localStorage.retryStartTime = Math.min(localStorage.retryStartTime * 2, MAX_RETRY_MILLISECONDS);
+        localStorage.retryStartTime = Math.min(localStorage.retryStartTime * 2, 
+            MAX_RETRY_MILLISECONDS);
       }
       retryTime = localStorage.retryStartTime;
       document.getElementById('retryInfo').style.display = 'inline';
@@ -110,6 +113,12 @@ Central roster: hosting all Google Talk chats in ChromeOS.
     }
   }
   function onPageLoaded() {
+    // localize the page
+    document.getElementById('retryMessage').textContent = 
+        chrome.i18n.getMessage('CHAT_MANAGER_COULD_NOT_CONNECT');
+    document.getElementById('retryButton').value = 
+        chrome.i18n.getMessage('CHAT_MANAGER_RETRY_NOW');
+
     if (localStorage.hasOpenedInViewer) {
       runGTalkScript();
     }
@@ -124,9 +133,9 @@ Central roster: hosting all Google Talk chats in ChromeOS.
 </head>
 <body onload='onPageLoaded()'>
   <div id='retryInfo' style='display:none'>
-    <p>Could not connect to Google Talk</p>
+    <p id='retryMessage'></p>
     <p id='retryStatus'></p>
-    <input type='button' value='Retry Now' onclick='retryConnection()'/>
+    <input id='retryButton' type='button' value='' onclick='retryConnection()'/>
   </div>
 </body>
 </html>
