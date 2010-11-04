@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
+#include "chrome/browser/extensions/external_policy_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -173,7 +174,8 @@ class ExtensionsServiceBackend
   // |install_directory| is a path where to look for extensions to load.
   // |load_external_extensions| indicates whether or not backend should load
   // external extensions listed in JSON file and Windows registry.
-  ExtensionsServiceBackend(const FilePath& install_directory,
+  ExtensionsServiceBackend(PrefService* prefs,
+                           const FilePath& install_directory,
                            bool load_external_extensions);
 
   // Loads a single extension from |path| where |path| is the top directory of
@@ -210,7 +212,8 @@ class ExtensionsServiceBackend
                                             Extension::Location location);
 
   virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
-                                                 const GURL& update_url);
+                                                 const GURL& update_url,
+                                                 Extension::Location location);
 
   // Reloads the given extensions from their manifests on disk (instead of what
   // we have cached in the prefs).
@@ -266,6 +269,7 @@ class ExtensionsServiceBackend
 };
 
 ExtensionsServiceBackend::ExtensionsServiceBackend(
+    PrefService* prefs,
     const FilePath& install_directory,
     bool load_external_extensions)
         : frontend_(NULL),
@@ -286,6 +290,12 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
       linked_ptr<ExternalExtensionProvider>(
           new ExternalRegistryExtensionProvider()));
 #endif
+  ExternalPolicyExtensionProvider* policy_extension_provider =
+      new ExternalPolicyExtensionProvider();
+  policy_extension_provider->SetPreferences(prefs);
+  external_extension_providers_.push_back(
+      linked_ptr<ExternalExtensionProvider>(policy_extension_provider));
+
 }
 
 ExtensionsServiceBackend::~ExtensionsServiceBackend() {
@@ -416,7 +426,8 @@ void ExtensionsServiceBackend::OnExternalExtensionFileFound(
 
 void ExtensionsServiceBackend::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
-    const GURL& update_url) {
+    const GURL& update_url,
+    Extension::Location location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (frontend_->GetExtensionById(id, true)) {
@@ -429,7 +440,7 @@ void ExtensionsServiceBackend::OnExternalExtensionUpdateUrlFound(
       NewRunnableMethod(
           frontend_,
           &ExtensionsService::AddPendingExtensionFromExternalUpdateUrl,
-          id, update_url));
+          id, update_url, location));
   external_extension_added_ |= true;
 }
 
@@ -584,7 +595,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
                                     update_frequency);
   }
 
-  backend_ = new ExtensionsServiceBackend(install_directory_,
+  backend_ = new ExtensionsServiceBackend(profile->GetPrefs(),
+                                          install_directory_,
                                           extensions_enabled_);
 
   // Use monochrome icons for Omnibox icons.
@@ -712,7 +724,8 @@ void ExtensionsService::AddPendingExtensionFromSync(
 }
 
 void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
-    const std::string& id, const GURL& update_url) {
+    const std::string& id, const GURL& update_url,
+    Extension::Location location) {
   // Add the extension to this list of extensions to update.
   const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
       PendingExtensionInfo::UNKNOWN;
@@ -730,7 +743,7 @@ void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
   AddPendingExtensionInternal(id, update_url, kExpectedCrxType, kIsFromSync,
                               kInstallSilently, kEnableOnInstall,
                               kEnableIncognitoOnInstall,
-                              Extension::EXTERNAL_PREF_DOWNLOAD);
+                              location);
 }
 
 void ExtensionsService::AddPendingExtensionFromDefaultAppList(

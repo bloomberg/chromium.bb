@@ -238,8 +238,9 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
     }
   }
 
-  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
-                                                 const GURL& update_url) {
+  virtual void OnExternalExtensionUpdateUrlFound(
+      const std::string& id, const GURL& update_url,
+      Extension::Location location) {
     ++ids_found_;
     DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
@@ -247,14 +248,17 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
     // dictionary then something is wrong.
     EXPECT_TRUE(prefs_->GetDictionary(id, &pref))
        << L"Got back ID (" << id.c_str() << ") we weren't expecting";
+    EXPECT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, location);
 
     if (pref) {
       EXPECT_TRUE(provider_->HasExtension(id));
 
       // External extensions with update URLs do not have versions.
       scoped_ptr<Version> v1;
-      EXPECT_TRUE(provider_->GetExtensionDetails(id, NULL, &v1));
+      Extension::Location location1 = Extension::INVALID;
+      EXPECT_TRUE(provider_->GetExtensionDetails(id, &location1, &v1));
       EXPECT_FALSE(v1.get());
+      EXPECT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD, location1);
 
       // Remove it so we won't count it again.
       prefs_->Remove(id, NULL);
@@ -1643,7 +1647,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
 // or not.
 TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
   InitializeEmptyExtensionsService();
-  service_->AddPendingExtensionFromExternalUpdateUrl(theme_crx, GURL());
+  service_->AddPendingExtensionFromExternalUpdateUrl(
+      theme_crx, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD);
 
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
 
@@ -1683,7 +1688,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
   // Add a crx to be updated, with the same ID, from a non-sync source.
   service_->AddPendingExtensionFromExternalUpdateUrl(
-      kGoodId, GURL(kGoodUpdateURL));
+      kGoodId, GURL(kGoodUpdateURL), Extension::EXTERNAL_PREF_DOWNLOAD);
 
   // Check that there is a pending crx, with is_from_sync set to false.
   it = service_->pending_extensions().find(kGoodId);

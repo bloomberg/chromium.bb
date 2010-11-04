@@ -6,18 +6,11 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTERNAL_PREF_EXTENSION_PROVIDER_H_
 #pragma once
 
-#include <set>
-#include <string>
-
-#include "chrome/browser/extensions/external_extension_provider.h"
-
-class DictionaryValue;
-class ValueSerializer;
-class Version;
+#include "chrome/browser/extensions/stateful_external_extension_provider.h"
 
 // A specialization of the ExternalExtensionProvider that uses a json file to
 // look up which external extensions are registered.
-class ExternalPrefExtensionProvider : public ExternalExtensionProvider {
+class ExternalPrefExtensionProvider : public StatefulExternalExtensionProvider {
  public:
   explicit ExternalPrefExtensionProvider();
   virtual ~ExternalPrefExtensionProvider();
@@ -25,18 +18,6 @@ class ExternalPrefExtensionProvider : public ExternalExtensionProvider {
   // Used only during testing to not use the json file for external extensions,
   // but instead parse a json file specified by the test.
   void SetPreferencesForTesting(const std::string& json_data_for_testing);
-
-  // ExternalExtensionProvider implementation:
-  virtual void VisitRegisteredExtension(
-      Visitor* visitor, const std::set<std::string>& ids_to_ignore) const;
-
-  virtual bool HasExtension(const std::string& id) const;
-
-  virtual bool GetExtensionDetails(const std::string& id,
-                                   Extension::Location* location,
-                                   scoped_ptr<Version>* version) const;
- protected:
-  scoped_ptr<DictionaryValue> prefs_;
 
  private:
   void SetPreferences(ValueSerializer* serializer);

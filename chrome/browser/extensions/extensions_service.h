@@ -245,7 +245,8 @@ class ExtensionsService
   // Given an extension id and an update URL, schedule the extension
   // to be fetched, installed, and activated.
   void AddPendingExtensionFromExternalUpdateUrl(const std::string& id,
-                                                const GURL& update_url);
+                                                const GURL& update_url,
+                                                Extension::Location location);
 
   // Like the above. Always installed silently, and defaults update url
   // from extension id.

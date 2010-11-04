@@ -130,6 +130,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     prefs::kExtensionInstallAllowList},
   { Value::TYPE_LIST, kPolicyExtensionInstallDenyList,
     prefs::kExtensionInstallDenyList},
+  { Value::TYPE_LIST, kPolicyExtensionInstallForceList,
+    prefs::kExtensionInstallForceList},
   { Value::TYPE_LIST, kPolicyDisabledPlugins,
     prefs::kPluginsPluginsBlacklist},
   { Value::TYPE_BOOLEAN, kPolicyShowHomeButton,
