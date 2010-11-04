@@ -50,9 +50,19 @@
 
 CocoaTest::CocoaTest() : called_tear_down_(false), test_window_(nil) {
   BootstrapCocoa();
+
   // Set the duration of AppKit-evaluated animations (such as frame changes)
   // to zero for testing purposes. That way they take effect immediately.
   [[NSAnimationContext currentContext] setDuration:0.0];
+
+  // The above does not affect window-resize time, such as for an
+  // attached sheet dropping in.  Set that duration for the current
+  // process (this is not persisted).  Empirically, the value of 0.0
+  // is ignored.
+  NSDictionary* dict =
+      [NSDictionary dictionaryWithObject:@"0.01" forKey:@"NSWindowResizeTime"];
+  [[NSUserDefaults standardUserDefaults] registerDefaults:dict];
+
   // Collect the list of windows that were open when the test started so
   // that we don't wait for them to close in TearDown. Has to be done
   // after BootstrapCocoa is called.
