@@ -284,6 +284,9 @@ CellularNetwork::CellularNetwork(const ServiceInfo* service)
   type_ = TYPE_CELLULAR;
 }
 
+CellularNetwork::~CellularNetwork() {
+}
+
 bool CellularNetwork::StartActivation() const {
   if (!EnsureCrosLoaded())
     return false;
@@ -323,14 +326,15 @@ bool CellularNetwork::is_gsm() const {
 CellularNetwork::DataLeft CellularNetwork::data_left() const {
   if (data_plans_.empty())
     return DATA_NORMAL;
-  CellularDataPlan plan = data_plans_[0];
+  const CellularDataPlan& plan(data_plans_[0]);
   if (plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
-    int64 remaining = plan.plan_end_time - plan.update_time;
-    if (remaining <= 0)
+    base::TimeDelta remaining = plan.plan_end_time - plan.update_time;
+    if (remaining <= base::TimeDelta::FromSeconds(0))
       return DATA_NONE;
-    else if (remaining <= kCellularDataVeryLowSecs)
+    else if (remaining <=
+        base::TimeDelta::FromSeconds(kCellularDataVeryLowSecs))
       return DATA_VERY_LOW;
-    else if (remaining <= kCellularDataLowSecs)
+    else if (remaining <= base::TimeDelta::FromSeconds(kCellularDataLowSecs))
       return DATA_LOW;
     else
       return DATA_NORMAL;
@@ -996,7 +1000,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     if (network->cellular_network()->service_path()
         .compare(modem_service_path) == 0) {
       if (dataplan != NULL) {
-        network->UpdateCellularDataPlan(*dataplan);
+        network->UpdateCellularDataPlan(dataplan);
       }
     }
   }
@@ -1128,23 +1132,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     enabled_devices_ = devices;
     connected_devices_ = devices;
     offline_mode_ = false;
-
-    chromeos::CellularDataPlan test_plan;
-    test_plan.plan_name = "Fake plan";
-    test_plan.data_bytes_used = 5LL * 1024LL * 1024LL * 1024LL;
-    test_plan.plan_start_time =
-        (base::Time::Now() - base::TimeDelta::FromDays(15)).ToInternalValue() /
-            base::Time::kMicrosecondsPerSecond;
-    test_plan.plan_end_time =
-        (base::Time::Now() + base::TimeDelta::FromDays(12)).ToInternalValue() /
-            base::Time::kMicrosecondsPerSecond;
-    test_plan.plan_data_bytes = 20LL * 1024LL * 1024LL * 1024LL;
-    test_plan.plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
-    test_plan.update_time = base::Time::Now().ToInternalValue() /
-        base::Time::kMicrosecondsPerSecond;
-    chromeos::CellularDataPlanList test_plans;
-    test_plans.push_back(test_plan);
-    cellular_->SetDataPlans(test_plans);
   }
 
   void UpdateSystemInfo() {
@@ -1275,9 +1262,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         // If new cellular, then update data plan list.
         if (cellular_networks_[i]->service_path() !=
                 prev_cellular_service_path) {
-          CellularDataPlanList list;
-          RetrieveCellularDataPlans(cellular_->service_path().c_str(), &list);
+          CellularDataPlanList* list = RetrieveCellularDataPlans(
+              cellular_->service_path().c_str());
           UpdateCellularDataPlan(list);
+          FreeCellularDataPlanList(list);
         }
         break;  // There is only one connected or connecting cellular network.
       }
@@ -1292,7 +1280,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     FreeSystemInfo(system);
   }
 
-  void UpdateCellularDataPlan(const CellularDataPlanList& data_plans) {
+  void UpdateCellularDataPlan(const CellularDataPlanList* data_plans) {
     DCHECK(cellular_);
     cellular_->SetDataPlans(data_plans);
     NotifyCellularDataPlanChanged();

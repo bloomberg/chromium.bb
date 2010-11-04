@@ -135,12 +135,39 @@ class WirelessNetwork : public Network {
         favorite_(false) {}
   explicit WirelessNetwork(const WirelessNetwork& network);
   explicit WirelessNetwork(const ServiceInfo* service);
-
+  virtual ~WirelessNetwork() {}
   std::string name_;
   int strength_;
   bool auto_connect_;
   bool favorite_;
 };
+
+class CellularDataPlan {
+ public:
+  CellularDataPlan() :
+      plan_name("Unknown"),
+      plan_type(CELLULAR_DATA_PLAN_UNLIMITED),
+      plan_data_bytes(0),
+      data_bytes_used(0) { }
+  explicit CellularDataPlan(const CellularDataPlanInfo &plan) :
+      plan_name(plan.plan_name?plan.plan_name:""),
+      plan_type(plan.plan_type),
+      update_time(base::Time::FromInternalValue(plan.update_time)),
+      plan_start_time(base::Time::FromInternalValue(plan.plan_start_time)),
+      plan_end_time(base::Time::FromInternalValue(plan.plan_end_time)),
+      plan_data_bytes(plan.plan_data_bytes),
+      data_bytes_used(plan.data_bytes_used) { }
+
+  std::string plan_name;
+  CellularDataPlanType plan_type;
+  base::Time update_time;
+  base::Time plan_start_time;
+  base::Time plan_end_time;
+  int64 plan_data_bytes;
+  int64 data_bytes_used;
+};
+
+typedef std::vector<CellularDataPlan> CellularDataPlanVector;
 
 class CellularNetwork : public WirelessNetwork {
  public:
@@ -154,7 +181,7 @@ class CellularNetwork : public WirelessNetwork {
   CellularNetwork();
   explicit CellularNetwork(const CellularNetwork& network);
   explicit CellularNetwork(const ServiceInfo* service);
-
+  virtual ~CellularNetwork();
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
@@ -192,12 +219,16 @@ class CellularNetwork : public WirelessNetwork {
   // WirelessNetwork overrides.
   virtual void Clear();
 
-  const CellularDataPlanList& GetDataPlans() const {
+  const CellularDataPlanVector& GetDataPlans() const {
     return data_plans_;
   }
 
-  void SetDataPlans(const CellularDataPlanList& data_plans) {
-    data_plans_ = data_plans;
+  void SetDataPlans(const CellularDataPlanList* data_plan_list) {
+    data_plans_.clear();
+    for (size_t i = 0; i < data_plan_list->plans_size; i++) {
+      const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
+      data_plans_.push_back(CellularDataPlan(*info));
+    }
   }
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
@@ -233,7 +264,7 @@ class CellularNetwork : public WirelessNetwork {
   std::string hardware_revision_;
   std::string last_update_;
   unsigned int prl_version_;
-  CellularDataPlanList data_plans_;
+  CellularDataPlanVector data_plans_;
 };
 
 class WifiNetwork : public WirelessNetwork {

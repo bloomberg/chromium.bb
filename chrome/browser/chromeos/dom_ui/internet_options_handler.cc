@@ -380,10 +380,10 @@ void InternetOptionsHandler::CellularDataPlanChanged(
   chromeos::CellularNetwork* cellular = obj->cellular_network();
   if (!cellular)
     return;
-  const chromeos::CellularDataPlanList& plans = cellular->GetDataPlans();
+  const chromeos::CellularDataPlanVector& plans = cellular->GetDataPlans();
   DictionaryValue connection_plans;
   ListValue* plan_list = new ListValue();
-  for (chromeos::CellularDataPlanList::const_iterator iter = plans.begin();
+  for (chromeos::CellularDataPlanVector::const_iterator iter = plans.begin();
        iter != plans.end();
        ++iter) {
     plan_list->Append(CellularDataPlanToDictionary(*iter));
@@ -410,9 +410,8 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
     case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
       description = l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA,
-          WideToUTF16(base::TimeFormatFriendlyDate(
-              base::Time::FromInternalValue(plan.plan_start_time *
-                  base::Time::kMicrosecondsPerSecond))));
+          WideToUTF16(base::TimeFormatFriendlyDate(plan.plan_start_time)));
+
       remaining = l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED);
       break;
@@ -424,8 +423,7 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
                             GetByteDisplayUnits(plan.plan_data_bytes),
                             true),
                 WideToUTF16(base::TimeFormatFriendlyDate(
-                    base::Time::FromInternalValue(plan.plan_start_time *
-                        base::Time::kMicrosecondsPerSecond))));
+                    plan.plan_start_time)));
       remaining = FormatBytes(plan.plan_data_bytes - plan.data_bytes_used,
           GetByteDisplayUnits(plan.plan_data_bytes - plan.data_bytes_used),
           true);
@@ -438,8 +436,7 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
                             GetByteDisplayUnits(plan.plan_data_bytes),
                             true),
                 WideToUTF16(base::TimeFormatFriendlyDate(
-                    base::Time::FromInternalValue(plan.plan_start_time *
-                        base::Time::kMicrosecondsPerSecond))));
+                            plan.plan_start_time)));
       remaining = FormatBytes(plan.plan_data_bytes - plan.data_bytes_used,
           GetByteDisplayUnits(plan.plan_data_bytes - plan.data_bytes_used),
           true);
@@ -447,10 +444,7 @@ DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
     }
   }
   string16 expiration = TimeFormat::TimeRemaining(
-      base::TimeDelta::FromSeconds(
-          plan.plan_end_time - (base::Time::Now().ToInternalValue() /
-                                      base::Time::kMicrosecondsPerSecond)));
-
+      plan.plan_end_time - base::Time::Now());
   plan_dict->SetString("name", plan.plan_name);
   plan_dict->SetString("planSummary", description);
   plan_dict->SetString("dataRemaining", remaining);
@@ -463,7 +457,8 @@ string16 InternetOptionsHandler::GetPlanWarning(
     const chromeos::CellularDataPlan& plan) {
   if (plan.plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
     // Time based plan. Show nearing expiration and data expiration.
-    int64 time_left = plan.plan_end_time - plan.update_time;
+    int64 time_left = base::TimeDelta(
+        plan.plan_end_time - plan.update_time).InSeconds();
     if (time_left <= 0) {
       return l10n_util::GetStringFUTF16(
           IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0"));

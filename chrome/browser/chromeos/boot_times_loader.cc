@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -281,7 +282,7 @@ BootTimesLoader::Stats BootTimesLoader::GetCurrentStats() {
   const FilePath kProcUptime("/proc/uptime");
   const FilePath kDiskStat("/sys/block/sda/stat");
   Stats stats;
-
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   file_util::ReadFileToString(kProcUptime, &stats.uptime);
   file_util::ReadFileToString(kDiskStat, &stats.disk);
   return stats;

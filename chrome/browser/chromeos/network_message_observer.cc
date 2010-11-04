@@ -155,7 +155,7 @@ void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
   if (!cellular)
     return;
   // Active plan is the first one in the list. Use empty one if none found.
-  const CellularDataPlanList& plans = cellular->GetDataPlans();
+  const CellularDataPlanVector& plans = cellular->GetDataPlans();
   CellularDataPlan plan = plans.empty() ? CellularDataPlan() : plans[0];
   // If connected cellular network changed, or data plan is different, then
   // it's a new network. Then hide all previous notifications.
@@ -204,8 +204,10 @@ void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
       int message = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
           IDS_NETWORK_MINUTES_REMAINING_MESSAGE :
           IDS_NETWORK_DATA_REMAINING_MESSAGE;
+      int64 remaining_minutes =
+          base::TimeDelta(plan.plan_end_time - plan.update_time).InMinutes();
       int64 remaining = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
-          (plan.plan_end_time - plan.update_time) / 60 :
+          remaining_minutes :
           (plan.plan_data_bytes - plan.data_bytes_used) / (1024 * 1024);
       notification_low_data_.Show(l10n_util::GetStringFUTF16(
           message, UTF8ToUTF16(base::Int64ToString(remaining))),
