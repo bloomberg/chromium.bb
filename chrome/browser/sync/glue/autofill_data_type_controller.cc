@@ -29,7 +29,8 @@ AutofillDataTypeController::AutofillDataTypeController(
       state_(NOT_RUNNING),
       personal_data_(NULL),
       abort_association_(false),
-      abort_association_complete_(false, false) {
+      abort_association_complete_(false, false),
+      datatype_stopped_(false, false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
@@ -136,10 +137,15 @@ void AutofillDataTypeController::Stop() {
     model_associator_->DisassociateModels();
 
   set_state(NOT_RUNNING);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+  if (BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
                           NewRunnableMethod(
                               this,
-                              &AutofillDataTypeController::StopImpl));
+                              &AutofillDataTypeController::StopImpl))) {
+    // We need to ensure the data type has fully stoppped before continuing. In
+    // particular, during shutdown we may attempt to destroy the
+    // profile_sync_service before we've removed its observers (BUG 61804).
+    datatype_stopped_.Wait();
+  }
 }
 
 void AutofillDataTypeController::StartImpl() {
@@ -173,6 +179,8 @@ void AutofillDataTypeController::StartImpl() {
   bool merge_success = model_associator_->AssociateModels();
   UMA_HISTOGRAM_TIMES("Sync.AutofillAssociationTime",
                       base::TimeTicks::Now() - start_time);
+  VLOG(1) << "Autofill association time: " <<
+      (base::TimeTicks::Now() - start_time).InSeconds();
   if (!merge_success) {
     StartFailed(ASSOCIATION_FAILED);
     return;
@@ -223,6 +231,8 @@ void AutofillDataTypeController::StopImpl() {
 
   change_processor_.reset();
   model_associator_.reset();
+
+  datatype_stopped_.Signal();
 }
 
 void AutofillDataTypeController::StartFailed(StartResult result) {

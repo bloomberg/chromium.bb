@@ -109,6 +109,10 @@ class AutofillDataTypeController : public DataTypeController,
   bool abort_association_;
   base::WaitableEvent abort_association_complete_;
 
+  // Barrier to ensure that the datatype has been stopped on the DB thread
+  // from the UI thread.
+  base::WaitableEvent datatype_stopped_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillDataTypeController);
 };
 
