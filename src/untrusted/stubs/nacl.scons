@@ -5,25 +5,29 @@
 
 Import('env')
 
-if ARGUMENTS.get('bitcode'):
-  assert env.get('CC_NATIVE')
-  # NOTE: we make sure everything in this directory gets compiled
-  #       all the way down into native code.
-  #       This is tricky when run in a pnacl where tls.c would
-  #       normally only compiled into a bitcode file.
-  #       As a solution we have a second compiler in the env
-  #       that always compiles to native.
-  env.Replace(CC='${CC_NATIVE}')
-
 # This directory contains untrusted C and ASM source for low-level
 # CPU-specific libraries implicitly supplied by the compiler driver.
 # Unlike most untrusted SDK code, conditional compilation may be
 # freely used, as the target will never be PNaCl.
 
-platform = env.get('TARGET_FULLARCH')
-assert platform in ['x86-32',  'x86-64', 'arm']
- # we do not like hyphens in file names
-platform = platform.replace('-', '_')
+def GetPlatformSuffix(env):
+  platform = env.get('TARGET_FULLARCH')
+  assert platform in ['x86-32',  'x86-64', 'arm']
+  # we do not like hyphens in file names
+  return platform.replace('-', '_')
+
+platform = GetPlatformSuffix(env)
+
+
+if ARGUMENTS.get('bitcode'):
+  # NOTE: we make sure everything in this directory gets compiled
+  #       all the way down into native code.
+  #       This is tricky in the pnacl case where a .c file would
+  #       normally compiled into a bitcode file.
+  #       To work around this we have a second compiler in the env
+  #       that always compiles to native.
+  assert env.get('CC_NATIVE')
+  env.Replace(CC='${CC_NATIVE}')
 
 # the nacl-gcc toolchain does not want to switch to using
 # src/untrusted/startup/nacl_startup.c
@@ -36,9 +40,16 @@ else:
 crti = env.ComponentObject('crti', ['crti_%s.S' % platform])
 crtn = env.ComponentObject('crtn', ['crtn_%s.S' % platform])
 
-tls = env.StaticObject('tls.o', ['tls_%s.c' % platform])
 
-# Archive library of modules written in C.
-crt_platform = env.StaticLibrary('crt_platform', [tls])
+# NOTE: we only provide setjmp/longjmp for pnacl, nacl-gcc obtains
+# them from newlib, while pnacl's newlib is arch neutral
+if ARGUMENTS.get('bitcode'):
+  setjmp = [env.StaticObject('setjmp.o', ['setjmp_%s.S' % platform])]
+else:
+  setjmp = []
+
+tls = [env.StaticObject('tls.o', ['tls_%s.c' % platform])]
+
+crt_platform = env.StaticLibrary('crt_platform', tls + setjmp)
 
 env.AddObjectToSdk([crt1, crti, crtn, crt_platform], is_platform=True)
