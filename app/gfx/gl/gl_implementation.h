@@ -37,6 +37,9 @@ typedef void* (*GLGetProcAddressProc)(const char* name);
 // Initialize a particular GL implementation.
 bool InitializeGLBindings(GLImplementation implementation);
 
+// Initialize a particular GL implementation.
+void InitializeDebugGLBindings();
+
 // Set the current GL implementation.
 void SetGLImplementation(GLImplementation implementation);
 

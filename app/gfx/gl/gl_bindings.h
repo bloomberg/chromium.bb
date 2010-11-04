@@ -15,6 +15,9 @@
 #include <GL/glext.h>
 
 #include "build/build_config.h"
+#if defined(OS_WIN)
+#include "base/logging.h"
+#endif
 
 // The standard OpenGL native extension headers are also included.
 #if defined(OS_WIN)
@@ -37,6 +40,12 @@
 #define GL_BINDING_CALL WINAPI
 #else
 #define GL_BINDING_CALL
+#endif
+
+#if defined(OS_WIN)
+#define GL_SERVICE_LOG(args) DLOG(INFO) << args;
+#else
+#define GL_SERVICE_LOG(args)
 #endif
 
 // Forward declare OSMesa types.

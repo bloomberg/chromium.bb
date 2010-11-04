@@ -84,4 +84,9 @@ bool InitializeGLBindings(GLImplementation implementation) {
   return true;
 }
 
+void InitializeDebugGLBindings() {
+  InitializeDebugGLBindingsGL();
+  InitializeDebugGLBindingsOSMESA();
+}
+
 }  // namespace gfx
