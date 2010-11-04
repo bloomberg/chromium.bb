@@ -540,6 +540,9 @@ class SandboxIPCProcess  {
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("lv"));
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("lt"));
         break;
+      // TODO(jungshik): Would we be better off mapping Big5 to zh-tw
+      // and GB2312 to zh-cn? Fontconfig has 4 separate orthography
+      // files (zh-{cn,tw,hk,mo}.
       case NPCharsetChineseBIG5:
       case NPCharsetGB2312:
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("zh"));
@@ -565,7 +568,7 @@ class SandboxIPCProcess  {
         break;
       case NPCharsetShiftJIS:
         // Japanese
-        FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("jp"));
+        FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("ja"));
         break;
       case NPCharsetTurkish:
         FcLangSetAdd(langset, reinterpret_cast<const FcChar8*>("tr"));
