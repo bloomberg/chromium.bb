@@ -44,10 +44,9 @@ int errors_seen = 0;
 void* ServerThread(void* desc);
 
 /* StartServer creates a new SRPC server thread each time it is invoked. */
-void StartServer(NaClSrpcRpc *rpc,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args,
-                 NaClSrpcClosure *done) {
+NaClSrpcError StartServer(NaClSrpcChannel *channel,
+                          NaClSrpcArg **in_args,
+                          NaClSrpcArg **out_args) {
   int            pair[2];
   pthread_t      server;
   int            rv;
@@ -74,41 +73,36 @@ void StartServer(NaClSrpcRpc *rpc,
   }
   /* Return success. */
   printf("START RPC FINISHED\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /* GetMsg simply returns a string in a character array. */
-static void GetMsg(NaClSrpcRpc *rpc,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args,
-                   NaClSrpcClosure *done) {
+static NaClSrpcError GetMsg(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args) {
   static char message[] = "Quidquid id est, timeo Danaos et dona ferentes";
 
   printf("ServerThread: GetMsg\n");
 
   if (out_args[0]->u.caval.count >= strlen(message)) {
     strncpy(out_args[0]->u.caval.carr, message, strlen(message) + 1);
-    rpc->result = NACL_SRPC_RESULT_OK;
+    return NACL_SRPC_RESULT_OK;
   } else {
     printf("GetMsg: u.caval.count %u is too small %u\n",
            (unsigned) out_args[0]->u.caval.count,
            (unsigned) strlen(message));
     ++errors_seen;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
-  done->Run(done);
 }
 
 /* Shutdown stops the RPC service. */
-static void Shutdown(NaClSrpcRpc *rpc,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args,
-                     NaClSrpcClosure *done) {
+static NaClSrpcError Shutdown(NaClSrpcChannel *channel,
+                              NaClSrpcArg **in_args,
+                              NaClSrpcArg **out_args) {
   printf("ServerThread: Shutdown\n");
 
-  rpc->result = NACL_SRPC_RESULT_BREAK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_BREAK;
 }
 
 void* ServerThread(void* desc) {
@@ -155,10 +149,9 @@ void* ServerThread(void* desc) {
  * TestSharedMemory tests the passing of shared memory regions.
  * It expects to receive a handle and a string.
  */
-void TestSharedMemory(NaClSrpcRpc *rpc,
-                      NaClSrpcArg **in_args,
-                      NaClSrpcArg **out_args,
-                      NaClSrpcClosure *done) {
+NaClSrpcError TestSharedMemory(NaClSrpcChannel *channel,
+                               NaClSrpcArg **in_args,
+                               NaClSrpcArg **out_args) {
   int desc = in_args[0]->u.hval;
   char* compare_string = in_args[1]->u.sval;
   char* map_addr;
@@ -206,18 +199,15 @@ void TestSharedMemory(NaClSrpcRpc *rpc,
   /* Report the number of errors seen back as the result. */
   out_args[0]->u.ival = errors_seen;
   printf("TestSharedMemory: returning errors %d\n", errors_seen);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /* Report reports the number of errors seen during the tests. */
-void Report(NaClSrpcRpc *rpc,
-            NaClSrpcArg **in_args,
-            NaClSrpcArg **out_args,
-            NaClSrpcClosure *done) {
+NaClSrpcError Report(NaClSrpcChannel *channel,
+                     NaClSrpcArg **in_args,
+                     NaClSrpcArg **out_args) {
   out_args[0]->u.ival = errors_seen;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

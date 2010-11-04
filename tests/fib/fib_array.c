@@ -20,10 +20,9 @@
  * values of the sequence.  The size of the output array determines how many
  * elements of the sequence to compute, which are returned in the output array.
  */
-void FibonacciArray(NaClSrpcRpc *rpc,
-                    NaClSrpcArg **in_args,
-                    NaClSrpcArg **out_args,
-                    NaClSrpcClosure *done) {
+NaClSrpcError FibonacciArray(NaClSrpcChannel *channel,
+                             NaClSrpcArg **in_args,
+                             NaClSrpcArg **out_args) {
   int v0 = in_args[0]->u.ival;
   int v1 = in_args[1]->u.ival;
   int v2;
@@ -31,11 +30,7 @@ void FibonacciArray(NaClSrpcRpc *rpc,
   int32_t *dest = out_args[0]->u.iaval.iarr;
   int i;
 
-  if (num < 2) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    done->Run(done);
-    return;
-  }
+  if (num < 2) return NACL_SRPC_RESULT_APP_ERROR;
   *dest++ = v0;
   *dest++ = v1;
   for (i = 2; i < num; ++i) {
@@ -43,8 +38,7 @@ void FibonacciArray(NaClSrpcRpc *rpc,
     *dest++ = v2;
     v0 = v1; v1 = v2;
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

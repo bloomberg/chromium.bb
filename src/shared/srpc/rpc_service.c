@@ -37,10 +37,9 @@ typedef struct NaClSrpcMethodDesc NaClSrpcMethodDesc;
 /*
  * Forward declarations for static "built-in" methods.
  */
-static void ServiceDiscovery(NaClSrpcRpc* rpc,
-                             NaClSrpcArg** in_args,
-                             NaClSrpcArg** out_args,
-                             NaClSrpcClosure* done);
+static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** in_args,
+                                      NaClSrpcArg** out_args);
 
 /*
  * Get the next text element (name, input types, or output types).  These
@@ -424,24 +423,21 @@ NaClSrpcMethod NaClSrpcServiceMethod(const NaClSrpcService* service,
   }
 }
 
-static void ServiceDiscovery(NaClSrpcRpc* rpc,
-                             NaClSrpcArg** in_args,
-                             NaClSrpcArg** out_args,
-                             NaClSrpcClosure* done) {
+static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** in_args,
+                                      NaClSrpcArg** out_args) {
   UNREFERENCED_PARAMETER(in_args);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  if (NULL == rpc->channel || NULL == rpc->channel->server) {
-    done->Run(done);
-    return;
+  if (NULL == channel->server) {
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
-  if (out_args[0]->u.caval.count >=
-      rpc->channel->server->service_string_length) {
+  if (out_args[0]->u.caval.count >= channel->server->service_string_length) {
     strncpy(out_args[0]->u.caval.carr,
-            rpc->channel->server->service_string,
-            rpc->channel->server->service_string_length);
+            channel->server->service_string,
+            channel->server->service_string_length);
     /* Set the length of the string actually returned. */
-    out_args[0]->u.caval.count = rpc->channel->server->service_string_length;
-    rpc->result = NACL_SRPC_RESULT_OK;
+    out_args[0]->u.caval.count = channel->server->service_string_length;
+    return NACL_SRPC_RESULT_OK;
+  } else {
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
-  done->Run(done);
 }

@@ -812,19 +812,16 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
           rv);
 }
 
-static void NaClSecureChannelShutdownRpc(
-    struct NaClSrpcRpc      *rpc,
+static NaClSrpcError NaClSecureChannelShutdownRpc(
+    struct NaClSrpcChannel  *chan,
     struct NaClSrpcArg      **in_args,
-    struct NaClSrpcArg      **out_args,
-    struct NaClSrpcClosure  *done) {
-  UNREFERENCED_PARAMETER(rpc);
+    struct NaClSrpcArg      **out_args) {
+  UNREFERENCED_PARAMETER(chan);
   UNREFERENCED_PARAMETER(in_args);
   UNREFERENCED_PARAMETER(out_args);
-  UNREFERENCED_PARAMETER(done);
 
   NaClLog(4, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
   _exit(0);
-  /* Return is never reached, so no need to invoke done->Run(done). */
 }
 
 /*
@@ -832,12 +829,10 @@ static void NaClSecureChannelShutdownRpc(
  * stream and not as a file. The only arguments are a handle to a
  * shared memory object that contains the nexe.
  */
-static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
-                              struct NaClSrpcArg      **in_args,
-                              struct NaClSrpcArg      **out_args,
-                              struct NaClSrpcClosure  *done) {
-  struct NaClApp          *nap =
-      (struct NaClApp *) rpc->channel->server_instance_data;
+static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
+                                       struct NaClSrpcArg      **in_args,
+                                       struct NaClSrpcArg      **out_args) {
+  struct NaClApp          *nap = (struct NaClApp *) chan->server_instance_data;
   struct NaClDesc         *nexe_binary = in_args[0]->u.hval;
   struct NaClGioShm       gio_shm;
   struct NaClGioNaClDesc  gio_desc;
@@ -846,17 +841,18 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   char                    *aux;
   int                     rval;
   NaClErrorCode           suberr = LOAD_INTERNAL;
+  NaClErrorCode           errcode;
   size_t                  rounded_size;
 
   UNREFERENCED_PARAMETER(out_args);
 
   NaClLog(4, "NaClLoadModuleRpc: entered\n");
 
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
+  errcode = NACL_SRPC_RESULT_INTERNAL;
 
   aux = strdup(in_args[1]->u.sval);
   if (NULL == aux) {
-    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+    errcode = NACL_SRPC_RESULT_NO_MEMORY;
     goto cleanup;
   }
   NaClLog(4, "Received aux_info: %s\n", aux);
@@ -882,7 +878,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
       NaClLog(4, "NaClLoadModuleRpc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
 
       if (!NaClGioShmCtor(&gio_shm, nexe_binary, rounded_size)) {
-        rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+        errcode = NACL_SRPC_RESULT_NO_MEMORY;
         goto cleanup;
       }
       load_src = (struct Gio *) &gio_shm;
@@ -892,7 +888,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
       NaClLog(4, "NaClLoadModuleRpc: creating Gio from NaClDescHostDesc\n");
 
       if (!NaClGioNaClDescCtor(&gio_desc, nexe_binary)) {
-        rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
+        errcode = NACL_SRPC_RESULT_NO_MEMORY;
         goto cleanup;
       }
       load_src = (struct Gio *) &gio_desc;
@@ -913,7 +909,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
     case NACL_DESC_IMC_SOCKET:
     case NACL_DESC_QUOTA:
       /* Unsupported stuff */
-      rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+      errcode = NACL_SRPC_RESULT_APP_ERROR;
       goto cleanup;
   }
 
@@ -922,7 +918,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   if (LOAD_STATUS_UNKNOWN != nap->module_load_status) {
     NaClLog(LOG_ERROR, "Repeated LoadModule RPC?!?\n");
     suberr = LOAD_DUP_LOAD_MODULE;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    errcode = NACL_SRPC_RESULT_APP_ERROR;
     goto cleanup_status_mu;
   }
 
@@ -935,7 +931,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    errcode = NACL_SRPC_RESULT_APP_ERROR;
     NaClXCondVarBroadcast(&nap->cv);
   }
  cleanup_status_mu:
@@ -958,12 +954,12 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   NaClXMutexLock(&nap->mu);
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    errcode = NACL_SRPC_RESULT_APP_ERROR;
     goto cleanup_mu;
   }
 
   nap->module_load_status = LOAD_OK;
-  rpc->result = NACL_SRPC_RESULT_OK;
+  errcode = NACL_SRPC_RESULT_OK;
 
  cleanup_mu:
   NaClXCondVarBroadcast(&nap->cv);
@@ -976,7 +972,7 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
 
   NaClDescUnref(nexe_binary);
   nexe_binary = NULL;
-  done->Run(done);
+  return errcode;
 }
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
@@ -986,23 +982,20 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
  * pid to process handle mapping queries. This is required to enable IMC handle
  * passing inside the Chrome sandbox.
  */
-static void NaClInitHandlePassingRpc(struct NaClSrpcRpc      *rpc,
-                                     struct NaClSrpcArg      **in_args,
-                                     struct NaClSrpcArg      **out_args,
-                                     struct NaClSrpcClosure  *done) {
-  struct NaClApp  *nap = (struct NaClApp *) rpc->channel->server_instance_data;
+static NaClSrpcError NaClInitHandlePassingRpc(
+    struct NaClSrpcChannel  *chan,
+    struct NaClSrpcArg      **in_args,
+    struct NaClSrpcArg      **out_args) {
+  struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
   NaClSrpcImcDescType handle_passing_socket_address = in_args[0]->u.hval;
   DWORD renderer_pid = in_args[1]->u.ival;
   NaClHandle renderer_handle = (NaClHandle)in_args[2]->u.ival;
   UNREFERENCED_PARAMETER(out_args);
   if (!NaClHandlePassLdrCtor(handle_passing_socket_address,
                              renderer_pid,
-                             renderer_handle)) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  } else {
-    rpc->result = NACL_SRPC_RESULT_OK;
-  }
-  done->Run(done);
+                             renderer_handle))
+    return NACL_SRPC_RESULT_APP_ERROR;
+  return NACL_SRPC_RESULT_OK;
 }
 #endif
 
@@ -1017,15 +1010,15 @@ NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) {
   return status;
 }
 
-static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
-                                            struct NaClSrpcArg     **in_args,
-                                            struct NaClSrpcArg     **out_args,
-                                            struct NaClSrpcClosure *done) {
+static NaClSrpcError NaClSecureChannelStartModuleRpc(
+    struct NaClSrpcChannel *chan,
+    struct NaClSrpcArg     **in_args,
+    struct NaClSrpcArg     **out_args) {
   /*
    * let module start if module is okay; otherwise report error (e.g.,
    * ABI version mismatch).
    */
-  struct NaClApp  *nap = (struct NaClApp *) rpc->channel->server_instance_data;
+  struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
   NaClErrorCode   status;
 
   UNREFERENCED_PARAMETER(in_args);
@@ -1046,24 +1039,22 @@ static void NaClSecureChannelStartModuleRpc(struct NaClSrpcRpc     *rpc,
 
   out_args[0]->u.ival = status;
   NaClLog(4, "NaClSecureChannelStartModuleRpc finished\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
-static void NaClSecureChannelLog(struct NaClSrpcRpc      *rpc,
-                                 struct NaClSrpcArg      **in_args,
-                                 struct NaClSrpcArg      **out_args,
-                                 struct NaClSrpcClosure  *done) {
+static NaClSrpcError NaClSecureChannelLog(struct NaClSrpcChannel  *chan,
+                                          struct NaClSrpcArg      **in_args,
+                                          struct NaClSrpcArg      **out_args) {
   int severity = in_args[0]->u.ival;
   char *msg = in_args[1]->u.sval;
 
+  UNREFERENCED_PARAMETER(chan);
   UNREFERENCED_PARAMETER(out_args);
 
   NaClLog(5, "NaClSecureChannelLog started\n");
   NaClLog(severity, "%s\n", msg);
   NaClLog(5, "NaClSecureChannelLog finished\n");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) {

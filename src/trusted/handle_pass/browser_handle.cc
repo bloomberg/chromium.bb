@@ -67,10 +67,9 @@ HANDLE NaClHandlePassBrowserLookupHandle(DWORD pid) {
   return retval;
 }
 
-static void Lookup(NaClSrpcRpc* rpc,
-                   NaClSrpcArg** in_args,
-                   NaClSrpcArg** out_args,
-                   NaClSrpcClosure* done) {
+static NaClSrpcError Lookup(NaClSrpcChannel* channel,
+                            NaClSrpcArg** in_args,
+                            NaClSrpcArg** out_args) {
   NaClMutexLock(&pid_handle_map_mu);
   // The PID of the process wanting to send a descriptor.
   int sender_pid = in_args[0]->u.ival;
@@ -94,16 +93,13 @@ static void Lookup(NaClSrpcRpc* rpc,
     out_args[0]->u.ival = reinterpret_cast<int>(recipient_handle);
   }
   NaClMutexUnlock(&pid_handle_map_mu);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
-static void Shutdown(NaClSrpcRpc* rpc,
-                     NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args,
-                     NaClSrpcClosure* done) {
-  rpc->result = NACL_SRPC_RESULT_BREAK;
-  done->Run(done);
+static NaClSrpcError Shutdown(NaClSrpcChannel* channel,
+                              NaClSrpcArg** in_args,
+                              NaClSrpcArg** out_args) {
+  return NACL_SRPC_RESULT_BREAK;
 }
 
 static void WINAPI HandleServer(void* dummy) {

@@ -43,18 +43,15 @@ static size_t shm_length = 0;
 static char*  shm_addr = NULL;
 static int    shm_desc = -1;
 
-void SetupSharedMemory(NaClSrpcRpc *rpc,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args,
-                       NaClSrpcClosure* done) {
+int SetupSharedMemory(NaClSrpcChannel *channel,
+                      NaClSrpcArg **in_args,
+                      NaClSrpcArg **out_args) {
   struct stat st;
   shm_desc = in_args[0]->u.hval;
 
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   /* Determine the size of the region. */
   if (fstat(shm_desc, &st)) {
-    done->Rpc(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   /* Map the shared memory region into the NaCl module's address space. */
   shm_length = (size_t) st.st_size;
@@ -64,32 +61,28 @@ void SetupSharedMemory(NaClSrpcRpc *rpc,
                           MAP_SHARED,
                           shm_desc,
                           0);
-  if (MAP_FAILED != shm_addr) {
+  if (MAP_FAILED == shm_addr) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  } else {
     g_BigBuffer.buf = shm_addr;
     g_BigBuffer.max = shm_length;
-    rpc->result = NACL_SRPC_RESULT_OK;
   }
-  done->Rpc(done);
+  return NACL_SRPC_RESULT_OK;
 }
 NACL_SRPC_METHOD("setup:h:", SetupSharedMemory);
 
-void ShutdownSharedMemory(NaClSrpcRpc *rpc,
-                          NaClSrpcArg **in_args,
-                          NaClSrpcArg **out_args,
-                          NaClSrpcClosure *done) {
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+int ShutdownSharedMemory(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   /* Unmap the memory region. */
   if (munmap((void*) shm_addr, shm_length)) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   /* Close the passed-in descriptor. */
   if (close(shm_desc)) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   /* Return success. */
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 NACL_SRPC_METHOD("shutdown::", ShutdownSharedMemory);

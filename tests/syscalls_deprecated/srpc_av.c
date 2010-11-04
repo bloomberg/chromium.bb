@@ -46,10 +46,9 @@ NaClSrpcError ErrorMsg(NaClSrpcArg **out_args, const char *func, int retval) {
  * These deprecated syscalls are expected to return -ENOSYS when nexe is
  * launched from Chrome.  This is a Chrome specific test.
  */
-void AVTest(NaClSrpcRpc *rpc,
-            NaClSrpcArg **in_args,
-            NaClSrpcArg **out_args,
-            NaClSrpcClosure *done) {
+NaClSrpcError AVTest(NaClSrpcChannel *channel,
+                     NaClSrpcArg **in_args,
+                     NaClSrpcArg **out_args) {
   int ret;
   int desired_samples = kSampleCount;
   int obtained_samples = 0;
@@ -57,133 +56,89 @@ void AVTest(NaClSrpcRpc *rpc,
 
   ret = NACL_SYSCALL(multimedia_init)(NACL_SUBSYSTEM_AUDIO);
   if (-ENOSYS != ret) {
-    rpc->result =
-        ErrorMsg(out_args, "multimedia_init(NACL_SUBSYSTEM_AUDIO)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "multimedia_init(NACL_SUBSYSTEM_AUDIO)", ret);
   }
 
   ret = NACL_SYSCALL(multimedia_init)(NACL_SUBSYSTEM_VIDEO);
   if (-ENOSYS != ret) {
-    rpc->result =
-        ErrorMsg(out_args, "multimedia_init(NACL_SUBSYSTEM_VIDEO)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "multimedia_init(NACL_SUBSYSTEM_VIDEO)", ret);
   }
 
   ret = NACL_SYSCALL(multimedia_init)(NACL_SUBSYSTEM_AUDIO |
                                       NACL_SUBSYSTEM_VIDEO);
   if (-ENOSYS != ret) {
-    rpc->result =
-        ErrorMsg(out_args,
-                 "multimedia_init(NACL_SUBSYSTEM_AUDIO | NACL_SUBSYSTEM_VIDEO",
-                 ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args,
+        "multimedia_init(NACL_SUBSYSTEM_AUDIO | NACL_SUBSYSTEM_VIDEO", ret);
   }
 
   ret = NACL_SYSCALL(multimedia_shutdown)();
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "multimedia_shutdown()", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "multimedia_shutdown()", ret);
   }
 
   ret = NACL_SYSCALL(video_init)(kWidth, kHeight);
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "video_init(width, height)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "video_init(width, height)", ret);
   }
 
   ret = NACL_SYSCALL(video_shutdown)();
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "video_shutdown()", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "video_shutdown()", ret);
   }
 
   ret = NACL_SYSCALL(video_update)(pixels);
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "video_update(pixels)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "video_update(pixels)", ret);
   }
 
   ret = NACL_SYSCALL(video_update)(NULL);
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "video_update(NULL)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "video_update(NULL)", ret);
   }
 
   ret = NACL_SYSCALL(video_poll_event)(NULL);
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "video_poll_event(NULL)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "video_poll_event(NULL)", ret);
   }
 
   ret = NACL_SYSCALL(audio_init)(NACL_AUDIO_FORMAT_STEREO_48K,
       desired_samples, &obtained_samples);
   if (-ENOSYS != ret) {
-    rpc->result =
-        ErrorMsg(
-            out_args,
-            "audio_init(NACL_AUDIO_FORMAT_STEREO_48K, desired, &obtained)",
-            ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args,
+        "audio_init(NACL_AUDIO_FORMAT_STEREO_48K, desired, &obtained)", ret);
   }
 
   ret = NACL_SYSCALL(audio_init)(NACL_AUDIO_FORMAT_STEREO_44K,
       desired_samples, &obtained_samples);
   if (-ENOSYS != ret) {
-    rpc->result =
-        ErrorMsg(
-            out_args,
-            "audio_init(NACL_AUDIO_FORMAT_STEREO_44K, desired, &obtained)",
-            ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args,
+        "audio_init(NACL_AUDIO_FORMAT_STEREO_44K, desired, &obtained)", ret);
   }
 
   ret = NACL_SYSCALL(audio_init)(NACL_AUDIO_FORMAT_STEREO_48K,
       desired_samples, NULL);
   if (-ENOSYS != ret) {
-    rpc->result =
-        ErrorMsg(
-            out_args,
-            "audio_init(NACL_AUDIO_FORMAT_STEREO_48K, desired, NULL)",
-            ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args,
+        "audio_init(NACL_AUDIO_FORMAT_STEREO_48K, desired, NULL)", ret);
   }
 
   ret = NACL_SYSCALL(audio_shutdown)();
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "audio_shutdown()", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "audio_shutdown()", ret);
   }
 
   ret = NACL_SYSCALL(audio_stream)(NULL, NULL);
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "audio_stream(NULL, NULL)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "audio_stream(NULL, NULL)", ret);
   }
 
   ret = NACL_SYSCALL(audio_stream)(samples, &count);
   if (-ENOSYS != ret) {
-    rpc->result = ErrorMsg(out_args, "audio_stream(samples, &count)", ret);
-    done->Run(done);
-    return;
+    return ErrorMsg(out_args, "audio_stream(samples, &count)", ret);
   }
 
   out_args[0]->u.sval = strdup("SUCCESS");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

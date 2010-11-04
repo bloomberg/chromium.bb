@@ -41,17 +41,15 @@ static int nacl_file_done = 0;
 static int nacl_file_embedded = -1;
 
 #define NACL_SRPC_HANDLER(signature, name) \
-  void name( \
-      NaClSrpcRpc *rpc, \
+  NaClSrpcError name( \
+      NaClSrpcChannel* channel, \
       NaClSrpcArg **in_args, \
-      NaClSrpcArg **out_args, \
-      NaClSrpcClosure *done); \
+      NaClSrpcArg **out_args); \
   NACL_SRPC_METHOD(signature, name); \
-  void name( \
-      NaClSrpcRpc *rpc, \
+  NaClSrpcError name( \
+      NaClSrpcChannel* channel, \
       NaClSrpcArg **in_args, \
-      NaClSrpcArg **out_args, \
-      NaClSrpcClosure *done)
+      NaClSrpcArg **out_args)
 
 NACL_SRPC_HANDLER("file:shi:", NaClFile) {
   char *pathname;
@@ -88,12 +86,9 @@ NACL_SRPC_HANDLER("file:shi:", NaClFile) {
 
   /* If this is the last file, shutdown the SRPC listener thread. */
   /* Note: after this no additional files can be loaded via file() SRPC. */
-  if (last) {
-    rpc->result = NACL_SRPC_RESULT_BREAK;
-  } else {
-    rpc->result = NACL_SRPC_RESULT_OK;
-  }
-  done->Run(done);
+  if (last) return NACL_SRPC_RESULT_BREAK;
+
+  return NACL_SRPC_RESULT_OK;
 }
 
 static pthread_mutex_t nacl_fake_mu = PTHREAD_MUTEX_INITIALIZER;

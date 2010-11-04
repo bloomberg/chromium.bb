@@ -117,57 +117,15 @@ static int RequestGet(NaClSrpcImcBuffer* buffer,
                       const char* ret_types,
                       NaClSrpcArg* rets[]);
 
-static void ResponseWrite(NaClSrpcRpc* rpc,
-                          NaClSrpcArg* rets[]);
+static int ResponseWrite(NaClSrpcChannel* channel,
+                         NaClSrpcRpc* rpc,
+                         NaClSrpcArg* rets[]);
 
 static int ResponseGet(NaClSrpcImcBuffer* buffer,
                        const NaClSrpcRpc* rpc,
                        const char* ret_types,
                        NaClSrpcArg* rets[]);
 
-/* TODO(sehr): make this public when the client side uses RPC. */
-static int NaClSrpcRpcCtor(NaClSrpcRpc* rpc,
-                           NaClSrpcChannel* channel) {
-  rpc->channel = channel;
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
-  rpc->rets = NULL;
-  return 1;
-}
-
-/* A self-deleting closure to send responses from RPC servers. */
-typedef struct RpcCheckingClosure {
-  struct NaClSrpcClosure base;
-  NaClSrpcRpc* rpc;
-} RpcCheckingClosure;
-
-static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
-  RpcCheckingClosure* vself = (RpcCheckingClosure*) self;
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done (result = %d)\n",
-           vself->rpc->result));
-  /* Send the RPC response to the caller. */
-  ResponseWrite(vself->rpc, vself->rpc->rets);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: response sent\n"));
-  vself->rpc->dispatch_loop_should_continue = 1;
-  if (NACL_SRPC_RESULT_BREAK == vself->rpc->result) {
-    dprintf((SIDE "SRPC: RpcCheckingClosureRun: server requested break\n"));
-    vself->rpc->result = NACL_SRPC_RESULT_OK;
-    vself->rpc->dispatch_loop_should_continue = 0;
-  }
-  if (!vself->rpc->ret_send_succeeded) {
-    /* If the response write failed, drop request and continue. */
-    dprintf((SIDE "SRPC: RpcCheckingClosureRun: response write failed\n"));
-  }
-  free(self);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done\n"));
-}
-
-static int RpcCheckingClosureCtor(RpcCheckingClosure* self,
-                                  NaClSrpcRpc* rpc) {
-  self->base.Run = RpcCheckingClosureRun;
-  self->rpc = rpc;
-  self->rpc->dispatch_loop_should_continue = 1;
-  return 1;
-}
 
 static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
                                                  NaClSrpcRpc* rpc_stack_top) {
@@ -180,20 +138,10 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   NaClSrpcArg* rets[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcMethod method;
   int retval;
+  int return_break = 0;
   const ArgsIoInterface* desc;
-  RpcCheckingClosure* done;
 
   dprintf((SIDE "SRPC: ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
-  done = (RpcCheckingClosure*) malloc(sizeof *done);
-  if (NULL == done) {
-    /* DISPATCH_EOF is the closest we have to an error return. */
-    return DISPATCH_EOF;
-  }
-  if (!NaClSrpcRpcCtor(&rpc, channel) || !RpcCheckingClosureCtor(done, &rpc)) {
-    free(done);
-    return DISPATCH_EOF;
-  }
-  rpc.rets = rets;
   /* Read a message from the channel. */
   buffer = __NaClSrpcImcFillbuf(channel);
   if (NULL == buffer) {
@@ -214,7 +162,7 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
         return DISPATCH_EOF;
       } else {
         /* Inform the pending invoke that a failure happened. */
-        rpc_stack_top->result = NACL_SRPC_RESULT_INTERNAL;
+        rpc_stack_top->app_error = NACL_SRPC_RESULT_INTERNAL;
         return DISPATCH_BREAK;
       }
     }
@@ -246,7 +194,6 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     /* Drop the request with a bad rpc number and continue */
     return DISPATCH_CONTINUE;
   }
-  dprintf((SIDE "SRPC: ReceiveAndDispatch: processing %s\n", rpc_name));
   /* Deserialize the request from the buffer. */
   if (!RequestGet(buffer, &rpc, arg_types, args, ret_types, rets)) {
     dprintf((SIDE "SRPC: ReceiveAndDispatch: receive message failed\n"));
@@ -260,24 +207,26 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
              rpc.rpc_number));
     return DISPATCH_CONTINUE;
   }
-  (*method)(&rpc, args, rets, (NaClSrpcClosure*) done);
-  /*
-   * Free the memory for the args and rets.
-   * TODO(sehr): memory allocation for rets should move to the method
-   * implementation, eliminating the second free.
-   */
+  rpc.app_error = (*method)(channel, args, rets);
+  if (NACL_SRPC_RESULT_BREAK == rpc.app_error) {
+    return_break = 1;
+    rpc.app_error = NACL_SRPC_RESULT_OK;
+  }
+  /* Then we return the rets. */
+  retval = ResponseWrite(channel, &rpc, rets);
+  /* Then we free the memory for the args and rets. */
   desc->free(desc, args);
   desc->free(desc, rets);
-  /*
-   * Return code to either continue or break out of the processing loop.
-   * When we separate closure invocation from the dispatch loop we will
-   * have to implement a barrier to make sure that all preceding RPCs are
-   * completed, and then signal the dispatcher to stop.
-   */
-  if (rpc.dispatch_loop_should_continue) {
+  if (!retval) {
+    /* If the response write failed, drop request and continue. */
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: response write failed\n"));
     return DISPATCH_CONTINUE;
-  } else {
+  }
+  /* Return code to either continue or break out of the processing loop. */
+  if (return_break) {
     return DISPATCH_BREAK;
+  } else {
+    return DISPATCH_CONTINUE;
   }
 }
 
@@ -301,39 +250,38 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
     retval = NaClSrpcReceiveAndDispatch(channel, rpc);
   } while (DISPATCH_CONTINUE == retval);
   /* Process responses */
-  dprintf((SIDE "SRPC: NaClSrpcRpcWait: loop done: %p, %d\n",
-           (void*) rpc, retval));
-  if (NULL == rpc) {
-    dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc is NULL\n"));
-    return;
-  }
-  if (DISPATCH_RESPONSE == retval) {
+  dprintf((SIDE "SRPC: response to RpcWait: %p, %d\n", (void*) rpc, retval));
+  if (NULL != rpc &&
+      DISPATCH_RESPONSE == retval) {
     NaClSrpcImcBuffer* buffer = rpc->buffer;
     /* We know here that the buffer contains a response to the current rpc. */
     __NaClSrpcImcRefill(buffer);
     /* Deserialize the header (0 indicates failure) */
     if (!NaClSrpcRpcGet(buffer, rpc)) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc deserialize failed\n"));
-      rpc->result = NACL_SRPC_RESULT_INTERNAL;
+      dprintf((SIDE "SRPC: InvokeV: rpc deserialize failed\n"));
+      rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
     /* Paranoia: if the message is a request, return an error */
     if (rpc->is_request) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc is not response: %d\n",
+      dprintf((SIDE "SRPC: Response: rpc is not response: %d\n",
                rpc->is_request));
-      rpc->result = NACL_SRPC_RESULT_INTERNAL;
+      rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
     if (!ResponseGet(buffer, rpc, rpc->ret_types, rpc->rets)) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: response receive failed\n"));
-      rpc->result = NACL_SRPC_RESULT_INTERNAL;
+      dprintf((SIDE "SRPC: response receive failed\n"));
+      rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
-  } else if (DISPATCH_EOF == retval) {
+  }
+  if (NULL != rpc &&
+      DISPATCH_EOF == retval) {
     dprintf((SIDE "SRPC: EOF is received instead of response. "
              "Probably, the other side "
              "(usually, nacl module or browser plugin) crashed."));
-    rpc->result = NACL_SRPC_RESULT_INTERNAL;
+    rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
+    return;
   }
 }
 
@@ -469,6 +417,7 @@ static uint32_t name##ArrLength(const NaClSrpcArg* arg,                        \
 }                                                                              \
                                                                                \
 static void name##ArrFree(NaClSrpcArg* arg) {                                  \
+  dprintf(("Freeing %p\n", (void*) arg->u.field.array));                       \
   free(arg->u.field.array);                                                    \
   arg->u.field.array = NULL;                                                   \
 }                                                                              \
@@ -875,7 +824,7 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
   uint8_t is_req = 0;
   uint64_t request_id = 0;
   uint32_t rpc_num = 0;
-  NaClSrpcError result = NACL_SRPC_RESULT_OK;
+  NaClSrpcError app_err = NACL_SRPC_RESULT_OK;
 
   dprintf((SIDE "SRPC: RpcGet starting\n"));
   if (1 != __NaClSrpcImcRead(buffer, sizeof(protocol), 1, &protocol)) {
@@ -903,18 +852,18 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
   }
   rpc->rpc_number = rpc_num;
   if (!rpc->is_request) {
-    /* Responses also need to read the result member */
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(result), 1, &result)) {
-      dprintf((SIDE "SRPC: RpcGet: result read fail\n"));
+    /* Responses also need to read the app_error member */
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(app_err), 1, &app_err)) {
+      dprintf((SIDE "SRPC: RpcGet: app_error read fail\n"));
       return 0;
     }
   }
-  rpc->result = result;
+  rpc->app_error = app_err;
   dprintf((SIDE "SRPC: RpcGet(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s) done\n",
            rpc->protocol_version,
            (rpc->is_request == 0) ? "response" : "request",
            rpc->rpc_number,
-           NaClSrpcErrorString(rpc->result)));
+           NaClSrpcErrorString(rpc->app_error)));
   return 1;
 }
 
@@ -927,7 +876,7 @@ static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
            rpc->protocol_version,
            rpc->is_request ? "request" : "response",
            rpc->rpc_number,
-           NaClSrpcErrorString(rpc->result)));
+           NaClSrpcErrorString(rpc->app_error)));
   if (1 !=
       __NaClSrpcImcWrite(&rpc->protocol_version,
                          sizeof(rpc->protocol_version),
@@ -956,10 +905,13 @@ static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
                          buffer)) {
     return 0;
   }
-  /* Responses also need to send the result member */
+  /* Responses also need to send the app_error member */
   if (!rpc->is_request) {
     if (1 !=
-        __NaClSrpcImcWrite(&rpc->result, sizeof(rpc->result), 1, buffer)) {
+        __NaClSrpcImcWrite(&rpc->app_error,
+                           sizeof(rpc->app_error),
+                           1,
+                           buffer)) {
       return 0;
     }
   }
@@ -973,7 +925,7 @@ static void RpcLength(int is_request, uint32_t* bytes, uint32_t* handles) {
       sizeof(uint64_t) +  /* request_id */
       sizeof(uint8_t)  +  /* is_request */
       sizeof(uint32_t) +  /* rpc_number */
-      (is_request ? sizeof(uint32_t) : 0);  /* result */
+      (is_request ? sizeof(uint32_t) : 0);  /* app_error */
   *handles = 0;
 }
 
@@ -1020,7 +972,7 @@ static int RequestPut(const ArgsIoInterface* desc,
            rpc->rpc_number));
   /* Set up and send rpc */
   rpc->is_request = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
+  rpc->app_error = NACL_SRPC_RESULT_OK;
   if (!RpcWrite(buffer, rpc)) {
     return 0;
   }
@@ -1106,9 +1058,9 @@ static int ResponseGet(NaClSrpcImcBuffer* buffer,
   /* Announce start of response processing */
   dprintf((SIDE "SRPC: ResponseGet: response, rpc %"NACL_PRIu32"\n",
            rpc->rpc_number));
-  if (NACL_SRPC_RESULT_OK != rpc->result) {
+  if (NACL_SRPC_RESULT_OK != rpc->app_error) {
     dprintf((SIDE "SRPC: ResponseGet: method returned failure: %d\n",
-             rpc->result));
+             rpc->app_error));
     return 1;
   }
   dprintf((SIDE "SRPC: ResponseGet: getting rets\n"));
@@ -1137,8 +1089,8 @@ static int ResponsePut(const ArgsIoInterface* desc,
     return 0;
   }
   dprintf((SIDE "SRPC: ResponsePut(%p, %"NACL_PRIu32", %d, %s): sent\n",
-           (void*) buffer, rpc->rpc_number, rpc->result,
-           NaClSrpcErrorString(rpc->result)));
+           (void*) buffer, rpc->rpc_number, rpc->app_error,
+           NaClSrpcErrorString(rpc->app_error)));
   return 1;
 }
 
@@ -1165,30 +1117,28 @@ static int ResponseLength(const ArgsIoInterface* desc,
  * ResponseWrite writes the header and the return values on the specified
  * channel.
  */
-static void ResponseWrite(NaClSrpcRpc* rpc, NaClSrpcArg* rets[]) {
+static int ResponseWrite(NaClSrpcChannel* channel,
+                         NaClSrpcRpc* rpc,
+                         NaClSrpcArg* rets[]) {
   uint32_t bytes;
   uint32_t handles;
   const ArgsIoInterface* desc = GetArgsInterface(rpc->protocol_version);
   NaClSrpcImcBuffer* buffer;
-  NaClSrpcChannel* channel = rpc->channel;
 
-  dprintf((SIDE "SRPC: ResponseWrite %p %p\n",
-           (void*)(rpc), (void*)(rets)));
-  rpc->ret_send_succeeded = 0;
   /*
    * ResponseLength computes the requirements for a write buffer.
    * It is currently unused, but will be used in the next CL to separate
    * serialization from buffer send/receive.
    */
   if (!ResponseLength(desc, rets, &bytes, &handles)) {
-    return;
+    return 0;
   }
   /* Get the buffer to write into */
   buffer = &channel->send_buf;
   /* Serialize into the buffer */
   if (!ResponsePut(desc, rpc, rets, buffer)) {
     dprintf((SIDE "SRPC: ResponseWrite: couldn't put rets\n"));
-    return;
+    return 0;
   }
   /* Flush the buffer to the channel */
   if (!__NaClSrpcImcFlush(buffer, channel)) {
@@ -1199,14 +1149,14 @@ static void ResponseWrite(NaClSrpcRpc* rpc, NaClSrpcArg* rets[]) {
      */
     dprintf((SIDE
              "SRPC: ResponseWrite: flush failed -- sending internal error\n"));
-    rpc->result = NACL_SRPC_RESULT_INTERNAL;
+    rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
     rpc->is_request = 0;
     if (!RpcWrite(buffer, rpc)) {
       dprintf((SIDE "SRPC: ResponseWrite: flush failed twice -- giving up\n"));
-      return;
+      return 0;
     }
     __NaClSrpcImcFlush(buffer, channel);
   }
   dprintf((SIDE "SRPC: ResponseWrite: sent\n"));
-  rpc->ret_send_succeeded = 1;
+  return 1;
 }

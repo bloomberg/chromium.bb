@@ -36,34 +36,29 @@ static const int kInvalidDescriptorNumber = -1;
 /*
  *  The test for bool inverts the input and returns it.
  */
-void BoolMethod(NaClSrpcRpc *rpc,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args,
-                NaClSrpcClosure *done) {
+NaClSrpcError BoolMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   out_args[0]->u.bval = !in_args[0]->u.bval;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  *  The test for double negates the input and returns it.
  */
-void DoubleMethod(NaClSrpcRpc *rpc,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args,
-                  NaClSrpcClosure *done) {
+NaClSrpcError DoubleMethod(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   out_args[0]->u.dval = -in_args[0]->u.dval;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  *  The test for returning signalling NaNs takes no input.
  */
-void NaNMethod(NaClSrpcRpc *rpc,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args,
-               NaClSrpcClosure *done) {
+NaClSrpcError NaNMethod(NaClSrpcChannel *channel,
+                        NaClSrpcArg **in_args,
+                        NaClSrpcArg **out_args) {
   union IntDouble {
     double d;
     int i[2];
@@ -71,44 +66,37 @@ void NaNMethod(NaClSrpcRpc *rpc,
   u.i[0] = 0x4007ffff;
   u.i[1] = 0xffffffff;
   *((union IntDouble*) (&out_args[0]->u.dval)) = u;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  *  The test for int negates the input and returns it.
  */
-void IntMethod(NaClSrpcRpc *rpc,
-               NaClSrpcArg **in_args,
-               NaClSrpcArg **out_args,
-               NaClSrpcClosure *done) {
+NaClSrpcError IntMethod(NaClSrpcChannel *channel,
+                        NaClSrpcArg **in_args,
+                        NaClSrpcArg **out_args) {
   out_args[0]->u.ival = -in_args[0]->u.ival;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  *  The test for long negates the input and returns it.
  */
-void LongMethod(NaClSrpcRpc *rpc,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args,
-                NaClSrpcClosure *done) {
+NaClSrpcError LongMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   out_args[0]->u.lval = -in_args[0]->u.lval;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  *  The test for string returns the length of the string.
  */
-void StringMethod(NaClSrpcRpc *rpc,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args,
-                  NaClSrpcClosure *done) {
+NaClSrpcError StringMethod(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   out_args[0]->u.ival = strlen(in_args[0]->u.sval);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
@@ -117,94 +105,79 @@ void StringMethod(NaClSrpcRpc *rpc,
  *  If the counts don't match, return an error.
  */
 
-void CharArrayMethod(NaClSrpcRpc *rpc,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args,
-                     NaClSrpcClosure *done) {
+NaClSrpcError CharArrayMethod(NaClSrpcChannel *channel,
+                              NaClSrpcArg **in_args,
+                              NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.caval.count != in_args[0]->u.caval.count) {
     printf("CharArrayMethod: count mismatch: in=%d out=%d\n",
            (int) in_args[0]->u.caval.count, (int) out_args[0]->u.caval.count);
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    done->Run(done);
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   length = in_args[0]->u.caval.count;
   for (i = 0; i < length; i++) {
     out_args[0]->u.caval.carr[length - i - 1] = in_args[0]->u.caval.carr[i];
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
-void DoubleArrayMethod(NaClSrpcRpc *rpc,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args,
-                       NaClSrpcClosure *done) {
+NaClSrpcError DoubleArrayMethod(NaClSrpcChannel *channel,
+                                NaClSrpcArg **in_args,
+                                NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.daval.count != in_args[0]->u.daval.count) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    done->Run(done);
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   length = in_args[0]->u.daval.count;
   for (i = 0; i < length; i++) {
     out_args[0]->u.daval.darr[length - i - 1] = in_args[0]->u.daval.darr[i];
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
-void IntArrayMethod(NaClSrpcRpc *rpc,
-                    NaClSrpcArg **in_args,
-                    NaClSrpcArg **out_args,
-                    NaClSrpcClosure *done) {
+NaClSrpcError IntArrayMethod(NaClSrpcChannel *channel,
+                             NaClSrpcArg **in_args,
+                             NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.iaval.count != in_args[0]->u.iaval.count) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    done->Run(done);
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   length = in_args[0]->u.iaval.count;
   for (i = 0; i < length; i++) {
     out_args[0]->u.iaval.iarr[length - i - 1] = in_args[0]->u.iaval.iarr[i];
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
-void LongArrayMethod(NaClSrpcRpc *rpc,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args,
-                     NaClSrpcClosure *done) {
+NaClSrpcError LongArrayMethod(NaClSrpcChannel *channel,
+                              NaClSrpcArg **in_args,
+                              NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.laval.count != in_args[0]->u.laval.count) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-    done->Run(done);
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   length = in_args[0]->u.laval.count;
   for (i = 0; i < length; i++) {
     out_args[0]->u.laval.larr[length - i - 1] = in_args[0]->u.laval.larr[i];
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  * A null RPC to test throughput and latency.
  */
-void NullMethod(NaClSrpcRpc *rpc,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args,
-                NaClSrpcClosure *done) {
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+NaClSrpcError NullMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  * A method to return a string.
  */
-void ReturnStringMethod(NaClSrpcRpc *rpc,
-                        NaClSrpcArg **in_args,
-                        NaClSrpcArg **out_args,
-                        NaClSrpcClosure *done) {
+NaClSrpcError ReturnStringMethod(NaClSrpcChannel *channel,
+                                 NaClSrpcArg **in_args,
+                                 NaClSrpcArg **out_args) {
   static char string[] = "Ich weiss nicht, was soll es bedeuten"
                          "Dass ich so traurig bin,"
                          "Ein Maerchen aus uralten Zeiten,"
@@ -222,59 +195,50 @@ void ReturnStringMethod(NaClSrpcRpc *rpc,
                          "Das hat eine wundersame,"
                          "Gewalt'ge Melodei.";
   out_args[0]->u.sval = strdup(string + in_args[0]->u.ival);
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  * A method to receive a handle (descriptor).
  */
-void HandleMethod(NaClSrpcRpc *rpc,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args,
-                  NaClSrpcClosure *done) {
+NaClSrpcError HandleMethod(NaClSrpcChannel *channel,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args) {
   /* If we got this far, things succeeded */
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  * A method to return a handle (descriptor).
  */
-void ReturnHandleMethod(NaClSrpcRpc *rpc,
-                        NaClSrpcArg **in_args,
-                        NaClSrpcArg **out_args,
-                        NaClSrpcClosure *done) {
+NaClSrpcError ReturnHandleMethod(NaClSrpcChannel *channel,
+                                 NaClSrpcArg **in_args,
+                                 NaClSrpcArg **out_args) {
   out_args[0]->u.hval = kSrpcSocketAddressDescriptorNumber;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
  * A method to accept an invalid handle (descriptor).
  */
-void InvalidHandleMethod(NaClSrpcRpc *rpc,
-                         NaClSrpcArg **in_args,
-                         NaClSrpcArg **out_args,
-                         NaClSrpcClosure *done) {
+NaClSrpcError InvalidHandleMethod(NaClSrpcChannel *channel,
+                                  NaClSrpcArg **in_args,
+                                  NaClSrpcArg **out_args) {
   if (kInvalidDescriptorNumber == in_args[0]->u.hval) {
-    rpc->result = NACL_SRPC_RESULT_OK;
+    return NACL_SRPC_RESULT_OK;
   } else {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
-  done->Run(done);
 }
 
 /*
  * A method to return an invalid handle (descriptor).
  */
-void ReturnInvalidHandleMethod(NaClSrpcRpc *rpc,
-                               NaClSrpcArg **in_args,
-                               NaClSrpcArg **out_args,
-                               NaClSrpcClosure *done) {
+NaClSrpcError ReturnInvalidHandleMethod(NaClSrpcChannel *channel,
+                                        NaClSrpcArg **in_args,
+                                        NaClSrpcArg **out_args) {
   out_args[0]->u.hval = kInvalidDescriptorNumber;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

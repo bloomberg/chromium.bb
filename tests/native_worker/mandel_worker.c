@@ -25,22 +25,17 @@ static int worker_upcall_desc = -1;
 /*
  * The method to store the upcall handle.
  */
-void SetUpcallDesc(NaClSrpcRpc *rpc,
-                   NaClSrpcArg **in_args,
-                   NaClSrpcArg **out_args,
-                   NaClSrpcClosure *done) {
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args) {
   worker_upcall_desc = in_args[0]->u.hval;
   if (worker_upcall_desc < 0) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   if (!NaClSrpcClientCtor(&upcall_channel, worker_upcall_desc)) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
@@ -106,10 +101,9 @@ static inline int mandel(char* rgb,
 }
 
 
-void MandelWorker(NaClSrpcRpc *rpc,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args,
-                  NaClSrpcClosure *done) {
+NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
+                           NaClSrpcArg** in_args,
+                           NaClSrpcArg** out_args) {
   char* argstr = in_args[0]->u.sval;
   int xlow;
   int ylow;
@@ -122,10 +116,8 @@ void MandelWorker(NaClSrpcRpc *rpc,
   size_t string_size;
   char* string;
 
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (worker_upcall_desc < 0) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   sscanf(argstr, "%d:%d:%d:%d",
          &canvas_width, &tile_width, &xlow, &ylow);
@@ -135,8 +127,7 @@ void MandelWorker(NaClSrpcRpc *rpc,
   string_size = tile_width * tile_width * 16 + 8;
   string = (char*) malloc(string_size);
   if (NULL == string) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
 
   /*
@@ -157,8 +148,7 @@ void MandelWorker(NaClSrpcRpc *rpc,
    */
   NaClSrpcInvokeBySignature(&upcall_channel, "postMessage:s:", string);
 
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

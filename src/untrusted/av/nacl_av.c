@@ -111,13 +111,11 @@ static void mark_multimedia_init_done() {
  * nacl_multimedia_bridge() is initialized at discovery.
  * It is a once-only event between plugin and native client.
  */
-void nacl_multimedia_bridge(NaClSrpcRpc *rpc,
-                            NaClSrpcArg **in_args,
-                            NaClSrpcArg **out_args,
-                            NaClSrpcClosure *done) {
+NaClSrpcError nacl_multimedia_bridge(NaClSrpcChannel *channel,
+                                     NaClSrpcArg **in_args,
+                                     NaClSrpcArg **out_args) {
   struct stat st;
 
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
   nacl_multimedia.channel = (NaClSrpcChannel*) malloc(sizeof(NaClSrpcChannel));
   nacl_multimedia.display_shm_desc = in_args[0]->u.hval;
   nacl_multimedia.connected_socket = in_args[1]->u.hval;
@@ -126,15 +124,13 @@ void nacl_multimedia_bridge(NaClSrpcRpc *rpc,
   if (!NaClSrpcClientCtor(nacl_multimedia.channel,
        nacl_multimedia.connected_socket)) {
     Log("nacl_av: SRPC constructor FAILED\n");
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_INTERNAL;
   }
 
   /* Determine the size of the region. */
   if (fstat(nacl_multimedia.display_shm_desc, &st)) {
     Log("nacl_av: fstat failed\n");
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_INTERNAL;
   }
   /* Map the shared memory region into the NaCl module's address space. */
   nacl_multimedia.video_size = (size_t) st.st_size;
@@ -149,14 +145,12 @@ void nacl_multimedia_bridge(NaClSrpcRpc *rpc,
     nacl_multimedia.video_size = 0;
     nacl_multimedia.video_data = NULL;
     nacl_multimedia.embedded = 0;
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_INTERNAL;
   }
 
   /* Tell main to proceed allowing further processing */
   mark_multimedia_init_done();
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*

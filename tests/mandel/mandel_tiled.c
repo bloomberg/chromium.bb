@@ -29,18 +29,15 @@ static int    shm_desc = -1;
  * The routine to set up the shared memory region to be used by all the calls.
  */
 
-void SetupSharedMemory(NaClSrpcRpc *rpc,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args,
-                       NaClSrpcClosure *done) {
+NaClSrpcError SetupSharedMemory(NaClSrpcChannel *channel,
+                                NaClSrpcArg **in_args,
+                                NaClSrpcArg **out_args) {
   struct stat st;
   shm_desc = in_args[0]->u.hval;
 
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   /* Determine the size of the region. */
   if (fstat(shm_desc, &st)) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   /* Map the shared memory region into the NaCl module's address space. */
   shm_length = (size_t) st.st_size;
@@ -50,30 +47,25 @@ void SetupSharedMemory(NaClSrpcRpc *rpc,
                           MAP_SHARED,
                           shm_desc,
                           0);
-  if (MAP_FAILED != shm_addr) {
-    rpc->result = NACL_SRPC_RESULT_OK;
+  if (MAP_FAILED == shm_addr) {
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
-void ShutdownSharedMemory(NaClSrpcRpc *rpc,
-                          NaClSrpcArg **in_args,
-                          NaClSrpcArg **out_args,
-                          NaClSrpcClosure *done) {
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+NaClSrpcError ShutdownSharedMemory(NaClSrpcChannel *channel,
+                                   NaClSrpcArg **in_args,
+                                   NaClSrpcArg **out_args) {
   /* Unmap the memory region. */
   if (munmap((void*) shm_addr, shm_length)) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   /* Close the passed-in descriptor. */
   if (close(shm_desc)) {
-    done->Run(done);
-    return;
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   /* Return success. */
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 /*
@@ -139,10 +131,9 @@ static inline int mandel(char* rgb,
 }
 
 
-void MandelTiled(NaClSrpcRpc *rpc,
-                 NaClSrpcArg **in_args,
-                 NaClSrpcArg **out_args,
-                 NaClSrpcClosure *done) {
+NaClSrpcError MandelTiled(NaClSrpcChannel *channel,
+                          NaClSrpcArg** in_args,
+                          NaClSrpcArg** out_args) {
   double xlow = in_args[0]->u.dval;
   double ylow = in_args[1]->u.dval;
   double points_per_tile = in_args[2]->u.dval;
@@ -161,8 +152,7 @@ void MandelTiled(NaClSrpcRpc *rpc,
       p += mandel(p, x, y, points_per_tile, tiles_per_row);
     }
   }
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

@@ -13,19 +13,29 @@
 #include <sys/nacl_syscalls.h>
 
 
-void TestMethod(NaClSrpcRpc *rpc,
-                NaClSrpcArg **in_args,
-                NaClSrpcArg **out_args,
-                NaClSrpcClosure *done) {
+NaClSrpcError TestMethod(NaClSrpcChannel *channel,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args) {
   out_args[0]->u.sval = strdup("Deferred SRPC connection worked.");
-  rpc->result = NACL_SRPC_RESULT_OK;
-  done->Run(done);
+  return NACL_SRPC_RESULT_OK;
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {
   { "test_method::s", TestMethod },
   { NULL, NULL },
 };
+
+
+/* We override __srpc_init() and __srpc_wait() from libsrpc's
+   accept_loop.c (which are called from crt1.o) in order to get finer
+   control over how this process accepts and initialises SRPC
+   connections. */
+void __srpc_init() {
+}
+
+void __srpc_wait() {
+}
+
 
 int main() {
   int fd;
