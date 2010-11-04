@@ -57,15 +57,17 @@ static int nacl_file_embedded = -1;
 
 
 #define NACL_SRPC_HANDLER(signature, name) \
-  extern "C" NaClSrpcError name( \
-      NaClSrpcChannel* channel, \
+  extern "C" void name( \
+      NaClSrpcRpc *rpc, \
       NaClSrpcArg **in_args, \
-      NaClSrpcArg **out_args); \
+      NaClSrpcArg **out_args, \
+      NaClSrpcClosure *done); \
   NACL_SRPC_METHOD(signature, name); \
-  NaClSrpcError name( \
-      NaClSrpcChannel* channel, \
+  void name( \
+      NaClSrpcRpc *rpc, \
       NaClSrpcArg **in_args, \
-      NaClSrpcArg **out_args)
+      NaClSrpcArg **out_args, \
+      NaClSrpcClosure *done)
 
 NACL_SRPC_HANDLER("file:shi:", NaClFile) {
   char *pathname;
@@ -100,7 +102,8 @@ NACL_SRPC_HANDLER("file:shi:", NaClFile) {
   pthread_mutex_unlock(&nacl_file_mu);
   printf("Unlocked, exit check\n");
 
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 static pthread_mutex_t nacl_fake_mu = PTHREAD_MUTEX_INITIALIZER;

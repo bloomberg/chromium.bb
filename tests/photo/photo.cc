@@ -546,168 +546,196 @@ Darkroom::~Darkroom() {
 
 // SRPC function OpenPhoto
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError OpenPhoto(NaClSrpcChannel *channel,
-              NaClSrpcArg** in_args,
-              NaClSrpcArg** out_args) {
+void OpenPhoto(NaClSrpcRpc* rpc,
+               NaClSrpcArg** in_args,
+               NaClSrpcArg** out_args,
+               NaClSrpcClosure* done) {
   char* filename = in_args[0]->u.sval;
   g_darkroom.SetLoadFilename(filename);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateSaturation
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateSaturation(NaClSrpcChannel *channel,
-                     NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args) {
+void UpdateSaturation(NaClSrpcRpc* rpc,
+                      NaClSrpcArg** in_args,
+                      NaClSrpcArg** out_args,
+                      NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float saturation = slider / 100.0f;
   g_darkroom.SetSaturation(saturation);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateContrast
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateContrast(NaClSrpcChannel *channel,
-                   NaClSrpcArg** in_args,
-                   NaClSrpcArg** out_args) {
+void UpdateContrast(NaClSrpcRpc* rpc,
+                    NaClSrpcArg** in_args,
+                    NaClSrpcArg** out_args,
+                    NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float contrast = slider / 100.0f;
   g_darkroom.SetContrast(contrast);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateBrightness
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateBrightness(NaClSrpcChannel *channel,
-                     NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args) {
+void UpdateBrightness(NaClSrpcRpc* rpc,
+                      NaClSrpcArg** in_args,
+                      NaClSrpcArg** out_args,
+                      NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float brightness = slider / 100.0f;
   g_darkroom.SetBrightness(brightness);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateTemperature
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateTemperature(NaClSrpcChannel *channel,
-                      NaClSrpcArg** in_args,
-                      NaClSrpcArg** out_args) {
+void UpdateTemperature(NaClSrpcRpc* rpc,
+                       NaClSrpcArg** in_args,
+                       NaClSrpcArg** out_args,
+                       NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float temperature = static_cast<float>(slider);
   g_darkroom.SetTemperature(temperature);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateBlackPoint
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateBlackPoint(NaClSrpcChannel *channel,
+void UpdateBlackPoint(NaClSrpcRpc* rpc,
                     NaClSrpcArg** in_args,
-                    NaClSrpcArg** out_args) {
+                    NaClSrpcArg** out_args,
+                    NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float blackPoint = slider / 100.0f;
   g_darkroom.SetBlackPoint(blackPoint);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateFill
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateFill(NaClSrpcChannel *channel,
-               NaClSrpcArg** in_args,
-               NaClSrpcArg** out_args) {
+void UpdateFill(NaClSrpcRpc* rpc,
+                NaClSrpcArg** in_args,
+                NaClSrpcArg** out_args,
+                NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float fill = slider / 100.0f;
   g_darkroom.SetFill(fill);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateShadowsHue
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateShadowsHue(NaClSrpcChannel *channel,
-                     NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args) {
+void UpdateShadowsHue(NaClSrpcRpc* rpc,
+                      NaClSrpcArg** in_args,
+                      NaClSrpcArg** out_args,
+                      NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float shadowsHue = slider / 1000.0f;
   g_darkroom.SetShadowsHue(shadowsHue);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateShdowsSaturation
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateShadowsSaturation(NaClSrpcChannel *channel,
-                            NaClSrpcArg** in_args,
-                            NaClSrpcArg** out_args) {
+void UpdateShadowsSaturation(NaClSrpcRpc* rpc,
+                             NaClSrpcArg** in_args,
+                             NaClSrpcArg** out_args,
+                             NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float shadowsSaturation = slider / 100.0f;
   g_darkroom.SetShadowsSaturation(shadowsSaturation);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateHighlightsHue
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateHighlightsHue(NaClSrpcChannel *channel,
-                        NaClSrpcArg** in_args,
-                        NaClSrpcArg** out_args) {
+void UpdateHighlightsHue(NaClSrpcRpc* rpc,
+                         NaClSrpcArg** in_args,
+                         NaClSrpcArg** out_args,
+                         NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float highlightsHue = slider / 1000.0f;
   g_darkroom.SetHighlightsHue(highlightsHue);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC function UpdateHighlightsSaturation
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateHighlightsSaturation(NaClSrpcChannel *channel,
-                               NaClSrpcArg** in_args,
-                               NaClSrpcArg** out_args) {
+void UpdateHighlightsSaturation(NaClSrpcRpc* rpc,
+                                NaClSrpcArg** in_args,
+                                NaClSrpcArg** out_args,
+                                NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float highlightsSaturation = slider / 100.0f;
   g_darkroom.SetHighlightsSaturation(highlightsSaturation);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC UpdateSplitPoint
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateSplitPoint(NaClSrpcChannel *channel,
-                     NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args) {
+void UpdateSplitPoint(NaClSrpcRpc* rpc,
+                      NaClSrpcArg** in_args,
+                      NaClSrpcArg** out_args,
+                      NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float splitPoint = slider / 100.0f;
   g_darkroom.SetSplitPoint(splitPoint);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC UpdateAngle
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateAngle(NaClSrpcChannel *channel,
-                     NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args) {
+void UpdateAngle(NaClSrpcRpc* rpc,
+                 NaClSrpcArg** in_args,
+                 NaClSrpcArg** out_args,
+                 NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float angle = static_cast<float>(slider);
   g_darkroom.SetAngle(angle);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 // SRPC UpdateFineAngle
 // invoked via Javascript, called from SRPC service thread.
-NaClSrpcError UpdateFineAngle(NaClSrpcChannel *channel,
+void UpdateFineAngle(NaClSrpcRpc* rpc,
                      NaClSrpcArg** in_args,
-                     NaClSrpcArg** out_args) {
+                     NaClSrpcArg** out_args,
+                     NaClSrpcClosure* done) {
   int slider = in_args[0]->u.ival;
   float fine = static_cast<float>(slider) / 100.0f;
   g_darkroom.SetFineAngle(fine);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 

@@ -69,9 +69,10 @@ static std::string DOMTable_CreateTableIH(int rows, int cols) {
   return html_string;
 }
 
-int CCDOMTable_CreateTable(NaClSrpcChannel *channel,
-                           NaClSrpcArg **in_args,
-                           NaClSrpcArg **out_args) {
+void CCDOMTable_CreateTable(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args,
+                            NaClSrpcClosure *done) {
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
@@ -84,9 +85,10 @@ int CCDOMTable_CreateTable(NaClSrpcChannel *channel,
   BBWrite(html.c_str(), &g_BigBuffer);
   out_args[0]->u.ival = g_BigBuffer.index;
   if (0 == g_BigBuffer.failed) {
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
   } else {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   }
+  done->Run(done);
 }
 NACL_SRPC_METHOD("CCDOMTable_CreateTable:ii:i", CCDOMTable_CreateTable);

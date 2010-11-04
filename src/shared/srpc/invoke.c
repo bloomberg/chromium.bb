@@ -109,7 +109,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   rpc.protocol_version = kNaClSrpcProtocolVersion;
   rpc.rpc_number = rpc_number;
   rpc.request_id = channel->next_outgoing_request_id;
-  rpc.app_error = NACL_SRPC_RESULT_OK;
+  rpc.result = NACL_SRPC_RESULT_OK;
   rpc.rets = rets;
   rpc.ret_types = ret_types;
   retval = NaClSrpcRequestWrite(channel, &rpc, args, rets);
@@ -126,10 +126,10 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
   /* Then we wait for the response. */
   NaClSrpcRpcWait(channel, &rpc);
   dprintf((SIDE "SRPC: InvokeV: received response (%d, %s)\n",
-           rpc.app_error,
-           NaClSrpcErrorString(rpc.app_error)));
+           rpc.result,
+           NaClSrpcErrorString(rpc.result)));
 
-  return rpc.app_error;
+  return rpc.result;
 }
 
 /*

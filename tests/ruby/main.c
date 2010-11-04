@@ -34,8 +34,10 @@ char* INIT_RUBY_SCRIPT =
 /*
  *  Evals Ruby expression and returns stdout updates.
  */
-NaClSrpcError RubyEval(NaClSrpcChannel *channel,
-    NaClSrpcArg **in_args, NaClSrpcArg **out_args) {
+void RubyEval(NaClSrpcRpc *rpc,
+              NaClSrpcArg **in_args,
+              NaClSrpcArg **out_args,
+              NaClSrpcClosure *done) {
 
   /* TODO(krasin): MAKE IT THREAD-SAFE */
   if (!initialized) {
@@ -51,7 +53,8 @@ NaClSrpcError RubyEval(NaClSrpcChannel *channel,
    */
   out_args[0]->u.sval = strdup(StringValuePtr(result));
 
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /*

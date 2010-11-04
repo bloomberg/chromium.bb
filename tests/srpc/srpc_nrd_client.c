@@ -29,9 +29,10 @@
 static int errors_seen = 0;
 
 /* SockAddrClient implements the NativeClient client portion above. */
-NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
-                             NaClSrpcArg **in_args,
-                             NaClSrpcArg **out_args) {
+void SockAddrClient(NaClSrpcRpc *rpc,
+                    NaClSrpcArg **in_args,
+                    NaClSrpcArg **out_args,
+                    NaClSrpcClosure *done) {
   NaClSrpcChannel channel;
   static char buf[1024];
   size_t buf_size = sizeof(buf);
@@ -39,6 +40,7 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
   int socket_address = in_args[0]->u.hval;
   static char cmp_msg[] = "Quidquid id est, timeo Danaos et dona ferentes";
 
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   /* Start up banner, clear errors. */
   printf("SockAddrClient: socket address is %d\n", socket_address);
   errors_seen = 0;
@@ -49,20 +51,23 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
   } else {
     printf("SockAddrClient: connect FAILED, errno %d\n", errno);
     ++errors_seen;
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   /* Start the SRPC client to communicate over the connected socket. */
   if (!NaClSrpcClientCtor(&channel, connected_socket)) {
     printf("SockAddrClient: SRPC constructor FAILED\n");
     ++errors_seen;
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   /* Perform an RPC on the SRPC client, which returns a message. */
   if (NACL_SRPC_RESULT_OK
       != NaClSrpcInvokeBySignature(&channel, "getmsg::C", &buf_size, buf)) {
     printf("SockAddrClient: RPC FAILED.\n");
     ++errors_seen;
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   /* Check the message for correctness. */
   printf("SockAddrClient: getmsg returned %s\n", buf);
@@ -89,13 +94,15 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
   }
   /* Return the error count and success. */
   out_args[0]->u.ival = errors_seen;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /* SharedMemoryClient creates and returns a shared memory region. */
-NaClSrpcError SharedMemoryClient(NaClSrpcChannel *channel,
-                                 NaClSrpcArg **in_args,
-                                 NaClSrpcArg **out_args) {
+void SharedMemoryClient(NaClSrpcRpc *rpc,
+                        NaClSrpcArg **in_args,
+                        NaClSrpcArg **out_args,
+                        NaClSrpcClosure *done) {
   int desc;
   char* test_string = "salvete, omnes";
   size_t size = in_args[0]->u.ival;
@@ -122,7 +129,8 @@ NaClSrpcError SharedMemoryClient(NaClSrpcChannel *channel,
   /* NOTE: string return values from SRPC need to be heap allocated. */
   out_args[1]->u.sval = strdup(test_string);
   out_args[2]->u.ival = errors_seen;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

@@ -25,17 +25,22 @@ static int worker_upcall_desc = -1;
 /*
  * The method to store the upcall handle.
  */
-NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
-                            NaClSrpcArg **in_args,
-                            NaClSrpcArg **out_args) {
+void SetUpcallDesc(NaClSrpcRpc *rpc,
+                   NaClSrpcArg **in_args,
+                   NaClSrpcArg **out_args,
+                   NaClSrpcClosure *done) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   worker_upcall_desc = in_args[0]->u.hval;
   if (worker_upcall_desc < 0) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   if (!NaClSrpcClientCtor(&upcall_channel, worker_upcall_desc)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /*
@@ -101,9 +106,10 @@ static inline int mandel(char* rgb,
 }
 
 
-NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
-                           NaClSrpcArg** in_args,
-                           NaClSrpcArg** out_args) {
+void MandelWorker(NaClSrpcRpc *rpc,
+                  NaClSrpcArg **in_args,
+                  NaClSrpcArg **out_args,
+                  NaClSrpcClosure *done) {
   char* argstr = in_args[0]->u.sval;
   int xlow;
   int ylow;
@@ -116,8 +122,10 @@ NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
   size_t string_size;
   char* string;
 
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (worker_upcall_desc < 0) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   sscanf(argstr, "%d:%d:%d:%d",
          &canvas_width, &tile_width, &xlow, &ylow);
@@ -127,7 +135,8 @@ NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
   string_size = tile_width * tile_width * 16 + 8;
   string = (char*) malloc(string_size);
   if (NULL == string) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
 
   /*
@@ -148,7 +157,8 @@ NaClSrpcError MandelWorker(NaClSrpcChannel *channel,
    */
   NaClSrpcInvokeBySignature(&upcall_channel, "postMessage:s:", string);
 
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

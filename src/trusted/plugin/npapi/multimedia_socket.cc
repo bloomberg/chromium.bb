@@ -93,54 +93,54 @@ void MultimediaSocket::UpcallThreadExiting() {
   NaClXMutexUnlock(&mu_);
 }
 
-static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** ins,
-                                  NaClSrpcArg** outs) {
-  NaClSrpcError ret;
-
+static void handleUpcall(NaClSrpcRpc* rpc,
+                         NaClSrpcArg** ins,
+                         NaClSrpcArg** outs,
+                         NaClSrpcClosure* done) {
   UNREFERENCED_PARAMETER(ins);
   UNREFERENCED_PARAMETER(outs);
-  ret = NACL_SRPC_RESULT_BREAK;
-  if (channel) {
+  rpc->result = NACL_SRPC_RESULT_BREAK;
+  if (rpc->channel) {
     VideoScopedGlobalLock video_lock;
     VideoCallbackData* video_cb_data;
     Plugin* portable_plugin;
     MultimediaSocket* msp;
 
-    PLUGIN_PRINTF(("Upcall: channel %p\n", static_cast<void*>(channel)));
+    PLUGIN_PRINTF(("Upcall: channel %p\n",
+                   static_cast<void*>(rpc->channel)));
     PLUGIN_PRINTF(("Upcall: server_instance_data %p\n",
-                   static_cast<void*>(channel->server_instance_data)));
+                   static_cast<void*>(rpc->channel->server_instance_data)));
     video_cb_data = reinterpret_cast<VideoCallbackData*>
-        (channel->server_instance_data);
+        (rpc->channel->server_instance_data);
     portable_plugin = video_cb_data->portable_plugin;
     if (NULL != portable_plugin) {
       VideoMap* video = static_cast<PluginNpapi*>(portable_plugin)->video();
       if (video) {
         video->RequestRedraw();
       }
-      ret = NACL_SRPC_RESULT_OK;
+      rpc->result = NACL_SRPC_RESULT_OK;
     } else if (NULL != getenv("NACLTEST_DISABLE_SHUTDOWN")) {
       PLUGIN_PRINTF(("Upcall: SrpcPlugin dtor invoked VideoMap dtor,"
                      "but pretending that the channel is okay for testing\n"));
-      ret = NACL_SRPC_RESULT_OK;
+      rpc->result = NACL_SRPC_RESULT_OK;
     } else {
       PLUGIN_PRINTF(("Upcall: plugin was NULL\n"));
     }
     msp = video_cb_data->msp;
     if (NULL != msp) {
       if (msp->UpcallThreadShouldExit()) {
-        ret = NACL_SRPC_RESULT_BREAK;
+        rpc->result = NACL_SRPC_RESULT_BREAK;
       }
     }
   }
-  if (NACL_SRPC_RESULT_OK == ret) {
+  if (NACL_SRPC_RESULT_OK == rpc->result) {
     PLUGIN_PRINTF(("Upcall: success\n"));
-  } else if (NACL_SRPC_RESULT_BREAK == ret) {
+  } else if (NACL_SRPC_RESULT_BREAK == rpc->result) {
     PLUGIN_PRINTF(("Upcall: break detected, thread exiting\n"));
   } else {
     PLUGIN_PRINTF(("Upcall: failure\n"));
   }
-  return ret;
+  done->Run(done);
 }
 
 bool MultimediaSocket::UpcallThreadShouldExit() {

@@ -169,10 +169,11 @@ def PrintServerFile(output, include_name, interface_name, specs):
 
   def FormatDispatchPrototype(indent, rpc):
     """Format the prototype of a dispatcher method."""
-    s = '%sstatic NaClSrpcError %sDispatcher(\n' % (indent, rpc['name'])
-    s += '%s    NaClSrpcChannel* channel,\n' % indent
+    s = '%sstatic void %sDispatcher(\n' % (indent, rpc['name'])
+    s += '%s    NaClSrpcRpc* rpc,\n' % indent
     s += '%s    NaClSrpcArg** inputs,\n' % indent
-    s += '%s    NaClSrpcArg** outputs\n' % indent
+    s += '%s    NaClSrpcArg** outputs,\n' % indent
+    s += '%s    NaClSrpcClosure* done\n' % indent
     s += '%s)' % indent
     return s
 
@@ -223,7 +224,7 @@ def PrintServerFile(output, include_name, interface_name, specs):
         s += ',\n%s    %s' % (indent, FormatArg(is_output, num, arg))
         num += 1
       return s
-    s = '%s::%s(\n%s    channel' % (class_name, rpc['name'], indent)
+    s = '%s::%s(\n%s    rpc->channel' % (class_name, rpc['name'], indent)
     s += FormatArgs(False, rpc['inputs'])
     s += FormatArgs(True, rpc['outputs'])
     s += '\n%s)' % indent
@@ -239,9 +240,9 @@ def PrintServerFile(output, include_name, interface_name, specs):
         s += '  UNREFERENCED_PARAMETER(inputs);\n'
       if rpc['outputs'] == []:
         s += '  UNREFERENCED_PARAMETER(outputs);\n'
-      s += '  NaClSrpcError retval;\n'
-      s += '  retval = %s;\n' % FormatCall(class_name, '  ', rpc)
-      s += '  return retval;\n'
+      s += '  UNREFERENCED_PARAMETER(done);\n'
+      s += '  rpc->result = %s;\n' % FormatCall(class_name, '  ', rpc)
+      s += '  done->Run(done);\n'
       s += '}\n\n'
   s += '}  // namespace\n\n'
   s += 'NACL_SRPC_METHOD_ARRAY(%s' % interface_name

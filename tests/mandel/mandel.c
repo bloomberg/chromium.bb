@@ -16,9 +16,10 @@
  * Sample application-specific RPC code.
  */
 
-NaClSrpcError Mandel(NaClSrpcChannel *channel,
-                     NaClSrpcArg **in_args,
-                     NaClSrpcArg **out_args) {
+void Mandel(NaClSrpcRpc *rpc,
+            NaClSrpcArg **in_args,
+            NaClSrpcArg **out_args,
+            NaClSrpcClosure *done) {
   double i = in_args[0]->u.dval;
   double j = in_args[1]->u.dval;
   double xsteps = in_args[2]->u.dval;
@@ -76,7 +77,8 @@ NaClSrpcError Mandel(NaClSrpcChannel *channel,
   out_args[0]->u.ival = r;
   out_args[1]->u.ival = g;
   out_args[2]->u.ival = b;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {
