@@ -300,6 +300,10 @@ void AutocompleteEditViewGtk::Init() {
       text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetAfterThunk), this);
   g_signal_connect(text_view_, "drag-data-received",
                    G_CALLBACK(&HandleDragDataReceivedThunk), this);
+  // Override the text_view_'s default drag-data-get handler by calling our own
+  // version after the normal call has happened.
+  g_signal_connect_after(text_view_, "drag-data-get",
+                   G_CALLBACK(&HandleDragDataGetThunk), this);
   g_signal_connect(text_view_, "backspace",
                    G_CALLBACK(&HandleBackSpaceThunk), this);
   g_signal_connect(text_view_, "copy-clipboard",
@@ -1271,6 +1275,23 @@ void AutocompleteEditViewGtk::HandleDragDataReceived(
     static guint signal_id =
         g_signal_lookup("drag-data-received", GTK_TYPE_WIDGET);
     g_signal_stop_emission(text_view_, signal_id, 0);
+  }
+}
+
+void AutocompleteEditViewGtk::HandleDragDataGet(
+    GtkWidget* widget,
+    GdkDragContext* context,
+    GtkSelectionData* selection_data,
+    guint target_type,
+    guint time) {
+  // If GTK put the normal textual version of the selection in our drag data,
+  // put our doctored selection that might have the 'http://' prefix. Also, GTK
+  // is confused about signedness of its datatypes, leading to the weird switch
+  // statement (no set of casts fixes this).
+  switch (target_type) {
+    case GTK_TEXT_BUFFER_TARGET_INFO_TEXT: {
+      gtk_selection_data_set_text(selection_data, selected_text_.c_str(), -1);
+    }
   }
 }
 

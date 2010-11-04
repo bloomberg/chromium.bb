@@ -206,6 +206,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   CHROMEGTK_CALLBACK_6(AutocompleteEditViewGtk, void, HandleDragDataReceived,
                        GdkDragContext*, gint, gint, GtkSelectionData*,
                        guint, guint);
+  CHROMEGTK_CALLBACK_4(AutocompleteEditViewGtk, void, HandleDragDataGet,
+                       GdkDragContext*, GtkSelectionData*, guint, guint);
   CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleBackSpace);
   CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCopyClipboard);
   CHROMEGTK_CALLBACK_0(AutocompleteEditViewGtk, void, HandleCutClipboard);
