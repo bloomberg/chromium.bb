@@ -25,6 +25,10 @@ PP_Resource Resource::GetReference() {
   return resource_id_;
 }
 
+PP_Resource Resource::GetReferenceNoAddRef() const {
+  return resource_id_;
+}
+
 void Resource::StoppedTracking() {
   DCHECK(resource_id_ != 0);
   resource_id_ = 0;

@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/dev/ppb_url_loader_trusted_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -41,6 +42,10 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   // PPB_URLLoader implementation.
   int32_t Open(URLRequestInfo* request, PP_CompletionCallback callback);
   int32_t FollowRedirect(PP_CompletionCallback callback);
+  bool GetUploadProgress(int64_t* bytes_sent,
+                         int64_t* total_bytes_to_be_sent);
+  bool GetDownloadProgress(int64_t* bytes_received,
+                           int64_t* total_bytes_to_be_received);
   int32_t ReadResponseBody(char* buffer, int32_t bytes_to_read,
                            PP_CompletionCallback callback);
   int32_t FinishStreamingToFile(PP_CompletionCallback callback);
@@ -48,6 +53,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
 
   // PPB_URLLoaderTrusted implementation.
   void GrantUniversalAccess();
+  void SetStatusCallback(PP_URLLoaderTrusted_StatusCallback cb);
 
   // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(WebKit::WebURLLoader* loader,
@@ -70,17 +76,14 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
 
   URLResponseInfo* response_info() const { return response_info_; }
 
-  // Progress counters.
-  int64_t bytes_sent() const { return bytes_sent_; }
-  int64_t total_bytes_to_be_sent() const { return total_bytes_to_be_sent_; }
-  int64_t bytes_received() const { return bytes_received_; }
-  int64_t total_bytes_to_be_received() const {
-    return total_bytes_to_be_received_;
-  }
-
  private:
   void RunCallback(int32_t result);
   size_t FillUserBuffer();
+
+  // Calls the status_callback_ (if any) with the current upload and download
+  // progress. Call this function if you update any of these values to
+  // synchronize an out-of-process plugin's state.
+  void UpdateStatus();
 
   scoped_refptr<PluginInstance> instance_;
   // If true, then the plugin instance is a full-frame plugin and we're just
@@ -97,7 +100,13 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   char* user_buffer_;
   size_t user_buffer_size_;
   int32_t done_status_;
+
+  bool record_download_progress_;
+  bool record_upload_progress_;
+
   bool has_universal_access_;
+
+  PP_URLLoaderTrusted_StatusCallback status_callback_;
 };
 
 }  // namespace pepper

@@ -146,7 +146,9 @@ struct URLRequestInfo::BodyItem {
 
 URLRequestInfo::URLRequestInfo(PluginModule* module)
     : Resource(module),
-      stream_to_file_(false) {
+      stream_to_file_(false),
+      record_download_progress_(false),
+      record_upload_progress_(false) {
 }
 
 URLRequestInfo::~URLRequestInfo() {
@@ -162,6 +164,12 @@ bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty_Dev property,
   switch (property) {
     case PP_URLREQUESTPROPERTY_STREAMTOFILE:
       stream_to_file_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS:
+      record_download_progress_ = value;
+      return true;
+    case PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS:
+      record_upload_progress_ = value;
       return true;
     default:
       //NOTIMPLEMENTED();  // TODO(darin): Implement me!

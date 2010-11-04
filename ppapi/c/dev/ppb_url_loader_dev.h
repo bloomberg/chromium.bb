@@ -52,20 +52,27 @@ struct PPB_URLLoader_Dev {
                             struct PP_CompletionCallback callback);
 
   // Returns the current upload progress, which is meaningful after Open has
-  // been called, and the request given to Open must have been configured with
-  // PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS set to true.  Progress only
-  // refers to the request body.  This data is only available if the
-  // PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS was set to true on the
-  // URLRequestInfo.  This method returns false if upload progress is not
-  // available.
+  // been called. Progress only refers to the request body and does not include
+  // the headers.
+  //
+  // This data is only available if the URLRequestInfo passed to Open() had the
+  // PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS flag set to true.
+  //
+  // This method returns false if upload progress is not available.
   bool (*GetUploadProgress)(PP_Resource loader,
                             int64_t* bytes_sent,
                             int64_t* total_bytes_to_be_sent);
 
   // Returns the current download progress, which is meaningful after Open has
-  // been called.  Progress only refers to the response body.  The total bytes
-  // to be received may be unknown, in which case -1 is returned.  This method
-  // returns false if download progress is not available.
+  // been called.  Progress only refers to the response body and does not
+  // include the headers.
+  //
+  // This data is only available if the URLRequestInfo passed to Open() had the
+  // PP_URLREQUESTPROPERTY_REPORTDOWNLOADPROGRESS flag set to true.
+  //
+  // The total bytes to be received may be unknown, in which case
+  // total_bytes_to_be_received will be set to -1. This method returns false if
+  // download progress is not available.
   bool (*GetDownloadProgress)(PP_Resource loader,
                               int64_t* bytes_received,
                               int64_t* total_bytes_to_be_received);

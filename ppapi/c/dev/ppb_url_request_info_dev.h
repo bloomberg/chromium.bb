@@ -18,7 +18,19 @@ typedef enum {
   PP_URLREQUESTPROPERTY_HEADERS,              // string, \n-delim
   PP_URLREQUESTPROPERTY_STREAMTOFILE,         // bool (default=false)
   PP_URLREQUESTPROPERTY_FOLLOWREDIRECTS,      // bool (default=true)
-  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS  // bool (default=false)
+
+  // Set to true if you want to be able to poll the download progress via the
+  // URLLoader.GetDownloadProgress function.
+  //
+  // Boolean (default = false).
+  PP_URLREQUESTPROPERTY_RECORDDOWNLOADPROGRESS,
+
+  // Set to true if you want to be able to pull the upload progress via the
+  // URLLoader.GetUploadProgress function.
+  //
+  // Boolean (default = false).
+  PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS
+
   // TODO(darin): Add security/privacy options?
 } PP_URLRequestProperty_Dev;
 

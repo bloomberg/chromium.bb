@@ -44,6 +44,9 @@ class URLRequestInfo : public Resource {
 
   WebKit::WebURLRequest ToWebURLRequest(WebKit::WebFrame* frame) const;
 
+  bool record_download_progress() const { return record_download_progress_; }
+  bool record_upload_progress() const { return record_upload_progress_; }
+
  private:
   struct BodyItem;
   typedef std::vector<BodyItem> Body;
@@ -52,7 +55,10 @@ class URLRequestInfo : public Resource {
   std::string method_;
   std::string headers_;
   Body body_;
+
   bool stream_to_file_;
+  bool record_download_progress_;
+  bool record_upload_progress_;
 };
 
 }  // namespace pepper

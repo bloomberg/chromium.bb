@@ -84,6 +84,19 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
     const PP_Resource id;
   };
 
+ protected:
+  // Returns the resource ID of this object OR NULL IF THERE IS NONE ASSIGNED.
+  // This will happen if the plugin doesn't have a reference to the given
+  // resource. The resource will not be addref'ed.
+  //
+  // This should only be used as an input parameter to the plugin for status
+  // updates in the proxy layer, where if the plugin has no reference, it will
+  // just give up since nothing needs to be updated.
+  //
+  // Generally you should use GetReference instead. This is why it has this
+  // obscure name rather than pp_resource().
+  PP_Resource GetReferenceNoAddRef() const;
+
  private:
   // Type-specific getters for individual resource types. These will return
   // NULL if the resource does not match the specified type. Used by the Cast()
@@ -93,7 +106,6 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   FOR_ALL_RESOURCES(DEFINE_TYPE_GETTER)
   #undef DEFINE_TYPE_GETTER
 
- private:
   // If referenced by a plugin, holds the id of this resource object. Do not
   // access this member directly, because it is possible that the plugin holds
   // no references to the object, and therefore the resource_id_ is zero. Use

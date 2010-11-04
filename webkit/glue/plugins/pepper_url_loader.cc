@@ -84,9 +84,7 @@ bool GetUploadProgress(PP_Resource loader_id,
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader)
     return false;
-
-  *bytes_sent = loader->bytes_sent();
-  *total_bytes_to_be_sent = loader->total_bytes_to_be_sent();
+  return loader->GetUploadProgress(bytes_sent, total_bytes_to_be_sent);
   return true;
 }
 
@@ -96,10 +94,8 @@ bool GetDownloadProgress(PP_Resource loader_id,
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader)
     return false;
-
-  *bytes_received = loader->bytes_received();
-  *total_bytes_to_be_received = loader->total_bytes_to_be_received();
-  return true;
+  return loader->GetDownloadProgress(bytes_received,
+                                     total_bytes_to_be_received);
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader_id) {
@@ -163,8 +159,17 @@ void GrantUniversalAccess(PP_Resource loader_id) {
   loader->GrantUniversalAccess();
 }
 
+void SetStatusCallback(PP_Resource loader_id,
+                       PP_URLLoaderTrusted_StatusCallback cb) {
+  scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
+  if (!loader)
+    return;
+  loader->SetStatusCallback(cb);
+}
+
 const PPB_URLLoaderTrusted_Dev ppb_urlloadertrusted = {
-  &GrantUniversalAccess
+  &GrantUniversalAccess,
+  &SetStatusCallback
 };
 
 }  // namespace
@@ -181,7 +186,10 @@ URLLoader::URLLoader(PluginInstance* instance, bool main_document_loader)
       user_buffer_(NULL),
       user_buffer_size_(0),
       done_status_(PP_ERROR_WOULDBLOCK),
-      has_universal_access_(false) {
+      record_download_progress_(false),
+      record_upload_progress_(false),
+      has_universal_access_(false),
+      status_callback_(NULL) {
 }
 
 URLLoader::~URLLoader() {
@@ -230,6 +238,8 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   loader_->loadAsynchronously(web_request, this);
 
   pending_callback_ = callback;
+  record_download_progress_ = request->record_download_progress();
+  record_upload_progress_  = request->record_upload_progress();
 
   // Notify completion when we receive a redirect or response headers.
   return PP_ERROR_WOULDBLOCK;
@@ -238,6 +248,30 @@ int32_t URLLoader::Open(URLRequestInfo* request,
 int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
   NOTIMPLEMENTED();  // TODO(darin): Implement me.
   return PP_ERROR_FAILED;
+}
+
+bool URLLoader::GetUploadProgress(int64_t* bytes_sent,
+                                  int64_t* total_bytes_to_be_sent) {
+  if (!record_upload_progress_) {
+    *bytes_sent = 0;
+    *total_bytes_to_be_sent = 0;
+    return false;
+  }
+  *bytes_sent = bytes_sent_;
+  *total_bytes_to_be_sent = total_bytes_to_be_sent_;
+  return true;
+}
+
+bool URLLoader::GetDownloadProgress(int64_t* bytes_received,
+                                    int64_t* total_bytes_to_be_received) {
+  if (!record_download_progress_) {
+    *bytes_received = 0;
+    *total_bytes_to_be_received = 0;
+    return false;
+  }
+  *bytes_received = bytes_received_;
+  *total_bytes_to_be_received = total_bytes_to_be_received_;
+  return true;
 }
 
 int32_t URLLoader::ReadResponseBody(char* buffer, int32_t bytes_to_read,
@@ -298,6 +332,10 @@ void URLLoader::GrantUniversalAccess() {
   has_universal_access_ = true;
 }
 
+void URLLoader::SetStatusCallback(PP_URLLoaderTrusted_StatusCallback cb) {
+  status_callback_ = cb;
+}
+
 void URLLoader::willSendRequest(WebURLLoader* loader,
                                 WebURLRequest& new_request,
                                 const WebURLResponse& redirect_response) {
@@ -310,6 +348,7 @@ void URLLoader::didSendData(WebURLLoader* loader,
   // TODO(darin): Bounds check input?
   bytes_sent_ = static_cast<int64_t>(bytes_sent);
   total_bytes_to_be_sent_ = static_cast<int64_t>(total_bytes_to_be_sent);
+  UpdateStatus();
 }
 
 void URLLoader::didReceiveResponse(WebURLLoader* loader,
@@ -320,6 +359,7 @@ void URLLoader::didReceiveResponse(WebURLLoader* loader,
 
   // Sets -1 if the content length is unknown.
   total_bytes_to_be_received_ = response.expectedContentLength();
+  UpdateStatus();
 
   RunCallback(PP_OK);
 }
@@ -327,6 +367,7 @@ void URLLoader::didReceiveResponse(WebURLLoader* loader,
 void URLLoader::didDownloadData(WebURLLoader* loader,
                                 int data_length) {
   bytes_received_ += data_length;
+  UpdateStatus();
 }
 
 void URLLoader::didReceiveData(WebURLLoader* loader,
@@ -374,6 +415,30 @@ size_t URLLoader::FillUserBuffer() {
   user_buffer_ = NULL;
   user_buffer_size_ = 0;
   return bytes_to_copy;
+}
+
+void URLLoader::UpdateStatus() {
+  if (status_callback_ &&
+      (record_download_progress_ || record_upload_progress_)) {
+    PP_Resource pp_resource = GetReferenceNoAddRef();
+    if (pp_resource) {
+      // The PP_Resource on the plugin will be NULL if the plugin has no
+      // reference to this object. That's fine, because then we don't need to
+      // call UpdateStatus.
+      //
+      // Here we go through some effort to only send the exact information that
+      // the requestor wanted in the request flags. It would be just as
+      // efficient to send all of it, but we don't want people to rely on
+      // getting download progress when they happen to set the upload progress
+      // flag.
+      status_callback_(
+          instance_->pp_instance(), pp_resource,
+          record_upload_progress_ ? bytes_sent_ : -1,
+          record_upload_progress_ ? total_bytes_to_be_sent_ : -1,
+          record_download_progress_ ? bytes_received_ : -1,
+          record_download_progress_ ? total_bytes_to_be_received_ : -1);
+    }
+  }
 }
 
 }  // namespace pepper
