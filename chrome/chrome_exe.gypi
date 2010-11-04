@@ -15,9 +15,9 @@
           # Test files are not included.
           'app/breakpad_win.cc',
           'app/breakpad_win.h',
-          'app/chrome_exe_main.cc',
-          'app/chrome_exe_main.mm',
           'app/chrome_exe_main_gtk.cc',
+          'app/chrome_exe_main_mac.mm',
+          'app/chrome_exe_main_win.cc',
           'app/chrome_exe_resource.h',
           'app/client_util.cc',
           'app/client_util.h',
@@ -126,7 +126,6 @@
             ],
           }, {  # 'OS!="win"
             'sources!': [
-              'app/chrome_exe_main.cc',
               'app/client_util.cc',
             ]
           }],

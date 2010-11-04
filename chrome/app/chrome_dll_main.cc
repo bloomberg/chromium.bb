@@ -467,11 +467,12 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 int ChromeMain(int argc, char** argv) {
 #endif
 #if defined(OS_MACOSX)
-  // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm.
-  // Under the current architecture, nothing in chrome_exe_main can rely
-  // directly on chrome_dll code on the Mac, though, so until some of this code
-  // is refactored to avoid such a dependency, it lives here.  See also the
-  // TODO(mark) below at InitCrashReporter() and DestructCrashReporter().
+  // TODO(mark): Some of these things ought to be handled in
+  // chrome_exe_main_mac.mm.  Under the current architecture, nothing
+  // in chrome_exe_main can rely directly on chrome_dll code on the
+  // Mac, though, so until some of this code is refactored to avoid
+  // such a dependency, it lives here.  See also the TODO(mark) below
+  // at InitCrashReporter() and DestructCrashReporter().
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
 #endif  // OS_MACOSX

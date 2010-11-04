@@ -1216,14 +1216,15 @@
             'infoplist_strings_tool',
           ],
           'sources': [
-            # chrome_exe_main.mm's main() is the entry point for the "chrome"
-            # (browser app) target.  All it does is jump to chrome_dll's
-            # ChromeMain.  This is appropriate for helper processes too,
-            # because the logic to discriminate between process types at run
-            # time is actually directed by the --type command line argument
-            # processed by ChromeMain.  Sharing chrome_exe_main.mm with the
+            # chrome_exe_main_mac.mm's main() is the entry point for
+            # the "chrome" (browser app) target.  All it does is jump
+            # to chrome_dll's ChromeMain.  This is appropriate for
+            # helper processes too, because the logic to discriminate
+            # between process types at run time is actually directed
+            # by the --type command line argument processed by
+            # ChromeMain.  Sharing chrome_exe_main_mac.mm with the
             # browser app will suffice for now.
-            'app/chrome_exe_main.mm',
+            'app/chrome_exe_main_mac.mm',
             'app/helper-Info.plist',
           ],
           # TODO(mark): Come up with a fancier way to do this.  It should only
