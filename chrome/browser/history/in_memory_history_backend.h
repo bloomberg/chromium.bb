@@ -30,6 +30,7 @@ namespace history {
 
 class InMemoryDatabase;
 class InMemoryURLIndex;
+struct KeywordSearchTermDetails;
 class URLDatabase;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
@@ -72,6 +73,9 @@ class InMemoryHistoryBackend : public NotificationObserver {
 
   // Handler for NOTIFY_HISTORY_URLS_DELETED.
   void OnURLsDeleted(const URLsDeletedDetails& details);
+
+  // Handler for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
+  void OnKeywordSearchTermUpdated(const KeywordSearchTermDetails& details);
 
   NotificationRegistrar registrar_;
 

@@ -637,6 +637,10 @@ class NotificationType {
     // the details is history::URLsDeletedDetails that lists the deleted URLs.
     HISTORY_URLS_DELETED,
 
+    // Sent when a keyword search term is updated. The source is the Profile and
+    // the details are history::KeywordSearchTermDetails
+    HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
+
     // Sent by history when the favicon of a URL changes.  The source is the
     // profile, and the details is history::FavIconChangeDetails (see
     // history_notifications.h).
@@ -706,6 +710,10 @@ class NotificationType {
     // database. The source is the TemplateURLModel, and the details are
     // NoDetails.
     TEMPLATE_URL_MODEL_LOADED,
+
+    // Sent when a TemplateURL is removed from the model. The source is the
+    // Profile, and the details the id of the TemplateURL being removed.
+    TEMPLATE_URL_REMOVED,
 
     // Notification triggered when a web application has been installed or
     // uninstalled. Any application view should reload its data.  The source is

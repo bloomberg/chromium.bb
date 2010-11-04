@@ -145,6 +145,8 @@ HistoryService::HistoryService(Profile* profile)
       needs_top_sites_migration_(false) {
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
+  registrar_.Add(this, NotificationType::TEMPLATE_URL_REMOVED,
+                 Source<Profile>(profile_));
 }
 
 HistoryService::~HistoryService() {
@@ -611,30 +613,37 @@ HistoryService::Handle HistoryService::QueryMostVisitedURLs(
 void HistoryService::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type != NotificationType::HISTORY_URLS_DELETED) {
-    NOTREACHED();
-    return;
-  }
+  switch (type.value) {
+    case NotificationType::HISTORY_URLS_DELETED: {
+      // Update the visited link system for deleted URLs. We will update the
+      // visited link system for added URLs as soon as we get the add
+      // notification (we don't have to wait for the backend, which allows us to
+      // be faster to update the state).
+      //
+      // For deleted URLs, we don't typically know what will be deleted since
+      // delete notifications are by time. We would also like to be more
+      // respectful of privacy and never tell the user something is gone when it
+      // isn't. Therefore, we update the delete URLs after the fact.
+      if (!profile_)
+        return;  // No profile, probably unit testing.
+      Details<history::URLsDeletedDetails> deleted_details(details);
+      VisitedLinkMaster* visited_links = profile_->GetVisitedLinkMaster();
+      if (!visited_links)
+        return;  // Nobody to update.
+      if (deleted_details->all_history)
+        visited_links->DeleteAllURLs();
+      else  // Delete individual ones.
+        visited_links->DeleteURLs(deleted_details->urls);
+      break;
+    }
 
-  // Update the visited link system for deleted URLs. We will update the
-  // visited link system for added URLs as soon as we get the add
-  // notification (we don't have to wait for the backend, which allows us to
-  // be faster to update the state).
-  //
-  // For deleted URLs, we don't typically know what will be deleted since
-  // delete notifications are by time. We would also like to be more
-  // respectful of privacy and never tell the user something is gone when it
-  // isn't. Therefore, we update the delete URLs after the fact.
-  if (!profile_)
-    return;  // No profile, probably unit testing.
-  Details<history::URLsDeletedDetails> deleted_details(details);
-  VisitedLinkMaster* visited_links = profile_->GetVisitedLinkMaster();
-  if (!visited_links)
-    return;  // Nobody to update.
-  if (deleted_details->all_history)
-    visited_links->DeleteAllURLs();
-  else  // Delete individual ones.
-    visited_links->DeleteURLs(deleted_details->urls);
+    case NotificationType::TEMPLATE_URL_REMOVED:
+      DeleteAllSearchTermsForKeyword(*(Details<TemplateURLID>(details).ptr()));
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 bool HistoryService::Init(const FilePath& history_dir,

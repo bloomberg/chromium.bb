@@ -13,6 +13,7 @@
 
 #include "googleurl/src/gurl.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 
 namespace history {
 
@@ -81,6 +82,16 @@ struct FavIconChangeDetails : public HistoryDetails {
   virtual ~FavIconChangeDetails();
 
   std::set<GURL> urls;
+};
+
+// Details for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
+struct KeywordSearchTermDetails : public HistoryDetails {
+  KeywordSearchTermDetails();
+  ~KeywordSearchTermDetails();
+
+  GURL url;
+  TemplateURLID keyword_id;
+  string16 term;
 };
 
 }  // namespace history

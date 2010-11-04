@@ -606,8 +606,7 @@ void TemplateURLModel::SetKeywordSearchTermsForURL(const TemplateURL* t_url,
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
   if (!history)
     return;
-  history->SetKeywordSearchTermsForURL(url, t_url->id(),
-                                       WideToUTF16Hack(term));
+  history->SetKeywordSearchTermsForURL(url, t_url->id(), WideToUTF16Hack(term));
 }
 
 void TemplateURLModel::Init(const Initializer* initializers,
@@ -1239,10 +1238,12 @@ void TemplateURLModel::RemoveNoNotify(const TemplateURL* template_url) {
     service_->RemoveKeyword(*template_url);
 
   if (profile_) {
-    HistoryService* history =
-        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (history)
-      history->DeleteAllSearchTermsForKeyword(template_url->id());
+    Source<Profile> source(profile_);
+    TemplateURLID id = template_url->id();
+    NotificationService::current()->Notify(
+        NotificationType::TEMPLATE_URL_REMOVED,
+        source,
+        Details<TemplateURLID>(&id));
   }
 
   // We own the TemplateURL and need to delete it.

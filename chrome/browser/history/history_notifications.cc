@@ -28,4 +28,8 @@ FavIconChangeDetails::FavIconChangeDetails() {}
 
 FavIconChangeDetails::~FavIconChangeDetails() {}
 
+KeywordSearchTermDetails::KeywordSearchTermDetails() : keyword_id(0) {}
+
+KeywordSearchTermDetails::~KeywordSearchTermDetails() {}
+
 }  // namespace history

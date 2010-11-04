@@ -1035,6 +1035,14 @@ void HistoryBackend::SetKeywordSearchTermsForURL(const GURL& url,
   }
 
   db_->SetKeywordSearchTermsForURL(url_row.id(), keyword_id, term);
+
+  // details is deleted by BroadcastNotifications.
+  KeywordSearchTermDetails* details = new KeywordSearchTermDetails;
+  details->url = url;
+  details->keyword_id = keyword_id;
+  details->term = term;
+  BroadcastNotifications(NotificationType::HISTORY_KEYWORD_SEARCH_TERM_UPDATED,
+                         details);
   ScheduleCommit();
 }
 
