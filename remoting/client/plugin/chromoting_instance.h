@@ -36,11 +36,14 @@ namespace remoting {
 
 class ChromotingClient;
 class ClientContext;
-class HostConnection;
 class InputHandler;
 class JingleThread;
 class PepperView;
 class RectangleUpdateDecoder;
+
+namespace protocol {
+class HostConnection;
+}  // namespace protocol
 
 class ChromotingInstance : public pp::Instance {
  public:
@@ -74,7 +77,7 @@ class ChromotingInstance : public pp::Instance {
   MessageLoop* pepper_main_loop_dont_post_to_me_;
 
   ClientContext context_;
-  scoped_ptr<HostConnection> host_connection_;
+  scoped_ptr<protocol::HostConnection> host_connection_;
   scoped_ptr<PepperView> view_;
   scoped_ptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<InputHandler> input_handler_;

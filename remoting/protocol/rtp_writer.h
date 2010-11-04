@@ -9,6 +9,7 @@
 #include "remoting/protocol/buffered_socket_writer.h"
 
 namespace remoting {
+namespace protocol {
 
 class RtpWriter {
  public:
@@ -38,6 +39,7 @@ class RtpWriter {
   scoped_refptr<BufferedDatagramWriter> buffered_rtp_writer_;
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_RTP_WRITER_H_

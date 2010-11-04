@@ -32,7 +32,7 @@ class SessionManagerTest : public testing::Test {
   void Init() {
     capturer_ = new MockCapturer();
     encoder_ = new MockEncoder();
-    client_ = new MockClientConnection();
+    client_ = new protocol::MockClientConnection();
     record_ = new SessionManager(&message_loop_,
                                  &message_loop_,
                                  &message_loop_,
@@ -41,7 +41,7 @@ class SessionManagerTest : public testing::Test {
   }
 
   scoped_refptr<SessionManager> record_;
-  scoped_refptr<MockClientConnection> client_;
+  scoped_refptr<protocol::MockClientConnection> client_;
   MockCapturer* capturer_;
   MockEncoder* encoder_;
   MessageLoop message_loop_;

@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
   MessageLoop ui_loop;
   remoting::ClientContext context;
-  remoting::JingleHostConnection connection(&context);
+  remoting::protocol::JingleHostConnection connection(&context);
   remoting::X11View view;
   remoting::RectangleUpdateDecoder rectangle_decoder(
       context.decode_message_loop(), &view);

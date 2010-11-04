@@ -9,6 +9,7 @@
 #include "remoting/protocol/util.h"
 
 namespace remoting {
+namespace protocol {
 
 ProtobufVideoWriter::ProtobufVideoWriter() { }
 
@@ -33,4 +34,5 @@ void ProtobufVideoWriter::Close() {
   buffered_writer_->Close();
 }
 
+}  // namespace protocol
 }  // namespace remoting

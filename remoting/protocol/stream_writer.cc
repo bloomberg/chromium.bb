@@ -9,6 +9,7 @@
 #include "remoting/protocol/util.h"
 
 namespace remoting {
+namespace protocol {
 
 StreamWriterBase::StreamWriterBase()
     : socket_(NULL),
@@ -42,4 +43,5 @@ bool ControlStreamWriter::SendMessage(const ChromotingHostMessage& message) {
   return buffered_writer_->Write(SerializeAndFrameMessage(message));
 }
 
+}  // namespace protocol
 }  // namespace remoting

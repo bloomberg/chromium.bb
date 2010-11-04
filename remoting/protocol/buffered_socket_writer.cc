@@ -8,6 +8,7 @@
 #include "net/base/net_errors.h"
 
 namespace remoting {
+namespace protocol {
 
 BufferedSocketWriterBase::BufferedSocketWriterBase()
     : buffer_size_(0),
@@ -164,4 +165,5 @@ void BufferedDatagramWriter::AdvanceBufferPosition_Locked(int written) {
 }
 
 
+}  // namespace protocol
 }  // namespace remoting

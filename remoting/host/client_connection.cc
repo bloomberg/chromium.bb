@@ -11,6 +11,7 @@
 #include "remoting/protocol/util.h"
 
 namespace remoting {
+namespace protocol {
 
 // Determine how many update streams we should count to find the size of
 // average update stream.
@@ -136,4 +137,5 @@ void ClientConnection::MessageReceivedTask(ChromotingClientMessage* message) {
 void ClientConnection::OnClosed() {
 }
 
+}  // namespace protocol
 }  // namespace remoting

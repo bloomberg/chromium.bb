@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 
 namespace remoting {
+namespace protocol {
 
 struct RtpHeader {
   // RTP version is always set to 2.
@@ -35,6 +36,7 @@ void PackRtpHeader(uint8* buffer, int buffer_size,
 int UnpackRtpHeader(const uint8* buffer, int buffer_size,
                     RtpHeader* header);
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_RTP_UTILS_H_

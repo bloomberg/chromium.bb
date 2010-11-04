@@ -56,7 +56,7 @@ class SessionManager;
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
-                       public ClientConnection::EventHandler,
+                       public protocol::ClientConnection::EventHandler,
                        public JingleClient::Callback {
  public:
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
@@ -78,18 +78,18 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void Shutdown();
 
   // This method is called if a client is connected to this object.
-  void OnClientConnected(ClientConnection* client);
+  void OnClientConnected(protocol::ClientConnection* client);
 
   // This method is called if a client is disconnected from the host.
-  void OnClientDisconnected(ClientConnection* client);
+  void OnClientDisconnected(protocol::ClientConnection* client);
 
   ////////////////////////////////////////////////////////////////////////////
-  // ClientConnection::EventHandler implementations
-  virtual void HandleMessage(ClientConnection* client,
+  // protocol::ClientConnection::EventHandler implementations
+  virtual void HandleMessage(protocol::ClientConnection* client,
                              ChromotingClientMessage* message);
-  virtual void OnConnectionOpened(ClientConnection* client);
-  virtual void OnConnectionClosed(ClientConnection* client);
-  virtual void OnConnectionFailed(ClientConnection* client);
+  virtual void OnConnectionOpened(protocol::ClientConnection* client);
+  virtual void OnConnectionClosed(protocol::ClientConnection* client);
+  virtual void OnConnectionFailed(protocol::ClientConnection* client);
 
   ////////////////////////////////////////////////////////////////////////////
   // JingleClient::Callback implementations
@@ -145,7 +145,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   // A ClientConnection manages the connectino to a remote client.
   // TODO(hclam): Expand this to a list of clients.
-  scoped_refptr<ClientConnection> client_;
+  scoped_refptr<protocol::ClientConnection> client_;
 
   // Session manager for the host process.
   scoped_refptr<SessionManager> session_;

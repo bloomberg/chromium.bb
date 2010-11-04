@@ -9,6 +9,7 @@
 #include "remoting/protocol/rtp_video_reader.h"
 
 namespace remoting {
+namespace protocol {
 
 VideoReader::~VideoReader() { }
 
@@ -23,4 +24,5 @@ VideoReader* VideoReader::Create(const ChromotocolConfig* config) {
   return NULL;
 }
 
+}  // namespace protocol
 }  // namespace remoting

@@ -22,6 +22,8 @@ class Session;
 class ChromotocolConfig;
 class ChromotocolConnection;
 
+namespace protocol {
+
 // TODO(sergeyu): VideoWriter should implement VideoStub interface.
 class VideoWriter {
  public:
@@ -47,6 +49,7 @@ class VideoWriter {
   DISALLOW_COPY_AND_ASSIGN(VideoWriter);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_VIDEO_WRITER_H_

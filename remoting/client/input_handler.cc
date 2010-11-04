@@ -12,7 +12,7 @@
 namespace remoting {
 
 InputHandler::InputHandler(ClientContext* context,
-                           HostConnection* connection,
+                           protocol::HostConnection* connection,
                            ChromotingView* view)
     : context_(context),
       connection_(connection),

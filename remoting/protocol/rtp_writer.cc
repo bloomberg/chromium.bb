@@ -9,6 +9,7 @@
 #include "remoting/protocol/rtp_utils.h"
 
 namespace remoting {
+namespace protocol {
 
 namespace {
 const int kMtu = 1200;
@@ -89,4 +90,5 @@ void RtpWriter::Close() {
   buffered_rtp_writer_->Close();
 }
 
+}  // namespace protocol
 }  // namespace remoting

@@ -18,6 +18,7 @@
 #include "remoting/protocol/video_writer.h"
 
 namespace remoting {
+namespace protocol {
 
 // This class represents a remote viewer connected to the chromoting host
 // through a libjingle connection. A viewer object is responsible for sending
@@ -114,6 +115,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   DISALLOW_COPY_AND_ASSIGN(ClientConnection);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_CLIENT_CONNECTION_H_

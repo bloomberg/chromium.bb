@@ -19,6 +19,7 @@ class Socket;
 }  // namespace net
 
 namespace remoting {
+namespace protocol {
 
 // BufferedSocketWriter and BufferedDatagramWriter implement write data queue
 // for stream and datagram sockets. BufferedSocketWriterBase is a base class
@@ -109,6 +110,7 @@ class BufferedDatagramWriter : public BufferedSocketWriterBase {
   virtual void AdvanceBufferPosition_Locked(int written);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_BUFFERED_SOCKET_WRITER_H_

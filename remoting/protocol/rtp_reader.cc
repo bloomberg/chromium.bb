@@ -8,6 +8,7 @@
 #include "net/base/io_buffer.h"
 
 namespace remoting {
+namespace protocol {
 
 RtpPacket::RtpPacket() {}
 RtpPacket::~RtpPacket() {}
@@ -37,4 +38,5 @@ void RtpReader::OnDataReceived(net::IOBuffer* buffer, int data_size) {
   on_message_callback_->Run(packet);
 }
 
+}  // namespace protocol
 }  // namespace remoting

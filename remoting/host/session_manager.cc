@@ -74,14 +74,16 @@ void SessionManager::SetMaxRate(double rate) {
       FROM_HERE, NewTracedMethod(this, &SessionManager::DoSetMaxRate, rate));
 }
 
-void SessionManager::AddClient(scoped_refptr<ClientConnection> client) {
+void SessionManager::AddClient(
+    scoped_refptr<protocol::ClientConnection> client) {
   // Gets the init information for the client.
   capture_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &SessionManager::DoGetInitInfo, client));
 }
 
-void SessionManager::RemoveClient(scoped_refptr<ClientConnection> client) {
+void SessionManager::RemoveClient(
+    scoped_refptr<protocol::ClientConnection> client) {
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &SessionManager::DoRemoveClient, client));
@@ -243,7 +245,8 @@ void SessionManager::DoFinishEncode() {
     DoCapture();
 }
 
-void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
+void SessionManager::DoGetInitInfo(
+    scoped_refptr<protocol::ClientConnection> client) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   ScopedTracer tracer("init");
@@ -342,22 +345,25 @@ void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
   TraceContext::tracer()->PrintString("DoSendUpdate done");
 }
 
-void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
-                                int width, int height) {
+void SessionManager::DoSendInit(
+    scoped_refptr<protocol::ClientConnection> client,
+    int width, int height) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // Sends the client init information.
   client->SendInitClientMessage(width, height);
 }
 
-void SessionManager::DoAddClient(scoped_refptr<ClientConnection> client) {
+void SessionManager::DoAddClient(
+    scoped_refptr<protocol::ClientConnection> client) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Force a full frame for next encode.
   clients_.push_back(client);
 }
 
-void SessionManager::DoRemoveClient(scoped_refptr<ClientConnection> client) {
+void SessionManager::DoRemoveClient(
+    scoped_refptr<protocol::ClientConnection> client) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Is it correct to do to a scoped_refptr?

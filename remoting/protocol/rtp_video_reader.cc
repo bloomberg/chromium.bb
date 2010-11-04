@@ -8,6 +8,7 @@
 #include "remoting/protocol/session.h"
 
 namespace remoting {
+namespace protocol {
 
 RtpVideoReader::RtpVideoReader() { }
 RtpVideoReader::~RtpVideoReader() { }
@@ -38,4 +39,5 @@ void RtpVideoReader::OnRtpPacket(const RtpPacket& rtp_packet) {
   video_stub_->ProcessVideoPacket(packet, new DeleteTask<VideoPacket>(packet));
 }
 
+}  // namespace protocol
 }  // namespace remoting

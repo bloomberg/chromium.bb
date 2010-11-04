@@ -41,6 +41,8 @@ class MockEventExecutor : public EventExecutor {
   DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
 };
 
+namespace protocol {
+
 class MockClientConnection : public ClientConnection {
  public:
   MockClientConnection(){}
@@ -69,6 +71,8 @@ class MockClientConnectionEventHandler : public ClientConnection::EventHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientConnectionEventHandler);
 };
+
+}  // namespace protocol
 
 }  // namespace remoting
 

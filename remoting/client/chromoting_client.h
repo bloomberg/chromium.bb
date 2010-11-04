@@ -26,13 +26,13 @@ class InputHandler;
 class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
-class ChromotingClient : public HostConnection::HostEventCallback,
-                         public VideoStub {
+class ChromotingClient : public protocol::HostConnection::HostEventCallback,
+                         public protocol::VideoStub {
  public:
   // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
                    ClientContext* context,
-                   HostConnection* connection,
+                   protocol::HostConnection* connection,
                    ChromotingView* view,
                    RectangleUpdateDecoder* rectangle_decoder,
                    InputHandler* input_handler,
@@ -55,11 +55,11 @@ class ChromotingClient : public HostConnection::HostEventCallback,
   virtual void SetViewport(int x, int y, int width, int height);
 
   // HostConnection::HostEventCallback implementation.
-  virtual void HandleMessage(HostConnection* conn,
+  virtual void HandleMessage(protocol::HostConnection* conn,
                              ChromotingHostMessage* messages);
-  virtual void OnConnectionOpened(HostConnection* conn);
-  virtual void OnConnectionClosed(HostConnection* conn);
-  virtual void OnConnectionFailed(HostConnection* conn);
+  virtual void OnConnectionOpened(protocol::HostConnection* conn);
+  virtual void OnConnectionClosed(protocol::HostConnection* conn);
+  virtual void OnConnectionFailed(protocol::HostConnection* conn);
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
@@ -90,7 +90,7 @@ class ChromotingClient : public HostConnection::HostEventCallback,
   // The following are not owned by this class.
   ClientConfig config_;
   ClientContext* context_;
-  HostConnection* connection_;
+  protocol::HostConnection* connection_;
   ChromotingView* view_;
   RectangleUpdateDecoder* rectangle_decoder_;
   InputHandler* input_handler_;

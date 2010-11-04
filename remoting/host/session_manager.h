@@ -19,7 +19,10 @@
 namespace remoting {
 
 class CaptureData;
+
+namespace protocol {
 class ClientConnection;
+}  // namespace protocol
 
 // A class for controlling and coordinate Capturer, Encoder
 // and NetworkChannel in a record session.
@@ -84,10 +87,10 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void SetMaxRate(double rate);
 
   // Add a client to this recording session.
-  void AddClient(scoped_refptr<ClientConnection> client);
+  void AddClient(scoped_refptr<protocol::ClientConnection> client);
 
   // Remove a client from receiving screen updates.
-  void RemoveClient(scoped_refptr<ClientConnection> client);
+  void RemoveClient(scoped_refptr<protocol::ClientConnection> client);
 
   // Remove all clients.
   void RemoveAllClients();
@@ -112,7 +115,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
   void DoFinishEncode();
 
-  void DoGetInitInfo(scoped_refptr<ClientConnection> client);
+  void DoGetInitInfo(scoped_refptr<protocol::ClientConnection> client);
 
   // Network thread -----------------------------------------------------------
 
@@ -126,11 +129,11 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   // DoSendUpdate takes ownership of header and is responsible for deleting it.
   void DoSendVideoPacket(VideoPacket* packet);
-  void DoSendInit(scoped_refptr<ClientConnection> client,
+  void DoSendInit(scoped_refptr<protocol::ClientConnection> client,
                   int width, int height);
 
-  void DoAddClient(scoped_refptr<ClientConnection> client);
-  void DoRemoveClient(scoped_refptr<ClientConnection> client);
+  void DoAddClient(scoped_refptr<protocol::ClientConnection> client);
+  void DoRemoveClient(scoped_refptr<protocol::ClientConnection> client);
   void DoRemoveAllClients();
 
   // Encoder thread -----------------------------------------------------------
@@ -158,7 +161,8 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   // This member is always accessed on the NETWORK thread.
   // TODO(hclam): Have to scoped_refptr the clients since they have a shorter
   // lifetime than this object.
-  typedef std::vector<scoped_refptr<ClientConnection> > ClientConnectionList;
+  typedef std::vector<scoped_refptr<protocol::ClientConnection> >
+      ClientConnectionList;
   ClientConnectionList clients_;
 
   // The following members are accessed on the capture thread.

@@ -11,10 +11,12 @@
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
+namespace protocol {
 
 JingleHostConnection::JingleHostConnection(ClientContext* context)
     : context_(context),
@@ -171,4 +173,5 @@ MessageLoop* JingleHostConnection::message_loop() {
   return context_->jingle_thread()->message_loop();
 }
 
+}  // namespace protocol
 }  // namespace remoting

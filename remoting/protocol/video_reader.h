@@ -21,6 +21,8 @@ class Session;
 class ChromotocolConfig;
 class ChromotocolConnection;
 
+namespace protocol {
+
 class VideoReader {
  public:
   static VideoReader* Create(const ChromotocolConfig* config);
@@ -42,6 +44,7 @@ class VideoReader {
   DISALLOW_COPY_AND_ASSIGN(VideoReader);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_VIDEO_READER_H_

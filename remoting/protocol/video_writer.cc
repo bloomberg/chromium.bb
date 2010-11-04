@@ -9,6 +9,7 @@
 #include "remoting/protocol/rtp_video_writer.h"
 
 namespace remoting {
+namespace protocol {
 
 VideoWriter::~VideoWriter() { }
 
@@ -23,4 +24,5 @@ VideoWriter* VideoWriter::Create(const ChromotocolConfig* config) {
   return NULL;
 }
 
+}  // namespace protocol
 }  // namespace remoting

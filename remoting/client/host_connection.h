@@ -12,9 +12,11 @@
 
 namespace remoting {
 
-class VideoStub;
-
 struct ClientConfig;
+
+namespace protocol {
+
+class VideoStub;
 
 class HostConnection {
  public:
@@ -55,6 +57,7 @@ class HostConnection {
   DISALLOW_COPY_AND_ASSIGN(HostConnection);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_CLIENT_HOST_CONNECTION_H_

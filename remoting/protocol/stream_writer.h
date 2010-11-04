@@ -13,6 +13,7 @@ class Socket;
 }  // namespace net
 
 namespace remoting {
+namespace protocol {
 
 class BufferedSocketWriter;
 
@@ -52,6 +53,7 @@ class ControlStreamWriter : public StreamWriterBase {
   bool SendMessage(const ChromotingHostMessage& message);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_STREAM_WRITER_H_

@@ -10,6 +10,7 @@
 #include "remoting/protocol/socket_reader_base.h"
 
 namespace remoting {
+namespace protocol {
 
 struct RtpPacket {
   RtpPacket();
@@ -45,6 +46,7 @@ class RtpReader : public SocketReaderBase {
   DISALLOW_COPY_AND_ASSIGN(RtpReader);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 

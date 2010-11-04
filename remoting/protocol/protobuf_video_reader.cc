@@ -8,6 +8,7 @@
 #include "remoting/protocol/session.h"
 
 namespace remoting {
+namespace protocol {
 
 ProtobufVideoReader::ProtobufVideoReader() { }
 ProtobufVideoReader::~ProtobufVideoReader() { }
@@ -27,4 +28,5 @@ void ProtobufVideoReader::OnNewData(VideoPacket* packet) {
   video_stub_->ProcessVideoPacket(packet, new DeleteTask<VideoPacket>(packet));
 }
 
+}  // namespace protocol
 }  // namespace remoting

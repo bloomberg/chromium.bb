@@ -10,6 +10,7 @@
 class Task;
 
 namespace remoting {
+namespace protocol {
 
 class VideoStub {
  public:
@@ -28,6 +29,7 @@ class VideoStub {
   DISALLOW_COPY_AND_ASSIGN(VideoStub);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_VIDEO_STUB_H_

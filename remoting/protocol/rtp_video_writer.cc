@@ -8,6 +8,7 @@
 #include "remoting/protocol/rtp_writer.h"
 
 namespace remoting {
+namespace protocol {
 
 RtpVideoWriter::RtpVideoWriter() { }
 
@@ -32,4 +33,5 @@ void RtpVideoWriter::Close() {
   rtp_writer_.Close();
 }
 
+}  // namespace protocol
 }  // namespace remoting

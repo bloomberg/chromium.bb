@@ -9,10 +9,9 @@
 #include "remoting/protocol/video_writer.h"
 
 namespace remoting {
-
 namespace protocol {
+
 class Session;
-}  // namespace protocol
 
 class RtpVideoWriter : public VideoWriter {
  public:
@@ -31,6 +30,7 @@ class RtpVideoWriter : public VideoWriter {
   DISALLOW_COPY_AND_ASSIGN(RtpVideoWriter);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_RTP_VIDEO_WRITER_H_

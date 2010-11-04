@@ -9,12 +9,10 @@
 #include "remoting/protocol/video_writer.h"
 
 namespace remoting {
-
 namespace protocol {
-class Session;
-}  // namespace protocol
 
 class BufferedSocketWriter;
+class Session;
 
 class ProtobufVideoWriter : public VideoWriter {
  public:
@@ -33,6 +31,7 @@ class ProtobufVideoWriter : public VideoWriter {
   DISALLOW_COPY_AND_ASSIGN(ProtobufVideoWriter);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_PROTOBUF_VIDEO_WRITER_H_

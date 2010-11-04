@@ -9,10 +9,9 @@
 #include "remoting/protocol/video_reader.h"
 
 namespace remoting {
-
 namespace protocol {
+
 class Session;
-}  // namespace protocol
 
 class RtpVideoReader : public VideoReader {
  public:
@@ -34,6 +33,7 @@ class RtpVideoReader : public VideoReader {
   DISALLOW_COPY_AND_ASSIGN(RtpVideoReader);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_RTP_VIDEO_READER_H_

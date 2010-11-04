@@ -25,8 +25,7 @@ namespace protocol {
 // Provides access to the connection channels, but doesn't depend on the
 // protocol used for each channel.
 // TODO(sergeyu): Remove refcounting?
-class Session
-    : public base::RefCountedThreadSafe<Session> {
+class Session : public base::RefCountedThreadSafe<Session> {
  public:
   enum State {
     INITIALIZING,

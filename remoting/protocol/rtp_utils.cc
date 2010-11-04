@@ -13,6 +13,7 @@ using talk_base::SetBE16;
 using talk_base::SetBE32;
 
 namespace remoting {
+namespace protocol {
 
 namespace {
 const int kRtpBaseHeaderSize = 12;
@@ -84,4 +85,5 @@ int UnpackRtpHeader(const uint8* buffer, int buffer_size, RtpHeader* header) {
   return GetRtpHeaderSize(header->sources);
 }
 
+}  // namespace protocol
 }  // namespace remoting

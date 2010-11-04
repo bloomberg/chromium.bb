@@ -29,17 +29,18 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/stream_writer.h"
-#include "remoting/protocol/video_reader.h"
 
 class MessageLoop;
 
 namespace remoting {
 
-namespace protocol {
-class VideoStub;
-}  // namespace protocol
-
 struct ClientConfig;
+class JingleThread;
+
+namespace protocol {
+
+class VideoReader;
+class VideoStub;
 
 class JingleHostConnection : public HostConnection,
                              public JingleClient::Callback {
@@ -102,8 +103,9 @@ class JingleHostConnection : public HostConnection,
   DISALLOW_COPY_AND_ASSIGN(JingleHostConnection);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::JingleHostConnection);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::protocol::JingleHostConnection);
 
 #endif  // REMOTING_CLIENT_JINGLE_HOST_CONNECTION_H_

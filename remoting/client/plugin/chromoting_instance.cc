@@ -67,7 +67,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   context_.Start();
 
   // Create the chromoting objects.
-  host_connection_.reset(new JingleHostConnection(&context_));
+  host_connection_.reset(new protocol::JingleHostConnection(&context_));
   view_.reset(new PepperView(this, &context_));
   rectangle_decoder_.reset(
       new RectangleUpdateDecoder(context_.decode_message_loop(), view_.get()));
