@@ -280,8 +280,6 @@ include_rules = [
   "+base",
   "+build",
   "+ipc",
-  "+rlz",
-  "+third_party/undoview",
 
   # For now, we allow ICU to be included by specifying "unicode/...", although
   # this should probably change.
@@ -292,16 +290,16 @@ include_rules = [
 
 # checkdeps.py shouldn't check include paths for files in these dirs:
 skip_child_includes = [
-   "breakpad",
-   "chrome_frame",
-   "gears",
-   "native_client",
-   "o3d",
-   "sdch",
-   "skia",
-   "testing",
-   "third_party",
-   "v8",
+  "breakpad",
+  "chrome_frame",
+  "gears",
+  "native_client",
+  "o3d",
+  "sdch",
+  "skia",
+  "testing",
+  "third_party",
+  "v8",
 ]
 
 

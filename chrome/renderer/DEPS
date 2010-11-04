@@ -9,7 +9,7 @@ include_rules = [
   "+media/video",
   "+ppapi/c",
   "+sandbox/src",
-  "+skia/include",
+  "+skia",
   "+webkit/extensions",
   "+webkit/glue",
   "+webkit/glue/plugins",

@@ -7,7 +7,7 @@ include_rules = [
   "+media/base",
   "+remoting/client/plugin",
   "+sandbox/src",
-  "+skia/include",
+  "+skia",
   "+webkit/glue",
 
   # Other libraries.

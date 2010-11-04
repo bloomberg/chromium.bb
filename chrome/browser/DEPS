@@ -9,7 +9,10 @@ include_rules = [
   "+chrome/views",
   "+cros",
   "+grit",  # For generated headers
-  "+sandbox/src",
+  "+rlz",
+  "+sandbox/linux",
+  "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.
+  "+skia/ext",
   "+skia/include",
   "+webkit/database",
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
@@ -18,15 +21,18 @@ include_rules = [
   # Other libraries.
   "+chrome/third_party/hunspell",
   "+chrome/third_party/mozilla_security_manager",
-  "+libxml", # For search engine definition parsing.
-  "+media/audio", # Chrome's lightweight audio library.
+  "+libxml",  # For search engine definition parsing.
+  "+media/audio",  # Chrome's lightweight audio library.
   "+media/base",
+  "+third_party/apple",  # Apple code ImageAndTextCell.
   "+third_party/expat",
   "+third_party/gpsd",
   "+third_party/sqlite",
-  "+third_party/libevent", # For the remote V8 debugging server
+  "+third_party/libevent",  # For the remote V8 debugging server
+  "+third_party/libjingle",
   "+third_party/cld",
-  "+v8/include", # Browser uses V8 to get the version and run the debugger.
+  "+third_party/undoview",
+  "+v8/include",  # Browser uses V8 to get the version and run the debugger.
 
   # FIXME: this should probably not be here, we need to find a better
   # structure for these includes.
