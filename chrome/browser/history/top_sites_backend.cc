@@ -102,14 +102,16 @@ void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
   if (request->canceled())
     return;
 
+  bool may_need_history_migration = false;
   if (db_.get()) {
     db_->GetPageThumbnails(&(request->value->most_visited),
                            &(request->value->url_to_images_map));
+    may_need_history_migration = db_->may_need_history_migration();
   }
   request->ForwardResult(GetMostVisitedThumbnailsRequest::TupleType(
                              request->handle(),
                              request->value,
-                             db_->may_need_history_migration()));
+                             may_need_history_migration));
 }
 
 void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {
