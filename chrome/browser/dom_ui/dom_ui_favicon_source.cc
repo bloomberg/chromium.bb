@@ -13,7 +13,7 @@
 
 DOMUIFavIconSource::DOMUIFavIconSource(Profile* profile)
     : DataSource(chrome::kChromeUIFavIconHost, MessageLoop::current()),
-      profile_(profile) {
+      profile_(profile->GetOriginalProfile()) {
 }
 
 DOMUIFavIconSource::~DOMUIFavIconSource() {
