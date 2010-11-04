@@ -78,6 +78,12 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
 
   virtual FilterHost* host();
 
+  // Indicates whether this filter requires a message loop to operate.
+  virtual bool requires_message_loop() const;
+
+  // The name to associate with this filter's message loop.
+  virtual const char* message_loop_name() const;
+
   // Sets the private member |message_loop_|, which is used by filters for
   // processing asynchronous tasks and maintaining synchronized access to
   // internal data members.  The message loop should be running and exceed the
@@ -171,6 +177,9 @@ class Demuxer : public MediaFilter {
   static FilterType static_filter_type() { return FILTER_DEMUXER; }
   virtual FilterType filter_type() const;
 
+  virtual bool requires_message_loop() const;
+  virtual const char* message_loop_name() const;
+
   // Initialize a Demuxer with the given DataSource, executing the callback upon
   // completion.
   virtual void Initialize(DataSource* data_source,
@@ -228,6 +237,9 @@ class VideoDecoder : public MediaFilter {
   virtual FilterType filter_type() const;
 
   virtual const char* major_mime_type() const;
+  virtual bool requires_message_loop() const;
+  virtual const char* message_loop_name() const;
+
 
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
@@ -273,6 +285,8 @@ class AudioDecoder : public MediaFilter {
   virtual FilterType filter_type() const;
 
   virtual const char* major_mime_type() const;
+  virtual bool requires_message_loop() const;
+  virtual const char* message_loop_name() const;
 
   // Initialize a AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.

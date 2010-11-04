@@ -25,6 +25,14 @@ FilterHost* MediaFilter::host() {
   return host_;
 }
 
+bool MediaFilter::requires_message_loop() const {
+  return false;
+}
+
+const char* MediaFilter::message_loop_name() const {
+  return "FilterThread";
+}
+
 void MediaFilter::set_message_loop(MessageLoop* message_loop) {
   DCHECK(message_loop);
   DCHECK(!message_loop_);
@@ -93,12 +101,28 @@ FilterType Demuxer::filter_type() const {
   return static_filter_type();
 }
 
+bool Demuxer::requires_message_loop() const {
+  return true;
+}
+
+const char* Demuxer::message_loop_name() const {
+  return "DemuxerThread";
+}
+
 FilterType AudioDecoder::filter_type() const {
   return static_filter_type();
 }
 
 const char* AudioDecoder::major_mime_type() const {
   return mime_type::kMajorTypeAudio;
+}
+
+bool AudioDecoder::requires_message_loop() const {
+  return true;
+}
+
+const char* AudioDecoder::message_loop_name() const {
+  return "AudioDecoderThread";
 }
 
 FilterType AudioRenderer::filter_type() const {
@@ -115,6 +139,14 @@ FilterType VideoDecoder::filter_type() const {
 
 const char* VideoDecoder::major_mime_type() const {
   return mime_type::kMajorTypeVideo;
+}
+
+bool VideoDecoder::requires_message_loop() const {
+  return true;
+}
+
+const char* VideoDecoder::message_loop_name() const {
+  return "VideoDecoderThread";
 }
 
 FilterType VideoRenderer::filter_type() const {
