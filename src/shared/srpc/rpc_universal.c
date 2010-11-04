@@ -422,7 +422,7 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
   /* Initialize the argument slot.  This enables freeing on failures. */
   memset(arg, 0, sizeof(*arg));
 
-  dprintf(("TOKEN %s\n", token));
+  dprintf((SIDE "SRPC: TOKEN %s\n", token));
   switch (token[0]) {
    case NACL_SRPC_ARG_TYPE_INVALID:
     arg->tag = NACL_SRPC_ARG_TYPE_INVALID;
@@ -757,13 +757,14 @@ static void PrintHelp() {
   /* TODO(sehr,robertm): we should have a syntax description option */
 }
 
-static NaClSrpcError UpcallString(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** ins,
-                                  NaClSrpcArg** outs) {
-  UNREFERENCED_PARAMETER(channel);
+static void UpcallString(NaClSrpcRpc* rpc,
+                         NaClSrpcArg** ins,
+                         NaClSrpcArg** outs,
+                         NaClSrpcClosure* done) {
   UNREFERENCED_PARAMETER(outs);
   printf("UpcallString: called with '%s'\n", ins[0]->u.sval);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 static char* BuildSignature(const char* name,
@@ -902,7 +903,7 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
 
       /* Build the input parameter values. */
       n_in = int_out_sep - 2;
-      dprintf(("Parsing %d input args.\n", n_in));
+      dprintf((SIDE "SRPC: Parsing %d input args.\n", n_in));
       BuildArgVec(inv, in, n_in);
 
       if (ParseArgs(in, &tokens[2], n_in) < 0) {
@@ -912,7 +913,7 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
 
       /* Build the output (rpc return) values. */
       n_out =  n - int_out_sep - 1;
-      dprintf(("Parsing %d output args.\n", n_out));
+      dprintf((SIDE "SRPC: Parsing %d output args.\n", n_out));
       BuildArgVec(outv, out, n_out);
 
       if (ParseArgs(out, &tokens[int_out_sep + 1], n_out) < 0) {
@@ -954,13 +955,38 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
   }
 }
 
+typedef struct {
+  struct NaClSrpcClosure base;
+  int run_was_invoked;
+} RpcCheckingClosure;
+
+static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
+  RpcCheckingClosure* vself = (RpcCheckingClosure*) self;
+  vself->run_was_invoked = 1;
+}
+
+static void RpcCheckingClosureCtor(RpcCheckingClosure* self) {
+  self->base.Run = RpcCheckingClosureRun;
+  self->run_was_invoked = 0;
+}
+
 static NaClSrpcError Interpreter(NaClSrpcService *service,
                                  NaClSrpcChannel *channel,
                                  uint32_t rpc_number,
                                  NaClSrpcArg **ins,
                                  NaClSrpcArg **outs) {
+  NaClSrpcRpc rpc;
+  RpcCheckingClosure done;
+  RpcCheckingClosureCtor(&done);
   UNREFERENCED_PARAMETER(channel);
-  return (*NaClSrpcServiceMethod(service, rpc_number))(NULL, ins, outs);
+  (*NaClSrpcServiceMethod(service, rpc_number))(&rpc,
+                                                ins,
+                                                outs,
+                                                (NaClSrpcClosure*) &done);
+  if (!done.run_was_invoked) {
+    fprintf(stderr, "done->Run(done) was never called\n");
+  }
+  return rpc.result;
 }
 
 int NaClSrpcCommandLoopMain(const struct NaClSrpcHandlerDesc *methods) {

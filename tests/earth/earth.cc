@@ -848,23 +848,27 @@ void ParseCmdLineArgs(int argc, char **argv) {
 sem_t GlobalDemoSemaphore;
 
 #if !defined(STANDALONE)
-NaClSrpcError NaclModuleStartDemo(NaClSrpcChannel *channel,
-                                  NaClSrpcArg** in_args,
-                                  NaClSrpcArg** out_args) {
+void NaclModuleStartDemo(NaClSrpcRpc *rpc,
+                         NaClSrpcArg** in_args,
+                         NaClSrpcArg** out_args,
+                         NaClSrpcClosure* done) {
   DebugPrintf("Start called with %d\n", in_args[0]->u.ival);
   g_num_frames = in_args[0]->u.ival;
   sem_post(&GlobalDemoSemaphore);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 NACL_SRPC_METHOD("start_demo:i:", NaclModuleStartDemo);
 
-NaClSrpcError NaclModuleFrameChecksum(NaClSrpcChannel *channel,
-                                      NaClSrpcArg** in_args,
-                                      NaClSrpcArg** out_args) {
+void NaclModuleFrameChecksum(NaClSrpcRpc *rpc,
+                             NaClSrpcArg** in_args,
+                             NaClSrpcArg** out_args,
+                             NaClSrpcClosure* done) {
   DebugPrintf("checksum called: %d\n", g_frame_checksum);
   out_args[0]->u.ival = g_frame_checksum;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 NACL_SRPC_METHOD("frame_checksum::i", NaclModuleFrameChecksum);

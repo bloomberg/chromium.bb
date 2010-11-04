@@ -19,15 +19,17 @@
 # define S_IFSHM 0000240000
 #endif
 
-NaClSrpcError Cat(NaClSrpcChannel *channel,
-                  NaClSrpcArg **in_args,
-                  NaClSrpcArg **out_args) {
+void Cat(NaClSrpcRpc *rpc,
+         NaClSrpcArg **in_args,
+         NaClSrpcArg **out_args,
+         NaClSrpcClosure *done) {
   int         fd;
   struct stat stb;
   int         ch;
   int         nchar;
   int         bufsize;
 
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   fd = in_args[0]->u.hval;
   printf("CatFile: Got fd %d\n", fd);
   if (-1 != fstat(fd, &stb)) {
@@ -49,7 +51,8 @@ NaClSrpcError Cat(NaClSrpcChannel *channel,
     file_map = (char *) mmap(NULL, stb.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (MAP_FAILED == file_map) {
       printf("map failed");
-      return NACL_SRPC_RESULT_APP_ERROR;
+      done->Run(done);
+      return;
     }
     for (nchar = 0; nchar < bufsize - 1; ++nchar) {
       ch = file_map[nchar];
@@ -63,7 +66,8 @@ NaClSrpcError Cat(NaClSrpcChannel *channel,
     printf("fdopening\n");
     if (NULL == iob) {
       printf("fdopen failed");
-      return NACL_SRPC_RESULT_APP_ERROR;
+      done->Run(done);
+      return;
     }
     for (nchar = 0; EOF != (ch = getc(iob)) && nchar < bufsize-1; ++nchar) {
       out_args[0]->u.caval.carr[nchar] = ch;
@@ -75,7 +79,8 @@ NaClSrpcError Cat(NaClSrpcChannel *channel,
   }
   printf("got %d bytes\n", nchar);
   printf("out param: %.*s\n", nchar, out_args[0]->u.caval.carr);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

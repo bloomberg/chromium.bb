@@ -70,17 +70,18 @@ static void EventQueueRefill(int max_events) {
   }
 }
 
-static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** ins,
-                                  NaClSrpcArg** outs) {
-  UNREFERENCED_PARAMETER(channel);
+static void handleUpcall(NaClSrpcRpc* rpc,
+                         NaClSrpcArg** ins,
+                         NaClSrpcArg** outs,
+                         NaClSrpcClosure* done) {
   UNREFERENCED_PARAMETER(ins);
   UNREFERENCED_PARAMETER(outs);
   g_mm->VideoUpdate(g_video_share->video_pixels);
   // NOTE: this is major hack: we piggyback on the video update
   //       to fill the event queue
   EventQueueRefill(NACL_EVENT_RING_BUFFER_SIZE);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 

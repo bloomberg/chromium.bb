@@ -21,12 +21,14 @@
    function pointers. */
 static int (*g_test_func)(void);
 
-NaClSrpcError RunTestsWrapper(NaClSrpcChannel *channel,
-                              NaClSrpcArg **in_args,
-                              NaClSrpcArg **out_args) {
+void RunTestsWrapper(NaClSrpcRpc *rpc,
+                     NaClSrpcArg **in_args,
+                     NaClSrpcArg **out_args,
+                     NaClSrpcClosure *done) {
   int result = g_test_func();
   out_args[0]->u.sval = strdup(result == 0 ? "passed" : "failed");
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

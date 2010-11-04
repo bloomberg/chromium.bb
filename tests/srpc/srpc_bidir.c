@@ -14,40 +14,47 @@
  * SetUpcallServices delivers the service discovery string that describes
  * those client services that may be called back from the server.
  */
-NaClSrpcError SetUpcallServices(NaClSrpcChannel *channel,
-                                NaClSrpcArg **in_args,
-                                NaClSrpcArg **out_args) {
+void SetUpcallServices(NaClSrpcRpc *rpc,
+                       NaClSrpcArg **in_args,
+                       NaClSrpcArg **out_args,
+                       NaClSrpcClosure *done) {
   const char* sd_string = (const char*) in_args[0]->u.sval;
   NaClSrpcService* service;
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   printf("SetUpcallServices: %s\n", sd_string);
   service = (NaClSrpcService*) malloc(sizeof(*service));
   if (NULL == service) {
     printf("malloc failed\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   if (!NaClSrpcServiceStringCtor(service, sd_string)) {
     printf("CTOR failed\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
-  channel->client = service;
-  return NACL_SRPC_RESULT_OK;
+  rpc->channel->client = service;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 
 /*
  * TestUpcall requests a server test of a named client method.
  */
-NaClSrpcError TestUpcall(NaClSrpcChannel *channel,
-                         NaClSrpcArg **in_args,
-                         NaClSrpcArg **out_args) {
+void TestUpcall(NaClSrpcRpc *rpc,
+                NaClSrpcArg **in_args,
+                NaClSrpcArg **out_args,
+                NaClSrpcClosure *done) {
   const char* method_name = (const char*) in_args[0]->u.sval;
   NaClSrpcError retval;
 
   printf("Testing upcall to method: '%s'\n", method_name);
-  retval = NaClSrpcInvokeBySignature(channel, method_name, "hello::");
+  retval = NaClSrpcInvokeBySignature(rpc->channel, method_name, "hello::");
   out_args[0]->u.ival = retval;
 
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

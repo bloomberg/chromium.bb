@@ -18,11 +18,13 @@ int worker_upcall_desc = -1;
 /*
  *  Send a string to a native web worker
  */
-NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
-                            NaClSrpcArg **in_args,
-                            NaClSrpcArg **out_args) {
+void SetUpcallDesc(NaClSrpcRpc *rpc,
+                   NaClSrpcArg **in_args,
+                   NaClSrpcArg **out_args,
+                   NaClSrpcClosure *done) {
   worker_upcall_desc = in_args[0]->u.hval;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /*
@@ -30,9 +32,11 @@ NaClSrpcError SetUpcallDesc(NaClSrpcChannel *channel,
  */
 static char* message_string;
 
-NaClSrpcError PostMessage(NaClSrpcChannel *channel,
-                          NaClSrpcArg **in_args,
-                          NaClSrpcArg **out_args) {
+void PostMessage(NaClSrpcRpc *rpc,
+                 NaClSrpcArg **in_args,
+                 NaClSrpcArg **out_args,
+                 NaClSrpcClosure *done) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
@@ -43,12 +47,14 @@ NaClSrpcError PostMessage(NaClSrpcChannel *channel,
   if (-1 != worker_upcall_desc) {
     NaClSrpcChannel upcall_channel;
     if (!NaClSrpcClientCtor(&upcall_channel, worker_upcall_desc)) {
-      return NACL_SRPC_RESULT_APP_ERROR;
+      done->Run(done);
+      return;
     }
     NaClSrpcInvokeBySignature(&upcall_channel, "postMessage:s:", "from nacl");
     NaClSrpcDtor(&upcall_channel);
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

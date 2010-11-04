@@ -13,22 +13,28 @@
 
 /* this is basically  a copy of of test/fib/fib_scalar.c */
 
-NaClSrpcError FibonacciScalar(NaClSrpcChannel *channel,
-                              NaClSrpcArg **in_args,
-                              NaClSrpcArg **out_args) {
+void FibonacciScalar(NaClSrpcRpc *rpc,
+                     NaClSrpcArg **in_args,
+                     NaClSrpcArg **out_args,
+                     NaClSrpcClosure *done) {
   int v0 = in_args[0]->u.ival;
   int v1 = in_args[1]->u.ival;
   int v2;
   int num = in_args[2]->u.ival;
 
-  if (num < 0) return NACL_SRPC_RESULT_APP_ERROR;
+  if (num < 0) {
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
+  }
   while (num > 0) {
     v2 = v0 + v1;
     v0 = v1; v1 = v2;
     --num;
   }
   out_args[0]->u.ival = v0;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

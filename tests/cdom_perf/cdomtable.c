@@ -71,9 +71,10 @@ static void DOMTable_CreateTableIH(int rows, int cols, BigBuffer *bb) {
 
 /* DOMTable_CreateTable provides the C to JavaScript interface.
  */
-int CDOMTable_CreateTable(NaClSrpcChannel *channel,
-                          NaClSrpcArg **in_args,
-                          NaClSrpcArg **out_args) {
+void CDOMTable_CreateTable(NaClSrpcRpc *rpc,
+                           NaClSrpcArg **in_args,
+                           NaClSrpcArg **out_args,
+                           NaClSrpcClosure* done) {
   int rows, cols;
   rows = in_args[0]->u.ival;
   cols = in_args[1]->u.ival;
@@ -83,9 +84,10 @@ int CDOMTable_CreateTable(NaClSrpcChannel *channel,
   DOMTable_CreateTableIH(rows, cols, &g_BigBuffer); /* create the table */
   out_args[0]->u.ival = g_BigBuffer.index;          /* return the length */
   if (0 == g_BigBuffer.failed) {
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
   } else {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   }
+  done->Run(done);
 }
 NACL_SRPC_METHOD("CDOMTable_CreateTable:ii:i", CDOMTable_CreateTable);

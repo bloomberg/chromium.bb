@@ -15,24 +15,28 @@
 /*
  *  Return a simple integer.
  */
-NaClSrpcError FortyTwo(NaClSrpcChannel *channel,
-                       NaClSrpcArg **in_args,
-                       NaClSrpcArg **out_args) {
+void FortyTwo(NaClSrpcRpc *rpc,
+              NaClSrpcArg **in_args,
+              NaClSrpcArg **out_args,
+              NaClSrpcClosure *done) {
   out_args[0]->u.ival = 42;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /*
  *  Return a clever string.
  */
-NaClSrpcError HelloWorld(NaClSrpcChannel *channel,
-                         NaClSrpcArg **in_args,
-                         NaClSrpcArg **out_args) {
+void HelloWorld(NaClSrpcRpc *rpc,
+                NaClSrpcArg **in_args,
+                NaClSrpcArg **out_args,
+                NaClSrpcClosure *done) {
   /*
    * Strdup must be used because the SRPC layer frees the string passed to it.
    */
   out_args[0]->u.sval = strdup("hello, world.");
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

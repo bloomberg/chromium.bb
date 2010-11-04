@@ -18,9 +18,10 @@
 /*
  * GetShmHandle creates and returns a shared memory region.
  */
-NaClSrpcError GetShmHandle(NaClSrpcChannel *channel,
-                           NaClSrpcArg **in_args,
-                           NaClSrpcArg **out_args) {
+void GetShmHandle(NaClSrpcRpc *rpc,
+                  NaClSrpcArg **in_args,
+                  NaClSrpcArg **out_args,
+                  NaClSrpcClosure *done) {
   int desc;
   size_t size = in_args[0]->u.ival;
   /* Start up banner, clear errors. */
@@ -42,31 +43,36 @@ NaClSrpcError GetShmHandle(NaClSrpcChannel *channel,
   }
   /* Return the shm descriptor. */
   out_args[0]->u.hval = desc;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /*
  * GetInvalidHandle returns an invalid shared memory descriptor.
  */
-NaClSrpcError GetInvalidHandle(NaClSrpcChannel *channel,
-                               NaClSrpcArg **in_args,
-                               NaClSrpcArg **out_args) {
+void GetInvalidHandle(NaClSrpcRpc *rpc,
+                      NaClSrpcArg **in_args,
+                      NaClSrpcArg **out_args,
+                      NaClSrpcClosure *done) {
   /* Return an invalid shm descriptor. */
   out_args[0]->u.ival = -1;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 /*
  * MapSysvHandle maps a SysV shared memory handle and prints its contents.
  */
-NaClSrpcError MapSysvHandle(NaClSrpcChannel *channel,
-                            NaClSrpcArg **in_args,
-                            NaClSrpcArg **out_args) {
+void MapSysvHandle(NaClSrpcRpc *rpc,
+                   NaClSrpcArg **in_args,
+                   NaClSrpcArg **out_args,
+                   NaClSrpcClosure *done) {
   int desc = in_args[0]->u.hval;
   char* map_addr;
   struct stat st;
   size_t size;
 
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   /* Get the region's size. */
   if (0 != fstat(desc, &st)) {
     printf("MapSysvHandle: fstat failed\n");
@@ -76,12 +82,14 @@ NaClSrpcError MapSysvHandle(NaClSrpcChannel *channel,
   map_addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, desc, 0);
   if (MAP_FAILED == map_addr) {
     printf("MapSysvHandle: mmap failed\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
+    done->Run(done);
+    return;
   }
   /* Print the region's contents. */
   printf("string '%s'\n", map_addr);
   /* Unmap the region. */
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
+  done->Run(done);
 }
 
 const struct NaClSrpcHandlerDesc srpc_methods[] = {

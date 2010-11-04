@@ -264,10 +264,14 @@ struct NaClSrpcRpc {
   uint64_t                  request_id;
   uint8_t                   is_request;
   uint32_t                  rpc_number;
-  NaClSrpcError             app_error;
+  NaClSrpcError             result;
   /* State maintained for transmission/reception, but not serialized */
+  struct NaClSrpcChannel*   channel;
   const char*               ret_types;
   NaClSrpcArg**             rets;
+  uint8_t                   ret_send_succeeded;
+  uint8_t                   dispatch_loop_should_continue;
+  /* TODO(sehr): buffer is actually part of the channel struct. Remove it. */
   struct NaClSrpcImcBuffer* buffer;
 };
 #ifndef __cplusplus
@@ -299,11 +303,26 @@ typedef struct NaClSrpcRpc  NaClSrpcRpc;
 typedef struct NaClSrpcChannel *NaClSrpcChannelPtr;
 
 /**
+ * The closure used to send responses from a method.
+ */
+struct NaClSrpcClosure {
+  void (*Run)(struct NaClSrpcClosure* self);
+};
+
+#ifndef __cplusplus
+/**
+ * A typedef for struct NaClSrpcClosure for use in C.
+ */
+typedef struct NaClSrpcClosure NaClSrpcClosure;
+#endif
+
+/**
  * Methods used to implement SRPC services have this type signature.
  */
-typedef NaClSrpcError (*NaClSrpcMethod)(NaClSrpcChannelPtr channel,
-                                        NaClSrpcArg* args[],
-                                        NaClSrpcArg* rets[]);
+typedef void (*NaClSrpcMethod)(NaClSrpcRpc* rpc,
+                               NaClSrpcArg* args[],
+                               NaClSrpcArg* rets[],
+                               NaClSrpcClosure* done);
 
 /**
  * Binaries that implement SRPC methods (servers) describe their services
