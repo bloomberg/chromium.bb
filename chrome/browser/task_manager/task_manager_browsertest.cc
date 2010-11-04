@@ -6,11 +6,16 @@
 
 #include "app/l10n_util.h"
 #include "base/file_path.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_navigator.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notification_test_util.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -136,6 +141,39 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticeExtensionChanges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
   WaitForResourceChange(3);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
+  EXPECT_EQ(0, model()->ResourceCount());
+
+  // Show the task manager.
+  browser()->window()->ShowTaskManager();
+  // Expect to see the browser and the New Tab Page renderer.
+  EXPECT_EQ(2, model()->ResourceCount());
+
+  // Show a notification.
+  NotificationUIManager* notifications =
+      g_browser_process->notification_ui_manager();
+
+  string16 content = DesktopNotificationService::CreateDataUrl(
+      GURL(), ASCIIToUTF16("Hello World!"), string16(),
+      WebKit::WebTextDirectionDefault);
+
+  scoped_refptr<NotificationDelegate> del1(new MockNotificationDelegate("n1"));
+  Notification n1(
+      GURL(), GURL(content), ASCIIToUTF16("Test 1"), string16(), del1.get());
+  scoped_refptr<NotificationDelegate> del2(new MockNotificationDelegate("n2"));
+  Notification n2(
+      GURL(), GURL(content), ASCIIToUTF16("Test 2"), string16(), del2.get());
+
+  notifications->Add(n1, browser()->profile());
+  WaitForResourceChange(3);
+  notifications->Add(n2, browser()->profile());
+  WaitForResourceChange(4);
+  notifications->Cancel(n1);
+  WaitForResourceChange(3);
+  notifications->Cancel(n2);
+  WaitForResourceChange(2);
 }
 
 // Times out on Vista; disabled to keep tests fast. http://crbug.com/44991

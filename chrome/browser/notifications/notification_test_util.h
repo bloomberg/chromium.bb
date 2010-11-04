@@ -10,8 +10,30 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "gfx/size.h"
 
+// NotificationDelegate which does nothing, useful for testing when
+// the notification events are not important.
+class MockNotificationDelegate : public NotificationDelegate {
+ public:
+  explicit MockNotificationDelegate(std::string id) : id_(id) {}
+  virtual ~MockNotificationDelegate() {}
+
+  // NotificationDelegate interface.
+  virtual void Display() {}
+  virtual void Error() {}
+  virtual void Close(bool by_user) {}
+  virtual void Click() {}
+  virtual std::string id() const { return id_; }
+
+ private:
+  std::string id_;
+};
+
 // Mock implementation of Javascript object proxy which logs events that
-// would have been fired on it. |Logger| class must static "log()" method.
+// would have been fired on it.  Useful for tests where the sequence of
+// notification events needs to be verified.
+//
+// |Logger| class provided in template must implement method
+// static void log(string);
 template<class Logger>
 class LoggingNotificationProxyBase : public NotificationObjectProxy {
  public:

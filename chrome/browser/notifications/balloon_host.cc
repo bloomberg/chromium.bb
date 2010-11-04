@@ -40,6 +40,7 @@ BalloonHost::BalloonHost(Balloon* balloon)
 }
 
 void BalloonHost::Shutdown() {
+  NotifyDisconnect();
   if (render_view_host_) {
     render_view_host_->Shutdown();
     render_view_host_ = NULL;
