@@ -30,6 +30,14 @@
 #include "views/standard_layout.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
+// If we don't clamp the maximum width, then very long URLs and titles can make
+// the bubble arbitrarily wide.
+const int kMaxContentsWidth = 500;
+
+// When we have multiline labels, we should set a minimum width lest we get very
+// narrow bubbles with lots of line-wrapping.
+const int kMinMultiLineContentsWidth = 250;
+
 class ContentSettingBubbleContents::Favicon : public views::ImageView {
  public:
   Favicon(const SkBitmap& image,
@@ -113,6 +121,16 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
+}
+
+gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
+  gfx::Size preferred_size(views::View::GetPreferredSize());
+  int min_width =
+      (!content_setting_bubble_model_->bubble_content().domain_lists.empty() &&
+       (kMinMultiLineContentsWidth > preferred_size.width())) ?
+      kMinMultiLineContentsWidth : preferred_size.width();
+  preferred_size.set_width(std::min(min_width, kMaxContentsWidth));
+  return preferred_size;
 }
 
 void ContentSettingBubbleContents::ViewHierarchyChanged(bool is_add,
@@ -240,6 +258,7 @@ void ContentSettingBubbleContents::InitControlLayout() {
 
       views::Link* link = new views::Link(UTF8ToWide(i->title));
       link->SetController(this);
+      link->SetElideInMiddle(true);
       popup_links_[link] = i - bubble_content.popup_items.begin();
       layout->AddView(new Favicon((*i).bitmap, this, link));
       layout->AddView(link);
@@ -289,11 +308,6 @@ void ContentSettingBubbleContents::InitControlLayout() {
     layout->StartRow(0, single_column_set_id);
     views::Label* section_title = new views::Label(UTF8ToWide(i->title));
     section_title->SetMultiLine(true);
-    // TODO(joth): Should need to have hard coded size here, but without it
-    // we get empty space at very end of bubble (as it's initially sized really
-    // tall & skinny but then widens once the link/buttons are added
-    // at the end of this method).
-    section_title->SizeToFit(256);
     section_title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
     for (std::set<std::string>::const_iterator j = i->hosts.begin();

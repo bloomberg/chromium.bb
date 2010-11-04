@@ -48,6 +48,8 @@ class ContentSettingBubbleContents : public views::View,
   // the bubble and must keep it alive.
   void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
 
+  virtual gfx::Size GetPreferredSize();
+
  private:
   class Favicon;
 
