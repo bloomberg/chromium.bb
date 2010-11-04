@@ -1,5 +1,5 @@
 # These tests fail under Dr. Memory; see http://crbug.com/57832
-JingleChromotocolConnectionTest.TestControlChannel
-JingleChromotocolConnectionTest.TestEventChannel
-JingleChromotocolConnectionTest.TestVideoChannel
-JingleChromotocolConnectionTest.TestVideoRtpChannel
+JingleSessionTest.TestControlChannel
+JingleSessionTest.TestEventChannel
+JingleSessionTest.TestVideoChannel
+JingleSessionTest.TestVideoRtpChannel
