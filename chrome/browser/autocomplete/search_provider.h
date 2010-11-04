@@ -23,7 +23,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -163,10 +162,13 @@ class SearchProvider : public AutocompleteProvider,
   // Called when timer_ expires.
   void Run();
 
+  // Runs the history query, if necessary. The history query is synchronous.
+  // This does not update |done_|.
+  void DoHistoryQuery(bool minimal_changes);
+
   // Determines whether an asynchronous subcomponent query should run for the
   // current input.  If so, starts it if necessary; otherwise stops it.
-  // NOTE: These functions do not update |done_|.  Callers must do so.
-  void StartOrStopHistoryQuery(bool minimal_changes);
+  // NOTE: This function does not update |done_|.  Callers must do so.
   void StartOrStopSuggestQuery(bool minimal_changes);
 
   // Returns true when the current query can be sent to the Suggest service.
@@ -174,21 +176,9 @@ class SearchProvider : public AutocompleteProvider,
   // potentially private data, etc.
   bool IsQuerySuitableForSuggest() const;
 
-  // Functions to stop the separate asynchronous subcomponents.
-  // NOTE: These functions do not update |done_|.  Callers must do so.
-  void StopHistory();
+  // Stops the suggest query.
+  // NOTE: This does not update |done_|.  Callers must do so.
   void StopSuggest();
-
-  // Schedules a history query requesting past searches against the engine
-  // whose id is |search_id| and whose text starts with |text|.
-  void ScheduleHistoryQuery(TemplateURLID search_id,
-                            const std::wstring& text);
-
-  // Called back by the history system to return searches that begin with the
-  // input text.
-  void OnGotMostRecentKeywordSearchTerms(
-      CancelableRequestProvider::Handle handle,
-      HistoryResults* results);
 
   // Creates a URLFetcher requesting suggest results for the specified
   // TemplateURL. Ownership of the returned URLFetchet passes to the caller.
@@ -275,23 +265,9 @@ class SearchProvider : public AutocompleteProvider,
   // Input text when searching against the keyword provider.
   std::wstring keyword_input_text_;
 
-  // An object we can use to cancel history requests. The client data
-  // corresponds to the id of the search engine and is used in the callback to
-  // determine whether the request corresponds to the keyword of default
-  // provider.
-  CancelableRequestConsumerTSimple<TemplateURLID>
-      history_request_consumer_;
-
   // Searches in the user's history that begin with the input text.
   HistoryResults keyword_history_results_;
   HistoryResults default_history_results_;
-
-  // Whether history_results_ is valid (so we can tell invalid apart from
-  // empty).
-  bool have_history_results_;
-
-  // Whether we are waiting for a history request to finish.
-  bool history_request_pending_;
 
   // Number of suggest results that haven't yet arrived. If greater than 0 it
   // indicates either |timer_| or one of the URLFetchers is still running.

@@ -21,6 +21,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
@@ -57,8 +58,6 @@ void SearchProvider::Providers::Set(const TemplateURL* default_provider,
 
 SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
-      have_history_results_(false),
-      history_request_pending_(false),
       suggest_results_pending_(0),
       have_suggest_results_(false) {
 }
@@ -77,10 +76,8 @@ void SearchProvider::Start(const AutocompleteInput& input,
   const TemplateURL* keyword_provider =
       KeywordProvider::GetSubstitutingTemplateURLForInput(profile_, input,
                                                           &keyword_input_text_);
-  if (!TemplateURL::SupportsReplacement(keyword_provider) ||
-      keyword_input_text_.empty()) {
+  if (keyword_input_text_.empty())
     keyword_provider = NULL;
-  }
 
   const TemplateURL* default_provider =
       profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
@@ -127,7 +124,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   input_ = input;
 
-  StartOrStopHistoryQuery(minimal_changes);
+  DoHistoryQuery(minimal_changes);
   StartOrStopSuggestQuery(minimal_changes);
   ConvertResultsToAutocompleteMatches();
 }
@@ -155,7 +152,6 @@ void SearchProvider::Run() {
 }
 
 void SearchProvider::Stop() {
-  StopHistory();
   StopSuggest();
   done_ = true;
 }
@@ -210,29 +206,36 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
 SearchProvider::~SearchProvider() {
 }
 
-void SearchProvider::StartOrStopHistoryQuery(bool minimal_changes) {
-  // For the minimal_changes case, if we finished the previous query and still
-  // have its results, or are allowed to keep running it, just do that, rather
-  // than starting a new query.
-  if (minimal_changes &&
-      (have_history_results_ || (!done_ && !input_.synchronous_only())))
+void SearchProvider::DoHistoryQuery(bool minimal_changes) {
+  // The history query results are synchronous, so if minimal_changes is true,
+  // we still have the last results and don't need to do anything.
+  if (minimal_changes)
     return;
 
-  // We can't keep running any previous query, so halt it.
-  StopHistory();
+  keyword_history_results_.clear();
+  default_history_results_.clear();
 
-  // We can't start a new query if we're only allowed synchronous results.
-  if (input_.synchronous_only())
+  HistoryService* const history_service =
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  history::URLDatabase* url_db = history_service ?
+      history_service->InMemoryDatabase() : NULL;
+  if (!url_db)
     return;
 
   // Request history for both the keyword and default provider.
   if (providers_.valid_keyword_provider()) {
-    ScheduleHistoryQuery(providers_.keyword_provider().id(),
-                         keyword_input_text_);
+    url_db->GetMostRecentKeywordSearchTerms(
+        providers_.keyword_provider().id(),
+        WideToUTF16(keyword_input_text_),
+        static_cast<int>(kMaxMatches),
+        &keyword_history_results_);
   }
   if (providers_.valid_default_provider()) {
-    ScheduleHistoryQuery(providers_.default_provider().id(),
-                         input_.text());
+    url_db->GetMostRecentKeywordSearchTerms(
+        providers_.default_provider().id(),
+        WideToUTF16(input_.text()),
+        static_cast<int>(kMaxMatches),
+        &default_history_results_);
   }
 }
 
@@ -324,14 +327,6 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   return true;
 }
 
-void SearchProvider::StopHistory() {
-  history_request_consumer_.CancelAllRequests();
-  history_request_pending_ = false;
-  keyword_history_results_.clear();
-  default_history_results_.clear();
-  have_history_results_ = false;
-}
-
 void SearchProvider::StopSuggest() {
   suggest_results_pending_ = 0;
   timer_.Stop();
@@ -343,47 +338,6 @@ void SearchProvider::StopSuggest() {
   keyword_navigation_results_.clear();
   default_navigation_results_.clear();
   have_suggest_results_ = false;
-}
-
-void SearchProvider::ScheduleHistoryQuery(TemplateURLID search_id,
-                                          const std::wstring& text) {
-  DCHECK(!text.empty());
-  HistoryService* const history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  HistoryService::Handle request_handle =
-      history_service->GetMostRecentKeywordSearchTerms(
-          search_id, WideToUTF16(text), static_cast<int>(kMaxMatches),
-          &history_request_consumer_,
-          NewCallback(this,
-                      &SearchProvider::OnGotMostRecentKeywordSearchTerms));
-  history_request_consumer_.SetClientData(history_service, request_handle,
-                                          search_id);
-  history_request_pending_ = true;
-}
-
-void SearchProvider::OnGotMostRecentKeywordSearchTerms(
-    CancelableRequestProvider::Handle handle,
-    HistoryResults* results) {
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  DCHECK(history_service);
-  if (providers_.valid_keyword_provider() &&
-      (providers_.keyword_provider().id() ==
-       history_request_consumer_.GetClientData(history_service, handle))) {
-    keyword_history_results_ = *results;
-  } else {
-    default_history_results_ = *results;
-  }
-
-  if (history_request_consumer_.PendingRequestCount() == 1) {
-    // Requests are removed AFTER the callback is invoked. If the count == 1,
-    // it means no more history requests are pending.
-    history_request_pending_ = false;
-    have_history_results_ = true;
-  }
-
-  ConvertResultsToAutocompleteMatches();
-  listener_->OnProviderUpdate(!results->empty());
 }
 
 URLFetcher* SearchProvider::CreateSuggestFetcher(int id,
@@ -540,13 +494,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
   UpdateStarredStateOfMatches();
 
-  // We're done when both asynchronous subcomponents have finished.  We can't
-  // use CancelableRequestConsumer.HasPendingRequests() for history requests
-  // here.  A pending request is not cleared until after the completion
-  // callback has returned, but we've reached here from inside that callback.
-  // HasPendingRequests() would therefore return true, and if this is the last
-  // thing left to calculate for this query, we'll never mark the query "done".
-  done_ = !history_request_pending_ && !suggest_results_pending_;
+  // We're done when there are no more suggest queries pending (this is set to 1
+  // when the timer is started).
+  done_ = suggest_results_pending_ == 0;
 }
 
 void SearchProvider::AddNavigationResultsToMatches(

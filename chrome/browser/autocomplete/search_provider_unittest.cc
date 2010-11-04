@@ -133,6 +133,11 @@ void SearchProviderTest::SetUp() {
   history->SetKeywordSearchTermsForURL(keyword_url_, keyword_t_url_->id(),
                                        keyword_term_);
 
+  // Keywords are updated by the InMemoryHistoryBackend only after the message
+  // has been processed on the history thread. Block until history processes all
+  // requests to ensure the InMemoryDatabase is the state we expect it.
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
   provider_ = new SearchProvider(this, &profile_);
 
   URLFetcher::set_factory(&test_factory_);
