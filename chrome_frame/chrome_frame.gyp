@@ -60,6 +60,15 @@
   },
   'targets': [
     {
+      # Builds the crash tests in crash_reporting.
+      'target_name': 'chrome_frame_crash_tests',
+      'type': 'none',
+      'dependencies': [
+        'crash_reporting/crash_reporting.gyp:minidump_test',
+        'crash_reporting/crash_reporting.gyp:vectored_handler_tests',
+      ],
+    },
+    {
       # TODO(slightlyoff): de-win23-ify
       'target_name': 'xulrunner_sdk',
       'type': 'none',
@@ -77,40 +86,6 @@
           },
         },],
       ],
-    },
-    {
-      # TODO(slightlyoff): de-win32-ify
-      #
-      # build the base_noicu.lib.
-      'target_name': 'base_noicu',
-      'type': 'none',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'actions': [
-        {
-          'action_name': 'combine_libs',
-          'msvs_cygwin_shell': 0,
-          'inputs': [
-            '<(PRODUCT_DIR)/lib/base.lib',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/lib/base_noicu.lib',
-          ],
-          'action': [
-            '<@(python)',
-            'combine_libs.py',
-            '-o', '<@(_outputs)',
-            '-r (icu_|_icu.obj)',
-            '<@(_inputs)'],
-        },
-      ],
-      'direct_dependent_settings': {
-        # linker_settings
-        'libraries': [
-          '<(PRODUCT_DIR)/lib/base_noicu.lib',
-        ],
-      },
     },
     {
       'target_name': 'chrome_frame_unittests',
@@ -499,6 +474,7 @@
       'type': 'executable',
       'msvs_guid': 'A1440368-4089-4E14-8864-D84D3C5714A7',
       'dependencies': [
+        '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:debugger',
@@ -506,7 +482,6 @@
         '../chrome/chrome.gyp:test_support_common',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        'base_noicu',
         'chrome_frame_ie',
         'chrome_frame_npapi',
         'chrome_frame_strings',
@@ -766,8 +741,6 @@
             '../google_update/google_update.gyp:google_update',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
-            'crash_reporting/crash_reporting.gyp:minidump_test',
-            'crash_reporting/crash_reporting.gyp:vectored_handler_tests',
           ],
         },],
       ],
@@ -829,7 +802,7 @@
       'type': 'shared_library',
       'msvs_guid': 'E3DE7E63-D3B6-4A9F-BCC4-5C8169E9C9F2',
       'dependencies': [
-        'base_noicu',
+        '../base/base.gyp:base',
         'chrome_frame_ie',
         'chrome_frame_npapi',
         'chrome_frame_strings',
@@ -889,7 +862,6 @@
             '../google_update/google_update.gyp:google_update',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
-            'crash_reporting/crash_reporting.gyp:vectored_handler_tests',
           ],
           'link_settings': {
             'libraries': [
