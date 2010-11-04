@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(hclam): Remove this header once MessageDispatcher is used.
-#include "remoting/base/multiple_array_input_stream.h"
-#include "remoting/host/client_connection.h"
+#include "remoting/protocol/connection_to_client.h"
 
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
 #include "remoting/protocol/util.h"
+
+// TODO(hclam): Remove this header once MessageDispatcher is used.
+#include "remoting/base/multiple_array_input_stream.h"
 
 namespace remoting {
 namespace protocol {
@@ -17,32 +18,32 @@ namespace protocol {
 // average update stream.
 static const size_t kAverageUpdateStream = 10;
 
-ClientConnection::ClientConnection(MessageLoop* message_loop,
-                                   EventHandler* handler)
+ConnectionToClient::ConnectionToClient(MessageLoop* message_loop,
+                                       EventHandler* handler)
     : loop_(message_loop),
       handler_(handler) {
   DCHECK(loop_);
   DCHECK(handler_);
 }
 
-ClientConnection::~ClientConnection() {
+ConnectionToClient::~ConnectionToClient() {
   // TODO(hclam): When we shut down the viewer we may have to close the
   // connection.
 }
 
-void ClientConnection::Init(protocol::Session* session) {
+void ConnectionToClient::Init(protocol::Session* session) {
   DCHECK_EQ(session->message_loop(), MessageLoop::current());
 
   session_ = session;
   session_->SetStateChangeCallback(
-      NewCallback(this, &ClientConnection::OnSessionStateChange));
+      NewCallback(this, &ConnectionToClient::OnSessionStateChange));
 }
 
-protocol::Session* ClientConnection::session() {
+protocol::Session* ConnectionToClient::session() {
   return session_;
 }
 
-void ClientConnection::SendInitClientMessage(int width, int height) {
+void ConnectionToClient::SendInitClientMessage(int width, int height) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If we are disconnected then return.
@@ -56,7 +57,7 @@ void ClientConnection::SendInitClientMessage(int width, int height) {
   control_writer_.SendMessage(msg);
 }
 
-void ClientConnection::SendVideoPacket(const VideoPacket& packet) {
+void ConnectionToClient::SendVideoPacket(const VideoPacket& packet) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If we are disconnected then return.
@@ -66,45 +67,45 @@ void ClientConnection::SendVideoPacket(const VideoPacket& packet) {
   video_writer_->SendPacket(packet);
 }
 
-int ClientConnection::GetPendingUpdateStreamMessages() {
+int ConnectionToClient::GetPendingUpdateStreamMessages() {
   DCHECK_EQ(loop_, MessageLoop::current());
   return video_writer_->GetPendingPackets();
 }
 
-void ClientConnection::Disconnect() {
+void ConnectionToClient::Disconnect() {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If there is a channel then close it and release the reference.
   if (session_) {
-    session_->Close(NewRunnableMethod(this, &ClientConnection::OnClosed));
+    session_->Close(NewRunnableMethod(this, &ConnectionToClient::OnClosed));
     session_ = NULL;
   }
 }
 
-ClientConnection::ClientConnection() {}
+ConnectionToClient::ConnectionToClient() {}
 
-void ClientConnection::OnSessionStateChange(
+void ConnectionToClient::OnSessionStateChange(
     protocol::Session::State state) {
   if (state == protocol::Session::CONNECTED) {
     control_writer_.Init(session_->control_channel());
     event_reader_.Init<ChromotingClientMessage>(
         session_->event_channel(),
-        NewCallback(this, &ClientConnection::OnMessageReceived));
+        NewCallback(this, &ConnectionToClient::OnMessageReceived));
     video_writer_.reset(VideoWriter::Create(session_->config()));
     video_writer_->Init(session_);
   }
 
   loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ClientConnection::StateChangeTask, state));
+      NewRunnableMethod(this, &ConnectionToClient::StateChangeTask, state));
 }
 
-void ClientConnection::OnMessageReceived(ChromotingClientMessage* message) {
+void ConnectionToClient::OnMessageReceived(ChromotingClientMessage* message) {
   loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ClientConnection::MessageReceivedTask,
+      NewRunnableMethod(this, &ConnectionToClient::MessageReceivedTask,
                         message));
 }
 
-void ClientConnection::StateChangeTask(protocol::Session::State state) {
+void ConnectionToClient::StateChangeTask(protocol::Session::State state) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   DCHECK(handler_);
@@ -127,14 +128,14 @@ void ClientConnection::StateChangeTask(protocol::Session::State state) {
   }
 }
 
-void ClientConnection::MessageReceivedTask(ChromotingClientMessage* message) {
+void ConnectionToClient::MessageReceivedTask(ChromotingClientMessage* message) {
   DCHECK_EQ(loop_, MessageLoop::current());
   DCHECK(handler_);
   handler_->HandleMessage(this, message);
 }
 
 // OnClosed() is used as a callback for protocol::Session::Close().
-void ClientConnection::OnClosed() {
+void ConnectionToClient::OnClosed() {
 }
 
 }  // namespace protocol

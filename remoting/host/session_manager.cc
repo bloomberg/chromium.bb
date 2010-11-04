@@ -11,8 +11,10 @@
 #include "base/stl_util-inl.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
-#include "remoting/host/client_connection.h"
+#include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/message_decoder.h"
+
+using remoting::protocol::ConnectionToClient;
 
 namespace remoting {
 
@@ -54,7 +56,7 @@ SessionManager::SessionManager(
 }
 
 SessionManager::~SessionManager() {
-  clients_.clear();
+  connections_.clear();
 }
 
 // Public methods --------------------------------------------------------------
@@ -74,22 +76,22 @@ void SessionManager::SetMaxRate(double rate) {
       FROM_HERE, NewTracedMethod(this, &SessionManager::DoSetMaxRate, rate));
 }
 
-void SessionManager::AddClient(
-    scoped_refptr<protocol::ClientConnection> client) {
-  // Gets the init information for the client.
+void SessionManager::AddConnection(
+    scoped_refptr<ConnectionToClient> connection) {
+  // Gets the init information for the connection.
   capture_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoGetInitInfo, client));
+      NewTracedMethod(this, &SessionManager::DoGetInitInfo, connection));
 }
 
-void SessionManager::RemoveClient(
-    scoped_refptr<protocol::ClientConnection> client) {
+void SessionManager::RemoveConnection(
+    scoped_refptr<ConnectionToClient> connection) {
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoRemoveClient, client));
+      NewTracedMethod(this, &SessionManager::DoRemoveClient, connection));
 }
 
-void SessionManager::RemoveAllClients() {
+void SessionManager::RemoveAllConnections() {
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &SessionManager::DoRemoveAllClients));
@@ -246,23 +248,23 @@ void SessionManager::DoFinishEncode() {
 }
 
 void SessionManager::DoGetInitInfo(
-    scoped_refptr<protocol::ClientConnection> client) {
+    scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
   ScopedTracer tracer("init");
 
-  // Sends the init message to the client.
+  // Sends the init message to the connection.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoSendInit, client,
+      NewTracedMethod(this, &SessionManager::DoSendInit, connection,
                         capturer()->width(), capturer()->height()));
 
-  // And then add the client to the list so it can receive update stream.
-  // It is important we do so in such order or the client will receive
+  // And then add the connection to the list so it can receive update stream.
+  // It is important we do so in such order or the connection will receive
   // update stream before init message.
   network_loop_->PostTask(
       FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoAddClient, client));
+      NewTracedMethod(this, &SessionManager::DoAddClient, connection));
 }
 
 // Network thread --------------------------------------------------------------
@@ -304,10 +306,10 @@ void SessionManager::DoRateControl() {
     return;
 
   int max_pending_update_streams = 0;
-  for (size_t i = 0; i < clients_.size(); ++i) {
+  for (size_t i = 0; i < connections_.size(); ++i) {
     max_pending_update_streams =
         std::max(max_pending_update_streams,
-                 clients_[i]->GetPendingUpdateStreamMessages());
+                 connections_[i]->GetPendingUpdateStreamMessages());
   }
 
   // If |slow_down| equals zero, we have no slow down.
@@ -336,8 +338,8 @@ void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
 
   TraceContext::tracer()->PrintString("DoSendUpdate");
 
-  for (ClientConnectionList::const_iterator i = clients_.begin();
-       i < clients_.end(); ++i) {
+  for (ConnectionToClientList::const_iterator i = connections_.begin();
+       i < connections_.end(); ++i) {
     (*i)->SendVideoPacket(*packet);
   }
   delete packet;
@@ -345,40 +347,38 @@ void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
   TraceContext::tracer()->PrintString("DoSendUpdate done");
 }
 
-void SessionManager::DoSendInit(
-    scoped_refptr<protocol::ClientConnection> client,
-    int width, int height) {
+void SessionManager::DoSendInit(scoped_refptr<ConnectionToClient> connection,
+                                int width, int height) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  // Sends the client init information.
-  client->SendInitClientMessage(width, height);
+  // Sends the connection init information.
+  connection->SendInitClientMessage(width, height);
 }
 
-void SessionManager::DoAddClient(
-    scoped_refptr<protocol::ClientConnection> client) {
+void SessionManager::DoAddClient(scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Force a full frame for next encode.
-  clients_.push_back(client);
+  connections_.push_back(connection);
 }
 
 void SessionManager::DoRemoveClient(
-    scoped_refptr<protocol::ClientConnection> client) {
+    scoped_refptr<ConnectionToClient> connection) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // TODO(hclam): Is it correct to do to a scoped_refptr?
-  ClientConnectionList::iterator it
-      = std::find(clients_.begin(), clients_.end(), client);
-  if (it != clients_.end()) {
-    clients_.erase(it);
+  ConnectionToClientList::iterator it
+      = std::find(connections_.begin(), connections_.end(), connection);
+  if (it != connections_.end()) {
+    connections_.erase(it);
   }
 }
 
 void SessionManager::DoRemoveAllClients() {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  // Clear the list of clients.
-  clients_.clear();
+  // Clear the list of connections.
+  connections_.clear();
 }
 
 // Encoder thread --------------------------------------------------------------
@@ -395,7 +395,7 @@ void SessionManager::DoEncode(
     return;
   }
 
-  // TODO(hclam): Enable |force_refresh| if a new client was
+  // TODO(hclam): Enable |force_refresh| if a new connection was
   // added.
   TraceContext::tracer()->PrintString("Encode start");
   encoder_->Encode(capture_data, false,
@@ -408,10 +408,10 @@ void SessionManager::EncodeDataAvailableTask(VideoPacket* packet) {
 
   bool last = (packet->flags() & VideoPacket::LAST_PACKET) != 0;
 
-  // Before a new encode task starts, notify clients a new update
+  // Before a new encode task starts, notify connected clients a new update
   // stream is coming.
   // Notify this will keep a reference to the DataBuffer in the
-  // task. The ownership will eventually pass to the ClientConnections.
+  // task. The ownership will eventually pass to the ConnectionToClients.
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &SessionManager::DoSendVideoPacket, packet));

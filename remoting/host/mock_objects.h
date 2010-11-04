@@ -6,7 +6,6 @@
 #define REMOTING_HOST_MOCK_OBJECTS_H_
 
 #include "remoting/host/capturer.h"
-#include "remoting/host/client_connection.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/proto/internal.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,39 +39,6 @@ class MockEventExecutor : public EventExecutor {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
 };
-
-namespace protocol {
-
-class MockClientConnection : public ClientConnection {
- public:
-  MockClientConnection(){}
-
-  MOCK_METHOD1(Init, void(ChromotocolConnection* connection));
-  MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
-  MOCK_METHOD1(SendVideoPacket, void(const VideoPacket& packet));
-  MOCK_METHOD0(GetPendingUpdateStreamMessages, int());
-  MOCK_METHOD0(Disconnect, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockClientConnection);
-};
-
-class MockClientConnectionEventHandler : public ClientConnection::EventHandler {
- public:
-  MockClientConnectionEventHandler() {}
-
-  MOCK_METHOD2(HandleMessage,
-               void(ClientConnection* viewer,
-                    ChromotingClientMessage* message));
-  MOCK_METHOD1(OnConnectionOpened, void(ClientConnection* viewer));
-  MOCK_METHOD1(OnConnectionClosed, void(ClientConnection* viewer));
-  MOCK_METHOD1(OnConnectionFailed, void(ClientConnection* viewer));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockClientConnectionEventHandler);
-};
-
-}  // namespace protocol
 
 }  // namespace remoting
 

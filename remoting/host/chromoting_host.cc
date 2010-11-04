@@ -19,6 +19,9 @@
 #include "remoting/host/session_manager.h"
 #include "remoting/protocol/chromotocol_config.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/connection_to_client.h"
+
+using remoting::protocol::ConnectionToClient;
 
 namespace remoting {
 
@@ -103,12 +106,12 @@ void ChromotingHost::Shutdown() {
   // Tell the session to pause and then disconnect all clients.
   if (session_.get()) {
     session_->Pause();
-    session_->RemoveAllClients();
+    session_->RemoveAllConnections();
   }
 
-  // Disconnect all clients.
-  if (client_) {
-    client_->Disconnect();
+  // Disconnect the client.
+  if (connection_) {
+    connection_->Disconnect();
   }
 
   // Stop the heartbeat sender.
@@ -133,8 +136,8 @@ void ChromotingHost::Shutdown() {
   }
 }
 
-// This method is called if a client is connected to this object.
-void ChromotingHost::OnClientConnected(protocol::ClientConnection* client) {
+// This method is called when a client connects.
+void ChromotingHost::OnClientConnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Create a new RecordSession if there was none.
@@ -143,7 +146,7 @@ void ChromotingHost::OnClientConnected(protocol::ClientConnection* client) {
     // it should run on.
     DCHECK(capturer_.get());
 
-    Encoder* encoder = CreateEncoder(client->session()->config());
+    Encoder* encoder = CreateEncoder(connection->session()->config());
 
     session_ = new SessionManager(context_->capture_message_loop(),
                                   context_->encode_message_loop(),
@@ -152,32 +155,32 @@ void ChromotingHost::OnClientConnected(protocol::ClientConnection* client) {
                                   encoder);
   }
 
-  // Immediately add the client and start the session.
-  session_->AddClient(client);
+  // Immediately add the connection and start the session.
+  session_->AddConnection(connection);
   session_->Start();
   VLOG(1) << "Session manager started";
 }
 
-void ChromotingHost::OnClientDisconnected(protocol::ClientConnection* client) {
+void ChromotingHost::OnClientDisconnected(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // Remove the client from the session manager and pause the session.
-  // TODO(hclam): Pause only if the last client disconnected.
+  // Remove the connection from the session manager and pause the session.
+  // TODO(hclam): Pause only if the last connection disconnected.
   if (session_.get()) {
-    session_->RemoveClient(client);
+    session_->RemoveConnection(connection);
     session_->Pause();
   }
 
-  // Close the connection to client just to be safe.
-  client->Disconnect();
+  // Close the connection to connection just to be safe.
+  connection->Disconnect();
 
-  // Also remove reference to ClientConnection from this object.
-  client_ = NULL;
+  // Also remove reference to ConnectionToClient from this object.
+  connection_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// protocol::ClientConnection::EventHandler implementations
-void ChromotingHost::HandleMessage(protocol::ClientConnection* client,
+// protocol::ConnectionToClient::EventHandler implementations
+void ChromotingHost::HandleMessage(ConnectionToClient* connection,
                                    ChromotingClientMessage* message) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
@@ -187,26 +190,26 @@ void ChromotingHost::HandleMessage(protocol::ClientConnection* client,
   executor_->HandleInputEvent(message);
 }
 
-void ChromotingHost::OnConnectionOpened(protocol::ClientConnection* client) {
+void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
-  // Completes the client connection.
+  // Completes the connection to the client.
   VLOG(1) << "Connection to client established.";
-  OnClientConnected(client_.get());
+  OnClientConnected(connection_.get());
 }
 
-void ChromotingHost::OnConnectionClosed(protocol::ClientConnection* client) {
+void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   VLOG(1) << "Connection to client closed.";
-  OnClientDisconnected(client_.get());
+  OnClientDisconnected(connection_.get());
 }
 
-void ChromotingHost::OnConnectionFailed(protocol::ClientConnection* client) {
+void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   LOG(ERROR) << "Connection failed unexpectedly.";
-  OnClientDisconnected(client_.get());
+  OnClientDisconnected(connection_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -246,7 +249,7 @@ void ChromotingHost::OnNewClientSession(
     protocol::SessionManager::IncomingSessionResponse* response) {
   AutoLock auto_lock(lock_);
   // TODO(hclam): Allow multiple clients to connect to the host.
-  if (client_.get() || state_ != kStarted) {
+  if (connection_.get() || state_ != kStarted) {
     *response = protocol::SessionManager::DECLINE;
     return;
   }
@@ -281,8 +284,8 @@ void ChromotingHost::OnNewClientSession(
 
   // If we accept the connected then create a client object and set the
   // callback.
-  client_ = new protocol::ClientConnection(context_->main_message_loop(), this);
-  client_->Init(session);
+  connection_ = new ConnectionToClient(context_->main_message_loop(), this);
+  connection_->Init(session);
 }
 
 void ChromotingHost::OnServerClosed() {

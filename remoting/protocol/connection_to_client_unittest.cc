@@ -4,9 +4,10 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/mock_objects.h"
-#include "remoting/host/client_connection.h"
 #include "remoting/host/mock_objects.h"
 #include "remoting/protocol/fake_session.h"
+#include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -14,10 +15,11 @@ using ::testing::NotNull;
 using ::testing::StrictMock;
 
 namespace remoting {
+namespace protocol {
 
-class ClientConnectionTest : public testing::Test {
+class ConnectionToClientTest : public testing::Test {
  public:
-  ClientConnectionTest() {
+  ConnectionToClientTest() {
   }
 
  protected:
@@ -26,7 +28,7 @@ class ClientConnectionTest : public testing::Test {
     session_->set_message_loop(&message_loop_);
 
     // Allocate a ClientConnection object with the mock objects.
-    viewer_ = new protocol::ClientConnection(&message_loop_, &handler_);
+    viewer_ = new ConnectionToClient(&message_loop_, &handler_);
     viewer_->Init(session_);
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
     session_->state_change_callback()->Run(
@@ -35,21 +37,21 @@ class ClientConnectionTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  protocol::MockClientConnectionEventHandler handler_;
-  scoped_refptr<protocol::ClientConnection> viewer_;
+  MockConnectionToClientEventHandler handler_;
+  scoped_refptr<ConnectionToClient> viewer_;
 
   scoped_refptr<protocol::FakeSession> session_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ClientConnectionTest);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionToClientTest);
 };
 
-TEST_F(ClientConnectionTest, SendUpdateStream) {
+TEST_F(ConnectionToClientTest, SendUpdateStream) {
   // Then send the actual data.
   VideoPacket packet;
   viewer_->SendVideoPacket(packet);
 
-  // And then close the connection to ClientConnection.
+  // And then close the connection to ConnectionToClient.
   viewer_->Disconnect();
 
   message_loop_.RunAllPending();
@@ -59,7 +61,7 @@ TEST_F(ClientConnectionTest, SendUpdateStream) {
   EXPECT_GT(session_->video_channel()->written_data().size(), 0u);
 }
 
-TEST_F(ClientConnectionTest, StateChange) {
+TEST_F(ConnectionToClientTest, StateChange) {
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get()));
   session_->state_change_callback()->Run(protocol::Session::CLOSED);
   message_loop_.RunAllPending();
@@ -71,7 +73,7 @@ TEST_F(ClientConnectionTest, StateChange) {
 
 // Test that we can close client connection more than once and operations
 // after the connection is closed has no effect.
-TEST_F(ClientConnectionTest, Close) {
+TEST_F(ConnectionToClientTest, Close) {
   viewer_->Disconnect();
   message_loop_.RunAllPending();
   EXPECT_TRUE(session_->is_closed());
@@ -85,4 +87,5 @@ TEST_F(ClientConnectionTest, Close) {
   EXPECT_EQ(session_->video_channel()->written_data().size(), 0u);
 }
 
+}  // namespace protocol
 }  // namespace remoting

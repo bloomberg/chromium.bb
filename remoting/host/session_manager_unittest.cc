@@ -7,8 +7,11 @@
 #include "remoting/base/mock_objects.h"
 #include "remoting/host/mock_objects.h"
 #include "remoting/host/session_manager.h"
+#include "remoting/protocol/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::remoting::protocol::MockConnectionToClient;
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -32,7 +35,7 @@ class SessionManagerTest : public testing::Test {
   void Init() {
     capturer_ = new MockCapturer();
     encoder_ = new MockEncoder();
-    client_ = new protocol::MockClientConnection();
+    connection_ = new MockConnectionToClient();
     record_ = new SessionManager(&message_loop_,
                                  &message_loop_,
                                  &message_loop_,
@@ -41,7 +44,7 @@ class SessionManagerTest : public testing::Test {
   }
 
   scoped_refptr<SessionManager> record_;
-  scoped_refptr<protocol::MockClientConnection> client_;
+  scoped_refptr<MockConnectionToClient> connection_;
   MockCapturer* capturer_;
   MockEncoder* encoder_;
   MessageLoop message_loop_;
@@ -88,8 +91,8 @@ TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
   // Add the mock client connection to the session.
   EXPECT_CALL(*capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(*capturer_, height()).WillRepeatedly(Return(kHeight));
-  EXPECT_CALL(*client_, SendInitClientMessage(kWidth, kHeight));
-  record_->AddClient(client_);
+  EXPECT_CALL(*connection_, SendInitClientMessage(kWidth, kHeight));
+  record_->AddConnection(connection_);
 
   // First the capturer is called.
   EXPECT_CALL(*capturer_, CaptureInvalidRects(NotNull()))
@@ -101,8 +104,8 @@ TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
       .WillOnce(FinishEncode(packet));
 
   // Expect the client be notified.
-  EXPECT_CALL(*client_, SendVideoPacket(_));
-  EXPECT_CALL(*client_, GetPendingUpdateStreamMessages())
+  EXPECT_CALL(*connection_, SendVideoPacket(_));
+  EXPECT_CALL(*connection_, GetPendingUpdateStreamMessages())
       .Times(AtLeast(0))
       .WillRepeatedly(Return(0));
 

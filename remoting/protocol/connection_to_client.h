@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_CLIENT_CONNECTION_H_
-#define REMOTING_HOST_CLIENT_CONNECTION_H_
+#ifndef REMOTING_PROTOCOL_CONNECTION_TO_CLIENT_H_
+#define REMOTING_PROTOCOL_CONNECTION_TO_CLIENT_H_
 
 #include <deque>
 #include <vector>
@@ -25,37 +25,38 @@ namespace protocol {
 // screen updates and other messages to the remote viewer. It is also
 // responsible for receiving and parsing data from the remote viewer and
 // delegating events to the event handler.
-class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
+class ConnectionToClient :
+  public base::RefCountedThreadSafe<ConnectionToClient> {
  public:
   class EventHandler {
    public:
     virtual ~EventHandler() {}
 
-    // Handles an event received by the ClientConnection. Receiver will own the
-    // ClientMessages in ClientMessageList and needs to delete them.
+    // Handles an event received by the ConnectionToClient. Receiver will own
+    // the ClientMessages in ClientMessageList and needs to delete them.
     // Note that the sender of messages will not reference messages
     // again so it is okay to clear |messages| in this method.
-    virtual void HandleMessage(ClientConnection* viewer,
+    virtual void HandleMessage(ConnectionToClient* connection,
                                ChromotingClientMessage* message) = 0;
 
     // Called when the network connection is opened.
-    virtual void OnConnectionOpened(ClientConnection* viewer) = 0;
+    virtual void OnConnectionOpened(ConnectionToClient* connection) = 0;
 
     // Called when the network connection is closed.
-    virtual void OnConnectionClosed(ClientConnection* viewer) = 0;
+    virtual void OnConnectionClosed(ConnectionToClient* connection) = 0;
 
     // Called when the network connection has failed.
-    virtual void OnConnectionFailed(ClientConnection* viewer) = 0;
+    virtual void OnConnectionFailed(ConnectionToClient* connection) = 0;
   };
 
-  // Constructs a ClientConnection object. |message_loop| is the message loop
+  // Constructs a ConnectionToClient object. |message_loop| is the message loop
   // that this object runs on. A viewer object receives events and messages from
   // a libjingle channel, these events are delegated to |handler|.
   // It is guranteed that |handler| is called only on the |message_loop|.
-  ClientConnection(MessageLoop* message_loop,
+  ConnectionToClient(MessageLoop* message_loop,
                    EventHandler* handler);
 
-  virtual ~ClientConnection();
+  virtual ~ConnectionToClient();
 
   virtual void Init(protocol::Session* session);
 
@@ -82,7 +83,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
 
  protected:
   // Protected constructor used by unit test.
-  ClientConnection();
+  ConnectionToClient();
 
  private:
   // Callback for protocol Session.
@@ -112,10 +113,10 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
   // Event handler for handling events sent from this object.
   EventHandler* handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ClientConnection);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionToClient);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_CLIENT_CONNECTION_H_
+#endif  // REMOTING_PROTOCOL_CONNECTION_TO_CLIENT_H_

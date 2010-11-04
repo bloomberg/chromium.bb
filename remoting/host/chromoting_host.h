@@ -11,16 +11,20 @@
 #include "remoting/base/encoder.h"
 #include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
-#include "remoting/host/client_connection.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/session_manager.h"
+#include "remoting/protocol/connection_to_client.h"
 
 class Task;
 
 namespace remoting {
+
+namespace protocol {
+class ConnectionToClient;
+}  // namespace protocol
 
 class Capturer;
 class ChromotingHostContext;
@@ -39,11 +43,11 @@ class SessionManager;
 //    and register the host.
 //
 // 2. We listen for incoming connection using libjingle. We will create
-//    a ClientConnection object that wraps around linjingle for transport. Also
-//    create a SessionManager with appropriate Encoder and Capturer and
-//    add the ClientConnection to this SessionManager for transporting the
+//    a ConnectionToClient object that wraps around linjingle for transport.
+//    Also create a SessionManager with appropriate Encoder and Capturer and
+//    add the ConnectionToClient to this SessionManager for transporting the
 //    screen captures. A EventExecutor is created and registered with the
-//    ClientConnection to receive mouse / keyboard events from the remote
+//    ConnectionToClient to receive mouse / keyboard events from the remote
 //    client.
 //    This is also the right time to create multiple threads to host
 //    the above objects. After we have done all the initialization
@@ -56,7 +60,7 @@ class SessionManager;
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
 class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
-                       public protocol::ClientConnection::EventHandler,
+                       public protocol::ConnectionToClient::EventHandler,
                        public JingleClient::Callback {
  public:
   ChromotingHost(ChromotingHostContext* context, MutableHostConfig* config,
@@ -78,18 +82,18 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void Shutdown();
 
   // This method is called if a client is connected to this object.
-  void OnClientConnected(protocol::ClientConnection* client);
+  void OnClientConnected(protocol::ConnectionToClient* client);
 
   // This method is called if a client is disconnected from the host.
-  void OnClientDisconnected(protocol::ClientConnection* client);
+  void OnClientDisconnected(protocol::ConnectionToClient* client);
 
   ////////////////////////////////////////////////////////////////////////////
-  // protocol::ClientConnection::EventHandler implementations
-  virtual void HandleMessage(protocol::ClientConnection* client,
+  // protocol::ConnectionToClient::EventHandler implementations
+  virtual void HandleMessage(protocol::ConnectionToClient* client,
                              ChromotingClientMessage* message);
-  virtual void OnConnectionOpened(protocol::ClientConnection* client);
-  virtual void OnConnectionClosed(protocol::ClientConnection* client);
-  virtual void OnConnectionFailed(protocol::ClientConnection* client);
+  virtual void OnConnectionOpened(protocol::ConnectionToClient* client);
+  virtual void OnConnectionClosed(protocol::ConnectionToClient* client);
+  virtual void OnConnectionFailed(protocol::ConnectionToClient* client);
 
   ////////////////////////////////////////////////////////////////////////////
   // JingleClient::Callback implementations
@@ -143,9 +147,9 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   AccessVerifier access_verifier_;
 
-  // A ClientConnection manages the connectino to a remote client.
+  // A ConnectionToClient manages the connectino to a remote client.
   // TODO(hclam): Expand this to a list of clients.
-  scoped_refptr<protocol::ClientConnection> client_;
+  scoped_refptr<protocol::ConnectionToClient> connection_;
 
   // Session manager for the host process.
   scoped_refptr<SessionManager> session_;
