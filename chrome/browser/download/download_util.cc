@@ -21,6 +21,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/windows_version.h"
@@ -150,8 +151,13 @@ void GenerateExtension(const FilePath& file_name,
     extension.assign(default_extension);
 #endif
 
-  if (extension.empty())
+  if (extension.empty()) {
+    // The GetPreferredExtensionForMimeType call will end up going to disk.  Do
+    // this on another thread to avoid slowing the IO thread.
+    // http://crbug.com/61827
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     net::GetPreferredExtensionForMimeType(mime_type, &extension);
+  }
 
   generated_extension->swap(extension);
 }

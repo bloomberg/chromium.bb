@@ -110,6 +110,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 // Cross-Site Navigations
 //
@@ -2027,25 +2028,19 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
   DCHECK(!plugin_path.value().empty());
 
   std::wstring plugin_name = plugin_path.ToWStringHack();
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  scoped_ptr<FileVersionInfo> version_info(
-      FileVersionInfo::CreateFileVersionInfo(plugin_path));
-  if (version_info.get()) {
-    const std::wstring& product_name = version_info->product_name();
-    if (!product_name.empty()) {
-      plugin_name = product_name;
+  WebPluginInfo plugin_info;
+  if (NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
+          plugin_path, &plugin_info) &&
+      !plugin_info.name.empty()) {
+    plugin_name = UTF16ToWide(plugin_info.name);
 #if defined(OS_MACOSX)
-      // Many plugins on the Mac have .plugin in the actual name, which looks
-      // terrible, so look for that and strip it off if present.
-      const std::wstring plugin_extension(L".plugin");
-      if (EndsWith(plugin_name, plugin_extension, true))
-        plugin_name.erase(plugin_name.length() - plugin_extension.length());
+    // Many plugins on the Mac have .plugin in the actual name, which looks
+    // terrible, so look for that and strip it off if present.
+    const std::wstring plugin_extension(L".plugin");
+    if (EndsWith(plugin_name, plugin_extension, true))
+      plugin_name.erase(plugin_name.length() - plugin_extension.length());
 #endif  // OS_MACOSX
-    }
   }
-#else
-  NOTIMPLEMENTED() << " convert plugin path to plugin name";
-#endif
   SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
   AddInfoBar(new SimpleAlertInfoBarDelegate(

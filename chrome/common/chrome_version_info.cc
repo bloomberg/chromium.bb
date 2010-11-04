@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "build/build_config.h"
 
 namespace chrome {
@@ -16,6 +17,8 @@ namespace chrome {
 // FileVersionInfo for the current module.
 
 VersionInfo::VersionInfo() {
+  // The current module is already loaded in memory, so this will be cheap.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   version_info_.reset(FileVersionInfo::CreateFileVersionInfoForCurrentModule());
 }
 

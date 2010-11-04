@@ -8,6 +8,7 @@
 #include "base/data_pack.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
@@ -842,6 +843,10 @@ void BrowserThemePack::BuildSourceImagesArray(const FilePathMap& file_paths) {
 bool BrowserThemePack::LoadRawBitmapsTo(
     const FilePathMap& file_paths,
     ImageCache* raw_bitmaps) {
+  // Themes should be loaded on the file thread, not the UI thread.
+  // http://crbug.com/61838
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   for (FilePathMap::const_iterator it = file_paths.begin();
        it != file_paths.end(); ++it) {
     scoped_refptr<RefCountedMemory> raw_data(ReadFileData(it->second));

@@ -4,6 +4,7 @@
 
 #include "net/base/ssl_config_service_win.h"
 
+#include "base/thread_restrictions.h"
 #include "base/win/registry.h"
 
 using base::TimeDelta;
@@ -59,6 +60,9 @@ void SSLConfigServiceWin::GetSSLConfigAt(SSLConfig* config, TimeTicks now) {
 
 // static
 bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
+  // This registry access goes to disk and will slow down the IO thread.
+  // http://crbug.com/61455
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   RegKey internet_settings;
   if (!internet_settings.Open(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                               KEY_READ))
@@ -83,6 +87,8 @@ bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
 
 // static
 void SSLConfigServiceWin::SetRevCheckingEnabled(bool enabled) {
+  // This registry access goes to disk and will slow down the IO thread.
+  // http://crbug.com/61455
   DWORD value = enabled;
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_WRITE);
@@ -108,6 +114,8 @@ void SSLConfigServiceWin::SetTLS1Enabled(bool enabled) {
 
 // static
 void SSLConfigServiceWin::SetSSLVersionEnabled(int version, bool enabled) {
+  // This registry access goes to disk and will slow down the IO thread.
+  // http://crbug.com/61455
   RegKey internet_settings(HKEY_CURRENT_USER, kInternetSettingsSubKeyName,
                            KEY_READ | KEY_WRITE);
   DWORD value;

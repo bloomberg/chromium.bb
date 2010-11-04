@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
 #include "base/task.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -116,7 +117,13 @@ void SandboxedExtensionUnpacker::Start() {
   }
 }
 
-SandboxedExtensionUnpacker::~SandboxedExtensionUnpacker() {}
+SandboxedExtensionUnpacker::~SandboxedExtensionUnpacker() {
+  // temp_dir_'s destructor will delete a directory on the file thread.  Do
+  // this on another thread to avoid slowing the UI thread.
+  // http://crbug.com/61922
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  temp_dir_.Delete();
+}
 
 void SandboxedExtensionUnpacker::StartProcessOnIOThread(
     const FilePath& temp_crx_path) {

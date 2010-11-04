@@ -13,6 +13,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/task.h"
 #include "base/thread.h"
@@ -1158,6 +1159,10 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(
 }
 
 FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
+  // The GetMimeTypeFromExtension call will end up going to disk.  Do this on
+  // another thread to avoid slowing the UI thread.  http://crbug.com/61775
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   // If the file name doesn't have an extension suitable for HTML files,
   // append one.
   FilePath::StringType ext = name.Extension();
@@ -1174,6 +1179,10 @@ FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
 
 FilePath SavePackage::EnsureMimeExtension(const FilePath& name,
     const FilePath::StringType& contents_mime_type) {
+  // The GetMimeTypeFromExtension call will end up going to disk.  Do this on
+  // another thread to avoid slowing the UI thread.  http://crbug.com/61775
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   // Start extension at 1 to skip over period if non-empty.
   FilePath::StringType ext = name.Extension().length() ?
       name.Extension().substr(1) : name.Extension();

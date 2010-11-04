@@ -257,7 +257,7 @@ net::ProxyScriptFetcher* IOThread::CreateAndRegisterProxyScriptFetcher(
 }
 
 void IOThread::Init() {
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
   // TODO(evan): test and enable this on all platforms.
   // Though this thread is called the "IO" thread, it actually just routes
   // messages around; it shouldn't be allowed to perform any blocking disk I/O.
