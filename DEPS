@@ -10,7 +10,7 @@ vars = {
   "swig_revision": "40423",
   "nacl_revision": "3365",
   "libjingle_revision": "33",
-  "libvpx_revision": "63575",
+  "libvpx_revision": "64931",
   "ffmpeg_revision": "64326",
 }
 
@@ -163,16 +163,13 @@ deps = {
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
 
+  "src/third_party/libvpx":
+    "/trunk/deps/third_party/libvpx@" +
+    Var("libvpx_revision"),
+
   "src/third_party/ffmpeg":
     "/trunk/deps/third_party/ffmpeg/source@" +
     Var("ffmpeg_revision"),
-
-  "src/third_party/libvpx/include":
-    "/trunk/deps/third_party/libvpx/include@" +
-    Var("libvpx_revision"),
-  "src/third_party/libvpx/lib":
-    "/trunk/deps/third_party/libvpx/lib@" +
-    Var("libvpx_revision"),
 
   "src/third_party/libjingle/source":
     (Var("googlecode_url") % "libjingle") + "/trunk@" +
