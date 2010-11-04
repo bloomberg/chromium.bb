@@ -4100,6 +4100,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DNS_SERVER_DESCRIPTION" desc="">
         User specified DNS server, which Chrome will use for DNS resolutions rather than the system defaults.
       </message>
+      <message name="IDS_FLAGS_PAGE_PRERENDER_NAME" desc="">
+        Web Page Prerendering.
+      </message>
+      <message name="IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION" desc="">
+        Speculatively prerenders complete webpages in the background for a faster browsing experience.
+      </message>
       <message name="IDS_FLAGS_CONFIRM_TO_QUIT_NAME" desc="Name of the 'Confirm to Quit' lab.">
         Confirm to Quit
       </message>

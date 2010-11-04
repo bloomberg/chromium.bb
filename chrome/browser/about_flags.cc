@@ -151,6 +151,13 @@ const Experiment kExperiments[] = {
     switches::kDnsServer
   },
   {
+    "page-prerender",
+    IDS_FLAGS_PAGE_PRERENDER_NAME,
+    IDS_FLAGS_PAGE_PRERENDER_DESCRIPTION,
+    kOsAll,
+    switches::kEnablePagePrerender
+  },
+  {
     "confirm-to-quit",   // Do not change; see above.
     IDS_FLAGS_CONFIRM_TO_QUIT_NAME,
     IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION,

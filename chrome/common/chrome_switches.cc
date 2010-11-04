@@ -464,6 +464,9 @@ const char kEnableRemoting[]                = "enable-remoting";
 const char kEnableResourceContentSettings[] =
     "enable-resource-content-settings";
 
+// Enable speculative prerendering of pages.
+const char kEnablePagePrerender[]           = "enable-page-prerender";
+
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
