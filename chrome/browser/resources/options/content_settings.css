@@ -6,9 +6,20 @@ found in the LICENSE file.
 
 .contentSettingsHeader {
    /* TODO(dhg): something nice. */
+  margin: 0px;
+  margin-bottom: 1em;
 }
 
-.exceptionsLink {
-  font-weight: bold;
-  cursor: pointer;
+.zippy div[mode=otr] {
+  display: none;
+}
+
+.zippy.show-otr div[mode=otr] {
+  display: block;
+  /* background reminiscent of an incognito window, but faded */
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(rgba(97, 122, 156, .25)),
+                               to(rgba(82, 108, 145, .25)));
 }

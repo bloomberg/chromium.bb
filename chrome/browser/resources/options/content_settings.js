@@ -29,32 +29,22 @@ cr.define('options', function() {
 
       chrome.send('getContentFilterSettings');
 
-      // Exceptions lists. -----------------------------------------------------
-      function handleExceptionsLinkClickEvent(event) {
-        var exceptionsArea = event.target.parentNode.
-            querySelector('div[contentType][mode=normal]');
-        exceptionsArea.classList.toggle('hidden');
-        exceptionsArea.querySelector('list').redraw();
-
-        var otrExceptionsArea = event.target.parentNode.
-            querySelector('div[contentType][mode=otr]');
-        if (otrExceptionsArea && otrExceptionsArea.otrProfileExists) {
-          otrExceptionsArea.classList.toggle('hidden');
-          otrExceptionsArea.querySelector('list').redraw();
-        }
-
-        return false;
-      }
-      var exceptionsLinks =
-          this.pageDiv.querySelectorAll('.exceptionsLink');
-      for (var i = 0; i < exceptionsLinks.length; i++) {
-        exceptionsLinks[i].onclick = handleExceptionsLinkClickEvent;
-      }
-
       var exceptionsAreas = this.pageDiv.querySelectorAll('div[contentType]');
       for (var i = 0; i < exceptionsAreas.length; i++) {
         options.contentSettings.ExceptionsArea.decorate(exceptionsAreas[i]);
       }
+
+      cr.ui.decorate('.zippy', options.Zippy);
+      this.pageDiv.addEventListener('measure', function(e) {
+        if (e.target.classList.contains('zippy')) {
+          var lists = e.target.querySelectorAll('list');
+          for (var i = 0; i < lists.length; i++) {
+            if (lists[i].redraw) {
+              lists[i].redraw();
+            }
+          }
+        }
+      });
 
       // Cookies filter page ---------------------------------------------------
       $('block-third-party-cookies').onclick = function(event) {
@@ -115,6 +105,18 @@ cr.define('options', function() {
     var exceptionsArea =
         document.querySelector('div[contentType=' + type + '][mode=otr]');
     exceptionsArea.otrProfileExists = true;
+
+    // Find the containing zippy, set it to show OTR profiles, and remeasure it
+    // to make it smoothly animate to the new size.
+    var zippy = exceptionsArea;
+    while (zippy &&
+           (!zippy.classList || !zippy.classList.contains('zippy'))) {
+      zippy = zippy.parentNode;
+    }
+    if (zippy) {
+      zippy.classList.add('show-otr');
+      zippy.remeasure();
+    }
 
     var exceptionsList = exceptionsArea.querySelector('list');
     exceptionsList.clear();
@@ -178,4 +180,3 @@ cr.define('options', function() {
   };
 
 });
-

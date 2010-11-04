@@ -1,0 +1,54 @@
+/*
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+.zippy {
+  margin-top: 1ex;
+  margin-bottom: 1ex;
+}
+
+.zippy > .zippy-header {
+  font-weight: bold;
+  cursor: pointer;
+  background-color: #DFDFDF;  /* medium light gray */
+  background-image: url("../shared/images/minus.png");
+  background-position: 3px 3px;
+  background-repeat: no-repeat;
+  -webkit-padding-start: 18px;
+  min-height: 18px;
+}
+
+.zippy.collapsed > .zippy-header {
+  background-image: url("../shared/images/plus.png");
+}
+
+html[dir=rtl] .zippy > .zippy-header {
+  background-position: 3px right;
+}
+
+.zippy .zippy-content {
+  background: #EFEFEF;  /* extra light gray */
+  padding-left: 3px;
+  padding-right: 3px;
+  overflow: hidden;
+}
+
+.zippy.animated .zippy-content {
+  -webkit-transition: all .15s ease-in-out;
+}
+
+.zippy.collapsed .zippy-content {
+  opacity: 0;
+  height: 0 !important;  /* must override height in DOM style parameter */
+}
+
+.zippy.measure .zippy-content {
+  visibility: hidden;
+  position: absolute;
+}
+
+.zippy.remeasure .zippy-content {
+  visibility: hidden;
+}

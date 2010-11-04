@@ -33,7 +33,7 @@ cr.define('options', function() {
   OptionsPage.registeredSubPages_ = {};
 
   /**
-   * Pages which are meant to behave like model dialogs.
+   * Pages which are meant to behave like modal dialogs.
    */
   OptionsPage.registeredOverlayPages_ = {};
 
