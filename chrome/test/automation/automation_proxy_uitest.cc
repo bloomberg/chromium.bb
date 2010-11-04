@@ -1202,8 +1202,10 @@ class ExternalTabUITestPopupEnabled : public ExternalTabUITest {
 #if defined(OS_WIN)
 // http://crbug.com/61023 - Fails on one popular operating system.
 #define MAYBE_WindowDotOpen FLAKY_WindowDotOpen
+#define MAYBE_UserGestureTargetBlank FLAKY_UserGestureTargetBlank
 #else
 #define MAYBE_WindowDotOpen WindowDotOpen
+#define MAYBE_UserGestureTargetBlank UserGestureTargetBlank
 #endif
 
 // Testing AutomationMsg_AttachExternalTab callback from Chrome.
@@ -1274,7 +1276,7 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
 }
 
 // Open a new window by simulating a user gesture through keyboard.
-TEST_F(ExternalTabUITestPopupEnabled, UserGestureTargetBlank) {
+TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
   mock_->IgnoreFavIconNetworkRequest();
