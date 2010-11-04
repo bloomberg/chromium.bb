@@ -8,7 +8,7 @@
 #define CEEE_IE_COMMON_CRASH_REPORTER_H_
 
 #include "base/scoped_ptr.h"
-#include "client/windows/handler/exception_handler.h"
+#include "breakpad/src/client/windows/handler/exception_handler.h"
 
 // A wrapper around Breakpad's ExceptionHandler class for crash reporting using
 // Omaha's crash reporting service.
