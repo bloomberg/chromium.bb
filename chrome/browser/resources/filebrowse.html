@@ -598,6 +598,10 @@ div.fullcontainer {
   background: url('../../app/theme/alert_small.png');
 }
 
+input.error {
+  background-color: #ff6666;
+}
+
 </style>
 <script src="shared/js/local_strings.js"></script>
 <script src="shared/js/media_common.js"></script>
@@ -998,9 +1002,25 @@ function dialogSaveClick() {
   }
   currentPath += '/';
   currentPath += filename;
-  chrome.send('DialogClose', [JSON.stringify({'path' : currentPath})]);
+  chrome.send('validateSavePath', [currentPath]);
+
+  filenameInput.disabled = true;
+  $('savebutton').disabled = true;
 };
 
+function onValidatedSavePath(valid, savePath) {
+  var filenameInput = $('filename');
+
+  filenameInput.disabled = false;
+  $('savebutton').disabled = false;
+
+  if (valid) {
+    filenameInput.classList.remove('error');
+    chrome.send('DialogClose', [JSON.stringify({'path' : savePath})]);
+  } else {
+    filenameInput.classList.add('error');
+  }
+}
 
 function createNewFormItem(initialName, isDirectory, id, blurcallback, keypresscallback) {
   var element = document.createElement('li');

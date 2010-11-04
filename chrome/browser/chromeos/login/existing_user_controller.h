@@ -26,6 +26,7 @@ namespace chromeos {
 
 class HelpAppLauncher;
 class MessageBubble;
+class UserCrosSettingsProvider;
 
 // ExistingUserController is used to handle login when someone has
 // already logged into the machine. When Init is invoked, a
@@ -163,6 +164,9 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // Help application used for help dialogs.
   scoped_ptr<HelpAppLauncher> help_app_;
+
+  // A user settings provider instance to trigger settings cache update.
+  scoped_ptr<UserCrosSettingsProvider> user_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

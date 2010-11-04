@@ -104,6 +104,7 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
 ExistingUserController*
   ExistingUserController::delete_scheduled_instance_ = NULL;
 
+// TODO(xiyuan): Wait for the cached settings update before using them.
 ExistingUserController::ExistingUserController(
     const std::vector<UserManager::User>& users,
     const gfx::Rect& background_bounds)
@@ -112,7 +113,8 @@ ExistingUserController::ExistingUserController(
       background_view_(NULL),
       selected_view_index_(kNotSelected),
       num_login_attempts_(0),
-      bubble_(NULL) {
+      bubble_(NULL),
+      user_settings_(new UserCrosSettingsProvider()) {
   if (delete_scheduled_instance_)
     delete_scheduled_instance_->Delete();
 
@@ -335,6 +337,12 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
 
 void ExistingUserController::RemoveUser(UserController* source) {
   ClearErrors();
+
+  // TODO(xiyuan): Wait for the cached settings update before using them.
+  if (UserCrosSettingsProvider::cached_owner() == source->user().email()) {
+    // Owner is not allowed to be removed from the device.
+    return;
+  }
 
   UserManager::Get()->RemoveUser(source->user().email());
 
