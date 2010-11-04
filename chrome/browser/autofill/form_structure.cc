@@ -167,16 +167,16 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
     if (processed_forms.find(signature) != processed_forms.end())
       continue;
     processed_forms.insert(signature);
-    buzz::XmlElement* encompassing_xml_element =
-        new buzz::XmlElement(buzz::QName("form"));
+    scoped_ptr<buzz::XmlElement> encompassing_xml_element(
+        new buzz::XmlElement(buzz::QName("form")));
     encompassing_xml_element->SetAttr(buzz::QName(kAttributeSignature),
                                       signature);
 
     if (!(*it)->EncodeFormRequest(FormStructure::QUERY,
-                                  encompassing_xml_element))
+                                  encompassing_xml_element.get()))
       continue;  // Malformed form, skip it.
 
-    autofil_request_xml.AddElement(encompassing_xml_element);
+    autofil_request_xml.AddElement(encompassing_xml_element.release());
     encoded_signatures->push_back(signature);
   }
 
