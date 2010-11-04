@@ -551,7 +551,7 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
   return true;
 }
 
-Singleton<ProxyFactory> g_proxy_factory;
+Singleton<ProxyFactory, LeakySingletonTraits<ProxyFactory> > g_proxy_factory;
 
 template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
   static void RetainCallee(ChromeFrameAutomationClient* obj) {}

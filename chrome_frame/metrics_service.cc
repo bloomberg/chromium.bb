@@ -98,7 +98,7 @@ base::LazyInstance<MetricsService>
 
 // Traits to create an instance of the ChromeFrame upload thread.
 struct UploadThreadInstanceTraits
-    : public base::DefaultLazyInstanceTraits<base::Thread> {
+    : public base::LeakyLazyInstanceTraits<base::Thread> {
   static base::Thread* New(void* instance) {
     // Use placement new to initialize our instance in our preallocated space.
     // The parenthesis is very important here to force POD type initialization.
