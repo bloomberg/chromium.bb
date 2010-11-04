@@ -16,3 +16,6 @@ HttpNetworkTransactionTest.StopsReading204
 HttpNetworkTransactionTest.Incomplete100ThenEOF
 HttpNetworkTransactionTest.UseAlternateProtocolForNpnSpdyWithExistingSpdySession
 HttpNetworkTransactionTest.KeepAliveConnectionEOF
+
+# Hangs, see http://crbug.com/61908
+DirectoryListerTest.BigDirRecursiveTest
