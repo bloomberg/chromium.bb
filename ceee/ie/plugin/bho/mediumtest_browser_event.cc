@@ -465,7 +465,8 @@ TEST_F(BrowserEventTest, NavigateToDifferentPageRetainsEventHandler) {
   EXPECT_EQ(3, TestFrameEventHandler::instance_count());
 }
 
-TEST_F(BrowserEventTest, RefreshFrameBrowserRetainsHandler) {
+// The failure may be IE9-specific.
+TEST_F(BrowserEventTest, FLAKY_RefreshFrameBrowserRetainsHandler) {
   EXPECT_TRUE(NavigateBrowser(GetTestUrl(kTwoFramesPage)));
 
   // We should have three frame handlers at this point.
