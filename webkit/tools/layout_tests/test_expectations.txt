@@ -37,4 +37,4 @@ BUG48982 MAC : tables/mozilla/bugs/bug82946-2.html = IMAGE
 // Below bug shows up regularly on Win (Debug) & Mac (Release), 
 // but also at least once on the Linux canary.
 // Could not reproduce on my local machine so far, though...
-BUGROLANDSTEINER WIN MAC : fast/events/remove-event-listener.html = CRASH
+BUGWK48896 : fast/events/remove-event-listener.html = CRASH PASS
