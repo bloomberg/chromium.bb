@@ -63,6 +63,7 @@ class SessionServiceTestHelper {
       size_t nav_count);
 
   void set_service(SessionService* service) { service_ = service; }
+  SessionService* ReleaseService() { return service_.release(); }
   SessionService* service() { return service_.get(); }
 
   SessionBackend* backend();

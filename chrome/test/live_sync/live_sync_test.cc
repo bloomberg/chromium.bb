@@ -118,6 +118,11 @@ void LiveSyncTest::SetUp() {
     cl->AppendSwitch(switches::kSyncTrySsltcpFirstForXmpp);
   }
 
+  // TODO(sync): Remove this once sessions sync is enabled by default.
+  if (!cl->HasSwitch(switches::kEnableSyncSessions)) {
+    cl->AppendSwitch(switches::kEnableSyncSessions);
+  }
+
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
 #if defined(OS_MACOSX)
   Encryptor::UseMockKeychain(true);

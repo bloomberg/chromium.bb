@@ -110,7 +110,7 @@ SessionWindow::~SessionWindow() {
 
 // ForeignSession --------------------------------------------------------------
 
-ForeignSession::ForeignSession() : foreign_tession_tag("invalid") {
+ForeignSession::ForeignSession() : foreign_session_tag("invalid") {
 }
 
 ForeignSession::~ForeignSession() {

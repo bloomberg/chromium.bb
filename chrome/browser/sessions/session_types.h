@@ -185,7 +185,7 @@ struct ForeignSession {
   ~ForeignSession();
 
   // Unique tag for each session.
-  std::string foreign_tession_tag;
+  std::string foreign_session_tag;
   std::vector<SessionWindow*> windows;
 };
 

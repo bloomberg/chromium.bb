@@ -240,7 +240,7 @@ class SessionService : public BaseSessionService,
   SessionCommand* CreatePinnedStateCommand(const SessionID& tab_id,
                                            bool is_pinned);
 
-  // Callback form the backend for getting the commands from the previous
+  // Callback from the backend for getting the commands from the previous
   // or save file. Converts the commands in SessionWindows and notifies
   // the real callback.
   void OnGotSessionCommands(

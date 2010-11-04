@@ -129,6 +129,10 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
   // Builds sessions from buffered specifics data
   bool GetSessionData(std::vector<ForeignSession*>* sessions);
 
+  // Helper method to generate session specifics from session windows.
+  void FillSpecificsFromSessions(std::vector<SessionWindow*>* windows,
+      sync_pb::SessionSpecifics* session);
+
   // Helper method for converting session specifics to windows.
   void AppendForeignSessionFromSpecifics(
       const sync_pb::SessionSpecifics* specifics,

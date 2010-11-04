@@ -142,7 +142,7 @@ void ForeignSessionHandler::GetForeignSessions(
 
         // TODO(zea): sessionTag is per client, it might be better per window.
         window_data->SetString("sessionTag",
-            foreign_session->foreign_tession_tag);
+            foreign_session->foreign_session_tag);
         window_data->SetInteger("sessionId", entry->id);
 
         // Give ownership to |list_value|.

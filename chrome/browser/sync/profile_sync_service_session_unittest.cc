@@ -314,7 +314,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
   ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs[0]->navigations.size());
-  ASSERT_EQ(foreign_sessions[0]->foreign_tession_tag, machine_tag);
+  ASSERT_EQ(foreign_sessions[0]->foreign_session_tag, machine_tag);
   ASSERT_EQ(1, foreign_sessions[0]->windows[0]->selected_tab_index);
   ASSERT_EQ(1, foreign_sessions[0]->windows[0]->type);
   ASSERT_EQ(13, foreign_sessions[0]->windows[0]->tabs[0]->tab_visual_index);

@@ -192,7 +192,9 @@ bool SessionModelAssociator::GetSessionData(
   // Build vector of sessions from specifics data
   for (std::vector<const sync_pb::SessionSpecifics*>::const_iterator i =
     specifics_.begin(); i != specifics_.end(); ++i) {
-    AppendForeignSessionFromSpecifics(*i, sessions);
+    // Only include sessions with open windows.
+    if ((*i)->session_window_size() > 0)
+      AppendForeignSessionFromSpecifics(*i, sessions);
   }
 
   return true;
@@ -202,7 +204,7 @@ void SessionModelAssociator::AppendForeignSessionFromSpecifics(
     const sync_pb::SessionSpecifics* specifics,
     std::vector<ForeignSession*>* session) {
   ForeignSession* foreign_session = new ForeignSession();
-  foreign_session->foreign_tession_tag = specifics->session_tag();
+  foreign_session->foreign_session_tag = specifics->session_tag();
   session->insert(session->end(), foreign_session);
   for (int i = 0; i < specifics->session_window_size(); i++) {
     const sync_pb::SessionWindow* window = &specifics->session_window(i);
@@ -386,24 +388,16 @@ bool SessionModelAssociator::WindowHasNoTabsToSync(
 
 void SessionModelAssociator::OnGotSession(int handle,
     std::vector<SessionWindow*>* windows) {
-  sync_pb::SessionSpecifics session;
+  sync_pb::SessionSpecifics specifics;
   // Set the tag, then iterate through the vector of windows, extracting the
   // window data, along with the tabs data and tab navigation data to populate
   // the session specifics.
-  session.set_session_tag(GetCurrentMachineTag());
-  for (std::vector<SessionWindow*>::const_iterator i = windows->begin();
-      i != windows->end(); ++i) {
-    const SessionWindow* window = *i;
-    if (WindowHasNoTabsToSync(window)) {
-       continue;
-    }
-    sync_pb::SessionWindow* session_window = session.add_session_window();
-    PopulateSessionSpecificsWindow(window, session_window);
-  }
+  specifics.set_session_tag(GetCurrentMachineTag());
+  FillSpecificsFromSessions(windows, &specifics);
   bool has_nodes = false;
   if (!SyncModelHasUserCreatedNodes(&has_nodes))
     return;
-  if (session.session_window_size() == 0 && has_nodes)
+  if (specifics.session_window_size() == 0 && has_nodes)
     return;
   sync_api::WriteTransaction trans(
       sync_service_->backend()->GetUserShareHandle());
@@ -412,7 +406,21 @@ void SessionModelAssociator::OnGotSession(int handle,
     LOG(ERROR) << kNoSessionsFolderError;
     return;
   }
-  UpdateSyncModel(&session, &trans, &root);
+  UpdateSyncModel(&specifics, &trans, &root);
+}
+
+void SessionModelAssociator::FillSpecificsFromSessions(
+    std::vector<SessionWindow*>* windows,
+    sync_pb::SessionSpecifics* session) {
+  for (std::vector<SessionWindow*>::const_iterator i = windows->begin();
+      i != windows->end(); ++i) {
+    const SessionWindow* window = *i;
+    if (WindowHasNoTabsToSync(window)) {
+      continue;
+    }
+    sync_pb::SessionWindow* session_window = session->add_session_window();
+    PopulateSessionSpecificsWindow(window, session_window);
+  }
 }
 
 void SessionModelAssociator::AppendSessionTabNavigation(
