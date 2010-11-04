@@ -21,6 +21,7 @@ class GPUUITest : public UITest {
   FilePath gpu_test_dir_;
 };
 
+// TODO(apatrick): OSMesa is flaky on Mac and Windows. http://crbug/61037
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_UITestLaunchedWithOSMesa DISABLED_UITestLaunchedWithOSMesa
 #else
