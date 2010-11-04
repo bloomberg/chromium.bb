@@ -2121,9 +2121,16 @@ void TabContents::OnPageTranslated(int32 page_id,
       Details<PageTranslatedDetails>(&details));
 }
 
-void TabContents::OnSetSuggestResult(int32 page_id, const std::string& result) {
+void TabContents::OnSetSuggestions(
+    int32 page_id,
+    const std::vector<std::string>& suggestions) {
   if (delegate())
-    delegate()->OnSetSuggestResult(page_id, result);
+    delegate()->OnSetSuggestions(page_id, suggestions);
+}
+
+void TabContents::OnInstantSupportDetermined(int32 page_id, bool result) {
+  if (delegate())
+    delegate()->OnInstantSupportDetermined(page_id, result);
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(

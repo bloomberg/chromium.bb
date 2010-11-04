@@ -78,7 +78,9 @@ v8::Handle<v8::Value> SearchExtensionWrapper::SetSuggestResult(
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  render_view->SetSuggestResult(std::string(*v8::String::Utf8Value(args[0])));
+  std::vector<std::string> suggestions;
+  suggestions.push_back(std::string(*v8::String::Utf8Value(args[0])));
+  render_view->SetSuggestions(suggestions);
   return v8::Undefined();
 }
 

@@ -32,6 +32,7 @@
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
+#include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/translate_helper.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
@@ -229,6 +230,10 @@ class RenderView : public RenderWidget,
              disable_scrollbars_size_limit_.height() <= height));
   }
 
+  const SearchBox& searchbox() const {
+    return search_box_;
+  }
+
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.
   void AddSearchProvider(const std::string& url,
@@ -239,8 +244,8 @@ class RenderView : public RenderWidget,
       GetSearchProviderInstallState(WebKit::WebFrame* frame,
                                     const std::string& url);
 
-  // Sends ViewHostMsg_SetSuggestResult to the browser.
-  void SetSuggestResult(const std::string& suggest);
+  // Sends ViewHostMsg_SetSuggestions to the browser.
+  void SetSuggestions(const std::vector<std::string>& suggestions);
 
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const string16& frame_xpath,
@@ -823,6 +828,13 @@ class RenderView : public RenderWidget,
                             const gfx::Point& screen_pt,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
+  void OnSearchBoxChange(const string16& value,
+                         int selection_start,
+                         int selection_end);
+  void OnSearchBoxSubmit(const string16& value, bool verbatim);
+  void OnSearchBoxCancel();
+  void OnSearchBoxResize(const gfx::Rect& bounds);
+  void OnDetermineIfPageSupportsInstant(const string16& value);
   void OnEnableViewSourceMode();
   void OnExecuteCode(const ViewMsg_ExecuteCode_Params& params);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
@@ -1234,6 +1246,8 @@ class RenderView : public RenderWidget,
 
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;
+
+  SearchBox search_box_;
 
   // View ----------------------------------------------------------------------
 

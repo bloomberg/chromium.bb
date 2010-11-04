@@ -80,6 +80,7 @@
 #include "chrome/renderer/render_widget_fullscreen_pepper.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
+#include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
@@ -837,6 +838,12 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxChange, OnSearchBoxChange)
+    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxSubmit, OnSearchBoxSubmit)
+    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxCancel, OnSearchBoxCancel)
+    IPC_MESSAGE_HANDLER(ViewMsg_SearchBoxResize, OnSearchBoxResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_DetermineIfPageSupportsInstant,
+                        OnDetermineIfPageSupportsInstant)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
@@ -4330,9 +4337,9 @@ WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   return frame;
 }
 
-void RenderView::SetSuggestResult(const std::string& suggest) {
-  // Explicitly allow empty strings to be sent to the browser.
-  Send(new ViewHostMsg_SetSuggestResult(routing_id_, page_id_, suggest));
+void RenderView::SetSuggestions(const std::vector<std::string>& suggestions) {
+  // Explicitly allow empty vector to be sent to the browser.
+  Send(new ViewHostMsg_SetSuggestions(routing_id_, page_id_, suggestions));
 }
 
 void RenderView::EvaluateScript(const string16& frame_xpath,
@@ -4568,6 +4575,49 @@ void RenderView::OnEnablePreferredSizeChangedMode(int flags) {
     preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
                                        &RenderView::CheckPreferredSize);
   }
+}
+
+void RenderView::OnSearchBoxChange(const string16& value,
+                                   int selection_start,
+                                   int selection_end) {
+  search_box_.value = value;
+  search_box_.selection_start = selection_start;
+  search_box_.selection_end = selection_end;
+  if (!webview() || !webview()->mainFrame())
+    return;
+  extensions_v8::SearchBoxExtension::DispatchChange(webview()->mainFrame());
+}
+
+void RenderView::OnSearchBoxSubmit(const string16& value, bool verbatim) {
+  search_box_.value = value;
+  search_box_.verbatim = verbatim;
+  if (!webview() || !webview()->mainFrame())
+    return;
+  extensions_v8::SearchBoxExtension::DispatchSubmit(webview()->mainFrame());
+}
+
+void RenderView::OnSearchBoxCancel() {
+  search_box_.verbatim = false;
+  if (!webview() || !webview()->mainFrame())
+    return;
+  extensions_v8::SearchBoxExtension::DispatchCancel(webview()->mainFrame());
+}
+
+void RenderView::OnSearchBoxResize(const gfx::Rect& bounds) {
+  search_box_.x = bounds.x();
+  search_box_.y = bounds.y();
+  search_box_.width = bounds.width();
+  search_box_.height = bounds.height();
+  if (!webview() || !webview()->mainFrame())
+    return;
+  extensions_v8::SearchBoxExtension::DispatchResize(webview()->mainFrame());
+}
+
+void RenderView::OnDetermineIfPageSupportsInstant(const string16& value) {
+  search_box_.value = value;
+  bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
+      webview()->mainFrame());
+  Send(new ViewHostMsg_InstantSupportDetermined(routing_id_, page_id_, result));
 }
 
 void RenderView::OnDisableScrollbarsForSmallWindows(

@@ -889,7 +889,9 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestResult, OnSetSuggestResult)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestions, OnSetSuggestions)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_InstantSupportDetermined,
+                        OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
                         OnDetectedPhishingSite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
@@ -2044,6 +2046,30 @@ void RenderViewHost::DidCancelPopupMenu() {
 }
 #endif
 
+void RenderViewHost::SearchBoxChange(const string16& value,
+                                     int selection_start,
+                                     int selection_end) {
+  Send(new ViewMsg_SearchBoxChange(
+      routing_id(), value, selection_start, selection_end));
+}
+
+void RenderViewHost::SearchBoxSubmit(const string16& value,
+                                     bool verbatim) {
+  Send(new ViewMsg_SearchBoxSubmit(routing_id(), value, verbatim));
+}
+
+void RenderViewHost::SearchBoxCancel() {
+  Send(new ViewMsg_SearchBoxCancel(routing_id()));
+}
+
+void RenderViewHost::SearchBoxResize(const gfx::Rect& search_box_bounds) {
+  Send(new ViewMsg_SearchBoxResize(routing_id(), search_box_bounds));
+}
+
+void RenderViewHost::DetermineIfPageSupportsInstant(const string16& value) {
+  Send(new ViewMsg_DetermineIfPageSupportsInstant(routing_id(), value));
+}
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {
@@ -2146,13 +2172,22 @@ void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,
   delegate_->UpdateZoomLimits(minimum_percent, maximum_percent, remember);
 }
 
-void RenderViewHost::OnSetSuggestResult(int32 page_id,
-                                        const std::string& result) {
+void RenderViewHost::OnSetSuggestions(
+    int32 page_id,
+    const std::vector<std::string>& suggestions) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (!integration_delegate)
     return;
-  integration_delegate->OnSetSuggestResult(page_id, result);
+  integration_delegate->OnSetSuggestions(page_id, suggestions);
+}
+
+void RenderViewHost::OnInstantSupportDetermined(int32 page_id, bool result) {
+  RenderViewHostDelegate::BrowserIntegration* integration_delegate =
+      delegate_->GetBrowserIntegrationDelegate();
+  if (!integration_delegate)
+    return;
+  integration_delegate->OnInstantSupportDetermined(page_id, result);
 }
 
 void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,

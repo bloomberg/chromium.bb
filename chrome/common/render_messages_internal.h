@@ -828,6 +828,19 @@ IPC_BEGIN_MESSAGES(View)
   // Used to instruct the RenderView to send back updates to the preferred size.
   IPC_MESSAGE_ROUTED1(ViewMsg_EnablePreferredSizeChangedMode, int /*flags*/)
 
+  IPC_MESSAGE_ROUTED3(ViewMsg_SearchBoxChange,
+                      string16 /*value*/,
+                      int /*selection_start*/,
+                      int /*selection_end*/)
+  IPC_MESSAGE_ROUTED2(ViewMsg_SearchBoxSubmit,
+                      string16 /*value*/,
+                      bool /*verbatim*/)
+  IPC_MESSAGE_ROUTED0(ViewMsg_SearchBoxCancel)
+  IPC_MESSAGE_ROUTED1(ViewMsg_SearchBoxResize,
+                      gfx::Rect /*search_box_bounds*/)
+  IPC_MESSAGE_ROUTED1(ViewMsg_DetermineIfPageSupportsInstant,
+                      string16 /*value*/)
+
   // Used to tell the renderer not to add scrollbars with height and
   // width below a threshold.
   IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
@@ -3003,9 +3016,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Suggest results -----------------------------------------------------------
 
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_SetSuggestResult,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_SetSuggestions,
                       int32 /* page_id */,
-                      std::string /* suggest */)
+                      std::vector<std::string> /* suggestions */)
+
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_InstantSupportDetermined,
+                      int32 /* page_id */,
+                      bool  /* result */)
 
   // Client-Side Phishing Detector ---------------------------------------------
   // Inform the browser that the current URL is phishing according to the

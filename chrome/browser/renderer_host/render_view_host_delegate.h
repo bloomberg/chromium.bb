@@ -299,8 +299,12 @@ class RenderViewHostDelegate {
                                   TranslateErrors::Type error_type) = 0;
 
     // Notification that the page has a suggest result.
-    virtual void OnSetSuggestResult(int32 page_id,
-                                    const std::string& result) = 0;
+    virtual void OnSetSuggestions(
+        int32 page_id,
+        const std::vector<std::string>& result) = 0;
+
+    // Notification of whether the page supports instant-style interaction.
+    virtual void OnInstantSupportDetermined(int32 page_id, bool result) = 0;
 
    protected:
     virtual ~BrowserIntegration() {}

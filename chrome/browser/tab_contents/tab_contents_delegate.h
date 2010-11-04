@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/browser/automation/automation_resource_routing_delegate.h"
@@ -305,7 +306,11 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
 
   // Notifies the delegate that the page has a suggest result.
-  virtual void OnSetSuggestResult(int32 page_id, const std::string& result);
+  virtual void OnSetSuggestions(int32 page_id,
+                                const std::vector<std::string>& result);
+
+ // Notifies the delegate whether the page supports instant-style interaction.
+  virtual void OnInstantSupportDetermined(int32 page_id, bool result);
 
   // Notifies the delegate that the content restrictions for this tab has
   // changed.

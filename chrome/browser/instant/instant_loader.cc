@@ -36,115 +36,19 @@
 #include "ipc/ipc_message.h"
 
 namespace {
-
-// Script sent as the user is typing and the provider supports instant.
-// Params:
-// . the text the user typed.
-// TODO: add support for the 2nd and 3rd params.
-const char kUserInputScript[] =
-    "if (window.chrome.userInput) window.chrome.userInput(\"$1\", 0, 0);";
-
-// Script sent when the page is committed and the provider supports instant.
-// Params:
-// . the text the user typed.
-// . boolean indicating if the user pressed enter to accept the text.
-const char kUserDoneScript[] =
-    "if (window.chrome.userWantsQuery) "
-      "window.chrome.userWantsQuery(\"$1\", $2);";
-
-// Script sent when the bounds of the omnibox changes and the provider supports
-// instant. The params are the bounds relative to the origin of the preview
-// (x, y, width, height).
-const char kSetOmniboxBoundsScript[] =
-    "if (window.chrome.setDropdownDimensions) "
-    "window.chrome.setDropdownDimensions($1, $2, $3, $4);";
-
-// We first send this script down to determine if the page supports instant.
-const char kSupportsInstantScript[] =
-    "if (window.chrome.sv) true; else false;";
-
-// If kSupportsInstantScript returns true, we then wait until
-// setDropdownDimensions has been registered. This is necessary as
-// 'window.chrome.sv' is set an onload time, but not setDropdownDimensions.
-const char kIsDropdownDimensionRegisteredScript[] =
-    "if (window.chrome.setDropdownDimensions) true; else false;";
-
 // Number of ms to delay before updating the omnibox bounds. This is a bit long
 // as updating the bounds ends up being quite expensive.
 const int kUpdateBoundsDelayMS = 500;
-
-// Number of ms we delay before seeing if the page has registered the instant
-// functions.
-const int kRegisterDelayMS = 10;
-
-// Escapes quotes in the |text| so that it be passed to JavaScript as a quoted
-// string.
-string16 EscapeUserText(const string16& text) {
-  string16 escaped_text(text);
-  ReplaceSubstringsAfterOffset(&escaped_text, 0L, ASCIIToUTF16("\""),
-                               ASCIIToUTF16("\\\""));
-  return escaped_text;
-}
-
-// Sends the script for when the user commits the preview. |pressed_enter| is
-// true if the user pressed enter to commit.
-void SendDoneScript(TabContents* tab_contents,
-                    const string16& text,
-                    bool pressed_enter) {
-  std::vector<string16> params;
-  params.push_back(EscapeUserText(text));
-  params.push_back(pressed_enter ? ASCIIToUTF16("true") :
-                   ASCIIToUTF16("false"));
-  string16 script = ReplaceStringPlaceholders(ASCIIToUTF16(kUserDoneScript),
-                                              params,
-                                              NULL);
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      std::wstring(),
-      UTF16ToWide(script));
-}
-
-// Sends the user input script to |tab_contents|. |text| is the text the user
-// input into the omnibox.
-void SendUserInputScript(TabContents* tab_contents, const string16& text) {
-  string16 script = ReplaceStringPlaceholders(ASCIIToUTF16(kUserInputScript),
-                                              EscapeUserText(text),
-                                              NULL);
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      std::wstring(),
-      UTF16ToWide(script));
-}
-
-// Sends the script for setting the bounds of the omnibox to |tab_contents|.
-void SendOmniboxBoundsScript(TabContents* tab_contents,
-                             const gfx::Rect& bounds) {
-  std::vector<string16> bounds_vector;
-  bounds_vector.push_back(base::IntToString16(bounds.x()));
-  bounds_vector.push_back(base::IntToString16(bounds.y()));
-  bounds_vector.push_back(base::IntToString16(bounds.width()));
-  bounds_vector.push_back(base::IntToString16(bounds.height()));
-  string16 script = ReplaceStringPlaceholders(
-      ASCIIToUTF16(kSetOmniboxBoundsScript),
-      bounds_vector,
-      NULL);
-  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
-      std::wstring(),
-      UTF16ToWide(script));
-}
-
 }  // namespace
 
-// FrameLoadObserver is responsible for waiting for the TabContents to finish
-// loading and when done sending the necessary script down to the page.
+// FrameLoadObserver is responsible for determining if the page supports
+// instant after it has loaded.
 class InstantLoader::FrameLoadObserver : public NotificationObserver {
  public:
-  FrameLoadObserver(InstantLoader* loader, const string16& text)
-      : loader_(loader),
-        tab_contents_(loader->preview_contents()),
-        unique_id_(tab_contents_->controller().pending_entry()->unique_id()),
+  FrameLoadObserver(TabContents* tab_contents, const string16& text)
+      : tab_contents_(tab_contents),
         text_(text),
-        initial_text_(text),
-        execute_js_id_(0),
-        got_supports_result_(false) {
+        unique_id_(tab_contents_->controller().pending_entry()->unique_id()) {
     registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                    Source<TabContents>(tab_contents_));
   }
@@ -165,48 +69,10 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
             active_entry->unique_id() != unique_id_) {
           return;
         }
-
-        DetermineIfPageSupportsInstant();
+        tab_contents_->render_view_host()->DetermineIfPageSupportsInstant(
+            text_);
         break;
       }
-
-      case NotificationType::EXECUTE_JAVASCRIPT_RESULT: {
-        typedef std::pair<int, Value*> ExecuteDetailType;
-        ExecuteDetailType* result =
-            (static_cast<Details<ExecuteDetailType > >(details)).ptr();
-        if (result->first != execute_js_id_)
-          return;
-
-        DCHECK(loader_);
-        bool bool_result;
-        if (!result->second || !result->second->IsType(Value::TYPE_BOOLEAN) ||
-            !result->second->GetAsBoolean(&bool_result)) {
-          DoesntSupportInstant();
-          return;
-        } else if (!got_supports_result_) {
-          // First evaluation. Result tells us whether page supports instant.
-          if (!bool_result) {
-            DoesntSupportInstant();
-            // WARNING: we may have been deleted.
-            return;
-          } else {
-            // Page supports instant, but we have to wait until page actually
-            // registers functions.
-            got_supports_result_ = true;
-            SendRegisterScript();
-          }
-        } else {
-          // Result tells us if instant functions have been registered.
-          if (bool_result) {
-            SupportsInstant();
-          } else {
-            // Wait a bit and ask again to see if the page supports instant.
-            WaitForRegister();
-          }
-        }
-        return;
-      }
-
       default:
         NOTREACHED();
         break;
@@ -214,82 +80,17 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
   }
 
  private:
-  // Executes the javascript to determine if the page supports script.  The
-  // results are passed back to us by way of NotificationObserver.
-  void DetermineIfPageSupportsInstant() {
-    DCHECK_EQ(0, execute_js_id_);
-
-    RenderViewHost* rvh = tab_contents_->render_view_host();
-    registrar_.Add(this, NotificationType::EXECUTE_JAVASCRIPT_RESULT,
-                   Source<RenderViewHost>(rvh));
-    execute_js_id_ = rvh->ExecuteJavascriptInWebFrameNotifyResult(
-        string16(),
-        ASCIIToUTF16(kSupportsInstantScript));
-  }
-
-  void WaitForRegister() {
-    register_timer_.Start(base::TimeDelta::FromMilliseconds(kRegisterDelayMS),
-                          this, &FrameLoadObserver::SendRegisterScript);
-  }
-
-  void SendRegisterScript() {
-    RenderViewHost* rvh = tab_contents_->render_view_host();
-    execute_js_id_ = rvh->ExecuteJavascriptInWebFrameNotifyResult(
-        string16(),
-        ASCIIToUTF16(kIsDropdownDimensionRegisteredScript));
-  }
-
-  // Invoked when we determine the page doesn't really support instant.
-  void DoesntSupportInstant() {
-    DCHECK(loader_);
-
-    loader_->PageDoesntSupportInstant(text_ != initial_text_);
-
-    // WARNING: we've been deleted.
-  }
-
-  // Invoked when we determine the page really supports instant.
-  void SupportsInstant() {
-    DCHECK(loader_);
-
-    gfx::Rect bounds = loader_->GetOmniboxBoundsInTermsOfPreview();
-    loader_->last_omnibox_bounds_ = loader_->omnibox_bounds_;
-    if (!bounds.IsEmpty())
-      SendOmniboxBoundsScript(tab_contents_, bounds);
-
-    SendUserInputScript(tab_contents_, text_);
-
-    loader_->PageFinishedLoading();
-
-    // WARNING: we've been deleted.
-  }
-
-  // InstantLoader that created us.
-  InstantLoader* loader_;
-
   // The TabContents we're listening for changes on.
   TabContents* tab_contents_;
-
-  // unique_id of the NavigationEntry we're waiting on.
-  const int unique_id_;
 
   // Text to send down to the page.
   string16 text_;
 
-  // Initial text supplied to constructor.
-  const string16 initial_text_;
+  // unique_id of the NavigationEntry we're waiting on.
+  const int unique_id_;
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;
-
-  // ID of the javascript that was executed to determine if the page supports
-  // instant.
-  int execute_js_id_;
-
-  // Timer used to wait for JS functions to be registered.
-  base::OneShotTimer<FrameLoadObserver> register_timer_;
-
-  bool got_supports_result_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameLoadObserver);
 };
@@ -323,11 +124,13 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       : loader_(loader),
         installed_paint_observer_(false),
         waiting_for_new_page_(true),
-        is_mouse_down_from_activate_(false) {
+        is_mouse_down_from_activate_(false),
+        user_typed_before_load_(false) {
   }
 
   // Invoked prior to loading a new URL.
   void PrepareForNewLoad() {
+    user_typed_before_load_ = false;
     waiting_for_new_page_ = true;
     add_page_vector_.clear();
   }
@@ -342,6 +145,8 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   bool is_mouse_down_from_activate() const {
     return is_mouse_down_from_activate_;
   }
+
+  void set_user_typed_before_load() { user_typed_before_load_ = true; }
 
   // Commits the currently buffered history.
   void CommitHistory() {
@@ -509,12 +314,33 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
   virtual void ContentTypeChanged(TabContents* source) {}
 
-  virtual void OnSetSuggestResult(int32 page_id, const std::string& result) {
+  virtual void OnSetSuggestions(int32 page_id,
+                                const std::vector<std::string>& suggestions) {
     TabContents* source = loader_->preview_contents();
+    if (!source->controller().GetActiveEntry() ||
+        page_id != source->controller().GetActiveEntry()->page_id())
+      return;
+
     // TODO: only allow for default search provider.
-    if (source->controller().GetActiveEntry() &&
-        page_id == source->controller().GetActiveEntry()->page_id()) {
-      loader_->SetCompleteSuggestedText(UTF8ToUTF16(result));
+    // TODO(sky): Handle multiple suggestions.
+    if (suggestions.empty())
+      loader_->SetCompleteSuggestedText(string16());
+    else
+      loader_->SetCompleteSuggestedText(UTF8ToUTF16(suggestions[0]));
+  }
+
+  virtual void OnInstantSupportDetermined(int32 page_id, bool result) {
+    TabContents* source = loader_->preview_contents();
+    if (!source->controller().GetActiveEntry() ||
+        page_id != source->controller().GetActiveEntry()->page_id())
+      return;
+
+    if (result) {
+      gfx::Rect bounds = loader_->GetOmniboxBoundsInTermsOfPreview();
+      loader_->last_omnibox_bounds_ = loader_->omnibox_bounds_;
+      loader_->PageFinishedLoading();
+    } else {
+      loader_->PageDoesntSupportInstant(user_typed_before_load_);
     }
   }
 
@@ -545,8 +371,11 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   // NEW_PAGE navigation we don't add history items to add_page_vector_.
   bool waiting_for_new_page_;
 
-  // Returns true if the mouse is down from an activate.
+  // True if the mouse is down from an activate.
   bool is_mouse_down_from_activate_;
+
+  // True if the user typed in the search box before the page loaded.
+  bool user_typed_before_load_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
 };
@@ -612,9 +441,12 @@ void InstantLoader::Update(TabContents* tab_contents,
       if (is_waiting_for_load()) {
         // The page hasn't loaded yet. We'll send the script down when it does.
         frame_load_observer_->set_text(user_text_);
+        preview_tab_contents_delegate_->set_user_typed_before_load();
         return;
       }
-      SendUserInputScript(preview_contents_.get(), user_text_);
+      preview_contents_->render_view_host()->SearchBoxChange(
+          user_text_, 0, 0);
+
       string16 complete_suggested_text_lower = l10n_util::ToLower(
           complete_suggested_text_);
       string16 user_text_lower = l10n_util::ToLower(user_text_);
@@ -638,7 +470,8 @@ void InstantLoader::Update(TabContents* tab_contents,
       initial_instant_url_ = url;
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
-      frame_load_observer_.reset(new FrameLoadObserver(this, user_text_));
+      frame_load_observer_.reset(
+          new FrameLoadObserver(preview_contents(), user_text_));
     }
   } else {
     DCHECK(template_url_id_ == 0);
@@ -678,9 +511,11 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
   DCHECK(type == INSTANT_COMMIT_DESTROY || !frame_load_observer_.get());
 
   if (type != INSTANT_COMMIT_DESTROY && is_showing_instant()) {
-    SendDoneScript(preview_contents_.get(),
-                   user_text_,
-                   type == INSTANT_COMMIT_PRESSED_ENTER);
+    if (type == INSTANT_COMMIT_FOCUS_LOST)
+      preview_contents_->render_view_host()->SearchBoxCancel();
+    else
+      preview_contents_->render_view_host()->SearchBoxSubmit(
+          user_text_, type == INSTANT_COMMIT_PRESSED_ENTER);
   }
   omnibox_bounds_ = gfx::Rect();
   last_omnibox_bounds_ = gfx::Rect();
@@ -781,15 +616,26 @@ void InstantLoader::PageFinishedLoading() {
   // date by the time we show it.
 }
 
+// TODO(tonyg): This method only fires when the omnibox bounds change. It also
+// needs to fire when the preview bounds change (e.g. open/close info bar).
 gfx::Rect InstantLoader::GetOmniboxBoundsInTermsOfPreview() {
-  if (omnibox_bounds_.IsEmpty())
-    return omnibox_bounds_;
-
   gfx::Rect preview_bounds(delegate_->GetInstantBounds());
-  return gfx::Rect(omnibox_bounds_.x() - preview_bounds.x(),
-                   omnibox_bounds_.y() - preview_bounds.y(),
-                   omnibox_bounds_.width(),
-                   omnibox_bounds_.height());
+  gfx::Rect intersection(omnibox_bounds_.Intersect(preview_bounds));
+
+  // Translate into window's coordinates.
+  if (!intersection.IsEmpty()) {
+    intersection.Offset(-preview_bounds.origin().x(),
+                        -preview_bounds.origin().y());
+  }
+
+  // In the current Chrome UI, these must always be true so they sanity check
+  // the above operations. In a future UI, these may be removed or adjusted.
+  DCHECK_EQ(0, intersection.y());
+  DCHECK_LE(0, intersection.x());
+  DCHECK_LE(0, intersection.width());
+  DCHECK_LE(0, intersection.height());
+
+  return intersection;
 }
 
 void InstantLoader::PageDoesntSupportInstant(bool needs_reload) {
@@ -812,7 +658,7 @@ void InstantLoader::ProcessBoundsChange() {
   last_omnibox_bounds_ = omnibox_bounds_;
   if (preview_contents_.get() && is_showing_instant() &&
       !is_waiting_for_load()) {
-    SendOmniboxBoundsScript(preview_contents_.get(),
-                            GetOmniboxBoundsInTermsOfPreview());
+    preview_contents_->render_view_host()->SearchBoxResize(
+        GetOmniboxBoundsInTermsOfPreview());
   }
 }

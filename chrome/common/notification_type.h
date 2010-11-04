@@ -1237,6 +1237,9 @@ class NotificationType {
     // Sent each time the InstantController is updated.
     INSTANT_CONTROLLER_UPDATED,
 
+    // Sent each time the InstantController shows the InstantLoader.
+    INSTANT_CONTROLLER_SHOWN,
+
     // Password Store ----------------------------------------------------------
     // This notification is sent whenenever login entries stored in the password
     // store are changed. The detail of this notification is a list of changes

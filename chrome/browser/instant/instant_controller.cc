@@ -241,6 +241,11 @@ void InstantController::ShowInstantLoader(InstantLoader* loader) {
   } else {
     // The loader supports instant but isn't active yet. Nothing to do.
   }
+
+  NotificationService::current()->Notify(
+      NotificationType::INSTANT_CONTROLLER_SHOWN,
+      Source<InstantController>(this),
+      NotificationService::NoDetails());
 }
 
 void InstantController::SetSuggestedTextFor(InstantLoader* loader,

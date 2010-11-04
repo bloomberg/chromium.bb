@@ -502,6 +502,16 @@ class RenderViewHost : public RenderWidgetHost {
   void DidCancelPopupMenu();
 #endif
 
+  // SearchBox notifications.
+  void SearchBoxChange(const string16& value,
+                       int selection_start,
+                       int selection_end);
+  void SearchBoxSubmit(const string16& value,
+                       bool verbatim);
+  void SearchBoxCancel();
+  void SearchBoxResize(const gfx::Rect& search_box_bounds);
+  void DetermineIfPageSupportsInstant(const string16& value);
+
 #if defined(UNIT_TEST)
   // These functions shouldn't be necessary outside of testing.
 
@@ -704,7 +714,9 @@ class RenderViewHost : public RenderWidgetHost {
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
                           bool remember);
-  void OnSetSuggestResult(int32 page_id, const std::string& result);
+  void OnSetSuggestions(int32 page_id,
+                        const std::vector<std::string>& suggestions);
+  void OnInstantSupportDetermined(int32 page_id, bool result);
   void OnDetectedPhishingSite(const GURL& phishing_url,
                               double phishing_score,
                               const SkBitmap& thumbnail);

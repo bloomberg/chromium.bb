@@ -66,6 +66,7 @@
 #include "chrome/renderer/renderer_webidbfactory_impl.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/search_extension.h"
+#include "chrome/renderer/searchbox_extension.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_channel_handle.h"
@@ -853,6 +854,7 @@ void RenderThread::EnsureWebKitInitialized() {
   RegisterExtension(extensions_v8::LoadTimesExtension::Get(), false);
   RegisterExtension(extensions_v8::ChromeAppExtension::Get(), false);
   RegisterExtension(extensions_v8::ExternalExtension::Get(), false);
+  RegisterExtension(extensions_v8::SearchBoxExtension::Get(), false);
   v8::Extension* search_extension = extensions_v8::SearchExtension::Get();
   // search_extension is null if not enabled.
   if (search_extension)
