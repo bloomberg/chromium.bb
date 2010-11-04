@@ -31,7 +31,5 @@ BUGDIMICH MAC : fast/repaint/selection-rl.html = IMAGE
 
 // probably due to WK r71198
 BUGROLANDSTEINER WIN MAC : fast/events/remove-event-listener.html = CRASH
-// started to fail somwhereh in WebKit roll to 71305
-BUGROLANDSTEINER WIN MAC DEBUG : svg/dom/baseVal-animVal-crash.html = CRASH
 
 BUG61739 MAC : animations/suspend-resume-animation-events.html = FAIL CRASH
