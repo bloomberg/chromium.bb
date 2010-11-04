@@ -306,9 +306,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   if (base_cache_path_.empty())
     base_cache_path_ = path_;
 
-  // Listen for theme installation.
+  // Listen for theme installations from our original profile.
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
-                 NotificationService::AllSources());
+                 Source<Profile>(GetOriginalProfile()));
 
   // Listen for bookmark model load, to bootstrap the sync service.
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
@@ -1226,6 +1226,7 @@ void ProfileImpl::Observe(NotificationType type,
               Source<Profile>(this), NotificationService::NoDetails());
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
+    DCHECK_EQ(Source<Profile>(source).ptr(), GetOriginalProfile());
     const Extension* extension = Details<const Extension>(details).ptr();
     SetTheme(extension);
   } else if (NotificationType::BOOKMARK_MODEL_LOADED == type) {
