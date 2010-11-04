@@ -51,28 +51,6 @@ using syncable::WriteTransaction;
 
 class ProfileSyncServiceTestHelper {
  public:
-  static const std::string GetTagForType(ModelType type) {
-    switch (type) {
-      case syncable::AUTOFILL:
-        return browser_sync::kAutofillTag;
-      case syncable::PREFERENCES:
-        return browser_sync::kPreferencesTag;
-      case syncable::PASSWORDS:
-        return browser_sync::kPasswordTag;
-      case syncable::NIGORI:
-        return browser_sync::kNigoriTag;
-      case syncable::TYPED_URLS:
-        return browser_sync::kTypedUrlTag;
-      case syncable::SESSIONS:
-        return browser_sync::kSessionsTag;
-      case syncable::BOOKMARKS:
-        return "google_chrome_bookmarks";
-      default:
-        NOTREACHED();
-        return std::string();
-    }
-  }
-
   static bool CreateRoot(ModelType model_type, ProfileSyncService* service,
                          TestIdFactory* ids) {
     UserShare* user_share = service->backend()->GetUserShareHandle();
@@ -82,7 +60,30 @@ class ProfileSyncServiceTestHelper {
     if (!dir.good())
       return false;
 
-    std::string tag_name = GetTagForType(model_type);
+    std::string tag_name;
+    switch (model_type) {
+      case syncable::AUTOFILL:
+        tag_name = browser_sync::kAutofillTag;
+        break;
+      case syncable::PREFERENCES:
+        tag_name = browser_sync::kPreferencesTag;
+        break;
+      case syncable::PASSWORDS:
+        tag_name = browser_sync::kPasswordTag;
+        break;
+      case syncable::NIGORI:
+        tag_name = browser_sync::kNigoriTag;
+        break;
+      case syncable::TYPED_URLS:
+        tag_name = browser_sync::kTypedUrlTag;
+        break;
+      case syncable::SESSIONS:
+        tag_name = browser_sync::kSessionsTag;
+        break;
+      default:
+        return false;
+    }
+
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry node(&wtrans,
                       CREATE,
@@ -96,7 +97,7 @@ class ProfileSyncServiceTestHelper {
     node.Put(SERVER_VERSION, 20);
     node.Put(BASE_VERSION, 20);
     node.Put(IS_DEL, false);
-    EXPECT_TRUE(node.Put(syncable::ID, ids->MakeServer(tag_name)));
+    node.Put(syncable::ID, ids->MakeServer(tag_name));
     sync_pb::EntitySpecifics specifics;
     syncable::AddDefaultExtensionValue(model_type, &specifics);
     node.Put(SPECIFICS, specifics);
@@ -112,8 +113,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   bool CreateRoot(ModelType model_type) {
     return ProfileSyncServiceTestHelper::CreateRoot(model_type,
-                                                    service_.get(),
-                                                    service_->id_factory());
+                                                    service_.get(), &ids_);
   }
 
  protected:
@@ -123,6 +123,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   ProfileSyncFactoryMock factory_;
   TokenService token_service_;
   scoped_ptr<TestProfileSyncService> service_;
+  TestIdFactory ids_;
 };
 
 class CreateRootTask : public Task {

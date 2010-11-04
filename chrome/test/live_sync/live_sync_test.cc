@@ -123,6 +123,11 @@ void LiveSyncTest::SetUp() {
     cl->AppendSwitch(switches::kEnableSyncSessions);
   }
 
+  // TODO(sync): Remove this once passwords sync is enabled by default.
+  if (!cl->HasSwitch(switches::kEnableSyncPasswords)) {
+    cl->AppendSwitch(switches::kEnableSyncPasswords);
+  }
+
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
 #if defined(OS_MACOSX)
   Encryptor::UseMockKeychain(true);

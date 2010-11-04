@@ -55,10 +55,10 @@ using testing::Invoke;
 
 class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:
-  TestBookmarkModelAssociator(TestProfileSyncService* service,
+  TestBookmarkModelAssociator(ProfileSyncService* service,
       UnrecoverableErrorHandler* persist_ids_error_handler)
       : BookmarkModelAssociator(service, persist_ids_error_handler),
-        helper_(new TestModelAssociatorHelper(service->id_factory())) {
+        helper_(new TestModelAssociatorHelper()) {
   }
   virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
     return helper_->GetSyncIdForTaggedNode(this, tag, sync_id);

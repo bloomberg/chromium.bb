@@ -1492,7 +1492,6 @@
         'browser/sync/sync_setup_wizard_unittest.cc',
         'browser/sync/sync_ui_util_mac_unittest.mm',
         'browser/sync/sync_ui_util_unittest.cc',
-        'browser/sync/test_profile_sync_service.cc',
         'browser/sync/test_profile_sync_service.h',
         'browser/sync/util/cryptographer_unittest.cc',
         'browser/sync/util/nigori_unittest.cc',
