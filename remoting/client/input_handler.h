@@ -15,13 +15,13 @@ class ClientContext;
 class ChromotingView;
 
 namespace protocol {
-class HostConnection;
+class ConnectionToHost;
 }  // namespace protocol
 
 class InputHandler {
  public:
   InputHandler(ClientContext* context,
-               protocol::HostConnection* connection,
+               protocol::ConnectionToHost* connection,
                ChromotingView* view);
   virtual ~InputHandler() {}
 
@@ -33,7 +33,7 @@ class InputHandler {
   void SendMouseButtonEvent(bool down, MouseButton button);
 
   ClientContext* context_;
-  protocol::HostConnection* connection_;
+  protocol::ConnectionToHost* connection_;
   ChromotingView* view_;
 
  private:

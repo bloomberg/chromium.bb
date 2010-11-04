@@ -5,14 +5,14 @@
 #include "remoting/client/input_handler.h"
 
 #include "remoting/client/chromoting_view.h"
-#include "remoting/client/host_connection.h"
 // TODO(hclam): Should not include internal.pb.h.
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/connection_to_host.h"
 
 namespace remoting {
 
 InputHandler::InputHandler(ClientContext* context,
-                           protocol::HostConnection* connection,
+                           protocol::ConnectionToHost* connection,
                            ChromotingView* view)
     : context_(context),
       connection_(connection),

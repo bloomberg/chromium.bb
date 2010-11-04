@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/protocol/jingle_connection_to_host.h"
+
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
 // TODO(hclam): Remove this header once MessageDispatcher is used.
 #include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/client/client_config.h"
-#include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/video_reader.h"
@@ -18,15 +19,15 @@
 namespace remoting {
 namespace protocol {
 
-JingleHostConnection::JingleHostConnection(ClientContext* context)
+JingleConnectionToHost::JingleConnectionToHost(ClientContext* context)
     : context_(context),
       event_callback_(NULL) {
 }
 
-JingleHostConnection::~JingleHostConnection() {
+JingleConnectionToHost::~JingleConnectionToHost() {
 }
 
-void JingleHostConnection::Connect(const ClientConfig& config,
+void JingleConnectionToHost::Connect(const ClientConfig& config,
                                    HostEventCallback* event_callback,
                                    VideoStub* video_stub) {
   event_callback_ = event_callback;
@@ -42,11 +43,11 @@ void JingleHostConnection::Connect(const ClientConfig& config,
   host_jid_ = config.host_jid;
 }
 
-void JingleHostConnection::Disconnect() {
+void JingleConnectionToHost::Disconnect() {
   if (MessageLoop::current() != message_loop()) {
     message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this,
-                                     &JingleHostConnection::Disconnect));
+                                     &JingleConnectionToHost::Disconnect));
     return;
   }
 
@@ -56,17 +57,17 @@ void JingleHostConnection::Disconnect() {
 
   if (session_) {
     session_->Close(
-        NewRunnableMethod(this, &JingleHostConnection::OnDisconnected));
+        NewRunnableMethod(this, &JingleConnectionToHost::OnDisconnected));
   } else {
     OnDisconnected();
   }
 }
 
-void JingleHostConnection::OnControlMessage(ChromotingHostMessage* msg) {
+void JingleConnectionToHost::OnControlMessage(ChromotingHostMessage* msg) {
   event_callback_->HandleMessage(this, msg);
 }
 
-void JingleHostConnection::InitSession() {
+void JingleConnectionToHost::InitSession() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Initialize chromotocol |session_manager_|.
@@ -77,7 +78,7 @@ void JingleHostConnection::InitSession() {
   session_manager->Init(
       jingle_client_->GetFullJid(),
       jingle_client_->session_manager(),
-      NewCallback(this, &JingleHostConnection::OnNewSession));
+      NewCallback(this, &JingleConnectionToHost::OnNewSession));
   session_manager_ = session_manager;
 
   CandidateChromotocolConfig* candidate_config =
@@ -88,21 +89,21 @@ void JingleHostConnection::InitSession() {
   // Initialize |session_|.
   session_ = session_manager_->Connect(
       host_jid_, candidate_config,
-      NewCallback(this, &JingleHostConnection::OnSessionStateChange));
+      NewCallback(this, &JingleConnectionToHost::OnSessionStateChange));
 }
 
-void JingleHostConnection::OnDisconnected() {
+void JingleConnectionToHost::OnDisconnected() {
   session_ = NULL;
 
   if (session_manager_) {
     session_manager_->Close(
-        NewRunnableMethod(this, &JingleHostConnection::OnServerClosed));
+        NewRunnableMethod(this, &JingleConnectionToHost::OnServerClosed));
   } else {
     OnServerClosed();
   }
 }
 
-void JingleHostConnection::OnServerClosed() {
+void JingleConnectionToHost::OnServerClosed() {
   session_manager_ = NULL;
   if (jingle_client_) {
     jingle_client_->Close();
@@ -110,13 +111,13 @@ void JingleHostConnection::OnServerClosed() {
   }
 }
 
-void JingleHostConnection::SendEvent(const ChromotingClientMessage& msg) {
+void JingleConnectionToHost::SendEvent(const ChromotingClientMessage& msg) {
   // This drops the message if we are not connected yet.
   event_writer_.SendMessage(msg);
 }
 
 // JingleClient::Callback interface.
-void JingleHostConnection::OnStateChange(JingleClient* client,
+void JingleConnectionToHost::OnStateChange(JingleClient* client,
                                          JingleClient::State state) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(client);
@@ -131,14 +132,14 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
   }
 }
 
-void JingleHostConnection::OnNewSession(protocol::Session* session,
+void JingleConnectionToHost::OnNewSession(protocol::Session* session,
     protocol::SessionManager::IncomingSessionResponse* response) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   // Client always rejects incoming sessions.
   *response = protocol::SessionManager::DECLINE;
 }
 
-void JingleHostConnection::OnSessionStateChange(
+void JingleConnectionToHost::OnSessionStateChange(
     protocol::Session::State state) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(event_callback_);
@@ -156,7 +157,7 @@ void JingleHostConnection::OnSessionStateChange(
       // Initialize reader and writer.
       control_reader_.Init<ChromotingHostMessage>(
           session_->control_channel(),
-          NewCallback(this, &JingleHostConnection::OnControlMessage));
+          NewCallback(this, &JingleConnectionToHost::OnControlMessage));
       event_writer_.Init(session_->event_channel());
       video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_, video_stub_);
@@ -169,7 +170,7 @@ void JingleHostConnection::OnSessionStateChange(
   }
 }
 
-MessageLoop* JingleHostConnection::message_loop() {
+MessageLoop* JingleConnectionToHost::message_loop() {
   return context_->jingle_thread()->message_loop();
 }
 

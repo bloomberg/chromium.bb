@@ -15,7 +15,7 @@ class ChromotingView;
 class X11InputHandler : public InputHandler {
  public:
   X11InputHandler(ClientContext* context,
-                  protocol::HostConnection* connection,
+                  protocol::ConnectionToHost* connection,
                   ChromotingView* view);
   virtual ~X11InputHandler();
 

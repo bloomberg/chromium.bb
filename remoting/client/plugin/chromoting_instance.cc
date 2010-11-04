@@ -16,13 +16,13 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_util.h"
 #include "remoting/client/chromoting_client.h"
-#include "remoting/client/host_connection.h"
-#include "remoting/client/jingle_host_connection.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/jingle_connection_to_host.h"
 
 namespace remoting {
 
@@ -67,7 +67,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   context_.Start();
 
   // Create the chromoting objects.
-  host_connection_.reset(new protocol::JingleHostConnection(&context_));
+  host_connection_.reset(new protocol::JingleConnectionToHost(&context_));
   view_.reset(new PepperView(this, &context_));
   rectangle_decoder_.reset(
       new RectangleUpdateDecoder(context_.decode_message_loop(), view_.get()));

@@ -10,10 +10,10 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_util.h"
-#include "remoting/client/jingle_host_connection.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/x11_view.h"
 #include "remoting/client/x11_input_handler.h"
+#include "remoting/protocol/jingle_connection_to_host.h"
 
 void ClientQuit(MessageLoop* loop) {
   loop->PostTask(FROM_HERE, new MessageLoop::QuitTask());
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
   MessageLoop ui_loop;
   remoting::ClientContext context;
-  remoting::protocol::JingleHostConnection connection(&context);
+  remoting::protocol::JingleConnectionToHost connection(&context);
   remoting::X11View view;
   remoting::RectangleUpdateDecoder rectangle_decoder(
       context.decode_message_loop(), &view);

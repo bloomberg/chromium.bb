@@ -10,9 +10,9 @@
 #include <list>
 
 #include "base/task.h"
-#include "remoting/client/host_connection.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/chromoting_view.h"
+#include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/video_stub.h"
 
 class MessageLoop;
@@ -26,13 +26,13 @@ class InputHandler;
 class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
-class ChromotingClient : public protocol::HostConnection::HostEventCallback,
+class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
                          public protocol::VideoStub {
  public:
   // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
                    ClientContext* context,
-                   protocol::HostConnection* connection,
+                   protocol::ConnectionToHost* connection,
                    ChromotingView* view,
                    RectangleUpdateDecoder* rectangle_decoder,
                    InputHandler* input_handler,
@@ -54,12 +54,12 @@ class ChromotingClient : public protocol::HostConnection::HostEventCallback,
   // thread synchronously really.
   virtual void SetViewport(int x, int y, int width, int height);
 
-  // HostConnection::HostEventCallback implementation.
-  virtual void HandleMessage(protocol::HostConnection* conn,
+  // ConnectionToHost::HostEventCallback implementation.
+  virtual void HandleMessage(protocol::ConnectionToHost* conn,
                              ChromotingHostMessage* messages);
-  virtual void OnConnectionOpened(protocol::HostConnection* conn);
-  virtual void OnConnectionClosed(protocol::HostConnection* conn);
-  virtual void OnConnectionFailed(protocol::HostConnection* conn);
+  virtual void OnConnectionOpened(protocol::ConnectionToHost* conn);
+  virtual void OnConnectionClosed(protocol::ConnectionToHost* conn);
+  virtual void OnConnectionFailed(protocol::ConnectionToHost* conn);
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);
@@ -90,7 +90,7 @@ class ChromotingClient : public protocol::HostConnection::HostEventCallback,
   // The following are not owned by this class.
   ClientConfig config_;
   ClientContext* context_;
-  protocol::HostConnection* connection_;
+  protocol::ConnectionToHost* connection_;
   ChromotingView* view_;
   RectangleUpdateDecoder* rectangle_decoder_;
   InputHandler* input_handler_;

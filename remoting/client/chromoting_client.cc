@@ -8,16 +8,16 @@
 #include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/host_connection.h"
 #include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/connection_to_host.h"
 
 namespace remoting {
 
 ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ClientContext* context,
-                                   protocol::HostConnection* connection,
+                                   protocol::ConnectionToHost* connection,
                                    ChromotingView* view,
                                    RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
@@ -93,7 +93,7 @@ void ChromotingClient::SetViewport(int x, int y, int width, int height) {
   view_->SetViewport(x, y, width, height);
 }
 
-void ChromotingClient::HandleMessage(protocol::HostConnection* conn,
+void ChromotingClient::HandleMessage(protocol::ConnectionToHost* conn,
                                      ChromotingHostMessage* msg) {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
@@ -146,17 +146,17 @@ void ChromotingClient::DispatchPacket() {
       *packet, NewTracedMethod(this, &ChromotingClient::OnPacketDone));
 }
 
-void ChromotingClient::OnConnectionOpened(protocol::HostConnection* conn) {
+void ChromotingClient::OnConnectionOpened(protocol::ConnectionToHost* conn) {
   VLOG(1) << "ChromotingClient::OnConnectionOpened";
   SetConnectionState(CONNECTED);
 }
 
-void ChromotingClient::OnConnectionClosed(protocol::HostConnection* conn) {
+void ChromotingClient::OnConnectionClosed(protocol::ConnectionToHost* conn) {
   VLOG(1) << "ChromotingClient::OnConnectionClosed";
   SetConnectionState(DISCONNECTED);
 }
 
-void ChromotingClient::OnConnectionFailed(protocol::HostConnection* conn) {
+void ChromotingClient::OnConnectionFailed(protocol::ConnectionToHost* conn) {
   VLOG(1) << "ChromotingClient::OnConnectionFailed";
   SetConnectionState(FAILED);
 }

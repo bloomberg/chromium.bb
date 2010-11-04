@@ -18,8 +18,8 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/host_connection.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
+#include "remoting/protocol/connection_to_host.h"
 
 class MessageLoop;
 struct PP_InputEvent;
@@ -33,6 +33,10 @@ class Module;
 }  // namespace pp
 
 namespace remoting {
+
+namespace protocol {
+class ConnectionToHost;
+}  // namespace protocol
 
 class ChromotingClient;
 class ClientContext;
@@ -77,7 +81,7 @@ class ChromotingInstance : public pp::Instance {
   MessageLoop* pepper_main_loop_dont_post_to_me_;
 
   ClientContext context_;
-  scoped_ptr<protocol::HostConnection> host_connection_;
+  scoped_ptr<protocol::ConnectionToHost> host_connection_;
   scoped_ptr<PepperView> view_;
   scoped_ptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<InputHandler> input_handler_;

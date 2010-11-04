@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// JingleHostConnection implements the HostConnection interface using
+// JingleConnectionToHost implements the ConnectionToHost interface using
 // libjingle as the transport protocol.
 //
 // Much of this class focuses on translating JingleClient and
-// ChromotingConnection callbacks into HostConnection::HostEventCallback
+// ChromotingConnection callbacks into ConnectionToHost::HostEventCallback
 // messages.
 //
 // The public API of this class is designed to be asynchronous, and thread
@@ -16,15 +16,15 @@
 // during construction.  Any event handlers running on the |network_thread|
 // should not block.
 
-#ifndef REMOTING_CLIENT_JINGLE_HOST_CONNECTION_H_
-#define REMOTING_CLIENT_JINGLE_HOST_CONNECTION_H_
+#ifndef REMOTING_PROTOCOL_JINGLE_CONNECTION_TO_HOST_H_
+#define REMOTING_PROTOCOL_JINGLE_CONNECTION_TO_HOST_H_
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "remoting/client/client_context.h"
-#include "remoting/client/host_connection.h"
 #include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
@@ -33,20 +33,16 @@
 class MessageLoop;
 
 namespace remoting {
-
-struct ClientConfig;
-class JingleThread;
-
 namespace protocol {
 
 class VideoReader;
 class VideoStub;
 
-class JingleHostConnection : public HostConnection,
-                             public JingleClient::Callback {
+class JingleConnectionToHost : public ConnectionToHost,
+                               public JingleClient::Callback {
  public:
-  explicit JingleHostConnection(ClientContext* context);
-  virtual ~JingleHostConnection();
+  explicit JingleConnectionToHost(ClientContext* context);
+  virtual ~JingleConnectionToHost();
 
   virtual void Connect(const ClientConfig& config,
                        HostEventCallback* event_callback,
@@ -100,12 +96,12 @@ class JingleHostConnection : public HostConnection,
 
   std::string host_jid_;
 
-  DISALLOW_COPY_AND_ASSIGN(JingleHostConnection);
+  DISALLOW_COPY_AND_ASSIGN(JingleConnectionToHost);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::protocol::JingleHostConnection);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::protocol::JingleConnectionToHost);
 
-#endif  // REMOTING_CLIENT_JINGLE_HOST_CONNECTION_H_
+#endif  // REMOTING_PROTOCOL_JINGLE_CONNECTION_TO_HOST_H_
