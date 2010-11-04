@@ -131,7 +131,7 @@ class TestAddressMapSerializer : public ::testing::Test {
   }
 
   void TearDown() {
-    delete serialized_data_;
+    delete [] serialized_data_;
   }
 
   google_breakpad::AddressMap<AddrType, EntryType> address_map_;
@@ -206,7 +206,7 @@ class TestRangeMapSerializer : public ::testing::Test {
   }
 
   void TearDown() {
-    delete serialized_data_;
+    delete [] serialized_data_;
   }
 
   google_breakpad::RangeMap<AddrType, EntryType> range_map_;
@@ -279,7 +279,7 @@ class TestContainedRangeMapSerializer : public ::testing::Test {
   }
 
   void TearDown() {
-    delete serialized_data_;
+    delete [] serialized_data_;
   }
 
   google_breakpad::ContainedRangeMap<AddrType, EntryType> crm_map_;

@@ -42,116 +42,118 @@
 #include "processor/logging.h"
 
 namespace {
-  // Each element in test_data contains the expected result when calling
-  // RetrieveRange on an address.
-  const int test_data[] = {
-    0,   // 0
-    0,   // 1
-    0,   // 2
-    0,   // 3
-    0,   // 4
-    0,   // 5
-    0,   // 6
-    0,   // 7
-    9,   // 8
-    7,   // 9
-    1,   // 10
-    5,   // 11
-    6,   // 12
-    6,   // 13
-    6,   // 14
-    6,   // 15
-    6,   // 16
-    6,   // 17
-    6,   // 18
-    5,   // 19
-    7,   // 20
-    8,   // 21
-    0,   // 22
-    0,   // 23
-    0,   // 24
-    0,   // 25
-    0,   // 26
-    0,   // 27
-    0,   // 28
-    0,   // 29
-    10,  // 30
-    10,  // 31
-    10,  // 32
-    11,  // 33
-    11,  // 34
-    11,  // 35
-    0,   // 36
-    0,   // 37
-    0,   // 38
-    0,   // 39
-    14,  // 40
-    14,  // 41
-    14,  // 42
-    14,  // 43
-    15,  // 44
-    15,  // 45
-    15,  // 46
-    15,  // 47
-    0,   // 48
-    0,   // 49
-    19,  // 50
-    18,  // 51
-    18,  // 52
-    18,  // 53
-    18,  // 54
-    18,  // 55
-    18,  // 56
-    18,  // 57
-    18,  // 58
-    20,  // 59
-    21,  // 60
-    25,  // 61
-    26,  // 62
-    26,  // 63
-    26,  // 64
-    26,  // 65
-    26,  // 66
-    26,  // 67
-    24,  // 68
-    22,  // 69
-    30,  // 70
-    30,  // 71
-    30,  // 72
-    30,  // 73
-    31,  // 74
-    31,  // 75
-    30,  // 76
-    32,  // 77
-    32,  // 78
-    30,  // 79
-    34,  // 80
-    35,  // 81
-    36,  // 82
-    39,  // 83
-    38,  // 84
-    37,  // 85
-    43,  // 86
-    44,  // 87
-    41,  // 88
-    45,  // 89
-    42,  // 90
-    0,   // 91
-    0,   // 92
-    0,   // 93
-    0,   // 94
-    0,   // 95
-    0,   // 96
-    0,   // 97
-    0,   // 98
-    0    // 99
-  };
-}  // namespace
-
 
 typedef google_breakpad::ContainedRangeMap<unsigned int, int> CRMMap;
 typedef google_breakpad::StaticContainedRangeMap<unsigned int, int> TestMap;
-using google_breakpad::scoped_ptr;
+
+// Each element in test_data contains the expected result when calling
+// RetrieveRange on an address.
+const int test_data[] = {
+  0,   // 0
+  0,   // 1
+  0,   // 2
+  0,   // 3
+  0,   // 4
+  0,   // 5
+  0,   // 6
+  0,   // 7
+  9,   // 8
+  7,   // 9
+  1,   // 10
+  5,   // 11
+  6,   // 12
+  6,   // 13
+  6,   // 14
+  6,   // 15
+  6,   // 16
+  6,   // 17
+  6,   // 18
+  5,   // 19
+  7,   // 20
+  8,   // 21
+  0,   // 22
+  0,   // 23
+  0,   // 24
+  0,   // 25
+  0,   // 26
+  0,   // 27
+  0,   // 28
+  0,   // 29
+  10,  // 30
+  10,  // 31
+  10,  // 32
+  11,  // 33
+  11,  // 34
+  11,  // 35
+  0,   // 36
+  0,   // 37
+  0,   // 38
+  0,   // 39
+  14,  // 40
+  14,  // 41
+  14,  // 42
+  14,  // 43
+  15,  // 44
+  15,  // 45
+  15,  // 46
+  15,  // 47
+  0,   // 48
+  0,   // 49
+  19,  // 50
+  18,  // 51
+  18,  // 52
+  18,  // 53
+  18,  // 54
+  18,  // 55
+  18,  // 56
+  18,  // 57
+  18,  // 58
+  20,  // 59
+  21,  // 60
+  25,  // 61
+  26,  // 62
+  26,  // 63
+  26,  // 64
+  26,  // 65
+  26,  // 66
+  26,  // 67
+  24,  // 68
+  22,  // 69
+  30,  // 70
+  30,  // 71
+  30,  // 72
+  30,  // 73
+  31,  // 74
+  31,  // 75
+  30,  // 76
+  32,  // 77
+  32,  // 78
+  30,  // 79
+  34,  // 80
+  35,  // 81
+  36,  // 82
+  39,  // 83
+  38,  // 84
+  37,  // 85
+  43,  // 86
+  44,  // 87
+  41,  // 88
+  45,  // 89
+  42,  // 90
+  0,   // 91
+  0,   // 92
+  0,   // 93
+  0,   // 94
+  0,   // 95
+  0,   // 96
+  0,   // 97
+  0,   // 98
+  0    // 99
+};
+
+}  // namespace
+
+namespace google_breakpad {
 
 class TestStaticCRMMap : public ::testing::Test {
  protected:
@@ -167,7 +169,7 @@ class TestStaticCRMMap : public ::testing::Test {
 
   google_breakpad::ContainedRangeMapSerializer<unsigned int, int> serializer_;
 
-  scoped_ptr<char> serialized_data_;
+  scoped_array<char> serialized_data_;
 };
 
 void TestStaticCRMMap::SetUp() {
@@ -236,7 +238,7 @@ TEST_F(TestStaticCRMMap, TestEmptyMap) {
   CRMMap empty_crm_map;
 
   unsigned int size;
-  scoped_ptr<char> serialized_data;
+  scoped_array<char> serialized_data;
   serialized_data.reset(serializer_.Serialize(&empty_crm_map, &size));
   scoped_ptr<TestMap> test_map(new TestMap(serialized_data.get()));
 
@@ -256,7 +258,7 @@ TEST_F(TestStaticCRMMap, TestSingleElementMap) {
   crm_map.StoreRange(10, 10,  entry);
 
   unsigned int size;
-  scoped_ptr<char> serialized_data;
+  scoped_array<char> serialized_data;
   serialized_data.reset(serializer_.Serialize(&crm_map, &size));
   scoped_ptr<TestMap> test_map(new TestMap(serialized_data.get()));
 
@@ -309,6 +311,8 @@ TEST_F(TestStaticCRMMap, RunTestData) {
   printf("  };\n");
 #endif  // GENERATE_TEST_DATA
 }
+
+}  // namespace google_breakpad
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

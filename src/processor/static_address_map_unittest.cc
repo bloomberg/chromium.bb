@@ -84,7 +84,7 @@ class TestStaticAddressMap : public ::testing::Test {
 
   void TearDown() {
     for (int i = 0; i < kNumberTestCases; ++i) {
-      delete map_data[i];
+      delete [] map_data[i];
       delete [] testdata[i];
     }
   }

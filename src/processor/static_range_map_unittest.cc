@@ -40,14 +40,12 @@
 #include "processor/logging.h"
 #include "processor/scoped_ptr.h"
 
-using google_breakpad::StaticRangeMap;
-using google_breakpad::RangeMap;
-
+namespace {
 // Types used for testing.
 typedef int AddressType;
 typedef int EntryType;
-typedef StaticRangeMap< AddressType, EntryType > TestMap;
-typedef RangeMap< AddressType, EntryType > RMap;
+typedef google_breakpad::StaticRangeMap< AddressType, EntryType > TestMap;
+typedef google_breakpad::RangeMap< AddressType, EntryType > RMap;
 
 // RangeTest contains data to use for store and retrieve tests.  See
 // RunTests for descriptions of the tests.
@@ -75,96 +73,97 @@ struct RangeTestSet {
   unsigned int range_test_count;
 };
 
-namespace {
-  // These tests will be run sequentially.  The first set of tests exercises
-  // most functions of RangeTest, and verifies all of the bounds-checking.
-  const RangeTest range_tests_0[] = {
-    { INT_MIN,     16,      1,  true },   // lowest possible range
-    { -2,          5,       2,  true },   // a range through zero
-    { INT_MAX - 9, 11,      3,  false },  // tests anti-overflow
-    { INT_MAX - 9, 10,      4,  true },   // highest possible range
-    { 5,           0,       5,  false },  // tests anti-zero-size
-    { 5,           1,       6,  true },   // smallest possible range
-    { -20,         15,      7,  true },   // entirely negative
+// These tests will be run sequentially.  The first set of tests exercises
+// most functions of RangeTest, and verifies all of the bounds-checking.
+const RangeTest range_tests_0[] = {
+  { INT_MIN,     16,      1,  true },   // lowest possible range
+  { -2,          5,       2,  true },   // a range through zero
+  { INT_MAX - 9, 11,      3,  false },  // tests anti-overflow
+  { INT_MAX - 9, 10,      4,  true },   // highest possible range
+  { 5,           0,       5,  false },  // tests anti-zero-size
+  { 5,           1,       6,  true },   // smallest possible range
+  { -20,         15,      7,  true },   // entirely negative
 
-    { 10,          10,      10, true },   // causes the following tests to fail
-    { 9,           10,      11, false },  // one-less base, one-less high
-    { 9,           11,      12, false },  // one-less base, identical high
-    { 9,           12,      13, false },  // completely contains existing
-    { 10,          9,       14, false },  // identical base, one-less high
-    { 10,          10,      15, false },  // exactly identical to existing range
-    { 10,          11,      16, false },  // identical base, one-greater high
-    { 11,          8,       17, false },  // contained completely within
-    { 11,          9,       18, false },  // one-greater base, identical high
-    { 11,          10,      19, false },  // one-greater base, one-greater high
-    { 9,           2,       20, false },  // overlaps bottom by one
-    { 10,          1,       21, false },  // overlaps bottom by one, contained
-    { 19,          1,       22, false },  // overlaps top by one, contained
-    { 19,          2,       23, false },  // overlaps top by one
+  { 10,          10,      10, true },   // causes the following tests to fail
+  { 9,           10,      11, false },  // one-less base, one-less high
+  { 9,           11,      12, false },  // one-less base, identical high
+  { 9,           12,      13, false },  // completely contains existing
+  { 10,          9,       14, false },  // identical base, one-less high
+  { 10,          10,      15, false },  // exactly identical to existing range
+  { 10,          11,      16, false },  // identical base, one-greater high
+  { 11,          8,       17, false },  // contained completely within
+  { 11,          9,       18, false },  // one-greater base, identical high
+  { 11,          10,      19, false },  // one-greater base, one-greater high
+  { 9,           2,       20, false },  // overlaps bottom by one
+  { 10,          1,       21, false },  // overlaps bottom by one, contained
+  { 19,          1,       22, false },  // overlaps top by one, contained
+  { 19,          2,       23, false },  // overlaps top by one
 
-    { 9,           1,       24, true },   // directly below without overlap
-    { 20,          1,       25, true },   // directly above without overlap
+  { 9,           1,       24, true },   // directly below without overlap
+  { 20,          1,       25, true },   // directly above without overlap
 
-    { 6,           3,       26, true },   // exactly between two ranges, gapless
-    { 7,           3,       27, false },  // tries to span two ranges
-    { 7,           5,       28, false },  // tries to span three ranges
-    { 4,           20,      29, false },  // tries to contain several ranges
+  { 6,           3,       26, true },   // exactly between two ranges, gapless
+  { 7,           3,       27, false },  // tries to span two ranges
+  { 7,           5,       28, false },  // tries to span three ranges
+  { 4,           20,      29, false },  // tries to contain several ranges
 
-    { 30,          50,      30, true },
-    { 90,          25,      31, true },
-    { 35,          65,      32, false },  // tries to span two noncontiguous
-    { 120,         10000,   33, true },   // > 8-bit
-    { 20000,       20000,   34, true },   // > 8-bit
-    { 0x10001,     0x10001, 35, true },   // > 16-bit
+  { 30,          50,      30, true },
+  { 90,          25,      31, true },
+  { 35,          65,      32, false },  // tries to span two noncontiguous
+  { 120,         10000,   33, true },   // > 8-bit
+  { 20000,       20000,   34, true },   // > 8-bit
+  { 0x10001,     0x10001, 35, true },   // > 16-bit
 
-    { 27,          -1,      36, false }   // tests high < base
-  };
+  { 27,          -1,      36, false }   // tests high < base
+};
 
-  // Attempt to fill the entire space.  The entire space must be filled with
-  // three stores because AddressType is signed for these tests, so RangeMap
-  // treats the size as signed and rejects sizes that appear to be negative.
-  // Even if these tests were run as unsigned, two stores would be needed
-  // to fill the space because the entire size of the space could only be
-  // described by using one more bit than would be present in AddressType.
-  const RangeTest range_tests_1[] = {
-    { INT_MIN, INT_MAX, 50, true },   // From INT_MIN to -2, inclusive
-    { -1,      2,       51, true },   // From -1 to 0, inclusive
-    { 1,       INT_MAX, 52, true },   // From 1 to INT_MAX, inclusive
-    { INT_MIN, INT_MAX, 53, false },  // Can't fill the space twice
-    { -1,      2,       54, false },
-    { 1,       INT_MAX, 55, false },
-    { -3,      6,       56, false },  // -3 to 2, inclusive - spans 3 ranges
-  };
+// Attempt to fill the entire space.  The entire space must be filled with
+// three stores because AddressType is signed for these tests, so RangeMap
+// treats the size as signed and rejects sizes that appear to be negative.
+// Even if these tests were run as unsigned, two stores would be needed
+// to fill the space because the entire size of the space could only be
+// described by using one more bit than would be present in AddressType.
+const RangeTest range_tests_1[] = {
+  { INT_MIN, INT_MAX, 50, true },   // From INT_MIN to -2, inclusive
+  { -1,      2,       51, true },   // From -1 to 0, inclusive
+  { 1,       INT_MAX, 52, true },   // From 1 to INT_MAX, inclusive
+  { INT_MIN, INT_MAX, 53, false },  // Can't fill the space twice
+  { -1,      2,       54, false },
+  { 1,       INT_MAX, 55, false },
+  { -3,      6,       56, false },  // -3 to 2, inclusive - spans 3 ranges
+};
 
-  // A light round of testing to verify that RetrieveRange does the right
-  // the right thing at the extremities of the range when nothing is stored
-  // there.  Checks are forced without storing anything at the extremities
-  // by setting size = 0.
-  const RangeTest range_tests_2[] = {
-    { INT_MIN, 0, 100, false },  // makes RetrieveRange check low end
-    { -1,      3, 101, true },
-    { INT_MAX, 0, 102, false },  // makes RetrieveRange check high end
-  };
+// A light round of testing to verify that RetrieveRange does the right
+// the right thing at the extremities of the range when nothing is stored
+// there.  Checks are forced without storing anything at the extremities
+// by setting size = 0.
+const RangeTest range_tests_2[] = {
+  { INT_MIN, 0, 100, false },  // makes RetrieveRange check low end
+  { -1,      3, 101, true },
+  { INT_MAX, 0, 102, false },  // makes RetrieveRange check high end
+};
 
-  // Similar to the previous test set, but with a couple of ranges closer
-  // to the extremities.
-  const RangeTest range_tests_3[] = {
-    { INT_MIN + 1, 1, 110, true },
-    { INT_MAX - 1, 1, 111, true },
-    { INT_MIN,     0, 112, false },  // makes RetrieveRange check low end
-    { INT_MAX,     0, 113, false }   // makes RetrieveRange check high end
-  };
+// Similar to the previous test set, but with a couple of ranges closer
+// to the extremities.
+const RangeTest range_tests_3[] = {
+  { INT_MIN + 1, 1, 110, true },
+  { INT_MAX - 1, 1, 111, true },
+  { INT_MIN,     0, 112, false },  // makes RetrieveRange check low end
+  { INT_MAX,     0, 113, false }   // makes RetrieveRange check high end
+};
 
-  // The range map is cleared between sets of tests listed here.
-  const RangeTestSet range_test_sets[] = {
-    { range_tests_0, sizeof(range_tests_0) / sizeof(RangeTest) },
-    { range_tests_1, sizeof(range_tests_1) / sizeof(RangeTest) },
-    { range_tests_2, sizeof(range_tests_2) / sizeof(RangeTest) },
-    { range_tests_3, sizeof(range_tests_3) / sizeof(RangeTest) },
-    { range_tests_0, sizeof(range_tests_0) / sizeof(RangeTest) }   // Run again
-  };
-}
+// The range map is cleared between sets of tests listed here.
+const RangeTestSet range_test_sets[] = {
+  { range_tests_0, sizeof(range_tests_0) / sizeof(RangeTest) },
+  { range_tests_1, sizeof(range_tests_1) / sizeof(RangeTest) },
+  { range_tests_2, sizeof(range_tests_2) / sizeof(RangeTest) },
+  { range_tests_3, sizeof(range_tests_3) / sizeof(RangeTest) },
+  { range_tests_0, sizeof(range_tests_0) / sizeof(RangeTest) }   // Run again
+};
 
+}  // namespace
+
+namespace google_breakpad {
 class TestStaticRangeMap : public ::testing::Test {
  protected:
   void SetUp() {
@@ -194,7 +193,7 @@ class TestStaticRangeMap : public ::testing::Test {
   void RunTestCase(int test_case);
 
   unsigned int kTestCasesCount_;
-  google_breakpad::RangeMapSerializer<AddressType, EntryType> serializer_;
+  RangeMapSerializer<AddressType, EntryType> serializer_;
 };
 
 void TestStaticRangeMap::StoreTest(RMap* range_map,
@@ -353,7 +352,7 @@ void TestStaticRangeMap::RetrieveIndexTest(const TestMap* range_map, int set) {
 void TestStaticRangeMap::RunTestCase(int test_case) {
   // Maintain the range map in a pointer so that deletion can be meaningfully
   // tested.
-  RMap* rmap = new RMap();
+  scoped_ptr<RMap> rmap(new RMap());
 
   const RangeTest* range_tests = range_test_sets[test_case].range_tests;
   unsigned int range_test_count = range_test_sets[test_case].range_test_count;
@@ -365,14 +364,14 @@ void TestStaticRangeMap::RunTestCase(int test_case) {
        range_test_index < range_test_count;
        ++range_test_index) {
     const RangeTest* range_test = &range_tests[range_test_index];
-    StoreTest(rmap, range_test);
+    StoreTest(rmap.get(), range_test);
 
     if (range_test->expect_storable)
       ++stored_count;
   }
 
-  char *memaddr = serializer_.Serialize(*rmap, NULL);
-  TestMap* static_range_map = new TestMap(memaddr);
+  scoped_array<char> memaddr(serializer_.Serialize(*rmap, NULL));
+  scoped_ptr<TestMap> static_range_map(new TestMap(memaddr.get()));
 
   // The RangeMap's own count of objects should also match.
   EXPECT_EQ(static_range_map->GetCount(), stored_count);
@@ -382,17 +381,10 @@ void TestStaticRangeMap::RunTestCase(int test_case) {
        range_test_index < range_test_count;
        ++range_test_index) {
     const RangeTest* range_test = &range_tests[range_test_index];
-    RetrieveTest(static_range_map, range_test);
+    RetrieveTest(static_range_map.get(), range_test);
   }
 
-  RetrieveIndexTest(static_range_map, test_case);
-
-  // Clear the map between test sets.  If this is the final test set,
-  // delete the map instead to test destruction.
-  delete memaddr;
-  delete static_range_map;
-  rmap->Clear();
-  delete rmap;
+  RetrieveIndexTest(static_range_map.get(), test_case);
 }
 
 TEST_F(TestStaticRangeMap, TestCase0) {
@@ -419,6 +411,8 @@ TEST_F(TestStaticRangeMap, RunTestCase0Again) {
   int test_case = 0;
   RunTestCase(test_case);
 }
+
+}  // namespace google_breakpad
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
