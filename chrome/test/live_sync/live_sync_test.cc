@@ -103,9 +103,9 @@ void LiveSyncTest::SetUp() {
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
 
   // TODO(rsimha): Until we implement a fake Tango server against which tests
-  // can run, we need to set the --sync-notification-method to "transitional".
+  // can run, we need to set the --sync-notification-method to "p2p".
   if (!cl->HasSwitch(switches::kSyncNotificationMethod))
-    cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "transitional");
+    cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "p2p");
 
   // TODO(akalin): Delete this block of code once a local python notification
   // server is implemented.

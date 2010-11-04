@@ -18,7 +18,6 @@
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/sync_constants.h"
-#include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/xmpp_connection.h"
 #include "jingle/notifier/listener/listen_task.h"
 #include "jingle/notifier/listener/notification_constants.h"
@@ -111,16 +110,8 @@ class LegacyNotifierDelegate
 
   virtual void OnConnect(base::WeakPtr<talk_base::Task> base_task) {
     LOG(INFO) << "Logged in";
-    notifier::NotificationMethod notification_method =
-        notifier::NOTIFICATION_TRANSITIONAL;
     std::vector<std::string> subscribed_services_list;
-    if (notification_method != notifier::NOTIFICATION_LEGACY) {
-      if (notification_method == notifier::NOTIFICATION_TRANSITIONAL) {
-        subscribed_services_list.push_back(
-            browser_sync::kSyncLegacyServiceUrl);
-      }
-      subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
-    }
+    subscribed_services_list.push_back(browser_sync::kSyncServiceUrl);
     // Owned by base_task.
     notifier::SubscribeTask* subscribe_task =
         new notifier::SubscribeTask(base_task, subscribed_services_list);

@@ -13,14 +13,8 @@ const NotificationMethod kDefaultNotificationMethod = NOTIFICATION_SERVER;
 std::string NotificationMethodToString(
     NotificationMethod notification_method) {
   switch (notification_method) {
-    case NOTIFICATION_LEGACY:
-      return "NOTIFICATION_LEGACY";
-      break;
-    case NOTIFICATION_TRANSITIONAL:
-      return "NOTIFICATION_TRANSITIONAL";
-      break;
-    case NOTIFICATION_NEW:
-      return "NOTIFICATION_NEW";
+    case NOTIFICATION_P2P:
+      return "NOTIFICATION_P2P";
       break;
     case NOTIFICATION_SERVER:
       return "NOTIFICATION_SERVER";
@@ -34,12 +28,8 @@ std::string NotificationMethodToString(
 }
 
 NotificationMethod StringToNotificationMethod(const std::string& str) {
-  if (str == "legacy") {
-    return NOTIFICATION_LEGACY;
-  } else if (str == "transitional") {
-    return NOTIFICATION_TRANSITIONAL;
-  } else if (str == "new") {
-    return NOTIFICATION_NEW;
+  if (str == "p2p") {
+    return NOTIFICATION_P2P;
   } else if (str == "server") {
     return NOTIFICATION_SERVER;
   }

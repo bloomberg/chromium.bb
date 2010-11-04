@@ -1463,24 +1463,14 @@ void SyncManager::SyncInternal::SendPendingXMPPNotification(
   }
   VLOG(1) << "Sending XMPP notification...";
   OutgoingNotificationData notification_data;
-  if (notifier_options_.notification_method == notifier::NOTIFICATION_LEGACY) {
-    notification_data.service_id = browser_sync::kSyncLegacyServiceId;
-    notification_data.service_url = browser_sync::kSyncLegacyServiceUrl;
-    notification_data.send_content = false;
-  } else {
-    notification_data.service_id = browser_sync::kSyncServiceId;
-    notification_data.service_url = browser_sync::kSyncServiceUrl;
-    notification_data.send_content = true;
-    notification_data.priority = browser_sync::kSyncPriority;
-    notification_data.write_to_cache_only = true;
-    if (notifier_options_.notification_method == notifier::NOTIFICATION_NEW) {
-      notification_data.service_specific_data =
-          browser_sync::kSyncServiceSpecificData;
-      notification_data.require_subscription = true;
-    } else {
-      notification_data.require_subscription = false;
-    }
-  }
+  notification_data.service_id = browser_sync::kSyncServiceId;
+  notification_data.service_url = browser_sync::kSyncServiceUrl;
+  notification_data.send_content = true;
+  notification_data.priority = browser_sync::kSyncPriority;
+  notification_data.write_to_cache_only = true;
+  notification_data.service_specific_data =
+      browser_sync::kSyncServiceSpecificData;
+  notification_data.require_subscription = true;
   bool success = talk_mediator_->SendNotification(notification_data);
   if (success) {
     notification_pending_ = false;
@@ -1571,15 +1561,7 @@ void SyncManager::SyncInternal::InitializeTalkMediator() {
         new TalkMediatorImpl(mediator_thread,
                              notifier_options_.invalidate_xmpp_login,
                              notifier_options_.allow_insecure_connection));
-    if (notifier_options_.notification_method !=
-        notifier::NOTIFICATION_LEGACY) {
-      if (notifier_options_.notification_method ==
-          notifier::NOTIFICATION_TRANSITIONAL) {
-        talk_mediator_->AddSubscribedServiceUrl(
-            browser_sync::kSyncLegacyServiceUrl);
-      }
-      talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
-    }
+    talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
   }
   talk_mediator_->SetDelegate(this);
 }

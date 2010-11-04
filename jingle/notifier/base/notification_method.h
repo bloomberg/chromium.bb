@@ -10,46 +10,11 @@
 
 namespace notifier {
 
-// This is the matrix for the interaction between clients with
-// different notification methods (except for NOTIFICATION_SERVER):
-//
-//          Listen
-//          L T N
-//        +-------+
-//      L | E E E |
-// Send T | Y Y Y |
-//      N | E Y Y |
-//        +-------+
-//
-// 'Y' means a client listening with the column notification method
-// will receive notifications from a client sending with the row
-// notification method. 'E' means means that the notification will be
-// an empty one, which may be dropped by the server in the future.
-//
-// As for NOTIFICATION_SERVER, server-issued notifications will also
-// simulate a peer-issued notification, so that any client with
-// NOTIFICATION_TRANSITIONAL or NOTIFICATION_NEW will be able to
-// receive those, too.  This support will be removed once everyone is
-// on NOTIFICATION_SERVER.
-
 enum NotificationMethod {
-  // Old, broken notification method.  Works only if notification
-  // servers don't drop empty notifications.
-  NOTIFICATION_LEGACY,
-  // Compatible with new notifications.  Also compatible with legacy
-  // notifications if the notification servers don't drop empty
-  // notifications.
-  NOTIFICATION_TRANSITIONAL,
-  // New notification method.  Compatible only with transitional
-  // notifications.
-  //
-  // NOTE: "New" is kind of a misnomer, as it refers only to
-  // peer-issued notifications; the plan is to migrate everyone to
-  // using NOTIFICATION_SERVER.
-  NOTIFICATION_NEW,
-
-  // Server-issued notifications.  Compatible only with transitional
-  // notifications.
+  // Old peer-to-peer notification method.  Currently only used for
+  // testing.
+  NOTIFICATION_P2P,
+  // Server-issued notifications.  The default.
   NOTIFICATION_SERVER,
 };
 
@@ -58,8 +23,8 @@ extern const NotificationMethod kDefaultNotificationMethod;
 std::string NotificationMethodToString(
     NotificationMethod notification_method);
 
-// If the given string is not one of "legacy", "transitional", "new",
-// or "server", returns kDefaultNotificationMethod.
+// If the given string is not one of "p2p" or "server", returns
+// kDefaultNotificationMethod.
 NotificationMethod StringToNotificationMethod(const std::string& str);
 
 }  // namespace notifier

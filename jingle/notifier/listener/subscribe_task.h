@@ -17,8 +17,7 @@
 #include "talk/xmpp/xmpptask.h"
 
 namespace notifier {
-// TODO(akalin): Remove NOTIFICATION_LEGACY and remove/refactor relevant code
-// in this class and any other class that uses notification_method.
+
 class SubscribeTask : public buzz::XmppTask {
  public:
   SubscribeTask(TaskParent* parent,

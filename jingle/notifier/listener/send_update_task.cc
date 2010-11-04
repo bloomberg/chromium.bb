@@ -90,7 +90,6 @@ buzz::XmlElement* SendUpdateTask::MakeUpdateMessage(
   //     <Content>
   //       <Priority int="{Priority}" />
   //       <RequireSubscription bool="{true/false}" />
-  //       <!-- If is_transitional is set, this is omitted. -->
   //       <ServiceSpecificData data="{ServiceData}" />
   //       <WriteToCacheOnly bool="{true/false}" />
   //     </Content>
