@@ -5,6 +5,9 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_DIRECTORY_READER_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_DIRECTORY_READER_H_
 
+#include <queue>
+
+#include "base/file_util_proxy.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PP_CompletionCallback;
@@ -31,8 +34,16 @@ class DirectoryReader : public Resource {
   int32_t GetNextEntry(PP_DirectoryEntry_Dev* entry,
                        PP_CompletionCallback callback);
 
+  void AddNewEntries(const std::vector<base::FileUtilProxy::Entry>& entries,
+                     bool has_more);
+
  private:
+  bool FillUpEntry();
+
   scoped_refptr<FileRef> directory_ref_;
+  std::queue<base::FileUtilProxy::Entry> entries_;
+  bool has_more_;
+  PP_DirectoryEntry_Dev* entry_;
 };
 
 }  // namespace pepper

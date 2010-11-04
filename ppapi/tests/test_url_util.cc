@@ -115,4 +115,3 @@ std::string TestUrlUtil::TestDocumentCanAccessDocument() {
   ASSERT_TRUE(util_->DocumentCanAccessDocument(*instance_, *instance_));
   return std::string();
 }
-

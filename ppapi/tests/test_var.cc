@@ -7,10 +7,10 @@
 #include <limits>
 
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/var.h"
+#include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
 REGISTER_TEST_CASE(Var);
@@ -24,16 +24,7 @@ pp::Var adoptVar(PP_Var var) {
 bool TestVar::Init() {
   var_interface_ = reinterpret_cast<PPB_Var const*>(
       pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
-  testing_interface_ = reinterpret_cast<PPB_Testing_Dev const*>(
-      pp::Module::Get()->GetBrowserInterface(PPB_TESTING_DEV_INTERFACE));
-  if (!testing_interface_) {
-    // Give a more helpful error message for the testing interface being gone
-    // since that needs special enabling in Chrome.
-    instance_->AppendError("This test needs the testing interface, which is "
-        "not currently available. In Chrome, use --enable-pepper-testing when "
-        "launching.");
-  }
-  return var_interface_ && testing_interface_;
+  return var_interface_ && InitTestingInterface();
 }
 
 void TestVar::RunTest() {
@@ -175,4 +166,3 @@ std::string TestVar::TestDefineProperty() {
 
   PASS();
 }
-

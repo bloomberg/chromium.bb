@@ -739,6 +739,14 @@ bool PepperPluginDelegateImpl::Rename(
   return file_system_dispatcher->Move(file_path, new_file_path, dispatcher);
 }
 
+bool PepperPluginDelegateImpl::ReadDirectory(
+    const FilePath& directory_path,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->ReadDirectory(directory_path, dispatcher);
+}
+
 FilePath GetModuleLocalFilePath(const std::string& module_name,
                                 const FilePath& path) {
 #if defined(OS_WIN)

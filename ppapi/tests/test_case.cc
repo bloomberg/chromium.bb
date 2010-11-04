@@ -6,6 +6,9 @@
 
 #include <sstream>
 
+#include "ppapi/tests/test_utils.h"
+#include "ppapi/tests/testing_instance.h"
+
 std::string TestCase::MakeFailureMessage(const char* file,
                                          int line,
                                          const char* cmd) {
@@ -35,3 +38,27 @@ pp::deprecated::ScriptableObject* TestCase::CreateTestObject() {
   return NULL;
 }
 
+bool TestCase::InitTestingInterface() {
+  if (!GetTestingInterface()) {
+    // Give a more helpful error message for the testing interface being gone
+    // since that needs special enabling in Chrome.
+    instance_->AppendError("This test needs the testing interface, which is "
+                           "not currently available. In Chrome, use "
+                           "--enable-pepper-testing when launching.");
+    return false;
+  }
+
+  return true;
+}
+
+bool TestCase::EnsureRunningOverHTTP() {
+  pp::Var window = instance_->GetWindowObject();
+  pp::Var location = window.GetProperty("location");
+  pp::Var protocol = location.GetProperty("protocol");
+  if (!protocol.is_string() || protocol.AsString() != "http:") {
+    instance_->AppendError("This test needs to be run over HTTP.");
+    return false;
+  }
+
+  return true;
+}

@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/glue/plugins/pepper_directory_reader.h"
 #include "webkit/glue/plugins/pepper_file_callbacks.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
@@ -118,7 +119,7 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
   if (!instance->delegate()->MakeDirectory(
           directory_ref->GetSystemPath(), make_ancestors,
           new FileCallbacks(instance->module()->AsWeakPtr(),
-                            callback, NULL, NULL)))
+                            callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
   return PP_ERROR_WOULDBLOCK;
@@ -140,7 +141,7 @@ int32_t Query(PP_Resource file_ref_id,
   if (!instance->delegate()->Query(
           file_ref->GetSystemPath(),
           new FileCallbacks(instance->module()->AsWeakPtr(),
-                            callback, info, file_system)))
+                            callback, info, file_system, NULL)))
     return PP_ERROR_FAILED;
 
   return PP_ERROR_WOULDBLOCK;
@@ -164,7 +165,7 @@ int32_t Touch(PP_Resource file_ref_id,
           file_ref->GetSystemPath(), base::Time::FromDoubleT(last_access_time),
           base::Time::FromDoubleT(last_modified_time),
           new FileCallbacks(instance->module()->AsWeakPtr(),
-                            callback, NULL, NULL)))
+                            callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
   return PP_ERROR_WOULDBLOCK;
@@ -185,7 +186,7 @@ int32_t Delete(PP_Resource file_ref_id,
   if (!instance->delegate()->Delete(
           file_ref->GetSystemPath(),
           new FileCallbacks(instance->module()->AsWeakPtr(),
-                            callback, NULL, NULL)))
+                            callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
   return PP_ERROR_WOULDBLOCK;
@@ -213,7 +214,7 @@ int32_t Rename(PP_Resource file_ref_id,
   if (!instance->delegate()->Rename(
           file_ref->GetSystemPath(), new_file_ref->GetSystemPath(),
           new FileCallbacks(instance->module()->AsWeakPtr(),
-                            callback, NULL, NULL)))
+                            callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
   return PP_ERROR_WOULDBLOCK;

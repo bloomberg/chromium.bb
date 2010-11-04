@@ -421,6 +421,8 @@
         'tests/test_buffer.h',
         'tests/test_char_set.cc',
         'tests/test_char_set.h',
+        'tests/test_directory_reader.cc',
+        'tests/test_directory_reader.h',
         'tests/test_file_io.cc',
         'tests/test_file_io.h',
         'tests/test_file_ref.cc',
@@ -439,6 +441,8 @@
         'tests/test_url_loader.h',
         'tests/test_url_util.cc',
         'tests/test_url_util.h',
+        'tests/test_utils.cc',
+        'tests/test_utils.h',
         'tests/test_var.cc',
         'tests/test_var.h',
 

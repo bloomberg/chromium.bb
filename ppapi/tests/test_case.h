@@ -47,6 +47,12 @@ class TestCase {
   // caller. Return NULL if there is no supported test object (the default).
   virtual pp::deprecated::ScriptableObject* CreateTestObject();
 
+  // Initializes the testing interface.
+  bool InitTestingInterface();
+
+  // Makes sure the test is run over HTTP.
+  bool EnsureRunningOverHTTP();
+
   // Pointer to the instance that owns us.
   TestingInstance* instance_;
 

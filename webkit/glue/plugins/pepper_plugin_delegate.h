@@ -198,6 +198,9 @@ class PluginDelegate {
   virtual bool Rename(const FilePath& file_path,
                       const FilePath& new_file_path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool ReadDirectory(
+      const FilePath& directory_path,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
 
   virtual base::PlatformFileError OpenModuleLocalFile(
       const std::string& module_name,

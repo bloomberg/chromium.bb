@@ -7,10 +7,8 @@
 
 #include <string>
 
-#include "ppapi/c/pp_stdint.h"
 #include "ppapi/tests/test_case.h"
 
-struct PPB_Testing_Dev;
 struct PPB_Transport_Dev;
 
 namespace pp {
@@ -25,15 +23,11 @@ class TestTransport : public TestCase {
   virtual bool Init();
   virtual void RunTest();
 
-  void QuitMessageLoop();
-
  private:
   std::string TestFirstTransport();
 
   // Used by the tests that access the C API directly.
-  const PPB_Testing_Dev* testing_interface_;
   const PPB_Transport_Dev* transport_interface_;
 };
 
 #endif  // PAPPI_TESTS_TEST_TRANSPORT_H_
-

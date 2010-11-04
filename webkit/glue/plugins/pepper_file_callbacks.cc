@@ -9,6 +9,7 @@
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/glue/plugins/pepper_directory_reader.h"
 #include "webkit/glue/plugins/pepper_error_util.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -18,11 +19,13 @@ namespace pepper {
 FileCallbacks::FileCallbacks(const base::WeakPtr<PluginModule>& module,
                              PP_CompletionCallback callback,
                              PP_FileInfo_Dev* info,
-                             scoped_refptr<FileSystem> file_system)
+                             scoped_refptr<FileSystem> file_system,
+                             scoped_refptr<DirectoryReader> directory_reader)
     : module_(module),
       callback_(callback),
       info_(info),
-      file_system_(file_system) {
+      file_system_(file_system),
+      directory_reader_(directory_reader) {
 }
 
 FileCallbacks::~FileCallbacks() {}
@@ -55,8 +58,14 @@ void FileCallbacks::DidReadMetadata(
 }
 
 void FileCallbacks::DidReadDirectory(
-    const std::vector<base::FileUtilProxy::Entry>&, bool) {
-  NOTREACHED();
+    const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
+  if (!module_.get() || !callback_.func)
+    return;
+
+  DCHECK(directory_reader_);
+  directory_reader_->AddNewEntries(entries, has_more);
+
+  PP_RunCompletionCallback(&callback_, PP_OK);
 }
 
 void FileCallbacks::DidOpenFileSystem(const std::string&,

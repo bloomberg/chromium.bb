@@ -9,7 +9,6 @@
 
 #include "ppapi/tests/test_case.h"
 
-struct PPB_Testing_Dev;
 struct PPB_Var;
 
 class TestVar : public TestCase {
@@ -26,7 +25,6 @@ class TestVar : public TestCase {
 
   // Used by the tests that access the C API directly.
   const PPB_Var* var_interface_;
-  const PPB_Testing_Dev* testing_interface_;
 };
 
 #endif  // PPAPI_TEST_TEST_VAR_H_

@@ -104,6 +104,8 @@ class PepperPluginDelegateImpl
   virtual bool Rename(const FilePath& file_path,
                       const FilePath& new_file_path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual bool ReadDirectory(const FilePath& directory_path,
+                             fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual base::PlatformFileError OpenModuleLocalFile(
       const std::string& module_name,
       const FilePath& path,
