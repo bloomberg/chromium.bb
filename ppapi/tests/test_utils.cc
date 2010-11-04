@@ -4,7 +4,7 @@
 
 #include "ppapi/tests/test_utils.h"
 
-#include <stdin.h>
+#include <stdio.h>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/module.h"
