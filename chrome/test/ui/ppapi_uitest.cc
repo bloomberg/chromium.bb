@@ -74,7 +74,7 @@ class PPAPITest : public UITest {
   void RunTestViaHTTP(const std::string& test_case) {
     net::TestServer test_server(
         net::TestServer::TYPE_HTTP,
-        FilePath(FILE_PATH_LITERAL("third_party/ppapi/tests")));
+        FilePath(FILE_PATH_LITERAL("ppapi/tests")));
     ASSERT_TRUE(test_server.Start());
     RunTestURL(test_server.GetURL("files/test_case.html?" + test_case));
   }
