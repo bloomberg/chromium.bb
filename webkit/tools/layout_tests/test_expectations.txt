@@ -29,7 +29,4 @@ BUG31342 MAC WIN RELEASE : security/block-test-no-port.html = TEXT PASS
 BUGDIMICH MAC : fast/canvas/canvas-zoom.html = IMAGE
 BUGDIMICH MAC : fast/repaint/selection-rl.html = IMAGE
 
-// probably due to WK r71198
-BUGROLANDSTEINER WIN MAC : fast/events/remove-event-listener.html = CRASH
-
 BUG61739 MAC : animations/suspend-resume-animation-events.html = FAIL CRASH
