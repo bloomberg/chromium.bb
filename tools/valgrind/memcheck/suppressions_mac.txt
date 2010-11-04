@@ -216,6 +216,30 @@
    fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE	
    fun:_ZN4dyld24initializeMainExecutableEv	
 }
+{
+   # The ConfirmQuitPanelController animates out and releases itself. And
+   # CocoaTest::TearDown() still sees this window and deques events for it,
+   # but one of those events creates this TSM Context that gets leaked.
+   # See http://crbug.com/61816 for more details.
+   Mac_Animated_Window_Close_ProcessNotification_Event
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:utOpenActivateAllSelectedIMInDoc
+   fun:MyActivateTSMDocument
+   fun:ActivateTSMDocument
+   fun:CallMyActivateTSMDocument
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:RunCurrentEventLoopInMode
+   fun:ReceiveNextEventCommon
+   fun:BlockUntilNextEventMatchingListInMode
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:_ZN9CocoaTest8TearDownEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
@@ -1079,7 +1103,6 @@
    fun:_ZN6policy49ConfigurationPolicyProviderMacTest_TestValue_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
-
 {
    bug_61737
    Memcheck:Cond
@@ -1097,26 +1120,6 @@
    fun:_ZN2v88internal9preparser9PreParserINS0_7ScannerENS0_21PartialParserRecorderEE15PreParseProgramEPS3_PS4_b
    fun:_ZN2v88internal9ParserApi15PartialPreParseENS0_6HandleINS0_6StringEEEPN7unibrow15CharacterStreamEPNS_9ExtensionE
    fun:_ZN2v88internal8Compiler7CompileENS0_6HandleINS0_6StringEEENS2_INS0_6ObjectEEEiiPNS_9ExtensionEPNS0_14ScriptDataImplES6_NS0_11NativesFlagE
-}
-{
-   bug_61816
-   Memcheck:Leak
-   fun:malloc_zone_malloc
-   fun:_CFRuntimeCreateInstance
-   fun:__CFDictionaryInit
-   fun:utOpenActivateAllSelectedIMInDoc
-   fun:MyActivateTSMDocument
-   fun:ActivateTSMDocument
-   fun:CallMyActivateTSMDocument
-   fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:RunCurrentEventLoopInMode
-   fun:ReceiveNextEventCommon
-   fun:BlockUntilNextEventMatchingListInMode
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:_ZN9CocoaTest8TearDownEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_61929
