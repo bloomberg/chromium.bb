@@ -42,6 +42,11 @@ chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
   captureEvent("onCommitted", details);
 });
 
+chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
+  function(details) {
+    captureEvent("onDOMContentLoaded", details);
+});
+
 chrome.experimental.webNavigation.onErrorOccurred.addListener(
   function(details) {
     captureEvent("onErrorOccurred", details);
@@ -67,6 +72,11 @@ chrome.tabs.getSelected(null, function(tab) {
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "link",
+            url: getURL('simpleLoad/a.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('simpleLoad/a.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('simpleLoad/a.html') });
     },
@@ -89,6 +99,11 @@ chrome.tabs.getSelected(null, function(tab) {
             transitionQualifiers: "",
             transitionType: "link",
             url: getURL('clientRedirect/a.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('clientRedirect/a.html') }],
         [ "onBeforeNavigate",
           { frameId: 0,
             requestId: 0,
@@ -101,6 +116,11 @@ chrome.tabs.getSelected(null, function(tab) {
             timeStamp: 0,
             transitionQualifiers: "client_redirect",
             transitionType: "link",
+            url: getURL('clientRedirect/b.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('clientRedirect/b.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('clientRedirect/a.html') });
     },
@@ -122,6 +142,11 @@ chrome.tabs.getSelected(null, function(tab) {
             transitionQualifiers: "",
             transitionType: "link",
             url: getURL('forwardBack/a.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('forwardBack/a.html') }],
         [ "onBeforeNavigate",
           { frameId: 0,
             requestId: 0,
@@ -135,6 +160,11 @@ chrome.tabs.getSelected(null, function(tab) {
             transitionQualifiers: "client_redirect",
             transitionType: "link",
             url: getURL('forwardBack/b.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('forwardBack/b.html') }],
         [ "onBeforeNavigate",
           { frameId: 0,
             requestId: 0,
@@ -147,6 +177,11 @@ chrome.tabs.getSelected(null, function(tab) {
             timeStamp: 0,
             transitionQualifiers: "forward_back",
             transitionType: "link",
+            url: getURL('forwardBack/a.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('forwardBack/a.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('forwardBack/a.html') });
     },
@@ -174,12 +209,22 @@ chrome.tabs.getSelected(null, function(tab) {
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframe/b.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/a.html') }],
         [ "onCommitted",
           { frameId: 1,
             tabId: tabId,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "auto_subframe",
+            url: getURL('iframe/b.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('iframe/b.html') }],
         [ "onBeforeNavigate",
           { frameId: 1,
@@ -193,6 +238,11 @@ chrome.tabs.getSelected(null, function(tab) {
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "manual_subframe",
+            url: getURL('iframe/c.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('iframe/c.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('iframe/a.html') });
     },
@@ -221,12 +271,22 @@ chrome.tabs.getSelected(null, function(tab) {
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframe/e.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/d.html') }],
         [ "onCommitted",
           { frameId: 1,
             tabId: tabId,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "auto_subframe",
+            url: getURL('iframe/e.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('iframe/e.html') }],
         [ "onBeforeNavigate",
           { frameId: 2,
@@ -241,6 +301,11 @@ chrome.tabs.getSelected(null, function(tab) {
             transitionQualifiers: "",
             transitionType: "auto_subframe",
             url: getURL('iframe/f.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 2,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/f.html') }],
         [ "onBeforeNavigate",
           { frameId: 2,
             requestId: 0,
@@ -253,6 +318,11 @@ chrome.tabs.getSelected(null, function(tab) {
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "manual_subframe",
+            url: getURL('iframe/g.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 2,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('iframe/g.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('iframe/d.html') });
     },

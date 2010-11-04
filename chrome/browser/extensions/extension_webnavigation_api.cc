@@ -44,10 +44,10 @@ FrameNavigationState::~FrameNavigationState() {
 }
 
 bool FrameNavigationState::CanSendEvents(long long frame_id) const {
-  FrameIdToErrorStateMap::const_iterator frame_state =
+  FrameIdToStateMap::const_iterator frame_state =
       frame_state_map_.find(frame_id);
   return frame_state != frame_state_map_.end() &&
-      !frame_state->second;
+      !frame_state->second.error_occurred;
 }
 
 void FrameNavigationState::TrackFrame(long long frame_id,
@@ -58,12 +58,35 @@ void FrameNavigationState::TrackFrame(long long frame_id,
     RemoveTabContentsState(tab_contents);
   tab_contents_map_.insert(
       TabContentsToFrameIdMap::value_type(tab_contents, frame_id));
-  frame_state_map_[frame_id] = (url.spec() == chrome::kUnreachableWebDataURL);
+  FrameState& frame_state = frame_state_map_[frame_id];
+  frame_state.error_occurred = (url.spec() == chrome::kUnreachableWebDataURL);
+  frame_state.url = url;
+  frame_state.is_main_frame = is_main_frame;
+}
+
+GURL FrameNavigationState::GetUrl(long long frame_id) const {
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  if (frame_state == frame_state_map_.end()) {
+    NOTREACHED();
+    return GURL();
+  }
+  return frame_state->second.url;
+}
+
+bool FrameNavigationState::IsMainFrame(long long frame_id) const {
+  FrameIdToStateMap::const_iterator frame_state =
+      frame_state_map_.find(frame_id);
+  if (frame_state == frame_state_map_.end()) {
+    NOTREACHED();
+    return false;
+  }
+  return frame_state->second.is_main_frame;
 }
 
 void FrameNavigationState::ErrorOccurredInFrame(long long frame_id) {
   DCHECK(frame_state_map_.find(frame_id) != frame_state_map_.end());
-  frame_state_map_[frame_id] = true;
+  frame_state_map_[frame_id].error_occurred = true;
 }
 
 void FrameNavigationState::RemoveTabContentsState(
@@ -94,6 +117,9 @@ void ExtensionWebNavigationEventRouter::Init() {
                    NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
                    NotificationService::AllSources());
     registrar_.Add(this,
+                   NotificationType::FRAME_DOM_CONTENT_LOADED,
+                   NotificationService::AllSources());
+    registrar_.Add(this,
                    NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
                    NotificationService::AllSources());
     registrar_.Add(this,
@@ -117,6 +143,11 @@ void ExtensionWebNavigationEventRouter::Observe(
           Source<NavigationController>(source).ptr(),
           Details<ProvisionalLoadDetails>(details).ptr());
       break;
+    case NotificationType::FRAME_DOM_CONTENT_LOADED:
+      FrameDomContentLoaded(
+          Source<NavigationController>(source).ptr(),
+          *Details<long long>(details).ptr());
+      break;
     case NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR:
       FailProvisionalLoadWithError(
           Source<NavigationController>(source).ptr(),
@@ -139,6 +170,8 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
                                details->url(),
                                details->main_frame(),
                                controller->tab_contents());
+  if (!navigation_state_.CanSendEvents(details->frame_id()))
+    return;
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
@@ -152,13 +185,14 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  if (navigation_state_.CanSendEvents(details->frame_id()))
-    DispatchEvent(controller->profile(), keys::kOnBeforeNavigate, json_args);
+  DispatchEvent(controller->profile(), keys::kOnBeforeNavigate, json_args);
 }
 
 void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
     NavigationController* controller,
     ProvisionalLoadDetails* details) {
+  if (!navigation_state_.CanSendEvents(details->frame_id()))
+    return;
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
@@ -177,13 +211,33 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  if (navigation_state_.CanSendEvents(details->frame_id()))
-    DispatchEvent(controller->profile(), keys::kOnCommitted, json_args);
+  DispatchEvent(controller->profile(), keys::kOnCommitted, json_args);
+}
+
+void ExtensionWebNavigationEventRouter::FrameDomContentLoaded(
+    NavigationController* controller, long long frame_id) {
+  if (!navigation_state_.CanSendEvents(frame_id))
+    return;
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger(keys::kTabIdKey,
+                   ExtensionTabUtil::GetTabId(controller->tab_contents()));
+  dict->SetString(keys::kUrlKey, navigation_state_.GetUrl(frame_id).spec());
+  dict->SetInteger(keys::kFrameIdKey, navigation_state_.IsMainFrame(frame_id) ?
+      0 : static_cast<int>(frame_id));
+  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  args.Append(dict);
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+  DispatchEvent(controller->profile(), keys::kOnDOMContentLoaded, json_args);
 }
 
 void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
     NavigationController* controller,
     ProvisionalLoadDetails* details) {
+  if (!navigation_state_.CanSendEvents(details->frame_id()))
+    return;
   ListValue args;
   DictionaryValue* dict = new DictionaryValue();
   dict->SetInteger(keys::kTabIdKey,
@@ -198,10 +252,8 @@ void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  if (navigation_state_.CanSendEvents(details->frame_id())) {
-    navigation_state_.ErrorOccurredInFrame(details->frame_id());
-    DispatchEvent(controller->profile(), keys::kOnErrorOccurred, json_args);
-  }
+  navigation_state_.ErrorOccurredInFrame(details->frame_id());
+  DispatchEvent(controller->profile(), keys::kOnErrorOccurred, json_args);
 }
 
 void ExtensionWebNavigationEventRouter::DispatchEvent(

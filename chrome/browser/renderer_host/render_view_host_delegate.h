@@ -361,7 +361,7 @@ class RenderViewHostDelegate {
         bool showing_repost_interstitial) = 0;
 
     // Notification that a document has been loaded in a frame.
-    virtual void DocumentLoadedInFrame() = 0;
+    virtual void DocumentLoadedInFrame(long long frame_id) = 0;
 
    protected:
     virtual ~Resource() {}

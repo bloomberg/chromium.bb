@@ -594,7 +594,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
                                          const std::string& target);
-  void OnMsgDocumentLoadedInFrame();
+  void OnMsgDocumentLoadedInFrame(long long frame_id);
   void OnMsgGoToEntryAtOffset(int offset);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);

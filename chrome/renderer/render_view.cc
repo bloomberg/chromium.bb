@@ -3285,7 +3285,7 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   DCHECK(navigation_state);
   navigation_state->set_finish_document_load_time(Time::Now());
 
-  Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_));
+  Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_, frame->identifier()));
 
   page_click_tracker_->StartTrackingFrame(frame);
   // The document has now been fully loaded.  Scan for forms to be sent up to

@@ -1214,7 +1214,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       std::string /* state */)
 
   // Notifies the browser that a document has been loaded in a frame.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentLoadedInFrame)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentLoadedInFrame,
+                      long long /* frame_id */)
 
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes.

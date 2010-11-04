@@ -39,6 +39,12 @@ class FrameNavigationState {
                   bool is_main_frame,
                   const TabContents* tab_contents);
 
+  // Returns the URL corresponding to a tracked frame given by its |frame_id|.
+  GURL GetUrl(long long frame_id) const;
+
+  // True if the frame given by its |frame_id| is the main frame of its tab.
+  bool IsMainFrame(long long frame_id) const;
+
   // Marks a frame as in an error state.
   void ErrorOccurredInFrame(long long frame_id);
 
@@ -47,14 +53,18 @@ class FrameNavigationState {
 
  private:
   typedef std::multimap<const TabContents*, long long> TabContentsToFrameIdMap;
-  typedef std::map<long long, bool> FrameIdToErrorStateMap;
+  struct FrameState {
+    bool error_occurred;  // True if an error has occurred in this frame.
+    bool is_main_frame;  // True if this is a main frame.
+    GURL url;  // URL of this frame.
+  };
+  typedef std::map<long long, FrameState> FrameIdToStateMap;
 
   // Tracks which frames belong to a given tab contents object.
   TabContentsToFrameIdMap tab_contents_map_;
 
-  // Tracks which frames are in an error state. Maps to true, if an error has
-  // occurred in a given frame.
-  FrameIdToErrorStateMap frame_state_map_;
+  // Tracks the state of known frames.
+  FrameIdToStateMap frame_state_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationState);
 };
@@ -90,6 +100,11 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   // extension event from it.
   void FrameProvisionalLoadCommitted(NavigationController* controller,
                                      ProvisionalLoadDetails* details);
+
+  // Handler for the FRAME_DOM_CONTENT_LOADED event. The method takes the frame
+  // ID and constructs a suitable JSON formatted extension event from it.
+  void FrameDomContentLoaded(NavigationController* controller,
+                             long long frame_id);
 
   // Handler for the FAIL_PROVISIONAL_LOAD_WITH_ERROR event. The method takes
   // the details of such an event and constructs a suitable JSON formatted

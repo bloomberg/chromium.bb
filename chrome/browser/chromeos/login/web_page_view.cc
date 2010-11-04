@@ -78,7 +78,8 @@ void WizardWebPageViewTabContents::DidRunInsecureContent(
   page_delegate_->OnPageLoadFailed(security_origin);
 }
 
-void WizardWebPageViewTabContents::DocumentLoadedInFrame() {
+void WizardWebPageViewTabContents::DocumentLoadedInFrame(
+    long long /*frame_id*/) {
   page_delegate_->OnPageLoaded();
 }
 

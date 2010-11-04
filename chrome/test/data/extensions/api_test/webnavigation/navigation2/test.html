@@ -42,6 +42,11 @@ chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
   captureEvent("onCommitted", details);
 });
 
+chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
+  function(details) {
+    captureEvent("onDOMContentLoaded", details);
+});
+
 chrome.experimental.webNavigation.onErrorOccurred.addListener(
   function(details) {
     captureEvent("onErrorOccurred", details);
@@ -92,6 +97,11 @@ chrome.tabs.getSelected(null, function(tab) {
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframeFail/c.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/d.html') }],
         [ "onErrorOccurred",
           { error: "net::ERR_FILE_NOT_FOUND",
             frameId: 1,
@@ -123,12 +133,22 @@ chrome.tabs.getSelected(null, function(tab) {
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframeFail/b.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/a.html') }],
         [ "onCommitted",
           { frameId: 1,
             tabId: tabId,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "auto_subframe",
+            url: getURL('iframeFail/b.html') }],
+        [ "onDOMContentLoaded",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
             url: getURL('iframeFail/b.html') }],
         [ "onBeforeNavigate",
           { frameId: 1,

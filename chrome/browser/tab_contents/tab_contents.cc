@@ -2247,8 +2247,12 @@ void TabContents::DidFailProvisionalLoadWithError(
       Details<ProvisionalLoadDetails>(&details));
 }
 
-void TabContents::DocumentLoadedInFrame() {
+void TabContents::DocumentLoadedInFrame(long long frame_id) {
   controller_.DocumentLoadedInFrame();
+  NotificationService::current()->Notify(
+      NotificationType::FRAME_DOM_CONTENT_LOADED,
+      Source<NavigationController>(&controller_),
+      Details<long long>(&frame_id));
 }
 
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {

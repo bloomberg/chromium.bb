@@ -24,17 +24,25 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   FrameNavigationState navigation_state;
   const long long frame_id1 = 23;
   const long long frame_id2 = 42;
-  const GURL url("http://www.google.com/");
+  const GURL url1("http://www.google.com/");
+  const GURL url2("http://mail.google.com/");
 
   // Create a main frame.
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id1));
-  navigation_state.TrackFrame(frame_id1, url, true, contents());
+  navigation_state.TrackFrame(frame_id1, url1, true, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id1));
 
   // Add a sub frame.
   EXPECT_FALSE(navigation_state.CanSendEvents(frame_id2));
-  navigation_state.TrackFrame(frame_id2, url, false, contents());
+  navigation_state.TrackFrame(frame_id2, url2, false, contents());
   EXPECT_TRUE(navigation_state.CanSendEvents(frame_id2));
+
+  // Check frame state.
+  EXPECT_TRUE(navigation_state.IsMainFrame(frame_id1));
+  EXPECT_EQ(url1, navigation_state.GetUrl(frame_id1));
+  EXPECT_FALSE(navigation_state.IsMainFrame(frame_id2));
+  EXPECT_EQ(url2, navigation_state.GetUrl(frame_id2));
+
 
   // Removing the tab contents should also remove all state of its frames.
   navigation_state.RemoveTabContentsState(contents());

@@ -1364,11 +1364,11 @@ void RenderViewHost::OnMsgForwardMessageToExternalHost(
   delegate_->ProcessExternalHostMessage(message, origin, target);
 }
 
-void RenderViewHost::OnMsgDocumentLoadedInFrame() {
+void RenderViewHost::OnMsgDocumentLoadedInFrame(long long frame_id) {
   RenderViewHostDelegate::Resource* resource_delegate =
       delegate_->GetResourceDelegate();
   if (resource_delegate)
-    resource_delegate->DocumentLoadedInFrame();
+    resource_delegate->DocumentLoadedInFrame(frame_id);
 }
 
 void RenderViewHost::DisassociateFromPopupCount() {
