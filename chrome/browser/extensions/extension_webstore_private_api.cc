@@ -29,7 +29,6 @@
 namespace {
 
 const char* install_base_url = extension_urls::kGalleryUpdateHttpsUrl;
-const char kAlreadyLoggedInError[] = "User already logged in";
 const char kLoginKey[] = "login";
 const char kTokenKey[] = "token";
 
@@ -184,13 +183,6 @@ bool PromptBrowserLoginFunction::RunImpl() {
   }
 
   Profile* profile = GetDefaultProfile(profile_);
-
-  // The user should not already be logged in.
-  std::string username = GetBrowserSignin(profile)->GetSignedInUsername();
-  if (!username.empty()) {
-    error_ = kAlreadyLoggedInError;
-    return false;
-  }
 
   // Login can currently only be invoked tab-modal.  Since this is
   // coming from the webstore, we should always have a tab, but check

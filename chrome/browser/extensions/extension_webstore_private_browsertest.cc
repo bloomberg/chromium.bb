@@ -191,9 +191,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBrowserTest, BrowserLogin) {
 
   RunLoginTest("browser_login/prompt_preferred.html", "", true, "foo@bar.com");
 
-  RunLoginTest("browser_login/prompt_already_logged_in_error.html",
-               "foo@bar.com", false, "foo@bar.com");
-
   RunLoginTest("browser_login/prompt_login_fails.html",
                "", false, "foo@bar.com");
 }
