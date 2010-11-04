@@ -450,8 +450,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_NavigateURLRelative) {
 
 const wchar_t kNavigateSimpleObjectFocus[] = L"simple_object_focus.html";
 
-// http://crbug.com/37087
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_ObjectFocus) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_ObjectFocus) {
   SimpleBrowserTest(FIREFOX, kNavigateSimpleObjectFocus);
 }
 
@@ -758,8 +757,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFHttpHeaderFrameSet) {
   SimpleBrowserTest(IE, kFullTabHttpHeaderPageFrameset);
 }
 
-// Flaky on the build bots. See http://crbug.com/30622
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InitializeHidden) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_InitializeHidden) {
   SimpleBrowserTest(FIREFOX, kInitializeHiddenPage);
 }
 
@@ -772,8 +770,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 const wchar_t kInHeadPage[] = L"in_head.html";
 
-// Flaky on build bots. See http://crbug.com/37009
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InHead) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_InHead) {
   SimpleBrowserTest(FIREFOX, kInHeadPage);
 }
 
@@ -803,8 +800,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_EventListener) {
 
 const wchar_t kPrivilegedApisPage[] = L"privileged_apis_host.html";
 
-// http://crbug.com/32321
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_PrivilegedApis) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_PrivilegedApis) {
   SimpleBrowserTest(IE, kPrivilegedApisPage);
 }
 
@@ -835,10 +831,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_PersistentCookieTest) {
   SimpleBrowserTest(IE, kPersistentCookieTest);
 }
 
-// This test has been disabled because we need a better way to navigate out
-// of chrome frame and detect it.
 const wchar_t kNavigateOutPage[] = L"navigate_out.html";
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_NavigateOut) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
   SimpleBrowserTest(IE, kNavigateOutPage);
 }
 
