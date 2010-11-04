@@ -256,23 +256,6 @@ TEST_F(WebDataServiceAutofillTest, FormFillRemoveMany) {
   done_event_.TimedWait(test_timeout_);
 }
 
-TEST_F(WebDataServiceAutofillTest, ProfileAdd) {
-  AutoFillProfile profile(name1_, unique_id1_);
-  const AutofillProfileChange expected_change(
-      AutofillProfileChange::ADD, name1_, &profile, string16());
-
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  wds_->AddAutoFillProfile(profile);
-  done_event_.TimedWait(test_timeout_);
-}
-
 TEST_F(WebDataServiceAutofillTest, ProfileAddGUID) {
   AutoFillProfile profile;
 
@@ -312,28 +295,6 @@ TEST_F(WebDataServiceAutofillTest, ProfileAddGUID) {
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(profile, *consumer.result()[0]);
   STLDeleteElements(&consumer.result());
-}
-
-TEST_F(WebDataServiceAutofillTest, ProfileRemove) {
-  AutoFillProfile profile(name1_, unique_id1_);
-
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event_));
-  wds_->AddAutoFillProfile(profile);
-  done_event_.TimedWait(test_timeout_);
-
-  const AutofillProfileChange expected_change(
-      AutofillProfileChange::REMOVE, name1_, NULL, string16());
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  wds_->RemoveAutoFillProfile(profile.unique_id());
-  done_event_.TimedWait(test_timeout_);
 }
 
 TEST_F(WebDataServiceAutofillTest, ProfileRemoveGUID) {
@@ -393,49 +354,11 @@ TEST_F(WebDataServiceAutofillTest, ProfileRemoveGUID) {
   ASSERT_EQ(0U, consumer2.result().size());
 }
 
-TEST_F(WebDataServiceAutofillTest, ProfileUpdate) {
-  AutoFillProfile profile1(name1_, unique_id1_);
-  AutoFillProfile profile2(name2_, unique_id2_);
-
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      Times(2).
-      WillOnce(DoDefault()).
-      WillOnce(SignalEvent(&done_event_));
-  wds_->AddAutoFillProfile(profile1);
-  wds_->AddAutoFillProfile(profile2);
-
-  done_event_.TimedWait(test_timeout_);
-
-  AutoFillProfile profile1_delta(profile1);
-  string16 new_label(ASCIIToUTF16("new_label!"));
-  profile1_delta.set_label(new_label);
-  const AutofillProfileChange expected_change(
-      AutofillProfileChange::UPDATE, new_label, &profile1_delta, name1_);
-
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_PROFILE_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillProfileChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  wds_->UpdateAutoFillProfile(profile1_delta);
-  done_event_.TimedWait(test_timeout_);
-}
-
 TEST_F(WebDataServiceAutofillTest, ProfileUpdateGUID) {
   AutoFillProfile profile1;
   profile1.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Abe"));
   AutoFillProfile profile2;
   profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Alice"));
-
-  // TODO(dhollowa): Remove once unique_ids are deprecated from the db.
-  // http://crbug.com/58813
-  profile1.set_unique_id(unique_id1_);
-  profile1.set_label(name1_);
-  profile2.set_unique_id(unique_id2_);
-  profile2.set_label(name2_);
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       WillOnce(DoDefault()).
@@ -502,23 +425,6 @@ TEST_F(WebDataServiceAutofillTest, ProfileUpdateGUID) {
   STLDeleteElements(&consumer2.result());
 }
 
-TEST_F(WebDataServiceAutofillTest, CreditAdd) {
-  CreditCard card(name1_, unique_id1_);
-  const AutofillCreditCardChange expected_change(
-      AutofillCreditCardChange::ADD, name1_, &card);
-
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  wds_->AddCreditCard(card);
-  done_event_.TimedWait(test_timeout_);
-}
-
 TEST_F(WebDataServiceAutofillTest, CreditAddGUID) {
   CreditCard card;
   const AutofillCreditCardChangeGUID expected_change(
@@ -544,28 +450,6 @@ TEST_F(WebDataServiceAutofillTest, CreditAddGUID) {
   ASSERT_EQ(1U, consumer.result().size());
   EXPECT_EQ(card, *consumer.result()[0]);
   STLDeleteElements(&consumer.result());
-}
-
-TEST_F(WebDataServiceAutofillTest, CreditRemove) {
-  CreditCard card(name1_, unique_id1_);
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      WillOnce(SignalEvent(&done_event_));
-  wds_->AddCreditCard(card);
-  done_event_.TimedWait(test_timeout_);
-
-  const AutofillCreditCardChange expected_change(
-      AutofillCreditCardChange::REMOVE, name1_, NULL);
-
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  wds_->RemoveCreditCard(card.unique_id());
-  done_event_.TimedWait(test_timeout_);
 }
 
 TEST_F(WebDataServiceAutofillTest, CreditCardRemoveGUID) {
@@ -608,45 +492,11 @@ TEST_F(WebDataServiceAutofillTest, CreditCardRemoveGUID) {
   ASSERT_EQ(0U, consumer2.result().size());
 }
 
-TEST_F(WebDataServiceAutofillTest, CreditUpdate) {
-  CreditCard card1(name1_, unique_id1_);
-  CreditCard card2(name2_, unique_id2_);
-
-  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
-      Times(2).
-      WillOnce(DoDefault()).
-      WillOnce(SignalEvent(&done_event_));
-  wds_->AddCreditCard(card1);
-  wds_->AddCreditCard(card2);
-  done_event_.TimedWait(test_timeout_);
-
-  CreditCard card1_delta(card1);
-  card1_delta.set_label(ASCIIToUTF16("new_label!"));
-  const AutofillCreditCardChange expected_change(
-      AutofillCreditCardChange::UPDATE, name1_, &card1_delta);
-
-  EXPECT_CALL(
-      *observer_helper_->observer(),
-      Observe(NotificationType(NotificationType::AUTOFILL_CREDIT_CARD_CHANGED),
-              Source<WebDataService>(wds_.get()),
-              Property(&Details<const AutofillCreditCardChange>::ptr,
-                       Pointee(expected_change)))).
-      WillOnce(SignalEvent(&done_event_));
-
-  wds_->UpdateCreditCard(card1_delta);
-  done_event_.TimedWait(test_timeout_);
-}
-
 TEST_F(WebDataServiceAutofillTest, CreditUpdateGUID) {
   CreditCard card1;
   card1.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Abe"));
   CreditCard card2;
   card2.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Alice"));
-
-  // TODO(dhollowa): Remove once unique_ids are deprecated from the db.
-  // http://crbug.com/58813
-  card1.set_unique_id(unique_id1_);
-  card2.set_unique_id(unique_id2_);
 
   EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
       Times(2).

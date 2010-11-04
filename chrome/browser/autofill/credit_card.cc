@@ -126,26 +126,15 @@ std::string GetCreditCardType(const string16& number) {
 
 }  // namespace
 
-CreditCard::CreditCard(const string16& label,
-                       int unique_id)
-    : expiration_month_(0),
-      expiration_year_(0),
-      label_(label),
-      unique_id_(unique_id),
-      guid_(guid::GenerateGUID()) {
-}
-
 CreditCard::CreditCard(const std::string& guid)
     : expiration_month_(0),
       expiration_year_(0),
-      unique_id_(0),
       guid_(guid) {
 }
 
 CreditCard::CreditCard()
     : expiration_month_(0),
       expiration_year_(0),
-      unique_id_(0),
       guid_(guid::GenerateGUID()) {
 }
 
@@ -380,7 +369,6 @@ void CreditCard::operator=(const CreditCard& credit_card) {
   expiration_month_ = credit_card.expiration_month_;
   expiration_year_ = credit_card.expiration_year_;
   label_ = credit_card.label_;
-  unique_id_ = credit_card.unique_id_;
   guid_ = credit_card.guid_;
 }
 
@@ -403,7 +391,7 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
 }
 
 bool CreditCard::operator==(const CreditCard& credit_card) const {
-  if (label_ != credit_card.label_ || unique_id_ != credit_card.unique_id_)
+  if (label_ != credit_card.label_ || guid_ != credit_card.guid_)
     return false;
 
   return Compare(credit_card) == 0;
@@ -614,8 +602,6 @@ bool CreditCard::ConvertDate(const string16& date, int* num) const {
 std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
   return os
       << UTF16ToUTF8(credit_card.Label())
-      << " "
-      << credit_card.unique_id()
       << " "
       << credit_card.guid()
       << " "

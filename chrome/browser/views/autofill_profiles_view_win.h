@@ -166,11 +166,11 @@ class AutoFillProfilesView : public views::View,
           is_address(false) {
     }
 
-    int unique_id() const {
+    std::string guid() const {
       if (is_address)
-        return address.unique_id();
+        return address.guid();
       else
-        return credit_card.unique_id();
+        return credit_card.guid();
     }
   };
 

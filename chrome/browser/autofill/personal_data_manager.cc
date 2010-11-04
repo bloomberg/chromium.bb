@@ -53,6 +53,51 @@ T* address_of(T& v) {
   return &v;
 }
 
+bool FindInProfilesByGUID(const std::vector<AutoFillProfile>& profiles,
+                          const std::string& guid) {
+  for (std::vector<AutoFillProfile>::const_iterator iter = profiles.begin();
+       iter != profiles.end();
+       ++iter) {
+    if (iter->guid() == guid)
+      return true;
+  }
+  return false;
+}
+
+bool FindInScopedProfilesByGUID(const ScopedVector<AutoFillProfile>& profiles,
+                                const std::string& guid) {
+  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end();
+       ++iter) {
+    if ((*iter)->guid() == guid)
+      return true;
+  }
+  return false;
+}
+
+bool FindInCreditCardsByGUID(const std::vector<CreditCard>& credit_cards,
+                             const std::string& guid) {
+  for (std::vector<CreditCard>::const_iterator iter = credit_cards.begin();
+       iter != credit_cards.end();
+       ++iter) {
+    if (iter->guid() == guid)
+      return true;
+  }
+  return false;
+}
+
+bool FindInScopedCreditCardsByGUID(
+    const ScopedVector<CreditCard>& credit_cards, const std::string& guid) {
+  for (std::vector<CreditCard*>::const_iterator iter =
+          credit_cards.begin();
+       iter != credit_cards.end();
+       ++iter) {
+    if ((*iter)->guid() == guid)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -126,14 +171,13 @@ void PersonalDataManager::RemoveObserver(
 bool PersonalDataManager::ImportFormData(
     const std::vector<FormStructure*>& form_structures,
     AutoFillManager* autofill_manager) {
-  AutoLock lock(unique_ids_lock_);
   // Parse the form and construct a profile based on the information that is
   // possible to import.
   int importable_fields = 0;
   int importable_credit_card_fields = 0;
-  imported_profile_.reset(new AutoFillProfile(string16(), 0));
+  imported_profile_.reset(new AutoFillProfile);
   // TODO(jhawkins): Use a hash of the CC# instead of a list of unique IDs?
-  imported_credit_card_.reset(new CreditCard(string16(), 0));
+  imported_credit_card_.reset(new CreditCard);
 
   bool billing_address_info = false;
   std::vector<FormStructure*>::const_iterator iter;
@@ -212,17 +256,8 @@ bool PersonalDataManager::ImportFormData(
   if (importable_credit_card_fields == 0)
     imported_credit_card_.reset();
 
-  {
-    // We're now done with the unique IDs, and SaveImportedProfile() needs the
-    // lock, so release it.
-    AutoUnlock unlock(unique_ids_lock_);
-
-    // We always save imported profiles.
-    SaveImportedProfile();
-
-    // We never save an imported credit card at this point. If there was one we
-    // found, we'll be asked to save it later once the user gives their OK.
-  }
+  // We always save imported profiles.
+  SaveImportedProfile();
 
   return true;
 }
@@ -246,45 +281,6 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
                      std::mem_fun_ref(&AutoFillProfile::IsEmpty)),
       profiles->end());
 
-  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-  if (!wds)
-    return;
-
-  AutoLock lock(unique_ids_lock_);
-
-  // Remove the unique IDs of the new set of profiles from the unique ID set.
-  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
-       iter != profiles->end(); ++iter) {
-    if (iter->unique_id() != 0)
-      unique_profile_ids_.erase(iter->unique_id());
-  }
-
-  // Any remaining IDs are not in the new profile list and should be removed
-  // from the web database.
-  for (std::set<int>::iterator iter = unique_profile_ids_.begin();
-       iter != unique_profile_ids_.end(); ++iter) {
-    wds->RemoveAutoFillProfile(*iter);
-
-    // Also remove these IDs from the total set of unique IDs.
-    unique_ids_.erase(*iter);
-  }
-
-  // Clear the unique IDs.  The set of unique IDs is updated for each profile
-  // added to |web_profiles_| below.
-  unique_profile_ids_.clear();
-
-  // Update the web database with the existing profiles.  We need to handle
-  // these first so that |unique_profile_ids_| is reset with the IDs of the
-  // existing profiles; otherwise, new profiles added before older profiles can
-  // take their unique ID.
-  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
-       iter != profiles->end(); ++iter) {
-    if (iter->unique_id() != 0) {
-      unique_profile_ids_.insert(iter->unique_id());
-      wds->UpdateAutoFillProfile(*iter);
-    }
-  }
-
   // Ensure that profile labels are up to date.  Currently, sync relies on
   // labels to identify a profile.
   // TODO(dhollowa): We need to deprecate labels and update the way sync
@@ -294,18 +290,34 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
       address_of<AutoFillProfile>);
   AutoFillProfile::AdjustInferredLabels(&profile_pointers);
 
+  WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  if (!wds)
+    return;
+
+  // Any profiles that are not in the new profile list should be removed from
+  // the web database.
+  for (std::vector<AutoFillProfile*>::const_iterator iter =
+           web_profiles_.begin();
+       iter != web_profiles_.end(); ++iter) {
+    if (!FindInProfilesByGUID(*profiles, (*iter)->guid()))
+      wds->RemoveAutoFillProfileGUID((*iter)->guid());
+  }
+
+  // Update the web database with the existing profiles.
+  for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
+       iter != profiles->end(); ++iter) {
+    if (FindInScopedProfilesByGUID(web_profiles_, iter->guid()))
+      wds->UpdateAutoFillProfileGUID(*iter);
+  }
+
   // Add the new profiles to the web database.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    // The profile was added by the AutoFill dialog, so we need to set the
-    // unique ID.  This also means we need to add this profile to the web
-    // database.
-    if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueIDFor(&unique_profile_ids_));
-      wds->AddAutoFillProfile(*iter);
-    }
+    if (!FindInScopedProfilesByGUID(web_profiles_, iter->guid()))
+      wds->AddAutoFillProfileGUID(*iter);
   }
 
+  // Copy in the new profiles.
   web_profiles_.reset();
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
@@ -315,15 +327,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   // Read our writes to ensure consistency with the database.
   Refresh();
 
-  {
-    // We're now done with the unique IDs, and observers might call into a
-    // method that needs the lock, so release it.  For example, observers on Mac
-    // might call profiles() which calls LoadAuxiliaryProfiles(), which needs
-    // the lock.
-    AutoUnlock unlock(unique_ids_lock_);
-
-    FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
-  }
+  FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
 void PersonalDataManager::SetCreditCards(
@@ -344,54 +348,29 @@ void PersonalDataManager::SetCreditCards(
   if (!wds)
     return;
 
-  AutoLock lock(unique_ids_lock_);
-
-  // Remove the unique IDs of the new set of credit cards from the unique ID
-  // set.
-  for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
-       iter != credit_cards->end(); ++iter) {
-    if (iter->unique_id() != 0)
-      unique_creditcard_ids_.erase(iter->unique_id());
+  // Any credit cards that are not in the new credit card list should be
+  // removed.
+  for (std::vector<CreditCard*>::const_iterator iter = credit_cards_.begin();
+       iter != credit_cards_.end(); ++iter) {
+    if (!FindInCreditCardsByGUID(*credit_cards, (*iter)->guid()))
+      wds->RemoveCreditCardGUID((*iter)->guid());
   }
 
-  // Any remaining IDs are not in the new credit card list and should be removed
-  // from the web database.
-  for (std::set<int>::iterator iter = unique_creditcard_ids_.begin();
-       iter != unique_creditcard_ids_.end(); ++iter) {
-    wds->RemoveCreditCard(*iter);
-
-    // Also remove these IDs from the total set of unique IDs.
-    unique_ids_.erase(*iter);
-  }
-
-  // Clear the unique IDs.  The set of unique IDs is updated for each credit
-  // card added to |credit_cards_| below.
-  unique_creditcard_ids_.clear();
-
-  // Update the web database with the existing credit cards.  We need to handle
-  // these first so that |unique_creditcard_ids_| is reset with the IDs of the
-  // existing credit cards; otherwise, new credit cards added before older
-  // credit cards can take their unique ID.
+  // Update the web database with the existing credit cards.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
-    if (iter->unique_id() != 0) {
-      unique_creditcard_ids_.insert(iter->unique_id());
-      wds->UpdateCreditCard(*iter);
-    }
+    if (FindInScopedCreditCardsByGUID(credit_cards_, iter->guid()))
+      wds->UpdateCreditCardGUID(*iter);
   }
 
   // Add the new credit cards to the web database.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
-    // The credit card was added by the AutoFill dialog, so we need to set the
-    // unique ID.  This also means we need to add this credit card to the web
-    // database.
-    if (iter->unique_id() == 0) {
-      iter->set_unique_id(CreateNextUniqueIDFor(&unique_creditcard_ids_));
-      wds->AddCreditCard(*iter);
-    }
+    if (!FindInScopedCreditCardsByGUID(credit_cards_, iter->guid()))
+      wds->AddCreditCardGUID(*iter);
   }
 
+  // Copy in the new credit cards.
   credit_cards_.reset();
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
@@ -401,15 +380,7 @@ void PersonalDataManager::SetCreditCards(
   // Read our writes to ensure consistency with the database.
   Refresh();
 
-  {
-    // We're now done with the unique IDs, and observers might call into a
-    // method that needs the lock, so release it.  For example, observers on Mac
-    // might call profiles() which calls LoadAuxiliaryProfiles(), which needs
-    // the lock.
-    AutoUnlock unlock(unique_ids_lock_);
-
-    FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
-  }
+  FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
 // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
@@ -459,11 +430,6 @@ void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
   for (std::vector<AutoFillProfile*>::iterator iter = web_profiles_->begin();
        iter != web_profiles_->end(); ++iter) {
     if ((*iter)->guid() == profile.guid()) {
-      // TODO(dhollowa): Remove |unique_id| once GUID migration work is
-      // complete. Until the |WebDataService::UpdateAutoFillProfile| is changed
-      // to use the GUID we need to preserve the unique ID association.
-      // http:://crbug.com/58813
-      const_cast<AutoFillProfile&>(profile).set_unique_id((*iter)->unique_id());
       delete *iter;
       *iter = new AutoFillProfile(profile);
       break;
@@ -473,7 +439,7 @@ void PersonalDataManager::UpdateProfile(const AutoFillProfile& profile) {
   // Ensure that profile labels are up to date.
   AutoFillProfile::AdjustInferredLabels(&web_profiles_.get());
 
-  wds->UpdateAutoFillProfile(profile);
+  wds->UpdateAutoFillProfileGUID(profile);
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
@@ -523,18 +489,13 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
   for (std::vector<CreditCard*>::iterator iter = credit_cards_->begin();
        iter != credit_cards_->end(); ++iter) {
     if ((*iter)->guid() == credit_card.guid()) {
-      // TODO(dhollowa): Remove |unique_id| once GUID migration work is
-      // complete. Until the |WebDataService::UpdateCreditCard| is changed
-      // to use the GUID we need to preserve the unique ID association.
-      // http:://crbug.com/58813
-      const_cast<CreditCard&>(credit_card).set_unique_id((*iter)->unique_id());
       delete *iter;
       *iter = new CreditCard(credit_card);
       break;
     }
   }
 
-  wds->UpdateCreditCard(credit_card);
+  wds->UpdateCreditCardGUID(credit_card);
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
 }
 
@@ -638,9 +599,8 @@ AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
     const string16& label) {
   // See comment in header for thread details.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-  AutoLock lock(unique_ids_lock_);
-  AutoFillProfile* p = new AutoFillProfile(label,
-      CreateNextUniqueIDFor(&unique_profile_ids_));
+  AutoFillProfile* p = new AutoFillProfile;
+  p->set_label(label);
   return p;
 }
 
@@ -660,18 +620,6 @@ void PersonalDataManager::Init(Profile* profile) {
   profile_ = profile;
   LoadProfiles();
   LoadCreditCards();
-}
-
-int PersonalDataManager::CreateNextUniqueIDFor(std::set<int>* id_set) {
-  // Profile IDs MUST start at 1 to allow 0 as an error value when reading
-  // the ID from the WebDB (see LoadData()).
-  unique_ids_lock_.AssertAcquired();
-  int id = 1;
-  while (unique_ids_.count(id) != 0)
-    ++id;
-  unique_ids_.insert(id);
-  id_set->insert(id);
-  return id;
 }
 
 void PersonalDataManager::LoadProfiles() {
@@ -710,10 +658,8 @@ void PersonalDataManager::LoadCreditCards() {
 void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
                                                 const WDTypedResult* result) {
   DCHECK_EQ(pending_profiles_query_, h);
-  pending_profiles_query_ = 0;
 
-  AutoLock lock(unique_ids_lock_);
-  unique_profile_ids_.clear();
+  pending_profiles_query_ = 0;
   web_profiles_.reset();
 
   const WDResult<std::vector<AutoFillProfile*> >* r =
@@ -722,8 +668,6 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
   std::vector<AutoFillProfile*> profiles = r->GetValue();
   for (std::vector<AutoFillProfile*>::iterator iter = profiles.begin();
        iter != profiles.end(); ++iter) {
-    unique_profile_ids_.insert((*iter)->unique_id());
-    unique_ids_.insert((*iter)->unique_id());
     web_profiles_.push_back(*iter);
   }
 }
@@ -731,10 +675,8 @@ void PersonalDataManager::ReceiveLoadedProfiles(WebDataService::Handle h,
 void PersonalDataManager::ReceiveLoadedCreditCards(
     WebDataService::Handle h, const WDTypedResult* result) {
   DCHECK_EQ(pending_creditcards_query_, h);
-  pending_creditcards_query_ = 0;
 
-  AutoLock lock(unique_ids_lock_);
-  unique_creditcard_ids_.clear();
+  pending_creditcards_query_ = 0;
   credit_cards_.reset();
 
   const WDResult<std::vector<CreditCard*> >* r =
@@ -743,8 +685,6 @@ void PersonalDataManager::ReceiveLoadedCreditCards(
   std::vector<CreditCard*> credit_cards = r->GetValue();
   for (std::vector<CreditCard*>::iterator iter = credit_cards.begin();
        iter != credit_cards.end(); ++iter) {
-    unique_creditcard_ids_.insert((*iter)->unique_id());
-    unique_ids_.insert((*iter)->unique_id());
     credit_cards_.push_back(*iter);
   }
 }

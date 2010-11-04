@@ -56,28 +56,6 @@ const int kDialogPadding = 7;
 const int kSubViewHorizotalInsets = 18;
 const int kSubViewVerticalInsets = 5;
 
-// This is a helper to compare items that were just created with items returned
-// from the db.
-// ProfileType could be either AutofillProfile or CreditCard.
-// The second argument could have an incomplete ID (0) - change it to first
-// argument's id for comparison and then change it back.
-template<class ProfileType> bool IsEqualDataWithIncompleteId(
-    ProfileType const * data_to_compare, ProfileType* data_with_incomplete_id) {
-  if (!data_with_incomplete_id->unique_id()) {
-    bool label_unset = data_with_incomplete_id->Label().empty();
-    if (label_unset)
-      data_with_incomplete_id->set_label(data_to_compare->Label());
-    data_with_incomplete_id->set_unique_id(data_to_compare->unique_id());
-    bool are_equal = (*data_to_compare == *data_with_incomplete_id);
-    data_with_incomplete_id->set_unique_id(0);
-    if (label_unset)
-      data_with_incomplete_id->set_label(string16());
-    return are_equal;
-  } else {
-    return (*data_to_compare == *data_with_incomplete_id);
-  }
-}
-
 };  // namespace
 
 /////////////////////////////////////////////////////////////////////////////
@@ -155,10 +133,10 @@ void AutoFillProfilesView::AddClicked(int group_type) {
   std::vector<EditableSetInfo>::iterator it = profiles_set_.end();
   int added_item_index = -1;
   if (group_type == ContentListTableModel::kAddressGroup) {
-    AutoFillProfile address(std::wstring(), 0);
+    AutoFillProfile address;
     info.reset(new EditableSetInfo(&address));
   } else if (group_type == ContentListTableModel::kCreditCardGroup) {
-    CreditCard credit_card(std::wstring(), 0);
+    CreditCard credit_card;
     info.reset(new EditableSetInfo(&credit_card));
   } else {
     NOTREACHED();
@@ -214,18 +192,16 @@ void AutoFillProfilesView::EditAccepted(EditableSetInfo* data,
   std::vector<EditableSetInfo>::iterator end_it;
   end_it = data->is_address ? profiles_set_.end() : credit_card_set_.end();
   for (; it != end_it; ++it) {
-    if (it->unique_id() == data->unique_id()) {
+    if (it->guid() == data->guid()) {
       *it = *data;
       break;
     }
     if (new_item) {
       if (data->is_address) {
-        if (IsEqualDataWithIncompleteId<AutoFillProfile>(&it->address,
-                                                         &data->address))
+        if (it->address.Compare(data->address) == 0)
           break;
       } else {
-        if (IsEqualDataWithIncompleteId<CreditCard>(&it->credit_card,
-                                                    &data->credit_card))
+        if (it->credit_card.Compare(data->credit_card) == 0)
           break;
       }
     }

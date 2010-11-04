@@ -21,9 +21,6 @@ typedef std::map<FieldTypeGroup, FormGroup*> FormGroupMap;
 // to the requested form group type.
 class AutoFillProfile : public FormGroup {
  public:
-  // DEPRECATED
-  // TODO(dhollowa): Remove unique ID and label.  http://crbug.com/58813
-  AutoFillProfile(const string16& label, int unique_id);
   explicit AutoFillProfile(const std::string& guid);
 
   // For use in STL containers.
@@ -50,9 +47,6 @@ class AutoFillProfile : public FormGroup {
   // profiles. Shows at least 2 fields that differentiate profile from other
   // profiles. See AdjustInferredLabels() further down for more description.
   virtual const string16 Label() const;
-
-  int unique_id() const { return unique_id_; }
-  void set_unique_id(int id) { unique_id_ = id; }
 
   // This guid is the primary identifier for |AutoFillProfile| objects.
   const std::string guid() const { return guid_; }
@@ -117,9 +111,6 @@ class AutoFillProfile : public FormGroup {
 
   // The label presented to the user when selecting a profile.
   string16 label_;
-
-  // The unique ID of this profile.
-  int unique_id_;
 
   // The guid of this profile.
   std::string guid_;

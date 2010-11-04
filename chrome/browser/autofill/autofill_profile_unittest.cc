@@ -396,8 +396,8 @@ TEST(AutoFillProfileTest, MergeWith) {
       "constitutionalist@gmail.com", "United States Government", "Monticello",
       NULL, "Charlottesville", "Virginia", "22902", NULL, "12134759123",
       "19384284720");
-  EXPECT_EQ(expected_a, *a);
-  EXPECT_EQ(expected_b, *b);
+  EXPECT_EQ(0, expected_a.Compare(*a));
+  EXPECT_EQ(0, expected_b.Compare(*b));
 }
 
 TEST(AutoFillProfileTest, Compare) {

@@ -265,7 +265,8 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
         }
         entries->push_back(AutofillEntry(key, timestamps));
       } else if (autofill.has_profile()) {
-        AutoFillProfile p(UTF8ToUTF16(autofill.profile().label()), 0);
+        AutoFillProfile p;
+        p.set_label(UTF8ToUTF16(autofill.profile().label()));
         AutofillModelAssociator::OverwriteProfileWithServerData(&p,
             autofill.profile());
         profiles->push_back(p);
@@ -528,7 +529,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasMixedNativeEmptySync) {
   std::vector<AutoFillProfile*> profiles;
   std::vector<AutoFillProfile> expected_profiles;
   // Owned by GetAutoFillProfiles caller.
-  AutoFillProfile* profile0 = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* profile0 = new AutoFillProfile;
   autofill_test::SetProfileInfo(profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -548,7 +549,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasMixedNativeEmptySync) {
   ASSERT_EQ(1U, entries.size());
   EXPECT_TRUE(entries[0] == sync_entries[0]);
   EXPECT_EQ(1U, sync_profiles.size());
-  EXPECT_EQ(expected_profiles[0], sync_profiles[0]);
+  EXPECT_EQ(0, expected_profiles[0].Compare(sync_profiles[0]));
 }
 
 bool ProfilesMatchExceptLabelImpl(AutoFillProfile p1, AutoFillProfile p2) {
@@ -583,12 +584,12 @@ MATCHER_P(ProfileMatchesExceptLabel, profile, "") {
 TEST_F(ProfileSyncServiceAutofillTest, HasDuplicateProfileLabelsEmptySync) {
   std::vector<AutoFillProfile> expected_profiles;
   std::vector<AutoFillProfile*> profiles;
-  AutoFillProfile* profile0 = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* profile0 = new AutoFillProfile;
   autofill_test::SetProfileInfo(profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
-  AutoFillProfile* profile1 = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* profile1 = new AutoFillProfile;
   autofill_test::SetProfileInfo(profile1,
       "Billing", "Same", "Label", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -615,7 +616,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasDuplicateProfileLabelsEmptySync) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&sync_entries, &sync_profiles));
   EXPECT_EQ(0U, sync_entries.size());
   EXPECT_EQ(2U, sync_profiles.size());
-  EXPECT_EQ(expected_profiles[0], sync_profiles[1]);
+  EXPECT_EQ(0, expected_profiles[0].Compare(sync_profiles[1]));
   EXPECT_TRUE(ProfilesMatchExceptLabelImpl(expected_profiles[1],
                                            sync_profiles[0]));
   EXPECT_EQ(sync_profiles[0].Label(), relabelled_profile.Label());
@@ -645,13 +646,13 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeWithDuplicatesEmptySync) {
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
   AutofillEntry native_entry(MakeAutofillEntry("native", "entry", 1));
   AutofillEntry sync_entry(MakeAutofillEntry("sync", "entry", 2));
-  AutoFillProfile sync_profile(string16(), 0);
+  AutoFillProfile sync_profile;
   autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
-  AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfo(native_profile,
       "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -677,10 +678,11 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
   AddAutofillEntriesTask task(this, sync_entries, sync_profiles);
 
   AutoFillProfile to_be_added(sync_profile);
-  to_be_added.set_unique_id(1);
   EXPECT_CALL(web_database_, UpdateAutofillEntries(ElementsAre(sync_entry))).
       WillOnce(Return(true));
-  EXPECT_CALL(web_database_, AddAutoFillProfile(Eq(to_be_added))).
+  // TODO(dhollowa): Duplicate removal when contents match but GUIDs don't.
+  // http://crbug.com/58813
+  EXPECT_CALL(web_database_, AddAutoFillProfile(_)).
       WillOnce(Return(true));
   EXPECT_CALL(*personal_data_manager_, Refresh());
   StartSyncService(&task, false);
@@ -699,8 +701,8 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
 
   EXPECT_TRUE(expected_entries == new_sync_entries_set);
   EXPECT_EQ(2U, new_sync_profiles.size());
-  EXPECT_EQ(expected_profiles[0], new_sync_profiles[0]);
-  EXPECT_EQ(expected_profiles[1], new_sync_profiles[1]);
+  EXPECT_EQ(0, expected_profiles[0].Compare(new_sync_profiles[0]));
+  EXPECT_EQ(0, expected_profiles[1].Compare(new_sync_profiles[1]));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
@@ -734,13 +736,13 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
-  AutoFillProfile sync_profile(string16(), 0);
+  AutoFillProfile sync_profile;
   autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
-  AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -757,7 +759,9 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   sync_profiles.push_back(sync_profile);
   AddAutofillEntriesTask task(this, sync_entries, sync_profiles);
 
-  EXPECT_CALL(web_database_, UpdateAutoFillProfile(Eq(sync_profile))).
+  // TODO(dhollowa): Duplicate removal when contents match but GUIDs don't.
+  // http://crbug.com/58813
+  EXPECT_CALL(web_database_, UpdateAutoFillProfile(_)).
       WillOnce(Return(true));
   EXPECT_CALL(*personal_data_manager_, Refresh());
   StartSyncService(&task, false);
@@ -768,9 +772,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
-  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
-  // http://crbug.com/58813
-  EXPECT_TRUE(sync_profile == new_sync_profiles[0]);
+  EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[0]));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddEntry) {
@@ -812,7 +814,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   StartSyncService(&task, false);
   ASSERT_TRUE(task.success());
 
-  AutoFillProfile added_profile(string16(), 0);
+  AutoFillProfile added_profile;
   autofill_test::SetProfileInfo(&added_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -830,13 +832,11 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
-  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
-  // http://crbug.com/58813
-  EXPECT_TRUE(added_profile == new_sync_profiles[0]);
+  EXPECT_EQ(0, added_profile.Compare(new_sync_profiles[0]));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
-  AutoFillProfile sync_profile(string16(), 0);
+  AutoFillProfile sync_profile;
   autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
@@ -847,17 +847,18 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
   sync_profiles.push_back(sync_profile);
   AddAutofillEntriesTask task(this, sync_entries, sync_profiles);
 
-  sync_profile.set_unique_id(1);
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
   EXPECT_CALL(web_database_, GetAutoFillProfiles(_)).WillOnce(Return(true));
-  EXPECT_CALL(web_database_, AddAutoFillProfile(Eq(sync_profile))).
+  // TODO(dhollowa): Duplicate removal when contents match but GUIDs don't.
+  // http://crbug.com/58813
+  EXPECT_CALL(web_database_, AddAutoFillProfile(_)).
               WillOnce(Return(true));
   EXPECT_CALL(*personal_data_manager_, Refresh());
   SetIdleChangeProcessorExpectations();
   StartSyncService(&task, false);
   ASSERT_TRUE(task.success());
 
-  AutoFillProfile added_profile(string16(), 0);
+  AutoFillProfile added_profile;
   autofill_test::SetProfileInfo(&added_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -882,8 +883,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(2U, new_sync_profiles.size());
-  sync_profile.set_unique_id(0);  // The sync DB doesn't store IDs.
-  EXPECT_EQ(sync_profile, new_sync_profiles[1]);
+  EXPECT_EQ(0, sync_profile.Compare(new_sync_profiles[1]));
   EXPECT_TRUE(ProfilesMatchExceptLabelImpl(added_profile,
                                            new_sync_profiles[0]));
   EXPECT_EQ(new_sync_profiles[0].Label(), relabelled_profile.Label());
@@ -926,7 +926,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
 
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
-  AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -941,7 +941,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
   StartSyncService(&task, false);
   ASSERT_TRUE(task.success());
 
-  AutoFillProfile update_profile(string16(), 0);
+  AutoFillProfile update_profile;
   autofill_test::SetProfileInfo(&update_profile,
       "Billing", "Changin'", "Mah", "Namez",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -960,13 +960,11 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
-  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
-  // http://crbug.com/58813
-  EXPECT_TRUE(update_profile == new_sync_profiles[0]);
+  EXPECT_EQ(0, update_profile.Compare(new_sync_profiles[0]));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
-  AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -981,7 +979,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
   StartSyncService(&task, false);
   ASSERT_TRUE(task.success());
 
-  AutoFillProfile update_profile(string16(), 0);
+  AutoFillProfile update_profile;
   autofill_test::SetProfileInfo(&update_profile,
       "TRYIN 2 FOOL U", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -1000,16 +998,14 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
   ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                            &new_sync_profiles));
   ASSERT_EQ(1U, new_sync_profiles.size());
-  // TODO(dhollowa): Replace with |AutoFillProfile::Compare|.
-  // http://crbug.com/58813
-  EXPECT_TRUE(update_profile == new_sync_profiles[0]);
+  EXPECT_EQ(0, update_profile.Compare(new_sync_profiles[0]));
 }
 
 TEST_F(ProfileSyncServiceAutofillTest,
        ProcessUserChangeUpdateProfileRelabelConflict) {
   std::vector<AutoFillProfile*> native_profiles;
-  native_profiles.push_back(new AutoFillProfile(string16(), 0));
-  native_profiles.push_back(new AutoFillProfile(string16(), 0));
+  native_profiles.push_back(new AutoFillProfile);
+  native_profiles.push_back(new AutoFillProfile);
   autofill_test::SetProfileInfo(native_profiles[0],
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
@@ -1061,8 +1057,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
     ASSERT_TRUE(GetAutofillEntriesFromSyncDB(&new_sync_entries,
                                              &new_sync_profiles));
     ASSERT_EQ(2U, new_sync_profiles.size());
-    marion.set_unique_id(0);  // The sync DB doesn't store IDs.
-    EXPECT_EQ(marion, new_sync_profiles[1]);
+    EXPECT_EQ(0, marion.Compare(new_sync_profiles[1]));
     EXPECT_TRUE(ProfilesMatchExceptLabelImpl(josephine_update,
                                              new_sync_profiles[0]));
     EXPECT_EQ(ASCIIToUTF16("ExistingLabel2"), new_sync_profiles[0].Label());
@@ -1100,12 +1095,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
-  AutoFillProfile sync_profile(string16(), 0);
+  AutoFillProfile sync_profile;
   autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
-  AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
+  AutoFillProfile* native_profile = new AutoFillProfile;
   autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",

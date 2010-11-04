@@ -201,7 +201,7 @@ class AutoFillProfileEditor {
 
   // If is_new_ is false this is the unique id of the profile the user is
   // editing.
-  const int profile_id_;
+  const std::string profile_guid_;
 
   AutoFillDialogObserver* observer_;
 
@@ -231,7 +231,8 @@ AutoFillProfileEditor::AutoFillProfileEditor(
     Profile* profile,
     AutoFillProfile* auto_fill_profile)
     : is_new_(!auto_fill_profile ? true : false),
-      profile_id_(auto_fill_profile ? auto_fill_profile->unique_id() : 0),
+      profile_guid_(auto_fill_profile ? auto_fill_profile->guid()
+          : std::string()),
       observer_(observer),
       profile_(profile) {
   Init();
@@ -391,7 +392,7 @@ void AutoFillProfileEditor::ApplyEdits() {
     // The user is editing an existing profile, find it.
     for (std::vector<AutoFillProfile>::iterator i = profiles.begin();
          i != profiles.end(); ++i) {
-      if (i->unique_id() == profile_id_) {
+      if (i->guid() == profile_guid_) {
         profile = &(*i);
         break;
       }
@@ -570,7 +571,7 @@ class AutoFillCreditCardEditor {
 
   // If is_new_ is false this is the unique id of the credit card the user is
   // editing.
-  const int credit_card_id_;
+  const std::string credit_card_guid_;
 
   AutoFillDialogObserver* observer_;
 
@@ -597,7 +598,7 @@ AutoFillCreditCardEditor::AutoFillCreditCardEditor(
     Profile* profile,
     CreditCard* credit_card)
     : is_new_(!credit_card ? true : false),
-      credit_card_id_(credit_card ? credit_card->unique_id() : 0),
+      credit_card_guid_(credit_card ? credit_card->guid() : std::string()),
       observer_(observer),
       profile_(profile),
       base_year_(0),
@@ -747,7 +748,7 @@ void AutoFillCreditCardEditor::ApplyEdits() {
     // The user is editing an existing credit card, find it.
     for (std::vector<CreditCard>::iterator i = cards.begin();
          i != cards.end(); ++i) {
-      if (i->unique_id() == credit_card_id_) {
+      if (i->guid() == credit_card_guid_) {
         card = &(*i);
         break;
       }

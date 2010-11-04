@@ -275,7 +275,7 @@ class LiveAutofillSyncTest : public LiveSyncTest {
         return false;
       }
       AutoFillProfile* expected_profile = &expected_profiles_map[p->Label()];
-      expected_profile->set_unique_id(p->unique_id());
+      expected_profile->set_guid(p->guid());
       if (*expected_profile != *p) {
         VLOG(1) << "Profile mismatch";
         return false;

@@ -14,9 +14,6 @@
 // A form group that stores credit card information.
 class CreditCard : public FormGroup {
  public:
-  // DEPRECATED
-  // TODO(dhollowa): Remove unique ID and label.  http://crbug.com/58813
-  CreditCard(const string16& label, int unique_id);
   explicit CreditCard(const std::string& guid);
 
   // For use in STL containers.
@@ -45,9 +42,6 @@ class CreditCard : public FormGroup {
   string16 LastFourDigits() const;
 
   const string16& type() const { return type_; }
-
-  int unique_id() const { return unique_id_; }
-  void set_unique_id(int id) { unique_id_ = id; }
 
   // The guid is the primary identifier for |CreditCard| objects.
   const std::string guid() const { return guid_; }
@@ -148,9 +142,6 @@ class CreditCard : public FormGroup {
 
   // This is the display name of the card set by the user, e.g., Amazon Visa.
   string16 label_;
-
-  // The unique ID of this credit card.
-  int unique_id_;
 
   // The guid of this credit card.
   std::string guid_;

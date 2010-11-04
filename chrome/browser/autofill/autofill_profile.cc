@@ -33,22 +33,13 @@ void InitPersonalInfo(FormGroupMap* personal_info) {
 
 }  // namespace
 
-AutoFillProfile::AutoFillProfile(const string16& label, int unique_id)
-    : label_(label),
-      unique_id_(unique_id),
-      guid_(guid::GenerateGUID()) {
-  InitPersonalInfo(&personal_info_);
-}
-
 AutoFillProfile::AutoFillProfile(const std::string& guid)
-    : unique_id_(0),
-      guid_(guid) {
+    : guid_(guid) {
   InitPersonalInfo(&personal_info_);
 }
 
 AutoFillProfile::AutoFillProfile()
-    : unique_id_(0),
-      guid_(guid::GenerateGUID()) {
+    : guid_(guid::GenerateGUID()) {
   InitPersonalInfo(&personal_info_);
 }
 
@@ -158,7 +149,6 @@ void AutoFillProfile::SetInfo(const AutoFillType& type, const string16& value) {
 FormGroup* AutoFillProfile::Clone() const {
   AutoFillProfile* profile = new AutoFillProfile();
   profile->label_ = label_;
-  profile->unique_id_ = unique_id();
   profile->guid_ = guid();
 
   FormGroupMap::const_iterator iter;
@@ -355,7 +345,6 @@ bool AutoFillProfile::IsEmpty() const {
 
 void AutoFillProfile::operator=(const AutoFillProfile& source) {
   label_ = source.label_;
-  unique_id_ = source.unique_id_;
   guid_ = source.guid_;
 
   STLDeleteContainerPairSecondPointers(personal_info_.begin(),
@@ -398,7 +387,7 @@ int AutoFillProfile::Compare(const AutoFillProfile& profile) const {
 }
 
 bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
-  if (label_ != profile.label_ || unique_id_ != profile.unique_id_)
+  if (label_ != profile.label_ || guid_ != profile.guid_)
     return false;
 
   return Compare(profile) == 0;
@@ -440,8 +429,6 @@ string16 AutoFillProfile::ConstructInferredLabel(
 std::ostream& operator<<(std::ostream& os, const AutoFillProfile& profile) {
   return os
       << UTF16ToUTF8(profile.Label())
-      << " "
-      << profile.unique_id()
       << " "
       << profile.guid()
       << " "

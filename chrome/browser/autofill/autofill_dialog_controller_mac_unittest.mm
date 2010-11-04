@@ -358,8 +358,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewProfile) {
   // New address should match.  Don't compare labels.
   AutoFillProfile new_profile;
   new_profile.SetInfo(AutoFillType(NAME_FULL), ASCIIToUTF16("Don"));
-  observer_.profiles_[1].set_label(string16());
-  ASSERT_EQ(observer_.profiles_[1], new_profile);
+  ASSERT_EQ(0, observer_.profiles_[1].Compare(new_profile));
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
@@ -387,8 +386,7 @@ TEST_F(AutoFillDialogControllerTest, AddNewCreditCard) {
   // New credit card should match.  Don't compare labels.
   CreditCard new_credit_card;
   new_credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), ASCIIToUTF16("Don"));
-  observer_.credit_cards_[1].set_label(string16());
-  ASSERT_EQ(observer_.credit_cards_[1], new_credit_card);
+  ASSERT_EQ(0, observer_.credit_cards_[1].Compare(new_credit_card));
 }
 
 TEST_F(AutoFillDialogControllerTest, AddNewEmptyProfile) {

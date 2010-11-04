@@ -32,7 +32,7 @@ class AutoFillTest : public InProcessBrowserTest {
   void SetUpProfile() {
     autofill_test::DisableSystemServices(browser()->profile());
 
-    AutoFillProfile profile(string16(), 0);
+    AutoFillProfile profile;
     autofill_test::SetProfileInfo(
         &profile, "Office Space", "Milton", "C.", "Waddams",
         "red.swingline@initech.com", "Initech", "4120 Freidrich Lane",

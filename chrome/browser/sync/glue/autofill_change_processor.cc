@@ -498,7 +498,7 @@ void AutofillChangeProcessor::ApplySyncAutofillProfileDelete(
     NOTREACHED() << "Couldn't retrieve autofill profile: " << label;
     return;
   }
-  if (!web_database_->RemoveAutoFillProfile(p->unique_id())) {
+  if (!web_database_->RemoveAutoFillProfile(p->guid())) {
     NOTREACHED() << "Couldn't remove autofill profile: " << label;
     return;
   }
