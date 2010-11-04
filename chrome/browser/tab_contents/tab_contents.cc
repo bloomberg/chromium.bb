@@ -795,7 +795,6 @@ void TabContents::DidBecomeSelected() {
   }
 
   WebCacheManager::GetInstance()->ObserveActivity(GetRenderProcessHost()->id());
-  last_selected_time_ = base::TimeTicks::Now();
 }
 
 void TabContents::WasHidden() {
