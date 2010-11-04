@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 
+from grit.format.policy_templates.writers import plist_helper
 from grit.format.policy_templates.writers import template_writer
 
 
@@ -54,8 +55,9 @@ class PListStringsWriter(template_writer.TemplateWriter):
     self._AddToStringTable(policy['name'], policy['label'], desc)
 
   def BeginTemplate(self):
+    app_name = plist_helper.GetPlistFriendlyName(self.config['app_name'])
     self._AddToStringTable(
-        self.config['app_name'],
+        app_name,
         self.config['app_name'],
         self.messages['IDS_POLICY_MAC_CHROME_PREFERENCES'])
 

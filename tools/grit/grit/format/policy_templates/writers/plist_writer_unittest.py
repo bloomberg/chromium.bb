@@ -73,8 +73,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         {'_chromium': '1', 'mac_bundle_id': 'com.example.Test'},
         'plist',
         'en')
-    expected_output = \
-        self._GetExpectedOutputs('Chromium', 'com.example.Test', '<array/>')
+    expected_output = self._GetExpectedOutputs(
+        'Chromium', 'com.example.Test', '<array/>')
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testMainPolicy(self):
@@ -107,8 +107,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist',
         'en')
-    expected_output = \
-        self._GetExpectedOutputs('Chromium', 'com.example.Test', '''<array>
+    expected_output = self._GetExpectedOutputs(
+        'Chromium', 'com.example.Test', '''<array>
       <dict>
         <key>pfm_name</key>
         <string>MainPolicy</string>
@@ -156,8 +156,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist',
         'en')
-    expected_output = \
-        self._GetExpectedOutputs('Chromium', 'com.example.Test', '''<array>
+    expected_output = self._GetExpectedOutputs(
+        'Chromium', 'com.example.Test', '''<array>
       <dict>
         <key>pfm_name</key>
         <string>StringPolicy</string>
@@ -211,8 +211,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
         'plist',
         'en')
-    expected_output = \
-        self._GetExpectedOutputs('Google Chrome', 'com.example.Test2', '''<array>
+    expected_output = self._GetExpectedOutputs(
+        'Google_Chrome', 'com.example.Test2', '''<array>
       <dict>
         <key>pfm_name</key>
         <string>EnumPolicy</string>
@@ -266,8 +266,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
         'plist',
         'en')
-    expected_output = \
-        self._GetExpectedOutputs('Google Chrome', 'com.example.Test2', '''<array/>''')
+    expected_output = self._GetExpectedOutputs(
+        'Google_Chrome', 'com.example.Test2', '''<array/>''')
     self.assertEquals(output.strip(), expected_output.strip())
 
 

@@ -41,10 +41,9 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         {'_chromium': '1', 'mac_bundle_id': 'com.example.Test'},
         'plist_strings',
         'en')
-    expected_output = \
-'''Chromium.pfm_title = "Chromium";
-Chromium.pfm_description = "Chromium preferen\\"ces";
-'''
+    expected_output = (
+        'Chromium.pfm_title = "Chromium";\n'
+        'Chromium.pfm_description = "Chromium preferen\\"ces";')
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testMainPolicy(self):
@@ -78,12 +77,11 @@ Chromium.pfm_description = "Chromium preferen\\"ces";
         {'_google_chrome' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist_strings',
         'en')
-    expected_output = \
-'''Google Chrome.pfm_title = "Google Chrome";
-Google Chrome.pfm_description = "Preferences of Google Chrome";
-MainPolicy.pfm_title = "Caption of main policy.";
-MainPolicy.pfm_description = "Title of main policy.";
-'''
+    expected_output = (
+        'Google_Chrome.pfm_title = "Google Chrome";\n'
+        'Google_Chrome.pfm_description = "Preferences of Google Chrome";\n'
+        'MainPolicy.pfm_title = "Caption of main policy.";\n'
+        'MainPolicy.pfm_description = "Title of main policy.";')
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testStringPolicy(self):
@@ -120,12 +118,12 @@ With a newline.</message>
         {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
         'plist_strings',
         'en')
-    expected_output = \
-'''Chromium.pfm_title = "Chromium";
-Chromium.pfm_description = "Preferences Of Chromium";
-StringPolicy.pfm_title = "Caption of policy.";
-StringPolicy.pfm_description = "Description of policy.\\nWith a newline.";
-        '''
+    expected_output = (
+        'Chromium.pfm_title = "Chromium";\n'
+        'Chromium.pfm_description = "Preferences Of Chromium";\n'
+        'StringPolicy.pfm_title = "Caption of policy.";\n'
+        'StringPolicy.pfm_description = '
+            '"Description of policy.\\nWith a newline.";')
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testEnumPolicy(self):
@@ -165,12 +163,13 @@ StringPolicy.pfm_description = "Description of policy.\\nWith a newline.";
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
         'plist_strings',
         'en')
-    expected_output = \
-'''Google Chrome.pfm_title = "Google Chrome";
-Google Chrome.pfm_description = "Google Chrome preferences";
-EnumPolicy.pfm_title = "Caption of policy.";
-EnumPolicy.pfm_description = "0 - Option1\\n1 - Option2\\nDescription of policy.";
-        '''
+    expected_output = (
+        'Google_Chrome.pfm_title = "Google Chrome";\n'
+        'Google_Chrome.pfm_description = "Google Chrome preferences";\n'
+        'EnumPolicy.pfm_title = "Caption of policy.";\n'
+        'EnumPolicy.pfm_description = '
+            '"0 - Option1\\n1 - Option2\\nDescription of policy.";\n')
+
     self.assertEquals(output.strip(), expected_output.strip())
 
   def testNonSupportedPolicy(self):
@@ -205,10 +204,9 @@ EnumPolicy.pfm_description = "0 - Option1\\n1 - Option2\\nDescription of policy.
         {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
         'plist_strings',
         'en')
-    expected_output = \
-'''Google Chrome.pfm_title = "Google Chrome";
-Google Chrome.pfm_description = "Google Chrome preferences";
-        '''
+    expected_output = (
+        'Google_Chrome.pfm_title = "Google Chrome";\n'
+        'Google_Chrome.pfm_description = "Google Chrome preferences";')
     self.assertEquals(output.strip(), expected_output.strip())
 
 

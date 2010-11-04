@@ -4,6 +4,7 @@
 
 
 from xml.dom import minidom
+from grit.format.policy_templates.writers import plist_helper
 from grit.format.policy_templates.writers import xml_formatted_writer
 
 
@@ -93,7 +94,8 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
     self._plist.attributes['version'] = '1'
     dict = self.AddElement(self._plist, 'dict')
 
-    self._AddStringKeyValuePair(dict, 'pfm_name', self.config['app_name'])
+    app_name = plist_helper.GetPlistFriendlyName(self.config['app_name'])
+    self._AddStringKeyValuePair(dict, 'pfm_name', app_name)
     self._AddStringKeyValuePair(dict, 'pfm_description', '')
     self._AddStringKeyValuePair(dict, 'pfm_title', '')
     self._AddStringKeyValuePair(dict, 'pfm_version', '1')
