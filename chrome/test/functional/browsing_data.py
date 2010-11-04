@@ -8,24 +8,11 @@ import time
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class BrowsingDataTest(pyauto.PyUITest):
   """Tests that clearing browsing data works correctly."""
-
-  def _DownloadTestFile(self, file_name):
-    """Downloads the specified file from the 'downloads' directory and waits
-       for downloads to complete.
-    """
-    test_dir = os.path.join(self.DataDir(), 'downloads')
-    file_path = os.path.join(test_dir, file_name)
-    file_url = self.GetFileURLForPath(file_path)
-    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  file_name)
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    self.DownloadAndWaitForStart(file_url)
-    self.WaitForAllDownloadsToComplete()
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
   def _GetURLForFile(self, file_name):
     """Returns the url for the file in the 'data' directory."""
@@ -55,8 +42,9 @@ class BrowsingDataTest(pyauto.PyUITest):
 
   def testClearDownloads(self):
     """Verify clearing downloads."""
+    zip_file = 'a_zip_file.zip'
     # First build up some data with downloads.
-    self._DownloadTestFile('a_zip_file.zip')
+    test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
     self.assertEqual(1, len(self.GetDownloadsInfo().Downloads()))
     # Clear the downloads and verify they're gone.
     self.ClearBrowsingData(['DOWNLOADS'], 'EVERYTHING')
@@ -92,9 +80,10 @@ class BrowsingDataTest(pyauto.PyUITest):
 
   def testClearHistoryAndDownloads(self):
     """Verify that we can clear history and downloads at the same time."""
+    zip_file = 'a_zip_file.zip'
     # First build up some history and download something.
     self.NavigateToURL(self._GetURLForFile('title2.html'))
-    self._DownloadTestFile('a_zip_file.zip')
+    test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
 
     # Verify that the history and download exist.
     self.assertEqual(1, len(self.GetHistoryInfo().History()))
@@ -109,10 +98,10 @@ class BrowsingDataTest(pyauto.PyUITest):
 
   def testClearingAccuracy(self):
     """Verify that clearing one thing does not clear another."""
+    zip_file = 'a_zip_file.zip'
     # First build up some history and download something.
     self.NavigateToURL(self._GetURLForFile('title2.html'))
-    self._DownloadTestFile('a_zip_file.zip')
-
+    test_utils.DownloadFileFromDownloadsDataDir(self, zip_file)
     # Verify that the history and download exist.
     self.assertEqual(1, len(self.GetHistoryInfo().History()))
     self.assertEqual(1, len(self.GetDownloadsInfo().Downloads()))

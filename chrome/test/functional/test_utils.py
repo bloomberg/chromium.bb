@@ -24,9 +24,9 @@ def DownloadFileFromDownloadsDataDir(test, file_name):
   file_url = test.GetFileURLForPath(file_path)
   downloaded_pkg = os.path.join(test.GetDownloadDirectory().value(),
                                 file_name)
-  # Check if zip file already exists. If so then delete it.
+  # Check if file already exists. If so then delete it.
   if os.path.exists(downloaded_pkg):
-    self.RemoveDownloadedTestFile(test, file_name)
+    RemoveDownloadedTestFile(test, file_name)
   test.DownloadAndWaitForStart(file_url)
   test.WaitForAllDownloadsToComplete()
 

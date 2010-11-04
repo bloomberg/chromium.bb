@@ -50,11 +50,12 @@
     # 'sync',  crbug.com/60970
     'test_basic.SimpleTest.testCanOpenGoogle',
     'themes',
-    'translate',
-    # This test fails due to crbug.com/35485
-    '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
-    # This test fails due to crbug.com/50706
-    '-translate.TranslateTest.testToggleTranslateOption',
+    # Disable translate test until it can run fine on golo. crbug.com/61256
+    # 'translate',
+    ## This test fails due to crbug.com/35485
+    # '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
+    ## This test fails due to crbug.com/50706
+    # '-translate.TranslateTest.testToggleTranslateOption',
   ],
 
   'win': [
