@@ -78,6 +78,10 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_INSTANT_PREF_WARNING));
   localized_strings->SetString("instantLearnMoreLink",
       ASCIIToUTF16(browser::kInstantLearnMoreURL));
+  localized_strings->SetString("instantConfirmTitle",
+      l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_TITLE));
+  localized_strings->SetString("instantConfirmMessage",
+      l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE));
   localized_strings->SetString("defaultBrowserGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME));
   localized_strings->SetString("defaultBrowserUnknown",

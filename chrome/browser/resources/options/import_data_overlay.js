@@ -17,12 +17,12 @@ cr.define('options', function() {
                      'importDataOverlay');
   }
 
-  ImportDataOverlay.throbIntervalId = 0
+  ImportDataOverlay.throbIntervalId = 0;
 
   cr.addSingletonGetter(ImportDataOverlay);
 
   ImportDataOverlay.prototype = {
-    // Inherit ImportDataOverlay from OptionsPage.
+    // Inherit from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     /**

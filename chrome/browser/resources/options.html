@@ -117,6 +117,7 @@
 <script src="options/font_settings.js"></script>
 <script src="options/font_settings_ui.js"></script>
 <script src="options/import_data_overlay.js"></script>
+<script src="options/instant_confirm_overlay.js"></script>
 <script src="options/passwords_exceptions.js"></script>
 <script src="options/passwords_exceptions_list.js"></script>
 <script src="options/personal_options.js"></script>
@@ -139,6 +140,7 @@ var CookiesView = options.CookiesView;
 var EditSearchEngineOverlay = options.EditSearchEngineOverlay;
 var FontSettings = options.FontSettings;
 var ImportDataOverlay = options.ImportDataOverlay;
+var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var OptionsPage = options.OptionsPage;
 var PasswordsExceptions = options.PasswordsExceptions;
 var PersonalOptions = options.PersonalOptions;
@@ -189,6 +191,7 @@ function load() {
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
   OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
+  OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
@@ -283,6 +286,7 @@ window.onpopstate = function(e) {
   <include src="options/clear_browser_data_overlay.html">
   <include src="options/edit_search_engine_overlay.html">
   <include src="options/import_data_overlay.html">
+  <include src="options/instant_confirm_overlay.html">
   <if expr="pp_ifdef('chromeos')">
      <include src="options/chromeos_language_add_language_overlay.html">
      <include

@@ -54,6 +54,16 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ManageSearchEngines']);
       };
+      $('instantEnableCheckbox').onclick = function(event) {
+        var alreadyConfirmed = $('instantDialogShown').checked;
+
+        if (this.checked && !alreadyConfirmed) {
+          // Leave disabled for now. The PrefCheckbox handler already set it to
+          // true so undo that.
+          Preferences.setBooleanPref(this.pref, false, this.metric);
+          OptionsPage.showOverlay('instantConfirmOverlay');
+        }
+      };
 
       var homepageField = $('homepageURL');
       $('homepageUseNTPButton').onchange =

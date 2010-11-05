@@ -38,3 +38,14 @@
 #defaultBrowserState.current {
   color: #008800;
 }
+
+#instantConfirmText {
+  font-family: inherit;
+  white-space: pre-wrap;
+  width: 500px;
+}
+
+#instantConfirmLearnMore {
+  position: absolute;
+  bottom: 18px;
+}
