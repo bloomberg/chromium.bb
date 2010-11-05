@@ -696,21 +696,6 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       L"options.InternetOptions.showDetailedInfo", dictionary);
 }
 
-void InternetOptionsHandler::PopupWirelessPassword(
-    const chromeos::WifiNetwork* network) {
-  DictionaryValue dictionary;
-  dictionary.SetString("servicePath", network->service_path());
-  if (network->encryption() == chromeos::SECURITY_8021X) {
-    dictionary.SetBoolean("certNeeded", true);
-    dictionary.SetString("ident", network->identity());
-    dictionary.SetString("cert", network->cert_path());
-  } else {
-    dictionary.SetBoolean("certNeeded", false);
-  }
-  dom_ui_->CallJavascriptFunction(
-      L"options.InternetOptions.showPasswordEntry", dictionary);
-}
-
 void InternetOptionsHandler::LoginCallback(const ListValue* args) {
   std::string service_path;
   std::string password;
@@ -822,7 +807,10 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
           if (network->encryption() == chromeos::SECURITY_8021X) {
             PopulateDictionaryDetails(network, cros);
           } else {
-            PopupWirelessPassword(network);
+            DictionaryValue dictionary;
+            dictionary.SetString("servicePath", network->service_path());
+            dom_ui_->CallJavascriptFunction(
+                L"options.InternetOptions.showPasswordEntry", dictionary);
           }
         } else {
           cros->ConnectToWifiNetwork(

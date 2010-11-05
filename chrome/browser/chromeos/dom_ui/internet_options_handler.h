@@ -66,8 +66,6 @@ class InternetOptionsHandler
   void PopulateDictionaryDetails(const chromeos::Network* net,
                                  chromeos::NetworkLibrary* cros);
 
-  void PopupWirelessPassword(const chromeos::WifiNetwork* network);
-
   // Converts CellularDataPlan structure into dictionary for JS. Formats
   // plan settings into human readable texts.
   DictionaryValue* CellularDataPlanToDictionary(
