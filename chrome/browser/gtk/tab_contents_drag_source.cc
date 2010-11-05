@@ -34,7 +34,6 @@ TabContentsDragSource::TabContentsDragSource(
       drag_failed_(false),
       drag_widget_(gtk_invisible_new()),
       drag_icon_(gtk_window_new(GTK_WINDOW_POPUP)) {
-  g_object_ref(drag_widget_);
   signals_.Connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailedThunk), this);
   signals_.Connect(drag_widget_, "drag-begin",
@@ -45,7 +44,6 @@ TabContentsDragSource::TabContentsDragSource(
   signals_.Connect(drag_widget_, "drag-data-get",
                    G_CALLBACK(OnDragDataGetThunk), this);
 
-  g_object_ref(drag_icon_);
   signals_.Connect(drag_icon_, "expose-event",
                    G_CALLBACK(OnDragIconExposeThunk), this);
 }
@@ -59,8 +57,8 @@ TabContentsDragSource::~TabContentsDragSource() {
     drop_data_.reset();
   }
 
-  g_object_unref(drag_widget_);
-  g_object_unref(drag_icon_);
+  gtk_widget_destroy(drag_widget_);
+  gtk_widget_destroy(drag_icon_);
 }
 
 TabContents* TabContentsDragSource::tab_contents() const {

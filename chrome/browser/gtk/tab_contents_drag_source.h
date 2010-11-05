@@ -80,7 +80,8 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
 
   // This is the widget we use to initiate drags. Since we don't use the
   // renderer widget, we can persist drags even when our contents is switched
-  // out.
+  // out. We can't use an OwnedWidgetGtk because the GtkInvisible widget
+  // initialization code sinks the reference.
   GtkWidget* drag_widget_;
 
   // The file mime type for a drag-out download.
@@ -92,7 +93,9 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // The URL to download from for a drag-out download.
   GURL download_url_;
 
-  // The widget that provides visual feedback for the drag.
+  // The widget that provides visual feedback for the drag. We can't use
+  // an OwnedWidgetGtk because the GtkWindow initialization code sinks
+  // the reference.
   GtkWidget* drag_icon_;
 
   GtkSignalRegistrar signals_;

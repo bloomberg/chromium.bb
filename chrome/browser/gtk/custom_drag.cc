@@ -43,7 +43,6 @@ void OnDragDataGetStandalone(GtkWidget* widget, GdkDragContext* context,
 CustomDrag::CustomDrag(SkBitmap* icon, int code_mask, GdkDragAction action)
     : drag_widget_(gtk_invisible_new()),
       pixbuf_(icon ? gfx::GdkPixbufFromSkBitmap(icon) : NULL) {
-  g_object_ref_sink(drag_widget_);
   g_signal_connect(drag_widget_, "drag-data-get",
                    G_CALLBACK(OnDragDataGetThunk), this);
   g_signal_connect(drag_widget_, "drag-begin",
@@ -62,7 +61,7 @@ CustomDrag::CustomDrag(SkBitmap* icon, int code_mask, GdkDragAction action)
 CustomDrag::~CustomDrag() {
   if (pixbuf_)
     g_object_unref(pixbuf_);
-  g_object_unref(drag_widget_);
+  gtk_widget_destroy(drag_widget_);
 }
 
 void CustomDrag::OnDragBegin(GtkWidget* widget, GdkDragContext* drag_context) {

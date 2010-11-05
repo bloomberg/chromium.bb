@@ -40,7 +40,10 @@ class CustomDrag {
                                       target_type, time);
   }
 
+  // Can't use a OwnedWidgetGtk because the initialization of GtkInvisible
+  // sinks the reference.
   GtkWidget* drag_widget_;
+
   GdkPixbuf* pixbuf_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDrag);
