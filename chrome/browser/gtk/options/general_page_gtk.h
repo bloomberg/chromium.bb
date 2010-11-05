@@ -36,6 +36,8 @@ class GeneralPageGtk : public OptionsPageBase,
   GtkWidget* get_page_widget() const { return page_; }
 
  private:
+  GtkWindow* GetWindow();
+
   // Overridden from OptionsPageBase
   virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);

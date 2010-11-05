@@ -27,7 +27,7 @@ void ShowInstantConfirmDialogIfNecessary(gfx::NativeWindow parent,
   ShowInstantConfirmDialog(parent, profile);
 }
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && !defined(TOOLKIT_GTK)
 void ShowInstantConfirmDialog(gfx::NativeWindow parent,
                               Profile* profile) {
   NOTIMPLEMENTED();

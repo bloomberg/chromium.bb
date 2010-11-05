@@ -122,6 +122,10 @@ GeneralPageGtk::~GeneralPageGtk() {
   default_browser_worker_->ObserverDestroyed();
 }
 
+GtkWindow* GeneralPageGtk::GetWindow() {
+  return GTK_WINDOW(gtk_widget_get_toplevel(page_));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GeneralPageGtk, OptionsPageBase overrides:
 
@@ -197,8 +201,7 @@ void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
   if ((!pref_name || *pref_name == prefs::kInstantEnabled) &&
       instant_checkbox_) {
     gtk_toggle_button_set_active(
-        GTK_TOGGLE_BUTTON(instant_checkbox_),
-        instant_.GetValue());
+        GTK_TOGGLE_BUTTON(instant_checkbox_), instant_.GetValue());
   }
 
   initializing_ = false;
@@ -483,7 +486,7 @@ void GeneralPageGtk::OnStartupAddCustomPageClicked(GtkWidget* button) {
   new UrlPickerDialogGtk(
       NewCallback(this, &GeneralPageGtk::OnAddCustomUrl),
       profile(),
-      GTK_WINDOW(gtk_widget_get_toplevel(page_)));
+      GetWindow());
 }
 
 void GeneralPageGtk::OnStartupRemoveCustomPageClicked(GtkWidget* button) {
@@ -545,9 +548,15 @@ void GeneralPageGtk::OnInstantToggled(GtkWidget* toggle_button) {
   if (initializing_)
     return;
 
-  // TODO(estade): show confirm dialog.
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(toggle_button));
-  instant_.SetValue(enabled);
+
+  if (enabled) {
+    if (!instant_.GetValue())
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(instant_checkbox_), false);
+    browser::ShowInstantConfirmDialogIfNecessary(GetWindow(), profile());
+  } else {
+    instant_.SetValue(enabled);
+  }
 
   // TODO(estade): UMA?
 }

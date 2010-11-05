@@ -1877,6 +1877,8 @@
         'browser/gtk/infobar_container_gtk.h',
         'browser/gtk/infobar_gtk.cc',
         'browser/gtk/infobar_gtk.h',
+        'browser/gtk/instant_confirm_dialog_gtk.cc',
+        'browser/gtk/instant_confirm_dialog_gtk.h',
         'browser/gtk/js_modal_dialog_gtk.cc',
         'browser/gtk/js_modal_dialog_gtk.h',
         'browser/gtk/keyword_editor_view.cc',
