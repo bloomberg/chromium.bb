@@ -3933,11 +3933,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plug-in is currently disabled.">
         (Disabled)
       </message>
-      <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently disabled by a policy set by an administrator.">
-        (Disabled by centrally-administered policy)
+      <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently disabled by enterprise policy.">
+        (Disabled by enterprise policy)
       </message>
-      <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be enabled because it has been disabled by a policy set by an administrator.">
-        Cannot enable plug-ins that are disabled by policy
+      <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be enabled because it has been disabled by enterprise policy.">
+        Cannot enable plug-ins that are disabled by enterprise policy
       </message>
       <message name="IDS_PLUGINS_DISABLED_RUNNING_PLUGIN" desc="Text that signifies that the plug-in is disabled but still running, and that it will be fully disabled after a browser restart.">
         (Still running; will be fully disabled after browser restart)
@@ -9368,8 +9368,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EULA_TPM_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
         Trusted Platform Module (TPM) chip is disabled or absent.
       </message>
-      <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by centrally-administered policy">
-	This option is controlled by an enterprise policy. Please contact your administrator for more information.
+      <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by enterprise policy">
+	This option is controlled by enterprise policy. Please contact your administrator for more information.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
                desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">
