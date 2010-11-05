@@ -1282,6 +1282,7 @@
         'browser/extensions/user_script_master_unittest.cc',
         'browser/find_backend_unittest.cc',
         'browser/first_run/first_run_unittest.cc',
+        'browser/geolocation/device_data_provider_unittest.cc',
         'browser/geolocation/fake_access_token_store.h',
         'browser/geolocation/gateway_data_provider_common_unittest.cc',
         'browser/geolocation/geolocation_content_settings_map_unittest.cc',

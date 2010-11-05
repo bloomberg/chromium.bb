@@ -216,7 +216,6 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   EXPECT_EQ(single_access_point.ssid, data.access_point_data.begin()->ssid);
 }
 
-// TODO(Joth) Convert to gmock style
 TEST_F(GeolocationWifiDataProviderCommonTest,
        StartThreadViaDeviceDataProvider) {
   MessageLoopQuitListener quit_listener(&main_message_loop_);

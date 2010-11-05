@@ -11,6 +11,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 #include <dbus/dbus.h>
+#include <dlfcn.h>
 #include <glib.h>
 
 #include "base/scoped_ptr.h"
@@ -30,6 +31,12 @@ const char kNetworkManagerInterface[] = "org.freedesktop.NetworkManager";
 
 // From http://projects.gnome.org/NetworkManager/developers/spec.html
 enum { NM_DEVICE_TYPE_WIFI = 2 };
+
+// Function type matching dbus_g_bus_get_private so that we can
+// dynamically determine the presence of this symbol (see
+// NetworkManagerWlanApi::Init)
+typedef DBusGConnection* DBusGBusGetPrivateFunc(
+    DBusBusType type, GMainContext* context, GError** error);
 
 // Utility wrappers to make various GLib & DBus structs into scoped objects.
 class ScopedGPtrArrayFree {
@@ -67,6 +74,23 @@ class ScopedGValue {
   }
 
   GValue v;
+};
+
+// Use ScopedDLHandle to automatically clean up after dlopen.
+class ScopedDLHandle {
+ public:
+  ScopedDLHandle(void* handle)
+      : handle_(handle) {
+  }
+  ~ScopedDLHandle() {
+    if (handle_)
+      dlclose(handle_);
+  }
+  void* get() {
+    return handle_;
+  }
+ private:
+  void *handle_;
 };
 
 // Wifi API binding to NetworkManager, to allow reuse of the polling behavior
@@ -115,7 +139,9 @@ class NetworkManagerWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   GError* error_;
   // Connection to the dbus system bus.
   DBusGConnection* connection_;
-  // Proxy to the network maanger dbus service.
+  // Main context
+  GMainContext* context_;
+  // Proxy to the network manager dbus service.
   ScopedDBusGProxyPtr proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkManagerWlanApi);
@@ -135,14 +161,21 @@ int frquency_in_khz_to_channel(int frequency_khz) {
 }
 
 NetworkManagerWlanApi::NetworkManagerWlanApi()
-    : error_(NULL), connection_(NULL) {
+    : error_(NULL),
+      connection_(NULL),
+      context_(NULL)
+{
 }
 
 NetworkManagerWlanApi::~NetworkManagerWlanApi() {
   proxy_.reset();
   if (connection_) {
+    dbus_connection_close(dbus_g_connection_get_connection(connection_));
     dbus_g_connection_unref(connection_);
   }
+  if (context_)
+    g_main_context_unref(context_);
+
   DCHECK(!error_) << "Missing a call to CheckError() to clear |error_|";
 }
 
@@ -151,19 +184,35 @@ bool NetworkManagerWlanApi::Init() {
   // get caught up with that nonsense here, lets just assert our requirement.
   CHECK(g_thread_supported());
 
-  // Get a connection to the session bus.
-  connection_ = dbus_g_bus_get(DBUS_BUS_SYSTEM, &error_);
+  // We require a private bus to ensure that we don't interfere with the
+  // default loop on the main thread.  Unforunately this functionality is only
+  // available in dbus-glib-0.84 and later. We do a dynamic symbol lookup
+  // to determine if dbus_g_bus_get_private is available. See bug
+  // http://code.google.com/p/chromium/issues/detail?id=59913 for more
+  // information.
+  ScopedDLHandle handle(dlopen(NULL, RTLD_LAZY));
+  if (!handle.get())
+    return false;
+
+  DBusGBusGetPrivateFunc *my_dbus_g_bus_get_private =
+      (DBusGBusGetPrivateFunc *) dlsym(handle.get(), "dbus_g_bus_get_private");
+
+  if (!my_dbus_g_bus_get_private) {
+    LOG(ERROR) << "We need dbus-glib >= 0.84 for wifi geolocation.";
+    return false;
+  }
+  // Get a private connection to the session bus.
+  context_ = g_main_context_new();
+  DCHECK(context_);
+  connection_ = my_dbus_g_bus_get_private(DBUS_BUS_SYSTEM, context_, &error_);
+
   if (CheckError())
     return false;
   DCHECK(connection_);
 
-  // dbus-glib queues timers that get fired on the default loop, unfortunately
-  // it isn't thread safe in it's handling of these timers. We can't easily
-  // tell it which loop to queue them on instead, but as we only make
-  // blocking sync calls we don't need timers anyway, so disable them.
-  // See http://crbug.com/40803 TODO(joth): This is not an ideal solution, as
-  // we're reconfiguring the process global system bus connection, so could
-  // impact other users of DBus.
+  // Disable timers on the connection since we don't need them and
+  // we're not going to run them anyway as the connection is associated
+  // with a private context. See bug http://crbug.com/40803
   dbus_bool_t ok = dbus_connection_set_timeout_functions(
       dbus_g_connection_get_connection(connection_),
       NULL, NULL, NULL, NULL, NULL);
@@ -376,4 +425,3 @@ PollingPolicyInterface* WifiDataProviderLinux::NewPollingPolicy() {
                                   kTwoNoChangePollingIntervalMilliseconds,
                                   kNoWifiPollingIntervalMilliseconds>;
 }
-
