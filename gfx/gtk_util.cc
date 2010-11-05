@@ -9,7 +9,6 @@
 #include <stdlib.h>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/linux_util.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -52,24 +51,6 @@ std::string ConvertAmperstandsTo(const std::string& label,
 }  // namespace
 
 namespace gfx {
-
-void GtkInitFromCommandLine(const CommandLine& command_line) {
-  const std::vector<std::string>& args = command_line.argv();
-  int argc = args.size();
-  scoped_array<char *> argv(new char *[argc + 1]);
-  for (size_t i = 0; i < args.size(); ++i) {
-    // TODO(piman@google.com): can gtk_init modify argv? Just being safe
-    // here.
-    argv[i] = strdup(args[i].c_str());
-  }
-  argv[argc] = NULL;
-  char **argv_pointer = argv.get();
-
-  gtk_init(&argc, &argv_pointer);
-  for (size_t i = 0; i < args.size(); ++i) {
-    free(argv[i]);
-  }
-}
 
 GdkPixbuf* GdkPixbufFromSkBitmap(const SkBitmap* bitmap) {
   if (bitmap->isNull())

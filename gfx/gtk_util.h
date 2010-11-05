@@ -17,17 +17,11 @@
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GdkRegion GdkRegion;
 
-class CommandLine;
 class SkBitmap;
 
 namespace gfx {
 
 class Rect;
-
-// Call gtk_init() using the argc and argv from command_line.
-// gtk_init() wants an argc and argv that it can mutate; we provide those,
-// but leave the original CommandLine unaltered.
-void GtkInitFromCommandLine(const CommandLine& command_line);
 
 // Convert and copy a SkBitmap to a GdkPixbuf. NOTE: this uses BGRAToRGBA, so
 // it is an expensive operation.  The returned GdkPixbuf will have a refcount of

@@ -15,7 +15,6 @@
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
-#include "gfx/gtk_util.h"
 #include "ipc/ipc_channel_handle.h"
 
 #if defined(OS_WIN)
@@ -44,7 +43,22 @@ GpuThread::GpuThread() {
     // rethink whether initializing Gtk is really necessary or whether we
     // should just send the display connection down to the GPUProcessor.
     g_thread_init(NULL);
-    gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
+    const std::vector<std::string>& args =
+        CommandLine::ForCurrentProcess()->argv();
+    int argc = args.size();
+    scoped_array<char *> argv(new char *[argc + 1]);
+    for (size_t i = 0; i < args.size(); ++i) {
+      // TODO(piman@google.com): can gtk_init modify argv? Just being safe
+      // here.
+      argv[i] = strdup(args[i].c_str());
+    }
+    argv[argc] = NULL;
+    char **argv_pointer = argv.get();
+
+    gtk_init(&argc, &argv_pointer);
+    for (size_t i = 0; i < args.size(); ++i) {
+      free(argv[i]);
+    }
     x11_util::SetDefaultX11ErrorHandlers();
   }
 #endif
