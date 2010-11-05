@@ -520,6 +520,9 @@ class Client {
   // Time used for tick and message processing.
   float last_tick_time_;
 
+  // Number of ticks since last reset.
+  int tick_count_;
+
   // Reference to global transform graph root for Client.
   Transform::Ref root_;
 

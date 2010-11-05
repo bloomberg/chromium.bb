@@ -85,6 +85,15 @@ namespace o3d {
 static const float kContinuousModeMinDrawPerSecond = 15;
 // TODO(zhurunz) Tuning this value.
 
+// We don't want to handle too much MOUSEMOVE events for perf reasons.
+// This is used for limiting one MOUSEMOVE event per N ticks.
+//
+// Notes:
+// Don't limit MOUSEMOVE event on new texture since that don't always come.
+// Don't limit MOUSEMOVE event on rendering since RENDERMODE_ON_DEMAND might
+// depends on MOUSEMOVE first.
+static const int kTicksPerMouseMoveEvent = 4;
+
 // Client constructor.  Creates the default root node for the scenegraph
 Client::Client(ServiceLocator* service_locator)
     : service_locator_(service_locator),
@@ -103,6 +112,7 @@ Client::Client(ServiceLocator* service_locator)
       event_manager_(),
       is_ticking_(false),
       last_tick_time_(0),
+      tick_count_(0),
       root_(NULL),
 #ifdef OS_WIN
       calls_(0),
@@ -238,6 +248,7 @@ bool Client::Tick() {
   }
 
   is_ticking_ = false;
+  tick_count_++;
   return message_check_ok;
 }
 
@@ -470,6 +481,14 @@ void Client::ClearEventCallback(String type_name) {
 }
 
 void Client::AddEventToQueue(const Event& event) {
+  // Limit one MOUSEMOVE event per N ticks.
+  if (event.type() == Event::TYPE_MOUSEMOVE) {
+    if (tick_count_ <= kTicksPerMouseMoveEvent) {
+      return;
+    } else {
+      tick_count_ = 0;
+    }
+  }
   event_manager_.AddEventToQueue(event);
 }
 
