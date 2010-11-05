@@ -49,11 +49,12 @@ class CrxInstaller
   // ExtensionFunction to a resulting download in the download manager, it's
   // currently necessary. This is the |id| of an extension to be installed
   // *by the web store only* which should not get the permissions install
-  // prompt.
+  // prompt. This should only be called on the UI thread.
   // crbug.com/54916
   static void SetWhitelistedInstallId(const std::string& id);
 
-  // Returns whether |id| was found and removed (was whitelisted).
+  // Returns whether |id| was found and removed (was whitelisted). This should
+  // only be called on the UI thread.
   static bool ClearWhitelistedInstallId(const std::string& id);
 
   // Constructor.  Extensions will be unpacked to |install_directory|.

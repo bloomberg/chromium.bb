@@ -1947,6 +1947,7 @@
         'browser/extensions/content_script_all_frames_apitest.cc',
         'browser/extensions/content_script_extension_process_apitest.cc',
         'browser/extensions/cross_origin_xhr_apitest.cc',
+        'browser/extensions/crx_installer_browsertest.cc',
         'browser/extensions/events_apitest.cc',
         'browser/extensions/extension_devtools_browsertest.cc',
         'browser/extensions/extension_devtools_browsertest.h',
