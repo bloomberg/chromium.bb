@@ -166,6 +166,7 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public com_util::IProvideClassInfo2Impl<class_id,
                                           DIID_DIChromeFrameEvents>,
   public com_util::IDispatchImpl<IChromeFrame>,
+  public IChromeFrameInternal,
   public IConnectionPointContainerImpl<T>,
   public ProxyDIChromeFrameEvents<T>,
   public IPropertyNotifySinkCP<T>,
@@ -200,6 +201,7 @@ DECLARE_NOT_AGGREGATABLE(T)
 BEGIN_COM_MAP(ChromeFrameActivexBase)
   COM_INTERFACE_ENTRY(IChromeFrame)
   COM_INTERFACE_ENTRY(IDispatch)
+  COM_INTERFACE_ENTRY(IChromeFrameInternal)
   COM_INTERFACE_ENTRY(IViewObjectEx)
   COM_INTERFACE_ENTRY(IViewObject2)
   COM_INTERFACE_ENTRY(IViewObject)
@@ -887,6 +889,19 @@ END_MSG_MAP()
 
     automation_client_->GetEnabledExtensions(NULL);
     return S_OK;
+  }
+
+  STDMETHOD(getSessionId)(int* session_id) {
+    DCHECK(automation_client_.get());
+    DCHECK(session_id);
+
+    if (!is_privileged_) {
+      DLOG(ERROR) << "Attempt to getSessionId in non-privileged mode";
+      return E_ACCESSDENIED;
+    }
+
+    *session_id = automation_client_->GetSessionId();
+    return (*session_id) == -1 ? S_FALSE : S_OK;
   }
 
   STDMETHOD(registerBhoIfNeeded)() {

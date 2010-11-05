@@ -523,12 +523,9 @@ bool BrowserHelperObject::EnsureTabId() {
 
   // At this point if tab_id_ is still invalid we have a problem.
   if (tab_id_ == kInvalidChromeSessionId) {
-    // TODO(hansl@google.com): uncomment the following code when the CF change
-    // has landed.
-    //// Something really bad happened.
-    //NOTREACHED();
-    //return false;
-    tab_id_ = reinterpret_cast<int>(tab_window_);
+    // Something really bad happened.
+    NOTREACHED();
+    return false;
   }
 
   CeeeWindowHandle handle = reinterpret_cast<CeeeWindowHandle>(tab_window_);

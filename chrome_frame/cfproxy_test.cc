@@ -33,10 +33,10 @@ struct MockChromeProxyDelegate : public ChromeProxyDelegate {
   MOCK_METHOD0(Disconnected, void());
   MOCK_METHOD0(tab_handle, int());
 
-  MOCK_METHOD4(Completed_CreateTab, void(bool success, HWND chrome_wnd,
-      HWND tab_window, int tab_handle));
-  MOCK_METHOD4(Completed_ConnectToTab, void(bool success, HWND chrome_window,
-      HWND tab_window, int tab_handle));
+  MOCK_METHOD5(Completed_CreateTab, void(bool success, HWND chrome_wnd,
+      HWND tab_window, int tab_handle, int session_id));
+  MOCK_METHOD5(Completed_ConnectToTab, void(bool success, HWND chrome_window,
+      HWND tab_window, int tab_handle, int session_id));
   MOCK_METHOD2(Completed_Navigate, void(bool success,
       enum AutomationMsg_NavigationResponseValues res));
   MOCK_METHOD3(Completed_InstallExtension, void(bool success,
@@ -274,7 +274,7 @@ TEST(ChromeProxy, ChannelError) {
           InvokeWithoutArgs(&connected, &base::WaitableEvent::Signal)));
 
   EXPECT_CALL(api.sender, Send(_));
-  EXPECT_CALL(delegate, Completed_ConnectToTab(false, _, _, _));
+  EXPECT_CALL(delegate, Completed_ConnectToTab(false, _, _, _, _));
   EXPECT_CALL(api, CloseChannel(&api.sender));
   EXPECT_CALL(delegate, PeerLost(_, ChromeProxyDelegate::CHANNEL_ERROR));
 
@@ -316,7 +316,16 @@ inline IPC::Message* CreateReply(M* m, const A& a, const B& b, const C& c) {
   }
   return r;
 }
-}  // namespace
+
+template <typename M, typename A, typename B, typename C, typename D>
+inline IPC::Message* CreateReply(M* m, const A& a, const B& b, const C& c,
+                                 const D& d) {
+  IPC::Message* r = IPC::SyncMessage::GenerateReply(m);
+  if (r) {
+    M::WriteReplyParams(r, a, b, c, d);
+  }
+  return r;
+}}  // namespace
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(SyncMsgSender);
 TEST(SyncMsgSender, Deserialize) {
@@ -329,12 +338,16 @@ TEST(SyncMsgSender, Deserialize) {
   TabsMap tab2delegate;
   SyncMsgSender queue(&tab2delegate);
 
+  const int kTabHandle = 6;
+  const int kSessionId = 8;
+
   // Create some sync messages and their replies.
   AutomationMsg_InstallExtension m1(0, FilePath(L"c:\\awesome.x"), 0);
-  AutomationMsg_CreateExternalTab m2(0, IPC::ExternalTabSettings(), 0, 0, 0);
+  AutomationMsg_CreateExternalTab m2(0, IPC::ExternalTabSettings(), 0, 0, 0, 0);
   scoped_ptr<IPC::Message> r1(CreateReply(&m1,
       AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED));
-  scoped_ptr<IPC::Message> r2(CreateReply(&m2, (HWND)1, (HWND)2, 6));
+  scoped_ptr<IPC::Message> r2(CreateReply(&m2, (HWND)1, (HWND)2, kTabHandle,
+                                          kSessionId));
 
   queue.QueueSyncMessage(&m1, &d1, NULL);
   queue.QueueSyncMessage(&m2, &d1, NULL);
@@ -342,7 +355,8 @@ TEST(SyncMsgSender, Deserialize) {
   testing::InSequence s;
   EXPECT_CALL(d1, Completed_InstallExtension(true,
       AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED, NULL));
-  EXPECT_CALL(d1, Completed_CreateTab(true, (HWND)1, (HWND)2, 6));
+  EXPECT_CALL(d1, Completed_CreateTab(true, (HWND)1, (HWND)2, kTabHandle,
+                                      kSessionId));
 
   // Execute replies in a worker thread.
   ipc.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(&queue,

@@ -20,10 +20,10 @@ void DispatchReplyFail(uint32 type,
                        SyncMessageContext* ctx) {
   switch (type) {
     case AutomationMsg_CreateExternalTab::ID:
-      delegate->Completed_CreateTab(false, NULL, NULL, NULL);
+      delegate->Completed_CreateTab(false, NULL, NULL, 0, 0);
       break;
     case AutomationMsg_ConnectExternalTab::ID:
-      delegate->Completed_ConnectToTab(false, NULL, NULL, NULL);
+      delegate->Completed_ConnectToTab(false, NULL, NULL, 0, 0);
       break;
     case AutomationMsg_InstallExtension::ID:
       delegate->Completed_InstallExtension(false,
@@ -38,23 +38,23 @@ bool DispatchReplyOk(const IPC::Message* reply_msg, uint32 type,
   void* iter = IPC::SyncMessage::GetDataIterator(reply_msg);
   switch (type) {
     case AutomationMsg_CreateExternalTab::ID: {
-      // Tuple3<HWND, HWND, int> out;
+      // Tuple4<HWND, HWND, int, int> out;
       TupleTypes<AutomationMsg_CreateExternalTab::ReplyParam>::ValueTuple out;
       if (ReadParam(reply_msg, &iter, &out)) {
         DCHECK(tab2delegate->find(out.c) == tab2delegate->end());
         (*tab2delegate)[out.c] = delegate;
-        delegate->Completed_CreateTab(true, out.a, out.b, out.c);
+        delegate->Completed_CreateTab(true, out.a, out.b, out.c, out.d);
       }
       return true;
     }
 
     case AutomationMsg_ConnectExternalTab::ID: {
-      // Tuple3<HWND, HWND, int> out;
+      // Tuple4<HWND, HWND, int, int> out;
       TupleTypes<AutomationMsg_ConnectExternalTab::ReplyParam>::ValueTuple out;
       if (ReadParam(reply_msg, &iter, &out)) {
         DCHECK(tab2delegate->find(out.c) == tab2delegate->end());
         (*tab2delegate)[out.c] = delegate;
-        delegate->Completed_ConnectToTab(true, out.a, out.b, out.c);
+        delegate->Completed_ConnectToTab(true, out.a, out.b, out.c, out.d);
       }
       return true;
     }

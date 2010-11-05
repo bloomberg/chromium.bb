@@ -136,6 +136,7 @@ class TestMessageReceiver {
       IPC_MESSAGE_HANDLER(Msg_R_3_1, On_3_1)
       IPC_MESSAGE_HANDLER(Msg_R_3_2, On_3_2)
       IPC_MESSAGE_HANDLER(Msg_R_3_3, On_3_3)
+      IPC_MESSAGE_HANDLER(Msg_R_3_4, On_3_4)
     IPC_END_MESSAGE_MAP()
   }
 

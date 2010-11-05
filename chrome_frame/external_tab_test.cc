@@ -133,10 +133,11 @@ struct AsyncEventCreator {
   }
 
   void Fire_CompletedCreateTab(bool success, HWND chrome_wnd, HWND tab_window,
-                               int tab_handle, base::TimeDelta delay) {
+                               int tab_handle, int session_id,
+                               base::TimeDelta delay) {
     ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
         &ChromeProxyDelegate::Completed_CreateTab, success, chrome_wnd,
-        tab_window, tab_handle), delay.InMilliseconds());
+        tab_window, tab_handle, session_id), delay.InMilliseconds());
   }
 
   void Fire_TabLoaded(const GURL& url, base::TimeDelta delay) {
@@ -173,7 +174,7 @@ TEST(ExternalTabProxy, CancelledCreateTab) {
   EXPECT_CALL(*proxy, RemoveDelegate(_)).WillOnce(DoAll(
       InvokeWithoutArgs(CreateFunctor(&async_events,
           &AsyncEventCreator::Fire_CompletedCreateTab, false, HWND(0), HWND(0),
-          0, base::TimeDelta::FromMilliseconds(0))),
+          0, 0, base::TimeDelta::FromMilliseconds(0))),
       InvokeWithoutArgs(CreateFunctor(&async_events,
           &AsyncEventCreator::Fire_Disconnected,
           base::TimeDelta::FromMilliseconds(0))),
@@ -216,7 +217,7 @@ TEST(ExternalTabProxy, NavigateAfterCreate) {
       .WillOnce(DoAll(
       InvokeWithoutArgs(CreateFunctor(&async_events,
           &AsyncEventCreator::Fire_CompletedCreateTab,
-          true, HWND(0), HWND(0), 7, base::TimeDelta::FromMilliseconds(9))),
+          true, HWND(0), HWND(0), 7, 0, base::TimeDelta::FromMilliseconds(9))),
       InvokeWithoutArgs(CreateFunctor(&async_events,
           &AsyncEventCreator::Fire_TabLoaded, real_url,
           base::TimeDelta::FromMilliseconds(150)))));

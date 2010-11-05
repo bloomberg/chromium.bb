@@ -194,7 +194,8 @@ void ExternalTabProxy::ChromeFrameHostMoved() {
 
 //////////////////////////////////////////////////////////////////////////
 void ExternalTabProxy::UiCompleted_CreateTab(bool success, HWND chrome_window,
-                                             HWND tab_window, int tab_handle) {
+                                             HWND tab_window, int tab_handle,
+                                             int session_id) {
   if (success) {
     state_ = READY;
     tab_ = tab_handle;
@@ -210,15 +211,16 @@ void ExternalTabProxy::UiCompleted_CreateTab(bool success, HWND chrome_window,
 }
 
 void ExternalTabProxy::Completed_CreateTab(bool success, HWND chrome_wnd,
-                                           HWND tab_window, int tab_handle) {
+                                           HWND tab_window, int tab_handle,
+                                           int session_id) {
   // in ipc_thread.
   ui_.PostTask(FROM_HERE, NewRunnableMethod(this,
       &ExternalTabProxy::UiCompleted_CreateTab,
-      success, chrome_wnd, tab_window, tab_handle));
+      success, chrome_wnd, tab_window, tab_handle, session_id));
 }
 
 void ExternalTabProxy::Completed_ConnectToTab(bool success,
-    HWND chrome_window, HWND tab_window, int tab_handle) {
+    HWND chrome_window, HWND tab_window, int tab_handle, int session_id) {
   CHECK(0);
 }
 

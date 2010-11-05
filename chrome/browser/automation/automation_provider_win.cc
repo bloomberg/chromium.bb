@@ -241,12 +241,13 @@ void AutomationProvider::GetTabHWND(int handle, HWND* tab_hwnd) {
 void AutomationProvider::CreateExternalTab(
     const IPC::ExternalTabSettings& settings,
     gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,
-    int* tab_handle) {
+    int* tab_handle, int* session_id) {
   TRACE_EVENT_BEGIN("AutomationProvider::CreateExternalTab", 0, "");
 
   *tab_handle = 0;
   *tab_container_window = NULL;
   *tab_window = NULL;
+  *session_id = -1;
   scoped_refptr<ExternalTabContainer> external_tab_container =
       new ExternalTabContainer(this, automation_resource_message_filter_);
 
@@ -266,6 +267,7 @@ void AutomationProvider::CreateExternalTab(
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
+    *session_id = tab_contents->controller().session_id().id();
   } else {
     external_tab_container->Uninitialize();
   }
@@ -378,12 +380,14 @@ void AutomationProvider::ConnectExternalTab(
     gfx::NativeWindow parent_window,
     gfx::NativeWindow* tab_container_window,
     gfx::NativeWindow* tab_window,
-    int* tab_handle) {
+    int* tab_handle,
+    int* session_id) {
   TRACE_EVENT_BEGIN("AutomationProvider::ConnectExternalTab", 0, "");
 
   *tab_handle = 0;
   *tab_container_window = NULL;
   *tab_window = NULL;
+  *session_id = -1;
 
   scoped_refptr<ExternalTabContainer> external_tab_container =
       ExternalTabContainer::RemovePendingTab(static_cast<uintptr_t>(cookie));
@@ -400,6 +404,7 @@ void AutomationProvider::ConnectExternalTab(
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
+    *session_id = tab_contents->controller().session_id().id();
   } else {
     external_tab_container->Uninitialize();
   }

@@ -181,7 +181,7 @@ void CFProxy::Tab_Navigate(int tab, const GURL& url, const GURL& referrer) {
 
 void CFProxy::CreateTab(ChromeProxyDelegate* delegate,
                         const IPC::ExternalTabSettings& p) {
-  IPC::SyncMessage* m = new AutomationMsg_CreateExternalTab(0, p, 0, 0, 0);
+  IPC::SyncMessage* m = new AutomationMsg_CreateExternalTab(0, p, 0, 0, 0, 0);
   sync_dispatcher_.QueueSyncMessage(m, delegate, NULL);
   SendIpcMessage(m);
 }
@@ -189,14 +189,14 @@ void CFProxy::CreateTab(ChromeProxyDelegate* delegate,
 void CFProxy::ConnectTab(ChromeProxyDelegate* delegate, HWND hwnd,
                          uint64 cookie) {
   IPC::SyncMessage* m = new AutomationMsg_ConnectExternalTab(0, cookie, true,
-      hwnd, NULL, NULL, NULL);
+      hwnd, NULL, NULL, NULL, 0);
   sync_dispatcher_.QueueSyncMessage(m, delegate, NULL);
   SendIpcMessage(m);
 }
 
 void CFProxy::BlockTab(uint64 cookie) {
   IPC::SyncMessage* m = new AutomationMsg_ConnectExternalTab(0, cookie, false,
-      NULL, NULL, NULL, NULL);
+      NULL, NULL, NULL, NULL, 0);
   sync_dispatcher_.QueueSyncMessage(m, NULL, NULL);
   SendIpcMessage(m);
 }

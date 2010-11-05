@@ -170,13 +170,6 @@ HRESULT ChromeFrameHost::GetSessionId(int* session_id) {
     CComQIPtr<IChromeFrameInternal> chrome_frame_internal_(chrome_frame_);
     if (chrome_frame_internal_) {
       return chrome_frame_internal_->getSessionId(session_id);
-    } else {
-      // This whole else should be removed when getSessionId gets committed to
-      // ChromeFrame.
-      if (session_id != NULL) {
-        *session_id = kInvalidChromeSessionId;
-        return S_OK;
-      }
     }
   }
   NOTREACHED();

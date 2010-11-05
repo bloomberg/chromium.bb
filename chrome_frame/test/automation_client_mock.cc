@@ -70,13 +70,15 @@ MATCHER_P(EqNavigationInfoUrl, url, "IPC::NavigationInfo matcher") {
 }
 
 // Could be implemented as MockAutomationProxy member (we have WithArgs<>!)
-ACTION_P3(HandleCreateTab, tab_handle, external_tab_container, tab_wnd) {
+ACTION_P4(HandleCreateTab, tab_handle, external_tab_container, tab_wnd,
+          session_id) {
   // arg0 - message
   // arg1 - callback
   // arg2 - key
   CreateExternalTabContext::output_type input_args(tab_wnd,
                                                    external_tab_container,
-                                                   tab_handle);
+                                                   tab_handle,
+                                                   session_id);
   CreateExternalTabContext* context =
       reinterpret_cast<CreateExternalTabContext*>(arg1);
   DispatchToMethod(context, &CreateExternalTabContext::Completed, input_args);
@@ -253,7 +255,7 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
       &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
       testing::NotNull(), _))
-          .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2));
+          .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2, 99));
 
   EXPECT_CALL(mock_proxy_, CreateTabProxy(testing::Eq(tab_handle_)))
       .WillOnce(Return(tab_));
@@ -287,7 +289,8 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
       &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
       testing::NotNull(), _))
-          .Times(1).WillOnce(HandleCreateTab(tab_handle_, null_wnd, null_wnd));
+          .Times(1).WillOnce(HandleCreateTab(tab_handle_, null_wnd, null_wnd,
+                                             99));
 
   EXPECT_CALL(mock_proxy_, CreateTabProxy(_)).Times(0);
 
@@ -348,9 +351,9 @@ TEST_F(CFACMockTest, OnChannelError) {
   EXPECT_CALL(proxy, SendAsAsync(testing::Property(
     &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
     testing::NotNull(), _)).Times(3)
-        .WillOnce(HandleCreateTab(tab_handle_, h1, h2))
-        .WillOnce(HandleCreateTab(tab_handle_ * 2, h1, h2))
-        .WillOnce(HandleCreateTab(tab_handle_ * 3, h1, h2));
+        .WillOnce(HandleCreateTab(tab_handle_, h1, h2, 99))
+        .WillOnce(HandleCreateTab(tab_handle_ * 2, h1, h2, 100))
+        .WillOnce(HandleCreateTab(tab_handle_ * 3, h1, h2, 101));
 
   SetAutomationServerOk(3);
 
@@ -428,7 +431,7 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
       &IPC::SyncMessage::type, AutomationMsg_CreateExternalTab__ID),
       testing::NotNull(), _))
-          .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2));
+          .Times(1).WillOnce(HandleCreateTab(tab_handle_, h1, h2, 99));
 
   EXPECT_CALL(mock_proxy_, CreateTabProxy(testing::Eq(tab_handle_)))
       .WillOnce(Return(tab_));

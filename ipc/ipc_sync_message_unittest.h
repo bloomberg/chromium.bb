@@ -104,4 +104,9 @@ IPC_BEGIN_MESSAGES(Test)
   IPC_SYNC_MESSAGE_ROUTED3_3(Msg_R_3_3, int, std::string, bool, std::string,
                              int, bool)
 
+  // in1 must be true, in2 must be 3, in3 must be "3_4", out1 is 34, out2 is
+  // true, out3 is "3_4", out4 is false
+  IPC_SYNC_MESSAGE_ROUTED3_4(Msg_R_3_4, bool, int, std::string, int, bool,
+                             std::string, bool)
+
 IPC_END_MESSAGES(Test)
