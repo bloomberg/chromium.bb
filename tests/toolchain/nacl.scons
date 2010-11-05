@@ -20,21 +20,21 @@ if not ARGUMENTS.get('bitcode') and not env.Bit('nacl_glibc'):
                             '-lpthread',
                             '-Wl,-no-whole-archive'])
 
+
 nexe = wa_env.ComponentProgram('dummy.nexe', 'dummy.c')
 node = wa_env.CommandValidatorTestNacl('whole_archive_test.out',
                                        image=[nexe])
 wa_env.AddNodeToTestSuite(node, ['toolchain_tests'], 'run_whole_archive_test')
 
 
-if not ARGUMENTS.get('bitcode'):
-  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=516
-  nexe = env.ComponentProgram('setlongjmp.nexe', 'setlongjmp.c')
-  node = env.CommandSelLdrTestNacl('setlongjmp.out',
-                                   command=[nexe],
-                                   exit_status='55')
-  env.AddNodeToTestSuite(node,
-                         ['toolchain_tests','small_tests'],
-                         'run_setlongjmp_test')
+nexe = env.ComponentProgram('setlongjmp.nexe', 'setlongjmp.c')
+node = env.CommandSelLdrTestNacl('setlongjmp.out',
+                                 command=[nexe],
+                                 exit_status='55')
+env.AddNodeToTestSuite(node,
+                       ['toolchain_tests','small_tests'],
+                       'run_setlongjmp_test')
+
 
 # NOTE: this currently only works for PNaCl, c.f:
 # http://code.google.com/p/nativeclient/issues/detail?id=968
@@ -58,6 +58,8 @@ if env.IsRunningUnderValgrind():
 sloppy_env = env.Clone()
 sloppy_env.FilterOut(CFLAGS=['-pedantic', '-O2'])
 sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-O2'])
+
+
 nexe = sloppy_env.ComponentProgram('return_address.nexe', 'return_address.c')
 node = sloppy_env.CommandSelLdrTestNacl('return_address.out',
                                         command=[nexe],
