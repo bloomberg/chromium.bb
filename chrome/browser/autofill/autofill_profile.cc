@@ -171,7 +171,7 @@ bool AutoFillProfile::AdjustInferredLabels(
   std::vector<string16> created_labels;
   const size_t kMinimalFieldsShown = 2;
   CreateInferredLabels(profiles, &created_labels, kMinimalFieldsShown,
-                       UNKNOWN_TYPE);
+                       UNKNOWN_TYPE, NULL);
   DCHECK(profiles->size() == created_labels.size());
   bool updated_labels = false;
   for (size_t i = 0; i < profiles->size(); ++i) {
@@ -188,10 +188,12 @@ void AutoFillProfile::CreateInferredLabels(
     const std::vector<AutoFillProfile*>* profiles,
     std::vector<string16>* created_labels,
     size_t minimal_fields_shown,
-    AutoFillFieldType exclude_field) {
-  // These fields are use to distinguish between two profiles in the order of
-  // importance, e. g. if both EMAIL_ADDRESS and COMPANY_NAME are different,
-  // EMAIL_ADDRESS will be used to distinguish them.
+    AutoFillFieldType exclude_field,
+    const std::vector<AutoFillFieldType>* suggested_fields) {
+  // |suggested_fields| may be NULL.
+  // The following fields are use to distinguish between two profiles in the
+  // order of importance, e. g. if both EMAIL_ADDRESS and COMPANY_NAME are
+  // different, EMAIL_ADDRESS will be used to distinguish them.
   const AutoFillFieldType distinguishing_fields[] = {
     // First non empty data are always present in the label, even if it matches.
     NAME_FULL,
@@ -205,15 +207,47 @@ void AutoFillProfile::CreateInferredLabels(
     PHONE_FAX_WHOLE_NUMBER,
     COMPANY_NAME,
   };
-  if (exclude_field == NAME_FIRST || exclude_field == NAME_LAST)
-    exclude_field = NAME_FULL;
+
   DCHECK(profiles);
   DCHECK(created_labels);
+
+  std::vector<AutoFillFieldType> fields_to_use;
+  if (suggested_fields) {
+    // Limiting the number of possible fields simplifies the following code,
+    // and 10 fields more than enough to create clear label.
+    fields_to_use.reserve(std::min(suggested_fields->size(),
+                                   arraysize(distinguishing_fields)));
+    bool name_selected = false;
+    for (size_t i = 0; i < suggested_fields->size() &&
+         fields_to_use.size() < arraysize(distinguishing_fields); ++i) {
+      if (suggested_fields->at(i) == NAME_FIRST ||
+          suggested_fields->at(i) == NAME_LAST ||
+          suggested_fields->at(i) == NAME_MIDDLE ||
+          suggested_fields->at(i) == NAME_FULL) {
+        if (name_selected)
+          continue;
+        name_selected = true;
+        fields_to_use.push_back(NAME_FULL);
+      } else {
+        fields_to_use.push_back(suggested_fields->at(i));
+      }
+    }
+  } else {
+    fields_to_use.resize(arraysize(distinguishing_fields));
+    for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
+      fields_to_use[i] = distinguishing_fields[i];
+    }
+  }
+
+  if (exclude_field == NAME_FIRST || exclude_field == NAME_LAST ||
+      exclude_field == NAME_MIDDLE)
+    exclude_field = NAME_FULL;
   created_labels->resize(profiles->size());
   std::map<string16, std::list<size_t> > labels;
   for (size_t it = 0; it < profiles->size(); ++it) {
-    labels[
-        profiles->at(it)->GetFieldText(AutoFillType(NAME_FULL))].push_back(it);
+    labels[profiles->at(it)->GetFieldText(
+        AutoFillType(fields_to_use.size() ? fields_to_use[0] :
+                                            NAME_FULL))].push_back(it);
   }
   std::map<string16, std::list<size_t> >::iterator label_iterator;
   for (label_iterator = labels.begin(); label_iterator != labels.end();
@@ -222,13 +256,14 @@ void AutoFillProfile::CreateInferredLabels(
       // We have more than one item with the same preview, add differentiating
       // data.
       std::list<size_t>::iterator similar_profiles;
+      DCHECK(fields_to_use.size() <= arraysize(distinguishing_fields));
       std::map<string16, int> tested_fields[arraysize(distinguishing_fields)];
       for (similar_profiles = label_iterator->second.begin();
            similar_profiles != label_iterator->second.end();
            ++similar_profiles) {
-        for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
+        for (size_t i = 0; i < fields_to_use.size(); ++i) {
           string16 key = profiles->at(*similar_profiles)->GetFieldText(
-              AutoFillType(distinguishing_fields[i]));
+              AutoFillType(fields_to_use[i]));
           std::map<string16, int>::iterator tested_field =
               tested_fields[i].find(key);
           if (tested_field == tested_fields[i].end())
@@ -242,7 +277,7 @@ void AutoFillProfile::CreateInferredLabels(
       size_t added_fields = 0;
       bool matched_necessary = false;
       // Leave it as a candidate if it is not the same for everybody.
-      for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
+      for (size_t i = 0; i < fields_to_use.size(); ++i) {
         if (tested_fields[i].size() == label_iterator->second.size()) {
           // This field is different for everybody.
           if (!matched_necessary) {
@@ -259,26 +294,26 @@ void AutoFillProfile::CreateInferredLabels(
           } else {
             ++added_fields;
           }
-          fields.push_back(distinguishing_fields[i]);
+          fields.push_back(fields_to_use[i]);
           if (added_fields >= minimal_fields_shown)
             break;
         } else if (tested_fields[i].size() != 1) {
           // this field is different for some.
           if (added_fields < minimal_fields_shown) {
-            first_non_empty_fields.push_back(distinguishing_fields[i]);
+            first_non_empty_fields.push_back(fields_to_use[i]);
             ++added_fields;
             if (added_fields == minimal_fields_shown && matched_necessary)
               break;
           }
-          fields.push_back(distinguishing_fields[i]);
+          fields.push_back(fields_to_use[i]);
         } else if (added_fields < minimal_fields_shown &&
-                   exclude_field != distinguishing_fields[i] &&
+                   exclude_field != fields_to_use[i] &&
                    !label_iterator->first.empty()) {
-          fields.push_back(distinguishing_fields[i]);
-          first_non_empty_fields.push_back(distinguishing_fields[i]);
+          fields.push_back(fields_to_use[i]);
+          first_non_empty_fields.push_back(fields_to_use[i]);
           ++added_fields;
           if (added_fields == minimal_fields_shown && matched_necessary)
-           break;
+            break;
         }
       }
       // Update labels if needed.
@@ -287,12 +322,12 @@ void AutoFillProfile::CreateInferredLabels(
            ++similar_profiles) {
         size_t field_it = 0;
         for (size_t field_id = 0;
-             field_id < arraysize(distinguishing_fields) &&
+             field_id < fields_to_use.size() &&
              field_it < fields.size(); ++field_id) {
-          if (fields[field_it] == distinguishing_fields[field_id]) {
+          if (fields[field_it] == fields_to_use[field_id]) {
             if ((tested_fields[field_id])[
                 profiles->at(*similar_profiles)->GetFieldText(
-                AutoFillType(distinguishing_fields[field_id]))] == 1) {
+                AutoFillType(fields_to_use[field_id]))] == 1) {
               // this field is unique among the subset.
               break;
             }
@@ -319,12 +354,12 @@ void AutoFillProfile::CreateInferredLabels(
       std::vector<AutoFillFieldType> non_empty_fields;
       size_t include_fields = minimal_fields_shown ? minimal_fields_shown : 1;
       non_empty_fields.reserve(include_fields);
-      for (size_t i = 0; i < arraysize(distinguishing_fields); ++i) {
-        if (exclude_field == distinguishing_fields[i])
+      for (size_t i = 0; i < fields_to_use.size(); ++i) {
+        if (exclude_field == fields_to_use[i])
           continue;
         if (!profiles->at(label_iterator->second.front())->GetFieldText(
-            AutoFillType(distinguishing_fields[i])).empty()) {
-          non_empty_fields.push_back(distinguishing_fields[i]);
+            AutoFillType(fields_to_use[i])).empty()) {
+          non_empty_fields.push_back(fields_to_use[i]);
           if (non_empty_fields.size() >= include_fields)
             break;
         }

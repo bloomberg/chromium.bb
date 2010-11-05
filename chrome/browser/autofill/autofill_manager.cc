@@ -500,8 +500,19 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
     }
   }
 
+  std::vector<AutoFillFieldType> form_fields;
+  form_fields.reserve(form->field_count());
+  for (std::vector<AutoFillField*>::const_iterator iter = form->begin();
+       iter != form->end(); ++iter) {
+    // The field list is terminated with a NULL AutoFillField, so don't try to
+    // dereference it.
+    if (!*iter)
+      break;
+    form_fields.push_back((*iter)->type());
+  }
+
   AutoFillProfile::CreateInferredLabels(&matched_profiles, labels, 0,
-                                        type.field_type());
+                                        type.field_type(), &form_fields);
 
   // No icons for profile suggestions.
   icons->resize(values->size());

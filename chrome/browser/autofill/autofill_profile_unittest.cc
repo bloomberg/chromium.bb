@@ -305,6 +305,101 @@ TEST(AutoFillProfileTest, AdjustInferredLabels) {
   STLDeleteContainerPointers(profiles.begin(), profiles.end());
 }
 
+TEST(AutoFillProfileTest, CreateInferredLabels) {
+  std::vector<AutoFillProfile*> profiles;
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[0],
+                                "",
+                                "John",
+                                "",
+                                "Doe",
+                                "johndoe@hades.com",
+                                "Underworld",
+                                "666 Erebus St.",
+                                "",
+                                "Elysium", "CA",
+                                "91111",
+                                "US",
+                                "11111111111",
+                                "22222222222");
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[1],
+                                "",
+                                "Jane",
+                                "",
+                                "Doe",
+                                "janedoe@tertium.com",
+                                "Pluto Inc.",
+                                "123 Letha Shore.",
+                                "",
+                                "Dis", "CA",
+                                "91222",
+                                "US",
+                                "12345678910",
+                                "01987654321");
+  std::vector<string16> labels;
+  // Two fields at least - no filter.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 2, UNKNOWN_TYPE,
+                                        NULL);
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe, 666 Erebus St.")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore.")), labels[1]);
+
+  // Three fields at least - no filter.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 3, UNKNOWN_TYPE,
+                                        NULL);
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe, 666 Erebus St., Elysium")),
+            labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis")),
+            labels[1]);
+
+  // Two fields at least - filter out the name.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 2, NAME_FULL, NULL);
+  EXPECT_EQ(string16(ASCIIToUTF16("666 Erebus St., Elysium")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("123 Letha Shore., Dis")), labels[1]);
+
+  std::vector<AutoFillFieldType> suggested_fields;
+  suggested_fields.push_back(ADDRESS_HOME_CITY);
+  suggested_fields.push_back(ADDRESS_HOME_STATE);
+  suggested_fields.push_back(ADDRESS_HOME_ZIP);
+
+  // Two fields at least, from suggested fields - no filter.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 2, UNKNOWN_TYPE,
+                                        &suggested_fields);
+  EXPECT_EQ(string16(ASCIIToUTF16("Elysium, CA")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("Dis, CA")), labels[1]);
+
+  // Three fields at least, from suggested fields - no filter.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 3, UNKNOWN_TYPE,
+                                        &suggested_fields);
+  EXPECT_EQ(string16(ASCIIToUTF16("Elysium, CA, 91111")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("Dis, CA, 91222")), labels[1]);
+
+  // Three fields at least, from suggested fields - but filter reduces available
+  // fields to two.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 3,
+                                        ADDRESS_HOME_STATE, &suggested_fields);
+  EXPECT_EQ(string16(ASCIIToUTF16("Elysium, 91111")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("Dis, 91222")), labels[1]);
+
+  suggested_fields.clear();
+  // In our implementation we always display NAME_FULL for all NAME* fields...
+  suggested_fields.push_back(NAME_MIDDLE);
+  // One field at least, from suggested fields - no filter.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 1, UNKNOWN_TYPE,
+                                        &suggested_fields);
+  EXPECT_EQ(string16(ASCIIToUTF16("John Doe")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("Jane Doe")), labels[1]);
+
+  // One field at least, from suggested fields - filter the same as suggested
+  // field.
+  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 1, NAME_MIDDLE,
+                                        &suggested_fields);
+  EXPECT_EQ(string16(ASCIIToUTF16("")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("")), labels[1]);
+  // Clean up.
+  STLDeleteContainerPointers(profiles.begin(), profiles.end());
+}
+
 TEST(AutoFillProfileTest, IsSubsetOf) {
   scoped_ptr<AutoFillProfile> a, b;
 

@@ -70,12 +70,14 @@ class AutoFillProfile : public FormGroup {
   // Created inferred labels for |profiles|, according to the rules above and
   // stores them in |created_labels|. |minimal_fields_shown| minimal number of
   // fields that need to be shown for the label. |exclude_field| is excluded
-  // from the label.
+  // from the label. If |suggested_fields| is not NULL it is used to generate
+  // labels appropriate to the actual fields in a given form.
   static void CreateInferredLabels(
       const std::vector<AutoFillProfile*>* profiles,
       std::vector<string16>* created_labels,
       size_t minimal_fields_shown,
-      AutoFillFieldType exclude_field);
+      AutoFillFieldType exclude_field,
+      const std::vector<AutoFillFieldType>* suggested_fields);
 
   // Returns true if there are no values (field types) set.
   bool IsEmpty() const;
