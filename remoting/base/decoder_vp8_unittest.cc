@@ -6,9 +6,7 @@
 #include "remoting/base/codec_test.h"
 #include "remoting/base/decoder_vp8.h"
 #include "remoting/base/encoder_vp8.h"
-#include "remoting/client/mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 namespace remoting {
 

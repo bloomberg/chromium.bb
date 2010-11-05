@@ -12,8 +12,8 @@
 #include "net/base/net_log.h"
 #include "net/socket/client_socket.h"
 #include "net/socket/ssl_client_socket.h"
-#include "talk/base/asyncsocket.h"
-#include "talk/base/ssladapter.h"
+#include "third_party/libjingle/source/talk/base/asyncsocket.h"
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
 
 namespace remoting {
 

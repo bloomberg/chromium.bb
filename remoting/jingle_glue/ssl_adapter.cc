@@ -5,7 +5,7 @@
 #include "remoting/jingle_glue/ssl_adapter.h"
 
 #if defined(OS_WIN)
-#include "talk/base/ssladapter.h"
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
 #else
 #include "remoting/jingle_glue/ssl_socket_adapter.h"
 #endif
@@ -24,4 +24,3 @@ talk_base::SSLAdapter* CreateSSLAdapter(talk_base::AsyncSocket* socket) {
 }
 
 }  // namespace remoting
-

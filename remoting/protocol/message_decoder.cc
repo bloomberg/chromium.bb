@@ -8,7 +8,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/base/multiple_array_input_stream.h"
 #include "remoting/proto/internal.pb.h"
-#include "talk/base/byteorder.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
 
 namespace remoting {
 

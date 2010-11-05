@@ -9,14 +9,14 @@
 
 #include "base/logging.h"
 #include "remoting/jingle_glue/ssl_adapter.h"
-#include "talk/base/byteorder.h"
-#include "talk/base/common.h"
-#include "talk/base/firewallsocketserver.h"
-#include "talk/base/logging.h"
-#include "talk/base/socketadapters.h"
-#include "talk/base/ssladapter.h"
-#include "talk/base/thread.h"
-#include "talk/xmpp/xmppengine.h"
+#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/libjingle/source/talk/base/common.h"
+#include "third_party/libjingle/source/talk/base/firewallsocketserver.h"
+#include "third_party/libjingle/source/talk/base/logging.h"
+#include "third_party/libjingle/source/talk/base/socketadapters.h"
+#include "third_party/libjingle/source/talk/base/ssladapter.h"
+#include "third_party/libjingle/source/talk/base/thread.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppengine.h"
 
 namespace remoting {
 

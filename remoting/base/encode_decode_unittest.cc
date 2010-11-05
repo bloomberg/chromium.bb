@@ -6,7 +6,6 @@
 #include "remoting/base/codec_test.h"
 #include "remoting/base/decoder_row_based.h"
 #include "remoting/base/encoder_zlib.h"
-#include "remoting/client/mock_objects.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

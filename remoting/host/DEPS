@@ -1,0 +1,7 @@
+include_rules = [
+  "+app",
+  "+gfx",
+
+  "+remoting/protocol",
+  "+remoting/jingle_glue",
+]

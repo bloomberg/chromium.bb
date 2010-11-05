@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "talk/base/asyncsocket.h"
-#include "talk/xmpp/asyncsocket.h"
-#include "talk/xmpp/xmppclientsettings.h"
-#include "talk/xmpp/xmppengine.h"
+#include "third_party/libjingle/source/talk/base/asyncsocket.h"
+#include "third_party/libjingle/source/talk/xmpp/asyncsocket.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppclientsettings.h"
+#include "third_party/libjingle/source/talk/xmpp/xmppengine.h"
 
 #ifndef _WIN32
 // Additional errors used by us from Win32 headers.

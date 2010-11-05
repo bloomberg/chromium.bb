@@ -1,13 +1,7 @@
 include_rules = [
-  "+app",
-  "+gfx",
-  "+google/protobuf",
   "+media/base",
-  "+net",
-  "+jingle",
-  "+ppapi",
-  "+talk",
-  "+third_party/npapi"
-  "+third_party/protobuf2",
-  "+third_party/zlib",
+
+  "-remoting",
+  "+remoting/base",
+  "+remoting/proto",
 ]

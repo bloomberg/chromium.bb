@@ -1,0 +1,8 @@
+include_rules = [
+  "+gfx",
+  "+ppapi",
+  "+third_party/npapi",
+
+  "+remoting/protocol",
+  "+remoting/jingle_glue",
+]
