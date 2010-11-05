@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 
@@ -49,11 +50,14 @@ int ShownSectionsHandler::GetShownSections(PrefService* prefs) {
 
 ShownSectionsHandler::ShownSectionsHandler(PrefService* pref_service)
     : pref_service_(pref_service) {
-  registrar_.Init(pref_service);
-  registrar_.Add(prefs::kNTPShownSections, this);
+  pref_registrar_.Init(pref_service);
+  pref_registrar_.Add(prefs::kNTPShownSections, this);
 }
 
 void ShownSectionsHandler::RegisterMessages() {
+  notification_registrar_.Add(this, NotificationType::EXTENSION_INSTALLED,
+                              Source<Profile>(dom_ui_->GetProfile()));
+
   dom_ui_->RegisterMessageCallback("getShownSections",
       NewCallback(this, &ShownSectionsHandler::HandleGetShownSections));
   dom_ui_->RegisterMessageCallback("setShownSections",
@@ -63,13 +67,30 @@ void ShownSectionsHandler::RegisterMessages() {
 void ShownSectionsHandler::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
-  DCHECK(NotificationType::PREF_CHANGED == type);
-  std::string* pref_name = Details<std::string>(details).ptr();
-  DCHECK(*pref_name == prefs::kNTPShownSections);
+  if (type == NotificationType::PREF_CHANGED) {
+    std::string* pref_name = Details<std::string>(details).ptr();
+    DCHECK(*pref_name == prefs::kNTPShownSections);
+    int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
+    FundamentalValue sections_value(sections);
+    dom_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
+  } else if (type == NotificationType::EXTENSION_INSTALLED) {
+    if (Details<const Extension>(details).ptr()->is_app()) {
+      int mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 
-  int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
-  FundamentalValue sections_value(sections);
-  dom_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
+      // De-minimize the apps section.
+      mode &= ~MINIMIZED_APPS;
+
+      // Hide any open sections.
+      mode &= ~ALL_SECTIONS_MASK;
+
+      // Show the apps section.
+      mode |= APPS;
+
+      pref_service_->SetInteger(prefs::kNTPShownSections, mode);
+    }
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {

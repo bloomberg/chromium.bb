@@ -252,13 +252,6 @@ var apps = (function() {
           document.documentElement.setAttribute("install-animation-enabled",
                                                 "false");
         });
-
-        // Make sure apps is de-minimized...
-        setSectionVisible('apps', Section.APPS, true, MINIMIZED_APPS);
-
-        // ...and expanded.
-        if ($('apps').classList.contains('hidden'))
-          toggleSectionVisibilityAndAnimate('APPS');
       }
 
       var settingsButton = div.appendChild(new cr.ui.ContextMenuButton);
