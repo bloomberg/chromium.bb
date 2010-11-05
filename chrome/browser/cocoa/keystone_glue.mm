@@ -13,8 +13,12 @@
 #import "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #import "base/worker_pool_mac.h"
+#include "base/ref_counted.h"
+#include "base/task.h"
+#include "base/worker_pool.h"
 #include "chrome/browser/cocoa/authorization_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
@@ -89,6 +93,51 @@ NSString* SystemBrandFilePath() {
   return [kBrandSystemFile stringByStandardizingPath];
 }
 
+// Adaptor for scheduling an Objective-C method call on a |WorkerPool|
+// thread.
+// TODO(shess): Move this into workerpool_mac.h?
+class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
+ public:
+
+  // Call |sel| on |target| with |arg| in a WorkerPool thread.
+  // |target| and |arg| are retained, |arg| may be |nil|.
+  static void PostPerform(id target, SEL sel, id arg) {
+    DCHECK(target);
+    DCHECK(sel);
+
+    scoped_refptr<PerformBridge> op = new PerformBridge(target, sel, arg);
+    WorkerPool::PostTask(
+        FROM_HERE, NewRunnableMethod(op.get(), &PerformBridge::Run), true);
+  }
+
+  // Convenience for the no-argument case.
+  static void PostPerform(id target, SEL sel) {
+    PostPerform(target, sel, nil);
+  }
+
+ private:
+  // Allow RefCountedThreadSafe<> to delete.
+  friend class base::RefCountedThreadSafe<PerformBridge>;
+
+  PerformBridge(id target, SEL sel, id arg)
+      : target_([target retain]),
+        sel_(sel),
+        arg_([arg retain]) {
+  }
+
+  ~PerformBridge() {}
+
+  // Happens on a WorkerPool thread.
+  void Run() {
+    base::mac::ScopedNSAutoreleasePool pool;
+    [target_ performSelector:sel_ withObject:arg_];
+  }
+
+  scoped_nsobject<id> target_;
+  SEL sel_;
+  scoped_nsobject<id> arg_;
+};
+
 }  // namespace
 
 @interface KSRegistration : NSObject
@@ -147,7 +196,7 @@ NSString* SystemBrandFilePath() {
 // -determineUpdateStatusAsync is called on the main thread to initiate the
 // operation.  It performs initial set-up work that must be done on the main
 // thread and arranges for -determineUpdateStatus to be called on a work queue
-// thread managed by NSOperationQueue.
+// thread managed by WorkerPool.
 // -determineUpdateStatus then reads the Info.plist, gets the version from the
 // CFBundleShortVersionString key, and performs
 // -determineUpdateStatusForVersion: on the main thread.
@@ -562,17 +611,10 @@ NSString* const kBrandKey = @"KSBrandID";
 - (void)determineUpdateStatusAsync {
   DCHECK([NSThread isMainThread]);
 
-  SEL selector = @selector(determineUpdateStatus);
-  NSInvocationOperation* operation =
-      [[[NSInvocationOperation alloc] initWithTarget:self
-                                            selector:selector
-                                              object:nil] autorelease];
-
-  NSOperationQueue* operationQueue = [WorkerPoolObjC sharedOperationQueue];
-  [operationQueue addOperation:operation];
+  PerformBridge::PostPerform(self, @selector(determineUpdateStatus));
 }
 
-// Runs on a thread managed by NSOperationQueue.
+// Runs on a thread managed by WorkerPool.
 - (void)determineUpdateStatus {
   DCHECK(![NSThread isMainThread]);
 
@@ -849,7 +891,7 @@ NSString* const kBrandKey = @"KSBrandID";
 
 - (void)changePermissionsForPromotionAsync {
   // NSBundle is not documented as being thread-safe.  Do NSBundle operations
-  // on the main thread before jumping over to a NSOperationQueue-managed
+  // on the main thread before jumping over to a WorkerPool-managed
   // thread to run the tool.
   DCHECK([NSThread isMainThread]);
 
@@ -858,13 +900,7 @@ NSString* const kBrandKey = @"KSBrandID";
       [mac_util::MainAppBundle() pathForResource:@"keystone_promote_postflight"
                                           ofType:@"sh"];
 
-  NSInvocationOperation* operation =
-      [[[NSInvocationOperation alloc] initWithTarget:self
-                                            selector:selector
-                                              object:toolPath] autorelease];
-
-  NSOperationQueue* operationQueue = [WorkerPoolObjC sharedOperationQueue];
-  [operationQueue addOperation:operation];
+  PerformBridge::PostPerform(self, selector, toolPath);
 }
 
 - (void)changePermissionsForPromotionWithTool:(NSString*)toolPath {

@@ -86,4 +86,18 @@ class LinuxDynamicThreadPool
 
 }  // namespace base
 
+#if defined(OS_MACOSX)
+namespace worker_pool_mac {
+
+// NOTE(shess): Helper so that Mac WorkerPool implementation can call
+// into Linux implementation while determining if the implementations
+// should be merged.  After evaluating, either remove the ifdef, or
+// shift this to a shared POSIX implementation.
+// http://crbug.com/44392
+bool MacPostTaskHelper(const tracked_objects::Location& from_here,
+                       Task* task, bool task_is_slow);
+
+}  // namespace worker_pool_mac
+#endif
+
 #endif  // BASE_WORKER_POOL_LINUX_H_

@@ -1231,6 +1231,13 @@ const char kEnableExposeForTabs[] = "enable-expose-for-tabs";
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
+
+
+// Temporary flag to revert to the old WorkerPool implementation.
+// This will be removed once we either fix the Mac WorkerPool
+// implementation, or completely switch to the shared (with Linux)
+// implementation.
+const char kDisableLinuxWorkerPool[]        = "disable-linux-worker-pool";
 #else
 // Enable Kiosk mode.
 const char kKioskMode[]                     = "kiosk";

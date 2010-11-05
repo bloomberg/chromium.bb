@@ -5,12 +5,13 @@
 #include "base/worker_pool_mac.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #import "base/singleton_objc.h"
 #include "base/task.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/worker_pool_linux.h"
 
 // When C++ exceptions are disabled, the C++ library defines |try| and
 // |catch| so as to allow exception-expecting C++ code to build properly when
@@ -23,6 +24,10 @@
 
 namespace {
 
+// |true| to use the Linux WorkerPool implementation for
+// |WorkerPool::PostTask()|.
+bool use_linux_workerpool_ = true;
+
 Lock lock_;
 base::Time last_check_;            // Last hung-test check.
 std::vector<id> outstanding_ops_;  // Outstanding operations at last check.
@@ -30,6 +35,14 @@ size_t running_ = 0;               // Operations in |Run()|.
 size_t outstanding_ = 0;           // Operations posted but not completed.
 
 }  // namespace
+
+namespace worker_pool_mac {
+
+void SetUseLinuxWorkerPool(bool flag) {
+  use_linux_workerpool_ = flag;
+}
+
+}  // namespace worker_pool_mac
 
 @implementation WorkerPoolObjC
 
@@ -117,6 +130,10 @@ size_t outstanding_ = 0;           // Operations posted but not completed.
 
 bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
                           Task* task, bool task_is_slow) {
+  if (use_linux_workerpool_) {
+    return worker_pool_mac::MacPostTaskHelper(from_here, task, task_is_slow);
+  }
+
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   // Ignore |task_is_slow|, it doesn't map directly to any tunable aspect of

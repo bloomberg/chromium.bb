@@ -84,11 +84,29 @@ void WorkerThread::ThreadMain() {
 
 }  // namespace
 
+// NOTE(shess): Temporarily allow the Mac WorkerPool implementation to
+// call into the linux so that it can provide a command-line flag for
+// switching back and forth.  After evaluating, either remove the
+// ifdef, or shift this to a shared POSIX implementation.
+// http://crbug.com/44392
+#if defined(OS_MACOSX)
+namespace worker_pool_mac {
+
+bool MacPostTaskHelper(const tracked_objects::Location& from_here,
+                       Task* task, bool task_is_slow) {
+  g_lazy_worker_pool.Pointer()->PostTask(from_here, task, task_is_slow);
+  return true;
+}
+
+}  // namespace worker_pool_mac
+
+#else
 bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
                           Task* task, bool task_is_slow) {
   g_lazy_worker_pool.Pointer()->PostTask(from_here, task, task_is_slow);
   return true;
 }
+#endif
 
 namespace base {
 

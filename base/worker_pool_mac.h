@@ -24,4 +24,10 @@
 
 @end  // @interface WorkerPoolObjC
 
+namespace worker_pool_mac {
+
+void SetUseLinuxWorkerPool(bool flag);
+
+}  // namespace worker_pool_mac
+
 #endif  // BASE_WORKER_POOL_MAC_H_
