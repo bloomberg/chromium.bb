@@ -40,6 +40,7 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_class.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -51,6 +52,7 @@
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_char_set.h"
+#include "webkit/glue/plugins/pepper_class.h"
 #include "webkit/glue/plugins/pepper_cursor_control.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
 #include "webkit/glue/plugins/pepper_file_chooser.h"
@@ -271,6 +273,8 @@ const void* GetInterface(const char* name) {
     return GetCursorControlInterface();
   if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
     return PluginInstance::GetZoomInterface();
+  if (strcmp(name, PPB_CLASS_INTERFACE) == 0)
+    return VarObjectClass::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

@@ -195,6 +195,7 @@
         'plugins/pepper_buffer.h',
         'plugins/pepper_char_set.cc',
         'plugins/pepper_char_set.h',
+        'plugins/pepper_class.h',
         'plugins/pepper_cursor_control.cc',
         'plugins/pepper_cursor_control.h',
         'plugins/pepper_directory_reader.cc',

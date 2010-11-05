@@ -36,6 +36,7 @@ namespace pepper {
   F(URLRequestInfo) \
   F(URLResponseInfo) \
   F(Var) \
+  F(VarObjectClass) \
   F(VideoDecoder) \
   F(Widget)
 

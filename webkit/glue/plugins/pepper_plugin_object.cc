@@ -5,6 +5,7 @@
 #include "webkit/glue/plugins/pepper_plugin_object.h"
 
 #include "base/logging.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -12,9 +13,13 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_class.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "webkit/glue/plugins/pepper_class.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/glue/plugins/pepper_resource.h"
 #include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_var.h"
 
@@ -27,7 +32,7 @@ namespace {
 const char kInvalidValueException[] = "Error: Invalid value";
 const char kInvalidPluginValue[] = "Error: Plugin returned invalid value.";
 
-// ---------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Utilities
 
 // Converts the given PP_Var to an NPVariant, returning true on success.
@@ -109,6 +114,25 @@ class PPVarArrayFromNPVariantArray {
   DISALLOW_COPY_AND_ASSIGN(PPVarArrayFromNPVariantArray);
 };
 
+// PPVarFromNPObject -----------------------------------------------------------
+
+// Converts an NPObject tp PP_Var, and scopes the ownership of the PP_Var. This
+// is used when converting 'this' pointer from WebKit to the plugin.
+class PPVarFromNPObject {
+ public:
+  PPVarFromNPObject(PluginModule* module, NPObject* object)
+      : var_(ObjectVar::NPObjectToPPVar(module, object)) {
+  }
+  ~PPVarFromNPObject() {
+    Var::PluginReleasePPVar(var_);
+  }
+  PP_Var var() const { return var_; }
+ private:
+  const PP_Var var_;
+
+  DISALLOW_COPY_AND_ASSIGN(PPVarFromNPObject);
+};
+
 // PPResultAndExceptionToNPResult ----------------------------------------------
 
 // Convenience object for converting a PPAPI call that can throw an exception
@@ -127,15 +151,14 @@ class PPVarArrayFromNPVariantArray {
 class PPResultAndExceptionToNPResult {
  public:
   // The object_var parameter is the object to associate any exception with.
-  // It may not be NULL. This class does not take a ref, so it must remain
-  // valid for the lifetime of this object.
+  // It may not be NULL.
   //
   // The np_result parameter is the NPAPI result output parameter. This may be
   // NULL if there is no NPVariant result (like for HasProperty). If this is
   // specified, you must call SetResult() to set it. If it is not, you must
   // call CheckExceptionForNoResult to do the exception checking with no result
   // conversion.
-  PPResultAndExceptionToNPResult(PluginObject* object_var,
+  PPResultAndExceptionToNPResult(NPObject* object_var,
                                  NPVariant* np_result)
       : object_var_(object_var),
         np_result_(np_result),
@@ -181,8 +204,7 @@ class PPResultAndExceptionToNPResult {
       ThrowException();
       success_ = false;
     } else if (!PPVarToNPVariant(result, np_result_)) {
-      WebBindings::setException(object_var_->GetNPObject(),
-                                kInvalidPluginValue);
+      WebBindings::setException(object_var_, kInvalidPluginValue);
       success_ = false;
     } else {
       success_ = true;
@@ -226,12 +248,11 @@ class PPResultAndExceptionToNPResult {
   void ThrowException() {
     scoped_refptr<StringVar> string(StringVar::FromPPVar(exception_));
     if (string) {
-      WebBindings::setException(object_var_->GetNPObject(),
-                                string->value().c_str());
+      WebBindings::setException(object_var_, string->value().c_str());
     }
   }
 
-  PluginObject* object_var_;  // Non-owning ref (see constructor).
+  NPObject* object_var_;  // Non-owning ref (see constructor).
   NPVariant* np_result_;  // Output value, possibly NULL (see constructor).
   PP_Var exception_;  // Exception set by the PPAPI call. We own a ref to it.
   bool success_;  // See the success() function above.
@@ -316,7 +337,8 @@ bool WrapperClass_HasMethod(NPObject* object, NPIdentifier method_name) {
   if (!accessor.is_valid())
     return false;
 
-  PPResultAndExceptionToNPResult result_converter(accessor.object(), NULL);
+  PPResultAndExceptionToNPResult result_converter(
+      accessor.object()->GetNPObject(), NULL);
   bool rv = accessor.object()->ppp_class()->HasMethod(
       accessor.object()->ppp_class_data(), accessor.identifier(),
       result_converter.exception());
@@ -331,7 +353,8 @@ bool WrapperClass_Invoke(NPObject* object, NPIdentifier method_name,
   if (!accessor.is_valid())
     return false;
 
-  PPResultAndExceptionToNPResult result_converter(accessor.object(), result);
+  PPResultAndExceptionToNPResult result_converter(
+      accessor.object()->GetNPObject(), result);
   PPVarArrayFromNPVariantArray args(accessor.object()->module(), argc, argv);
 
   return result_converter.SetResult(accessor.object()->ppp_class()->Call(
@@ -346,7 +369,7 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
     return false;
 
   PPVarArrayFromNPVariantArray args(obj->module(), argc, argv);
-  PPResultAndExceptionToNPResult result_converter(obj, result);
+  PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), result);
 
   result_converter.SetResult(obj->ppp_class()->Call(
       obj->ppp_class_data(), PP_MakeUndefined(), argc, args.array(),
@@ -354,27 +377,13 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
   return result_converter.success();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 bool WrapperClass_HasProperty(NPObject* object, NPIdentifier property_name) {
   NPObjectAccessorWithIdentifier accessor(object, property_name, true);
   if (!accessor.is_valid())
     return false;
 
-  PPResultAndExceptionToNPResult result_converter(accessor.object(), NULL);
+  PPResultAndExceptionToNPResult result_converter(
+      accessor.object()->GetNPObject(), NULL);
   bool rv = accessor.object()->ppp_class()->HasProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(),
       result_converter.exception());
@@ -388,7 +397,8 @@ bool WrapperClass_GetProperty(NPObject* object, NPIdentifier property_name,
   if (!accessor.is_valid())
     return false;
 
-  PPResultAndExceptionToNPResult result_converter(accessor.object(), result);
+  PPResultAndExceptionToNPResult result_converter(
+      accessor.object()->GetNPObject(), result);
   return result_converter.SetResult(accessor.object()->ppp_class()->GetProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(),
       result_converter.exception()));
@@ -400,7 +410,8 @@ bool WrapperClass_SetProperty(NPObject* object, NPIdentifier property_name,
   if (!accessor.is_valid())
     return false;
 
-  PPResultAndExceptionToNPResult result_converter(accessor.object(), NULL);
+  PPResultAndExceptionToNPResult result_converter(
+      accessor.object()->GetNPObject(), NULL);
   PP_Var value_var = Var::NPVariantToPPVar(accessor.object()->module(), value);
   accessor.object()->ppp_class()->SetProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(), value_var,
@@ -414,7 +425,8 @@ bool WrapperClass_RemoveProperty(NPObject* object, NPIdentifier property_name) {
   if (!accessor.is_valid())
     return false;
 
-  PPResultAndExceptionToNPResult result_converter(accessor.object(), NULL);
+  PPResultAndExceptionToNPResult result_converter(
+      accessor.object()->GetNPObject(), NULL);
   accessor.object()->ppp_class()->RemoveProperty(
       accessor.object()->ppp_class_data(), accessor.identifier(),
       result_converter.exception());
@@ -431,7 +443,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
 
   uint32_t property_count = 0;
   PP_Var* properties = NULL;  // Must be freed!
-  PPResultAndExceptionToNPResult result_converter(obj, NULL);
+  PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), NULL);
   obj->ppp_class()->GetAllPropertyNames(obj->ppp_class_data(),
                                         &property_count, &properties,
                                         result_converter.exception());
@@ -482,7 +494,7 @@ bool WrapperClass_Construct(NPObject* object, const NPVariant* argv,
     return false;
 
   PPVarArrayFromNPVariantArray args(obj->module(), argc, argv);
-  PPResultAndExceptionToNPResult result_converter(obj, result);
+  PPResultAndExceptionToNPResult result_converter(obj->GetNPObject(), result);
   return result_converter.SetResult(obj->ppp_class()->Construct(
       obj->ppp_class_data(), argc, args.array(),
       result_converter.exception()));
@@ -506,7 +518,7 @@ const NPClass wrapper_class = {
 
 }  // namespace
 
-// PluginObject -------------------------------------------------------------
+// PluginObject ----------------------------------------------------------------
 
 struct PluginObject::NPObjectWrapper : public NPObject {
   // Points to the var object that owns this wrapper. This value may be NULL
@@ -597,5 +609,279 @@ NPObject* PluginObject::AllocateObjectWrapper() {
   memset(wrapper, 0, sizeof(NPObjectWrapper));
   return wrapper;
 }
+
+// VarObjectClass::InstanceData  -----------------------------------------------
+
+struct VarObjectClass::InstanceData : public NPObject {
+  InstanceData() : native_data(NULL) {}
+
+  scoped_refptr<VarObjectClass> object_class;
+  void* native_data;
+};
+
+// VarObjectClass::Property  ---------------------------------------------------
+
+VarObjectClass::Property::Property(const PP_ClassProperty& prop)
+    : method(prop.method),
+      getter(prop.getter),
+      setter(prop.setter),
+      writable(!(prop.modifiers & PP_OBJECTPROPERTY_MODIFIER_READONLY)),
+      enumerable(!(prop.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTENUM)) {
+}
+
+
+// VarObjectAccessorWithIdentifier ---------------------------------------------
+
+// Helper class for the new (PPB_Class) NPObject wrapper. This converts a call
+// from WebKit where it gives us an NPObject and an NPIdentifier to an
+// easily-accessible InstanceData (corresponding to the NPObject) and
+// std::string and Property (corresponding to the NPIdentifier).
+class VarObjectAccessorWithIdentifier {
+ public:
+  VarObjectAccessorWithIdentifier(NPObject* object, NPIdentifier identifier)
+      : exists_(false),
+        instance_(static_cast<VarObjectClass::InstanceData*>(object)),
+        property_(NULL) {
+    if (instance_) {
+      const NPUTF8* string_value = NULL;
+      int32_t int_value = 0;
+      bool is_string = false;
+      WebBindings::extractIdentifierData(identifier, string_value, int_value,
+                                         is_string);
+      if (is_string) {
+        property_name_ = string_value;
+
+        const VarObjectClass::PropertyMap& properties =
+            instance_->object_class->properties();
+        VarObjectClass::PropertyMap::const_iterator it =
+            properties.find(property_name_);
+        if (it != properties.end()) {
+          property_ = &it->second;
+          exists_ = true;
+        }
+      }
+    }
+  }
+
+  // Return true if the object is valid, the identifier is valid, and the
+  // property with said name exists.
+  bool exists() const { return exists_; }
+  bool is_method() const { return exists() && property_->method; }
+  bool is_readable() const { return exists() && property_->getter; }
+  bool is_writable() const {
+    return exists() && property_->setter && property_->writable;
+  }
+  const VarObjectClass::InstanceData* instance() const { return instance_; }
+  const VarObjectClass::Property* property() const { return property_; }
+  PluginModule* module() const {
+    return instance_ ? instance_->object_class->module() : NULL;
+  }
+
+ private:
+  bool exists_;
+  const VarObjectClass::InstanceData* instance_;
+  std::string property_name_;
+  const VarObjectClass::Property* property_;
+
+  DISALLOW_COPY_AND_ASSIGN(VarObjectAccessorWithIdentifier);
+};
+
+// NPObject implementation in terms of PPB_Class -------------------------------
+
+namespace {
+
+NPObject* VarObjectClassAllocate(NPP npp, NPClass* the_class) {
+  return new VarObjectClass::InstanceData;
+}
+
+void VarObjectClassDeallocate(NPObject* object) {
+  VarObjectClass::InstanceData* instance =
+      static_cast<VarObjectClass::InstanceData*>(object);
+  if (instance->object_class->instance_native_destructor())
+    instance->object_class->instance_native_destructor()(instance->native_data);
+  delete instance;
+}
+
+bool VarObjectClassHasMethod(NPObject* np_obj, NPIdentifier name) {
+  VarObjectAccessorWithIdentifier accessor(np_obj, name);
+  return accessor.is_method();
+}
+
+bool VarObjectClassInvoke(NPObject* np_obj, NPIdentifier name,
+                          const NPVariant* args, uint32 arg_count,
+                          NPVariant* result) {
+  VarObjectAccessorWithIdentifier accessor(np_obj, name);
+  if (!accessor.is_method())
+    return false;
+
+  PPResultAndExceptionToNPResult result_converter(np_obj, result);
+  PPVarArrayFromNPVariantArray arguments(accessor.module(), arg_count, args);
+  PPVarFromNPObject self(accessor.module(), np_obj);
+
+  return result_converter.SetResult(accessor.property()->method(
+    accessor.instance()->native_data, self.var(), arguments.array(), arg_count,
+    result_converter.exception()));
+}
+
+bool VarObjectClassInvokeDefault(NPObject* np_obj,
+                                 const NPVariant* args,
+                                 uint32 arg_count,
+                                 NPVariant* result) {
+  VarObjectClass::InstanceData* instance =
+      static_cast<VarObjectClass::InstanceData*>(np_obj);
+  if (!instance || !instance->object_class->instance_invoke())
+    return false;
+
+  PPResultAndExceptionToNPResult result_converter(np_obj, result);
+  PPVarArrayFromNPVariantArray arguments(instance->object_class->module(),
+                                         arg_count, args);
+  PPVarFromNPObject self(instance->object_class->module(), np_obj);
+
+  return result_converter.SetResult(instance->object_class->instance_invoke()(
+      instance->native_data, self.var(), arguments.array(), arg_count,
+      result_converter.exception()));
+}
+
+bool VarObjectClassHasProperty(NPObject* np_obj, NPIdentifier name) {
+  VarObjectAccessorWithIdentifier accessor(np_obj, name);
+  return accessor.is_readable();
+}
+
+bool VarObjectClassGetProperty(NPObject* np_obj, NPIdentifier name,
+                               NPVariant* result) {
+  VarObjectAccessorWithIdentifier accessor(np_obj, name);
+  if (!accessor.is_readable()) {
+    return false;
+  }
+
+  PPResultAndExceptionToNPResult result_converter(np_obj, result);
+  PPVarFromNPObject self(accessor.module(), np_obj);
+
+  return result_converter.SetResult(accessor.property()->getter(
+    accessor.instance()->native_data, self.var(), 0, 0,
+    result_converter.exception()));
+}
+
+bool VarObjectClassSetProperty(NPObject* np_obj, NPIdentifier name,
+                     const NPVariant* variant) {
+  VarObjectAccessorWithIdentifier accessor(np_obj, name);
+  if (!accessor.is_writable()) {
+    return false;
+  }
+
+  PPResultAndExceptionToNPResult result_converter(np_obj, NULL);
+  PPVarArrayFromNPVariantArray arguments(accessor.module(), 1, variant);
+  PPVarFromNPObject self(accessor.module(), np_obj);
+
+  // Ignore return value.
+  Var::PluginReleasePPVar(accessor.property()->setter(
+      accessor.instance()->native_data, self.var(), arguments.array(), 1,
+      result_converter.exception()));
+
+  return result_converter.CheckExceptionForNoResult();
+}
+
+bool VarObjectClassEnumerate(NPObject *np_obj, NPIdentifier **value,
+                             uint32_t *count) {
+  VarObjectClass::InstanceData* instance =
+      static_cast<VarObjectClass::InstanceData*>(np_obj);
+  *count = 0;
+  *value = NULL;
+  if (!instance)
+    return false;
+
+  const VarObjectClass::PropertyMap& properties =
+      instance->object_class->properties();
+
+  // Don't bother calculating the size of enumerable properties, just allocate
+  // enough for all and then fill it partially.
+  *value = static_cast<NPIdentifier*>(
+      malloc(sizeof(NPIdentifier) * properties.size()));
+
+  NPIdentifier* inserter = *value;
+  for (VarObjectClass::PropertyMap::const_iterator i = properties.begin();
+      i != properties.end(); ++i)
+    if (i->second.enumerable)
+      *inserter++ = WebBindings::getStringIdentifier(i->first.c_str());
+
+  *count = inserter - *value;
+  return true;
+}
+
+NPClass objectclassvar_class = {
+  NP_CLASS_STRUCT_VERSION,
+  &VarObjectClassAllocate,
+  &VarObjectClassDeallocate,
+  NULL,
+  &VarObjectClassHasMethod,
+  &VarObjectClassInvoke,
+  &VarObjectClassInvokeDefault,
+  &VarObjectClassHasProperty,
+  &VarObjectClassGetProperty,
+  &VarObjectClassSetProperty,
+  NULL,
+  &VarObjectClassEnumerate,
+};
+
+// PPB_Class interface ---------------------------------------------------------
+
+PP_Resource Create(PP_Module module, PP_ClassDestructor destruct,
+                   PP_ClassFunction invoke, PP_ClassProperty* properties) {
+  PluginModule* plugin_module = ResourceTracker::Get()->GetModule(module);
+  if (!properties || !plugin_module)
+    return 0;
+  scoped_refptr<VarObjectClass> cls = new VarObjectClass(plugin_module,
+                                                         destruct,
+                                                         invoke,
+                                                         properties);
+  if (!cls)
+    return 0;
+  return cls->GetReference();
+}
+
+PP_Var Instantiate(PP_Resource class_object, void* native_data,
+                   PP_Var* exception) {
+  scoped_refptr<VarObjectClass> object_class =
+      Resource::GetAs<VarObjectClass>(class_object);
+  if (!object_class)
+    return PP_MakeUndefined();
+  NPObject* obj = WebBindings::createObject(NULL, &objectclassvar_class);
+  VarObjectClass::InstanceData* instance_data =
+      static_cast<VarObjectClass::InstanceData*>(obj);
+  instance_data->object_class = object_class;
+  instance_data->native_data = native_data;
+  return ObjectVar::NPObjectToPPVar(object_class->module(), obj);
+}
+
+}  // namespace
+
+// VarObjectClass --------------------------------------------------------------
+
+VarObjectClass::VarObjectClass(PluginModule* module,
+                               PP_ClassDestructor destruct,
+                               PP_ClassFunction invoke,
+                               PP_ClassProperty* properties)
+    : Resource(module),
+      instance_native_destructor_(destruct),
+      instance_invoke_(invoke) {
+  PP_ClassProperty* prop = properties;
+  while (prop->name) {
+    properties_.insert(std::make_pair(std::string(prop->name),
+                                      Property(*prop)));
+    ++prop;
+  }
+}
+
+// static
+const PPB_Class* VarObjectClass::GetInterface() {
+  static PPB_Class interface = {
+    &Create,
+    &Instantiate
+  };
+  return &interface;
+}
+
+// virtual
+VarObjectClass::~VarObjectClass() { }
 
 }  // namespace pepper
