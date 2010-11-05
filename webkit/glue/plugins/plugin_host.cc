@@ -34,7 +34,6 @@ using WebKit::WebBindings;
 // The caller must take a reference if needed.
 static NPAPI::PluginInstance* FindInstance(NPP id) {
   if (id == NULL) {
-    NOTREACHED();
     return NULL;
   }
   return reinterpret_cast<NPAPI::PluginInstance*>(id->ndata);
@@ -338,7 +337,6 @@ static NPError GetURLNotify(NPP id,
 
   scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
   if (!plugin.get()) {
-    NOTREACHED();
     return NPERR_GENERIC_ERROR;
   }
 
@@ -611,7 +609,6 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
   // plug-in can call NPN_ForceRedraw after calling this method.
 
   scoped_refptr<NPAPI::PluginInstance> plugin(FindInstance(id));
-  DCHECK(plugin.get() != NULL);
   if (plugin.get() && plugin->webplugin()) {
     if (invalidRect) {
 #if defined(OS_WIN)
