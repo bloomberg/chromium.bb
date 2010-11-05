@@ -31,8 +31,6 @@ static const char kWeakDHKeyLearnMoreUrl[] =
     "http://sites.google.com/a/chromium.org/dev/err_ssl_weak_server_ephemeral_dh_key";
 static const char kESETLearnMoreUrl[] =
     "http://sites.google.com/a/chromium.org/dev/err_eset_anti_virus_ssl_interception";
-static const char kNetNannyLearnMoreUrl[] =
-    "http://sites.google.com/a/chromium.org/dev/err_netnanny_ssl_interception";
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE     = 0,
@@ -146,13 +144,6 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_ESET_ANTI_VIRUS_SSL_INTERCEPTION,
    IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION,
-   IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_LEARNMORE,
-  },
-  {net::ERR_NETNANNY_SSL_INTERCEPTION,
-   IDS_ERRORPAGES_TITLE_LOAD_FAILED,
-   IDS_ERRORPAGES_HEADING_NETNANNY_SSL_INTERCEPTION,
-   IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
    SUGGEST_LEARNMORE,
   },
@@ -443,9 +434,6 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
         break;
       case net::ERR_ESET_ANTI_VIRUS_SSL_INTERCEPTION:
         learn_more_url = GURL(kESETLearnMoreUrl);
-        break;
-      case net::ERR_NETNANNY_SSL_INTERCEPTION:
-        learn_more_url = GURL(kNetNannyLearnMoreUrl);
         break;
       default:
         break;
