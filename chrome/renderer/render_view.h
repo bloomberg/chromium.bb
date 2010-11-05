@@ -29,6 +29,7 @@
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/external_popup_menu.h"
+#include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
@@ -994,8 +995,6 @@ class RenderView : public RenderWidget,
   // image doesn't have a frame at the specified size, the first is returned.
   bool DownloadImage(int id, const GURL& image_url, int image_size);
 
-  void DumpLoadHistograms() const;
-
   // Initializes the document_tag_ member if necessary.
   void EnsureDocumentTag();
 
@@ -1044,10 +1043,6 @@ class RenderView : public RenderWidget,
                                const WebKit::WebURLError& error,
                                const std::string& html,
                                bool replace);
-
-  // Logs the navigation state to the console.
-  void LogNavigationState(const NavigationState* state,
-                          const WebKit::WebDataSource* ds) const;
 
   bool MaybeLoadAlternateErrorPage(WebKit::WebFrame* frame,
                                    const WebKit::WebURLError& error,
@@ -1208,11 +1203,6 @@ class RenderView : public RenderWidget,
 
   int document_tag_;
 
-  // Site isolation metrics flags. These are per-page-load counts, reset to 0
-  // in OnClosePage.
-  int cross_origin_access_count_;
-  int same_origin_access_count_;
-
   // UI state ------------------------------------------------------------------
 
   // The state of our target_url transmissions. When we receive a request to
@@ -1354,6 +1344,9 @@ class RenderView : public RenderWidget,
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   scoped_ptr<DeviceOrientationDispatcher> device_orientation_dispatcher_;
+
+  // Responsible for sending page load related histograms.
+  PageLoadHistograms page_load_histograms_;
 
   // Misc ----------------------------------------------------------------------
 

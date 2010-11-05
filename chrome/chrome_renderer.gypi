@@ -133,6 +133,8 @@
         'renderer/page_click_listener.h',
         'renderer/page_click_tracker.cc',
         'renderer/page_click_tracker.h',
+        'renderer/page_load_histograms.cc',
+        'renderer/page_load_histograms.h',
         'renderer/password_autocomplete_manager.cc',
         'renderer/password_autocomplete_manager.h',
         'renderer/pepper_devices.cc',
