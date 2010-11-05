@@ -13,6 +13,9 @@ if not ARGUMENTS.get('bitcode'):
 if env['TARGET_ARCHITECTURE'] == 'arm':
   Return()
 
+# NOTE: disabled until next DEPS update
+Return()
+
 TESTS = ['small_structs_by_value.c',
          'data_type.c',
          'vaarg.c',
