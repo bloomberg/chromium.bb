@@ -178,6 +178,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("repaintSweepHorizontally", &LayoutTestController::repaintSweepHorizontally);
   BindMethod("clearBackForwardList", &LayoutTestController::clearBackForwardList);
   BindMethod("keepWebHistory", &LayoutTestController::keepWebHistory);
+  BindMethod("layerTreeAsText", &LayoutTestController::layerTreeAsText);
   BindMethod("storeWebScriptObject", &LayoutTestController::storeWebScriptObject);
   BindMethod("accessStoredWebScriptObject", &LayoutTestController::accessStoredWebScriptObject);
   BindMethod("objCClassNameOf", &LayoutTestController::objCClassNameOf);
@@ -1045,6 +1046,12 @@ void LayoutTestController::clearBackForwardList(
 void LayoutTestController::keepWebHistory(
     const CppArgumentList& args,  CppVariant* result) {
   result->SetNull();
+}
+
+void LayoutTestController::layerTreeAsText(
+    const CppArgumentList& args,  CppVariant* result) {
+  WebString rv = shell_->webView()->mainFrame()->layerTreeAsText();
+  result->Set(rv.utf8());
 }
 
 void LayoutTestController::storeWebScriptObject(

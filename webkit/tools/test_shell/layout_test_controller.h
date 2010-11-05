@@ -218,6 +218,7 @@ class LayoutTestController : public CppBoundClass {
   void repaintSweepHorizontally(const CppArgumentList& args, CppVariant* result);
   void clearBackForwardList(const CppArgumentList& args, CppVariant* result);
   void keepWebHistory(const CppArgumentList& args, CppVariant* result);
+  void layerTreeAsText(const CppArgumentList& args, CppVariant* result);
   void storeWebScriptObject(const CppArgumentList& args, CppVariant* result);
   void accessStoredWebScriptObject(const CppArgumentList& args, CppVariant* result);
   void objCClassNameOf(const CppArgumentList& args, CppVariant* result);
