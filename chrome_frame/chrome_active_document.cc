@@ -958,13 +958,14 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   if (!browser_service || !travel_log)
     return true;
 
-  EnableMenuItem(menu, IDS_CONTENT_CONTEXT_BACK, MF_BYCOMMAND |
-      (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_BACK, NULL)) ?
+  EnableMenuItem(menu, IDC_BACK, MF_BYCOMMAND |
+      (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_BACK,
+                                            NULL)) ?
       MF_ENABLED : MF_DISABLED));
-  EnableMenuItem(menu, IDS_CONTENT_CONTEXT_FORWARD, MF_BYCOMMAND |
-      (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_FORE, NULL)) ?
+  EnableMenuItem(menu, IDC_FORWARD, MF_BYCOMMAND |
+      (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_FORE,
+                                            NULL)) ?
       MF_ENABLED : MF_DISABLED));
-
   // Call base class (adds 'About' item)
   return BaseActiveX::PreProcessContextMenu(menu);
 }

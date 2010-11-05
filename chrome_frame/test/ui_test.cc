@@ -647,4 +647,74 @@ TEST_F(ContextMenuTest, IEBackForward) {
   LaunchIEAndNavigate(page1);
 }
 
+TEST_F(ContextMenuTest, CFBackForward) {
+  std::wstring page1 = GetLinkPageUrl();
+  std::wstring page2 = GetSimplePageUrl();
+  std::wstring page3 = GetTestUrl(L"anchor.html");
+
+  server_mock_.ExpectAndServeRequestWithCardinality(
+      CFInvocation::MetaTag(), page1, testing::Exactly(2));
+
+  server_mock_.ExpectAndServeRequestWithCardinality(
+      CFInvocation::None(), page2, testing::Exactly(3));
+
+  server_mock_.ExpectAndServeRequestWithCardinality(
+      CFInvocation::MetaTag(), page3, testing::Exactly(2));
+
+  InSequence expect_in_sequence_for_scope;
+
+  // Navigate to second page.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          VerifyPageLoad(&ie_mock_, IN_CF, page1),
+          Navigate(&ie_mock_, page2)));
+
+  // Navigate to third page.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          VerifyPageLoad(&ie_mock_, IN_IE, page2),
+          Navigate(&ie_mock_, page3)));
+
+  // Go back.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          VerifyPageLoad(&ie_mock_, IN_CF, page3),
+          OpenContextMenuAsync()));
+
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Back")));
+
+  // Go back
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          VerifyPageLoad(&ie_mock_, IN_IE, page2),
+          OpenContextMenuAsync()));
+
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Back")));
+
+  // Go forward.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          VerifyPageLoad(&ie_mock_, IN_CF, page1),
+          OpenContextMenuAsync()));
+
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Forward")));
+
+  // Go forward.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(testing::DoAll(
+          VerifyPageLoad(&ie_mock_, IN_IE, page2),
+          OpenContextMenuAsync()));
+
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher(L"Forward")));
+
+  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(page3)))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(page1);
+}
+
 }  // namespace chrome_frame_test

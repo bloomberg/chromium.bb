@@ -284,8 +284,15 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
 // MockWebServer methods
 void MockWebServer::ExpectAndServeRequest(CFInvocation invocation,
                                           const std::wstring& url) {
+  ExpectAndServeRequestWithCardinality(invocation, url, testing::Exactly(1));
+}
+
+void MockWebServer::ExpectAndServeRequestWithCardinality(
+    CFInvocation invocation, const std::wstring& url,
+    testing::Cardinality cardinality) {
   EXPECT_CALL(*this, Get(_, chrome_frame_test::UrlPathEq(url), _))
-      .WillOnce(SendResponse(this, invocation));
+      .Times(cardinality)
+      .WillRepeatedly(SendResponse(this, invocation));
 }
 
 void MockWebServer::ExpectAndServeRequestAllowCache(CFInvocation invocation,
