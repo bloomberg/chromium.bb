@@ -114,6 +114,7 @@
         'test/exception_barrier_unittest.cc',
         'test/html_util_unittests.cc',
         'test/http_negotiate_unittest.cc',
+        'test/module_utils_test.cc',
         'test/policy_settings_unittest.cc',
         'test/simulate_input.h',
         'test/simulate_input.cc',

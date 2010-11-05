@@ -212,26 +212,25 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                         logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
 
-    if (!DllRedirector::RegisterAsFirstCFModule()) {
-      // We are not the first ones in, get the module who registered first.
-      HMODULE original_module = DllRedirector::GetFirstCFModule();
-      DCHECK(original_module != NULL)
-          << "Could not get first CF module handle.";
-      HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
-      if (original_module != this_module) {
-        // Someone else was here first, try and get a pointer to their
-        // DllGetClassObject export:
-        g_dll_get_class_object_redir_ptr =
-            DllRedirector::GetDllGetClassObjectPtr(original_module);
-        DCHECK(g_dll_get_class_object_redir_ptr != NULL)
-            << "Found CF module with no DllGetClassObject export.";
-      }
+    DllRedirector* dll_redirector = Singleton<DllRedirector>::get();
+    DCHECK(dll_redirector);
+
+    if (!dll_redirector->RegisterAsFirstCFModule()) {
+      // Someone else was here first, try and get a pointer to their
+      // DllGetClassObject export:
+      g_dll_get_class_object_redir_ptr =
+          dll_redirector->GetDllGetClassObjectPtr();
+      DCHECK(g_dll_get_class_object_redir_ptr != NULL)
+          << "Found CF module with no DllGetClassObject export.";
     }
 
     // Enable ETW logging.
     logging::LogEventProvider::Initialize(kChromeFrameProvider);
   } else if (reason == DLL_PROCESS_DETACH) {
-    DllRedirector::UnregisterAsFirstCFModule();
+    DllRedirector* dll_redirector = Singleton<DllRedirector>::get();
+    DCHECK(dll_redirector);
+
+    dll_redirector->UnregisterAsFirstCFModule();
     g_patch_helper.UnpatchIfNeeded();
     delete g_exit_manager;
     g_exit_manager = NULL;
