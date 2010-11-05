@@ -49,13 +49,11 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_graphics_2d.h"
-#include "webkit/glue/plugins/pepper_graphics_3d.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
 #include "webkit/glue/plugins/pepper_fullscreen_container.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
-#include "webkit/glue/plugins/pepper_resource.h"
 #include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
@@ -162,11 +160,11 @@ PP_Var GetOwnerElementObject(PP_Instance instance_id) {
   return instance->GetOwnerElementObject();
 }
 
-bool BindGraphics(PP_Instance instance_id, PP_Resource graphics_id) {
+bool BindGraphics(PP_Instance instance_id, PP_Resource device_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
-  return instance->BindGraphics(graphics_id);
+  return instance->BindGraphics(device_id);
 }
 
 bool IsFullFrame(PP_Instance instance_id) {
@@ -340,8 +338,8 @@ const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
 void PluginInstance::Paint(WebCanvas* canvas,
                            const gfx::Rect& plugin_rect,
                            const gfx::Rect& paint_rect) {
-  if (bound_graphics_2d())
-    bound_graphics_2d()->Paint(canvas, plugin_rect, paint_rect);
+  if (bound_graphics_2d_)
+    bound_graphics_2d_->Paint(canvas, plugin_rect, paint_rect);
 }
 
 void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
@@ -374,17 +372,6 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
   }
 }
 
-unsigned PluginInstance::GetBackingTextureId() {
-  if (!bound_graphics_3d())
-    return 0;
-
-  return bound_graphics_3d()->GetBackingTextureId();
-}
-
-void PluginInstance::CommitBackingTexture() {
-  container_->commitBackingTexture();
-}
-
 PP_Var PluginInstance::GetWindowObject() {
   if (!container_)
     return PP_MakeUndefined();
@@ -403,44 +390,35 @@ PP_Var PluginInstance::GetOwnerElementObject() {
                                     container_->scriptableObjectForElement());
 }
 
-bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
-  if (!graphics_id) {
+bool PluginInstance::BindGraphics(PP_Resource device_id) {
+  if (!device_id) {
     // Special-case clearing the current device.
-    if (bound_graphics_.get()) {
-      if (bound_graphics_2d()) {
-        bound_graphics_2d()->BindToInstance(NULL);
-      } else if (bound_graphics_.get()) {
-        bound_graphics_3d()->SetSwapBuffersCallback(NULL);
-        bound_graphics_3d()->BindToInstance(NULL);
-      }
+    if (bound_graphics_2d_) {
+      bound_graphics_2d_->BindToInstance(NULL);
+      bound_graphics_2d_ = NULL;
       InvalidateRect(gfx::Rect());
     }
-    bound_graphics_ = NULL;
     return true;
   }
 
-  scoped_refptr<Graphics2D> graphics_2d =
-      Resource::GetAs<Graphics2D>(graphics_id);
-  scoped_refptr<Graphics3D> graphics_3d =
-      Resource::GetAs<Graphics3D>(graphics_id);
+  scoped_refptr<Graphics2D> device_2d = Resource::GetAs<Graphics2D>(device_id);
 
-  if (graphics_2d) {
-    if (!graphics_2d->BindToInstance(this))
+  if (device_2d) {
+    if (!device_2d->BindToInstance(this))
       return false;  // Can't bind to more than one instance.
-    bound_graphics_ = graphics_2d;
 
     // See http://crbug.com/49403: this can be further optimized by keeping the
     // old device around and painting from it.
-    if (bound_graphics_2d()) {
+    if (bound_graphics_2d_.get()) {
       // Start the new image with the content of the old image until the plugin
       // repaints.
       const SkBitmap* old_backing_bitmap =
-          bound_graphics_2d()->image_data()->GetMappedBitmap();
+          bound_graphics_2d_->image_data()->GetMappedBitmap();
       SkRect old_size = SkRect::MakeWH(
           SkScalar(static_cast<float>(old_backing_bitmap->width())),
           SkScalar(static_cast<float>(old_backing_bitmap->height())));
 
-      SkCanvas canvas(*graphics_2d->image_data()->GetMappedBitmap());
+      SkCanvas canvas(*device_2d->image_data()->GetMappedBitmap());
       canvas.drawBitmap(*old_backing_bitmap, 0, 0);
 
       // Fill in any extra space with white.
@@ -448,14 +426,8 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
       canvas.drawARGB(255, 255, 255, 255);
     }
 
+    bound_graphics_2d_ = device_2d;
     // BindToInstance will have invalidated the plugin if necessary.
-  } else if (graphics_3d) {
-    if (!graphics_3d->BindToInstance(this))
-      return false;
-
-    bound_graphics_ = graphics_3d;
-    bound_graphics_3d()->SetSwapBuffersCallback(
-        NewCallback(this, &PluginInstance::CommitBackingTexture));
   }
 
   return true;
@@ -560,17 +532,7 @@ PP_Var PluginInstance::GetInstanceObject() {
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
-  if (position.size() != position_.size() && bound_graphics_3d()) {
-    // TODO(apatrick): This is a hack to force the back buffer to resize.
-    // It is obviously wrong to call SwapBuffers when a partial frame has
-    // potentially been rendered. Plan is to embed resize commands in the
-    // command buffer just before ViewChanged is called.
-    bound_graphics_3d()->ResizeBackingTexture(position.size());
-    bound_graphics_3d()->SwapBuffers();
-  }
-
   position_ = position;
-
   if (clip.IsEmpty()) {
     // WebKit can give weird (x,y) positions for empty clip rects (since the
     // position technically doesn't matter). But we want to make these
@@ -608,13 +570,13 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 }
 
 void PluginInstance::ViewInitiatedPaint() {
-  if (bound_graphics_2d())
-    bound_graphics_2d()->ViewInitiatedPaint();
+  if (bound_graphics_2d_)
+    bound_graphics_2d_->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
-  if (bound_graphics_2d())
-    bound_graphics_2d()->ViewFlushedPaint();
+  if (bound_graphics_2d_)
+    bound_graphics_2d_->ViewFlushedPaint();
 }
 
 bool PluginInstance::GetBitmapForOptimizedPluginPaint(
@@ -624,13 +586,13 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* clip) {
   if (!always_on_top_)
     return false;
-  if (!bound_graphics_2d() || !bound_graphics_2d()->is_always_opaque())
+  if (!bound_graphics_2d_ || !bound_graphics_2d_->is_always_opaque())
     return false;
 
   // We specifically want to compare against the area covered by the backing
   // store when seeing if we cover the given paint bounds, since the backing
   // store could be smaller than the declared plugin area.
-  ImageData* image_data = bound_graphics_2d()->image_data();
+  ImageData* image_data = bound_graphics_2d_->image_data();
   gfx::Rect plugin_backing_store_rect(position_.origin(),
                                       gfx::Size(image_data->width(),
                                                 image_data->height()));
@@ -859,6 +821,16 @@ void PluginInstance::PrintEnd() {
   num_pages_ = 0;
   pdf_output_done_ = false;
 #endif  // defined(OS_LINUX)
+}
+
+void PluginInstance::Graphics3DContextLost() {
+  if (!plugin_graphics_3d_interface_) {
+    plugin_graphics_3d_interface_ =
+        reinterpret_cast<const PPP_Graphics3D_Dev*>(module_->GetPluginInterface(
+            PPP_GRAPHICS_3D_DEV_INTERFACE));
+  }
+  if (plugin_graphics_3d_interface_)
+    plugin_graphics_3d_interface_->Graphics3DContextLost(pp_instance());
 }
 
 bool PluginInstance::IsFullscreen() {
@@ -1131,18 +1103,5 @@ void PluginInstance::DrawSkBitmapToCanvas(
 }
 #endif  // defined(OS_MACOSX)
 
-Graphics2D* PluginInstance::bound_graphics_2d() const {
-  if (bound_graphics_.get() == NULL)
-    return NULL;
-
-  return bound_graphics_->Cast<Graphics2D>();
-}
-
-Graphics3D* PluginInstance::bound_graphics_3d() const {
-  if (bound_graphics_.get() == NULL)
-    return NULL;
-
-  return bound_graphics_->Cast<Graphics3D>();
-}
 
 }  // namespace pepper

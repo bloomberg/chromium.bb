@@ -13,7 +13,6 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/task.h"
-#include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -38,9 +37,7 @@ class Rect;
 }
 
 namespace gpu {
-namespace gles2 {
-class GLES2Implementation;
-}
+class CommandBuffer;
 }
 
 namespace skia {
@@ -90,30 +87,14 @@ class PluginDelegate {
     virtual ~PlatformContext3D() {}
 
     // Initialize the context.
-    virtual bool Init() = 0;
+    virtual bool Init(const gfx::Rect& position, const gfx::Rect& clip) = 0;
 
-    // Present the rendered frame to the compositor.
-    virtual bool SwapBuffers() = 0;
+    // This call will return the address of the command buffer object that is
+    // constructed in Initialize() and is valid until this context is destroyed.
+    virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
 
-    // Get the last EGL error.
-    virtual unsigned GetError() = 0;
-
-    // Resize the backing texture used as a back buffer by OpenGL.
-    virtual void ResizeBackingTexture(const gfx::Size& size) = 0;
-
-    // Set an optional callback that will be invoked when the side effects of
-    // a SwapBuffers call become visible to the compositor. Takes ownership
-    // of the callback.
-    virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
-
-    // If the plugin instance is backed by an OpenGL, return its ID in the
-    // compositors namespace. Otherwise return 0. Returns 0 by default.
-    virtual unsigned GetBackingTextureId() = 0;
-
-    // This call will return the address of the GLES2 implementation for this
-    // context that is constructed in Initialize() and is valid until this
-    // context is destroyed.
-    virtual gpu::gles2::GLES2Implementation* GetGLES2Implementation() = 0;
+    // Sets the function to be called on repaint.
+    virtual void SetNotifyRepaintTask(Task* task) = 0;
   };
 
   class PlatformAudio {

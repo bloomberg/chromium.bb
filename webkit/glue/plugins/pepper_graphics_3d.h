@@ -5,19 +5,19 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_GRAPHICS_3D_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_GRAPHICS_3D_H_
 
-#include "base/callback.h"
 #include "base/scoped_ptr.h"
-#include "gfx/size.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/pp_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace gpu {
-namespace gles2 {
-class GLES2Implementation;
-}
+class CommandBuffer;
 }  // namespace gpu
 
 struct PPB_Graphics3D_Dev;
@@ -48,40 +48,35 @@ class Graphics3D : public Resource {
   bool Init(PP_Instance instance_id, int32_t config,
             const int32_t* attrib_list);
 
-  // Associates this Graphics3D with the given plugin instance. You can pass
-  // NULL to clear the existing device. Returns true on success. In this case,
-  // the last rendered frame is displayed.
-  // TODO(apatrick): Figure out the best semantics here.
-  bool BindToInstance(PluginInstance* new_instance);
-
   bool MakeCurrent();
 
   bool SwapBuffers();
 
-  unsigned GetError();
-
-  void ResizeBackingTexture(const gfx::Size& size);
-
-  void SetSwapBuffersCallback(Callback0::Type* callback);
-
-  unsigned GetBackingTextureId();
-
   gpu::gles2::GLES2Implementation* impl() {
-    return gles2_implementation_;
+    return gles2_implementation_.get();
   }
 
  private:
+  void HandleRepaint(PP_Instance instance_id);
   void Destroy();
-
-  // Non-owning pointer to the plugin instance this context is currently bound
-  // to, if any. If the context is currently unbound, this will be NULL.
-  PluginInstance* bound_instance_;
 
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
   scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;
 
-  // GLES2 Implementation instance. Owned by the platform context's GGL context.
-  gpu::gles2::GLES2Implementation* gles2_implementation_;
+  // Command buffer is owned by the platform context.
+  gpu::CommandBuffer* command_buffer_;
+
+  // GLES2 Command Helper instance.
+  scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
+
+  // ID of the transfer buffer.
+  int32_t transfer_buffer_id_;
+
+  // GLES2 Implementation instance.
+  scoped_ptr<gpu::gles2::GLES2Implementation> gles2_implementation_;
+
+  // Runnable methods that must be cancelled when the 3D context is destroyed.
+  ScopedRunnableMethodFactory<Graphics3D> method_factory3d_;
 };
 
 }  // namespace pepper

@@ -178,11 +178,6 @@ void PluginInstance::DidFinishLoadWithReason(
   NPP_URLNotify(url.spec().c_str(), reason, notify_data);
 }
 
-unsigned PluginInstance::GetBackingTextureId() {
-  // By default the plugin instance is not backed by an OpenGL texture.
-  return 0;
-}
-
 // NPAPI methods
 NPError PluginInstance::NPP_New(unsigned short mode,
                                 short argc,

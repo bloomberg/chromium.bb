@@ -136,10 +136,6 @@ void WebViewPlugin::updateGeometry(
   }
 }
 
-unsigned WebViewPlugin::getBackingTextureId() {
-  return container_->plugin()->getBackingTextureId();
-}
-
 bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
                                      WebCursorInfo& cursor) {
   current_cursor_ = cursor;

@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/surface/transport_dib.h"
-#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -22,13 +21,9 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/command_buffer_proxy.h"
-#include "chrome/renderer/ggl/ggl.h"
-#include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
-#include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
-#include "gfx/size.h"
 #include "grit/locale_settings.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -85,29 +80,139 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
 
 class PlatformContext3DImpl : public pepper::PluginDelegate::PlatformContext3D {
  public:
-  explicit PlatformContext3DImpl(WebKit::WebView* web_view)
-      : web_view_(web_view),
-        context_(NULL) {
-  }
+  explicit PlatformContext3DImpl(RenderView* render_view)
+      : render_view_(render_view),
+        nested_delegate_(NULL),
+        command_buffer_(NULL),
+        renderview_to_webplugin_adapter_(render_view) {}
 
   virtual ~PlatformContext3DImpl() {
-    if (context_) {
-      ggl::DestroyContext(context_);
-      context_ = NULL;
+    if (nested_delegate_) {
+      nested_delegate_->DestroyCommandBuffer(command_buffer_);
+      nested_delegate_->PluginDestroyed();
     }
   }
 
-  virtual bool Init();
-  virtual bool SwapBuffers();
-  virtual unsigned GetError();
-  virtual void SetSwapBuffersCallback(Callback0::Type* callback);
-  void ResizeBackingTexture(const gfx::Size& size);
-  virtual unsigned GetBackingTextureId();
-  virtual gpu::gles2::GLES2Implementation* GetGLES2Implementation();
+  virtual bool Init(const gfx::Rect& position, const gfx::Rect& clip);
+
+  virtual gpu::CommandBuffer* GetCommandBuffer() {
+    return command_buffer_;
+  }
+
+  virtual void SetNotifyRepaintTask(Task* task) {
+    command_buffer_->SetNotifyRepaintTask(task);
+  }
 
  private:
-  WebKit::WebView* web_view_;
-  ggl::Context* context_;
+
+  class WebPluginAdapter : public webkit_glue::WebPlugin {
+   public:
+    explicit WebPluginAdapter(RenderView* render_view)
+        : render_view_(render_view) {}
+
+    virtual void SetWindow(gfx::PluginWindowHandle window) {
+      render_view_->CreatedPluginWindow(window);
+    }
+
+    virtual void WillDestroyWindow(gfx::PluginWindowHandle window) {
+      render_view_->WillDestroyPluginWindow(window);
+    }
+
+    virtual void SetAcceptsInputEvents(bool accepts) {
+      NOTREACHED();
+    }
+
+#if defined(OS_WIN)
+    virtual void SetWindowlessPumpEvent(HANDLE pump_messages_event) {
+      NOTREACHED();
+    }
+#endif
+
+    virtual void CancelResource(unsigned long id) {
+      NOTREACHED();
+    }
+
+    virtual void Invalidate() {
+      NOTREACHED();
+    }
+
+    virtual void InvalidateRect(const gfx::Rect& rect) {
+      NOTREACHED();
+    }
+
+    virtual NPObject* GetWindowScriptNPObject() {
+      NOTREACHED();
+      return NULL;
+    }
+
+    virtual NPObject* GetPluginElement() {
+      NOTREACHED();
+      return NULL;
+    }
+
+    virtual void SetCookie(const GURL& url,
+                           const GURL& first_party_for_cookies,
+                           const std::string& cookie) {
+      NOTREACHED();
+    }
+
+    virtual std::string GetCookies(const GURL& url,
+                                   const GURL& first_party_for_cookies) {
+      NOTREACHED();
+      return std::string();
+    }
+
+    virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
+                                     const std::string& json_arguments,
+                                     std::string* json_retval) {
+      NOTREACHED();
+    }
+
+    virtual void OnMissingPluginStatus(int status) {
+      NOTREACHED();
+    }
+
+    virtual void HandleURLRequest(const char* url,
+                                  const char* method,
+                                  const char* target,
+                                  const char* buf,
+                                  unsigned int len,
+                                  int notify_id,
+                                  bool popups_allowed) {
+      NOTREACHED();
+    }
+
+    virtual void CancelDocumentLoad() {
+      NOTREACHED();
+    }
+
+    virtual void InitiateHTTPRangeRequest(const char* url,
+                                          const char* range_info,
+                                          int range_request_id) {
+      NOTREACHED();
+    }
+
+    virtual bool IsOffTheRecord() {
+      NOTREACHED();
+      return false;
+    }
+
+    virtual void SetDeferResourceLoading(unsigned long resource_id,
+                                         bool defer) {
+      NOTREACHED();
+    }
+
+   private:
+    RenderView* render_view_;
+  };
+
+  void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
+                                           const gfx::Rect& clip_rect);
+
+  RenderView* render_view_;
+  WebPluginDelegateProxy* nested_delegate_;
+  CommandBufferProxy* command_buffer_;
+  WebPluginAdapter renderview_to_webplugin_adapter_;
 };
 
 #endif  // ENABLE_GPU
@@ -173,83 +278,76 @@ class PlatformAudioImpl
 
 #ifdef ENABLE_GPU
 
-bool PlatformContext3DImpl::Init() {
+bool PlatformContext3DImpl::Init(const gfx::Rect& position,
+                                 const gfx::Rect& clip) {
+#if defined(ENABLE_GPU)
   // Ignore initializing more than once.
-  if (context_)
+  if (nested_delegate_)
     return true;
 
-  WebGraphicsContext3DCommandBufferImpl* context =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          web_view_->graphicsContext3D());
-  if (!context)
-    return false;
+  // Create an instance of the GPU plugin that is responsible for 3D
+  // rendering.
+  nested_delegate_ = new WebPluginDelegateProxy(
+      std::string("application/vnd.google.chrome.gpu-plugin"),
+      render_view_->AsWeakPtr());
 
-  ggl::Context* parent_context = context->context();
-  if (!parent_context)
-    return false;
+  if (nested_delegate_->Initialize(GURL(), std::vector<std::string>(),
+                                   std::vector<std::string>(),
+                                   &renderview_to_webplugin_adapter_,
+                                   false)) {
+    // Ensure the window has the correct size before initializing the
+    // command buffer.
+    nested_delegate_->UpdateGeometry(position, clip);
 
-  RenderThread* render_thread = RenderThread::current();
-  if (!render_thread)
-    return false;
+    // Ask the GPU plugin to create a command buffer and return a proxy.
+    command_buffer_ = nested_delegate_->CreateCommandBuffer();
+    if (command_buffer_) {
+      // Initialize the proxy command buffer.
+      if (command_buffer_->Initialize(kDefaultCommandBufferSize)) {
+#if defined(OS_MACOSX)
+        command_buffer_->SetWindowSize(position.size());
+#endif  // OS_MACOSX
 
-  GpuChannelHost* host = render_thread->GetGpuChannel();
-  if (!host)
-    return false;
+        // Make sure the nested delegate shows up in the right place
+        // on the page.
+        SendNestedDelegateGeometryToBrowser(position, clip);
 
-  DCHECK(host->state() == GpuChannelHost::CONNECTED);
+        return true;
+      }
+    }
 
-  // TODO(apatrick): Let Pepper plugins configure their back buffer surface.
-  static const int32 attribs[] = {
-    ggl::GGL_ALPHA_SIZE, 8,
-    ggl::GGL_DEPTH_SIZE, 24,
-    ggl::GGL_STENCIL_SIZE, 8,
-    ggl::GGL_SAMPLES, 0,
-    ggl::GGL_SAMPLE_BUFFERS, 0,
-    ggl::GGL_NONE,
-  };
+    nested_delegate_->DestroyCommandBuffer(command_buffer_);
+    command_buffer_ = NULL;
+  }
 
-  // TODO(apatrick): Decide which extensions to expose to Pepper plugins.
-  // Currently they get only core GLES2.
-  context_ = ggl::CreateOffscreenContext(host,
-                                         parent_context,
-                                         gfx::Size(1, 1),
-                                         "",
-                                         attribs);
-  if (!context_)
-    return false;
-
-  return true;
+  nested_delegate_->PluginDestroyed();
+  nested_delegate_ = NULL;
+#endif  // ENABLE_GPU
+  return false;
 }
 
-bool PlatformContext3DImpl::SwapBuffers() {
-  DCHECK(context_);
-  return ggl::SwapBuffers(context_);
-}
+void PlatformContext3DImpl::SendNestedDelegateGeometryToBrowser(
+    const gfx::Rect& window_rect,
+    const gfx::Rect& clip_rect) {
+  // Inform the browser about the location of the plugin on the page.
+  // It appears that initially the plugin does not get laid out correctly --
+  // possibly due to lazy creation of the nested delegate.
+  if (!nested_delegate_ ||
+      !nested_delegate_->GetPluginWindowHandle() ||
+      !render_view_) {
+    return;
+  }
 
-unsigned PlatformContext3DImpl::GetError() {
-  DCHECK(context_);
-  return ggl::GetError(context_);
-}
-
-void PlatformContext3DImpl::ResizeBackingTexture(const gfx::Size& size) {
-  DCHECK(context_);
-  ggl::ResizeOffscreenContext(context_, size);
-}
-
-void PlatformContext3DImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
-  DCHECK(context_);
-  ggl::SetSwapBuffersCallback(context_, callback);
-}
-
-unsigned PlatformContext3DImpl::GetBackingTextureId() {
-  DCHECK(context_);
-  return ggl::GetParentTextureId(context_);
-}
-
-gpu::gles2::GLES2Implementation*
-    PlatformContext3DImpl::GetGLES2Implementation() {
-  DCHECK(context_);
-  return ggl::GetImplementation(context_);
+  webkit_glue::WebPluginGeometry geom;
+  geom.window = nested_delegate_->GetPluginWindowHandle();
+  geom.window_rect = window_rect;
+  geom.clip_rect = clip_rect;
+  // Rects_valid must be true for this to work in the Gtk port;
+  // hopefully not having the cutout rects will not cause incorrect
+  // clipping.
+  geom.rects_valid = true;
+  geom.visible = true;
+  render_view_->DidMovePlugin(geom);
 }
 
 #endif  // ENABLE_GPU
@@ -506,7 +604,7 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
 pepper::PluginDelegate::PlatformContext3D*
     PepperPluginDelegateImpl::CreateContext3D() {
 #ifdef ENABLE_GPU
-  return new PlatformContext3DImpl(render_view_->webview());
+  return new PlatformContext3DImpl(render_view_);
 #else
   return NULL;
 #endif

@@ -35,31 +35,32 @@ class PluginInstance : public pp::Instance {
     }
   }
 
-  virtual void DidChangeView(const pp::Rect& position,
-                             const pp::Rect& /*clip*/) {
-    if (size_ == position.size())
-      return;
-
-    size_ = position.size();
-    demo_->InitWindowSize(size_.width(), size_.height());
-
-    if (graphics_.is_null()) {
+  virtual void ViewChanged(const pp::Rect& position, const pp::Rect& /*clip*/) {
+    if (size_.IsEmpty() && !position.IsEmpty()) {
+      size_ = position.size();
+      demo_->InitWindowSize(size_.width(), size_.height());
       graphics_ = pp::Graphics3D_Dev(*this, 0, NULL, NULL);
-      if (graphics_.is_null())
-        return;
+      if (!graphics_.is_null()) {
+        graphics_.MakeCurrent();
+        demo_->InitGL();
+        pp::Graphics3D_Dev::ResetCurrent();
 
-      if (!pp::Instance::BindGraphics(graphics_))
-        return;
-
-      graphics_.MakeCurrent();
-      demo_->InitGL();
-      pp::Graphics3D_Dev::ResetCurrent();
+        // TODO(neb): Remove this once the startup order bug (51842) is fixed.
+        if (true)
+  //      if (demo_->IsAnimated())
+          Animate(0);
+        else
+          Paint();
+      }
     }
+  }
 
-    if (demo_->IsAnimated())
-      Animate(0);
-    else
-      Paint();
+  virtual void Graphics3DContextLost() {
+    // TODO(neb): Replace this with the correct code once 53889 is fixed.
+    Paint();
+//    pp::Rect fake_position(size_);
+//    size_ = pp::Size();
+//    ViewChanged(fake_position, fake_position);
   }
 
   void Paint() {

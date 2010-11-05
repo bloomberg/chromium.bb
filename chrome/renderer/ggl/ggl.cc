@@ -6,6 +6,7 @@
 
 #include "base/ref_counted.h"
 #include "base/singleton.h"
+#include "base/thread_local.h"
 #include "base/weak_ptr.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/ggl/ggl.h"
@@ -33,6 +34,8 @@ const int32 kCommandBufferSize = 1024 * 1024;
 // TODO(kbr): make the transfer buffer size configurable via context
 // creation attributes.
 const int32 kTransferBufferSize = 1024 * 1024;
+
+base::ThreadLocalPointer<Context> g_current_context;
 
 // Singleton used to initialize and terminate the gles2 library.
 class GLES2Initializer {
@@ -74,7 +77,7 @@ class Context : public base::SupportsWeakPtr<Context> {
 
   // Provides a callback that will be invoked when SwapBuffers has completed
   // service side.
-  void SetSwapBuffersCallback(Callback0::Type* callback) {
+  void SetSwapBuffersCallback(Callback1<Context*>::Type* callback) {
     swap_buffers_callback_.reset(callback);
   }
 
@@ -114,22 +117,17 @@ class Context : public base::SupportsWeakPtr<Context> {
   // TODO(gman): Remove this.
   void DisableShaderTranslation();
 
-  gpu::gles2::GLES2Implementation* gles2_implementation() const {
-    return gles2_implementation_;
-  }
  private:
   void OnSwapBuffers();
 
   scoped_refptr<GpuChannelHost> channel_;
   base::WeakPtr<Context> parent_;
-  scoped_ptr<Callback0::Type> swap_buffers_callback_;
+  scoped_ptr<Callback1<Context*>::Type> swap_buffers_callback_;
   uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   int32 transfer_buffer_id_;
   gpu::gles2::GLES2Implementation* gles2_implementation_;
-  gfx::Size size_;
-
   Error last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
@@ -264,25 +262,19 @@ bool Context::Initialize(gfx::NativeViewId view,
       transfer_buffer_id_,
       false);
 
-  size_ = size;
-
   return true;
 }
 
 #if defined(OS_MACOSX)
 void Context::ResizeOnscreen(const gfx::Size& size) {
   DCHECK(size.width() > 0 && size.height() > 0);
-  size_ = size;
   command_buffer_->SetWindowSize(size);
 }
 #endif
 
 void Context::ResizeOffscreen(const gfx::Size& size) {
   DCHECK(size.width() > 0 && size.height() > 0);
-  if (size_ != size) {
-    command_buffer_->ResizeOffscreenFrameBuffer(size);
-    size_ = size;
-  }
+  command_buffer_->ResizeOffscreenFrameBuffer(size);
 }
 
 uint32 Context::CreateParentTexture(const gfx::Size& size) const {
@@ -351,6 +343,7 @@ void Context::Destroy() {
 }
 
 bool Context::MakeCurrent(Context* context) {
+  g_current_context.Set(context);
   if (context) {
     gles2::SetGLContext(context->gles2_implementation_);
 
@@ -412,7 +405,7 @@ void Context::DisableShaderTranslation() {
 
 void Context::OnSwapBuffers() {
   if (swap_buffers_callback_.get())
-    swap_buffers_callback_->Run();
+    swap_buffers_callback_->Run(this);
 }
 
 #endif  // ENABLE_GPU
@@ -487,7 +480,7 @@ void DeleteParentTexture(Context* context, uint32 texture) {
 }
 
 void SetSwapBuffersCallback(Context* context,
-                            Callback0::Type* callback) {
+                            Callback1<Context*>::Type* callback) {
 #if defined(ENABLE_GPU)
   context->SetSwapBuffersCallback(callback);
 #endif
@@ -498,6 +491,14 @@ bool MakeCurrent(Context* context) {
   return Context::MakeCurrent(context);
 #else
   return false;
+#endif
+}
+
+Context* GetCurrentContext() {
+#if defined(ENABLE_GPU)
+  return g_current_context.Get();
+#else
+  return NULL;
 #endif
 }
 
@@ -517,6 +518,9 @@ bool DestroyContext(Context* context) {
   if (!context)
     return false;
 
+  if (context == GetCurrentContext())
+    MakeCurrent(NULL);
+
   delete context;
   return true;
 #else
@@ -533,8 +537,12 @@ media::VideoDecodeContext* CreateVideoDecodeContext(
   return context->CreateVideoDecodeContext(message_loop, hardware_decoder);
 }
 
-Error GetError(Context* context) {
+Error GetError() {
 #if defined(ENABLE_GPU)
+  Context* context = GetCurrentContext();
+  if (!context)
+    return BAD_CONTEXT;
+
   return context->GetError();
 #else
   return NOT_INITIALIZED;
@@ -549,12 +557,4 @@ void DisableShaderTranslation(Context* context) {
   }
 #endif
 }
-
-gpu::gles2::GLES2Implementation* GetImplementation(Context* context) {
-  if (!context)
-    return NULL;
-
-  return context->gles2_implementation();
-}
-
 }  // namespace ggl

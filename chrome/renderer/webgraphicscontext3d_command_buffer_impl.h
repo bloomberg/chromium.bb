@@ -368,8 +368,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void copyTextureToCompositor(unsigned texture,
                                        unsigned parent_texture);
 
-  ggl::Context* context() { return context_; }
-
  private:
   // The GGL context we use for OpenGL rendering.
   ggl::Context* context_;

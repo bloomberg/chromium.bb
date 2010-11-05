@@ -327,11 +327,6 @@ void WebPluginImpl::updateGeometry(
   first_geometry_update_ = false;
 }
 
-unsigned WebPluginImpl::getBackingTextureId() {
-  // Regular plugins do not have a backing texture.
-  return 0;
-}
-
 void WebPluginImpl::updateFocus(bool focused) {
   if (accepts_input_events_)
     delegate_->SetFocus(focused);

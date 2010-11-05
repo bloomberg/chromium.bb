@@ -27,7 +27,6 @@ struct PP_InputEvent;
 namespace pp {
 
 class Graphics2D;
-class Graphics3D_Dev;
 class ImageData;
 class Point;
 class Rect;
@@ -89,9 +88,6 @@ class Instance {
 
   /** See PPB_Instance.BindGraphics. */
   bool BindGraphics(const Graphics2D& graphics);
-
-  /** See PPB_Instance.BindGraphics. */
-  bool BindGraphics(const Graphics3D_Dev& graphics);
 
   /** See PPB_Instance.IsFullFrame. */
   bool IsFullFrame();

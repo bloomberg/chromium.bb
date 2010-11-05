@@ -71,8 +71,6 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
       const WebKit::WebRect& frame_rect, const WebKit::WebRect& clip_rect,
       const WebKit::WebVector<WebKit::WebRect>& cut_out_rects, bool is_visible);
 
-  virtual unsigned getBackingTextureId();
-
   virtual void updateFocus(bool) { }
   virtual void updateVisibility(bool) { }
 

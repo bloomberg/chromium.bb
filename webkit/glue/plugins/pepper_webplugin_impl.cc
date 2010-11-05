@@ -109,10 +109,6 @@ void WebPluginImpl::updateGeometry(
     instance_->ViewChanged(plugin_rect_, clip_rect);
 }
 
-unsigned WebPluginImpl::getBackingTextureId() {
-  return instance_->GetBackingTextureId();
-}
-
 void WebPluginImpl::updateFocus(bool focused) {
   instance_->SetWebKitFocus(focused);
 }

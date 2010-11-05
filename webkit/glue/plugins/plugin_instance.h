@@ -161,10 +161,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   bool use_mozilla_user_agent() { return use_mozilla_user_agent_; }
   void set_use_mozilla_user_agent() { use_mozilla_user_agent_ = true; }
 
-  // If the plugin instance is backed by a texture, return its ID in the
-  // compositor's namespace. Otherwise return 0. Returns 0 by default.
-  virtual unsigned GetBackingTextureId();
-
   // Helper that implements NPN_PluginThreadAsyncCall semantics
   void PluginThreadAsyncCall(void (*func)(void *),
                              void *userData);
