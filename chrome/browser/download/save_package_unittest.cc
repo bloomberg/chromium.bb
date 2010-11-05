@@ -82,7 +82,7 @@ class SavePackageTest : public RenderViewHostTestHarness {
   }
 
   FilePath EnsureMimeExtension(const FilePath& name,
-                               const FilePath::StringType& content_mime_type) {
+                               const std::string& content_mime_type) {
     return SavePackage::EnsureMimeExtension(name, content_mime_type);
   }
 
@@ -242,35 +242,35 @@ TEST_F(SavePackageTest, TestEnsureMimeExtension) {
   static const struct {
     const FilePath::CharType* page_title;
     const FilePath::CharType* expected_name;
-    const FilePath::CharType* contents_mime_type;
+    const char* contents_mime_type;
   } kExtensionTests[] = {
-    { FPL("filename.html"), FPL("filename.html"), FPL("text/html") },
-    { FPL("filename.htm"), FPL("filename.htm"), FPL("text/html") },
-    { FPL("filename.xhtml"), FPL("filename.xhtml"), FPL("text/html") },
+    { FPL("filename.html"), FPL("filename.html"), "text/html" },
+    { FPL("filename.htm"), FPL("filename.htm"), "text/html" },
+    { FPL("filename.xhtml"), FPL("filename.xhtml"), "text/html" },
 #if defined(OS_WIN)
-    { FPL("filename"), FPL("filename.htm"), FPL("text/html") },
+    { FPL("filename"), FPL("filename.htm"), "text/html" },
 #else  // defined(OS_WIN)
-    { FPL("filename"), FPL("filename.html"), FPL("text/html") },
+    { FPL("filename"), FPL("filename.html"), "text/html" },
 #endif  // defined(OS_WIN)
-    { FPL("filename.html"), FPL("filename.html"), FPL("text/xml") },
-    { FPL("filename.xml"), FPL("filename.xml"), FPL("text/xml") },
-    { FPL("filename"), FPL("filename.xml"), FPL("text/xml") },
+    { FPL("filename.html"), FPL("filename.html"), "text/xml" },
+    { FPL("filename.xml"), FPL("filename.xml"), "text/xml" },
+    { FPL("filename"), FPL("filename.xml"), "text/xml" },
     { FPL("filename.xhtml"), FPL("filename.xhtml"),
-      FPL("application/xhtml+xml") },
+      "application/xhtml+xml" },
     { FPL("filename.html"), FPL("filename.html"),
-      FPL("application/xhtml+xml") },
-    { FPL("filename"), FPL("filename.xhtml"), FPL("application/xhtml+xml") },
-    { FPL("filename.txt"), FPL("filename.txt"), FPL("text/plain") },
-    { FPL("filename"), FPL("filename.txt"), FPL("text/plain") },
-    { FPL("filename.css"), FPL("filename.css"), FPL("text/css") },
-    { FPL("filename"), FPL("filename.css"), FPL("text/css") },
-    { FPL("filename.abc"), FPL("filename.abc"), FPL("unknown/unknown") },
-    { FPL("filename"), FPL("filename"), FPL("unknown/unknown") },
+      "application/xhtml+xml" },
+    { FPL("filename"), FPL("filename.xhtml"), "application/xhtml+xml" },
+    { FPL("filename.txt"), FPL("filename.txt"), "text/plain" },
+    { FPL("filename"), FPL("filename.txt"), "text/plain" },
+    { FPL("filename.css"), FPL("filename.css"), "text/css" },
+    { FPL("filename"), FPL("filename.css"), "text/css" },
+    { FPL("filename.abc"), FPL("filename.abc"), "unknown/unknown" },
+    { FPL("filename"), FPL("filename"), "unknown/unknown" },
   };
   for (uint32 i = 0; i < ARRAYSIZE_UNSAFE(kExtensionTests); ++i) {
     FilePath original = FilePath(kExtensionTests[i].page_title);
     FilePath expected = FilePath(kExtensionTests[i].expected_name);
-    FilePath::StringType mime_type(kExtensionTests[i].contents_mime_type);
+    std::string mime_type(kExtensionTests[i].contents_mime_type);
     FilePath actual = EnsureMimeExtension(original, mime_type);
     EXPECT_EQ(expected.value(), actual.value()) << "Failed for page title: " <<
         kExtensionTests[i].page_title << " MIME:" << mime_type;
@@ -338,7 +338,7 @@ TEST_F(SavePackageTest, TestSuggestedSaveNames) {
 
     FilePath save_name = save_package->GetSuggestedNameForSaveAs(
         kSuggestedSaveNames[i].ensure_html_extension,
-        FilePath::StringType());
+        std::string());
     EXPECT_EQ(kSuggestedSaveNames[i].expected_name, save_name.value()) <<
         "Test case " << i;
   }
