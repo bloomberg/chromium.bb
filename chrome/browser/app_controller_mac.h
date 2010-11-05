@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+#include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 
@@ -23,7 +24,8 @@ class Profile;
 // The application controller object, created by loading the MainMenu nib.
 // This handles things like responding to menus when there are no windows
 // open, etc and acts as the NSApplication delegate.
-@interface AppController : NSObject<NSUserInterfaceValidations> {
+@interface AppController : NSObject<NSUserInterfaceValidations,
+                                    NSApplicationDelegate> {
  @private
   scoped_ptr<CommandUpdater> menuState_;
   // Management of the bookmark menu which spans across all windows
