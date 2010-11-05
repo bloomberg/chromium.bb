@@ -458,7 +458,14 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
     }
     transaction_complete_signalled_ = true;
     state_ = PLAN_ACTIVATION_START;
-    EvaluateCellularNetwork(GetCellularNetwork());
+    chromeos::CellularNetwork* network = GetCellularNetwork();
+    if (network &&
+        network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATED) {
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+          DisconnectFromWirelessNetwork(network);
+    } else {
+      EvaluateCellularNetwork(network);
+    }
   }
 }
 
@@ -694,7 +701,7 @@ void MobileSetupHandler::ReEnableOtherConnections() {
   }
   if (reenable_wifi_) {
     reenable_wifi_ = false;
-    lib->EnableCellularNetworkDevice(true);
+    lib->EnableWifiNetworkDevice(true);
   }
 
   PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
@@ -734,7 +741,7 @@ void MobileSetupHandler::SetupActivationProcess(
   }
   if (!reenable_wifi_ && lib->wifi_enabled()) {
     reenable_wifi_ = true;
-    lib->EnableCellularNetworkDevice(false);
+    lib->EnableWifiNetworkDevice(false);
   }
 }
 

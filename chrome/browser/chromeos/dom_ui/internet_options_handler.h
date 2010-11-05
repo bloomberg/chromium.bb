@@ -78,7 +78,7 @@ class InternetOptionsHandler
   ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,
       const std::string& name, bool connecting, bool connected,
       chromeos::ConnectionType connection_type, bool remembered,
-      chromeos::ActivationState activation_state);
+      chromeos::ActivationState activation_state, bool restricted_ip);
 
   // Creates the map of wired networks
   ListValue* GetWiredList();

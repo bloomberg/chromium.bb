@@ -104,7 +104,8 @@ cr.define('options.internet', function() {
       connecting: network[5],
       iconURL: network[6],
       remembered: network[7],
-      activation_state: network[8]
+      activation_state: network[8],
+      restricted: network[9]
     };
     NetworkItem.decorate(el);
     return el;
@@ -183,12 +184,18 @@ cr.define('options.internet', function() {
       var buttonsDiv = this.ownerDocument.createElement('div');
       var self = this;
       if (!this.data.remembered) {
+        var no_plan =
+            this.data.networkType == NetworkItem.TYPE_CELLULAR &&
+            this.data.activation_state ==
+                NetworkItem.ACTIVATION_STATE_ACTIVATED &&
+            this.data.restricted &&
+            this.data.connected;
         var show_activate =
-          this.data.networkType == NetworkItem.TYPE_CELLULAR &&
-          this.data.activation_state !=
-              NetworkItem.ACTIVATION_STATE_ACTIVATED &&
-          this.data.activation_state !=
-              NetworkItem.ACTIVATION_STATE_ACTIVATING;
+          (this.data.networkType == NetworkItem.TYPE_CELLULAR &&
+           this.data.activation_state !=
+               NetworkItem.ACTIVATION_STATE_ACTIVATED &&
+           this.data.activation_state !=
+               NetworkItem.ACTIVATION_STATE_ACTIVATING);
 
         // Disconnect button if not ethernet and if cellular it should be
         // activated.
@@ -204,9 +211,10 @@ cr.define('options.internet', function() {
                }));
         }
         // Show [Activate] button for non-activated Cellular network.
-        if (show_activate) {
+        if (show_activate || no_plan) {
+          var button_name = no_plan ? 'buyplan_button' : 'activate_button';
           buttonsDiv.appendChild(
-              this.createButton_('activate_button', 'activate',
+              this.createButton_(button_name, 'activate',
                                  function(e) {
                 chrome.send('buttonClickCallback',
                             [String(self.data.networkType),

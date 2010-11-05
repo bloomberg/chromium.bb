@@ -57,11 +57,13 @@ cr.define('mobile', function() {
       $(frame_name).addEventListener('load', function(e) {
         // Flip the visibility of the payment page only after the frame is
         // fully loaded.
-        $('statusHeader').textContent = '';
-        $('paymentForm').classList.remove('hidden');
-        $('finalMessage').classList.add('hidden');
-        $('errorMessage').classList.add('hidden');
-        $('systemStatus').classList.add('hidden');
+        if (self.state_ == MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT) {
+          $('statusHeader').textContent = '';
+          $('finalMessage').classList.add('hidden');
+          $('errorMessage').classList.add('hidden');
+          $('systemStatus').classList.add('hidden');
+          $('paymentForm').classList.remove('hidden');
+        }
       });
 
       this.changeState_(MobileSetup.PLAN_ACTIVATION_LOADING);
@@ -121,14 +123,18 @@ cr.define('mobile', function() {
           $('systemStatus').classList.remove('hidden');
           break;
         case MobileSetup.PLAN_ACTIVATION_SHOWING_PAYMENT:
+          $('paymentForm').classList.add('hidden');
+          $('finalMessage').classList.add('hidden');
+          $('errorMessage').classList.add('hidden');
+          $('systemStatus').classList.remove('hidden');
           this.loadPaymentFrame_(deviceInfo);
           break;
         case MobileSetup.PLAN_ACTIVATION_DONE:
           $('statusHeader').textContent = '';
-          $('paymentForm').classList.remove('hidden');
-          $('finalMessage').classList.remove('hidden');
           $('errorMessage').classList.add('hidden');
           $('systemStatus').classList.add('hidden');
+          $('paymentForm').classList.remove('hidden');
+          $('finalMessage').classList.remove('hidden');
           break;
         case MobileSetup.PLAN_ACTIVATION_ERROR:
           $('statusHeader').textContent =
