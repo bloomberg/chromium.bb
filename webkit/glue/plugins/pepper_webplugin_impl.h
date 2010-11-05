@@ -46,6 +46,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
       const WebKit::WebRect& clip_rect,
       const WebKit::WebVector<WebKit::WebRect>& cut_outs_rects,
       bool is_visible);
+  virtual unsigned getBackingTextureId();
   virtual void updateFocus(bool focused);
   virtual void updateVisibility(bool visible);
   virtual bool acceptsInputEvents();

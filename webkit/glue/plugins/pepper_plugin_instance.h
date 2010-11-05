@@ -48,9 +48,11 @@ class WebPluginContainer;
 namespace pepper {
 
 class Graphics2D;
+class Graphics3D;
 class ImageData;
 class PluginDelegate;
 class PluginModule;
+class Resource;
 class URLLoader;
 class FullscreenContainer;
 
@@ -105,10 +107,18 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // slow path can also be triggered if there is an overlapping frame.
   void ScrollRect(int dx, int dy, const gfx::Rect& rect);
 
+  // If the plugin instance is backed by a texture, return its texture ID in the
+  // compositor's namespace. Otherwise return 0. Returns 0 by default.
+  virtual unsigned GetBackingTextureId();
+
+  // Commit the backing texture to the screen once the side effects some
+  // rendering up to an offscreen SwapBuffers are visible.
+  void CommitBackingTexture();
+
   // PPB_Instance implementation.
   PP_Var GetWindowObject();
   PP_Var GetOwnerElementObject();
-  bool BindGraphics(PP_Resource device_id);
+  bool BindGraphics(PP_Resource graphics_id);
   bool full_frame() const { return full_frame_; }
   bool SetCursor(PP_CursorType_Dev type);
   PP_Var ExecuteScript(PP_Var script, PP_Var* exception);
@@ -195,6 +205,14 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
                             const gfx::Rect& dest_rect, int canvas_height);
 #endif  // OS_MACOSX
 
+  // Get the bound graphics context as a concrete 2D graphics context or returns
+  // null if the context is not 2D.
+  Graphics2D* bound_graphics_2d() const;
+
+  // Get the bound graphics context as a concrete 3D graphics context or returns
+  // null if the context is not 3D.
+  Graphics3D* bound_graphics_3d() const;
+
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   const PPP_Instance* instance_interface_;
@@ -218,15 +236,15 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // be (0, 0, w, h) regardless of scroll position.
   gfx::Rect clip_;
 
+  // The current device context for painting in 2D or 3D.
+  scoped_refptr<Resource> bound_graphics_;
+
   // We track two types of focus, one from WebKit, which is the focus among
   // all elements of the page, one one from the browser, which is whether the
   // tab/window has focus. We tell the plugin it has focus only when both of
   // these values are set to true.
   bool has_webkit_focus_;
   bool has_content_area_focus_;
-
-  // The current device context for painting in 2D.
-  scoped_refptr<Graphics2D> bound_graphics_2d_;
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;

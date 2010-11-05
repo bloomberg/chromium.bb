@@ -156,7 +156,6 @@
             ['OS=="mac"', {
               'action': [
                 '<(PRODUCT_DIR)/Chromium.app/Contents/MacOS/Chromium',
-                '--enable-gpu-plugin',
                 '--register-pepper-plugins='
                   '<(PRODUCT_DIR)/$(PRODUCT_NAME).plugin;'
                   'pepper-application/x-gpu-demo',
@@ -165,7 +164,6 @@
              }, { # OS != "mac"
               'action': [
                 '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
-                '--enable-gpu-plugin',
                 '--register-pepper-plugins=$(TargetPath);'
                   'pepper-application/x-gpu-demo',
                 'file://$(ProjectDir)pepper_gpu_demo.html',
