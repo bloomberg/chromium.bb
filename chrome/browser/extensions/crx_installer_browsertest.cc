@@ -69,8 +69,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
   // A regular extension should give no prompt.
   EXPECT_FALSE(DidWhitelistInstallPrompt("good.crx",
                                          "ldnnhddmnhbkjipkidpdiheffobcpfmf"));
-
+#if !defined(OS_CHROMEOS)
   // An extension with NPAPI should give a prompt.
   EXPECT_TRUE(DidWhitelistInstallPrompt("uitest/plugins.crx",
                                         "hdgllgikmikobbofgnabhfimcfoopgnd"));
+#endif // !defined(OS_CHROMEOS
 }
