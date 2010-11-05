@@ -6,6 +6,7 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/module.h"
@@ -35,7 +36,7 @@ Graphics2D::Graphics2D(const Size& size, bool is_always_opaque)
     return;
   PassRefFromConstructor(graphics_2d_f->Create(Module::Get()->pp_module(),
                                                &size.pp_size(),
-                                               is_always_opaque));
+                                               BoolToPPBool(is_always_opaque)));
   if (!is_null()) {
     // Only save the size if allocation succeeded.
     size_ = size;

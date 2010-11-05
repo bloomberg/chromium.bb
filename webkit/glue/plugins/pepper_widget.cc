@@ -9,6 +9,7 @@
 #include "ppapi/c/dev/ppp_widget_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -17,30 +18,30 @@ namespace pepper {
 
 namespace {
 
-bool IsWidget(PP_Resource resource) {
-  return !!Resource::GetAs<Widget>(resource);
+PP_Bool IsWidget(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Widget>(resource));
 }
 
-bool Paint(PP_Resource resource, const PP_Rect* rect, PP_Resource image_id) {
+PP_Bool Paint(PP_Resource resource, const PP_Rect* rect, PP_Resource image_id) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
   if (!widget)
-    return false;
+    return PP_FALSE;
 
   scoped_refptr<ImageData> image(Resource::GetAs<ImageData>(image_id));
   if (!image)
-    return false;
+    return PP_FALSE;
 
-  return widget->Paint(rect, image);
+  return BoolToPPBool(widget->Paint(rect, image));
 }
 
-bool HandleEvent(PP_Resource resource, const PP_InputEvent* event) {
+PP_Bool HandleEvent(PP_Resource resource, const PP_InputEvent* event) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
-  return widget && widget->HandleEvent(event);
+  return BoolToPPBool(widget && widget->HandleEvent(event));
 }
 
-bool GetLocation(PP_Resource resource, PP_Rect* location) {
+PP_Bool GetLocation(PP_Resource resource, PP_Rect* location) {
   scoped_refptr<Widget> widget(Resource::GetAs<Widget>(resource));
-  return widget && widget->GetLocation(location);
+  return BoolToPPBool(widget && widget->GetLocation(location));
 }
 
 void SetLocation(PP_Resource resource, const PP_Rect* location) {

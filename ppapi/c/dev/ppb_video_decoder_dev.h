@@ -5,13 +5,14 @@
 #ifndef PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_completion_callback.h"
 
-#define PPB_VIDEODECODER_DEV_INTERFACE "PPB_VideoDecoder(Dev);0.1"
+#define PPB_VIDEODECODER_DEV_INTERFACE "PPB_VideoDecoder(Dev);0.2"
 
 struct PPB_VideoDecoder_Dev {
   // Queries capability of the decoder for |codec|.
@@ -25,13 +26,13 @@ struct PPB_VideoDecoder_Dev {
   // are returned, but the total number of configurations available will be
   // returned in |num_config|.
   //
-  // Returns true on success, false otherwise.
+  // Returns PP_TRUE on success, PP_FALSE otherwise.
   // NOTE: browser owns the memory of all PP_VideoConfig's.
-  bool (*GetConfig)(PP_Instance instance,
-                    PP_VideoCodecId_Dev codec,
-                    PP_VideoConfig_Dev* configs,
-                    int32_t config_size,
-                    int32_t* num_config);
+  PP_Bool (*GetConfig)(PP_Instance instance,
+                       enum PP_VideoCodecId_Dev codec,
+                       PP_VideoConfig_Dev* configs,
+                       int32_t config_size,
+                       int32_t* num_config);
 
   // Creates a video decoder with requested |decoder_config|.
   // |input_format| in |decoder_config| specifies the format of input access
@@ -66,20 +67,20 @@ struct PPB_VideoDecoder_Dev {
   // provided by plugin during creation of decoder.
   // The input data buffer is returned to plugin by decoder only when plugin
   // provides |input_callback|.
-  // Returns true on decoder successfully accepting buffer, false otherwise.
+  // Returns PP_TRUE on decoder successfully accepting buffer, PP_FALSE
+  // otherwise.
   //
-  bool (*Decode)(PP_Resource decoder,
-                 struct PP_VideoCompressedDataBuffer_Dev* input_buffer);
+  PP_Bool (*Decode)(PP_Resource decoder,
+                    struct PP_VideoCompressedDataBuffer_Dev* input_buffer);
 
   // Requests the decoder to flush its input and output buffers. Once done with
   // flushing, the decode will call the |callback|.
-  int32_t (*Flush)(PP_Resource decoder,
-                   PP_CompletionCallback callback);
+  int32_t (*Flush)(PP_Resource decoder, struct PP_CompletionCallback callback);
 
   // Plugin sends uncompressed data buffers to the decoder.
-  // Returns true on decoder successfully accepting the buffer, false otherwise.
-  bool (*ReturnUncompressedDataBuffer)(
-      PP_Resource decoder,
+  // Returns PP_TRUE on decoder successfully accepting the buffer, PP_FALSE
+  // otherwise.
+  PP_Bool (*ReturnUncompressedDataBuffer)(PP_Resource decoder,
       struct PP_VideoUncompressedDataBuffer_Dev* buffer);
 };
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #ifndef PPAPI_C_DEV_PPP_SCROLLBAR_DEV_H_
-#define PPAPI_C_DEv_PPP_SCROLLBAR_DEV_H_
+#define PPAPI_C_DEV_PPP_SCROLLBAR_DEV_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"

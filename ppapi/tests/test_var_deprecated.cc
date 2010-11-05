@@ -219,7 +219,7 @@ std::string TestVarDeprecated::TestVarToUtf8ForWrongType() {
 
   length = kInvalidLength;
   result = NULL;
-  result = var_interface_->VarToUtf8(PP_MakeBool(true), &length);
+  result = var_interface_->VarToUtf8(PP_MakeBool(PP_TRUE), &length);
   if (length != 0) {
     return "Expected 0 on string conversion from Bool var.";
   }

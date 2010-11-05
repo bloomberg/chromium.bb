@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_DEV_PPB_SCROLLBAR_DEV_H_
 #define PPAPI_C_DEV_PPB_SCROLLBAR_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -18,18 +19,18 @@ typedef enum {
   PP_SCROLLBY_DOCUMENT = 3
 } PP_ScrollBy_Dev;
 
-#define PPB_SCROLLBAR_DEV_INTERFACE "PPB_Scrollbar(Dev);0.1"
+#define PPB_SCROLLBAR_DEV_INTERFACE "PPB_Scrollbar(Dev);0.2"
 
 // The interface for a scrollbar.  A scrollbar is a widget, so the functions
 // in PPB_Widget can also be used with scrollbar objects.
 struct PPB_Scrollbar_Dev {
   // Create a new scrollbar.  Returns 0 if the instance is invalid.
   PP_Resource (*Create)(PP_Instance instance,
-                        bool vertical);
+                        PP_Bool vertical);
 
-  // Returns true if the given resource is a Scrollbar. Returns false if the
-  // resource is invalid or some type other than a scrollbar.
-  bool (*IsScrollbar)(PP_Resource resource);
+  // Returns PP_TRUE if the given resource is a Scrollbar. Returns PP_FALSE if
+  // the resource is invalid or some type other than a scrollbar.
+  PP_Bool (*IsScrollbar)(PP_Resource resource);
 
   // Gets the thickness of a scrollbar.
   uint32_t (*GetThickness)();

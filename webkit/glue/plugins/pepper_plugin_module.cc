@@ -49,6 +49,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "webkit/glue/plugins/pepper_audio.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_char_set.h"
 #include "webkit/glue/plugins/pepper_cursor_control.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
@@ -141,8 +142,8 @@ void CallOnMainThread(int delay_in_msec,
       delay_in_msec);
 }
 
-bool IsMainThread() {
-  return GetMainThreadMessageLoop()->BelongsToCurrentThread();
+PP_Bool IsMainThread() {
+  return BoolToPPBool(GetMainThreadMessageLoop()->BelongsToCurrentThread());
 }
 
 const PPB_Core core_interface = {
@@ -158,14 +159,14 @@ const PPB_Core core_interface = {
 
 // PPB_Testing -----------------------------------------------------------------
 
-bool ReadImageData(PP_Resource device_context_2d,
+PP_Bool ReadImageData(PP_Resource device_context_2d,
                    PP_Resource image,
                    const PP_Point* top_left) {
   scoped_refptr<Graphics2D> context(
       Resource::GetAs<Graphics2D>(device_context_2d));
   if (!context.get())
-    return false;
-  return context->ReadImageData(image, top_left);
+    return PP_FALSE;
+  return BoolToPPBool(context->ReadImageData(image, top_left));
 }
 
 void RunMessageLoop() {

@@ -73,7 +73,7 @@ int32_t FileRef_Dev::MakeDirectory(const CompletionCallback& cc) {
   if (!file_ref_f)
     return PP_ERROR_NOINTERFACE;
   return file_ref_f->MakeDirectory(pp_resource(),
-                                   false,  // make_ancestors
+                                   PP_FALSE,  // make_ancestors
                                    cc.pp_completion_callback());
 }
 
@@ -82,7 +82,7 @@ int32_t FileRef_Dev::MakeDirectoryIncludingAncestors(
   if (!file_ref_f)
     return PP_ERROR_NOINTERFACE;
   return file_ref_f->MakeDirectory(pp_resource(),
-                                   true,  // make_ancestors
+                                   PP_TRUE,  // make_ancestors
                                    cc.pp_completion_callback());
 }
 

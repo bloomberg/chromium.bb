@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/dev/ppb_audio_trusted_dev.h"
+#include "webkit/glue/plugins/pepper_common.h"
 
 namespace pepper {
 
@@ -50,9 +51,9 @@ uint32_t RecommendSampleFrameCount(uint32_t requested_sample_frame_count) {
   return requested_sample_frame_count;
 }
 
-bool IsAudioConfig(PP_Resource resource) {
+PP_Bool IsAudioConfig(PP_Resource resource) {
   scoped_refptr<AudioConfig> config = Resource::GetAs<AudioConfig>(resource);
-  return !!config;
+  return BoolToPPBool(!!config);
 }
 
 PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config_id) {
@@ -87,9 +88,9 @@ PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
   return audio->GetReference();
 }
 
-bool IsAudio(PP_Resource resource) {
+PP_Bool IsAudio(PP_Resource resource) {
   scoped_refptr<Audio> audio = Resource::GetAs<Audio>(resource);
-  return !!audio;
+  return BoolToPPBool(!!audio);
 }
 
 PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
@@ -97,14 +98,14 @@ PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
   return audio ? audio->GetCurrentConfiguration() : 0;
 }
 
-bool StartPlayback(PP_Resource audio_id) {
+PP_Bool StartPlayback(PP_Resource audio_id) {
   scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
-  return audio ? audio->StartPlayback() : false;
+  return audio ? BoolToPPBool(audio->StartPlayback()) : PP_FALSE;
 }
 
-bool StopPlayback(PP_Resource audio_id) {
+PP_Bool StopPlayback(PP_Resource audio_id) {
   scoped_refptr<Audio> audio = Resource::GetAs<Audio>(audio_id);
-  return audio ? audio->StopPlayback() : false;
+  return audio ? BoolToPPBool(audio->StopPlayback()) : PP_FALSE;
 }
 
 const PPB_Audio_Dev ppb_audio = {

@@ -5,11 +5,12 @@
 #ifndef PPAPI_C_DEV_PPB_AUDIO_CONFIG_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_CONFIG_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_CONFIG_DEV_INTERFACE "PPB_AudioConfig(Dev);0.2"
+#define PPB_AUDIO_CONFIG_DEV_INTERFACE "PPB_AudioConfig(Dev);0.3"
 
 enum {
   PP_AUDIOMINSAMPLEFRAMECOUNT = 64,
@@ -74,7 +75,7 @@ struct PPB_AudioConfig_Dev {
   /**
    * Returns true if the given resource is an AudioConfig object.
    */
-  bool (*IsAudioConfig)(PP_Resource resource);
+  PP_Bool (*IsAudioConfig)(PP_Resource resource);
 
   /**
    * Returns the sample rate for the given AudioConfig resource. If the
@@ -91,4 +92,3 @@ struct PPB_AudioConfig_Dev {
 };
 
 #endif  // PPAPI_C_DEV_PPB_AUDIO_CONFIG_DEV_H_
-

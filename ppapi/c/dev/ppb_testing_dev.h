@@ -5,13 +5,14 @@
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
 struct PP_Point;
 
-#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.2"
+#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.3"
 
 // This interface contains functions used for unit testing. Do not use in
 // production code. They are not guaranteed to be available in normal plugin
@@ -19,7 +20,7 @@ struct PP_Point;
 struct PPB_Testing_Dev {
   // Reads the bitmap data out of the backing store for the given
   // DeviceContext2D and into the given image. If the data was successfully
-  // read, it will return true.
+  // read, it will return PP_TRUE.
   //
   // This function should not generally be necessary for normal plugin
   // operation. If you want to update portions of a device, the expectation is
@@ -33,20 +34,20 @@ struct PPB_Testing_Dev {
   // context, and proceeding down and to the right for as many pixels as the
   // image is large. If any part of the image bound would fall outside of the
   // backing store of the device if positioned at |top_left|, this function
-  // will fail and return false.
+  // will fail and return PP_FALSE.
   //
   // The image format must be of the format
   // PPB_ImageData.GetNativeImageDataFormat() or this function will fail and
-  // return false.
+  // return PP_FALSE.
   //
   // The returned image data will represent the current status of the backing
   // store. This will not include any paint, scroll, or replace operations
   // that have not yet been flushed; these operations are only reflected in
   // the backing store (and hence ReadImageData) until after a Flush()
   // operation has completed.
-  bool (*ReadImageData)(PP_Resource device_context_2d,
-                        PP_Resource image,
-                        const struct PP_Point* top_left);
+  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
+                           PP_Resource image,
+                           const struct PP_Point* top_left);
 
   // Runs a nested message loop. The plugin will be reentered from this call.
   // This function is used for unit testing the API. The normal pattern is to

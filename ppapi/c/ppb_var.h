@@ -5,13 +5,15 @@
 #ifndef PPAPI_C_PPB_VAR_H_
 #define PPAPI_C_PPB_VAR_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VAR_INTERFACE "PPB_Var;0.1"
+#define PPB_VAR_INTERFACE "PPB_Var;0.2"
 
 /**
  * @file
@@ -33,10 +35,10 @@ enum PP_ObjectProperty_Modifier {
 };
 
 struct PP_ObjectProperty {
-  PP_Var name;
-  PP_Var value;
-  PP_Var getter;
-  PP_Var setter;
+  struct PP_Var name;
+  struct PP_Var value;
+  struct PP_Var getter;
+  struct PP_Var setter;
   uint32_t modifiers;
 };
 
@@ -127,10 +129,10 @@ struct PPB_Var {
    * For conversions from/to PP_VARTYPE_OBJECT, the instance must be specified,
    * or an exception of type PP_VARTYPE_STRING will be thrown.
    */
-  PP_Var (*ConvertType)(PP_Instance instance,
-                        struct PP_Var var,
-                        PP_VarType new_type,
-                        PP_Var* exception);
+  struct PP_Var (*ConvertType)(PP_Instance instance,
+                               struct PP_Var var,
+                               PP_VarType new_type,
+                               struct PP_Var* exception);
 
   /**
    * Sets a property on the object, similar to Object.prototype.defineProperty.
@@ -148,7 +150,7 @@ struct PPB_Var {
    */
   void (*DefineProperty)(struct PP_Var object,
                          struct PP_ObjectProperty property,
-                         PP_Var* exception);
+                         struct PP_Var* exception);
 
   /**
    * Tests whether an object has a property with a given name.
@@ -159,9 +161,9 @@ struct PPB_Var {
    * Then, convert 'property' to string using ConvertType (ToString [9.8]).
    * Then return true if the given property exists on the object [8.12.6].
    */
-  bool (*HasProperty)(struct PP_Var object,
-                      struct PP_Var property,
-                      struct PP_Var* exception);
+  PP_Bool (*HasProperty)(struct PP_Var object,
+                         struct PP_Var property,
+                         struct PP_Var* exception);
 
   /**
    * Returns a given property of the object.
@@ -172,9 +174,9 @@ struct PPB_Var {
    * Then, convert 'property' to string using ConvertType (ToString [9.8]).
    * Then return the given property of the object [8.12.2].
    */
-  PP_Var (*GetProperty)(struct PP_Var object,
-                        struct PP_Var property,
-                        struct PP_Var* exception);
+  struct PP_Var (*GetProperty)(struct PP_Var object,
+                               struct PP_Var property,
+                               struct PP_Var* exception);
 
   /**
    * Delete a property from the object, return true if succeeded.
@@ -187,9 +189,9 @@ struct PPB_Var {
    * Then, convert 'property' to string using ConvertType (ToString [9.8]).
    * Then delete the given property of the object [8.12.7].
    */
-  bool (*DeleteProperty)(struct PP_Var object,
-                         struct PP_Var property,
-                         struct PP_Var* exception);
+  PP_Bool (*DeleteProperty)(struct PP_Var object,
+                            struct PP_Var property,
+                            struct PP_Var* exception);
 
   /**
    * Retrieves all property names on the given object. Property names include
@@ -232,7 +234,7 @@ struct PPB_Var {
   /**
    * Check if an object is a JS Function [9.11].
    */
-  bool (*IsCallable)(struct PP_Var object);
+  PP_Bool (*IsCallable)(struct PP_Var object);
 
   /**
    * Call the functions.
@@ -279,11 +281,14 @@ struct PPB_Var {
                              struct PP_Var* exception);
 };
 
-inline struct PP_ObjectProperty PP_MakeSimpleProperty(PP_Var name,
-                                                      PP_Var value) {
-  struct PP_ObjectProperty result = {
-    name, value, PP_MakeUndefined(), PP_MakeUndefined(),
-    PP_OBJECTPROPERTY_MODIFIER_HASVALUE };
+PP_INLINE struct PP_ObjectProperty PP_MakeSimpleProperty(struct PP_Var name,
+                                                         struct PP_Var value) {
+  struct PP_ObjectProperty result;
+  result.name = name;
+  result.value = value;
+  result.getter = PP_MakeUndefined();
+  result.setter = PP_MakeUndefined();
+  result.modifiers = PP_OBJECTPROPERTY_MODIFIER_HASVALUE;
   return result;
 }
 
@@ -292,4 +297,3 @@ inline struct PP_ObjectProperty PP_MakeSimpleProperty(PP_Var name,
  * End addtogroup PPB
  */
 #endif  // PPAPI_C_PPB_VAR_H_
-

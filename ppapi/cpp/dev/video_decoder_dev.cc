@@ -5,6 +5,7 @@
 #include "ppapi/cpp/dev/video_decoder_dev.h"
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -53,18 +54,17 @@ bool VideoDecoder_Dev::GetConfig(const Instance& instance,
                              int32_t* num_config) {
   if (!video_decoder_f)
     return false;
-  return video_decoder_f->GetConfig(instance.pp_instance(),
-                                    codec,
-                                    configs,
-                                    config_size,
-                                    num_config);
+  return PPBoolToBool(video_decoder_f->GetConfig(instance.pp_instance(),
+                                                 codec,
+                                                 configs,
+                                                 config_size,
+                                                 num_config));
 }
 
 bool VideoDecoder_Dev::Decode(PP_VideoCompressedDataBuffer_Dev& input_buffer) {
   if (!video_decoder_f || !pp_resource())
     return false;
-  return video_decoder_f->Decode(pp_resource(),
-                                 &input_buffer);
+  return PPBoolToBool(video_decoder_f->Decode(pp_resource(), &input_buffer));
 }
 
 int32_t VideoDecoder_Dev::Flush(PP_CompletionCallback callback) {
@@ -77,8 +77,9 @@ bool VideoDecoder_Dev::ReturnUncompressedDataBuffer(
     PP_VideoUncompressedDataBuffer_Dev& buffer) {
   if (!video_decoder_f || !pp_resource())
     return false;
-  return video_decoder_f->ReturnUncompressedDataBuffer(pp_resource(),
-                                                       &buffer);
+  return PPBoolToBool(
+      video_decoder_f->ReturnUncompressedDataBuffer(pp_resource(),
+                                                    &buffer));
 }
 
 }  // namespace pp

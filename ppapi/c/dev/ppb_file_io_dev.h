@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_DEV_PPB_FILE_IO_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_IO_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -36,16 +37,16 @@ typedef enum {
   PP_FILEOPENFLAG_EXCLUSIVE = 1 << 4
 } PP_FileOpenFlags_Dev;
 
-#define PPB_FILEIO_DEV_INTERFACE "PPB_FileIO(Dev);0.1"
+#define PPB_FILEIO_DEV_INTERFACE "PPB_FileIO(Dev);0.2"
 
 // Use this interface to operate on a regular file (PP_FileType_Regular).
 struct PPB_FileIO_Dev {
   // Creates a new FileIO object.  Returns 0 if the module is invalid.
   PP_Resource (*Create)(PP_Module module);
 
-  // Returns true if the given resource is a FileIO. Returns false if the
+  // Returns PP_TRUE if the given resource is a FileIO. Returns PP_FALSE if the
   // resource is invalid or some type other than a FileIO.
-  bool (*IsFileIO)(PP_Resource resource);
+  PP_Bool (*IsFileIO)(PP_Resource resource);
 
   // Open the specified regular file for I/O according to the given open flags,
   // which is a bit-mask of the PP_FileOpenFlags values.  Upon success, the
@@ -59,7 +60,7 @@ struct PPB_FileIO_Dev {
   // Queries info about the file opened by this FileIO object.  Fails if the
   // FileIO object has not been opened.
   int32_t (*Query)(PP_Resource file_io,
-                   PP_FileInfo_Dev* info,
+                   struct PP_FileInfo_Dev* info,
                    struct PP_CompletionCallback callback);
 
   // Updates timestamps for the file opened by this FileIO object.  Fails if

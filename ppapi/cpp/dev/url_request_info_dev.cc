@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/dev/url_request_info_dev.h"
 
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -43,15 +44,17 @@ bool URLRequestInfo_Dev::SetProperty(PP_URLRequestProperty_Dev property,
                                      const Var& value) {
   if (!url_request_info_f)
     return false;
-  return url_request_info_f->SetProperty(pp_resource(),
-                                         property,
-                                         value.pp_var());
+  return PPBoolToBool(url_request_info_f->SetProperty(pp_resource(),
+                                                      property,
+                                                      value.pp_var()));
 }
 
 bool URLRequestInfo_Dev::AppendDataToBody(const char* data, uint32_t len) {
   if (!url_request_info_f)
     return false;
-  return url_request_info_f->AppendDataToBody(pp_resource(), data, len);
+  return PPBoolToBool(url_request_info_f->AppendDataToBody(pp_resource(),
+                                                           data,
+                                                           len));
 }
 
 bool URLRequestInfo_Dev::AppendFileToBody(
@@ -59,11 +62,12 @@ bool URLRequestInfo_Dev::AppendFileToBody(
     PP_Time expected_last_modified_time) {
   if (!url_request_info_f)
     return false;
-  return url_request_info_f->AppendFileToBody(pp_resource(),
-                                              file_ref.pp_resource(),
-                                              0,
-                                              -1,
-                                              expected_last_modified_time);
+  return PPBoolToBool(
+      url_request_info_f->AppendFileToBody(pp_resource(),
+                                           file_ref.pp_resource(),
+                                           0,
+                                           -1,
+                                           expected_last_modified_time));
 }
 
 bool URLRequestInfo_Dev::AppendFileRangeToBody(
@@ -71,11 +75,12 @@ bool URLRequestInfo_Dev::AppendFileRangeToBody(
     int64_t start_offset,
     int64_t length,
     PP_Time expected_last_modified_time) {
-  return url_request_info_f->AppendFileToBody(pp_resource(),
-                                              file_ref.pp_resource(),
-                                              start_offset,
-                                              length,
-                                              expected_last_modified_time);
+  return PPBoolToBool(
+      url_request_info_f->AppendFileToBody(pp_resource(),
+                                           file_ref.pp_resource(),
+                                           start_offset,
+                                           length,
+                                           expected_last_modified_time));
 }
 
 }  // namespace pp

@@ -5,11 +5,12 @@
 #ifndef PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_
 #define PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_URLUTIL_DEV_INTERFACE "PPB_UrlUtil(Dev);0.1"
+#define PPB_URLUTIL_DEV_INTERFACE "PPB_UrlUtil(Dev);0.2"
 
 // A component specifies the range of the part of the URL. The begin specifies
 // the index into the string of the first character of that component. The len
@@ -33,14 +34,14 @@ struct PP_UrlComponent_Dev {
 };
 
 struct PP_UrlComponents_Dev {
-  PP_UrlComponent_Dev scheme;
-  PP_UrlComponent_Dev username;
-  PP_UrlComponent_Dev password;
-  PP_UrlComponent_Dev host;
-  PP_UrlComponent_Dev port;
-  PP_UrlComponent_Dev path;
-  PP_UrlComponent_Dev query;
-  PP_UrlComponent_Dev ref;
+  struct PP_UrlComponent_Dev scheme;
+  struct PP_UrlComponent_Dev username;
+  struct PP_UrlComponent_Dev password;
+  struct PP_UrlComponent_Dev host;
+  struct PP_UrlComponent_Dev port;
+  struct PP_UrlComponent_Dev path;
+  struct PP_UrlComponent_Dev query;
+  struct PP_UrlComponent_Dev ref;
 };
 
 // URL encoding: URLs are supplied to this interface as NULL-terminated 8-bit
@@ -91,21 +92,20 @@ struct PPB_UrlUtil_Dev {
       struct PP_UrlComponents_Dev* components);
 
   // Checks whether the given two URLs are in the same security origin. Returns
-  // false if either of the URLs are invalid.
-  bool (*IsSameSecurityOrigin)(struct PP_Var url_a, struct PP_Var url_b);
+  // FALSE if either of the URLs are invalid.
+  PP_Bool (*IsSameSecurityOrigin)(struct PP_Var url_a, struct PP_Var url_b);
 
   // Checks whether the document hosting the given plugin instance can access
   // the given URL according to the same origin policy of the browser. Returns
-  // false if the instance or the URL is invalid.
-  bool (*DocumentCanRequest)(PP_Instance instance, struct PP_Var url);
+  // PP_FALSE if the instance or the URL is invalid.
+  PP_Bool (*DocumentCanRequest)(PP_Instance instance, struct PP_Var url);
 
   // Checks whether the document containing the |active| plugin instance can
   // access the document containing the |target| plugin instance according to
   // the security policy of the browser. This includes the same origin policy
   // and any cross-origin capabilities enabled by the document. If either of
-  // the plugin instances are invalid, returns false.
-  bool (*DocumentCanAccessDocument)(PP_Instance active, PP_Instance target);
+  // the plugin instances are invalid, returns PP_FALSE.
+  PP_Bool (*DocumentCanAccessDocument)(PP_Instance active, PP_Instance target);
 };
 
 #endif  // PPAPI_C_DEV_PPB_URL_UTIL_DEV_H_
-

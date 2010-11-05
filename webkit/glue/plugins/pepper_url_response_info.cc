@@ -10,6 +10,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_var.h"
 #include "webkit/glue/webkit_glue.h"
@@ -38,8 +39,8 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   std::string buffer_;
 };
 
-bool IsURLResponseInfo(PP_Resource resource) {
-  return !!Resource::GetAs<URLResponseInfo>(resource);
+PP_Bool IsURLResponseInfo(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<URLResponseInfo>(resource));
 }
 
 PP_Var GetProperty(PP_Resource response_id,

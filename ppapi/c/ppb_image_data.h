@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
@@ -19,14 +20,14 @@ struct PP_ImageDataDesc {
   PP_ImageDataFormat format;
 
   // Size of the bitmap in pixels.
-  PP_Size size;
+  struct PP_Size size;
 
   // The row width in bytes. This may be different than width * 4 since there
   // may be padding at the end of the lines.
   int32_t stride;
 };
 
-#define PPB_IMAGEDATA_INTERFACE "PPB_ImageData;0.1"
+#define PPB_IMAGEDATA_INTERFACE "PPB_ImageData;0.2"
 
 /**
  * @file
@@ -46,9 +47,9 @@ struct PPB_ImageData {
   PP_ImageDataFormat (*GetNativeImageDataFormat)();
 
   /**
-   * Returns true if the given image data format is supported by the browser.
+   * Returns PP_TRUE if the given image data format is supported by the browser.
    */
-  bool (*IsImageDataFormatSupported)(PP_ImageDataFormat format);
+  PP_Bool (*IsImageDataFormatSupported)(PP_ImageDataFormat format);
 
   /**
    * Allocates an image data resource with the given format and size. The
@@ -67,21 +68,21 @@ struct PPB_ImageData {
   PP_Resource (*Create)(PP_Module module,
                         PP_ImageDataFormat format,
                         const struct PP_Size* size,
-                        bool init_to_zero);
+                        PP_Bool init_to_zero);
 
   /**
-   * Returns true if the given resource is an image data. Returns false if the
-   * resource is invalid or some type other than an image data.
+   * Returns PP_TRUE if the given resource is an image data. Returns PP_FALSE if
+   * the resource is invalid or some type other than an image data.
    */
-  bool (*IsImageData)(PP_Resource image_data);
+  PP_Bool (*IsImageData)(PP_Resource image_data);
 
   /**
-   * Computes the description of the image data. Returns true on success, false
-   * if the resource is not an image data. On false, the |desc| structure will
-   * be filled with 0.
+   * Computes the description of the image data. Returns PP_TRUE on success,
+   * PP_FALSE if the resource is not an image data. On PP_FALSE, the |desc|
+   * structure will be filled with 0.
    */
-  bool (*Describe)(PP_Resource image_data,
-                   struct PP_ImageDataDesc* desc);
+  PP_Bool (*Describe)(PP_Resource image_data,
+                      struct PP_ImageDataDesc* desc);
 
   /**
    * Maps this bitmap into the plugin address space and returns a pointer to the

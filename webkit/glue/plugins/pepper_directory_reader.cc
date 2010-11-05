@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "webkit/glue/plugins/pepper_file_callbacks.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
@@ -51,8 +52,8 @@ PP_Resource Create(PP_Resource directory_ref_id) {
   return reader->GetReference();
 }
 
-bool IsDirectoryReader(PP_Resource resource) {
-  return !!Resource::GetAs<DirectoryReader>(resource);
+PP_Bool IsDirectoryReader(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<DirectoryReader>(resource));
 }
 
 int32_t GetNextEntry(PP_Resource reader_id,

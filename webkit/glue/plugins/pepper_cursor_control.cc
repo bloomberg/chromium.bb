@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource.h"
@@ -18,59 +19,59 @@ namespace pepper {
 
 namespace {
 
-bool SetCursor(PP_Instance instance_id,
+PP_Bool SetCursor(PP_Instance instance_id,
                PP_CursorType_Dev type,
                PP_Resource custom_image_id,
                const PP_Point* hot_spot) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
+    return PP_FALSE;
 
   scoped_refptr<ImageData> custom_image(
       Resource::GetAs<ImageData>(custom_image_id));
   if (custom_image.get()) {
     // TODO(neb): implement custom cursors.
     NOTIMPLEMENTED();
-    return false;
+    return PP_FALSE;
   }
 
-  return instance->SetCursor(type);
+  return BoolToPPBool(instance->SetCursor(type));
 }
 
-bool LockCursor(PP_Instance instance_id) {
+PP_Bool LockCursor(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
+    return PP_FALSE;
 
   // TODO(neb): implement cursor locking.
-  return false;
+  return PP_FALSE;
 }
 
-bool UnlockCursor(PP_Instance instance_id) {
+PP_Bool UnlockCursor(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
+    return PP_FALSE;
 
   // TODO(neb): implement cursor locking.
-  return false;
+  return PP_FALSE;
 }
 
-bool HasCursorLock(PP_Instance instance_id) {
+PP_Bool HasCursorLock(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
+    return PP_FALSE;
 
   // TODO(neb): implement cursor locking.
-  return false;
+  return PP_FALSE;
 }
 
-bool CanLockCursor(PP_Instance instance_id) {
+PP_Bool CanLockCursor(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
+    return PP_FALSE;
 
   // TODO(neb): implement cursor locking.
-  return false;
+  return PP_FALSE;
 }
 
 const PPB_CursorControl_Dev cursor_control_interface = {

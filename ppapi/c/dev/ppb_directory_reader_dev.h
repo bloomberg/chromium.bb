@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 #define PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
@@ -16,7 +17,7 @@ struct PP_DirectoryEntry_Dev {
   PP_FileType_Dev file_type;
 };
 
-#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.1"
+#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.2"
 
 struct PPB_DirectoryReader_Dev {
   // Creates a DirectoryReader for the given directory.  Upon success, the
@@ -25,9 +26,10 @@ struct PPB_DirectoryReader_Dev {
   // destroyed.
   PP_Resource (*Create)(PP_Resource directory_ref);
 
-  // Returns true if the given resource is a DirectoryReader. Returns false if
-  // the resource is invalid or some type other than a DirectoryReader.
-  bool (*IsDirectoryReader)(PP_Resource resource);
+  // Returns PP_TRUE if the given resource is a DirectoryReader. Returns
+  // PP_FALSE if the resource is invalid or some type other than a
+  // DirectoryReader.
+  PP_Bool (*IsDirectoryReader)(PP_Resource resource);
 
   // Reads the next entry in the directory.  Return PP_OK and sets
   // entry->file_ref to 0 to indicate reaching the end of the directory.  If

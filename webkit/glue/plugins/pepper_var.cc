@@ -13,6 +13,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_plugin_object.h"
@@ -297,20 +298,24 @@ PP_Var ConvertType(PP_Instance instance,
   return result;
 }
 
+PP_Var BoolToPPVar(bool value) {
+  return PP_MakeBool(BoolToPPBool(value));
+}
+
 void DefineProperty(struct PP_Var object,
                     struct PP_ObjectProperty property,
                     PP_Var* exception) {
   PP_Var params[] = {
     object, property.name,
-    PP_MakeBool(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_HASVALUE)),
+    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_HASVALUE)),
     property.value,
-    PP_MakeBool(property.getter.type == PP_VARTYPE_OBJECT),
+    BoolToPPVar(property.getter.type == PP_VARTYPE_OBJECT),
     property.getter,
-    PP_MakeBool(property.setter.type == PP_VARTYPE_OBJECT),
+    BoolToPPVar(property.setter.type == PP_VARTYPE_OBJECT),
     property.setter,
-    PP_MakeBool(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_READONLY)),
-    PP_MakeBool(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTDELETE)),
-    PP_MakeBool(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTENUM))
+    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_READONLY)),
+    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTDELETE)),
+    BoolToPPVar(!!(property.modifiers & PP_OBJECTPROPERTY_MODIFIER_DONTENUM))
   };
 
   RunJSFunction(object,
@@ -329,14 +334,21 @@ void DefineProperty(struct PP_Var object,
       params, sizeof(params) / sizeof(PP_Var), exception);
 }
 
-bool HasProperty(PP_Var var,
-                 PP_Var name,
-                 PP_Var* exception) {
+PP_Bool HasProperty(PP_Var var,
+                    PP_Var name,
+                    PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
-    return false;
-  return WebBindings::hasProperty(NULL, accessor.object()->np_object(),
-                                  accessor.identifier());
+    return PP_FALSE;
+  return BoolToPPBool(WebBindings::hasProperty(NULL,
+                                               accessor.object()->np_object(),
+                                               accessor.identifier()));
+}
+
+bool HasPropertyDeprecated(PP_Var var,
+                           PP_Var name,
+                           PP_Var* exception) {
+  return PPBoolToBool(HasProperty(var, name, exception));
 }
 
 bool HasMethodDeprecated(PP_Var var,
@@ -418,15 +430,17 @@ void SetPropertyDeprecated(PP_Var var,
     accessor.SetException(kUnableToSetPropertyException);
 }
 
-bool DeleteProperty(PP_Var var,
-                    PP_Var name,
-                    PP_Var* exception) {
+PP_Bool DeleteProperty(PP_Var var,
+                       PP_Var name,
+                       PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
-    return false;
+    return PP_FALSE;
 
-  return WebBindings::removeProperty(NULL, accessor.object()->np_object(),
-                                     accessor.identifier());
+  return BoolToPPBool(
+      WebBindings::removeProperty(NULL,
+                                  accessor.object()->np_object(),
+                                  accessor.identifier()));
 }
 
 void DeletePropertyDeprecated(PP_Var var,
@@ -441,10 +455,12 @@ void DeletePropertyDeprecated(PP_Var var,
     accessor.SetException(kUnableToRemovePropertyException);
 }
 
-bool IsCallable(struct PP_Var object) {
+PP_Bool IsCallable(struct PP_Var object) {
   PP_Var result = RunJSFunction(object,
       "(function() { return typeof(this) == 'function' })", NULL, 0, NULL);
-  return result.type == PP_VARTYPE_BOOL && result.value.as_bool;
+  if (result.type == PP_VARTYPE_BOOL)
+    return result.value.as_bool;
+  return PP_FALSE;
 }
 
 struct PP_Var Call(struct PP_Var object,
@@ -597,7 +613,7 @@ const PPB_Var_Deprecated var_deprecated_interface = {
   &Var::PluginReleasePPVar,
   &VarFromUtf8,
   &VarToUtf8,
-  &HasProperty,
+  &HasPropertyDeprecated,
   &HasMethodDeprecated,
   &GetProperty,
   &EnumerateProperties,
@@ -644,7 +660,7 @@ PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
     case NPVariantType_Null:
       return PP_MakeNull();
     case NPVariantType_Bool:
-      return PP_MakeBool(NPVARIANT_TO_BOOLEAN(*variant));
+      return BoolToPPVar(NPVARIANT_TO_BOOLEAN(*variant));
     case NPVariantType_Int32:
       return PP_MakeInt32(NPVARIANT_TO_INT32(*variant));
     case NPVariantType_Double:

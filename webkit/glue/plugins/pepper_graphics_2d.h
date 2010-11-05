@@ -42,7 +42,7 @@ class Graphics2D : public Resource {
   virtual Graphics2D* AsGraphics2D() { return this; }
 
   // PPB_Graphics2D functions.
-  bool Describe(PP_Size* size, bool* is_always_opaque);
+  PP_Bool Describe(PP_Size* size, PP_Bool* is_always_opaque);
   void PaintImageData(PP_Resource image_data,
                       const PP_Point* top_left,
                       const PP_Rect* src_rect);

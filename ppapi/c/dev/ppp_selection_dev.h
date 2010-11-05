@@ -5,10 +5,11 @@
 #ifndef PPAPI_C_DEV_PPP_SELECTION_DEV_H_
 #define PPAPI_C_DEV_PPP_SELECTION_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPP_SELECTION_DEV_INTERFACE "PPP_Selection(Dev);0.1"
+#define PPP_SELECTION_DEV_INTERFACE "PPP_Selection(Dev);0.2"
 
 struct PPP_Selection_Dev {
   /**
@@ -17,7 +18,7 @@ struct PPP_Selection_Dev {
    * void string.
    */
   struct PP_Var (*GetSelectedText)(PP_Instance instance,
-                                   bool html);
+                                   PP_Bool html);
 };
 
 #endif  // PPAPI_C_DEV_PPP_SELECTION_DEV_H_

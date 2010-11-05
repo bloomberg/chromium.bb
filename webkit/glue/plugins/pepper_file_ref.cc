@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
 #include "webkit/glue/plugins/pepper_file_callbacks.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
@@ -58,8 +59,8 @@ PP_Resource Create(PP_Resource file_system_id, const char* path) {
   return file_ref->GetReference();
 }
 
-bool IsFileRef(PP_Resource resource) {
-  return !!Resource::GetAs<FileRef>(resource);
+PP_Bool IsFileRef(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<FileRef>(resource));
 }
 
 PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref_id) {
@@ -103,7 +104,7 @@ PP_Resource GetParent(PP_Resource file_ref_id) {
 }
 
 int32_t MakeDirectory(PP_Resource directory_ref_id,
-                      bool make_ancestors,
+                      PP_Bool make_ancestors,
                       PP_CompletionCallback callback) {
   scoped_refptr<FileRef> directory_ref(
       Resource::GetAs<FileRef>(directory_ref_id));
@@ -117,7 +118,7 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
 
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->MakeDirectory(
-          directory_ref->GetSystemPath(), make_ancestors,
+          directory_ref->GetSystemPath(), PPBoolToBool(make_ancestors),
           new FileCallbacks(instance->module()->AsWeakPtr(),
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;

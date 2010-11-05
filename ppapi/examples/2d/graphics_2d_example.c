@@ -31,20 +31,20 @@ const struct PPB_Instance* g_instance_interface;
 
 struct InstanceInfo {
   PP_Instance pp_instance;
-  PP_Size last_size;
+  struct PP_Size last_size;
 
-  InstanceInfo* next;
+  struct InstanceInfo* next;
 };
 
 // Linked list of all live instances.
-InstanceInfo* all_instances = NULL;
+struct InstanceInfo* all_instances = NULL;
 
 // Returns a refed resource corresponding to the created device context.
 PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
                                      const struct PP_Size* size) {
   PP_Resource device_context;
 
-  device_context = g_graphics_2d_interface->Create(g_module_id, size, false);
+  device_context = g_graphics_2d_interface->Create(g_module_id, size, PP_FALSE);
   if (!device_context)
     return 0;
 
@@ -59,15 +59,15 @@ void FlushCompletionCallback(void* user_data, int32_t result) {
   // Don't need to do anything here.
 }
 
-void Repaint(InstanceInfo* instance, const struct PP_Size* size) {
+void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
   PP_Resource image, device_context;
-  PP_ImageDataDesc image_desc;
+  struct PP_ImageDataDesc image_desc;
   uint32_t* image_data;
   int num_words, i;
 
   // Create image data to paint into.
   image = g_image_data_interface->Create(
-      g_module_id, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, true);
+      g_module_id, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, PP_TRUE);
   if (!image)
     return;
   g_image_data_interface->Describe(image, &image_desc);
@@ -98,8 +98,8 @@ void Repaint(InstanceInfo* instance, const struct PP_Size* size) {
 }
 
 // Returns the info for the given instance, or NULL if it's not found.
-InstanceInfo* FindInstance(PP_Instance instance) {
-  InstanceInfo* cur = all_instances;
+struct InstanceInfo* FindInstance(PP_Instance instance) {
+  struct InstanceInfo* cur = all_instances;
   while (cur) {
     if (cur->pp_instance == instance)
       return cur;
@@ -107,8 +107,12 @@ InstanceInfo* FindInstance(PP_Instance instance) {
   return NULL;
 }
 
-bool Instance_New(PP_Instance instance) {
-  InstanceInfo* info = (InstanceInfo*)malloc(sizeof(InstanceInfo));
+PP_Bool Instance_DidCreate(PP_Instance instance,
+                           uint32_t argc,
+                           const char* argn[],
+                           const char* argv[]) {
+  struct InstanceInfo* info =
+      (struct InstanceInfo*)malloc(sizeof(struct InstanceInfo));
   info->pp_instance = instance;
   info->last_size.width = 0;
   info->last_size.height = 0;
@@ -116,13 +120,13 @@ bool Instance_New(PP_Instance instance) {
   // Insert into linked list of live instances.
   info->next = all_instances;
   all_instances = info;
-  return true;
+  return PP_TRUE;
 }
 
-void Instance_Delete(PP_Instance instance) {
+void Instance_DidDestroy(PP_Instance instance) {
   // Find the matching item in the linked list, delete it, and patch the links.
-  InstanceInfo** prev_ptr = &all_instances;
-  InstanceInfo* cur = all_instances;
+  struct InstanceInfo** prev_ptr = &all_instances;
+  struct InstanceInfo* cur = all_instances;
   while (cur) {
     if (instance == cur->pp_instance) {
       *prev_ptr = cur->next;
@@ -133,35 +137,10 @@ void Instance_Delete(PP_Instance instance) {
   }
 }
 
-bool Instance_Initialize(PP_Instance pp_instance,
-                         uint32_t argc,
-                         const char* argn[],
-                         const char* argv[]) {
-  return true;
-}
-
-bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
-                                 PP_Resource pp_url_loader) {
-  return false;
-}
-
-bool Instance_HandleInputEvent(PP_Instance pp_instance,
-                               const struct PP_InputEvent* event) {
-  // We don't handle any events.
-  return false;
-}
-
-void Instance_HandleFocusChanged(bool /*has_focus*/) {
-}
-
-PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
-  return PP_MakeNull();
-}
-
-void Instance_ViewChanged(PP_Instance pp_instance,
-                          const struct PP_Rect* position,
-                          const struct PP_Rect* clip) {
-  InstanceInfo* info = FindInstance(pp_instance);
+void Instance_DidChangeView(PP_Instance pp_instance,
+                            const struct PP_Rect* position,
+                            const struct PP_Rect* clip) {
+  struct InstanceInfo* info = FindInstance(pp_instance);
   if (!info)
     return;
 
@@ -174,21 +153,32 @@ void Instance_ViewChanged(PP_Instance pp_instance,
   }
 }
 
-PP_Var Instance_GetSelectedText(PP_Instance pp_instance,
-                                bool html) {
+void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
+}
+
+PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
+                               const struct PP_InputEvent* event) {
+  // We don't handle any events.
+  return PP_FALSE;
+}
+
+PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
+                                    PP_Resource pp_url_loader) {
+  return PP_FALSE;
+}
+
+struct PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
   return PP_MakeNull();
 }
 
-static PPP_Instance instance_interface = {
-  &Instance_New,
-  &Instance_Delete,
-  &Instance_Initialize,
-  &Instance_HandleDocumentLoad,
+static struct PPP_Instance instance_interface = {
+  &Instance_DidCreate,
+  &Instance_DidDestroy,
+  &Instance_DidChangeView,
+  &Instance_DidChangeFocus,
   &Instance_HandleInputEvent,
-  &Instance_HandleFocusChanged,
+  &Instance_HandleDocumentLoad,
   &Instance_GetInstanceObject,
-  &Instance_ViewChanged,
-  &Instance_GetSelectedText,
 };
 
 

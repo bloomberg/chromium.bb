@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/dev/url_util_dev.h"
 
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 
@@ -52,19 +53,21 @@ Var UrlUtil_Dev::ResoveRelativeToDocument(
 
 bool UrlUtil_Dev::IsSameSecurityOrigin(const Var& url_a,
                                        const Var& url_b) const {
-  return interface_->IsSameSecurityOrigin(url_a.pp_var(), url_b.pp_var());
+  return PPBoolToBool(interface_->IsSameSecurityOrigin(url_a.pp_var(),
+                                                       url_b.pp_var()));
 }
 
 bool UrlUtil_Dev::DocumentCanRequest(const Instance& instance,
                                      const Var& url) const {
-  return interface_->DocumentCanRequest(instance.pp_instance(), url.pp_var());
+  return PPBoolToBool(interface_->DocumentCanRequest(instance.pp_instance(),
+                                                     url.pp_var()));
 }
 
 bool UrlUtil_Dev::DocumentCanAccessDocument(const Instance& active,
                                             const Instance& target) const {
-  return interface_->DocumentCanAccessDocument(active.pp_instance(),
-                                               target.pp_instance());
+  return PPBoolToBool(
+      interface_->DocumentCanAccessDocument(active.pp_instance(),
+                                            target.pp_instance()));
 }
 
 }  // namespace pp
-

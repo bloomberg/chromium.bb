@@ -6,6 +6,7 @@
 
 #include "ppapi/c/dev/ppb_url_loader_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/dev/url_request_info_dev.h"
@@ -64,10 +65,9 @@ bool URLLoader_Dev::GetUploadProgress(int64_t* bytes_sent,
                                       int64_t* total_bytes_to_be_sent) const {
   if (!url_loader_f)
     return false;
-  return url_loader_f->GetUploadProgress(
-      pp_resource(),
-      bytes_sent,
-      total_bytes_to_be_sent);
+  return PPBoolToBool(url_loader_f->GetUploadProgress(pp_resource(),
+                                                      bytes_sent,
+                                                      total_bytes_to_be_sent));
 }
 
 bool URLLoader_Dev::GetDownloadProgress(
@@ -75,10 +75,10 @@ bool URLLoader_Dev::GetDownloadProgress(
     int64_t* total_bytes_to_be_received) const {
   if (!url_loader_f)
     return false;
-  return url_loader_f->GetDownloadProgress(
-      pp_resource(),
-      bytes_received,
-      total_bytes_to_be_received);
+  return PPBoolToBool(
+      url_loader_f->GetDownloadProgress(pp_resource(),
+                                        bytes_received,
+                                        total_bytes_to_be_received));
 }
 
 URLResponseInfo_Dev URLLoader_Dev::GetResponseInfo() const {

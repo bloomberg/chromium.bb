@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -14,7 +15,7 @@ struct PP_Point;
 struct PP_Rect;
 struct PP_Size;
 
-#define PPB_GRAPHICS_2D_INTERFACE "PPB_Graphics2D;0.1"
+#define PPB_GRAPHICS_2D_INTERFACE "PPB_Graphics2D;0.2"
 
 /**
  * @file
@@ -46,23 +47,23 @@ struct PPB_Graphics2D {
    */
   PP_Resource (*Create)(PP_Module module,
                         const struct PP_Size* size,
-                        bool is_always_opaque);
+                        PP_Bool is_always_opaque);
 
   /**
-   * Returns true if the given resource is a valid Graphics2D, false if it
+   * Returns PP_TRUE if the given resource is a valid Graphics2D, PP_FALSE if it
    * is an invalid resource or is a resource of another type.
    */
-  bool (*IsGraphics2D)(PP_Resource resource);
+  PP_Bool (*IsGraphics2D)(PP_Resource resource);
 
   /**
    * Retrieves the configuration for the given graphics context, filling the
-   * given values (which must not be NULL). On success, returns true. If the
+   * given values (which must not be NULL). On success, returns PP_TRUE. If the
    * resource is invalid, the output parameters will be set to 0 and it will
-   * return false.
+   * return PP_FALSE.
    */
-  bool (*Describe)(PP_Resource graphics_2d,
-                   struct PP_Size* size,
-                   bool* is_always_opqaue);
+  PP_Bool (*Describe)(PP_Resource graphics_2d,
+                      struct PP_Size* size,
+                      PP_Bool* is_always_opqaue);
 
   /**
    * Enqueues a paint of the given image into the context. THIS HAS NO EFFECT

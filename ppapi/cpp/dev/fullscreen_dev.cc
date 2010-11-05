@@ -5,6 +5,7 @@
 #include "ppapi/cpp/dev/fullscreen_dev.h"
 
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -32,8 +33,9 @@ bool Fullscreen_Dev::IsFullscreen() {
 bool Fullscreen_Dev::SetFullscreen(bool fullscreen) {
   if (!ppb_fullscreen_f)
     return false;
-  return ppb_fullscreen_f->SetFullscreen(associated_instance_->pp_instance(),
-                                         fullscreen);
+  return PPBoolToBool(
+      ppb_fullscreen_f->SetFullscreen(associated_instance_->pp_instance(),
+                                      BoolToPPBool(fullscreen)));
 }
 
 }  // namespace pp

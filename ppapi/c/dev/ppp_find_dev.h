@@ -5,9 +5,10 @@
 #ifndef PPAPI_C_DEV_PPP_FIND_DEV_H_
 #define PPAPI_C_DEV_PPP_FIND_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 
-#define PPP_FIND_DEV_INTERFACE "PPP_Find(Dev);0.1"
+#define PPP_FIND_DEV_INTERFACE "PPP_Find(Dev);0.2"
 
 struct PPP_Find_Dev {
   // Finds the given UTF-8 text starting at the current selection. The number of
@@ -15,15 +16,15 @@ struct PPP_Find_Dev {
   // PPB_Find. Note that multiple StartFind calls can happen before StopFind is
   // called in the case of the search term changing.
   //
-  // Return false if plugin doesn't support find in page. Consequently, it won't
-  // call any callbacks.
-  bool (*StartFind)(PP_Instance instance,
-                    const char* text,
-                    bool case_sensitive);
+  // Return PP_FALSE if the plugin doesn't support find in page. Consequently,
+  // it won't call any callbacks.
+  PP_Bool (*StartFind)(PP_Instance instance,
+                       const char* text,
+                       PP_Bool case_sensitive);
 
   // Go to the next/previous result.
   void (*SelectFindResult)(PP_Instance instance,
-                           bool forward);
+                           PP_Bool forward);
 
   // Tells the plugin that the find operation has stopped, so it should clear
   // any highlighting.

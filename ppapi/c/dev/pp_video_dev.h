@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_DEV_PP_VIDEO_DEV_H_
 #define PPAPI_C_DEV_PP_VIDEO_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -245,9 +246,9 @@ struct PP_VideoUncompressedDataBuffer_Dev {
 
   // Output from decoder, indicating the decoded frame has error pixels. This
   // could be resulted from corrupted input bit stream and error concealment
-  // in decoding.
+  // in decoding.  PP_TRUE indicates error.
   // TODO(wjia): add more info about error pixels, such as error MB map, etc.
-  bool has_error;
+  PP_Bool error;
 };
 
 // Plugin callback for decoder to deliver decoded frame buffers.
@@ -274,7 +275,7 @@ typedef void (*PP_VideoDecodeInputCallback_Func_Dev)(
 //   data1 is type of PP_Rect*, data2 is ignored;
 typedef void (*PP_VideoDecodeEventHandler_Func_Dev)(
     PP_Instance instance,
-    PP_VideoDecoderEvent_Dev event,
+    enum PP_VideoDecoderEvent_Dev event,
     PP_VideoDecodeData_Dev data1,
     PP_VideoDecodeData_Dev data2);
 

@@ -5,13 +5,14 @@
 #ifndef PPAPI_C_DEV_PPB_URL_LOADER_DEV_H_
 #define PPAPI_C_DEV_PPB_URL_LOADER_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
 struct PP_CompletionCallback;
 
-#define PPB_URLLOADER_DEV_INTERFACE "PPB_URLLoader(Dev);0.1"
+#define PPB_URLLOADER_DEV_INTERFACE "PPB_URLLoader(Dev);0.2"
 
 // The interface for loading URLs.
 //
@@ -35,9 +36,9 @@ struct PPB_URLLoader_Dev {
   // know the origin of the URL request.
   PP_Resource (*Create)(PP_Instance instance);
 
-  // Returns true if the given resource is an URLLoader. Returns false if the
-  // resource is invalid or some type other than an URLLoader.
-  bool (*IsURLLoader)(PP_Resource resource);
+  // Returns PP_TRUE if the given resource is an URLLoader. Returns PP_FALSE if
+  // the resource is invalid or some type other than an URLLoader.
+  PP_Bool (*IsURLLoader)(PP_Resource resource);
 
   // Begins loading the URLRequestInfo.  Completes when response headers are
   // received or when an error occurs.  Use the GetResponseInfo method to
@@ -56,26 +57,26 @@ struct PPB_URLLoader_Dev {
   // the headers.
   //
   // This data is only available if the URLRequestInfo passed to Open() had the
-  // PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS flag set to true.
+  // PP_URLREQUESTPROPERTY_REPORTUPLOADPROGRESS flag set to PP_TRUE.
   //
-  // This method returns false if upload progress is not available.
-  bool (*GetUploadProgress)(PP_Resource loader,
-                            int64_t* bytes_sent,
-                            int64_t* total_bytes_to_be_sent);
+  // This method returns PP_FALSE if upload progress is not available.
+  PP_Bool (*GetUploadProgress)(PP_Resource loader,
+                               int64_t* bytes_sent,
+                               int64_t* total_bytes_to_be_sent);
 
   // Returns the current download progress, which is meaningful after Open has
   // been called.  Progress only refers to the response body and does not
   // include the headers.
   //
   // This data is only available if the URLRequestInfo passed to Open() had the
-  // PP_URLREQUESTPROPERTY_REPORTDOWNLOADPROGRESS flag set to true.
+  // PP_URLREQUESTPROPERTY_REPORTDOWNLOADPROGRESS flag set to PP_TRUE.
   //
   // The total bytes to be received may be unknown, in which case
-  // total_bytes_to_be_received will be set to -1. This method returns false if
-  // download progress is not available.
-  bool (*GetDownloadProgress)(PP_Resource loader,
-                              int64_t* bytes_received,
-                              int64_t* total_bytes_to_be_received);
+  // total_bytes_to_be_received will be set to -1. This method returns PP_FALSE
+  // if download progress is not available.
+  PP_Bool (*GetDownloadProgress)(PP_Resource loader,
+                                 int64_t* bytes_received,
+                                 int64_t* total_bytes_to_be_received);
 
   // Returns the current URLResponseInfo object.
   PP_Resource (*GetResponseInfo)(PP_Resource loader);

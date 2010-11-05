@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_PPP_INSTANCE_H_
 #define PPAPI_C_PPP_INSTANCE_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
@@ -12,7 +13,7 @@
 struct PP_InputEvent;
 struct PP_Var;
 
-#define PPP_INSTANCE_INTERFACE "PPP_Instance;0.1"
+#define PPP_INSTANCE_INTERFACE "PPP_Instance;0.2"
 
 /**
  * @file
@@ -35,10 +36,10 @@ struct PPP_Instance {
    * If the plugin reports failure from this function, the plugin will be
    * deleted and OnDestroy will be called.
    */
-  bool (*DidCreate)(PP_Instance instance,
-                    uint32_t argc,
-                    const char* argn[],
-                    const char* argv[]);
+  PP_Bool (*DidCreate)(PP_Instance instance,
+                       uint32_t argc,
+                       const char* argn[],
+                       const char* argv[]);
 
   /**
    * Called when the plugin instance is destroyed. This will always be called,
@@ -74,7 +75,7 @@ struct PPP_Instance {
    * If you're not getting focus, check to make sure you're returning true from
    * the mouse click in HandleInputEvent.
    */
-  void (*DidChangeFocus)(PP_Instance instance, bool has_focus);
+  void (*DidChangeFocus)(PP_Instance instance, PP_Bool has_focus);
 
   /**
    * General handler for input events. Returns true if the event was handled or
@@ -92,8 +93,8 @@ struct PPP_Instance {
    * where clicks on the transparent areas will behave like clicks to the
    * underlying page.
    */
-  bool (*HandleInputEvent)(PP_Instance instance,
-                           const struct PP_InputEvent* event);
+  PP_Bool (*HandleInputEvent)(PP_Instance instance,
+                              const struct PP_InputEvent* event);
 
   /**
    * Called after Initialize for a full-frame plugin that was instantiated
@@ -107,11 +108,11 @@ struct PPP_Instance {
    * of the plugin, if you're going to keep a reference to it, you need to
    * addref it yourself.
    *
-   * This method returns false if the plugin cannot handle the data. In
+   * This method returns PP_FALSE if the plugin cannot handle the data. In
    * response to this method, the plugin should call ReadResponseBody to read
    * the incoming data.
    */
-  bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
+  PP_Bool (*HandleDocumentLoad)(PP_Instance instance, PP_Resource url_loader);
 
   /**
    * Returns a Var representing the instance object to the web page. Normally

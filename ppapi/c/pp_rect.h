@@ -13,6 +13,7 @@
  * @{
  */
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
@@ -22,8 +23,8 @@ struct PP_Rect {
   struct PP_Size size;
 };
 
-inline struct PP_Rect PP_MakeRectFromXYWH(int32_t x, int32_t y,
-                                          int32_t w, int32_t h) {
+PP_INLINE struct PP_Rect PP_MakeRectFromXYWH(int32_t x, int32_t y,
+                                             int32_t w, int32_t h) {
   struct PP_Rect ret;
   ret.point.x = x;
   ret.point.y = y;

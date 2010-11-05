@@ -7,6 +7,7 @@
 #include "base/singleton.h"
 #include "base/thread_local.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
@@ -25,15 +26,15 @@ PP_Resource CreateTransport(PP_Module module,
 }
 
 // Returns whether or not resource is Transport
-bool IsTransport(PP_Resource resource) {
-  return !!Resource::GetAs<Transport>(resource);
+PP_Bool IsTransport(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Transport>(resource));
 }
 
 // Returns whether the transport is currently writable
 // (i.e. can send data to the remote peer)
-bool IsWritable(PP_Resource transport) {
+PP_Bool IsWritable(PP_Resource transport) {
   // TODO(juberti): impelement me
-  return false;
+  return PP_FALSE;
 }
 
 

@@ -12,6 +12,7 @@
 #include "base/utf_string_conversion_utils.h"
 #include "ppapi/c/pp_input_event.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "webkit/glue/plugins/pepper_common.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -142,7 +143,8 @@ void AppendMouseWheelEvent(const WebInputEvent& event,
   result.u.wheel.delta_y = mouse_wheel_event.deltaY;
   result.u.wheel.wheel_ticks_x = mouse_wheel_event.wheelTicksX;
   result.u.wheel.wheel_ticks_y = mouse_wheel_event.wheelTicksY;
-  result.u.wheel.scroll_by_page = !!mouse_wheel_event.scrollByPage;
+  result.u.wheel.scroll_by_page =
+      pepper::BoolToPPBool(!!mouse_wheel_event.scrollByPage);
   pp_events->push_back(result);
 }
 

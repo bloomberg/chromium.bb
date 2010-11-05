@@ -9,6 +9,7 @@
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
@@ -68,9 +69,10 @@ void TestGraphics2D::QuitMessageLoop() {
 bool TestGraphics2D::ReadImageData(const pp::Graphics2D& dc,
                                    pp::ImageData* image,
                                    const pp::Point& top_left) const {
-  return testing_interface_->ReadImageData(dc.pp_resource(),
-                                           image->pp_resource(),
-                                           &top_left.pp_point());
+  return pp::PPBoolToBool(testing_interface_->ReadImageData(
+      dc.pp_resource(),
+      image->pp_resource(),
+      &top_left.pp_point()));
 }
 
 bool TestGraphics2D::IsDCUniformColor(const pp::Graphics2D& dc,
@@ -181,7 +183,7 @@ std::string TestGraphics2D::TestInvalidResource() {
 
   // Describe.
   PP_Size size;
-  bool opaque;
+  PP_Bool opaque;
   graphics_2d_interface_->Describe(image.pp_resource(), &size, &opaque);
   graphics_2d_interface_->Describe(null_context.pp_resource(),
                                    &size, &opaque);
@@ -248,12 +250,12 @@ std::string TestGraphics2D::TestInvalidSize() {
   size.width = 16;
   size.height = -16;
   ASSERT_FALSE(!!graphics_2d_interface_->Create(
-      pp::Module::Get()->pp_module(), &size, false));
+      pp::Module::Get()->pp_module(), &size, PP_FALSE));
 
   size.width = -16;
   size.height = 16;
   ASSERT_FALSE(!!graphics_2d_interface_->Create(
-      pp::Module::Get()->pp_module(), &size, false));
+      pp::Module::Get()->pp_module(), &size, PP_FALSE));
 
   return "";
 }
@@ -296,11 +298,11 @@ std::string TestGraphics2D::TestDescribe() {
   PP_Size size;
   size.width = -1;
   size.height = -1;
-  bool is_always_opaque = true;
+  PP_Bool is_always_opaque = PP_TRUE;
   if (!graphics_2d_interface_->Describe(dc.pp_resource(), &size,
                                         &is_always_opaque))
     return "Describe failed";
-  if (size.width != w || size.height != h || is_always_opaque != false)
+  if (size.width != w || size.height != h || is_always_opaque != PP_FALSE)
     return "Mismatch of data.";
 
   return "";

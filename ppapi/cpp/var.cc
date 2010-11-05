@@ -10,6 +10,7 @@
 
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -50,7 +51,7 @@ Var::Var(Null) {
 
 Var::Var(bool b) {
   var_.type = PP_VARTYPE_BOOL;
-  var_.value.as_bool = b;
+  var_.value.as_bool = BoolToPPBool(b);
   needs_release_ = false;
 }
 
@@ -166,7 +167,7 @@ bool Var::AsBool() const {
     PP_NOTREACHED();
     return false;
   }
-  return var_.value.as_bool;
+  return PPBoolToBool(var_.value.as_bool);
 }
 
 int32_t Var::AsInt() const {

@@ -5,21 +5,22 @@
 #ifndef PPAPI_C_DEV_PPB_CURSOR_CONTROL_DEV_H_
 #define PPAPI_C_DEV_PPB_CURSOR_CONTROL_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_CURSOR_CONTROL_DEV_INTERFACE "PPB_CursorControl(Dev);0.1"
+#define PPB_CURSOR_CONTROL_DEV_INTERFACE "PPB_CursorControl(Dev);0.2"
 
 struct PPB_CursorControl_Dev {
   // Set a cursor.  If "type" is PP_CURSOR_TYPE_CUSTOM, then "custom_image"
   // must be an ImageData resource containing the cursor and "hot_spot" must
   // contain the offset within that image that refers to the cursor's position.
-  bool (*SetCursor)(PP_Instance instance,
-                    enum PP_CursorType_Dev type,
-                    PP_Resource custom_image,
-                    const struct PP_Point* hot_spot);
+  PP_Bool (*SetCursor)(PP_Instance instance,
+                       enum PP_CursorType_Dev type,
+                       PP_Resource custom_image,
+                       const struct PP_Point* hot_spot);
 
   // This method causes the cursor to be moved to the center of the
   // instance and be locked, preventing the user from moving it.
@@ -38,19 +39,18 @@ struct PPB_CursorControl_Dev {
   // another program via a reserved keystroke (e.g., ALT+TAB), or
   // some other system event.
   //
-  // Returns true if the cursor could be locked.
-  bool (*LockCursor)(PP_Instance);
+  // Returns PP_TRUE if the cursor could be locked, PP_FALSE otherwise.
+  PP_Bool (*LockCursor)(PP_Instance);
 
   // Causes the cursor to be unlocked, allowing it to track user
   // movement again.
-  bool (*UnlockCursor)(PP_Instance);
+  PP_Bool (*UnlockCursor)(PP_Instance);
 
-  // Returns true if the cursor is locked.
-  bool (*HasCursorLock)(PP_Instance);
+  // Returns PP_TRUE if the cursor is locked, PP_FALSE otherwise.
+  PP_Bool (*HasCursorLock)(PP_Instance);
 
-  // Returns true if the cursor can be locked.
-  bool (*CanLockCursor)(PP_Instance);
+  // Returns PP_TRUE if the cursor can be locked, PP_FALSE otherwise.
+  PP_Bool (*CanLockCursor)(PP_Instance);
 };
 
 #endif  //  PPAPI_C_DEV_PPB_CURSOR_CONTROL_DEV_H_
-

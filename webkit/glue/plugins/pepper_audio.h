@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_AUDIO_H_
+#define WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_AUDIO_H_
+
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
@@ -14,9 +17,6 @@
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_resource.h"
-
-#ifndef WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_AUDIO_H_
-#define WEBKIT_GLUE_PLUGINS_PEPPER_DEVICE_CONTEXT_AUDIO_H_
 
 namespace pepper {
 

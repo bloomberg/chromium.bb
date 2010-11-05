@@ -5,32 +5,34 @@
 #ifndef PPAPI_C_DEV_PPB_WIDGET_DEV_H_
 #define PPAPI_C_DEV_PPB_WIDGET_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_resource.h"
 
 struct PP_Rect;
 struct PP_InputEvent;
 
-#define PPB_WIDGET_DEV_INTERFACE "PPB_Widget(Dev);0.1"
+#define PPB_WIDGET_DEV_INTERFACE "PPB_Widget(Dev);0.2"
 
 // The interface for reusing browser widgets.
 struct PPB_Widget_Dev {
-  // Returns true if the given resource is a Widget. Returns false if the
+  // Returns PP_TRUE if the given resource is a Widget. Returns PP_FALSE if the
   // resource is invalid or some type other than an Widget.
-  bool (*IsWidget)(PP_Resource resource);
+  PP_Bool (*IsWidget)(PP_Resource resource);
 
   // Paint the given rectangle of the widget into the given image.
-  // Returns true on success, false on failure
-  bool (*Paint)(PP_Resource widget,
-                const struct PP_Rect* rect,
-                PP_Resource image);
+  // Returns PP_TRUE on success, PP_FALSE on failure
+  PP_Bool (*Paint)(PP_Resource widget,
+                   const struct PP_Rect* rect,
+                   PP_Resource image);
 
-  // Pass in an event to a widget.  It'll return true if the event was consumed.
-  bool (*HandleEvent)(PP_Resource widget,
-                      const struct PP_InputEvent* event);
+  // Pass in an event to a widget.  It'll return PP_TRUE if the event was
+  // consumed.
+  PP_Bool (*HandleEvent)(PP_Resource widget,
+                         const struct PP_InputEvent* event);
 
   // Get/set the location of the widget.
-  bool (*GetLocation)(PP_Resource widget,
-                      struct PP_Rect* location);
+  PP_Bool (*GetLocation)(PP_Resource widget,
+                         struct PP_Rect* location);
 
   void (*SetLocation)(PP_Resource widget,
                       const struct PP_Rect* location);

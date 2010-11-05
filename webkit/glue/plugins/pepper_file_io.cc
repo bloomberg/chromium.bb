@@ -15,6 +15,7 @@
 #include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -33,8 +34,8 @@ PP_Resource Create(PP_Module module_id) {
   return file_io->GetReference();
 }
 
-bool IsFileIO(PP_Resource resource) {
-  return !!Resource::GetAs<FileIO>(resource);
+PP_Bool IsFileIO(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<FileIO>(resource));
 }
 
 int32_t Open(PP_Resource file_io_id,

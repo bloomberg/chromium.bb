@@ -15,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -41,8 +42,8 @@ PP_Resource Create(PP_Instance instance_id,
   return chooser->GetReference();
 }
 
-bool IsFileChooser(PP_Resource resource) {
-  return !!Resource::GetAs<FileChooser>(resource);
+PP_Bool IsFileChooser(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<FileChooser>(resource));
 }
 
 int32_t Show(PP_Resource chooser_id, PP_CompletionCallback callback) {

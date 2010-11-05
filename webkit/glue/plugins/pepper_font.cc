@@ -14,6 +14,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextRun.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_string.h"
@@ -87,8 +88,8 @@ WebFontDescription PPFontDescToWebFontDesc(const PP_FontDescription_Dev& font) {
     result.family = UTF8ToUTF16(face_name->value());
   result.genericFamily = PP_FONTFAMILY_TO_WEB_FONTFAMILY(font.family);
   result.size = static_cast<float>(font.size);
-  result.italic = font.italic;
-  result.smallCaps = font.small_caps;
+  result.italic = PPBoolToBool(font.italic);
+  result.smallCaps = PPBoolToBool(font.small_caps);
   result.weight = static_cast<WebFontDescription::Weight>(font.weight);
   result.letterSpacing = static_cast<short>(font.letter_spacing);
   result.wordSpacing = static_cast<short>(font.word_spacing);
@@ -102,7 +103,8 @@ bool PPTextRunToWebTextRun(const PP_TextRun_Dev* run, WebTextRun* output) {
   if (!text_string)
     return false;
   *output = WebTextRun(UTF8ToUTF16(text_string->value()),
-                       run->rtl, run->override_direction);
+                       PPBoolToBool(run->rtl),
+                       PPBoolToBool(run->override_direction));
   return true;
 }
 
@@ -119,31 +121,31 @@ PP_Resource Create(PP_Module module_id,
   return font->GetReference();
 }
 
-bool IsFont(PP_Resource resource) {
-  return !!Resource::GetAs<Font>(resource).get();
+PP_Bool IsFont(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Font>(resource).get());
 }
 
-bool Describe(PP_Resource font_id,
+PP_Bool Describe(PP_Resource font_id,
               PP_FontDescription_Dev* description,
               PP_FontMetrics_Dev* metrics) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
-    return false;
-  return font->Describe(description, metrics);
+    return PP_FALSE;
+  return BoolToPPBool(font->Describe(description, metrics));
 }
 
-bool DrawTextAt(PP_Resource font_id,
+PP_Bool DrawTextAt(PP_Resource font_id,
                 PP_Resource image_data,
                 const PP_TextRun_Dev* text,
                 const PP_Point* position,
                 uint32_t color,
                 const PP_Rect* clip,
-                bool image_data_is_opaque) {
+                PP_Bool image_data_is_opaque) {
   scoped_refptr<Font> font(Resource::GetAs<Font>(font_id));
   if (!font.get())
-    return false;
-  return font->DrawTextAt(image_data, text, position, color, clip,
-                          image_data_is_opaque);
+    return PP_FALSE;
+  return BoolToPPBool(font->DrawTextAt(image_data, text, position, color, clip,
+                                       PPBoolToBool(image_data_is_opaque)));
 }
 
 int32_t MeasureText(PP_Resource font_id, const PP_TextRun_Dev* text) {
@@ -211,8 +213,8 @@ bool Font::Describe(PP_FontDescription_Dev* description,
   description->family = static_cast<PP_FontFamily_Dev>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);
   description->weight = static_cast<PP_FontWeight_Dev>(web_desc.weight);
-  description->italic = web_desc.italic;
-  description->small_caps = web_desc.smallCaps;
+  description->italic = BoolToPPBool(web_desc.italic);
+  description->small_caps = BoolToPPBool(web_desc.smallCaps);
 
   metrics->height = font_->height();
   metrics->ascent = font_->ascent();

@@ -5,12 +5,13 @@
 #ifndef PPAPI_C_DEV_PPB_AUDIO_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_DEV_INTERFACE "PPB_Audio(Dev);0.2"
+#define PPB_AUDIO_DEV_INTERFACE "PPB_Audio(Dev);0.3"
 
 // Callback function type for SetCallback.
 typedef void (*PPB_Audio_Callback)(void* sample_buffer,
@@ -49,23 +50,23 @@ struct PPB_Audio_Dev {
                         PPB_Audio_Callback audio_callback, void* user_data);
 
   /**
-   * Returns true if the given resource is an Audio resource.
+   * Returns PP_TRUE if the given resource is an Audio resource, PP_FALSE
+   * otherwise.
    */
-  bool (*IsAudio)(PP_Resource resource);
+  PP_Bool (*IsAudio)(PP_Resource resource);
 
   // Get the current configuration.
   PP_Resource (*GetCurrentConfig)(PP_Resource audio);
 
   // Start the playback. Begin periodically calling the callback. If called
-  // while playback is already in progress, will return true and be a no-op.
-  // On error, return false.
-  bool (*StartPlayback)(PP_Resource audio);
+  // while playback is already in progress, will return PP_TRUE and be a no-op.
+  // On error, return PP_FALSE.
+  PP_Bool (*StartPlayback)(PP_Resource audio);
 
   // Stop the playback. If playback is already stopped, this is a no-op and
-  // returns true. On error, returns false. If a callback is in progress,
+  // returns PP_TRUE. On error, returns PP_FALSE. If a callback is in progress,
   // StopPlayback will block until callback completes.
-  bool (*StopPlayback)(PP_Resource audio);
+  PP_Bool (*StopPlayback)(PP_Resource audio);
 };
 
 #endif  // PPAPI_C_DEV_PPB_DEVICE_CONTEXT_AUDIO_DEV_H_
-

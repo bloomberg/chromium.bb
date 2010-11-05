@@ -5,12 +5,13 @@
 #ifndef PPAPI_C_DEV_PPB_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FONT_DEV_INTERFACE "PPB_Font(Dev);0.1"
+#define PPB_FONT_DEV_INTERFACE "PPB_Font(Dev);0.2"
 
 struct PP_Point;
 struct PP_Rect;
@@ -55,8 +56,8 @@ struct PP_FontDescription_Dev {
   // Normally you will use either PP_FONTWEIGHT_NORMAL or PP_FONTWEIGHT_BOLD.
   PP_FontWeight_Dev weight;
 
-  bool italic;
-  bool small_caps;
+  PP_Bool italic;
+  PP_Bool small_caps;
 
   // Adjustment to apply to letter and word spacing, respectively. Initialize
   // to 0 to get normal spacing. Negative values bring letters/words closer
@@ -78,11 +79,12 @@ struct PP_TextRun_Dev {
   // a 0-length string).
   struct PP_Var text;
 
-  // Set to true if the text is right-to-left.
-  bool rtl;
+  // Set to PP_TRUE if the text is right-to-left.
+  PP_Bool rtl;
 
-  // Set to true to force the directionality of the text regardless of content
-  bool override_direction;
+  // Set to PP_TRUE to force the directionality of the text regardless of
+  // content
+  PP_Bool override_direction;
 };
 
 struct PPB_Font_Dev {
@@ -91,9 +93,9 @@ struct PPB_Font_Dev {
   PP_Resource (*Create)(PP_Module module,
                         const struct PP_FontDescription_Dev* description);
 
-  // Returns true if the given resource is a Font. Returns false if the
+  // Returns PP_TRUE if the given resource is a Font. Returns PP_FALSE if the
   // resource is invalid or some type other than a Font.
-  bool (*IsFont)(PP_Resource resource);
+  PP_Bool (*IsFont)(PP_Resource resource);
 
   // Loads the description and metrics of the font into the given structures.
   // The description will be different than the description the font was
@@ -104,11 +106,11 @@ struct PPB_Font_Dev {
   // this will contain the string and will have a reference count of 1. The
   // plugin is responsible for calling Release on this var.
   //
-  // Returns true on success, false if the font is invalid or if the Var in
-  // the description isn't Null (to prevent leaks).
-  bool (*Describe)(PP_Resource font,
-                   struct PP_FontDescription_Dev* description,
-                   struct PP_FontMetrics_Dev* metrics);
+  // Returns PP_TRUE on success, PP_FALSE if the font is invalid or if the Var
+  // in the description isn't Null (to prevent leaks).
+  PP_Bool (*Describe)(PP_Resource font,
+                      struct PP_FontDescription_Dev* description,
+                      struct PP_FontMetrics_Dev* metrics);
 
   // Draws the text to the image buffer.
   //
@@ -121,18 +123,18 @@ struct PPB_Font_Dev {
   //
   // The image_data_is_opaque flag indicates whether subpixel antialiasing can
   // be performend, if it is supported. When the image below the text is
-  // opaque, subpixel antialiasing is supported and you should set this to true
-  // to pick up the user's default preferences. If your plugin is partially
-  // transparent, then subpixel antialiasing is not possible and grayscale
-  // antialiasing will be used instead (assuming the user has antialiasing
-  // enabled at all).
-  bool (*DrawTextAt)(PP_Resource font,
-                     PP_Resource image_data,
-                     const struct PP_TextRun_Dev* text,
-                     const struct PP_Point* position,
-                     uint32_t color,
-                     const struct PP_Rect* clip,
-                     bool image_data_is_opaque);
+  // opaque, subpixel antialiasing is supported and you should set this to
+  // PP_TRUE to pick up the user's default preferences. If your plugin is
+  // partially transparent, then subpixel antialiasing is not possible and
+  // grayscale antialiasing will be used instead (assuming the user has
+  // antialiasing enabled at all).
+  PP_Bool (*DrawTextAt)(PP_Resource font,
+                        PP_Resource image_data,
+                        const struct PP_TextRun_Dev* text,
+                        const struct PP_Point* position,
+                        uint32_t color,
+                        const struct PP_Rect* clip,
+                        PP_Bool image_data_is_opaque);
 
   // Returns the width of the given string. If the font is invalid or the var
   // isn't a valid string, this will return -1.

@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
@@ -31,16 +32,16 @@ PP_Resource Create(PP_Module module_id, int32_t size) {
   return buffer->GetReference();
 }
 
-bool IsBuffer(PP_Resource resource) {
-  return !!Resource::GetAs<Buffer>(resource);
+PP_Bool IsBuffer(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Buffer>(resource));
 }
 
-bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
+PP_Bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
   scoped_refptr<Buffer> buffer(Resource::GetAs<Buffer>(resource));
   if (!buffer)
-    return false;
+    return PP_FALSE;
   buffer->Describe(size_in_bytes);
-  return true;
+  return PP_TRUE;
 }
 
 void* Map(PP_Resource resource) {

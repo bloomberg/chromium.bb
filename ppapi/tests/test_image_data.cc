@@ -61,7 +61,7 @@ std::string TestImageData::TestInvalidSize() {
   PP_Resource rsrc = image_data_interface_->Create(
       pp::Module::Get()->pp_module(),
       PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-      &negative_height, true);
+      &negative_height, PP_TRUE);
   if (rsrc)
     return "Negative height accepted";
 
@@ -71,7 +71,7 @@ std::string TestImageData::TestInvalidSize() {
   rsrc = image_data_interface_->Create(
       pp::Module::Get()->pp_module(),
       PP_IMAGEDATAFORMAT_BGRA_PREMUL,
-      &negative_width, true);
+      &negative_width, PP_TRUE);
   if (rsrc)
     return "Negative width accepted";
 
@@ -137,4 +137,3 @@ std::string TestImageData::TestIsImageData() {
 
   return "";
 }
-

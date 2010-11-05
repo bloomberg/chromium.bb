@@ -9,6 +9,7 @@
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
@@ -17,7 +18,7 @@ namespace pepper {
 
 namespace {
 
-bool GetConfig(PP_Instance instance_id,
+PP_Bool GetConfig(PP_Instance instance_id,
                PP_VideoCodecId_Dev codec,
                PP_VideoConfig_Dev* configs,
                int32_t config_size,
@@ -25,7 +26,7 @@ bool GetConfig(PP_Instance instance_id,
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   *num_config = 0;
   if (!instance)
-    return false;
+    return PP_FALSE;
 
   // Get configs based on codec.
 
@@ -35,7 +36,7 @@ bool GetConfig(PP_Instance instance_id,
 
   // Update *num_config.
 
-  return true;
+  return PP_TRUE;
 }
 
 PP_Resource Create(PP_Instance instance_id,
@@ -52,15 +53,15 @@ PP_Resource Create(PP_Instance instance_id,
   return decoder->GetReference();
 }
 
-bool Decode(PP_Resource decoder_id,
+PP_Bool Decode(PP_Resource decoder_id,
             PP_VideoCompressedDataBuffer_Dev* input_buffer) {
   scoped_refptr<VideoDecoder> decoder(
       Resource::GetAs<VideoDecoder>(decoder_id));
   if (!decoder)
-    return false;
+    return PP_FALSE;
 
   decoder->Decode(*input_buffer);
-  return true;
+  return PP_TRUE;
 }
 
 int32_t Flush(PP_Resource decoder_id, PP_CompletionCallback callback) {
@@ -72,14 +73,14 @@ int32_t Flush(PP_Resource decoder_id, PP_CompletionCallback callback) {
   return decoder->Flush(callback);
 }
 
-bool ReturnUncompressedDataBuffer(PP_Resource decoder_id,
+PP_Bool ReturnUncompressedDataBuffer(PP_Resource decoder_id,
                                   PP_VideoUncompressedDataBuffer_Dev* buffer) {
   scoped_refptr<VideoDecoder> decoder(
       Resource::GetAs<VideoDecoder>(decoder_id));
   if (!decoder)
-    return false;
+    return PP_FALSE;
 
-  return decoder->ReturnUncompressedDataBuffer(*buffer);
+  return BoolToPPBool(decoder->ReturnUncompressedDataBuffer(*buffer));
 }
 
 const PPB_VideoDecoder_Dev ppb_videodecoder = {

@@ -28,6 +28,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/dev/url_loader_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
@@ -38,19 +39,19 @@ namespace pp {
 
 // PPP_Instance implementation -------------------------------------------------
 
-bool Instance_DidCreate(PP_Instance pp_instance,
-                        uint32_t argc,
-                        const char* argn[],
-                        const char* argv[]) {
+PP_Bool Instance_DidCreate(PP_Instance pp_instance,
+                           uint32_t argc,
+                           const char* argn[],
+                           const char* argv[]) {
   Module* module_singleton = Module::Get();
   if (!module_singleton)
-    return false;
+    return PP_FALSE;
 
   Instance* instance = module_singleton->CreateInstance(pp_instance);
   if (!instance)
-    return false;
+    return PP_FALSE;
   module_singleton->current_instances_[pp_instance] = instance;
-  return instance->Init(argc, argn, argv);
+  return BoolToPPBool(instance->Init(argc, argn, argv));
 }
 
 void Instance_DidDestroy(PP_Instance instance) {
@@ -80,36 +81,37 @@ void Instance_DidChangeView(PP_Instance pp_instance,
   instance->DidChangeView(*position, *clip);
 }
 
-void Instance_DidChangeFocus(PP_Instance pp_instance, bool has_focus) {
+void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
   Module* module_singleton = Module::Get();
   if (!module_singleton)
     return;
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
     return;
-  instance->DidChangeFocus(has_focus);
+  instance->DidChangeFocus(PPBoolToBool(has_focus));
 }
 
-bool Instance_HandleInputEvent(PP_Instance pp_instance,
-                               const PP_InputEvent* event) {
+PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
+                                  const PP_InputEvent* event) {
   Module* module_singleton = Module::Get();
   if (!module_singleton)
-    return false;
+    return PP_FALSE;
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
-    return false;
-  return instance->HandleInputEvent(*event);
+    return PP_FALSE;
+  return BoolToPPBool(instance->HandleInputEvent(*event));
 }
 
-bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
-                                 PP_Resource pp_url_loader) {
+PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
+                                    PP_Resource pp_url_loader) {
   Module* module_singleton = Module::Get();
   if (!module_singleton)
-    return false;
+    return PP_FALSE;
   Instance* instance = module_singleton->InstanceForPPInstance(pp_instance);
   if (!instance)
-    return false;
-  return instance->HandleDocumentLoad(URLLoader_Dev(pp_url_loader));
+    return PP_FALSE;
+  return BoolToPPBool(
+      instance->HandleDocumentLoad(URLLoader_Dev(pp_url_loader)));
 }
 
 PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {

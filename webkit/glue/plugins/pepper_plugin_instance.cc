@@ -48,6 +48,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_graphics_2d.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
 #include "webkit/glue/plugins/pepper_fullscreen_container.h"
@@ -160,18 +161,18 @@ PP_Var GetOwnerElementObject(PP_Instance instance_id) {
   return instance->GetOwnerElementObject();
 }
 
-bool BindGraphics(PP_Instance instance_id, PP_Resource device_id) {
+PP_Bool BindGraphics(PP_Instance instance_id, PP_Resource device_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
-  return instance->BindGraphics(device_id);
+    return PP_FALSE;
+  return BoolToPPBool(instance->BindGraphics(device_id));
 }
 
-bool IsFullFrame(PP_Instance instance_id) {
+PP_Bool IsFullFrame(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
-  return instance->full_frame();
+    return PP_FALSE;
+  return BoolToPPBool(instance->full_frame());
 }
 
 PP_Var ExecuteScript(PP_Instance instance_id,
@@ -193,14 +194,14 @@ const PPB_Instance ppb_instance = {
 
 void NumberOfFindResultsChanged(PP_Instance instance_id,
                                 int32_t total,
-                                bool final_result) {
+                                PP_Bool final_result) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
 
   DCHECK_NE(instance->find_identifier(), -1);
   instance->delegate()->NumberOfFindResultsChanged(
-      instance->find_identifier(), total, final_result);
+      instance->find_identifier(), total, PPBoolToBool(final_result));
 }
 
 void SelectedFindResultChanged(PP_Instance instance_id,
@@ -219,18 +220,18 @@ const PPB_Find_Dev ppb_find = {
   &SelectedFindResultChanged,
 };
 
-bool IsFullscreen(PP_Instance instance_id) {
+PP_Bool IsFullscreen(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
-  return instance->IsFullscreen();
+    return PP_FALSE;
+  return BoolToPPBool(instance->IsFullscreen());
 }
 
-bool SetFullscreen(PP_Instance instance_id, bool fullscreen) {
+PP_Bool SetFullscreen(PP_Instance instance_id, PP_Bool fullscreen) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
-    return false;
-  return instance->SetFullscreen(fullscreen);
+    return PP_FALSE;
+  return BoolToPPBool(instance->SetFullscreen(PPBoolToBool(fullscreen)));
 }
 
 const PPB_Fullscreen_Dev ppb_fullscreen = {
@@ -502,13 +503,16 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
     argc++;
   }
 
-  return instance_interface_->DidCreate(pp_instance(),
-                                        argc, argn.get(), argv.get());
+  return PPBoolToBool(instance_interface_->DidCreate(pp_instance(),
+                                                     argc,
+                                                     argn.get(),
+                                                     argv.get()));
 }
 
 bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
   Resource::ScopedResourceId resource(loader);
-  return instance_interface_->HandleDocumentLoad(pp_instance(), resource.id);
+  return PPBoolToBool(instance_interface_->HandleDocumentLoad(pp_instance(),
+                                                              resource.id));
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -518,8 +522,10 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
 
   // Each input event may generate more than one PP_InputEvent.
   bool rv = false;
-  for (size_t i = 0; i < pp_events.size(); i++)
-    rv |= instance_interface_->HandleInputEvent(pp_instance(), &pp_events[i]);
+  for (size_t i = 0; i < pp_events.size(); i++) {
+    rv |= PPBoolToBool(instance_interface_->HandleInputEvent(pp_instance(),
+                                                             &pp_events[i]));
+  }
 
   if (cursor_.get())
     *cursor_info = *cursor_;
@@ -555,8 +561,10 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
 
   bool old_plugin_focus = PluginHasFocus();
   has_webkit_focus_ = has_focus;
-  if (PluginHasFocus() != old_plugin_focus)
-    instance_interface_->DidChangeFocus(pp_instance(), PluginHasFocus());
+  if (PluginHasFocus() != old_plugin_focus) {
+    instance_interface_->DidChangeFocus(pp_instance(),
+                                        BoolToPPBool(PluginHasFocus()));
+  }
 }
 
 void PluginInstance::SetContentAreaFocus(bool has_focus) {
@@ -565,8 +573,10 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 
   bool old_plugin_focus = PluginHasFocus();
   has_content_area_focus_ = has_focus;
-  if (PluginHasFocus() != old_plugin_focus)
-    instance_interface_->DidChangeFocus(pp_instance(), PluginHasFocus());
+  if (PluginHasFocus() != old_plugin_focus) {
+    instance_interface_->DidChangeFocus(pp_instance(),
+                                        BoolToPPBool(PluginHasFocus()));
+  }
 }
 
 void PluginInstance::ViewInitiatedPaint() {
@@ -610,7 +620,8 @@ string16 PluginInstance::GetSelectedText(bool html) {
   if (!LoadSelectionInterface())
     return string16();
 
-  PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(), html);
+  PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(),
+                                                           BoolToPPBool(html));
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
   Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
   if (!string)
@@ -636,7 +647,7 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
 void PluginInstance::Zoom(double factor, bool text_only) {
   if (!LoadZoomInterface())
     return;
-  plugin_zoom_interface_->Zoom(pp_instance(), factor, text_only);
+  plugin_zoom_interface_->Zoom(pp_instance(), factor, BoolToPPBool(text_only));
 }
 
 bool PluginInstance::StartFind(const string16& search_text,
@@ -645,15 +656,17 @@ bool PluginInstance::StartFind(const string16& search_text,
   if (!LoadFindInterface())
     return false;
   find_identifier_ = identifier;
-  return plugin_find_interface_->StartFind(
-      pp_instance(),
-      UTF16ToUTF8(search_text.c_str()).c_str(),
-      case_sensitive);
+  return PPBoolToBool(
+      plugin_find_interface_->StartFind(
+          pp_instance(),
+          UTF16ToUTF8(search_text.c_str()).c_str(),
+          BoolToPPBool(case_sensitive)));
 }
 
 void PluginInstance::SelectFindResult(bool forward) {
   if (LoadFindInterface())
-    plugin_find_interface_->SelectFindResult(pp_instance(), forward);
+    plugin_find_interface_->SelectFindResult(pp_instance(),
+                                             BoolToPPBool(forward));
 }
 
 void PluginInstance::StopFind() {
@@ -759,7 +772,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   RectToPPRect(printable_area, &print_settings.printable_area);
   print_settings.dpi = printer_dpi;
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
-  print_settings.grayscale = false;
+  print_settings.grayscale = PP_FALSE;
   print_settings.format = format;
   int num_pages = plugin_print_interface_->Begin(pp_instance(),
                                                  &print_settings);

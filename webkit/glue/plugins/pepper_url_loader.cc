@@ -19,6 +19,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
@@ -50,8 +51,8 @@ PP_Resource Create(PP_Instance instance_id) {
   return loader->GetReference();
 }
 
-bool IsURLLoader(PP_Resource resource) {
-  return !!Resource::GetAs<URLLoader>(resource);
+PP_Bool IsURLLoader(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<URLLoader>(resource));
 }
 
 int32_t Open(PP_Resource loader_id,
@@ -78,24 +79,26 @@ int32_t FollowRedirect(PP_Resource loader_id,
   return loader->FollowRedirect(callback);
 }
 
-bool GetUploadProgress(PP_Resource loader_id,
+PP_Bool GetUploadProgress(PP_Resource loader_id,
                        int64_t* bytes_sent,
                        int64_t* total_bytes_to_be_sent) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader)
-    return false;
-  return loader->GetUploadProgress(bytes_sent, total_bytes_to_be_sent);
-  return true;
+    return PP_FALSE;
+
+  return BoolToPPBool(loader->GetUploadProgress(bytes_sent,
+                                                total_bytes_to_be_sent));
 }
 
-bool GetDownloadProgress(PP_Resource loader_id,
-                         int64_t* bytes_received,
-                         int64_t* total_bytes_to_be_received) {
+PP_Bool GetDownloadProgress(PP_Resource loader_id,
+                            int64_t* bytes_received,
+                            int64_t* total_bytes_to_be_received) {
   scoped_refptr<URLLoader> loader(Resource::GetAs<URLLoader>(loader_id));
   if (!loader)
-    return false;
-  return loader->GetDownloadProgress(bytes_received,
-                                     total_bytes_to_be_received);
+    return PP_FALSE;
+
+  return BoolToPPBool(loader->GetDownloadProgress(bytes_received,
+                                                  total_bytes_to_be_received));
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader_id) {

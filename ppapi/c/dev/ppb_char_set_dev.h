@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_CHAR_SET_DEV_INTERFACE "PPB_CharSet(Dev);0.1"
+#define PPB_CHAR_SET_DEV_INTERFACE "PPB_CharSet(Dev);0.2"
 
 // Specifies the error behavior for the character set conversion functions.
 // This will affect two cases: where the input is not encoded correctly, and
@@ -50,7 +50,7 @@ struct PPB_CharSet_Dev {
   // set was unknown.
   char* (*UTF16ToCharSet)(const uint16_t* utf16, uint32_t utf16_len,
                           const char* output_char_set,
-                          PP_CharSet_ConversionError on_error,
+                          enum PP_CharSet_ConversionError on_error,
                           uint32_t* output_length);
 
   // Same as UTF16ToCharSet except converts in the other direction. The input
@@ -63,7 +63,7 @@ struct PPB_CharSet_Dev {
   // is incorrect.
   uint16_t* (*CharSetToUTF16)(const char* input, uint32_t input_len,
                               const char* input_char_set,
-                              PP_CharSet_ConversionError on_error,
+                              enum PP_CharSet_ConversionError on_error,
                               uint32_t* output_length);
 
   // Returns a string var representing the current multi-byte character set of
@@ -72,7 +72,7 @@ struct PPB_CharSet_Dev {
   // WARNING: You really shouldn't be using this function unless you're dealing
   // with legacy data. You should be using UTF-8 or UTF-16 and you don't have
   // to worry about the character sets.
-  PP_Var (*GetDefaultCharSet)(PP_Module module);
+  struct PP_Var (*GetDefaultCharSet)(PP_Module module);
 };
 
 #endif  // PPAPI_C_DEV_PPB_CHAR_SET_DEV_H_

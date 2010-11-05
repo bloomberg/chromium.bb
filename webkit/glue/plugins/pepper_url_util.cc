@@ -13,6 +13,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_var.h"
@@ -115,46 +116,46 @@ PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
                            components);
 }
 
-bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
+PP_Bool IsSameSecurityOrigin(PP_Var url_a, PP_Var url_b) {
   scoped_refptr<StringVar> url_a_string(StringVar::FromPPVar(url_a));
   scoped_refptr<StringVar> url_b_string(StringVar::FromPPVar(url_b));
   if (!url_a_string || !url_b_string)
-    return false;
+    return PP_FALSE;
 
   GURL gurl_a(url_a_string->value());
   GURL gurl_b(url_b_string->value());
   if (!gurl_a.is_valid() || !gurl_b.is_valid())
-    return false;
+    return PP_FALSE;
 
-  return gurl_a.GetOrigin() == gurl_b.GetOrigin();
+  return BoolToPPBool(gurl_a.GetOrigin() == gurl_b.GetOrigin());
 }
 
-bool DocumentCanRequest(PP_Instance instance, PP_Var url) {
+PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) {
   scoped_refptr<StringVar> url_string(StringVar::FromPPVar(url));
   if (!url_string)
-    return false;
+    return PP_FALSE;
 
   WebKit::WebSecurityOrigin security_origin;
   if (!SecurityOriginForInstance(instance, &security_origin))
-    return false;
+    return PP_FALSE;
 
   GURL gurl(url_string->value());
   if (!gurl.is_valid())
-    return false;
+    return PP_FALSE;
 
-  return security_origin.canRequest(gurl);
+  return BoolToPPBool(security_origin.canRequest(gurl));
 }
 
-bool DocumentCanAccessDocument(PP_Instance active, PP_Instance target) {
+PP_Bool DocumentCanAccessDocument(PP_Instance active, PP_Instance target) {
   WebKit::WebSecurityOrigin active_origin;
   if (!SecurityOriginForInstance(active, &active_origin))
-    return false;
+    return PP_FALSE;
 
   WebKit::WebSecurityOrigin target_origin;
   if (!SecurityOriginForInstance(active, &target_origin))
-    return false;
+    return PP_FALSE;
 
-  return active_origin.canAccess(target_origin);
+  return BoolToPPBool(active_origin.canAccess(target_origin));
 }
 
 }  // namespace

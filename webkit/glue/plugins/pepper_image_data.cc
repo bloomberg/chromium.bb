@@ -16,6 +16,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
@@ -27,38 +28,42 @@ PP_ImageDataFormat GetNativeImageDataFormat() {
   return ImageData::GetNativeImageDataFormat();
 }
 
-bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  return ImageData::IsImageDataFormatSupported(format);
+PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
+  return BoolToPPBool(ImageData::IsImageDataFormatSupported(format));
 }
 
 PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
-                   bool init_to_zero) {
+                   PP_Bool init_to_zero) {
   PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 
   scoped_refptr<ImageData> data(new ImageData(module));
-  if (!data->Init(format, size->width, size->height, init_to_zero))
+  if (!data->Init(format,
+                  size->width,
+                  size->height,
+                  PPBoolToBool(init_to_zero))) {
     return 0;
+  }
 
   return data->GetReference();
 }
 
-bool IsImageData(PP_Resource resource) {
-  return !!Resource::GetAs<ImageData>(resource);
+PP_Bool IsImageData(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<ImageData>(resource));
 }
 
-bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
+PP_Bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
   // Give predictable values on failure.
   memset(desc, 0, sizeof(PP_ImageDataDesc));
 
   scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
   if (!image_data)
-    return false;
+    return PP_FALSE;
   image_data->Describe(desc);
-  return true;
+  return PP_TRUE;
 }
 
 void* Map(PP_Resource resource) {

@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/dev/graphics_3d_dev.h"
 
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/module.h"
@@ -30,25 +31,34 @@ namespace pp {
 // static
 bool Graphics3D_Dev::GetConfigs(int32_t *configs, int32_t config_size,
                                 int32_t *num_config) {
-  if (graphics_3d_f)
-    return graphics_3d_f->GetConfigs(configs, config_size, num_config);
+  if (graphics_3d_f) {
+    return PPBoolToBool(graphics_3d_f->GetConfigs(configs,
+                                                  config_size,
+                                                  num_config));
+  }
   return false;
 }
 
 // static
 bool Graphics3D_Dev::ChooseConfig(const int32_t *attrib_list, int32_t *configs,
                                   int32_t config_size, int32_t *num_config) {
-  if (graphics_3d_f)
-    return graphics_3d_f->ChooseConfig(attrib_list, configs, config_size,
-                                       num_config);
+  if (graphics_3d_f) {
+    return PPBoolToBool(graphics_3d_f->ChooseConfig(attrib_list,
+                                                    configs,
+                                                    config_size,
+                                                    num_config));
+  }
   return false;
 }
 
 // static
 bool Graphics3D_Dev::GetConfigAttrib(int32_t config, int32_t attribute,
                                      int32_t *value) {
-  if (graphics_3d_f)
-    return graphics_3d_f->GetConfigAttrib(config, attribute, value);
+  if (graphics_3d_f) {
+    return PPBoolToBool(graphics_3d_f->GetConfigAttrib(config,
+                                                       attribute,
+                                                       value));
+  }
   return false;
 }
 
@@ -114,4 +124,3 @@ bool Graphics3D_Dev::SwapBuffers() const {
 }
 
 }  // namespace pp
-

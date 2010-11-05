@@ -19,6 +19,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -112,28 +113,28 @@ void ConvertImageData(ImageData* src_image, const SkIRect& src_rect,
 
 PP_Resource Create(PP_Module module_id,
                    const PP_Size* size,
-                   bool is_always_opaque) {
+                   PP_Bool is_always_opaque) {
   PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 
   scoped_refptr<Graphics2D> context(new Graphics2D(module));
-  if (!context->Init(size->width, size->height, is_always_opaque))
+  if (!context->Init(size->width, size->height, PPBoolToBool(is_always_opaque)))
     return 0;
   return context->GetReference();
 }
 
-bool IsGraphics2D(PP_Resource resource) {
-  return !!Resource::GetAs<Graphics2D>(resource);
+PP_Bool IsGraphics2D(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Graphics2D>(resource));
 }
 
-bool Describe(PP_Resource graphics_2d,
+PP_Bool Describe(PP_Resource graphics_2d,
               PP_Size* size,
-              bool* is_always_opaque) {
+              PP_Bool* is_always_opaque) {
   scoped_refptr<Graphics2D> context(
       Resource::GetAs<Graphics2D>(graphics_2d));
   if (!context)
-    return false;
+    return PP_FALSE;
   return context->Describe(size, is_always_opaque);
 }
 
@@ -242,11 +243,11 @@ bool Graphics2D::Init(int width, int height, bool is_always_opaque) {
   return true;
 }
 
-bool Graphics2D::Describe(PP_Size* size, bool* is_always_opaque) {
+PP_Bool Graphics2D::Describe(PP_Size* size, PP_Bool* is_always_opaque) {
   size->width = image_data_->width();
   size->height = image_data_->height();
-  *is_always_opaque = false;  // TODO(brettw) implement this.
-  return true;
+  *is_always_opaque = PP_FALSE;  // TODO(brettw) implement this.
+  return PP_TRUE;
 }
 
 void Graphics2D::PaintImageData(PP_Resource image_data,

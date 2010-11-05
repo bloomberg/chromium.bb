@@ -5,13 +5,14 @@
 #ifndef PPAPI_C_PPB_VAR_DEPRECATED_H_
 #define PPAPI_C_PPB_VAR_DEPRECATED_H_
 
+#include "ppapi/c/dev/deprecated_bool.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
 struct PPP_Class_Deprecated;
 
-#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.1"
+#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.2"
 
 /**
  * @file
@@ -240,4 +241,3 @@ struct PPB_Var_Deprecated {
  * End addtogroup PPB
  */
 #endif  // PPAPI_C_PPB_VAR_DEPRECATED_H_
-

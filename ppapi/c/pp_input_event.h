@@ -13,6 +13,7 @@
  * @{
  */
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
@@ -145,7 +146,7 @@ struct PP_InputEvent_Wheel {
   float wheel_ticks_x;
   float wheel_ticks_y;
 
-  bool scroll_by_page;
+  PP_Bool scroll_by_page;
 };
 
 struct PP_InputEvent {

@@ -12,6 +12,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -30,17 +31,18 @@ namespace pepper {
 
 namespace {
 
-PP_Resource Create(PP_Instance instance_id, bool vertical) {
+PP_Resource Create(PP_Instance instance_id, PP_Bool vertical) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 
-  scoped_refptr<Scrollbar> scrollbar(new Scrollbar(instance, vertical));
+  scoped_refptr<Scrollbar> scrollbar(new Scrollbar(instance,
+                                                   PPBoolToBool(vertical)));
   return scrollbar->GetReference();
 }
 
-bool IsScrollbar(PP_Resource resource) {
-  return !!Resource::GetAs<Scrollbar>(resource);
+PP_Bool IsScrollbar(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Scrollbar>(resource));
 }
 
 uint32_t GetThickness() {

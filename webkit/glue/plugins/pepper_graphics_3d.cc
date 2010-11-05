@@ -8,6 +8,7 @@
 #include "base/singleton.h"
 #include "base/thread_local.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
+#include "webkit/glue/plugins/pepper_common.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 namespace pepper {
@@ -22,24 +23,24 @@ typedef Singleton<base::ThreadLocalPointer<Graphics3D>,
 // Size of the transfer buffer.
 enum { kTransferBufferSize = 512 * 1024 };
 
-bool IsGraphics3D(PP_Resource resource) {
-  return !!Resource::GetAs<Graphics3D>(resource);
+PP_Bool IsGraphics3D(PP_Resource resource) {
+  return BoolToPPBool(!!Resource::GetAs<Graphics3D>(resource));
 }
 
-bool GetConfigs(int32_t* configs, int32_t config_size, int32_t* num_config) {
+PP_Bool GetConfigs(int32_t* configs, int32_t config_size, int32_t* num_config) {
   // TODO(neb): Implement me!
-  return false;
+  return PP_FALSE;
 }
 
-bool ChooseConfig(const int32_t* attrib_list, int32_t* configs,
-                  int32_t config_size, int32_t* num_config) {
+PP_Bool ChooseConfig(const int32_t* attrib_list, int32_t* configs,
+                     int32_t config_size, int32_t* num_config) {
   // TODO(neb): Implement me!
-  return false;
+  return PP_FALSE;
 }
 
-bool GetConfigAttrib(int32_t config, int32_t attribute, int32_t* value) {
+PP_Bool GetConfigAttrib(int32_t config, int32_t attribute, int32_t* value) {
   // TODO(neb): Implement me!
-  return false;
+  return PP_FALSE;
 }
 
 const char* QueryString(int32_t name) {
@@ -80,13 +81,13 @@ void* GetProcAddress(const char* name) {
   return NULL;
 }
 
-bool MakeCurrent(PP_Resource graphics3d) {
+PP_Bool MakeCurrent(PP_Resource graphics3d) {
   if (!graphics3d) {
     Graphics3D::ResetCurrent();
-    return true;
+    return PP_TRUE;
   } else {
     scoped_refptr<Graphics3D> context(Resource::GetAs<Graphics3D>(graphics3d));
-    return context.get() && context->MakeCurrent();
+    return BoolToPPBool(context.get() && context->MakeCurrent());
   }
 }
 
@@ -95,9 +96,9 @@ PP_Resource GetCurrentContext() {
   return currentContext ? currentContext->GetReference() : 0;
 }
 
-bool SwapBuffers(PP_Resource graphics3d) {
+PP_Bool SwapBuffers(PP_Resource graphics3d) {
   scoped_refptr<Graphics3D> context(Resource::GetAs<Graphics3D>(graphics3d));
-  return context && context->SwapBuffers();
+  return BoolToPPBool(context && context->SwapBuffers());
 }
 
 uint32_t GetError() {

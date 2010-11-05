@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 #define PPAPI_C_DEV_PPB_FILE_CHOOSER_DEV_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
@@ -27,7 +28,7 @@ struct PP_FileChooserOptions_Dev {
   const char* accept_mime_types;
 };
 
-#define PPB_FILECHOOSER_DEV_INTERFACE "PPB_FileChooser(Dev);0.1"
+#define PPB_FILECHOOSER_DEV_INTERFACE "PPB_FileChooser(Dev);0.2"
 
 struct PPB_FileChooser_Dev {
   // Creates a file chooser dialog with the specified options.  The chooser is
@@ -37,9 +38,9 @@ struct PPB_FileChooser_Dev {
   PP_Resource (*Create)(PP_Instance instance,
                         const struct PP_FileChooserOptions_Dev* options);
 
-  // Returns true if the given resource is a FileChooser. Returns false if the
-  // resource is invalid or some type other than a FileChooser.
-  bool (*IsFileChooser)(PP_Resource resource);
+  // Returns PP_TRUE if the given resource is a FileChooser. Returns PP_FALSE
+  // if the resource is invalid or some type other than a FileChooser.
+  PP_Bool (*IsFileChooser)(PP_Resource resource);
 
   // Prompts the user to choose a file or files.
   int32_t (*Show)(PP_Resource chooser, struct PP_CompletionCallback callback);
