@@ -553,9 +553,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// DISABLED crbug.com/61849
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationValueChanged) {
+                       TestNotificationValueChanged) {
   GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"
       "</body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -564,13 +563,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"old value");
   AccessibleChecker text_field_div_checker(L"", L"div", L"");
   AccessibleChecker text_field_checker(L"", ROLE_SYSTEM_TEXT, L"old value");
   text_field_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  text_field_div_checker.AppendExpectedChild(&static_text_checker);
   text_field_checker.AppendExpectedChild(&text_field_div_checker);
   body_checker.AppendExpectedChild(&text_field_checker);
   document_checker.AppendExpectedChild(&body_checker);
@@ -583,7 +580,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the accessibility tree of the browser has been updated.
   text_field_checker.SetExpectedValue(L"new value");
-  static_text_checker.SetExpectedValue(L"new value");
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 

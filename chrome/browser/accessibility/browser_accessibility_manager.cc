@@ -109,7 +109,7 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
 
 void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
     const WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibility* new_browser_acc = UpdateNode(acc_obj, false);
   if (!new_browser_acc)
     return;
 
@@ -121,7 +121,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
 
 void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
     const WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibility* new_browser_acc = UpdateNode(acc_obj, true);
   if (!new_browser_acc)
     return;
 
@@ -133,7 +133,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
 
 void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
   const WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibility* new_browser_acc = UpdateNode(acc_obj, false);
   if (!new_browser_acc)
     return;
 
@@ -169,7 +169,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
 
 void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
     const WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibility* new_browser_acc = UpdateNode(acc_obj, false);
   if (!new_browser_acc)
     return;
 
@@ -181,7 +181,7 @@ void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
 
 void BrowserAccessibilityManager::OnAccessibilityObjectTextChange(
     const WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibility* new_browser_acc = UpdateNode(acc_obj, false);
   if (!new_browser_acc)
     return;
 
@@ -263,10 +263,10 @@ void BrowserAccessibilityManager::ModifyTreeInPlace(
       new_root);
 }
 
-
-BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
-    const WebAccessibility& acc_obj) {
-  base::hash_map<int, int32>::iterator iter =
+BrowserAccessibility* BrowserAccessibilityManager::UpdateNode(
+    const WebAccessibility& acc_obj,
+    bool include_children) {
+  base::hash_map<int32, int32>::iterator iter =
       renderer_id_to_child_id_map_.find(acc_obj.id);
   if (iter == renderer_id_to_child_id_map_.end())
     return NULL;
@@ -276,30 +276,41 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
   if (!old_browser_acc)
     return NULL;
 
+  if (!include_children) {
+    DCHECK_EQ(0U, acc_obj.children.size());
+    old_browser_acc->Initialize(
+        this,
+        old_browser_acc->GetParent(),
+        old_browser_acc->child_id(),
+        old_browser_acc->index_in_parent(),
+        acc_obj);
+    return old_browser_acc;
+  }
+
   if (CanModifyTreeInPlace(old_browser_acc, acc_obj)) {
     ModifyTreeInPlace(old_browser_acc, acc_obj);
     return old_browser_acc;
   }
 
   BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
-        old_browser_acc->GetParent(),
-        child_id,
-        acc_obj,
-        old_browser_acc->index_in_parent());
+      old_browser_acc->GetParent(),
+      child_id,
+      acc_obj,
+      old_browser_acc->index_in_parent());
 
-    if (old_browser_acc->GetParent()) {
-      old_browser_acc->GetParent()->ReplaceChild(
-          old_browser_acc,
-          new_browser_acc);
-    } else {
-      DCHECK_EQ(old_browser_acc, root_);
-      root_ = new_browser_acc;
-    }
-    old_browser_acc->ReleaseTree();
-    old_browser_acc->ReleaseReference();
-    child_id_map_[child_id] = new_browser_acc;
+  if (old_browser_acc->GetParent()) {
+    old_browser_acc->GetParent()->ReplaceChild(
+        old_browser_acc,
+        new_browser_acc);
+  } else {
+    DCHECK_EQ(old_browser_acc, root_);
+    root_ = new_browser_acc;
+  }
+  old_browser_acc->ReleaseTree();
+  old_browser_acc->ReleaseReference();
+  child_id_map_[child_id] = new_browser_acc;
 
-    return new_browser_acc;
+  return new_browser_acc;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(

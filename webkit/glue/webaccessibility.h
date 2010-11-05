@@ -187,14 +187,18 @@ struct WebAccessibility {
   // nodes as needed to complete the tree. Adds |src| to |cache| and
   // stores its cache ID.
   WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                   WebKit::WebAccessibilityCache* cache);
+                   WebKit::WebAccessibilityCache* cache,
+                   bool include_children);
 
   ~WebAccessibility();
 
+ private:
   // Initialize an already-created struct, same as the constructor a
   void Init(const WebKit::WebAccessibilityObject& src,
-            WebKit::WebAccessibilityCache* cache);
+            WebKit::WebAccessibilityCache* cache,
+            bool include_children);
 
+ public:
   // This is a simple serializable struct. All member variables should be
   // copyable.
   int32 id;

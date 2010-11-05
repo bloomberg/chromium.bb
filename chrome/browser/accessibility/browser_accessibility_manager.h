@@ -133,12 +133,14 @@ class BrowserAccessibilityManager {
       BrowserAccessibility* current_root,
       const WebAccessibility& new_root);
 
-  // Update the accessibility tree with an updated WebAccessibility tree or
-  // subtree received from the renderer process. First attempts to modify
-  // the tree in place, and if that fails, replaces the entire subtree.
-  // Returns the updated node or NULL if no node was updated.
-  BrowserAccessibility* UpdateTree(
-      const WebAccessibility& acc_obj);
+  // Update an accessibility node with an updated WebAccessibility node
+  // received from the renderer process. When |include_children| is true
+  // the node's children will also be updated, otherwise only the node
+  // itself is updated. Returns the updated node or NULL if no node was
+  // updated.
+  BrowserAccessibility* UpdateNode(
+      const WebAccessibility& acc_obj,
+      bool include_children);
 
   // Recursively build a tree of BrowserAccessibility objects from
   // the WebAccessibility tree received from the renderer process.
@@ -168,7 +170,7 @@ class BrowserAccessibilityManager {
 
   // A mapping from the IDs of objects in the renderer, to the child IDs
   // we use internally here.
-  base::hash_map<int, int32> renderer_id_to_child_id_map_;
+  base::hash_map<int32, int32> renderer_id_to_child_id_map_;
 
   // A mapping from child IDs to BrowserAccessibility objects.
   base::hash_map<int32, BrowserAccessibility*> child_id_map_;

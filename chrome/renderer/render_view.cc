@@ -615,6 +615,15 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   next_page_id_ = next_page_id;
 }
 
+bool RenderView::RendererAccessibilityNotification::ShouldIncludeChildren() {
+  typedef ViewHostMsg_AccessibilityNotification_Params params;
+  if (type == params::NOTIFICATION_TYPE_CHILDREN_CHANGED ||
+      type == params::NOTIFICATION_TYPE_LOAD_COMPLETE) {
+    return true;
+  }
+  return false;
+}
+
 WebKit::WebView* RenderView::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
 }
@@ -2071,7 +2080,8 @@ void RenderView::SendPendingAccessibilityNotifications() {
 
     ViewHostMsg_AccessibilityNotification_Params param;
     param.notification_type = pending_accessibility_notifications_[i].type;
-    param.acc_obj = WebAccessibility(obj, accessibility_.get());
+    param.acc_obj = WebAccessibility(
+        obj, accessibility_.get(), notification.ShouldIncludeChildren());
     notifications.push_back(param);
   }
   pending_accessibility_notifications_.clear();

@@ -672,6 +672,9 @@ class RenderView : public RenderWidget,
 
   // Identifies an accessibility notification from webkit.
   struct RendererAccessibilityNotification {
+   public:
+    bool ShouldIncludeChildren();
+
     // The webkit glue id of the accessibility object.
     int32 id;
 
