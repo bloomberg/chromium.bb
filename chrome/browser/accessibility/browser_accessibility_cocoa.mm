@@ -37,6 +37,7 @@ static const RoleEntry roles[] = {
   { WebAccessibility::ROLE_NONE, NSAccessibilityUnknownRole },
   { WebAccessibility::ROLE_BUTTON, NSAccessibilityButtonRole },
   { WebAccessibility::ROLE_CHECKBOX, NSAccessibilityCheckBoxRole },
+  { WebAccessibility::ROLE_COLUMN, NSAccessibilityColumnRole },
   { WebAccessibility::ROLE_GRID, NSAccessibilityGridRole },
   { WebAccessibility::ROLE_GROUP, NSAccessibilityGroupRole },
   { WebAccessibility::ROLE_HEADING, @"AXHeading" },
@@ -46,6 +47,7 @@ static const RoleEntry roles[] = {
   { WebAccessibility::ROLE_LIST, NSAccessibilityListRole },
   { WebAccessibility::ROLE_RADIO_BUTTON, NSAccessibilityRadioButtonRole },
   { WebAccessibility::ROLE_RADIO_GROUP, NSAccessibilityRadioGroupRole },
+  { WebAccessibility::ROLE_ROW, NSAccessibilityRowRole },
   { WebAccessibility::ROLE_SCROLLAREA, NSAccessibilityScrollAreaRole },
   { WebAccessibility::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
   { WebAccessibility::ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
@@ -238,13 +240,53 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       [attribute isEqualToString:@"AXLoaded"]) {
     return [NSNumber numberWithBool:YES];
   }
+
+  // Text related attributes.
+  if ([attribute isEqualToString:
+      NSAccessibilityNumberOfCharactersAttribute]) {
+    return [NSNumber numberWithInt:browserAccessibility_->value().length()];
+  }
+  if ([attribute isEqualToString:
+      NSAccessibilityVisibleCharacterRangeAttribute]) {
+    return [NSValue valueWithRange:
+        NSMakeRange(0, browserAccessibility_->value().length())];
+  }
+
+  int selStart, selEnd;
+  if (browserAccessibility_->
+          GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &selStart) &&
+      browserAccessibility_->
+          GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_END, &selEnd)) {
+    if (selStart > selEnd)
+      std::swap(selStart, selEnd);
+    int selLength = selEnd - selStart;
+    if ([attribute isEqualToString:
+        NSAccessibilityInsertionPointLineNumberAttribute]) {
+      return [NSNumber numberWithInt:0];
+    }
+    if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute]) {
+      return base::SysUTF16ToNSString(browserAccessibility_->value().substr(
+          selStart, selLength));
+    }
+    if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute]) {
+      return [NSValue valueWithRange:NSMakeRange(selStart, selLength)];
+    }
+  }
   return nil;
 }
 
 // Returns an array of action names that this object will respond to.
 - (NSArray*)accessibilityActionNames {
-  return [NSArray arrayWithObjects:
-      NSAccessibilityPressAction, NSAccessibilityShowMenuAction, nil];
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+
+  // General actions.
+  [ret addObject:NSAccessibilityShowMenuAction];
+
+  // TODO(dtseng): this should only get set when there's a default action.
+  if ([self role] != NSAccessibilityStaticTextRole)
+    [ret addObject:NSAccessibilityPressAction];
+
+  return ret;
 }
 
 // Returns a sub-array of values for the given attribute value, starting at
@@ -279,7 +321,10 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 // Returns the list of accessibility attributes that this object supports.
 - (NSArray*)accessibilityAttributeNames {
-  return [NSArray arrayWithObjects:
+  NSMutableArray* ret = [[NSMutableArray alloc] init];
+
+  // General attributes.
+  [ret addObjectsFromArray:[NSArray arrayWithObjects:
       NSAccessibilityChildrenAttribute,
       NSAccessibilityDescriptionAttribute,
       NSAccessibilityEnabledAttribute,
@@ -294,7 +339,19 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
       NSAccessibilityTopLevelUIElementAttribute,
       NSAccessibilityValueAttribute,
       NSAccessibilityWindowAttribute,
-      nil];
+      nil]];
+
+  // Specific role attributes.
+  if ([self role] == NSAccessibilityTextFieldRole) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityInsertionPointLineNumberAttribute,
+        NSAccessibilityNumberOfCharactersAttribute,
+        NSAccessibilitySelectedTextAttribute,
+        NSAccessibilitySelectedTextRangeAttribute,
+        NSAccessibilityVisibleCharacterRangeAttribute,
+        nil]];
+  }
+  return ret;
 }
 
 // Returns the index of the child in this objects array of children.
@@ -383,6 +440,9 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 }
 
 - (NSUInteger)hash {
+  // Potentially called during dealloc.
+  if (!browserAccessibility_)
+    return [super hash];
   return browserAccessibility_->renderer_id();
 }
 

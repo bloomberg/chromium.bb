@@ -121,9 +121,7 @@ class BrowserAccessibility {
   BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 
- protected:
-  BrowserAccessibility();
-
+  // BrowserAccessibilityCocoa needs access to these methods.
   // Return true if this attribute is in the attributes map.
   bool HasAttribute(WebAccessibility::Attribute attribute);
 
@@ -137,6 +135,9 @@ class BrowserAccessibility {
   // converted to an integer.
   bool GetAttributeAsInt(
       WebAccessibility::Attribute attribute, int* value_int);
+
+ protected:
+  BrowserAccessibility();
 
   // The manager of this tree of accessibility objects; needed for
   // global operations like focus tracking.
