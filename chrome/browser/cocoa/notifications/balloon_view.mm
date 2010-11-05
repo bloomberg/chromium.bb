@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/notifications/balloon_controller.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 
 namespace {
@@ -35,6 +36,16 @@ const int kRoundedCornerSize = 6;
 
 - (BOOL)canBecomeMainWindow {
   return NO;
+}
+
+- (void)sendEvent:(NSEvent*)event {
+  // We do not want to bring chrome window to foreground when we click on close
+  // or option button. To do this, we have to intercept the event.
+  BalloonController* delegate =
+      static_cast<BalloonController*>([self delegate]);
+  if (![delegate handleEvent:event]) {
+    [super sendEvent:event];
+  }
 }
 @end
 

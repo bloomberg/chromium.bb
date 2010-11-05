@@ -112,12 +112,45 @@ const int kRightMargin = 2;
                                        assumeInside:NO];
 }
 
+- (BOOL)handleEvent:(NSEvent*)event {
+  BOOL eventHandled = NO;
+  if ([event type] == NSLeftMouseDown) {
+    NSPoint mouse = [shelf_ convertPoint:[event locationInWindow]
+                                fromView:nil];
+    if (NSPointInRect(mouse, [closeButton_ frame])) {
+      [closeButton_ mouseDown:event];
+
+      // Bring back the front process that is deactivated when we click the
+      // close button.
+      if (frontProcessNum_.highLongOfPSN || frontProcessNum_.lowLongOfPSN) {
+        SetFrontProcessWithOptions(&frontProcessNum_,
+                                   kSetFrontProcessFrontWindowOnly);
+        frontProcessNum_.highLongOfPSN = 0;
+        frontProcessNum_.lowLongOfPSN = 0;
+      }
+
+      eventHandled = YES;
+    } else if (NSPointInRect(mouse, [optionsButton_ frame])) {
+      [optionsButton_ mouseDown:event];
+      eventHandled = YES;
+    }
+  }
+  return eventHandled;
+}
+
 - (void) mouseEntered:(NSEvent*)event {
   [[closeButton_ cell] setHighlighted:YES];
+
+  // Remember the current front process so that we can bring it back later.
+  if (!frontProcessNum_.highLongOfPSN && !frontProcessNum_.lowLongOfPSN)
+    GetFrontProcess(&frontProcessNum_);
 }
 
 - (void) mouseExited:(NSEvent*)event {
   [[closeButton_ cell] setHighlighted:NO];
+
+  frontProcessNum_.highLongOfPSN = 0;
+  frontProcessNum_.lowLongOfPSN = 0;
 }
 
 - (IBAction)optionsButtonPressed:(id)sender {
@@ -145,7 +178,8 @@ const int kRightMargin = 2;
 }
 
 - (void)closeBalloon:(bool)byUser {
-  DCHECK(balloon_);
+  if (!balloon_)
+    return;
   [self close];
   if (htmlContents_.get())
     htmlContents_->Shutdown();
