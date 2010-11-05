@@ -144,8 +144,8 @@ JankObserverHelper::JankObserverHelper(
       1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag);
   if (discard_count_ > 0) {
     // Select a vaguely random sample-start-point.
-    events_till_measurement_ =
-        (TimeTicks::Now() - TimeTicks()).InSeconds() % (discard_count_ + 1);
+    events_till_measurement_ = static_cast<int>(
+        (TimeTicks::Now() - TimeTicks()).InSeconds() % (discard_count_ + 1));
   }
 }
 
