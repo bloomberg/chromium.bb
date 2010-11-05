@@ -23,23 +23,30 @@ ChunkRange::ChunkRange(const ChunkRange& rhs)
 
 // Helper functions -----------------------------------------------------------
 
-// Traverse the chunks vector looking for contiguous integers.
-void ChunksToRanges(const std::vector<int>& chunks,
-                    std::vector<ChunkRange>* ranges) {
-  DCHECK(ranges);
-  for (size_t i = 0; i < chunks.size(); ++i) {
-    int start = static_cast<int>(i);
-    int next = start + 1;
-    while (next < static_cast<int>(chunks.size()) &&
-           (chunks[start] == chunks[next] - 1 ||
-            chunks[start] == chunks[next])) {
-      ++start;
-      ++next;
+void ChunksToRangeString(const std::vector<int>& chunks, std::string* result) {
+  // The following code requires the range to be sorted.
+  std::vector<int> sorted_chunks(chunks);
+  std::sort(sorted_chunks.begin(), sorted_chunks.end());
+
+  DCHECK(result);
+  result->clear();
+  std::vector<int>::const_iterator iter = sorted_chunks.begin();
+  while (iter != sorted_chunks.end()) {
+    const int range_begin = *iter;
+    int range_end = *iter;
+
+    // Extend the range forward across duplicates and increments.
+    for (; iter != sorted_chunks.end() && *iter <= range_end + 1; ++iter) {
+      range_end = *iter;
     }
-    ranges->push_back(ChunkRange(chunks[i], chunks[start]));
-    if (next >= static_cast<int>(chunks.size()))
-      break;
-    i = start;
+
+    if (!result->empty())
+      result->append(",");
+    result->append(base::IntToString(range_begin));
+    if (range_end > range_begin) {
+      result->append("-");
+      result->append(base::IntToString(range_end));
+    }
   }
 }
 
@@ -50,23 +57,6 @@ void RangesToChunks(const std::vector<ChunkRange>& ranges,
     const ChunkRange& range = ranges[i];
     for (int chunk = range.start(); chunk <= range.stop(); ++chunk) {
       chunks->push_back(chunk);
-    }
-  }
-}
-
-void RangesToString(const std::vector<ChunkRange>& ranges,
-                    std::string* result) {
-  DCHECK(result);
-  result->clear();
-  std::vector<ChunkRange>::const_iterator it = ranges.begin();
-  for (; it != ranges.end(); ++it) {
-    if (!result->empty())
-      result->append(",");
-    if (it->start() == it->stop()) {
-      std::string num_buf = base::IntToString(it->start());
-      result->append(num_buf);
-    } else {
-      result->append(StringPrintf("%d-%d", it->start(), it->stop()));
     }
   }
 }

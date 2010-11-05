@@ -123,15 +123,8 @@ void GetChunkIds(const std::vector<int>& chunks,
     }
   }
 
-  std::sort(malware_chunks.begin(), malware_chunks.end());
-  std::vector<ChunkRange> malware_ranges;
-  ChunksToRanges(malware_chunks, &malware_ranges);
-  RangesToString(malware_ranges, malware_list);
-
-  std::sort(phishing_chunks.begin(), phishing_chunks.end());
-  std::vector<ChunkRange> phishing_ranges;
-  ChunksToRanges(phishing_chunks, &phishing_ranges);
-  RangesToString(phishing_ranges, phishing_list);
+  ChunksToRangeString(malware_chunks, malware_list);
+  ChunksToRangeString(phishing_chunks, phishing_list);
 }
 
 // Order |SBAddFullHash| on the prefix part.  |SBAddPrefixLess()| from

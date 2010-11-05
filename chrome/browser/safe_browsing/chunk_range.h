@@ -42,24 +42,19 @@ class ChunkRange {
 
 // Helper functions ------------------------------------------------------------
 
-// Convert a series of chunk numbers into a more compact range representation.
-// The 'chunks' vector must be sorted in ascending order.
-void ChunksToRanges(const std::vector<int>& chunks,
-                    std::vector<ChunkRange>* ranges);
-
 // Convert a set of ranges into individual chunk numbers.
 void RangesToChunks(const std::vector<ChunkRange>& ranges,
                     std::vector<int>* chunks);
-
-// Convert a series of chunk ranges into a string in protocol format.
-void RangesToString(const std::vector<ChunkRange>& ranges,
-                    std::string* result);
 
 // Returns 'true' if the string was successfully converted to ChunkRanges,
 // 'false' if the input was malformed.
 // The string must be in the form: "1-100,398,415,1138-2001,2019".
 bool StringToRanges(const std::string& input,
                     std::vector<ChunkRange>* ranges);
+
+// Convenience for going from a list of chunks to a string in protocol
+// format.
+void ChunksToRangeString(const std::vector<int>& chunks, std::string* result);
 
 // Tests if a chunk number is contained a sorted vector of ChunkRanges.
 bool IsChunkInRange(int chunk_number, const std::vector<ChunkRange>& ranges);

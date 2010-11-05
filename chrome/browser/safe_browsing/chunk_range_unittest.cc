@@ -7,38 +7,10 @@
 #include "chunk_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Test formatting chunks into a string representation.
-TEST(SafeBrowsingChunkRangeTest, TestRangesToString) {
-  std::vector<ChunkRange> ranges;
-  ranges.push_back(ChunkRange(1, 10));
-  ranges.push_back(ChunkRange(15, 17));
-  ranges.push_back(ChunkRange(21, 410));
-  ranges.push_back(ChunkRange(991, 1000));
-
-  std::string range_string;
-  RangesToString(ranges, &range_string);
-  EXPECT_EQ(range_string, "1-10,15-17,21-410,991-1000");
-  ranges.clear();
-
-  ranges.push_back(ChunkRange(4, 4));
-  RangesToString(ranges, &range_string);
-  EXPECT_EQ(range_string, "4");
-
-  ranges.push_back(ChunkRange(7));
-  ranges.push_back(ChunkRange(9));
-  RangesToString(ranges, &range_string);
-  EXPECT_EQ(range_string, "4,7,9");
-
-  ranges.push_back(ChunkRange(42, 99));
-  RangesToString(ranges, &range_string);
-  EXPECT_EQ(range_string, "4,7,9,42-99");
-}
-
-
 // Test various configurations of chunk numbers.
-TEST(SafeBrowsingChunkRangeTest, TestChunksToRanges) {
+TEST(SafeBrowsingChunkRangeTest, TestChunksToRangeString) {
   std::vector<int> chunks;
-  std::vector<ChunkRange> ranges;
+  std::string range_string;
 
   // Test one chunk range and one single value.
   chunks.push_back(1);
@@ -46,15 +18,11 @@ TEST(SafeBrowsingChunkRangeTest, TestChunksToRanges) {
   chunks.push_back(3);
   chunks.push_back(4);
   chunks.push_back(7);
-  ChunksToRanges(chunks, &ranges);
-  EXPECT_EQ(ranges.size(), static_cast<size_t>(2));
-  EXPECT_EQ(ranges[0].start(), 1);
-  EXPECT_EQ(ranges[0].stop(),  4);
-  EXPECT_EQ(ranges[1].start(), 7);
-  EXPECT_EQ(ranges[1].stop(),  7);
+  ChunksToRangeString(chunks, &range_string);
+  EXPECT_EQ(range_string, std::string("1-4,7"));
 
   chunks.clear();
-  ranges.clear();
+  range_string.clear();
 
   // Test all chunk numbers in one range.
   chunks.push_back(3);
@@ -65,13 +33,11 @@ TEST(SafeBrowsingChunkRangeTest, TestChunksToRanges) {
   chunks.push_back(8);
   chunks.push_back(9);
   chunks.push_back(10);
-  ChunksToRanges(chunks, &ranges);
-  EXPECT_EQ(ranges.size(), static_cast<size_t>(1));
-  EXPECT_EQ(ranges[0].start(), 3);
-  EXPECT_EQ(ranges[0].stop(),  10);
+  ChunksToRangeString(chunks, &range_string);
+  EXPECT_EQ(range_string, std::string("3-10"));
 
   chunks.clear();
-  ranges.clear();
+  range_string.clear();
 
   // Test no chunk numbers in contiguous ranges.
   chunks.push_back(3);
@@ -82,21 +48,19 @@ TEST(SafeBrowsingChunkRangeTest, TestChunksToRanges) {
   chunks.push_back(13);
   chunks.push_back(15);
   chunks.push_back(17);
-  ChunksToRanges(chunks, &ranges);
-  EXPECT_EQ(ranges.size(), static_cast<size_t>(8));
+  ChunksToRangeString(chunks, &range_string);
+  EXPECT_EQ(range_string, std::string("3,5,7,9,11,13,15,17"));
 
   chunks.clear();
-  ranges.clear();
+  range_string.clear();
 
   // Test a single chunk number.
   chunks.push_back(17);
-  ChunksToRanges(chunks, &ranges);
-  EXPECT_EQ(ranges.size(), static_cast<size_t>(1));
-  EXPECT_EQ(ranges[0].start(), 17);
-  EXPECT_EQ(ranges[0].stop(),  17);
+  ChunksToRangeString(chunks, &range_string);
+  EXPECT_EQ(range_string, std::string("17"));
 
   chunks.clear();
-  ranges.clear();
+  range_string.clear();
 
   // Test duplicates.
   chunks.push_back(1);
@@ -108,14 +72,21 @@ TEST(SafeBrowsingChunkRangeTest, TestChunksToRanges) {
   chunks.push_back(7);
   chunks.push_back(7);
   chunks.push_back(7);
-  ChunksToRanges(chunks, &ranges);
-  EXPECT_EQ(ranges.size(), static_cast<size_t>(2));
-  EXPECT_EQ(ranges[0].start(), 1);
-  EXPECT_EQ(ranges[0].stop(), 3);
-  EXPECT_EQ(ranges[1].start(), 7);
-  EXPECT_EQ(ranges[1].stop(), 7);
-}
+  ChunksToRangeString(chunks, &range_string);
+  EXPECT_EQ(range_string, std::string("1-3,7"));
 
+  // Test unsorted chunks.
+  chunks.push_back(4);
+  chunks.push_back(1);
+  chunks.push_back(7);
+  chunks.push_back(3);
+  chunks.push_back(2);
+  ChunksToRangeString(chunks, &range_string);
+  EXPECT_EQ(range_string, std::string("1-4,7"));
+
+  chunks.clear();
+  range_string.clear();
+}
 
 TEST(SafeBrowsingChunkRangeTest, TestStringToRanges) {
   std::vector<ChunkRange> ranges;
