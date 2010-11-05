@@ -54,9 +54,11 @@ void ImportDataHandler::GetLocalizedValues(
 void ImportDataHandler::Initialize() {
   importer_list_.reset(new ImporterList);
 
-  // We should not be loading profiles from the UI thread!
-  // Temporarily allow this until we fix
-  //   http://code.google.com/p/chromium/issues/detail?id=60825
+  // The ImporterHost object creates an ImporterList, which calls PathExists
+  // one or more times.  Because we are currently in the UI thread, this will
+  // trigger a DCHECK due to IO being done on the UI thread.  For now we will
+  // supress the DCHECK.  See the following bug for more detail:
+  // http://crbug.com/60825
   base::ThreadRestrictions::ScopedAllowIO allow_io;
   importer_list_->DetectSourceProfiles();
   int profiles_count = importer_list_->GetAvailableProfileCount();
@@ -129,10 +131,17 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     dom_ui_->CallJavascriptFunction(
         L"ImportDataOverlay.setImportingState", state);
 
-// TODO(csilv): Out-of-process import has only been qualified on MacOS X,
-// so we will only use it on that platform since it is required. Remove this
-// conditional logic once oop import is qualified for Linux/Windows.
-// http://crbug.com/22142
+    // The ImporterHost object creates an ImporterList, which calls PathExists
+    // one or more times.  Because we are currently in the UI thread, this will
+    // trigger a DCHECK due to IO being done on the UI thread.  For now we will
+    // supress the DCHECK.  See the following bug for more detail:
+    // http://crbug.com/60825
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+    // TODO(csilv): Out-of-process import has only been qualified on MacOS X,
+    // so we will only use it on that platform since it is required. Remove this
+    // conditional logic once oop import is qualified for Linux/Windows.
+    // http://crbug.com/22142
 #if defined(OS_MACOSX)
     importer_host_ = new ExternalProcessImporterHost;
 #else
