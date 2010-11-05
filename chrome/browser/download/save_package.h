@@ -127,10 +127,6 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   int id() const { return unique_id_; }
 
   void GetSaveInfo();
-  void ContinueGetSaveInfo(FilePath save_dir);
-  void ContinueSave(SavePackageParam* param,
-                    const FilePath& final_name,
-                    int index);
 
   // RenderViewHostDelegate::Save ----------------------------------------------
 
@@ -202,6 +198,13 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Retrieves the URL to be saved from tab_contents_ variable.
   GURL GetUrlToBeSaved();
 
+  void CreateDirectoryOnFileThread(const FilePath& website_save_dir,
+                                   const FilePath& download_save_dir,
+                                   const std::string& mime_type);
+  void ContinueGetSaveInfo(const FilePath& suggested_path,
+                           bool can_save_as_complete);
+  void ContinueSave(const FilePath& final_name, int index);
+
 
   typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;
   // in_progress_items_ is map of all saving job in in-progress state.
@@ -228,7 +231,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // suggested name is determined by the web document's title.
   FilePath GetSuggestedNameForSaveAs(
       bool can_save_as_complete,
-      const FilePath::StringType& contents_mime_type);
+      const std::string& contents_mime_type);
 
   // Ensures that the file name has a proper extension for HTML by adding ".htm"
   // if necessary.
@@ -237,12 +240,12 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Ensures that the file name has a proper extension for supported formats
   // if necessary.
   static FilePath EnsureMimeExtension(const FilePath& name,
-      const FilePath::StringType& contents_mime_type);
+      const std::string& contents_mime_type);
 
   // Returns extension for supported MIME types (for example, for "text/plain"
   // it returns "txt").
   static const FilePath::CharType* ExtensionForMimeType(
-      const FilePath::StringType& contents_mime_type);
+      const std::string& contents_mime_type);
 
   typedef std::queue<SaveItem*> SaveItemQueue;
   // A queue for items we are about to start saving.

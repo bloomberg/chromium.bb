@@ -13,7 +13,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
-#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/task.h"
 #include "base/thread.h"
@@ -53,24 +52,6 @@
 
 using base::Time;
 using WebKit::WebPageSerializerClient;
-
-// This structure is for storing parameters which we will use to create a
-// SavePackage object later.
-struct SavePackageParam {
-  // MIME type of current tab contents.
-  const std::string current_tab_mime_type;
-  // Pointer to preference service.
-  SavePackage::SavePackageType save_type;
-  // File path for main html file.
-  FilePath saved_main_file_path;
-  // Directory path for saving sub resources and sub html frames.
-  FilePath dir;
-
-  explicit SavePackageParam(const std::string& mime_type)
-      : current_tab_mime_type(mime_type),
-        save_type(SavePackage::SAVE_TYPE_UNKNOWN) {
-  }
-};
 
 namespace {
 
@@ -183,46 +164,6 @@ bool GetSafePureFileName(const FilePath& dir_path,
   pure_file_name->clear();
   return false;
 }
-
-// This task creates a directory (if needed) and then posts a task on the given
-// thread.
-class CreateDownloadDirectoryTask : public Task {
- public:
-  CreateDownloadDirectoryTask(SavePackage* save_package,
-                              const FilePath& default_save_file_dir,
-                              const FilePath& default_download_dir)
-    : save_package_(save_package),
-      default_save_file_dir_(default_save_file_dir),
-      default_download_dir_(default_download_dir){
-  }
-
-  virtual void Run() {
-    // If the default html/websites save folder doesn't exist...
-    if (!file_util::DirectoryExists(default_save_file_dir_)) {
-      // If the default download dir doesn't exist, create it.
-      if (!file_util::DirectoryExists(default_download_dir_))
-        file_util::CreateDirectory(default_download_dir_);
-
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(save_package_,
-              &SavePackage::ContinueGetSaveInfo,
-              default_download_dir_));
-    } else {
-      // If it does exist, use the default save dir param.
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(save_package_,
-              &SavePackage::ContinueGetSaveInfo,
-              default_save_file_dir_));
-    }
-  }
-
- private:
-  SavePackage* save_package_;
-  FilePath default_save_file_dir_;
-  FilePath default_download_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateDownloadDirectoryTask);
-};
 
 }  // namespace
 
@@ -1114,7 +1055,7 @@ void SavePackage::SetShouldPromptUser(bool should_prompt) {
 
 FilePath SavePackage::GetSuggestedNameForSaveAs(
     bool can_save_as_complete,
-    const FilePath::StringType& contents_mime_type) {
+    const std::string& contents_mime_type) {
   FilePath name_with_proper_ext =
       FilePath::FromWStringHack(UTF16ToWideHack(title_));
 
@@ -1159,10 +1100,6 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(
 }
 
 FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
-  // The GetMimeTypeFromExtension call will end up going to disk.  Do this on
-  // another thread to avoid slowing the UI thread.  http://crbug.com/61775
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
   // If the file name doesn't have an extension suitable for HTML files,
   // append one.
   FilePath::StringType ext = name.Extension();
@@ -1178,11 +1115,7 @@ FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
 }
 
 FilePath SavePackage::EnsureMimeExtension(const FilePath& name,
-    const FilePath::StringType& contents_mime_type) {
-  // The GetMimeTypeFromExtension call will end up going to disk.  Do this on
-  // another thread to avoid slowing the UI thread.  http://crbug.com/61775
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
+    const std::string& contents_mime_type) {
   // Start extension at 1 to skip over period if non-empty.
   FilePath::StringType ext = name.Extension().length() ?
       name.Extension().substr(1) : name.Extension();
@@ -1199,8 +1132,8 @@ FilePath SavePackage::EnsureMimeExtension(const FilePath& name,
   return name;
 }
 
-const FilePath::CharType *SavePackage::ExtensionForMimeType(
-    const FilePath::StringType& contents_mime_type) {
+const FilePath::CharType* SavePackage::ExtensionForMimeType(
+    const std::string& contents_mime_type) {
   static const struct {
     const FilePath::CharType *mime_type;
     const FilePath::CharType *suggested_extension;
@@ -1211,8 +1144,13 @@ const FilePath::CharType *SavePackage::ExtensionForMimeType(
     { FILE_PATH_LITERAL("text/plain"), FILE_PATH_LITERAL("txt") },
     { FILE_PATH_LITERAL("text/css"), FILE_PATH_LITERAL("css") },
   };
+#if defined(OS_POSIX)
+  FilePath::StringType mime_type(contents_mime_type);
+#elif defined(OS_WIN)
+  FilePath::StringType mime_type(UTF8ToWide(contents_mime_type));
+#endif  // OS_WIN
   for (uint32 i = 0; i < ARRAYSIZE_UNSAFE(extensions); ++i) {
-    if (contents_mime_type == extensions[i].mime_type)
+    if (mime_type == extensions[i].mime_type)
       return extensions[i].suggested_extension;
   }
   return FILE_PATH_LITERAL("");
@@ -1243,40 +1181,51 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 }
 
 void SavePackage::GetSaveInfo() {
+  // Can't use tab_contents_ in the file thread, so get the data that we need
+  // before calling to it.
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   FilePath website_save_dir = GetSaveDirPreference(prefs);
   FilePath download_save_dir = prefs->GetFilePath(
       prefs::kDownloadDefaultDirectory);
+  std::string mime_type = tab_contents_->contents_mime_type();
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      new CreateDownloadDirectoryTask(this,
-          website_save_dir,
-          download_save_dir));
-  // CreateDownloadDirectoryTask calls ContinueGetSaveInfo() below.
+      NewRunnableMethod(this, &SavePackage::CreateDirectoryOnFileThread,
+          website_save_dir, download_save_dir, mime_type));
 }
 
-void SavePackage::ContinueGetSaveInfo(FilePath save_dir) {
+void SavePackage::CreateDirectoryOnFileThread(
+    const FilePath& website_save_dir,
+    const FilePath& download_save_dir,
+    const std::string& mime_type) {
+  FilePath save_dir;
+  // If the default html/websites save folder doesn't exist...
+  if (!file_util::DirectoryExists(website_save_dir)) {
+    // If the default download dir doesn't exist, create it.
+    if (!file_util::DirectoryExists(download_save_dir))
+      file_util::CreateDirectory(download_save_dir);
+    save_dir = download_save_dir;
+  } else {
+    // If it does exist, use the default save dir param.
+    save_dir = website_save_dir;
+  }
+
+  bool can_save_as_complete = CanSaveAsComplete(mime_type);
+  FilePath suggested_path = save_dir.Append(
+      GetSuggestedNameForSaveAs(can_save_as_complete, mime_type));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &SavePackage::ContinueGetSaveInfo,
+          suggested_path, can_save_as_complete));
+}
+
+void SavePackage::ContinueGetSaveInfo(const FilePath& suggested_path,
+                                      bool can_save_as_complete) {
   // Use "Web Page, Complete" option as default choice of saving page.
   int file_type_index = 2;
   SelectFileDialog::FileTypeInfo file_type_info;
   FilePath::StringType default_extension;
-
-  SavePackageParam* save_params =
-      new SavePackageParam(tab_contents_->contents_mime_type());
-
-  bool can_save_as_complete =
-      CanSaveAsComplete(save_params->current_tab_mime_type);
-
-#if defined(OS_POSIX)
-  FilePath::StringType mime_type(save_params->current_tab_mime_type);
-#elif defined(OS_WIN)
-  FilePath::StringType mime_type(
-      UTF8ToWide(save_params->current_tab_mime_type));
-#endif  // OS_WIN
-
-  FilePath suggested_path = save_dir.Append(
-      GetSuggestedNameForSaveAs(can_save_as_complete, mime_type));
 
   // If the contents can not be saved as complete-HTML, do not show the
   // file filters.
@@ -1324,34 +1273,32 @@ void SavePackage::ContinueGetSaveInfo(FilePath save_dir) {
                                     default_extension,
                                     platform_util::GetTopLevel(
                                         tab_contents_->GetNativeView()),
-                                    save_params);
+                                    NULL);
   } else {
     // Just use 'suggested_path' instead of opening the dialog prompt.
-    ContinueSave(save_params, suggested_path, file_type_index);
-    delete save_params;
+    ContinueSave(suggested_path, file_type_index);
   }
 }
 
 // Called after the save file dialog box returns.
-void SavePackage::ContinueSave(SavePackageParam* param,
-                               const FilePath& final_name,
+void SavePackage::ContinueSave(const FilePath& final_name,
                                int index) {
   // Ensure the filename is safe.
-  param->saved_main_file_path = final_name;
-  download_util::GenerateSafeFileName(param->current_tab_mime_type,
-                                      &param->saved_main_file_path);
+  saved_main_file_path_ = final_name;
+  download_util::GenerateSafeFileName(tab_contents_->contents_mime_type(),
+                                      &saved_main_file_path_);
 
   // The option index is not zero-based.
   DCHECK(index > 0 && index < 3);
-  param->dir = param->saved_main_file_path.DirName();
+  saved_main_directory_path_ = saved_main_file_path_.DirName();
 
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   StringPrefMember save_file_path;
   save_file_path.Init(prefs::kSaveFileDefaultDirectory, prefs, NULL);
 #if defined(OS_POSIX)
-  std::string path_string = param->dir.value();
+  std::string path_string = saved_main_directory_path_.value();
 #elif defined(OS_WIN)
-  std::string path_string = WideToUTF8(param->dir.value());
+  std::string path_string = WideToUTF8(saved_main_directory_path_.value());
 #endif
   // If user change the default saving directory, we will remember it just
   // like IE and FireFox.
@@ -1360,19 +1307,15 @@ void SavePackage::ContinueSave(SavePackageParam* param,
     save_file_path.SetValue(path_string);
   }
 
-  param->save_type = (index == 1) ? SavePackage::SAVE_AS_ONLY_HTML :
-                                    SavePackage::SAVE_AS_COMPLETE_HTML;
+  save_type_ = (index == 1) ? SavePackage::SAVE_AS_ONLY_HTML :
+                             SavePackage::SAVE_AS_COMPLETE_HTML;
 
-  if (param->save_type == SavePackage::SAVE_AS_COMPLETE_HTML) {
+  if (save_type_ == SavePackage::SAVE_AS_COMPLETE_HTML) {
     // Make new directory for saving complete file.
-    param->dir = param->dir.Append(
-        param->saved_main_file_path.RemoveExtension().BaseName().value() +
+    saved_main_directory_path_ = saved_main_directory_path_.Append(
+        saved_main_file_path_.RemoveExtension().BaseName().value() +
         FILE_PATH_LITERAL("_files"));
   }
-
-  save_type_ = param->save_type;
-  saved_main_file_path_ = param->saved_main_file_path;
-  saved_main_directory_path_ = param->dir;
 
   Init();
 }
@@ -1402,12 +1345,8 @@ bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
 // SelectFileDialog::Listener interface.
 void SavePackage::FileSelected(const FilePath& path,
                                int index, void* params) {
-  SavePackageParam* save_params = reinterpret_cast<SavePackageParam*>(params);
-  ContinueSave(save_params, path, index);
-  delete save_params;
+  ContinueSave(path, index);
 }
 
 void SavePackage::FileSelectionCanceled(void* params) {
-  SavePackageParam* save_params = reinterpret_cast<SavePackageParam*>(params);
-  delete save_params;
 }
