@@ -104,7 +104,12 @@ TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
 }
 
 // Tests new window behavior with ctrl+N.
-TEST_P(FullTabUITest, FLAKY_CtrlN) {
+TEST_P(FullTabUITest, CtrlN) {
+  if (IsWorkstationLocked()) {
+    LOG(ERROR) << "This test cannot be run in a locked workstation.";
+    return;
+  }
+
   bool is_cf = GetParam().invokes_cf();
   if (!is_cf) {
     LOG(ERROR) << "Test not implemented for this configuration.";
@@ -134,7 +139,12 @@ TEST_P(FullTabUITest, FLAKY_CtrlN) {
 }
 
 // Test that Ctrl+F opens the Find dialog.
-TEST_P(FullTabUITest, FLAKY_CtrlF) {
+TEST_P(FullTabUITest, CtrlF) {
+  if (IsWorkstationLocked()) {
+    LOG(ERROR) << "This test cannot be run in a locked workstation.";
+    return;
+  }
+
   bool is_cf = GetParam().invokes_cf();
   if (!is_cf) {
     LOG(ERROR) << "Test not implemented for this configuration.";
@@ -163,7 +173,12 @@ TEST_P(FullTabUITest, FLAKY_CtrlF) {
 }
 
 // Test that ctrl+r does cause a refresh.
-TEST_P(FullTabUITest, FLAKY_CtrlR) {
+TEST_P(FullTabUITest, CtrlR) {
+  if (IsWorkstationLocked()) {
+    LOG(ERROR) << "This test cannot be run in a locked workstation.";
+    return;
+  }
+
   InSequence expect_in_sequence_for_scope;
 
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
@@ -181,7 +196,12 @@ TEST_P(FullTabUITest, FLAKY_CtrlR) {
 }
 
 // Test window close with ctrl+w.
-TEST_P(FullTabUITest, FLAKY_CtrlW) {
+TEST_P(FullTabUITest, CtrlW) {
+  if (IsWorkstationLocked()) {
+    LOG(ERROR) << "This test cannot be run in a locked workstation.";
+    return;
+  }
+
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
                                StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
@@ -192,7 +212,12 @@ TEST_P(FullTabUITest, FLAKY_CtrlW) {
 }
 
 // Test address bar navigation with Alt+d and URL.
-TEST_P(FullTabUITest, FLAKY_AltD) {
+TEST_P(FullTabUITest, AltD) {
+  if (IsWorkstationLocked()) {
+    LOG(ERROR) << "This test cannot be run in a locked workstation.";
+    return;
+  }
+
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(),
                                StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(

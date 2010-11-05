@@ -90,5 +90,7 @@ class DispCallback
 bool KillAllNamedProcessesWithArgument(const std::wstring& process_name,
                                        const std::wstring& argument);
 
+// If the workstation is locked and cannot receive user input.
+bool IsWorkstationLocked();
 
 #endif  // CHROME_FRAME_TEST_UTILS_H_

@@ -303,3 +303,21 @@ bool KillAllNamedProcessesWithArgument(const std::wstring& process_name,
 
   return result;
 }
+
+bool IsWorkstationLocked() {
+  bool is_locked = true;
+  HDESK input_desk = ::OpenInputDesktop(0, 0, GENERIC_READ);
+  if (input_desk)  {
+    wchar_t name[256] = {0};
+    DWORD needed = 0;
+    if (::GetUserObjectInformation(input_desk,
+      UOI_NAME,
+      name,
+      sizeof(name),
+      &needed)) {
+        is_locked = lstrcmpi(name, L"default") != 0;
+    }
+    ::CloseDesktop(input_desk);
+  }
+  return is_locked;
+}
