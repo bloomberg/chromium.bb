@@ -36,6 +36,8 @@
           'action': [
             '<@(python)',
             '$(ProjectDir)\zipfiles.py',
+            '-c',
+            '$(ConfigurationName)',
             '-i',
             '<(SHARED_INTERMEDIATE_DIR)/ceee_ff.xpi',
             '-o',
@@ -77,9 +79,12 @@
             # one of the form "-o >(_outputs)".
             '<@(python)',
             '$(ProjectDir)\zipfiles.py',
+            '-c',
+            '$(ConfigurationName)',
             '-o',
             '<(_outputs)',
             '<@(_xpi_files)',
+            '##',
             '<@(_xpi_test_files)',
           ],
         },
