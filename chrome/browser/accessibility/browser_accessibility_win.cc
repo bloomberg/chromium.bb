@@ -1118,6 +1118,11 @@ void BrowserAccessibilityWin::Initialize() {
     html_attributes_.push_back(std::make_pair(L"level", role_name_.substr(1)));
   }
 
+  // Expose the "display" object attribute.
+  string16 display;
+  if (GetAttribute(WebAccessibility::ATTR_DISPLAY, &display))
+    html_attributes_.push_back(std::make_pair(L"display", display));
+
   // If this object doesn't have a name but it does have a description,
   // use the description as its name - because some screen readers only
   // announce the name.
