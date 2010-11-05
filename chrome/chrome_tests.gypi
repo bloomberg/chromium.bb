@@ -1635,6 +1635,11 @@
         '../views/view_unittest.cc',
       ],
       'conditions': [
+        ['touchui==1', {
+          'sources!': [
+             'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
+          ],
+        }],
         ['chromeos==1', {
           'sources!': [
              'browser/notifications/desktop_notifications_unittest.cc',

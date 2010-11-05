@@ -3428,6 +3428,8 @@
           'sources/': [
             ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
+            ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
+            ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
           ],
         }],
         ['OS=="linux"', {
