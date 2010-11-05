@@ -248,6 +248,20 @@ class DatabasesTest(pyauto.PyUITest):
       pass
     self.assertFalse(can_read_incognito_database)
 
+  def testDbModificationPersistInSecondTab(self):
+    """Verify DB changes within first tab are present in the second tab."""
+    self.NavigateToURL(self.TEST_PAGE_URL)
+    self._CreateTable()
+    self._InsertRecord('text')
+    self.AppendTab(pyauto.GURL(self.TEST_PAGE_URL))
+    self._UpdateRecord(0, '0', tab_index=0)
+    tab1_records = self._GetRecords(tab_index=0)
+    tab2_records = self._GetRecords(tab_index=1)
+    self.assertEquals(1, len(tab1_records))
+    self.assertEquals('0', tab1_records[0])
+    self.assertEquals(1, len(tab2_records))
+    self.assertEquals(tab1_records[0], tab2_records[0])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
