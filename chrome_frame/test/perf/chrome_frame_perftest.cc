@@ -1069,7 +1069,7 @@ TEST_F(ChromeFrameCreationTestReference, PerfWarm) {
                  NULL, true /* not important */, false);
 }
 
-TEST_F(FlashCreationTest, PerfWarm) {
+TEST_F(FlashCreationTest, DISABLED_PerfWarm) {
   RunStartupTest("creation_warm", "t_flash", "", false /* cold */, 0, NULL,
                  true /* not important */, false);
 }
