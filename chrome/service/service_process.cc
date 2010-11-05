@@ -121,10 +121,12 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled);
   remoting_host_enabled |= command_line.HasSwitch(switches::kEnableRemoting);
 
+#if defined(ENABLE_REMOTING)
   // Check if remoting host is already enabled.
   if (remoting_host_enabled) {
     StartChromotingHost();
   }
+#endif
 
   // Enable Cloud Print if needed. First check the command-line.
   bool cloud_print_proxy_enabled =
