@@ -930,9 +930,17 @@ net::ProxyConfig* CreateProxyConfig(const PrefService* pref_service) {
     prefs::kProxyAutoDetect
   };
 
+  // Check whether the preference system holds a valid proxy configuration. Note
+  // that preferences coming from a lower-priority source than the user settings
+  // are ignored. That's because chrome treats the system settings as the
+  // default values, which should apply if there's no explicit value forced by
+  // policy or the user.
   bool found_enable_proxy_pref = false;
   for (size_t i = 0; i < arraysize(proxy_prefs); i++) {
-    if (pref_service->HasPrefPath(proxy_prefs[i])) {
+    const PrefService::Preference* pref =
+        pref_service->FindPreference(proxy_prefs[i]);
+    DCHECK(pref);
+    if (pref && (!pref->IsUserModifiable() || pref->HasUserSetting())) {
       found_enable_proxy_pref = true;
       break;
     }
