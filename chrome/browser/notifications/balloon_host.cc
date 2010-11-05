@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
+#include "webkit/glue/webpreferences.h"
 
 BalloonHost::BalloonHost(Balloon* balloon)
     : render_view_host_(NULL),
@@ -58,6 +60,10 @@ gfx::NativeView BalloonHost::GetNativeViewOfHost() {
 }
 
 TabContents* BalloonHost::associated_tab_contents() const { return NULL; }
+
+const string16& BalloonHost::GetSource() const {
+  return balloon_->notification().display_source();
+}
 
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences prefs;

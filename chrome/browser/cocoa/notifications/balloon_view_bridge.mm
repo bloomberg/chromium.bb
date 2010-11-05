@@ -4,6 +4,10 @@
 
 #include "chrome/browser/cocoa/notifications/balloon_view_bridge.h"
 
+#include "chrome/browser/cocoa/notifications/balloon_controller.h"
+#import "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
+#include "gfx/size.h"
+
 #import <Cocoa/Cocoa.h>
 
 BalloonViewBridge::BalloonViewBridge() :

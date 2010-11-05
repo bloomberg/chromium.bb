@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_COCOA_NOTIFICATIONS_BALLOON_VIEW_BRIDGE_H_
 #pragma once
 
-#include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/notifications/balloon_controller.h"
 #include "chrome/browser/notifications/balloon.h"
-#include "gfx/size.h"
+
+@class BalloonController;
+class BalloonHost;
+namespace gfx {
+class Size;
+}
 
 // Bridges from the cross-platform BalloonView interface to the Cocoa
 // controller which will draw the view on screen.

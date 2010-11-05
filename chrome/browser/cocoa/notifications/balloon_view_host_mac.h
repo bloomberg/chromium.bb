@@ -7,7 +7,9 @@
 #pragma once
 
 #include "chrome/browser/notifications/balloon_host.h"
-#import "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+
+class RenderWidgetHostView;
+class RenderWidgetHostViewMac;
 
 // BalloonViewHost class is a delegate to the renderer host for the HTML
 // notification.  When initialized it creates a new RenderViewHost and loads
@@ -17,23 +19,17 @@ class BalloonViewHost : public BalloonHost {
  public:
   explicit BalloonViewHost(Balloon* balloon);
 
-  ~BalloonViewHost() {
-     Shutdown();
-  }
+  ~BalloonViewHost();
 
   // Changes the size of the balloon.
   void UpdateActualSize(const gfx::Size& new_size);
 
   // Accessors.
-  gfx::NativeView native_view() const {
-    return render_widget_host_view_->native_view();
-  }
+  gfx::NativeView native_view() const;
 
  protected:
   virtual void InitRenderWidgetHostView();
-  virtual RenderWidgetHostView* render_widget_host_view() const {
-    return render_widget_host_view_;
-  }
+  virtual RenderWidgetHostView* render_widget_host_view() const;
 
  private:
   // The Mac-specific widget host view.  This is owned by its native view,

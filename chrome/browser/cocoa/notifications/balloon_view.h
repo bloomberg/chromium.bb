@@ -8,8 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
-
 @interface BalloonWindow : NSWindow {
 }
 @end

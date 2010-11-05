@@ -8,13 +8,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_nsobject.h"
 #include "base/cocoa_protocols_mac.h"
-#import "chrome/browser/cocoa/hover_image_button.h"
-#import "chrome/browser/cocoa/notifications/balloon_view.h"
-#import "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
-#include "chrome/browser/notifications/balloon.h"
+#include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
 
+class Balloon;
+@class BalloonContentViewCocoa;
+@class BalloonShelfViewCocoa;
+class BalloonViewHost;
+@class HoverImageButton;
 @class MenuController;
 class NotificationOptionsMenuModel;
 

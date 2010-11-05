@@ -4,13 +4,15 @@
 
 #include "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
 
-#include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 BalloonViewHost::BalloonViewHost(Balloon* balloon)
     : BalloonHost(balloon) {
+}
+
+BalloonViewHost::~BalloonViewHost() {
+   Shutdown();
 }
 
 void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
@@ -23,8 +25,15 @@ void BalloonViewHost::UpdateActualSize(const gfx::Size& new_size) {
   [view setNeedsDisplay:YES];
 }
 
+gfx::NativeView BalloonViewHost::native_view() const {
+  return render_widget_host_view_->native_view();
+}
+
 void BalloonViewHost::InitRenderWidgetHostView() {
   DCHECK(render_view_host_);
   render_widget_host_view_ = new RenderWidgetHostViewMac(render_view_host_);
 }
 
+RenderWidgetHostView* BalloonViewHost::render_widget_host_view() const {
+  return render_widget_host_view_;
+}

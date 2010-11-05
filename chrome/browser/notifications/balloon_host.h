@@ -10,17 +10,15 @@
 #include <vector>
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/notifications/balloon.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/renderer_preferences.h"
-#include "webkit/glue/webpreferences.h"
 
+class Balloon;
 class Browser;
 class Profile;
+class SiteInstance;
+struct RendererPreferences;
+struct WebPreferences;
 
 class BalloonHost : public RenderViewHostDelegate,
                     public RenderViewHostDelegate::View,
@@ -41,9 +39,7 @@ class BalloonHost : public RenderViewHostDelegate,
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 
-  const string16& GetSource() const {
-    return balloon_->notification().display_source();
-  }
+  const string16& GetSource() const;
 
   // RenderViewHostDelegate overrides.
   virtual WebPreferences GetWebkitPrefs();
