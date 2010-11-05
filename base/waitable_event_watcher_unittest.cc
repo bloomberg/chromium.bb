@@ -151,7 +151,13 @@ TEST(WaitableEventWatcherTest, OutlivesMessageLoop) {
   RunTest_OutlivesMessageLoop(MessageLoop::TYPE_UI);
 }
 
-TEST(WaitableEventWatcherTest, DeleteUnder) {
+#if defined(OS_WIN)
+// Crashes sometimes on vista.  http://crbug.com/62119
+#define MAYBE_DeleteUnder DISABLED_DeleteUnder
+#else
+#define MAYBE_DeleteUnder DeleteUnder
+#endif
+TEST(WaitableEventWatcherTest, MAYBE_DeleteUnder) {
   RunTest_DeleteUnder(MessageLoop::TYPE_DEFAULT);
   RunTest_DeleteUnder(MessageLoop::TYPE_IO);
   RunTest_DeleteUnder(MessageLoop::TYPE_UI);
