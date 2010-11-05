@@ -606,13 +606,15 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
   gfx::Rect plugin_backing_store_rect(position_.origin(),
                                       gfx::Size(image_data->width(),
                                                 image_data->height()));
-  gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_);
+  gfx::Rect clip_page(clip_);
+  clip_page.Offset(position_.origin());
+  gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_page);
   if (!plugin_paint_rect.Contains(paint_bounds))
     return false;
 
   *dib = image_data->platform_image()->GetTransportDIB();
   *location = plugin_backing_store_rect;
-  *clip = clip_;
+  *clip = clip_page;
   return true;
 }
 
