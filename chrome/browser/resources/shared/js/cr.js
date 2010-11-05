@@ -23,6 +23,12 @@ const cr = (function() {
   const isChromeOS = /CrOS/.test(navigator.userAgent);
 
   /**
+   * Whether this uses the views toolkit or not.
+   * @type {boolean}
+   */
+  const isViews = isWindows || isChromeOS;
+
+  /**
    * Builds an object structure for the provided namespace path,
    * ensuring that names that already exist are not overwritten. For
    * example:

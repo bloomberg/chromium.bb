@@ -94,16 +94,10 @@
     </label>
   </div>
 
-  <div class="button-strip">
-    <if expr="os == 'win32'">
-      <button type="submit" id="autoFillEditAddressApplyButton" disabled
-          i18n-content="ok"></button>
-    </if>
+  <div class="action-area button-strip">
     <button type="reset" id="autoFillEditAddressCancelButton"
-        i18n-content="cancel"></button>
-    <if expr="os != 'win32'">
-      <button type="submit" id="autoFillEditAddressApplyButton" disabled
-          i18n-content="ok"></button>
-    </if>
+            i18n-content="cancel"></button>
+    <button type="submit" id="autoFillEditAddressApplyButton" disabled
+            i18n-content="ok"></button>
   </div>
 </div>

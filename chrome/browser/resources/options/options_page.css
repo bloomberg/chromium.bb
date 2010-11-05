@@ -55,11 +55,28 @@ html[dir='rtl'] #close-overlay {
   left: -20px;
 }
 
-.overlay .button-strip {
+.action-area {
   padding: 12px;
   position: absolute;
   right: 0px;
   bottom: 0px;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+}
+
+.button-strip {
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+}
+
+html[toolkit=views] .button-strip {
+  -webkit-box-direction: reverse;
+}
+
+.button-strip > button {
+  display: block;
+  -webkit-margin-start: 4px;
 }
 
 .overlay > div {

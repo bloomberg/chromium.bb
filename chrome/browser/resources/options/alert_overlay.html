@@ -1,13 +1,8 @@
 <div class="page hidden" id="alertOverlay">
   <h1 id="alertOverlayTitle"></h1>
   <div id="alertOverlayMessage"></div>
-  <div class="button-strip">
-    <if expr="os != 'darwin'">
-      <button type="submit" id="alertOverlayOk"></button>
-    </if>
+  <div class="action-area button-strip">
     <button type="reset" id="alertOverlayCancel"></button>
-    <if expr="os == 'darwin'">
-      <button type="submit" id="alertOverlayOk"></button>
-    </if>
+    <button type="submit" id="alertOverlayOk"></button>
   </div>
 </div>

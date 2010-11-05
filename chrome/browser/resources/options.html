@@ -256,6 +256,8 @@ function load() {
   // Allow platform specific CSS rules.
   if (cr.isMac)
     document.documentElement.setAttribute('os', 'mac');
+  if (cr.isViews)
+    document.documentElement.setAttribute('toolkit', 'views');
 
   var end = new Date();
   var total = end - start;

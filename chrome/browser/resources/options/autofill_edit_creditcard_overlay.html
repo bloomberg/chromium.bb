@@ -23,16 +23,10 @@
     </label>
   </div>
 
-  <div class="button-strip">
-    <if expr="os == 'win32'">
-      <button type="submit" id="autoFillEditCreditCardApplyButton" disabled
-          i18n-content="ok"></button>
-    </if>
+  <div class="action-area button-strip">
     <button type="reset" id="autoFillEditCreditCardCancelButton"
         i18n-content="cancel"></button>
-    <if expr="os != 'win32'">
-      <button type="submit" id="autoFillEditCreditCardApplyButton" disabled
-          i18n-content="ok"></button>
-    </if>
+    <button type="submit" id="autoFillEditCreditCardApplyButton" disabled
+        i18n-content="ok"></button>
   </div>
 </div>

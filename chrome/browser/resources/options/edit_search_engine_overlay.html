@@ -30,17 +30,11 @@
         <td></td>
     </table>
 
-    <div class="button-strip">
-      <if expr="os == 'win32'">
-        <button type="submit" id="editSearchEngineOkayButton" disabled
-            i18n-content="editSearchEngineOkayButton"></button>
-      </if>
+    <div class="action-area button-strip">
       <button type="reset"
           i18n-content="editSearchEngineCancelButton"></button>
-      <if expr="os != 'win32'">
-        <button type="submit" id="editSearchEngineOkayButton" disabled
-            i18n-content="editSearchEngineOkayButton"></button>
-      </if>
+      <button type="submit" id="editSearchEngineOkayButton" disabled
+          i18n-content="editSearchEngineOkayButton"></button>
     </div>
   </form>
 </div>

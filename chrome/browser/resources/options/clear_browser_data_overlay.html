@@ -44,19 +44,16 @@
     <select id="clearBrowsingDataTimePeriod"
         pref="browser.clear_data.time_period"></select>
   </div>
-  <div class="button-strip">
+  <div class="action-area">
     <span id="cbdThrobber"></span>
-    <if expr="os == 'win32'">
+    <div class="button-strip">
+      <button id="clearBrowsingDataDismiss" i18n-content="cancel"
+              onclick="ClearBrowserDataOverlay.dismiss();">
+      </button>
       <button id="clearBrowsingDataCommit"
-          i18n-content="clearBrowsingDataCommit"></button>
-    </if>
-    <button id="clearBrowsingDataDismiss" i18n-content="cancel"
-        onclick="ClearBrowserDataOverlay.dismiss();">
-    </button>
-    <if expr="os != 'win32'">
-      <button id="clearBrowsingDataCommit"
-          i18n-content="clearBrowsingDataCommit"></button>
-    </if>
+              i18n-content="clearBrowsingDataCommit">
+      </button>
+    </div>
   </div>
   <hr>
   <a target="_blank" i18n-content="flash_storage_settings"

@@ -23,14 +23,11 @@
       <label for="import-search" i18n-content="import_search"></label>
     </div>
   </div>
-  <div class="button-strip">
+  <div class="action-area">
     <span id="import-throbber"></span>
-    <if expr="os == 'win32'">
+    <div class="button-strip">
+      <button id="import-data-cancel" i18n-content="cancel"></button>
       <button id="import-data-commit" i18n-content="import_commit"></button>
-    </if>
-    <button id="import-data-cancel" i18n-content="cancel"></button>
-    <if expr="os != 'win32'">
-      <button id="import-data-commit" i18n-content="import_commit"></button>
-    </if>
+    </div>
   </div>
 </div>

@@ -8,17 +8,11 @@
 
     <list id="addStartupRecentPageList"></list>
 
-    <div class="button-strip">
-      <if expr="os == 'win32'">
-        <button type="submit" id="addStartupPageAddButton" disabled
-            i18n-content="addStartupPageAddButton"></button>
-      </if>
+    <div class="action-area button-strip">
       <button type="reset"
           i18n-content="addStartupPageCancelButton"></button>
-      <if expr="os != 'win32'">
-        <button type="submit" id="addStartupPageAddButton" disabled
-            i18n-content="addStartupPageAddButton"></button>
-      </if>
+      <button type="submit" id="addStartupPageAddButton" disabled
+          i18n-content="addStartupPageAddButton"></button>
     </div>
   </form>
 </div>
