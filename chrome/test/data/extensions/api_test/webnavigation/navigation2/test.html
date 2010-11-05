@@ -47,6 +47,11 @@ chrome.experimental.webNavigation.onDOMContentLoaded.addListener(
     captureEvent("onDOMContentLoaded", details);
 });
 
+chrome.experimental.webNavigation.onCompleted.addListener(
+  function(details) {
+    captureEvent("onCompleted", details);
+});
+
 chrome.experimental.webNavigation.onErrorOccurred.addListener(
   function(details) {
     captureEvent("onErrorOccurred", details);
@@ -107,7 +112,12 @@ chrome.tabs.getSelected(null, function(tab) {
             frameId: 1,
             tabId: tabId,
             timeStamp: 0,
-            url: getURL('iframeFail/c.html') }]]);
+            url: getURL('iframeFail/c.html') }],
+        [ "onCompleted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/d.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('iframeFail/d.html') });
     },
 
@@ -150,6 +160,16 @@ chrome.tabs.getSelected(null, function(tab) {
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframeFail/b.html') }],
+        [ "onCompleted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/b.html') }],
+        [ "onCompleted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/a.html') }],
         [ "onBeforeNavigate",
           { frameId: 1,
             requestId: 0,

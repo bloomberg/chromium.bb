@@ -106,6 +106,10 @@ class ExtensionWebNavigationEventRouter : public NotificationObserver {
   void FrameDomContentLoaded(NavigationController* controller,
                              long long frame_id);
 
+  // Handler for the FRAME_DID_FINISH_LOAD event. The method takes the frame
+  // ID and constructs a suitable JSON formatted extension event from it.
+  void FrameDidFinishLoad(NavigationController* controller, long long frame_id);
+
   // Handler for the FAIL_PROVISIONAL_LOAD_WITH_ERROR event. The method takes
   // the details of such an event and constructs a suitable JSON formatted
   // extension event from it.

@@ -3361,6 +3361,8 @@ void RenderView::didFinishLoad(WebFrame* frame) {
 
   // Let the password manager know which password forms are actually visible.
   password_autocomplete_manager_->SendPasswordForms(frame, true);
+
+  Send(new ViewHostMsg_DidFinishLoad(routing_id_, frame->identifier()));
 }
 
 void RenderView::didNavigateWithinPage(

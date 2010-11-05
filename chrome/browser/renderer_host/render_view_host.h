@@ -605,6 +605,7 @@ class RenderViewHost : public RenderWidgetHost {
                                          const std::string& origin,
                                          const std::string& target);
   void OnMsgDocumentLoadedInFrame(long long frame_id);
+  void OnMsgDidFinishLoad(long long frame_id);
   void OnMsgGoToEntryAtOffset(int offset);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);

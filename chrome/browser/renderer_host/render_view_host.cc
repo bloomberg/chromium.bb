@@ -803,6 +803,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgForwardMessageToExternalHost)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentLoadedInFrame,
                         OnMsgDocumentLoadedInFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFinishLoad,
+                        OnMsgDidFinishLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset,
                         OnMsgGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnMsgSetTooltipText)
@@ -1371,6 +1373,13 @@ void RenderViewHost::OnMsgDocumentLoadedInFrame(long long frame_id) {
       delegate_->GetResourceDelegate();
   if (resource_delegate)
     resource_delegate->DocumentLoadedInFrame(frame_id);
+}
+
+void RenderViewHost::OnMsgDidFinishLoad(long long frame_id) {
+  RenderViewHostDelegate::Resource* resource_delegate =
+      delegate_->GetResourceDelegate();
+  if (resource_delegate)
+    resource_delegate->DidFinishLoad(frame_id);
 }
 
 void RenderViewHost::DisassociateFromPopupCount() {

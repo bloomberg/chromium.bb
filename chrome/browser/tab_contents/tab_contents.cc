@@ -2256,6 +2256,13 @@ void TabContents::DocumentLoadedInFrame(long long frame_id) {
       Details<long long>(&frame_id));
 }
 
+void TabContents::DidFinishLoad(long long frame_id) {
+  NotificationService::current()->Notify(
+      NotificationType::FRAME_DID_FINISH_LOAD,
+      Source<NavigationController>(&controller_),
+      Details<long long>(&frame_id));
+}
+
 void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {
   if (delegate_)
     delegate_->OnContentSettingsChange(this);

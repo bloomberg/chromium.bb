@@ -916,6 +916,7 @@ class TabContents : public PageNavigator,
       const GURL& url,
       bool showing_repost_interstitial);
   virtual void DocumentLoadedInFrame(long long frame_id);
+  virtual void DidFinishLoad(long long frame_id);
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();

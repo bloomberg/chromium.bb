@@ -83,6 +83,10 @@ void WizardWebPageViewTabContents::DocumentLoadedInFrame(
   page_delegate_->OnPageLoaded();
 }
 
+void WizardWebPageViewTabContents::DidFinishLoad(
+    long long /*frame_id*/) {
+}
+
 void WizardWebPageViewTabContents::OnContentBlocked(ContentSettingsType type) {
   LOG(ERROR) << "Page load failed: content blocked. Type: " << type;
   page_delegate_->OnPageLoadFailed("");

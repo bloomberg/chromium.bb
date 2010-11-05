@@ -367,6 +367,9 @@ class RenderViewHostDelegate {
     // Notification that a document has been loaded in a frame.
     virtual void DocumentLoadedInFrame(long long frame_id) = 0;
 
+    // Notification that a frame finished loading.
+    virtual void DidFinishLoad(long long frame_id) = 0;
+
    protected:
     virtual ~Resource() {}
   };

@@ -120,6 +120,11 @@ class NotificationType {
     // occurred. Details are the long long frame ID.
     FRAME_DOM_CONTENT_LOADED,
 
+    // The frame finished loading. The source is a Source<NavigationController>
+    // corresponding to the tab in which the load occurred. Details are the
+    // long long frame ID.
+    FRAME_DID_FINISH_LOAD,
+
     // Content was loaded from an in-memory cache.  The source will be a
     // Source<NavigationController> corresponding to the tab in which the load
     // occurred.  Details in the form of a LoadFromMemoryCacheDetails object

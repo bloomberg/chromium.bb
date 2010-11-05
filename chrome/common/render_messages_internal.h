@@ -1230,6 +1230,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentLoadedInFrame,
                       long long /* frame_id */)
 
+  // Notifies the browser that a frame finished loading.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFinishLoad,
+                      long long /* frame_id */)
+
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes.
   // TODO(darin): use a UTF-8 string to reduce data size
