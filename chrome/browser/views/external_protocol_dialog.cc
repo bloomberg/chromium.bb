@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
@@ -157,6 +158,10 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
 // static
 std::wstring ExternalProtocolDialog::GetApplicationForProtocol(
     const GURL& url) {
+  // We shouldn't be accessing the registry from the UI thread, since it can go
+  // to disk.  http://crbug.com/61996
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   std::wstring url_spec = ASCIIToWide(url.possibly_invalid_spec());
   std::wstring cmd_key_path =
       ASCIIToWide(url.scheme() + "\\shell\\open\\command");
