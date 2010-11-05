@@ -51,7 +51,7 @@ namespace {
 
 // FIXME: Replace this magic constant once we have a more sophisticated quota
 // system.
-static const uint64 kDatabaseQuota = 5 * 1024 * 1024;
+static const uint64 kDefaultQuota = 5 * 1024 * 1024;
 
 template <class T>
 void DeleteOnWebKitThread(T* obj) {
@@ -289,12 +289,19 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     return;
   }
 
-  DCHECK(kDatabaseQuota == params.maximum_size_);
+  DCHECK(kDefaultQuota == params.maximum_size_);
+
+  uint64 quota = kDefaultQuota;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUnlimitedQuotaForIndexedDB)) {
+      quota = 1024 * 1024 * 1024; // 1GB. More or less "unlimited".
+  }
+
   Context()->GetIDBFactory()->open(
       params.name_, params.description_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL,
-      webkit_glue::FilePathToWebString(indexed_db_path), kDatabaseQuota);
+      webkit_glue::FilePathToWebString(indexed_db_path), quota);
 }
 
 //////////////////////////////////////////////////////////////////////
