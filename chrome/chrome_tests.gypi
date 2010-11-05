@@ -1392,6 +1392,7 @@
         'browser/policy/file_based_policy_provider_unittest.cc',
         'browser/policy/device_management_backend_impl_mock.h',
         'browser/policy/device_management_backend_impl_unittest.cc',
+        'browser/policy/device_management_policy_cache_unittest.cc',
         'browser/policy/managed_prefs_banner_base_unittest.cc',
         'browser/policy/mock_configuration_policy_provider.cc',
         'browser/policy/mock_configuration_policy_provider.h',
