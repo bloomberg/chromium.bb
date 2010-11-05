@@ -17,15 +17,15 @@ class Task;
 namespace remoting {
 namespace protocol {
 
-class NotifyScreenResolution;
+class NotifyResolutionRequest;
 
 class ClientStub {
  public:
   ClientStub() {}
   virtual ~ClientStub() {}
 
-  virtual void NotifyScreenResolution(const NotifyScreenResolution& msg,
-                                      Task* done) = 0;
+  virtual void NotifyResolution(const NotifyResolutionRequest& msg,
+                                Task* done) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);
