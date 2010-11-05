@@ -63,11 +63,13 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadTest) {
     PipeReader reader(pipe_name);
     // asking for more should still just return the amount that was written.
     std::string my_foo = reader.Read(5 * line.length());
+    ASSERT_GT(my_foo.length(), 0U);
     EXPECT_EQ(my_foo[my_foo.length() - 1], '\n');
     my_foo.resize(my_foo.length() - 1);
     EXPECT_EQ(my_foo, foo);
 
     std::string my_boo = reader.Read(5 * line.length());
+    ASSERT_GT(my_boo.length(), 0U);
     EXPECT_EQ(my_boo[my_boo.length() - 1], '\n');
     my_boo.resize(my_boo.length() - 1);
     EXPECT_EQ(my_boo, boo);
@@ -97,6 +99,7 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadNoEndingNewlineTest) {
     PipeReader reader(pipe_name);
     // asking for more should still just return the amount that was written.
     std::string my_foo = reader.Read(5 * line.length());
+    ASSERT_GT(my_foo.length(), 0U);
     EXPECT_EQ(my_foo[my_foo.length() - 1], '\n');
     my_foo.resize(my_foo.length() - 1);
     EXPECT_EQ(my_foo, foo);
