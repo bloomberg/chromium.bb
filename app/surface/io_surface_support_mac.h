@@ -46,6 +46,9 @@ class IOSurfaceSupport {
   virtual mach_port_t IOSurfaceCreateMachPort(CFTypeRef io_surface) = 0;
   virtual CFTypeRef IOSurfaceLookupFromMachPort(mach_port_t port) = 0;
 
+  virtual size_t IOSurfaceGetWidth(CFTypeRef io_surface) = 0;
+  virtual size_t IOSurfaceGetHeight(CFTypeRef io_surface) = 0;
+
   virtual CGLError CGLTexImageIOSurface2D(CGLContextObj ctx,
                                           GLenum target,
                                           GLenum internal_format,

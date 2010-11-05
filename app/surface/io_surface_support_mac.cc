@@ -12,6 +12,8 @@ typedef uint32 (*IOSurfaceGetIDProcPtr)(CFTypeRef io_surface);
 typedef CFTypeRef (*IOSurfaceLookupProcPtr)(uint32 io_surface_id);
 typedef mach_port_t (*IOSurfaceCreateMachPortProcPtr)(CFTypeRef io_surface);
 typedef CFTypeRef (*IOSurfaceLookupFromMachPortProcPtr)(mach_port_t port);
+typedef size_t (*IOSurfaceGetWidthPtr)(CFTypeRef io_surface);
+typedef size_t (*IOSurfaceGetHeightPtr)(CFTypeRef io_surface);
 typedef CGLError (*CGLTexImageIOSurface2DProcPtr)(CGLContextObj ctx,
                                                   GLenum target,
                                                   GLenum internal_format,
@@ -41,6 +43,9 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   virtual mach_port_t IOSurfaceCreateMachPort(CFTypeRef io_surface);
   virtual CFTypeRef IOSurfaceLookupFromMachPort(mach_port_t port);
 
+  virtual size_t IOSurfaceGetWidth(CFTypeRef io_surface);
+  virtual size_t IOSurfaceGetHeight(CFTypeRef io_surface);
+
   virtual CGLError CGLTexImageIOSurface2D(CGLContextObj ctx,
                                           GLenum target,
                                           GLenum internal_format,
@@ -66,6 +71,8 @@ class IOSurfaceSupportImpl : public IOSurfaceSupport {
   IOSurfaceLookupProcPtr io_surface_lookup_;
   IOSurfaceCreateMachPortProcPtr io_surface_create_mach_port_;
   IOSurfaceLookupFromMachPortProcPtr io_surface_lookup_from_mach_port_;
+  IOSurfaceGetWidthPtr io_surface_get_width_;
+  IOSurfaceGetHeightPtr io_surface_get_height_;
   CGLTexImageIOSurface2DProcPtr cgl_tex_image_io_surface_2d_;
   bool initialized_successfully_;
 
@@ -120,6 +127,15 @@ CFTypeRef IOSurfaceSupportImpl::IOSurfaceLookupFromMachPort(mach_port_t port) {
   return io_surface_lookup_from_mach_port_(port);
 }
 
+size_t IOSurfaceSupportImpl::IOSurfaceGetWidth(CFTypeRef io_surface) {
+  return io_surface_get_width_(io_surface);
+}
+
+size_t IOSurfaceSupportImpl::IOSurfaceGetHeight(CFTypeRef io_surface) {
+  return io_surface_get_height_(io_surface);
+}
+
+
 CGLError IOSurfaceSupportImpl::CGLTexImageIOSurface2D(CGLContextObj ctx,
                                                       GLenum target,
                                                       GLenum internal_format,
@@ -152,6 +168,8 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       io_surface_lookup_(NULL),
       io_surface_create_mach_port_(NULL),
       io_surface_lookup_from_mach_port_(NULL),
+      io_surface_get_width_(NULL),
+      io_surface_get_height_(NULL),
       cgl_tex_image_io_surface_2d_(NULL),
       initialized_successfully_(false) {
   iosurface_handle_ = dlopen(
@@ -181,6 +199,10 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       dlsym(iosurface_handle_, "IOSurfaceCreateMachPort");
   void* surface_lookup_from_mach_port_ptr =
       dlsym(iosurface_handle_, "IOSurfaceLookupFromMachPort");
+  void* io_surface_get_width_ptr =
+      dlsym(iosurface_handle_, "IOSurfaceGetWidth");
+  void* io_surface_get_height_ptr =
+      dlsym(iosurface_handle_, "IOSurfaceGetHeight");
   void* tex_image_io_surface_2d_ptr =
       dlsym(opengl_handle_, "CGLTexImageIOSurface2D");
   if (!surface_width_ptr ||
@@ -192,6 +214,8 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
       !surface_lookup_ptr ||
       !surface_create_mach_port_ptr ||
       !surface_lookup_from_mach_port_ptr ||
+      !io_surface_get_width_ptr ||
+      !io_surface_get_height_ptr ||
       !tex_image_io_surface_2d_ptr) {
     dlclose(iosurface_handle_);
     iosurface_handle_ = NULL;
@@ -217,6 +241,12 @@ IOSurfaceSupportImpl::IOSurfaceSupportImpl()
   io_surface_lookup_from_mach_port_ =
       reinterpret_cast<IOSurfaceLookupFromMachPortProcPtr>(
           surface_lookup_from_mach_port_ptr);
+  io_surface_get_width_ =
+      reinterpret_cast<IOSurfaceGetWidthPtr>(
+          io_surface_get_width_ptr);
+  io_surface_get_height_ =
+      reinterpret_cast<IOSurfaceGetHeightPtr>(
+          io_surface_get_height_ptr);
   cgl_tex_image_io_surface_2d_ =
       reinterpret_cast<CGLTexImageIOSurface2DProcPtr>(
           tex_image_io_surface_2d_ptr);

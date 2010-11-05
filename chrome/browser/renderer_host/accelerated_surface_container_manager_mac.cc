@@ -99,7 +99,10 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
   AutoLock lock(lock_);
 
   glColorMask(true, true, true, true);
-  glClearColor(0, 0, 0, 0);
+  // Should match the clear color of RenderWidgetHostViewMac.
+  glClearColor(255, 255, 255, 255);
+  // TODO(thakis): Clearing the whole color buffer is wasteful, since most of
+  // it is overwritten by the surface.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_BLEND);

@@ -100,12 +100,17 @@ class AcceleratedSurfaceContainerMac {
   // The id of |surface_|, or 0 if |surface_| is NULL.
   uint64 surface_id_;
 
+  // The width and height of the io surface. During resizing, this is different
+  // from |width_| and |height_|.
+  int32 surface_width_;
+  int32 surface_height_;
+
   // The TransportDIB which is used in pre-10.6 systems where the IOSurface
   // API is not supported.  This is a weak reference to the actual TransportDIB
   // whic is owned by the GPU process.
   scoped_ptr<TransportDIB> transport_dib_;
 
-  // The width and height of the surface.
+  // The width and height of the container.
   int32 width_;
   int32 height_;
 
