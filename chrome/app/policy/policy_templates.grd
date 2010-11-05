@@ -414,12 +414,10 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_EXTENSIONS_CAPTION" desc="Caption of the group of extension-related policies.">
-      Allowed extensions
+      Extensions
     </message>
     <message name="IDS_POLICY_EXTENSIONS_DESC" desc="Description of the group of extension-related policies.">
-      Configures extension installation blacklist and whitelist. The user is not allowed to install blacklisted extensions. If you add an already installed extension to the blacklist, then it gets automatically uninstalled from the user's machine.
-
-      A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.
+      Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. The blacklist takes precedence over the list of forced extensions.
     </message>
 
     <message name="IDS_POLICY_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Caption of the 'extension blacklist' policy settings page.">
@@ -446,6 +444,19 @@ templates and will be translated for each locale. -->
       A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
 
       By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.
+    </message>
+    <message name="IDS_POLICY_EXTENSIONINSTALLFORCELIST_CAPTION" desc="Caption of the 'extension force-list' policy settings page.">
+      Configure the list of force-installed extensions
+    </message>
+    <message name="IDS_POLICY_EXTENSIONINSTALLFORCELIST_LABEL" desc="Label of the 'extension force-list' list editor view in the 'extension whitelist' policy settings page.">
+      Extension IDs and update URLs to be silently installed
+    </message>
+    <message name="IDS_POLICY_EXTENSIONINSTALLFORCELIST_DESC" desc="Description of the 'extension force-list' policy settings page.">
+      Allows you to specify a list of extensions that will be installed silently, without user interaction.
+
+      Each item of the list is a string, that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON">;</ph>). For example: <ph name="EXTENSION_POLICY_EXAMPLE">lcncmkcnkcdbbanbjakcencbaoegdjlp;https://clients2.google.com/service/update2/crx</ph>. For each item, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will retrieve the extension specified by the ID from the specified URL and silently install it. The following pages explain how you can host extensions on your own server. About update URLs: <ph name="LINK_TO_EXTENSION_DOC1">http://code.google.com/chrome/extensions/autoupdate.html</ph> , about hosting extensions in general: <ph name="LINK_TO_EXTENSION_DOC2">http://code.google.com/chrome/extensions/hosting.html</ph>.
+
+      Users will be unable to uninstall extensions that are specified by this policy. If you remove an extension from this list, then it will be automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Extensions that are blacklisted in 'ExtensionInstallBlacklist' and not whitelisted, cannot be force-installed by this policy.
     </message>
 
     <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2" desc="A label specifying the oldest possible compatible version of Windows. This text will appear right next to a label containing the text 'Supported on:'.">
