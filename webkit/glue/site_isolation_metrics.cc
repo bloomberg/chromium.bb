@@ -135,7 +135,7 @@ void SiteIsolationMetrics::LogMimeTypeForCrossOriginRequest(
 
       // Now focus on non-frame, non-plugin requests.
       if (target_type != WebURLRequest::TargetIsMainFrame &&
-          target_type != WebURLRequest::TargetIsSubFrame &&
+          target_type != WebURLRequest::TargetIsSubframe &&
           target_type != WebURLRequest::TargetIsObject) {
         // If it is part of a MIME type we might block, log the MIME type.
         std::string mime_type = response.mimeType().utf8();
