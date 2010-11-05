@@ -42,6 +42,12 @@ class NotificationRegistrar {
   // Returns true if no notifications are registered.
   bool IsEmpty() const;
 
+  // Returns true if there is already a registered notification with the
+  // specified details.
+  bool IsRegistered(NotificationObserver* observer,
+                    NotificationType type,
+                    const NotificationSource& source);
+
  private:
   struct Record;
 

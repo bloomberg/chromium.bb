@@ -47,10 +47,9 @@ NotificationRegistrar::~NotificationRegistrar() {
 void NotificationRegistrar::Add(NotificationObserver* observer,
                                 NotificationType type,
                                 const NotificationSource& source) {
-  Record record = { observer, type, source, PlatformThread::CurrentId() };
+  DCHECK(!IsRegistered(observer, type, source)) << "Duplicate registration.";
 
-  DCHECK(std::find(registered_.begin(), registered_.end(), record) ==
-         registered_.end()) << "Duplicate registration.";
+  Record record = { observer, type, source, PlatformThread::CurrentId() };
   registered_.push_back(record);
 
   NotificationService::current()->AddObserver(observer, type, source);
@@ -59,16 +58,16 @@ void NotificationRegistrar::Add(NotificationObserver* observer,
 void NotificationRegistrar::Remove(NotificationObserver* observer,
                                    NotificationType type,
                                    const NotificationSource& source) {
-  Record record = { observer, type, source };
-  RecordVector::iterator found = std::find(
-      registered_.begin(), registered_.end(), record);
-  if (found == registered_.end()) {
+  if (!IsRegistered(observer, type, source)) {
     NOTREACHED() << "Trying to remove unregistered observer of type " <<
         type.value << " from list of size " << registered_.size() << ".";
     return;
   }
-  CheckCalledOnValidThread(found->thread_id);
 
+  Record record = { observer, type, source };
+  RecordVector::iterator found = std::find(
+      registered_.begin(), registered_.end(), record);
+  CheckCalledOnValidThread(found->thread_id);
   registered_.erase(found);
 
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
@@ -105,4 +104,12 @@ void NotificationRegistrar::RemoveAll() {
 
 bool NotificationRegistrar::IsEmpty() const {
   return registered_.empty();
+}
+
+bool NotificationRegistrar::IsRegistered(NotificationObserver* observer,
+                                         NotificationType type,
+                                         const NotificationSource& source) {
+  Record record = { observer, type, source };
+  return std::find(registered_.begin(), registered_.end(), record) !=
+      registered_.end();
 }
