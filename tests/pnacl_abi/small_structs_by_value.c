@@ -1,6 +1,5 @@
 /*
  * tests whether small structures are lowered as expected
- * TODO: they are not lowered as expected
  */
 
 typedef struct { char x; char y; } TWO_CHARS;

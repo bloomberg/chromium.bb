@@ -1,25 +1,29 @@
 target triple = "armv7-none-linux-gnueabi"
 
-define arm_aapcs_vfpcc void @bar_chars(i16 %z.0) nounwind {
+%struct.TWO_CHARS = type { i8, i8 }
+%struct.TWO_INTS = type { i32, i32 }
+%struct.TWO_SHORTS = type { i16, i16 }
+
+define void @bar_chars(%struct.TWO_CHARS %z) nounwind {
 entry:
-  tail call arm_aapcs_vfpcc  void @foo_chars(i16 %z.0) nounwind
+  tail call void @foo_chars(%struct.TWO_CHARS %z) nounwind
   ret void
 }
 
-define arm_aapcs_vfpcc void @bar_ints(i32 %z.0.0, i32 %z.0.1) nounwind {
+define void @bar_ints(%struct.TWO_INTS %z) nounwind {
 entry:
-  tail call arm_aapcs_vfpcc  void @foo_ints(i32 %z.0.0, i32 %z.0.1) nounwind
+  tail call void @foo_ints(%struct.TWO_INTS %z) nounwind
   ret void
 }
 
-declare arm_aapcs_vfpcc void @foo_ints(i32, i32)
+declare void @foo_ints(%struct.TWO_INTS)
 
-define arm_aapcs_vfpcc void @bar_shorts(i32 %z.0.0) nounwind {
+define void @bar_shorts(%struct.TWO_SHORTS %z) nounwind {
 entry:
-  tail call arm_aapcs_vfpcc  void @foo_shorts(i32 %z.0.0) nounwind
+  tail call void @foo_shorts(%struct.TWO_SHORTS %z) nounwind
   ret void
 }
 
-declare arm_aapcs_vfpcc void @foo_shorts(i32)
+declare void @foo_shorts(%struct.TWO_SHORTS)
 
-declare arm_aapcs_vfpcc void @foo_chars(i16)
+declare void @foo_chars(%struct.TWO_CHARS)
