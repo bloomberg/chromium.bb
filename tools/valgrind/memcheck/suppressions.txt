@@ -3198,10 +3198,16 @@
    fun:_ZN15LocationBarView6UpdateEPK11TabContents
 }
 {
-   bug_61988
+   bug_61988_a
    Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN14TestingProfile20CreateWebDataServiceEb
    fun:_ZN23PersonalDataManagerTest5SetUpEv
+}
+{
+   bug_61988_b
+   Memcheck:Leak
+   ...
+   fun:_ZN36PersonalDataManagerTest_Refresh_Test8TestBodyEv
 }
