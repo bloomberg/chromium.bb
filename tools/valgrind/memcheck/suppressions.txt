@@ -3165,7 +3165,6 @@
    fun:ocsp_CreateCertID
    fun:CERT_CreateOCSPCertID
    fun:PKIX_PL_OcspCertID_Create
-   fun:pkix_OcspChecker_CheckLocal
 }
 {
    bug_61424
