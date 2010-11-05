@@ -7,8 +7,10 @@
 #include <iostream>
 
 #include "base/at_exit.h"
+#include "base/message_loop.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_config.h"
+#include "remoting/client/client_context.h"
 #include "remoting/client/client_util.h"
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/x11_view.h"
@@ -30,7 +32,8 @@ int main(int argc, char** argv) {
 
   MessageLoop ui_loop;
   remoting::ClientContext context;
-  remoting::protocol::JingleConnectionToHost connection(&context);
+  remoting::protocol::JingleConnectionToHost connection(
+      context.jingle_thread());
   remoting::X11View view;
   remoting::RectangleUpdateDecoder rectangle_decoder(
       context.decode_message_loop(), &view);

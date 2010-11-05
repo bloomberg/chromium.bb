@@ -276,22 +276,22 @@
       ],
     },  # end of target 'chromoting_client'
 
-    #{
-    #  'target_name': 'chromoting_simple_host',
-    #  'type': 'executable',
-    #  'dependencies': [
-    #    'chromoting_base',
-    #    'chromoting_host',
-    #    'chromoting_jingle_glue',
-    #    '../base/base.gyp:base',
-    #    '../base/base.gyp:base_i18n',
-    #  ],
-    #  'sources': [
-    #    'host/capturer_fake_ascii.cc',
-    #    'host/capturer_fake_ascii.h',
-    #    'host/simple_host_process.cc',
-    #  ],
-    #},  # end of target 'chromoting_simple_host'
+    {
+      'target_name': 'chromoting_simple_host',
+      'type': 'executable',
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_host',
+        'chromoting_jingle_glue',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+      ],
+      'sources': [
+        'host/capturer_fake_ascii.cc',
+        'host/capturer_fake_ascii.h',
+        'host/simple_host_process.cc',
+      ],
+    },  # end of target 'chromoting_simple_host'
 
     {
       'target_name': 'chromoting_host_keygen',
@@ -410,17 +410,17 @@
       ],
     },  # end of target 'chromoting_protocol'
 
-    #{
-    #  'target_name': 'chromotocol_test_client',
-    #  'type': 'executable',
-    #  'dependencies': [
-    #    'chromoting_base',
-    #    'chromoting_protocol',
-    #  ],
-    #  'sources': [
-    #    'protocol/protocol_test_client.cc',
-    #  ],
-    #},  # end of target 'chromotocol_test_client'
+    {
+      'target_name': 'chromotocol_test_client',
+      'type': 'executable',
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_protocol',
+      ],
+      'sources': [
+        'protocol/protocol_test_client.cc',
+      ],
+    },  # end of target 'chromotocol_test_client'
 
     # Remoting unit tests
     {

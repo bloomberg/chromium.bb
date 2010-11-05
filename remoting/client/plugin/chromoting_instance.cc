@@ -67,11 +67,13 @@ bool ChromotingInstance::Init(uint32_t argc,
   context_.Start();
 
   // Create the chromoting objects.
-  host_connection_.reset(new protocol::JingleConnectionToHost(&context_));
+  host_connection_.reset(new protocol::JingleConnectionToHost(
+      context_.jingle_thread()));
   view_.reset(new PepperView(this, &context_));
   rectangle_decoder_.reset(
       new RectangleUpdateDecoder(context_.decode_message_loop(), view_.get()));
-  input_handler_.reset(new PepperInputHandler(&context_, host_connection_.get(),
+  input_handler_.reset(new PepperInputHandler(&context_,
+                                              host_connection_.get(),
                                               view_.get()));
 
   // Default to a medium grey.

@@ -44,7 +44,8 @@ void ChromotingClient::Start() {
     return;
   }
 
-  connection_->Connect(config_, this, this);
+  connection_->Connect(config_.username, config_.auth_token, config_.host_jid,
+                       this, this);
 
   if (!view_->Initialize()) {
     ClientDone();

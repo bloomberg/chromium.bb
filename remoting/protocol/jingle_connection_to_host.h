@@ -22,7 +22,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "remoting/client/client_context.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/message_reader.h"
@@ -33,6 +32,9 @@
 class MessageLoop;
 
 namespace remoting {
+
+class JingleThread;
+
 namespace protocol {
 
 class VideoReader;
@@ -41,10 +43,13 @@ class VideoStub;
 class JingleConnectionToHost : public ConnectionToHost,
                                public JingleClient::Callback {
  public:
-  explicit JingleConnectionToHost(ClientContext* context);
+  // TODO(sergeyu): Constructor shouldn't need thread here.
+  explicit JingleConnectionToHost(JingleThread* thread);
   virtual ~JingleConnectionToHost();
 
-  virtual void Connect(const ClientConfig& config,
+  virtual void Connect(const std::string& username,
+                       const std::string& auth_token,
+                       const std::string& host_jid,
                        HostEventCallback* event_callback,
                        VideoStub* video_stub);
   virtual void Disconnect();
@@ -81,7 +86,7 @@ class JingleConnectionToHost : public ConnectionToHost,
   void OnDisconnected();
   void OnServerClosed();
 
-  ClientContext* context_;
+  JingleThread* thread_;
 
   scoped_refptr<JingleClient> jingle_client_;
   scoped_refptr<protocol::SessionManager> session_manager_;

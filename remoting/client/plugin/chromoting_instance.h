@@ -45,6 +45,8 @@ class JingleThread;
 class PepperView;
 class RectangleUpdateDecoder;
 
+struct ClientConfig;
+
 namespace protocol {
 class HostConnection;
 }  // namespace protocol

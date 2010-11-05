@@ -5,15 +5,14 @@
 #ifndef REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 #define REMOTING_PROTOCOL_CONNECTION_TO_HOST_H_
 
+#include <string>
+
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
 
 namespace remoting {
-
-struct ClientConfig;
-
 namespace protocol {
 
 class VideoStub;
@@ -24,8 +23,8 @@ class ConnectionToHost {
    public:
     virtual ~HostEventCallback() {}
 
-    // Handles an event received by the protocol::ConnectionToHost. Ownership of
-    // the message is passed to the callee.
+    // Handles an event received by the protocol::ConnectionToHost. Ownership
+    // of the message is passed to the callee.
     virtual void HandleMessage(ConnectionToHost* conn,
                                ChromotingHostMessage* message) = 0;
 
@@ -42,7 +41,9 @@ class ConnectionToHost {
   virtual ~ConnectionToHost() {}
 
   // TODO(ajwong): We need to generalize this API.
-  virtual void Connect(const ClientConfig& config,
+  virtual void Connect(const std::string& username,
+                       const std::string& auth_token,
+                       const std::string& host_jid,
                        HostEventCallback* event_callback,
                        VideoStub* video_stub) = 0;
   virtual void Disconnect() = 0;

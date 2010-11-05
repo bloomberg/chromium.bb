@@ -9,7 +9,6 @@
 #include "remoting/base/constants.h"
 // TODO(hclam): Remove this header once MessageDispatcher is used.
 #include "remoting/base/multiple_array_input_stream.h"
-#include "remoting/client/client_config.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/video_reader.h"
@@ -19,28 +18,30 @@
 namespace remoting {
 namespace protocol {
 
-JingleConnectionToHost::JingleConnectionToHost(ClientContext* context)
-    : context_(context),
+JingleConnectionToHost::JingleConnectionToHost(JingleThread* thread)
+    : thread_(thread),
       event_callback_(NULL) {
 }
 
 JingleConnectionToHost::~JingleConnectionToHost() {
 }
 
-void JingleConnectionToHost::Connect(const ClientConfig& config,
-                                   HostEventCallback* event_callback,
-                                   VideoStub* video_stub) {
+void JingleConnectionToHost::Connect(const std::string& username,
+                                     const std::string& auth_token,
+                                     const std::string& host_jid,
+                                     HostEventCallback* event_callback,
+                                     VideoStub* video_stub) {
   event_callback_ = event_callback;
   video_stub_ = video_stub;
 
   // Initialize |jingle_client_|.
-  jingle_client_ = new JingleClient(context_->jingle_thread());
-  jingle_client_->Init(config.username, config.auth_token,
+  jingle_client_ = new JingleClient(thread_);
+  jingle_client_->Init(username, auth_token,
                        kChromotingTokenServiceName, this);
 
   // Save jid of the host. The actual connection is created later after
   // |jingle_client_| is connected.
-  host_jid_ = config.host_jid;
+  host_jid_ = host_jid;
 }
 
 void JingleConnectionToHost::Disconnect() {
@@ -72,7 +73,7 @@ void JingleConnectionToHost::InitSession() {
 
   // Initialize chromotocol |session_manager_|.
   protocol::JingleSessionManager* session_manager =
-      new protocol::JingleSessionManager(context_->jingle_thread());
+      new protocol::JingleSessionManager(thread_);
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
@@ -171,7 +172,7 @@ void JingleConnectionToHost::OnSessionStateChange(
 }
 
 MessageLoop* JingleConnectionToHost::message_loop() {
-  return context_->jingle_thread()->message_loop();
+  return thread_->message_loop();
 }
 
 }  // namespace protocol
