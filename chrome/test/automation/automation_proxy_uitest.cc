@@ -1082,7 +1082,8 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
   loop.RunFor(action_max_timeout_ms());
 }
 
-TEST_F(ExternalTabUITest, HostNetworkStackAbortRequest) {
+// Flaky, http://crbug.com/61023.
+TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackAbortRequest) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
@@ -1123,7 +1124,8 @@ TEST_F(ExternalTabUITest, HostNetworkStackAbortRequest) {
   loop.RunFor(action_max_timeout_ms());
 }
 
-TEST_F(ExternalTabUITest, HostNetworkStackUnresponsiveRenderer) {
+// Flaky, http://crbug.com/61023.
+TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackUnresponsiveRenderer) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
