@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/content_setting_bubble_gtk.h"
 
 #include "app/l10n_util.h"
+#include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/blocked_content_container.h"
@@ -24,8 +25,24 @@
 #include "grit/generated_resources.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
+namespace {
+
 // Padding between content and edge of info bubble.
-static const int kContentBorder = 7;
+const int kContentBorder = 7;
+
+// The maximum width of a title entry in the content box. We elide anything
+// longer than this.
+const int kMaxLinkPixelSize = 500;
+
+std::string BuildElidedText(const std::string& input) {
+  return UTF16ToUTF8(gfx::ElideText(
+      UTF8ToUTF16(input),
+      gfx::Font(),
+      kMaxLinkPixelSize,
+      false));
+}
+
+}  // namespace
 
 ContentSettingBubbleGtk::ContentSettingBubbleGtk(
     GtkWidget* anchor,
@@ -95,7 +112,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
       else
         name = *it;
 
-      GtkWidget* label = gtk_label_new(name.c_str());
+      GtkWidget* label = gtk_label_new(BuildElidedText(name).c_str());
       GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
       gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
 
@@ -134,7 +151,8 @@ void ContentSettingBubbleGtk::BuildBubble() {
                          gtk_util::kControlSpacing / 2);
       }
 
-      GtkWidget* button = gtk_chrome_link_button_new(i->title.c_str());
+      GtkWidget* button = gtk_chrome_link_button_new(
+          BuildElidedText(i->title).c_str());
       popup_links_[button] = i -popup_items.begin();
       g_signal_connect(button, "clicked", G_CALLBACK(OnPopupLinkClickedThunk),
                        this);
@@ -153,12 +171,13 @@ void ContentSettingBubbleGtk::BuildBubble() {
     for (ContentSettingBubbleModel::RadioItems::const_iterator i =
          radio_group.radio_items.begin();
          i != radio_group.radio_items.end(); ++i) {
+      std::string elided = BuildElidedText(*i);
       GtkWidget* radio =
           radio_group_gtk_.empty() ?
-              gtk_radio_button_new_with_label(NULL, i->c_str()) :
+              gtk_radio_button_new_with_label(NULL, elided.c_str()) :
               gtk_radio_button_new_with_label_from_widget(
                   GTK_RADIO_BUTTON(radio_group_gtk_[0]),
-                  i->c_str());
+                  elided.c_str());
       gtk_box_pack_start(GTK_BOX(bubble_content), radio, FALSE, FALSE, 0);
       if (i - radio_group.radio_items.begin() == radio_group.default_item) {
         // We must set the default value before we attach the signal handlers
@@ -184,7 +203,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
     // Put each list into its own vbox to allow spacing between lists.
     GtkWidget* list_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-    GtkWidget* label = gtk_label_new(i->title.c_str());
+    GtkWidget* label = gtk_label_new(BuildElidedText(i->title).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
