@@ -981,8 +981,8 @@
    bug_57966c
    Heapcheck:Leak
    ...
-   fun:remoting::JingleChromotocolConnection::OnInitiate
-   fun:remoting::JingleChromotocolConnection::OnSessionState
+   fun:remoting::protocol::JingleSession::OnInitiate
+   fun:remoting::protocol::JingleSession::OnSessionState
 }
 {
    bug_58094
@@ -1052,26 +1052,4 @@
    fun:ReloadButtonGtkTest_*_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-}
-{
-   bug_62078
-   Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_S_construct
-   fun:std::string::_S_construct_aux
-   fun:std::string::_S_construct
-   fun:basic_string
-   fun:remoting::protocol::JingleSession::OnInitiate
-   fun:remoting::protocol::JingleSession::OnSessionState
-   fun:sigslot::_connection2::emit
-   fun:sigslot::signal2::operator
-   fun:cricket::BaseSession::SetState
-   fun:cricket::Session::OnInitiateMessage
-   fun:cricket::Session::OnIncomingMessage
-   fun:cricket::SessionManager::OnIncomingMessage
-   fun:remoting::SessionManagerPair::DeliverMessage
-   fun:remoting::SessionManagerPair::DoProcessMessage
-   ...
-   fun:remoting::JingleThread::JingleMessagePump::OnMessage
 }
