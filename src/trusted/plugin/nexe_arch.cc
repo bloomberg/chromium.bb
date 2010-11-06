@@ -85,9 +85,9 @@ bool GetNexeURL(const char* nexes_attr, nacl::string* result) {
 }
 }  // namespace plugin
 
-EXTERN_C_BEGIN
+#if defined(NACL_STANDALONE)
 const char* NaClPluginGetSandboxISA() {
   return plugin::GetSandboxISA();
 }
-EXTERN_C_END
+#endif
 

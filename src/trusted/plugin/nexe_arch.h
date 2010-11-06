@@ -38,6 +38,7 @@ bool GetNexeURL(const char* nexes_attr, nacl::string* result);
 
 }  // namespace plugin
 
+#if defined(NACL_STANDALONE)
 // These symbols are for linking with things like unit test frameworks that
 // want to get at the C++ symbol names defined above in an un-mangled way.
 // TODO(dspringer): Figure out how to link the shared libs with the test
@@ -45,5 +46,6 @@ bool GetNexeURL(const char* nexes_attr, nacl::string* result);
 EXTERN_C_BEGIN
 DLLEXPORT const char* NaClPluginGetSandboxISA();
 EXTERN_C_END
+#endif
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NEXE_ARCH_H_
