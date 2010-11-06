@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 //
 // Implementation of a Windows event trace controller class.
-#include "base/event_trace_controller_win.h"
+#include "base/win/event_trace_controller.h"
 #include "base/logging.h"
+
+namespace base {
+namespace win {
 
 EtwTraceProperties::EtwTraceProperties() {
   memset(buffer_, 0, sizeof(buffer_));
@@ -165,3 +168,6 @@ HRESULT EtwTraceController::Flush(const wchar_t* session_name,
                              EVENT_TRACE_CONTROL_FLUSH);
   return HRESULT_FROM_WIN32(err);
 }
+
+}  // namespace win
+}  // namespace base

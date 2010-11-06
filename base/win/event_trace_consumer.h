@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 //
 // Declaration of a Windows event trace consumer base class.
-#ifndef BASE_EVENT_TRACE_CONSUMER_WIN_H_
-#define BASE_EVENT_TRACE_CONSUMER_WIN_H_
+#ifndef BASE_WIN_EVENT_TRACE_CONSUMER_H_
+#define BASE_WIN_EVENT_TRACE_CONSUMER_H_
 #pragma once
 
 #include <windows.h>
@@ -12,6 +12,9 @@
 #include <evntrace.h>
 #include <vector>
 #include "base/basictypes.h"
+
+namespace base {
+namespace win {
 
 // This class is a base class that makes it easier to consume events
 // from realtime or file sessions. Concrete consumers need to sublass
@@ -141,4 +144,7 @@ HRESULT EtwTraceConsumerBase<ImplClass>::Close() {
   return hr;
 }
 
-#endif  // BASE_EVENT_TRACE_CONSUMER_WIN_H_
+}  // namespace win
+}  // namespace base
+
+#endif  // BASE_WIN_EVENT_TRACE_CONSUMER_H_

@@ -17,8 +17,8 @@
 //
 // A trace consumer consumes events from zero or one realtime session,
 // as well as potentially from multiple binary trace files.
-#ifndef BASE_EVENT_TRACE_CONTROLLER_WIN_H_
-#define BASE_EVENT_TRACE_CONTROLLER_WIN_H_
+#ifndef BASE_WIN_EVENT_TRACE_CONTROLLER_H_
+#define BASE_WIN_EVENT_TRACE_CONTROLLER_H_
 #pragma once
 
 #include <windows.h>
@@ -26,6 +26,9 @@
 #include <evntrace.h>
 #include <string>
 #include "base/basictypes.h"
+
+namespace base {
+namespace win {
 
 // Utility class to make it easier to work with EVENT_TRACE_PROPERTIES.
 // The EVENT_TRACE_PROPERTIES structure contains information about an
@@ -141,4 +144,7 @@ class EtwTraceController {
   DISALLOW_COPY_AND_ASSIGN(EtwTraceController);
 };
 
-#endif  // BASE_EVENT_TRACE_CONTROLLER_WIN_H_
+}  // namespace win
+}  // namespace base
+
+#endif  // BASE_WIN_EVENT_TRACE_CONTROLLER_H_

@@ -4,14 +4,17 @@
 //
 // Declaration of a Windows event trace provider class, to allow using
 // Windows Event Tracing for logging transport and control.
-#ifndef BASE_EVENT_TRACE_PROVIDER_WIN_H_
-#define BASE_EVENT_TRACE_PROVIDER_WIN_H_
+#ifndef BASE_WIN_EVENT_TRACE_PROVIDER_H_
+#define BASE_WIN_EVENT_TRACE_PROVIDER_H_
 #pragma once
 
 #include <windows.h>
 #include <wmistr.h>
 #include <evntrace.h>
 #include "base/basictypes.h"
+
+namespace base {
+namespace win {
 
 typedef GUID EtwEventClass;
 typedef UCHAR EtwEventType;
@@ -165,4 +168,7 @@ class EtwTraceProvider {
   DISALLOW_COPY_AND_ASSIGN(EtwTraceProvider);
 };
 
-#endif  // BASE_EVENT_TRACE_PROVIDER_WIN_H_
+}  // namespace win
+}  // namespace base
+
+#endif  // BASE_WIN_EVENT_TRACE_PROVIDER_H_

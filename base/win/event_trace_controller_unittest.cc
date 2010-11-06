@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 //
 // Unit tests for event trace controller.
-#include "base/event_trace_controller_win.h"
-#include "base/event_trace_provider_win.h"
+#include "base/win/event_trace_controller.h"
+#include "base/win/event_trace_provider.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -14,6 +14,10 @@
 #include <initguid.h>  // NOLINT - must be last.
 
 namespace {
+
+using base::win::EtwTraceController;
+using base::win::EtwTraceProvider;
+using base::win::EtwTraceProperties;
 
 const wchar_t kTestSessionName[] = L"TestLogSession";
 

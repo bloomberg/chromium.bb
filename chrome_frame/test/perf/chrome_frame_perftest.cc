@@ -11,8 +11,6 @@
 
 #include "chrome_tab.h"  // Generated from chrome_tab.idl.
 
-#include "base/event_trace_controller_win.h"
-#include "base/event_trace_consumer_win.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -23,6 +21,8 @@
 #include "base/time.h"
 #include "base/debug/trace_event_win.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/event_trace_controller.h"
+#include "base/win/event_trace_consumer.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
@@ -1143,7 +1143,7 @@ class TracedEvents {
 // We may need to add kernel provider and pass Process Start/Exit events etc,
 // but for the time being we stick with base::kChromeTraceProviderName
 // provider only.
-class EtwConsumer : public EtwTraceConsumerBase<EtwConsumer> {
+class EtwConsumer : public base::win::EtwTraceConsumerBase<EtwConsumer> {
  public:
   EtwConsumer() {
     set_delegate(NULL);
@@ -1197,8 +1197,8 @@ class EtwPerfSession {
 
   void Start() {
     // To ensure there is no session leftover from crashes, previous runs, etc.
-    EtwTraceProperties ignore;
-    EtwTraceController::Stop(L"cf_perf", &ignore);
+    base::win::EtwTraceProperties ignore;
+    base::win::EtwTraceController::Stop(L"cf_perf", &ignore);
     ASSERT_TRUE(file_util::CreateTemporaryFile(&etl_log_file_));
     ASSERT_HRESULT_SUCCEEDED(controller_.StartFileSession(L"cf_perf",
         etl_log_file_.value().c_str(), false));
@@ -1221,7 +1221,7 @@ class EtwPerfSession {
   }
 
   FilePath etl_log_file_;
-  EtwTraceController controller_;
+  base::win::EtwTraceController controller_;
 };
 
 // Base class for the tracing event helper classes.

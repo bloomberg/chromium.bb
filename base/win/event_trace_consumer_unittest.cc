@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 //
 // Unit tests for event trace consumer_ base class.
-#include "base/event_trace_consumer_win.h"
+#include "base/win/event_trace_consumer.h"
 #include <list>
 #include "base/basictypes.h"
-#include "base/event_trace_controller_win.h"
-#include "base/event_trace_provider_win.h"
+#include "base/win/event_trace_controller.h"
+#include "base/win/event_trace_provider.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -17,6 +17,12 @@
 #include <initguid.h>  // NOLINT - has to be last
 
 namespace {
+
+using base::win::EtwMofEvent;
+using base::win::EtwTraceController;
+using base::win::EtwTraceConsumerBase;
+using base::win::EtwTraceProperties;
+using base::win::EtwTraceProvider;
 
 typedef std::list<EVENT_TRACE> EventQueue;
 
