@@ -447,11 +447,13 @@ void BookmarkBarView::SetProfile(Profile* profile) {
     delete GetChildViewAt(0);
 
   model_ = profile_->GetBookmarkModel();
-  model_->AddObserver(this);
-  if (model_->IsLoaded())
-    Loaded(model_);
-  // else case: we'll receive notification back from the BookmarkModel when done
-  // loading, then we'll populate the bar.
+  if (model_) {
+    model_->AddObserver(this);
+    if (model_->IsLoaded())
+      Loaded(model_);
+    // else case: we'll receive notification back from the BookmarkModel when
+    // done loading, then we'll populate the bar.
+  }
 }
 
 void BookmarkBarView::SetPageNavigator(PageNavigator* navigator) {

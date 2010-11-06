@@ -27,22 +27,17 @@ void HtmlDialogTabContentsDelegate::Detach() {
   profile_ = NULL;
 }
 
-Browser* HtmlDialogTabContentsDelegate::CreateBrowser() {
-  DCHECK(profile_);
-  return Browser::Create(profile_);
-}
-
 void HtmlDialogTabContentsDelegate::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition, PageTransition::Type transition) {
   if (profile_) {
-    // Force all links to open in a new window, ignoring the incoming
-    // disposition. This is a tabless, modal dialog so we can't just
-    // open it in the current frame.  Code adapted from
-    // Browser::OpenURLFromTab() with disposition == NEW_WINDOW.
-    browser::NavigateParams params(CreateBrowser(), url, transition);
+    // Specify a NULL browser for navigation. This will cause Navigate()
+    // to find a browser matching params.profile or create a new one.
+    Browser* browser = NULL;
+    browser::NavigateParams params(browser, url, transition);
+    params.profile = profile_;
     params.referrer = referrer;
-    params.disposition = NEW_FOREGROUND_TAB;
+    params.disposition = disposition;
     params.show_window = true;
     browser::Navigate(&params);
   }
@@ -59,11 +54,13 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
   if (profile_) {
-    // Force this to open in a new window so that it appears at the top
-    // of the z-index.
-    browser::NavigateParams params(CreateBrowser(), new_contents);
+    // Specify a NULL browser for navigation. This will cause Navigate()
+    // to find a browser matching params.profile or create a new one.
+    Browser* browser = NULL;
+    browser::NavigateParams params(browser, new_contents);
+    params.profile = profile_;
     params.source_contents = source;
-    params.disposition = NEW_FOREGROUND_TAB;
+    params.disposition = disposition;
     params.window_bounds = initial_pos;
     params.show_window = true;
     browser::Navigate(&params);
@@ -111,4 +108,3 @@ bool HtmlDialogTabContentsDelegate::ShouldAddNavigationToHistory(
     NavigationType::Type navigation_type) {
   return false;
 }
-

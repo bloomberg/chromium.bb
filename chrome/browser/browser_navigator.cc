@@ -101,41 +101,59 @@ Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
   // If no source TabContents was specified, we use the selected one from the
   // target browser. This must happen first, before GetBrowserForDisposition()
   // has a chance to replace |params->browser| with another one.
-  if (!params->source_contents)
+  if (!params->source_contents && params->browser)
     params->source_contents = params->browser->GetSelectedTabContents();
+
+  Profile* profile =
+      params->browser ? params->browser->profile() : params->profile;
 
   switch (params->disposition) {
     case CURRENT_TAB:
+      if (!params->browser && profile) {
+        // We specified a profile instead of a browser; find or create one.
+        params->browser = Browser::GetOrCreateTabbedBrowser(profile);
+      }
       return params->browser;
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB:
       // See if we can open the tab in the window this navigator is bound to.
-      if (WindowCanOpenTabs(params->browser))
+      if (params->browser && WindowCanOpenTabs(params->browser))
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(params->browser->profile());
+      if (profile)
+        return GetOrCreateBrowser(profile);
+      return NULL;
     case NEW_POPUP: {
       // Make a new popup window. Coerce app-style if |params->browser| or the
       // |source| represents an app.
       Browser::Type type = Browser::TYPE_POPUP;
-      if (params->browser->type() == Browser::TYPE_APP ||
+      if ((params->browser && params->browser->type() == Browser::TYPE_APP) ||
           (params->source_contents && params->source_contents->is_app())) {
         type = Browser::TYPE_APP_POPUP;
       }
-      Browser* browser = new Browser(type, params->browser->profile());
-      browser->set_override_bounds(params->window_bounds);
-      browser->CreateBrowserWindow();
-      return browser;
+      if (profile) {
+        Browser* browser = new Browser(type, profile);
+        browser->set_override_bounds(params->window_bounds);
+        browser->CreateBrowserWindow();
+        return browser;
+      }
+      return NULL;
     }
     case NEW_WINDOW:
       // Make a new normal browser window.
-      return Browser::Create(params->browser->profile());
+      if (profile) {
+        Browser* browser = new Browser(Browser::TYPE_NORMAL, profile);
+        browser->CreateBrowserWindow();
+        return browser;
+      }
+      return NULL;
     case OFF_THE_RECORD:
       // Make or find an incognito window.
-      return GetOrCreateBrowser(
-          params->browser->profile()->GetOffTheRecordProfile());
+      if (profile)
+        return GetOrCreateBrowser(profile->GetOffTheRecordProfile());
+      return NULL;
     // The following types all result in no navigation.
     case SUPPRESS_OPEN:
     case SAVE_TO_DISK:
@@ -153,7 +171,8 @@ void NormalizeDisposition(browser::NavigateParams* params) {
   // Calculate the WindowOpenDisposition if necessary.
   if (params->browser->tabstrip_model()->empty() &&
       (params->disposition == NEW_BACKGROUND_TAB ||
-       params->disposition == CURRENT_TAB)) {
+       params->disposition == CURRENT_TAB ||
+       params->disposition == SINGLETON_TAB)) {
     params->disposition = NEW_FOREGROUND_TAB;
   }
   if (params->browser->profile()->IsOffTheRecord() &&
@@ -241,8 +260,8 @@ NavigateParams::NavigateParams(
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
       show_window(false),
-      browser(a_browser) {
-  DCHECK(browser);
+      browser(a_browser),
+      profile(NULL) {
 }
 
 NavigateParams::NavigateParams(Browser* a_browser,
@@ -254,8 +273,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_SELECTED),
       show_window(false),
-      browser(a_browser) {
-  DCHECK(browser);
+      browser(a_browser),
+      profile(NULL) {
 }
 
 NavigateParams::~NavigateParams() {
@@ -310,6 +329,7 @@ void Navigate(NavigateParams* params) {
       // ... otherwise if we're loading in the current tab, the target is the
       // same as the source.
       params->target_contents = params->source_contents;
+      DCHECK(params->target_contents);
     }
 
     if (user_initiated) {
@@ -360,4 +380,3 @@ void Navigate(NavigateParams* params) {
 }
 
 }  // namespace browser
-

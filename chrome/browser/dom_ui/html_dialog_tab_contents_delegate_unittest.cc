@@ -23,63 +23,18 @@
 
 namespace {
 
-class MockTestBrowserWindow : public TestBrowserWindow {
- public:
-  // TestBrowserWindow() doesn't actually use its browser argument so we just
-  // pass NULL.
-  MockTestBrowserWindow() : TestBrowserWindow(NULL) {}
-
-  virtual ~MockTestBrowserWindow() {}
-
-  MOCK_METHOD0(Show, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTestBrowserWindow);
-};
-
 class TestTabContentsDelegate : public HtmlDialogTabContentsDelegate {
  public:
   explicit TestTabContentsDelegate(Profile* profile)
-    : HtmlDialogTabContentsDelegate(profile),
-      window_for_next_created_browser_(NULL) {}
+    : HtmlDialogTabContentsDelegate(profile) {}
 
   virtual ~TestTabContentsDelegate() {
-    CHECK(!window_for_next_created_browser_);
-    for (std::vector<Browser*>::iterator i = created_browsers_.begin();
-         i != created_browsers_.end(); ++i) {
-      (*i)->CloseAllTabs();
-      // We need to explicitly cast this since BrowserWindow does *not*
-      // have a virtual destructor.
-      delete static_cast<MockTestBrowserWindow*>((*i)->window());
-      delete *i;
-    }
   }
 
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
 
-  // Takes ownership of window.
-  void SetWindowForNextCreatedBrowser(BrowserWindow* window) {
-    CHECK(window);
-    window_for_next_created_browser_ = window;
-  }
-
- protected:
-  // CreateBrowser() is called by OpenURLFromTab() and AddNewContents().
-  virtual Browser* CreateBrowser() {
-    DCHECK(profile());
-    DCHECK(window_for_next_created_browser_);
-    Browser* browser = new Browser(Browser::TYPE_NORMAL, profile());
-    browser->set_window(window_for_next_created_browser_);
-    window_for_next_created_browser_ = NULL;
-    created_browsers_.push_back(browser);
-    return browser;
-  }
-
  private:
-  BrowserWindow* window_for_next_created_browser_;
-  std::vector<Browser*> created_browsers_;
-
   DISALLOW_COPY_AND_ASSIGN(TestTabContentsDelegate);
 };
 
@@ -124,28 +79,22 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
 }
 
 TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
-  MockTestBrowserWindow* window = new MockTestBrowserWindow();
-  EXPECT_CALL(*window, Show()).Times(1);
-  test_tab_contents_delegate_->SetWindowForNextCreatedBrowser(window);
-
   test_tab_contents_delegate_->OpenURLFromTab(
     NULL, GURL(chrome::kAboutBlankURL), GURL(),
     NEW_FOREGROUND_TAB, PageTransition::LINK);
-  EXPECT_EQ(0, browser()->tab_count());
-  EXPECT_EQ(2U, BrowserList::size());
+  // This should create a new foreground tab in the existing browser.
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1U, BrowserList::size());
 }
 
-TEST_F(HtmlDialogTabContentsDelegateTest, AddNewContentsTest) {
-  MockTestBrowserWindow* window = new MockTestBrowserWindow();
-  EXPECT_CALL(*window, Show()).Times(1);
-  test_tab_contents_delegate_->SetWindowForNextCreatedBrowser(window);
-
+TEST_F(HtmlDialogTabContentsDelegateTest, AddNewContentsForegroundTabTest) {
   TabContents* contents =
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   test_tab_contents_delegate_->AddNewContents(
       NULL, contents, NEW_FOREGROUND_TAB, gfx::Rect(), false);
-  EXPECT_EQ(0, browser()->tab_count());
-  EXPECT_EQ(2U, BrowserList::size());
+  // This should create a new foreground tab in the existing browser.
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1U, BrowserList::size());
 }
 
 TEST_F(HtmlDialogTabContentsDelegateTest, DetachTest) {
@@ -163,4 +112,3 @@ TEST_F(HtmlDialogTabContentsDelegateTest, DetachTest) {
 }
 
 }  // namespace
-

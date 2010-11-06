@@ -407,4 +407,61 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
   EXPECT_EQ(2, browser()->tab_count());
 }
 
+// This test verifies that constructing params with a NULL browser has
+// the same result as navigating to a new foreground tab in the (only)
+// active browser. Tests are the same as for Disposition_NewForegroundTab.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewForegroundTab) {
+  TabContents* old_contents = browser()->GetSelectedTabContents();
+  // Navigate with a NULL browser.
+  browser::NavigateParams p(MakeNavigateParams(NULL));
+  p.disposition = NEW_FOREGROUND_TAB;
+  p.profile = browser()->profile();
+  browser::Navigate(&p);
+
+  // Navigate() should have found browser() and create a new tab.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_NE(old_contents, browser()->GetSelectedTabContents());
+  EXPECT_EQ(browser()->GetSelectedTabContents(), p.target_contents);
+  EXPECT_EQ(2, browser()->tab_count());
+}
+
+// This test verifies that constructing params with a NULL browser and
+// a specific profile matches the specified profile.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_MatchProfile) {
+  // Create a new browser with using the incognito profile.
+  Browser* incognito =
+      Browser::Create(browser()->profile()->GetOffTheRecordProfile());
+
+  // Navigate with a NULL browser and the incognito profile.
+  browser::NavigateParams p(MakeNavigateParams(NULL));
+  p.disposition = NEW_FOREGROUND_TAB;
+  p.profile = incognito->profile();
+  browser::Navigate(&p);
+
+  // Navigate() should have found incognito, not browser().
+  EXPECT_EQ(incognito, p.browser);
+  EXPECT_EQ(incognito->GetSelectedTabContents(), p.target_contents);
+  EXPECT_EQ(1, incognito->tab_count());
+}
+
+// This test verifies that constructing params with a NULL browser and
+// disposition = NEW_WINDOW always opens exactly one new window.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
+  browser::NavigateParams p(MakeNavigateParams(NULL));
+  p.disposition = NEW_WINDOW;
+  p.profile = browser()->profile();
+  browser::Navigate(&p);
+
+  // Navigate() should have created a new browser.
+  EXPECT_NE(browser(), p.browser);
+  EXPECT_EQ(Browser::TYPE_NORMAL, p.browser->type());
+
+  // We should now have two windows, the browser() provided by the framework and
+  // the new normal window.
+  EXPECT_EQ(2u, BrowserList::size());
+  EXPECT_EQ(1, browser()->tab_count());
+  EXPECT_EQ(1, p.browser->tab_count());
+}
+
+
 }  // namespace

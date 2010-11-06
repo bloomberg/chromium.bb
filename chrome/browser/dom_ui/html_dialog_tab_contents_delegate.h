@@ -58,13 +58,8 @@ class HtmlDialogTabContentsDelegate : public TabContentsDelegate {
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType::Type navigation_type);
 
- protected:
-  // Overridden only for testing.
-  virtual Browser* CreateBrowser();
-
  private:
   Profile* profile_;  // Weak pointer.  Always an original profile.
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
-
