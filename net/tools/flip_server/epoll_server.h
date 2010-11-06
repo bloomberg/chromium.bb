@@ -8,6 +8,8 @@
 
 #include <fcntl.h>
 #include <sys/queue.h>
+#include <ext/hash_map>  // it is annoying that gcc does this. oh well.
+#include <ext/hash_set>
 #include <map>
 #include <string>
 #include <utility>
@@ -34,7 +36,6 @@
 #endif
 
 #include "base/basictypes.h"
-#include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include <sys/epoll.h>
 
@@ -573,7 +574,7 @@ class EpollServer {
     }
   };
 
-  typedef base::hash_set<CBAndEventMask, CBAndEventMaskHash> FDToCBMap;
+  typedef __gnu_cxx::hash_set<CBAndEventMask, CBAndEventMaskHash> FDToCBMap;
 
   // the following four functions are OS-specific, and are likely
   // to be changed in a subclass if the poll/select method is changed
@@ -942,7 +943,7 @@ class EpollServer {
 
     std::vector<DebugOutput*> debug_events_;
     std::vector<Events> unregistered_fds_;
-    typedef base::hash_map<int, Events> EventCountsMap;
+    typedef __gnu_cxx::hash_map<int, Events> EventCountsMap;
     EventCountsMap event_counts_;
     int64 num_records_;
     int64 record_threshold_;
