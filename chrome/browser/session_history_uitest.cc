@@ -331,7 +331,8 @@ TEST_F(SessionHistoryTest, DISABLED_CrossFrameFormBackForward) {
 // See http://crbug.com/61619
 #define MAYBE_FragmentBackForward FLAKY_FragmentBackForward
 #else
-#define MAYBE_FragmentBackForward FragmentBackForward
+// http://crbug.com/62156
+#define MAYBE_FragmentBackForward DISABLED_FragmentBackForward
 #endif
 
 // Test that back/forward entries are created for reference fragment
