@@ -15,7 +15,9 @@
 #include "net/url_request/url_request_status.h"
 
 CloudPrintURLFetcher::CloudPrintURLFetcher()
-    : protect_entry_(NULL), num_retries_(0) {
+    : delegate_(NULL),
+      protect_entry_(NULL),
+      num_retries_(0) {
 }
 
 void CloudPrintURLFetcher::StartGetRequest(const GURL& url,

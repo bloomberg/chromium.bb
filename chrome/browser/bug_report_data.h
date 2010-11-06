@@ -23,7 +23,8 @@ class BugReportData {
   // don't want it to send the report either - this will make sure that if
   // SyslogsComplete gets called before UpdateData, we'll simply populate the
   // sys_info and zip_content fields and exit without disturbing anything else
-  BugReportData() : profile_(NULL)
+  BugReportData() : profile_(NULL),
+                    problem_type_(0)
 #if defined(OS_CHROMEOS)
                     , sent_report_(false), send_sys_info_(false)
 #endif

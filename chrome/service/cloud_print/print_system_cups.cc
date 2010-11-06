@@ -134,7 +134,8 @@ class PrintServerWatcherCUPS
   : public PrintSystem::PrintServerWatcher {
  public:
   explicit PrintServerWatcherCUPS(PrintSystemCUPS* print_system)
-      : print_system_(print_system) {
+      : print_system_(print_system),
+        delegate_(NULL) {
   }
   ~PrintServerWatcherCUPS() {
     StopWatching();
