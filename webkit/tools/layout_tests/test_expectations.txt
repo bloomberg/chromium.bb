@@ -33,8 +33,3 @@ BUG61739 MAC : animations/suspend-resume-animation-events.html = FAIL CRASH
 
 // Probably caused by activation of ICC on Chromium-Mac, likely only requires resume
 BUG48982 MAC : tables/mozilla/bugs/bug82946-2.html = IMAGE
-
-// Below bug shows up regularly on Win (Debug) & Mac (Release), 
-// but also at least once on the Linux canary.
-// Could not reproduce on my local machine so far, though...
-BUGWK48896 : fast/events/remove-event-listener.html = CRASH PASS
