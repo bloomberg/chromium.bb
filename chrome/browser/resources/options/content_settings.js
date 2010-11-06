@@ -130,7 +130,6 @@ cr.define('options', function() {
     var parentExceptionsArea =
         document.querySelector('div[contentType=' + type + '][mode=normal]');
     if (!parentExceptionsArea.classList.contains('hidden')) {
-      exceptionsArea.classList.remove('hidden');
       exceptionsArea.querySelector('list').redraw();
     }
   };
@@ -139,12 +138,18 @@ cr.define('options', function() {
    * Clears and hides the incognito exceptions lists.
    */
   ContentSettings.OTRProfileDestroyed = function() {
+    // Find all zippies, set them to hide OTR profiles, and remeasure them
+    // to make them smoothly animate to the new size.
+    var zippies = document.querySelectorAll('.zippy');
+    for (var i = 0; i < zippies.length; i++) {
+      zippies[i].classList.remove('show-otr');
+      zippies[i].remeasure();
+    }
+
     var exceptionsAreas =
         document.querySelectorAll('div[contentType][mode=otr]');
-
     for (var i = 0; i < exceptionsAreas.length; i++) {
       exceptionsAreas[i].otrProfileExists = false;
-      exceptionsAreas[i].classList.add('hidden');
       exceptionsAreas[i].querySelector('list').clear();
     }
   };
