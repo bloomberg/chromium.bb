@@ -143,10 +143,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_NoticeExtensionChanges) {
   WaitForResourceChange(3);
 }
 
-// Fails on win when storage for props get exhausted. http://crbug.com/44991
-#if defined(OS_WIN)
-#define NoticeNotificationChanges FLAKY_NoticeNotificationChanges
-#endif
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeNotificationChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
 
