@@ -25,7 +25,7 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
   virtual void ScheduleWork() {
     thread_->Post(this, kRunTasksMessageId);
   }
-  virtual void ScheduleDelayedWork(const base::Time& time) {
+  virtual void ScheduleDelayedWork(const base::TimeTicks& time) {
     delayed_work_time_ = time;
     ScheduleNextDelayedTask();
   }
@@ -66,7 +66,7 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
     DCHECK_EQ(thread_->message_loop(), MessageLoop::current());
 
     if (!delayed_work_time_.is_null()) {
-      base::Time now = base::Time::Now();
+      base::TimeTicks now = base::TimeTicks::Now();
       int delay = static_cast<int>((delayed_work_time_ - now).InMilliseconds());
       if (delay > 0) {
         thread_->PostDelayed(delay, this, kRunTasksMessageId);
@@ -77,7 +77,7 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
   }
 
   JingleThread* thread_;
-  base::Time delayed_work_time_;
+  base::TimeTicks delayed_work_time_;
 };
 
 class JingleThread::JingleMessageLoop : public MessageLoop {
