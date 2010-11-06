@@ -7,11 +7,11 @@
 #include <emmintrin.h>
 
 #include <algorithm>
-#include <ext/hash_set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/string_piece.h"
@@ -29,9 +29,9 @@ const char kContentLength[] = "Content-Length";
 const char kTransferEncoding[] = "Transfer-Encoding";
 const char kSpaceChar = ' ';
 
-__gnu_cxx::hash_set<base::StringPiece,
-                    net::StringPieceCaseHash,
-                    net::StringPieceCaseEqual> g_multivalued_headers;
+base::hash_set<base::StringPiece,
+               net::StringPieceCaseHash,
+               net::StringPieceCaseEqual> g_multivalued_headers;
 
 void InitMultivaluedHeaders() {
   g_multivalued_headers.insert("accept");
@@ -615,7 +615,7 @@ void BalsaHeaders::SetContentLength(size_t length) {
   content_length_ = length;
   // FastUInt64ToBuffer is supposed to use a maximum of kFastToBufferSize bytes.
   char buffer[kFastToBufferSize];
-  int len_converted = snprintf(buffer, sizeof(buffer), "%d", length);
+  int len_converted = snprintf(buffer, sizeof(buffer), "%zu", length);
   CHECK_GT(len_converted, 0);
   const base::StringPiece length_str(buffer, len_converted);
   AppendHeader(content_length, length_str);
@@ -724,7 +724,7 @@ void BalsaHeaders::SetParsedResponseCodeAndUpdateFirstline(
     size_t parsed_response_code) {
   char buffer[kFastToBufferSize];
   int len_converted = snprintf(buffer, sizeof(buffer),
-                               "%d", parsed_response_code);
+                               "%zu", parsed_response_code);
   CHECK_GT(len_converted, 0);
   SetResponseCode(base::StringPiece(buffer, len_converted));
 }
