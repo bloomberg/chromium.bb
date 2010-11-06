@@ -144,6 +144,13 @@ const Experiment kExperiments[] = {
     switches::kEnablePrintPreview
   },
   {
+    "enable-nacl",   // Do not change; see above.
+    IDS_FLAGS_ENABLE_NACL_NAME,
+    IDS_FLAGS_ENABLE_NACL_DESCRIPTION,
+    kOsAll,
+    switches::kEnableNaCl
+  },
+  {
     "dns-server",
     IDS_FLAGS_DNS_SERVER_NAME,
     IDS_FLAGS_DNS_SERVER_DESCRIPTION,

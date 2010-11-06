@@ -4052,6 +4052,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION" desc="Description of the 'Disable outdated plug-ins' lab">
         Automatically disables plug-ins with known security vulnerabilities and offers update links for them.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NACL_NAME" desc="Description of the 'Enable Native Client' lab.">
+        Native Client
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NACL_DESCRIPTION" desc="Description of the 'Enable Native Client' lab.">
+        Enable support for Native Client.
+      </message>
       <message name="IDS_FLAGS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
         XSS Auditor
       </message>
