@@ -75,6 +75,8 @@ FilePath::StringType CreateUniqueDirectoryName(const GURL& origin_url) {
   return unique;
 }
 
+static const char kExtensionScheme[] = "chrome-extension";
+
 }  // anonymous namespace
 
 class FileSystemPathManager::GetFileSystemRootPathTask
@@ -320,6 +322,7 @@ bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
   // Basically we only accept http or https. We allow file:// URLs
   // only if --allow-file-access-from-files flag is given.
   return url.SchemeIs("http") || url.SchemeIs("https") ||
+         url.SchemeIs(kExtensionScheme) ||
          (url.SchemeIsFile() && allow_file_access_from_files_);
 }
 
