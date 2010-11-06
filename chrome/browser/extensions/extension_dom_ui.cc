@@ -194,10 +194,6 @@ TabContents* ExtensionDOMUI::associated_tab_contents() const {
   return tab_contents();
 }
 
-Profile* ExtensionDOMUI::GetProfile() {
-  return DOMUI::GetProfile();
-}
-
 ExtensionBookmarkManagerEventRouter*
 ExtensionDOMUI::extension_bookmark_manager_event_router() {
   return extension_bookmark_manager_event_router_.get();
