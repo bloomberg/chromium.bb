@@ -92,8 +92,8 @@ PP_Bool MakeCurrent(PP_Resource graphics3d) {
 }
 
 PP_Resource GetCurrentContext() {
-  Graphics3D* currentContext = Graphics3D::GetCurrent();
-  return currentContext ? currentContext->GetReference() : 0;
+  Graphics3D* current_context = Graphics3D::GetCurrent();
+  return current_context ? current_context->GetReference() : 0;
 }
 
 PP_Bool SwapBuffers(PP_Resource graphics3d) {
@@ -102,8 +102,14 @@ PP_Bool SwapBuffers(PP_Resource graphics3d) {
 }
 
 uint32_t GetError() {
-  // TODO(neb): Figure out error checking.
-  return PP_GRAPHICS_3D_ERROR_SUCCESS;
+  // Technically, this should return the last error that occurred on the current
+  // thread, rather than an error associated with a particular context.
+  // TODO(apatrick): Fix this.
+  Graphics3D* current_context = Graphics3D::GetCurrent();
+  if (!current_context)
+    return 0;
+
+  return current_context->GetError();
 }
 
 const PPB_Graphics3D_Dev ppb_graphics3d = {
@@ -123,10 +129,8 @@ const PPB_Graphics3D_Dev ppb_graphics3d = {
 }  // namespace
 
 Graphics3D::Graphics3D(PluginModule* module)
-    : Resource(module),
-      command_buffer_(NULL),
-      transfer_buffer_id_(0),
-      method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+  : Resource(module),
+    bound_instance_(NULL) {
 }
 
 const PPB_Graphics3D_Dev* Graphics3D::GetInterface() {
@@ -154,70 +158,88 @@ bool Graphics3D::Init(PP_Instance instance_id, int32_t config,
 
   // Create and initialize the objects required to issue GLES2 calls.
   platform_context_.reset(instance->delegate()->CreateContext3D());
-  if (!platform_context_.get())
-    return false;
-
-  if (!platform_context_->Init(instance->position(),
-                               instance->clip())) {
-    platform_context_.reset();
+  if (!platform_context_.get()) {
+    Destroy();
     return false;
   }
-  command_buffer_ = platform_context_->GetCommandBuffer();
-  gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer_));
-  gpu::Buffer buffer = command_buffer_->GetRingBuffer();
-  if (gles2_helper_->Initialize(buffer.size)) {
-    transfer_buffer_id_ =
-        command_buffer_->CreateTransferBuffer(kTransferBufferSize);
-    gpu::Buffer transfer_buffer =
-        command_buffer_->GetTransferBuffer(transfer_buffer_id_);
-    if (transfer_buffer.ptr) {
-      gles2_implementation_.reset(new gpu::gles2::GLES2Implementation(
-          gles2_helper_.get(),
-          transfer_buffer.size,
-          transfer_buffer.ptr,
-          transfer_buffer_id_,
-          false));
-      platform_context_->SetNotifyRepaintTask(
-          method_factory3d_.NewRunnableMethod(&Graphics3D::HandleRepaint,
-                                              instance_id));
-      return true;
-    }
+
+  if (!platform_context_->Init()) {
+    Destroy();
+    return false;
   }
 
-  // Tear everything down if initialization failed.
-  Destroy();
-  return false;
+  gles2_implementation_ = platform_context_->GetGLES2Implementation();
+  DCHECK(gles2_implementation_);
+
+  return true;
+}
+
+bool Graphics3D::BindToInstance(PluginInstance* new_instance) {
+  if (bound_instance_ == new_instance)
+    return true;  // Rebinding the same device, nothing to do.
+  if (bound_instance_ && new_instance)
+    return false;  // Can't change a bound device.
+
+  if (new_instance) {
+    // Resize the backing texture to the size of the instance when it is bound.
+    platform_context_->ResizeBackingTexture(new_instance->position().size());
+
+    // This is a temporary hack. The SwapBuffers is issued to force the resize
+    // to take place before any subsequent rendering. This might lead to a
+    // partially rendered frame being displayed. It is also not thread safe
+    // since the SwapBuffers is written to the command buffer and that command
+    // buffer might be written to by another thread.
+    // TODO(apatrick): Figure out the semantics of binding and resizing.
+    platform_context_->SwapBuffers();
+  }
+
+  bound_instance_ = new_instance;
+  return true;
 }
 
 bool Graphics3D::MakeCurrent() {
-  if (!command_buffer_)
+  if (!platform_context_.get())
     return false;
 
   CurrentContextKey::get()->Set(this);
 
-  // Don't request latest error status from service. Just use the locally
-  // cached information from the last flush.
-  // TODO(apatrick): I'm not sure if this should actually change the
-  // current context if it fails. For now it gets changed even if it fails
-  // becuase making GL calls with a NULL context crashes.
-  // TODO(neb): Figure out error checking.
-//  if (command_buffer_->GetCachedError() != gpu::error::kNoError)
-//    return false;
+  // TODO(apatrick): Return false on context lost.
   return true;
 }
 
 bool Graphics3D::SwapBuffers() {
-  if (!command_buffer_)
+  if (!platform_context_.get())
     return false;
 
-  // Don't request latest error status from service. Just use the locally cached
-  // information from the last flush.
-  // TODO(neb): Figure out error checking.
-//  if (command_buffer_->GetCachedError() != gpu::error::kNoError)
-//    return false;
+  return platform_context_->SwapBuffers();
+}
 
-  gles2_implementation_->SwapBuffers();
-  return true;
+unsigned Graphics3D::GetError() {
+  if (!platform_context_.get())
+    return 0;
+
+  return platform_context_->GetError();
+}
+
+void Graphics3D::ResizeBackingTexture(const gfx::Size& size) {
+  if (!platform_context_.get())
+    return;
+
+  platform_context_->ResizeBackingTexture(size);
+}
+
+void Graphics3D::SetSwapBuffersCallback(Callback0::Type* callback) {
+  if (!platform_context_.get())
+    return;
+
+  platform_context_->SetSwapBuffersCallback(callback);
+}
+
+unsigned Graphics3D::GetBackingTextureId() {
+  if (!platform_context_.get())
+    return 0;
+
+  return platform_context_->GetBackingTextureId();
 }
 
 void Graphics3D::Destroy() {
@@ -225,32 +247,9 @@ void Graphics3D::Destroy() {
     ResetCurrent();
   }
 
-  method_factory3d_.RevokeAll();
+  gles2_implementation_ = NULL;
 
-  gles2_implementation_.reset();
-
-  if (command_buffer_ && transfer_buffer_id_ != 0) {
-    command_buffer_->DestroyTransferBuffer(transfer_buffer_id_);
-    transfer_buffer_id_ = 0;
-  }
-
-  gles2_helper_.reset();
-
-  // Platform context owns the command buffer.
   platform_context_.reset();
-  command_buffer_ = NULL;
-}
-
-void Graphics3D::HandleRepaint(PP_Instance instance_id) {
-  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
-  if (instance) {
-    instance->Graphics3DContextLost();
-    if (platform_context_.get()) {
-      platform_context_->SetNotifyRepaintTask(
-          method_factory3d_.NewRunnableMethod(&Graphics3D::HandleRepaint,
-                                              instance_id));
-    }
-  }
 }
 
 }  // namespace pepper

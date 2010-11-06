@@ -86,6 +86,7 @@
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "chrome/renderer/websharedworker_proxy.h"
@@ -2628,14 +2629,19 @@ WebMediaPlayer* RenderView::createMediaPlayer(
 
   if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
       !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
-    // Add the hardware video decoder factory.
-    // TODO(hclam): This assumes that ggl::Context is set to current
-    // internally. I need to make it more explicit to get the context.
-    bool ret = frame->view()->graphicsContext3D()->makeContextCurrent();
-    CHECK(ret) << "Failed to switch context";
+    WebGraphicsContext3DCommandBufferImpl* context =
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+            frame->view()->graphicsContext3D());
+    if (!context)
+      return NULL;
 
+    // Add the hardware video decoder factory.
+    // TODO(hclam): This will cause the renderer process to crash on context
+    // lost.
+    bool ret = context->makeContextCurrent();
+    CHECK(ret) << "Failed to switch context";
     collection->AddFilter(new IpcVideoDecoder(
-        MessageLoop::current(), ggl::GetCurrentContext()));
+        MessageLoop::current(), context->context()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =

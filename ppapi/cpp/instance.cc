@@ -7,6 +7,7 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/cpp/common.h"
+#include "ppapi/cpp/dev/graphics_3d_dev.h"
 #include "ppapi/cpp/dev/scrollbar_dev.h"
 #include "ppapi/cpp/dev/widget_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -82,6 +83,13 @@ Var Instance::GetOwnerElementObject() {
 }
 
 bool Instance::BindGraphics(const Graphics2D& graphics) {
+  if (!ppb_instance_f)
+    return false;
+  return PPBoolToBool(ppb_instance_f->BindGraphics(pp_instance(),
+                                                   graphics.pp_resource()));
+}
+
+bool Instance::BindGraphics(const Graphics3D_Dev& graphics) {
   if (!ppb_instance_f)
     return false;
   return PPBoolToBool(ppb_instance_f->BindGraphics(pp_instance(),
