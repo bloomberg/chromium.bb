@@ -1039,7 +1039,6 @@ void WebDataService::UpdateAutoFillProfileGUIDImpl(
     // the caller will detect this on the next refresh.
     AutoFillProfile* original_profile = NULL;
     if (!db_->GetAutoFillProfileForGUID(profile.guid(), &original_profile)) {
-      request->RequestComplete();
       return;
     }
     scoped_ptr<AutoFillProfile> scoped_profile(original_profile);
@@ -1158,7 +1157,6 @@ void WebDataService::UpdateCreditCardGUIDImpl(
     // the write and the caller will detect this on the next refresh.
     CreditCard* original_credit_card = NULL;
     if (!db_->GetCreditCardForGUID(credit_card.guid(), &original_credit_card)) {
-      request->RequestComplete();
       return;
     }
     scoped_ptr<CreditCard> scoped_credit_card(original_credit_card);

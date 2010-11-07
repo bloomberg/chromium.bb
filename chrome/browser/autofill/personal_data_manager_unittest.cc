@@ -457,19 +457,19 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   EXPECT_EQ(profile0, *results1.at(0));
   EXPECT_EQ(profile1, *results1.at(1));
 
-  AutoFillProfile profile2;
-  autofill_test::SetProfileInfo(&profile2,
+  scoped_ptr<AutoFillProfile> profile2(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profile2.get(),
       "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
 
   // Adjust all labels.
-  profile_pointers.push_back(&profile2);
+  profile_pointers.push_back(profile2.get());
   AutoFillProfile::AdjustInferredLabels(&profile_pointers);
 
   WebDataService* wds = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
   ASSERT_TRUE(wds);
-  wds->AddAutoFillProfileGUID(profile2);
+  wds->AddAutoFillProfileGUID(*profile2.get());
 
   personal_data_->Refresh();
 
@@ -483,21 +483,21 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   ASSERT_EQ(3U, results2.size());
   EXPECT_EQ(profile0, *results2.at(0));
   EXPECT_EQ(profile1, *results2.at(1));
-  EXPECT_EQ(profile2, *results2.at(2));
+  EXPECT_EQ(*profile2.get(), *results2.at(2));
 
   wds->RemoveAutoFillProfileGUID(profile1.guid());
-  wds->RemoveAutoFillProfileGUID(profile2.guid());
+  wds->RemoveAutoFillProfileGUID(profile2->guid());
 
   // Before telling the PDM to refresh, simulate an edit to one of the profiles
   // via a SetProfile update (this would happen if the AutoFill window was
   // open with a previous snapshot of the profiles, and something [e.g. sync]
   // removed a profile from the browser.  In this edge case, we will end up
   // in a consistent state by dropping the write).
-  profile2.SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jo"));
+  profile2->SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16("Jo"));
   update.clear();
   update.push_back(profile0);
   update.push_back(profile1);
-  update.push_back(profile2);
+  update.push_back(*profile2.get());
   personal_data_->SetProfiles(&update);
 
   // And wait for the refresh.

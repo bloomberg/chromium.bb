@@ -1053,3 +1053,15 @@
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
+{
+   bug_61988_a
+   Heapcheck:Leak
+   ...
+   fun:PersonalDataManagerTest_Refresh_Test::TestBody
+}
+{
+   bug_61988_b
+   Heapcheck:Leak
+   ...
+   fun:TestingProfile::CreateWebDataService
+}
