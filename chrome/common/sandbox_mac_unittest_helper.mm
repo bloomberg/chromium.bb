@@ -16,6 +16,8 @@ extern "C" {
 #include "chrome/common/sandbox_mac.h"
 #include "testing/multiprocess_func_list.h"
 
+using sandbox::Sandbox;
+
 namespace {
 
 const char* kSandboxTypeKey = "CHROMIUM_SANDBOX_SANDBOX_TYPE";
@@ -52,10 +54,10 @@ bool MacSandboxTest:: RunTestInAllSandboxTypes(const char* test_name,
                                 const char* test_data) {
   // Go through all the sandbox types, and run the test case in each of them
   // if one fails, abort.
-  for(int i = static_cast<int>(sandbox::SANDBOX_TYPE_FIRST_TYPE);
-      i < sandbox::SANDBOX_AFTER_TYPE_LAST_TYPE;
+  for(int i = static_cast<int>(Sandbox::SANDBOX_TYPE_FIRST_TYPE);
+      i < Sandbox::SANDBOX_AFTER_TYPE_LAST_TYPE;
       ++i) {
-    if (!RunTestInSandbox(static_cast<sandbox::SandboxProcessType>(i),
+    if (!RunTestInSandbox(static_cast<Sandbox::SandboxProcessType>(i),
             test_name, test_data)) {
       LOG(ERROR) << "Sandboxed test (" << test_name << ")" <<
           "Failed in sandbox type " << i <<
@@ -66,7 +68,7 @@ bool MacSandboxTest:: RunTestInAllSandboxTypes(const char* test_name,
  return true;
 }
 
-bool MacSandboxTest::RunTestInSandbox(sandbox::SandboxProcessType sandbox_type,
+bool MacSandboxTest::RunTestInSandbox(Sandbox::SandboxProcessType sandbox_type,
                                       const char* test_name,
                                       const char* test_data) {
   std::stringstream s;
@@ -116,8 +118,8 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     LOG(ERROR) << "Sandbox type not specified";
     return -1;
   }
-  sandbox::SandboxProcessType sandbox_type =
-      static_cast<sandbox::SandboxProcessType>(atoi(sandbox_type_str));
+  Sandbox::SandboxProcessType sandbox_type =
+      static_cast<Sandbox::SandboxProcessType>(atoi(sandbox_type_str));
   char* sandbox_test_name = getenv(kSandboxTestNameKey);
   if (!sandbox_test_name) {
     LOG(ERROR) << "Sandbox test name not specified";
@@ -141,9 +143,9 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     return -1;
   }
 
-  sandbox::SandboxWarmup();
+  Sandbox::SandboxWarmup();
 
-  if (!sandbox::EnableSandbox(sandbox_type, FilePath())) {
+  if (!Sandbox::EnableSandbox(sandbox_type, FilePath())) {
     LOG(ERROR) << "Failed to initialize sandbox " << sandbox_type;
     return -1;
   }

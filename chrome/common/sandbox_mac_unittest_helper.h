@@ -50,7 +50,7 @@ class MacSandboxTest : public base::MultiProcessTest {
   // to the child process runing in the sandbox.
   // Returns true if the test passes, false if either of the functions in
   // the corresponding MacSandboxTestCase return false.
-  bool RunTestInSandbox(sandbox::SandboxProcessType sandbox_type,
+  bool RunTestInSandbox(sandbox::Sandbox::SandboxProcessType sandbox_type,
                         const char* test_name,
                         const char* test_data);
 

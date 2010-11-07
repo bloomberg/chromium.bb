@@ -15,7 +15,6 @@ extern "C" {
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/hash_tables.h"
 #include "base/mac_util.h"
 #include "base/rand_util_c.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -70,19 +69,13 @@ bool EscapeSingleChar(char c, std::string* dst) {
 
 namespace sandbox {
 
-// A map of variable name -> string to substitute in its place.
-typedef base::hash_map<std::string, sandbox::SandboxSubstring>
-    SandboxVariableSubstitions;
 
-// Escape |str_utf8| for use in a plain string variable in a sandbox
-// configuraton file.  On return |dst| is set to the utf-8 encoded quoted
-// output.
-// Returns: true on success, false otherwise.
-bool QuotePlainString(const std::string& str_utf8, std::string* dst) {
+// static
+bool Sandbox::QuotePlainString(const std::string& src_utf8, std::string* dst) {
   dst->clear();
 
-  const char* src = str_utf8.c_str();
-  int32_t length = str_utf8.length();
+  const char* src = src_utf8.c_str();
+  int32_t length = src_utf8.length();
   int32_t position = 0;
   while (position < length) {
     UChar32 c;
@@ -113,18 +106,9 @@ bool QuotePlainString(const std::string& str_utf8, std::string* dst) {
   return true;
 }
 
-// Escape |str_utf8| for use in a regex literal in a sandbox
-// configuraton file.  On return |dst| is set to the utf-8 encoded quoted
-// output.
-//
-// The implementation of this function is based on empirical testing of the
-// OS X sandbox on 10.5.8 & 10.6.2 which is undocumented and subject to change.
-//
-// Note: If str_utf8 contains any characters < 32 || >125 then the function
-// fails and false is returned.
-//
-// Returns: true on success, false otherwise.
-bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst) {
+// static
+bool Sandbox::QuoteStringForRegex(const std::string& str_utf8,
+                                  std::string* dst) {
   // Characters with special meanings in sandbox profile syntax.
   const char regex_special_chars[] = {
     '\\',
@@ -191,7 +175,9 @@ bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst) {
 // enable the function is also noted.
 // This function is tested on the following OS versions:
 //     10.5.6, 10.6.0
-void SandboxWarmup() {
+
+// static
+void Sandbox::SandboxWarmup() {
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -247,16 +233,8 @@ void SandboxWarmup() {
   }
 }
 
-// Build the Sandbox command necessary to allow access to a named directory
-// indicated by |allowed_dir|.
-// Returns a string containing the sandbox profile commands necessary to allow
-// access to that directory or nil if an error occured.
-
-// The header comment for PostProcessSandboxProfile() explains how variable
-// substition works in sandbox templates.
-// The returned string contains embedded variables. The function fills in
-// |substitutions| to contain the values for these variables.
-NSString* BuildAllowDirectoryAccessSandboxString(
+// static
+NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
     const FilePath& allowed_dir,
     SandboxVariableSubstitions* substitutions) {
   // A whitelist is used to determine which directories can be statted
@@ -317,21 +295,21 @@ NSString* BuildAllowDirectoryAccessSandboxString(
 
 // Load the appropriate template for the given sandbox type.
 // Returns the template as an NSString or nil on error.
-NSString* LoadSandboxTemplate(SandboxProcessType sandbox_type) {
+NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
   // We use a custom sandbox definition file to lock things down as
   // tightly as possible.
   NSString* sandbox_config_filename = nil;
   switch (sandbox_type) {
-    case SANDBOX_TYPE_RENDERER:
+    case Sandbox::SANDBOX_TYPE_RENDERER:
       sandbox_config_filename = @"renderer";
       break;
-    case SANDBOX_TYPE_WORKER:
+    case Sandbox::SANDBOX_TYPE_WORKER:
       sandbox_config_filename = @"worker";
       break;
-    case SANDBOX_TYPE_UTILITY:
+    case Sandbox::SANDBOX_TYPE_UTILITY:
       sandbox_config_filename = @"utility";
       break;
-    case SANDBOX_TYPE_NACL_LOADER:
+    case Sandbox::SANDBOX_TYPE_NACL_LOADER:
       // The Native Client loader is used for safeguarding the user's
       // untrusted code within Native Client.
       sandbox_config_filename = @"nacl_loader";
@@ -384,35 +362,12 @@ void GetOSVersion(bool* snow_leopard_or_higher) {
       (major_version > 10 || (major_version == 10 && minor_version >= 6));
 }
 
-// Assemble the final sandbox profile from a template by removing comments
-// and substituting variables.
-//
-// |sandbox_template| is a string which contains 2 entitites to operate on:
-//
-// - Comments - The sandbox comment syntax is used to make the OS sandbox
-// optionally ignore commands it doesn't support. e.g.
-// ;10.6_ONLY (foo)
-// Where (foo) is some command that is only supported on OS X 10.6.
-// The ;10.6_ONLY comment can then be removed from the template to enable (foo)
-// as appropriate.
-//
-// - Variables - denoted by @variable_name@ .  These are defined in the sandbox
-// template in cases where another string needs to be substituted at runtime.
-// e.g. @HOMEDIR_AS_LITERAL@ is substituted at runtime for the user's home
-// directory escaped appropriately for a (literal ...) expression.
-//
-// |comments_to_remove| is a list of NSStrings containing the comments to
-// remove.
-// |substitutions| is a hash of "variable name" -> "string to substitute".
-// Where the replacement string is tagged with information on how it is to be
-// escaped e.g. used as part of a regex string or a literal.
-//
-// On output |final_sandbox_profile_str| contains the final sandbox profile.
-// Returns true on success, false otherwise.
-bool PostProcessSandboxProfile(NSString* sandbox_template,
-                               NSArray* comments_to_remove,
-                               SandboxVariableSubstitions& substitutions,
-                               std::string *final_sandbox_profile_str) {
+// static
+bool Sandbox::PostProcessSandboxProfile(
+        NSString* sandbox_template,
+        NSArray* comments_to_remove,
+        SandboxVariableSubstitions& substitutions,
+        std::string *final_sandbox_profile_str) {
   NSString* sandbox_data = [[sandbox_template copy] autorelease];
 
   // Remove comments, e.g. ;10.6_ONLY .
@@ -475,8 +430,10 @@ bool PostProcessSandboxProfile(NSString* sandbox_template,
 
 
 // Turns on the OS X sandbox for this process.
-bool EnableSandbox(SandboxProcessType sandbox_type,
-                   const FilePath& allowed_dir) {
+
+// static
+bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
+                            const FilePath& allowed_dir) {
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
   if (sandbox_type != SANDBOX_TYPE_UTILITY) {
@@ -570,7 +527,8 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
   return success;
 }
 
-void GetCanonicalSandboxPath(FilePath* path) {
+// static
+void Sandbox::GetCanonicalSandboxPath(FilePath* path) {
   int fd = HANDLE_EINTR(open(path->value().c_str(), O_RDONLY));
   if (fd < 0) {
     PLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "

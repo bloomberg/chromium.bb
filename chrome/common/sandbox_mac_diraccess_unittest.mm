@@ -11,7 +11,6 @@ extern "C" {
 
 #include "base/file_util.h"
 #include "base/file_path.h"
-#include "base/hash_tables.h"
 #include "base/test/multiprocess_test.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -19,29 +18,16 @@ extern "C" {
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-// Tests to exercise directory-access-related restrictions of Mac sandbox.
-
-namespace sandbox {
-
-typedef base::hash_map<std::string, SandboxSubstring>
-    SandboxVariableSubstitions;
-
-bool QuotePlainString(const std::string& str_utf8, std::string* dst);
-bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst);
-NSString* BuildAllowDirectoryAccessSandboxString(
-    const FilePath& allowed_dir,
-    SandboxVariableSubstitions* substitutions);
-bool PostProcessSandboxProfile(NSString* in_sandbox_data,
-                               NSArray* comments_to_remove,
-                               SandboxVariableSubstitions& substitutions,
-                               std::string *final_sandbox_profile_str);
-
-}  // namespace sandbox
-
 namespace {
 
 static const char* kSandboxAccessPathKey = "sandbox_dir";
 static const char* kDeniedSuffix = "_denied";
+
+}  // namespace
+
+// Tests need to be in the same namespace as the sandbox::Sandbox class to be
+// useable with FRIEND_TEST() declaration.
+namespace sandbox {
 
 class MacDirAccessSandboxTest : public base::MultiProcessTest {
  public:
@@ -59,8 +45,6 @@ class MacDirAccessSandboxTest : public base::MultiProcessTest {
 };
 
 TEST_F(MacDirAccessSandboxTest, StringEscape) {
-  using sandbox::QuotePlainString;
-
   const struct string_escape_test_data {
   const char* to_escape;
   const char* escaped;
@@ -76,14 +60,12 @@ TEST_F(MacDirAccessSandboxTest, StringEscape) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(string_escape_cases); ++i) {
     std::string out;
     std::string in(string_escape_cases[i].to_escape);
-    EXPECT_TRUE(QuotePlainString(in, &out));
+    EXPECT_TRUE(Sandbox::QuotePlainString(in, &out));
     EXPECT_EQ(string_escape_cases[i].escaped, out);
   }
 }
 
 TEST_F(MacDirAccessSandboxTest, RegexEscape) {
-  using sandbox::QuoteStringForRegex;
-
   const std::string kSandboxEscapeSuffix("(/|$)");
   const struct regex_test_data {
     const wchar_t *to_escape;
@@ -101,24 +83,25 @@ TEST_F(MacDirAccessSandboxTest, RegexEscape) {
     std::string out;
     char fail_string[] = {31, 0};
     char ok_string[] = {32, 0};
-    EXPECT_FALSE(QuoteStringForRegex(fail_string, &out));
-    EXPECT_TRUE(QuoteStringForRegex(ok_string, &out));
+    EXPECT_FALSE(Sandbox::QuoteStringForRegex(fail_string, &out));
+    EXPECT_TRUE(Sandbox::QuoteStringForRegex(ok_string, &out));
   }
 
   // Check that all characters whose values are larger than 126 [7E] are
   // rejected by the regex escaping code.
   {
     std::string out;
-    EXPECT_TRUE(QuoteStringForRegex("}", &out));   // } == 0x7D == 125
-    EXPECT_FALSE(QuoteStringForRegex("~", &out));  // ~ == 0x7E == 126
-    EXPECT_FALSE(QuoteStringForRegex(WideToUTF8(L"^\u2135.\u2136$"), &out));
+    EXPECT_TRUE(Sandbox::QuoteStringForRegex("}", &out));   // } == 0x7D == 125
+    EXPECT_FALSE(Sandbox::QuoteStringForRegex("~", &out));  // ~ == 0x7E == 126
+    EXPECT_FALSE(
+        Sandbox::QuoteStringForRegex(WideToUTF8(L"^\u2135.\u2136$"), &out));
   }
 
   {
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(regex_cases); ++i) {
       std::string out;
       std::string in = WideToUTF8(regex_cases[i].to_escape);
-      EXPECT_TRUE(QuoteStringForRegex(in, &out));
+      EXPECT_TRUE(Sandbox::QuoteStringForRegex(in, &out));
       std::string expected("^");
       expected.append(regex_cases[i].escaped);
       expected.append(kSandboxEscapeSuffix);
@@ -137,7 +120,7 @@ TEST_F(MacDirAccessSandboxTest, RegexEscape) {
     expected.append(kSandboxEscapeSuffix);
 
     std::string out;
-    EXPECT_TRUE(QuoteStringForRegex(in_utf8, &out));
+    EXPECT_TRUE(Sandbox::QuoteStringForRegex(in_utf8, &out));
     EXPECT_EQ(expected, out);
 
   }
@@ -163,7 +146,7 @@ TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
   // This step is important on OS X since the sandbox only understands "real"
   // paths and the paths CreateNewTempDirectory() returns are empirically in
   // /var which is a symlink to /private/var .
-  sandbox::GetCanonicalSandboxPath(&tmp_dir);
+  Sandbox::GetCanonicalSandboxPath(&tmp_dir);
   ScopedDirectory cleanup(&tmp_dir);
 
   const char* sandbox_dir_cases[] = {
@@ -205,9 +188,9 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
       ";ENABLE_DIRECTORY_ACCESS";
 
   std::string allowed_dir(sandbox_allowed_dir);
-  sandbox::SandboxVariableSubstitions substitutions;
+  Sandbox::SandboxVariableSubstitions substitutions;
   NSString* allow_dir_sandbox_code =
-      sandbox::BuildAllowDirectoryAccessSandboxString(
+      Sandbox::BuildAllowDirectoryAccessSandboxString(
           FilePath(sandbox_allowed_dir),
           &substitutions);
   sandbox_profile = [sandbox_profile
@@ -215,14 +198,13 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
                                 withString:allow_dir_sandbox_code];
 
   std::string final_sandbox_profile_str;
-  if (!PostProcessSandboxProfile(sandbox_profile,
-                                 [NSArray array],
-                                 substitutions,
-                                 &final_sandbox_profile_str)) {
+  if (!Sandbox::PostProcessSandboxProfile(sandbox_profile,
+                                          [NSArray array],
+                                          substitutions,
+                                          &final_sandbox_profile_str)) {
     LOG(ERROR) << "Call to PostProcessSandboxProfile() failed";
     return -1;
   }
-
 
   // Enable Sandbox.
   char* error_buff = NULL;
@@ -319,4 +301,4 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
   return 0;
 }
 
-}  // namespace
+}  // namespace sandbox
