@@ -122,32 +122,32 @@ bool FontLoadingTestCase::SandboxedTest() {
   // Unload the font container when done.
   ScopedFontContainer scoped_unloader(font_container);
 
-  CGFontRef font_ref;
-  if (!CGFontFromFontContainer(font_container, &font_ref)) {
+  CGFontRef cg_font_ref;
+  if (!CGFontFromFontContainer(font_container, &cg_font_ref)) {
     LOG(ERROR) << "CGFontFromFontContainer failed";
     return false;
   }
 
-  if (!font_ref) {
+  if (!cg_font_ref) {
     LOG(ERROR) << "Got NULL CGFontRef";
     return false;
   }
-  base::mac::ScopedCFTypeRef<CGFontRef> cgfont;
-  cgfont.reset(font_ref);
+  base::mac::ScopedCFTypeRef<CGFontRef> cgfont(cg_font_ref);
 
-  const NSFont* nsfont = reinterpret_cast<const NSFont*>(
-                         CTFontCreateWithGraphicsFont(cgfont.get(), 16.0,
-                            NULL, NULL));
-  if (!nsfont) {
+  CTFontRef ct_font_ref =
+      CTFontCreateWithGraphicsFont(cgfont.get(), 16.0, NULL, NULL);
+  base::mac::ScopedCFTypeRef<CTFontRef> ctfont(ct_font_ref);
+
+  if (!ct_font_ref) {
     LOG(ERROR) << "CTFontCreateWithGraphicsFont() failed";
     return false;
   }
 
   // Do something with the font to make sure it's loaded.
-  CGFloat cap_height = [nsfont capHeight];
+  CGFloat cap_height = CTFontGetCapHeight(ct_font_ref);
 
   if (cap_height <= 0.0) {
-    LOG(ERROR) << "Got bad value for [NSFont capHeight] " << cap_height;
+    LOG(ERROR) << "Got bad value for CTFontGetCapHeight " << cap_height;
     return false;
   }
 
