@@ -2184,8 +2184,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	/* Use the new one if available */
 	if (exec2) {
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec2;
-		if (bufmgr_gem->has_bsd|bufmgr_gem->has_blt)
-			bufmgr_gem->bufmgr.bo_mrb_exec = drm_intel_gem_bo_mrb_exec2;
+		bufmgr_gem->bufmgr.bo_mrb_exec = drm_intel_gem_bo_mrb_exec2;
 	} else
 		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
 	bufmgr_gem->bufmgr.bo_busy = drm_intel_gem_bo_busy;
