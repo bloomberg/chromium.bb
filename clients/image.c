@@ -162,7 +162,7 @@ image_draw(struct image *image)
 					       rectangle.width,
 					       rectangle.height);
 
-	cairo_destroy(wsurface);
+	cairo_surface_destroy(wsurface);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
