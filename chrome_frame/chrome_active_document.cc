@@ -30,7 +30,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
 #include "grit/generated_resources.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"

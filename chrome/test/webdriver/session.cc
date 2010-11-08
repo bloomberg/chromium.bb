@@ -31,7 +31,7 @@
 #include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
 
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/test_launcher_utils.h"

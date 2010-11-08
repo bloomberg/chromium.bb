@@ -217,7 +217,7 @@ class TabContents;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the
-// "chrome/app/chrome_dll_resource.h" file.
+// "chrome/app/chrome_command_ids.h" file.
 - (void)executeCommand:(int)command;
 
 // Delegate method for the status bubble to query its base frame.

@@ -10,7 +10,7 @@
 #include "app/menus/accelerator_gtk.h"
 #include "base/singleton.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/tab_menu_model.h"

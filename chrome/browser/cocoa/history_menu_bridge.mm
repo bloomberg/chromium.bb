@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"  // IDC_HISTORY_MENU
+#include "chrome/app/chrome_command_ids.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/cocoa/history_menu_cocoa_controller.h"
 #include "chrome/browser/history/page_usage_data.h"

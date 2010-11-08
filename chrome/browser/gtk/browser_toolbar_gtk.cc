@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"

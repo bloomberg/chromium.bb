@@ -15,7 +15,7 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_constants.h"

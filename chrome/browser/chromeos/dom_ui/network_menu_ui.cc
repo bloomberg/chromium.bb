@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"

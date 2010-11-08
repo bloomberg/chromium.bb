@@ -6,7 +6,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

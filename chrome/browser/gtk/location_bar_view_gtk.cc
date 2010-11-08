@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"

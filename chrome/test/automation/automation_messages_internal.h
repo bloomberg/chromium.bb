@@ -225,7 +225,7 @@ IPC_BEGIN_MESSAGES(Automation)
                              int)  // accelerator id like (IDC_BACK,
                                    //  IDC_FORWARD, etc)
                                    // The list can be found at
-                                   // chrome/app/chrome_dll_resource.h
+                                   // chrome/app/chrome_command_ids.h
 
   // This message requests that the AutomationProvider executes a JavaScript,
   // which is sent embedded in a 'javascript:' URL.

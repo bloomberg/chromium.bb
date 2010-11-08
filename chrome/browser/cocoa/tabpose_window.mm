@@ -11,7 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_callback_factory.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"

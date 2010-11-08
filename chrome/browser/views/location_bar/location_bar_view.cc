@@ -14,7 +14,7 @@
 #include "app/theme_provider.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/defaults.h"

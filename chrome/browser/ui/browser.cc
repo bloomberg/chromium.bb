@@ -24,7 +24,7 @@
 #include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/point.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #if defined(OS_WIN)
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"

@@ -11,7 +11,7 @@
 #include "app/menus/accelerator_cocoa.h"
 
 // This class maintains a map of command_ids to AcceleratorCocoa objects (see
-// chrome/app/chrome_dll_resource.h). Currently, this only lists the commands
+// chrome/app/chrome_command_ids.h). Currently, this only lists the commands
 // that are used in the Wrench menu.
 //
 // It is recommended that this class be used as a singleton so that the key map

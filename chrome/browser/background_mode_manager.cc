@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_list.h"

@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"

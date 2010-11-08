@@ -7,7 +7,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/app/chrome_dll_resource.h"  // IDC_*
+#include "chrome/app/chrome_command_ids.h"  // IDC_*
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/test_event_utils.h"

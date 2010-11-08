@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "grit/generated_resources.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"  // IDC_*
+#include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field.h"

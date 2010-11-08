@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/menus/menu_model.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/menu_tracked_root_view.h"

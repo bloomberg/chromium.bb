@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #if !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/gtk/menu_gtk.h"

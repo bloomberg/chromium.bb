@@ -4,7 +4,7 @@
 
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/prefs/pref_service.h"

@@ -4,7 +4,7 @@
 
 #include "app/message_box_flags.h"
 #include "base/file_path.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"

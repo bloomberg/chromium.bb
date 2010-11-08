@@ -4,7 +4,7 @@
 
 #include "chrome/browser/wrench_menu_model.h"
 
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/menu_model_test.h"
 #include "chrome/test/testing_profile.h"

@@ -90,6 +90,7 @@
                 '../gears/gears.gyp:gears',
               ],
               'sources': [
+                'app/chrome_command_ids.h',
                 'app/chrome_dll.rc',
                 'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
@@ -170,6 +171,7 @@
                 'ORDER_FILE': 'app/framework.order',
               },
               'sources': [
+                'app/chrome_command_ids.h',
                 'app/chrome_dll_app_mode_mac.mm',
                 'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
@@ -567,6 +569,7 @@
             '<@(nacl_win64_defines)',
           ],
           'sources': [
+            'app/chrome_command_ids.h',
             'app/chrome_dll_main.cc',
             'app/chrome_dll_resource.h',
             'browser/renderer_host/render_process_host_dummy.cc',

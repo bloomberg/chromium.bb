@@ -6,7 +6,7 @@
 
 #include "app/keyboard_codes.h"
 #include "base/basictypes.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 
 namespace browser {
 

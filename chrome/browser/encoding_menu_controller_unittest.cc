@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"

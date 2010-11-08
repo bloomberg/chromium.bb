@@ -76,7 +76,7 @@ class PyUITestBase : public UITestBase {
 
   // Apply the accelerator with given id (IDC_BACK, IDC_NEWTAB ...) to the
   // browser window at the given or first index.
-  // The list can be found at chrome/app/chrome_dll_resource.h
+  // The list can be found at chrome/app/chrome_command_ids.h
   // Returns true if the call was successful.
   bool ApplyAccelerator(int id, int window_index = 0);
 

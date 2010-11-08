@@ -7,7 +7,7 @@
 
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(GlobalKeyboardShortcuts, ShortcutsToWindowCommand) {

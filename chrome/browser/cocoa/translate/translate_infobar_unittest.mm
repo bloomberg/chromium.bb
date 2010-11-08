@@ -7,7 +7,7 @@
 #import "base/scoped_nsobject.h"
 #import "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#import "chrome/app/chrome_dll_resource.h"  // For translate menu command ids.
+#import "chrome/app/chrome_command_ids.h"  // For translate menu command ids.
 #import "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/infobar.h"

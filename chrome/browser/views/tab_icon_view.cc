@@ -13,7 +13,7 @@
 #include "app/theme_provider.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "gfx/canvas.h"
 #include "gfx/favicon_size.h"

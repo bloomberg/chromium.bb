@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

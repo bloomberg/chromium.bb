@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/browser_dialogs.h"

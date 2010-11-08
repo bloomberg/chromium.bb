@@ -14,7 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #import "base/worker_pool_mac.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_list.h"

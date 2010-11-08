@@ -6,7 +6,7 @@
 
 #include "app/menus/accelerator_cocoa.h"
 #include "base/singleton.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/cocoa/accelerators_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

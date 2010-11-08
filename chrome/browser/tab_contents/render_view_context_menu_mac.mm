@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/cocoa/menu_controller.h"
 #include "grit/generated_resources.h"
 

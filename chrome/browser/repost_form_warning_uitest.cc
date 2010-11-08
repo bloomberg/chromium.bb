@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"

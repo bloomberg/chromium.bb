@@ -8,7 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"

@@ -6,7 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "app/win_util.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"

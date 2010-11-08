@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/renderer_host/mock_render_process_host.h"

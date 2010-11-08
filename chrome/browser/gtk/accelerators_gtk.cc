@@ -8,7 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <X11/XF86keysym.h>
 
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 
 namespace {
 

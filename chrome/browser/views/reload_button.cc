@@ -5,7 +5,7 @@
 #include "chrome/browser/views/reload_button.h"
 
 #include "app/l10n_util.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"

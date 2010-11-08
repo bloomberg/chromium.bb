@@ -5,7 +5,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"

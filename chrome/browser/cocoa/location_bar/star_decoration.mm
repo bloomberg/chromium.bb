@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/location_bar/star_decoration.h"
 
 #include "app/l10n_util_mac.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/command_updater.h"
 #include "grit/generated_resources.h"

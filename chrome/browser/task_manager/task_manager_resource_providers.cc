@@ -15,7 +15,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

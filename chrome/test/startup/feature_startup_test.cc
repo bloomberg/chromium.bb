@@ -7,7 +7,7 @@
 #include "base/perftimer.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"

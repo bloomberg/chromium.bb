@@ -5,6 +5,7 @@
 {
   'variables' : {
     'pyautolib_sources': [
+      'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
       'common/pref_names.cc',
       'common/pref_names.h',
@@ -1880,6 +1881,7 @@
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
         'app/breakpad_mac_stubs.mm',
+        'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
         'app/chrome_dll_version.rc.version',
@@ -2123,6 +2125,7 @@
           }
         }, { # else: OS != "win"
           'sources!': [
+            'app/chrome_command_ids.h',
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_dll_version.rc.version',
@@ -2680,6 +2683,7 @@
       # TODO(phajdan.jr): Only temporary, to make transition easier.
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
+        'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
         'app/chrome_dll_resource.h',
         'app/chrome_dll_version.rc.version',

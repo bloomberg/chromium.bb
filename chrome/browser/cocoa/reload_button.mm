@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/nsimage_cache_mac.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/view_id_util.h"
 #include "grit/generated_resources.h"

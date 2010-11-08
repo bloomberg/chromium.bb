@@ -10,7 +10,7 @@
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
 #include "base/values.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_switches.h"

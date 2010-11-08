@@ -14,7 +14,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/gtk/gtk_custom_menu.h"
 #include "chrome/browser/gtk/gtk_custom_menu_item.h"
 #include "chrome/browser/gtk/gtk_util.h"

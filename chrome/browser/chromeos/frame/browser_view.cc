@@ -10,7 +10,7 @@
 
 #include "app/menus/simple_menu_model.h"
 #include "base/command_line.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"

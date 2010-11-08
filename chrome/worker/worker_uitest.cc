@@ -4,7 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/string_util.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"

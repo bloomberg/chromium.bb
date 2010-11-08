@@ -13,7 +13,7 @@
 #include "base/nsimage_cache_mac.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"  // IDC_*
+#include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"

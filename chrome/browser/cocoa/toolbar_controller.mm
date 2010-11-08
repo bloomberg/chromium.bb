@@ -14,7 +14,7 @@
 #include "base/nsimage_cache_mac.h"
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"

@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/menus/menu_model.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

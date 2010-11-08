@@ -17,7 +17,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/view_ids.h"

@@ -6,7 +6,7 @@
 
 #include "app/keyboard_codes.h"
 #include "base/compiler_specific.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "views/accelerator.h"

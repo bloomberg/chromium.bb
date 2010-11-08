@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/app/chrome_command_ids.h"
 
 // Basically, there are two kinds of keyboard shortcuts: Ones that should work
 // only if the tab contents is focused (BrowserKeyboardShortcut), and ones that
