@@ -105,11 +105,13 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   ASSERT_EQ(1, tab_index);
 }
 
-TEST_F(KeyboardAccessTest, TestMenuKeyboardAccess) {
+// Disabled, http://crbug.com/62310.
+TEST_F(KeyboardAccessTest, DISABLED_TestMenuKeyboardAccess) {
   TestMenuKeyboardAccess(false, 0);
 }
 
-TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
+// Disabled, http://crbug.com/62310.
+TEST_F(KeyboardAccessTest, DISABLED_TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, 0);
 }
 
