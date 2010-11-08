@@ -639,11 +639,24 @@ void NetworkMenu::InitMenuItems() {
   //     l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
   //     SkBitmap(), std::string(), FLAG_TOGGLE_OFFLINE));
 
-  // Network settings.
-  if (ShouldOpenButtonOptions()) {
-    // Separator.
-    menu_items_.push_back(MenuItem());
+  bool connected = cros->Connected();  // alwasy call for test expectations.
+  bool show_ip = !MenuUI::IsEnabled() && connected;
+  bool show_settings = ShouldOpenButtonOptions();
 
+  // Separator.
+  if (show_ip || show_settings) {
+    menu_items_.push_back(MenuItem());
+  }
+
+  // IP Address
+  if (show_ip) {
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
+                                   ASCIIToUTF16(cros->IPAddress()), SkBitmap(),
+                                   std::string(), FLAG_DISABLED));
+  }
+
+  // Network settings.
+  if (show_settings) {
     if (IsBrowserMode()) {
       label = l10n_util::GetStringUTF16(
           IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);

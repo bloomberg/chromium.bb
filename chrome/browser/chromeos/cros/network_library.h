@@ -462,7 +462,7 @@ class NetworkLibrary {
   virtual bool Connecting() const = 0;
 
   // Returns the current IP address if connected. If not, returns empty string.
-  // virtual const std::string& IPAddress() const = 0;
+  virtual const std::string& IPAddress() const = 0;
 
   // Returns the current list of wifi networks.
   virtual const WifiNetworkVector& wifi_networks() const = 0;

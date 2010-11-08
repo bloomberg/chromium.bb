@@ -67,7 +67,7 @@ class NativeMenuGtk : public MenuWrapper,
   void ResetMenu();
 
   // Updates the menu item's state.
-  void UpdateMenuItemState(GtkWidget* menu_item);
+  void UpdateMenuItemState(GtkWidget* menu_item, bool recurse);
 
   static void UpdateStateCallback(GtkWidget* menu_item, gpointer data);
 
