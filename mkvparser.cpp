@@ -3193,7 +3193,7 @@ bool Track::EOSBlock::EOS() const
 }
 
 
-Cluster* Track::EOSBlock::GetCluster() const
+const Cluster* Track::EOSBlock::GetCluster() const
 {
     return NULL;
 }

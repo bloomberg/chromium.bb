@@ -254,7 +254,7 @@ protected:
         EOSBlock();
 
         bool EOS() const;
-        Cluster* GetCluster() const;
+        const Cluster* GetCluster() const;
         size_t GetIndex() const;
         const Block* GetBlock() const;
         bool IsBFrame() const;
