@@ -826,7 +826,8 @@ class HistoryService : public CancelableRequestProvider,
   // when done. We use this internal consumer for this purpose.
   CancelableRequestConsumer internal_consumer_;
 
-  // The thread used by the history service to run complicated operations
+  // The thread used by the history service to run complicated operations.
+  // |thread_| is NULL once |Cleanup| is NULL.
   base::Thread* thread_;
 
   // This class has most of the implementation and runs on the 'thread_'.

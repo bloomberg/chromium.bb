@@ -143,4 +143,6 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   EXPECT_TRUE(profile2->GetHistoryService(Profile::EXPLICIT_ACCESS));
   profile1.reset();
   profile2.reset();
+  // Make sure history cleans up correctly.
+  message_loop_.RunAllPending();
 }

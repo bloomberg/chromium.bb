@@ -129,11 +129,6 @@ HistoryService::HistoryService()
       bookmark_service_(NULL),
       no_db_(false),
       needs_top_sites_migration_(false) {
-  // Is NULL when running generate_profile.
-  if (NotificationService::current()) {
-    registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
-                   Source<Profile>(profile_));
-  }
 }
 
 HistoryService::HistoryService(Profile* profile)
@@ -143,6 +138,7 @@ HistoryService::HistoryService(Profile* profile)
       bookmark_service_(NULL),
       no_db_(false),
       needs_top_sites_migration_(false) {
+  DCHECK(profile_);
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::TEMPLATE_URL_REMOVED,
@@ -613,6 +609,9 @@ HistoryService::Handle HistoryService::QueryMostVisitedURLs(
 void HistoryService::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
+  if (!thread_)
+    return;
+
   switch (type.value) {
     case NotificationType::HISTORY_URLS_DELETED: {
       // Update the visited link system for deleted URLs. We will update the
@@ -745,6 +744,9 @@ void HistoryService::BroadcastNotifications(
   if (!g_browser_process)
     return;
 
+  if (!thread_)
+    return;
+
   // The source of all of our notifications is the profile. Note that this
   // pointer is NULL in unit tests.
   Source<Profile> source(profile_);
@@ -781,7 +783,7 @@ void HistoryService::OnDBLoaded() {
   NotificationService::current()->Notify(NotificationType::HISTORY_LOADED,
                                          Source<Profile>(profile_),
                                          Details<HistoryService>(this));
-  if (profile_ && history::TopSites::IsEnabled()) {
+  if (thread_ && profile_ && history::TopSites::IsEnabled()) {
     // We don't want to force creation of TopSites.
     history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
     if (ts)
@@ -791,7 +793,7 @@ void HistoryService::OnDBLoaded() {
 
 void HistoryService::StartTopSitesMigration() {
   needs_top_sites_migration_ = true;
-  if (history::TopSites::IsEnabled()) {
+  if (thread_ && profile_ && history::TopSites::IsEnabled()) {
     // We don't want to force creation of TopSites.
     history::TopSites* ts = profile_->GetTopSitesWithoutCreating();
     if (ts)
