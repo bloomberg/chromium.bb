@@ -1,5 +1,6 @@
 {
   "name": "Omnibox Example",
+  "description" : "To use, type 'omnix' plus a search term into the Omnibox.",
   "version": "1.0",
   "permissions": [ "experimental" ],
   "background_page": "background.html",

@@ -567,6 +567,37 @@
     {
       "features": [
         "background_page", 
+        "experimental", 
+        "tabs"
+      ], 
+      "icon": "icon-128.png", 
+      "description": "Search the Chrome Extensions documentation.  To use, type 'crdoc' plus a search term into the Omnibox.", 
+      "search_string": "EXTENSION DOCS SEARCH SEARCH THE CHROME EXTENSIONS DOCUMENTATION.  TO USE, TYPE CRDOC PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.EXPERIMENTAL.OMNIBOX.STYLENONE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.ONREMOVED CHROME.TABS.UPDATE", 
+      "source_files": [
+        "background.html", 
+        "manifest.json"
+      ], 
+      "zip_path": "examples/api/omnibox/extension-docs.zip", 
+      "path": "examples/api/omnibox/extension-docs/", 
+      "api_calls": [
+        "chrome.experimental.omnibox.onInputChanged", 
+        "chrome.experimental.omnibox.onInputEntered", 
+        "chrome.experimental.omnibox.styleMatch", 
+        "chrome.experimental.omnibox.styleNone", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.onRemoved", 
+        "chrome.tabs.update"
+      ], 
+      "id": "e3df888a89e35bdeb9c8bc8d03be5e1851b97c68", 
+      "protocols": [
+        "http://"
+      ], 
+      "name": "Extension Docs Search"
+    }, 
+    {
+      "features": [
+        "background_page", 
         "browser_action", 
         "options_page", 
         "popup", 
@@ -1050,19 +1081,19 @@
         "experimental"
       ], 
       "icon": null, 
-      "description": "", 
-      "search_string": "OMNIBOX EXAMPLE  BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED", 
+      "description": "To use, type 'omnix' plus a search term into the Omnibox.", 
+      "search_string": "OMNIBOX EXAMPLE TO USE, TYPE OMNIX PLUS A SEARCH TERM INTO THE OMNIBOX. BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED", 
       "source_files": [
         "background.html", 
         "manifest.json"
       ], 
-      "zip_path": "examples/api/omnibox.zip", 
-      "path": "examples/api/omnibox/", 
+      "zip_path": "examples/api/omnibox/simple-example.zip", 
+      "path": "examples/api/omnibox/simple-example/", 
       "api_calls": [
         "chrome.experimental.omnibox.onInputChanged", 
         "chrome.experimental.omnibox.onInputEntered"
       ], 
-      "id": "a88ab12b0241ee3dac6e74bb04da7964fab0f57d", 
+      "id": "e787b322bddbc6289bb31b7d7550b1bf6456a80b", 
       "protocols": [], 
       "name": "Omnibox Example"
     }, 
@@ -1130,6 +1161,7 @@
         "jquery/jquery.client.js", 
         "jquery/jquery.flot.dashes.js", 
         "jquery/jquery.flot.js", 
+        "jquery/jquery.flot.min.js", 
         "jquery/jquery.flot.navigate.js", 
         "jquery/jquery.flot.valuelabels.js", 
         "jst/jsevalcontext.js", 
@@ -1138,7 +1170,9 @@
         "jst/util.js", 
         "manifest.json", 
         "options.html", 
-        "script.js"
+        "script.js", 
+        "util/sorttable.js", 
+        "util/table2CSV.js"
       ], 
       "zip_path": "examples/extensions/benchmark.zip", 
       "path": "examples/extensions/benchmark/", 
