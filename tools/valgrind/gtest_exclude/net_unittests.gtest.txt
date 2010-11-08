@@ -4,6 +4,3 @@ KeygenHandlerTest.*ConcurrencyTest
 
 # Fails Valgrind with varying stack traces. http://crbug.com/43179
 SpdyNetworkTransactionTest.PostWithEarlySynReply
-
-# These tests fail under Valgrind, see http://crbug.com/62314
-SSLClientSocketTest.*
