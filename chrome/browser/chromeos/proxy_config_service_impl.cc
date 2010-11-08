@@ -409,12 +409,8 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToPACScript(const GURL& pac_url) {
   CheckCurrentlyOnUIThread();
   reference_config_.mode = ProxyConfig::MODE_PAC_SCRIPT;
   reference_config_.automatic_proxy.pac_url = pac_url;
-  if (pac_url.is_valid()) {
-    OnUISetProxyConfig(true);
-    return true;
-  }
-  VLOG(1) << "Cannot set proxy: invalid pac url";
-  return false;
+  OnUISetProxyConfig(true);
+  return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
@@ -423,12 +419,8 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToSingleProxy(
   CheckCurrentlyOnUIThread();
   reference_config_.mode = ProxyConfig::MODE_SINGLE_PROXY;
   reference_config_.single_proxy.server = server;
-  if (server.is_valid()) {
-    OnUISetProxyConfig(true);
-    return true;
-  }
-  VLOG(1) << "Cannot set proxy: invalid single server";
-  return false;
+  OnUISetProxyConfig(true);
+  return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
@@ -450,12 +442,8 @@ bool ProxyConfigServiceImpl::UISetProxyConfigToProxyPerScheme(
   }
   reference_config_.mode = ProxyConfig::MODE_PROXY_PER_SCHEME;
   proxy->server = server;
-  if (server.is_valid()) {
-    OnUISetProxyConfig(true);
-    return true;
-  }
-  VLOG(1) << "Cannot set proxy: invalid " << scheme << " server";
-  return false;
+  OnUISetProxyConfig(true);
+  return true;
 }
 
 bool ProxyConfigServiceImpl::UISetProxyConfigBypassRules(

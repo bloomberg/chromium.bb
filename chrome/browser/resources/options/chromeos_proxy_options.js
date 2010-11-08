@@ -91,6 +91,7 @@ cr.define('options', function() {
      * @param {Event} e Click event.
      */
     disableManual_: function(e) {
+      $('proxyAllProtocols').disabled = true;
       $('proxyHostName').disabled = true;
       $('proxyHostPort').disabled = true;
       $('proxyHostSingleName').disabled = true;
@@ -114,6 +115,7 @@ cr.define('options', function() {
      * @param {Event} e Click event.
      */
     enableManual_: function(e) {
+      $('proxyAllProtocols').disabled = false;
       $('proxyHostName').disabled = false;
       $('proxyHostPort').disabled = false;
       $('proxyHostSingleName').disabled = false;

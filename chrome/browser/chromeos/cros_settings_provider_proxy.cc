@@ -11,6 +11,21 @@
 
 namespace chromeos {
 
+static const char kProxyPacUrl[]         = "cros.proxy.pacurl";
+static const char kProxySingleHttp[]     = "cros.proxy.singlehttp";
+static const char kProxySingleHttpPort[] = "cros.proxy.singlehttpport";
+static const char kProxyHttpUrl[]        = "cros.proxy.httpurl";
+static const char kProxyHttpPort[]       = "cros.proxy.httpport";
+static const char kProxyHttpsUrl[]       = "cros.proxy.httpsurl";
+static const char kProxyHttpsPort[]      = "cros.proxy.httpsport";
+static const char kProxyType[]           = "cros.proxy.type";
+static const char kProxySingle[]         = "cros.proxy.single";
+static const char kProxyFtpUrl[]         = "cros.proxy.ftpurl";
+static const char kProxyFtpPort[]        = "cros.proxy.ftpport";
+static const char kProxySocks[]          = "cros.proxy.socks";
+static const char kProxySocksPort[]      = "cros.proxy.socksport";
+static const char kProxyIgnoreList[]     = "cros.proxy.ignorelist";
+
 //------------------ CrosSettingsProviderProxy: public methods -----------------
 
 CrosSettingsProviderProxy::CrosSettingsProviderProxy() { }
@@ -20,50 +35,69 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
   if (!in_value) {
     return;
   }
+
+  // Keep whatever user inputs so that we could use it later.
+  SetCache(path, in_value);
+
   chromeos::ProxyConfigServiceImpl* config_service = GetConfigService();
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
-  if (path == "cros.proxy.pacurl") {
+  if (path == kProxyPacUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       GURL url(val);
       config_service->UISetProxyConfigToPACScript(url);
     }
-  } else if (path == "cros.proxy.singlehttp") {
+  } else if (path == kProxySingleHttp) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      AppendPortIfValid(config.single_proxy, &uri);
+      AppendPortIfValid(kProxySingleHttpPort, &uri);
       config_service->UISetProxyConfigToSingleProxy(
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
-  } else if (path == "cros.proxy.singlehttpport") {
+  } else if (path == kProxySingleHttpPort) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri;
-      if (FormServerUriIfValid(config.single_proxy, val, &uri)) {
-        config_service->UISetProxyConfigToSingleProxy(
-            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
-      }
+      FormServerUriIfValid(kProxySingleHttp, val, &uri);
+      config_service->UISetProxyConfigToSingleProxy(
+          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
-  } else if (path == "cros.proxy.httpurl") {
+  } else if (path == kProxyHttpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      AppendPortIfValid(config.http_proxy, &uri);
+      AppendPortIfValid(kProxyHttpPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("http",
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
-  } else if (path == "cros.proxy.httpsurl") {
+  } else if (path == kProxyHttpPort) {
+    std::string val;
+    if (in_value->GetAsString(&val)) {
+      std::string uri;
+      FormServerUriIfValid(kProxyHttpUrl, val, &uri);
+      config_service->UISetProxyConfigToProxyPerScheme("http",
+         net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+    }
+  } else if (path == kProxyHttpsUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      AppendPortIfValid(config.https_proxy, &uri);
+      AppendPortIfValid(kProxyHttpsPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("https",
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
     }
-  } else if (path == "cros.proxy.type") {
+  } else if (path == kProxyHttpsPort) {
+    std::string val;
+    if (in_value->GetAsString(&val)) {
+      std::string uri;
+      FormServerUriIfValid(kProxyHttpsUrl, val, &uri);
+      config_service->UISetProxyConfigToProxyPerScheme("https",
+          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
+    }
+  } else if (path == kProxyType) {
     int val;
     if (in_value->GetAsInteger(&val)) {
       if (val == 3) {
@@ -107,7 +141,7 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
         config_service->UISetProxyConfigToDirect();
       }
     }
-  } else if (path == "cros.proxy.single") {
+  } else if (path == kProxySingle) {
     bool val;
     if (in_value->GetAsBoolean(&val)) {
       if (val)
@@ -117,59 +151,39 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
         config_service->UISetProxyConfigToProxyPerScheme("http",
             config.http_proxy.server);
     }
-  } else if (path == "cros.proxy.ftpurl") {
+  } else if (path == kProxyFtpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      AppendPortIfValid(config.ftp_proxy, &uri);
+      AppendPortIfValid(kProxyFtpPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("ftp",
           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
-  } else if (path == "cros.proxy.socks") {
+  } else if (path == kProxyFtpPort) {
+    std::string val;
+    if (in_value->GetAsString(&val)) {
+      std::string uri;
+      FormServerUriIfValid(kProxyFtpUrl, val, &uri);
+      config_service->UISetProxyConfigToProxyPerScheme("ftp",
+          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
+    }
+  } else if (path == kProxySocks) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri = val;
-      AppendPortIfValid(config.socks_proxy, &uri);
+      AppendPortIfValid(kProxySocksPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("socks",
          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS4));
     }
-  } else if (path == "cros.proxy.httpport") {
+  } else if (path == kProxySocksPort) {
     std::string val;
     if (in_value->GetAsString(&val)) {
       std::string uri;
-      if (FormServerUriIfValid(config.http_proxy, val, &uri)) {
-        config_service->UISetProxyConfigToProxyPerScheme("http",
-           net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
-      }
+      FormServerUriIfValid(kProxySocks, val, &uri);
+      config_service->UISetProxyConfigToProxyPerScheme("socks",
+          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS4));
     }
-  } else if (path == "cros.proxy.httpsport") {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      if (FormServerUriIfValid(config.https_proxy, val, &uri)) {
-        config_service->UISetProxyConfigToProxyPerScheme("https",
-            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
-      }
-    }
-  } else if (path == "cros.proxy.ftpport") {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      if (FormServerUriIfValid(config.ftp_proxy, val, &uri)) {
-        config_service->UISetProxyConfigToProxyPerScheme("ftp",
-            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
-      }
-    }
-  } else if (path == "cros.proxy.socksport") {
-    std::string val;
-    if (in_value->GetAsString(&val)) {
-      std::string uri;
-      if (FormServerUriIfValid(config.socks_proxy, val, &uri)) {
-        config_service->UISetProxyConfigToProxyPerScheme("socks",
-            net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS5));
-      }
-    }
-  } else if (path == "cros.proxy.ignorelist") {
+  } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;
     if (in_value->GetType() == Value::TYPE_LIST) {
       const ListValue* list_value = static_cast<const ListValue*>(in_value);
@@ -193,20 +207,20 @@ bool CrosSettingsProviderProxy::Get(const std::string& path,
   chromeos::ProxyConfigServiceImpl::ProxyConfig config;
   config_service->UIGetProxyConfig(&config);
 
-  if (path == "cros.proxy.pacurl") {
+  if (path == kProxyPacUrl) {
     if (config.automatic_proxy.pac_url.is_valid()) {
       data = Value::CreateStringValue(config.automatic_proxy.pac_url.spec());
       found = true;
     }
-  } else if (path == "cros.proxy.singlehttp") {
+  } else if (path == kProxySingleHttp) {
     found = (data = CreateServerHostValue(config.single_proxy));
-  } else if (path == "cros.proxy.singlehttpport") {
+  } else if (path == kProxySingleHttpPort) {
     found = (data = CreateServerPortValue(config.single_proxy));
-  } else if (path == "cros.proxy.httpurl") {
+  } else if (path == kProxyHttpUrl) {
     found = (data = CreateServerHostValue(config.http_proxy));
-  } else if (path == "cros.proxy.httpsurl") {
+  } else if (path == kProxyHttpsUrl) {
     found = (data = CreateServerHostValue(config.https_proxy));
-  } else if (path == "cros.proxy.type") {
+  } else if (path == kProxyType) {
     if (config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_AUTO_DETECT ||
         config.mode ==
@@ -221,23 +235,23 @@ bool CrosSettingsProviderProxy::Get(const std::string& path,
       data = Value::CreateIntegerValue(1);
     }
     found = true;
-  } else if (path == "cros.proxy.single") {
+  } else if (path == kProxySingle) {
     data = Value::CreateBooleanValue(config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY);
     found = true;
-  } else if (path == "cros.proxy.ftpurl") {
+  } else if (path == kProxyFtpUrl) {
     found = (data = CreateServerHostValue(config.ftp_proxy));
-  } else if (path == "cros.proxy.socks") {
+  } else if (path == kProxySocks) {
     found = (data = CreateServerHostValue(config.socks_proxy));
-  } else if (path == "cros.proxy.httpport") {
+  } else if (path == kProxyHttpPort) {
     found = (data = CreateServerPortValue(config.http_proxy));
-  } else if (path == "cros.proxy.httpsport") {
+  } else if (path == kProxyHttpsPort) {
     found = (data = CreateServerPortValue(config.https_proxy));
-  } else if (path == "cros.proxy.ftpport") {
+  } else if (path == kProxyFtpPort) {
     found = (data = CreateServerPortValue(config.ftp_proxy));
-  } else if (path == "cros.proxy.socksport") {
+  } else if (path == kProxySocksPort) {
     found = (data = CreateServerPortValue(config.socks_proxy));
-  } else if (path == "cros.proxy.ignorelist") {
+  } else if (path == kProxyIgnoreList) {
     ListValue* list =  new ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
     for (size_t x = 0; x < bypass_rules.size(); x++) {
@@ -275,19 +289,21 @@ chromeos::ProxyConfigServiceImpl*
 }
 
 void CrosSettingsProviderProxy::AppendPortIfValid(
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+    const char* port_cache_key,
     std::string* server_uri) {
-  if (proxy.server.is_valid())
-    *server_uri += ":" + proxy.server.host_port_pair().port();
+  std::string port;
+  if (!server_uri->empty() && cache_.GetString(port_cache_key, &port) &&
+      !port.empty()) {
+    *server_uri += ":" + port;
+  }
 }
 
-bool CrosSettingsProviderProxy::FormServerUriIfValid(
-    const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+void CrosSettingsProviderProxy::FormServerUriIfValid(
+    const char* host_cache_key,
     const std::string& port_num, std::string* server_uri) {
-  if (!proxy.server.is_valid())
-    return false;
-  *server_uri = proxy.server.host_port_pair().host() + ":" + port_num;
-  return true;
+  if (cache_.GetString(host_cache_key, server_uri) && !server_uri->empty() &&
+      !port_num.empty())
+    *server_uri += ":" + port_num;
 }
 
 Value* CrosSettingsProviderProxy::CreateServerHostValue(
@@ -302,6 +318,11 @@ Value* CrosSettingsProviderProxy::CreateServerPortValue(
   return proxy.server.is_valid() ?
          Value::CreateIntegerValue(proxy.server.host_port_pair().port()) :
          NULL;
+}
+
+void CrosSettingsProviderProxy::SetCache(const std::string& key,
+    const Value* value) {
+  cache_.Set(key, value->DeepCopy());
 }
 
 }  // namespace chromeos

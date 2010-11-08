@@ -26,12 +26,9 @@ class CrosSettingsProviderProxy : public CrosSettingsProvider {
 
   chromeos::ProxyConfigServiceImpl* GetConfigService() const;
 
-  void AppendPortIfValid(
-      const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
-      std::string* server_uri);
+  void AppendPortIfValid(const char* port_cache_key, std::string* server_uri);
 
-  bool FormServerUriIfValid(
-      const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy,
+  void FormServerUriIfValid(const char* host_cache_key,
       const std::string& port_num, std::string* server_uri);
 
   Value* CreateServerHostValue(
@@ -39,6 +36,11 @@ class CrosSettingsProviderProxy : public CrosSettingsProvider {
 
   Value* CreateServerPortValue(
       const ProxyConfigServiceImpl::ProxyConfig::ManualProxy& proxy) const;
+
+  void SetCache(const std::string& key, const Value* value);
+
+  // A cache to keep whatever user typed.
+  DictionaryValue cache_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettingsProviderProxy);
 };

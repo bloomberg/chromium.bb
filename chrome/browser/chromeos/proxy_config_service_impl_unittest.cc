@@ -388,55 +388,42 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
     const Input& input = tests[i].input;
     switch (input.mode) {
       case MK_MODE(DIRECT) :
-        EXPECT_EQ(tests[i].is_valid,
-                  config_service()->UISetProxyConfigToDirect());
+        config_service()->UISetProxyConfigToDirect();
         break;
       case MK_MODE(AUTO_DETECT) :
-        EXPECT_EQ(tests[i].is_valid,
-                  config_service()->UISetProxyConfigToAutoDetect());
+        config_service()->UISetProxyConfigToAutoDetect();
         break;
       case MK_MODE(PAC_SCRIPT) :
-        EXPECT_EQ(tests[i].is_valid,
-                  config_service()->UISetProxyConfigToPACScript(
-                      GURL(input.pac_url)));
+        config_service()->UISetProxyConfigToPACScript(GURL(input.pac_url));
         break;
       case MK_MODE(SINGLE_PROXY) :
-        EXPECT_EQ(tests[i].is_valid,
-                  config_service()->UISetProxyConfigToSingleProxy(
-                      net::ProxyServer::FromURI(input.single_uri,
-                                                MK_SCHM(HTTP))));
+        config_service()->UISetProxyConfigToSingleProxy(
+            net::ProxyServer::FromURI(input.single_uri, MK_SCHM(HTTP)));
         if (input.bypass_rules) {
           bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
-          EXPECT_EQ(tests[i].is_valid,
-                    config_service()->UISetProxyConfigBypassRules(
-                        bypass_rules));
+          config_service()->UISetProxyConfigBypassRules(bypass_rules);
         }
         break;
       case MK_MODE(PROXY_PER_SCHEME) :
         if (input.http_uri) {
-          EXPECT_EQ(tests[i].is_valid,
-              config_service()->UISetProxyConfigToProxyPerScheme("http",
-                  net::ProxyServer::FromURI(input.http_uri, MK_SCHM(HTTP))));
+          config_service()->UISetProxyConfigToProxyPerScheme("http",
+                  net::ProxyServer::FromURI(input.http_uri, MK_SCHM(HTTP)));
         }
         if (input.https_uri) {
-          EXPECT_EQ(tests[i].is_valid,
-              config_service()->UISetProxyConfigToProxyPerScheme("https",
-                  net::ProxyServer::FromURI(input.https_uri, MK_SCHM(HTTPS))));
+          config_service()->UISetProxyConfigToProxyPerScheme("https",
+              net::ProxyServer::FromURI(input.https_uri, MK_SCHM(HTTPS)));
         }
         if (input.ftp_uri) {
-          EXPECT_EQ(tests[i].is_valid,
-              config_service()->UISetProxyConfigToProxyPerScheme("ftp",
-                  net::ProxyServer::FromURI(input.ftp_uri, MK_SCHM(HTTP))));
+          config_service()->UISetProxyConfigToProxyPerScheme("ftp",
+              net::ProxyServer::FromURI(input.ftp_uri, MK_SCHM(HTTP)));
         }
         if (input.socks_uri) {
-          EXPECT_EQ(tests[i].is_valid,
-              config_service()->UISetProxyConfigToProxyPerScheme("socks",
-                  net::ProxyServer::FromURI(input.socks_uri, MK_SCHM(SOCKS4))));
+          config_service()->UISetProxyConfigToProxyPerScheme("socks",
+              net::ProxyServer::FromURI(input.socks_uri, MK_SCHM(SOCKS4)));
         }
         if (input.bypass_rules) {
           bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
-          EXPECT_EQ(tests[i].is_valid,
-              config_service()->UISetProxyConfigBypassRules(bypass_rules));
+          config_service()->UISetProxyConfigBypassRules(bypass_rules);
         }
         break;
     }
