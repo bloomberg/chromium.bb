@@ -6,4 +6,4 @@ KeygenHandlerTest.*ConcurrencyTest
 SpdyNetworkTransactionTest.PostWithEarlySynReply
 
 # These tests fail under Valgrind, see http://crbug.com/62314
-SSLClientSocketTest.Connect*
+SSLClientSocketTest.*
