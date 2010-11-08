@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/options/fonts_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/default_encoding_combo_model.h"
@@ -28,8 +29,8 @@ std::string MakeFontName(std::string family_name, int pixel_size) {
   // TODO(mattm): We can pass in the size in pixels (px), and the font button
   // actually honors it, but when you open the selector it interprets it as
   // points.  See crbug.com/17857
-  SStringPrintf(&fontname, "%s, %dpx", WideToUTF8(actual_family_name).c_str(),
-                pixel_size);
+  base::SStringPrintf(&fontname, "%s, %dpx",
+                      WideToUTF8(actual_family_name).c_str(), pixel_size);
   return fontname;
 }
 

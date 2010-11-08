@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -175,7 +176,7 @@ void CloudPrintHelpers::AddMultipartValueForUpload(
 void CloudPrintHelpers::CreateMimeBoundaryForUpload(std::string* out) {
   int r1 = base::RandInt(0, kint32max);
   int r2 = base::RandInt(0, kint32max);
-  SStringPrintf(out, "---------------------------%08X%08X", r1, r2);
+  base::SStringPrintf(out, "---------------------------%08X%08X", r1, r2);
 }
 
 std::string CloudPrintHelpers::GenerateHashOfStringMap(

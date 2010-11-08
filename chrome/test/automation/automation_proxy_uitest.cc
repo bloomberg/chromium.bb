@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -491,7 +492,7 @@ class AutomationProxyTest4 : public UITest {
 
 std::wstring CreateJSString(const std::wstring& value) {
   std::wstring jscript;
-  SStringPrintf(&jscript,
+  base::SStringPrintf(&jscript,
       L"window.domAutomationController.send(%ls);",
       value.c_str());
   return jscript;
@@ -543,7 +544,7 @@ TEST_F(AutomationProxyTest4, NumberValueIsEchoedByDomAutomationController) {
   int expected = 1;
   int actual = 0;
   std::wstring expected_string;
-  SStringPrintf(&expected_string, L"%d", expected);
+  base::SStringPrintf(&expected_string, L"%d", expected);
   std::wstring jscript = CreateJSString(expected_string);
   ASSERT_TRUE(tab->ExecuteAndExtractInt(L"", jscript, &actual));
   ASSERT_EQ(expected, actual);

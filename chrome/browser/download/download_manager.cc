@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -341,8 +342,10 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info,
     FilePath::StringType file_name;
     FilePath path;
     while (path.empty()) {
-      SStringPrintf(&file_name, FILE_PATH_LITERAL("unconfirmed %d.crdownload"),
-                    base::RandInt(0, 100000));
+      base::SStringPrintf(
+          &file_name,
+          FILE_PATH_LITERAL("unconfirmed %d.crdownload"),
+          base::RandInt(0, 100000));
       path = dir.Append(file_name);
       if (file_util::PathExists(path))
         path = FilePath();

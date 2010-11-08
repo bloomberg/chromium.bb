@@ -20,6 +20,7 @@
 #include "base/singleton.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -715,8 +716,10 @@ int GetUniquePathNumberWithCrDownload(const FilePath& path) {
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
   FilePath::StringType file_name;
-  SStringPrintf(&file_name, PRFilePathLiteral FILE_PATH_LITERAL(".crdownload"),
-                suggested_path.value().c_str());
+  base::SStringPrintf(
+      &file_name,
+      PRFilePathLiteral FILE_PATH_LITERAL(".crdownload"),
+      suggested_path.value().c_str());
   return FilePath(file_name);
 }
 

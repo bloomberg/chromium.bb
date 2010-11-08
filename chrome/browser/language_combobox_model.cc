@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_split.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -109,8 +110,8 @@ std::wstring LanguageList::GetLanguageNameAt(int index) const {
   // changed the format. We also want to switch the order of locale_name
   // and native_name without going back to translators.
   std::wstring formatted_item;
-  SStringPrintf(&formatted_item, L"%ls - %ls", locale_name.c_str(),
-                native_name.c_str());
+  base::SStringPrintf(&formatted_item, L"%ls - %ls", locale_name.c_str(),
+                      native_name.c_str());
   if (base::i18n::IsRTL())
     // Somehow combo box (even with LAYOUTRTL flag) doesn't get this
     // right so we add RTL BDO (U+202E) to set the direction

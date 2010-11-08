@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/stringprintf.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
@@ -1178,9 +1179,9 @@ void TestingAutomationProvider::ExecuteJavascript(
     // communication while sending back the response of
     // this javascript execution.
     std::wstring set_automation_id;
-    SStringPrintf(&set_automation_id,
-      L"window.domAutomationController.setAutomationId(%d);",
-      reply_message->routing_id());
+    base::SStringPrintf(&set_automation_id,
+        L"window.domAutomationController.setAutomationId(%d);",
+        reply_message->routing_id());
 
     DCHECK(reply_message_ == NULL);
     reply_message_ = reply_message;

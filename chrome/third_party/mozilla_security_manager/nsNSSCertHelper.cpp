@@ -47,6 +47,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
@@ -466,11 +467,12 @@ std::string ProcessGeneralName(PRArenaPool* arena,
                                &current->name.OthName.name) == SECSuccess &&
             guid.len == 16) {
           unsigned char* d = guid.data;
-          SStringPrintf(&value,
-                        "{%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-"
-                        "%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x}",
-                        d[3], d[2], d[1], d[0], d[5], d[4], d[7], d[6],
-                        d[8], d[9], d[10], d[11], d[12], d[13], d[14], d[15]);
+          base::SStringPrintf(
+              &value,
+              "{%.2x%.2x%.2x%.2x-%.2x%.2x-%.2x%.2x-"
+              "%.2x%.2x-%.2x%.2x%.2x%.2x%.2x%.2x}",
+              d[3], d[2], d[1], d[0], d[5], d[4], d[7], d[6],
+              d[8], d[9], d[10], d[11], d[12], d[13], d[14], d[15]);
         } else {
           value = ProcessRawBytes(&current->name.OthName.name);
         }
