@@ -146,7 +146,7 @@ RenderProcessImpl::RenderProcessImpl()
   webkit_glue::SetJavaScriptFlags(
       "--debugger-auto-break"
       // Enable lazy in-memory profiling.
-      " --prof --prof-lazy --logfile=* --compress-log");
+      " --prof --prof-lazy");
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
