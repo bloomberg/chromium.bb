@@ -96,7 +96,7 @@ compositor) cairo-gl, glib-2.0, gdk-2.0 (for poppler) and
 poppler-glib:
 
     $ git clone git://people.freedesktop.org/~krh/wayland
-    $ aclocal; autoconf; ./configure --prefix=$HOME/install
+    $ ./autogen.sh --prefix=$HOME/install
     $ make && make install
 
 Installing into a non-/usr prefix is fine, but the 70-wayland.rules
