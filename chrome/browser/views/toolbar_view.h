@@ -142,6 +142,9 @@ class ToolbarView : public AccessiblePaneView,
   // Returns true if we should show the upgrade recommended dot.
   bool IsUpgradeRecommended();
 
+  // Returns true if we should show the warning for incompatible software.
+  bool ShouldShowIncompatibilityWarning();
+
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;
 
@@ -158,12 +161,12 @@ class ToolbarView : public AccessiblePaneView,
     return display_mode_ == DISPLAYMODE_NORMAL;
   }
 
-  // Starts the recurring timer that periodically asks the upgrade notifier
+  // Starts the recurring timer that periodically asks the notification dot
   // to pulsate.
-  void ShowUpgradeReminder();
+  void ShowNotificationDot();
 
-  // Show the reminder, tempting the user to upgrade by pulsating.
-  void PulsateUpgradeNotifier();
+  // Show the reminder, tempting the user to take a look.
+  void PulsateNotificationDot();
 
   // Gets a canvas with the icon for the app menu. It will possibly contain
   // an overlaid badge if an update is recommended.
@@ -210,12 +213,12 @@ class ToolbarView : public AccessiblePaneView,
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
 
-  // The animation that makes the update reminder pulse.
-  scoped_ptr<SlideAnimation> update_reminder_animation_;
+  // The animation that makes the notification dot pulse.
+  scoped_ptr<SlideAnimation> notification_dot_animation_;
 
   // We periodically restart the animation after it has been showed
   // once, to create a pulsating effect.
-  base::RepeatingTimer<ToolbarView> upgrade_reminder_pulse_timer_;
+  base::RepeatingTimer<ToolbarView> notification_dot_pulse_timer_;
 
   // Used to post tasks to switch to the next/previous menu.
   ScopedRunnableMethodFactory<ToolbarView> method_factory_;

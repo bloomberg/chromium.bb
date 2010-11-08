@@ -1730,6 +1730,11 @@ void Browser::ShowExtensionsTab() {
   ShowSingletonTab(GURL(chrome::kChromeUIExtensionsURL));
 }
 
+void Browser::ShowAboutConflictsTab() {
+  UserMetrics::RecordAction(UserMetricsAction("AboutConflicts"), profile_);
+  ShowSingletonTab(GURL(chrome::kChromeUIConflictsURL));
+}
+
 void Browser::ShowBrokenPageTab(TabContents* contents) {
   UserMetrics::RecordAction(UserMetricsAction("ReportBug"), profile_);
   string16 page_title = contents->GetTitle();
@@ -2206,6 +2211,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();       break;
     case IDC_ABOUT:                 OpenAboutChromeDialog();          break;
     case IDC_UPGRADE_DIALOG:        OpenUpdateChromeDialog();         break;
+    case IDC_VIEW_INCOMPATIBILITIES: ShowAboutConflictsTab();         break;
     case IDC_HELP_PAGE:             OpenHelpTab();                    break;
 #if defined(OS_CHROMEOS)
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
@@ -3075,7 +3081,6 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
 }
 
 void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
     ShowOptionsTab(
@@ -3488,9 +3493,11 @@ void Browser::InitCommandState() {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
 
-  // The upgrade entry should always be enabled. Whether it is visible is a
-  // separate matter determined on menu show.
+  // The upgrade entry and the view incompatibility entry should always be
+  // enabled. Whether they are visible is a separate matter determined on menu
+  // show.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
+  command_updater_.UpdateCommandEnabled(IDC_VIEW_INCOMPATIBILITIES, true);
 
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);

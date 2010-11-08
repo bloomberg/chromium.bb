@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html i18n-values="dir:textdirection;">
+<head>
+<meta charset="utf-8">
+<style>
+body {
+  margin: 10px;
+  min-width: 47em;
+}
+
+a {
+  color: blue;
+  font-size: 103%;
+}
+
+div#header {
+  margin-bottom: 1.05em;
+  /* 67px is the height of the header's background image. */
+  min-height: 67px;
+  overflow: hidden;
+  padding-bottom: 20px;
+  padding-left: 0;
+  padding-top: 20px;
+  position: relative;
+  -webkit-box-sizing: border-box;
+}
+
+html[dir=rtl] #header {
+  padding-right: 0;
+}
+
+#header h1 {
+  background: url('../../app/theme/conflicts_section.png') 0px 20px no-repeat;
+  display: inline;
+  margin: 0;
+  padding-bottom: 43px;
+  padding-left: 75px;
+  padding-top: 40px;
+}
+
+html[dir=rtl] #header h1 {
+  background: url('../../app/theme/conflicts_section.png') right no-repeat;
+  padding-right: 95px;
+  padding-left: 0;
+}
+
+h1 {
+  font-size: 156%;
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
+}
+
+#blurb-container {
+  padding-bottom: 1.5em;
+  font-size: 120%;
+}
+
+div.content {
+  font-size: 88%;
+  margin-top: 5px;
+}
+
+.section-header {
+  background: #ebeff9;
+  border-top: 1px solid #b5c7de;
+  font-size: 99%;
+  padding-bottom: 2px;
+  padding-left: 5px;
+  padding-top: 3px;
+  width: 100%;
+}
+
+html[dir=rtl] .section-header {
+  padding-right: 5px;
+  padding-left: 0;
+}
+
+.section-header > table > tr > td:first-child {
+  width: 100%;
+}
+
+.section-header > table {
+  width: 100%;
+}
+
+.section-header-title {
+  font-weight: bold;
+}
+
+.vbox-container {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.wbox {
+  display: -webkit-box;
+  -webkit-box-align: stretch;
+  -webkit-box-flex: 1;
+}
+
+#top {
+  padding-right: 5px;
+}
+
+html[dir=rtl] #top {
+  padding-left: 5px;
+  padding-right: 0;
+}
+
+.module-loaded > td {
+  padding-bottom: 4px;
+  padding-top: 5px;
+}
+
+.module {
+  border-bottom: 1px solid #cdcdcd;
+}
+
+.module-name {
+  font-weight: bold;
+}
+
+.no-modules {
+  margin: 6em 0 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+.suspected-bad {
+  color: orange;
+}
+
+.confirmed-bad {
+  color: red;
+}
+</style>
+<script>
+
+  /**
+  * This variable structure is here to document the structure that the template
+  * expects to correctly populate the page.
+  */
+  var moduleListDataFormat = {
+    'moduleList': [
+    {
+      'type': 'The type of module found',
+      'type_description':
+          'The type of module (string), defaults to blank for regular modules',
+      'status': 'The module status',
+      'location': 'The module path, not including filename',
+      'name': 'The name of the module',
+      'product_name': 'The name of the product the module belongs to',
+      'description': 'The module description',
+      'version': 'The module version',
+      'digital_signer': 'The signer of the digital certificate for the module',
+      'recommended_action': 'The help tips bitmask',
+      'possible_resolution': 'The help tips in string form',
+      'help_url': 'The link to the Help Center article'
+    }
+  ]
+  };
+
+  /**
+  * Takes the |moduleListData| input argument which represents data about
+  * the currently available modules and populates the html jstemplate
+  * with that data. It expects an object structure like the above.
+  * @param {Object} moduleListData Information about available modules
+  */
+  function renderTemplate(moduleListData) {
+    // This is the javascript code that processes the template:
+    var input = new JsEvalContext(moduleListData);
+    var output = document.getElementById('modulesTemplate');
+    jstProcess(input, output);
+  }
+
+  /**
+  * Asks the C++ ConflictsDOMHandler to get details about the available modules
+  * and return detailed data about the configuration. The ConflictsDOMHandler
+  * should reply to returnModuleList() (below).
+  */
+  function requestModuleListData() {
+    chrome.send('requestModuleList', []);
+  }
+
+  /**
+  * Called by the dom_ui to re-populate the page with data representing the
+  * current state of installed modules.
+  */
+  function returnModuleList(moduleListData) {
+    var bodyContainer = document.getElementById('body-container');
+    renderTemplate(moduleListData);
+    bodyContainer.style.visibility = 'visible';
+  }
+
+  // Get data and have it displayed upon loading.
+  document.addEventListener('DOMContentLoaded', requestModuleListData);
+
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div id="body-container" style="visibility:hidden">
+
+  <div id="header"><h1 i18n-content="modulesLongTitle">TITLE</h1></div>
+
+  <div id="blurb-container">
+    <span i18n-content="modulesBlurb">MODULES BLURB</span>
+  </div>
+
+  <div id="modulesTemplate">
+
+    <div id="container" class="vbox-container">
+    <div id="top" class="wbox">
+
+      <div class="section-header">
+        <table cellpadding="0" cellspacing="0"><tr valign="center">
+          <td>
+            <span class="section-header-title"
+                  jscontent="modulesTableTitle">TITLE</span>
+          </td>
+        </tr></table>
+      </div>
+
+    </div>
+    </div>
+
+    <div class="content">
+      <div class="module-name no-modules"
+           jsdisplay="moduleList.length === 0">
+        <div i18n-content="modulesNoneLoaded">NO_MODULES_ARE_AVAILABLE</div>
+      </div>
+
+      <div jsdisplay="moduleList.length > 0">
+      <div class="module" jsselect="moduleList">
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr class="module-loaded">
+        <td valign="top">
+          <table cellpadding="2" cellspacing="0">
+            <tr>
+              <td colspan="2"><span class="module-name" dir="ltr"
+                                   jscontent="name">NAME</span>
+              </td>
+            </tr>
+            <tr>
+              <td width="75"><span i18n-content="headerSoftware" /></td>
+              <td><span dir="ltr" jsdisplay="type_description.length > 0">
+                  <span dir="ltr"
+                        jscontent="type_description">MODULE_TYPE</span>: </span>
+                  <span dir="ltr" jsvalues=".innerHTML:description"></span>
+                  <span dir="ltr" jsdisplay="version.length > 0"> - </span>
+                  <span dir="ltr" jscontent="version">VERSION</span></td>
+            </tr>
+            <tr jsdisplay="digital_signer.length > 0">
+              <td><span i18n-content="headerSignedBy" /></td>
+              <td><span dir="ltr" jscontent="digital_signer">SIGNER</span></td>
+            </tr>
+            <tr>
+              <td><span i18n-content="headerLocation" /></td>
+              <td><span dir="ltr"
+                        jscontent="location">LOCATION</span><span
+                            dir="ltr" jscontent="name">NAME</span></td>
+            </tr>
+            <tr jsdisplay="status == 2 || status == 3">
+              <td><span i18n-content="headerWarning" /></td>
+              <td><span jsdisplay="status == 2"
+                        i18n-content="moduleSuspectedBad"
+                        class="suspected-bad">SUSPECTED_BAD</span>
+                  <span jsdisplay="status == 3"
+                        i18n-content="moduleConfirmedBad"
+                        class="confirmed-bad">CONFIRMED_BAD</span>
+                  <a jsdisplay="help_url.length > 0"
+                     jsvalues=".href:help_url"><span
+                         i18n-content="helpCenterLink">HELP_CENTER</span></a>
+              </td>
+            </tr>
+            <tr jsdisplay="possibleResolution.length > 0">
+              <td><span i18n-content="headerHelpTip" /></td>
+              <td><span
+                  jscontent="possibleResolution">POSSIBLE_RESOLUTION</span></td>
+            </tr>
+          </table>
+
+        </td>
+        </tr>
+        </table>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

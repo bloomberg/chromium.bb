@@ -76,6 +76,9 @@
       <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
       <include name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" type="BINDATA" />
+      <if expr="os.find('win') != -1">
+        <include name="IDR_CONFLICTS" file="conflicts.png" type="BINDATA" />
+      </if>
       <include name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_v.png" type="BINDATA" />
       <include name="IDR_CONSTRAINED_BOTTOM_RIGHT_CORNER_V" file="constrained_bottom_right_corner_v.png" type="BINDATA" />
@@ -169,6 +172,10 @@
       <include name="IDR_HOME" file="home.png" type="BINDATA" />
       <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />
       <include name="IDR_HOME_P" file="home_p.png" type="BINDATA" />
+      <if expr="os.find('win') != -1">
+        <include name="IDR_INCOMPATIBILITY_DOT_ACTIVE" file="incompatibility_dot_active.png" type="BINDATA" />
+        <include name="IDR_INCOMPATIBILITY_DOT_INACTIVE" file="incompatibility_dot_inactive.png" type="BINDATA" />
+      </if>
       <include name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean.png" type="BINDATA" />
       <include name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill.png" type="BINDATA" />
       <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" type="BINDATA" />

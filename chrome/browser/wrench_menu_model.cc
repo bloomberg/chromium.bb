@@ -49,6 +49,10 @@
 #include "chrome/browser/chromeos/cros/update_library.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/enumerate_modules_model_win.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
 
@@ -270,7 +274,16 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
 #else
     return Singleton<UpgradeDetector>::get()->notify_upgrade();
 #endif
+  } else if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
+#if defined(OS_WIN)
+    EnumerateModulesModel* loaded_modules =
+        EnumerateModulesModel::GetSingleton();
+    return loaded_modules->confirmed_bad_modules_detected() > 0;
+#else
+    return false;
+#endif
   }
+
   return true;
 }
 
@@ -407,6 +420,9 @@ void WrenchMenuModel::Build() {
 
   AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
       IDS_UPDATE_NOW, product_name));
+  AddItem(IDC_VIEW_INCOMPATIBILITIES, l10n_util::GetStringUTF16(
+      IDS_VIEW_INCOMPATIBILITIES));
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetIcon(GetIndexOfCommandId(IDC_UPGRADE_DIALOG),
           *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE));

@@ -51,6 +51,10 @@
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/dom_ui/conflicts_ui.h"
+#endif
+
 const DOMUITypeID DOMUIFactory::kNoDOMUI = NULL;
 
 // A function for creating a new DOMUI. The caller owns the return value, which
@@ -131,6 +135,10 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<BugReportUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewDOMUI<DevToolsUI>;
+#if defined(OS_WIN)
+  if (url.host() == chrome::kChromeUIConflictsHost)
+    return &NewDOMUI<ConflictsUI>;
+#endif
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewDOMUI<DownloadsUI>;
   if (url.host() == chrome::kChromeUITextfieldsHost)
@@ -270,6 +278,11 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
 
   if (!HasDOMUIScheme(page_url))
     return NULL;
+
+#if defined(OS_WIN)
+  if (page_url.host() == chrome::kChromeUIConflictsHost)
+    return ConflictsUI::GetFaviconResourceBytes();
+#endif
 
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return DownloadsUI::GetFaviconResourceBytes();

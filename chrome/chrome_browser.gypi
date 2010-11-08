@@ -2181,6 +2181,8 @@
         'browser/language_order_table_model.h',
         'browser/load_from_memory_cache_details.h',
         'browser/load_notification_details.h',
+        'browser/enumerate_modules_model_win.cc',
+        'browser/enumerate_modules_model_win.h',
         'browser/location_bar.h',
         'browser/location_bar_util.cc',
         'browser/location_bar_util.h',
@@ -3706,6 +3708,8 @@
           },
           'sources': [
             # Using built-in rule in vstudio for midl.
+            'browser/dom_ui/conflicts_ui.cc',
+            'browser/dom_ui/conflicts_ui.h',
             'browser/history/history_indexer.idl',
           ],
           'sources!': [

@@ -41,6 +41,10 @@
 #endif
 #include "chrome/browser/views/wrench_menu.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/enumerate_modules_model_win.h"
+#endif
+
 // The space between items is 4 px in general.
 const int ToolbarView::kStandardSpacing = 4;
 // The top of the toolbar has an edge we have to skip over in addition to the 4
@@ -102,6 +106,8 @@ ToolbarView::ToolbarView(Browser* browser)
     registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
   }
+  registrar_.Add(this, NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
+                 NotificationService::AllSources());
 }
 
 ToolbarView::~ToolbarView() {
@@ -175,8 +181,8 @@ void ToolbarView::Init(Profile* profile) {
   app_menu_->SetID(VIEW_ID_APP_MENU);
 
   // Catch the case where the window is created after we detect a new version.
-  if (IsUpgradeRecommended())
-    ShowUpgradeReminder();
+  if (IsUpgradeRecommended() || ShouldShowIncompatibilityWarning())
+    ShowNotificationDot();
 
   LoadImages();
 
@@ -317,8 +323,8 @@ cleanup:
     return;
   destroyed_flag_ = NULL;
 
-  // Stop pulsating the upgrade reminder on the app menu, if active.
-  upgrade_reminder_pulse_timer_.Stop();
+  // Stop pulsating the notification dot on the app menu (if active).
+  notification_dot_pulse_timer_.Stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,7 +407,11 @@ void ToolbarView::Observe(NotificationType type,
       SchedulePaint();
     }
   } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
-    ShowUpgradeReminder();
+    ShowNotificationDot();
+  } else if (type == NotificationType::MODULE_INCOMPATIBILITY_DETECTED) {
+    bool confirmed_bad = *Details<bool>(details).ptr();
+    if (confirmed_bad)
+      ShowNotificationDot();
   }
 }
 
@@ -580,6 +590,15 @@ bool ToolbarView::IsUpgradeRecommended() {
 #endif
 }
 
+bool ToolbarView::ShouldShowIncompatibilityWarning() {
+#if defined(OS_WIN)
+  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetSingleton();
+  return loaded_modules->confirmed_bad_modules_detected() > 0;
+#else
+  return false;
+#endif
+}
+
 int ToolbarView::PopupTopSpacing() const {
   return GetWindow()->GetNonClientView()->UseNativeFrame() ?
       0 : kPopupTopSpacingNonGlass;
@@ -629,20 +648,21 @@ void ToolbarView::LoadImages() {
   app_menu_->SetPushedIcon(GetAppMenuIcon(views::CustomButton::BS_PUSHED));
 }
 
-void ToolbarView::ShowUpgradeReminder() {
-  update_reminder_animation_.reset(new SlideAnimation(this));
-  update_reminder_animation_->SetSlideDuration(kPulseDuration);
+void ToolbarView::ShowNotificationDot() {
+  notification_dot_animation_.reset(new SlideAnimation(this));
+  notification_dot_animation_->SetSlideDuration(kPulseDuration);
 
   // Then start the recurring timer for pulsating it.
-  upgrade_reminder_pulse_timer_.Start(
+  notification_dot_pulse_timer_.Stop();
+  notification_dot_pulse_timer_.Start(
       base::TimeDelta::FromMilliseconds(kPulsateEveryMs),
-      this, &ToolbarView::PulsateUpgradeNotifier);
+      this, &ToolbarView::PulsateNotificationDot);
 }
 
-void ToolbarView::PulsateUpgradeNotifier() {
+void ToolbarView::PulsateNotificationDot() {
   // Start the pulsating animation.
-  update_reminder_animation_->Reset(0.0);
-  update_reminder_animation_->Show();
+  notification_dot_animation_->Reset(0.0);
+  notification_dot_animation_->Show();
 }
 
 SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
@@ -657,7 +677,8 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   }
   SkBitmap icon = *tp->GetBitmapNamed(id);
 
-  if (!IsUpgradeRecommended())
+  bool add_badge = IsUpgradeRecommended() || ShouldShowIncompatibilityWarning();
+  if (!add_badge)
     return icon;
 
   // Draw the chrome app menu icon onto the canvas.
@@ -668,27 +689,48 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   SkBitmap badge;
   static bool has_faded_in = false;
   if (!has_faded_in) {
-    SkBitmap* dot = tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
+    SkBitmap* dot = NULL;
+    if (ShouldShowIncompatibilityWarning()) {
+#if defined(OS_WIN)
+      dot = tp->GetBitmapNamed(IDR_INCOMPATIBILITY_DOT_INACTIVE);
+#else
+      NOTREACHED();
+#endif
+    } else {
+      dot = tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE);
+    }
     SkBitmap transparent;
     transparent.setConfig(dot->getConfig(), dot->width(), dot->height());
     transparent.allocPixels();
     transparent.eraseARGB(0, 0, 0, 0);
     badge = SkBitmapOperations::CreateBlendedBitmap(
-        *dot, transparent, 1.0 - update_reminder_animation_->GetCurrentValue());
-    if (update_reminder_animation_->GetCurrentValue() == 1.0)
+        *dot, transparent,
+        1.0 - notification_dot_animation_->GetCurrentValue());
+    if (notification_dot_animation_->GetCurrentValue() == 1.0)
       has_faded_in = true;
   } else {
     // Convert animation values that start from 0.0 and incrementally go
     // up to 1.0 into values that start in 0.0, go to 1.0 and then back
     // to 0.0 (to create a pulsing effect).
     double value =
-        1.0 - abs(2.0 * update_reminder_animation_->GetCurrentValue() - 1.0);
+        1.0 - abs(2.0 * notification_dot_animation_->GetCurrentValue() - 1.0);
 
     // Add the badge to it.
-    badge = SkBitmapOperations::CreateBlendedBitmap(
-        *tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
-        *tp->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
-        value);
+    if (ShouldShowIncompatibilityWarning()) {
+#if defined(OS_WIN)
+      badge = SkBitmapOperations::CreateBlendedBitmap(
+          *tp->GetBitmapNamed(IDR_INCOMPATIBILITY_DOT_INACTIVE),
+          *tp->GetBitmapNamed(IDR_INCOMPATIBILITY_DOT_ACTIVE),
+          value);
+#else
+      NOTREACHED();
+#endif
+    } else {
+      badge = SkBitmapOperations::CreateBlendedBitmap(
+          *tp->GetBitmapNamed(IDR_UPGRADE_DOT_INACTIVE),
+          *tp->GetBitmapNamed(IDR_UPGRADE_DOT_ACTIVE),
+          value);
+    }
   }
 
   static const int kBadgeLeftSpacing = 8;

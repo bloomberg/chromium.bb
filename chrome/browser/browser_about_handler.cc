@@ -64,6 +64,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/views/about_ipc_dialog.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -101,6 +102,9 @@ const char kAppCacheInternalsPath[] = "appcache-internals";
 const char kBlobInternalsPath[] = "blob-internals";
 const char kCreditsPath[] = "credits";
 const char kCachePath[] = "view-http-cache";
+#if defined(OS_WIN)
+const char kConflictsPath[] = "conflicts";
+#endif
 const char kDnsPath[] = "dns";
 const char kFlagsPath[] = "flags";
 const char kGpuPath[] = "gpu";
@@ -134,6 +138,9 @@ const char *kAllAboutPaths[] = {
   kBlobInternalsPath,
   kCachePath,
   kCreditsPath,
+#if defined(OS_WIN)
+  kConflictsPath,
+#endif
   kDnsPath,
   kFlagsPath,
   kGpuPath,
@@ -263,6 +270,9 @@ std::string AboutAbout() {
     if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
         kAllAboutPaths[i] == kBlobInternalsPath ||
         kAllAboutPaths[i] == kCachePath ||
+#if defined(OS_WIN)
+        kAllAboutPaths[i] == kConflictsPath ||
+#endif
         kAllAboutPaths[i] == kFlagsPath ||
         kAllAboutPaths[i] == kNetInternalsPath ||
         kAllAboutPaths[i] == kPluginsPath) {
@@ -1084,6 +1094,14 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
     *url = RemapAboutURL(chrome::kNetworkViewCacheURL, *url);
     return true;
   }
+
+#if defined(OS_WIN)
+  // Rewrite about:conflicts/* URLs to chrome://conflicts/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutConflicts)) {
+    *url = GURL(chrome::kChromeUIConflictsURL);
+    return true;
+  }
+#endif
 
   // Rewrite about:flags and about:vaporware to chrome://flags/.
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL) ||

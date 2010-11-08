@@ -91,6 +91,13 @@ const Experiment kExperiments[] = {
     switches::kEnableBackgroundMode
   },
   {
+    "conflicting-modules-check", // Do not change; see above.
+    IDS_FLAGS_CONFLICTS_CHECK_NAME,
+    IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,
+    kOsWin,
+    switches::kConflictingModulesCheck
+  },
+  {
     "cloud-print-proxy", // Do not change; see above.
     IDS_FLAGS_CLOUD_PRINT_PROXY_NAME,
     IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION,

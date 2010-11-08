@@ -100,6 +100,10 @@ const char kCloudPrintProxyId[]             = "cloud-print-proxy-id";
 // print service has been enabled (see enable-cloud-print).
 const char kCloudPrintServiceURL[]          = "cloud-print-service";
 
+// Causes the browser process to inspect loaded and registered DLLs for
+// known conflicts and warn the user.
+const char kConflictingModulesCheck[]       = "conflicting-modules-check";
+
 // The Country we should use.  This is normally obtained from the operating
 // system during first run and cached in the preferences afterwards.  This is a
 // string value, the 2 letter code from ISO 3166-1.

@@ -510,6 +510,7 @@ class Browser : public TabHandlerDelegate,
   void ShowHistoryTab();
   void ShowDownloadsTab();
   void ShowExtensionsTab();
+  void ShowAboutConflictsTab();
   void ShowBrokenPageTab(TabContents* contents);
   void ShowOptionsTab(const std::string& sub_page);
   void OpenClearBrowsingDataDialog();

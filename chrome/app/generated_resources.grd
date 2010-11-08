@@ -1016,6 +1016,9 @@ each locale. -->
         <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
           Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
+        <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
+          View incompatibilities
+        </message>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
         </message>
@@ -1053,6 +1056,9 @@ each locale. -->
         </message>
         <message name="IDS_UPDATE_NOW" desc="In Title Case: The text label of the Update Chrome Now menu item">
           Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+        <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
+          View Incompatibilities
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
@@ -4076,6 +4082,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
         Enables a background service that connects the <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> service to any printers installed on this computer. Once this lab is enabled, you can turn <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
       </message>
+      <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
+        Check for known conflicts with 3rd party modules.
+      </message>
+      <message name="IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION" desc="Description of the conflicts check flag">
+        Enables a background check that warns you when a software incompatibility is detected (ie. 3rd party modules that crash the browser).
+      </message>
       <message name="IDS_FLAGS_ACCELERATED_COMPOSITING_NAME" desc="Name of the 'GPU Accelerated Compositing' lab.">
         GPU Accelerated Compositing
       </message>
@@ -4140,6 +4152,65 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_INSTANT_PREF_WARNING" desc="Warning displayed beneath instant pref">
         Omnibox input may be logged
+      </message>
+
+      <!-- Conflicts page -->
+      <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">
+        Modules (<ph name="TOTAL_COUNT">$1<ex>50</ex></ph>) - No conflicts detected
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_TWO" desc="What gets appended after the page title (number of conflicts found).">
+        Modules (<ph name="TOTAL_COUNT">$1<ex>50</ex></ph>) - Known conflicts: <ph name="BAD_COUNT">$2<ex>3</ex></ph>, suspected: <ph name="SUSPICIOUS_COUNT">$3<ex>2</ex></ph>
+      </message>
+      <message name="IDS_CONFLICTS_EXPLANATION_TEXT" desc="The text blurb explaining what the compatibility page is.">
+        This page lists all modules loaded into the main process and modules registered to load at a later point.
+      </message>
+      <message name="IDS_CONFLICTS_HELP_CENTER_LINK" desc="The text for the Help Center link.">
+        Learn more
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_WARNING_PREFIX" desc="Warning label prefix on the compatibility page">
+        Warning:
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_VERSION_STRING" desc="The version string to show on the compatibility page">
+        Version <ph name="VERSION">$1<ex>1.2.3.4</ex></ph>.
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_INVESTIGATING" desc="A label on the compatibility page saying we are investigating.">
+        We are currently investigating this issue.
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS" desc="A label on the compatibility page describing possible resolutions.">
+        If you are experiencing frequent problems, you could try the following to resolve the issue with this module:
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL" desc="An uninstall label. 'It' refers to 'a module'.">
+        Uninstalling
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE" desc="An update label. 'It' refers to 'a module'.">
+        Updating
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE" desc="A disable label. 'It' refers to 'a module'.">
+        Disabling
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPERATOR" desc="The separator separating the words 'Uninstalling it', 'Updating it' and 'Disabling it'">
+        /
+      </message>
+      <message name="IDS_CONFLICTS_NO_MODULES_LOADED" desc="Error message for when no modules were found in the process">
+        Unable to detect any modules loaded.
+      </message>
+      <message name="IDS_CONFLICTS_HEADER_SOFTWARE" desc="The 'Software:' header for each module item in the list">
+        Software:
+      </message>
+      <message name="IDS_CONFLICTS_HEADER_SIGNED_BY" desc="The 'Signed by:' header for each module item in the list">
+        Signed by:
+      </message>
+      <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location:' header for each module item in the list">
+        Location:
+      </message>
+      <message name="IDS_CONFLICTS_HEADER_WARNING" desc="The 'Warning:' header for each module item in the list">
+        Warning:
+      </message>
+      <message name="IDS_CONFLICTS_HEADER_HELP_TIP" desc="The 'Help tip:' header for each module item in the list">
+        Help tip:
+      </message>
+      <message name="IDS_HELP_CENTER_VIEW_CONFLICTS" desc="The url of the Help center article for the View Conflicts page">
+        http://www.google.com/support/chrome/bin/answer.py?answer=666386&amp;hl=[GRITLANGCODE]&amp;n=<ph name="NAME">$1<ex>Hash</ex></ph>&amp;l=<ph name="LOCATION">$2<ex>Hash</ex></ph>&amp;d=<ph name="DESC">$3<ex>Hash</ex></ph>&amp;s=<ph name="SIGNER">$4<ex>Hash</ex></ph>
       </message>
 
       <!-- Click-to-load -->

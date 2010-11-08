@@ -11,6 +11,9 @@ without changes to the corresponding grd file. et -->
   </outputs>
   <release seq="1">
     <includes>
+      <if expr="os.find('win') != -1">
+        <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\about_conflicts.html" flattenhtml="true" type="BINDATA" />
+      </if>
       <if expr="os == 'linux2' or os.find('bsd') != -1">
         <include name="IDR_ABOUT_MEMORY_HTML" file="resources\about_memory_linux.html" flattenhtml="true" type="BINDATA" />
       </if>

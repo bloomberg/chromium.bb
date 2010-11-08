@@ -454,6 +454,16 @@ be available for now. -->
       <message name="IDS_TRY_TOAST_WHY" desc="Text of the url link that explains why this dialog is being shown">
         Why am I seeing this?
       </message>
+      <!-- about:conflicts strings -->
+      <message name="IDS_CONFLICTS_CHECK_PAGE_TITLE_LONG" desc="The long title on the compatibility page">
+        Modules loaded into Chromium
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_WARNING_CONFIRMED" desc="Warning label on the compatibility page">
+        This module is known to conflict with Chromium.
+      </message>
+      <message name="IDS_CONFLICTS_CHECK_WARNING_SUSPECTED" desc="Warning label on the compatibility page">
+        A module with the same name has been known to conflict with Chromium.
+      </message>
 
       <if expr="os == 'darwin'">
         <message name="IDS_SHORT_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">

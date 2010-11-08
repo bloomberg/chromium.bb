@@ -1017,6 +1017,17 @@ class NotificationType {
     // expected.
     UPGRADE_RECOMMENDED,
 
+    // Software incompatibility notifications ----------------------------------
+
+    // Sent when Chrome has finished compiling the list of loaded modules (and
+    // other modules of interest). No details are expected.
+    MODULE_LIST_ENUMERATED,
+
+    // Sent when Chrome detects an incompatible module. Details is a boolean
+    // specifying true if one or more confirmed bad modules were found or false
+    // if only suspected bad modules were found.
+    MODULE_INCOMPATIBILITY_DETECTED,
+
     // Accessibility Notifications ---------------------------------------------
 
     // Notification that a window in the browser UI (not the web content)
