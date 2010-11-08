@@ -46,6 +46,7 @@ using testing::NotNull;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
+using testing::WithoutArgs;
 
 const int kGoodWindowId = 42;
 const HWND kGoodWindow = reinterpret_cast<HWND>(kGoodWindowId);
@@ -127,6 +128,11 @@ class TestingExecutorCreator : public CeeeExecutorCreator {
   using CeeeExecutorCreator::GetMsgProc;
 };
 
+template<int error_code>
+void SetFakeLastError() {
+  ::SetLastError(error_code);
+}
+
 TEST(ExecutorCreator, CreateExecutor) {
   testing::LogDisabler no_dchecks;
 
@@ -143,8 +149,8 @@ TEST(ExecutorCreator, CreateExecutor) {
   EXPECT_CALL(mock_hooking, SetWindowsHookEx(WH_GETMESSAGE, _, _, 42L)).
       WillRepeatedly(Return(reinterpret_cast<HHOOK>(1)));
   EXPECT_CALL(mock_hooking, PostThreadMessage(42L, _, 0, 0)).
-      WillOnce(Return(FALSE));
-  ::SetLastError(ERROR_INVALID_ACCESS);
+      WillOnce(DoAll(WithoutArgs(Invoke(
+          SetFakeLastError<ERROR_INVALID_ACCESS>)), Return(FALSE)));
   EXPECT_HRESULT_FAILED(executor_creator.CreateWindowExecutor(42L, 0L));
   ::SetLastError(ERROR_SUCCESS);
 
@@ -462,8 +468,8 @@ TEST_F(ExecutorTests, GetWindow) {
   EXPECT_CALL(mock_window_utils_, GetTopLevelParent(kGoodWindow)).
       WillRepeatedly(Return(kGoodWindow));
   EXPECT_CALL(user32_, GetWindowRect(kGoodWindow, NotNull())).
-      WillOnce(Return(FALSE));
-  ::SetLastError(ERROR_INVALID_ACCESS);
+      WillOnce(DoAll(WithoutArgs(Invoke(
+          SetFakeLastError<ERROR_INVALID_ACCESS>)), Return(FALSE)));
   common_api::WindowInfo window_info;
   EXPECT_HRESULT_FAILED(executor_->GetWindow(FALSE, &window_info));
   EXPECT_EQ(NULL, window_info.tab_list);
@@ -938,18 +944,20 @@ TEST_F(ExecutorTests, GetCookieValue) {
 
   // Failure to get cookie.
   EXPECT_CALL(mock_wininet, InternetGetCookieExW(_, _, IsNull(), _, _, _))
-      .WillOnce(Return(FALSE));
-  ::SetLastError(ERROR_INVALID_PARAMETER);
+      .WillOnce(DoAll(WithoutArgs(Invoke(
+          SetFakeLastError<ERROR_INVALID_PARAMETER>)), Return(FALSE)));
   CComBSTR value;
   EXPECT_HRESULT_FAILED(executor_->CallGetCookieValue(url, name, &value));
   EXPECT_EQ((BSTR)NULL, value);
+  ::SetLastError(ERROR_SUCCESS);
 
   // Nonexistent cookie.
   EXPECT_CALL(mock_wininet, InternetGetCookieExW(_, _, IsNull(), _, _, _))
-      .WillOnce(Return(FALSE));
-  ::SetLastError(ERROR_NO_MORE_ITEMS);
+      .WillOnce(DoAll(WithoutArgs(Invoke(
+          SetFakeLastError<ERROR_NO_MORE_ITEMS>)), Return(FALSE)));
   EXPECT_EQ(S_FALSE, executor_->CallGetCookieValue(url, name, &value));
   EXPECT_EQ((BSTR)NULL, value);
+  ::SetLastError(ERROR_SUCCESS);
 
   // Malformed cookie.
   EXPECT_CALL(mock_wininet, InternetGetCookieExW(_, _, IsNull(), _, _, _))
