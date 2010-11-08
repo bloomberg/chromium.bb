@@ -51,6 +51,7 @@
     "chrome.experimental.clipboard.executeCopy": "experimental.clipboard.html#method-executeCopy", 
     "chrome.bookmarks.move": "bookmarks.html#method-move", 
     "chrome.experimental.webRequest.onBeforeRedirect": "experimental.webRequest.html#event-onBeforeRedirect", 
+    "chrome.management.get": "management.html#method-get", 
     "chrome.tabs.getCurrent": "tabs.html#method-getCurrent", 
     "chrome.experimental.sidebar.getState": "experimental.sidebar.html#method-getState", 
     "chrome.management.launchApp": "management.html#method-launchApp", 

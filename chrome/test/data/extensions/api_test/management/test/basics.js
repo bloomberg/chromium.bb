@@ -20,13 +20,13 @@ var tests = [
     chrome.management.getAll(callback(function(items) {
       chrome.test.assertEq(5, items.length);
 
-      checkItem(items, "Extension Management API Test", true, false);
+      checkItemInList(items, "Extension Management API Test", true, false);
 
-      checkItem(items, "enabled_app", true, true,
+      checkItemInList(items, "enabled_app", true, true,
                 {"appLaunchUrl": "http://www.google.com/"});
-      checkItem(items, "disabled_app", false, true);
-      checkItem(items, "enabled_extension", true, false);
-      checkItem(items, "disabled_extension", false, false,
+      checkItemInList(items, "disabled_app", false, true);
+      checkItemInList(items, "enabled_extension", true, false);
+      checkItemInList(items, "disabled_extension", false, false,
                 {"optionsUrl": "chrome-extension://<ID>/pages/options.html"});
 
       // Check that we got the icons correctly
@@ -35,6 +35,12 @@ var tests = [
       checkIcon(extension, 128, "icon_128.png");
       checkIcon(extension, 48, "icon_48.png");
       checkIcon(extension, 16, "icon_16.png");
+
+      // Check that we can retrieve this extension by ID.
+      chrome.management.get(extension.id, callback(function(same_extension) {
+        checkItem(same_extension, extension.name, extension.enabled,
+                  extension.isApp, extension.additional_properties)
+      }));
     }));
   },
 
@@ -45,11 +51,11 @@ var tests = [
     });
 
     chrome.management.getAll(callback(function(items) {
-      checkItem(items, "enabled_app", true, true);
       var enabled_app = getItemNamed(items, "enabled_app");
+      checkItem(enabled_app, "enabled_app", true, true);
       chrome.management.setEnabled(enabled_app.id, false, callback(function() {
-        chrome.management.getAll(callback(function(items2) {
-          checkItem(items2, "enabled_app", false, true);
+        chrome.management.get(enabled_app.id, callback(function(now_disabled) {
+          checkItem(now_disabled, "enabled_app", false, true);
         }));
       }));
     }));
@@ -61,11 +67,11 @@ var tests = [
       assertEq(info.name, "disabled_extension");
     });
     chrome.management.getAll(callback(function(items) {
-      checkItem(items, "disabled_extension", false, false);
       var disabled = getItemNamed(items, "disabled_extension");
+      checkItem(disabled, "disabled_extension", false, false);
       chrome.management.setEnabled(disabled.id, true, callback(function() {
-        chrome.management.getAll(callback(function(items2) {
-          checkItem(items2, "disabled_extension", true, false);
+        chrome.management.get(disabled.id, callback(function(now_enabled) {
+          checkItem(now_enabled, "disabled_extension", true, false);
         }));
       }));
     }));

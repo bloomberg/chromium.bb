@@ -104,6 +104,24 @@ bool GetAllExtensionsFunction::RunImpl() {
   return true;
 }
 
+bool GetExtensionByIdFunction::RunImpl() {
+  std::string extension_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  const Extension* extension = service()->GetExtensionById(extension_id, true);
+  if (!extension) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoExtensionError,
+                                                     extension_id);
+    return false;
+  }
+  bool enabled = service()->extension_prefs()->
+      GetExtensionState(extension_id) == Extension::ENABLED;
+
+  DictionaryValue* result = CreateExtensionInfo(*extension, enabled);
+  result_.reset(result);
+
+  return true;
+}
+
 bool LaunchAppFunction::RunImpl() {
   std::string extension_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));

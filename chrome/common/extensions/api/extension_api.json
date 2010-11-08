@@ -4105,6 +4105,28 @@
         ]
       },
       {
+        "name": "get",
+        "description": "Return information about the installed extension with the given ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The ID from an item of $ref:ExtensionInfo."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "ExtensionInfo"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "setEnabled",
         "description": "Enable or disable an app or extension.",
         "parameters": [
