@@ -16,8 +16,6 @@
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
-typedef struct NPObject NPObject;
-
 namespace pepper {
 
 class PluginInstance;
