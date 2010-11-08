@@ -9,12 +9,10 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profile.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-class BookmarkModel;
-class BookmarkNode;
 
 // Helper class that performs operations on a bookmark model and echoes the
 // changes in a verifier model that can be used as an expected hierarchy to
@@ -111,6 +109,12 @@ class BookmarkModelVerifier {
   void set_use_verifier_model(bool use_verifier_model) {
     use_verifier_model_ = use_verifier_model;
   }
+
+  // Returns the number of nodes of node type |node_type| in |model| whose
+  // titles match the string |title|.
+  static int CountNodesWithTitlesMatching(BookmarkModel* model,
+                                          BookmarkNode::Type node_type,
+                                          const string16& title);
 
  private:
   // A pointer to the BookmarkModel object within the verifier_profile_ object

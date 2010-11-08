@@ -262,6 +262,22 @@ class LiveBookmarksSyncTest : public LiveSyncTest {
     return nodes[0];
   }
 
+  // Returns the number of bookmarks in bookmark model of profile |profile|
+  // whose titles match the string |title|.
+  int CountBookmarksWithTitlesMatching(int profile, const std::wstring& title)
+      WARN_UNUSED_RESULT {
+    return verifier_helper_->CountNodesWithTitlesMatching(
+        GetBookmarkModel(profile), BookmarkNode::URL, WideToUTF16(title));
+  }
+
+  // Returns the number of bookmark folders in the bookmark model of profile
+  // |profile| whose titles contain the query string |title|.
+  int CountFoldersWithTitlesMatching(int profile,
+       const std::wstring& title) WARN_UNUSED_RESULT {
+    return verifier_helper_->CountNodesWithTitlesMatching(
+        GetBookmarkModel(profile), BookmarkNode::FOLDER, WideToUTF16(title));
+  }
+
  private:
   // Helper object that has the functionality to verify changes made to the
   // bookmarks of individual profiles.

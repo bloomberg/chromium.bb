@@ -89,6 +89,23 @@ bool BookmarkModelVerifier::ContainsDuplicateBookmarks(BookmarkModel* model) {
   return false;
 }
 
+// static
+int BookmarkModelVerifier::CountNodesWithTitlesMatching(
+    BookmarkModel* model,
+    BookmarkNode::Type node_type,
+    const string16& title) {
+  TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  // Walk through the model tree looking for bookmark nodes of node type
+  // |node_type| whose titles match |title|.
+  int count = 0;
+  while (iterator.has_next()) {
+    const BookmarkNode* node = iterator.Next();
+    if ((node->type() == node_type) && (node->GetTitle() == title))
+      ++count;
+  }
+  return count;
+}
+
 void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
                                                const BookmarkNode* foreign_node,
                                                const BookmarkNode** result) {
