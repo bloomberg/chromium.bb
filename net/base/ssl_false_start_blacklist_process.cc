@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 
   const char* input_file = argv[1];
   const char* output_file = argv[2];
-  FILE* input = fopen(input_file, "r");
+  FILE* input = fopen(input_file, "rb");
   if (!input) {
     perror("open");
     return usage(argv[0]);
@@ -147,11 +147,16 @@ int main(int argc, char** argv) {
   }
 
   char* buffer = static_cast<char*>(malloc(input_size));
-  if (fread(buffer, input_size, 1, input) != 1) {
-    perror("fread");
-    free(buffer);
-    fclose(input);
-    return 1;
+  long done = 0;
+  while (done < input_size) {
+    size_t n = fread(buffer + done, 1, input_size - done, input);
+    if (n == 0) {
+      perror("fread");
+      free(buffer);
+      fclose(input);
+      return 1;
+    }
+    done += n;
   }
   fclose(input);
 
@@ -162,8 +167,12 @@ int main(int argc, char** argv) {
   bool non_whitespace_seen = false;
   for (long i = 0; i <= input_size; i++) {
     if (i == input_size || buffer[i] == '\n') {
-      if (!is_comment && non_whitespace_seen)
-        hosts.push_back(std::string(&buffer[line_start], i - line_start));
+      if (!is_comment && non_whitespace_seen) {
+        long len = i - line_start;
+        if (i > 0 && buffer[i-1] == '\r')
+          len--;
+        hosts.push_back(std::string(&buffer[line_start], len));
+      }
       is_comment = false;
       non_whitespace_seen = false;
       line_start = i + 1;
@@ -172,7 +181,7 @@ int main(int argc, char** argv) {
 
     if (i == line_start && buffer[i] == '#')
       is_comment = true;
-    if (buffer[i] != ' ' && buffer[i] != '\t')
+    if (buffer[i] != ' ' && buffer[i] != '\t' && buffer[i] != '\r')
       non_whitespace_seen = true;
   }
   free(buffer);
