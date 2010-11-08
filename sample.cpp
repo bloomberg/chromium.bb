@@ -239,11 +239,13 @@ int main(int argc, char* argv[])
             const Track* const pTrack = pTracks->GetTrackByNumber(trackNum);
             const long long trackType = pTrack->GetType();
             const long size = pBlock->GetSize();
+            const long long offset = pBlock->GetOffset();
             const long long time_ns = pBlock->GetTime(pCluster);
 
-            printf("\t\t\tBlock\t\t:%s,%15ld,%s,%15lld\n",
+            printf("\t\t\tBlock\t\t:%s,%15ld,%15llx,%s,%15lld\n",
                    (trackType == VIDEO_TRACK) ? "V" : "A",
                    size,
+                   offset,
                    pBlock->IsKey() ? "I" : "P",
                    time_ns);
 
