@@ -44,6 +44,8 @@ class URLRequestInfo : public Resource {
 
   WebKit::WebURLRequest ToWebURLRequest(WebKit::WebFrame* frame) const;
 
+  bool follow_redirects() { return follow_redirects_; }
+
   bool record_download_progress() const { return record_download_progress_; }
   bool record_upload_progress() const { return record_upload_progress_; }
 
@@ -57,6 +59,7 @@ class URLRequestInfo : public Resource {
   Body body_;
 
   bool stream_to_file_;
+  bool follow_redirects_;
   bool record_download_progress_;
   bool record_upload_progress_;
 };

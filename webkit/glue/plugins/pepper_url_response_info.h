@@ -35,10 +35,14 @@ class URLResponseInfo : public Resource {
 
   FileRef* body() { return body_; }
 
+  std::string redirect_url() { return redirect_url_; }
+
  private:
   std::string url_;
   std::string headers_;
   int32_t status_code_;
+  std::string status_text_;
+  std::string redirect_url_;
   scoped_refptr<FileRef> body_;
 };
 

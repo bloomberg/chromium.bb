@@ -38,6 +38,7 @@ void TestURLLoader::RunTest() {
   RUN_TEST(IgnoresBogusContentLength);
   RUN_TEST(SameOriginRestriction);
   RUN_TEST(StreamToFile);
+  RUN_TEST(AuditURLRedirect);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
@@ -251,6 +252,37 @@ std::string TestURLLoader::TestSameOriginRestriction() {
       return ReportError("URLLoader::Open()", rv);
     }
   }
+
+  return "";
+}
+
+// This test should cause a redirect and ensure that the loader runs
+// the callback, rather than following the redirect.
+std::string TestURLLoader::TestAuditURLRedirect() {
+  pp::URLRequestInfo_Dev request;
+  // This path will cause the server to return a 301 redirect.
+  request.SetURL("/server-redirect?www.google.com");
+  request.SetFollowRedirects(false);
+
+  TestCompletionCallback callback;
+
+  pp::URLLoader_Dev loader(*instance_);
+  int32_t rv = loader.Open(request, callback);
+  if (rv == PP_ERROR_WOULDBLOCK)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("URLLoader::Open", rv);
+
+  // Checks that the response indicates a redirect, and that the URL
+  // is correct.
+  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  if (response_info.is_null())
+    return "URLLoader::GetResponseInfo returned null";
+  int32_t status_code = response_info.GetStatusCode();
+  if (status_code != 301)
+    return "Response status should be 301";
+  if (response_info.GetRedirectURL().AsString() != "www.google.com")
+    return "Redirect URL should be www.google.com";
 
   return "";
 }

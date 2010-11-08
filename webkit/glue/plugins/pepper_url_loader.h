@@ -10,12 +10,16 @@
 #include "base/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/dev/ppb_url_loader_trusted_dev.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PPB_URLLoader_Dev;
 struct PPB_URLLoaderTrusted_Dev;
+
+namespace WebKit {
+class WebFrame;
+class WebURL;
+}
 
 namespace pepper {
 
@@ -80,6 +84,11 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   void RunCallback(int32_t result);
   size_t FillUserBuffer();
 
+  // Converts a WebURLResponse to a URLResponseInfo and saves it.
+  void SaveResponse(const WebKit::WebURLResponse& response);
+
+  int32_t CanRequest(const WebKit::WebFrame* frame, const WebKit::WebURL& url);
+
   // Calls the status_callback_ (if any) with the current upload and download
   // progress. Call this function if you update any of these values to
   // synchronize an out-of-process plugin's state.
@@ -90,6 +99,7 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   // wrapping the main document's loader (i.e. loader_ is null).
   bool main_document_loader_;
   scoped_ptr<WebKit::WebURLLoader> loader_;
+  scoped_refptr<URLRequestInfo> request_info_;
   scoped_refptr<URLResponseInfo> response_info_;
   PP_CompletionCallback pending_callback_;
   std::deque<char> buffer_;

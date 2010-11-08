@@ -16,6 +16,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
@@ -175,6 +176,10 @@ const PPB_URLLoaderTrusted_Dev ppb_urlloadertrusted = {
   &SetStatusCallback
 };
 
+WebKit::WebFrame* GetFrame(PluginInstance* instance) {
+  return instance->container()->element().document().frame();
+}
+
 }  // namespace
 
 URLLoader::URLLoader(PluginInstance* instance, bool main_document_loader)
@@ -217,15 +222,14 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   if (!callback.func)
     return PP_ERROR_BADARGUMENT;
 
-  WebFrame* frame = instance_->container()->element().document().frame();
+  WebFrame* frame = GetFrame(instance_);
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request(request->ToWebURLRequest(frame));
 
-  // Check if we are allowed to access this URL.
-  if (!has_universal_access_ &&
-      !frame->securityOrigin().canRequest(web_request.url()))
-    return PP_ERROR_NOACCESS;
+  int32_t rv = CanRequest(frame, web_request.url());
+  if (rv != PP_OK)
+    return rv;
 
   frame->dispatchWillSendRequest(web_request);
 
@@ -238,8 +242,10 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   loader_.reset(WebKit::webKitClient()->createURLLoader());
   if (!loader_.get())
     return PP_ERROR_FAILED;
+
   loader_->loadAsynchronously(web_request, this);
 
+  request_info_ = scoped_refptr<URLRequestInfo>(request);
   pending_callback_ = callback;
   record_download_progress_ = request->record_download_progress();
   record_upload_progress_  = request->record_upload_progress();
@@ -249,8 +255,22 @@ int32_t URLLoader::Open(URLRequestInfo* request,
 }
 
 int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me.
-  return PP_ERROR_FAILED;
+  if (pending_callback_.func)
+    return PP_ERROR_INPROGRESS;
+
+  // We only support non-blocking calls.
+  if (!callback.func)
+    return PP_ERROR_BADARGUMENT;
+
+  WebURL redirect_url = GURL(response_info_->redirect_url());
+
+  int32_t rv = CanRequest(GetFrame(instance_), redirect_url);
+  if (rv != PP_OK)
+    return rv;
+
+  pending_callback_ = callback;
+  loader_->setDefersLoading(false);  // Allow the redirect to continue.
+  return PP_ERROR_WOULDBLOCK;
 }
 
 bool URLLoader::GetUploadProgress(int64_t* bytes_sent,
@@ -342,7 +362,17 @@ void URLLoader::SetStatusCallback(PP_URLLoaderTrusted_StatusCallback cb) {
 void URLLoader::willSendRequest(WebURLLoader* loader,
                                 WebURLRequest& new_request,
                                 const WebURLResponse& redirect_response) {
-  NOTIMPLEMENTED();  // TODO(darin): Allow the plugin to inspect redirects.
+  if (!request_info_->follow_redirects()) {
+    SaveResponse(redirect_response);
+    loader_->setDefersLoading(true);
+    RunCallback(PP_OK);
+  } else {
+    int32_t rv = CanRequest(GetFrame(instance_), new_request.url());
+    if (rv != PP_OK) {
+      loader_->setDefersLoading(true);
+      RunCallback(rv);
+    }
+  }
 }
 
 void URLLoader::didSendData(WebURLLoader* loader,
@@ -356,9 +386,7 @@ void URLLoader::didSendData(WebURLLoader* loader,
 
 void URLLoader::didReceiveResponse(WebURLLoader* loader,
                                    const WebURLResponse& response) {
-  scoped_refptr<URLResponseInfo> response_info(new URLResponseInfo(module()));
-  if (response_info->Initialize(response))
-    response_info_ = response_info;
+  SaveResponse(response);
 
   // Sets -1 if the content length is unknown.
   total_bytes_to_be_received_ = response.expectedContentLength();
@@ -418,6 +446,22 @@ size_t URLLoader::FillUserBuffer() {
   user_buffer_ = NULL;
   user_buffer_size_ = 0;
   return bytes_to_copy;
+}
+
+void URLLoader::SaveResponse(const WebKit::WebURLResponse& response) {
+  scoped_refptr<URLResponseInfo> response_info(new URLResponseInfo(module()));
+  if (response_info->Initialize(response))
+    response_info_ = response_info;
+}
+
+// Checks that the client can request the URL. Returns a PPAPI error code.
+int32_t URLLoader::CanRequest(const WebKit::WebFrame* frame,
+                              const WebKit::WebURL& url) {
+  if (!has_universal_access_ &&
+      !frame->securityOrigin().canRequest(url))
+    return PP_ERROR_NOACCESS;
+
+  return PP_OK;
 }
 
 void URLLoader::UpdateStatus() {
