@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
@@ -161,6 +162,9 @@ class DelayedInitTask : public Task {
   virtual ~DelayedInitTask() {
   }
   virtual void Run() {
+    // Needs to be evaluated. See http://crbug.com/62328/.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     // For non-interactive tests we don't do the rest of the initialization
     // because sometimes the very act of loading the dll causes QEMU to crash.
     if (::GetEnvironmentVariableW(ASCIIToWide(env_vars::kHeadless).c_str(),
