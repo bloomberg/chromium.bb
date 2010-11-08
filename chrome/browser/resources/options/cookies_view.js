@@ -148,7 +148,6 @@ cr.define('options', function() {
      * Sets IndexedDB info to display.
      */
     setIndexedDBInfo: function(indexedDB) {
-      $('indexedDBName').textContent = indexedDB.name;
       $('indexedDBOrigin').textContent = indexedDB.origin;
       $('indexedDBSize').textContent = indexedDB.size;
       $('indexedDBLastModified').textContent = indexedDB.modified;

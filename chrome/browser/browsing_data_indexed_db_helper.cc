@@ -108,13 +108,9 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.Extension() == IndexedDBContext::kIndexedDBExtension) {
-      std::string name;
-      WebSecurityOrigin web_security_origin;
-      if (!IndexedDBContext::SplitIndexedDBFileName(
-          file_path, &name, &web_security_origin)) {
-        // Could not parse file name.
-        continue;
-      }
+      WebSecurityOrigin web_security_origin =
+          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+              webkit_glue::FilePathToWebString(file_path.BaseName()));
       if (EqualsASCII(web_security_origin.protocol(),
                       chrome::kExtensionScheme)) {
         // Extension state is not considered browsing data.
@@ -129,7 +125,6 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
             web_security_origin.port(),
             web_security_origin.databaseIdentifier().utf8(),
             web_security_origin.toString().utf8(),
-            name,
             file_path,
             file_info.size,
             file_info.last_modified));
@@ -176,7 +171,7 @@ CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
 }
 
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
-    const GURL& origin, const string16& name, const string16& description) {
+    const GURL& origin, const string16& description) {
   WebSecurityOrigin web_security_origin =
       WebSecurityOrigin::createFromString(
           UTF8ToUTF16(origin.spec()));
@@ -195,9 +190,8 @@ void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
       web_security_origin.port(),
       web_security_origin.databaseIdentifier().utf8(),
       security_origin,
-      UTF16ToUTF8(name),
       profile_->GetWebKitContext()->indexed_db_context()->
-          GetIndexedDBFilePath(name, web_security_origin),
+          GetIndexedDBFilePath(web_security_origin.databaseIdentifier()),
       0,
       base::Time()));
 }

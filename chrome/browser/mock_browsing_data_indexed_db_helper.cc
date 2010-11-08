@@ -34,12 +34,12 @@ void MockBrowsingDataIndexedDBHelper::DeleteIndexedDBFile(
 void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
   response_.push_back(
       BrowsingDataIndexedDBHelper::IndexedDBInfo(
-          "http", "idbhost1", 1, "idb1", "http://idbhost1:1/", "name",
+          "http", "idbhost1", 1, "idb1", "http://idbhost1:1/",
           FilePath(FILE_PATH_LITERAL("file1")), 1, base::Time()));
   files_[FILE_PATH_LITERAL("file1")] = true;
   response_.push_back(
       BrowsingDataIndexedDBHelper::IndexedDBInfo(
-          "http", "idbhost2", 2, "idb2", "http://idbhost2:2/", "name",
+          "http", "idbhost2", 2, "idb2", "http://idbhost2:2/",
           FilePath(FILE_PATH_LITERAL("file2")), 2, base::Time()));
   files_[FILE_PATH_LITERAL("file2")] = true;
 }

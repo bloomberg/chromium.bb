@@ -96,7 +96,6 @@ typedef struct {
 
   // The IndexedDB details widgets.
   GtkWidget* indexed_db_details_table_;
-  GtkWidget* indexed_db_name_entry_;
   GtkWidget* indexed_db_origin_entry_;
   GtkWidget* indexed_db_size_entry_;
   GtkWidget* indexed_db_last_modified_entry_;

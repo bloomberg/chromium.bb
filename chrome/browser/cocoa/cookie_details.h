@@ -83,9 +83,8 @@ enum CocoaCookieDetailsType {
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
   scoped_nsobject<NSString> created_;
 
-  // Only set for types kCocoaCookieDetailsTypeCookie,
-  // kCocoaCookieDetailsTypePromptDatabase, and
-  // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
+  // Only set for types kCocoaCookieDetailsTypeCookie, and
+  // kCocoaCookieDetailsTypePromptDatabase nodes.
   scoped_nsobject<NSString> name_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeLocalStorage,

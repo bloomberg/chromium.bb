@@ -186,9 +186,10 @@ CookieTreeSessionStorageNode::CookieTreeSessionStorageNode(
 
 CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
     BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info)
-    : CookieTreeNode(indexed_db_info->database_name.empty() ?
-          l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
-          UTF8ToUTF16(indexed_db_info->database_name)),
+    : CookieTreeNode(UTF8ToUTF16(
+          indexed_db_info->origin.empty() ?
+              indexed_db_info->database_identifier :
+              indexed_db_info->origin)),
       indexed_db_info_(indexed_db_info) {
 }
 

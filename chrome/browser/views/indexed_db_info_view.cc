@@ -23,8 +23,7 @@ static const int kIndexedDBInfoViewInsetSize = 3;
 // IndexedDBInfoView, public:
 
 IndexedDBInfoView::IndexedDBInfoView()
-    : name_value_field_(NULL),
-      origin_value_field_(NULL),
+    : origin_value_field_(NULL),
       size_value_field_(NULL),
       last_modified_value_field_(NULL) {
 }
@@ -34,10 +33,6 @@ IndexedDBInfoView::~IndexedDBInfoView() {
 
 void IndexedDBInfoView::SetIndexedDBInfo(
     const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info) {
-  name_value_field_->SetText(
-      indexed_db_info.database_name.empty() ?
-          l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
-          UTF8ToWide(indexed_db_info.database_name));
   origin_value_field_->SetText(UTF8ToWide(indexed_db_info.origin));
   size_value_field_->SetText(
       FormatBytes(indexed_db_info.size,
@@ -49,7 +44,6 @@ void IndexedDBInfoView::SetIndexedDBInfo(
 }
 
 void IndexedDBInfoView::EnableIndexedDBDisplay(bool enabled) {
-  name_value_field_->SetEnabled(enabled);
   origin_value_field_->SetEnabled(enabled);
   size_value_field_->SetEnabled(enabled);
   last_modified_value_field_->SetEnabled(enabled);
@@ -58,7 +52,6 @@ void IndexedDBInfoView::EnableIndexedDBDisplay(bool enabled) {
 void IndexedDBInfoView::ClearIndexedDBDisplay() {
   std::wstring no_cookie_string =
       l10n_util::GetString(IDS_COOKIES_COOKIE_NONESELECTED);
-  name_value_field_->SetText(no_cookie_string);
   origin_value_field_->SetText(no_cookie_string);
   size_value_field_->SetText(no_cookie_string);
   last_modified_value_field_->SetText(no_cookie_string);
@@ -84,9 +77,6 @@ void IndexedDBInfoView::Init() {
       kIndexedDBInfoViewBorderSize, border_color);
   set_border(border);
 
-  views::Label* name_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NAME_LABEL));
-  name_value_field_ = new views::Textfield;
   views::Label* origin_label = new views::Label(
       l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
   origin_value_field_ = new views::Textfield;
@@ -115,10 +105,6 @@ void IndexedDBInfoView::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, three_column_layout_id);
-  layout->AddView(name_label);
-  layout->AddView(name_value_field_);
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(0, three_column_layout_id);
   layout->AddView(origin_label);
   layout->AddView(origin_value_field_);
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
@@ -133,9 +119,6 @@ void IndexedDBInfoView::Init() {
   // Color these borderless text areas the same as the containing dialog.
   SkColor text_area_background = color_utils::GetSysSkColor(COLOR_3DFACE);
   // Now that the Textfields are in the view hierarchy, we can initialize them.
-  name_value_field_->SetReadOnly(true);
-  name_value_field_->RemoveBorder();
-  name_value_field_->SetBackgroundColor(text_area_background);
   origin_value_field_->SetReadOnly(true);
   origin_value_field_->RemoveBorder();
   origin_value_field_->SetBackgroundColor(text_area_background);

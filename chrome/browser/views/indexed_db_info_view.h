@@ -45,7 +45,6 @@ class IndexedDBInfoView : public views::View {
   void Init();
 
   // Individual property labels
-  views::Textfield* name_value_field_;
   views::Textfield* origin_value_field_;
   views::Textfield* size_value_field_;
   views::Textfield* last_modified_value_field_;

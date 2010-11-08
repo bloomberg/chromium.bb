@@ -42,17 +42,16 @@ TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_AddIndexedDB) {
 
   const GURL origin1("http://host1:1/");
   const GURL origin2("http://host2:1/");
-  const string16 name(ASCIIToUTF16("name"));
   const string16 description(ASCIIToUTF16("description"));
   const FilePath::CharType file1[] =
-      FILE_PATH_LITERAL("http_host1_1@name.indexeddb");
+      FILE_PATH_LITERAL("http_host1_1.indexeddb");
   const FilePath::CharType file2[] =
-      FILE_PATH_LITERAL("http_host2_1@name.indexeddb");
+      FILE_PATH_LITERAL("http_host2_1.indexeddb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(&profile));
-  helper->AddIndexedDB(origin1, name, description);
-  helper->AddIndexedDB(origin2, name, description);
+  helper->AddIndexedDB(origin1, description);
+  helper->AddIndexedDB(origin2, description);
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -72,15 +71,14 @@ TEST(CannedBrowsingDataIndexedDBHelperTest, DISABLED_Unique) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
-  const string16 name(ASCIIToUTF16("name"));
   const string16 description(ASCIIToUTF16("description"));
   const FilePath::CharType file[] =
-      FILE_PATH_LITERAL("http_host1_1@name.indexeddb");
+      FILE_PATH_LITERAL("http_host1_1.indexeddb");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(&profile));
-  helper->AddIndexedDB(origin, name, description);
-  helper->AddIndexedDB(origin, name, description);
+  helper->AddIndexedDB(origin, description);
+  helper->AddIndexedDB(origin, description);
 
   TestCompletionCallback callback;
   helper->StartFetching(
@@ -98,14 +96,13 @@ TEST(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   TestingProfile profile;
 
   const GURL origin("http://host1:1/");
-  const string16 name(ASCIIToUTF16("name"));
   const string16 description(ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(&profile));
 
   ASSERT_TRUE(helper->empty());
-  helper->AddIndexedDB(origin, name, description);
+  helper->AddIndexedDB(origin, description);
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());

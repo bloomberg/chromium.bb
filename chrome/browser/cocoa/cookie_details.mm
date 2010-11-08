@@ -248,7 +248,6 @@
     lastModified_.reset([base::SysWideToNSString(
         base::TimeFormatFriendlyDateAndTime(
             indexedDBInfo->last_modified)) retain]);
-    name_.reset([base::SysUTF8ToNSString(indexedDBInfo->database_name) retain]);
   }
   return self;
 }

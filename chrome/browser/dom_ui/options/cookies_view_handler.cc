@@ -157,9 +157,6 @@ void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info =
           *node.GetDetailedInfo().indexed_db_info;
 
-      dict->SetString(kKeyName, indexed_db_info.database_name.empty() ?
-          l10n_util::GetStringUTF8(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
-          indexed_db_info.database_name);
       dict->SetString(kKeyOrigin, indexed_db_info.origin);
       dict->SetString(kKeySize,
           FormatBytes(indexed_db_info.size,
@@ -234,8 +231,6 @@ void CookiesViewHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
   localized_strings->SetString("label_local_storage_origin",
       l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
-  localized_strings->SetString("label_indexed_db_name",
-      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
   localized_strings->SetString("label_indexed_db_size",
       l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
   localized_strings->SetString("label_indexed_db_last_modified",

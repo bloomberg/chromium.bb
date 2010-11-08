@@ -35,7 +35,6 @@ class BrowsingDataIndexedDBHelper
         unsigned short port,
         const std::string& database_identifier,
         const std::string& origin,
-        const std::string& database_name,
         const FilePath& file_path,
         int64 size,
         base::Time last_modified)
@@ -44,7 +43,6 @@ class BrowsingDataIndexedDBHelper
           port(port),
           database_identifier(database_identifier),
           origin(origin),
-          database_name(database_name),
           file_path(file_path),
           size(size),
           last_modified(last_modified) {
@@ -59,7 +57,6 @@ class BrowsingDataIndexedDBHelper
     unsigned short port;
     std::string database_identifier;
     std::string origin;
-    std::string database_name;
     FilePath file_path;
     int64 size;
     base::Time last_modified;
@@ -97,7 +94,6 @@ class CannedBrowsingDataIndexedDBHelper
   // Add a indexed database to the set of canned indexed databases that is
   // returned by this helper.
   void AddIndexedDB(const GURL& origin,
-                    const string16& name,
                     const string16& description);
 
   // Clear the list of canned indexed databases.

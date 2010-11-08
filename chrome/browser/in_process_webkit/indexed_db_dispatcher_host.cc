@@ -275,8 +275,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   CallRenderViewHostContentSettingsDelegate(
       process_id_, params.routing_id_,
       &RenderViewHostDelegate::ContentSettings::OnIndexedDBAccessed,
-      host, params.name_, params.description_,
-      content_setting == CONTENT_SETTING_BLOCK);
+      host, params.description_, content_setting == CONTENT_SETTING_BLOCK);
 
   if (content_setting == CONTENT_SETTING_BLOCK) {
     // TODO(jorlow): Change this to the proper error code once we figure out

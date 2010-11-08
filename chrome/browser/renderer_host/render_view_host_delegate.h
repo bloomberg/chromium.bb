@@ -397,7 +397,6 @@ class RenderViewHostDelegate {
     // |blocked_by_policy| should be true, and this function should invoke
     // OnContentBlocked.
     virtual void OnIndexedDBAccessed(const GURL& url,
-                                     const string16& name,
                                      const string16& description,
                                      bool blocked_by_policy) = 0;
 

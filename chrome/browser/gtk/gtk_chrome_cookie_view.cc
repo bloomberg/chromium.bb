@@ -181,7 +181,6 @@ void SetAppCacheDetailsSensitivity(GtkChromeCookieView *self,
 
 void SetIndexedDBDetailsSensitivity(GtkChromeCookieView *self,
                                     gboolean enabled) {
-  gtk_widget_set_sensitive(self->indexed_db_name_entry_, enabled);
   gtk_widget_set_sensitive(self->indexed_db_origin_entry_, enabled);
   gtk_widget_set_sensitive(self->indexed_db_size_entry_, enabled);
   gtk_widget_set_sensitive(self->indexed_db_last_modified_entry_, enabled);
@@ -383,9 +382,6 @@ void BuildWidgets(GtkChromeCookieView *self, gboolean editable_expiration) {
                             gtk_util::kLabelSpacing);
 
   row = 0;
-  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
-                self->indexed_db_details_table_,
-                &self->indexed_db_name_entry_);
   InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL,
                 self->indexed_db_details_table_,
                 &self->indexed_db_origin_entry_);
@@ -602,11 +598,6 @@ void gtk_chrome_cookie_view_display_indexed_db(
     const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info) {
   UpdateVisibleDetailedInfo(self, self->indexed_db_details_table_);
 
-  gtk_entry_set_text(GTK_ENTRY(self->indexed_db_name_entry_),
-                     indexed_db_info.database_name.empty() ?
-                         l10n_util::GetStringUTF8(
-                             IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME).c_str() :
-                         indexed_db_info.database_name.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_origin_entry_),
                      indexed_db_info.origin.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_size_entry_),

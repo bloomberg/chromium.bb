@@ -90,8 +90,6 @@ class CookiesViewTest : public testing::Test {
               GTK_WIDGET_SENSITIVE(display->appcache_last_accessed_entry_));
     // IndexedDB
     EXPECT_EQ(expected_indexed_db,
-              GTK_WIDGET_SENSITIVE(display->indexed_db_name_entry_));
-    EXPECT_EQ(expected_indexed_db,
               GTK_WIDGET_SENSITIVE(display->indexed_db_origin_entry_));
     EXPECT_EQ(expected_indexed_db,
               GTK_WIDGET_SENSITIVE(display->indexed_db_size_entry_));

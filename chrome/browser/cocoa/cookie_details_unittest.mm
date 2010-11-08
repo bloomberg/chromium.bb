@@ -145,7 +145,6 @@ TEST_F(CookiesDetailsTest, CreateForTreeIndexedDB) {
   unsigned short port = 80;
   std::string database_identifier("id");
   std::string origin("moose.org");
-  std::string name("name");
   FilePath file_path(FILE_PATH_LITERAL("/"));
   int64 size = 1234;
   base::Time last_modified = base::Time::Now();
@@ -154,7 +153,6 @@ TEST_F(CookiesDetailsTest, CreateForTreeIndexedDB) {
                                                   port,
                                                   database_identifier,
                                                   origin,
-                                                  name,
                                                   file_path,
                                                   size,
                                                   last_modified);
