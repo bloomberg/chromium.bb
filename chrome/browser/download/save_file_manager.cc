@@ -259,7 +259,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
 // thread, which will use the save URL to find corresponding request record and
 // delete it.
 void SaveFileManager::SaveFinished(int save_id,
-                                   GURL save_url,
+                                   const GURL& save_url,
                                    int render_process_id,
                                    bool is_success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -338,7 +338,7 @@ void SaveFileManager::OnSaveFinished(int save_id,
     package->SaveFinished(save_id, bytes_so_far, is_success);
 }
 
-void SaveFileManager::OnErrorFinished(GURL save_url, int tab_id) {
+void SaveFileManager::OnErrorFinished(const GURL& save_url, int tab_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SavePackage* save_package = UnregisterStartingRequest(save_url, tab_id);
   if (save_package)

@@ -195,7 +195,7 @@ void RenderWidgetHelper::OnCancelResourceRequests(
 }
 
 void RenderWidgetHelper::OnCrossSiteClosePageACK(
-    ViewMsg_ClosePage_Params params) {
+    const ViewMsg_ClosePage_Params& params) {
   resource_dispatcher_host_->OnClosePageACK(params);
 }
 

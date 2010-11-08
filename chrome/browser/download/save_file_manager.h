@@ -102,8 +102,10 @@ class SaveFileManager
   // Notifications sent from the IO thread and run on the file thread:
   void StartSave(SaveFileCreateInfo* info);
   void UpdateSaveProgress(int save_id, net::IOBuffer* data, int size);
-  void SaveFinished(int save_id, GURL save_url,
-                    int render_process_id, bool is_success);
+  void SaveFinished(int save_id,
+                    const GURL& save_url,
+                    int render_process_id,
+                    bool is_success);
 
   // Notifications sent from the UI thread and run on the file thread.
   // Cancel a SaveFile instance which has specified save id.
@@ -190,7 +192,7 @@ class SaveFileManager
   void OnSaveFinished(int save_id, int64 bytes_so_far, bool is_success);
   // For those requests that do not have valid save id, use
   // map:(url, SavePackage) to find the request and remove it.
-  void OnErrorFinished(GURL save_url, int tab_id);
+  void OnErrorFinished(const GURL& save_url, int tab_id);
   // Notifies SavePackage that the whole page saving job is finished.
   void OnFinishSavePageJob(int render_process_id,
                            int render_view_id,

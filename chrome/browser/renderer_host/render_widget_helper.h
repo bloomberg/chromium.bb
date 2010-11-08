@@ -189,7 +189,7 @@ class RenderWidgetHelper
   void OnCancelResourceRequests(int render_widget_id);
 
   // Called on the IO thread to resume a cross-site response.
-  void OnCrossSiteClosePageACK(ViewMsg_ClosePage_Params params);
+  void OnCrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);
 
 #if defined(OS_MACOSX)
   // Called on destruction to release all allocated transport DIBs

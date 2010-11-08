@@ -254,7 +254,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
 
   // Synchronize a 3D context state with the service.
   void Synchronize3DContext(NPDeviceContext3D* context,
-                            gpu::CommandBuffer::State state);
+                            const gpu::CommandBuffer::State& state);
 
   // Synchronize the 3D context state with the proxy and invoke the async
   // flush callback.

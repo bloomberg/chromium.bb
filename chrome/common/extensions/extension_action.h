@@ -151,7 +151,7 @@ class ExtensionAction {
   };
 
   template<class T>
-  void SetValue(std::map<int, T>* map, int tab_id, T val) {
+  void SetValue(std::map<int, T>* map, int tab_id, const T& val) {
     (*map)[tab_id] = val;
   }
 

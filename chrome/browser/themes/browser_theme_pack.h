@@ -144,7 +144,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
 
   // Generates button images tinted with |button_tint| and places them in
   // processed_bitmaps.
-  void GenerateTintedButtons(color_utils::HSL button_tint,
+  void GenerateTintedButtons(const color_utils::HSL& button_tint,
                              ImageCache* processed_bitmaps) const;
 
   // Generates the semi-transparent tab background images, putting the results

@@ -167,7 +167,8 @@ class DownloadManager
   // Methods called on completion of a query sent to the history system.
   void OnQueryDownloadEntriesComplete(
       std::vector<DownloadCreateInfo>* entries);
-  void OnCreateDownloadEntryComplete(DownloadCreateInfo info, int64 db_handle);
+  void OnCreateDownloadEntryComplete(
+      const DownloadCreateInfo& info, int64 db_handle);
 
   // Display a new download in the appropriate browser UI.
   void ShowDownloadInBrowser(const DownloadCreateInfo& info,

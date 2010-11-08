@@ -36,7 +36,7 @@ class ManifestFetchData {
  public:
   static const int kNeverPinged = -1;
 
-  explicit ManifestFetchData(GURL update_url);
+  explicit ManifestFetchData(const GURL& update_url);
   ~ManifestFetchData();
 
   // Returns true if this extension information was successfully added. If the

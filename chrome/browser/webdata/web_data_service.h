@@ -126,7 +126,7 @@ class WDTypedResult {
 template <class T> class WDResult : public WDTypedResult {
  public:
 
-  WDResult(WDResultType type, T v) : WDTypedResult(type), value_(v) {
+  WDResult(WDResultType type, const T& v) : WDTypedResult(type), value_(v) {
   }
 
   virtual ~WDResult() {
@@ -220,8 +220,9 @@ class WebDataService
     GenericRequest(WebDataService* service,
                    Handle handle,
                    WebDataServiceConsumer* consumer,
-                   T arg) : WebDataRequest(service, handle, consumer),
-                            arg_(arg) {
+                   const T& arg)
+        : WebDataRequest(service, handle, consumer),
+          arg_(arg) {
     }
 
     virtual ~GenericRequest() {
@@ -241,8 +242,8 @@ class WebDataService
     GenericRequest2(WebDataService* service,
                     Handle handle,
                     WebDataServiceConsumer* consumer,
-                    T arg1,
-                    U arg2)
+                    const T& arg1,
+                    const U& arg2)
         : WebDataRequest(service, handle, consumer),
           arg1_(arg1),
           arg2_(arg2) {

@@ -116,7 +116,7 @@ class TaskManagerTabContentsResourceProvider
 
 class TaskManagerChildProcessResource : public TaskManager::Resource {
  public:
-  explicit TaskManagerChildProcessResource(ChildProcessInfo child_proc);
+  explicit TaskManagerChildProcessResource(const ChildProcessInfo& child_proc);
   ~TaskManagerChildProcessResource();
 
   // TaskManagerResource methods:
@@ -183,10 +183,10 @@ class TaskManagerChildProcessResourceProvider
  private:
   virtual ~TaskManagerChildProcessResourceProvider();
 
-  void Add(ChildProcessInfo child_process_info);
-  void Remove(ChildProcessInfo child_process_info);
+  void Add(const ChildProcessInfo& child_process_info);
+  void Remove(const ChildProcessInfo& child_process_info);
 
-  void AddToTaskManager(ChildProcessInfo child_process_info);
+  void AddToTaskManager(const ChildProcessInfo& child_process_info);
 
   TaskManager* task_manager_;
 

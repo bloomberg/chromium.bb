@@ -940,7 +940,7 @@ void BrowserThemePack::GenerateFrameImages(ImageCache* bitmaps) const {
 }
 
 void BrowserThemePack::GenerateTintedButtons(
-    color_utils::HSL button_tint,
+    const color_utils::HSL& button_tint,
     ImageCache* processed_bitmaps) const {
   if (button_tint.h != -1 || button_tint.s != -1 || button_tint.l != -1) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();

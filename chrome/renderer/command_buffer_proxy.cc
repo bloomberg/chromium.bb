@@ -249,7 +249,7 @@ void CommandBufferProxy::AsyncFlush(int32 put_offset, Task* completion_task) {
     pending_async_flush_tasks_.push(linked_ptr<Task>(completion_task));
 }
 
-void CommandBufferProxy::OnUpdateState(gpu::CommandBuffer::State state) {
+void CommandBufferProxy::OnUpdateState(const gpu::CommandBuffer::State& state) {
   last_state_ = state;
 
   linked_ptr<Task> task = pending_async_flush_tasks_.front();
