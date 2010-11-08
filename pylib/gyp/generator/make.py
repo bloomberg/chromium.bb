@@ -556,8 +556,6 @@ class MakefileWriter:
       spec, configs: gyp info
       part_of_all: flag indicating this target is part of 'all'
     """
-    print 'Generating %s' % output_filename
-
     ensure_directory_exists(output_filename)
 
     self.fp = open(output_filename, 'w')
@@ -653,8 +651,6 @@ class MakefileWriter:
       targets: list of "all" targets for this sub-project
       build_dir: build output directory, relative to the sub-project
     """
-    print 'Generating %s' % output_filename
-
     ensure_directory_exists(output_filename)
     self.fp = open(output_filename, 'w')
     self.fp.write(header)
@@ -1223,6 +1219,29 @@ class MakefileWriter:
     return '$(builddir)/' + self.alias
 
 
+def WriteAutoRegenerationRule(params, root_makefile, makefile_name,
+                              build_files):
+  """Write the target to regenerate the Makefile."""
+  options = params['options']
+  build_files_args = [gyp.common.RelativePath(filename, options.toplevel_dir)
+                      for filename in params['build_files_arg']]
+  gyp_binary = gyp.common.FixIfRelativePath(params['gyp_binary'],
+                                            options.toplevel_dir)
+  if not gyp_binary.startswith(os.sep):
+    gyp_binary = os.path.join('.', gyp_binary)
+  root_makefile.write(
+      "quiet_cmd_regen_makefile = ACTION Regenerating $@\n"
+      "cmd_regen_makefile = %(cmd)s\n"
+      "%(makefile_name)s: %(deps)s\n"
+      "\t$(call do_cmd,regen_makefile)\n\n" % {
+          'makefile_name': makefile_name,
+          'deps': ' '.join(map(Sourceify, build_files)),
+          'cmd': gyp.common.EncodePOSIXShellList(
+                     [gyp_binary, '-fmake'] +
+                     gyp.RegenerateFlags(options) +
+                     build_files_args)})
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -1358,21 +1377,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     root_makefile.write("endif\n")
   root_makefile.write('\n')
 
-  # Write the target to regenerate the Makefile.
   if generator_flags.get('auto_regeneration', True):
-    build_files_args = [gyp.common.RelativePath(filename, options.toplevel_dir)
-                        for filename in params['build_files_arg']]
-    gyp_binary = gyp.common.FixIfRelativePath(params['gyp_binary'],
-                                              options.toplevel_dir)
-    if not gyp_binary.startswith(os.sep):
-      gyp_binary = os.path.join('.', gyp_binary)
-    root_makefile.write("%s: %s\n\t%s\n" % (
-        makefile_name,
-        ' '.join(map(Sourceify, build_files)),
-        gyp.common.EncodePOSIXShellList(
-            [gyp_binary, '-fmake'] +
-            gyp.RegenerateFlags(options) +
-            build_files_args)))
+    WriteAutoRegenerationRule(params, root_makefile, makefile_name, build_files)
 
   # Write the rule to load dependencies.  We batch 1000 files at a time to
   # avoid overflowing the command line.
