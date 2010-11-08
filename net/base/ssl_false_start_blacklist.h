@@ -81,7 +81,7 @@ class SSLFalseStartBlacklist {
 
   // kHashTable contains an offset into |kHashData| for each bucket. The
   // additional element at the end contains the length of |kHashData|.
-  static const uint16 kHashTable[kBuckets + 1];
+  static const uint32 kHashTable[kBuckets + 1];
   // kHashData contains the contents of the hash table. |kHashTable| indexes
   // into this array. Each bucket consists of zero or more, 8-bit length
   // prefixed strings. Each string is a DNS name in dotted form. For a given

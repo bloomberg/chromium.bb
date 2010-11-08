@@ -19,6 +19,8 @@ using net::SSLFalseStartBlacklist;
 
 static const unsigned kBuckets = SSLFalseStartBlacklist::kBuckets;
 
+static bool verbose = false;
+
 static int
 usage(const char* argv0) {
   fprintf(stderr, "Usage: %s <blacklist file> <output .c file>\n", argv0);
@@ -48,7 +50,8 @@ static void RemoveDuplicateEntries(std::vector<std::string>* hosts) {
   for (std::vector<std::string>::const_iterator
        i = hosts->begin(); i != hosts->end(); i++) {
     if (hosts_set.count(*i)) {
-      fprintf(stderr, "Removing duplicate entry for %s\n", i->c_str());
+      if (verbose)
+        fprintf(stderr, "Removing duplicate entry for %s\n", i->c_str());
       continue;
     }
     hosts_set.insert(*i);
@@ -93,7 +96,8 @@ static void RemoveRedundantEntries(std::vector<std::string>* hosts) {
     if (parent.empty()) {
       ret.push_back(*i);
     } else {
-      fprintf(stderr, "Removing %s as redundant\n", i->c_str());
+      if (verbose)
+        fprintf(stderr, "Removing %s as redundant\n", i->c_str());
     }
   }
 
@@ -185,7 +189,7 @@ int main(int argc, char** argv) {
   }
 
   fprintf(stderr, "Using %d entry hash table\n", kBuckets);
-  uint16 table[kBuckets];
+  uint32 table[kBuckets];
   std::vector<std::string> buckets[kBuckets];
 
   for (std::vector<std::string>::const_iterator
@@ -199,11 +203,6 @@ int main(int argc, char** argv) {
   std::string table_data;
   unsigned max_bucket_size = 0;
   for (unsigned i = 0; i < kBuckets; i++) {
-    if (table_data.size() > 65535) {
-      fprintf(stderr, "Hash table overflowed a uint16_t index\n");
-      return 3;
-    }
-
     if (buckets[i].size() > max_bucket_size)
       max_bucket_size = buckets[i].size();
 
@@ -231,12 +230,12 @@ int main(int argc, char** argv) {
   fprintf(out, "#include \"base/basictypes.h\"\n\n");
   fprintf(out, "#include \"net/base/ssl_false_start_blacklist.h\"\n\n");
   fprintf(out, "namespace net {\n\n");
-  fprintf(out, "const uint16 SSLFalseStartBlacklist::kHashTable[%d + 1] = {\n",
+  fprintf(out, "const uint32 SSLFalseStartBlacklist::kHashTable[%d + 1] = {\n",
           kBuckets);
   for (unsigned i = 0; i < kBuckets; i++) {
-    fprintf(out, "  %d,\n", (int) table[i]);
+    fprintf(out, "  %u,\n", (unsigned) table[i]);
   }
-  fprintf(out, "  %d,\n", (int) table_data.size());
+  fprintf(out, "  %u,\n", (unsigned) table_data.size());
   fprintf(out, "};\n\n");
 
   fprintf(out, "const char SSLFalseStartBlacklist::kHashData[] = \n");
