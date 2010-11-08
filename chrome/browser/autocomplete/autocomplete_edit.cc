@@ -323,13 +323,17 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (!match.destination_url.is_valid())
     return;
 
-  if (match.destination_url ==
-      URLFixerUpper::FixupURL(WideToUTF8(permanent_text_), std::string())) {
+  if ((match.transition == TYPED) && (match.destination_url ==
+      URLFixerUpper::FixupURL(WideToUTF8(permanent_text_), std::string()))) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
     // up leaving the URL unchanged (e.g. deleting the last character and then
-    // retyping it) as reloads too.
+    // retyping it) as reloads too.  We exclude non-TYPED transitions because if
+    // the transition is GENERATED, the user input something that looked
+    // different from the current URL, even if it wound up at the same place
+    // (e.g. manually retyping the same search query), and it seems wrong to
+    // treat this as a reload.
     match.transition = PageTransition::RELOAD;
   } else if (for_drop || ((paste_state_ != NONE) &&
                           match.is_history_what_you_typed_match)) {
