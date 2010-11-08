@@ -570,6 +570,7 @@ WifiNetwork::WifiNetwork(const WifiNetwork& network)
     : WirelessNetwork(network) {
   encryption_ = network.encryption();
   passphrase_ = network.passphrase();
+  passphrase_required_ = network.passphrase_required();
   identity_ = network.identity();
   cert_path_ = network.cert_path();
 }
@@ -578,6 +579,13 @@ WifiNetwork::WifiNetwork(const ServiceInfo* service)
     : WirelessNetwork(service) {
   encryption_ = service->security;
   passphrase_ = SafeString(service->passphrase);
+  // TODO(stevenjb): Remove this once flimflam is setting passphrase_required
+  // correctly: http://crosbug.com/8830.
+  if (service->state == chromeos::STATE_FAILURE &&
+      service->security != chromeos::SECURITY_NONE)
+    passphrase_required_ = true;
+  else
+    passphrase_required_ = service->passphrase_required;
   identity_ = SafeString(service->identity);
   cert_path_ = SafeString(service->cert_path);
   type_ = TYPE_WIFI;
@@ -833,13 +841,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return true;
   }
 
-  virtual void ConnectToWifiNetwork(const WifiNetwork* network,
+  virtual bool ConnectToWifiNetwork(const WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) {
     DCHECK(network);
     if (!EnsureCrosLoaded())
-      return;
+      return true;  // No library loaded, don't trigger a retry attempt.
     // TODO(ers) make wifi the highest priority service type
     if (ConnectToNetworkWithCertInfo(network->service_path().c_str(),
         password.empty() ? NULL : password.c_str(),
@@ -856,18 +864,20 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         wifi_ = wifi;
       }
       NotifyNetworkManagerChanged();
+      return true;
+    } else {
+      return false;  // Immediate failure.
     }
   }
 
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+  virtual bool ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,
                                     bool auto_connect) {
     if (!EnsureCrosLoaded())
-      return;
-
+      return true;  // No library loaded, don't trigger a retry attempt.
     // First create a service from hidden network.
     ServiceInfo* service = GetWifiService(ssid.c_str(), security);
     if (service) {
@@ -875,23 +885,26 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       SetAutoConnect(service->service_path, auto_connect);
       // Now connect to that service.
       // TODO(ers) make wifi the highest priority service type
-      ConnectToNetworkWithCertInfo(service->service_path,
+      bool res = ConnectToNetworkWithCertInfo(
+          service->service_path,
           password.empty() ? NULL : password.c_str(),
           identity.empty() ? NULL : identity.c_str(),
           certpath.empty() ? NULL : certpath.c_str());
 
       // Clean up ServiceInfo object.
       FreeServiceInfo(service);
+      return res;
     } else {
       LOG(WARNING) << "Cannot find hidden network: " << ssid;
       // TODO(chocobo): Show error message.
+      return false;  // Immediate failure.
     }
   }
 
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {
+  virtual bool ConnectToCellularNetwork(const CellularNetwork* network) {
     DCHECK(network);
     if (!EnsureCrosLoaded())
-      return;
+      return true;  // No library loaded, don't trigger a retry attempt.
     // TODO(ers) make cellular the highest priority service type
     if (network && ConnectToNetwork(network->service_path().c_str(), NULL)) {
       // Update local cache and notify listeners.
@@ -902,6 +915,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         cellular_ = cellular;
       }
       NotifyNetworkManagerChanged();
+      return true;
+    } else {
+      return false;  // Immediate failure.
     }
   }
 
@@ -1622,17 +1638,23 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     return false;
   }
 
-  virtual void ConnectToWifiNetwork(const WifiNetwork* network,
+  virtual bool ConnectToWifiNetwork(const WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
-                                    const std::string& certpath) {}
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+                                    const std::string& certpath) {
+    return true;
+  }
+  virtual bool ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath,
-                                    bool auto_connect) {}
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) {}
+                                    bool auto_connect) {
+    return true;
+  }
+  virtual bool ConnectToCellularNetwork(const CellularNetwork* network) {
+    return true;
+  }
   virtual void RefreshCellularDataPlans(const CellularNetwork* network) {}
   virtual void DisconnectFromWirelessNetwork(const WirelessNetwork* network) {}
   virtual void SaveCellularNetwork(const CellularNetwork* network) {}

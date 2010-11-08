@@ -191,6 +191,7 @@ bool WifiConfigView::Login() {
   if (identity_textfield_ != NULL) {
     identity_string = UTF16ToUTF8(identity_textfield_->text());
   }
+  bool connected = false;
   if (other_network_) {
     ConnectionSecurity sec = SECURITY_UNKNOWN;
     int index = security_combobox_->selected_item();
@@ -202,17 +203,17 @@ bool WifiConfigView::Login() {
       sec = SECURITY_WPA;
     else if (index == INDEX_RSN)
       sec = SECURITY_RSN;
-    CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
+    connected =  CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
         sec, GetSSID(), GetPassphrase(),
         identity_string, certificate_path_,
         autoconnect_checkbox_ ? autoconnect_checkbox_->checked() : true);
   } else {
     Save();
-    CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
+    connected = CrosLibrary::Get()->GetNetworkLibrary()->ConnectToWifiNetwork(
         wifi_.get(), GetPassphrase(),
         identity_string, certificate_path_);
   }
-  return true;
+  return connected;
 }
 
 bool WifiConfigView::Save() {

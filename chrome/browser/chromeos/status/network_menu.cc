@@ -210,39 +210,82 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
       // Connect or reconnect.
       if (remember >= 0)
         wifi->set_favorite(remember ? true : false);
+      if (cros->wifi_network() &&
+          wifi->service_path() == cros->wifi_network()->service_path()) {
+        // Show the config settings for the active network.
+        ShowWifi(wifi, false);
+        return true;
+      }
+      bool connected = false;
       if (wifi->encrypted()) {
         if (wifi->IsCertificateLoaded()) {
-          cros->ConnectToWifiNetwork(wifi, std::string(), std::string(),
-                                     wifi->cert_path());
+          connected = cros->ConnectToWifiNetwork(
+              wifi, std::string(), std::string(), wifi->cert_path());
         } else if (wifi->encryption() == SECURITY_8021X) {
-          // Show the wifi settings/dialog to load/select a certificate.
+          // Always show the wifi settings/dialog to load/select a certificate.
           ShowWifi(wifi, true);
+          return true;
         } else {
-          if (MenuUI::IsEnabled()) {
-            cros->ConnectToWifiNetwork(wifi, passphrase, std::string(),
-                                       std::string());
-          } else {
-            ShowWifi(wifi, true);
+          if (MenuUI::IsEnabled() || !wifi->passphrase_required()) {
+            connected = cros->ConnectToWifiNetwork(
+                wifi, passphrase, std::string(), std::string());
           }
         }
       } else {
-        cros->ConnectToWifiNetwork(wifi, std::string(), std::string(),
-                                   std::string());
+        connected = cros->ConnectToWifiNetwork(
+            wifi, std::string(), std::string(), std::string());
       }
+      if (!connected) {
+        if (!MenuUI::IsEnabled()) {
+          // Show the wifi dialog on a failed attempt for non DOM UI menus.
+          ShowWifi(wifi, true);
+          return true;
+        } else {
+          // If the connection attempt failed immediately (e.g. short password)
+          // keep the menu open so that a retry can be attempted.
+          return false;
+        }
+      }
+    } else {
+      // If we are attempting to connect to a network that no longer exists,
+      // display a notification.
+      // TODO(stevenjb): Show notification.
     }
   } else if (flags & FLAG_CELLULAR) {
     CellularNetwork* cellular = cros->FindCellularNetworkByPath(
         menu_items_[index].wireless_path);
     if (cellular) {
-      // TODO(zelidrag): Start activation process if needed.
-      // Connect or reconnect.
-      cros->ConnectToCellularNetwork(cellular);
+      if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED) {
+        ActivateCellular(cellular);
+        return true;
+      } else if (cros->cellular_network() &&
+                 (cellular->service_path() ==
+                  cros->cellular_network()->service_path())) {
+        // Show the config settings for the cellular network.
+        ShowCellular(cellular, false);
+        return true;
+      } else {
+        bool connected = cros->ConnectToCellularNetwork(cellular);
+        if (!connected) {
+          ShowCellular(cellular, true);
+        }
+      }
+    } else {
+      // If we are attempting to connect to a network that no longer exists,
+      // display a notification.
+      // TODO(stevenjb): Show notification.
     }
   } else if (flags & FLAG_OTHER_NETWORK) {
-    bool favorite = remember == 0 ? false : true;  // default is true
-    cros->ConnectToWifiNetwork(
-        passphrase.empty() ? SECURITY_NONE : SECURITY_UNKNOWN,
-        ssid, passphrase, std::string(), std::string(), favorite);
+    bool connected = false;
+    if (MenuUI::IsEnabled()) {
+      bool favorite = remember == 0 ? false : true;  // default is true
+      connected = cros->ConnectToWifiNetwork(
+          passphrase.empty() ? SECURITY_NONE : SECURITY_UNKNOWN,
+          ssid, passphrase, std::string(), std::string(), favorite);
+    }
+    if (!connected) {
+      ShowOther();
+    }
   }
   return true;
 }
@@ -302,43 +345,16 @@ void NetworkMenu::ActivatedAt(int index) {
     cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
-  } else if (flags & FLAG_OTHER_NETWORK) {
-    ShowOther();
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
       ShowEthernet(cros->ethernet_network());
     }
   } else if (flags & FLAG_WIFI) {
-    WifiNetwork* wifi = cros->FindWifiNetworkByPath(
-        menu_items_[index].wireless_path);
-    if (!wifi) {
-      // If we are attempting to connect to a network that no longer exists,
-      // display a notification.
-      // TODO(stevenjb): Show notification.
-    } else if (cros->wifi_network() &&
-               wifi->service_path() == cros->wifi_network()->service_path()) {
-      // Show the config settings for the active network.
-      ShowWifi(wifi, false);
-    } else {
-      ConnectToNetworkAt(index, std::string(), std::string(), -1);
-    }
+    ConnectToNetworkAt(index, std::string(), std::string(), -1);
+  } else if (flags & FLAG_OTHER_NETWORK) {
+    ConnectToNetworkAt(index, std::string(), std::string(), -1);
   } else if (flags & FLAG_CELLULAR) {
-    CellularNetwork* cellular = cros->FindCellularNetworkByPath(
-        menu_items_[index].wireless_path);
-    if (!cellular) {
-      // If we are attempting to connect to a network that no longer exists,
-      // display a notification.
-      // TODO(stevenjb): Show notification.
-    } else if (cellular->activation_state() != ACTIVATION_STATE_ACTIVATED) {
-      ActivateCellular(cellular);
-    } else if (cros->cellular_network() &&
-               (cellular->service_path() ==
-                cros->cellular_network()->service_path())) {
-      // Show the config settings for the cellular network.
-      ShowCellular(cellular, false);
-    } else {
-      ConnectToNetworkAt(index, std::string(), std::string(), -1);
-    }
+    ConnectToNetworkAt(index, std::string(), std::string(), -1);
   }
 }
 

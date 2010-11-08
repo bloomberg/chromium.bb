@@ -304,6 +304,7 @@ class WifiNetwork : public WirelessNetwork {
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }
   const std::string& passphrase() const { return passphrase_; }
+  bool passphrase_required() const { return passphrase_required_; }
   const std::string& identity() const { return identity_; }
   const std::string& cert_path() const { return cert_path_; }
 
@@ -333,6 +334,7 @@ class WifiNetwork : public WirelessNetwork {
  protected:
   ConnectionSecurity encryption_;
   std::string passphrase_;
+  bool passphrase_required_;
   std::string identity_;
   std::string cert_path_;
 };
@@ -497,13 +499,15 @@ class NetworkLibrary {
   virtual void UpdateSystemInfo() = 0;
 
   // Connect to the specified wireless network with password.
-  virtual void ConnectToWifiNetwork(const WifiNetwork* network,
+  // Returns false if the attempt fails immediately (e.g. passphrase too short).
+  virtual bool ConnectToWifiNetwork(const WifiNetwork* network,
                                     const std::string& password,
                                     const std::string& identity,
                                     const std::string& certpath) = 0;
 
   // Connect to the specified network with security, ssid, and password.
-  virtual void ConnectToWifiNetwork(ConnectionSecurity security,
+  // Returns false if the attempt fails immediately (e.g. passphrase too short).
+  virtual bool ConnectToWifiNetwork(ConnectionSecurity security,
                                     const std::string& ssid,
                                     const std::string& password,
                                     const std::string& identity,
@@ -511,7 +515,8 @@ class NetworkLibrary {
                                     bool auto_connect) = 0;
 
   // Connect to the specified cellular network.
-  virtual void ConnectToCellularNetwork(const CellularNetwork* network) = 0;
+  // Returns false if the attempt fails immediately.
+  virtual bool ConnectToCellularNetwork(const CellularNetwork* network) = 0;
 
   // Initiates cellular data plan refresh. Plan data will be passed through
   // Network::Observer::CellularDataPlanChanged callback.
