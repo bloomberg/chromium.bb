@@ -15,7 +15,10 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
+#include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
 #include "webkit/glue/plugins/npapi_extension_thunk.h"
@@ -25,8 +28,6 @@
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugininfo.h"
-#include "third_party/npapi/bindings/npapi_extensions.h"
-#include "third_party/npapi/bindings/npruntime.h"
 
 using WebKit::WebBindings;
 
@@ -307,9 +308,8 @@ uint32_t NPN_MemFlush(uint32_t size) {
 
 // This is for dynamic discovery of new plugins.
 // Should force a re-scan of the plugins directory to load new ones.
-void NPN_ReloadPlugins(NPBool reloadPages) {
-  // TODO: implement me
-  DVLOG(1) << "NPN_ReloadPlugin is not implemented yet.";
+void NPN_ReloadPlugins(NPBool reload_pages) {
+  WebKit::resetPluginCache(reload_pages);
 }
 
 // Requests a range of bytes for a seekable stream.
