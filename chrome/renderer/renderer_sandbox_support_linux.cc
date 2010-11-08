@@ -92,6 +92,10 @@ int MakeSharedMemorySegmentViaIPC(size_t length) {
   return result_fd;
 }
 
+int MakeSharedMemorySegmentViaIPCExecutable(size_t length, bool executable) {
+  return MakeSharedMemorySegmentViaIPC(length);
+}
+
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {
   Pickle request;

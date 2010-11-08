@@ -7,6 +7,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/nacl_messages.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
+
+#if defined(OS_LINUX)
+#include "chrome/renderer/renderer_sandbox_support_linux.h"
+#endif
 
 // This is ugly.  We need an interface header file for the exported
 // sel_ldr interfaces.
@@ -40,6 +45,10 @@ void NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
+#if defined(OS_LINUX)
+  nacl::SetCreateMemoryObjectFunc(
+      renderer_sandbox_support::MakeSharedMemorySegmentViaIPCExecutable);
+#endif
   scoped_array<NaClHandle> array(new NaClHandle[handles.size()]);
   for (size_t i = 0; i < handles.size(); i++) {
     array[i] = nacl::ToNativeHandle(handles[i]);

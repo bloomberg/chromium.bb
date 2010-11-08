@@ -29,7 +29,13 @@ void getRenderStyleForStrike(const char* family, int sizeAndStyle,
                              WebKit::WebFontRenderStyle* out);
 
 // Returns a file descriptor for a shared memory segment.
+// TODO(mseaborn): Remove this when the call site is gone from native_client.
 int MakeSharedMemorySegmentViaIPC(size_t length);
+
+// Returns a file descriptor for a shared memory segment.
+// The second argument is ignored because SHM segments are always
+// mappable with PROT_EXEC on Linux.
+int MakeSharedMemorySegmentViaIPCExecutable(size_t length, bool executable);
 
 // Return a read-only file descriptor to the font which best matches the given
 // properties or -1 on failure.

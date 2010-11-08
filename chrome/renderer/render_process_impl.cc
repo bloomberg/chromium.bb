@@ -32,6 +32,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -42,6 +43,10 @@
 #include "base/mac_util.h"
 #elif defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
 namespace {
@@ -168,6 +173,10 @@ RenderProcessImpl::RenderProcessImpl()
     funcs["launch_nacl_process_multi_fd"] =
         reinterpret_cast<uintptr_t>(LaunchNaClProcessMultiFD);
     RegisterInternalNaClPlugin(funcs);
+#if defined(OS_LINUX)
+    nacl::SetCreateMemoryObjectFunc(
+        renderer_sandbox_support::MakeSharedMemorySegmentViaIPCExecutable);
+#endif
   }
 #endif
 
