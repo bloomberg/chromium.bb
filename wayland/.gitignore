@@ -1,0 +1,4 @@
+scanner
+wayland-client-protocol.h
+wayland-protocol.c
+wayland-server-protocol.h
