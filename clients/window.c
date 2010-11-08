@@ -184,6 +184,17 @@ drm_surface_data_destroy(void *p)
 	wl_buffer_destroy(data->data.buffer);
 }
 
+EGLImageKHR
+display_get_image_for_drm_surface(struct display *display,
+				  cairo_surface_t *surface)
+{
+	struct drm_surface_data *data;
+
+	data = cairo_surface_get_user_data (surface, &surface_data_key);
+
+	return data->image;
+}
+
 cairo_surface_t *
 display_create_drm_surface(struct display *display,
 			   struct rectangle *rectangle)
@@ -272,8 +283,8 @@ display_create_drm_surface_from_file(struct display *display,
 		while (p < end) {
 			unsigned int t;
 
-#define MULT(d,c,a,t) \
-	do { t = c * a + 0x7f; d = ((t >> 8) + t) >> 8; } while (0)
+#define MULT(_d,c,a,t) \
+	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
 
 			MULT(p[0], p[0], p[3], t);
 			MULT(p[1], p[1], p[3], t);
@@ -424,9 +435,6 @@ display_create_shm_surface_from_file(struct display *display,
 			unsigned int t;
 			unsigned char a, r, g, b;
 
-#define MULT(_d,c,a,t) \
-	do { t = c * a + 0x7f; _d = ((t >> 8) + t) >> 8; } while (0)
-
 			a = p[3];
 			MULT(r, p[0], a, t);
 			MULT(g, p[1], a, t);
@@ -569,10 +577,12 @@ window_flush(struct window *window)
 void
 window_set_surface(struct window *window, cairo_surface_t *surface)
 {
+	cairo_surface_reference(surface);
+
 	if (window->cairo_surface != NULL)
 		cairo_surface_destroy(window->cairo_surface);
 
-	window->cairo_surface = cairo_surface_reference(surface);
+	window->cairo_surface = surface;
 }
 
 void

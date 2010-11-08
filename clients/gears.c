@@ -43,9 +43,6 @@
 
 #include "window.h"
 
-static const char gem_device[] = "/dev/dri/card0";
-static const char socket_name[] = "\0wayland";
-
 struct gears {
 	struct window *window;
 
@@ -54,14 +51,14 @@ struct gears {
 
 	EGLDisplay display;
 	EGLContext context;
-	EGLImageKHR image;
 	int drm_fd;
-	int resized;
 	GLfloat angle;
 	cairo_surface_t *cairo_surface;
 
 	GLint gear_list[3];
-	GLuint fbo, color_rbo, depth_rbo;
+	GLuint fbo, color_rbo[2], depth_rbo;
+	cairo_surface_t *surface[2];
+	int current;
 };
 
 struct gear_template {
@@ -206,10 +203,62 @@ make_gear(const struct gear_template *t)
 }
 
 static void
+allocate_buffer(struct gears *gears)
+{
+	EGLImageKHR image;
+
+	/* Constrain child size to be square and at least 300x300 */
+	window_get_child_rectangle(gears->window, &gears->rectangle);
+	if (gears->rectangle.width > gears->rectangle.height)
+		gears->rectangle.height = gears->rectangle.width;
+	else
+		gears->rectangle.width = gears->rectangle.height;
+	if (gears->rectangle.width < 300) {
+		gears->rectangle.width = 300;
+		gears->rectangle.height = 300;
+	}
+
+	window_set_child_size(gears->window, &gears->rectangle);
+	window_draw(gears->window);
+
+	gears->surface[gears->current] = window_get_surface(gears->window);
+
+	image = display_get_image_for_drm_surface(gears->display,
+						  gears->surface[gears->current]);
+
+	if (!eglMakeCurrent(gears->display, NULL, NULL, gears->context))
+		die("faile to make context current\n");
+
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT,
+			   gears->color_rbo[gears->current]);
+	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, image);
+
+	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
+			      GL_DEPTH_COMPONENT,
+			      gears->rectangle.width + 20 + 32,
+			      gears->rectangle.height + 60 + 32);
+}
+
+static void
 draw_gears(struct gears *gears)
 {
 	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 
+	if (gears->surface[gears->current] == NULL)
+		allocate_buffer(gears);
+
+	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
+				  GL_COLOR_ATTACHMENT0_EXT,
+				  GL_RENDERBUFFER_EXT,
+				  gears->color_rbo[gears->current]);
+
+	glViewport(gears->rectangle.x, gears->rectangle.y,
+		   gears->rectangle.width, gears->rectangle.height);
+	glScissor(gears->rectangle.x, gears->rectangle.y,
+		   gears->rectangle.width, gears->rectangle.height);
+
+	glEnable(GL_SCISSOR_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
@@ -241,52 +290,9 @@ draw_gears(struct gears *gears)
 	glPopMatrix();
 
 	glFlush();
-}
 
-static void
-resize_window(struct gears *gears)
-{
-	EGLint attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SHARE_MESA |
-						EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
-
-	/* Constrain child size to be square and at least 300x300 */
-	window_get_child_rectangle(gears->window, &gears->rectangle);
-	if (gears->rectangle.width > gears->rectangle.height)
-		gears->rectangle.height = gears->rectangle.width;
-	else
-		gears->rectangle.width = gears->rectangle.height;
-	if (gears->rectangle.width < 300) {
-		gears->rectangle.width = 300;
-		gears->rectangle.height = 300;
-	}
-	window_set_child_size(gears->window, &gears->rectangle);
-
-	window_draw(gears->window);
-
-	if (gears->image)
-		eglDestroyImageKHR(gears->display, gears->image);
-	attribs[1] = gears->rectangle.width;
-	attribs[3] = gears->rectangle.height;
-	gears->image = eglCreateDRMImageMESA(gears->display, attribs);
-
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
-	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, gears->image);
-
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
-			      GL_DEPTH_COMPONENT,
-			      gears->rectangle.width,
-			      gears->rectangle.height);
-
-	glViewport(0, 0, gears->rectangle.width, gears->rectangle.height);
-
-	gears->resized = 0;
+	window_set_surface(gears->window, gears->surface[gears->current]);
+	window_flush(gears->window);
 }
 
 static void
@@ -294,17 +300,10 @@ resize_handler(struct window *window, void *data)
 {
 	struct gears *gears = data;
 
-	/* Right now, resizing the window from the per-frame callback
-	 * is fine, since the window drawing code is so slow that we
-	 * can't draw more than one window per frame anyway.  However,
-	 * once we implement faster resizing, this will show lag
-	 * between pointer motion and window size even if resizing is
-	 * fast.  We need to keep processing motion events and posting
-	 * new frames as fast as possible so when the server
-	 * composites the next frame it will have the most recent size
-	 * possible, like what we do for window moves. */
-
-	gears->resized = 1;
+	cairo_surface_destroy(gears->surface[0]);
+	gears->surface[0] = NULL;
+	cairo_surface_destroy(gears->surface[1]);
+	gears->surface[1] = NULL;
 }
 
 static void
@@ -313,7 +312,15 @@ keyboard_focus_handler(struct window *window,
 {
 	struct gears *gears = data;
 
-	gears->resized = 1;
+	resize_handler(window, gears);
+}
+
+static void
+redraw_handler(struct window *window, void *data)
+{
+	struct gears *gears = data;
+
+	draw_gears(gears);
 }
 
 static void
@@ -321,15 +328,11 @@ frame_callback(void *data, uint32_t time)
 {
 	struct gears *gears = data;
 
-	window_copy_image(gears->window, &gears->rectangle, gears->image);
-
-	if (gears->resized)
-		resize_window(gears);
-
-	draw_gears(gears);
+	gears->current = 1 - gears->current;
 
 	gears->angle = (GLfloat) (time % 8192) * 360 / 8192.0;
 
+	window_schedule_redraw(gears->window);
 	wl_display_frame_callback(display_get_display(gears->d),
 				  frame_callback, gears);
 }
@@ -352,9 +355,6 @@ gears_create(struct display *display)
 	if (gears->display == NULL)
 		die("failed to create egl display\n");
 
-	if (!eglInitialize(gears->display, &major, &minor))
-		die("failed to initialize display\n");
-
 	eglBindAPI(EGL_OPENGL_API);
 
 	gears->context = eglCreateContext(gears->display,
@@ -368,13 +368,7 @@ gears_create(struct display *display)
 	glGenFramebuffers(1, &gears->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER_EXT, gears->fbo);
 
-	glGenRenderbuffers(1, &gears->color_rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->color_rbo);
-	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
-				  GL_COLOR_ATTACHMENT0_EXT,
-				  GL_RENDERBUFFER_EXT,
-				  gears->color_rbo);
-
+	glGenRenderbuffers(2, gears->color_rbo);
 	glGenRenderbuffers(1, &gears->depth_rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
 	glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT,
@@ -402,16 +396,12 @@ gears_create(struct display *display)
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0, 0, 0, 0.92);
 
-	if (glCheckFramebufferStatus (GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE)
-		fprintf(stderr, "framebuffer incomplete\n");
-
-	resize_window(gears);
-	draw_gears(gears);
-
 	window_set_user_data(gears->window, gears);
 	window_set_resize_handler(gears->window, resize_handler);
 	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler);
+	window_set_redraw_handler(gears->window, redraw_handler);
 
+	draw_gears(gears);
 	wl_display_frame_callback(display_get_display(gears->d),
 				  frame_callback, gears);
 

@@ -47,6 +47,10 @@ display_get_compositor(struct display *display);
 #ifdef EGL_NO_DISPLAY
 EGLDisplay
 display_get_egl_display(struct display *d);
+
+EGLImageKHR
+display_get_image_for_drm_surface(struct display *display,
+				  cairo_surface_t *surface);
 #endif
 
 cairo_surface_t *
