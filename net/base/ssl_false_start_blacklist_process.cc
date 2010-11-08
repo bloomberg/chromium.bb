@@ -238,23 +238,16 @@ int main(int argc, char** argv) {
   fprintf(out, "  %u,\n", (unsigned) table_data.size());
   fprintf(out, "};\n\n");
 
-  fprintf(out, "const char SSLFalseStartBlacklist::kHashData[] = \n");
+  fprintf(out, "const char SSLFalseStartBlacklist::kHashData[] = {\n");
   for (unsigned i = 0, line_length = 0; i < table_data.size(); i++) {
     if (line_length == 0)
-      fprintf(out, "  \"");
+      fprintf(out, "  ");
     uint8 c = static_cast<uint8>(table_data[i]);
-    if (c < 32 || c > 127 || c == '"') {
-      fprintf(out, "\\%c%c%c", '0' + ((c >> 6) & 7), '0' + ((c >> 3) & 7),
-              '0' + (c & 7));
-      line_length += 4;
-    } else {
-      fprintf(out, "%c", c);
-      line_length++;
-    }
+    line_length += fprintf(out, "%d, ", c);
     if (i == table_data.size() - 1) {
-      fprintf(out, "\";\n");
+      fprintf(out, "\n};\n");
     } else if (line_length >= 70) {
-      fprintf(out, "\"\n");
+      fprintf(out, "\n");
       line_length = 0;
     }
   }
