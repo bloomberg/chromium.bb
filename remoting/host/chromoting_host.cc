@@ -17,7 +17,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
-#include "remoting/protocol/chromotocol_config.h"
+#include "remoting/protocol/session_config.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
 
@@ -260,14 +260,13 @@ void ChromotingHost::OnNewClientSession(
     return;
   }
 
-  scoped_ptr<CandidateChromotocolConfig> local_config(
-      CandidateChromotocolConfig::CreateDefault());
+  scoped_ptr<protocol::CandidateSessionConfig>
+      local_config(protocol::CandidateSessionConfig::CreateDefault());
   local_config->SetInitialResolution(
-      ScreenResolution(capturer_->width(), capturer_->height()));
+      protocol::ScreenResolution(capturer_->width(), capturer_->height()));
   // TODO(sergeyu): Respect resolution requested by the client if supported.
-  ChromotocolConfig* config =
-      local_config->Select(session->candidate_config(),
-                           true /* force_host_resolution */);
+  protocol::SessionConfig* config = local_config->Select(
+      session->candidate_config(), true /* force_host_resolution */);
 
   if (!config) {
     LOG(WARNING) << "Rejecting connection from " << session->jid()
@@ -293,17 +292,17 @@ void ChromotingHost::OnServerClosed() {
 }
 
 // TODO(sergeyu): Move this to SessionManager?
-Encoder* ChromotingHost::CreateEncoder(const ChromotocolConfig* config) {
-  const ChannelConfig& video_config = config->video_config();
+Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig* config) {
+  const protocol::ChannelConfig& video_config = config->video_config();
 
-  if (video_config.codec == ChannelConfig::CODEC_VERBATIM) {
+  if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
     return new remoting::EncoderVerbatim();
-  } else if (video_config.codec == ChannelConfig::CODEC_ZIP) {
+  } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
     return new remoting::EncoderZlib();
   }
   // TODO(sergeyu): Enable VP8 on ARM builds.
 #if !defined(ARCH_CPU_ARM_FAMILY)
-  else if (video_config.codec == ChannelConfig::CODEC_VP8) {
+  else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
     return new remoting::EncoderVp8();
   }
 #endif

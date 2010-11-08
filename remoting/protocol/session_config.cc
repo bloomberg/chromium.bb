@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/chromotocol_config.h"
+#include "remoting/protocol/session_config.h"
 
 #include <algorithm>
 
 namespace remoting {
+namespace protocol {
 
 const int kDefaultStreamVersion = 1;
 
@@ -49,83 +50,83 @@ bool ScreenResolution::IsValid() const {
   return width > 0 && height > 0;
 }
 
-ChromotocolConfig::ChromotocolConfig() { }
+SessionConfig::SessionConfig() { }
 
-ChromotocolConfig::ChromotocolConfig(const ChromotocolConfig& config)
+SessionConfig::SessionConfig(const SessionConfig& config)
     : control_config_(config.control_config_),
       event_config_(config.event_config_),
       video_config_(config.video_config_),
       initial_resolution_(config.initial_resolution_) {
 }
 
-ChromotocolConfig::~ChromotocolConfig() { }
+SessionConfig::~SessionConfig() { }
 
-void ChromotocolConfig::SetControlConfig(const ChannelConfig& control_config) {
+void SessionConfig::SetControlConfig(const ChannelConfig& control_config) {
   control_config_ = control_config;
 }
-void ChromotocolConfig::SetEventConfig(const ChannelConfig& event_config) {
+void SessionConfig::SetEventConfig(const ChannelConfig& event_config) {
   event_config_ = event_config;
 }
-void ChromotocolConfig::SetVideoConfig(const ChannelConfig& video_config) {
+void SessionConfig::SetVideoConfig(const ChannelConfig& video_config) {
   video_config_ = video_config;
 }
-void ChromotocolConfig::SetInitialResolution(const ScreenResolution& resolution) {
+void SessionConfig::SetInitialResolution(const ScreenResolution& resolution) {
   initial_resolution_ = resolution;
 }
 
-ChromotocolConfig* ChromotocolConfig::Clone() const {
-  return new ChromotocolConfig(*this);
+SessionConfig* SessionConfig::Clone() const {
+  return new SessionConfig(*this);
 }
 
 // static
-ChromotocolConfig* ChromotocolConfig::CreateDefault() {
-  ChromotocolConfig* result = new ChromotocolConfig();
+SessionConfig* SessionConfig::CreateDefault() {
+  SessionConfig* result = new SessionConfig();
   result->SetControlConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                          kDefaultStreamVersion,
                                          ChannelConfig::CODEC_UNDEFINED));
   result->SetEventConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
-                                        kDefaultStreamVersion,
-                                        ChannelConfig::CODEC_UNDEFINED));
+                                       kDefaultStreamVersion,
+                                       ChannelConfig::CODEC_UNDEFINED));
   result->SetVideoConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                        kDefaultStreamVersion,
                                        ChannelConfig::CODEC_ZIP));
   return result;
 }
 
-CandidateChromotocolConfig::CandidateChromotocolConfig() { }
+CandidateSessionConfig::CandidateSessionConfig() { }
 
-CandidateChromotocolConfig::CandidateChromotocolConfig(
-    const CandidateChromotocolConfig& config)
+CandidateSessionConfig::CandidateSessionConfig(
+    const CandidateSessionConfig& config)
     : control_configs_(config.control_configs_),
       event_configs_(config.event_configs_),
       video_configs_(config.video_configs_),
       initial_resolution_(config.initial_resolution_) {
 }
 
-CandidateChromotocolConfig::~CandidateChromotocolConfig() { }
+CandidateSessionConfig::~CandidateSessionConfig() { }
 
-void CandidateChromotocolConfig::AddControlConfig(
+void CandidateSessionConfig::AddControlConfig(
     const ChannelConfig& control_config) {
   control_configs_.push_back(control_config);
 }
 
-void CandidateChromotocolConfig::AddEventConfig(
+void CandidateSessionConfig::AddEventConfig(
     const ChannelConfig& event_config) {
   event_configs_.push_back(event_config);
 }
 
-void CandidateChromotocolConfig::AddVideoConfig(
+void CandidateSessionConfig::AddVideoConfig(
     const ChannelConfig& video_config) {
   video_configs_.push_back(video_config);
 }
 
-void CandidateChromotocolConfig::SetInitialResolution(
+void CandidateSessionConfig::SetInitialResolution(
     const ScreenResolution& resolution) {
   initial_resolution_ = resolution;
 }
 
-ChromotocolConfig* CandidateChromotocolConfig::Select(
-    const CandidateChromotocolConfig* client_config,
+SessionConfig* CandidateSessionConfig::Select(
+    const CandidateSessionConfig* client_config,
     bool force_host_resolution) {
   ChannelConfig control_config;
   ChannelConfig event_config;
@@ -139,7 +140,7 @@ ChromotocolConfig* CandidateChromotocolConfig::Select(
     return NULL;
   }
 
-  ChromotocolConfig* result = ChromotocolConfig::CreateDefault();
+  SessionConfig* result = SessionConfig::CreateDefault();
   result->SetControlConfig(control_config);
   result->SetEventConfig(event_config);
   result->SetVideoConfig(video_config);
@@ -153,8 +154,8 @@ ChromotocolConfig* CandidateChromotocolConfig::Select(
   return result;
 }
 
-bool CandidateChromotocolConfig::IsSupported(
-    const ChromotocolConfig* config) const {
+bool CandidateSessionConfig::IsSupported(
+    const SessionConfig* config) const {
   return
       IsChannelConfigSupported(control_configs_, config->control_config()) &&
       IsChannelConfigSupported(event_configs_, config->event_config()) &&
@@ -162,14 +163,14 @@ bool CandidateChromotocolConfig::IsSupported(
       config->initial_resolution().IsValid();
 }
 
-ChromotocolConfig* CandidateChromotocolConfig::GetFinalConfig() const {
+SessionConfig* CandidateSessionConfig::GetFinalConfig() const {
   if (control_configs_.size() != 1 ||
       event_configs_.size() != 1 ||
       video_configs_.size() != 1) {
     return NULL;
   }
 
-  ChromotocolConfig* result = ChromotocolConfig::CreateDefault();
+  SessionConfig* result = SessionConfig::CreateDefault();
   result->SetControlConfig(control_configs_.front());
   result->SetEventConfig(event_configs_.front());
   result->SetVideoConfig(video_configs_.front());
@@ -178,7 +179,7 @@ ChromotocolConfig* CandidateChromotocolConfig::GetFinalConfig() const {
 }
 
 // static
-bool CandidateChromotocolConfig::SelectCommonChannelConfig(
+bool CandidateSessionConfig::SelectCommonChannelConfig(
     const std::vector<ChannelConfig>& host_configs,
     const std::vector<ChannelConfig>& client_configs,
     ChannelConfig* config) {
@@ -195,25 +196,25 @@ bool CandidateChromotocolConfig::SelectCommonChannelConfig(
 }
 
 // static
-bool CandidateChromotocolConfig::IsChannelConfigSupported(
+bool CandidateSessionConfig::IsChannelConfigSupported(
     const std::vector<ChannelConfig>& vector,
     const ChannelConfig& value) {
   return std::find(vector.begin(), vector.end(), value) != vector.end();
 }
 
-CandidateChromotocolConfig* CandidateChromotocolConfig::Clone() const {
-  return new CandidateChromotocolConfig(*this);
+CandidateSessionConfig* CandidateSessionConfig::Clone() const {
+  return new CandidateSessionConfig(*this);
 }
 
 // static
-CandidateChromotocolConfig* CandidateChromotocolConfig::CreateEmpty() {
-  return new CandidateChromotocolConfig();
+CandidateSessionConfig* CandidateSessionConfig::CreateEmpty() {
+  return new CandidateSessionConfig();
 }
 
 // static
-CandidateChromotocolConfig* CandidateChromotocolConfig::CreateFrom(
-    const ChromotocolConfig* config) {
-  CandidateChromotocolConfig* result = CreateEmpty();
+CandidateSessionConfig* CandidateSessionConfig::CreateFrom(
+    const SessionConfig* config) {
+  CandidateSessionConfig* result = CreateEmpty();
   result->AddControlConfig(config->control_config());
   result->AddEventConfig(config->event_config());
   result->AddVideoConfig(config->video_config());
@@ -222,8 +223,8 @@ CandidateChromotocolConfig* CandidateChromotocolConfig::CreateFrom(
 }
 
 // static
-CandidateChromotocolConfig* CandidateChromotocolConfig::CreateDefault() {
-  CandidateChromotocolConfig* result = CreateEmpty();
+CandidateSessionConfig* CandidateSessionConfig::CreateDefault() {
+  CandidateSessionConfig* result = CreateEmpty();
   result->AddControlConfig(ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                                          kDefaultStreamVersion,
                                          ChannelConfig::CODEC_UNDEFINED));
@@ -240,4 +241,5 @@ CandidateChromotocolConfig* CandidateChromotocolConfig::CreateDefault() {
   return result;
 }
 
+}  // namespace protocol
 }  // namespace remoting

@@ -35,7 +35,6 @@ class JingleSessionTest;
 DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::protocol::JingleSessionTest);
 
 namespace remoting {
-
 namespace protocol {
 
 namespace {
@@ -69,7 +68,7 @@ class JingleSessionTest : public testing::Test {
         NewCallback(&host_connection_callback_,
                     &MockSessionCallback::OnStateChange));
 
-    session->set_config(ChromotocolConfig::CreateDefault());
+    session->set_config(SessionConfig::CreateDefault());
   }
 
  protected:
@@ -167,7 +166,7 @@ class JingleSessionTest : public testing::Test {
 
     client_session_ = client_server_->Connect(
         SessionManagerPair::kHostJid,
-        CandidateChromotocolConfig::CreateDefault(),
+        CandidateSessionConfig::CreateDefault(),
         NewCallback(&client_connection_callback_,
                     &MockSessionCallback::OnStateChange));
 
@@ -538,7 +537,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
   client_session_ = client_server_->Connect(
       SessionManagerPair::kHostJid,
-      CandidateChromotocolConfig::CreateDefault(),
+      CandidateSessionConfig::CreateDefault(),
       NewCallback(&client_connection_callback_,
                   &MockSessionCallback::OnStateChange));
 
@@ -615,5 +614,4 @@ TEST_F(JingleSessionTest, TestVideoRtpChannel) {
 }
 
 }  // namespace protocol
-
 }  // namespace remoting

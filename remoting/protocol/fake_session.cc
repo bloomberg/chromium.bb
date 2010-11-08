@@ -9,7 +9,6 @@
 #include "net/base/net_errors.h"
 
 namespace remoting {
-
 namespace protocol {
 
 const char kTestJid[] = "host1@gmail.com/chromoting123";
@@ -72,8 +71,8 @@ bool FakeSocket::SetSendBufferSize(int32 size) {
 }
 
 FakeSession::FakeSession()
-    : candidate_config_(CandidateChromotocolConfig::CreateDefault()),
-      config_(ChromotocolConfig::CreateDefault()),
+    : candidate_config_(CandidateSessionConfig::CreateDefault()),
+      config_(SessionConfig::CreateDefault()),
       message_loop_(NULL),
       jid_(kTestJid) {
 }
@@ -113,17 +112,16 @@ MessageLoop* FakeSession::message_loop() {
   return message_loop_;
 }
 
-const CandidateChromotocolConfig*
-FakeSession::candidate_config() {
+const CandidateSessionConfig* FakeSession::candidate_config() {
   return candidate_config_.get();
 }
 
-const ChromotocolConfig* FakeSession::config() {
+const SessionConfig* FakeSession::config() {
   CHECK(config_.get());
   return config_.get();
 }
 
-void FakeSession::set_config(const ChromotocolConfig* config) {
+void FakeSession::set_config(const SessionConfig* config) {
   config_.reset(config);
 }
 
@@ -134,5 +132,4 @@ void FakeSession::Close(Task* closed_task) {
 }
 
 }  // namespace protocol
-
 }  // namespace remoting

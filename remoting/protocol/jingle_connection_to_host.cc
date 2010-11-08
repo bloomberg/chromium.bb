@@ -82,8 +82,8 @@ void JingleConnectionToHost::InitSession() {
       NewCallback(this, &JingleConnectionToHost::OnNewSession));
   session_manager_ = session_manager;
 
-  CandidateChromotocolConfig* candidate_config =
-      CandidateChromotocolConfig::CreateDefault();
+  CandidateSessionConfig* candidate_config =
+      CandidateSessionConfig::CreateDefault();
   // TODO(sergeyu): Set resolution in the |candidate_config| to the desired
   // resolution.
 

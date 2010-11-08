@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_CHROMOTOCOL_CONFIG_H_
-#define REMOTING_PROTOCOL_CHROMOTOCOL_CONFIG_H_
+#ifndef REMOTING_PROTOCOL_SESSION_CONFIG_H_
+#define REMOTING_PROTOCOL_SESSION_CONFIG_H_
 
 #include <string>
 #include <vector>
@@ -11,10 +11,13 @@
 #include "base/basictypes.h"
 
 namespace remoting {
+namespace protocol {
 
 extern const int kDefaultStreamVersion;
 
 // Struct for configuration parameters of a single channel.
+// Some channels (like video) may have multiple underlying sockets that need
+// to be configured simultaneously.
 struct ChannelConfig {
   enum TransportType {
     TRANSPORT_STREAM,
@@ -54,11 +57,11 @@ struct ScreenResolution {
   int height;
 };
 
-// ChromotocolConfig is used by ChromotingConnection to store negotiated
+// SessionConfig is used by the chromoting Session to store negotiated
 // chromotocol configuration.
-class ChromotocolConfig {
+class SessionConfig {
  public:
-  ~ChromotocolConfig();
+  ~SessionConfig();
 
   const ChannelConfig& control_config() const { return control_config_; }
   const ChannelConfig& event_config() const { return event_config_; }
@@ -72,14 +75,14 @@ class ChromotocolConfig {
   void SetVideoConfig(const ChannelConfig& video_config);
   void SetInitialResolution(const ScreenResolution& initial_resolution);
 
-  ChromotocolConfig* Clone() const;
+  SessionConfig* Clone() const;
 
-  static ChromotocolConfig* CreateDefault();
+  static SessionConfig* CreateDefault();
 
  private:
-  ChromotocolConfig();
-  explicit ChromotocolConfig(const ChromotocolConfig& config);
-  ChromotocolConfig& operator=(const ChromotocolConfig& b);
+  SessionConfig();
+  explicit SessionConfig(const SessionConfig& config);
+  SessionConfig& operator=(const SessionConfig& b);
 
   ChannelConfig control_config_;
   ChannelConfig event_config_;
@@ -88,11 +91,11 @@ class ChromotocolConfig {
 };
 
 // Defines session description that is sent from client to the host in the
-// session-initiate message. It is different from the regular ChromotocolConfig
+// session-initiate message. It is different from the regular Config
 // because it allows one to specify multiple configurations for each channel.
-class CandidateChromotocolConfig {
+class CandidateSessionConfig {
  public:
-  ~CandidateChromotocolConfig();
+  ~CandidateSessionConfig();
 
   const std::vector<ChannelConfig>& control_configs() const {
     return control_configs_;
@@ -119,29 +122,28 @@ class CandidateChromotocolConfig {
   // NULL is returned if such configuration doesn't exist. When selecting
   // channel configuration priority is given to the configs listed first
   // in |client_config|.
-  ChromotocolConfig* Select(const CandidateChromotocolConfig* client_config,
-                         bool force_host_resolution);
+  SessionConfig* Select(const CandidateSessionConfig* client_config,
+                        bool force_host_resolution);
 
   // Returns true if |config| is supported.
-  bool IsSupported(const ChromotocolConfig* config) const;
+  bool IsSupported(const SessionConfig* config) const;
 
   // Extracts final protocol configuration. Must be used for the description
   // received in the session-accept stanza. If the selection is ambiguous
   // (e.g. there is more than one configuration for one of the channel)
   // or undefined (e.g. no configurations for a channel) then NULL is returned.
-  ChromotocolConfig* GetFinalConfig() const;
+  SessionConfig* GetFinalConfig() const;
 
-  CandidateChromotocolConfig* Clone() const;
+  CandidateSessionConfig* Clone() const;
 
-  static CandidateChromotocolConfig* CreateEmpty();
-  static CandidateChromotocolConfig* CreateFrom(
-      const ChromotocolConfig* config);
-  static CandidateChromotocolConfig* CreateDefault();
+  static CandidateSessionConfig* CreateEmpty();
+  static CandidateSessionConfig* CreateFrom(const SessionConfig* config);
+  static CandidateSessionConfig* CreateDefault();
 
  private:
-  CandidateChromotocolConfig();
-  explicit CandidateChromotocolConfig(const CandidateChromotocolConfig& config);
-  CandidateChromotocolConfig& operator=(const CandidateChromotocolConfig& b);
+  CandidateSessionConfig();
+  explicit CandidateSessionConfig(const CandidateSessionConfig& config);
+  CandidateSessionConfig& operator=(const CandidateSessionConfig& b);
 
   static bool SelectCommonChannelConfig(
       const std::vector<ChannelConfig>& host_configs_,
@@ -157,6 +159,7 @@ class CandidateChromotocolConfig {
   ScreenResolution initial_resolution_;
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CHROMOTOCOL_CONFIG_H_
+#endif  // REMOTING_PROTOCOL_SESSION_CONFIG_H_

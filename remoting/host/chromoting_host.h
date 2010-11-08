@@ -24,11 +24,11 @@ namespace remoting {
 
 namespace protocol {
 class ConnectionToClient;
+class SessionConfig;
 }  // namespace protocol
 
 class Capturer;
 class ChromotingHostContext;
-class ChromotocolConfig;
 class Encoder;
 class EventExecutor;
 class MutableHostConfig;
@@ -119,7 +119,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   void OnServerClosed();
 
   // Creates encoder for the specified configuration.
-  Encoder* CreateEncoder(const ChromotocolConfig* config);
+  Encoder* CreateEncoder(const protocol::SessionConfig* config);
 
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;

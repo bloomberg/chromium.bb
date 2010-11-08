@@ -181,4 +181,3 @@ bool CloudPrintProxyService::InvokeServiceTask(Task* task) {
     process_control->Launch(task, NULL);
   return !!process_control;
 }
-

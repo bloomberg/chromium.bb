@@ -15,24 +15,22 @@
 
 namespace remoting {
 
-namespace protocol {
-class Session;
-}  // namespace protocol
-
-class ChromotocolConfig;
 class ChromotocolConnection;
 
 namespace protocol {
+
+class Session;
+class SessionConfig;
 
 // TODO(sergeyu): VideoWriter should implement VideoStub interface.
 class VideoWriter {
  public:
   virtual ~VideoWriter();
 
-  static VideoWriter* Create(const ChromotocolConfig* config);
+  static VideoWriter* Create(const SessionConfig* config);
 
   // Initializes the writer.
-  virtual void Init(protocol::Session* session) = 0;
+  virtual void Init(Session* session) = 0;
 
   // Sends the |packet|.
   virtual void SendPacket(const VideoPacket& packet) = 0;

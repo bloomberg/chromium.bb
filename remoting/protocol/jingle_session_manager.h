@@ -29,20 +29,20 @@ class JingleThread;
 namespace protocol {
 
 // ContentDescription used for chromoting sessions. It simply wraps
-// CandidateChromotocolConfig. CandidateChromotocolConfig doesn't inherit
+// CandidateSessionConfig. CandidateSessionConfig doesn't inherit
 // from ContentDescription to avoid dependency on libjingle in
 // Chromotocol Session interface.
 class ContentDescription : public cricket::ContentDescription {
  public:
-  explicit ContentDescription(const CandidateChromotocolConfig* config);
+  explicit ContentDescription(const CandidateSessionConfig* config);
   ~ContentDescription();
 
-  const CandidateChromotocolConfig* config() const {
+  const CandidateSessionConfig* config() const {
     return candidate_config_.get();
   }
 
  private:
-  scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
+  scoped_ptr<const CandidateSessionConfig> candidate_config_;
 };
 
 // This class implements SessionClient for Chromoting sessions. It acts as a
@@ -64,7 +64,7 @@ class JingleSessionManager
   // ChromotocolServer interface.
   virtual scoped_refptr<protocol::Session> Connect(
       const std::string& jid,
-      CandidateChromotocolConfig* chromotocol_config,
+      CandidateSessionConfig* candidate_config,
       protocol::Session::StateChangeCallback* state_change_callback);
   virtual void Close(Task* closed_task);
 
@@ -93,7 +93,7 @@ class JingleSessionManager
 
   // Creates outgoing session description for an incoming session.
   cricket::SessionDescription* CreateSessionDescription(
-      const CandidateChromotocolConfig* config);
+      const CandidateSessionConfig* candidate_config);
 
   // cricket::SessionClient interface.
   virtual void OnSessionCreate(cricket::Session* cricket_session,

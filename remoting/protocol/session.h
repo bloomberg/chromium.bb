@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "remoting/protocol/chromotocol_config.h"
+#include "remoting/protocol/session_config.h"
 
 class MessageLoop;
 class Task;
@@ -18,7 +18,6 @@ class Socket;
 }  // namespace net
 
 namespace remoting {
-
 namespace protocol {
 
 // Generic interface for Chromotocol connection used by both client and host.
@@ -64,17 +63,17 @@ class Session : public base::RefCountedThreadSafe<Session> {
   // Configuration of the protocol that was sent or received in the
   // session-initiate jingle message. Returned pointer is valid until
   // connection is closed.
-  virtual const CandidateChromotocolConfig* candidate_config() = 0;
+  virtual const CandidateSessionConfig* candidate_config() = 0;
 
   // Protocol configuration. Can be called only after session has been accepted.
   // Returned pointer is valid until connection is closed.
-  virtual const ChromotocolConfig* config() = 0;
+  virtual const SessionConfig* config() = 0;
 
   // Set protocol configuration for an incoming session. Must be called
   // on the host before the connection is accepted, from
   // ChromotocolServer::IncomingConnectionCallback. Ownership of |config| is
   // given to the connection.
-  virtual void set_config(const ChromotocolConfig* config) = 0;
+  virtual void set_config(const SessionConfig* config) = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called after
   // |closed_task| is executed.
@@ -91,7 +90,6 @@ class Session : public base::RefCountedThreadSafe<Session> {
 };
 
 }  // namespace protocol
-
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_SESSION_H_

@@ -51,10 +51,10 @@ class JingleSession : public protocol::Session,
   virtual const std::string& jid();
   virtual MessageLoop* message_loop();
 
-  virtual const CandidateChromotocolConfig* candidate_config();
-  virtual const ChromotocolConfig* config();
+  virtual const CandidateSessionConfig* candidate_config();
+  virtual const SessionConfig* config();
 
-  virtual void set_config(const ChromotocolConfig* config);
+  virtual void set_config(const SessionConfig* config);
 
   virtual void Close(Task* closed_task);
 
@@ -65,7 +65,7 @@ class JingleSession : public protocol::Session,
   friend class JingleSessionManager;
 
   // Called by JingleSessionManager.
-  void set_candidate_config(const CandidateChromotocolConfig* candidate_config);
+  void set_candidate_config(const CandidateSessionConfig* candidate_config);
   void Init(cricket::Session* cricket_session);
   bool HasSession(cricket::Session* cricket_session);
   cricket::Session* ReleaseSession();
@@ -95,8 +95,8 @@ class JingleSession : public protocol::Session,
   // The corresponding libjingle session.
   cricket::Session* cricket_session_;
 
-  scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
-  scoped_ptr<const ChromotocolConfig> config_;
+  scoped_ptr<const CandidateSessionConfig> candidate_config_;
+  scoped_ptr<const SessionConfig> config_;
 
   cricket::PseudoTcpChannel* control_channel_;
   scoped_ptr<StreamSocketAdapter> control_channel_adapter_;

@@ -12,7 +12,6 @@
 #include "remoting/protocol/session.h"
 
 namespace remoting {
-
 namespace protocol {
 
 extern const char kTestJid[];
@@ -79,16 +78,16 @@ class FakeSession : public Session {
   virtual const std::string& jid();
 
   virtual MessageLoop* message_loop();
-  virtual const CandidateChromotocolConfig* candidate_config();
-  virtual const ChromotocolConfig* config();
-  virtual void set_config(const ChromotocolConfig* config);
+  virtual const CandidateSessionConfig* candidate_config();
+  virtual const SessionConfig* config();
+  virtual void set_config(const SessionConfig* config);
 
   virtual void Close(Task* closed_task);
 
  public:
   scoped_ptr<StateChangeCallback> callback_;
-  scoped_ptr<const CandidateChromotocolConfig> candidate_config_;
-  scoped_ptr<const ChromotocolConfig> config_;
+  scoped_ptr<const CandidateSessionConfig> candidate_config_;
+  scoped_ptr<const SessionConfig> config_;
   MessageLoop* message_loop_;
   FakeSocket control_channel_;
   FakeSocket event_channel_;
@@ -100,7 +99,6 @@ class FakeSession : public Session {
 };
 
 }  // namespace protocol
-
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_FAKE_SESSION_H_

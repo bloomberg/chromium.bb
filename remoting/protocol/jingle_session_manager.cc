@@ -18,7 +18,6 @@ using buzz::QName;
 using buzz::XmlElement;
 
 namespace remoting {
-
 namespace protocol {
 
 namespace {
@@ -151,8 +150,8 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 }  // namespace
 
 ContentDescription::ContentDescription(
-    const CandidateChromotocolConfig* config)
-    : candidate_config_(config) {
+    const CandidateSessionConfig* candidate_config)
+    : candidate_config_(candidate_config) {
 }
 
 ContentDescription::~ContentDescription() { }
@@ -220,12 +219,12 @@ void JingleSessionManager::set_allow_local_ips(bool allow_local_ips) {
 
 scoped_refptr<protocol::Session> JingleSessionManager::Connect(
     const std::string& jid,
-    CandidateChromotocolConfig* chromotocol_config,
+    CandidateSessionConfig* candidate_config,
     protocol::Session::StateChangeCallback* state_change_callback) {
   // Can be called from any thread.
   scoped_refptr<JingleSession> jingle_session(
       new JingleSession(this));
-  jingle_session->set_candidate_config(chromotocol_config);
+  jingle_session->set_candidate_config(candidate_config);
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleSessionManager::DoConnect,
                                    jingle_session, jid,
@@ -320,8 +319,8 @@ void JingleSessionManager::AcceptConnection(
     case protocol::SessionManager::ACCEPT: {
       // Connection must be configured by the callback.
       DCHECK(jingle_session->config());
-      CandidateChromotocolConfig* candidate_config =
-          CandidateChromotocolConfig::CreateFrom(jingle_session->config());
+      CandidateSessionConfig* candidate_config =
+          CandidateSessionConfig::CreateFrom(jingle_session->config());
       cricket_session->Accept(CreateSessionDescription(candidate_config));
       break;
     }
@@ -349,8 +348,8 @@ bool JingleSessionManager::ParseContent(
     const cricket::ContentDescription** content,
     cricket::ParseError* error) {
   if (element->Name() == QName(kChromotingXmlNamespace, kDescriptionTag)) {
-    scoped_ptr<CandidateChromotocolConfig> config(
-        CandidateChromotocolConfig::CreateEmpty());
+    scoped_ptr<CandidateSessionConfig> config(
+        CandidateSessionConfig::CreateEmpty());
     const XmlElement* child = NULL;
 
     // <control> tags.
@@ -432,7 +431,7 @@ bool JingleSessionManager::WriteContent(
   XmlElement* root = new XmlElement(
       QName(kChromotingXmlNamespace, kDescriptionTag), true);
 
-  const CandidateChromotocolConfig* config = desc->config();
+  const CandidateSessionConfig* config = desc->config();
   std::vector<ChannelConfig>::const_iterator it;
 
   for (it = config->control_configs().begin();
@@ -465,7 +464,7 @@ bool JingleSessionManager::WriteContent(
 }
 
 SessionDescription* JingleSessionManager::CreateSessionDescription(
-    const CandidateChromotocolConfig* config) {
+    const CandidateSessionConfig* config) {
   SessionDescription* desc = new SessionDescription();
   desc->AddContent(JingleSession::kChromotingContentName,
                    kChromotingXmlNamespace,
@@ -474,5 +473,4 @@ SessionDescription* JingleSessionManager::CreateSessionDescription(
 }
 
 }  // namespace protocol
-
 }  // namespace remoting

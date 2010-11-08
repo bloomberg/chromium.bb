@@ -358,8 +358,6 @@
       'sources': [
         'protocol/buffered_socket_writer.cc',
         'protocol/buffered_socket_writer.h',
-        'protocol/chromotocol_config.cc',
-        'protocol/chromotocol_config.h',
         'protocol/client_stub.h',
         'protocol/client_stub_impl.cc',
         'protocol/client_stub_impl.h',
@@ -395,6 +393,8 @@
         'protocol/rtp_writer.cc',
         'protocol/rtp_writer.h',
         'protocol/session.h',
+        'protocol/session_config.cc',
+        'protocol/session_config.h',
         'protocol/session_manager.h',
         'protocol/socket_reader_base.cc',
         'protocol/socket_reader_base.h',

@@ -34,8 +34,8 @@
 // configuration. The configuration specified in the session-accept is used
 // for the session.
 //
-// The CandidateChromotocolConfig class represents list of configurations
-// supported by an endpoint. The |chromotocol_config| argument in the Connect()
+// The CandidateSessionConfig class represents list of configurations
+// supported by an endpoint. The |candidate_config| argument in the Connect()
 // specifies configuration supported on the client side. When the host receives
 // session-initiate stanza, the IncomingSessionCallback is called. The
 // configuration sent in the session-intiate staza is available via
@@ -55,7 +55,6 @@
 class Task;
 
 namespace remoting {
-
 namespace protocol {
 
 // Generic interface for Chromoting session manager.
@@ -78,10 +77,10 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
       IncomingSessionCallback;
 
   // Initializes session to the host |jid|.  Ownership of the
-  // |chromotocol_config| is passed to the new session.
+  // |config| is passed to the new session.
   virtual scoped_refptr<Session> Connect(
       const std::string& jid,
-      CandidateChromotocolConfig* chromotocol_config,
+      CandidateSessionConfig* config,
       Session::StateChangeCallback* state_change_callback) = 0;
 
   // Close session manager and all current sessions. |close_task| is executed
@@ -100,7 +99,6 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 };
 
 }  // namespace protocol
-
 }  // namespace remoting
 
 #endif  // REMOTING_PROTOCOL_SESSION_MANAGER_H_

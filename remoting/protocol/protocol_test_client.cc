@@ -29,7 +29,6 @@ extern "C" {
 using remoting::kChromotingTokenServiceName;
 
 namespace remoting {
-
 namespace protocol {
 
 namespace {
@@ -286,7 +285,7 @@ void ProtocolTestClient::OnStateChange(
       ProtocolTestConnection* connection =
           new ProtocolTestConnection(this, client_->message_loop());
       connection->Init(session_manager_->Connect(
-          host_jid_, CandidateChromotocolConfig::CreateDefault(),
+          host_jid_, CandidateSessionConfig::CreateDefault(),
           NewCallback(connection,
                       &ProtocolTestConnection::OnStateChange)));
       connections_.push_back(make_scoped_refptr(connection));
@@ -301,7 +300,7 @@ void ProtocolTestClient::OnNewSession(
     SessionManager::IncomingSessionResponse* response) {
   std::cerr << "Accepting connection from " << session->jid() << std::endl;
 
-  session->set_config(ChromotocolConfig::CreateDefault());
+  session->set_config(SessionConfig::CreateDefault());
   *response = SessionManager::ACCEPT;
 
   ProtocolTestConnection* test_connection =
@@ -331,7 +330,6 @@ void ProtocolTestClient::DestroyConnection(
 }
 
 }  // namespace protocol
-
 }  // namespace remoting
 
 using remoting::protocol::ProtocolTestClient;

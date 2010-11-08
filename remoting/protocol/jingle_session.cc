@@ -114,25 +114,25 @@ MessageLoop* JingleSession::message_loop() {
   return jingle_session_manager_->message_loop();
 }
 
-const CandidateChromotocolConfig*
+const CandidateSessionConfig*
 JingleSession::candidate_config() {
   DCHECK(candidate_config_.get());
   return candidate_config_.get();
 }
 
 void JingleSession::set_candidate_config(
-    const CandidateChromotocolConfig* candidate_config) {
+    const CandidateSessionConfig* candidate_config) {
   DCHECK(!candidate_config_.get());
   DCHECK(candidate_config);
   candidate_config_.reset(candidate_config);
 }
 
-const ChromotocolConfig* JingleSession::config() {
+const SessionConfig* JingleSession::config() {
   DCHECK(config_.get());
   return config_.get();
 }
 
-void JingleSession::set_config(const ChromotocolConfig* config) {
+void JingleSession::set_config(const SessionConfig* config) {
   DCHECK(!config_.get());
   DCHECK(config);
   config_.reset(config);
@@ -281,7 +281,7 @@ void JingleSession::OnAccept() {
 
     const protocol::ContentDescription* content_description =
         static_cast<const protocol::ContentDescription*>(content->description);
-    ChromotocolConfig* config = content_description->config()->GetFinalConfig();
+    SessionConfig* config = content_description->config()->GetFinalConfig();
 
     // Terminate the session if the config we received is invalid.
     if (!config || !candidate_config()->IsSupported(config)) {

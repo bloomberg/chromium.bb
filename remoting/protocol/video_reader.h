@@ -14,24 +14,22 @@
 
 namespace remoting {
 
-namespace protocol {
-class Session;
-}  // namespace protocol
-
-class ChromotocolConfig;
 class ChromotocolConnection;
 
 namespace protocol {
 
+class Session;
+class SessionConfig;
+
 class VideoReader {
  public:
-  static VideoReader* Create(const ChromotocolConfig* config);
+  static VideoReader* Create(const SessionConfig* config);
 
   virtual ~VideoReader();
 
   // Initializies the reader. Doesn't take ownership of either |connection|
   // or |video_stub|.
-  virtual void Init(protocol::Session* session,
+  virtual void Init(Session* session,
                     VideoStub* video_stub) = 0;
 
   // Closes the reader. The stub should not be called after Close().
