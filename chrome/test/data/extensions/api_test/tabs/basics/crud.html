@@ -21,6 +21,7 @@ chrome.test.runTests([
       assertEq(firstWindowId, tab.windowId);
       assertEq(false, tab.selected);
       assertEq("chrome://newtab/", tab.url);
+      assertEq(false, tab.pinned);
     }));
   },
 

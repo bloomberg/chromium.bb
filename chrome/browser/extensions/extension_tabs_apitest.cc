@@ -35,6 +35,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud.html")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabPinned) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "pinned.html")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMove) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;

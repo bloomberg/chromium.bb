@@ -809,6 +809,7 @@
           "index": {"type": "integer", "minimum": 0, "description": "The zero-based index of the tab within its window."},
           "windowId": {"type": "integer", "minimum": 0, "description": "The ID of the window the tab is contained within."},
           "selected": {"type": "boolean", "description": "Whether the tab is selected."},
+          "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
           "url": {"type": "string", "description": "The URL the tab is displaying."},
           "title": {"type": "string", "optional": true, "description": "The title of the tab. This may not be available if the tab is loading."},
           "favIconUrl": {"type": "string", "optional": true, "description": "The URL of the tab's favicon. This may not be available if the tab is loading."},
@@ -979,6 +980,11 @@
                 "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should become the selected tab in the window. Defaults to <var>true</var>"
+              },
+              "pinned": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tab should be pinned. Defaults to <var>false</var>"
               }
             }
           },
@@ -1006,8 +1012,20 @@
             "type": "object",
             "name": "updateProperties",
             "properties": {
-              "url": {"type": "string", "optional": true},
-              "selected": {"type": "boolean", "optional": true}
+              "url": {
+                "optional": true,
+                "description": "A URL to navigate the tab to."
+              },
+              "selected": {
+                "type": "boolean", 
+                "optional": true,
+                "description": "Whether the tab should be selected."
+              },
+              "pinned": {
+                "type": "boolean", 
+                "optional": true,
+                "description": "Whether the tab should be pinned."
+              }
             }
           },
           {
@@ -1214,12 +1232,18 @@
             "properties": {
               "status": {
                 "type": "string",
+                "optional": true,
                 "description": "The status of the tab. Can be either <em>loading</em> or <em>complete</em>."
               },
               "url": {
                 "type": "string",
                 "optional": true,
-                "description": "Only specified if the tab's URL changed."
+                "description": "The tab's URL if it has changed."
+              },
+              "pinned": {
+                "type": "boolean",
+                "optional": true,
+                "description": "The tab's new pinned state."
               }
             }
           },

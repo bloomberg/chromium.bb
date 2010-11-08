@@ -1351,6 +1351,11 @@ private:
 
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
+
+  // Don't do anything if the change was already picked up by the move event.
+  if (tabStripModel_->IsMiniTab(modelIndex) == [tabController mini])
+    return;
+
   [tabController setMini:tabStripModel_->IsMiniTab(modelIndex)];
   [tabController setPinned:tabStripModel_->IsTabPinned(modelIndex)];
   [tabController setApp:tabStripModel_->IsAppTab(modelIndex)];

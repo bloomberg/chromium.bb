@@ -90,14 +90,10 @@ int ExtensionTabUtil::GetWindowIdOfTab(const TabContents* tab_contents) {
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const TabContents* contents) {
   // Find the tab strip and index of this guy.
-  for (BrowserList::const_iterator it = BrowserList::begin();
-      it != BrowserList::end(); ++it) {
-    TabStripModel* tab_strip = (*it)->tabstrip_model();
-    int tab_index = tab_strip->GetIndexOfTabContents(contents);
-    if (tab_index != -1) {
-      return ExtensionTabUtil::CreateTabValue(contents, tab_strip, tab_index);
-    }
-  }
+  TabStripModel* tab_strip = NULL;
+  int tab_index;
+  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index))
+    return ExtensionTabUtil::CreateTabValue(contents, tab_strip, tab_index);
 
   // Couldn't find it.  This can happen if the tab is being dragged.
   return ExtensionTabUtil::CreateTabValue(contents, NULL, -1);
@@ -125,6 +121,8 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetString(keys::kStatusKey, GetTabStatusText(contents->is_loading()));
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->selected_index());
+  result->SetBoolean(keys::kPinnedKey,
+                     tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetString(keys::kTitleKey, contents->GetTitle());
   result->SetBoolean(keys::kIncognitoKey,
                      contents->profile()->IsOffTheRecord());
@@ -164,6 +162,27 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   }
 
   return result;
+}
+
+bool ExtensionTabUtil::GetTabStripModel(const TabContents* tab_contents,
+                                        TabStripModel** tab_strip_model,
+                                        int* tab_index) {
+  DCHECK(tab_contents);
+  DCHECK(tab_strip_model);
+  DCHECK(tab_index);
+
+  for (BrowserList::const_iterator it = BrowserList::begin();
+      it != BrowserList::end(); ++it) {
+    TabStripModel* tab_strip = (*it)->tabstrip_model();
+    int index = tab_strip->GetIndexOfTabContents(tab_contents);
+    if (index != -1) {
+      *tab_strip_model = tab_strip;
+      *tab_index = index;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool ExtensionTabUtil::GetDefaultTab(Browser* browser, TabContents** contents,
@@ -598,6 +617,12 @@ bool CreateTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kSelectedKey,
                                                  &selected));
 
+  // Default to not pinning the tab. Setting the 'pinned' property to true
+  // will override this default.
+  bool pinned = false;
+  if (args->HasKey(keys::kPinnedKey))
+    EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPinnedKey, &pinned));
+
   // We can't load extension URLs into incognito windows unless the extension
   // uses split mode. Special case to fall back to a normal window.
   if (url.SchemeIs(chrome::kExtensionScheme) &&
@@ -625,6 +650,8 @@ bool CreateTabFunction::RunImpl() {
   int add_types = selected ? TabStripModel::ADD_SELECTED :
                              TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
+  if (pinned)
+    add_types |= TabStripModel::ADD_PINNED;
   browser::NavigateParams params(browser, url, PageTransition::LINK);
   params.disposition = selected ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
@@ -724,12 +751,6 @@ bool UpdateTabFunction::RunImpl() {
       // controller->GetURL()?
     }
 
-    if (tab_strip->IsTabPinned(tab_index)) {
-      // Don't allow changing the url of pinned tabs.
-      error_ = keys::kCannotUpdatePinnedTab;
-      return false;
-    }
-
     controller.LoadURL(url, GURL(), PageTransition::LINK);
 
     // The URL of a tab contents never actually changes to a JavaScript URL, so
@@ -752,6 +773,16 @@ bool UpdateTabFunction::RunImpl() {
       }
       contents->Focus();
     }
+  }
+
+  bool pinned = false;
+  if (update_props->HasKey(keys::kPinnedKey)) {
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(keys::kPinnedKey,
+                                                         &pinned));
+    tab_strip->SetTabPinned(tab_index, pinned);
+
+    // Update the tab index because it may move when being pinned.
+    tab_index = tab_strip->GetIndexOfTabContents(contents);
   }
 
   if (has_callback())

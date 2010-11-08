@@ -34,7 +34,10 @@ class ExtensionTabUtil {
                                          int tab_index);
   static DictionaryValue* CreateWindowValue(const Browser* browser,
                                             bool populate_tabs);
-
+  // Gets the |tab_strip_model| and |tab_index| for the given |tab_contents|.
+  static bool GetTabStripModel(const TabContents* tab_contents,
+                               TabStripModel** tab_strip_model,
+                               int* tab_index);
   static bool GetDefaultTab(Browser* browser, TabContents** contents,
                             int* tab_id);
   // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may

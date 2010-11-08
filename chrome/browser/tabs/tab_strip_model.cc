@@ -442,10 +442,10 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
     contents_data_[index]->pinned = pinned;
     if (pinned && index != non_mini_tab_index) {
       MoveTabContentsAtImpl(index, non_mini_tab_index, false);
-      return;  // Don't send TabPinnedStateChanged notification.
+      index = non_mini_tab_index;
     } else if (!pinned && index + 1 != non_mini_tab_index) {
       MoveTabContentsAtImpl(index, non_mini_tab_index - 1, false);
-      return;  // Don't send TabPinnedStateChanged notification.
+      index = non_mini_tab_index - 1;
     }
 
     FOR_EACH_OBSERVER(TabStripModelObserver, observers_,

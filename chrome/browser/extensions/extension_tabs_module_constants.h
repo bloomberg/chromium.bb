@@ -26,6 +26,7 @@ extern const char kNewPositionKey[];
 extern const char kNewWindowIdKey[];
 extern const char kOldPositionKey[];
 extern const char kOldWindowIdKey[];
+extern const char kPinnedKey[];
 extern const char kPopulateKey[];
 extern const char kQualityKey[];
 extern const char kSelectedKey[];
@@ -69,7 +70,6 @@ extern const char kSupportedInWindowsOnlyError[];
 extern const char kNoCodeOrFileToExecuteError[];
 extern const char kMoreThanOneValuesError[];
 extern const char kLoadFileError[];
-extern const char kCannotUpdatePinnedTab[];
 extern const char kCannotDetermineLanguageOfUnloadedTab[];
 
 };  // namespace extension_tabs_module_constants

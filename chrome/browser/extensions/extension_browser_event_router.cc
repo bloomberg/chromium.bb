@@ -270,7 +270,7 @@ void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,
                                                 bool foreground) {
   // If tab is new, send created event.
   int tab_id = ExtensionTabUtil::GetTabId(contents);
-  if (tab_entries_.find(tab_id) == tab_entries_.end()) {
+  if (!GetTabEntry(contents)) {
     tab_entries_[tab_id] = TabEntry();
 
     TabCreatedAt(contents, index, foreground);
@@ -295,14 +295,13 @@ void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,
 
 void ExtensionBrowserEventRouter::TabDetachedAt(TabContents* contents,
                                                 int index) {
-  int tab_id = ExtensionTabUtil::GetTabId(contents);
-  if (tab_entries_.find(tab_id) == tab_entries_.end()) {
+  if (!GetTabEntry(contents)) {
     // The tab was removed. Don't send detach event.
     return;
   }
 
   ListValue args;
-  args.Append(Value::CreateIntegerValue(tab_id));
+  args.Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
 
   DictionaryValue* object_args = new DictionaryValue();
   object_args->Set(tab_keys::kOldWindowIdKey, Value::CreateIntegerValue(
@@ -384,36 +383,51 @@ void ExtensionBrowserEventRouter::TabMoved(TabContents* contents,
 
 void ExtensionBrowserEventRouter::TabUpdated(TabContents* contents,
                                              bool did_navigate) {
+  TabEntry* entry = GetTabEntry(contents);
+  DictionaryValue* changed_properties = NULL;
+
+  DCHECK(entry);
+
+  if (did_navigate)
+    changed_properties = entry->DidNavigate(contents);
+  else
+    changed_properties = entry->UpdateLoadState(contents);
+
+  if (changed_properties)
+    DispatchTabUpdatedEvent(contents, changed_properties);
+}
+
+void ExtensionBrowserEventRouter::DispatchTabUpdatedEvent(
+    TabContents* contents, DictionaryValue* changed_properties) {
+  DCHECK(changed_properties);
+  DCHECK(contents);
+
+  // The state of the tab (as seen from the extension point of view) has
+  // changed.  Send a notification to the extension.
+  ListValue args;
+
+  // First arg: The id of the tab that changed.
+  args.Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
+
+  // Second arg: An object containing the changes to the tab state.
+  args.Append(changed_properties);
+
+  // Third arg: An object containing the state of the tab.
+  args.Append(ExtensionTabUtil::CreateTabValue(contents));
+
+  std::string json_args;
+  base::JSONWriter::Write(&args, false, &json_args);
+
+  DispatchEvent(contents->profile(), events::kOnTabUpdated, json_args);
+}
+
+ExtensionBrowserEventRouter::TabEntry* ExtensionBrowserEventRouter::GetTabEntry(
+    const TabContents* contents) {
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   std::map<int, TabEntry>::iterator i = tab_entries_.find(tab_id);
-  DCHECK(tab_entries_.end() != i);
-  TabEntry& entry = i->second;
-
-  DictionaryValue* changed_properties = NULL;
-  if (did_navigate)
-    changed_properties = entry.DidNavigate(contents);
-  else
-    changed_properties = entry.UpdateLoadState(contents);
-
-  if (changed_properties) {
-    // The state of the tab (as seen from the extension point of view) has
-    // changed.  Send a notification to the extension.
-    ListValue args;
-
-    // First arg: The id of the tab that changed.
-    args.Append(Value::CreateIntegerValue(tab_id));
-
-    // Second arg: An object containing the changes to the tab state.
-    args.Append(changed_properties);
-
-    // Third arg: An object containing the state of the tab.
-    args.Append(ExtensionTabUtil::CreateTabValue(contents));
-
-    std::string json_args;
-    base::JSONWriter::Write(&args, false, &json_args);
-
-    DispatchEvent(contents->profile(), events::kOnTabUpdated, json_args);
-  }
+  if (tab_entries_.end() == i)
+    return NULL;
+  return &i->second;
 }
 
 void ExtensionBrowserEventRouter::Observe(NotificationType type,
@@ -453,6 +467,19 @@ void ExtensionBrowserEventRouter::TabReplacedAt(TabContents* old_contents,
                                                 int index) {
   UnregisterForTabNotifications(old_contents);
   RegisterForTabNotifications(new_contents);
+}
+
+void ExtensionBrowserEventRouter::TabPinnedStateChanged(TabContents* contents,
+                                                        int index) {
+  TabStripModel* tab_strip = NULL;
+  int tab_index;
+
+  if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
+    DictionaryValue* changed_properties = new DictionaryValue();
+    changed_properties->SetBoolean(tab_keys::kPinnedKey,
+                                   tab_strip->IsTabPinned(tab_index));
+    DispatchTabUpdatedEvent(contents, changed_properties);
+  }
 }
 
 void ExtensionBrowserEventRouter::TabStripEmpty() {}

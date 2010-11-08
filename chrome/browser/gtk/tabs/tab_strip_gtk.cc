@@ -1050,6 +1050,10 @@ void TabStripGtk::TabReplacedAt(TabContents* old_contents,
 }
 
 void TabStripGtk::TabMiniStateChanged(TabContents* contents, int index) {
+  // Don't do anything if we've already picked up the change from TabMoved.
+  if (GetTabAt(index)->mini() == model_->IsMiniTab(index))
+    return;
+
   GetTabAt(index)->set_mini(model_->IsMiniTab(index));
   // Don't animate if the window isn't visible yet. The window won't be visible
   // when dragging a mini-tab to a new window.
@@ -2007,7 +2011,8 @@ bool TabStripGtk::CanPaintOnlyFavIcons(const GdkRectangle* rects,
   for (int r = 0; r < num_rects; ++r) {
     while (t < GetTabCount()) {
       TabGtk* tab = GetTabAt(t);
-      if (GdkRectMatchesTabFavIconBounds(rects[r], tab)) {
+      if (GdkRectMatchesTabFavIconBounds(rects[r], tab) &&
+          tab->ShouldShowIcon()) {
         tabs_to_paint->push_back(t);
         ++t;
         break;

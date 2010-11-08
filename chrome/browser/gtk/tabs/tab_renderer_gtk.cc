@@ -417,6 +417,19 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
   PaintIcon(&canvas);
 }
 
+bool TabRendererGtk::ShouldShowIcon() const {
+  if (mini() && height() >= GetMinimumUnselectedSize().height()) {
+    return true;
+  } else if (!data_.show_icon) {
+    return false;
+  } else if (IsSelected()) {
+    // The selected tab clips favicon before close button.
+    return IconCapacity() >= 2;
+  }
+  // Non-selected tabs clip close button before favicon.
+  return IconCapacity() >= 1;
+}
+
 // static
 gfx::Size TabRendererGtk::GetMinimumUnselectedSize() {
   InitResources();
@@ -958,19 +971,6 @@ int TabRendererGtk::IconCapacity() const {
   if (height() < GetMinimumUnselectedSize().height())
     return 0;
   return (width() - kLeftPadding - kRightPadding) / kFavIconSize;
-}
-
-bool TabRendererGtk::ShouldShowIcon() const {
-  if (mini() && height() >= GetMinimumUnselectedSize().height()) {
-    return true;
-  } else if (!data_.show_icon) {
-    return false;
-  } else if (IsSelected()) {
-    // The selected tab clips favicon before close button.
-    return IconCapacity() >= 2;
-  }
-  // Non-selected tabs clip close button before favicon.
-  return IconCapacity() >= 1;
 }
 
 bool TabRendererGtk::ShouldShowCloseBox() const {

@@ -74,6 +74,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index);
+  virtual void TabPinnedStateChanged(TabContents* contents, int index);
   virtual void TabStripEmpty();
 
   // Page Action execute event.
@@ -99,6 +100,11 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Internal processing of tab updated events. Is called by both TabChangedAt
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(TabContents* contents, bool did_navigate);
+
+  // Packages |changed_properties| as a tab updated event for the tab |contents|
+  // and dispatches the event to the extension.
+  void DispatchTabUpdatedEvent(TabContents* contents,
+                               DictionaryValue* changed_properties);
 
   // Called to dispatch a deprecated style page action click event that was
   // registered like:
@@ -163,6 +169,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
     GURL url_;
   };
+
+  // Gets the TabEntry for the given |contents|. Returns TabEntry* if
+  // found, NULL if not.
+  TabEntry* GetTabEntry(const TabContents* contents);
 
   std::map<int, TabEntry> tab_entries_;
 

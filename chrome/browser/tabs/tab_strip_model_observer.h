@@ -91,14 +91,11 @@ class TabStripModelObserver {
                              TabContents* new_contents,
                              int index);
 
-  // Invoked when the pinned state of a tab changes. This is not invoked if the
-  // tab ends up moving as a result of the mini state changing.
-  // See note in TabMiniStateChanged as to how this relates to
-  // TabMiniStateChanged.
+  // Invoked when the pinned state of a tab changes. See note in
+  // TabMiniStateChanged as to how this relates to TabMiniStateChanged.
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
 
-  // Invoked if the mini state of a tab changes.  This is not invoked if the
-  // tab ends up moving as a result of the mini state changing.
+  // Invoked if the mini state of a tab changes.
   // NOTE: this is sent when the pinned state of a non-app tab changes and is
   // sent in addition to TabPinnedStateChanged. UI code typically need not care
   // about TabPinnedStateChanged, but instead this.

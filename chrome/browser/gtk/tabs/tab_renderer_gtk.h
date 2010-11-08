@@ -171,6 +171,9 @@ class TabRendererGtk : public AnimationDelegate,
   // Repaint only the area of the tab that contains the favicon.
   void PaintFavIconArea(GdkEventExpose* event);
 
+  // Returns whether the Tab should display a favicon.
+  bool ShouldShowIcon() const;
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must
@@ -340,8 +343,6 @@ class TabRendererGtk : public AnimationDelegate,
   // current size.
   int IconCapacity() const;
 
-  // Returns whether the Tab should display a favicon.
-  bool ShouldShowIcon() const;
 
   // Returns whether the Tab should display a close button.
   bool ShouldShowCloseBox() const;
