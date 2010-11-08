@@ -10,7 +10,6 @@ import stat
 import subprocess
 import sys
 sys.path.append("./common")
-import sets
 
 from SCons.Errors import UserError
 from SCons.Script import GetBuildFailures
@@ -241,8 +240,8 @@ pre_base_env['ENV']['CYGWIN'] = os.environ.get('CYGWIN', 'nodosfilewarning')
 
 def EnsureRequiredBuildWarnings(env):
   if env.Bit('linux') or env.Bit('mac'):
-    required_env_flags = sets.Set(['-pedantic', '-Wall'] + werror_flags)
-    ccflags = sets.Set(env.get('CCFLAGS'))
+    required_env_flags = set(['-pedantic', '-Wall'] + werror_flags)
+    ccflags = set(env.get('CCFLAGS'))
 
     if not required_env_flags.issubset(ccflags):
       raise UserError('required build flags missing: '
