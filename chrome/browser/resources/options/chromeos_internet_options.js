@@ -266,7 +266,6 @@ cr.define('options', function() {
       $('roamingState').textContent = data.roamingState;
       $('restrictedPool').textContent = data.restrictedPool;
       $('errorState').textContent = data.errorState;
-      $('customerSupport').href = data.supportUrl;
       $('manufacturer').textContent = data.manufacturer;
       $('modelId').textContent = data.modelId;
       $('firmwareRevision').textContent = data.firmwareRevision;
