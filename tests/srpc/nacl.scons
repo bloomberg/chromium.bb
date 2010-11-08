@@ -114,9 +114,9 @@ node = env.CommandSelLdrTestNacl(
     )
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_basic_test')
 
-trusted = env.get('TRUSTED_ENV', None)
+trusted_env = env.get('TRUSTED_ENV')
 # TODO: add comment explaining the if
-if trusted and trusted.Bit('linux'):
+if trusted_env and trusted_env.Bit('linux'):
   node = env.CommandSelLdrTestNacl(
       'srpc_sysv_shm_test.out',
       loader='sel_universal',

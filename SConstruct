@@ -323,9 +323,9 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
 
   # If we are testing 'NACL' we really need the trusted info
   if build=='nacl' and 'TRUSTED_ENV' in env:
-    trusted = env['TRUSTED_ENV']
-    build = trusted['BUILD_TYPE']
-    subarch = trusted['BUILD_SUBARCH']
+    trusted_env = env['TRUSTED_ENV']
+    build = trusted_env['BUILD_TYPE']
+    subarch = trusted_env['BUILD_SUBARCH']
   else:
     subarch = env['BUILD_SUBARCH']
 
@@ -687,8 +687,8 @@ def GetValidator(env, validator):
     else:
       validator = 'ncval'
 
-  t_env = env['TRUSTED_ENV']
-  return t_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
+  trusted_env = env['TRUSTED_ENV']
+  return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
                     validator)
 
 

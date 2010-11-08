@@ -42,10 +42,10 @@ env['TARGET_PLATFORM'] = (env['TARGET_ARCHITECTURE'] +
 env.AppendENVPath('PATH',os.environ['PATH'])
 print env['ENV']['PATH']
 
-trusted = env.get('TRUSTED_ENV', None)
-if trusted:
+trusted_env = env.get('TRUSTED_ENV')
+if trusted_env:
   # TODO(robertm): factor this hack
-  sel_ldr = trusted.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 
 node = env.Command('breakpad.out',
                     ['test_breakpad.py', sel_ldr, nexe],
