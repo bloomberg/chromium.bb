@@ -205,16 +205,16 @@
    fun:_ZN4dyld24initializeMainExecutableEv
 }
 {
-   # With our tweaks to get Chromium to link on Mac 10.5, we sometimes get	
-   # this suppression instead.	
-   Mac_Sandbox_Intentional_Leak3	
-   Memcheck:Leak	
-   fun:_Znw*	
-   fun:_Z41__static_initialization_and_destruction_0ii	
-   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE	
-   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj	
-   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE	
-   fun:_ZN4dyld24initializeMainExecutableEv	
+   # With our tweaks to get Chromium to link on Mac 10.5, we sometimes get
+   # this suppression instead.
+   Mac_Sandbox_Intentional_Leak3
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
+   fun:_ZN11ImageLoader23recursiveInitializationERKNS_11LinkContextEj
+   fun:_ZN11ImageLoader15runInitializersERKNS_11LinkContextE
+   fun:_ZN4dyld24initializeMainExecutableEv
 }
 {
    # The ConfirmQuitPanelController animates out and releases itself. And
@@ -1142,4 +1142,17 @@
    fun:__CGBitmapContextDelegateCreate
    fun:createBitmapContext
    fun:CGBitmapContextCreate
+}
+{
+   bug_62346
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFArrayInit
+   fun:CFArrayCreateCopy
+   obj:*
+   fun:_ZN12_GLOBAL__N_113Apple80211Api18GetAccessPointDataEPSt3setI15AccessPointData19AccessPointDataLessSaIS2_EE
+   fun:_ZN22WifiDataProviderCommon14DoWifiScanTaskEv
+   fun:_Z16DispatchToMethodI22WifiDataProviderCommonMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN27ScopedRunnableMethodFactoryI22WifiDataProviderCommonE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
 }
