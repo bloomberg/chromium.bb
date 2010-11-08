@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 
 #include "base/callback.h"
-#include "base/move.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
@@ -14,15 +13,17 @@
 
 namespace chromeos {
 
-SystemNotification::SystemNotification(Profile* profile, std::string id,
-                                       int icon_resource_id, string16 title)
-  : profile_(profile),
-    collection_(static_cast<BalloonCollectionImpl*>(
-      g_browser_process->notification_ui_manager()->balloon_collection())),
-    delegate_(new Delegate(base::move(id))),
-    title_(move(title)),
-    visible_(false),
-    urgent_(false) {
+SystemNotification::SystemNotification(Profile* profile,
+                                       const std::string& id,
+                                       int icon_resource_id,
+                                       const string16& title)
+    : profile_(profile),
+      collection_(static_cast<BalloonCollectionImpl*>(
+          g_browser_process->notification_ui_manager()->balloon_collection())),
+      delegate_(new Delegate(id)),
+      title_(title),
+      visible_(false),
+      urgent_(false) {
   std::string url = dom_ui_util::GetImageDataUrlFromResource(icon_resource_id);
   DCHECK(!url.empty());
   GURL tmp_gurl(url);

@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/move.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
@@ -28,8 +27,9 @@ class SystemNotification {
   // The profile is the current user profile. The id is any string used
   // to uniquely identify this notification. The title is the title of
   // the message to be displayed. On creation, the message is hidden.
-  SystemNotification(Profile* profile, std::string id, int icon_resource_id,
-                     string16 title);
+  SystemNotification(Profile* profile, const std::string& id,
+                     int icon_resource_id,
+                     const string16& title);
 
   virtual ~SystemNotification();
 
@@ -58,7 +58,7 @@ class SystemNotification {
  private:
   class Delegate : public NotificationDelegate {
    public:
-    explicit Delegate(std::string id) : id_(base::move(id)) {}
+    explicit Delegate(const std::string& id) : id_(id) {}
     void Display() {}
     void Error() {}
     void Close(bool by_user) {}
