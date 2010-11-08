@@ -209,7 +209,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   dangerous_mode_body_image_set_ = dangerous_mode_body_image_set;
 
   LoadIcon();
-  tooltip_text_ = download_->GetFileName().ToWStringHack();
+  tooltip_text_ = download_->GetFileNameToReportUser().ToWStringHack();
 
   font_ = ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
   box_height_ = std::max<int>(2 * kVerticalPadding + font_.GetHeight() +
@@ -257,11 +257,11 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // Ensure the file name is not too long.
 
     // Extract the file extension (if any).
-    FilePath filepath(download->original_name());
+    FilePath filename(download->target_name());
 #if defined(OS_LINUX)
-    std::wstring extension = base::SysNativeMBToWide(filepath.Extension());
+    std::wstring extension = base::SysNativeMBToWide(filename.Extension());
 #else
-    std::wstring extension = filepath.Extension();
+    std::wstring extension = filename.Extension();
 #endif
 
     // Remove leading '.'
@@ -269,9 +269,9 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
       extension = extension.substr(1);
 #if defined(OS_LINUX)
     std::wstring rootname =
-        base::SysNativeMBToWide(filepath.BaseName().RemoveExtension().value());
+        base::SysNativeMBToWide(filename.RemoveExtension().value());
 #else
-    std::wstring rootname = filepath.BaseName().RemoveExtension().value();
+    std::wstring rootname = filename.RemoveExtension().value();
 #endif
 
     // Elide giant extensions (this shouldn't currently be hit, but might
@@ -602,7 +602,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
   if (!IsDangerousMode()) {
     string16 filename;
     if (!disabled_while_opening_) {
-      filename = gfx::ElideFilename(download_->GetFileName(),
+      filename = gfx::ElideFilename(download_->GetFileNameToReportUser(),
                                     font_, kTextWidth);
     } else {
       // First, Calculate the download status opening string width.
@@ -612,7 +612,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
       int status_string_width = font_.GetStringWidth(status_string);
       // Then, elide the file name.
       string16 filename_string =
-          gfx::ElideFilename(download_->GetFileName(), font_,
+          gfx::ElideFilename(download_->GetFileNameToReportUser(), font_,
                              kTextWidth - status_string_width);
       // Last, concat the whole string.
       filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
@@ -637,7 +637,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
   // Paint the icon.
   IconManager* im = g_browser_process->icon_manager();
   SkBitmap* icon = IsDangerousMode() ? warning_icon_ :
-      im->LookupIcon(download_->full_path(), IconLoader::SMALL);
+      im->LookupIcon(download_->GetUserVerifiedFileName(), IconLoader::SMALL);
 
   // We count on the fact that the icon manager will cache the icons and if one
   // is available, it will be cached here. We *don't* want to request the icon
@@ -731,7 +731,7 @@ void DownloadItemView::ClearDangerousMode() {
 
   // We need to load the icon now that the download_ has the real path.
   LoadIcon();
-  tooltip_text_ = download_->GetFileName().ToWStringHack();
+  tooltip_text_ = download_->GetFileNameToReportUser().ToWStringHack();
 
   // Force the shelf to layout again as our size has changed.
   parent_->Layout();
@@ -849,7 +849,7 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
   if (dragging_) {
     if (download_->state() == DownloadItem::COMPLETE) {
       IconManager* im = g_browser_process->icon_manager();
-      SkBitmap* icon = im->LookupIcon(download_->full_path(),
+      SkBitmap* icon = im->LookupIcon(download_->GetUserVerifiedFileName(),
                                       IconLoader::SMALL);
       if (icon) {
         views::Widget* widget = GetWidget();
@@ -960,7 +960,8 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 
 void DownloadItemView::LoadIcon() {
   IconManager* im = g_browser_process->icon_manager();
-  im->LoadIcon(download_->full_path(), IconLoader::SMALL, &icon_consumer_,
+  im->LoadIcon(download_->GetUserVerifiedFileName(),
+               IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemView::OnExtractIconComplete));
 }
 
@@ -1062,7 +1063,7 @@ void DownloadItemView::UpdateAccessibleName() {
     new_name = dangerous_download_label_->GetText();
   } else {
     new_name = status_text_ + L" " +
-        download_->GetFileName().ToWStringHack();
+        download_->GetFileNameToReportUser().ToWStringHack();
   }
 
   // If the name has changed, call SetAccessibleName and notify

@@ -181,8 +181,8 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
       // This basic fixup copies Windows DownloadItemView::DownloadItemView().
 
       // Extract the file extension (if any).
-      FilePath filepath(downloadModel->download()->original_name());
-      FilePath::StringType extension = filepath.Extension();
+      FilePath filename(downloadModel->download()->target_name());
+      FilePath::StringType extension = filename.Extension();
 
       // Remove leading '.' from the extension
       if (extension.length() > 0)
@@ -197,15 +197,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
       }
 
       // Rebuild the filename.extension.
-      std::wstring rootname =
-          UTF8ToWide(filepath.BaseName().RemoveExtension().value());
+      std::wstring rootname = UTF8ToWide(filename.RemoveExtension().value());
       ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
-      std::string filename = WideToUTF8(rootname);
+      std::string new_filename = WideToUTF8(rootname);
       if (extension.length())
-        filename += std::string(".") + extension;
+        new_filename += std::string(".") + extension;
 
       dangerousWarning = l10n_util::GetNSStringFWithFixup(
-          IDS_PROMPT_DANGEROUS_DOWNLOAD, UTF8ToUTF16(filename));
+          IDS_PROMPT_DANGEROUS_DOWNLOAD, UTF8ToUTF16(new_filename));
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(IDS_SAVE_DOWNLOAD);
     }
     [dangerousDownloadLabel_ setStringValue:dangerousWarning];
@@ -268,7 +267,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)updateToolTip {
   string16 elidedFilename = gfx::ElideFilename(
-      [self download]->GetFileName(),
+      [self download]->GetFileNameToReportUser(),
       gfx::Font(), kToolTipMaxWidth);
   [progressView_ setToolTip:base::SysUTF16ToNSString(elidedFilename)];
 }

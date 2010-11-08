@@ -355,8 +355,8 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     parent_shelf_->MaybeShowMoreDownloadItems();
   }
 
-  if (download->full_path() != icon_filepath_) {
-    // Turns out the file path is "unconfirmed %d.download" for dangerous
+  if (download->GetUserVerifiedFileName() != icon_filename_) {
+    // Turns out the file path is "unconfirmed %d.crdownload" for dangerous
     // downloads. When the download is confirmed, the file is renamed on
     // another thread, so reload the icon if the download filename changes.
     LoadIcon();
@@ -510,18 +510,18 @@ void DownloadItemGtk::OnLoadLargeIconComplete(IconManager::Handle handle,
 void DownloadItemGtk::LoadIcon() {
   icon_consumer_.CancelAllRequests();
   IconManager* im = g_browser_process->icon_manager();
-  icon_filepath_ = get_download()->full_path();
-  im->LoadIcon(icon_filepath_,
+  icon_filename_ = get_download()->GetUserVerifiedFileName();
+  im->LoadIcon(icon_filename_,
                IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemGtk::OnLoadSmallIconComplete));
-  im->LoadIcon(icon_filepath_,
+  im->LoadIcon(icon_filename_,
                IconLoader::LARGE, &icon_consumer_,
                NewCallback(this, &DownloadItemGtk::OnLoadLargeIconComplete));
 }
 
 void DownloadItemGtk::UpdateTooltip() {
   string16 elided_filename = gfx::ElideFilename(
-      get_download()->GetFileName(),
+      get_download()->GetFileNameToReportUser(),
       gfx::Font(), kTooltipMaxWidth);
   gtk_widget_set_tooltip_text(body_.get(),
                               UTF16ToUTF8(elided_filename).c_str());
@@ -533,7 +533,7 @@ void DownloadItemGtk::UpdateNameLabel() {
   // much padding when we set the size request. We need to either use gfx::Font
   // or somehow extend TextElider.
   string16 elided_filename = gfx::ElideFilename(
-      get_download()->GetFileName(),
+      get_download()->GetFileNameToReportUser(),
       gfx::Font(), kTextWidth);
 
   GdkColor color = theme_provider_->GetGdkColor(
@@ -584,7 +584,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
           l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
     } else {
       string16 elided_filename = gfx::ElideFilename(
-          get_download()->original_name(), gfx::Font(), kTextWidth);
+          get_download()->target_name(), gfx::Font(), kTextWidth);
 
       dangerous_warning =
           l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,

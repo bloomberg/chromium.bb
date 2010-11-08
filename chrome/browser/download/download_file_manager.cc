@@ -286,7 +286,7 @@ void DownloadFileManager::OnIntermediateDownloadName(
     return;
 
   DownloadFile* download = it->second;
-  if (!download->Rename(full_path, false)) {
+  if (!download->Rename(full_path, false /* is_final_rename */)) {
     // Error. Between the time the UI thread generated 'full_path' to the time
     // this code runs, something happened that prevents us from renaming.
     CancelDownloadOnRename(id);
@@ -303,17 +303,16 @@ void DownloadFileManager::OnIntermediateDownloadName(
 // 1. tmp -> foo            (need_delete_crdownload=T)
 // 2. foo.crdownload -> foo (need_delete_crdownload=F)
 // 3. tmp-> unconfirmed.xxx.crdownload (need_delete_crdownload=F)
-void DownloadFileManager::OnFinalDownloadName(int id,
-                                              const FilePath& full_path,
-                                              bool need_delete_crdownload,
-                                              DownloadManager* manager) {
+void DownloadFileManager::OnFinalDownloadName(
+    int id, const FilePath& full_path, bool need_delete_crdownload,
+    DownloadManager* download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DownloadFile* download = GetDownloadFile(id);
   if (!download)
     return;
 
-  if (download->Rename(full_path, true)) {
+  if (download->Rename(full_path, true /* is_final_rename */)) {
 #if defined(OS_MACOSX)
     // Done here because we only want to do this once; see
     // http://crbug.com/13120 for details.
@@ -322,7 +321,7 @@ void DownloadFileManager::OnFinalDownloadName(int id,
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
-            manager, &DownloadManager::DownloadRenamedToFinalName, id,
+            download_manager, &DownloadManager::DownloadRenamedToFinalName, id,
             full_path));
   } else {
     // Error. Between the time the UI thread generated 'full_path' to the time

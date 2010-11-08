@@ -235,7 +235,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
   // Set the name of the download.
-  downloadPath_ = downloadModel->download()->GetFileName();
+  downloadPath_ = downloadModel->download()->GetFileNameToReportUser();
 
   std::wstring statusText = downloadModel->GetStatusText();
   if (statusText.empty()) {

@@ -448,8 +448,8 @@ void DragDownload(const DownloadItem* download,
   OSExchangeData data;
 
   if (icon) {
-    drag_utils::CreateDragImageForFile(download->GetFileName().value(), icon,
-                                       &data);
+    drag_utils::CreateDragImageForFile(
+        download->GetFileNameToReportUser().value(), icon, &data);
   }
 
   const FilePath full_path = download->full_path();
@@ -462,7 +462,7 @@ void DragDownload(const DownloadItem* download,
   // Add URL so that we can load supported files when dragged to TabContents.
   if (net::IsSupportedMimeType(mime_type)) {
     data.SetURL(GURL(WideToUTF8(full_path.ToWStringHack())),
-                     download->GetFileName().ToWStringHack());
+                     download->GetFileNameToReportUser().ToWStringHack());
   }
 
 #if defined(OS_WIN)
@@ -502,10 +502,10 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
       WideToUTF16Hack(base::TimeFormatShortDate(download->start_time())));
   file_value->SetInteger("id", id);
   file_value->SetString("file_path",
-      WideToUTF16Hack(download->full_path().ToWStringHack()));
+      WideToUTF16Hack(download->GetTargetFilePath().ToWStringHack()));
   // Keep file names as LTR.
   string16 file_name = WideToUTF16Hack(
-      download->GetFileName().ToWStringHack());
+      download->GetFileNameToReportUser().ToWStringHack());
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
   file_value->SetString("file_name", file_name);
   file_value->SetString("url", download->url().spec());

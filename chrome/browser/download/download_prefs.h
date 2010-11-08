@@ -33,10 +33,10 @@ class DownloadPrefs {
 
   // Enables auto-open based on file extension. Returns true on success.
   // TODO(phajdan.jr): Add WARN_UNUSED_RESULT here.
-  bool EnableAutoOpenBasedOnExtension(const FilePath& file_path);
+  bool EnableAutoOpenBasedOnExtension(const FilePath& file_name);
 
   // Disables auto-open based on file extension.
-  void DisableAutoOpenBasedOnExtension(const FilePath& file_path);
+  void DisableAutoOpenBasedOnExtension(const FilePath& file_name);
 
   void ResetToDefaults();
   void ResetAutoOpen();

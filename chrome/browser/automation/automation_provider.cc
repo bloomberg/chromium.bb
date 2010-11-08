@@ -282,8 +282,10 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
   dl_item_value->SetInteger("id", static_cast<int>(download->id()));
   dl_item_value->SetString("url", download->url().spec());
   dl_item_value->SetString("referrer_url", download->referrer_url().spec());
-  dl_item_value->SetString("file_name", download->GetFileName().value());
-  dl_item_value->SetString("full_path", download->full_path().value());
+  dl_item_value->SetString("file_name",
+                           download->GetFileNameToReportUser().value());
+  dl_item_value->SetString("full_path",
+                           download->GetTargetFilePath().value());
   dl_item_value->SetBoolean("is_paused", download->is_paused());
   dl_item_value->SetBoolean("open_when_complete",
                             download->open_when_complete());

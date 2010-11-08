@@ -159,7 +159,8 @@ void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     IconManager* im = g_browser_process->icon_manager();
-    SkBitmap* icon = im->LookupIcon(file->full_path(), IconLoader::NORMAL);
+    SkBitmap* icon = im->LookupIcon(file->GetUserVerifiedFileName(),
+                                    IconLoader::NORMAL);
     gfx::NativeView view = dom_ui_->tab_contents()->GetNativeView();
     download_util::DragDownload(file, icon, view);
   }

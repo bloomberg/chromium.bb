@@ -55,7 +55,7 @@ class DownloadItemMac : DownloadItem::Observer {
   CancelableRequestConsumerT<int, 0> icon_consumer_;
 
   // Stores the last known name where the file will be saved.
-  FilePath lastFilePath_;
+  FilePath lastFileName_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemMac);
 };

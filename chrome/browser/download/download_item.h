@@ -187,23 +187,31 @@ class DownloadItem {
     safety_state_ = safety_state;
   }
   bool auto_opened() { return auto_opened_; }
-  FilePath original_name() const { return original_name_; }
+  FilePath target_name() const { return target_name_; }
   bool save_as() const { return save_as_; }
   bool is_otr() const { return is_otr_; }
   bool is_extension_install() const { return is_extension_install_; }
   bool name_finalized() const { return name_finalized_; }
   bool is_temporary() const { return is_temporary_; }
-  bool need_final_rename() const { return need_final_rename_; }
-  void set_need_final_rename(bool need_final_rename) {
-    need_final_rename_ = need_final_rename;
-  }
   void set_opened(bool opened) { opened_ = opened; }
   bool opened() const { return opened_; }
 
+  // Returns the final target file path for the download.
+  FilePath GetTargetFilePath() const;
+
   // Returns the file-name that should be reported to the user, which is
-  // file_name_ for safe downloads and original_name_ for dangerous ones with
-  // the uniquifier number.
-  FilePath GetFileName() const;
+  // target_name_ possibly with the uniquifier number.
+  FilePath GetFileNameToReportUser() const;
+
+  // Returns the user-verified target name for the download.
+  // This returns the same path as target_name() for safe downloads
+  // but does not for dangerous downloads until the name is verified.
+  FilePath GetUserVerifiedFileName() const;
+
+  // Returns true if the current file name is not the final target name yet.
+  bool NeedsRename() const {
+    return target_name_ != full_path_.BaseName();
+  }
 
  private:
   void Init(bool start_timer);
@@ -218,15 +226,12 @@ class DownloadItem {
   // Request ID assigned by the ResourceDispatcherHost.
   int32 id_;
 
-  // Full path to the downloaded file
+  // Full path to the downloaded or downloading file.
   FilePath full_path_;
 
   // A number that should be appended to the path to make it unique, or 0 if the
   // path should be used as is.
   int path_uniquifier_;
-
-  // Short display version of the file
-  FilePath file_name_;
 
   // The URL from whence we came.
   GURL url_;
@@ -283,9 +288,10 @@ class DownloadItem {
   // before the observer is added.
   bool auto_opened_;
 
-  // Dangerous download are given temporary names until the user approves them.
-  // This stores their original name.
-  FilePath original_name_;
+  // Dangerous downloads or ongoing downloads are given temporary names until
+  // the user approves them or the downloads finish.
+  // This stores their final target name.
+  FilePath target_name_;
 
   // For canceling or pausing requests.
   int render_process_id_;
@@ -305,9 +311,6 @@ class DownloadItem {
 
   // True if the item was downloaded temporarily.
   bool is_temporary_;
-
-  // True if the file needs final rename.
-  bool need_final_rename_;
 
   // Did the user open the item either directly or indirectly (such as by
   // setting always open files of this type)? The shelf also sets this field

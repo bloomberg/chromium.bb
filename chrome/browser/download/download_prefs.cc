@@ -81,8 +81,8 @@ bool DownloadPrefs::IsAutoOpenEnabledForExtension(
   return auto_open_.find(extension) != auto_open_.end();
 }
 
-bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_path) {
-  FilePath::StringType extension = file_path.Extension();
+bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_name) {
+  FilePath::StringType extension = file_name.Extension();
   if (extension.empty())
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
@@ -95,8 +95,8 @@ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_path) {
   return true;
 }
 
-void DownloadPrefs::DisableAutoOpenBasedOnExtension(const FilePath& file_path) {
-  FilePath::StringType extension = file_path.Extension();
+void DownloadPrefs::DisableAutoOpenBasedOnExtension(const FilePath& file_name) {
+  FilePath::StringType extension = file_name.Extension();
   if (extension.empty())
     return;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
