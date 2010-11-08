@@ -16,23 +16,14 @@ using WebKit::WebMouseWheelEvent;
 namespace {
 
 // Returns true if the caps lock flag should be set for the given event.
-// TODO: Ideally the event itself would know about the caps lock key; see
-// <http://crbug.com/38226>. This function is only a temporary workaround that
-// guesses based on live state.
 bool CapsLockIsActive(const WebInputEvent& event) {
-  NSUInteger current_flags = [[NSApp currentEvent] modifierFlags];
-  bool caps_lock_on = (current_flags & NSAlphaShiftKeyMask) ? true : false;
-  // If this a caps lock keypress, then the event stream state can be wrong.
-  // Luckily, the weird event stream for caps lock makes it easy to tell whether
-  // caps lock is being turned on or off.
-  if (event.type == WebInputEvent::KeyDown ||
-      event.type == WebInputEvent::KeyUp) {
-    const WebKeyboardEvent* key_event =
-        static_cast<const WebKeyboardEvent*>(&event);
-    if (key_event->nativeKeyCode == 57)
-      caps_lock_on = (event.type == WebInputEvent::KeyDown);
-  }
-  return caps_lock_on;
+  // Only key events have accurate information for the caps lock flag; see
+  // <https://bugs.webkit.org/show_bug.cgi?id=46518>.
+  // For other types, use the live state.
+  if (WebInputEvent::isKeyboardEventType(event.type))
+    return (event.modifiers & WebInputEvent::CapsLockOn) != 0;
+  else
+    return ([[NSApp currentEvent] modifierFlags] & NSAlphaShiftKeyMask) != 0;
 }
 
 }  // namespace
