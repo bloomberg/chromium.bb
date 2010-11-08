@@ -318,7 +318,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       SSLConfigServiceManager::CreateDefaultManager(this));
 
 #if defined(OS_CHROMEOS)
-  chromeos_preferences_.reset(new chromeos::Preferences(this));
+  chromeos_preferences_.reset(new chromeos::Preferences());
   chromeos_preferences_->Init(prefs);
 #endif
 
@@ -399,11 +399,6 @@ void ProfileImpl::RegisterComponentExtensions() {
   // Web Store.
   component_extensions.push_back(
       std::make_pair("web_store", IDR_WEBSTORE_MANIFEST));
-
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
-  component_extensions.push_back(
-      std::make_pair("chat_manager", IDR_TALK_APP_MANIFEST));
-#endif
 
   for (ComponentExtensionList::iterator iter = component_extensions.begin();
     iter != component_extensions.end(); ++iter) {

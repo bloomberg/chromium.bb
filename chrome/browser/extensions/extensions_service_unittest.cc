@@ -342,12 +342,6 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
 
   profile_.reset(profile);
 
-  // TODO(scherkus): Remove this when we no longer need to have Talk
-  // component extension state as a preference http://crbug.com/56429
-  DictionaryValue* dict =
-      profile->GetPrefs()->GetMutableDictionary("extensions.settings");
-  dict->Remove("ggnioahjipcehijkhpdjekioddnjoben", NULL);
-
   service_ = profile->CreateExtensionsService(
       CommandLine::ForCurrentProcess(),
       extensions_install_dir);

@@ -9125,9 +9125,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADVANCEDFS">
         Enable Advanced File System, including USB and SD card support
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TALK">
-        Talk
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_SIDE_TABS">
         Side tabs
       </message>
@@ -9145,9 +9142,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ADVANCEDFS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for the filesystem.">
         Advanced Filesystem including USB/SD card support.
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_TALK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on Talk.">
-        Use Google Talk to chat across browser tabs.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SIDE_TABS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on side tabs.">
         Show tabs on the left side.

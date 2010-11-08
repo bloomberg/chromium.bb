@@ -146,7 +146,6 @@ extern const char kLanguageXkbAutoRepeatInterval[];
 extern const char kAccessibilityEnabled[];
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
-extern const char kLabsTalkEnabled[];
 extern const char kEnableScreenLock[];
 #endif
 extern const char kIpcDisabledMessages[];
