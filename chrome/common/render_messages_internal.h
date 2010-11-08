@@ -822,8 +822,9 @@ IPC_BEGIN_MESSAGES(View)
   // Used to instruct the RenderView to send back updates to the preferred size.
   IPC_MESSAGE_ROUTED1(ViewMsg_EnablePreferredSizeChangedMode, int /*flags*/)
 
-  IPC_MESSAGE_ROUTED3(ViewMsg_SearchBoxChange,
+  IPC_MESSAGE_ROUTED4(ViewMsg_SearchBoxChange,
                       string16 /*value*/,
+                      bool /*verbatim*/,
                       int /*selection_start*/,
                       int /*selection_end*/)
   IPC_MESSAGE_ROUTED2(ViewMsg_SearchBoxSubmit,

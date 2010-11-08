@@ -833,6 +833,7 @@ class RenderView : public RenderWidget,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode(int flags);
   void OnSearchBoxChange(const string16& value,
+                         bool verbatim,
                          int selection_start,
                          int selection_end);
   void OnSearchBoxSubmit(const string16& value, bool verbatim);

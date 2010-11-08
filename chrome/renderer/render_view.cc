@@ -4572,9 +4572,11 @@ void RenderView::OnEnablePreferredSizeChangedMode(int flags) {
 }
 
 void RenderView::OnSearchBoxChange(const string16& value,
+                                   bool verbatim,
                                    int selection_start,
                                    int selection_end) {
   search_box_.value = value;
+  search_box_.verbatim = verbatim;
   search_box_.selection_start = selection_start;
   search_box_.selection_end = selection_end;
   if (!webview() || !webview()->mainFrame())

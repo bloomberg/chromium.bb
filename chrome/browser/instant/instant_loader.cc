@@ -445,7 +445,7 @@ void InstantLoader::Update(TabContents* tab_contents,
         return;
       }
       preview_contents_->render_view_host()->SearchBoxChange(
-          user_text_, 0, 0);
+          user_text_, false, 0, 0);
 
       string16 complete_suggested_text_lower = l10n_util::ToLower(
           complete_suggested_text_);

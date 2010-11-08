@@ -504,6 +504,7 @@ class RenderViewHost : public RenderWidgetHost {
 
   // SearchBox notifications.
   void SearchBoxChange(const string16& value,
+                       bool verbatim,
                        int selection_start,
                        int selection_end);
   void SearchBoxSubmit(const string16& value,

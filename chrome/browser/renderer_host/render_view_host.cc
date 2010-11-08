@@ -2056,10 +2056,11 @@ void RenderViewHost::DidCancelPopupMenu() {
 #endif
 
 void RenderViewHost::SearchBoxChange(const string16& value,
+                                     bool verbatim,
                                      int selection_start,
                                      int selection_end) {
   Send(new ViewMsg_SearchBoxChange(
-      routing_id(), value, selection_start, selection_end));
+      routing_id(), value, verbatim, selection_start, selection_end));
 }
 
 void RenderViewHost::SearchBoxSubmit(const string16& value,
