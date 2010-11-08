@@ -309,7 +309,7 @@ uint32_t NPN_MemFlush(uint32_t size) {
 // This is for dynamic discovery of new plugins.
 // Should force a re-scan of the plugins directory to load new ones.
 void NPN_ReloadPlugins(NPBool reload_pages) {
-  WebKit::resetPluginCache(reload_pages);
+  WebKit::resetPluginCache(reload_pages ? true : false);
 }
 
 // Requests a range of bytes for a seekable stream.
