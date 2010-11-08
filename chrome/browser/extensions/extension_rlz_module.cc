@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_rlz_module.h"
 
 #include "base/scoped_ptr.h"
+#include "base/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "rlz/win/lib/lib_values.h"
@@ -70,6 +71,11 @@ bool GetEventFromName(const std::string& event_name,
 }  // namespace
 
 bool RlzRecordProductEventFunction::RunImpl() {
+  // This can be slow if registry access goes to disk. Should preferably
+  // perform registry operations on the File thread.
+  //   http://code.google.com/p/chromium/issues/detail?id=62098
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   std::string product_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &product_name));
   rlz_lib::Product product;
@@ -90,6 +96,11 @@ bool RlzRecordProductEventFunction::RunImpl() {
 }
 
 bool RlzGetAccessPointRlzFunction::RunImpl() {
+  // This can be slow if registry access goes to disk. Should preferably
+  // perform registry operations on the File thread.
+  //   http://code.google.com/p/chromium/issues/detail?id=62098
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   std::string ap_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &ap_name));
   rlz_lib::AccessPoint access_point;
@@ -103,6 +114,11 @@ bool RlzGetAccessPointRlzFunction::RunImpl() {
 }
 
 bool RlzSendFinancialPingFunction::RunImpl() {
+  // This can be slow if registry access goes to disk. Should preferably
+  // perform registry operations on the File thread.
+  //   http://code.google.com/p/chromium/issues/detail?id=62098
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   std::string product_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &product_name));
   rlz_lib::Product product;
@@ -159,6 +175,11 @@ bool RlzSendFinancialPingFunction::RunImpl() {
 }
 
 bool RlzClearProductStateFunction::RunImpl() {
+  // This can be slow if registry access goes to disk. Should preferably
+  // perform registry operations on the File thread.
+  //   http://code.google.com/p/chromium/issues/detail?id=62098
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
   std::string product_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &product_name));
   rlz_lib::Product product;
