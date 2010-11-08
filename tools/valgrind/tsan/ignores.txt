@@ -53,11 +53,14 @@ src:*ts_valgrind_intercepts.c
 ##################################################################
 # Don't instrument synchronization code
 src:*base/waitable_event*
-src:*base/atomic*
 src:*base/condition_variable*
 src:*base/lock*
 src:*base/stats_counters*
 src:*base/thread_local_storage*
+
+# Don't instrument code dealing with atomics (base::subtle)
+fun:*base*subtle*Release_Store*
+fun:*base*subtle*NoBarrier_CompareAndSwap*
 
 # Don't instrument tcmalloc
 src:*/tcmalloc/*

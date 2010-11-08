@@ -4,12 +4,6 @@
 # ThreadSanitizer, so we have to define fun:* rules for Mac OS complementing
 # the src:* rules defined for Linux.
 
-# Don't instrument code dealing with atomics (base::subtle)
-fun:*base*subtle*NoBarrier_Load*
-fun:*base*subtle*Release_Store*
-fun:*base*subtle*NoBarrier_Store*
-fun:*base*subtle*NoBarrier_CompareAndSwap*
-
 # we ignore the Security libraries for now since
 # their instrumentation is very slow.
 # TODO(timurrrr): investigate whether we need to instrument them
