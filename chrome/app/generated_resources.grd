@@ -5640,12 +5640,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_SUGGESTION_HEADING" desc="Heading in the error page above the actual suggestions">
         Here are some suggestions:
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_LINK" desc="Link in the error page that opens more details about the load error">
-        More information on this error
-      </message>
-      <message name="IDS_ERRORPAGES_DETAILS_HEADING" desc="On an error page, the heading text next to the detailed error description">
-        Below is the original error message
-      </message>
 
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD" desc="When a page fails to load, we provide a suggestion that the user try reloading the page later">
         <ph name="BEGIN_LINK">&lt;a jsvalues="href:reloadUrl"&gt;</ph>Reload<ph name="END_LINK">&lt;/a&gt;</ph> this web page later.

@@ -301,12 +301,6 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
 
-  // Grab strings that are applicable to all error pages
-  error_strings->SetString("detailsLink",
-    l10n_util::GetStringUTF16(IDS_ERRORPAGES_DETAILS_LINK));
-  error_strings->SetString("detailsHeading",
-    l10n_util::GetStringUTF16(IDS_ERRORPAGES_DETAILS_HEADING));
-
   // Grab the strings and settings that depend on the error type.  Init
   // options with default values.
   LocalizedErrorMap options = {
