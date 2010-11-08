@@ -22,6 +22,11 @@ compositor_SOURCES =				\
 	drm.c					\
 	shm.c
 
+udevdir = $(sysconfdir)/udev
+
+dist_udev_DATA =				\
+	70-wayland.rules
+
 BUILT_SOURCES =					\
 	screenshooter-server-protocol.h		\
 	screenshooter-protocol.c
