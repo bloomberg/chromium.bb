@@ -52,6 +52,7 @@ def _GrabOutput(cmd):
 
 def _GrabTags():
   """Returns list of tags from current git repository."""
+  # TODO(dianders): replace this with the python equivalent.
   cmd = ("git for-each-ref refs/tags | awk '{print $3}' | "
          "sed 's,refs/tags/,,g' | sort -t. -k3,3rn -k4,4rn")
   return _GrabOutput(cmd).split()
@@ -129,7 +130,20 @@ class Commit(object):
 
   def __init__(self, commit, projectname, commit_email, commit_date, subject,
                body, tracker_acc):
-    """Create commit logs."""
+    """Create commit logs.
+
+    Args:
+      commit: The commit hash (sha) from git.
+      projectname: The project name, from:
+                   git config --get remote.cros.projectname
+      commit_email: The email address associated with the commit (%ce in git
+                    log)
+      commit_date: The date of the commit, like "Mon Nov 1 17:34:14 2010 -0500"
+                   (%cd in git log))
+      subject: The subject of the commit (%s in git log)
+      body: The body of the commit (%b in git log)
+      tracker_acc: A tracker_access.TrackerAccess object.
+    """
     self.commit = commit
     self.projectname = projectname
     self.commit_email = commit_email
@@ -149,7 +163,12 @@ class Commit(object):
     Returns:
       A list of Issue objects, each of which holds info about a bug.
     """
+    # NOTE: most of this code is copied from bugdroid:
+    #   <http://src.chromium.org/viewvc/chrome/trunk/tools/bugdroid/bugdroid.py?revision=59229&view=markup>
 
+    # Get a list of bugs.  Handle lots of possibilities:
+    # - Multiple "BUG=" lines, with varying amounts of whitespace.
+    # - For each BUG= line, bugs can be split by commas _or_ by whitespace (!)
     entries = []
     for line in self.body.split('\n'):
       match = re.match(r'^ *BUG *=(.*)', line)
@@ -157,6 +176,13 @@ class Commit(object):
         for i in match.group(1).split(','):
           entries.extend(filter(None, [x.strip() for x in i.split()]))
 
+    # Try to parse the bugs.  Handle lots of different formats:
+    # - The whole URL, from which we parse the project and bug.
+    # - A simple string that looks like "project:bug"
+    # - A string that looks like "bug", which will always refer to the previous
+    #   tracker referenced (defaulting to the default tracker).
+    #
+    # We will create an "Issue" object for each bug.
     issues = []
     last_tracker = DEFAULT_TRACKER
     regex = (r'http://code.google.com/p/(\S+)/issues/detail\?id=([0-9]+)'
@@ -174,6 +200,7 @@ class Commit(object):
         elif bug_tuple[4]:
           issues.append(Issue(last_tracker, bug_tuple[4], self._tracker_acc))
 
+    # Sort the issues and return...
     issues.sort()
     return issues
 
@@ -205,12 +232,12 @@ class Commit(object):
         bug_str = '<font color="red">none</font>'
 
     cols = [
-      cgi.escape(self.projectname),
-      str(self.commit_date),
-      commit_desc,
-      cgi.escape(self.commit_email),
-      bug_str,
-      cgi.escape(self.subject[:100]),
+        cgi.escape(self.projectname),
+        str(self.commit_date),
+        commit_desc,
+        cgi.escape(self.commit_email),
+        bug_str,
+        cgi.escape(self.subject[:100]),
     ]
     return '<tr><td>%s</td></tr>' % ('</td><td>'.join(cols))
 
@@ -221,7 +248,17 @@ class Commit(object):
 
 
 def _GrabChanges(path, tag1, tag2, tracker_acc):
-  """Return list of commits to path between tag1 and tag2."""
+  """Return list of commits to path between tag1 and tag2.
+
+  Args:
+    path: One of the directories managed by repo.
+    tag1: The first of the two tags to pass to git log.
+    tag2: The second of the two tags to pass to git log.
+    tracker_acc: A tracker_access.TrackerAccess object.
+
+  Returns:
+    A list of "Commit" objects.
+  """
 
   cmd = 'cd %s && git config --get remote.cros.projectname' % path
   projectname = _GrabOutput(cmd).strip()
@@ -239,19 +276,24 @@ def _GrabChanges(path, tag1, tag2, tracker_acc):
 
 
 def _ParseArgs():
+  """Parse command-line arguments.
+
+  Returns:
+    An optparse.OptionParser object.
+  """
   parser = optparse.OptionParser()
   parser.add_option(
-      "--sort-by-date", dest="sort_by_date", default=False,
-      action='store_true', help="Sort commits by date.")
+      '--sort-by-date', dest='sort_by_date', default=False,
+      action='store_true', help='Sort commits by date.')
   parser.add_option(
-      "--tracker-user", dest="tracker_user", default=None,
-      help="Specify a username to login to code.google.com.")
+      '--tracker-user', dest='tracker_user', default=None,
+      help='Specify a username to login to code.google.com.')
   parser.add_option(
-      "--tracker-pass", dest="tracker_pass", default=None,
-      help="Specify a password to go w/ user.")
+      '--tracker-pass', dest='tracker_pass', default=None,
+      help='Specify a password to go w/ user.')
   parser.add_option(
-      "--tracker-passfile", dest="tracker_passfile", default=None,
-      help="Specify a file containing a password to go w/ user.")
+      '--tracker-passfile', dest='tracker_passfile', default=None,
+      help='Specify a file containing a password to go w/ user.')
   return parser.parse_args()
 
 
@@ -264,7 +306,11 @@ def main():
   elif len(args) == 1:
     tag2, = args
     if tag2 in tags:
-      tag1 = tags[tags.index(tag2) + 1]
+      tag2_index = tags.index(tag2)
+      if tag2_index == len(tags) - 1:
+        print >>sys.stderr, 'No previous tag for %s' % tag2
+        sys.exit(1)
+      tag1 = tags[tag2_index + 1]
     else:
       print >>sys.stderr, 'Unrecognized tag: %s' % tag2
       sys.exit(1)
@@ -287,7 +333,7 @@ def main():
       print >>sys.stderr, INSTRS_FOR_GDATA
       sys.exit(1)
     if options.tracker_passfile is not None:
-      options.tracker_pass = open(options.tracker_passfile, "r").read().strip()
+      options.tracker_pass = open(options.tracker_passfile, 'r').read().strip()
     tracker_acc = tracker_access.TrackerAccess(options.tracker_user,
                                                options.tracker_pass)
   else:
@@ -307,7 +353,7 @@ def main():
   print '<table border="1" cellpadding="4">'
   print '<tr><th>%s</th>' % ('</th><th>'.join(cols))
   if options.sort_by_date:
-    changes.sort(key=operator.attrgetter("commit_date"))
+    changes.sort(key=operator.attrgetter('commit_date'))
   else:
     changes.sort()
   for change in changes:
