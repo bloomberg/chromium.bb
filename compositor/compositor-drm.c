@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <signal.h>
+#include <linux/kd.h>
 #include <linux/vt.h>
 #include <linux/input.h>
 
@@ -509,6 +510,9 @@ static void on_enter_vt(int signal_number, void *data)
 	fprintf(stderr, "enter vt\n");
 
 	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
+	ret = ioctl(ec->tty_fd, KDSETMODE, KD_GRAPHICS);
+	if (ret)
+		fprintf(stderr, "failed to set KD_GRAPHICS mode on console: %m\n");
 	ec->vt_active = 1;
 
 	wl_list_for_each(output, &ec->base.output_list, base.link) {
@@ -535,6 +539,9 @@ static void on_leave_vt(int signal_number, void *data)
 	}
 
 	ioctl (ec->tty_fd, VT_RELDISP, 1);
+	ret = ioctl(ec->tty_fd, KDSETMODE, KD_TEXT);
+	if (ret)
+		fprintf(stderr, "failed to set KD_TEXT mode on console: %m\n");
 	ec->vt_active = 0;
 }
 
@@ -562,6 +569,7 @@ static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
 {
 	struct termios raw_attributes;
 	struct vt_mode mode = { 0 };
+	int ret;
 
 	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
 	if (ec->tty_fd <= 0) {
@@ -590,6 +598,10 @@ static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
 	ec->tty_input_source =
 		wl_event_loop_add_fd(loop, ec->tty_fd,
 				     WL_EVENT_READABLE, on_tty_input, ec);
+
+	ret = ioctl(ec->tty_fd, KDSETMODE, KD_GRAPHICS);
+	if (ret)
+		fprintf(stderr, "failed to set KD_GRAPHICS mode on tty: %m\n");
 
 	ec->vt_active = 1;
 	mode.mode = VT_PROCESS;
