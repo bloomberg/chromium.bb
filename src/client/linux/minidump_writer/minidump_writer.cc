@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,6 @@
 #include "client/linux/minidump_writer/minidump_writer.h"
 #include "client/minidump_file_writer-inl.h"
 
-#include <algorithm>
-
 #include <errno.h>
 #include <fcntl.h>
 #if !defined(__ANDROID__)
@@ -60,6 +58,8 @@
 #include <sys/user.h>
 #endif
 #include <sys/utsname.h>
+
+#include <algorithm>
 
 #include "client/minidump_file_writer.h"
 #include "google_breakpad/common/minidump_format.h"
@@ -252,9 +252,9 @@ static void CPUFillFromThreadInfo(MDRawContextAMD64 *out,
   out->flt_save.tag_word = info.fpregs.ftw;
   out->flt_save.error_opcode = info.fpregs.fop;
   out->flt_save.error_offset = info.fpregs.rip;
-  out->flt_save.error_selector = 0; // We don't have this.
+  out->flt_save.error_selector = 0;  // We don't have this.
   out->flt_save.data_offset = info.fpregs.rdp;
-  out->flt_save.data_selector = 0;  // We don't have this.
+  out->flt_save.data_selector = 0;   // We don't have this.
   out->flt_save.mx_csr = info.fpregs.mxcsr;
   out->flt_save.mx_csr_mask = info.fpregs.mxcr_mask;
   memcpy(&out->flt_save.float_registers, &info.fpregs.st_space, 8 * 16);
@@ -300,7 +300,7 @@ static void CPUFillFromUContext(MDRawContextAMD64 *out, const ucontext *uc,
   out->flt_save.error_opcode = fpregs->fop;
   out->flt_save.error_offset = fpregs->rip;
   out->flt_save.data_offset = fpregs->rdp;
-  out->flt_save.error_selector = 0; // We don't have this.
+  out->flt_save.error_selector = 0;  // We don't have this.
   out->flt_save.data_selector = 0;  // We don't have this.
   out->flt_save.mx_csr = fpregs->mxcsr;
   out->flt_save.mx_csr_mask = fpregs->mxcr_mask;
@@ -322,7 +322,7 @@ static void CPUFillFromThreadInfo(MDRawContextARM *out,
 #if !defined(__ANDROID__)
   out->float_save.fpscr = info.fpregs.fpsr |
     (static_cast<u_int64_t>(info.fpregs.fpcr) << 32);
-  //TODO: sort this out, actually collect floating point registers
+  // TODO: sort this out, actually collect floating point registers
   memset(&out->float_save.regs, 0, sizeof(out->float_save.regs));
   memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
 #endif
@@ -352,7 +352,7 @@ static void CPUFillFromUContext(MDRawContextARM *out, const ucontext *uc,
 
   out->cpsr = uc->uc_mcontext.arm_cpsr;
 
-  //TODO: fix this after fixing ExceptionHandler
+  // TODO: fix this after fixing ExceptionHandler
   out->float_save.fpscr = 0;
   memset(&out->float_save.regs, 0, sizeof(out->float_save.regs));
   memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
@@ -375,7 +375,7 @@ class MinidumpWriter {
 #if !defined(__ARM_EABI__)
         float_state_(&context->float_state),
 #else
-        //TODO: fix this after fixing ExceptionHandler
+        // TODO: fix this after fixing ExceptionHandler
         float_state_(NULL),
 #endif
         crashing_tid_(context->tid),
@@ -409,8 +409,9 @@ class MinidumpWriter {
       if (dyn.d_tag == DT_DEBUG) {
         r_debug = (struct r_debug*)dyn.d_un.d_ptr;
         continue;
-      } else if (dyn.d_tag == DT_NULL)
+      } else if (dyn.d_tag == DT_NULL) {
         break;
+      }
     }
 #endif
 
@@ -677,7 +678,7 @@ class MinidumpWriter {
             ip_memory_d.start_of_memory_range =
               std::max(mapping.start_addr,
                        uintptr_t(ip - (kIPMemorySize / 2)));
-            uintptr_t end_of_range = 
+            uintptr_t end_of_range =
               std::min(uintptr_t(ip + (kIPMemorySize / 2)),
                        uintptr_t(mapping.start_addr + mapping.size));
             ip_memory_d.memory.data_size =
@@ -742,8 +743,8 @@ class MinidumpWriter {
   }
 
   static bool ShouldIncludeMapping(const MappingInfo& mapping) {
-    if (mapping.name[0] == 0 || // we only want modules with filenames.
-        mapping.offset || // we only want to include one mapping per shared lib.
+    if (mapping.name[0] == 0 ||  // only want modules with filenames.
+        mapping.offset ||  // only want to include one mapping per shared lib.
         mapping.size < 4096) {  // too small to get a signature for.
       return false;
     }
@@ -1084,7 +1085,7 @@ class MinidumpWriter {
           }
         }
 
-popline:
+ popline:
         line_reader->PopLine(line_len);
       }
       sys_close(fd);
@@ -1140,7 +1141,7 @@ popline:
 
       if (r < 1)
         break;
-      
+
       total += r;
       bufptr->len += r;
       if (bufptr->len == kBufSize) {

@@ -27,8 +27,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <string>
-
 #include <stdint.h>
 #include <unistd.h>
 #include <signal.h>
@@ -37,6 +35,8 @@
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
+
+#include <string>
 
 #include "breakpad_googletest_includes.h"
 #include "client/linux/handler/exception_handler.h"
@@ -170,7 +170,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemory) {
     // of the block of memory, because the minidump should contain 128
     // bytes on either side of the instruction pointer.
     memcpy(memory + kOffset, instructions, sizeof(instructions));
-    
+
     // Now execute the instructions, which should crash.
     typedef void (*void_function)(void);
     void_function memory_function =
@@ -294,7 +294,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMinBound) {
     // of the block of memory, because the minidump should contain 128
     // bytes on either side of the instruction pointer.
     memcpy(memory + kOffset, instructions, sizeof(instructions));
-    
+
     // Now execute the instructions, which should crash.
     typedef void (*void_function)(void);
     void_function memory_function =
@@ -418,7 +418,7 @@ TEST(ExceptionHandlerTest, InstructionPointerMemoryMaxBound) {
     // of the block of memory, because the minidump should contain 128
     // bytes on either side of the instruction pointer.
     memcpy(memory + kOffset, instructions, sizeof(instructions));
-    
+
     // Now execute the instructions, which should crash.
     typedef void (*void_function)(void);
     void_function memory_function =

@@ -39,6 +39,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <vector>
+
 #include "client/linux/crash_generation/crash_generation_server.h"
 #include "client/linux/crash_generation/client_info.h"
 #include "client/linux/handler/exception_handler.h"
@@ -142,15 +144,15 @@ FindProcessHoldingSocket(pid_t* pid_out, ino_t socket_inode)
 
       ino_t fd_inode;
       if (GetInodeForProcPath(&fd_inode, buf)
-	  && fd_inode == socket_inode) {
-	if (already_found) {
-	  closedir(fd);
-	  return false;
-	}
+          && fd_inode == socket_inode) {
+        if (already_found) {
+          closedir(fd);
+          return false;
+        }
 
-	already_found = true;
-	*pid_out = current_pid;
-	break;
+        already_found = true;
+        *pid_out = current_pid;
+        break;
       }
     }
 
@@ -224,11 +226,11 @@ CrashGenerationServer::Stop()
 {
   assert(pthread_self() != thread_);
 
- if (!started_)
-   return;
+  if (!started_)
+    return;
 
   HANDLE_EINTR(write(control_pipe_out_, &kCommandQuit, 1));
-  
+
   void* dummy;
   pthread_join(thread_, &dummy);
 
@@ -280,7 +282,7 @@ CrashGenerationServer::Run()
       if (EINTR == errno) {
         continue;
       } else {
-	return;
+        return;
       }
     }
 
@@ -463,4 +465,4 @@ CrashGenerationServer::ThreadMain(void *arg)
   return NULL;
 }
 
-} // namespace google_breakpad
+}  // namespace google_breakpad
