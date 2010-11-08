@@ -69,33 +69,32 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
   // Fail to establish a channel if some implementation of GL cannot be
   // initialized.
   if (gfx::GLContext::InitializeOneOff()) {
-    // Fail to establish channel if GPU stats cannot be retreived.
-    if (gpu_info_collector::CollectGraphicsInfo(&gpu_info)) {
-      child_process_logging::SetGpuInfo(gpu_info);
-      GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
-      if (iter == gpu_channels_.end()) {
-        channel = new GpuChannel(renderer_id);
-      } else {
-        channel = iter->second;
-      }
+    if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
+      LOG(WARNING) << "Could not collect GPU info.";
 
-      DCHECK(channel != NULL);
+    child_process_logging::SetGpuInfo(gpu_info);
+    GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
 
-      if (channel->Init()) {
-        gpu_channels_[renderer_id] = channel;
-      } else {
-        channel = NULL;
-      }
+    if (iter == gpu_channels_.end())
+      channel = new GpuChannel(renderer_id);
+    else
+      channel = iter->second;
 
-      if (channel.get()) {
-        channel_handle.name = channel->GetChannelName();
+    DCHECK(channel != NULL);
+
+    if (channel->Init())
+      gpu_channels_[renderer_id] = channel;
+    else
+      channel = NULL;
+
+    if (channel.get()) {
+      channel_handle.name = channel->GetChannelName();
 #if defined(OS_POSIX)
-        // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
-        // that it gets closed after it has been sent.
-        int renderer_fd = channel->DisownRendererFd();
-        channel_handle.socket = base::FileDescriptor(renderer_fd, true);
+      // On POSIX, pass the renderer-side FD. Also mark it as auto-close so
+      // that it gets closed after it has been sent.
+      int renderer_fd = channel->DisownRendererFd();
+      channel_handle.socket = base::FileDescriptor(renderer_fd, true);
 #endif
-      }
     }
   }
 

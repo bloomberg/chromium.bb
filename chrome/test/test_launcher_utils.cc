@@ -33,12 +33,13 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableLogging);
   command_line->AppendSwitchASCII(switches::kLoggingLevel, "1");  // warning
 
-  // TODO(apatrick): Other pending changes will fix this for mac.
-#if !defined(OS_MACOSX)
   // Force all tests to use OSMesa if they launch the GPU process.
   command_line->AppendSwitchASCII(switches::kUseGL,
                                   gfx::kGLImplementationOSMesaName);
-#endif
+
+  // Mac does not support accelerated compositing with OSMesa.
+  // http://crbug.com/58343
+  command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {

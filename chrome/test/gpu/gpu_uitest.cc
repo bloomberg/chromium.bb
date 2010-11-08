@@ -21,14 +21,7 @@ class GPUUITest : public UITest {
   FilePath gpu_test_dir_;
 };
 
-// TODO(apatrick): OSMesa is flaky on Mac. http://crbug/61037
-#if defined(OS_MACOSX)
-#define MAYBE_UITestLaunchedWithOSMesa DISABLED_UITestLaunchedWithOSMesa
-#else
-#define MAYBE_UITestLaunchedWithOSMesa UITestLaunchedWithOSMesa
-#endif
-
-TEST_F(GPUUITest, MAYBE_UITestLaunchedWithOSMesa) {
+TEST_F(GPUUITest, UITestLaunchedWithOSMesa) {
   // Check the webgl test reports success and that the renderer was OSMesa.
   // We use OSMesa for tests in order to get consistent results across a
   // variety of boxes.
