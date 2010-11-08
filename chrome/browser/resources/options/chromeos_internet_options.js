@@ -59,15 +59,15 @@ cr.define('options', function() {
       };
       $('disableWifi').onclick = function(event) {
         event.target.disabled = true;
-         chrome.send('disableWifi', []);
+        chrome.send('disableWifi', []);
       };
       $('enableCellular').onclick = function(event) {
         event.target.disabled = true;
-         chrome.send('enableCellular', []);
+        chrome.send('enableCellular', []);
       };
       $('disableCellular').onclick = function(event) {
-         event.target.disabled = true;
-         chrome.send('disableCellular', []);
+        event.target.disabled = true;
+        chrome.send('disableCellular', []);
       };
       $('purchaseMore').onclick = function(event) {
         chrome.send('buyDataPlan', []);

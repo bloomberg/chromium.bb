@@ -301,6 +301,8 @@ void InternetOptionsHandler::GetLocalizedValues(
 
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  localized_strings->SetBoolean("wifiAvailable", cros->wifi_available());
+  localized_strings->SetBoolean("wifiEnabled", cros->wifi_enabled());
   localized_strings->SetBoolean("cellularAvailable",
                                 cros->cellular_available());
   localized_strings->SetBoolean("cellularEnabled", cros->cellular_enabled());
