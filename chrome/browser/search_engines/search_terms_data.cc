@@ -5,6 +5,7 @@
 #include "chrome/browser/search_engines/search_terms_data.h"
 
 #include "base/logging.h"
+#include "base/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/google/google_url_tracker.h"
@@ -79,6 +80,8 @@ std::wstring UIThreadSearchTermsData::GetRlzParameterValue() const {
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.
   std::wstring brand;
+  // See http://crbug.com/62337.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   if (GoogleUpdateSettings::GetBrand(&brand) && !brand.empty() &&
       !GoogleUpdateSettings::IsOrganic(brand))
     RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
