@@ -17,7 +17,8 @@ class NotificationsPermissionTest : public UITest {
   }
 };
 
-TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
+// Flaky, http://crbug.com/62311.
+TEST_F(NotificationsPermissionTest, FLAKY_TestUserGestureInfobar) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
@@ -43,7 +44,8 @@ TEST_F(NotificationsPermissionTest, TestUserGestureInfobar) {
   EXPECT_TRUE(tab->WaitForInfoBarCount(1));
 }
 
-TEST_F(NotificationsPermissionTest, TestNoUserGestureInfobar) {
+// Flaky, http://crbug.com/62311.
+TEST_F(NotificationsPermissionTest, FLAKY_TestNoUserGestureInfobar) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());

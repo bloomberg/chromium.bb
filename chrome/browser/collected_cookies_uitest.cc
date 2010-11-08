@@ -21,7 +21,8 @@ const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 typedef UITest CollectedCookiesTest;
 
-TEST_F(CollectedCookiesTest, DoubleDisplay) {
+// Flaky, http://crbug.com/62311.
+TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -43,7 +44,8 @@ TEST_F(CollectedCookiesTest, DoubleDisplay) {
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
 }
 
-TEST_F(CollectedCookiesTest, NavigateAway) {
+// Flaky, http://crbug.com/62311.
+TEST_F(CollectedCookiesTest, FLAKY_NavigateAway) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 

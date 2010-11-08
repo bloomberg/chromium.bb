@@ -23,7 +23,8 @@
 // tabs out.
 #define MAYBE_Tab2OutOfTabStrip DISABLED_Tab2OutOfTabStrip
 #else
-#define MAYBE_Tab2OutOfTabStrip Tab2OutOfTabStrip
+// Flaky, http://crbug.com/62311.
+#define MAYBE_Tab2OutOfTabStrip FLAKY_Tab2OutOfTabStrip
 #endif
 
 #if defined(OS_LINUX)
@@ -42,8 +43,9 @@
 #define MAYBE_Tab1Tab2 DISABLED_Tab1Tab2
 #define MAYBE_Tab1Tab3 DISABLED_Tab1Tab3
 #else
-#define MAYBE_Tab1Tab2 Tab1Tab2
-#define MAYBE_Tab1Tab3 Tab1Tab3
+// Flaky, http://crbug.com/62311.
+#define MAYBE_Tab1Tab2 FLAKY_Tab1Tab2
+#define MAYBE_Tab1Tab3 FLAKY_Tab1Tab3
 #endif
 
 class TabDraggingTest : public UITest {

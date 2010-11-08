@@ -115,16 +115,18 @@ TEST_F(KeyboardAccessTest, DISABLED_TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, 0);
 }
 
-TEST_F(KeyboardAccessTest, TestShiftAltMenuKeyboardAccess) {
+// Flaky, http://crbug.com/62311.
+TEST_F(KeyboardAccessTest, FLAKY_TestShiftAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, views::Event::EF_SHIFT_DOWN);
 }
 
+#if defined(OS_CHROMEOS)
 // TODO(isherman): This test times out on ChromeOS.  We should merge it with
 // BrowserKeyEventsTest.ReservedAccelerators, but just disable for now.
-#if defined(OS_CHROMEOS)
 #define MAYBE_ReserveKeyboardAccelerators DISABLED_ReserveKeyboardAccelerators
 #else
-#define MAYBE_ReserveKeyboardAccelerators ReserveKeyboardAccelerators
+// Flaky, http://crbug.com/62311.
+#define MAYBE_ReserveKeyboardAccelerators FLAKY_ReserveKeyboardAccelerators
 #endif
 
 // Test that JavaScript cannot intercept reserved keyboard accelerators like
