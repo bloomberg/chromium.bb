@@ -323,7 +323,7 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (!match.destination_url.is_valid())
     return;
 
-  if ((match.transition == TYPED) && (match.destination_url ==
+  if ((match.transition == PageTransition::TYPED) && (match.destination_url ==
       URLFixerUpper::FixupURL(WideToUTF8(permanent_text_), std::string()))) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
