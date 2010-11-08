@@ -1406,13 +1406,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     for (size_t i = 0; i < cellular_networks_.size(); i++) {
       if (cellular_networks_[i]->connecting_or_connected()) {
         cellular_ = cellular_networks_[i];
-        // If new cellular, then update data plan list.
+        // If new cellular, then request update of the data plan list.
         if (cellular_networks_[i]->service_path() !=
                 prev_cellular_service_path) {
-          CellularDataPlanList* list = RetrieveCellularDataPlans(
-              cellular_->service_path().c_str());
-          UpdateCellularDataPlan(list);
-          FreeCellularDataPlanList(list);
+          RefreshCellularDataPlans(cellular_);
         }
         break;  // There is only one connected or connecting cellular network.
       }
