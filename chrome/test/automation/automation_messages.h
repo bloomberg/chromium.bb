@@ -520,7 +520,7 @@ struct ParamTraits<NavigationInfo> {
 };
 
 // A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
-struct ContextMenuParams {
+struct MiniContextMenuParams {
   // The x coordinate for displaying the menu.
   int screen_x;
 
@@ -550,8 +550,8 @@ struct ContextMenuParams {
 
 // Traits for ContextMenuParams structure to pack/unpack.
 template <>
-struct ParamTraits<ContextMenuParams> {
-  typedef ContextMenuParams param_type;
+struct ParamTraits<MiniContextMenuParams> {
+  typedef MiniContextMenuParams param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.screen_x);
     WriteParam(m, p.screen_y);

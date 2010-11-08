@@ -618,7 +618,7 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
   POINT screen_pt = { params.x, params.y };
   MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_pt, 1);
 
-  IPC::ContextMenuParams ipc_params;
+  IPC::MiniContextMenuParams ipc_params;
   ipc_params.screen_x = screen_pt.x;
   ipc_params.screen_y = screen_pt.y;
   ipc_params.link_url = params.link_url;

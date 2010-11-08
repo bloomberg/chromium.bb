@@ -953,7 +953,7 @@ IPC_BEGIN_MESSAGES(Automation)
                       int /* tab_handle */,
                       HANDLE /* source menu handle */,
                       int    /* align flags */,
-                      IPC::ContextMenuParams /* params */)
+                      IPC::MiniContextMenuParams /* params */)
 
   IPC_MESSAGE_ROUTED2(AutomationMsg_ForwardContextMenuCommandToChrome,
                       int /* tab_handle */,

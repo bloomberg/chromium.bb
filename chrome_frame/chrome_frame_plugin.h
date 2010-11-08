@@ -120,7 +120,7 @@ END_MSG_MAP()
 
   virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
                                    int align_flags,
-                                   const IPC::ContextMenuParams& params) {
+                                   const IPC::MiniContextMenuParams& params) {
     if (!menu_handle || !automation_client_.get()) {
       NOTREACHED();
       return;
@@ -219,7 +219,7 @@ END_MSG_MAP()
   // Return true if menu command is processed, otherwise the command will be
   // passed to Chrome for execution. Override in most-derived class if needed.
   bool HandleContextMenuCommand(UINT cmd,
-                                const IPC::ContextMenuParams& params) {
+                                const IPC::MiniContextMenuParams& params) {
     return false;
   }
 

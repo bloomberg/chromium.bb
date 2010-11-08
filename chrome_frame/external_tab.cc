@@ -273,8 +273,10 @@ void ExternalTabProxy::HandleAccelerator(const MSG& accel_message) {
       &UIDelegate::OnHandleAccelerator, accel_message));
 }
 
-void ExternalTabProxy::HandleContextMenu(HANDLE menu_handle, int align_flags,
-                                         const IPC::ContextMenuParams& params) {
+void ExternalTabProxy::HandleContextMenu(
+    HANDLE menu_handle,
+    int align_flags,
+    const IPC::MiniContextMenuParams& params) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnHandleContextMenu, menu_handle, align_flags, params));
 }

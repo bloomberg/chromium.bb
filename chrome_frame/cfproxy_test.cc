@@ -73,7 +73,7 @@ struct MockChromeProxyDelegate : public ChromeProxyDelegate {
   // Misc. UI.
   MOCK_METHOD1(HandleAccelerator, void(const MSG& accel_message));
   MOCK_METHOD3(HandleContextMenu, void(HANDLE menu_handle, int align_flags,
-      const IPC::ContextMenuParams& params));
+      const IPC::MiniContextMenuParams& params));
   MOCK_METHOD1(TabbedOut, void(bool reverse));
 
   //
@@ -486,7 +486,7 @@ TEST(Deserialize, DispatchTabMessage) {
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m9));
 
   // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
-  IPC::ContextMenuParams ctxmenu = { 711, 512, GURL("http://link_src"),
+  IPC::MiniContextMenuParams ctxmenu = { 711, 512, GURL("http://link_src"),
       GURL("http://unfiltered_link_url"), GURL("http://src_url"),
       GURL("http://page_url"), GURL("http://frame_url") };
   AutomationMsg_ForwardContextMenuToExternalHost m10(0, 1, HANDLE(7), 4,

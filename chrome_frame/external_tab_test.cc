@@ -41,7 +41,7 @@ struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD3(OnMessageFromChromeFrame, void(const std::string& message,
       const std::string& origin, const std::string& target));
   MOCK_METHOD3(OnHandleContextMenu, void(HANDLE menu_handle, int align_flags,
-      const IPC::ContextMenuParams& params));
+      const IPC::MiniContextMenuParams& params));
   MOCK_METHOD1(OnHandleAccelerator, void(const MSG& accel_message));
   MOCK_METHOD1(OnTabbedOut, void(bool reverse));
   MOCK_METHOD1(OnGoToHistoryOffset, void(int offset));

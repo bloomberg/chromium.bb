@@ -34,7 +34,7 @@ namespace IPC {
   struct NavigationInfo;
   struct AutomationURLRequest;
   struct AttachExternalTabParams;
-  struct ContextMenuParams;
+  struct MiniContextMenuParams;
 };
 
 class GURL;
@@ -196,7 +196,7 @@ class ChromeProxyDelegate {
   // Misc. UI.
   virtual void HandleAccelerator(const MSG& accel_message) = 0;
   virtual void HandleContextMenu(HANDLE menu_handle, int align_flags,
-                                 const IPC::ContextMenuParams& params) = 0;
+                                 const IPC::MiniContextMenuParams& params) = 0;
   virtual void TabbedOut(bool reverse) = 0;
 
   // Tab related.

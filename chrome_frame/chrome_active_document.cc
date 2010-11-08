@@ -971,7 +971,7 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
 }
 
 bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
-    const IPC::ContextMenuParams& params) {
+    const IPC::MiniContextMenuParams& params) {
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 
