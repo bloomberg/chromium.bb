@@ -136,6 +136,8 @@ void DownloadManager::Shutdown() {
 
   download_history_.reset();
 
+  request_context_getter_ = NULL;
+
   shutdown_needed_ = false;
 }
 
