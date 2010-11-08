@@ -5,6 +5,7 @@
 #ifndef PPAPI_PPB_GRAPHICS_2D_PROXY_H_
 #define PPAPI_PPB_GRAPHICS_2D_PROXY_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_module.h"
@@ -38,7 +39,7 @@ class PPB_Graphics2D_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgCreate(PP_Module module,
                    const PP_Size& size,
-                   bool is_always_opaque,
+                   PP_Bool is_always_opaque,
                    PP_Resource* result);
   void OnMsgPaintImageData(PP_Resource graphics_2d,
                            PP_Resource image_data,

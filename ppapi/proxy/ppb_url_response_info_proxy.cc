@@ -27,9 +27,9 @@ class URLResponseInfo : public PluginResource {
 
 namespace {
 
-bool IsURLResponseInfo(PP_Resource resource) {
+PP_Bool IsURLResponseInfo(PP_Resource resource) {
   URLResponseInfo* object = PluginResource::GetAs<URLResponseInfo>(resource);
-  return !!object;
+  return BoolToPPBool(!!object);
 }
 
 PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty_Dev property) {

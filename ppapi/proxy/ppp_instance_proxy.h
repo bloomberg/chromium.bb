@@ -41,18 +41,18 @@ class PPP_Instance_Proxy : public InterfaceProxy {
   void OnMsgDidCreate(PP_Instance instance,
                       const std::vector<std::string>& argn,
                       const std::vector<std::string>& argv,
-                      bool* result);
+                      PP_Bool* result);
   void OnMsgDidDestroy(PP_Instance instance);
   void OnMsgDidChangeView(PP_Instance instance,
                           const PP_Rect& position,
                           const PP_Rect& clip);
-  void OnMsgDidChangeFocus(PP_Instance instance, bool has_focus);
+  void OnMsgDidChangeFocus(PP_Instance instance, PP_Bool has_focus);
   void OnMsgHandleInputEvent(PP_Instance instance,
                              const PP_InputEvent& event,
-                             bool* result);
+                             PP_Bool* result);
   void OnMsgHandleDocumentLoad(PP_Instance instance,
                                PP_Resource url_loader,
-                               bool* result);
+                               PP_Bool* result);
   void OnMsgGetInstanceObject(PP_Instance instance,
                               SerializedVarReturnValue result);
 };

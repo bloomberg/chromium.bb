@@ -14,10 +14,10 @@ namespace proxy {
 
 namespace {
 
-bool ReadImageData(PP_Resource device_context_2d,
-                   PP_Resource image,
-                   const PP_Point* top_left) {
-  bool result = false;
+PP_Bool ReadImageData(PP_Resource device_context_2d,
+                      PP_Resource image,
+                      const PP_Point* top_left) {
+  PP_Bool result = PP_FALSE;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBTesting_ReadImageData(
       INTERFACE_ID_PPB_TESTING, device_context_2d, image, *top_left, &result));
   return result;
@@ -82,7 +82,7 @@ void PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
 void PPB_Testing_Proxy::OnMsgReadImageData(PP_Resource device_context_2d,
                                            PP_Resource image,
                                            const PP_Point& top_left,
-                                           bool* result) {
+                                           PP_Bool* result) {
   *result = ppb_testing_target()->ReadImageData(
       device_context_2d, image, &top_left);
 }

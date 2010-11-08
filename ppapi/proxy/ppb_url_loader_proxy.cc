@@ -75,9 +75,9 @@ PP_Resource Create(PP_Instance instance_id) {
   return result;
 }
 
-bool IsURLLoader(PP_Resource resource) {
+PP_Bool IsURLLoader(PP_Resource resource) {
   URLLoader* object = PluginResource::GetAs<URLLoader>(resource);
-  return !!object;
+  return BoolToPPBool(!!object);
 }
 
 int32_t Open(PP_Resource loader_id,
@@ -99,32 +99,32 @@ int32_t FollowRedirect(PP_Resource loader_id,
   return PP_ERROR_WOULDBLOCK;
 }
 
-bool GetUploadProgress(PP_Resource loader_id,
-                       int64_t* bytes_sent,
-                       int64_t* total_bytes_to_be_sent) {
+PP_Bool GetUploadProgress(PP_Resource loader_id,
+                          int64_t* bytes_sent,
+                          int64_t* total_bytes_to_be_sent) {
   URLLoader* object = PluginResource::GetAs<URLLoader>(loader_id);
   if (!object || object->bytes_sent_ == -1) {
     *bytes_sent = 0;
     *total_bytes_to_be_sent = 0;
-    return false;
+    return PP_FALSE;
   }
   *bytes_sent = object->bytes_sent_;
   *total_bytes_to_be_sent = object->total_bytes_to_be_sent_;
-  return true;
+  return PP_TRUE;
 }
 
-bool GetDownloadProgress(PP_Resource loader_id,
-                         int64_t* bytes_received,
-                         int64_t* total_bytes_to_be_received) {
+PP_Bool GetDownloadProgress(PP_Resource loader_id,
+                            int64_t* bytes_received,
+                            int64_t* total_bytes_to_be_received) {
   URLLoader* object = PluginResource::GetAs<URLLoader>(loader_id);
   if (!object || object->bytes_received_ == -1) {
     *bytes_received = 0;
     *total_bytes_to_be_received = 0;
-    return false;
+    return PP_FALSE;
   }
   *bytes_received = object->bytes_received_;
   *total_bytes_to_be_received = object->total_bytes_to_be_received_;
-  return true;
+  return PP_TRUE;
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader_id) {

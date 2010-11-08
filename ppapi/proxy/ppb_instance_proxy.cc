@@ -31,15 +31,15 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
   return result.Return(dispatcher);
 }
 
-bool BindGraphics(PP_Instance instance, PP_Resource device) {
-  bool result;
+PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
+  PP_Bool result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBInstance_BindGraphics(
       INTERFACE_ID_PPB_INSTANCE, instance, device, &result));
   return result;
 }
 
-bool IsFullFrame(PP_Instance instance) {
-  bool result;
+PP_Bool IsFullFrame(PP_Instance instance) {
+  PP_Bool result;
   PluginDispatcher::Get()->Send(new PpapiHostMsg_PPBInstance_IsFullFrame(
       INTERFACE_ID_PPB_INSTANCE, instance, &result));
   return result;
@@ -115,11 +115,12 @@ void PPB_Instance_Proxy::OnMsgGetOwnerElementObject(
 
 void PPB_Instance_Proxy::OnMsgBindGraphics(PP_Instance instance,
                                            PP_Resource device,
-                                           bool* result) {
+                                           PP_Bool* result) {
   *result = ppb_instance_target()->BindGraphics(instance, device);
 }
 
-void PPB_Instance_Proxy::OnMsgIsFullFrame(PP_Instance instance, bool* result) {
+void PPB_Instance_Proxy::OnMsgIsFullFrame(PP_Instance instance,
+                                          PP_Bool* result) {
   *result = ppb_instance_target()->IsFullFrame(instance);
 }
 

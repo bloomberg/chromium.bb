@@ -38,14 +38,14 @@ PP_Resource Create(PP_Module module_id) {
   return result;
 }
 
-bool IsURLRequestInfo(PP_Resource resource) {
+PP_Bool IsURLRequestInfo(PP_Resource resource) {
   URLRequestInfo* object = PluginResource::GetAs<URLRequestInfo>(resource);
-  return !!object;
+  return BoolToPPBool(!!object);
 }
 
-bool SetProperty(PP_Resource request_id,
-                 PP_URLRequestProperty_Dev property,
-                 PP_Var var) {
+PP_Bool SetProperty(PP_Resource request_id,
+                    PP_URLRequestProperty_Dev property,
+                    PP_Var var) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_SetProperty(
       INTERFACE_ID_PPB_URL_REQUEST_INFO, request_id,
@@ -54,10 +54,11 @@ bool SetProperty(PP_Resource request_id,
 
   // TODO(brettw) do some validation on the types. We should be able to tell on
   // the plugin side whether the request will succeed or fail in the renderer.
-  return true;
+  return PP_TRUE;
 }
 
-bool AppendDataToBody(PP_Resource request_id, const char* data, uint32_t len) {
+PP_Bool AppendDataToBody(PP_Resource request_id,
+                         const char* data, uint32_t len) {
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBURLRequestInfo_AppendDataToBody(
           INTERFACE_ID_PPB_URL_REQUEST_INFO, request_id,
@@ -65,14 +66,14 @@ bool AppendDataToBody(PP_Resource request_id, const char* data, uint32_t len) {
 
   // TODO(brettw) do some validation. We should be able to tell on the plugin
   // side whether the request will succeed or fail in the renderer.
-  return true;
+  return PP_TRUE;
 }
 
-bool AppendFileToBody(PP_Resource request_id,
-                      PP_Resource file_ref_id,
-                      int64_t start_offset,
-                      int64_t number_of_bytes,
-                      PP_Time expected_last_modified_time) {
+PP_Bool AppendFileToBody(PP_Resource request_id,
+                         PP_Resource file_ref_id,
+                         int64_t start_offset,
+                         int64_t number_of_bytes,
+                         PP_Time expected_last_modified_time) {
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBURLRequestInfo_AppendFileToBody(
           INTERFACE_ID_PPB_URL_REQUEST_INFO, request_id, file_ref_id,
@@ -80,7 +81,7 @@ bool AppendFileToBody(PP_Resource request_id,
 
   // TODO(brettw) do some validation. We should be able to tell on the plugin
   // side whether the request will succeed or fail in the renderer.
-  return true;
+  return PP_TRUE;
 }
 
 const PPB_URLRequestInfo_Dev ppb_urlrequestinfo = {

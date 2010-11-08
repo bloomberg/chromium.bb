@@ -35,7 +35,7 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   void OnMsgReadImageData(PP_Resource device_context_2d,
                           PP_Resource image,
                           const PP_Point& top_left,
-                          bool* result);
+                          PP_Bool* result);
   void OnMsgRunMessageLoop(bool* dummy);
   void OnMsgQuitMessageLoop();
   void OnMsgGetLiveObjectCount(PP_Module module_id, uint32_t* result);

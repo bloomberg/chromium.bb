@@ -70,6 +70,14 @@ class InterfaceProxy : public IPC::Channel::Listener,
   const void* target_interface_;
 };
 
+inline PP_Bool BoolToPPBool(bool value) {
+  return value ? PP_TRUE : PP_FALSE;
+}
+
+inline bool PPBoolToBool(PP_Bool value) {
+  return (PP_TRUE == value);
+}
+
 }  // namespace proxy
 }  // namespace pp
 

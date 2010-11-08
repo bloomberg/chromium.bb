@@ -20,7 +20,7 @@ namespace proxy {
 
 class Graphics2D : public PluginResource {
  public:
-  Graphics2D(const PP_Size& size, bool is_always_opaque)
+  Graphics2D(const PP_Size& size, PP_Bool is_always_opaque)
       : size_(size), is_always_opaque_(is_always_opaque) {
   }
 
@@ -28,11 +28,11 @@ class Graphics2D : public PluginResource {
   virtual Graphics2D* AsGraphics2D() { return this; }
 
   const PP_Size& size() const { return size_; }
-  bool is_always_opaque() const { return is_always_opaque_; }
+  PP_Bool is_always_opaque() const { return is_always_opaque_; }
 
  private:
   PP_Size size_;
-  bool is_always_opaque_;
+  PP_Bool is_always_opaque_;
 
   DISALLOW_COPY_AND_ASSIGN(Graphics2D);
 };
@@ -41,7 +41,7 @@ namespace {
 
 PP_Resource Create(PP_Module module_id,
                    const PP_Size* size,
-                   bool is_always_opaque) {
+                   PP_Bool is_always_opaque) {
   PluginDispatcher* dispatcher = PluginDispatcher::Get();
   PP_Resource result = 0;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics2D_Create(
@@ -54,25 +54,25 @@ PP_Resource Create(PP_Module module_id,
   return result;
 }
 
-bool IsGraphics2D(PP_Resource resource) {
+PP_Bool IsGraphics2D(PP_Resource resource) {
   Graphics2D* object = PluginResource::GetAs<Graphics2D>(resource);
-  return !!object;
+  return BoolToPPBool(!!object);
 }
 
-bool Describe(PP_Resource graphics_2d,
-              PP_Size* size,
-              bool* is_always_opaque) {
+PP_Bool Describe(PP_Resource graphics_2d,
+                 PP_Size* size,
+                 PP_Bool* is_always_opaque) {
   Graphics2D* object = PluginResource::GetAs<Graphics2D>(graphics_2d);
   if (!object) {
     size->width = 0;
     size->height = 0;
-    *is_always_opaque = false;
-    return false;
+    *is_always_opaque = PP_FALSE;
+    return PP_FALSE;
   }
 
   *size = object->size();
   *is_always_opaque = object->is_always_opaque();
-  return true;
+  return PP_TRUE;
 }
 
 void PaintImageData(PP_Resource graphics_2d,
@@ -158,7 +158,7 @@ void PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
 void PPB_Graphics2D_Proxy::OnMsgCreate(PP_Module module,
                                        const PP_Size& size,
-                                       bool is_always_opaque,
+                                       PP_Bool is_always_opaque,
                                        PP_Resource* result) {
   *result = ppb_graphics_2d_target()->Create(
       module, &size, is_always_opaque);

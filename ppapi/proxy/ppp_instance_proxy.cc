@@ -17,10 +17,10 @@ namespace proxy {
 
 namespace {
 
-bool DidCreate(PP_Instance instance,
-               uint32_t argc,
-               const char* argn[],
-               const char* argv[]) {
+PP_Bool DidCreate(PP_Instance instance,
+                  uint32_t argc,
+                  const char* argn[],
+                  const char* argv[]) {
   std::vector<std::string> argn_vect;
   std::vector<std::string> argv_vect;
   for (uint32_t i = 0; i < argc; i++) {
@@ -28,7 +28,7 @@ bool DidCreate(PP_Instance instance,
     argv_vect.push_back(std::string(argv[i]));
   }
 
-  bool result = false;
+  PP_Bool result = PP_FALSE;
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPInstance_DidCreate(INTERFACE_ID_PPP_INSTANCE, instance,
                                          argn_vect, argv_vect, &result));
@@ -48,24 +48,24 @@ void DidChangeView(PP_Instance instance,
                                              instance, *position, *clip));
 }
 
-void DidChangeFocus(PP_Instance instance, bool has_focus) {
+void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPInstance_DidChangeFocus(INTERFACE_ID_PPP_INSTANCE,
                                               instance, has_focus));
 }
 
-bool HandleInputEvent(PP_Instance instance,
-                      const PP_InputEvent* event) {
-  bool result = false;
+PP_Bool HandleInputEvent(PP_Instance instance,
+                         const PP_InputEvent* event) {
+  PP_Bool result = PP_FALSE;
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPInstance_HandleInputEvent(INTERFACE_ID_PPP_INSTANCE,
                                                 instance, *event, &result));
   return result;
 }
 
-bool HandleDocumentLoad(PP_Instance instance,
-                        PP_Resource url_loader) {
-  bool result = false;
+PP_Bool HandleDocumentLoad(PP_Instance instance,
+                           PP_Resource url_loader) {
+  PP_Bool result = PP_FALSE;
   HostDispatcher::GetForInstance(instance)->Send(
       new PpapiMsg_PPPInstance_HandleDocumentLoad(INTERFACE_ID_PPP_INSTANCE,
                                                   instance, url_loader,
@@ -132,8 +132,8 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
     PP_Instance instance,
     const std::vector<std::string>& argn,
     const std::vector<std::string>& argv,
-    bool* result) {
-  *result = false;
+    PP_Bool* result) {
+  *result = PP_FALSE;
   if (argn.size() != argv.size())
     return;
 
@@ -141,7 +141,7 @@ void PPP_Instance_Proxy::OnMsgDidCreate(
   // address below.
   std::vector<const char*> argn_array(
       std::max(static_cast<size_t>(1), argn.size()));
-  std::vector<const char*> argv_array;
+  std::vector<const char*> argv_array(
       std::max(static_cast<size_t>(1), argn.size()));
   for (size_t i = 0; i < argn.size(); i++) {
     argn_array[i] = argn[i].c_str();
@@ -166,19 +166,19 @@ void PPP_Instance_Proxy::OnMsgDidChangeView(PP_Instance instance,
 }
 
 void PPP_Instance_Proxy::OnMsgDidChangeFocus(PP_Instance instance,
-                                             bool has_focus) {
+                                             PP_Bool has_focus) {
   ppp_instance_target()->DidChangeFocus(instance, has_focus);
 }
 
 void PPP_Instance_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
                                                const PP_InputEvent& event,
-                                               bool* result) {
+                                               PP_Bool* result) {
   *result = ppp_instance_target()->HandleInputEvent(instance, &event);
 }
 
 void PPP_Instance_Proxy::OnMsgHandleDocumentLoad(PP_Instance instance,
                                                  PP_Resource url_loader,
-                                                 bool* result) {
+                                                 PP_Bool* result) {
   PPB_URLLoader_Proxy::TrackPluginResource(url_loader);
   *result = ppp_instance_target()->HandleDocumentLoad(
       instance, url_loader);

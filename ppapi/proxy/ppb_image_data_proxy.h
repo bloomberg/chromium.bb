@@ -5,6 +5,7 @@
 #ifndef PPAPI_PPB_IMAGE_DATA_PROXY_H_
 #define PPAPI_PPB_IMAGE_DATA_PROXY_H_
 
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
@@ -34,11 +35,11 @@ class PPB_ImageData_Proxy : public InterfaceProxy {
  private:
   // Message handlers.
   void OnMsgGetNativeImageDataFormat(int32* result);
-  void OnMsgIsImageDataFormatSupported(int32 format, bool* result);
+  void OnMsgIsImageDataFormatSupported(int32 format, PP_Bool* result);
   void OnMsgCreate(PP_Module module,
                    int32_t format,
                    const PP_Size& size,
-                   bool init_to_zero,
+                   PP_Bool init_to_zero,
                    PP_Resource* result,
                    std::string* image_data_desc,
                    uint64_t* result_shm_handle);

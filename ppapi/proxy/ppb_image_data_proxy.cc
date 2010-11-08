@@ -94,8 +94,8 @@ PP_ImageDataFormat GetNativeImageDataFormat() {
   return static_cast<PP_ImageDataFormat>(format);
 }
 
-bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
-  bool supported = false;
+PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
+  PP_Bool supported = PP_FALSE;
   PluginDispatcher::Get()->Send(
       new PpapiHostMsg_PPBImageData_IsImageDataFormatSupported(
           INTERFACE_ID_PPB_IMAGE_DATA, static_cast<int32_t>(format),
@@ -106,7 +106,7 @@ bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
 PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
-                   bool init_to_zero) {
+                   PP_Bool init_to_zero) {
   PP_Resource result = 0;
   std::string image_data_desc;
   uint64_t shm_handle = -1;
@@ -128,17 +128,17 @@ PP_Resource Create(PP_Module module_id,
   return result;
 }
 
-bool IsImageData(PP_Resource resource) {
+PP_Bool IsImageData(PP_Resource resource) {
   ImageData* object = PluginResource::GetAs<ImageData>(resource);
-  return !!object;
+  return BoolToPPBool(!!object);
 }
 
-bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
+PP_Bool Describe(PP_Resource resource, PP_ImageDataDesc* desc) {
   ImageData* object = PluginResource::GetAs<ImageData>(resource);
   if (!object)
-    return false;
+    return PP_FALSE;
   memcpy(desc, &object->desc(), sizeof(PP_ImageDataDesc));
-  return true;
+  return PP_TRUE;
 }
 
 void* Map(PP_Resource resource) {
@@ -198,7 +198,7 @@ void PPB_ImageData_Proxy::OnMsgGetNativeImageDataFormat(int32* result) {
 }
 
 void PPB_ImageData_Proxy::OnMsgIsImageDataFormatSupported(int32 format,
-                                                          bool* result) {
+                                                          PP_Bool* result) {
   *result = ppb_image_data_target()->IsImageDataFormatSupported(
       static_cast<PP_ImageDataFormat>(format));
 }
@@ -206,7 +206,7 @@ void PPB_ImageData_Proxy::OnMsgIsImageDataFormatSupported(int32 format,
 void PPB_ImageData_Proxy::OnMsgCreate(PP_Module module,
                                       int32_t format,
                                       const PP_Size& size,
-                                      bool init_to_zero,
+                                      PP_Bool init_to_zero,
                                       PP_Resource* result,
                                       std::string* image_data_desc,
                                       uint64_t* result_shm_handle) {

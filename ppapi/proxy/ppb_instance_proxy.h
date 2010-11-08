@@ -41,8 +41,8 @@ class PPB_Instance_Proxy : public InterfaceProxy {
                                   SerializedVarReturnValue result);
   void OnMsgBindGraphics(PP_Instance instance,
                          PP_Resource device,
-                         bool* result);
-  void OnMsgIsFullFrame(PP_Instance instance, bool* result);
+                         PP_Bool* result);
+  void OnMsgIsFullFrame(PP_Instance instance, PP_Bool* result);
   void OnMsgExecuteScript(PP_Instance instance,
                           SerializedVarReceiveInput script,
                           SerializedVarOutParam out_exception,

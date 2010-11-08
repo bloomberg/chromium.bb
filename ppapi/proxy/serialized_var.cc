@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ipc/ipc_message_utils.h"
 #include "ppapi/proxy/dispatcher.h"
+#include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/var_serialization_rules.h"
 
@@ -171,9 +172,12 @@ bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m, void** iter) {
       // just serialized.
       success = true;
       break;
-    case PP_VARTYPE_BOOL:
-      success = m->ReadBool(iter, &var_.value.as_bool);
+    case PP_VARTYPE_BOOL: {
+      bool bool_value;
+      success = m->ReadBool(iter, &bool_value);
+      var_.value.as_bool = BoolToPPBool(bool_value);
       break;
+    }
     case PP_VARTYPE_INT32:
       success = m->ReadInt(iter, &var_.value.as_int);
       break;
