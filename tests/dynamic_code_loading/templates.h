@@ -19,3 +19,9 @@ extern char branch_forwards;
 extern char branch_forwards_end;
 extern char branch_backwards;
 extern char branch_backwards_end;
+
+/*
+ * The end of the text segment, the dynamic code resion starts at the
+ * next page.
+ */
+extern char etext[];
