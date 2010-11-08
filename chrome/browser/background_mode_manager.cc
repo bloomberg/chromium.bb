@@ -9,9 +9,12 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -32,9 +35,9 @@
 #include <unistd.h>
 #include "base/environment.h"
 #include "base/file_util.h"
+#include "base/nix/xdg_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "base/nix/xdg_util.h"
 #include "chrome/common/chrome_version_info.h"
 #endif
 
@@ -127,10 +130,22 @@ class EnableLaunchOnStartupTask : public Task {
 };
 #endif  // defined(OS_LINUX)
 
+void BackgroundModeManager::OnApplicationDataChanged(
+    const Extension* extension) {
+  UpdateContextMenuEntryIcon(extension);
+}
+
+void BackgroundModeManager::OnApplicationListChanged() {
+  UpdateStatusTrayIconContextMenu();
+}
+
 BackgroundModeManager::BackgroundModeManager(Profile* profile,
                                              CommandLine* command_line)
     : profile_(profile),
+      applications_(profile),
       background_app_count_(0),
+      context_menu_(NULL),
+      context_menu_application_offset_(0),
       in_background_mode_(false),
       keep_alive_for_startup_(false),
       status_tray_(NULL),
@@ -184,9 +199,13 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile,
   // Listen for changes to the background mode preference.
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(prefs::kBackgroundModeEnabled, this);
+
+  applications_.AddObserver(this);
 }
 
 BackgroundModeManager::~BackgroundModeManager() {
+  applications_.RemoveObserver(this);
+
   // We're going away, so exit background mode (does nothing if we aren't in
   // background mode currently). This is primarily needed for unit tests,
   // because in an actual running system we'd get an APP_TERMINATING
@@ -207,20 +226,6 @@ void BackgroundModeManager::SetLaunchOnStartupResetAllowed(bool allowed) {
                                    allowed);
 }
 
-namespace {
-
-bool HasBackgroundAppPermission(
-    const std::set<std::string>& api_permissions) {
-  return Extension::HasApiPermission(
-      api_permissions, Extension::kBackgroundPermission);
-}
-
-bool IsBackgroundApp(const Extension& extension) {
-  return HasBackgroundAppPermission(extension.api_permissions());
-}
-
-}  // namespace
-
 void BackgroundModeManager::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
@@ -239,22 +244,30 @@ void BackgroundModeManager::Observe(NotificationType type,
 #endif
       break;
     case NotificationType::EXTENSION_LOADED:
-      if (IsBackgroundApp(*Details<const Extension>(details).ptr()))
+      if (BackgroundApplicationListModel::IsBackgroundApp(
+              *Details<Extension>(details).ptr())) {
         OnBackgroundAppLoaded();
+      }
       break;
     case NotificationType::EXTENSION_UNLOADED:
-      if (IsBackgroundApp(*Details<const Extension>(details).ptr()))
+      if (BackgroundApplicationListModel::IsBackgroundApp(
+              *Details<Extension>(details).ptr())) {
         OnBackgroundAppUnloaded();
+      }
       break;
     case NotificationType::EXTENSION_INSTALLED:
-      if (IsBackgroundApp(*Details<const Extension>(details).ptr()))
+      if (BackgroundApplicationListModel::IsBackgroundApp(
+              *Details<Extension>(details).ptr())) {
         OnBackgroundAppInstalled();
+      }
       break;
     case NotificationType::EXTENSION_UNINSTALLED:
-      if (HasBackgroundAppPermission(
-              Details<UninstalledExtensionInfo>(details).ptr()->
-              extension_api_permissions))
+      if (Extension::HasApiPermission(
+            Details<UninstalledExtensionInfo>(details).ptr()->
+                extension_api_permissions,
+            Extension::kBackgroundPermission)) {
         OnBackgroundAppUninstalled();
+      }
       break;
     case NotificationType::APP_TERMINATING:
       // Make sure we aren't still keeping the app alive (only happens if we
@@ -447,9 +460,30 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
       IDR_STATUS_TRAY_ICON);
   status_icon_->SetImage(*bitmap);
   status_icon_->SetToolTip(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  UpdateStatusTrayIconContextMenu();
+}
+
+void BackgroundModeManager::UpdateContextMenuEntryIcon(
+    const Extension* extension) {
+  if (!context_menu_)
+    return;
+  context_menu_->SetIcon(
+      context_menu_application_offset_ + applications_.GetPosition(extension),
+      *(applications_.GetIcon(extension)));
+  status_icon_->SetContextMenu(context_menu_);  // for Update effect
+}
+
+void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
+  if (!status_icon_)
+    return;
 
   // Create a context menu item for Chrome.
   menus::SimpleMenuModel* menu = new menus::SimpleMenuModel(this);
+  // Add About item
+  menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+
+  // Add Preferences item
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableTabbedOptions)) {
     menu->AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
@@ -464,11 +498,23 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
     menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
   }
-  menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  menu->AddSeparator();
+  int application_position = 0;
+  context_menu_application_offset_ = menu->GetItemCount();
+  for (ExtensionList::const_iterator cursor = applications_.begin();
+       cursor != applications_.end();
+       ++cursor, ++application_position) {
+    const SkBitmap* icon = applications_.GetIcon(*cursor);
+    int sort_position = applications_.GetPosition(*cursor);
+    DCHECK(sort_position == application_position);
+    const std::string& name = (*cursor)->name();
+    menu->AddItem(sort_position, ASCIIToUTF16(name));
+    if (icon)
+      menu->SetIcon(menu->GetItemCount() - 1, *icon);
+  }
   menu->AddSeparator();
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
-
+  context_menu_ = menu;
   status_icon_->SetContextMenu(menu);
 }
 
@@ -494,6 +540,16 @@ void BackgroundModeManager::RemoveStatusTrayIcon() {
   status_icon_ = NULL;
 }
 
+void BackgroundModeManager::ExecuteApplication(int item) {
+  DCHECK(item > 0 && item < static_cast<int>(applications_.size()));
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser) {
+    Browser::OpenEmptyWindow(profile_);
+    browser = BrowserList::GetLastActive();
+  }
+  const Extension* extension = applications_.GetExtension(item);
+  browser->OpenApplicationTab(profile_, extension, NULL);
+}
 
 void BackgroundModeManager::ExecuteCommand(int item) {
   switch (item) {
@@ -508,7 +564,7 @@ void BackgroundModeManager::ExecuteCommand(int item) {
       GetBrowserWindow()->OpenOptionsDialog();
       break;
     default:
-      NOTREACHED();
+      ExecuteApplication(item);
       break;
   }
 }
