@@ -58,10 +58,6 @@
 
 namespace {
 
-// Horizontal space between the right edge of the |location_icon_decoration_|
-// and the first run bubble arrow point.
-const static int kFirstRunBubbleXOffset = 4;
-
 // Vertical space between the bottom edge of the location_bar and the first run
 // bubble arrow point.
 const static int kFirstRunBubbleYOffset = 1;
@@ -128,9 +124,15 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal(
   if (!field_ || ![field_ window])
     return;
 
-  // The bubble needs to be just below the Omnibox and slightly to the right
-  // of the left omnibox icon, so shift x and y co-ordinates.
-  const NSPoint kOffset = GetFirstRunBubblePoint();
+  // The first run bubble's left edge should line up with the left edge of the
+  // omnibox. This is different from other bubbles, which line up at a point
+  // set by their top arrow. Because the BaseBubbleController adjusts the
+  // window origin left to account for the arrow spacing, the first run bubble
+  // moves the window origin right by this spacing, so that the
+  // BaseBubbleController will move it back to the correct position.
+  const NSPoint kOffset = NSMakePoint(
+      info_bubble::kBubbleArrowXOffset + info_bubble::kBubbleArrowWidth/2.0,
+      kFirstRunBubbleYOffset);
   [FirstRunBubbleController showForView:field_ offset:kOffset profile:profile_];
 }
 
@@ -503,16 +505,6 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
         location_icon_decoration_->GetBubblePointInFrame(frame);
     return [field_ convertPoint:point toView:nil];
   }
-}
-
-NSPoint LocationBarViewMac::GetFirstRunBubblePoint() const {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect frame =
-      [cell frameForDecoration:location_icon_decoration_.get()
-                       inFrame:[field_ bounds]];
-  return NSMakePoint(
-      NSMaxX(frame) + kFirstRunBubbleXOffset,
-      kFirstRunBubbleYOffset);
 }
 
 NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
