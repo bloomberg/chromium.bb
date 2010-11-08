@@ -41,7 +41,6 @@ class Message;
 
 class BackingStore;
 class RenderWidgetHost;
-class GpuViewHost;
 
 typedef CWinTraits<WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0>
     RenderWidgetHostHWNDTraits;
@@ -156,7 +155,6 @@ class RenderWidgetHostViewWin
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(bool deemphasized);
@@ -267,10 +265,6 @@ class RenderWidgetHostViewWin
 
   // The associated Model.
   RenderWidgetHost* render_widget_host_;
-
-  // If we're doing out-of-process painting, this member will be non-NULL,
-  // indicating the gpu view we're using for the painting.
-  scoped_ptr<GpuViewHost> gpu_view_host_;
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;

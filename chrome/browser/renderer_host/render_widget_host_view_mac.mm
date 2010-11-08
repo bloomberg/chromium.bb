@@ -809,12 +809,6 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
   return new BackingStoreMac(render_widget_host_, size);
 }
 
-VideoLayer* RenderWidgetHostViewMac::AllocVideoLayer(
-    const gfx::Size& size) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 // Sets whether or not to accept first responder status.
 void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
   [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];

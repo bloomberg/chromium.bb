@@ -12,7 +12,6 @@
 // shuttling messages between the browser and GPU processes.
 
 #include "base/singleton.h"
-#include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/common/message_router.h"
 #include "ipc/ipc_channel.h"
 #include "gfx/native_widget_types.h"
@@ -24,10 +23,6 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   static GpuProcessHostUIShim* Get();
 
   int32 GetNextRoutingId();
-
-  // Creates the new remote view and returns the routing ID for the view, or 0
-  // on failure.
-  int32 NewRenderWidgetHostView(GpuNativeWindowHandle parent);
 
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg);

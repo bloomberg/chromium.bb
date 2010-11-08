@@ -17,7 +17,6 @@
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/renderer_host/video_layer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
@@ -150,9 +149,6 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PaintAtSize_ACK, OnMsgPaintAtSizeAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateVideo, OnMsgCreateVideo)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateVideo, OnMsgUpdateVideo)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyVideo, OnMsgDestroyVideo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
@@ -792,7 +788,6 @@ void RenderWidgetHost::OnMsgUpdateRect(
   DCHECK(!params.bitmap_rect.IsEmpty());
   DCHECK(!params.view_size.IsEmpty());
 
-  bool painted_synchronously = true;  // Default to sending a paint ACK below.
   if (!is_gpu_rendering_active_) {
     const size_t size = params.bitmap_rect.height() *
         params.bitmap_rect.width() * 4;
@@ -816,8 +811,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
         // renderer-supplied bits. The view will read out of the backing store
         // later to actually draw to the screen.
         PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
-                              params.copy_rects, params.view_size,
-                              &painted_synchronously);
+                              params.copy_rects, params.view_size);
       }
     }
   }
@@ -825,10 +819,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
   // ACK early so we can prefetch the next PaintRect if there is a next one.
   // This must be done AFTER we're done painting with the bitmap supplied by the
   // renderer. This ACK is a signal to the renderer that the backing store can
-  // be re-used, so the bitmap may be invalid after this call. If the backing
-  // store is painting asynchronously, it will manage issuing this IPC.
-  if (painted_synchronously)
-    Send(new ViewMsg_UpdateRect_ACK(routing_id_));
+  // be re-used, so the bitmap may be invalid after this call.
+  Send(new ViewMsg_UpdateRect_ACK(routing_id_));
 
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
@@ -869,27 +861,6 @@ void RenderWidgetHost::OnMsgUpdateRect(
   // Log the time delta for processing a paint message.
   TimeDelta delta = TimeTicks::Now() - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
-}
-
-void RenderWidgetHost::OnMsgCreateVideo(const gfx::Size& size) {
-  DCHECK(!video_layer_.get());
-
-  video_layer_.reset(view_->AllocVideoLayer(size));
-
-  // TODO(scherkus): support actual video ids!
-  Send(new ViewMsg_CreateVideo_ACK(routing_id_, -1));
-}
-
-void RenderWidgetHost::OnMsgUpdateVideo(TransportDIB::Id bitmap,
-                                        const gfx::Rect& bitmap_rect) {
-  PaintVideoLayer(bitmap, bitmap_rect);
-
-  // TODO(scherkus): support actual video ids!
-  Send(new ViewMsg_UpdateVideo_ACK(routing_id_, -1));
-}
-
-void RenderWidgetHost::OnMsgDestroyVideo() {
-  video_layer_.reset();
 }
 
 void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
@@ -1077,12 +1048,7 @@ void RenderWidgetHost::PaintBackingStoreRect(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    const gfx::Size& view_size,
-    bool* painted_synchronously) {
-  // On failure, we need to be sure our caller knows we're done with the
-  // backing store.
-  *painted_synchronously = true;
-
+    const gfx::Size& view_size) {
   // The view may be destroyed already.
   if (!view_)
     return;
@@ -1097,8 +1063,7 @@ void RenderWidgetHost::PaintBackingStoreRect(
 
   bool needs_full_paint = false;
   BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
-                                           copy_rects, &needs_full_paint,
-                                           painted_synchronously);
+                                           copy_rects, &needs_full_paint);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
@@ -1124,26 +1089,6 @@ void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,
   if (!backing_store || (backing_store->size() != view_size))
     return;
   backing_store->ScrollBackingStore(dx, dy, clip_rect, view_size);
-}
-
-void RenderWidgetHost::PaintVideoLayer(TransportDIB::Id bitmap,
-                                       const gfx::Rect& bitmap_rect) {
-  if (is_hidden_ || !video_layer_.get())
-    return;
-
-  video_layer_->CopyTransportDIB(process(), bitmap, bitmap_rect);
-
-  // Don't update the view if we're hidden or if the view has been destroyed.
-  if (is_hidden_ || !view_)
-    return;
-
-  // Trigger a paint for the updated video layer bitmap.
-  std::vector<gfx::Rect> copy_rects;
-  copy_rects.push_back(bitmap_rect);
-
-  view_being_painted_ = true;
-  view_->DidUpdateBackingStore(gfx::Rect(), 0, 0, copy_rects);
-  view_being_painted_ = false;
 }
 
 void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {

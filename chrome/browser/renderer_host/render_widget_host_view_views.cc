@@ -18,9 +18,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/renderer_host/backing_store_x.h"
-#include "chrome/browser/renderer_host/gpu_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/renderer_host/video_layer_x.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
@@ -61,7 +59,6 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 
 RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
     : host_(host),
-      enable_gpu_rendering_(false),
       about_to_validate_and_paint_(false),
       is_hidden_(false),
       is_loading_(false),
@@ -69,11 +66,6 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       visually_deemphasized_(false) {
   SetFocusable(true);
   host_->set_view(this);
-
-  // Enable experimental out-of-process GPU rendering.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  enable_gpu_rendering_ =
-      command_line->HasSwitch(switches::kEnableGPURendering);
 }
 
 RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {
@@ -267,19 +259,6 @@ bool RenderWidgetHostViewViews::IsPopup() {
 
 BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
     const gfx::Size& size) {
-  if (enable_gpu_rendering_) {
-    // Use a special GPU accelerated backing store.
-    if (!gpu_view_host_.get()) {
-      // Here we lazily make the GpuViewHost. This must be allocated when we
-      // have a native view realized, which happens sometime after creation
-      // when our owner puts us in the parent window.
-      DCHECK(GetNativeView());
-      XID window_xid = x11_util::GetX11WindowFromGtkWidget(GetNativeView());
-      gpu_view_host_.reset(new GpuViewHost(host_, window_xid));
-    }
-    return gpu_view_host_->CreateBackingStore(size);
-  }
-
   return new BackingStoreX(host_, size,
                            x11_util::GetVisualFromGtkWidget(native_view()),
                            gtk_widget_get_visual(native_view())->depth);
@@ -289,37 +268,12 @@ gfx::NativeView RenderWidgetHostViewViews::native_view() const {
   return GetWidget()->GetNativeView();
 }
 
-VideoLayer* RenderWidgetHostViewViews::AllocVideoLayer(const gfx::Size& size) {
-  if (enable_gpu_rendering_) {
-    // TODO(scherkus): is it possible for a video layer to be allocated before a
-    // backing store?
-    DCHECK(gpu_view_host_.get())
-        << "AllocVideoLayer() called before AllocBackingStore()";
-    return gpu_view_host_->CreateVideoLayer(size);
-  }
-
-  return new VideoLayerX(host_, size,
-                         x11_util::GetVisualFromGtkWidget(native_view()),
-                         gtk_widget_get_visual(native_view())->depth);
-}
-
 void RenderWidgetHostViewViews::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
 }
 
 void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
-  if (enable_gpu_rendering_) {
-    // When we're proxying painting, we don't actually display the web page
-    // ourselves.
-    if (gpu_view_host_.get())
-      gpu_view_host_->OnWindowPainted();
-
-    // Erase the background. This will prevent a flash of black when resizing
-    // or exposing the window. White is usually better than black.
-    return;
-  }
-
   // Don't do any painting if the GPU process is rendering directly
   // into the View.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
@@ -352,15 +306,6 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
         // we don't need to double buffer.
         backing_store->XShowRect(
             paint_rect, x11_util::GetX11WindowFromGtkWidget(native_view()));
-
-        // Paint the video layer using XCopyArea.
-        // TODO(scherkus): implement VideoLayerX::CairoShow() for grey
-        // blending.
-        VideoLayerX* video_layer = static_cast<VideoLayerX*>(
-            host_->video_layer());
-        if (video_layer)
-          video_layer->XShow(
-              x11_util::GetX11WindowFromGtkWidget(native_view()));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect

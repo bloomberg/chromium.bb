@@ -206,7 +206,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual void SelectionChanged(const std::string& text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag);
   virtual gfx::Rect GetWindowRect();
   virtual gfx::Rect GetRootWindowRect();

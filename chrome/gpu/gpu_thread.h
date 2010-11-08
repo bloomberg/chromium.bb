@@ -10,26 +10,15 @@
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
-#include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/x_util.h"
 #include "gfx/native_widget_types.h"
 
-#if defined(GPU_USE_GLX)
-class GpuBackingStoreGLXContext;
-#endif
-
 class GpuThread : public ChildThread {
  public:
   GpuThread();
   ~GpuThread();
-
-#if defined(GPU_USE_GLX)
-  GpuBackingStoreGLXContext* GetGLXContext();
-
-  Display* display() const { return display_; }
-#endif
 
   // Remove the channel for a particular renderer.
   void RemoveChannel(int renderer_id);
@@ -44,16 +33,9 @@ class GpuThread : public ChildThread {
   void OnCollectGraphicsInfo();
   void OnCrash();
   void OnHang();
-  void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
-                                 int32 routing_id);
 
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
-
-#if defined(GPU_USE_GLX)
-  Display* display_;
-  scoped_ptr<GpuBackingStoreGLXContext> glx_context_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuThread);
 };

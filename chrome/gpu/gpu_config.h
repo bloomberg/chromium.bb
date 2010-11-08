@@ -10,12 +10,4 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX) && !defined(ARCH_CPU_ARMEL)
-
-// Only define GLX support for Intel CPUs for now until we can get the
-// proper dependencies and build setup for ARM.
-#define GPU_USE_GLX
-
-#endif
-
 #endif  // CHROME_GPU_GPU_CONFIG_H_

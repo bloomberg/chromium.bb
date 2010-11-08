@@ -76,8 +76,6 @@
         'renderer/media/gles2_video_decode_context.h',
         'renderer/media/ipc_video_decoder.cc',
         'renderer/media/ipc_video_decoder.h',
-        'renderer/media/ipc_video_renderer.cc',
-        'renderer/media/ipc_video_renderer.h',
         'renderer/net/predictor_queue.cc',
         'renderer/net/predictor_queue.h',
         'renderer/net/renderer_net_predictor.cc',

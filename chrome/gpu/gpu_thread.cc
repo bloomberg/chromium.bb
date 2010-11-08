@@ -17,15 +17,6 @@
 #include "chrome/gpu/gpu_info_collector.h"
 #include "ipc/ipc_channel_handle.h"
 
-#if defined(OS_WIN)
-#include "chrome/gpu/gpu_view_win.h"
-#elif defined(GPU_USE_GLX)
-#include "chrome/gpu/gpu_backing_store_glx_context.h"
-#include "chrome/gpu/gpu_view_x.h"
-
-#include <X11/Xutil.h>  // Must be last.
-#endif
-
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
 #include "app/x11_util.h"
@@ -33,16 +24,13 @@
 #endif
 
 GpuThread::GpuThread() {
-#if defined(GPU_USE_GLX)
-  display_ = ::XOpenDisplay(NULL);
-#endif
 #if defined(OS_LINUX)
   {
     // The X11 port of the command buffer code assumes it can access the X
     // display via the macro GDK_DISPLAY(), which implies that Gtk has been
     // initialized. This code was taken from PluginThread. TODO(kbr):
     // rethink whether initializing Gtk is really necessary or whether we
-    // should just send the display connection down to the GPUProcessor.
+    // should just send a raw display connection down to the GPUProcessor.
     g_thread_init(NULL);
     gfx::GtkInitFromCommandLine(*CommandLine::ForCurrentProcess());
     x11_util::SetDefaultX11ErrorHandlers();
@@ -52,14 +40,6 @@ GpuThread::GpuThread() {
 
 GpuThread::~GpuThread() {
 }
-
-#if defined(GPU_USE_GLX)
-GpuBackingStoreGLXContext* GpuThread::GetGLXContext() {
-  if (!glx_context_.get())
-    glx_context_.reset(new GpuBackingStoreGLXContext(this));
-  return glx_context_.get();
-}
-#endif
 
 void GpuThread::RemoveChannel(int renderer_id) {
   gpu_channels_.erase(renderer_id);
@@ -72,8 +52,6 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_Synchronize,
                         OnSynchronize)
-    IPC_MESSAGE_HANDLER(GpuMsg_NewRenderWidgetHostView,
-                        OnNewRenderWidgetHostView)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo,
                         OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_Crash,
@@ -126,20 +104,6 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
 
 void GpuThread::OnSynchronize() {
   Send(new GpuHostMsg_SynchronizeReply());
-}
-
-void GpuThread::OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
-                                          int32 routing_id) {
-  // The GPUView class' lifetime is controlled by the host, which will send a
-  // message to destroy the GpuRWHView when necessary. So we don't manage the
-  // lifetime of this object.
-#if defined(OS_WIN)
-  new GpuViewWin(this, parent_window, routing_id);
-#elif defined(GPU_USE_GLX)
-  new GpuViewX(this, parent_window, routing_id);
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void GpuThread::OnCollectGraphicsInfo() {

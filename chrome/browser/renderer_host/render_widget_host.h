@@ -42,7 +42,6 @@ class RenderProcessHost;
 class RenderWidgetHostView;
 class RenderWidgetHostPaintingObserver;
 class TransportDIB;
-class VideoLayer;
 class WebCursor;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -247,9 +246,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // trigger a re-composite to the view. If a resize is pending, it will
   // block briefly waiting for an ack from the renderer.
   void ScheduleComposite();
-
-  // Returns the video layer if it exists, NULL otherwise.
-  VideoLayer* video_layer() const { return video_layer_.get(); }
 
   // Starts a hang monitor timeout. If there's already a hang monitor timeout
   // the new one will only fire if it has a shorter delay than the time
@@ -479,9 +475,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgRequestMove(const gfx::Rect& pos);
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-  void OnMsgCreateVideo(const gfx::Size& size);
-  void OnMsgUpdateVideo(TransportDIB::Id bitmap, const gfx::Rect& bitmap_rect);
-  void OnMsgDestroyVideo();
   void OnMsgInputEventAck(const IPC::Message& message);
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();
@@ -519,27 +512,16 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 #endif
 
   // Paints the given bitmap to the current backing store at the given location.
-  // |*painted_synchronously| will be true if the message was processed
-  // synchronously, and the bitmap is done being used. False means that the
-  // backing store will paint the bitmap at a later time and that the DIB can't
-  // be freed (it will be the backing store's job to free it later).
   void PaintBackingStoreRect(TransportDIB::Id bitmap,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects,
-                             const gfx::Size& view_size,
-                             bool* painted_synchronously);
+                             const gfx::Size& view_size);
 
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
   // |dib| and its corresponding location |bitmap_rect| in the backing store
   // is the newly painted pixels by the renderer.
   void ScrollBackingStoreRect(int dx, int dy, const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
-
-  // Paints the entire given bitmap into the current video layer, if it exists.
-  // |bitmap_rect| specifies the destination size and absolute location of the
-  // bitmap on the backing store.
-  void PaintVideoLayer(TransportDIB::Id bitmap,
-                       const gfx::Rect& bitmap_rect);
 
   // Called by OnMsgInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardEventAck(int type, bool processed);
@@ -689,9 +671,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
-
-  // Optional video YUV layer for used for out-of-process compositing.
-  scoped_ptr<VideoLayer> video_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

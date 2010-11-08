@@ -114,12 +114,6 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
   return new TestBackingStore(rwh_, size);
 }
 
-VideoLayer* TestRenderWidgetHostView::AllocVideoLayer(
-    const gfx::Size& size) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 #if defined(OS_MACOSX)
 
 void TestRenderWidgetHostView::ShowPopupWithItems(

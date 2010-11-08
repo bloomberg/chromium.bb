@@ -30,7 +30,6 @@ class Message;
 class BackingStore;
 class RenderProcessHost;
 class RenderWidgetHost;
-class VideoLayer;
 class WebCursor;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_AccessibilityNotification_Params;
@@ -172,9 +171,6 @@ class RenderWidgetHostView {
 
   // Allocate a backing store for this view
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
-
-  // Allocate a video layer for this view.
-  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size) = 0;
 
 #if defined(OS_MACOSX)
   // Tells the view whether or not to accept first responder status.  If |flag|

@@ -20,7 +20,6 @@
 #include "webkit/glue/webcursor.h"
 
 class RenderWidgetHost;
-class GpuViewHost;
 struct NativeWebKeyboardEvent;
 
 namespace WebKit {
@@ -71,7 +70,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void SelectionChanged(const std::string& text);
   virtual void ShowingContextMenu(bool showing);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void SetBackground(const SkBitmap& background);
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
@@ -122,12 +120,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
 
   // The model object.
   RenderWidgetHost* host_;
-
-  // Cached value of --enable-gpu-rendering for out-of-process painting.
-  bool enable_gpu_rendering_;
-
-  // Non-NULL when we're doing out-of-process painting.
-  scoped_ptr<GpuViewHost> gpu_view_host_;
 
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually

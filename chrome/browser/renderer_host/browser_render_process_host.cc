@@ -594,7 +594,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableOpenMax,
     switches::kVideoThreads,
     switches::kEnableVideoFullscreen,
-    switches::kEnableVideoLayering,
     switches::kEnableVideoLogging,
     switches::kEnableTouch,
     // We propagate the Chrome Frame command line here as well in case the

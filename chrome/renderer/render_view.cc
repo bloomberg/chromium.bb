@@ -65,7 +65,6 @@
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/media/ipc_video_decoder.h"
-#include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/page_click_tracker.h"
@@ -2668,18 +2667,11 @@ WebMediaPlayer* RenderView::createMediaPlayer(
           routing_id());
 
   scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;
-  if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
-    scoped_refptr<IPCVideoRenderer> renderer(
-        new IPCVideoRenderer(routing_id_));
-    collection->AddFilter(renderer);
-    video_renderer = renderer;
-  } else {
-    bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
-    scoped_refptr<webkit_glue::VideoRendererImpl> renderer(
-        new webkit_glue::VideoRendererImpl(pts_logging));
-    collection->AddFilter(renderer);
-    video_renderer = renderer;
-  }
+  bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
+  scoped_refptr<webkit_glue::VideoRendererImpl> renderer(
+      new webkit_glue::VideoRendererImpl(pts_logging));
+  collection->AddFilter(renderer);
+  video_renderer = renderer;
 
   return new webkit_glue::WebMediaPlayerImpl(
       client, collection.release(), bridge_factory_simple,

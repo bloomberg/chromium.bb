@@ -116,12 +116,7 @@ void BackingStoreWin::PaintToBackingStore(
     RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously) {
-  // Our paints are always synchronous and the TransportDIB can be freed when
-  // we're done (even on error).
-  *painted_synchronously = true;
-
+    const std::vector<gfx::Rect>& copy_rects) {
   if (!backing_store_dib_) {
     backing_store_dib_ = CreateDIB(hdc_, size().width(),
                                    size().height(), color_depth_);

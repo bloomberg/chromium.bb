@@ -12,7 +12,6 @@
 #include "chrome/common/dx_diag_node.h"
 #include "chrome/common/gpu_create_command_buffer_config.h"
 #include "chrome/common/gpu_info.h"
-#include "chrome/common/gpu_native_window_handle.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

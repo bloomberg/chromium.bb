@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "chrome/common/common_param_traits.h"
-#include "chrome/common/gpu_native_window_handle.h"
 #include "chrome/common/gpu_param_traits.h"
 #include "gfx/native_widget_types.h"
 #include "gpu/command_buffer/common/command_buffer.h"

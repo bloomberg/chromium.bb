@@ -701,8 +701,6 @@
         '../skia/skia.gyp:skia',
       ],
       'sources': [
-        'gpu/gpu_backing_store_win.cc',
-        'gpu/gpu_backing_store_win.h',
         'gpu/gpu_channel.cc',
         'gpu/gpu_channel.h',
         'gpu/gpu_command_buffer_stub.cc',
@@ -722,8 +720,6 @@
         'gpu/gpu_video_decoder.h',
         'gpu/gpu_video_service.cc',
         'gpu/gpu_video_service.h',
-        'gpu/gpu_view_win.cc',
-        'gpu/gpu_view_win.h',
         'gpu/media/gpu_video_device.h',
         'gpu/media/fake_gl_video_decode_engine.cc',
         'gpu/media/fake_gl_video_decode_engine.h',
@@ -795,16 +791,8 @@
         }],
         ['OS=="linux" and target_arch!="arm"', {
           'sources': [
-            'gpu/gpu_backing_store_glx.cc',
-            'gpu/gpu_backing_store_glx.h',
-            'gpu/gpu_backing_store_glx_context.cc',
-            'gpu/gpu_backing_store_glx_context.h',
-            'gpu/gpu_view_x.cc',
-            'gpu/gpu_view_x.h',
             'gpu/x_util.cc',
             'gpu/x_util.h',
-            'gpu/gpu_video_layer_glx.cc',
-            'gpu/gpu_video_layer_glx.h',
           ],
         }],
         ['enable_gpu==1', {

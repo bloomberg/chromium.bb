@@ -196,11 +196,7 @@ void BackingStoreManager::PrepareBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    bool* needs_full_paint,
-    bool* painted_synchronously) {
-  // Default to declaring we're done using the transport DIB so it can be freed.
-  *painted_synchronously = true;
-
+    bool* needs_full_paint) {
   BackingStore* backing_store = GetBackingStore(host, backing_store_size);
   if (!backing_store) {
     // We need to get Webkit to generate a new paint here, as we
@@ -218,8 +214,7 @@ void BackingStoreManager::PrepareBackingStore(
   }
 
   backing_store->PaintToBackingStore(host->process(), bitmap,
-                                     bitmap_rect, copy_rects,
-                                     painted_synchronously);
+                                     bitmap_rect, copy_rects);
 }
 
 // static

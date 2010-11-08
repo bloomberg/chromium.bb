@@ -47,10 +47,6 @@ IPC_BEGIN_MESSAGES(Gpu)
   // asynchronously.) Results in a GpuHostMsg_SynchronizeReply.
   IPC_MESSAGE_CONTROL0(GpuMsg_Synchronize)
 
-  IPC_MESSAGE_CONTROL2(GpuMsg_NewRenderWidgetHostView,
-                       GpuNativeWindowHandle, /* parent window */
-                       int32 /* view_id */)
-
   // Tells the GPU process to create a context for collecting graphics card
   // information.
   IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
@@ -61,57 +57,12 @@ IPC_BEGIN_MESSAGES(Gpu)
   // Tells the GPU process to hang.
   IPC_MESSAGE_CONTROL0(GpuMsg_Hang)
 
-  // Creates a new backing store.
-  IPC_MESSAGE_ROUTED2(GpuMsg_NewBackingStore,
-                      int32, /* backing_store_routing_id */
-                      gfx::Size /* size */)
-
-  // Creates a new video layer.
-  IPC_MESSAGE_ROUTED2(GpuMsg_NewVideoLayer,
-                      int32, /* video_layer_routing_id */
-                      gfx::Size /* size */)
-
-  // Updates the backing store with the given bitmap. The GPU process will send
-  // back a GpuHostMsg_PaintToBackingStore_ACK after the paint is complete to
-  // let the caller know the TransportDIB can be freed or reused.
-  IPC_MESSAGE_ROUTED4(GpuMsg_PaintToBackingStore,
-                      base::ProcessId, /* process */
-                      TransportDIB::Id, /* bitmap */
-                      gfx::Rect, /* bitmap_rect */
-                      std::vector<gfx::Rect>) /* copy_rects */
-
-
-  IPC_MESSAGE_ROUTED4(GpuMsg_ScrollBackingStore,
-                      int, /* dx */
-                      int, /* dy */
-                      gfx::Rect, /* clip_rect */
-                      gfx::Size) /* view_size */
-
-  // Tells the GPU process that the RenderWidgetHost has painted the window.
-  // Depending on the platform, the accelerated content may need to be painted
-  // over the top.
-  IPC_MESSAGE_ROUTED0(GpuMsg_WindowPainted)
-
-  // Updates the video layer with the given YUV data. The GPU process will send
-  // back a GpuHostMsg_PaintToVideoLayer_ACK after the paint is complete to
-  // let the caller know the TransportDIB can be freed or reused.
-  IPC_MESSAGE_ROUTED3(GpuMsg_PaintToVideoLayer,
-                      base::ProcessId, /* process */
-                      TransportDIB::Id, /* bitmap */
-                      gfx::Rect) /* bitmap_rect */
-
 IPC_END_MESSAGES(Gpu)
 
 //------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages from the GPU process to the browser.
 IPC_BEGIN_MESSAGES(GpuHost)
-
-  // Sent in response to GpuMsg_PaintToBackingStore, see that for more.
-  IPC_MESSAGE_ROUTED0(GpuHostMsg_PaintToBackingStore_ACK)
-
-  // Sent in response to GpuMsg_PaintToVideoLayer, see that for more.
-  IPC_MESSAGE_ROUTED0(GpuHostMsg_PaintToVideoLayer_ACK)
 
   // Response to a GpuHostMsg_EstablishChannel message.
   IPC_MESSAGE_CONTROL2(GpuHostMsg_ChannelEstablished,

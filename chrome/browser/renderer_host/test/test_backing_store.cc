@@ -16,8 +16,7 @@ void TestBackingStore::PaintToBackingStore(
     RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
-    const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously) {
+    const std::vector<gfx::Rect>& copy_rects) {
 }
 
 bool TestBackingStore::CopyFromBackingStore(const gfx::Rect& rect,

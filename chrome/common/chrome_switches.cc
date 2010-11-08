@@ -434,9 +434,6 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
 
-// Enable experimental GPU rendering for backing store and video.
-const char kEnableGPURendering[]            = "enable-gpu-rendering";
-
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
@@ -530,10 +527,6 @@ const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
 // Enables support for fullscreen video. Current implementation is
 // incomplete and this flag is used for development and testing.
 const char kEnableVideoFullscreen[]         = "enable-video-fullscreen";
-
-// Enables video layering where video is rendered as a separate layer outside
-// of the backing store.
-const char kEnableVideoLayering[]           = "enable-video-layering";
 
 // Enables video logging where video elements log playback performance data to
 // the debug log.

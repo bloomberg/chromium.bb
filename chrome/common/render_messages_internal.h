@@ -203,12 +203,6 @@ IPC_BEGIN_MESSAGES(View)
   // This signals the render view that it can send another UpdateRect message.
   IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)
 
-  // Replies to creating and updating videos.
-  IPC_MESSAGE_ROUTED1(ViewMsg_CreateVideo_ACK,
-                      int32 /* video_id */)
-  IPC_MESSAGE_ROUTED1(ViewMsg_UpdateVideo_ACK,
-                      int32 /* video_id */)
-
   // Message payload includes:
   // 1. A blob that should be cast to WebInputEvent
   // 2. An optional boolean value indicating if a RawKeyDown event is associated
@@ -1314,14 +1308,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // generates a ViewMsg_UpdateRect_ACK message.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
                       ViewHostMsg_UpdateRect_Params)
-
-  // Sent to create, update and destroy video layers.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_CreateVideo,
-                      gfx::Size /* size */)
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateVideo,
-                      TransportDIB::Id /* bitmap */,
-                      gfx::Rect /* bitmap_rect */)
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_DestroyVideo)
 
   // Sent by the renderer when GPU compositing is enabled or disabled to notify
   // the browser whether or not is should do paiting.
