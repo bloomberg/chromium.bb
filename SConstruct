@@ -485,9 +485,10 @@ def FixupArmEnvironment():
   (stdout, stderr) = p.communicate()
   assert p.returncode == 0, stderr
   arm_env = eval(stdout)
-  for k in arm_env:
-    if k.startswith('NACL_') or k.startswith('ARM_'):
-      os.environ[k] = arm_env[k]
+
+  for key, value in arm_env.iteritems():
+    if key.startswith('NACL_') or key.startswith('ARM_'):
+      os.environ[key] = value
 
 
 # Source setup bash scripts and glean the settings.
@@ -556,9 +557,9 @@ AlwaysBuild(n)
 
 # ----------------------------------------------------------
 def HasSuffix(item, suffix):
-  if type(item) == str:
+  if isinstance(item, str):
     return item.endswith(suffix)
-  elif '__getitem__' in dir(item):
+  elif hasattr(item, '__getitem__'):
     return HasSuffix(item[0], suffix)
   else:
     return item.path.endswith(suffix)
@@ -971,7 +972,7 @@ def CommandTest(env, name, command, size='small',
 
   # extract deps from command and rewrite
   for n, c in enumerate(command):
-    if type(c) != str:
+    if not isinstance(c, str):
       if len(Flatten(c)) != 1:
         # Do not allow this, because it would cause "deps" to get out
         # of sync with the indexes in "command".
@@ -991,13 +992,13 @@ def CommandTest(env, name, command, size='small',
                                             extra_env)
 
   # extract deps from flags and rewrite
-  for e in extra:
-    assert e in TEST_EXTRA_ARGS
-    if type(extra[e]) != str:
-      deps.append(extra[e])
-      extra[e] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
-    script_flags.append('--' + e)
-    script_flags.append(extra[e])
+  for flag_name, flag_value in extra.iteritems():
+    assert flag_name in TEST_EXTRA_ARGS
+    if not isinstance(flag_value, str):
+      deps.append(flag_value)
+      flag_value = '${SOURCES[%d].abspath}' % (len(deps) - 1)
+    script_flags.append('--' + flag_name)
+    script_flags.append(flag_value)
 
 
   # NOTE: "SOURCES[X]" references the scons object in deps[x]
@@ -2087,8 +2088,7 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
 
   if VerboseConfigInfo(pre_base_env):
     Banner("The following environments have been configured")
-    for family in family_map:
-      env = family_map[family]
+    for family, env in family_map.iteritems():
       for tag in RELEVANT_CONFIG:
         assert tag in env
         print "%s:  %s" % (tag, env.subst(env.get(tag)))
@@ -2113,9 +2113,9 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
     print "Not all families have envs this may cause some tests to not run"
   return family_map
 
+# This is where TRUSTED_ENV is set.
 def ExportSpecialFamilyVars(selected_envs, family_map):
-    for family in family_map:
-      family_env = family_map[family]
+    for family, family_env in family_map.iteritems():
       for env in selected_envs:
         env[family + '_ENV'] = family_env
 
@@ -2140,6 +2140,8 @@ selected_envs = FilterEnvironments(environment_list)
 family_map = SanityCheckAndMapExtraction(environment_list, selected_envs)
 ExportSpecialFamilyVars(selected_envs, family_map)
 
+# Note: BuildEnvironments calls FilterEnvironments internally.
+# Passing environment_list is OK
 BuildEnvironments(environment_list)
 
 # Change default to build everything, but not run tests.
