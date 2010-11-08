@@ -103,6 +103,7 @@ bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   DCHECK(WirelessScanSplit_function_);
   CFArrayRef managed_access_points = NULL;
   CFArrayRef adhoc_access_points = NULL;
+  // Arrays returned here are owned by the caller.
   WIErr err = (*WirelessScanSplit_function_)(wifi_context_,
                                              &managed_access_points,
                                              &adhoc_access_points,
@@ -144,6 +145,12 @@ bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
     }
     data->insert(access_point_data);
   }
+
+  if (managed_access_points)
+    CFRelease(managed_access_points);
+  if (adhoc_access_points)
+    CFRelease(adhoc_access_points);
+
   return true;
 }
 }  // namespace
