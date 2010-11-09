@@ -26,7 +26,7 @@
 //       pyautolib_sources in chrome_tests.gypi.
 
 // Headers that can be swigged directly.
-%include "chrome/app/chrome_dll_resource.h"
+%include "chrome/app/chrome_command_ids.h"
 %include "chrome/common/pref_names.h"
 %include "chrome/test/automation/automation_constants.h"
 
