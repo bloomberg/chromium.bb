@@ -26,57 +26,24 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
-const char GoogleURLTracker::kDefaultGoogleHomepage[] =
-    "http://www.google.com/";
-const char GoogleURLTracker::kSearchDomainCheckURL[] =
-    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
-
-namespace {
+// GoogleURLTrackerInfoBarDelegate --------------------------------------------
 
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   GoogleURLTrackerInfoBarDelegate(TabContents* tab_contents,
                                   GoogleURLTracker* google_url_tracker,
-                                  const GURL& new_google_url)
-      : ConfirmInfoBarDelegate(tab_contents),
-        google_url_tracker_(google_url_tracker),
-        new_google_url_(new_google_url) {}
+                                  const GURL& new_google_url);
 
   // ConfirmInfoBarDelegate
-  virtual string16 GetMessageText() const {
-    // TODO(ukai): change new_google_url to google_base_domain?
-    return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
-                                      UTF8ToUTF16(new_google_url_.spec()));
-  }
-
-  virtual int GetButtons() const {
-    return BUTTON_OK | BUTTON_CANCEL;
-  }
-
-  virtual string16 GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-                                     IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
-                                     IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
-  }
-
-  virtual bool Accept() {
-    google_url_tracker_->AcceptGoogleURL(new_google_url_);
-    google_url_tracker_->RedoSearch();
-    return true;
-  }
-
-  virtual bool Cancel() {
-    google_url_tracker_->CancelGoogleURL(new_google_url_);
-    return true;
-  }
-
-  virtual void InfoBarClosed() {
-    google_url_tracker_->InfoBarClosed();
-    delete this;
-  }
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual bool Accept();
+  virtual bool Cancel();
+  virtual void InfoBarClosed();
 
  private:
-  virtual ~GoogleURLTrackerInfoBarDelegate() {}
+  virtual ~GoogleURLTrackerInfoBarDelegate();
 
   GoogleURLTracker* google_url_tracker_;
   const GURL new_google_url_;
@@ -84,7 +51,58 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
 };
 
-}  // anonymous namespace
+GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
+    TabContents* tab_contents,
+    GoogleURLTracker* google_url_tracker,
+    const GURL& new_google_url)
+    : ConfirmInfoBarDelegate(tab_contents),
+      google_url_tracker_(google_url_tracker),
+      new_google_url_(new_google_url) {
+}
+
+string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
+  // TODO(ukai): change new_google_url to google_base_domain?
+  return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
+                                    UTF8ToUTF16(new_google_url_.spec()));
+}
+
+int GoogleURLTrackerInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK | BUTTON_CANCEL;
+}
+
+string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+                                   IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
+                                   IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+}
+
+bool GoogleURLTrackerInfoBarDelegate::Accept() {
+  google_url_tracker_->AcceptGoogleURL(new_google_url_);
+  google_url_tracker_->RedoSearch();
+  return true;
+}
+
+bool GoogleURLTrackerInfoBarDelegate::Cancel() {
+  google_url_tracker_->CancelGoogleURL(new_google_url_);
+  return true;
+}
+
+void GoogleURLTrackerInfoBarDelegate::InfoBarClosed() {
+  google_url_tracker_->InfoBarClosed();
+  delete this;
+}
+
+GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
+}
+
+
+// GoogleURLTracker -----------------------------------------------------------
+
+const char GoogleURLTracker::kDefaultGoogleHomepage[] =
+    "http://www.google.com/";
+const char GoogleURLTracker::kSearchDomainCheckURL[] =
+    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
 InfoBarDelegate* GoogleURLTracker::InfoBarDelegateFactory::CreateInfoBar(
     TabContents* tab_contents,

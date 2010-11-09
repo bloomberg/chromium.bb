@@ -19,41 +19,74 @@
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TestNotificationObserver ---------------------------------------------------
+
 namespace {
 
 class TestNotificationObserver : public NotificationObserver {
  public:
-  TestNotificationObserver() : notified_(false) {}
-  virtual ~TestNotificationObserver() {}
+  TestNotificationObserver();
+  virtual ~TestNotificationObserver();
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
-    notified_ = true;
-  }
+                       const NotificationDetails& details);
   bool notified() const { return notified_; }
   void ClearNotified() { notified_ = false; }
+
  private:
   bool notified_;
 };
 
+TestNotificationObserver::TestNotificationObserver() : notified_(false) {
+}
+
+TestNotificationObserver::~TestNotificationObserver() {
+}
+
+void TestNotificationObserver::Observe(NotificationType type,
+                                       const NotificationSource& source,
+                                       const NotificationDetails& details) {
+  notified_ = true;
+}
+
+
+// TestInfoBarDelegate --------------------------------------------------------
+
 class TestInfoBarDelegate : public InfoBarDelegate {
  public:
   TestInfoBarDelegate(GoogleURLTracker* google_url_tracker,
-                      const GURL& new_google_url)
-      : InfoBarDelegate(NULL),
-        google_url_tracker_(google_url_tracker),
-        new_google_url_(new_google_url) {}
-  virtual ~TestInfoBarDelegate() {}
+                      const GURL& new_google_url);
+  virtual ~TestInfoBarDelegate();
+
   GoogleURLTracker* google_url_tracker() const { return google_url_tracker_; }
   const GURL& new_google_url() const { return new_google_url_; }
 
-  virtual InfoBar* CreateInfoBar() { return NULL; }
+  virtual InfoBar* CreateInfoBar();
 
  private:
   GoogleURLTracker* google_url_tracker_;
   GURL new_google_url_;
 };
+
+TestInfoBarDelegate::TestInfoBarDelegate(GoogleURLTracker* google_url_tracker,
+                                         const GURL& new_google_url)
+    : InfoBarDelegate(NULL),
+      google_url_tracker_(google_url_tracker),
+      new_google_url_(new_google_url) {
+}
+
+TestInfoBarDelegate::~TestInfoBarDelegate() {
+}
+
+InfoBar* TestInfoBarDelegate::CreateInfoBar() {
+  return NULL;
+}
+
+}  // namespace
+
+
+// TestInfoBarDelegateFactory -------------------------------------------------
 
 class TestInfoBarDelegateFactory
     : public GoogleURLTracker::InfoBarDelegateFactory {
@@ -65,166 +98,37 @@ class TestInfoBarDelegateFactory
   }
 };
 
-}  // anonymous namespace
+
+// GoogleURLTrackerTest -------------------------------------------------------
 
 class GoogleURLTrackerTest : public testing::Test {
  protected:
-  GoogleURLTrackerTest()
-      : message_loop_(NULL),
-        io_thread_(NULL),
-        original_default_request_context_(NULL) {
-  }
+  GoogleURLTrackerTest();
+  virtual ~GoogleURLTrackerTest();
 
-  void SetUp() {
-    original_default_request_context_ = Profile::GetDefaultRequestContext();
-    Profile::set_default_request_context(NULL);
-    message_loop_ = new MessageLoop(MessageLoop::TYPE_IO);
-    io_thread_ = new BrowserThread(BrowserThread::IO, message_loop_);
-    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-    testing_profile_.reset(new TestingProfile);
-    TestingBrowserProcess* testing_browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    PrefService* pref_service = testing_profile_->GetPrefs();
-    testing_browser_process->SetPrefService(pref_service);
-    testing_browser_process->SetGoogleURLTracker(new GoogleURLTracker);
+  // testing::Test
+  virtual void SetUp();
+  virtual void TearDown();
 
-    URLFetcher::set_factory(&fetcher_factory_);
-    observer_.reset(new TestNotificationObserver);
-    g_browser_process->google_url_tracker()->infobar_factory_.reset(
-        new TestInfoBarDelegateFactory);
-  }
-
-  void TearDown() {
-    URLFetcher::set_factory(NULL);
-    TestingBrowserProcess* testing_browser_process =
-        static_cast<TestingBrowserProcess*>(g_browser_process);
-    testing_browser_process->SetGoogleURLTracker(NULL);
-    testing_browser_process->SetPrefService(NULL);
-    testing_profile_.reset();
-    network_change_notifier_.reset();
-    delete io_thread_;
-    delete message_loop_;
-    Profile::set_default_request_context(original_default_request_context_);
-    original_default_request_context_ = NULL;
-  }
-
-  void CreateRequestContext() {
-    testing_profile_->CreateRequestContext();
-    Profile::set_default_request_context(testing_profile_->GetRequestContext());
-    NotificationService::current()->Notify(
-        NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
-        NotificationService::AllSources(), NotificationService::NoDetails());
-  }
-
-  TestURLFetcher* GetFetcherByID(int expected_id) {
-    return fetcher_factory_.GetFetcherByID(expected_id);
-  }
-
-  void MockSearchDomainCheckResponse(
-      int expected_id, const std::string& domain) {
-    TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(expected_id);
-    ASSERT_TRUE(fetcher);
-    fetcher->delegate()->OnURLFetchComplete(
-        fetcher,
-        GURL(GoogleURLTracker::kSearchDomainCheckURL),
-        URLRequestStatus(),
-        200,
-        ResponseCookies(),
-        domain);
-    MessageLoop::current()->RunAllPending();
-  }
-
-  void RequestServerCheck() {
-    registrar_.Add(observer_.get(), NotificationType::GOOGLE_URL_UPDATED,
-                   NotificationService::AllSources());
-    GoogleURLTracker::RequestServerCheck();
-    MessageLoop::current()->RunAllPending();
-  }
-
-  void FinishSleep() {
-    g_browser_process->google_url_tracker()->FinishSleep();
-    MessageLoop::current()->RunAllPending();
-  }
-
-  void NotifyIPAddressChanged() {
-    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    MessageLoop::current()->RunAllPending();
-  }
-
-  GURL GetFetchedGoogleURL() {
-    return g_browser_process->google_url_tracker()->fetched_google_url_;
-  }
-
-  void SetGoogleURL(const GURL& url) {
-    g_browser_process->google_url_tracker()->google_url_ = url;
-  }
-
-  void SetLastPromptedGoogleURL(const GURL& url) {
-    g_browser_process->local_state()->SetString(
-        prefs::kLastPromptedGoogleURL, url.spec());
-  }
-
-  GURL GetLastPromptedGoogleURL() {
-    return GURL(g_browser_process->local_state()->GetString(
-        prefs::kLastPromptedGoogleURL));
-  }
-
-  void SearchCommitted(const GURL& search_url) {
-    GoogleURLTracker* google_url_tracker =
-        g_browser_process->google_url_tracker();
-
-    google_url_tracker->SearchCommitted();
-    // GoogleURLTracker wait for NAV_ENTRY_PENDING.
-    // In NAV_ENTRY_PENDING, it will set search_url_.
-    google_url_tracker->search_url_ = search_url;
-  }
-
-  void NavEntryCommitted() {
-    GoogleURLTracker* google_url_tracker =
-        g_browser_process->google_url_tracker();
-    google_url_tracker->ShowGoogleURLInfoBarIfNecessary(NULL);
-  }
-
-  bool InfoBarIsShown() {
-    return (g_browser_process->google_url_tracker()->infobar_ != NULL);
-  }
-
-  GURL GetInfoBarShowingURL() {
-    TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
-        g_browser_process->google_url_tracker()->infobar_);
-    return infobar->new_google_url();
-  }
-
-  void AcceptGoogleURL() {
-    TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
-        g_browser_process->google_url_tracker()->infobar_);
-    ASSERT_TRUE(infobar);
-    ASSERT_TRUE(infobar->google_url_tracker());
-    infobar->google_url_tracker()->AcceptGoogleURL(infobar->new_google_url());
-  }
-
-  void CancelGoogleURL() {
-    TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
-        g_browser_process->google_url_tracker()->infobar_);
-    ASSERT_TRUE(infobar);
-    ASSERT_TRUE(infobar->google_url_tracker());
-    infobar->google_url_tracker()->CancelGoogleURL(infobar->new_google_url());
-  }
-
-  void InfoBarClosed() {
-    TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
-        g_browser_process->google_url_tracker()->infobar_);
-    ASSERT_TRUE(infobar);
-    ASSERT_TRUE(infobar->google_url_tracker());
-    infobar->google_url_tracker()->InfoBarClosed();
-    delete infobar;
-  }
-
-  void ExpectDefaultURLs() {
-    EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage),
-              GoogleURLTracker::GoogleURL());
-    EXPECT_EQ(GURL(), GetFetchedGoogleURL());
-  }
+  void CreateRequestContext();
+  TestURLFetcher* GetFetcherByID(int expected_id);
+  void MockSearchDomainCheckResponse(int expected_id,
+                                     const std::string& domain);
+  void RequestServerCheck();
+  void FinishSleep();
+  void NotifyIPAddressChanged();
+  GURL GetFetchedGoogleURL();
+  void SetGoogleURL(const GURL& url);
+  void SetLastPromptedGoogleURL(const GURL& url);
+  GURL GetLastPromptedGoogleURL();
+  void SearchCommitted(const GURL& search_url);
+  void NavEntryCommitted();
+  bool InfoBarIsShown();
+  GURL GetInfoBarShowingURL();
+  void AcceptGoogleURL();
+  void CancelGoogleURL();
+  void InfoBarClosed();
+  void ExpectDefaultURLs();
 
  private:
   MessageLoop* message_loop_;
@@ -238,6 +142,167 @@ class GoogleURLTrackerTest : public testing::Test {
 
   URLRequestContextGetter* original_default_request_context_;
 };
+
+GoogleURLTrackerTest::GoogleURLTrackerTest()
+    : message_loop_(NULL),
+      io_thread_(NULL),
+      original_default_request_context_(NULL) {
+}
+
+void GoogleURLTrackerTest::SetUp() {
+  original_default_request_context_ = Profile::GetDefaultRequestContext();
+  Profile::set_default_request_context(NULL);
+  message_loop_ = new MessageLoop(MessageLoop::TYPE_IO);
+  io_thread_ = new BrowserThread(BrowserThread::IO, message_loop_);
+  network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
+  testing_profile_.reset(new TestingProfile);
+  TestingBrowserProcess* testing_browser_process =
+      static_cast<TestingBrowserProcess*>(g_browser_process);
+  PrefService* pref_service = testing_profile_->GetPrefs();
+  testing_browser_process->SetPrefService(pref_service);
+  testing_browser_process->SetGoogleURLTracker(new GoogleURLTracker);
+
+  URLFetcher::set_factory(&fetcher_factory_);
+  observer_.reset(new TestNotificationObserver);
+  g_browser_process->google_url_tracker()->infobar_factory_.reset(
+      new TestInfoBarDelegateFactory);
+}
+
+void GoogleURLTrackerTest::TearDown() {
+  URLFetcher::set_factory(NULL);
+  TestingBrowserProcess* testing_browser_process =
+      static_cast<TestingBrowserProcess*>(g_browser_process);
+  testing_browser_process->SetGoogleURLTracker(NULL);
+  testing_browser_process->SetPrefService(NULL);
+  testing_profile_.reset();
+  network_change_notifier_.reset();
+  delete io_thread_;
+  delete message_loop_;
+  Profile::set_default_request_context(original_default_request_context_);
+  original_default_request_context_ = NULL;
+}
+
+void GoogleURLTrackerTest::CreateRequestContext() {
+  testing_profile_->CreateRequestContext();
+  Profile::set_default_request_context(testing_profile_->GetRequestContext());
+  NotificationService::current()->Notify(
+      NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
+      NotificationService::AllSources(), NotificationService::NoDetails());
+}
+
+TestURLFetcher* GoogleURLTrackerTest::GetFetcherByID(int expected_id) {
+  return fetcher_factory_.GetFetcherByID(expected_id);
+}
+
+void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
+    int expected_id,
+    const std::string& domain) {
+  TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(expected_id);
+  ASSERT_TRUE(fetcher);
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher,
+      GURL(GoogleURLTracker::kSearchDomainCheckURL),
+      URLRequestStatus(),
+      200,
+      ResponseCookies(),
+      domain);
+  MessageLoop::current()->RunAllPending();
+}
+
+void GoogleURLTrackerTest::RequestServerCheck() {
+  registrar_.Add(observer_.get(), NotificationType::GOOGLE_URL_UPDATED,
+                 NotificationService::AllSources());
+  GoogleURLTracker::RequestServerCheck();
+  MessageLoop::current()->RunAllPending();
+}
+
+void GoogleURLTrackerTest::FinishSleep() {
+  g_browser_process->google_url_tracker()->FinishSleep();
+  MessageLoop::current()->RunAllPending();
+}
+
+void GoogleURLTrackerTest::NotifyIPAddressChanged() {
+  net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+  MessageLoop::current()->RunAllPending();
+}
+
+GURL GoogleURLTrackerTest::GetFetchedGoogleURL() {
+  return g_browser_process->google_url_tracker()->fetched_google_url_;
+}
+
+void GoogleURLTrackerTest::SetGoogleURL(const GURL& url) {
+  g_browser_process->google_url_tracker()->google_url_ = url;
+}
+
+void GoogleURLTrackerTest::SetLastPromptedGoogleURL(const GURL& url) {
+  g_browser_process->local_state()->SetString(
+      prefs::kLastPromptedGoogleURL, url.spec());
+}
+
+GURL GoogleURLTrackerTest::GetLastPromptedGoogleURL() {
+  return GURL(g_browser_process->local_state()->GetString(
+      prefs::kLastPromptedGoogleURL));
+}
+
+void GoogleURLTrackerTest::SearchCommitted(const GURL& search_url) {
+  GoogleURLTracker* google_url_tracker =
+      g_browser_process->google_url_tracker();
+
+  google_url_tracker->SearchCommitted();
+  // GoogleURLTracker wait for NAV_ENTRY_PENDING.
+  // In NAV_ENTRY_PENDING, it will set search_url_.
+  google_url_tracker->search_url_ = search_url;
+}
+
+void GoogleURLTrackerTest::NavEntryCommitted() {
+  GoogleURLTracker* google_url_tracker =
+      g_browser_process->google_url_tracker();
+  google_url_tracker->ShowGoogleURLInfoBarIfNecessary(NULL);
+}
+
+bool GoogleURLTrackerTest::InfoBarIsShown() {
+  return (g_browser_process->google_url_tracker()->infobar_ != NULL);
+}
+
+GURL GoogleURLTrackerTest::GetInfoBarShowingURL() {
+  TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
+      g_browser_process->google_url_tracker()->infobar_);
+  return infobar->new_google_url();
+}
+
+void GoogleURLTrackerTest::AcceptGoogleURL() {
+  TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
+      g_browser_process->google_url_tracker()->infobar_);
+  ASSERT_TRUE(infobar);
+  ASSERT_TRUE(infobar->google_url_tracker());
+  infobar->google_url_tracker()->AcceptGoogleURL(infobar->new_google_url());
+}
+
+void GoogleURLTrackerTest::CancelGoogleURL() {
+  TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
+      g_browser_process->google_url_tracker()->infobar_);
+  ASSERT_TRUE(infobar);
+  ASSERT_TRUE(infobar->google_url_tracker());
+  infobar->google_url_tracker()->CancelGoogleURL(infobar->new_google_url());
+}
+
+void GoogleURLTrackerTest::InfoBarClosed() {
+  TestInfoBarDelegate* infobar = static_cast<TestInfoBarDelegate*>(
+      g_browser_process->google_url_tracker()->infobar_);
+  ASSERT_TRUE(infobar);
+  ASSERT_TRUE(infobar->google_url_tracker());
+  infobar->google_url_tracker()->InfoBarClosed();
+  delete infobar;
+}
+
+void GoogleURLTrackerTest::ExpectDefaultURLs() {
+  EXPECT_EQ(GURL(GoogleURLTracker::kDefaultGoogleHomepage),
+            GoogleURLTracker::GoogleURL());
+  EXPECT_EQ(GURL(), GetFetchedGoogleURL());
+}
+
+
+// Tests ----------------------------------------------------------------------
 
 TEST_F(GoogleURLTrackerTest, StartupSleepFinishNoObserver) {
   CreateRequestContext();
