@@ -1143,3 +1143,35 @@
    fun:createBitmapContext
    fun:CGBitmapContextCreate
 }
+{
+   bug_62461a
+   Memcheck:Addr4
+   ...
+   fun:objc_msgSend*
+   ...
+   fun:-[NS*
+}
+{
+   bug_62461b
+   Memcheck:Addr4
+   ...
+   fun:objc_msgSend*
+   ...
+   fun:*Browser*
+}
+{
+   bug_62461c
+   Memcheck:Addr4
+   ...
+   fun:_cache*
+   ...
+   fun:-[NS*
+}
+{
+   bug_62461d
+   Memcheck:Addr4
+   ...
+   fun:_cache*
+   ...
+   fun:*Browser*
+}
