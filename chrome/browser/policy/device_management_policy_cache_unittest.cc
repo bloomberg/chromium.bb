@@ -85,7 +85,15 @@ TEST_F(DeviceManagementPolicyCacheTest, LoadNoFile) {
   EXPECT_TRUE(empty.Equals(policy.get()));
 }
 
-TEST_F(DeviceManagementPolicyCacheTest, LoadWithFile) {
+// Flaky on Windows since the file time is not as precise as the
+// system clock time and can end up being later than "now".
+// http://crbug.com/62489.
+#if defined(OS_WIN)
+#define MAYBE_LoadWithFile FLAKY_LoadWithFile
+#else
+#define MAYBE_LoadWithFile LoadWithFile
+#endif
+TEST_F(DeviceManagementPolicyCacheTest, MAYBE_LoadWithFile) {
   WritePolicy(em::DevicePolicyResponse());
   DeviceManagementPolicyCache cache(test_file());
   cache.LoadPolicyFromFile();
