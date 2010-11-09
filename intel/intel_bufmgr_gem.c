@@ -1204,11 +1204,11 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 	return ret;
 }
 
-/** Waits for all GPU rendering to the object to have completed. */
+/** Waits for all GPU rendering with the object to have completed. */
 static void
 drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
 {
-	drm_intel_gem_bo_start_gtt_access(bo, 0);
+	drm_intel_gem_bo_start_gtt_access(bo, 1);
 }
 
 /**
