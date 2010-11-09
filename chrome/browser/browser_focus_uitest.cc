@@ -55,7 +55,8 @@
 #elif defined(OS_WIN)
 #define MAYBE_FocusTraversal FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
-#define MAYBE_TabsRememberFocusFindInPage TabsRememberFocusFindInPage
+// Flaky, http://crbug.com/62537.
+#define MAYBE_TabsRememberFocusFindInPage FLAKY_TabsRememberFocusFindInPage
 #endif
 
 namespace {
@@ -314,7 +315,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
 }
 
 // Background window does not steal focus.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
+// Flaky, http://crbug.com/62538.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
+                       FLAKY_BackgroundBrowserDontStealFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
@@ -700,7 +703,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
+// Flaky, http://crbug.com/62539.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Open the history tab, focus should be on the tab contents.
