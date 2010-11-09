@@ -7,6 +7,7 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/side_tab_strip.h"
