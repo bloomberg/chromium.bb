@@ -6,26 +6,8 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/content_exceptions_table_model.h"
-#include "views/controls/table/table_view.h"
-
-// A thin wrapper around TableView that displays off-the-record entries in
-// italics.
-class ContentExceptionsTableView : public views::TableView {
- public:
-  ContentExceptionsTableView(ContentExceptionsTableModel* model,
-                             const std::vector<TableColumn>& columns);
-
-  virtual ~ContentExceptionsTableView() {}
-
- private:
-  virtual bool GetCellColors(int model_row,
-                             int column,
-                             ItemColor* foreground,
-                             ItemColor* background,
-                             LOGFONT* logfont);
-
-  ContentExceptionsTableModel* exceptions_;
-};
+#include "chrome/browser/ui/views/options/content_exceptions_table_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_VIEW_H_
+

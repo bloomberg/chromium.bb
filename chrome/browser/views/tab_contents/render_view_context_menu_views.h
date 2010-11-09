@@ -6,42 +6,8 @@
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_VIEWS_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
-#include "views/controls/menu/menu_2.h"
-
-class RenderViewContextMenuViews : public RenderViewContextMenu {
- public:
-  RenderViewContextMenuViews(TabContents* tab_contents,
-                           const ContextMenuParams& params);
-
-  virtual ~RenderViewContextMenuViews();
-
-  void RunMenuAt(int x, int y);
-
-  gfx::NativeMenu GetMenuHandle() const {
-    return (menu_.get() ? menu_->GetNativeMenu() : NULL);
-  }
-
-#if defined(OS_WIN)
-  // Set this menu to show for an external tab contents. This
-  // only has an effect before Init() is called.
-  void SetExternal();
-#endif
-
-  void UpdateMenuItemStates();
-
- protected:
-  // RenderViewContextMenu implementation --------------------------------------
-  virtual void PlatformInit();
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
- private:
-  // The context menu itself and its contents.
-  scoped_ptr<views::Menu2> menu_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuViews);
-};
+#include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_VIEWS_H_
+

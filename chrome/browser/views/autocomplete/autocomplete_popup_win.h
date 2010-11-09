@@ -6,28 +6,8 @@
 #define CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
 #pragma once
 
-#include "base/weak_ptr.h"
-#include "views/widget/widget_win.h"
-
-class AutocompleteEditView;
-class AutocompletePopupContentsView;
-
-class AutocompletePopupWin
-    : public views::WidgetWin,
-      public base::SupportsWeakPtr<AutocompletePopupWin> {
- public:
-  // Creates the popup and shows it. |edit_view| is the edit that created us.
-  AutocompletePopupWin(AutocompleteEditView* edit_view,
-                       AutocompletePopupContentsView* contents);
-  virtual ~AutocompletePopupWin();
-
- private:
-  // Overridden from WidgetWin:
-  virtual LRESULT OnMouseActivate(HWND window,
-                                  UINT hit_test,
-                                  UINT mouse_message);
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWin);
-};
+#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_win.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
+

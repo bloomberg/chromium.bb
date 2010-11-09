@@ -6,38 +6,8 @@
 #define CHROME_BROWSER_VIEWS_STATUS_ICONS_STATUS_TRAY_WIN_H_
 #pragma once
 
-#include <windows.h>
-
-#include "chrome/browser/status_icons/status_tray.h"
-
-class StatusTrayWin : public StatusTray {
- public:
-  StatusTrayWin();
-  ~StatusTrayWin();
-
-  // Exposed for testing.
-  LRESULT CALLBACK WndProc(HWND hwnd,
-                           UINT message,
-                           WPARAM wparam,
-                           LPARAM lparam);
- protected:
-  // Overriden from StatusTray:
-  virtual StatusIcon* CreatePlatformStatusIcon();
-
- private:
-  // Static callback invoked when a message comes in to our messaging window.
-  static LRESULT CALLBACK WndProcStatic(HWND hwnd,
-                                        UINT message,
-                                        WPARAM wparam,
-                                        LPARAM lparam);
-
-  // The unique icon ID we will assign to the next icon.
-  UINT next_icon_id_;
-  // The window used for processing events.
-  HWND window_;
-
-  DISALLOW_COPY_AND_ASSIGN(StatusTrayWin);
-};
+#include "chrome/browser/ui/views/status_icons/status_tray_win.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_STATUS_ICONS_STATUS_TRAY_WIN_H_
 

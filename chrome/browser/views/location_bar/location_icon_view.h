@@ -6,30 +6,8 @@
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/location_bar/click_handler.h"
-#include "views/controls/image_view.h"
-
-class LocationBarView;
-namespace views {
-class MouseEvent;
-}
-
-// LocationIconView is used to display an icon to the left of the edit field.
-// This shows the user's current action while editing, the page security
-// status on https pages, or a globe for other URLs.
-class LocationIconView : public views::ImageView {
- public:
-  explicit LocationIconView(const LocationBarView* location_bar);
-  virtual ~LocationIconView();
-
-  // Overridden from view.
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-
- private:
-  ClickHandler click_handler_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LocationIconView);
-};
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
+

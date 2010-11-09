@@ -6,29 +6,8 @@
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_CLICK_HANDLER_H_
 #pragma once
 
-#include "base/basictypes.h"
-
-class LocationBarView;
-
-namespace views {
-class MouseEvent;
-class View;
-}
-
-// This helper class is kept as a member by classes that need to show the Page
-// Info dialog on click, to encapsulate that logic in one place.
-class ClickHandler {
- public:
-  ClickHandler(const views::View* owner, const LocationBarView* location_bar);
-
-  void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-
- private:
-  const views::View* owner_;
-  const LocationBarView* location_bar_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ClickHandler);
-};
+#include "chrome/browser/ui/views/location_bar/click_handler.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_LOCATION_BAR_CLICK_HANDLER_H_
 

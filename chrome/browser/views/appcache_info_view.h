@@ -6,19 +6,8 @@
 #define CHROME_BROWSER_VIEWS_APPCACHE_INFO_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/generic_info_view.h"
-#include "chrome/browser/browsing_data_appcache_helper.h"
-
-// AppCacheInfoView
-// Displays a tabular grid of AppCache information.
-class AppCacheInfoView : public GenericInfoView {
- public:
-  AppCacheInfoView();
-  void SetAppCacheInfo(const appcache::AppCacheInfo* info);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppCacheInfoView);
-};
+#include "chrome/browser/ui/views/appcache_info_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_APPCACHE_INFO_VIEW_H_
 

@@ -6,32 +6,8 @@
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
 #pragma once
 
-#include "gfx/size.h"
-#include "views/view.h"
-
-class GURL;
-class PageActionImageView;
-class TabContents;
-
-// A container for the PageActionImageView plus its badge.
-class PageActionWithBadgeView : public views::View {
- public:
-  explicit PageActionWithBadgeView(PageActionImageView* image_view);
-
-  PageActionImageView* image_view() { return image_view_; }
-
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-  virtual gfx::Size GetPreferredSize();
-
-  void UpdateVisibility(TabContents* contents, const GURL& url);
-
- private:
-  virtual void Layout();
-
-  // The button this view contains.
-  PageActionImageView* image_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageActionWithBadgeView);
-};
+#include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
+

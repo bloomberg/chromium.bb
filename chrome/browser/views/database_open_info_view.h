@@ -6,28 +6,8 @@
 #define CHROME_BROWSER_VIEWS_DATABASE_OPEN_INFO_VIEW_H_
 #pragma once
 
-#include "base/string16.h"
-#include "chrome/browser/views/generic_info_view.h"
-
-///////////////////////////////////////////////////////////////////////////////
-// DatabaseOpenInfoView
-//
-//  Responsible for displaying a tabular grid of Database information when
-//  prompting for permission to open a new database.
-class DatabaseOpenInfoView : public GenericInfoView {
- public:
-  DatabaseOpenInfoView();
-
-  // Update the display from the specified Database data.
-  void SetFields(const std::string& host,
-                 const string16& database_name,
-                 const string16& display_name,
-                 unsigned long estimated_size);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DatabaseOpenInfoView);
-};
-
+#include "chrome/browser/ui/views/database_open_info_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_DATABASE_OPEN_INFO_VIEW_H_
 

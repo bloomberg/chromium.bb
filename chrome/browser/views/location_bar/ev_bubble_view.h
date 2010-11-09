@@ -6,33 +6,8 @@
 #define CHROME_BROWSER_VIEWS_LOCATION_BAR_EV_BUBBLE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/location_bar/click_handler.h"
-#include "chrome/browser/views/location_bar/icon_label_bubble_view.h"
-
-class LocationBarView;
-
-namespace views {
-class MouseEvent;
-}
-
-// EVBubbleView displays the EV Bubble in the LocationBarView.
-class EVBubbleView : public IconLabelBubbleView {
- public:
-  EVBubbleView(const int background_images[],
-               int contained_image,
-               const SkColor& color,
-               const LocationBarView* location_bar);
-  virtual ~EVBubbleView();
-
-  // Overridden from view.
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-
- private:
-  ClickHandler click_handler_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(EVBubbleView);
-};
+#include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_LOCATION_BAR_EV_BUBBLE_VIEW_H_
 

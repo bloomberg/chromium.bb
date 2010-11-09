@@ -2,51 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H__
-#define CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H__
+#ifndef CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H_
+#define CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/options_page_base.h"
-#include "views/controls/link.h"
-#include "views/controls/button/native_button.h"
+#include "chrome/browser/ui/views/options/options_page_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
-class PrefService;
+#endif  // CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H_
 
-///////////////////////////////////////////////////////////////////////////////
-// OptionsPageView
-//
-//  A base class for Options dialog pages that handles ensuring control
-//  initialization is done just once.
-//
-class OptionsPageView : public views::View,
-                        public OptionsPageBase {
- public:
-  virtual ~OptionsPageView();
-
-  // Returns true if the window containing this view can be closed, given the
-  // current state of this view. This can be used to prevent the window from
-  // being closed when a modal dialog box is showing, for example.
-  virtual bool CanClose() const { return true; }
-
- protected:
-  // This class cannot be instantiated directly, but its constructor must be
-  // called by derived classes.
-  explicit OptionsPageView(Profile* profile);
-
-  // Initializes the layout of the controls within the panel.
-  virtual void InitControlLayout() = 0;
-
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child);
-  virtual AccessibilityTypes::Role GetAccessibleRole();
-
- private:
-  // Whether or not the control layout has been initialized for this page.
-  bool initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptionsPageView);
-};
-
-#endif  // CHROME_BROWSER_VIEWS_OPTIONS_OPTIONS_PAGE_VIEW_H__

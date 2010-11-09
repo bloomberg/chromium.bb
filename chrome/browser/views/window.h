@@ -6,24 +6,8 @@
 #define CHROME_BROWSER_VIEWS_WINDOW_H_
 #pragma once
 
-#include "gfx/native_widget_types.h"
-
-namespace gfx {
-class Rect;
-}
-
-namespace views {
-class Window;
-class WindowDelegate;
-}
-
-namespace browser {
-
-// Create a window for given |delegate| using default frame view.
-views::Window* CreateViewsWindow(gfx::NativeWindow parent,
-                                 const gfx::Rect& bounds,
-                                 views::WindowDelegate* delegate);
-
-}  // namespace browser
+#include "chrome/browser/ui/views/window.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_WINDOW_H_
+

@@ -6,32 +6,8 @@
 #define CHROME_BROWSER_VIEWS_LIST_BACKGROUND_H_
 #pragma once
 
-#include "gfx/canvas_skia.h"
-#include "gfx/native_theme_win.h"
-#include "views/background.h"
-
-// A background object that paints the scrollable list background,
-// which may be rendered by the system visual styles system.
-class ListBackground : public views::Background {
- public:
-  explicit ListBackground() {
-    SkColor list_color =
-        gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-        gfx::NativeTheme::LIST, 1, TS_NORMAL, TMT_FILLCOLOR, COLOR_WINDOW);
-    SetNativeControlColor(list_color);
-  }
-  virtual ~ListBackground() {}
-
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const {
-    HDC dc = canvas->BeginPlatformPaint();
-    RECT native_lb = view->GetLocalBounds(true).ToRECT();
-    gfx::NativeTheme::instance()->PaintListBackground(dc, true, &native_lb);
-    canvas->EndPlatformPaint();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ListBackground);
-};
+#include "chrome/browser/ui/views/list_background.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_LIST_BACKGROUND_H_
 

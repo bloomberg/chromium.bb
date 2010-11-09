@@ -6,26 +6,8 @@
 #define CHROME_BROWSER_VIEWS_MODAL_DIALOG_DELEGATE_H_
 #pragma once
 
-#include "views/window/dialog_delegate.h"
-
-namespace views {
-class Window;
-}
-
-class ModalDialogDelegate : public views::DialogDelegate {
- public:
-  virtual ~ModalDialogDelegate() {}
-  // Methods called from AppModalDialog.
-  virtual gfx::NativeWindow GetDialogRootWindow() = 0;
-  virtual void ShowModalDialog();
-  virtual void ActivateModalDialog();
-  virtual void CloseModalDialog();
- protected:
-  ModalDialogDelegate();
-
-  // The dialog if it is currently visible.
-  views::Window* dialog_;
-};
+#include "chrome/browser/ui/views/modal_dialog_delegate.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_MODAL_DIALOG_DELEGATE_H_
 

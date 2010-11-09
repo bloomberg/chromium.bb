@@ -2,38 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__
-#define CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__
+#ifndef CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H_
+#define CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/options/options_page_view.h"
+#include "chrome/browser/ui/views/options/advanced_contents_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
-class AdvancedContentsView;
-namespace views {
-class ScrollView;
-}
+#endif  // CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H_
 
-///////////////////////////////////////////////////////////////////////////////
-// AdvancedScrollViewContainer
-//
-//  A View that contains a scroll view containing the Advanced options.
-
-class AdvancedScrollViewContainer : public views::View {
- public:
-  explicit AdvancedScrollViewContainer(Profile* profile);
-  virtual ~AdvancedScrollViewContainer();
-
-  // views::View overrides:
-  virtual void Layout();
-
- private:
-  // The contents of the advanced scroll view.
-  AdvancedContentsView* contents_view_;
-
-  // The scroll view that contains the advanced options.
-  views::ScrollView* scroll_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdvancedScrollViewContainer);
-};
-
-#endif  // CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__

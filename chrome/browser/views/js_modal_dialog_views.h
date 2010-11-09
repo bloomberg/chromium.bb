@@ -6,55 +6,8 @@
 #define CHROME_BROWSER_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
 #pragma once
 
-#include "chrome/browser/js_modal_dialog.h"
-
-#include <string>
-
-#include "app/message_box_flags.h"
-#include "chrome/browser/native_app_modal_dialog.h"
-#include "views/window/dialog_delegate.h"
-
-class MessageBoxView;
-
-class JSModalDialogViews : public NativeAppModalDialog,
-                           public views::DialogDelegate {
- public:
-  explicit JSModalDialogViews(JavaScriptAppModalDialog* parent);
-  virtual ~JSModalDialogViews();
-
-  // Overridden from NativeAppModalDialog:
-  virtual int GetAppModalDialogButtons() const;
-  virtual void ShowAppModalDialog();
-  virtual void ActivateAppModalDialog();
-  virtual void CloseAppModalDialog();
-  virtual void AcceptAppModalDialog();
-  virtual void CancelAppModalDialog();
-
-  // Overridden from views::DialogDelegate:
-  virtual int GetDefaultDialogButton() const;
-  virtual int GetDialogButtons() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual void WindowClosing();
-  virtual void DeleteDelegate();
-  virtual bool Cancel();
-  virtual bool Accept();
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-
-  // Overridden from views::WindowDelegate:
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView();
-  virtual views::View* GetInitiallyFocusedView();
-  virtual void OnClose();
-
- private:
-  // A pointer to the AppModalDialog that owns us.
-  JavaScriptAppModalDialog* parent_;
-
-  // The message box view whose commands we handle.
-  MessageBoxView* message_box_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(JSModalDialogViews);
-};
+#include "chrome/browser/ui/views/js_modal_dialog_views.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
+

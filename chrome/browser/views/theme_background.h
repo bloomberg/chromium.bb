@@ -6,36 +6,8 @@
 #define CHROME_BROWSER_VIEWS_THEME_BACKGROUND_H_
 #pragma once
 
-#include "views/background.h"
-
-class BrowserView;
-
-namespace views {
-class View;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// ThemeBackground class.
-//
-// A ThemeBackground is used to paint the background theme image in a
-// view in such a way that it's consistent with the frame's theme
-// image. It takes care of active/inactive state, incognito state and
-// the offset from the frame view.
-//
-////////////////////////////////////////////////////////////////////////////////
-class ThemeBackground : public views::Background {
- public:
-  explicit ThemeBackground(BrowserView* browser);
-  virtual ~ThemeBackground() {}
-
-  // Overridden from views:;Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
-
- private:
-  BrowserView* browser_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThemeBackground);
-};
+#include "chrome/browser/ui/views/theme_background.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_THEME_BACKGROUND_H_
+

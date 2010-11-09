@@ -6,22 +6,8 @@
 #define CHROME_BROWSER_VIEWS_TEXTFIELD_VIEWS_H_
 #pragma once
 
-#include <string>
-
-#include "chrome/browser/views/dom_view.h"
-
-class TextfieldsUI;
-
-class TextfieldViews : public DOMView {
- public:
-  TextfieldViews();
-  std::wstring GetText();
-  void SetText(const std::wstring& text);
-
- private:
-  TextfieldsUI* dom_ui();
-
-  DISALLOW_COPY_AND_ASSIGN(TextfieldViews);
-};
+#include "chrome/browser/ui/views/textfield_views.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_TEXTFIELD_VIEWS_H_
+

@@ -6,41 +6,8 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_PAGE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/options/options_page_view.h"
-#include "views/controls/button/button.h"
-
-class AdvancedOptionsListModel;
-class AdvancedScrollViewContainer;
-class PrefService;
-namespace views {
-class NativeButton;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AdvancedPageView
-
-class AdvancedPageView : public OptionsPageView,
-                         public views::ButtonListener {
- public:
-  explicit AdvancedPageView(Profile* profile);
-  virtual ~AdvancedPageView();
-
-  // Resets all prefs to their default values.
-  void ResetToDefaults();
-
-  // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
- protected:
-  // OptionsPageView implementation:
-  virtual void InitControlLayout();
-
- private:
-  // Controls for the Advanced page
-  AdvancedScrollViewContainer* advanced_scroll_view_;
-  views::NativeButton* reset_to_default_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdvancedPageView);
-};
+#include "chrome/browser/ui/views/options/advanced_page_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_PAGE_VIEW_H_
+

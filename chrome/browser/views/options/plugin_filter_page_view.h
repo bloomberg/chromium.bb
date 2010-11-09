@@ -6,27 +6,8 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_PLUGIN_FILTER_PAGE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/views/options/content_filter_page_view.h"
-
-////////////////////////////////////////////////////////////////////////////////
-// PluginFilterPageView class is used to render the plugin content settings tab.
-
-class PluginFilterPageView : public ContentFilterPageView,
-                             public views::LinkController {
- public:
-  explicit PluginFilterPageView(Profile* profile);
-  virtual ~PluginFilterPageView();
-
- private:
-  // Overridden from ContentFilterPageView:
-  virtual void InitControlLayout();
-
-  // Overridden from views::LinkController:
-  virtual void LinkActivated(views::Link* source, int event_flags);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PluginFilterPageView);
-};
+#include "chrome/browser/ui/views/options/plugin_filter_page_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_PLUGIN_FILTER_PAGE_VIEW_H_
 

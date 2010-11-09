@@ -2,47 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_IMPORTER_LOCK_VIEW_H__
-#define CHROME_BROWSER_VIEWS_IMPORTER_LOCK_VIEW_H__
+#ifndef CHROME_BROWSER_IMPORTER_LOCK_VIEW_H_
+#define CHROME_BROWSER_IMPORTER_LOCK_VIEW_H_
 #pragma once
 
-#include "views/view.h"
-#include "views/window/dialog_delegate.h"
+#include "chrome/browser/ui/views/importer_lock_view.h"
+// TODO(beng): remove this file once all includes have been updated.
 
-namespace views {
-class Label;
-class Window;
-}
+#endif  // CHROME_BROWSER_IMPORTER_LOCK_VIEW_H_
 
-class ImporterHost;
-
-// ImporterLockView draws the dialog, and asks the user to shut Firefox
-// down before starting the import.
-class ImporterLockView : public views::View,
-                         public views::DialogDelegate {
- public:
-  explicit ImporterLockView(ImporterHost* host);
-  virtual ~ImporterLockView();
-
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-
-  // Overridden from views::DialogDelegate:
-  virtual std::wstring GetDialogButtonLabel(
-      MessageBoxFlags::DialogButton button) const;
-  virtual bool IsModal() const;
-  virtual std::wstring GetWindowTitle() const;
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual views::View* GetContentsView();
-
- private:
-  views::Label* description_label_;
-
-  ImporterHost* importer_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImporterLockView);
-};
-
-#endif  // CHROME_BROWSER_VIEWS_IMPORTER_LOCK_VIEW_H__

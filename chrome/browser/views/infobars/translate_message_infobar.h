@@ -6,24 +6,8 @@
 #define CHROME_BROWSER_VIEWS_INFOBARS_TRANSLATE_MESSAGE_INFOBAR_H_
 #pragma once
 
-#include "chrome/browser/views/infobars/translate_infobar_base.h"
-
-class InfoBarTextButton;
-
-class TranslateMessageInfoBar : public TranslateInfoBarBase {
- public:
-  explicit TranslateMessageInfoBar(TranslateInfoBarDelegate* delegate);
-
-  virtual void Layout();
-
-  // views::ButtonListener implementation:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
- private:
-  views::Label* label_;
-  InfoBarTextButton* button_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateMessageInfoBar);
-};
+#include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_INFOBARS_TRANSLATE_MESSAGE_INFOBAR_H_
+

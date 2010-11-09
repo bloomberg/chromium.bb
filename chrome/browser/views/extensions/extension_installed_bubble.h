@@ -6,80 +6,8 @@
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
 #pragma once
 
-#include "base/ref_counted.h"
-#include "chrome/browser/views/info_bubble.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-
-class Browser;
-class Extension;
-class InstalledBubbleContent;
-class SkBitmap;
-
-// Provides feedback to the user upon successful installation of an
-// extension. Depending on the type of extension, the InfoBubble will
-// point to:
-//    BROWSER_ACTION -> The browserAction icon in the toolbar.
-//    PAGE_ACTION    -> A preview of the pageAction icon in the location
-//                      bar which is shown while the InfoBubble is shown.
-//    GENERIC        -> The wrench menu. This case includes pageActions that
-//                      don't specify a default icon.
-//
-// ExtensionInstallBubble manages its own lifetime.
-class ExtensionInstalledBubble
-    : public InfoBubbleDelegate,
-      public NotificationObserver,
-      public base::RefCountedThreadSafe<ExtensionInstalledBubble> {
- public:
-  // The behavior and content of this InfoBubble comes in these varieties:
-  enum BubbleType {
-    BROWSER_ACTION,
-    PAGE_ACTION,
-    EXTENSION_APP,
-    GENERIC
-  };
-
-  // Creates the ExtensionInstalledBubble and schedules it to be shown once
-  // the extension has loaded. |extension| is the installed extension. |browser|
-  // is the browser window which will host the bubble. |icon| is the install
-  // icon of the extension.
-  static void Show(const Extension* extension, Browser *browser, SkBitmap icon);
-
- private:
-  friend class base::RefCountedThreadSafe<ExtensionInstalledBubble>;
-
-  // Private ctor. Registers a listener for EXTENSION_LOADED.
-  ExtensionInstalledBubble(const Extension* extension, Browser *browser,
-                           SkBitmap icon);
-
-  ~ExtensionInstalledBubble() {}
-
-  // Shows the bubble. Called internally via PostTask.
-  void ShowInternal();
-
-  // NotificationObserver
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // InfoBubbleDelegate
-  virtual void InfoBubbleClosing(InfoBubble* info_bubble,
-                                 bool closed_by_escape);
-  virtual bool CloseOnEscape() { return true; }
-  virtual bool FadeInOnShow() { return true; }
-
-  const Extension* extension_;
-  Browser* browser_;
-  SkBitmap icon_;
-  NotificationRegistrar registrar_;
-  InstalledBubbleContent* bubble_content_;
-  BubbleType type_;
-
-  // How many times we've deferred due to animations being in progress.
-  int animation_wait_retries_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubble);
-};
+#include "chrome/browser/ui/views/extensions/extension_installed_bubble.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
+

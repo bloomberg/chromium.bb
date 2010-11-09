@@ -6,34 +6,8 @@
 #define CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "build/build_config.h"
-#include "views/views_delegate.h"
-
-class ChromeViewsDelegate : public views::ViewsDelegate {
- public:
-  ChromeViewsDelegate() {}
-  virtual ~ChromeViewsDelegate() {}
-
-  // Overridden from views::ViewsDelegate:
-  virtual Clipboard* GetClipboard() const;
-  virtual void SaveWindowPlacement(const std::wstring& window_name,
-                                   const gfx::Rect& bounds,
-                                   bool maximized);
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
-                                    gfx::Rect* bounds) const;
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
-                                      bool* maximized) const;
-  virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type);
-#if defined(OS_WIN)
-  virtual HICON GetDefaultWindowIcon() const;
-#endif
-  virtual void AddRef();
-  virtual void ReleaseRef();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);
-};
+#include "chrome/browser/ui/views/chrome_views_delegate.h"
+// TODO(beng): remove this file once all includes have been updated.
 
 #endif  // CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_
+
