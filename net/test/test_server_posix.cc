@@ -98,24 +98,45 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
-  struct pollfd poll_fds[1];
+  uint16 port;
+  uint8* buffer = reinterpret_cast<uint8*>(&port);
+  ssize_t bytes_read = 0;
+  ssize_t bytes_max = sizeof(port);
+  base::TimeDelta remaining_time = base::TimeDelta::FromMilliseconds(
+      TestTimeouts::action_max_timeout_ms());
+  base::Time previous_time = base::Time::Now();
+  while (bytes_read < bytes_max) {
+    struct pollfd poll_fds[1];
 
-  poll_fds[0].fd = child_fd_;
-  poll_fds[0].events = POLLIN | POLLPRI;
-  poll_fds[0].revents = 0;
+    poll_fds[0].fd = child_fd_;
+    poll_fds[0].events = POLLIN | POLLPRI;
+    poll_fds[0].revents = 0;
 
-  int rv = HANDLE_EINTR(poll(poll_fds, 1,
-                             TestTimeouts::action_max_timeout_ms()));
-  if (rv != 1) {
-    LOG(ERROR) << "Failed to poll for the child file descriptor.";
-    return false;
+    int rv = HANDLE_EINTR(poll(poll_fds, 1, remaining_time.InMilliseconds()));
+    if (rv != 1) {
+      LOG(ERROR) << "Failed to poll for the child file descriptor.";
+      return false;
+    }
+
+    base::Time current_time = base::Time::Now();
+    base::TimeDelta elapsed_time_cycle = current_time - previous_time;
+    DCHECK(elapsed_time_cycle.InMilliseconds() >= 0);
+    remaining_time -= elapsed_time_cycle;
+    previous_time = current_time;
+
+    ssize_t num_bytes = HANDLE_EINTR(read(child_fd_, buffer + bytes_read,
+                                          bytes_max - bytes_read));
+    if (num_bytes <= 0)
+      break;
+    bytes_read += num_bytes;
   }
 
-  char buf[8];
-  ssize_t n = HANDLE_EINTR(read(child_fd_, buf, sizeof(buf)));
   // We don't need the FD anymore.
   child_fd_closer_.reset(NULL);
-  return n > 0;
+  if (bytes_read < bytes_max)
+    return false;
+  host_port_pair_.set_port(port);
+  return true;
 }
 
 bool TestServer::CheckCATrusted() {
