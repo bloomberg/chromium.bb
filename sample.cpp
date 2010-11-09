@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    mkvparser::Cluster* pCluster = pSegment->GetFirst();
+    const mkvparser::Cluster* pCluster = pSegment->GetFirst();
 
     while ((pCluster != NULL) && !pCluster->EOS())
     {
@@ -238,16 +238,21 @@ int main(int argc, char* argv[])
             const unsigned long trackNum = pBlock->GetTrackNumber();
             const Track* const pTrack = pTracks->GetTrackByNumber(trackNum);
             const long long trackType = pTrack->GetType();
-            const long size = pBlock->GetSize();
-            const long long offset = pBlock->GetOffset();
+            const int frameCount = pBlock->GetFrameCount();
             const long long time_ns = pBlock->GetTime(pCluster);
 
-            printf("\t\t\tBlock\t\t:%s,%15ld,%15llx,%s,%15lld\n",
+            printf("\t\t\tBlock\t\t:%s,%s,%15lld\n",
                    (trackType == VIDEO_TRACK) ? "V" : "A",
-                   size,
-                   offset,
                    pBlock->IsKey() ? "I" : "P",
                    time_ns);
+
+            for (int i = 0; i < frameCount; ++i)
+            {
+                const Block::Frame& theFrame = pBlock->GetFrame(i);
+                const long size = theFrame.len;
+                const long offset = theFrame.pos;
+                printf("\t\t\t %15ld,%15lx\n", size, offset);
+            }
 
             pBlockEntry = pCluster->GetNext(pBlockEntry);
         }
