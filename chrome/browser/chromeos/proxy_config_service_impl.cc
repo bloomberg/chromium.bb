@@ -286,13 +286,13 @@ bool ProxyConfigServiceImpl::ProxyConfig::Deserialize(
                              net::ProxyServer::SCHEME_HTTP, &http_proxy))
         return false;
       if (!DecodeManualProxy(dict, kHttpsProxy, true,
-                             net::ProxyServer::SCHEME_HTTPS, &https_proxy))
+                             net::ProxyServer::SCHEME_HTTP, &https_proxy))
         return false;
       if (!DecodeManualProxy(dict, kFtpProxy, true,
                              net::ProxyServer::SCHEME_HTTP, &ftp_proxy))
         return false;
       if (!DecodeManualProxy(dict, kSocksProxy, true,
-                             net::ProxyServer::SCHEME_SOCKS4, &socks_proxy))
+                             net::ProxyServer::SCHEME_SOCKS5, &socks_proxy))
         return false;
       // Make sure we have valid server for at least one of the protocols.
       if (!(http_proxy.server.is_valid() || https_proxy.server.is_valid() ||

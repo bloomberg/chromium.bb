@@ -87,7 +87,7 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
       std::string uri = val;
       AppendPortIfValid(kProxyHttpsPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("https",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
+          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyHttpsPort) {
     std::string val;
@@ -95,7 +95,7 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
       std::string uri;
       FormServerUriIfValid(kProxyHttpsUrl, val, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("https",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTPS));
+          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_HTTP));
     }
   } else if (path == kProxyType) {
     int val;
@@ -173,7 +173,10 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
       std::string uri = val;
       AppendPortIfValid(kProxySocksPort, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("socks",
-         net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS4));
+          net::ProxyServer::FromURI(uri,
+              StartsWithASCII(uri, "socks4://", false) ?
+                  net::ProxyServer::SCHEME_SOCKS4 :
+                  net::ProxyServer::SCHEME_SOCKS5));
     }
   } else if (path == kProxySocksPort) {
     std::string val;
@@ -181,7 +184,10 @@ void CrosSettingsProviderProxy::DoSet(const std::string& path,
       std::string uri;
       FormServerUriIfValid(kProxySocks, val, &uri);
       config_service->UISetProxyConfigToProxyPerScheme("socks",
-          net::ProxyServer::FromURI(uri, net::ProxyServer::SCHEME_SOCKS4));
+          net::ProxyServer::FromURI(uri,
+              StartsWithASCII(uri, "socks4://", false) ?
+                  net::ProxyServer::SCHEME_SOCKS4 :
+                  net::ProxyServer::SCHEME_SOCKS5));
     }
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;

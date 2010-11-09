@@ -192,7 +192,7 @@ const struct {
         "www.google.com:80",        // http
         "https://www.foo.com:110",  // https
         "ftp.foo.com:121",          // ftp
-        "socks4://socks.com:888",   // fallback proxy
+        "socks5://socks.com:888",   // fallback proxy
         ""),                        // bypass rules
   },
 
@@ -287,7 +287,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
                        init_config, &init_config->https_proxy);
         SetManualProxy(input.mode, source, input.ftp_uri, MK_SCHM(HTTP),
                        init_config, &init_config->ftp_proxy);
-        SetManualProxy(input.mode, source, input.socks_uri, MK_SCHM(SOCKS4),
+        SetManualProxy(input.mode, source, input.socks_uri, MK_SCHM(SOCKS5),
                        init_config, &init_config->socks_proxy);
         break;
     }
@@ -419,7 +419,7 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
         }
         if (input.socks_uri) {
           config_service()->UISetProxyConfigToProxyPerScheme("socks",
-              net::ProxyServer::FromURI(input.socks_uri, MK_SCHM(SOCKS4)));
+              net::ProxyServer::FromURI(input.socks_uri, MK_SCHM(SOCKS5)));
         }
         if (input.bypass_rules) {
           bypass_rules.ParseFromStringUsingSuffixMatching(input.bypass_rules);
