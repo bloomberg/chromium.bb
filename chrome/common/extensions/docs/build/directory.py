@@ -446,10 +446,10 @@ class Sample(dict):
         if file[-5:] == '.html' or file[-3:] == '.js':
           path = os.path.join(root, file)
           try:
-            code_file = open(path)
+            code_file = open(path, "r")
           except IOError, msg:
             raise Exception("Failed to read %s: %s" % (path, msg))
-          code_contents = code_file.read()
+          code_contents = unicode(code_file.read(), errors="replace")
           code_file.close()
 
           for method in api_methods:
