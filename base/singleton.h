@@ -239,12 +239,14 @@ class Singleton {
 
  private:
   // Adapter function for use with AtExit().  This should be called single
-  // threaded, but we might as well take the precautions anyway.
+  // threaded, so don't use atomic operations.
+  // Calling OnExit while singleton is in use by other threads is a mistake.
   static void OnExit(void* unused) {
     // AtExit should only ever be register after the singleton instance was
     // created.  We should only ever get here with a valid instance_ pointer.
-    Traits::Delete(reinterpret_cast<Type*>(
-        base::subtle::NoBarrier_AtomicExchange(&instance_, 0)));
+    Traits::Delete(
+        reinterpret_cast<Type*>(base::subtle::NoBarrier_Load(&instance_)));
+    instance_ = 0;
   }
   static base::subtle::AtomicWord instance_;
 };
