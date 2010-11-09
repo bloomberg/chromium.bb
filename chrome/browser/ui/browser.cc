@@ -2357,8 +2357,6 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
   browser::NavigateParams params(this, GURL(chrome::kChromeUINewTabURL),
                                  PageTransition::TYPED);
-  params.tabstrip_add_types =
-      foreground ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE;
   params.disposition = foreground ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
   params.tabstrip_index = index;
   browser::Navigate(&params);

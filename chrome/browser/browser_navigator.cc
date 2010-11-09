@@ -185,6 +185,8 @@ void NormalizeDisposition(browser::NavigateParams* params) {
   // background.
   if (params->disposition == NEW_BACKGROUND_TAB)
     params->tabstrip_add_types &= ~TabStripModel::ADD_SELECTED;
+  else if (params->disposition == NEW_FOREGROUND_TAB)
+    params->tabstrip_add_types |= TabStripModel::ADD_SELECTED;
 
   // Code that wants to open a new window typically expects it to be shown
   // automatically.
