@@ -106,6 +106,57 @@ class TargetBase(object):
     return cached["output"]
 
 
+class HashCache(object):
+
+  """
+  This object will hash file contents, and can reuse previously cached
+  results based on inode number and mtime.  So that the cache does not
+  accumulate unused entries over time, it can resave the cache to
+  contain only the entries that were used on the last pass.  This is
+  similar to the caching provided by Git's index file.  The cache is
+  typically scoped to a specific build target's directory.
+  """
+
+  # Use a header line so that we can change the format.
+  HEADER_LINE = "hash-list-v1\n"
+
+  def __init__(self, hash_func=dirtree.HashFile):
+    self._cache = {}
+    self._new_cache = set()
+    self._hash_func = hash_func
+
+  def HashFileGivenStat(self, filename, stat_info):
+    """
+    Returns the hash of the given file.  Takes stat_info (as returned
+    by os.stat()/os.lstat()) as an argument so that we do not have to
+    do the stat() syscall a second time.
+    """
+    key = (stat_info.st_dev, stat_info.st_ino, stat_info.st_mtime)
+    file_hash = self._cache.get(key)
+    if file_hash is None:
+      file_hash = self._hash_func(filename)
+      self._cache[key] = file_hash
+    self._new_cache.add((key, file_hash))
+    return file_hash
+
+  def WriteCacheToFile(self, filename):
+    fh = open(filename, "w")
+    fh.write(self.HEADER_LINE)
+    for entry in sorted(self._new_cache):
+      fh.write(CheckedRepr(entry) + "\n")
+    fh.close()
+
+  def ReadCacheFromFile(self, filename):
+    fh = open(filename, "r")
+    header = fh.readline()
+    # Ignore the file if we do not recognise the format.
+    if header == self.HEADER_LINE:
+      for line in fh:
+        key, file_hash = Unrepr(line)
+        self._cache[key] = file_hash
+    fh.close()
+
+
 def ListFiles(tree, dirpath_rel=""):
   # Assumes that directory order does not affect things we build!
   for leafname, child in sorted(tree.iteritems()):
@@ -151,12 +202,28 @@ class BuildTarget(TargetBase):
   def GetName(self):
     return self._name
 
+  def _GetHashCacheFile(self):
+    return self.dest_path + ".hashcache"
+
+  def _GetOutputTreeAndCache(self):
+    file_hasher = HashCache()
+    if os.path.exists(self._GetHashCacheFile()):
+      file_hasher.ReadCacheFromFile(self._GetHashCacheFile())
+    tree = treemappers.RemoveVersionControlDirs(
+        dirtree.MakeSnapshotFromPath(self.dest_path, file_hasher))
+    return tree, file_hasher
+
   def GetOutputTree(self):
-    return treemappers.RemoveVersionControlDirs(
-        dirtree.MakeSnapshotFromPath(self.dest_path))
+    tree, file_hasher = self._GetOutputTreeAndCache()
+    return tree
 
   def _GetOutputHash(self):
-    return HashTree(self.GetOutputTree())
+    tree, file_hasher = self._GetOutputTreeAndCache()
+    # Since HashTree() does a full pass over the tree, the whole tree
+    # will be read into the hash cache, so we can save the cache.
+    result = HashTree(tree)
+    file_hasher.WriteCacheToFile(self._GetHashCacheFile())
+    return result
 
 
 class NonSnapshottingBuildTarget(BuildTarget):

@@ -205,9 +205,10 @@ class SymlinkSnapshot(FileSnapshot):
 
 class FileSnapshotUsingHardLink(FileSnapshot):
 
-  def __init__(self, filename, executable):
+  def __init__(self, filename, stat_info, file_hasher):
     self._filename = filename
-    self._is_executable = executable
+    self._stat_info = stat_info
+    self._file_hasher = file_hasher
 
   def CopyToPath(self, dest_path):
     os.link(self._filename, dest_path)
@@ -216,10 +217,10 @@ class FileSnapshotUsingHardLink(FileSnapshot):
     return ReadFile(self._filename)
 
   def GetHash(self):
-    return HashFile(self._filename)
+    return self._file_hasher.HashFileGivenStat(self._filename, self._stat_info)
 
   def IsExecutable(self):
-    return self._is_executable
+    return self._stat_info.st_mode & stat.S_IXUSR != 0
 
 
 class FileSnapshotInMemory(FileSnapshot):
@@ -285,17 +286,17 @@ class LazyDict(object):
     return self._GetDict().get(*args)
 
 
-def MakeSnapshotFromPath(filename):
+def MakeSnapshotFromPath(filename, file_hasher):
   st = os.lstat(filename)
   if stat.S_ISREG(st.st_mode):
-    is_executable = st.st_mode & stat.S_IXUSR != 0
-    return FileSnapshotUsingHardLink(filename, is_executable)
+    return FileSnapshotUsingHardLink(filename, st, file_hasher)
   elif stat.S_ISLNK(st.st_mode):
     return SymlinkSnapshot(os.readlink(filename))
   elif stat.S_ISDIR(st.st_mode):
     def ReadDir():
       return dict(
-          (leafname, MakeSnapshotFromPath(os.path.join(filename, leafname)))
+          (leafname, MakeSnapshotFromPath(os.path.join(filename, leafname),
+                                          file_hasher))
           for leafname in os.listdir(filename))
     return LazyDict(ReadDir)
   else:

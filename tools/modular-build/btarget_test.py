@@ -221,7 +221,7 @@ digraph {
     subprocess.check_call(["chmod", "+x",
                            os.path.join(tempdir, "subdir", "script")])
     os.symlink("symlink_dest", os.path.join(tempdir, "symlink"))
-    snapshot = dirtree.MakeSnapshotFromPath(tempdir)
+    snapshot = dirtree.MakeSnapshotFromPath(tempdir, btarget.HashCache())
     self.assertEquals(
         list(btarget.ListFiles(snapshot)),
         [('subdir', 'dir'),
@@ -235,9 +235,39 @@ digraph {
     # same identity.
     copy_dir = self.MakeTempDir()
     dirtree.WriteSnapshotToPath(snapshot, copy_dir)
-    snapshot_from_copy = dirtree.MakeSnapshotFromPath(copy_dir)
+    snapshot_from_copy = dirtree.MakeSnapshotFromPath(copy_dir,
+                                                      btarget.HashCache())
     self.assertEquals(btarget.HashTree(snapshot),
                       btarget.HashTree(snapshot_from_copy))
+
+  def test_hash_cache(self):
+    calls = []
+    def GetHash(filename):
+      calls.append(filename)
+      return "12345"
+    tempdir = self.MakeTempDir()
+    test_file = os.path.join(tempdir, "test_file")
+    cache_file = os.path.join(tempdir, "cache_file")
+    dirtree.WriteFile(test_file, "Contents")
+    cache = btarget.HashCache(GetHash)
+    self.assertEquals(cache.HashFileGivenStat(test_file, os.stat(test_file)),
+                      "12345")
+    self.assertEquals(len(calls), 1)
+    calls[:] = []
+    # GetHash() should not get called again on another
+    # HashFileGivenStat() call.
+    self.assertEquals(cache.HashFileGivenStat(test_file, os.stat(test_file)),
+                      "12345")
+    self.assertEquals(len(calls), 0)
+    cache.WriteCacheToFile(cache_file)
+
+    # GetHash() should not get called after we reload the cache from
+    # the file.
+    cache = btarget.HashCache(GetHash)
+    cache.ReadCacheFromFile(cache_file)
+    self.assertEquals(cache.HashFileGivenStat(test_file, os.stat(test_file)),
+                      "12345")
+    self.assertEquals(len(calls), 0)
 
   def test_tree_mapper(self):
     Dir = dirtree_test.Dir
@@ -261,7 +291,8 @@ digraph {
                                  MapperFunc, [dir_in1, dir_in2])
     btarget.Rebuild([dir_out], open(os.devnull, "w"))
     self.assertEquals(
-        MapSnapshotToContents(dirtree.MakeSnapshotFromPath(dir_out.dest_path)),
+        MapSnapshotToContents(dirtree.MakeSnapshotFromPath(
+            dir_out.dest_path, btarget.HashCache())),
         {"new_subdir": {"subdir_foo": {"myfile": "my file"}},
          "urfile": "another file"})
 
