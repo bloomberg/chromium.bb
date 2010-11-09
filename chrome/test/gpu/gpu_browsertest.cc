@@ -28,15 +28,7 @@ class GPUBrowserTest : public InProcessBrowserTest {
   FilePath gpu_test_dir_;
 };
 
-// TODO(apatrick): OSMesa is flaky on Mac and Windows. http://crbug/61037
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_BrowserTestLaunchedWithOSMesa \
-    DISABLED_BrowserTestLaunchedWithOSMesa
-#else
-#define MAYBE_BrowserTestLaunchedWithOSMesa BrowserTestLaunchedWithOSMesa
-#endif
-
-IN_PROC_BROWSER_TEST_F(GPUBrowserTest, MAYBE_BrowserTestLaunchedWithOSMesa) {
+IN_PROC_BROWSER_TEST_F(GPUBrowserTest, BrowserTestLaunchedWithOSMesa) {
   // Check the webgl test reports success and that the renderer was OSMesa.
   // We use OSMesa for tests in order to get consistent results across a
   // variety of boxes.
