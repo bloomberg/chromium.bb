@@ -32,7 +32,6 @@
     'crash_reporter',
     'downloads',
     # crbug.com/62398. Also look in the chromeos section while removing this.
-    '-downloads.DownloadsTest.testDownloadsPersistence',
     '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
     'find_in_page',
     # Turkish I problem. crbug.com/60638

@@ -42,6 +42,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
                            const DownloadCreateInfo& info)
     : id_(-1),
       full_path_(info.path),
+      path_uniquifier_(0),
       url_(info.url),
       referrer_url_(info.referrer_url),
       mime_type_(info.mime_type),
