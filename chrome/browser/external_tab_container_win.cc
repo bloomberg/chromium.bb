@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/browser_window.h"
