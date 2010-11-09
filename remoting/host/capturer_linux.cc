@@ -65,7 +65,6 @@ class CapturerLinuxPimpl {
   static const int kBytesPerPixel = 4;
 
   // Reference to containing class so we can access friend functions.
-  // Not owned.
   CapturerLinux* capturer_;
 
   // X11 graphics context.

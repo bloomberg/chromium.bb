@@ -231,7 +231,6 @@
             'libraries': [
               '-lX11',
               '-lXdamage',
-              '-lXtst',
             ],
           },
         }],
