@@ -239,7 +239,7 @@ bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
 
 bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
                                          base::Time receive_time,
-                                         SBFullHash full_hash) {
+                                         const SBFullHash& full_hash) {
   add_hashes_.push_back(SBAddFullHash(chunk_id, receive_time, full_hash));
   return true;
 }
@@ -252,7 +252,7 @@ bool SafeBrowsingStoreFile::WriteSubPrefix(int32 chunk_id,
 }
 
 bool SafeBrowsingStoreFile::WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                                         SBFullHash full_hash) {
+                                         const SBFullHash& full_hash) {
   sub_hashes_.push_back(SBSubFullHash(chunk_id, add_chunk_id, full_hash));
   return true;
 }

@@ -208,7 +208,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   virtual ~ChromeCookieMonsterDelegate() {}
 
   void OnCookieChangedAsyncHelper(
-      net::CookieMonster::CanonicalCookie cookie,
+      const net::CookieMonster::CanonicalCookie& cookie,
       bool removed) {
     if (profile_getter_->get()) {
       ChromeCookieDetails cookie_details(&cookie, removed);

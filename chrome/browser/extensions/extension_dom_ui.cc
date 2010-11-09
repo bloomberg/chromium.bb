@@ -122,7 +122,7 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 const char ExtensionDOMUI::kExtensionURLOverrides[] =
     "extensions.chrome_url_overrides";
 
-ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, GURL url)
+ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, const GURL& url)
     : DOMUI(tab_contents),
       url_(url) {
   ExtensionsService* service = tab_contents->profile()->GetExtensionsService();

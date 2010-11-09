@@ -56,7 +56,7 @@ Firefox3Importer::Firefox3Importer() {
 Firefox3Importer::~Firefox3Importer() {
 }
 
-void Firefox3Importer::StartImport(importer::ProfileInfo profile_info,
+void Firefox3Importer::StartImport(const importer::ProfileInfo& profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
 #if defined(OS_LINUX)

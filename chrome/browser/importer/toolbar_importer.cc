@@ -99,7 +99,7 @@ Toolbar5Importer::~Toolbar5Importer() {
   DCHECK(!data_fetcher_);
 }
 
-void Toolbar5Importer::StartImport(importer::ProfileInfo profile_info,
+void Toolbar5Importer::StartImport(const importer::ProfileInfo& profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   DCHECK(bridge);

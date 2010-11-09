@@ -33,7 +33,7 @@ class SafariImporter : public Importer {
   explicit SafariImporter(const FilePath& library_dir);
 
   // Importer methods.
-  virtual void StartImport(importer::ProfileInfo profile_info,
+  virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
                            ImporterBridge* bridge);
 

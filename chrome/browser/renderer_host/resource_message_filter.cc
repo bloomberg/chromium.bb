@@ -1145,7 +1145,7 @@ void ResourceMessageFilter::OnResourceTypeStats(
 }
 
 void ResourceMessageFilter::OnResourceTypeStatsOnUIThread(
-    WebCache::ResourceTypeStats stats, base::ProcessId renderer_id) {
+    const WebCache::ResourceTypeStats& stats, base::ProcessId renderer_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
       renderer_id, stats);

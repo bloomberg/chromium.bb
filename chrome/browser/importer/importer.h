@@ -442,7 +442,7 @@ class Importer : public base::RefCountedThreadSafe<Importer> {
   // Since we do async import, the importer should invoke
   // ImporterHost::Finished() to notify its host that import
   // stuff have been finished.
-  virtual void StartImport(importer::ProfileInfo profile_info,
+  virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
                            ImporterBridge* bridge) = 0;
 

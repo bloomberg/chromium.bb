@@ -52,8 +52,8 @@ class ProviderImpl : public Provider {
 
   // Method for notifying observers of an orientation update.
   // Runs on the creator_thread_.
-  void DoNotify(Orientation orientation);
-  void ScheduleDoNotify(Orientation orientation);
+  void DoNotify(const Orientation& orientation);
+  void ScheduleDoNotify(const Orientation& orientation);
 
   static bool SignificantlyDifferent(const Orientation& orientation1,
                                      const Orientation& orientation2);

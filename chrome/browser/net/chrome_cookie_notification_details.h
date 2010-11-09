@@ -10,13 +10,13 @@
 
 struct ChromeCookieDetails {
  public:
-  ChromeCookieDetails(net::CookieMonster::CanonicalCookie* cookie_copy,
+  ChromeCookieDetails(const net::CookieMonster::CanonicalCookie* cookie_copy,
                       bool is_removed)
       : cookie(cookie_copy),
         removed(is_removed) {
   }
 
-  net::CookieMonster::CanonicalCookie* cookie;
+  const net::CookieMonster::CanonicalCookie* cookie;
   bool removed;
 };
 

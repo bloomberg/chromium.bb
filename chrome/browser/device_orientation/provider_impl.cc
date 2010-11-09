@@ -99,7 +99,7 @@ void ProviderImpl::ScheduleInitializePollingThread() {
   polling_loop->PostTask(FROM_HERE, task);
 }
 
-void ProviderImpl::DoNotify(Orientation orientation) {
+void ProviderImpl::DoNotify(const Orientation& orientation) {
   DCHECK(MessageLoop::current() == creator_loop_);
 
   last_notification_ = orientation;
@@ -115,7 +115,7 @@ void ProviderImpl::DoNotify(Orientation orientation) {
   }
 }
 
-void ProviderImpl::ScheduleDoNotify(Orientation orientation) {
+void ProviderImpl::ScheduleDoNotify(const Orientation& orientation) {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
 
   Task* task = NewRunnableMethod(this, &ProviderImpl::DoNotify, orientation);

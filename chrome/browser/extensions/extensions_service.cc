@@ -190,7 +190,7 @@ class ExtensionsServiceBackend
   // Check externally updated extensions for updates and install if necessary.
   // Errors are reported through ExtensionErrorReporter. Succcess is not
   // reported.
-  void CheckForExternalUpdates(std::set<std::string> ids_to_ignore,
+  void CheckForExternalUpdates(const std::set<std::string>& ids_to_ignore,
                                scoped_refptr<ExtensionsService> frontend);
 
   // For the extension in |version_path| with |id|, check to see if it's an
@@ -351,7 +351,7 @@ void ExtensionsServiceBackend::ReportExtensionLoadError(
 // check that location for a .crx file, which it will then install locally if
 // a new version is available.
 void ExtensionsServiceBackend::CheckForExternalUpdates(
-    std::set<std::string> ids_to_ignore,
+    const std::set<std::string>& ids_to_ignore,
     scoped_refptr<ExtensionsService> frontend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

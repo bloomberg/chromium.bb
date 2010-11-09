@@ -36,7 +36,7 @@ class Orientation {
 
   static Orientation Empty() { return Orientation(); }
 
-  bool IsEmpty() {
+  bool IsEmpty() const {
     return !can_provide_alpha_ && !can_provide_beta_ && !can_provide_gamma_;
   }
 

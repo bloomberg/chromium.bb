@@ -284,8 +284,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
-  static void OnResourceTypeStatsOnUIThread(WebKit::WebCache::ResourceTypeStats,
-                                            base::ProcessId renderer_id);
+  static void OnResourceTypeStatsOnUIThread(
+      const WebKit::WebCache::ResourceTypeStats&,
+      base::ProcessId renderer_id);
 
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
   static void OnV8HeapStatsOnUIThread(int v8_memory_allocated,

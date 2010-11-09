@@ -50,7 +50,7 @@ Firefox2Importer::Firefox2Importer() : parsing_bookmarks_html_file_(false) {
 Firefox2Importer::~Firefox2Importer() {
 }
 
-void Firefox2Importer::StartImport(importer::ProfileInfo profile_info,
+void Firefox2Importer::StartImport(const importer::ProfileInfo& profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   bridge_ = bridge;

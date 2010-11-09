@@ -14,7 +14,7 @@ class IEImporter : public Importer {
   IEImporter() {}
 
   // Importer methods.
-  virtual void StartImport(ProfileInfo browser_info,
+  virtual void StartImport(const ProfileInfo& browser_info,
                            uint16 items,
                            ImporterBridge* bridge);
 

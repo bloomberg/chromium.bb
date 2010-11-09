@@ -37,7 +37,8 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
     return WriteAddPrefixes(prefixes);
   }
   virtual bool WriteAddHash(int32 chunk_id,
-                            base::Time receive_time, SBFullHash full_hash) {
+                            base::Time receive_time,
+                            const SBFullHash& full_hash) {
     const std::vector<SBAddFullHash>
         hashes(1, SBAddFullHash(chunk_id, receive_time, full_hash));
     return WriteAddHashes(hashes);
@@ -49,7 +50,7 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
     return WriteSubPrefixes(prefixes);
   }
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBFullHash full_hash) {
+                            const SBFullHash& full_hash) {
     const std::vector<SBSubFullHash>
         hashes(1, SBSubFullHash(chunk_id, add_chunk_id, full_hash));
     return WriteSubHashes(hashes);

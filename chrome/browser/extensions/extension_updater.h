@@ -112,7 +112,6 @@ class ManifestFetchesBuilder {
                         const Version& version,
                         PendingExtensionInfo::ExpectedCrxType crx_type,
                         GURL update_url);
-
   ExtensionUpdateService* service_;
 
   // List of data on fetches we're going to do. We limit the number of

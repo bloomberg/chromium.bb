@@ -42,7 +42,7 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
   // should only either be NONE or FAVORITES, since as of right now these are
   // the only items this importer supports.  This method provides implementation
   // of Importer::StartImport.
-  virtual void StartImport(importer::ProfileInfo profile_info,
+  virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
                            ImporterBridge* bridge);
 

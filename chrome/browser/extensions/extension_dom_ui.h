@@ -33,7 +33,7 @@ class ExtensionDOMUI
  public:
   static const char kExtensionURLOverrides[];
 
-  explicit ExtensionDOMUI(TabContents* tab_contents, GURL url);
+  explicit ExtensionDOMUI(TabContents* tab_contents, const GURL& url);
 
   virtual ~ExtensionDOMUI();
 

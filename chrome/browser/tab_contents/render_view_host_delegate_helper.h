@@ -76,7 +76,7 @@ class RenderViewHostDelegateViewHelper {
       int route_id,
       Profile* profile,
       SiteInstance* site,
-      GURL opener_url,
+      const GURL& opener_url,
       const string16& frame_name);
 
   // Tracks created RenderViewHost objects that have not been shown yet.

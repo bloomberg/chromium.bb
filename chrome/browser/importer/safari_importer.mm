@@ -76,7 +76,7 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
   return *services_supported != importer::NONE;
 }
 
-void SafariImporter::StartImport(importer::ProfileInfo profile_info,
+void SafariImporter::StartImport(const importer::ProfileInfo& profile_info,
                                  uint16 services_supported,
                                  ImporterBridge* bridge) {
   bridge_ = bridge;

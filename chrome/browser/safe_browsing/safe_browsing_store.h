@@ -69,7 +69,7 @@ struct SBAddFullHash {
   int32 received;
   SBFullHash full_hash;
 
-  SBAddFullHash(int32 id, base::Time r, SBFullHash h)
+  SBAddFullHash(int32 id, base::Time r, const SBFullHash& h)
       : chunk_id(id),
         received(static_cast<int32>(r.ToTimeT())),
         full_hash(h) {
@@ -77,7 +77,7 @@ struct SBAddFullHash {
 
   // Provided for ReadAddHashes() implementations, which already have
   // an int32 for the time.
-  SBAddFullHash(int32 id, int32 r, SBFullHash h)
+  SBAddFullHash(int32 id, int32 r, const SBFullHash& h)
       : chunk_id(id), received(r), full_hash(h) {}
 
   SBAddFullHash() : chunk_id(), received(), full_hash() {}
@@ -91,7 +91,7 @@ struct SBSubFullHash {
   int32 add_chunk_id;
   SBFullHash full_hash;
 
-  SBSubFullHash(int32 id, int32 add_id, SBFullHash h)
+  SBSubFullHash(int32 id, int32 add_id, const SBFullHash& h)
       : chunk_id(id), add_chunk_id(add_id), full_hash(h) {}
   SBSubFullHash() : chunk_id(), add_chunk_id(), full_hash() {}
 
@@ -182,11 +182,12 @@ class SafeBrowsingStore {
 
   virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) = 0;
   virtual bool WriteAddHash(int32 chunk_id,
-                            base::Time receive_time, SBFullHash full_hash) = 0;
+                            base::Time receive_time,
+                            const SBFullHash& full_hash) = 0;
   virtual bool WriteSubPrefix(int32 chunk_id,
                               int32 add_chunk_id, SBPrefix prefix) = 0;
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBFullHash full_hash) = 0;
+                            const SBFullHash& full_hash) = 0;
 
   // Collect the chunk data and preferrably store it on disk to
   // release memory.  Shoul not modify the data in-place.

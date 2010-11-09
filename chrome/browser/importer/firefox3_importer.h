@@ -27,7 +27,7 @@ class Firefox3Importer : public Importer {
   Firefox3Importer();
 
   // Importer methods.
-  virtual void StartImport(importer::ProfileInfo profile_info,
+  virtual void StartImport(const importer::ProfileInfo& profile_info,
                            uint16 items,
                            ImporterBridge* bridge);
 

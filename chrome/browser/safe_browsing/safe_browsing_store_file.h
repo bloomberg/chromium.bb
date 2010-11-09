@@ -127,11 +127,12 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   virtual bool BeginChunk();
   virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix);
   virtual bool WriteAddHash(int32 chunk_id,
-                            base::Time receive_time, SBFullHash full_hash);
+                            base::Time receive_time,
+                            const SBFullHash& full_hash);
   virtual bool WriteSubPrefix(int32 chunk_id,
                               int32 add_chunk_id, SBPrefix prefix);
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBFullHash full_hash);
+                            const SBFullHash& full_hash);
   virtual bool FinishChunk();
 
   virtual bool BeginUpdate();
