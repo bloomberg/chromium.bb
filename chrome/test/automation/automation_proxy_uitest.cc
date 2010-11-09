@@ -840,7 +840,7 @@ AutomationProxy* ExternalTabUITest::CreateAutomationProxy(int exec_timeout) {
 }
 
 // Create with specifying a url
-// Flaky, http://crbug.com/32293.
+// Flaky, http://crbug.com/32293
 TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab1) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
@@ -863,6 +863,7 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab1) {
 }
 
 // Create with empty url and then navigate
+// Flaky, http://crbug.com/32293
 TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
@@ -971,6 +972,7 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
   loop.RunFor(action_max_timeout_ms());
 }
 
+// Flaky: http://crbug.com/62143
 TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   net::TestServer test_server(
       net::TestServer::TYPE_HTTP,

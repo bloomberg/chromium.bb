@@ -60,7 +60,7 @@ TEST_F(NaClUITest, SrpcShmTest) {
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, FLAKY_SrpcPluginTest) {
+TEST_F(NaClUITest, SrpcPluginTest) {
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }

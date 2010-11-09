@@ -629,8 +629,7 @@ TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 
-// Flaky, http://crbug.com/35221.
-TEST_F(WorkerTest, FLAKY_MultipleTabsQueuedSharedWorker) {
+TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
   // Tests to make sure that only one instance of queued shared workers are
   // started up even when those instances are on multiple tabs.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;

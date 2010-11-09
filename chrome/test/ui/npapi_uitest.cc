@@ -78,10 +78,9 @@ TEST_F(NPAPITesterBase, GetJavaScriptURL) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-// Flaky test: http://crbug.com/29020
 // Test that calling GetURL with a javascript URL and target=_self
 // works properly when the plugin is embedded in a subframe.
-TEST_F(NPAPITesterBase, FLAKY_GetJavaScriptURL2) {
+TEST_F(NPAPITesterBase, GetJavaScriptURL2) {
   const FilePath test_case(FILE_PATH_LITERAL("get_javascript_url2.html"));
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir), test_case);
   ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
