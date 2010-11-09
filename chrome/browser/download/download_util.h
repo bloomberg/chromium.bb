@@ -210,6 +210,10 @@ void CancelDownloadRequest(ResourceDispatcherHost* rdh,
 // a number, -1 is returned.
 int GetUniquePathNumberWithCrDownload(const FilePath& path);
 
+// Erases all downloaded files with the specified path and name prefix.
+// Used by download UI tests to clean up the download directory.
+void EraseUniqueDownloadFiles(const FilePath& path_prefix);
+
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);
 

@@ -86,6 +86,13 @@ namespace download_util {
 // so that the animation ends faded out.
 static const int kCompleteAnimationCycles = 5;
 
+// The maximum number of 'uniquified' files we will try to create.
+// This is used when the filename we're trying to download is already in use,
+// so we create a new unique filename by appending " (nnn)" before the
+// extension, where 1 <= nnn <= kMaxUniqueFiles.
+// Also used by code that cleans up said files.
+static const int kMaxUniqueFiles = 100;
+
 // Download temporary file creation --------------------------------------------
 
 class DefaultDownloadDirectory {
@@ -647,13 +654,11 @@ void AppendNumberToPath(FilePath* path, int number) {
 // unique. If |path| does not exist, 0 is returned.  If it fails to find such
 // a number, -1 is returned.
 int GetUniquePathNumber(const FilePath& path) {
-  const int kMaxAttempts = 100;
-
   if (!file_util::PathExists(path))
     return 0;
 
   FilePath new_path;
-  for (int count = 1; count <= kMaxAttempts; ++count) {
+  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
     new_path = FilePath(path);
     AppendNumberToPath(&new_path, count);
 
@@ -695,14 +700,12 @@ void CancelDownloadRequest(ResourceDispatcherHost* rdh,
 }
 
 int GetUniquePathNumberWithCrDownload(const FilePath& path) {
-  const int kMaxAttempts = 100;
-
   if (!file_util::PathExists(path) &&
       !file_util::PathExists(GetCrDownloadPath(path)))
     return 0;
 
   FilePath new_path;
-  for (int count = 1; count <= kMaxAttempts; ++count) {
+  for (int count = 1; count <= kMaxUniqueFiles; ++count) {
     new_path = FilePath(path);
     AppendNumberToPath(&new_path, count);
 
@@ -712,6 +715,27 @@ int GetUniquePathNumberWithCrDownload(const FilePath& path) {
   }
 
   return -1;
+}
+
+namespace {
+
+// NOTE: If index is 0, deletes files that do not have the " (nnn)" appended.
+void DeleteUniqueDownloadFile(const FilePath& path, int index) {
+  FilePath new_path(path);
+  if (index > 0)
+    AppendNumberToPath(&new_path, index);
+  file_util::Delete(new_path, false);
+}
+
+}
+
+void EraseUniqueDownloadFiles(const FilePath& path) {
+  FilePath cr_path = GetCrDownloadPath(path);
+
+  for (int index = 0; index <= kMaxUniqueFiles; ++index) {
+    DeleteUniqueDownloadFile(path, index);
+    DeleteUniqueDownloadFile(cr_path, index);
+  }
 }
 
 FilePath GetCrDownloadPath(const FilePath& suggested_path) {
