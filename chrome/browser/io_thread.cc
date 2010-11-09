@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -242,6 +243,30 @@ void IOThread::InitNetworkPredictor(
           startup_urls, referral_list, preconnect_enabled));
 }
 
+void IOThread::RegisterURLRequestContextGetter(
+    ChromeURLRequestContextGetter* url_request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::list<ChromeURLRequestContextGetter*>::const_iterator it =
+      std::find(url_request_context_getters_.begin(),
+                url_request_context_getters_.end(),
+                url_request_context_getter);
+  DCHECK(it == url_request_context_getters_.end());
+  url_request_context_getters_.push_back(url_request_context_getter);
+}
+
+void IOThread::UnregisterURLRequestContextGetter(
+    ChromeURLRequestContextGetter* url_request_context_getter) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::list<ChromeURLRequestContextGetter*>::iterator it =
+      std::find(url_request_context_getters_.begin(),
+                url_request_context_getters_.end(),
+                url_request_context_getter);
+  DCHECK(it != url_request_context_getters_.end());
+  // This does not scale, but we shouldn't have many URLRequestContextGetters in
+  // the first place, so this should be fine.
+  url_request_context_getters_.erase(it);
+}
+
 void IOThread::ChangedToOnTheRecord() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   message_loop()->PostTask(
@@ -291,6 +316,9 @@ void IOThread::Init() {
 }
 
 void IOThread::CleanUp() {
+  // Step 1: Kill all things that might be holding onto
+  // URLRequest/URLRequestContexts.
+
 #if defined(USE_NSS)
   net::ShutdownOCSP();
 #endif  // defined(USE_NSS)
@@ -298,13 +326,31 @@ void IOThread::CleanUp() {
   // Destroy all URLRequests started by URLFetchers.
   URLFetcher::CancelAll();
 
-  // This must be reset before the ChromeNetLog is destroyed.
-  network_change_observer_.reset();
+  // Break any cycles between the ProxyScriptFetcher and URLRequestContext.
+  for (ProxyScriptFetchers::const_iterator it = fetchers_.begin();
+       it != fetchers_.end(); ++it) {
+    (*it)->Cancel();
+  }
 
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever
   // IO thread only resources they are referencing.
   BrowserChildProcessHost::TerminateAll();
+
+  std::list<ChromeURLRequestContextGetter*> url_request_context_getters;
+  url_request_context_getters.swap(url_request_context_getters_);
+  for (std::list<ChromeURLRequestContextGetter*>::iterator it =
+       url_request_context_getters.begin();
+       it != url_request_context_getters.end(); ++it) {
+    ChromeURLRequestContextGetter* getter = *it;
+    getter->ReleaseURLRequestContext();
+  }
+
+  // Step 2: Release objects that the URLRequestContext could have been pointing
+  // to.
+
+  // This must be reset before the ChromeNetLog is destroyed.
+  network_change_observer_.reset();
 
   // Not initialized in Init().  May not be initialized.
   if (predictor_) {
@@ -326,12 +372,6 @@ void IOThread::CleanUp() {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
-  // Break any cycles between the ProxyScriptFetcher and URLRequestContext.
-  for (ProxyScriptFetchers::const_iterator it = fetchers_.begin();
-       it != fetchers_.end(); ++it) {
-    (*it)->Cancel();
-  }
-
   // We will delete the NetLog as part of CleanUpAfterMessageLoopDestruction()
   // in case any of the message loop destruction observers try to access it.
   deferred_net_log_to_delete_.reset(globals_->net_log.release());
@@ -344,10 +384,13 @@ void IOThread::CleanUp() {
 
 void IOThread::CleanUpAfterMessageLoopDestruction() {
   // TODO(eroman): get rid of this special case for 39723. If we could instead
-  // have a method that runs after the message loop destruction obsevers have
+  // have a method that runs after the message loop destruction observers have
   // run, but before the message loop itself is destroyed, we could safely
   // combine the two cleanups.
   deferred_net_log_to_delete_.reset();
+
+  // This will delete the |notification_service_|.  Make sure it's done after
+  // anything else can reference it.
   BrowserProcessSubThread::CleanUpAfterMessageLoopDestruction();
 
   // URLRequest instances must NOT outlive the IO thread.
