@@ -3523,7 +3523,7 @@
             'browser/automation/automation_provider_list_generic.cc',
             'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
-            'browser/browser_list_stub.cc',
+            'browser/ui/browser_list_stub.cc',
             'browser/dock_info.cc',
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
@@ -3704,7 +3704,7 @@
             'browser/history/history_indexer.idl',
           ],
           'sources!': [
-            'browser/browser_list_stub.cc',
+            'browser/ui/browser_list_stub.cc',
             'browser/history/history_publisher_none.cc',
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
@@ -4054,7 +4054,7 @@
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.h'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.cc'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.h'],
-                ['exclude', '^browser/browser_list_gtk.cc'],
+                ['exclude', '^browser/ui/browser_list_gtk.cc'],
               ],
             }],
             # Exclude these toolkit_views specific files again.
@@ -4083,7 +4083,7 @@
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
-                ['exclude', '^browser/browser_list_stub.cc'],
+                ['exclude', '^browser/ui/browser_list_stub.cc'],
                 ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
