@@ -574,6 +574,8 @@
         <include name="IDR_USER_IMAGE_NO_VIDEO" file="no_video.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_CAPTURE" file="snapshot_wide.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" type="BINDATA" />
+        <include name="IDR_USER_IMAGE_CAPTURE_DISABLED" file="snapshot_wide_disabled.png" type="BINDATA" />
+        <include name="IDR_USER_IMAGE_INITIALIZING" file="initializing_video.png" type="BINDATA" />
         <include name="IDR_VOLUMEBUBBLE_ICON" file="volume_icon.png" type="BINDATA" />
         <include name="IDR_SCROLL_BACKGROUND" file="chromeos_scroll_background.png" type="BINDATA" />
         <include name="IDR_SCROLL_BACKGROUND_BORDER_UP" file="chromeos_scroll_background_border_up.png" type="BINDATA" />
