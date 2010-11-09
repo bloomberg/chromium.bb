@@ -171,6 +171,8 @@ def _SetEnvForX86Sdk(env, sdk_path):
               GDB=os.path.join(bin_path, 'nacl-gdb'),
               # NOTE: use g++ for linking so we can handle C AND C++.
               LINK=os.path.join(bin_path, '%s-g++' % arch),
+              # Grrr... and sometimes we really need ld.
+              LD=os.path.join(bin_path, '%s-ld' % arch),
               RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
               CFLAGS = ['-std=gnu99'],
               CCFLAGS=['-O3',
@@ -229,6 +231,9 @@ def _SetEnvForPnacl(env, arch):
               #       (CC_NATIVE had to handle both .c and .S files)
               CC_NATIVE=pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
+              # Grrr... and sometimes we need raw assembly and the real ld.
+              LD=(pnacl_sdk_root + '/arm-none-linux-gnueabi/bin/' +
+                  'arm-none-linux-gnueabi-ld'),
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,
               DISASS=pnacl_sdk_disass,

@@ -364,7 +364,9 @@ pre_base_env.AddMethod(AddNodeToTestSuite)
 # ----------------------------------------------------------
 # Convenient testing aliases
 # NOTE: work around for scons non-determinism in the following two lines
-Alias('small_tests', [])
+Alias('sel_ldr_sled_tests', [])
+
+Alias('small_tests', [ 'sel_ldr_sled_tests' ])
 Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('browser_tests', [])
@@ -1581,6 +1583,7 @@ environment_list.append(nacl_env)
 nacl_env.Append(
     BUILD_SCONSCRIPTS = [
     ####  ALPHABETICALLY SORTED ####
+    'src/trusted/service_runtime/nacl.scons',
     'tests/app_lib/nacl.scons',
     'tests/autoloader/nacl.scons',
     'tests/barebones/nacl.scons',

@@ -190,6 +190,13 @@ status_map = {
         'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
         'win64':  -11,
         },
+    'trusted_sigabrt' : {
+        'linux2': -6, # SIGABRT
+        'darwin': -6, # SIGABRT
+        'cygwin': -6, # SIGABRT
+        'win32':  -6, # SIGABRT
+        'win64':  -6, # SIGABRT
+        },
     'trusted_sigill' : {
         'linux2': -11, # SIGSEGV
         'darwin': -11, # SIGBUS

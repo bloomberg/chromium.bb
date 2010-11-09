@@ -1,0 +1,178 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.  Use
+# of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+# So far, all tests involve native assembler
+
+HALT_SLED_SIZE=32
+
+
+# ----------------------------------------------------------
+# Tests that require a NaCl module
+# ----------------------------------------------------------
+
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  arch_dir = ('arch/' + env['TARGET_ARCHITECTURE'] +
+              '_' + env['TARGET_SUBARCH'])
+  nacl_text_pad_asm = (arch_dir +
+                       '/nacl_text_pad_test.S')
+elif env['TARGET_ARCHITECTURE'] == 'arm':
+  arch_dir = 'arch/' + env['TARGET_ARCHITECTURE']
+  nacl_text_pad_asm = ( arch_dir +
+                       '/nacl_text_pad_test.S')
+else:
+  raise Exception, 'unknown architecture'
+
+def NewAsmEnv(env, *alist, **kwarg):
+  asm_env = env.Clone()
+  if ARGUMENTS.get('bitcode'):
+    asm_env.Replace(CC=env['CC_NATIVE'])
+  if env['TARGET_ARCHITECTURE'] == 'x86':
+    if env['TARGET_SUBARCH'] == '32':
+      asm_env['LINKCOM'] = ('${LD} -melf_nacl -e _start ${RO_START}' +
+                            ' ${RW_START} -o ${TARGET} ${SOURCES}')
+    elif env['TARGET_SUBARCH'] == '64':
+      asm_env['LINKCOM'] = ('${LD} -melf64_nacl -e _start ${RO_START}' +
+                            ' ${RW_START} -o ${TARGET} ${SOURCES}')
+    else:
+      raise Exception, 'new subarchtecture for x86?!?'
+  elif env['TARGET_ARCHITECTURE'] == 'arm':
+    asm_env['LINKCOM'] = ('${LD} --native-client -e _start -Ttext 0x20000' +
+                          ' -nostdlib -static' +
+                          ' ${RO_START} ${RW_START} -o ${TARGET} ${SOURCES}' +
+                          ' && ${PYTHON}' +
+                          ' ${SCONSTRUCT_DIR}/tools/elf_patcher.py' +
+                          ' -a 16 -h ${SCONSTRUCT_DIR}/src/include/nacl_elf.h' +
+                          ' ${TARGET}')
+  else:
+    raise Exception, 'unknown architecture'
+
+  asm_env.Append(CPPDEFINES = [
+                     ['NACL_BLOCK_SHIFT', 5],
+                     ['NACL_BLOCK_SIZE', 32],
+                     ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
+                     ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
+                     ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
+                     ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
+                 ])
+  asm_env.Append(*alist, **kwarg)
+  return asm_env
+
+
+if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']):
+  ALLOCATION_SIZE   = 0x10000
+  START_OF_TEXT     = 0x20000
+  TEXT_SIZE_BOUND   = 0x10000  # estimate of test code size
+  RODATA_SIZE_BOUND = 0x10000
+  RWDATA_SIZE       = 0x4  # if we have rwdata, we must use exactly one word!
+
+  def EndOfText(text_end_modulus):
+    return START_OF_TEXT + text_end_modulus
+
+  def RoundUpToAllocSize(size):
+    return (size + ALLOCATION_SIZE - 1) & ~(ALLOCATION_SIZE - 1)
+
+  def TextGap(text_end):
+    end_of_text = EndOfText(text_end)
+    rounded_end_of_text = RoundUpToAllocSize(end_of_text)
+    text_gap = rounded_end_of_text - end_of_text
+    return text_gap
+
+  def NaturalRodataStart(text_end):
+    extra = 0
+    text_gap = TextGap(text_end)
+    if text_gap < HALT_SLED_SIZE:
+      extra = ALLOCATION_SIZE
+    return RoundUpToAllocSize(START_OF_TEXT + TEXT_SIZE_BOUND + extra)
+
+  def ExpectedBreak(text_end, rodata_addr, rwdata_addr, rwdata_size):
+    if rwdata_addr is None:
+      if rodata_addr is None:
+        break_addr = NaturalRodataStart(text_end)
+      else:
+        break_addr = RoundUpToAllocSize(rodata_addr + RODATA_SIZE_BOUND)
+    else:
+      break_addr = rwdata_addr + rwdata_size
+    return break_addr
+
+  test_specs = [ (0x10000,       'no'),
+                 (0x10000 - 32, 'small'),
+                 ( 0x8000,      'large'),
+                 (0x10000 - 28, 'too_small') ]
+
+  rwdata_address = None  # none for now
+
+  for text_end, variant in test_specs:
+    for rodata_address, name_modifier in [ (None, ''),
+                                           (0, '_ro'),
+                                           (0x100000, '_ro_dyn') ]:
+      # rodata_address is None when no .rodata section should appear
+      # in the generated nexe, and is 0 when it should appear in the
+      # natural location (as defined by the linker script); when it
+      # has a non-zero numeric value, then the .rodata section is
+      # forced to start at that address.
+
+      expected_exit_status = '0'
+
+      # arm assembler misplaces the text section when --section-start
+      # directive is used, so none of the tests that leaves room for
+      # dynamic code can run.
+
+      if (rodata_address is not None and rodata_address != 0 and
+          env['TARGET_ARCHITECTURE'] == 'arm'):
+        continue
+
+      # arm assembler does not ensure there is enough space for
+      # halt sled, and manually setting rodata's start location
+      # is currently broken (moves text too).
+      if (rodata_address == 0 and
+          env['TARGET_ARCHITECTURE'] == 'arm' and
+          variant == 'too_small'):
+        expected_exit_status = 'trusted_sigabrt'
+
+      if rodata_address == 0:
+        use_rodata_address = NaturalRodataStart(text_end)
+      else:
+        use_rodata_address = rodata_address
+      # use_rodata_address is None or a non-zero integer
+
+      break_address = ExpectedBreak(text_end, use_rodata_address,
+                                    rwdata_address, RWDATA_SIZE)
+
+      defines=[]
+      for (symbol, value) in [('TEXT_EXTEND', text_end),
+                              ('EXPECTED_BREAK', break_address),
+                              ('EXPECTED_RODATA', use_rodata_address),
+                              ('EXPECTED_RWDATA', rwdata_address)]:
+        if value is not None:
+          defines += [[symbol, str(value)]]
+
+      asm_env = NewAsmEnv(env,
+                          CPPDEFINES=defines)
+
+      for (linkcom_symbol, section_name, address) in [
+          ('RO_START', '.rodata', rodata_address),
+          ('RW_START', '.data', rwdata_address)]:
+        # on the arm, we *must* leave out the --section-start directive
+        # when we use the "natural" address, since otherwise the linker
+        # gets confused and misplaces the text section!
+        if address is not None and address != 0:
+          asm_env[linkcom_symbol] = ('--section-start=' + section_name +
+                                     '=' + hex(address))
+
+      base_name = ('nacl_text_' + variant + '_pad'
+                   + name_modifier + '_test')
+      obj = asm_env.ComponentObject(base_name + '.o',
+                                    nacl_text_pad_asm)
+      nexe_name = base_name + '.nexe'
+
+      asm_env.ComponentProgram(nexe_name,
+                               [obj])
+      node = env.CommandSelLdrTestNacl(
+          base_name + '.out',
+          command=[env.File(nexe_name)],
+          exit_status=expected_exit_status)
+      env.AddNodeToTestSuite(node, ['sel_ldr_sled_tests'], 'run_' + base_name)

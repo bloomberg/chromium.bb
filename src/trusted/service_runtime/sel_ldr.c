@@ -361,6 +361,10 @@ void  NaClMemRegionPrinter(void                   *state,
           entry->page_num, entry->page_num);
   gprintf(gp,   "npages %"NACL_PRIdS" (0x%"NACL_PRIxS")\n", entry->npages,
           entry->npages);
+  gprintf(gp,   "start vaddr 0x%"NACL_PRIxPTR"\n",
+          entry->page_num << NACL_PAGESHIFT);
+  gprintf(gp,   "end vaddr   0x%"NACL_PRIxPTR"\n",
+          (entry->page_num + entry->npages) << NACL_PAGESHIFT);
   gprintf(gp,   "prot   0x%08x\n", entry->prot);
   gprintf(gp,   "%sshared/backed by a file\n",
           (NULL == entry->nmop) ? "not " : "");
@@ -466,6 +470,10 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Text segment overlaps rodata segment";
     case LOAD_TEXT_OVERLAPS_DATA:
       return "No rodata segment, and text segment overlaps data segment";
+    case LOAD_BAD_RODATA_ALIGNMENT:
+      return "The rodata segment is not properly aligned";
+    case LOAD_BAD_DATA_ALIGNMENT:
+      return "The data segment is not properly aligned";
     case LOAD_UNLOADABLE:
       return "Error during loading";
     case LOAD_BAD_ELF_TEXT:

@@ -44,32 +44,51 @@
 
 /*
  * Fill from static_text_end to end of that page with halt
- * instruction, which is NACL_HALT_LEN in size.  Does not touch
- * dynamic text region, which should be pre-filled with HLTs.
+ * instruction, which is at least NACL_HALT_LEN in size when no
+ * dynamic text is present.  Does not touch dynamic text region, which
+ * should be pre-filled with HLTs.
+ *
+ * By adding NACL_HALT_SLED_SIZE, we ensure that the code region ends
+ * with HLTs, just in case the CPU has a bug in which it fails to
+ * check for running off the end of the x86 code segment.
  */
 void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   size_t page_pad;
 
   /*
-   * By adding NACL_HALT_SLED_SIZE, we ensure that the code region
-   * ends with HLTs, just in case the CPU has a bug in which it fails
-   * to check for running off the end of the x86 code segment.
+   * NOTE: make sure we are not silently overwriting data.  It is the
+   * toolchain's responsibility to ensure that a NACL_HALT_SLED_SIZE
+   * gap exists.
    */
-  page_pad = (NaClRoundAllocPage(nap->static_text_end + NACL_HALT_SLED_SIZE)
-              - nap->static_text_end);
-
-  /* NOTE: make sure we are not silently overwriting data */
   if (0 != nap->data_start &&
       nap->static_text_end + NACL_HALT_SLED_SIZE > nap->data_start) {
-    NaClLog(LOG_FATAL, "Missing gap between text and data for halt_sled");
+    NaClLog(LOG_FATAL, "Missing gap between text and data for halt_sled\n");
   }
   if (0 != nap->rodata_start &&
       nap->static_text_end + NACL_HALT_SLED_SIZE > nap->rodata_start) {
-    NaClLog(LOG_FATAL, "Missing gap between text and rodata for halt_sled");
+    NaClLog(LOG_FATAL, "Missing gap between text and rodata for halt_sled\n");
   }
 
-  CHECK(page_pad >= NACL_HALT_SLED_SIZE);
-  CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
+  if (NULL == nap->text_shm) {
+    /*
+     * No dynamic text exists.  Space for NACL_HALT_SLED_SIZE must
+     * exist.
+     */
+    page_pad = (NaClRoundAllocPage(nap->static_text_end + NACL_HALT_SLED_SIZE)
+                - nap->static_text_end);
+    CHECK(page_pad >= NACL_HALT_SLED_SIZE);
+    CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
+  } else {
+    /*
+     * Dynamic text exists; the halt sled resides in the dynamic text
+     * region, so all we need to do here is to round out the last
+     * static text page with HLT instructions.  It doesn't matter if
+     * the size of this region is smaller than NACL_HALT_SLED_SIZE --
+     * this is just to fully initialize the page, rather than (later)
+     * decoding/validating zero-filled memory as instructions.
+     */
+    page_pad = NaClRoundAllocPage(nap->static_text_end) - nap->static_text_end;
+  }
 
   NaClLog(4,
           "Filling with halts: %08"NACL_PRIxPTR", %08"NACL_PRIxS" bytes\n",
@@ -138,13 +157,41 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     goto done;
   }
 
+  if (0 == nap->data_start) {
+    if (0 == nap->rodata_start) {
+      if (NaClRoundAllocPage(max_vaddr) - max_vaddr < NACL_HALT_SLED_SIZE) {
+        /*
+         * if no rodata and no data, we make sure that there is space for
+         * the halt sled.
+         */
+        max_vaddr += NACL_MAP_PAGESIZE;
+      }
+    } else {
+      /*
+       * no data, but there is rodata.  this means max_vaddr is just
+       * where rodata ends.  this might not be at an allocation
+       * boundary, and in this the page would not be writable.  round
+       * max_vaddr up to the next allocation boundary so that bss will
+       * be at the next writable region.
+       */
+      ;
+    }
+    max_vaddr = NaClRoundAllocPage(max_vaddr);
+  }
+  /*
+   * max_vaddr -- the break or the boundary between data (initialized
+   * and bss) and the address space hole -- does not have to be at a
+   * page boundary.
+   */
   nap->break_addr = max_vaddr;
   nap->data_end = max_vaddr;
 
-  NaClLog(4, "rodata_end = %08"NACL_PRIxPTR"\n", rodata_end);
-  NaClLog(4, "data_start = %08"NACL_PRIxPTR"\n", nap->data_start);
-  NaClLog(4, "data_end   = %08"NACL_PRIxPTR"\n", data_end);
-  NaClLog(4, "max_vaddr  = %08"NACL_PRIxPTR"\n", max_vaddr);
+  NaClLog(4, "Values from NaClElfImageValidateProgramHeaders:\n");
+  NaClLog(4, "rodata_start = 0x%08"NACL_PRIxPTR"\n", nap->rodata_start);
+  NaClLog(4, "rodata_end   = 0x%08"NACL_PRIxPTR"\n", rodata_end);
+  NaClLog(4, "data_start   = 0x%08"NACL_PRIxPTR"\n", nap->data_start);
+  NaClLog(4, "data_end     = 0x%08"NACL_PRIxPTR"\n", data_end);
+  NaClLog(4, "max_vaddr    = 0x%08"NACL_PRIxPTR"\n", max_vaddr);
 
 #if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   nap->bundle_size = NaClElfImageGetBundleSize(image);
@@ -159,15 +206,33 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,
-          "static_text_end: 0x%016"NACL_PRIxPTR"  "
-          "break_add: 0x%016"NACL_PRIxPTR"  "
-          "data_end: 0x%016"NACL_PRIxPTR"  "
-          "entry_pt: 0x%016"NACL_PRIxPTR"  "
-          "bundle_size: 0x%x\n",
-          nap->static_text_end,
-          nap->break_addr,
-          nap->data_end,
-          nap->entry_pt,
+          "NaClApp addr space layout:\n");
+  NaClLog(2,
+          "nap->static_text_end    = 0x%016"NACL_PRIxPTR"\n",
+          nap->static_text_end);
+  NaClLog(2,
+          "nap->dynamic_text_start = 0x%016"NACL_PRIxPTR"\n",
+          nap->dynamic_text_start);
+  NaClLog(2,
+          "nap->dynamic_text_end   = 0x%016"NACL_PRIxPTR"\n",
+          nap->dynamic_text_end);
+  NaClLog(2,
+          "nap->rodata_start       = 0x%016"NACL_PRIxPTR"\n",
+          nap->rodata_start);
+  NaClLog(2,
+          "nap->data_start         = 0x%016"NACL_PRIxPTR"\n",
+          nap->data_start);
+  NaClLog(2,
+          "nap->data_end           = 0x%016"NACL_PRIxPTR"\n",
+          nap->data_end);
+  NaClLog(2,
+          "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
+          nap->break_addr);
+  NaClLog(2,
+          "nap->entry_pt           = 0x%016"NACL_PRIxPTR"\n",
+          nap->entry_pt);
+  NaClLog(2,
+          "nap->bundle_size        = 0x%x\n",
           nap->bundle_size);
 
   if (!NaClAddrIsValidEntryPt(nap, nap->entry_pt)) {
@@ -185,7 +250,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
       goto done;
     }
   } else if (0 != nap->rodata_start) {
-    if (rodata_end != max_vaddr) {
+    if (NaClRoundAllocPage(rodata_end) != max_vaddr) {
       /*
        * This should be unreachable, but we include it just for
        * completeness.
@@ -220,6 +285,19 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
       ret = LOAD_TEXT_OVERLAPS_DATA;
       goto done;
     }
+  }
+
+  if (0 != nap->rodata_start &&
+      NaClRoundAllocPage(nap->rodata_start) != nap->rodata_start) {
+    NaClLog(LOG_INFO, "rodata_start not a multiple of allocation size\n");
+    ret = LOAD_BAD_RODATA_ALIGNMENT;
+    goto done;
+  }
+  if (0 != nap->data_start &&
+      NaClRoundAllocPage(nap->data_start) != nap->data_start) {
+    NaClLog(LOG_INFO, "data_start not a multiple of allocation size\n");
+    ret = LOAD_BAD_DATA_ALIGNMENT;
+    goto done;
   }
 
   NaClLog(2, "Allocating address space\n");
@@ -314,6 +392,35 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     ret = subret;
     goto done;
   }
+  NaClLog(2,
+          "NaClAppLoadFile done; addr space layout:\n");
+  NaClLog(2,
+          "nap->static_text_end    = 0x%016"NACL_PRIxPTR"\n",
+          nap->static_text_end);
+  NaClLog(2,
+          "nap->dynamic_text_start = 0x%016"NACL_PRIxPTR"\n",
+          nap->dynamic_text_start);
+  NaClLog(2,
+          "nap->dynamic_text_end   = 0x%016"NACL_PRIxPTR"\n",
+          nap->dynamic_text_end);
+  NaClLog(2,
+          "nap->rodata_start       = 0x%016"NACL_PRIxPTR"\n",
+          nap->rodata_start);
+  NaClLog(2,
+          "nap->data_start         = 0x%016"NACL_PRIxPTR"\n",
+          nap->data_start);
+  NaClLog(2,
+          "nap->data_end           = 0x%016"NACL_PRIxPTR"\n",
+          nap->data_end);
+  NaClLog(2,
+          "nap->break_addr         = 0x%016"NACL_PRIxPTR"\n",
+          nap->break_addr);
+  NaClLog(2,
+          "nap->entry_pt           = 0x%016"NACL_PRIxPTR"\n",
+          nap->entry_pt);
+  NaClLog(2,
+          "nap->bundle_size        = 0x%x\n",
+          nap->bundle_size);
 
   ret = LOAD_OK;
 done:

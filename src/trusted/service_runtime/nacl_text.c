@@ -970,4 +970,3 @@ int32_t NaClTextSysDyncode_Delete(struct NaClAppThread *natp,
   NaClMutexUnlock(&nap->dynamic_load_mutex);
   return retval;
 }
-

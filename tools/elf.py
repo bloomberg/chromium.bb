@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
 """
 This module contains utilities and constants needed to parse ELF headers.
 """
@@ -57,6 +62,9 @@ ehdr_member_and_type = [
 ]
 
 ehdr_member_type = dict(ehdr_member_and_type)
+
+def MemberPositionMap(member_and_type):
+  return dict((m,i) for i,(m,t) in enumerate(member_and_type))
 
 elf32_phdr_member_and_type = [
     ('type', 'Word'),

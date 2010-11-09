@@ -32,6 +32,8 @@
 import getopt
 import sys
 
+import nacl_elf_constants
+
 
 """Changes the OS ABI number of Native Client executables.
 
@@ -44,10 +46,13 @@ toolchain.
 
 """
 
+ELF_OSABI_OFFSET = 7
 ELF_ABIVERSION_OFFSET = 8
 
+OS_NUMBER_NACL = 123
 
-def SetOsAbiVersion(elf_file_data, version):
+
+def SetOsAbiVersion(elf_file_data, os_number, abi_version):
   """Change the OS ABI number of a string, interpreted as an NaCl executable.
 
   Args:
@@ -57,12 +62,17 @@ def SetOsAbiVersion(elf_file_data, version):
   Returns:
     Updated ELF NaCl executable.
   """
-  return (elf_file_data[:ELF_ABIVERSION_OFFSET]
-          + chr(version) + elf_file_data[ELF_ABIVERSION_OFFSET + 1:])
+  data = elf_file_data
+
+  data = (data[:ELF_OSABI_OFFSET]
+          + chr(os_number) + data[ELF_OSABI_OFFSET + 1:])
+  data = (data[:ELF_ABIVERSION_OFFSET]
+          + chr(abi_version) + data[ELF_ABIVERSION_OFFSET + 1:])
+  return data
 #enddef
 
 
-def ModifyFileOsAbiVersion(filename, version):
+def ModifyFileOsAbiVersion(filename, os_number, abi_version):
   """Changes the OS ABI number of the named file.
 
   No sanity checking is done on the file's contents to verify that it
@@ -78,7 +88,8 @@ def ModifyFileOsAbiVersion(filename, version):
 
   """
   file_data = open(filename, 'rb').read()
-  open(filename, 'wb').write(SetOsAbiVersion(file_data, version))
+  open(filename, 'wb').write(SetOsAbiVersion(file_data,
+                                             os_number, abi_version))
 # enddef
 
 
@@ -98,14 +109,21 @@ def ReadFileOsAbiVersion(filename):
 def main(argv):
   abi_version = -1
   try:
-    (opts, args) = getopt.getopt(argv[1:], 'v:')
+    (opts, args) = getopt.getopt(argv[1:], 'c:v:')
   except getopt.error, e:
     print >>sys.stderr, str(e)
     print >>sys.stderr, 'Usage: set_abi_version [-v version_num] filename...'
     return 1
   # endtry
+
+  os_number = OS_NUMBER_NACL  # default
+
   for opt, val in opts:
-    if opt == '-v':
+    if opt == '-c':
+      const_dict = nacl_elf_constants.GetNaClElfConstants(val)
+      os_number = const_dict['ELFOSABI_NACL']
+      abi_version = const_dict['EF_NACL_ABIVERSION']
+    elif opt == '-v':
       abi_version = int(val)
     # endif
   # endfor
@@ -117,7 +135,7 @@ def main(argv):
       new_abi = abi_version
     # endif
 
-    ModifyFileOsAbiVersion(filename, new_abi)
+    ModifyFileOsAbiVersion(filename, os_number, new_abi)
   # endfor
 
   return 0
