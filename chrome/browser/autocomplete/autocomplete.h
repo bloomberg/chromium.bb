@@ -42,10 +42,11 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // HistoryURL (exact or inline autocomplete match)                     | 1400
+// Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
 // HistoryURL (what you typed)                                         | 1200
 // Keyword (substituting, exact match)                                 | 1100
-// Search Primary Provider (past query in history)                     | 1050--
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (inexact match)                                          |  900++
 // Search Primary Provider (navigational suggestion)                   |  800++
@@ -63,10 +64,11 @@
 // --------------------------------------------------------------------|-----
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // HistoryURL (exact or inline autocomplete match)                     | 1400
+// Search Primary Provider (past query in history within 2 days)       | 1399**
 // HistoryURL (what you typed)                                         | 1200
 // Search Primary Provider (what you typed)                            | 1150
 // Keyword (substituting, exact match)                                 | 1100
-// Search Primary Provider (past query in history)                     | 1050--
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (inexact match)                                          |  900++
 // Search Primary Provider (navigational suggestion)                   |  800++
@@ -102,8 +104,9 @@
 // Keyword (non-substituting or in keyword UI mode, exact match)       | 1500
 // Keyword (substituting, exact match)                                 | 1450
 // HistoryURL (exact or inline autocomplete match)                     | 1400
+// Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
-// Search Primary Provider (past query in history)                     | 1050--
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (inexact match)                                          |  900++
 // Search Primary Provider (navigational suggestion)                   |  800++
@@ -119,8 +122,9 @@
 //
 // FORCED_QUERY input type:
 // --------------------------------------------------------------------|-----
+// Search Primary Provider (past query in history within 2 days)       | 1399**
 // Search Primary Provider (what you typed)                            | 1300
-// Search Primary Provider (past query in history)                     | 1050--
+// Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
@@ -140,6 +144,8 @@
 // ++: a series of matches with relevance from n up to (n + max_matches).
 // --: relevance score falls off over time (discounted 50 points @ 15 minutes,
 //     450 points @ two weeks)
+// --: relevance score falls off over two days (discounted 99 points after two
+//     days).
 
 class AutocompleteInput;
 struct AutocompleteMatch;

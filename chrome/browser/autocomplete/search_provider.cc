@@ -565,11 +565,25 @@ int SearchProvider::CalculateRelevanceForWhatYouTyped() const {
 
 int SearchProvider::CalculateRelevanceForHistory(const Time& time,
                                                  bool is_keyword) const {
-  // The relevance of past searches falls off over time.  This curve is chosen
-  // so that the relevance of a search 15 minutes ago is discounted about 50
-  // points, while the relevance of a search two weeks ago is discounted about
-  // 450 points.
-  const double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
+  // The relevance of past searches falls off over time. There are two distinct
+  // equations used. If the first equation is used (searches to the primary
+  // provider with a type other than URL) the score starts at 1399 and falls to
+  // 1300. If the second equation is used the relevance of a search 15 minutes
+  // ago is discounted about 50 points, while the relevance of a search two
+  // weeks ago is discounted about 450 points.
+  double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
+
+  if (providers_.is_primary_provider(is_keyword) &&
+      input_.type() != AutocompleteInput::URL) {
+    // Searches with the past two days get a different curve.
+    const double autocomplete_time= 2 * 24 * 60 * 60;
+    if (elapsed_time < autocomplete_time) {
+      return 1399 - static_cast<int>(99 *
+          std::pow(elapsed_time / autocomplete_time, 2.5));
+    }
+    elapsed_time -= autocomplete_time;
+  }
+
   const int score_discount =
       static_cast<int>(6.5 * std::pow(elapsed_time, 0.3));
 
