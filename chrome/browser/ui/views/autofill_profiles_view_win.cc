@@ -824,14 +824,6 @@ views::View* AutoFillProfilesView::EditableSetViewContents::GetContentsView() {
 }
 
 bool AutoFillProfilesView::EditableSetViewContents::Cancel() {
-  if (new_item_) {
-    // Remove added item - it is last in the list.
-    if (temporary_info_.is_address) {
-      observer_->profiles_set_.pop_back();
-    } else {
-      observer_->credit_card_set_.pop_back();
-    }
-  }
   return true;
 }
 
