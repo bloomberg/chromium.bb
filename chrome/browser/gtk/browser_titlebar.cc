@@ -23,7 +23,9 @@
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
+#if defined(USE_GCONF)
 #include "chrome/browser/gtk/gconf_titlebar_listener.h"
+#endif
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
@@ -193,6 +195,9 @@ void PopupPageMenuModel::Build() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTitlebar
 
+// static
+const char BrowserTitlebar::kDefaultButtonString[] = ":minimize,maximize,close";
+
 BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
                                  GtkWindow* window)
     : browser_window_(browser_window),
@@ -299,9 +304,13 @@ void BrowserTitlebar::Init() {
   gtk_box_pack_end(GTK_BOX(container_hbox_), titlebar_right_buttons_vbox_,
                    FALSE, FALSE, 0);
 
+#if defined(USE_GCONF)
   // Either read the gconf database and register for updates (on GNOME), or use
   // the default value (anywhere else).
   Singleton<GConfTitlebarListener>()->SetTitlebarButtons(this);
+#else
+  BuildButtons(kDefaultButtonString);
+#endif
 
   // We use an alignment to control the titlebar height.
   titlebar_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -363,7 +372,9 @@ void BrowserTitlebar::Init() {
 
 BrowserTitlebar::~BrowserTitlebar() {
   ActiveWindowWatcherX::RemoveObserver(this);
+#if defined(USE_GCONF)
   Singleton<GConfTitlebarListener>()->RemoveObserver(this);
+#endif
 }
 
 void BrowserTitlebar::BuildButtons(const std::string& button_string) {

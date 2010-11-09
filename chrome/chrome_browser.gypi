@@ -3405,6 +3405,12 @@
             ],
           },
         }],
+	['use_gconf==0', {
+	  'sources!': [
+            'browser/gtk/gconf_titlebar_listener.cc',
+            'browser/gtk/gconf_titlebar_listener.h',
+	  ],
+	}],
         ['use_gnome_keyring==0', {
           'sources!': [
             'browser/password_manager/native_backend_gnome_x.h',

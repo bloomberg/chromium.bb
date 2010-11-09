@@ -31,6 +31,10 @@ class BrowserTitlebar : public NotificationObserver,
                         public ActiveWindowWatcherX::Observer,
                         public menus::SimpleMenuModel::Delegate {
  public:
+  // A default button order string for when we aren't asking gconf for the
+  // metacity configuration.
+  static const char kDefaultButtonString[];
+
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
   virtual ~BrowserTitlebar();
 
