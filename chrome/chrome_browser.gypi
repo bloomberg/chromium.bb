@@ -720,6 +720,8 @@
         'browser/chromeos/pulse_audio_mixer.h',
         'browser/chromeos/status/clock_menu_button.cc',
         'browser/chromeos/status/clock_menu_button.h',
+        'browser/chromeos/status/feedback_menu_button.cc',
+        'browser/chromeos/status/feedback_menu_button.h',
         'browser/chromeos/status/input_method_menu.cc',
         'browser/chromeos/status/input_method_menu.h',
         'browser/chromeos/status/input_method_menu_button.cc',

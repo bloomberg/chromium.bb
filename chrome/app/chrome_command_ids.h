@@ -154,7 +154,7 @@
 #define IDC_DEV_TOOLS                   40003
 #define IDC_DEV_TOOLS_CONSOLE           40004
 #define IDC_TASK_MANAGER                40005
-#define IDC_FEEDBACK                    40008
+#define IDC_REPORT_BUG                  40008
 #define IDC_SHOW_BOOKMARK_BAR           40009
 #define IDC_SHOW_HISTORY                40010
 #define IDC_SHOW_BOOKMARK_MANAGER       40011

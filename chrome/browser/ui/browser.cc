@@ -1071,7 +1071,7 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
       browser_defaults::bookmarks_enabled && show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
@@ -2199,7 +2199,7 @@ void Browser::ExecuteCommandWithDisposition(
                                         DEVTOOLS_TOGGLE_ACTION_INSPECT);
                                     break;
     case IDC_TASK_MANAGER:          OpenTaskManager();                break;
-    case IDC_FEEDBACK:            OpenBugReportDialog();            break;
+    case IDC_REPORT_BUG:            OpenBugReportDialog();            break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
 
