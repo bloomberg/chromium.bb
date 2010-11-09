@@ -520,6 +520,11 @@ class SafeBrowsingServiceTestHelper
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTestHelper);
 };
 
+
+#if defined(OS_MACOSX)
+// TODO(lzheng): http://crbug.com/62415, can not start on MacOS.
+#define SafeBrowsingSystemTest DISABLED_SafeBrowsingSystemTest
+#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   LOG(INFO) << "Start test";
   const char* server_host = SafeBrowsingTestServer::Host();
@@ -635,4 +640,3 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   // EXPECT_EQ("yes", safe_browsing_helper->response_data());
   test_server.Stop();
 }
-
