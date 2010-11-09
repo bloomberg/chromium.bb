@@ -321,11 +321,8 @@ void BrowserSignin::UnregisterAuthNotifications() {
 }
 
 void BrowserSignin::ShowSigninTabModal(TabContents* tab_contents) {
-//  TODO(johnnyg): Need a linux views implementation for ConstrainedHtmlDialog.
-#if defined(OS_WIN) || !defined(TOOLKIT_VIEWS)
   html_dialog_ui_delegate_ = CreateHtmlDialogUI();
   ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile_,
                                                  html_dialog_ui_delegate_,
                                                  tab_contents);
-#endif
 }

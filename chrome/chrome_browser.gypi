@@ -3998,6 +3998,7 @@
                 ['include', '^browser/gtk/certificate_viewer.h'],
                 ['include', '^browser/gtk/collected_cookies_gtk.cc'],
                 ['include', '^browser/gtk/collected_cookies_gtk.h'],
+                ['include', '^browser/gtk/constrained_html_delegate_gtk.cc'],
                 ['include', '^browser/gtk/constrained_window_gtk.cc'],
                 ['include', '^browser/gtk/constrained_window_gtk.h'],
                 ['include', '^browser/gtk/gtk_chrome_cookie_view.cc'],
