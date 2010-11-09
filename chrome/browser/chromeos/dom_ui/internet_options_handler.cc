@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -542,6 +543,12 @@ void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
     NOTREACHED();
     return;
   }
+
+  if (!chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner()) {
+    LOG(WARNING) << "Non-owner tried to change a network.";
+    return;
+  }
+
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   chromeos::WifiNetwork* network = cros->FindWifiNetworkByPath(service_path);
@@ -794,6 +801,9 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
     return;
   }
 
+  bool is_owner =
+      chromeos::OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
+
   int type = atoi(str_type.c_str());
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -804,6 +814,10 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   } else if (type == chromeos::TYPE_WIFI) {
     chromeos::WifiNetwork* network;
     if (command == "forget") {
+      if (!is_owner) {
+        LOG(WARNING) << "Non-owner tried to forget a network.";
+        return;
+      }
       cros->ForgetWifiNetwork(service_path);
     } else if ((network = cros->FindWifiNetworkByPath(service_path))) {
       if (command == "connect") {

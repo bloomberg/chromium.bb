@@ -241,8 +241,8 @@ cr.define('options.internet', function() {
                                    self.data.servicePath,
                                    'forget']);
                      });
-        if (cr.commandLine.options['--bwsi']) {
-          // Disable this for guest session(bwsi).
+        if (!AccountsOptions.currentUserIsOwner()) {
+          // Disable this for guest non-Owners.
           button.disabled = true;
         }
 

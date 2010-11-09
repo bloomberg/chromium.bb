@@ -236,6 +236,10 @@ cr.define('options', function() {
       page.removeAttribute('gsm');
       $('inetSsid').textContent = data.ssid;
       $('rememberNetwork').checked = data.autoConnect;
+      if (!AccountsOptions.currentUserIsOwner()) {
+        // Disable this for guest non-Owners.
+        $('rememberNetwork').disabled = true;
+      }
       page.removeAttribute('password');
       page.removeAttribute('cert');
       page.removeAttribute('certPkcs');
