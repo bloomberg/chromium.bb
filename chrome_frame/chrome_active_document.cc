@@ -142,7 +142,7 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
   // Here we refuse to be activated in-place and we will force IE to UIActivate
   // us.
   if (OLEIVERB_INPLACEACTIVATE == verb)
-    return E_NOTIMPL;
+    return OLEOBJ_E_INVALIDVERB;
   // Check if we should activate as a docobject or not
   // (client supports IOleDocumentSite)
   if (doc_site_) {

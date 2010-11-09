@@ -506,7 +506,7 @@ END_MSG_MAP()
     }
 
     std::string url = base::StringPrintf(
-        "%hs:%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
+        "%hs://%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
         scheme.c_str(),
         host.c_str(),
         params.cookie,
