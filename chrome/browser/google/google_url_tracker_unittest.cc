@@ -149,6 +149,9 @@ GoogleURLTrackerTest::GoogleURLTrackerTest()
       original_default_request_context_(NULL) {
 }
 
+GoogleURLTrackerTest::~GoogleURLTrackerTest() {
+}
+
 void GoogleURLTrackerTest::SetUp() {
   original_default_request_context_ = Profile::GetDefaultRequestContext();
   Profile::set_default_request_context(NULL);
