@@ -890,7 +890,7 @@ void RecordLastRunAppBundlePath() {
       else
         Browser::OpenHelpWindow(defaultProfile);
       break;
-    case IDC_REPORT_BUG: {
+    case IDC_FEEDBACK: {
       Browser* browser = BrowserList::GetLastActive();
       TabContents* currentTab =
           browser ? browser->GetSelectedTabContents() : NULL;
@@ -1002,7 +1002,7 @@ void RecordLastRunAppBundlePath() {
   menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
   menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
-  menuState_->UpdateCommandEnabled(IDC_REPORT_BUG, true);
+  menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
   menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
 }

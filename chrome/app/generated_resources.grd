@@ -918,7 +918,7 @@ each locale. -->
         <message name="IDS_VIEW_SOURCE" desc="The text label of the View Page Source menu item">
           View s&amp;ource
         </message>
-        <message name="IDS_REPORT_BUG" desc="The text label of the Report Bug menu item">
+        <message name="IDS_FEEDBACK" desc="The text label of the Report Bug menu item">
           &amp;Report bug or broken website...
         </message>
         <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
@@ -944,7 +944,7 @@ each locale. -->
         <message name="IDS_VIEW_SOURCE" desc="In Title Case: The text label of the View Page Source menu item">
           View S&amp;ource
         </message>
-        <message name="IDS_REPORT_BUG" desc="In Title Case: The text label of the Report Bug menu item">
+        <message name="IDS_FEEDBACK" desc="In Title Case: The text label of the Report Bug menu item">
           &amp;Report Bug or Broken Website...
         </message>
         <message name="IDS_DEV_TOOLS" desc="In Title Case: The text label of the Developer Tools menu item">
@@ -4438,6 +4438,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_RELOAD" desc="The tooltip for reload button">
         Reload this page
       </message>
+      <message name="IDS_TOOLTIP_FEEDBACK" desc="Tooltip for the feedback button.">
+        Report a bug or an issue
+      </message>
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
       </message>
@@ -4811,7 +4814,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_INCLUDE_NO_SCREENSHOT" desc="Radio button for not including a screen image on the bug report dialog box">
         Do not send a screen shot
       </message>
-      <message name="IDS_BUGREPORT_BUG_TYPE" desc="Label for bug type">
+      <message name="IDS_BUGFEEDBACK_TYPE" desc="Label for bug type">
         Bug type:
       </message>
       <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="Report a bug/problem type: Phishing page">
@@ -8652,7 +8655,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Bring All to Front
         </message>
         <!-- Help menu -->
-        <message name="IDS_REPORT_BUG_MAC" desc="The Mac menu item to report a bug in the Help menu.">
+        <message name="IDS_FEEDBACK_MAC" desc="The Mac menu item to report a bug in the Help menu.">
           Report Bug or Broken Website...
         </message>
         <message name="IDS_HELP_MAC" desc="The Mac menu item to show help in the Help menu.">

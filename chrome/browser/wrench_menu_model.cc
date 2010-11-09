@@ -170,7 +170,7 @@ void ToolsMenuModel::Build(Browser* browser) {
 
   AddSeparator();
 #if defined(OS_CHROMEOS)
-  AddItemWithStringId(IDC_REPORT_BUG, IDS_REPORT_BUG);
+  AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
   AddSeparator();
 #endif
 

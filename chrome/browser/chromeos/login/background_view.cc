@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/login/shutdown_button.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/feedback_menu_button.h"
 #include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
@@ -267,7 +266,6 @@ bool BackgroundView::ShouldOpenButtonOptions(
     return true;
   }
   if (button_view == status_area_->clock_view() ||
-      button_view == status_area_->feedback_view() ||
       button_view == status_area_->input_method_view()) {
     return false;
   }
@@ -305,8 +303,6 @@ void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   status_area_ = new StatusAreaView(this);
   status_area_->Init();
-  // Feedback button shoudn't be visible on OOBE/login/screen lock.
-  status_area_->feedback_view()->SetVisible(false);
   AddChildView(status_area_);
 }
 

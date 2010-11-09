@@ -62,7 +62,7 @@
 									<object class="NSTextFieldCell" key="NSCell" id="89599916">
 										<int key="NSCellFlags">68288064</int>
 										<int key="NSCellFlags2">71304192</int>
-										<string key="NSContents">^IDS_BUGREPORT_BUG_TYPE</string>
+										<string key="NSContents">^IDS_BUGFEEDBACK_TYPE</string>
 										<object class="NSFont" key="NSSupport" id="702304060">
 											<string key="NSName">LucidaGrande</string>
 											<double key="NSSize">1.300000e+01</double>
