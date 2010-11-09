@@ -566,10 +566,8 @@ void NetworkMenu::InitMenuItems() {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
       if (activation_state == ACTIVATION_STATE_NOT_ACTIVATED) {
-        // If we are on the login screen, do not show activating 3G option.
-        // TODO(chocobo): We are currently using ShouldOpenButtonOptions() to
-        //   tell whether or not we are at the login screen. We need to fix it.
-        if (!ShouldOpenButtonOptions())
+        // If we are on the OOBE/login screen, do not show activating 3G option.
+        if (!IsBrowserMode())
           continue;
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
