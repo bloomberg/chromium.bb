@@ -53,16 +53,6 @@ void CommandBufferProxy::OnChannelError() {
   last_state_.error = gpu::error::kLostContext;
 }
 
-bool CommandBufferProxy::Send(IPC::Message* msg) {
-  if (channel_)
-    return channel_->Send(msg);
-
-  // Callee takes ownership of message, regardless of whether Send is
-  // successful. See IPC::Message::Sender.
-  delete msg;
-  return false;
-}
-
 bool CommandBufferProxy::Initialize(int32 size) {
   DCHECK(!ring_buffer_.get());
 
@@ -94,14 +84,21 @@ Buffer CommandBufferProxy::GetRingBuffer() {
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::GetState() {
-  Send(new GpuCommandBufferMsg_GetState(route_id_, &last_state_));
+  // Send will flag state with lost context if IPC fails.
+  if (last_state_.error == gpu::error::kNoError)
+    Send(new GpuCommandBufferMsg_GetState(route_id_, &last_state_));
+
   return last_state_;
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::Flush(int32 put_offset) {
-  Send(new GpuCommandBufferMsg_Flush(route_id_,
-                                     put_offset,
-                                     &last_state_));
+  // Send will flag state with lost context if IPC fails.
+  if (last_state_.error == gpu::error::kNoError) {
+    Send(new GpuCommandBufferMsg_Flush(route_id_,
+                                       put_offset,
+                                       &last_state_));
+  }
+
   return last_state_;
 }
 
@@ -111,14 +108,22 @@ void CommandBufferProxy::SetGetOffset(int32 get_offset) {
 }
 
 int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
-  int32 id;
-  if (Send(new GpuCommandBufferMsg_CreateTransferBuffer(route_id_, size, &id)))
-    return id;
+  if (last_state_.error == gpu::error::kNoError) {
+    int32 id;
+    if (Send(new GpuCommandBufferMsg_CreateTransferBuffer(route_id_,
+                                                          size,
+                                                          &id))) {
+      return id;
+    }
+  }
 
   return -1;
 }
 
 void CommandBufferProxy::DestroyTransferBuffer(int32 id) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
   // Remove the transfer buffer from the client side4 cache.
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
   DCHECK(it != transfer_buffers_.end());
@@ -132,6 +137,9 @@ void CommandBufferProxy::DestroyTransferBuffer(int32 id) {
 }
 
 Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
+  if (last_state_.error != gpu::error::kNoError)
+    return Buffer();
+
   // Check local cache to see if there is already a client side shared memory
   // object for this id.
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
@@ -197,8 +205,12 @@ void CommandBufferProxy::SetSwapBuffersCallback(Callback0::Type* callback) {
 }
 
 void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
   IPC::Message* message =
       new GpuCommandBufferMsg_ResizeOffscreenFrameBuffer(route_id_, size);
+
   // We need to set the unblock flag on this message to guarantee the
   // order in which it is processed in the GPU process. Ordinarily in
   // certain situations, namely if a synchronous message is being
@@ -220,11 +232,17 @@ void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
 
 #if defined(OS_MACOSX)
 void CommandBufferProxy::SetWindowSize(const gfx::Size& size) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
   Send(new GpuCommandBufferMsg_SetWindowSize(route_id_, size));
 }
 #endif
 
 void CommandBufferProxy::AsyncGetState(Task* completion_task) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
   IPC::Message* message = new GpuCommandBufferMsg_AsyncGetState(route_id_);
 
   // Do not let a synchronous flush hold up this message. If this handler is
@@ -237,6 +255,9 @@ void CommandBufferProxy::AsyncGetState(Task* completion_task) {
 }
 
 void CommandBufferProxy::AsyncFlush(int32 put_offset, Task* completion_task) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
   IPC::Message* message = new GpuCommandBufferMsg_AsyncFlush(route_id_,
                                                           put_offset);
 
@@ -247,6 +268,28 @@ void CommandBufferProxy::AsyncFlush(int32 put_offset, Task* completion_task) {
 
   if (Send(message))
     pending_async_flush_tasks_.push(linked_ptr<Task>(completion_task));
+}
+
+bool CommandBufferProxy::Send(IPC::Message* msg) {
+  // Caller should not intentionally send a message if the context is lost.
+  DCHECK(last_state_.error == gpu::error::kNoError);
+
+  if (channel_) {
+    if (channel_->Send(msg)) {
+      return true;
+    } else {
+      // Flag the command buffer as lost. Defer deleting the channel until
+      // OnChannelError is called after returning to the message loop in case
+      // it is referenced elsewhere.
+      last_state_.error = gpu::error::kLostContext;
+      return false;
+    }
+  }
+
+  // Callee takes ownership of message, regardless of whether Send is
+  // successful. See IPC::Message::Sender.
+  delete msg;
+  return false;
 }
 
 void CommandBufferProxy::OnUpdateState(const gpu::CommandBuffer::State& state) {

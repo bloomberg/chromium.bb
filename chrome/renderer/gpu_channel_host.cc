@@ -10,7 +10,7 @@
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/gpu_video_service_host.h"
 
-GpuChannelHost::GpuChannelHost() : state_(UNCONNECTED) {
+GpuChannelHost::GpuChannelHost() : state_(kUnconnected) {
 }
 
 GpuChannelHost::~GpuChannelHost() {
@@ -26,7 +26,7 @@ void GpuChannelHost::Connect(const std::string& channel_name) {
   // It is safe to send IPC messages before the channel completes the connection
   // and receives the hello message from the GPU process. The messages get
   // cached.
-  state_ = CONNECTED;
+  state_ = kConnected;
 }
 
 void GpuChannelHost::set_gpu_info(const GPUInfo& gpu_info) {
@@ -55,7 +55,7 @@ void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
 }
 
 void GpuChannelHost::OnChannelError() {
-  state_ = LOST;
+  state_ = kLost;
 
   // Channel is invalid and will be reinitialized if this host is requested
   // again.
@@ -76,12 +76,13 @@ void GpuChannelHost::OnChannelError() {
 }
 
 bool GpuChannelHost::Send(IPC::Message* message) {
-  if (!channel_.get()) {
-    delete message;
-    return false;
-  }
+  if (channel_.get())
+    return channel_->Send(message);
 
-  return channel_->Send(message);
+  // Callee takes ownership of message, regardless of whether Send is
+  // successful. See IPC::Message::Sender.
+  delete message;
+  return false;
 }
 
 CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(

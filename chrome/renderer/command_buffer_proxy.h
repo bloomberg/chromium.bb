@@ -32,8 +32,7 @@ class Task;
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
 class CommandBufferProxy : public gpu::CommandBuffer,
-                           public IPC::Channel::Listener,
-                           public IPC::Message::Sender {
+                           public IPC::Channel::Listener {
  public:
   CommandBufferProxy(IPC::Channel::Sender* channel, int route_id);
   virtual ~CommandBufferProxy();
@@ -41,9 +40,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
-
-  // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
 
   int route_id() const { return route_id_; }
 
@@ -89,6 +85,12 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   void AsyncFlush(int32 put_offset, Task* completion_task);
 
  private:
+
+  // Send an IPC message over the GPU channel. This is private to fully
+  // encapsulate the channel; all callers of this function must explicitly
+  // verify that the context has not been lost.
+  bool Send(IPC::Message* msg);
+
   // Message handlers:
   void OnUpdateState(const gpu::CommandBuffer::State& state);
   void OnNotifyRepaint();

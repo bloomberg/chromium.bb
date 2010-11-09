@@ -196,7 +196,7 @@ bool PlatformContext3DImpl::Init() {
   if (!host)
     return false;
 
-  DCHECK(host->state() == GpuChannelHost::CONNECTED);
+  DCHECK(host->state() == GpuChannelHost::kConnected);
 
   // TODO(apatrick): Let Pepper plugins configure their back buffer surface.
   static const int32 attribs[] = {

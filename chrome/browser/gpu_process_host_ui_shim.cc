@@ -67,3 +67,19 @@ void GpuProcessHostUIShim::CollectGraphicsInfoAsynchronously() {
       FROM_HERE,
       new SendOnIOThreadTask(new GpuMsg_CollectGraphicsInfo()));
 }
+
+void GpuProcessHostUIShim::SendAboutGpuCrash() {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      new SendOnIOThreadTask(new GpuMsg_Crash()));
+}
+
+void GpuProcessHostUIShim::SendAboutGpuHang() {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      new SendOnIOThreadTask(new GpuMsg_Hang()));
+}

@@ -10,6 +10,7 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_message_utils.h"
 
 #define MESSAGES_INTERNAL_IMPL_FILE \
   "chrome/common/gpu_messages_internal.h"
@@ -80,6 +81,7 @@ void ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> ::Log(
 #endif  // if defined(OS_MACOSX)
 
 void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
+  ParamTraits<base::TimeDelta> ::Write(m, p.initialization_time());
   m->WriteUInt32(p.vendor_id());
   m->WriteUInt32(p.device_id());
   m->WriteWString(p.driver_version());
@@ -94,6 +96,7 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
+  base::TimeDelta initialization_time;
   uint32 vendor_id;
   uint32 device_id;
   std::wstring driver_version;
@@ -101,13 +104,15 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   uint32 vertex_shader_version;
   uint32 gl_version;
   bool can_lose_context;
-  bool ret = m->ReadUInt32(iter, &vendor_id);
+  bool ret = ParamTraits<base::TimeDelta> ::Read(m, iter, &initialization_time);
+  ret = ret && m->ReadUInt32(iter, &vendor_id);
   ret = ret && m->ReadUInt32(iter, &device_id);
   ret = ret && m->ReadWString(iter, &driver_version);
   ret = ret && m->ReadUInt32(iter, &pixel_shader_version);
   ret = ret && m->ReadUInt32(iter, &vertex_shader_version);
   ret = ret && m->ReadUInt32(iter, &gl_version);
   ret = ret && m->ReadBool(iter, &can_lose_context);
+  p->SetInitializationTime(initialization_time);
   p->SetGraphicsInfo(vendor_id,
                      device_id,
                      driver_version,
@@ -126,7 +131,9 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
 }
 
 void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("<GPUInfo> %x %x %ls %d",
+  l->append(base::StringPrintf("<GPUInfo> %d %x %x %ls %d",
+                               static_cast<int32>(
+                                   p.initialization_time().InMilliseconds()),
                                p.vendor_id(),
                                p.device_id(),
                                p.driver_version().c_str(),

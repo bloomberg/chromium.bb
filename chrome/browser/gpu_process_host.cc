@@ -95,6 +95,7 @@ bool GpuProcessHost::Init() {
   static const char* const kSwitchNames[] = {
     switches::kUseGL,
     switches::kDisableGpuVsync,
+    switches::kDisableGpuWatchdog,
     switches::kDisableLogging,
     switches::kEnableAcceleratedDecoding,
     switches::kEnableLogging,
@@ -125,16 +126,6 @@ GpuProcessHost* GpuProcessHost::Get() {
   if (sole_instance_ == NULL)
     sole_instance_ = new GpuProcessHost();
   return sole_instance_;
-}
-
-// static
-void GpuProcessHost::SendAboutGpuCrash() {
-  Get()->Send(new GpuMsg_Crash());
-}
-
-// static
-void GpuProcessHost::SendAboutGpuHang() {
-  Get()->Send(new GpuMsg_Hang());
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {

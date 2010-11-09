@@ -41,6 +41,13 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   // graphics card.
   void CollectGraphicsInfoAsynchronously();
 
+  // Tells the GPU process to crash. Useful for testing.
+  void SendAboutGpuCrash();
+
+  // Tells the GPU process to let its main thread enter an infinite loop.
+  // Useful for testing.
+  void SendAboutGpuHang();
+
  private:
   friend struct DefaultSingletonTraits<GpuProcessHostUIShim>;
 

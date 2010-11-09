@@ -8,8 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
+#include "chrome/common/gpu_info.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/x_util.h"
@@ -19,6 +21,8 @@ class GpuThread : public ChildThread {
  public:
   GpuThread();
   ~GpuThread();
+
+  void Init(const base::Time& process_start_time);
 
   // Remove the channel for a particular renderer.
   void RemoveChannel(int renderer_id);
@@ -36,6 +40,9 @@ class GpuThread : public ChildThread {
 
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
+
+  // Information about the GPU, such as device and vendor ID.
+  GPUInfo gpu_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuThread);
 };
