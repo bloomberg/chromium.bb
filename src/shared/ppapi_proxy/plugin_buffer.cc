@@ -24,15 +24,15 @@ PP_Resource Create(PP_Module module, int32_t size_in_bytes) {
   return kInvalidResourceId;
 }
 
-bool IsBuffer(PP_Resource resource) {
+PP_Bool IsBuffer(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
-bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
+PP_Bool Describe(PP_Resource resource, int32_t* size_in_bytes) {
   UNREFERENCED_PARAMETER(resource);
   UNREFERENCED_PARAMETER(size_in_bytes);
-  return false;
+  return PP_FALSE;
 }
 
 void* Map(PP_Resource resource) {

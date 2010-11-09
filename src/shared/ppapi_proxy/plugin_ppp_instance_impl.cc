@@ -147,7 +147,8 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface != NULL &&
       instance_interface->DidChangeFocus != NULL) {
-    instance_interface->DidChangeFocus(instance, has_focus);
+    instance_interface->DidChangeFocus(instance,
+        static_cast<PP_Bool>(has_focus));
   }
   return NACL_SRPC_RESULT_OK;
 }

@@ -20,9 +20,9 @@ PP_Resource Create(PP_Module module) {
   return kInvalidResourceId;
 }
 
-bool IsFileIO(PP_Resource resource) {
+PP_Bool IsFileIO(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
 int32_t Open(PP_Resource file_io,

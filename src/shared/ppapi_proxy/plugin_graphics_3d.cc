@@ -18,21 +18,21 @@
 namespace ppapi_proxy {
 
 namespace {
-bool IsGraphics3D(PP_Resource resource) {
+PP_Bool IsGraphics3D(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
-bool GetConfigs(int32_t* configs,
+PP_Bool GetConfigs(int32_t* configs,
                 int32_t config_size,
                 int32_t* num_config) {
   UNREFERENCED_PARAMETER(configs);
   UNREFERENCED_PARAMETER(config_size);
   UNREFERENCED_PARAMETER(num_config);
-  return false;
+  return PP_FALSE;
 }
 
-bool ChooseConfig(const int32_t* attrib_list,
+PP_Bool ChooseConfig(const int32_t* attrib_list,
                   int32_t* configs,
                   int32_t config_size,
                   int32_t* num_config) {
@@ -40,14 +40,14 @@ bool ChooseConfig(const int32_t* attrib_list,
   UNREFERENCED_PARAMETER(configs);
   UNREFERENCED_PARAMETER(config_size);
   UNREFERENCED_PARAMETER(num_config);
-  return false;
+  return PP_FALSE;
 }
 
-bool GetConfigAttrib(int32_t config, int32_t attribute, int32_t* value) {
+PP_Bool GetConfigAttrib(int32_t config, int32_t attribute, int32_t* value) {
   UNREFERENCED_PARAMETER(config);
   UNREFERENCED_PARAMETER(attribute);
   UNREFERENCED_PARAMETER(value);
-  return false;
+  return PP_FALSE;
 }
 
 const char* QueryString(int32_t name) {
@@ -71,18 +71,18 @@ void* GetProcAddress(const char* name) {
   return NULL;
 }
 
-bool MakeCurrent(PP_Resource context) {
+PP_Bool MakeCurrent(PP_Resource context) {
   UNREFERENCED_PARAMETER(context);
-  return false;
+  return PP_FALSE;
 }
 
 PP_Resource GetCurrentContext() {
   return kInvalidResourceId;
 }
 
-bool SwapBuffers(PP_Resource context) {
+PP_Bool SwapBuffers(PP_Resource context) {
   UNREFERENCED_PARAMETER(context);
-  return false;
+  return PP_FALSE;
 }
 
 uint32_t GetError() {

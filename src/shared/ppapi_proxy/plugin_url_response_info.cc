@@ -19,9 +19,9 @@
 namespace ppapi_proxy {
 
 namespace {
-bool IsURLResponseInfo(PP_Resource resource) {
+PP_Bool IsURLResponseInfo(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
 PP_Var GetProperty(PP_Resource response,

@@ -23,28 +23,28 @@ PP_Resource Create(PP_Module module) {
   return kInvalidResourceId;
 }
 
-bool IsURLRequestInfo(PP_Resource resource) {
+PP_Bool IsURLRequestInfo(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
-bool SetProperty(PP_Resource request,
+PP_Bool SetProperty(PP_Resource request,
                  PP_URLRequestProperty_Dev property,
                  struct PP_Var value) {
   UNREFERENCED_PARAMETER(request);
   UNREFERENCED_PARAMETER(property);
   UNREFERENCED_PARAMETER(value);
-  return false;
+  return PP_FALSE;
 }
 
-bool AppendDataToBody(PP_Resource request, const char* data, uint32_t len) {
+PP_Bool AppendDataToBody(PP_Resource request, const char* data, uint32_t len) {
   UNREFERENCED_PARAMETER(request);
   UNREFERENCED_PARAMETER(data);
   UNREFERENCED_PARAMETER(len);
-  return false;
+  return PP_FALSE;
 }
 
-bool AppendFileToBody(PP_Resource request,
+PP_Bool AppendFileToBody(PP_Resource request,
                       PP_Resource file_ref,
                       int64_t start_offset,
                       int64_t number_of_bytes,
@@ -54,7 +54,7 @@ bool AppendFileToBody(PP_Resource request,
   UNREFERENCED_PARAMETER(start_offset);
   UNREFERENCED_PARAMETER(number_of_bytes);
   UNREFERENCED_PARAMETER(expected_last_modified_time);
-  return false;
+  return PP_FALSE;
 }
 }  // namespace
 

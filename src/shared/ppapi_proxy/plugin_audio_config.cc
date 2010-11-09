@@ -32,9 +32,9 @@ uint32_t RecommendSampleFrameCount(uint32_t request_sample_frame_count) {
   return 0;
 }
 
-bool IsAudioConfig(PP_Resource config) {
+PP_Bool IsAudioConfig(PP_Resource config) {
   UNREFERENCED_PARAMETER(config);
-  return false;
+  return PP_FALSE;
 }
 
 PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config) {

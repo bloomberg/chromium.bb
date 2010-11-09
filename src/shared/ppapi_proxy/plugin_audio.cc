@@ -29,9 +29,9 @@ PP_Resource Create(PP_Instance instance,
   return kInvalidResourceId;
 }
 
-bool IsAudio(PP_Resource audio) {
+PP_Bool IsAudio(PP_Resource audio) {
   UNREFERENCED_PARAMETER(audio);
-  return false;
+  return PP_FALSE;
 }
 
 PP_Resource GetCurrentConfig(PP_Resource audio) {
@@ -39,14 +39,14 @@ PP_Resource GetCurrentConfig(PP_Resource audio) {
   return kInvalidResourceId;
 }
 
-bool StartPlayback(PP_Resource audio) {
+PP_Bool StartPlayback(PP_Resource audio) {
   UNREFERENCED_PARAMETER(audio);
-  return false;
+  return PP_FALSE;
 }
 
-bool StopPlayback(PP_Resource audio) {
+PP_Bool StopPlayback(PP_Resource audio) {
   UNREFERENCED_PARAMETER(audio);
-  return false;
+  return PP_FALSE;
 }
 }  // namespace
 

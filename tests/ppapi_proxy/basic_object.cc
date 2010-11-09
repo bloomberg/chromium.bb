@@ -31,8 +31,8 @@ PPB_GetInterface g_get_browser_interface = NULL;
 const PPB_Var_Deprecated* g_var_interface = NULL;
 
 const PP_Var kGetFailed = PP_MakeNull();
-const PP_Var kSetFailed = PP_MakeBool(false);
-const PP_Var kCallFailed = PP_MakeBool(false);
+const PP_Var kSetFailed = PP_MakeBool(PP_FALSE);
+const PP_Var kCallFailed = PP_MakeBool(PP_FALSE);
 
 // __moduleReady is required for tests that use the nacl_js_lib.js harness.
 // This property really should go in the ppruntime somehow.  It used to be
@@ -217,7 +217,7 @@ TestObject::TestObject()
       prop_double_(PP_MakeNull()),
       prop_string_(PP_MakeNull()),
       prop_object_(PP_MakeNull()),
-      prop_module_ready_(PP_MakeBool(true)) {
+      prop_module_ready_(PP_MakeBool(PP_TRUE)) {
   if (class_is_initialized) {
     return;
   }
@@ -575,7 +575,7 @@ PP_Var TestObject::window_location(uint32_t argc,
     *exception = kCallFailed;
     return kCallFailed;
   }
-  return PP_MakeBool(true);
+  return PP_MakeBool(PP_TRUE);
 }
 
 PP_Var TestObject::hello_world(uint32_t argc, PP_Var* argv, PP_Var* exception) {
@@ -647,7 +647,7 @@ static const PPP_Class_Deprecated object_class = {
 
 // PPP_Instance functions.
 
-bool DidCreate(PP_Instance instance,
+PP_Bool DidCreate(PP_Instance instance,
                uint32_t argc,
                const char* argn[],
                const char* argv[]) {
@@ -655,7 +655,7 @@ bool DidCreate(PP_Instance instance,
   for (uint32_t i = 0; i < argc; ++i) {
     printf("  arg[%"NACL_PRIu32"]: '%s' = '%s'\n", i, argn[i], argv[i]);
   }
-  return true;
+  return PP_TRUE;
 }
 
 void DidDestroy(PP_Instance instance) {

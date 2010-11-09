@@ -20,9 +20,9 @@ PP_Resource Create(PP_Resource file_system,
   return kInvalidResourceId;
 }
 
-bool IsFileRef(PP_Resource resource) {
+PP_Bool IsFileRef(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
 PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref) {
@@ -46,7 +46,7 @@ PP_Resource GetParent(PP_Resource file_ref) {
 }
 
 int32_t MakeDirectory(PP_Resource directory_ref,
-                      bool make_ancestors,
+                      PP_Bool make_ancestors,
                       struct PP_CompletionCallback callback) {
   UNREFERENCED_PARAMETER(directory_ref);
   UNREFERENCED_PARAMETER(make_ancestors);

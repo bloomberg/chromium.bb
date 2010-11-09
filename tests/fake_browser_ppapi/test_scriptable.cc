@@ -27,7 +27,7 @@
 namespace {
 
 // Some canonical constants used to initialize properties of various types.
-const bool kBoolValue = true;
+const PP_Bool kBoolValue = PP_TRUE;
 const int32_t kInt32Value = 144000;
 const double kDoubleValue = 3.1415;
 const char* const kStringValue = "hello, world";
@@ -115,39 +115,39 @@ PP_Var PropertyValue(PP_VarType type) {
 }
 
 // Checks that the var matches the canonical var for the specified type.
-bool PropertyIsValidValue(PP_VarType type, PP_Var value) {
+PP_Bool PropertyIsValidValue(PP_VarType type, PP_Var value) {
   switch (type) {
     case PP_VARTYPE_UNDEFINED:
-      return (value.type == PP_VARTYPE_UNDEFINED);
+      return static_cast<PP_Bool>(value.type == PP_VARTYPE_UNDEFINED);
     case PP_VARTYPE_NULL:
-      return (value.type == PP_VARTYPE_NULL);
+      return static_cast<PP_Bool>(value.type == PP_VARTYPE_NULL);
     case PP_VARTYPE_BOOL:
-      return ((value.type == PP_VARTYPE_BOOL) &&
+      return static_cast<PP_Bool>((value.type == PP_VARTYPE_BOOL) &&
               (value.value.as_bool == kBoolValue));
     case PP_VARTYPE_INT32:
-      return ((value.type == PP_VARTYPE_INT32) &&
+      return static_cast<PP_Bool>((value.type == PP_VARTYPE_INT32) &&
               (value.value.as_int == kInt32Value));
     case PP_VARTYPE_DOUBLE:
-      return ((value.type == PP_VARTYPE_DOUBLE) &&
+      return static_cast<PP_Bool>((value.type == PP_VARTYPE_DOUBLE) &&
               (value.value.as_double == kDoubleValue));
     case PP_VARTYPE_STRING: {
       if (value.type != PP_VARTYPE_STRING) {
-        return false;
+        return PP_FALSE;
       }
       uint32_t ret_length;
       const char* ret_str = g_var_interface->VarToUtf8(value, &ret_length);
       if (ret_length == 0 || ret_str == NULL) {
-        return false;
+        return PP_FALSE;
       }
-      return strcmp(ret_str, kStringValue) == 0;
+      return static_cast<PP_Bool>(strcmp(ret_str, kStringValue) == 0);
     }
     case PP_VARTYPE_OBJECT: {
       // TODO(sehr,polina): check that the value is correct also.  This is
       // quite complicated with proxies-to-proxies at the moment.
-      return (value.type == PP_VARTYPE_OBJECT);
+      return static_cast<PP_Bool>(value.type == PP_VARTYPE_OBJECT);
     }
   }
-  return false;
+  return PP_FALSE;
 }
 
 // Test that the "prop<Type>" property is present on object.

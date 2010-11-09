@@ -25,9 +25,9 @@ PP_Resource Create(PP_Instance instance) {
   return kInvalidResourceId;
 }
 
-bool IsURLLoader(PP_Resource resource) {
+PP_Bool IsURLLoader(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
 int32_t Open(PP_Resource loader,
@@ -46,22 +46,22 @@ int32_t FollowRedirect(PP_Resource loader,
   return PP_ERROR_BADRESOURCE;
 }
 
-bool GetUploadProgress(PP_Resource loader,
+PP_Bool GetUploadProgress(PP_Resource loader,
                        int64_t* bytes_sent,
                        int64_t* total_bytes_to_be_sent) {
   UNREFERENCED_PARAMETER(loader);
   UNREFERENCED_PARAMETER(bytes_sent);
   UNREFERENCED_PARAMETER(total_bytes_to_be_sent);
-  return false;
+  return PP_FALSE;
 }
 
-bool GetDownloadProgress(PP_Resource loader,
+PP_Bool GetDownloadProgress(PP_Resource loader,
                          int64_t* bytes_received,
                          int64_t* total_bytes_to_be_received) {
   UNREFERENCED_PARAMETER(loader);
   UNREFERENCED_PARAMETER(bytes_received);
   UNREFERENCED_PARAMETER(total_bytes_to_be_received);
-  return false;
+  return PP_FALSE;
 }
 
 PP_Resource GetResponseInfo(PP_Resource loader) {

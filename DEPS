@@ -7,14 +7,13 @@ vars = {
   "arm_toolchain_version": "3624",
 
   "breakpad_rev": "452",
-  "chrome_rev": "61644",
+  "chrome_rev": "65416",
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "805",
   "gtest_rev": "267",
   "tools_rev": "3082",
   "python_rev": "22967",
   "wix_rev": "153",
-  "ppapi_rev": "304",
   "lcov_rev": "54822",
 }
 
@@ -72,7 +71,7 @@ deps = {
   "gpu/command_buffer":
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
   "ppapi":
-    "http://ppapi.googlecode.com/svn/trunk@" +  Var("ppapi_rev"),
+    Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
 }

@@ -25,25 +25,25 @@ namespace ppapi_proxy {
 namespace {
 PP_Resource Create(PP_Module module,
                    const struct PP_Size* size,
-                   bool is_always_opaque) {
+                   PP_Bool is_always_opaque) {
   UNREFERENCED_PARAMETER(module);
   UNREFERENCED_PARAMETER(size);
   UNREFERENCED_PARAMETER(is_always_opaque);
   return kInvalidResourceId;
 }
 
-bool IsGraphics2D(PP_Resource resource) {
+PP_Bool IsGraphics2D(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
-bool Describe(PP_Resource graphics_2d,
+PP_Bool Describe(PP_Resource graphics_2d,
               struct PP_Size* size,
-              bool* is_always_opaque) {
+              PP_Bool* is_always_opaque) {
   UNREFERENCED_PARAMETER(graphics_2d);
   UNREFERENCED_PARAMETER(size);
   UNREFERENCED_PARAMETER(is_always_opaque);
-  return false;
+  return PP_FALSE;
 }
 
 void PaintImageData(PP_Resource graphics_2d,

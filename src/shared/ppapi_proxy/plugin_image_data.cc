@@ -22,15 +22,15 @@ PP_ImageDataFormat GetNativeImageDataFormat() {
   return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 }
 
-bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
+PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
   UNREFERENCED_PARAMETER(format);
-  return false;
+  return PP_FALSE;
 }
 
 PP_Resource Create(PP_Module module,
                    PP_ImageDataFormat format,
                    const struct PP_Size* size,
-                   bool init_to_zero) {
+                   PP_Bool init_to_zero) {
   UNREFERENCED_PARAMETER(module);
   UNREFERENCED_PARAMETER(format);
   UNREFERENCED_PARAMETER(size);
@@ -38,16 +38,16 @@ PP_Resource Create(PP_Module module,
   return kInvalidResourceId;
 }
 
-bool IsImageData(PP_Resource resource) {
+PP_Bool IsImageData(PP_Resource resource) {
   UNREFERENCED_PARAMETER(resource);
-  return false;
+  return PP_FALSE;
 }
 
-bool Describe(PP_Resource resource,
+PP_Bool Describe(PP_Resource resource,
               struct PP_ImageDataDesc* desc) {
   UNREFERENCED_PARAMETER(resource);
   UNREFERENCED_PARAMETER(desc);
-  return false;
+  return PP_FALSE;
 }
 
 void* Map(PP_Resource resource) {

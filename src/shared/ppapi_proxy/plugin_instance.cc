@@ -32,18 +32,19 @@ static PP_Var GetOwnerElementObjectThunk(PP_Instance instance) {
   return GetInstancePointer(instance)->GetOwnerElementObject();
 }
 
-static bool BindGraphicsThunk(PP_Instance instance,
+static PP_Bool BindGraphicsThunk(PP_Instance instance,
                               PP_Resource device) {
   DebugPrintf("PluginInstance::BindGraphicsDeviceContext: instance=%"
               NACL_PRIx64 ", device=%" NACL_PRIu64 "\n",
               instance, device);
-  return GetInstancePointer(instance)->BindGraphics(device);
+  return static_cast<PP_Bool>
+      (GetInstancePointer(instance)->BindGraphics(device));
 }
 
-static bool IsFullFrameThunk(PP_Instance instance) {
+static PP_Bool IsFullFrameThunk(PP_Instance instance) {
   DebugPrintf("PluginInstance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
               instance);
-  return GetInstancePointer(instance)->IsFullFrame();
+  return static_cast<PP_Bool>(GetInstancePointer(instance)->IsFullFrame());
 }
 
 static PP_Var ExecuteScriptThunk(PP_Instance instance,
