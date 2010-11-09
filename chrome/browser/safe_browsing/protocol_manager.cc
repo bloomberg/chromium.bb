@@ -76,7 +76,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
   next_update_sec_ = base::RandInt(60, kSbTimerStartIntervalSec);
 
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid())
+  if (!version_info.is_valid() || version_info.Version().empty())
     version_ = "0.1";
   else
     version_ = version_info.Version();

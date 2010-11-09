@@ -128,11 +128,10 @@ class SafeBrowsingTestServer {
         FILE_PATH_LITERAL("safebrowsing_test_server.py"));
 
     FilePath pyproto_code_dir;
-    if (!PathService::Get(base::DIR_EXE, &pyproto_code_dir)) {
-      LOG(ERROR) << "Failed to get DIR_EXE";
+    if (!GetPyProtoPath(&pyproto_code_dir)) {
+      LOG(ERROR) << "Failed to get generated python protobuf dir";
       return false;
     }
-    pyproto_code_dir = pyproto_code_dir.Append(FILE_PATH_LITERAL("pyproto"));
     AppendToPythonPath(pyproto_code_dir);
     pyproto_code_dir = pyproto_code_dir.Append(FILE_PATH_LITERAL("google"));
     AppendToPythonPath(pyproto_code_dir);
@@ -520,11 +519,6 @@ class SafeBrowsingServiceTestHelper
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTestHelper);
 };
 
-
-#if defined(OS_MACOSX)
-// TODO(lzheng): http://crbug.com/62415, can not start on MacOS.
-#define SafeBrowsingSystemTest DISABLED_SafeBrowsingSystemTest
-#endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   LOG(INFO) << "Start test";
   const char* server_host = SafeBrowsingTestServer::Host();
@@ -633,10 +627,10 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   // the latest data in the next revision.
 
   // Verifies with server if test is done and waits till server responses.
-  // EXPECT_EQ(URLRequestStatus::SUCCESS,
-  //           safe_browsing_helper->VerifyTestComplete(server_host,
-  //                                                    server_port,
-  //                                                    last_step));
-  // EXPECT_EQ("yes", safe_browsing_helper->response_data());
+  //  EXPECT_EQ(URLRequestStatus::SUCCESS,
+  //            safe_browsing_helper->VerifyTestComplete(server_host,
+  //                                                     server_port,
+  //                                                     last_step));
+  //  EXPECT_EQ("yes", safe_browsing_helper->response_data());
   test_server.Stop();
 }
