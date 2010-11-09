@@ -90,15 +90,18 @@ int GpuMain(const MainFunctionParams& parameters) {
   SetGpuX11ErrorHandlers();
 #endif
 
+  // On Linux the GpuThread constructor performs certain
+  // initialization that is required before accessing the default X
+  // display.
+  GpuProcess gpu_process;
+  GpuThread* gpu_thread = new GpuThread;
+  gpu_process.set_main_thread(gpu_thread);
+
   // Load the GL implementation and locate the bindings before starting as
   // this can take a lot of time and the GPU watchdog might terminate the GPU
   // process.
   if (!gfx::GLContext::InitializeOneOff())
     return EXIT_FAILURE;
-
-  GpuProcess gpu_process;
-  GpuThread* gpu_thread = new GpuThread;
-  gpu_process.set_main_thread(gpu_thread);
 
   // Only enable this experimental feaure for a subset of users.
   scoped_refptr<base::FieldTrial> watchdog_trial(
