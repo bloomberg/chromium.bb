@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/thread_restrictions.h"
 #include "base/time.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,6 +22,9 @@ using base::win::RegKey;
 namespace {
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
+  // The registry functions below will end up going to disk.  Do this on another
+  // thread to avoid slowing the IO thread.  http://crbug.com/62121
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
