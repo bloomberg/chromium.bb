@@ -79,6 +79,9 @@ class OmniBoxUsageObserver : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
+    // Needs to be evaluated. See http://crbug.com/62328.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     // Try to record event now, else set the flag to try later when we
     // attempt the ping.
     if (!RLZTracker::RecordProductEvent(rlz_lib::CHROME,
@@ -132,6 +135,9 @@ class DailyPingTask : public Task {
  private:
   // Causes a ping to the server using WinInet.
   static void _cdecl PingNow(void*) {
+    // Needs to be evaluated. See http://crbug.com/62328.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     std::wstring lang;
     GoogleUpdateSettings::GetLanguage(&lang);
     if (lang.empty())
@@ -162,7 +168,7 @@ class DelayedInitTask : public Task {
   virtual ~DelayedInitTask() {
   }
   virtual void Run() {
-    // Needs to be evaluated. See http://crbug.com/62328/.
+    // Needs to be evaluated. See http://crbug.com/62328.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
 
     // For non-interactive tests we don't do the rest of the initialization
