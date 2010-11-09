@@ -94,7 +94,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     navigation_state->set_finish_load_time(finish_all_loads);
   } else {
     DCHECK(!abandoned_page);  // How can the doc have finished but not the page?
-    if (!abandoned_page)
+    if (abandoned_page)
       return;  // Don't try to record a stat which is broken.
   }
 
