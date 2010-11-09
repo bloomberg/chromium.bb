@@ -136,6 +136,7 @@
     # Note on Win64 targets: targets that end with win64 be used
     # on 64-bit Windows only. Targets that end with nacl_win64 should be used
     # by Native Client only.
+    'app/policy/policy_templates.gypi',
     'chrome_browser.gypi',
     'chrome_common.gypi',
     'chrome_dll.gypi',
@@ -1818,101 +1819,6 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="win" or OS=="mac" or OS=="linux"',
-      { 'targets': [
-        {
-          # policy_templates has different inputs and outputs, so it can't use
-          # the rules of chrome_strings
-          'target_name': 'policy_templates',
-          'type': 'none',
-          'variables': {
-            'grd_path': 'app/policy/policy_templates.grd',
-            'template_files': [
-              '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(grd_path))'
-            ]
-          },
-          'actions': [
-            {
-              'action_name': 'policy_templates',
-              'variables': {
-                'conditions': [
-                  ['branding=="Chrome"', {
-                    # TODO(mmoss) The .grd files look for _google_chrome, but for
-                    # consistency they should look for GOOGLE_CHROME_BUILD like C++.
-                    # Clean this up when Windows moves to gyp.
-                    'chrome_build': '_google_chrome',
-                  }, {  # else: branding!="Chrome"
-                    'chrome_build': '_chromium',
-                  }],
-                ],
-              },
-              'inputs': [
-                '<!@(<(grit_info_cmd) --inputs <(grd_path))',
-              ],
-              'outputs': [
-                '<@(template_files)'
-              ],
-              'action': [
-                '<@(grit_cmd)',
-                '-i', '<(grd_path)', 'build',
-                '-o', '<(grit_out_dir)',
-                '-D', '<(chrome_build)'
-              ],
-              'conditions': [
-                ['chromeos==1', {
-                  'action': ['-D', 'chromeos'],
-                }],
-                ['use_titlecase_in_grd_files==1', {
-                  'action': ['-D', 'use_titlecase'],
-                }],
-                ['OS == "mac"', {
-                  'action': ['-D', 'mac_bundle_id=<(mac_bundle_id)'],
-                }],
-              ],
-              'message': 'Generating policy templates from <(grd_path)',
-            },
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '<(grit_out_dir)',
-            ],
-          },
-          'conditions': [
-            ['OS=="win"', {
-              'actions': [
-                {
-                  # Add all the templates generated at the previous step into
-                  # a zip archive.
-                  'action_name': 'pack_templates',
-                  'variables': {
-                    'zip_script':
-                        'tools/build/win/make_zip_with_relative_entries.py'
-                  },
-                  'inputs': [
-                    '<@(template_files)',
-                    '<(zip_script)'
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/policy_templates.zip'
-                  ],
-                  'action': [
-                    'python',
-                    '<(zip_script)',
-                    '<@(_outputs)',
-                    '<(grit_out_dir)/app/policy',
-                    '<@(template_files)'
-                  ],
-                  'message': 'Packing generated templates into <(_outputs)',
-                }
-              ]
-            }],
-            ['OS=="win"', {
-              'dependencies': ['../build/win/system.gyp:cygwin'],
-            }],
-          ],
-        },
-      ]},  # 'targets'
-    ],  # OS=="win" or OS=="mac" or OS=="linux"
     ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
       'targets': [{
         'target_name': 'packed_resources',
