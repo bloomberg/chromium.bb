@@ -74,8 +74,12 @@ class RenderbufferManager {
     GLenum internal_format_;
   };
 
-  RenderbufferManager();
+  explicit RenderbufferManager(GLint max_renderbuffer_size);
   ~RenderbufferManager();
+
+  GLint max_renderbuffer_size() const {
+    return max_renderbuffer_size_;
+  }
 
   // Must call before destruction.
   void Destroy(bool have_context);
@@ -93,6 +97,8 @@ class RenderbufferManager {
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
  private:
+  GLint max_renderbuffer_size_;
+
   // Info for each renderbuffer in the system.
   // TODO(gman): Choose a faster container.
   typedef std::map<GLuint, RenderbufferInfo::Ref> RenderbufferInfoMap;

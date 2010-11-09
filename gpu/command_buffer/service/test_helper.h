@@ -18,6 +18,7 @@ class TestHelper {
   static const GLuint kServiceDefaultTexture2dId = 703;
   static const GLuint kServiceDefaultTextureCubemapId = 704;
 
+  static const GLint kMaxRenderbufferSize = 1024;
   static const GLint kMaxTextureSize = 2048;
   static const GLint kMaxCubeMapTextureSize = 256;
   static const GLint kNumVertexAttribs = 16;

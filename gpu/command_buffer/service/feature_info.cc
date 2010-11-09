@@ -261,7 +261,8 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
 
   // Check for multisample support
   if (ext.Desire("GL_CHROMIUM_framebuffer_multisample") &&
-      ext.Have("GL_EXT_framebuffer_multisample")) {
+      (ext.Have("GL_EXT_framebuffer_multisample") ||
+       ext.Have("GL_ANGLE_framebuffer_multisample"))) {
     feature_flags_.chromium_framebuffer_multisample = true;
     validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
     validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);

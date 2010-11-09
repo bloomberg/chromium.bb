@@ -49,9 +49,12 @@ bool ContextGroup::Initialize(const char* allowed_features) {
     return false;
   }
 
+  GLint max_renderbuffer_size = 0;
+  glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &max_renderbuffer_size);
+
   buffer_manager_.reset(new BufferManager());
   framebuffer_manager_.reset(new FramebufferManager());
-  renderbuffer_manager_.reset(new RenderbufferManager());
+  renderbuffer_manager_.reset(new RenderbufferManager(max_renderbuffer_size));
   shader_manager_.reset(new ShaderManager());
   program_manager_.reset(new ProgramManager());
 
@@ -72,8 +75,8 @@ bool ContextGroup::Initialize(const char* allowed_features) {
     return false;
   }
 
-  GLint max_texture_size;
-  GLint max_cube_map_texture_size;
+  GLint max_texture_size = 0;
+  GLint max_cube_map_texture_size = 0;
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
   glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_texture_size);
   texture_manager_.reset(new TextureManager(max_texture_size,

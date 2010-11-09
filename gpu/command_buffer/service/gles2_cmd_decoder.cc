@@ -2770,13 +2770,13 @@ bool GLES2DecoderImpl::GetHelper(
     case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
       *num_written = 1;
       if (params) {
-        *params = GL_RGBA;  // TODO(gman): get correct format.
+        *params = GL_RGBA;  // We don't support other formats.
       }
       return true;
     case GL_IMPLEMENTATION_COLOR_READ_TYPE:
       *num_written = 1;
       if (params) {
-        *params = GL_UNSIGNED_BYTE;  // TODO(gman): get correct type.
+        *params = GL_UNSIGNED_BYTE;  // We don't support other types.
       }
       return true;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
@@ -2797,6 +2797,15 @@ bool GLES2DecoderImpl::GetHelper(
         *params = group_->max_vertex_uniform_vectors();
       }
       return true;
+    case GL_MAX_VIEWPORT_DIMS:
+      if (offscreen_target_frame_buffer_.get()) {
+        *num_written = 2;
+        if (params) {
+          params[0] = renderbuffer_manager()->max_renderbuffer_size();
+          params[1] = renderbuffer_manager()->max_renderbuffer_size();
+        }
+        return true;
+      }
     }
   }
   switch (pname) {
@@ -3454,8 +3463,13 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     SetGLError(GL_INVALID_OPERATION,
                "glBlitFramebufferEXT: function not available");
   }
-  glBlitFramebufferEXT(
-    srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  if (IsAngle()) {
+    glBlitFramebufferANGLE(
+        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  } else {
+    glBlitFramebufferEXT(
+        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  }
 }
 
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
