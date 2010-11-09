@@ -1843,7 +1843,7 @@
         }, { # else: toolkit_views == 0
           'sources/': [
             ['exclude', '^browser/ui/views/'],
-            ['exclude', '^../ui/views/'],
+            ['exclude', '^../views/'],
           ],
         }],
       ],
