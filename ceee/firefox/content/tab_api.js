@@ -64,9 +64,10 @@ CEEE_tabs_internal_.buildTabValue = function(mainBrowser, tab, url_opt) {
   ret.id = CEEE_mozilla_tabs.getTabId(tab);
   ret.index = index;
   ret.windowId = CEEE_mozilla_windows.getWindowId(window);
+  ret.selected = (tab == mainBrowser.selectedTab);
+  ret.pinned = false;
   ret.url = url_opt || browser.currentURI.asciiSpec;
   ret.title = browser.contentTitle;
-  ret.selected = (tab == mainBrowser.selectedTab);
   ret.incognito = CEEE_globals.privateBrowsingService.isInPrivateBrowsing;
 
   return ret;
