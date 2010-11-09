@@ -1,6 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "chrome_dll_resource.h"
+#include "chrome_command_ids.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
