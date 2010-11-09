@@ -7,8 +7,17 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/logging.h"
+#include "base/task.h"
 #include "net/base/io_buffer.h"
 #include "third_party/libjingle/source/talk/base/byteorder.h"
+
+namespace {
+
+void DeleteMessage(google::protobuf::MessageLite* message) {
+  delete message;
+}
+
+}  // namespace
 
 namespace remoting {
 
@@ -23,6 +32,10 @@ scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
   msg.SerializeWithCachedSizesToArray(
       reinterpret_cast<uint8*>(buffer->data()) + kExtraBytes);
   return buffer;
+}
+
+Task* NewDeleteMessageTask(google::protobuf::MessageLite* message) {
+  return NewRunnableFunction(&DeleteMessage, message);
 }
 
 }  // namespace remoting

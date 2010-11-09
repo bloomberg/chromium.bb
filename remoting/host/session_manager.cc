@@ -11,8 +11,11 @@
 #include "base/stl_util-inl.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
+#include "remoting/proto/control.pb.h"
+#include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/message_decoder.h"
+#include "remoting/protocol/util.h"
 
 using remoting::protocol::ConnectionToClient;
 
@@ -352,7 +355,12 @@ void SessionManager::DoSendInit(scoped_refptr<ConnectionToClient> connection,
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
   // Sends the connection init information.
-  connection->SendInitClientMessage(width, height);
+  protocol::NotifyResolutionRequest* message =
+      new protocol::NotifyResolutionRequest();
+  message->set_width(width);
+  message->set_height(height);
+  connection->client_stub()->NotifyResolution(message,
+                                              NewDeleteMessageTask(message));
 }
 
 void SessionManager::DoAddClient(scoped_refptr<ConnectionToClient> connection) {

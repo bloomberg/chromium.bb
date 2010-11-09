@@ -6,7 +6,7 @@
 
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
-#include "remoting/protocol/util.h"
+#include "remoting/protocol/client_control_sender.h"
 
 // TODO(hclam): Remove this header once MessageDispatcher is used.
 #include "remoting/base/multiple_array_input_stream.h"
@@ -43,20 +43,6 @@ protocol::Session* ConnectionToClient::session() {
   return session_;
 }
 
-void ConnectionToClient::SendInitClientMessage(int width, int height) {
-  DCHECK_EQ(loop_, MessageLoop::current());
-
-  // If we are disconnected then return.
-  if (!session_)
-    return;
-
-  ChromotingHostMessage msg;
-  msg.mutable_init_client()->set_width(width);
-  msg.mutable_init_client()->set_height(height);
-  DCHECK(msg.IsInitialized());
-  control_writer_.SendMessage(msg);
-}
-
 void ConnectionToClient::SendVideoPacket(const VideoPacket& packet) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
@@ -87,7 +73,7 @@ ConnectionToClient::ConnectionToClient() {}
 void ConnectionToClient::OnSessionStateChange(
     protocol::Session::State state) {
   if (state == protocol::Session::CONNECTED) {
-    control_writer_.Init(session_->control_channel());
+    client_stub_.reset(new ClientControlSender(session_->control_channel()));
     event_reader_.Init<ChromotingClientMessage>(
         session_->event_channel(),
         NewCallback(this, &ConnectionToClient::OnMessageReceived));

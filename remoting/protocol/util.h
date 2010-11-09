@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This file defines utility methods used for encoding and decoding the protocol
+// used in Chromoting.
+
 #ifndef REMOTING_PROTOCOL_UTIL_H_
 #define REMOTING_PROTOCOL_UTIL_H_
 
 #include "google/protobuf/message_lite.h"
 #include "net/base/io_buffer.h"
-// TODO(hclam): Should not include internal.pb.h.
-#include "remoting/proto/internal.pb.h"
 
-// This file defines utility methods used for encoding and decoding the protocol
-// used in Chromoting.
+class Task;
+
 namespace remoting {
 
 // Serialize the Protocol Buffer message and provide sufficient framing for
@@ -20,6 +21,9 @@ namespace remoting {
 // decode the message.
 scoped_refptr<net::IOBufferWithSize> SerializeAndFrameMessage(
     const google::protobuf::MessageLite& msg);
+
+// Create a runnable task that deletes a message.
+Task* NewDeleteMessageTask(google::protobuf::MessageLite* message);
 
 }  // namespace remoting
 

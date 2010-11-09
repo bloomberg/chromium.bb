@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/stream_writer.h"
@@ -19,6 +18,8 @@
 
 namespace remoting {
 namespace protocol {
+
+class ClientStub;
 
 // This class represents a remote viewer connected to the chromoting host
 // through a libjingle connection. A viewer object is responsible for sending
@@ -63,9 +64,6 @@ class ConnectionToClient :
   // Returns the connection in use.
   virtual protocol::Session* session();
 
-  // Send information to the client for initialization.
-  virtual void SendInitClientMessage(int width, int height);
-
   // Send encoded update stream data to the viewer.
   virtual void SendVideoPacket(const VideoPacket& packet);
 
@@ -80,6 +78,9 @@ class ConnectionToClient :
   //
   // After this method is called all the send method calls will be ignored.
   virtual void Disconnect();
+
+  // Return pointer to ClientStub.
+  virtual ClientStub* client_stub() { return client_stub_.get(); }
 
  protected:
   // Protected constructor used by unit test.
@@ -103,9 +104,11 @@ class ConnectionToClient :
   // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<protocol::Session> session_;
 
-  ControlStreamWriter control_writer_;
   MessageReader event_reader_;
   scoped_ptr<VideoWriter> video_writer_;
+
+  // ClientStub for sending messages to the client.
+  scoped_ptr<ClientStub> client_stub_;
 
   // The message loop that this object runs on.
   MessageLoop* loop_;

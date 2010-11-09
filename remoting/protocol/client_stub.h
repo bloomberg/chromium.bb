@@ -24,7 +24,7 @@ class ClientStub {
   ClientStub() {}
   virtual ~ClientStub() {}
 
-  virtual void NotifyResolution(const NotifyResolutionRequest& msg,
+  virtual void NotifyResolution(const NotifyResolutionRequest* msg,
                                 Task* done) = 0;
 
  private:
