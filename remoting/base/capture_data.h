@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "media/base/video_frame.h"
 #include "remoting/base/types.h"
-#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
@@ -29,7 +29,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   CaptureData(const DataPlanes &data_planes,
               int width,
               int height,
-              PixelFormat format);
+              media::VideoFrame::Format format);
 
   // Get the data_planes data of the last capture.
   const DataPlanes& data_planes() const { return data_planes_; }
@@ -45,7 +45,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   int height() const { return height_; }
 
   // Get the pixel format of the image captured.
-  PixelFormat pixel_format() const { return pixel_format_; }
+  media::VideoFrame::Format pixel_format() const { return pixel_format_; }
 
   // Mutating methods.
   InvalidRects& mutable_dirty_rects() { return dirty_rects_; }
@@ -55,7 +55,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   InvalidRects dirty_rects_;
   int width_;
   int height_;
-  PixelFormat pixel_format_;
+  media::VideoFrame::Format pixel_format_;
 
   friend class base::RefCountedThreadSafe<CaptureData>;
   virtual ~CaptureData();

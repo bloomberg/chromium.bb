@@ -19,23 +19,6 @@ message InitClientMessage {
   required int32 height = 2;
 }
 
-// Identifies the pixel format.
-// Note that this list should match exactly the same as
-// media::VideoFrame::Format in media/base/video_frame.h.
-enum PixelFormat {
-  PIXEL_FORMAT_INVALID = 0;
-  PIXEL_FORMAT_RGB555 = 1;
-  PIXEL_FORMAT_RGB565 = 2;
-  PIXEL_FORMAT_RGB24 = 3;
-  PIXEL_FORMAT_RGB32 = 4;
-  PIXEL_FORMAT_RGBA = 5; 
-  PIXEL_FORMAT_YV12 = 6;
-  PIXEL_FORMAT_YV16 = 7;
-  PIXEL_FORMAT_NV12 = 8;
-  PIXEL_FORMAT_EMPTY = 9;
-  PIXEL_FORMAT_ASCII = 10;
-}
-
 // TODO(ajwong): Determine if these fields should be optional or required.
 message VideoPacketFormat {
   // Identifies how the image was encoded.
@@ -56,9 +39,6 @@ message VideoPacketFormat {
 
   // The encoding used for this image update.
   optional Encoding encoding = 5 [default = ENCODING_INVALID];
-
-  // The pixel format of this image.
-  optional PixelFormat pixel_format = 6 [default = PIXEL_FORMAT_RGB24];
 }
 
 message VideoPacket {

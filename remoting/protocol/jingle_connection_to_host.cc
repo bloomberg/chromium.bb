@@ -64,8 +64,10 @@ void JingleConnectionToHost::Disconnect() {
   }
 }
 
-void JingleConnectionToHost::OnControlMessage(ChromotingHostMessage* msg) {
-  event_callback_->HandleMessage(this, msg);
+void JingleConnectionToHost::OnControlMessage(ControlMessage* msg) {
+  // TODO(sergeyu): Remove this method and pass ClientStub to the control
+  // stream dispatcher.
+  delete msg;
 }
 
 void JingleConnectionToHost::InitSession() {
@@ -112,6 +114,10 @@ void JingleConnectionToHost::OnServerClosed() {
   }
 }
 
+const SessionConfig* JingleConnectionToHost::config() {
+  return session_->config();
+}
+
 void JingleConnectionToHost::SendEvent(const ChromotingClientMessage& msg) {
   // This drops the message if we are not connected yet.
   event_writer_.SendMessage(msg);
@@ -156,7 +162,7 @@ void JingleConnectionToHost::OnSessionStateChange(
 
     case protocol::Session::CONNECTED:
       // Initialize reader and writer.
-      control_reader_.Init<ChromotingHostMessage>(
+      control_reader_.Init<ControlMessage>(
           session_->control_channel(),
           NewCallback(this, &JingleConnectionToHost::OnControlMessage));
       event_writer_.Init(session_->event_channel());

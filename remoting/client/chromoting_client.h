@@ -19,9 +19,7 @@ class MessageLoop;
 
 namespace remoting {
 
-class ChromotingHostMessage;
 class ClientContext;
-class InitClientMessage;
 class InputHandler;
 class RectangleUpdateDecoder;
 
@@ -55,8 +53,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   virtual void SetViewport(int x, int y, int width, int height);
 
   // ConnectionToHost::HostEventCallback implementation.
-  virtual void HandleMessage(protocol::ConnectionToHost* conn,
-                             ChromotingHostMessage* messages);
   virtual void OnConnectionOpened(protocol::ConnectionToHost* conn);
   virtual void OnConnectionClosed(protocol::ConnectionToHost* conn);
   virtual void OnConnectionFailed(protocol::ConnectionToHost* conn);
@@ -75,6 +71,9 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   MessageLoop* message_loop();
 
+  // Initializes connection.
+  void Initialize();
+
   // Convenience method for modifying the state on this object's message loop.
   void SetConnectionState(ConnectionState s);
 
@@ -83,9 +82,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   void DispatchPacket();
 
   void OnPacketDone();
-
-  // Handles for chromotocol messages.
-  void InitClient(const InitClientMessage& msg);
 
   // The following are not owned by this class.
   ClientConfig config_;

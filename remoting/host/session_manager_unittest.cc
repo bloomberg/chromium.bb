@@ -7,6 +7,7 @@
 #include "remoting/base/mock_objects.h"
 #include "remoting/host/mock_objects.h"
 #include "remoting/host/session_manager.h"
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +23,7 @@ namespace remoting {
 
 static const int kWidth = 640;
 static const int kHeight = 480;
-static const PixelFormat kFormat = PIXEL_FORMAT_RGB32;
+static const media::VideoFrame::Format kFormat = media::VideoFrame::RGB32;
 static const VideoPacketFormat::Encoding kEncoding =
     VideoPacketFormat::ENCODING_VERBATIM;
 
@@ -91,7 +92,6 @@ TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
   // Add the mock client connection to the session.
   EXPECT_CALL(*capturer_, width()).WillRepeatedly(Return(kWidth));
   EXPECT_CALL(*capturer_, height()).WillRepeatedly(Return(kHeight));
-  EXPECT_CALL(*connection_, SendInitClientMessage(kWidth, kHeight));
   record_->AddConnection(connection_);
 
   // First the capturer is called.

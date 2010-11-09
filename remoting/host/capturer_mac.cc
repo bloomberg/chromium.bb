@@ -13,9 +13,9 @@ namespace remoting {
 CapturerMac::CapturerMac() : cgl_context_(NULL) {
   // TODO(dmaclach): move this initialization out into session_manager,
   // or at least have session_manager call into here to initialize it.
-  CGError err
-      = CGRegisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback,
-                                        this);
+  CGError err =
+      CGRegisterScreenRefreshCallback(CapturerMac::ScreenRefreshCallback,
+                                      this);
   DCHECK_EQ(err, kCGErrorSuccess);
   err = CGScreenRegisterMoveCallback(CapturerMac::ScreenUpdateMoveCallback,
                                      this);
@@ -47,7 +47,6 @@ void CapturerMac::ScreenConfigurationChanged() {
   width_ = CGDisplayPixelsWide(mainDevice);
   height_ = CGDisplayPixelsHigh(mainDevice);
   bytes_per_row_ = width_ * sizeof(uint32_t);
-  pixel_format_ = PIXEL_FORMAT_RGB32;
   size_t buffer_size = height() * bytes_per_row_;
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].reset(new uint8[buffer_size]);

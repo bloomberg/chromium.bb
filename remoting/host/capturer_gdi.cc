@@ -57,7 +57,6 @@ void CapturerGdi::ScreenConfigurationChanged() {
   int rounded_width = (width_ + 3) & (~3);
 
   // Dimensions of screen.
-  pixel_format_ = PIXEL_FORMAT_RGB32;
   bytes_per_row_ = rounded_width * kBytesPerPixel;
 
   // Create a differ for this screen size.

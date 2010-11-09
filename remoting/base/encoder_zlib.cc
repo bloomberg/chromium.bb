@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "gfx/rect.h"
-#include "media/base/data_buffer.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/compressor_zlib.h"
 #include "remoting/base/util.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
@@ -26,7 +26,7 @@ EncoderZlib::~EncoderZlib() {}
 void EncoderZlib::Encode(scoped_refptr<CaptureData> capture_data,
                          bool key_frame,
                          DataAvailableCallback* data_available_callback) {
-  CHECK(capture_data->pixel_format() == PIXEL_FORMAT_RGB32)
+  CHECK(capture_data->pixel_format() == media::VideoFrame::RGB32)
       << "Zlib Encoder only works with RGB32. Got "
       << capture_data->pixel_format();
   capture_data_ = capture_data;
@@ -118,7 +118,6 @@ void EncoderZlib::PrepareUpdateStart(const gfx::Rect& rect,
   format->set_width(rect.width());
   format->set_height(rect.height());
   format->set_encoding(VideoPacketFormat::ENCODING_ZLIB);
-  format->set_pixel_format(capture_data_->pixel_format());
 }
 
 uint8* EncoderZlib::GetOutputBuffer(VideoPacket* packet, size_t size) {

@@ -6,9 +6,10 @@
 
 #include "base/logging.h"
 #include "gfx/rect.h"
-#include "media/base/data_buffer.h"
+#include "net/base/io_buffer.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/util.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
@@ -16,8 +17,6 @@ namespace remoting {
 // TODO(garykac): 10* is added to ensure that rects fit in a single packet.
 //                Add support for splitting across packets and remove the 10*.
 static const int kPacketSize = 10 * 1024 * 1024;
-
-using media::DataBuffer;
 
 EncoderVerbatim::EncoderVerbatim()
     : packet_size_(kPacketSize) {
@@ -87,7 +86,6 @@ void EncoderVerbatim::PrepareUpdateStart(const gfx::Rect& rect,
   format->set_width(rect.width());
   format->set_height(rect.height());
   format->set_encoding(VideoPacketFormat::ENCODING_VERBATIM);
-  format->set_pixel_format(capture_data_->pixel_format());
 }
 
 uint8* EncoderVerbatim::GetOutputBuffer(VideoPacket* packet, size_t size) {

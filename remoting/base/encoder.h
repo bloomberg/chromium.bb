@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/data_buffer.h"
-// TODO(hclam): Should not depend on internal.pb.h.
-#include "remoting/proto/internal.pb.h"
 
 namespace media {
   class DataBuffer;
@@ -18,6 +16,7 @@ namespace media {
 namespace remoting {
 
 class CaptureData;
+class VideoPacket;
 
 // A class to perform the task of encoding a continous stream of
 // images.

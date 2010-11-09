@@ -34,6 +34,7 @@ class MessageLoop;
 namespace remoting {
 
 class JingleThread;
+class VideoPacket;
 
 namespace protocol {
 
@@ -53,6 +54,8 @@ class JingleConnectionToHost : public ConnectionToHost,
                        HostEventCallback* event_callback,
                        VideoStub* video_stub);
   virtual void Disconnect();
+
+  virtual const SessionConfig* config();
 
   virtual void SendEvent(const ChromotingClientMessage& msg);
 
@@ -76,7 +79,7 @@ class JingleConnectionToHost : public ConnectionToHost,
   void InitSession();
 
   // Callback for |control_reader_|.
-  void OnControlMessage(ChromotingHostMessage* msg);
+  void OnControlMessage(ControlMessage* msg);
 
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);

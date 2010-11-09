@@ -15,6 +15,7 @@
 namespace remoting {
 namespace protocol {
 
+class SessionConfig;
 class VideoStub;
 
 class ConnectionToHost {
@@ -22,11 +23,6 @@ class ConnectionToHost {
   class HostEventCallback {
    public:
     virtual ~HostEventCallback() {}
-
-    // Handles an event received by the protocol::ConnectionToHost. Ownership
-    // of the message is passed to the callee.
-    virtual void HandleMessage(ConnectionToHost* conn,
-                               ChromotingHostMessage* message) = 0;
 
     // Called when the network connection is opened.
     virtual void OnConnectionOpened(ConnectionToHost* conn) = 0;
@@ -47,6 +43,8 @@ class ConnectionToHost {
                        HostEventCallback* event_callback,
                        VideoStub* video_stub) = 0;
   virtual void Disconnect() = 0;
+
+  virtual const SessionConfig* config() = 0;
 
   // Send an input event to the host.
   virtual void SendEvent(const ChromotingClientMessage& msg) = 0;

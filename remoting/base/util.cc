@@ -6,17 +6,19 @@
 
 #include "base/logging.h"
 
+using media::VideoFrame;
+
 namespace remoting {
 
-int GetBytesPerPixel(PixelFormat format) {
+int GetBytesPerPixel(VideoFrame::Format format) {
   // Note: The order is important here for performance. This is sorted from the
   // most common to the less common (PIXEL_FORMAT_ASCII is mostly used
   // just for testing).
   switch (format) {
-    case PIXEL_FORMAT_RGB24:  return 3;
-    case PIXEL_FORMAT_RGB565: return 2;
-    case PIXEL_FORMAT_RGB32:  return 4;
-    case PIXEL_FORMAT_ASCII:  return 1;
+    case VideoFrame::RGB24:  return 3;
+    case VideoFrame::RGB565: return 2;
+    case VideoFrame::RGB32:  return 4;
+    case VideoFrame::ASCII:  return 1;
     default:
       NOTREACHED() << "Pixel format not supported";
       return 0;

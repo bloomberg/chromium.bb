@@ -12,6 +12,7 @@
 #include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/connection_to_host.h"
+#include "remoting/protocol/session_config.h"
 
 namespace remoting {
 
@@ -94,27 +95,6 @@ void ChromotingClient::SetViewport(int x, int y, int width, int height) {
   view_->SetViewport(x, y, width, height);
 }
 
-void ChromotingClient::HandleMessage(protocol::ConnectionToHost* conn,
-                                     ChromotingHostMessage* msg) {
-  if (message_loop() != MessageLoop::current()) {
-    message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ChromotingClient::HandleMessage,
-                          conn, msg));
-    return;
-  }
-
-  // TODO(ajwong): Consider creating a macro similar to the IPC message
-  // mappings.  Also reconsider the lifetime of the message object.
-  if (msg->has_init_client()) {
-    ScopedTracer tracer("Handle Init Client");
-    InitClient(msg->init_client());
-    delete msg;
-  } else {
-    NOTREACHED() << "Unknown message received";
-  }
-}
-
 void ChromotingClient::ProcessVideoPacket(const VideoPacket* packet,
                                           Task* done) {
   if (message_loop() != MessageLoop::current()) {
@@ -144,12 +124,13 @@ void ChromotingClient::DispatchPacket() {
 
   ScopedTracer tracer("Handle video packet");
   rectangle_decoder_->DecodePacket(
-      *packet, NewTracedMethod(this, &ChromotingClient::OnPacketDone));
+      packet, NewTracedMethod(this, &ChromotingClient::OnPacketDone));
 }
 
 void ChromotingClient::OnConnectionOpened(protocol::ConnectionToHost* conn) {
   VLOG(1) << "ChromotingClient::OnConnectionOpened";
   SetConnectionState(CONNECTED);
+  Initialize();
 }
 
 void ChromotingClient::OnConnectionClosed(protocol::ConnectionToHost* conn) {
@@ -201,19 +182,30 @@ void ChromotingClient::OnPacketDone() {
   DispatchPacket();
 }
 
-void ChromotingClient::InitClient(const InitClientMessage& init_client) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  TraceContext::tracer()->PrintString("Init received");
+void ChromotingClient::Initialize() {
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this, &ChromotingClient::Initialize));
+    return;
+  }
+
+  TraceContext::tracer()->PrintString("Initializing client.");
+
+  const protocol::SessionConfig* config = connection_->config();
 
   // Resize the window.
-  int width = init_client.width();
-  int height = init_client.height();
-  VLOG(1) << "Init client received geometry: " << width << "x" << height;
+  int width = config->initial_resolution().width;
+  int height = config->initial_resolution().height;
+  VLOG(1) << "Initial screen geometry: " << width << "x" << height;
 
-//  TODO(ajwong): What to do here?  Does the decoder actually need to request
-//  the right frame size?  This is mainly an optimization right?
-//  rectangle_decoder_->SetOutputFrameSize(width, height);
+  // TODO(ajwong): What to do here?  Does the decoder actually need to request
+  // the right frame size?  This is mainly an optimization right?
+  // rectangle_decoder_->SetOutputFrameSize(width, height);
   view_->SetViewport(0, 0, width, height);
+
+  // Initialize the decoder.
+  rectangle_decoder_->Initialize(config);
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();

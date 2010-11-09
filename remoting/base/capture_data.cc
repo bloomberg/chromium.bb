@@ -16,7 +16,7 @@ DataPlanes::DataPlanes() {
 CaptureData::CaptureData(const DataPlanes &data_planes,
                          int width,
                          int height,
-                         PixelFormat format) :
+                         media::VideoFrame::Format format) :
     data_planes_(data_planes), dirty_rects_(),
     width_(width), height_(height), pixel_format_(format) {
 }

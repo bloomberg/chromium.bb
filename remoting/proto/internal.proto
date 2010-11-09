@@ -6,20 +6,13 @@
 
 syntax = "proto2";
 
+import "control.proto";
 import "event.proto";
 import "video.proto";
 
 option optimize_for = LITE_RUNTIME;
 
 package remoting;
-
-// Defines the message that is sent from the host to the client.
-// Only one of these messages should be present.
-// NEXT ID: 5
-message ChromotingHostMessage {
-  optional InitClientMessage init_client= 1;
-  optional VideoPacket video_packet = 2;
-}
 
 // Defines the message that is sent from the client to the host.
 // Only one of the optional messages should be present.

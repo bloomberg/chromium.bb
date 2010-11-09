@@ -19,7 +19,10 @@ VideoReader* VideoReader::Create(const SessionConfig* config) {
   if (video_config.transport == ChannelConfig::TRANSPORT_SRTP) {
     return new RtpVideoReader();
   } else if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {
-    return new ProtobufVideoReader();
+    if (video_config.codec == ChannelConfig::CODEC_ZIP)
+      return new ProtobufVideoReader(VideoPacketFormat::ENCODING_ZLIB);
+    else if (video_config.codec == ChannelConfig::CODEC_VERBATIM)
+      return new ProtobufVideoReader(VideoPacketFormat::ENCODING_VERBATIM);
   }
   return NULL;
 }

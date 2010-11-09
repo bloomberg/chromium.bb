@@ -5,6 +5,7 @@
 #ifndef REMOTING_PROTOCOL_PROTOBUF_VIDEO_READER_H_
 #define REMOTING_PROTOCOL_PROTOBUF_VIDEO_READER_H_
 
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/video_reader.h"
 
@@ -15,7 +16,7 @@ class Session;
 
 class ProtobufVideoReader : public VideoReader {
  public:
-  ProtobufVideoReader();
+  ProtobufVideoReader(VideoPacketFormat::Encoding encoding);
   virtual ~ProtobufVideoReader();
 
   // VideoReader interface.
@@ -24,6 +25,8 @@ class ProtobufVideoReader : public VideoReader {
 
  private:
   void OnNewData(VideoPacket* packet);
+
+  VideoPacketFormat::Encoding encoding_;
 
   MessageReader reader_;
 

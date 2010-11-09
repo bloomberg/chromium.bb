@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/rtp_video_writer.h"
 
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/rtp_writer.h"
 
@@ -15,12 +16,11 @@ RtpVideoWriter::RtpVideoWriter() { }
 RtpVideoWriter::~RtpVideoWriter() { }
 
 void RtpVideoWriter::Init(protocol::Session* session) {
-  rtp_writer_.Init(session->video_rtp_channel(),
-                   session->video_rtcp_channel());
+  rtp_writer_.Init(session->video_rtp_channel(), session->video_rtcp_channel());
 }
 
 void RtpVideoWriter::SendPacket(const VideoPacket& packet) {
-  rtp_writer_.SendPacket(packet.data().data(), packet.data().length(),
+  rtp_writer_.SendPacket(packet.data().data(), packet.data().size(),
                          packet.timestamp());
 }
 

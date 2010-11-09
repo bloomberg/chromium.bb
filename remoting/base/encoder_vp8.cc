@@ -4,10 +4,10 @@
 
 #include "base/logging.h"
 #include "media/base/callback.h"
-#include "media/base/data_buffer.h"
 #include "media/base/media.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/encoder_vp8.h"
+#include "remoting/proto/video.pb.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
@@ -114,7 +114,7 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data) {
   // giv ae gray scale image after conversion.
   // TODO(sergeyu): Move this code to a separate routine.
   // TODO(sergeyu): Optimize this code.
-  DCHECK(capture_data->pixel_format() == PIXEL_FORMAT_RGB32)
+  DCHECK(capture_data->pixel_format() == media::VideoFrame::RGB32)
       << "Only RGB32 is supported";
   uint8* in = capture_data->data_planes().data[0];
   const int in_stride = capture_data->data_planes().strides[0];
@@ -197,11 +197,6 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
 
   message->mutable_format()->set_encoding(VideoPacketFormat::ENCODING_VP8);
   message->set_flags(VideoPacket::FIRST_PACKET | VideoPacket::LAST_PACKET);
-  message->mutable_format()->set_pixel_format(PIXEL_FORMAT_RGB32);
-  message->mutable_format()->set_x(0);
-  message->mutable_format()->set_y(0);
-  message->mutable_format()->set_width(capture_data->width());
-  message->mutable_format()->set_height(capture_data->height());
 
   data_available_callback->Run(message);
   delete data_available_callback;

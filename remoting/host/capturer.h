@@ -49,13 +49,13 @@ class Capturer {
   virtual void ScreenConfigurationChanged() = 0;
 
   // Return the width of the screen.
-  virtual int width() const { return width_; }
+  virtual int width() const;
 
   // Return the height of the screen.
-  virtual int height() const { return height_; }
+  virtual int height() const;
 
   // Return the pixel format of the screen.
-  virtual PixelFormat pixel_format() const { return pixel_format_; }
+  virtual media::VideoFrame::Format pixel_format() const;
 
   // Clear out the list of invalid rects.
   void ClearInvalidRects();
@@ -116,7 +116,7 @@ class Capturer {
   int height_;
 
   // Format of pixels returned in buffer.
-  PixelFormat pixel_format_;
+  media::VideoFrame::Format pixel_format_;
   int bytes_per_row_;
 
   // The current buffer with valid data for reading.

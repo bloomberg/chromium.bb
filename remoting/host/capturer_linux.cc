@@ -235,7 +235,7 @@ void CapturerLinuxPimpl::CaptureRects(
 
   scoped_refptr<CaptureData> capture_data(
       new CaptureData(planes, capturer_->width(), capturer_->height(),
-                      PIXEL_FORMAT_RGB32));
+                      media::VideoFrame::RGB32));
 
   for (InvalidRects::const_iterator it = rects.begin();
        it != rects.end();

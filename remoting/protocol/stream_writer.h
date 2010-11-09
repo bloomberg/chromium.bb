@@ -50,7 +50,7 @@ class ControlStreamWriter : public StreamWriterBase {
  public:
   // Sends the |message| or returns false if called before Init().
   // Can be called on any thread.
-  bool SendMessage(const ChromotingHostMessage& message);
+  bool SendMessage(const ControlMessage& message);
 };
 
 }  // namespace protocol

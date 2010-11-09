@@ -5,11 +5,12 @@
 #ifndef REMOTING_BASE_UTIL_H_
 #define REMOTING_BASE_UTIL_H_
 
-#include "remoting/proto/video.pb.h"
+#include "media/base/video_frame.h"
 
 namespace remoting {
 
-int GetBytesPerPixel(PixelFormat format);
+// TODO(sergeyu): Move this to media::VideoFrame.
+int GetBytesPerPixel(media::VideoFrame::Format format);
 
 }  // namespace remoting
 

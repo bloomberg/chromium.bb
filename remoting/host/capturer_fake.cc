@@ -38,7 +38,7 @@ CapturerFake::~CapturerFake() {
 void CapturerFake::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
-  pixel_format_ = PIXEL_FORMAT_RGB32;
+  pixel_format_ = media::VideoFrame::RGB32;
   bytes_per_row_ = width_ * kBytesPerPixel;
 
   // Create memory for the buffers.

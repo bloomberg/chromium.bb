@@ -5,18 +5,23 @@
 #include "remoting/protocol/protobuf_video_reader.h"
 
 #include "base/task.h"
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/session.h"
 
 namespace remoting {
 namespace protocol {
 
-ProtobufVideoReader::ProtobufVideoReader() { }
+ProtobufVideoReader::ProtobufVideoReader(VideoPacketFormat::Encoding encoding)
+    : encoding_(encoding) {
+}
+
 ProtobufVideoReader::~ProtobufVideoReader() { }
 
 void ProtobufVideoReader::Init(protocol::Session* session,
                                VideoStub* video_stub) {
-  reader_.Init<VideoPacket>(session->video_channel(),
-                            NewCallback(this, &ProtobufVideoReader::OnNewData));
+  reader_.Init<VideoPacket>(
+      session->video_channel(),
+      NewCallback(this, &ProtobufVideoReader::OnNewData));
   video_stub_ = video_stub;
 }
 

@@ -30,8 +30,7 @@ DecoderVp8::~DecoderVp8() {
   delete codec_;
 }
 
-void DecoderVp8::Initialize(scoped_refptr<media::VideoFrame> frame,
-                            const gfx::Rect& clip, int bytes_per_src_pixel) {
+void DecoderVp8::Initialize(scoped_refptr<media::VideoFrame> frame) {
   DCHECK_EQ(kUninitialized, state_);
 
   if (frame->format() != media::VideoFrame::RGB32) {
@@ -44,7 +43,7 @@ void DecoderVp8::Initialize(scoped_refptr<media::VideoFrame> frame,
   state_ = kReady;
 }
 
-void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
+Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
   DCHECK_EQ(kReady, state_);
 
   // Initialize the codec as needed.
@@ -59,19 +58,19 @@ void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
       delete codec_;
       codec_ = NULL;
       state_ = kError;
-      return;
+      return DECODE_ERROR;
     }
   }
 
   // Do the actual decoding.
   vpx_codec_err_t ret = vpx_codec_decode(
-      codec_, reinterpret_cast<const uint8*>(encoded_bytes.data()),
-      encoded_bytes.size(), NULL, 0);
+      codec_, reinterpret_cast<const uint8*>(packet->data().data()),
+      packet->data().size(), NULL, 0);
   if (ret != VPX_CODEC_OK) {
     LOG(INFO) << "Decoding failed:" << vpx_codec_err_to_string(ret) << "\n"
               << "Details: " << vpx_codec_error(codec_) << "\n"
               << vpx_codec_error_detail(codec_);
-    return;
+    return DECODE_ERROR;
   }
 
   // Gets the decoded data.
@@ -79,7 +78,7 @@ void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
   vpx_image_t* image = vpx_codec_get_frame(codec_, &iter);
   if (!image) {
     LOG(INFO) << "No video frame decoded";
-    return;
+    return DECODE_ERROR;
   }
 
   // Perform YUV conversion.
@@ -89,6 +88,10 @@ void DecoderVp8::DecodeBytes(const std::string& encoded_bytes) {
                            image->stride[0], image->stride[1],
                            frame_->stride(media::VideoFrame::kRGBPlane),
                            media::YV12);
+  return DECODE_DONE;
+}
+
+void DecoderVp8::GetUpdatedRects(UpdatedRects* rects) {
 }
 
 void DecoderVp8::Reset() {

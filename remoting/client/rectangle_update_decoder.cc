@@ -13,8 +13,11 @@
 #include "remoting/base/tracer.h"
 #include "remoting/base/util.h"
 #include "remoting/client/frame_consumer.h"
+#include "remoting/protocol/session_config.h"
 
 using media::AutoTaskRunner;
+using remoting::protocol::ChannelConfig;
+using remoting::protocol::SessionConfig;
 
 namespace remoting {
 
@@ -47,7 +50,30 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(MessageLoop* message_loop,
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
 }
 
-void RectangleUpdateDecoder::DecodePacket(const VideoPacket& packet,
+void RectangleUpdateDecoder::Initialize(const SessionConfig* config) {
+  screen_size_ = gfx::Size(config->initial_resolution().width,
+                           config->initial_resolution().height);
+
+  // Initialize decoder based on the selected codec.
+  ChannelConfig::Codec codec = config->video_config().codec;
+  if (codec == ChannelConfig::CODEC_VERBATIM) {
+    TraceContext::tracer()->PrintString("Creating Verbatim decoder.");
+    decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());
+  } else if (codec == ChannelConfig::CODEC_ZIP) {
+    TraceContext::tracer()->PrintString("Creating Zlib decoder");
+    decoder_.reset(DecoderRowBased::CreateZlibDecoder());
+    // TODO(sergeyu): Enable VP8 on ARM builds.
+#if !defined(ARCH_CPU_ARM_FAMILY)
+  } else if (codec == ChannelConfig::CODEC_VP8) {
+      TraceContext::tracer()->PrintString("Creating VP8 decoder");
+      decoder_.reset(new DecoderVp8());
+#endif
+  } else {
+    NOTREACHED() << "Invalid Encoding found: " << codec;
+  }
+}
+
+void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
                                           Task* done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
@@ -61,28 +87,18 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket& packet,
 
   TraceContext::tracer()->PrintString("Decode Packet called.");
 
-  if (!IsValidPacket(packet)) {
-    LOG(ERROR) << "Received invalid packet.";
-    return;
-  }
-
-  Task* process_packet_data =
-      NewTracedMethod(this,
-                      &RectangleUpdateDecoder::ProcessPacketData,
-                      packet, done_runner.release());
-
-  if (packet.flags() | VideoPacket::FIRST_PACKET) {
-    const VideoPacketFormat& format = packet.format();
-
-    InitializeDecoder(format, process_packet_data);
+  if (!decoder_->IsReadyForData()) {
+    InitializeDecoder(
+        NewTracedMethod(this,
+                        &RectangleUpdateDecoder::ProcessPacketData,
+                        packet, done_runner.release()));
   } else {
-    process_packet_data->Run();
-    delete process_packet_data;
+    ProcessPacketData(packet, done_runner.release());
   }
 }
 
 void RectangleUpdateDecoder::ProcessPacketData(
-    const VideoPacket& packet, Task* done) {
+    const VideoPacket* packet, Task* done) {
   AutoTaskRunner done_runner(done);
 
   if (!decoder_->IsReadyForData()) {
@@ -92,70 +108,31 @@ void RectangleUpdateDecoder::ProcessPacketData(
   }
 
   TraceContext::tracer()->PrintString("Executing Decode.");
-  decoder_->DecodeBytes(packet.data());
 
-  if (packet.flags() | VideoPacket::LAST_PACKET) {
-    decoder_->Reset();
+  Decoder::DecodeResult result = decoder_->DecodePacket(packet);
 
+  if (result == Decoder::DECODE_DONE) {
     UpdatedRects* rects = new UpdatedRects();
-
-    // Empty out the list of current updated rects so the decoder can keep
-    // writing new ones while these are processed.
-    rects->swap(updated_rects_);
-
+    decoder_->GetUpdatedRects(rects);
     consumer_->OnPartialFrameOutput(frame_, rects,
                                     new PartialFrameCleanup(frame_, rects));
   }
 }
 
-// static
-bool RectangleUpdateDecoder::IsValidPacket(const VideoPacket& packet) {
-  if (!packet.IsInitialized()) {
-    LOG(WARNING) << "Protobuf consistency checks fail.";
-    return false;
-  }
-
-  // First packet must have a format.
-  if (packet.flags() | VideoPacket::FIRST_PACKET) {
-    if (!packet.has_format()) {
-      LOG(WARNING) << "First packet must have format.";
-      return false;
-    }
-
-    // TODO(ajwong): Verify that we don't need to whitelist encodings.
-    const VideoPacketFormat& format = packet.format();
-    if (!format.has_encoding() ||
-        format.encoding() == VideoPacketFormat::ENCODING_INVALID) {
-      LOG(WARNING) << "Invalid encoding specified.";
-      return false;
-    }
-  }
-
-  // We shouldn't generate null packets.
-  if (!packet.has_data()) {
-    LOG(WARNING) << "Packet w/o data received.";
-    return false;
-  }
-
-  return true;
-}
-
-void RectangleUpdateDecoder::InitializeDecoder(const VideoPacketFormat& format,
-                                               Task* done) {
+void RectangleUpdateDecoder::InitializeDecoder(Task* done) {
   if (message_loop_ != MessageLoop::current()) {
     message_loop_->PostTask(
         FROM_HERE,
         NewTracedMethod(this,
-                        &RectangleUpdateDecoder::InitializeDecoder,
-                        format, done));
+                        &RectangleUpdateDecoder::InitializeDecoder, done));
     return;
   }
   AutoTaskRunner done_runner(done);
 
   // Check if we need to request a new frame.
   if (!frame_ ||
-      frame_->width() < static_cast<size_t>(format.width()) ||
-      frame_->height() < static_cast<size_t>(format.height())) {
+      frame_->width() != static_cast<size_t>(screen_size_.width()) ||
+      frame_->height() != static_cast<size_t>(screen_size_.height())) {
     if (frame_) {
       TraceContext::tracer()->PrintString("Releasing old frame.");
       consumer_->ReleaseFrame(frame_);
@@ -163,13 +140,12 @@ void RectangleUpdateDecoder::InitializeDecoder(const VideoPacketFormat& format,
     }
     TraceContext::tracer()->PrintString("Requesting new frame.");
     consumer_->AllocateFrame(media::VideoFrame::RGB32,
-                             format.width(), format.height(),
+                             screen_size_.width(), screen_size_.height(),
                              base::TimeDelta(), base::TimeDelta(),
                              &frame_,
                              NewTracedMethod(
                                  this,
                                  &RectangleUpdateDecoder::InitializeDecoder,
-                                 format,
                                  done_runner.release()));
     return;
   }
@@ -178,45 +154,9 @@ void RectangleUpdateDecoder::InitializeDecoder(const VideoPacketFormat& format,
   // and properly disable this class.
   CHECK(frame_);
 
-  if (decoder_.get()) {
-    // TODO(ajwong): We need to handle changing decoders midstream correctly
-    // since someone may feed us a corrupt stream, or manually create a
-    // stream that changes decoders. At the very leask, we should not
-    // crash the process.
-    //
-    // For now though, assume that only one encoding is used throughout.
-    //
-    // Note, this may be as simple as just deleting the current decoder.
-    // However, we need to verify the flushing semantics of the decoder first.
-    CHECK(decoder_->Encoding() == format.encoding());
-  } else {
-    // Initialize a new decoder based on this message encoding.
-    if (format.encoding() == VideoPacketFormat::ENCODING_VERBATIM) {
-      TraceContext::tracer()->PrintString("Creating Verbatim decoder.");
-      decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());
-    } else if (format.encoding() == VideoPacketFormat::ENCODING_ZLIB) {
-      TraceContext::tracer()->PrintString("Creating Zlib decoder");
-      decoder_.reset(DecoderRowBased::CreateZlibDecoder());
-// TODO(sergeyu): Enable VP8 on ARM builds.
-#if !defined(ARCH_CPU_ARM_FAMILY)
-    } else if (format.encoding() == VideoPacketFormat::ENCODING_VP8) {
-      TraceContext::tracer()->PrintString("Creating VP8 decoder");
-      decoder_.reset(new DecoderVp8());
-#endif
-    } else {
-      NOTREACHED() << "Invalid Encoding found: " << format.encoding();
-    }
-  }
+  decoder_->Reset();
+  decoder_->Initialize(frame_);
 
-  // TODO(ajwong): This can happen in the face of corrupt input data.  Figure
-  // out the right behavior and make this more resilient.
-  CHECK(updated_rects_.empty());
-
-  gfx::Rect rectangle_size(format.x(), format.y(),
-                           format.width(), format.height());
-  updated_rects_.push_back(rectangle_size);
-  decoder_->Initialize(frame_, rectangle_size,
-                       GetBytesPerPixel(format.pixel_format()));
   TraceContext::tracer()->PrintString("Decoder is Initialized");
 }
 

@@ -15,11 +15,9 @@
 
 namespace remoting {
 
-static const int kWidth = 640;
-static const int kHeight = 480;
-static const std::string kTestData = "Chromoting rockz";
+static const int kTestKey = 142;
 
-static void AppendMessage(const ChromotingHostMessage& msg,
+static void AppendMessage(const ChromotingClientMessage& msg,
                           std::string* buffer) {
   // Contains one encoded message.
   scoped_refptr<net::IOBufferWithSize> encoded_msg;
@@ -32,17 +30,12 @@ static void PrepareData(uint8** buffer, int* size) {
   // Contains all encoded messages.
   std::string encoded_data;
 
-  // The first message is InitClient.
-  ChromotingHostMessage msg;
-  msg.mutable_init_client()->set_width(kWidth);
-  msg.mutable_init_client()->set_height(kHeight);
-  AppendMessage(msg, &encoded_data);
-  msg.Clear();
+  ChromotingClientMessage msg;
 
   // Then append 10 update sequences to the data.
   for (int i = 0; i < 10; ++i) {
-    msg.mutable_video_packet()->set_sequence_number(0);
-    msg.mutable_video_packet()->set_data(kTestData);
+    msg.mutable_key_event()->set_key(kTestKey + i);
+    msg.mutable_key_event()->set_pressed((i % 2) != 0);
     AppendMessage(msg, &encoded_data);
     msg.Clear();
   }
@@ -67,7 +60,7 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
 
   // Then feed the protocol decoder using the above generated data and the
   // read pattern.
-  std::list<ChromotingHostMessage*> message_list;
+  std::list<ChromotingClientMessage*> message_list;
   for (int i = 0; i < size;) {
     // First generate the amount to feed the decoder.
     int read = std::min(size - i, read_sequence[i % sequence_size]);
@@ -80,19 +73,21 @@ void SimulateReadSequence(const int read_sequence[], int sequence_size) {
   }
 
   // Then verify the decoded messages.
-  EXPECT_EQ(11u, message_list.size());
-  EXPECT_TRUE(message_list.front()->has_init_client());
-  delete message_list.front();
-  message_list.pop_front();
+  EXPECT_EQ(10u, message_list.size());
 
-  for (std::list<ChromotingHostMessage*>::iterator it =
+  int index = 0;
+  for (std::list<ChromotingClientMessage*>::iterator it =
            message_list.begin();
        it != message_list.end(); ++it) {
-    ChromotingHostMessage* message = *it;
+    ChromotingClientMessage* message = *it;
     // Partial update stream.
-    EXPECT_TRUE(message->has_video_packet());
-    EXPECT_EQ(kTestData,
-              message->video_packet().data().data());
+    EXPECT_TRUE(message->has_key_event());
+
+    // TODO(sergeyu): Don't use index here. Instead store the expected values
+    // in an array.
+    EXPECT_EQ(kTestKey + index, message->key_event().key());
+    EXPECT_EQ((index % 2) != 0, message->key_event().pressed());
+    ++index;
   }
   STLDeleteElements(&message_list);
 }

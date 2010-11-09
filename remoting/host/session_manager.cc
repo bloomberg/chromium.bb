@@ -12,6 +12,7 @@
 #include "remoting/base/capture_data.h"
 #include "remoting/base/tracer.h"
 #include "remoting/proto/control.pb.h"
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/message_decoder.h"
@@ -256,15 +257,7 @@ void SessionManager::DoGetInitInfo(
 
   ScopedTracer tracer("init");
 
-  // Sends the init message to the connection.
-  network_loop_->PostTask(
-      FROM_HERE,
-      NewTracedMethod(this, &SessionManager::DoSendInit, connection,
-                      capturer()->width(), capturer()->height()));
-
-  // And then add the connection to the list so it can receive update stream.
-  // It is important we do so in such order or the connection will receive
-  // update stream before init message.
+  // Add the client to the list so it can receive update stream.
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &SessionManager::DoAddClient, connection));
@@ -348,19 +341,6 @@ void SessionManager::DoSendVideoPacket(VideoPacket* packet) {
   delete packet;
 
   TraceContext::tracer()->PrintString("DoSendUpdate done");
-}
-
-void SessionManager::DoSendInit(scoped_refptr<ConnectionToClient> connection,
-                                int width, int height) {
-  DCHECK_EQ(network_loop_, MessageLoop::current());
-
-  // Sends the connection init information.
-  protocol::NotifyResolutionRequest* message =
-      new protocol::NotifyResolutionRequest();
-  message->set_width(width);
-  message->set_height(height);
-  connection->client_stub()->NotifyResolution(message,
-                                              NewDeleteMessageTask(message));
 }
 
 void SessionManager::DoAddClient(scoped_refptr<ConnectionToClient> connection) {

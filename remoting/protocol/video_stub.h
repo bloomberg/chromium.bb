@@ -5,11 +5,12 @@
 #ifndef REMOTING_PROTOCOL_VIDEO_STUB_H_
 #define REMOTING_PROTOCOL_VIDEO_STUB_H_
 
-#include "remoting/proto/video.pb.h"
-
 class Task;
 
 namespace remoting {
+
+class VideoPacket;
+
 namespace protocol {
 
 class VideoStub {

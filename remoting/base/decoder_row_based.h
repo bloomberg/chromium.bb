@@ -19,12 +19,12 @@ class DecoderRowBased : public Decoder {
   static DecoderRowBased* CreateVerbatimDecoder();
 
   // Decoder implementation.
-  virtual void Reset();
   virtual bool IsReadyForData();
-  virtual void Initialize(scoped_refptr<media::VideoFrame> frame,
-                          const gfx::Rect& clip, int bytes_per_src_pixel);
-  virtual void DecodeBytes(const std::string& encoded_bytes);
-  virtual VideoPacketFormat::Encoding Encoding() { return encoding_; }
+  virtual void Initialize(scoped_refptr<media::VideoFrame> frame);
+  virtual DecodeResult DecodePacket(const VideoPacket* packet);
+  virtual void GetUpdatedRects(UpdatedRects* rects);
+  virtual void Reset();
+  virtual VideoPacketFormat::Encoding Encoding();
 
   // TODO(hclam): Should make this into the Decoder interface.
   // TODO(ajwong): Before putting into the interface, we should decide if the
@@ -32,14 +32,19 @@ class DecoderRowBased : public Decoder {
   void set_reverse_rows(bool reverse) { reverse_rows_ = reverse; }
 
  private:
-  DecoderRowBased(Decompressor* decompressor,
-                  VideoPacketFormat::Encoding encoding);
-
   enum State {
     kUninitialized,
     kReady,
+    kProcessing,
+    kDone,
     kError,
   };
+
+  DecoderRowBased(Decompressor* decompressor,
+                  VideoPacketFormat::Encoding encoding);
+
+  // Helper method. Called from DecodePacket to updated state of the decoder.
+  void UpdateStateForPacket(const VideoPacket* packet);
 
   // The internal state of the decoder.
   State state_;
@@ -55,9 +60,6 @@ class DecoderRowBased : public Decoder {
 
   // The encoding of the incoming stream.
   VideoPacketFormat::Encoding encoding_;
-
-  // Number of bytes per pixel from source stream.
-  int bytes_per_src_pixel_;
 
   // The position in the row that we are updating.
   int row_pos_;

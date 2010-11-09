@@ -11,11 +11,10 @@
 #define REMOTING_PROTOCOL_VIDEO_WRITER_H_
 
 #include "base/basictypes.h"
-#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 
-class ChromotocolConnection;
+class VideoPacket;
 
 namespace protocol {
 

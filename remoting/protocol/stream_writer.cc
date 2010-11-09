@@ -39,7 +39,7 @@ bool EventStreamWriter::SendMessage(const ChromotingClientMessage& message) {
   return buffered_writer_->Write(SerializeAndFrameMessage(message));
 }
 
-bool ControlStreamWriter::SendMessage(const ChromotingHostMessage& message) {
+bool ControlStreamWriter::SendMessage(const ControlMessage& message) {
   return buffered_writer_->Write(SerializeAndFrameMessage(message));
 }
 

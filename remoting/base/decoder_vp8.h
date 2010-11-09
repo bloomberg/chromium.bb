@@ -17,17 +17,11 @@ class DecoderVp8 : public Decoder {
   virtual ~DecoderVp8();
 
   // Decoder implementations.
-  virtual void Initialize(scoped_refptr<media::VideoFrame> frame,
-                          const gfx::Rect& clip, int bytes_per_src_pixel);
-
-  virtual void Reset();
-
-  // Feeds more data into the decoder.
-  virtual void DecodeBytes(const std::string& encoded_bytes);
-
-  // Returns true if decoder is ready to accept data via ProcessRectangleData.
+  virtual void Initialize(scoped_refptr<media::VideoFrame> frame);
+  virtual DecodeResult DecodePacket(const VideoPacket* packet);
+  virtual void GetUpdatedRects(UpdatedRects* rects);
   virtual bool IsReadyForData();
-
+  virtual void Reset();
   virtual VideoPacketFormat::Encoding Encoding();
 
  private:
