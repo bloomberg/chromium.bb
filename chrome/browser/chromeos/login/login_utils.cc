@@ -58,6 +58,9 @@ const char kAuthPrefix[] = "Auth=";
 // Suffix for Auth token received from ClientLogin request.
 const char kAuthSuffix[] = "\n";
 
+// Increase logging level for Guest mode to avoid LOG(INFO) messages in logs.
+const char kGuestModeLoggingLevel[] = "1";
+
 }  // namespace
 
 class LoginUtilsImpl : public LoginUtils {
@@ -260,13 +263,17 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
     // For guest session we ask session manager to restart Chrome with --bwsi
     // flag. We keep only some of the arguments of this process.
     static const char* kForwardSwitches[] = {
-        switches::kLoggingLevel,
         switches::kEnableLogging,
         switches::kUserDataDir,
         switches::kScrollPixels,
         switches::kEnableGView,
         switches::kNoFirstRun,
-        switches::kLoginProfile
+        switches::kLoginProfile,
+        switches::kEnableTabbedOptions,
+        switches::kCompressSystemFeedback,
+#if defined(USE_SECCOMP_SANDBOX)
+        switches::kDisableSeccompSandbox,
+#endif
     };
     const CommandLine& browser_command_line =
         *CommandLine::ForCurrentProcess();
@@ -276,7 +283,8 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
                                   arraysize(kForwardSwitches));
     command_line.AppendSwitch(switches::kGuestSession);
     command_line.AppendSwitch(switches::kIncognito);
-    command_line.AppendSwitch(switches::kEnableTabbedOptions);
+    command_line.AppendSwitchASCII(switches::kLoggingLevel,
+                                   kGuestModeLoggingLevel);
     command_line.AppendSwitchASCII(
         switches::kLoginUser,
         UserManager::Get()->logged_in_user().email());
