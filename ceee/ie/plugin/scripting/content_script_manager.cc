@@ -241,7 +241,7 @@ HRESULT ContentScriptManager::LoadCss(const GURL& match_url,
 
 HRESULT ContentScriptManager::LoadStartScripts(const GURL& match_url,
                                                IHTMLDocument2* document) {
-  // Run the document end scripts.
+  // Run the document start scripts.
   return LoadScriptsImpl(match_url, document, UserScript::DOCUMENT_START);
 }
 
