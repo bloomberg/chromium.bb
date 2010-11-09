@@ -28,7 +28,7 @@ var OptionsPage = options.OptionsPage;
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      // Setup click handlers for buttons.
+      // Set up click handlers for buttons.
       $('privacyContentSettingsButton').onclick = function(event) {
         OptionsPage.showPageByName('content');
         OptionsPage.showTab($('cookies-nav-tab'));

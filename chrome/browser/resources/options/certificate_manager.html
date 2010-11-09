@@ -7,14 +7,30 @@
 
   <!-- Navigation tabs -->
   <div class="subpages-nav-tabs">
-    <span i18n-content="personalCertsTabTitle" id="personal-certs-nav-tab"
-        class="inactive-tab" tab-contents="personalCertsTab"></span><span
-        i18n-content="serverCertsTabTitle" id="server-certs-nav-tab"
-        class="inactive-tab" tab-contents="serverCertsTab"></span><span
-        i18n-content="caCertsTabTitle" id="ca-certs-nav-tab"
-        class="inactive-tab" tab-contents="caCertsTab"></span><span
-        i18n-content="unknownCertsTabTitle" id="other-certs-nav-tab"
-        class="inactive-tab" tab-contents="otherCertsTab"></span>
+    <span id="personal-certs-nav-tab" class="inactive-tab"
+        tab-contents="personalCertsTab">
+      <span class="inactive-tab-label"
+          i18n-content="personalCertsTabTitle"></span>
+      <span class="active-tab-label"
+          i18n-content="personalCertsTabTitle"></span>
+    </span>
+    <span id="server-certs-nav-tab" class="inactive-tab"
+        tab-contents="serverCertsTab">
+      <span class="inactive-tab-label"
+          i18n-content="serverCertsTabTitle"></span>
+      <span class="active-tab-label" i18n-content="serverCertsTabTitle"></span>
+    </span>
+    <span id="ca-certs-nav-tab" class="inactive-tab"
+        tab-contents="caCertsTab">
+      <span class="inactive-tab-label" i18n-content="caCertsTabTitle"></span>
+      <span class="active-tab-label" i18n-content="caCertsTabTitle"></span>
+    </span>
+    <span id="other-certs-nav-tab" class="inactive-tab"
+        tab-contents="otherCertsTab">
+      <span class="inactive-tab-label"
+          i18n-content="unknownCertsTabTitle"></span>
+      <span class="active-tab-label" i18n-content="unknownCertsTabTitle"></span>
+    </span>
   </div>
 
   <!-- TODO(mattm): get rid of use of tables? -->

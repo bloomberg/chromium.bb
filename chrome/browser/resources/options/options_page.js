@@ -94,7 +94,13 @@ cr.define('options', function() {
   * @param {!Element} tab The tab that the user clicked.
   */
   OptionsPage.showTab = function(tab) {
-    if (!tab.classList.contains('inactive-tab'))
+    // Search parents until we find a tab, or the nav bar itself. This allows
+    // tabs to have child nodes, e.g. labels in separately-styled spans.
+    while (tab && !tab.classList.contains('subpages-nav-tabs') &&
+           !tab.classList.contains('inactive-tab')) {
+      tab = tab.parentNode;
+    }
+    if (!tab || !tab.classList.contains('inactive-tab'))
       return;
 
     if (this.activeNavTab != null) {
