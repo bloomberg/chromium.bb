@@ -198,9 +198,12 @@ URLLoader::URLLoader(PluginInstance* instance, bool main_document_loader)
       record_upload_progress_(false),
       has_universal_access_(false),
       status_callback_(NULL) {
+  instance->AddObserver(this);
 }
 
 URLLoader::~URLLoader() {
+  if (instance_)
+    instance_->RemoveObserver(this);
 }
 
 // static
@@ -423,6 +426,40 @@ void URLLoader::didFail(WebURLLoader* loader, const WebURLError& error) {
   // TODO(darin): Provide more detailed error information.
   done_status_ = PP_ERROR_FAILED;
   RunCallback(done_status_);
+}
+
+void URLLoader::InstanceDestroyed(PluginInstance* instance) {
+  // When the instance is destroyed, we force delete any associated loads.
+  DCHECK(instance == instance_);
+  instance_ = NULL;
+
+  // Normally the only ref to this class will be from the plugin which
+  // ForceDeletePluginResourceRefs will free. We don't want our object to be
+  // deleted out from under us until the function completes.
+  scoped_refptr<URLLoader> death_grip(this);
+
+  // Force delete any plugin refs to us. If the instance is being deleted, we
+  // don't want to allow the requests to continue to use bandwidth and send us
+  // callbacks (for which we might have no plugin).
+  ResourceTracker *tracker = ResourceTracker::Get();
+  PP_Resource loader_resource = GetReferenceNoAddRef();
+  if (loader_resource)
+    tracker->ForceDeletePluginResourceRefs(loader_resource);
+
+  // Also force free the response from the plugin, both the plugin's ref(s)
+  // and ours.
+  if (response_info_.get()) {
+    PP_Resource response_info_resource = response_info_->GetReferenceNoAddRef();
+    if (response_info_resource)
+      tracker->ForceDeletePluginResourceRefs(response_info_resource);
+    response_info_ = NULL;
+  }
+
+  // Free the WebKit request.
+  loader_.reset();
+
+  // Often, |this| will be deleted at the end of this function when death_grip
+  // goes out of scope.
 }
 
 void URLLoader::RunCallback(int32_t result) {

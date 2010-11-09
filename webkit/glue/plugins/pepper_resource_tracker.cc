@@ -66,6 +66,16 @@ bool ResourceTracker::UnrefResource(PP_Resource res) {
   }
 }
 
+void ResourceTracker::ForceDeletePluginResourceRefs(PP_Resource res) {
+  ResourceMap::iterator i = live_resources_.find(res);
+  if (i != live_resources_.end())
+    return;  // Nothing to do.
+
+  i->second.second = 0;
+  i->second.first->StoppedTracking();
+  live_resources_.erase(i);
+}
+
 uint32 ResourceTracker::GetLiveObjectsForModule(PluginModule* module) const {
   // Since this is for testing only, we'll just go through all of them and
   // count.

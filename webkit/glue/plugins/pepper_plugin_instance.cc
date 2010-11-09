@@ -311,6 +311,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
 }
 
 PluginInstance::~PluginInstance() {
+  FOR_EACH_OBSERVER(Observer, observers_, InstanceDestroyed(this));
+
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
 
@@ -335,6 +337,14 @@ const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
 // static
 const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
   return &ppb_zoom;
+}
+
+void PluginInstance::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PluginInstance::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void PluginInstance::Paint(WebCanvas* canvas,

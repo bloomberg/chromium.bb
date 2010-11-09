@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -62,6 +63,14 @@ class FullscreenContainer;
 // ResourceTracker.
 class PluginInstance : public base::RefCounted<PluginInstance> {
  public:
+  class Observer {
+   public:
+    // Indicates that the instance is being destroyed. This will be called from
+    // the instance's destructor so don't do anything in this callback that
+    // uses the instance.
+    virtual void InstanceDestroyed(PluginInstance* instance) = 0;
+  };
+
   PluginInstance(PluginDelegate* delegate,
                  PluginModule* module,
                  const PPP_Instance* instance_interface);
@@ -90,6 +99,12 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Returns the PP_Instance uniquely identifying this instance. Guaranteed
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }
+
+  // Other classes can register an observer for instance events. These pointers
+  // are NOT owned by the Instance. If the object implementing the observer
+  // goes away, it must take care to unregister itself.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Paints the current backing store to the web page.
   void Paint(WebKit::WebCanvas* canvas,
@@ -291,6 +306,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Plugin container for fullscreen mode. NULL if not in fullscreen mode.
   FullscreenContainer* fullscreen_container_;
+
+  // Non-owning pointers to all active observers.
+  ObserverList<Observer, false> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

@@ -70,6 +70,18 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   // reference to the plugin.
   PP_Resource GetReference();
 
+  // Returns the resource ID of this object OR NULL IF THERE IS NONE ASSIGNED.
+  // This will happen if the plugin doesn't have a reference to the given
+  // resource. The resource will not be addref'ed.
+  //
+  // This should only be used as an input parameter to the plugin for status
+  // updates in the proxy layer, where if the plugin has no reference, it will
+  // just give up since nothing needs to be updated.
+  //
+  // Generally you should use GetReference instead. This is why it has this
+  // obscure name rather than pp_resource().
+  PP_Resource GetReferenceNoAddRef() const;
+
   // When you need to ensure that a resource has a reference, but you do not
   // want to increase the refcount (for example, if you need to call a plugin
   // callback function with a reference), you can use this class. For example:
@@ -84,19 +96,6 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
     }
     const PP_Resource id;
   };
-
- protected:
-  // Returns the resource ID of this object OR NULL IF THERE IS NONE ASSIGNED.
-  // This will happen if the plugin doesn't have a reference to the given
-  // resource. The resource will not be addref'ed.
-  //
-  // This should only be used as an input parameter to the plugin for status
-  // updates in the proxy layer, where if the plugin has no reference, it will
-  // just give up since nothing needs to be updated.
-  //
-  // Generally you should use GetReference instead. This is why it has this
-  // obscure name rather than pp_resource().
-  PP_Resource GetReferenceNoAddRef() const;
 
  private:
   // Type-specific getters for individual resource types. These will return

@@ -47,6 +47,16 @@ class ResourceTracker {
   bool AddRefResource(PP_Resource res);
   bool UnrefResource(PP_Resource res);
 
+  // Forces the plugin refcount of the given resource to 0. This can be used to
+  // delete an object the plugin has leaked or whose lifetime is otherwise
+  // exceeded.
+  //
+  // Note that this may not necessarily delete the resource object since the
+  // regular refcount is maintained separately from the plugin refcount and
+  // random components in the Pepper implementation could still have
+  // references to it.
+  void ForceDeletePluginResourceRefs(PP_Resource res);
+
   // Returns the number of resources associated with this module.
   //
   // This is slow, use only for testing.

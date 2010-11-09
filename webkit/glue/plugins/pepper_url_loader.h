@@ -11,6 +11,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/dev/ppb_url_loader_trusted_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PPB_URLLoader_Dev;
@@ -27,7 +28,9 @@ class PluginInstance;
 class URLRequestInfo;
 class URLResponseInfo;
 
-class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
+class URLLoader : public Resource,
+                  public WebKit::WebURLLoaderClient,
+                  public PluginInstance::Observer {
  public:
   URLLoader(PluginInstance* instance, bool main_document_loader);
   virtual ~URLLoader();
@@ -78,6 +81,9 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   virtual void didFail(WebKit::WebURLLoader* loader,
                        const WebKit::WebURLError& error);
 
+  // PluginInstance::Observer implementation.
+  void InstanceDestroyed(PluginInstance* instance);
+
   URLResponseInfo* response_info() const { return response_info_; }
 
  private:
@@ -94,7 +100,12 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   // synchronize an out-of-process plugin's state.
   void UpdateStatus();
 
-  scoped_refptr<PluginInstance> instance_;
+  // This will be NULL if the instance has been deleted but this URLLoader was
+  // somehow leaked. In general, you should not need to check this for NULL.
+  // However, if you see a NULL pointer crash, that means somebody is holding
+  // a reference to this object longer than the PluginInstance's lifetime.
+  PluginInstance* instance_;
+
   // If true, then the plugin instance is a full-frame plugin and we're just
   // wrapping the main document's loader (i.e. loader_ is null).
   bool main_document_loader_;
