@@ -189,6 +189,9 @@ bool TabApiResult::CreateTabValue(int tab_id, long index) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   result->SetInteger(ext::kIdKey, tab_id);
 
+  // TODO(mad@chromium.org): Support the pin field.
+  result->SetBoolean(ext::kPinnedKey, false);
+
   // The window ID is just the window handle of the frame window, which is the
   // top-level ancestor of this window.
   HWND frame_window = window_utils::GetTopLevelParent(tab_window);
