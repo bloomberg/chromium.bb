@@ -21,6 +21,7 @@ fun_r:*InitializeClock*
 fun_r:Ordinal_*
 fun:unnamedImageEntryPoint
 fun_r:RtlDestroyQueryDebugBuffer
+fun:_updatetlocinfoEx_nolock
 
 # Strange reports on net_unittests, maybe related to raising
 # a debug exception by PlatformThread
