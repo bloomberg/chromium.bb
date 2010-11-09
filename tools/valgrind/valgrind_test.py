@@ -707,6 +707,11 @@ class ThreadSanitizerWindows(ThreadSanitizerBase, PinTool):
       logging.info(self.INFO_MESSAGE)
     return ret
 
+  # TODO(timurrrr): temporary workaround for http://crbug.com/62512
+  def Execute(self):
+    super(ThreadSanitizerWindows, self).Execute()
+    return 0
+
 
 class DrMemory(BaseTool):
   """Dr.Memory
