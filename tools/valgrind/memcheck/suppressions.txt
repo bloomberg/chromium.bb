@@ -3230,3 +3230,12 @@
    ...
    fun:CERT_PKIXVerifyCert
 }
+{
+   bug_62505
+   Memcheck:Leak
+   ...
+   fun:_ZNK15DictionaryValue8DeepCopyEv
+   fun:_ZN6policy27DeviceManagementPolicyCache9GetPolicyEv
+   fun:_ZN6policy30DeviceManagementPolicyProvider7ProvideEPNS_33ConfigurationPolicyStoreInterfaceE
+   fun:*policy*DeviceManagementPolicyProviderTest*
+}
