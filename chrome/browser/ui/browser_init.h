@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_INIT_H_
-#define CHROME_BROWSER_BROWSER_INIT_H_
+#ifndef CHROME_BROWSER_UI_BROWSER_INIT_H_
+#define CHROME_BROWSER_UI_BROWSER_INIT_H_
 #pragma once
 
 #include <string>
@@ -196,4 +196,4 @@ class BrowserInit {
   DISALLOW_COPY_AND_ASSIGN(BrowserInit);
 };
 
-#endif  // CHROME_BROWSER_BROWSER_INIT_H_
+#endif  // CHROME_BROWSER_UI_BROWSER_INIT_H_
