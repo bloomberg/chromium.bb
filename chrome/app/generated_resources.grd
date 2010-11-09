@@ -9078,7 +9078,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Go incognito
       </message>
       <message name="IDS_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/locker screen">
-        Shutdown
+        Shut down
       </message>
       <message name="IDS_LOGIN_OOBE_HELP_DIALOG_TITLE" desc="Default title for help dialogs during OOBE/login">
         Help
