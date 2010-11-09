@@ -64,7 +64,7 @@ class ImageData : public Resource {
   void Unmap();
 
   // PPB_ImageDataTrusted implementation.
-  uint64 GetNativeMemoryHandle() const;
+  uint64 GetNativeMemoryHandle(uint32* byte_count) const;
 
   // The mapped bitmap and canvas will be NULL if the image is not mapped.
   skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }

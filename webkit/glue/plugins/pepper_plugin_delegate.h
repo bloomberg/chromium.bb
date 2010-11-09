@@ -78,9 +78,10 @@ class PluginDelegate {
     virtual skia::PlatformCanvas* Map() = 0;
 
     // Returns the platform-specific shared memory handle of the data backing
-    // this image. This is used by NativeClient to send the image to the
-    // out-of-process plugin. Returns 0 on failure.
-    virtual intptr_t GetSharedMemoryHandle() const = 0;
+    // this image. This is used by PPAPI proxying to send the image to the
+    // out-of-process plugin. On success, the size in bytes will be placed into
+    // |*bytes_count|. Returns 0 on failure.
+    virtual intptr_t GetSharedMemoryHandle(uint32* byte_count) const = 0;
 
     virtual TransportDIB* GetTransportDIB() const = 0;
   };

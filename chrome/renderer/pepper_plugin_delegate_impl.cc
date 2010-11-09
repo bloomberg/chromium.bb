@@ -65,8 +65,15 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
     return dib_->GetPlatformCanvas(width_, height_);
   }
 
-  virtual intptr_t GetSharedMemoryHandle() const {
-    return reinterpret_cast<intptr_t>(dib_.get());
+  virtual intptr_t GetSharedMemoryHandle(uint32* byte_count) const {
+    *byte_count = dib_->size();
+#if defined(OS_WIN)
+    return reinterpret_cast<intptr_t>(dib_->handle());
+#elif defined(OS_MACOSX)
+    return static_cast<intptr_t>(dib_->handle().fd);
+#elif defined(OS_LINUX)
+    return static_cast<intptr_t>(dib_->handle());
+#endif
   }
 
   virtual TransportDIB* GetTransportDIB() const {

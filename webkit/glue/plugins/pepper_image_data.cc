@@ -79,10 +79,10 @@ void Unmap(PP_Resource resource) {
     image_data->Unmap();
 }
 
-uint64_t GetNativeMemoryHandle2(PP_Resource resource) {
+uint64_t GetNativeMemoryHandle2(PP_Resource resource, uint32_t* byte_count) {
   scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
   if (image_data)
-    return image_data->GetNativeMemoryHandle();
+    return image_data->GetNativeMemoryHandle(byte_count);
   return 0;
 }
 
@@ -189,8 +189,8 @@ void ImageData::Unmap() {
   // in the future to save some memory.
 }
 
-uint64 ImageData::GetNativeMemoryHandle() const {
-  return platform_image_->GetSharedMemoryHandle();
+uint64 ImageData::GetNativeMemoryHandle(uint32* byte_count) const {
+  return platform_image_->GetSharedMemoryHandle(byte_count);
 }
 
 const SkBitmap* ImageData::GetMappedBitmap() const {
