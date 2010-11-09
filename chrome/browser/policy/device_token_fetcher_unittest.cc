@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
@@ -9,12 +11,8 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
-#include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
+#include "chrome/test/device_management_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,29 +20,6 @@ namespace policy {
 
 using testing::_;
 using testing::Mock;
-
-class MockDeviceTokenPathProvider
-    : public StoredDeviceTokenPathProvider {
- public:
-  MockDeviceTokenPathProvider() {
-    EXPECT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
-  }
-
-  virtual ~MockDeviceTokenPathProvider() {}
-
-  virtual bool GetPath(FilePath* path) const {
-    if (!file_util::PathExists(temp_user_data_dir_.path()))
-      return false;
-    *path = temp_user_data_dir_.path().Append(
-        FILE_PATH_LITERAL("temp_token_file"));
-    return true;
-  }
-
- private:
-  ScopedTempDir temp_user_data_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockDeviceTokenPathProvider);
-};
 
 class MockTokenAvailableObserver : public NotificationObserver {
  public:
@@ -62,56 +37,58 @@ class MockTokenAvailableObserver : public NotificationObserver {
 
 class DeviceTokenFetcherTest : public testing::Test {
  protected:
-  DeviceTokenFetcherTest() {
-    backend_ = new MockDeviceManagementBackend();
-    path_provider_ = new MockDeviceTokenPathProvider();
-    fetcher_.reset(new DeviceTokenFetcher(backend_, path_provider_));
+  DeviceTokenFetcherTest()
+      : ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_) {
+    EXPECT_TRUE(temp_user_data_dir_.CreateUniqueTempDir());
+    fetcher_ = NewTestFetcher(temp_user_data_dir_.path());
     fetcher_->StartFetching();
-  }
-
-  virtual void SetUp() {
-    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &loop_));
-    file_thread_.reset(new BrowserThread(BrowserThread::FILE, &loop_));
   }
 
   virtual void TearDown() {
     loop_.RunAllPending();
   }
 
-  void SimulateSuccessfulLogin() {
-    const std::string service(GaiaConstants::kDeviceManagementService);
-    const std::string auth_token(kFakeGaiaAuthToken);
-    const Source<TokenService> source(NULL);
-    TokenService::TokenAvailableDetails details(service, auth_token);
-    NotificationService::current()->Notify(
-        NotificationType::TOKEN_AVAILABLE,
-        source,
-        Details<const TokenService::TokenAvailableDetails>(&details));
+  void SimulateSuccessfulLoginAndRunPending() {
+    loop_.RunAllPending();
+    SimulateSuccessfulLogin();
     loop_.RunAllPending();
   }
 
-  MockDeviceManagementBackend* backend_;  // weak
-  MockDeviceTokenPathProvider* path_provider_;  // weak
-  scoped_ptr<DeviceTokenFetcher> fetcher_;
+  DeviceTokenFetcher* NewTestFetcher(const FilePath& token_dir) {
+    backend_.reset(new MockDeviceManagementBackend());
+    return new DeviceTokenFetcher(
+        backend_.get(),
+        token_dir.Append(FILE_PATH_LITERAL("test-token-file.txt")));
+  }
+
+  static void GetDeviceTokenPath(const DeviceTokenFetcher* fetcher,
+                                 FilePath* path) {
+    fetcher->GetDeviceTokenPath(path);
+  }
+
+  MessageLoop loop_;
+  scoped_ptr<MockDeviceManagementBackend> backend_;
+  ScopedTempDir temp_user_data_dir_;
+  scoped_refptr<DeviceTokenFetcher> fetcher_;
 
  private:
-  MessageLoop loop_;
-  scoped_ptr<BrowserThread> ui_thread_;
-  scoped_ptr<BrowserThread> file_thread_;
-
-  static const char kFakeGaiaAuthToken[];
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 };
-
-const char DeviceTokenFetcherTest::kFakeGaiaAuthToken[] = "0123456789abcdef";
 
 TEST_F(DeviceTokenFetcherTest, IsPending) {
   ASSERT_TRUE(fetcher_->IsTokenPending());
-  SimulateSuccessfulLogin();
+  backend_->AllShouldSucceed();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
 }
 
 TEST_F(DeviceTokenFetcherTest, SimpleFetchSingleLogin) {
-  SimulateSuccessfulLogin();
+  backend_->AllShouldSucceed();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   ASSERT_TRUE(fetcher_->IsTokenValid());
   const std::string token(fetcher_->GetDeviceToken());
@@ -119,12 +96,14 @@ TEST_F(DeviceTokenFetcherTest, SimpleFetchSingleLogin) {
 }
 
 TEST_F(DeviceTokenFetcherTest, SimpleFetchDoubleLogin) {
-  SimulateSuccessfulLogin();
+  backend_->AllShouldSucceed();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
   EXPECT_NE("", token);
 
-  SimulateSuccessfulLogin();
+  SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token2(fetcher_->GetDeviceToken());
   EXPECT_NE("", token2);
@@ -138,29 +117,21 @@ TEST_F(DeviceTokenFetcherTest, FetchBetweenBrowserLaunchAndNotify) {
                 NotificationType::DEVICE_TOKEN_AVAILABLE,
                 NotificationService::AllSources());
   EXPECT_CALL(observer, Observe(_, _, _)).Times(1);
-
-  SimulateSuccessfulLogin();
+  backend_->AllShouldSucceed();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
   EXPECT_NE("", token);
-
   Mock::VerifyAndClearExpectations(&observer);
-  EXPECT_CALL(observer, Observe(_, _, _)).Times(1);
 
   // Swap out the fetchers, including copying the device management token on
   // disk to where the new fetcher expects it.
-  backend_ = new MockDeviceManagementBackend();
-  FilePath old_path;
-  ASSERT_TRUE(path_provider_->GetPath(&old_path));
-  MockDeviceTokenPathProvider* new_provider =
-      new MockDeviceTokenPathProvider();
-  FilePath new_path;
-  ASSERT_TRUE(new_provider->GetPath(&new_path));
-  ASSERT_TRUE(file_util::Move(old_path, new_path));
-  path_provider_ = new_provider;
-  fetcher_.reset(new DeviceTokenFetcher(backend_, path_provider_));
-
+  fetcher_ = NewTestFetcher(
+      temp_user_data_dir_.path());
   fetcher_->StartFetching();
+  ASSERT_TRUE(fetcher_->IsTokenPending());
+  loop_.RunAllPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token2(fetcher_->GetDeviceToken());
   EXPECT_NE("", token2);
@@ -168,8 +139,9 @@ TEST_F(DeviceTokenFetcherTest, FetchBetweenBrowserLaunchAndNotify) {
 }
 
 TEST_F(DeviceTokenFetcherTest, FailedServerRequest) {
-  backend_->SetFailure(true);
-  SimulateSuccessfulLogin();
+  backend_->AllShouldFail();
+  EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).Times(1);
+  SimulateSuccessfulLoginAndRunPending();
   ASSERT_FALSE(fetcher_->IsTokenPending());
   const std::string token(fetcher_->GetDeviceToken());
   EXPECT_EQ("", token);

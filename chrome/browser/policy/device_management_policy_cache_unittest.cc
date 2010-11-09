@@ -92,6 +92,8 @@ TEST_F(DeviceManagementPolicyCacheTest, LoadWithFile) {
   DictionaryValue empty;
   scoped_ptr<Value> policy(cache.GetPolicy());
   EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_NE(base::Time(), cache.last_policy_refresh_time());
+  EXPECT_GE(base::Time::Now(), cache.last_policy_refresh_time());
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, LoadWithData) {

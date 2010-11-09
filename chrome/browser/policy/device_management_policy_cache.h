@@ -10,6 +10,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 class DictionaryValue;
@@ -38,6 +39,11 @@ class DeviceManagementPolicyCache {
   // Gets the policy information. Ownership of the return value is transferred
   // to the caller.
   DictionaryValue* GetPolicy();
+
+  // Returns the time as which the policy was last fetched.
+  base::Time last_policy_refresh_time() const {
+    return last_policy_refresh_time_;
+  }
 
  private:
   friend class DeviceManagementPolicyCacheDecodeTest;
@@ -69,6 +75,9 @@ class DeviceManagementPolicyCache {
   // Tracks whether the store received a SetPolicy() call, which overrides any
   // information loaded from the file.
   bool fresh_policy_;
+
+  // The time at which the policy was last refreshed.
+  base::Time last_policy_refresh_time_;
 };
 
 }  // namespace policy

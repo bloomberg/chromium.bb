@@ -62,6 +62,15 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
   if (!file_util::PathExists(backing_file_path_) || fresh_policy_)
     return;
 
+  base::PlatformFileInfo info;
+  // TODO(danno): The last refresh should actually get stored in the
+  // persisted cache file.
+  if (!file_util::GetFileInfo(backing_file_path_, &info)) {
+    LOG(WARNING) << "Failed to get policy file information from "
+                 << backing_file_path_.value();
+    return;
+  }
+
   // Read the protobuf from the file.
   std::string data;
   if (!file_util::ReadFileToString(backing_file_path_, &data)) {
@@ -83,16 +92,19 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
     AutoLock lock(lock_);
     if (!fresh_policy_)
       policy_.reset(value.release());
+    last_policy_refresh_time_ = info.last_modified;
   }
 }
 
 void DeviceManagementPolicyCache::SetPolicy(
     const em::DevicePolicyResponse& policy) {
   DictionaryValue* value = DeviceManagementPolicyCache::DecodePolicy(policy);
+  base::Time now(base::Time::Now());
   {
     AutoLock lock(lock_);
     policy_.reset(value);
     fresh_policy_ = true;
+    last_policy_refresh_time_ = now;
   }
 
   em::DevicePolicyResponse* policy_copy = new em::DevicePolicyResponse;

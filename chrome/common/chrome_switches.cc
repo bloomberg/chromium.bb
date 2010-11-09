@@ -112,6 +112,11 @@ const char kCountry[]                       = "country";
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
 
+// Specifies the URL at which to fetch configuration policy from the device
+// management backend. Specifying this switch turns on managed policy from the
+// device management backend.
+const char kDeviceManagementUrl[]           = "device-management-url";
+
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 

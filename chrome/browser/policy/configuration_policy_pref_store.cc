@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -19,6 +20,7 @@
 #elif defined(OS_POSIX)
 #include "chrome/browser/policy/config_dir_policy_provider.h"
 #endif
+#include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -61,6 +63,15 @@ ConfigurationPolicyProvider*
     ConfigurationPolicyProviderKeeper::CreateManagedProvider() {
   const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
+#ifndef NDEBUG
+  // TODO(danno): This is a temporary solution only, the PrefValueStore needs to
+  // be changed to support two managed PrefStores, the local managed store and
+  // the device management policy store.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDeviceManagementUrl)) {
+    return new DeviceManagementPolicyProvider(policy_list);
+  }
+#endif
 #if defined(OS_WIN)
   return new ConfigurationPolicyProviderWin(policy_list);
 #elif defined(OS_MACOSX)
@@ -177,7 +188,7 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
 };
 
 /* static */
-ConfigurationPolicyProvider::PolicyDefinitionList*
+const ConfigurationPolicyProvider::PolicyDefinitionList*
 ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
   static ConfigurationPolicyProvider::PolicyDefinitionList::Entry entries[] = {
     { kPolicyHomePage, Value::TYPE_STRING, key::kHomepageLocation },

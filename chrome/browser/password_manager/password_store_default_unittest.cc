@@ -16,6 +16,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/mock_notification_observer.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,13 +43,6 @@ class MockWebDataServiceConsumer : public WebDataServiceConsumer {
  public:
   MOCK_METHOD2(OnWebDataServiceRequestDone, void(WebDataService::Handle,
                                                  const WDTypedResult*));
-};
-
-class MockNotificationObserver : public NotificationObserver {
- public:
-  MOCK_METHOD3(Observe, void(NotificationType,
-                             const NotificationSource&,
-                             const NotificationDetails&));
 };
 
 // This class will add and remove a mock notification observer from

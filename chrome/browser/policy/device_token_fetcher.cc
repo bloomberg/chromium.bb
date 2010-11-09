@@ -8,7 +8,6 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_details.h"
@@ -24,40 +23,35 @@ static const char kPlaceholderDeviceID[] = "placeholder_device_id";
 
 namespace policy {
 
-bool UserDirDeviceTokenPathProvider::GetPath(FilePath* path) const {
-  FilePath dir_path;
-  if ( PathService::Get(chrome::DIR_USER_DATA, &dir_path))
-    return false;
-  *path = dir_path.Append(FILE_PATH_LITERAL("DeviceManagementToken"));
-  return true;
-}
-
 DeviceTokenFetcher::DeviceTokenFetcher(
     DeviceManagementBackend* backend,
-    StoredDeviceTokenPathProvider* path_provider)
-    : backend_(backend),
-      path_provider_(path_provider),
-      state_(kStateLoadDeviceTokenFromDisk),
+    const FilePath& token_path)
+    : token_path_(token_path),
+      backend_(backend),
+      state_(kStateNotStarted),
       device_token_load_complete_event_(true, false) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // The token fetcher gets initialized AuthTokens for the device management
+  // server are available. Install a notification observer to ensure that the
+  // device management token gets fetched after the AuthTokens are available.
+  registrar_.Add(this,
+                 NotificationType::TOKEN_AVAILABLE,
+                 NotificationService::AllSources());
 }
 
 void DeviceTokenFetcher::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type == NotificationType::TOKEN_AVAILABLE) {
     const Source<TokenService> token_service(source);
     const TokenService::TokenAvailableDetails* token_details =
         Details<const TokenService::TokenAvailableDetails>(details).ptr();
-    if (token_details->service() == GaiaConstants::kDeviceManagementService &&
-        state_ < kStateHasAuthToken) {
-      DCHECK_EQ(kStateFetchingAuthToken, state_);
-      SetState(kStateHasAuthToken);
-      em::DeviceRegisterRequest register_request;
-      backend_->ProcessRegisterRequest(token_details->token(),
-                                       GetDeviceID(),
-                                       register_request,
-                                       this);
+    if (token_details->service() == GaiaConstants::kDeviceManagementService) {
+      if (!HasAuthToken()) {
+        auth_token_ = token_details->token();
+        SendServerRequestIfPossible();
+      }
     }
   } else {
     NOTREACHED();
@@ -66,19 +60,16 @@ void DeviceTokenFetcher::Observe(NotificationType type,
 
 void DeviceTokenFetcher::HandleRegisterResponse(
     const em::DeviceRegisterResponse& response) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(kStateHasAuthToken, state_);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(kStateRequestingDeviceTokenFromServer, state_);
   if (response.has_device_management_token()) {
     device_token_ = response.device_management_token();
-    FilePath device_token_path;
-    if (path_provider_->GetPath(&device_token_path)) {
-      BrowserThread::PostTask(
-          BrowserThread::FILE,
-          FROM_HERE,
-          NewRunnableFunction(&WriteDeviceTokenToDisk,
-                              device_token_path,
-                              device_token_));
-    }
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        NewRunnableFunction(&WriteDeviceTokenToDisk,
+                            token_path_,
+                            device_token_));
     SetState(kStateHasDeviceToken);
   } else {
     NOTREACHED();
@@ -87,50 +78,82 @@ void DeviceTokenFetcher::HandleRegisterResponse(
 }
 
 void DeviceTokenFetcher::OnError(DeviceManagementBackend::ErrorCode code) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SetState(kStateFailure);
 }
 
 void DeviceTokenFetcher::StartFetching() {
-  DCHECK(CalledOnValidThread());
-  if (state_ < kStateHasDeviceToken) {
-    FilePath device_token_path;
-    FetcherState new_state = kStateFailure;
-    if (path_provider_->GetPath(&device_token_path)) {
-      if (file_util::PathExists(device_token_path)) {
-        std::string device_token;
-        if (file_util::ReadFileToString(device_token_path, &device_token_)) {
-          new_state = kStateHasDeviceToken;
-        }
-      }
-      if (new_state != kStateHasDeviceToken) {
-        new_state = kStateFetchingAuthToken;
-        // The policy provider gets initialized with the PrefService and Profile
-        // before ServiceTokens are available. Install a notification observer
-        // to ensure that the device management token gets fetched after the
-        // AuthTokens are available if it's needed.
-        registrar_.Add(this,
-                       NotificationType::TOKEN_AVAILABLE,
-                       NotificationService::AllSources());
-      }
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (state_ == kStateNotStarted) {
+    SetState(kStateLoadDeviceTokenFromDisk);
+    // The file calls for loading the persisted token must be deferred to the
+    // FILE thread.
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &DeviceTokenFetcher::AttemptTokenLoadFromDisk));
+  }
+}
+
+void DeviceTokenFetcher::AttemptTokenLoadFromDisk() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  FetcherState new_state = kStateFailure;
+  if (file_util::PathExists(token_path_)) {
+    std::string device_token;
+    if (file_util::ReadFileToString(token_path_, &device_token_)) {
+      new_state = kStateHasDeviceToken;
     }
-    SetState(new_state);
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &DeviceTokenFetcher::SetState,
+                          new_state));
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &DeviceTokenFetcher::MakeReadyToRequestDeviceToken));
+}
+
+void DeviceTokenFetcher::MakeReadyToRequestDeviceToken() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  SetState(kStateReadyToRequestDeviceTokenFromServer);
+  SendServerRequestIfPossible();
+}
+
+void DeviceTokenFetcher::SendServerRequestIfPossible() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (state_ == kStateReadyToRequestDeviceTokenFromServer
+      && HasAuthToken()) {
+    em::DeviceRegisterRequest register_request;
+    SetState(kStateRequestingDeviceTokenFromServer);
+    backend_->ProcessRegisterRequest(auth_token_,
+                                     GetDeviceID(),
+                                     register_request,
+                                     this);
   }
 }
 
 bool DeviceTokenFetcher::IsTokenPending() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return !device_token_load_complete_event_.IsSignaled();
 }
 
 std::string DeviceTokenFetcher::GetDeviceToken() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   device_token_load_complete_event_.Wait();
   return device_token_;
 }
 
 void DeviceTokenFetcher::SetState(FetcherState state) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (state_ == state)
+    return;
   state_ = state;
   if (state == kStateFailure) {
     device_token_load_complete_event_.Signal();
@@ -143,7 +166,13 @@ void DeviceTokenFetcher::SetState(FetcherState state) {
   }
 }
 
+void DeviceTokenFetcher::GetDeviceTokenPath(FilePath* token_path) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  *token_path = token_path_;
+}
+
 bool DeviceTokenFetcher::IsTokenValid() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return state_ == kStateHasDeviceToken;
 }
 

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
+
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/stl_util-inl.h"
 
 namespace {
 
@@ -14,48 +17,90 @@ static char next_token_suffix_ = '0';
 
 namespace policy {
 
-using enterprise_management::DeviceRegisterRequest;
-using enterprise_management::DeviceUnregisterRequest;
-using enterprise_management::DevicePolicyRequest;
-using enterprise_management::DeviceRegisterResponse;
-using enterprise_management::DeviceUnregisterResponse;
-using enterprise_management::DevicePolicyResponse;
+using ::testing::_;
+using ::testing::Invoke;
+
+using em::DeviceRegisterRequest;
+using em::DeviceUnregisterRequest;
+using em::DevicePolicyRequest;
+using em::DeviceRegisterResponse;
+using em::DeviceUnregisterResponse;
+using em::DevicePolicyResponse;
 
 MockDeviceManagementBackend::MockDeviceManagementBackend()
-    : DeviceManagementBackend(),
-      failure_(false) {
+    : DeviceManagementBackend() {
+  policy_setting_ = policy_response_.add_setting();
+  policy_setting_->set_policy_key("chrome-policy");
+  policy_setting_->set_watermark("fresh");
 }
 
-void MockDeviceManagementBackend::ProcessRegisterRequest(
+MockDeviceManagementBackend::~MockDeviceManagementBackend() {
+}
+
+void MockDeviceManagementBackend::AllShouldSucceed() {
+  ON_CALL(*this, ProcessRegisterRequest(_, _, _, _)).
+      WillByDefault(Invoke(
+          this,
+          &MockDeviceManagementBackend::SimulateSuccessfulRegisterRequest));
+  ON_CALL(*this, ProcessPolicyRequest(_, _, _)).
+      WillByDefault(Invoke(
+          this,
+          &MockDeviceManagementBackend::SimulateSuccessfulPolicyRequest));
+}
+
+void MockDeviceManagementBackend::AllShouldFail() {
+  ON_CALL(*this, ProcessRegisterRequest(_, _, _, _)).
+      WillByDefault(Invoke(
+          this,
+          &MockDeviceManagementBackend::SimulateFailedRegisterRequest));
+  ON_CALL(*this, ProcessPolicyRequest(_, _, _)).
+      WillByDefault(Invoke(
+          this,
+          &MockDeviceManagementBackend::SimulateFailedPolicyRequest));
+}
+
+void MockDeviceManagementBackend::AddBooleanPolicy(const char* policy_name,
+                                                   bool value) {
+  em::GenericSetting* policy_value = policy_setting_->mutable_policy_value();
+  em::GenericNamedValue* named_value = policy_value->add_named_value();
+  named_value->set_name(policy_name);
+  named_value->mutable_value()->set_value_type(
+      em::GenericValue::VALUE_TYPE_BOOL);
+  named_value->mutable_value()->set_bool_value(value);
+}
+
+void MockDeviceManagementBackend::SimulateSuccessfulRegisterRequest(
     const std::string& auth_token,
     const std::string& device_id,
-    const DeviceRegisterRequest& request,
+    const em::DeviceRegisterRequest& request,
     DeviceRegisterResponseDelegate* delegate) {
-  if (failure_) {
-    delegate->OnError(kErrorRequestInvalid);
-  } else {
-    DeviceRegisterResponse response;
-    std::string token(kFakeDeviceManagementToken);
-    token += next_token_suffix_++;
-    response.set_device_management_token(token);
-    delegate->HandleRegisterResponse(response);
-  }
+  DeviceRegisterResponse response;
+  std::string token(kFakeDeviceManagementToken);
+  token += next_token_suffix_++;
+  response.set_device_management_token(token);
+  delegate->HandleRegisterResponse(response);
 }
 
-void MockDeviceManagementBackend::ProcessUnregisterRequest(
+void MockDeviceManagementBackend::SimulateSuccessfulPolicyRequest(
     const std::string& device_management_token,
-    const DeviceUnregisterRequest& request,
-    DeviceUnregisterResponseDelegate* delegate) {
-  // TODO(danno): need a mock implementation for the backend here.
-  NOTREACHED();
-}
-
-void MockDeviceManagementBackend::ProcessPolicyRequest(
-    const std::string& device_management_token,
-    const DevicePolicyRequest& request,
+    const em::DevicePolicyRequest& request,
     DevicePolicyResponseDelegate* delegate) {
-  // TODO(danno): need a mock implementation for the backend here.
-  NOTREACHED();
+  delegate->HandlePolicyResponse(policy_response_);
+}
+
+void MockDeviceManagementBackend::SimulateFailedRegisterRequest(
+    const std::string& auth_token,
+    const std::string& device_id,
+    const em::DeviceRegisterRequest& request,
+    DeviceRegisterResponseDelegate* delegate) {
+  delegate->OnError(kErrorRequestFailed);
+}
+
+void MockDeviceManagementBackend::SimulateFailedPolicyRequest(
+    const std::string& device_management_token,
+    const em::DevicePolicyRequest& request,
+    DevicePolicyResponseDelegate* delegate) {
+  delegate->OnError(kErrorRequestFailed);
 }
 
 }  // namespace

@@ -58,21 +58,6 @@ bool FileBasedPolicyProvider::Provide(
   return true;
 }
 
-void FileBasedPolicyProvider::DecodePolicyValueTree(
-    DictionaryValue* policies,
-    ConfigurationPolicyStoreInterface* store) {
-  const PolicyDefinitionList* policy_list(policy_definition_list());
-  for (const PolicyDefinitionList::Entry* i = policy_list->begin;
-       i != policy_list->end; ++i) {
-    Value* value;
-    if (policies->Get(i->name, &value) && value->IsType(i->value_type))
-      store->Apply(i->policy_type, value->DeepCopy());
-  }
-
-  // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
-  // supports it.
-}
-
 // FileBasedPolicyLoader implementation:
 
 FileBasedPolicyLoader::FileBasedPolicyLoader(

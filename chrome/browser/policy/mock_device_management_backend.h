@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_POLICY_MOCK_DEVICE_MANAGEMENT_BACKEND_H_
 #pragma once
 
+#include <map>
 #include <string>
 
+#include "base/values.h"
 #include "chrome/browser/policy/device_management_backend.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -21,29 +25,56 @@ class MockDeviceManagementBackend
     : public DeviceManagementBackend {
  public:
   MockDeviceManagementBackend();
-  virtual ~MockDeviceManagementBackend() {}
-
-  void SetFailure(bool failure) { failure_ = failure; }
+  virtual ~MockDeviceManagementBackend();
 
   // DeviceManagementBackend method overrides:
-  virtual void ProcessRegisterRequest(
+  MOCK_METHOD4(ProcessRegisterRequest, void(
+      const std::string& auth_token,
+      const std::string& device_id,
+      const em::DeviceRegisterRequest& request,
+      DeviceRegisterResponseDelegate* delegate));
+
+  MOCK_METHOD3(ProcessUnregisterRequest, void(
+      const std::string& device_management_token,
+      const em::DeviceUnregisterRequest& request,
+      DeviceUnregisterResponseDelegate* delegate));
+
+  MOCK_METHOD3(ProcessPolicyRequest, void(
+      const std::string& device_management_token,
+      const em::DevicePolicyRequest& request,
+      DevicePolicyResponseDelegate* delegate));
+
+  void AllShouldSucceed();
+  void AllShouldFail();
+
+  void SimulateSuccessfulRegisterRequest(
       const std::string& auth_token,
       const std::string& device_id,
       const em::DeviceRegisterRequest& request,
       DeviceRegisterResponseDelegate* delegate);
 
-  virtual void ProcessUnregisterRequest(
-      const std::string& device_management_token,
-      const em::DeviceUnregisterRequest& request,
-      DeviceUnregisterResponseDelegate* delegate);
-
-  virtual void ProcessPolicyRequest(
+  void SimulateSuccessfulPolicyRequest(
       const std::string& device_management_token,
       const em::DevicePolicyRequest& request,
       DevicePolicyResponseDelegate* delegate);
 
+  void SimulateFailedRegisterRequest(
+      const std::string& auth_token,
+      const std::string& device_id,
+      const em::DeviceRegisterRequest& request,
+      DeviceRegisterResponseDelegate* delegate);
+
+  void SimulateFailedPolicyRequest(
+      const std::string& device_management_token,
+      const em::DevicePolicyRequest& request,
+      DevicePolicyResponseDelegate* delegate);
+
+  void AddBooleanPolicy(const char* policy_name, bool value);
+
  private:
-  bool failure_;
+  em::DevicePolicyResponse policy_response_;
+  em::DevicePolicySetting* policy_setting_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDeviceManagementBackend);
 };
 

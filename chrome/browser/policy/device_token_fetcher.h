@@ -9,41 +9,15 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/non_thread_safe.h"
+#include "base/ref_counted.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/browser/policy/device_management_backend.h"
 
 namespace policy {
 
 namespace em = enterprise_management;
-
-// Abstracts how the path is determined where the DeviceTokenFetcher stores the
-// device token once it has been returned from the server. Tests provide a mock
-// implementation to the DeviceTokenFetcher that doesn't write to DIR_USER_DATA.
-class StoredDeviceTokenPathProvider {
- public:
-  virtual ~StoredDeviceTokenPathProvider() {}
-
-  // Sets |path| to contain the path at which to use to store the device
-  // management token file. Returns true if successful, otherwise false.
-  virtual bool GetPath(FilePath* path) const = 0;
- protected:
-  StoredDeviceTokenPathProvider() {}
- private:
-  DISALLOW_COPY_AND_ASSIGN(StoredDeviceTokenPathProvider);
-};
-
-// Provides a path to the device token that's inside DIR_USER_DATA.
-class UserDirDeviceTokenPathProvider : public StoredDeviceTokenPathProvider {
- public:
-  UserDirDeviceTokenPathProvider() {}
-  virtual ~UserDirDeviceTokenPathProvider() {}
-  virtual bool GetPath(FilePath* path) const;
- private:
-  DISALLOW_COPY_AND_ASSIGN(UserDirDeviceTokenPathProvider);
-};
 
 // Fetches the device token that can be used for policy requests with the device
 // management server, either from disk if it already has been successfully
@@ -51,18 +25,17 @@ class UserDirDeviceTokenPathProvider : public StoredDeviceTokenPathProvider {
 // fetcher is shared as a singleton by all users of the device management token
 // to ensure they all get the same token.
 class DeviceTokenFetcher
-    : public NonThreadSafe,
-      public NotificationObserver,
-      public DeviceManagementBackend::DeviceRegisterResponseDelegate {
+    : public NotificationObserver,
+      public DeviceManagementBackend::DeviceRegisterResponseDelegate,
+      public base::RefCountedThreadSafe<DeviceTokenFetcher> {
  public:
-  // Requests to the device management server are sent through |backend|.  The
-  // DeviceTokenFetcher assumes ownership of |backend|, which is passed in
-  // explicitly to simplify mocking of the backend for unit testing.  The
-  // fetcher uses |path_provider| to determine the directory in which the device
-  // token is stored once it's retrieved from the server. The fetcher assumes
-  // ownership of |path_provider|.
+  // Requests to the device management server are sent through |backend|, which
+  // is passed in explicitly to simplify mocking of the backend for unit
+  // testing. The fetcher uses the directory in |token_dir| in which to store
+  // the device token once it's retrieved from the server. Should only be called
+  // by unit tests.
   DeviceTokenFetcher(DeviceManagementBackend* backend,
-                     StoredDeviceTokenPathProvider* path_provider);
+                     const FilePath& token_path);
   virtual ~DeviceTokenFetcher() {}
 
   // NotificationObserver method overrides:
@@ -76,7 +49,7 @@ class DeviceTokenFetcher
   virtual void OnError(DeviceManagementBackend::ErrorCode code);
 
   // Called by subscribers of the device management token to indicate that they
-  // will need the token in the future.
+  // will need the token in the future. Must be called on the UI thread.
   void StartFetching();
 
   // Returns true if there is a pending token request to the device management
@@ -88,16 +61,22 @@ class DeviceTokenFetcher
   // case that the token could not be fetched, an empty string is returned.
   std::string GetDeviceToken();
 
+  // True if the fetcher has a valid AuthToken for the device management server.
+  bool HasAuthToken() const { return !auth_token_.empty(); }
+
   // True if the device token has been fetched and is valid.
   bool IsTokenValid() const;
 
  private:
+  friend class DeviceTokenFetcherTest;
+
   // The different states that the fetcher can be in during the process of
   // getting the device token.
   enum FetcherState {
+    kStateNotStarted,
     kStateLoadDeviceTokenFromDisk,
-    kStateFetchingAuthToken,
-    kStateHasAuthToken,
+    kStateReadyToRequestDeviceTokenFromServer,
+    kStateRequestingDeviceTokenFromServer,
     kStateHasDeviceToken,
     kStateFailure
   };
@@ -106,6 +85,25 @@ class DeviceTokenFetcher
   // or is moving into the failure state, callers waiting on WaitForToken
   // are unblocked.
   void SetState(FetcherState state);
+
+  // Returns the full path to the file that persists the device manager token.
+  void GetDeviceTokenPath(FilePath* token_path) const;
+
+  // Tries to load the device token from disk. Must be called on the FILE
+  // thread.
+  void AttemptTokenLoadFromDisk();
+
+  // Called if it's not possible to load the device token from disk.  Sets the
+  // fetcher in a state that's ready to register the device with the device
+  // management server and receive the device token in return. If the AuthToken
+  // for the device management server is available, initiate the server
+  // request.
+  void MakeReadyToRequestDeviceToken();
+
+  // Issues a registration request to the server if both the fetcher is in the
+  // ready-to-request state and the device management server AuthToken is
+  // available.
+  void SendServerRequestIfPossible();
 
   // Saves the device management token to disk once it has been retrieved from
   // the server. Must be called on the FILE thread.
@@ -116,10 +114,15 @@ class DeviceTokenFetcher
   // management server and generate the device token.
   static std::string GetDeviceID();
 
-  scoped_ptr<DeviceManagementBackend> backend_;
-  scoped_ptr<StoredDeviceTokenPathProvider> path_provider_;
+  FilePath token_path_;
+  DeviceManagementBackend* backend_;  // weak
   FetcherState state_;
   std::string device_token_;
+
+  // Contains the AuthToken for the device management server. Empty if the
+  // AuthToken hasn't been issued yet or that was an error getting the
+  // AuthToken.
+  std::string auth_token_;
 
   // An event that is signaled only once the device token has been fetched
   // or it has been determined that there was an error during fetching.

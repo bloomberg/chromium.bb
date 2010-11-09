@@ -10,7 +10,9 @@
 #include <utility>
 
 #include "base/stl_util-inl.h"
+#include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -20,27 +22,22 @@ class MockConfigurationPolicyStore : public ConfigurationPolicyStoreInterface {
  public:
   typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
 
-  MockConfigurationPolicyStore() {}
-  ~MockConfigurationPolicyStore() {
-    STLDeleteValues(&policy_map_);
-  }
+  MockConfigurationPolicyStore();
+  virtual ~MockConfigurationPolicyStore();
 
   const PolicyMap& policy_map() const { return policy_map_; }
 
   // Get a value for the given policy. Returns NULL if that key doesn't exist.
-  const Value* Get(ConfigurationPolicyType type) const {
-    PolicyMap::const_iterator entry(policy_map_.find(type));
-    return entry == policy_map_.end() ? NULL : entry->second;
-  }
-
+  const Value* Get(ConfigurationPolicyType type) const;
   // ConfigurationPolicyStore implementation.
-  virtual void Apply(ConfigurationPolicyType policy, Value* value) {
-    std::swap(policy_map_[policy], value);
-    delete value;
-  }
+  void ApplyToMap(ConfigurationPolicyType policy, Value* value);
+
+  MOCK_METHOD2(Apply, void(ConfigurationPolicyType policy, Value* value));
 
  private:
   PolicyMap policy_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockConfigurationPolicyStore);
 };
 
 }  // namespace policy
