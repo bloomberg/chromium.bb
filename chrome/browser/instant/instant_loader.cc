@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -467,6 +468,9 @@ void InstantLoader::Update(TabContents* tab_contents,
       GURL instant_url(
           template_url->instant_url()->ReplaceSearchTerms(
               *template_url, std::wstring(), -1, std::wstring()));
+      CommandLine* cl = CommandLine::ForCurrentProcess();
+      if (cl->HasSwitch(switches::kInstantURL))
+        instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
       initial_instant_url_ = url;
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);

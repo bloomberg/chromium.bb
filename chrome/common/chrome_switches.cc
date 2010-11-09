@@ -681,6 +681,10 @@ const char kInProcessWebGL[]                = "in-process-webgl";
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
+// URL to use for instant. If specified this overrides the url from the
+// TemplateURL.
+const char kInstantURL[]                    = "instant-url";
+
 // Runs the Native Client inside the renderer process.
 const char kInternalNaCl[]                  = "internal-nacl";
 
