@@ -15,6 +15,14 @@
   fun:*InitializeClock*
 }
 
+{
+  bug_62560
+  ThreadSanitizer:Race
+  ...
+  fun:_initterm
+  fun:doexit
+}
+
 ############################
 # Reports on the guts of Windows
 {
