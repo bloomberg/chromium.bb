@@ -45,9 +45,6 @@ UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
       this,
       NotificationType::SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
-  camera_thread_.Start();
-  camera_ = new Camera(this, &camera_thread_, true);
-  camera_->Initialize(kFrameWidth, kFrameHeight);
 }
 
 UserImageScreen::~UserImageScreen() {
@@ -56,6 +53,9 @@ UserImageScreen::~UserImageScreen() {
 }
 
 void UserImageScreen::Refresh() {
+  camera_thread_.Start();
+  camera_ = new Camera(this, &camera_thread_, true);
+  InitCamera();
 }
 
 void UserImageScreen::Hide() {
@@ -83,7 +83,7 @@ void UserImageScreen::OnInitializeFailure() {
   // Retry initializing the camera.
   if (camera_.get()) {
     camera_->Uninitialize();
-    camera_->Initialize(kFrameWidth, kFrameHeight);
+    InitCamera();
   }
 }
 
@@ -154,7 +154,13 @@ void UserImageScreen::Observe(NotificationType type,
   if (is_screen_locked)
     camera_->Uninitialize();
   else
-    camera_->Initialize(kFrameWidth, kFrameHeight);
+    InitCamera();
+}
+
+void UserImageScreen::InitCamera() {
+  if (view())
+    view()->ShowCameraInitializing();
+  camera_->Initialize(kFrameWidth, kFrameHeight);
 }
 
 }  // namespace chromeos

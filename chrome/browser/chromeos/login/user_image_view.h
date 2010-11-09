@@ -13,12 +13,13 @@ class SkBitmap;
 
 namespace views {
 class ImageButton;
-class ImageView;
 class Label;
 class NativeButton;
 }  // namespace views
 
 namespace chromeos {
+
+class CameraImageView;
 
 // View used for selecting user image.
 class UserImageView : public views::View,
@@ -46,8 +47,13 @@ class UserImageView : public views::View,
   // Updates image from camera.
   void UpdateVideoFrame(const SkBitmap& frame);
 
+  // If in capturing mode, shows that camera is initializing by running
+  // throbber above the picture. Disables snapshot button until frame is
+  // received.
+  void ShowCameraInitializing();
+
   // If in capturing mode, shows that camera is broken instead of video
-  // frame and disables snapshot button.
+  // frame and disables snapshot button until new frame is received.
   void ShowCameraError();
 
   // Overridden from views::View:
@@ -70,7 +76,7 @@ class UserImageView : public views::View,
   views::NativeButton* ok_button_;
   views::NativeButton* skip_button_;
   views::ImageButton* snapshot_button_;
-  views::ImageView* user_image_;
+  CameraImageView* user_image_;
 
   // Notifications receiver.
   Delegate* delegate_;

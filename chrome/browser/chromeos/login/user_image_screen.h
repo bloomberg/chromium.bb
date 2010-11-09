@@ -47,6 +47,10 @@ class UserImageScreen: public ViewScreen<UserImageView>,
                        const NotificationDetails& details);
 
  private:
+  // Starts initializing the camera and shows the appropriate status on the
+  // screen.
+  void InitCamera();
+
   // Capturing timer callback that updates image from camera.
   void OnCaptureTimer();
 
