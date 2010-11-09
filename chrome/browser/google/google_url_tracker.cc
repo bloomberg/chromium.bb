@@ -35,18 +35,21 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
                                   const GURL& new_google_url);
 
   // ConfirmInfoBarDelegate
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
   virtual bool Cancel();
   virtual void InfoBarClosed();
 
- private:
+ protected:
   virtual ~GoogleURLTrackerInfoBarDelegate();
 
   GoogleURLTracker* google_url_tracker_;
   const GURL new_google_url_;
+
+ private:
+  // ConfirmInfoBarDelegate
+  virtual string16 GetMessageText() const;
+  virtual int GetButtons() const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
 };
@@ -58,23 +61,6 @@ GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
     : ConfirmInfoBarDelegate(tab_contents),
       google_url_tracker_(google_url_tracker),
       new_google_url_(new_google_url) {
-}
-
-string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
-  // TODO(ukai): change new_google_url to google_base_domain?
-  return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(new_google_url_.spec()));
-}
-
-int GoogleURLTrackerInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
-string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-                                   IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
-                                   IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
@@ -96,6 +82,32 @@ void GoogleURLTrackerInfoBarDelegate::InfoBarClosed() {
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
 }
 
+string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
+  // TODO(ukai): change new_google_url to google_base_domain?
+  return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
+                                    UTF8ToUTF16(new_google_url_.spec()));
+}
+
+int GoogleURLTrackerInfoBarDelegate::GetButtons() const {
+  return BUTTON_OK | BUTTON_CANCEL;
+}
+
+string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+                                   IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
+                                   IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+}
+
+InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
+                               GoogleURLTracker* google_url_tracker,
+                               const GURL& new_google_url) {
+  InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(tab_contents,
+      google_url_tracker, new_google_url);
+  tab_contents->AddInfoBar(infobar);
+  return infobar;
+}
+
 
 // GoogleURLTracker -----------------------------------------------------------
 
@@ -104,20 +116,9 @@ const char GoogleURLTracker::kDefaultGoogleHomepage[] =
 const char GoogleURLTracker::kSearchDomainCheckURL[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 
-InfoBarDelegate* GoogleURLTracker::InfoBarDelegateFactory::CreateInfoBar(
-    TabContents* tab_contents,
-    GoogleURLTracker* google_url_tracker,
-    const GURL& new_google_url) {
-  InfoBarDelegate* infobar =
-      new GoogleURLTrackerInfoBarDelegate(tab_contents,
-                                          google_url_tracker,
-                                          new_google_url);
-  tab_contents->AddInfoBar(infobar);
-  return infobar;
-}
-
 GoogleURLTracker::GoogleURLTracker()
-    : google_url_(g_browser_process->local_state()->GetString(
+    : infobar_creator_(&CreateInfobar),
+      google_url_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownGoogleURL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
       fetcher_id_(0),
@@ -127,7 +128,6 @@ GoogleURLTracker::GoogleURLTracker()
       request_context_available_(!!Profile::GetDefaultRequestContext()),
       need_to_prompt_(false),
       controller_(NULL),
-      infobar_factory_(new InfoBarDelegateFactory),
       infobar_(NULL) {
   registrar_.Add(this, NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
                  NotificationService::AllSources());
@@ -374,9 +374,6 @@ void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
   if (!need_to_prompt_)
     return;
   DCHECK(!fetched_google_url_.is_empty());
-  DCHECK(infobar_factory_.get());
 
-  infobar_ = infobar_factory_->CreateInfoBar(tab_contents,
-                                             this,
-                                             fetched_google_url_);
+  infobar_ = (*infobar_creator_)(tab_contents, this, fetched_google_url_);
 }

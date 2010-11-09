@@ -59,10 +59,11 @@ class TestInfoBarDelegate : public InfoBarDelegate {
                       const GURL& new_google_url);
   virtual ~TestInfoBarDelegate();
 
+  // InfoBarDelegate
+  virtual InfoBar* CreateInfoBar();
+
   GoogleURLTracker* google_url_tracker() const { return google_url_tracker_; }
   const GURL& new_google_url() const { return new_google_url_; }
-
-  virtual InfoBar* CreateInfoBar();
 
  private:
   GoogleURLTracker* google_url_tracker_;
@@ -83,20 +84,14 @@ InfoBar* TestInfoBarDelegate::CreateInfoBar() {
   return NULL;
 }
 
+InfoBarDelegate* CreateTestInfobar(
+    TabContents* tab_contents,
+    GoogleURLTracker* google_url_tracker,
+    const GURL& new_google_url) {
+  return new TestInfoBarDelegate(google_url_tracker, new_google_url);
+}
+
 }  // namespace
-
-
-// TestInfoBarDelegateFactory -------------------------------------------------
-
-class TestInfoBarDelegateFactory
-    : public GoogleURLTracker::InfoBarDelegateFactory {
- public:
-  virtual InfoBarDelegate* CreateInfoBar(TabContents* tab_contents,
-                                         GoogleURLTracker* google_url_tracker,
-                                         const GURL& new_google_url) {
-    return new TestInfoBarDelegate(google_url_tracker, new_google_url);
-  }
-};
 
 
 // GoogleURLTrackerTest -------------------------------------------------------
@@ -167,8 +162,8 @@ void GoogleURLTrackerTest::SetUp() {
 
   URLFetcher::set_factory(&fetcher_factory_);
   observer_.reset(new TestNotificationObserver);
-  g_browser_process->google_url_tracker()->infobar_factory_.reset(
-      new TestInfoBarDelegateFactory);
+  g_browser_process->google_url_tracker()->infobar_creator_ =
+      &CreateTestInfobar;
 }
 
 void GoogleURLTrackerTest::TearDown() {
@@ -359,14 +354,6 @@ TEST_F(GoogleURLTrackerTest, UpdatePromptedURLWhenBack) {
   FinishSleep();
   MockSearchDomainCheckResponse(0, ".google.co.uk");
 
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), GetFetchedGoogleURL());
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), GoogleURLTracker::GoogleURL());
-  EXPECT_EQ(GURL("http://www.google.co.uk/"), GetLastPromptedGoogleURL());
-
-  SearchCommitted(GURL("http://www.google.co.uk/search?q=test"));
-  NavEntryCommitted();
-
-  EXPECT_FALSE(InfoBarIsShown());
   EXPECT_EQ(GURL("http://www.google.co.uk/"), GetFetchedGoogleURL());
   EXPECT_EQ(GURL("http://www.google.co.uk/"), GoogleURLTracker::GoogleURL());
   EXPECT_EQ(GURL("http://www.google.co.uk/"), GetLastPromptedGoogleURL());

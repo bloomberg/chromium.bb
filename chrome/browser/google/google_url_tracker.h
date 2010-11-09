@@ -39,14 +39,6 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                          public NotificationObserver,
                          public net::NetworkChangeNotifier::Observer {
  public:
-  class InfoBarDelegateFactory {
-   public:
-    virtual ~InfoBarDelegateFactory() {}
-    virtual InfoBarDelegate* CreateInfoBar(TabContents* tab_contents,
-                                           GoogleURLTracker* google_url_tracker,
-                                           const GURL& new_google_url);
-  };
-
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->google_url_tracker_.  No code other than the
   // GoogleURLTracker itself should actually use
@@ -94,6 +86,10 @@ class GoogleURLTracker : public URLFetcher::Delegate,
  private:
   friend class GoogleURLTrackerTest;
 
+  typedef InfoBarDelegate* (*InfobarCreator)(TabContents*,
+                                             GoogleURLTracker*,
+                                             const GURL&);
+
   // Registers consumer interest in getting an updated URL from the server.
   // It will be notified as NotificationType::GOOGLE_URL_UPDATED, so the
   // consumer should observe this notification before calling this.
@@ -128,6 +124,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   void ShowGoogleURLInfoBarIfNecessary(TabContents* tab_contents);
 
   NotificationRegistrar registrar_;
+  InfobarCreator infobar_creator_;
   // TODO(ukai): GoogleURLTracker should track google domain (e.g. google.co.uk)
   // rather than URL (e.g. http://www.google.co.uk/), so that user could
   // configure to use https in search engine templates.
@@ -153,7 +150,6 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.
   NavigationController* controller_;
-  scoped_ptr<InfoBarDelegateFactory> infobar_factory_;
   InfoBarDelegate* infobar_;
   GURL search_url_;
 
