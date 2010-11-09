@@ -9,7 +9,9 @@
 import logging
 import os
 import shutil
+import sys
 import tempfile
+import zipfile
 
 
 class ExistingPathReplacer(object):
@@ -91,4 +93,47 @@ def RemovePath(path):
     os.remove(path)
   except OSError:
     pass
+
+
+def UnzipFilenameToDir(filename, dir):
+  """Unzip |filename| to directory |dir|.
+
+  This works with as low as python2.4 (used on win).
+  """
+  zf = zipfile.ZipFile(filename)
+  pushd = os.getcwd()
+  if not os.path.isdir(dir):
+    os.mkdir(dir)
+  os.chdir(dir)
+  # Extract files.
+  for info in zf.infolist():
+    name = info.filename
+    if name.endswith('/'):  # dir
+      if not os.path.isdir(name):
+        os.makedirs(name)
+    else:  # file
+      dir = os.path.dirname(name)
+      if not os.path.isdir(dir):
+        os.makedirs(dir)
+      out = open(name, 'wb')
+      out.write(zf.read(name))
+      out.close()
+    # Set permissions. Permission info in external_attr is shifted 16 bits.
+    os.chmod(name, info.external_attr >> 16L)
+  os.chdir(pushd)
+
+
+def GetCurrentPlatform():
+  """Get a string representation for the current platform.
+
+  Returns:
+    'mac', 'win' or 'linux'
+  """
+  if sys.platform == 'darwin':
+    return 'mac'
+  if sys.platform == 'win32':
+    return 'win'
+  if sys.platform == 'linux2':
+    return 'linux'
+  raise RuntimeError('Unknown platform')
 
