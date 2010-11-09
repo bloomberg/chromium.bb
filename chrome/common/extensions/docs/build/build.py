@@ -204,11 +204,14 @@ def main():
   # Write zipped versions of the samples listed in the manifest to the
   # filesystem, unless the user has disabled it
   if options.zips:
-    samples_manifest.writeZippedSamples()
+    modified_zips = samples_manifest.writeZippedSamples()
+  else:
+    modified_zips = []
 
   modified_files = RenderPages(page_names, test_shell)
+  modified_files.extend(modified_zips)
 
-  if (len(modified_files) == 0):
+  if len(modified_files) == 0:
     print "Output files match existing files. No changes made."
   else:
     print ("ATTENTION: EXTENSION DOCS HAVE CHANGED\n" +
@@ -216,7 +219,7 @@ def main():
            "into source control (ideally in the same changelist as the\n" +
            "underlying files that resulting in their changing).")
     for f in modified_files:
-      print f
+      print " * %s" % f
 
   # Hack. Sleep here, otherwise windows doesn't properly close the debug.log
   # and the os.remove will fail with a "Permission denied".

@@ -225,8 +225,7 @@ class SamplesManifest(object):
     Args:
       path: The path to write the samples manifest file to.
     """
-
-    manifest_text = json.dumps(self._manifest_data, indent=2)
+    manifest_text = json.dumps(self._manifest_data, indent=2, sort_keys=True)
     output_path = os.path.realpath(path)
     try:
       output_file = open(output_path, 'w')
@@ -238,10 +237,18 @@ class SamplesManifest(object):
 
   def writeZippedSamples(self):
     """ For each sample in the current manifest, create a zip file with the
-    sample contents in the sample's parent directory. """
+    sample contents in the sample's parent directory if not zip exists, or
+    update the zip file if the sample has been updated.
 
+    Returns:
+      A set of paths representing zip files which have been modified.
+    """
+    modified_paths = []
     for sample in self._manifest_data['samples']:
-      sample.write_zip()
+      path = sample.write_zip()
+      if path:
+        modified_paths.append(path)
+    return modified_paths
 
 class Sample(dict):
   """ Represents metadata about a Chrome extension sample.
@@ -264,10 +271,13 @@ class Sample(dict):
     self._manifest = parse_json_file(self._manifest_path)
     self._locale_data = self._parse_locale_data()
 
-    # The following properties will be serialized when converting this object
-    # to JSON.
+    # The following calls set data which will be serialized when converting
+    # this object to JSON.
+    source_data = self._parse_source_data(api_methods)
+    self['api_calls'] = source_data['api_calls']
+    self['source_files'] = source_data['source_files']
+    self['source_hash'] = source_data['source_hash']
 
-    self['api_calls'] = self._parse_api_calls(api_methods)
     self['name'] = self._parse_name()
     self['description'] = self._parse_description()
     self['icon'] = self._parse_icon()
@@ -275,7 +285,6 @@ class Sample(dict):
     self['protocols'] = self._parse_protocols()
     self['path'] = self._get_relative_path()
     self['search_string'] = self._get_search_string()
-    self['source_files'] = self._parse_source_files()
     self['id'] = hashlib.sha1(self['path']).hexdigest()
     self['zip_path'] = self._get_relative_zip_path()
 
@@ -421,62 +430,6 @@ class Sample(dict):
     sample_dirname = os.path.basename(sample_path)
     return "%s.zip" % sample_dirname
 
-  def _parse_api_calls(self, api_methods):
-    """ Returns a list of Chrome extension API calls the sample makes.
-
-    Parses any *.html and *.js files in the sample directory and matches them
-    against the supplied list of all available API methods, returning methods
-    which show up in the sample code.
-
-    Args:
-      api_methods: A list of strings containing the potential
-          API calls the and the extension sample could be making.
-
-    Returns:
-      A set of every member of api_methods that appears in any *.html or *.js
-      file contained in this sample's directory (or subdirectories).
-
-    Raises:
-      Exception: If any of the *.html or *.js files cannot be read.
-    """
-    api_calls = set()
-    extension_dir_path = os.path.dirname(self._manifest_path)
-    for root, dirs, files in sorted_walk(extension_dir_path):
-      for file in files:
-        if file[-5:] == '.html' or file[-3:] == '.js':
-          path = os.path.join(root, file)
-          try:
-            code_file = open(path, "r")
-          except IOError, msg:
-            raise Exception("Failed to read %s: %s" % (path, msg))
-          code_contents = unicode(code_file.read(), errors="replace")
-          code_file.close()
-
-          for method in api_methods:
-            if (code_contents.find(method) > -1):
-              api_calls.add(method)
-    return sorted(api_calls)
-
-  def _parse_source_files(self):
-    """ Returns a list of paths to source files present in the extenion.
-
-    Returns:
-      A list of paths relative to the manifest file directory.
-    """
-    source_paths = []
-    base_path = os.path.realpath(os.path.dirname(self._manifest_path))
-    for root, directories, files in sorted_walk(base_path):
-      if '.svn' in directories:
-        directories.remove('.svn')   # Don't go into SVN metadata directories
-
-      for file_name in files:
-        ext = os.path.splitext(file_name)[1]
-        if ext in self._SOURCE_FILE_EXTENSIONS:
-          path = os.path.realpath(os.path.join(root, file_name))
-          path = path.replace(base_path, '')[1:]
-          source_paths.append(path)
-    return sorted(source_paths)
-
   def _parse_description(self):
     """ Returns a localized description of the extension.
 
@@ -577,6 +530,66 @@ class Sample(dict):
           protocols.append(split[0] + "://")
     return protocols
 
+  def _parse_source_data(self, api_methods):
+    """ Iterates over the sample's source files and parses data from them.
+
+    Parses any files in the sample directory with known source extensions
+    (as defined in self._SOURCE_FILE_EXTENSIONS).  For each file, this method:
+
+       1. Stores a relative path from the manifest.json directory to the file.
+       2. Searches through the contents of the file for chrome.* API calls.
+       3. Calculates a SHA1 digest for the contents of the file.
+
+    Args:
+      api_methods: A list of strings containing the potential
+          API calls the and the extension sample could be making.
+
+    Raises:
+      Exception: If any of the source files cannot be read.
+
+    Returns:
+      A dictionary containing the keys/values:
+        'api_calls'     A sorted list of API calls the sample makes.
+        'source_files'  A sorted list of paths to files the extension uses.
+        'source_hash'   A hash of the individual file hashes.
+    """
+    data = {}
+    source_paths = []
+    source_hashes = []
+    api_calls = set()
+    base_path = os.path.realpath(os.path.dirname(self._manifest_path))
+    for root, directories, files in sorted_walk(base_path):
+      if '.svn' in directories:
+        directories.remove('.svn')   # Don't go into SVN metadata directories
+
+      for file_name in files:
+        ext = os.path.splitext(file_name)[1]
+        if ext in self._SOURCE_FILE_EXTENSIONS:
+          # Add the file path to the list of source paths.
+          fullpath = os.path.realpath(os.path.join(root, file_name))
+          path = fullpath.replace(base_path, '')[1:]
+          source_paths.append(path)
+
+          # Read the contents and parse out API calls.
+          try:
+            code_file = open(fullpath, "r")
+          except IOError, msg:
+            raise Exception("Failed to read %s: %s" % (fullpath, msg))
+          code_contents = unicode(code_file.read(), errors="replace")
+          code_file.close()
+          for method in api_methods:
+            if (code_contents.find(method) > -1):
+              api_calls.add(method)
+
+          # Get a hash of the file contents for zip file generation.
+          hash = hashlib.sha1(code_contents.encode("ascii", "replace"))
+          source_hashes.append(hash.hexdigest())
+
+    data['api_calls'] = sorted(api_calls)
+    data['source_files'] = sorted(source_paths)
+    data['source_hash'] = hashlib.sha1(''.join(source_hashes)).hexdigest()
+    return data
+
   def _uses_background(self):
     """ Returns true if the extension defines a background page. """
     return self._manifest.has_key('background_page')
@@ -618,6 +631,26 @@ class Sample(dict):
 
     zip_filename = self._get_zip_filename()
     zip_path = os.path.join(sample_parentpath, zip_filename)
+    zip_manifest_path = os.path.join(sample_dirname, 'manifest.json')
+
+    zipfile.ZipFile.debug = 3
+
+    if os.path.isfile(zip_path):
+      try:
+        old_zip_file = zipfile.ZipFile(zip_path, 'r')
+      except IOError, msg:
+        raise Exception("Could not read zip at %s: %s" % (zip_path, msg))
+
+      try:
+        info = old_zip_file.getinfo(zip_manifest_path)
+        hash = info.comment
+        if hash == self['source_hash']:
+          return None    # Hashes match - no need to generate file
+      except KeyError, msg:
+        pass             # The old zip file doesn't contain a hash - overwrite
+      finally:
+        old_zip_file.close()
+
     zip_file = zipfile.ZipFile(zip_path, 'w')
 
     try:
@@ -629,8 +662,14 @@ class Sample(dict):
           abspath = os.path.realpath(os.path.join(root, file))
           # Relative path to store the file in under the zip.
           relpath = sample_dirname + abspath.replace(sample_path, "")
+
           zip_file.write(abspath, relpath)
+          if file == 'manifest.json':
+            info = zip_file.getinfo(zip_manifest_path)
+            info.comment = self['source_hash']
     except RuntimeError, msg:
-      raise Exception("Could not write zip at " % zip_path)
+      raise Exception("Could not write zip at %s: %s" % (zip_path, msg))
     finally:
       zip_file.close()
+
+    return self._get_relative_zip_path()
