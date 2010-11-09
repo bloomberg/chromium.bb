@@ -34,10 +34,13 @@ struct SerializedFontDescription {
   int32_t word_spacing;
 };
 
+// Since there are so many parameters, DrawTextAt requires this separate
+// structure. This includes everything but the font name. Because the font name
+// is a var, it's much more convenient to use the normal way of passing a
+// PP_Var.
 struct PPBFont_DrawTextAt_Params {
   PP_Resource font;
   PP_Resource image_data;
-  pp::proxy::SerializedVar text;
   PP_Bool text_is_rtl;
   PP_Bool override_direction;
   PP_Point position;
