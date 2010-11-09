@@ -10,7 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/file_system/browser_file_system_callback_dispatcher.h"
-#include "chrome/browser/file_system/file_system_host_context.h"
+#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
@@ -21,9 +21,9 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/fileapi/file_system_quota.h"
+#include "webkit/fileapi/file_system_quota_manager.h"
 
-using fileapi::FileSystemQuota;
+using fileapi::FileSystemQuotaManager;
 
 class FileSystemDispatcherHost::OpenFileSystemTask {
  public:
@@ -78,7 +78,7 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(
     : message_sender_(sender),
       process_handle_(0),
       shutdown_(false),
-      context_(profile->GetFileSystemHostContext()),
+      context_(profile->GetFileSystemContext()),
       host_content_settings_map_(profile->GetHostContentSettingsMap()),
       request_context_getter_(profile->GetRequestContext()) {
   DCHECK(message_sender_);
@@ -89,7 +89,7 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(
     : message_sender_(sender),
       process_handle_(0),
       shutdown_(false),
-      context_(context->file_system_host_context()),
+      context_(context->browser_file_system_context()),
       host_content_settings_map_(context->host_content_settings_map()),
       request_context_(context) {
   DCHECK(message_sender_);
@@ -163,7 +163,7 @@ void FileSystemDispatcherHost::OnMove(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
   if (!VerifyFileSystemPathForRead(src_path, request_id) ||
       !VerifyFileSystemPathForWrite(dest_path, request_id, true /* create */,
-                                    FileSystemQuota::kUnknownSize))
+                                    FileSystemQuotaManager::kUnknownSize))
     return;
 
   GetNewOperation(request_id)->Move(src_path, dest_path);
@@ -173,7 +173,7 @@ void FileSystemDispatcherHost::OnCopy(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
   if (!VerifyFileSystemPathForRead(src_path, request_id) ||
       !VerifyFileSystemPathForWrite(dest_path, request_id, true /* create */,
-                                    FileSystemQuota::kUnknownSize))
+                                    FileSystemQuotaManager::kUnknownSize))
     return;
 
   GetNewOperation(request_id)->Copy(src_path, dest_path);
@@ -227,7 +227,7 @@ void FileSystemDispatcherHost::OnWrite(
     const GURL& blob_url,
     int64 offset) {
   if (!VerifyFileSystemPathForWrite(path, request_id, true /* create */,
-                                    FileSystemQuota::kUnknownSize))
+                                    FileSystemQuotaManager::kUnknownSize))
     return;
   GetNewOperation(request_id)->Write(
       request_context_, path, blob_url, offset);

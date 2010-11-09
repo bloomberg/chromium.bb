@@ -13,7 +13,7 @@
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/file_system/file_system_host_context.h"
+#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/io_thread.h"
@@ -71,8 +71,8 @@ class ChromeURLRequestContext : public URLRequestContext {
   }
 
   // Gets the file system host context with this context's profile.
-  FileSystemHostContext* file_system_host_context() const {
-    return file_system_host_context_.get();
+  BrowserFileSystemContext* browser_file_system_context() const {
+    return browser_file_system_context_.get();
   }
 
   bool is_off_the_record() const {
@@ -174,8 +174,8 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_blob_storage_context(ChromeBlobStorageContext* context) {
     blob_storage_context_ = context;
   }
-  void set_file_system_host_context(FileSystemHostContext* context) {
-    file_system_host_context_ = context;
+  void set_browser_file_system_context(BrowserFileSystemContext* context) {
+    browser_file_system_context_ = context;
   }
   void set_extension_info_map(ExtensionInfoMap* map) {
     extension_info_map_ = map;
@@ -204,7 +204,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<FileSystemHostContext> file_system_host_context_;
+  scoped_refptr<BrowserFileSystemContext> browser_file_system_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   bool is_media_;
@@ -373,7 +373,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
   scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<FileSystemHostContext> file_system_host_context_;
+  scoped_refptr<BrowserFileSystemContext> browser_file_system_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   FilePath profile_dir_path_;

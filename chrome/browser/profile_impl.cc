@@ -38,7 +38,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/file_system/file_system_host_context.h"
+#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/find_bar_state.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -1010,12 +1010,12 @@ PersonalDataManager* ProfileImpl::GetPersonalDataManager() {
   return personal_data_manager_.get();
 }
 
-FileSystemHostContext* ProfileImpl::GetFileSystemHostContext() {
-  if (!file_system_host_context_.get())
-    file_system_host_context_ = new FileSystemHostContext(
+BrowserFileSystemContext* ProfileImpl::GetFileSystemContext() {
+  if (!browser_file_system_context_.get())
+    browser_file_system_context_ = new BrowserFileSystemContext(
         GetPath(), IsOffTheRecord());
-  DCHECK(file_system_host_context_.get());
-  return file_system_host_context_.get();
+  DCHECK(browser_file_system_context_.get());
+  return browser_file_system_context_.get();
 }
 
 void ProfileImpl::InitThemes() {

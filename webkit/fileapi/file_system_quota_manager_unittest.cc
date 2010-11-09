@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/file_system_quota.h"
+#include "webkit/fileapi/file_system_quota_manager.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -12,19 +12,19 @@
 
 using namespace fileapi;
 
-class FileSystemQuotaTest : public testing::Test {
+class FileSystemQuotaManagerTest : public testing::Test {
  public:
-  FileSystemQuotaTest() { }
+  FileSystemQuotaManagerTest() { }
 
   void SetUp() {
-    quota_.reset(new FileSystemQuota);
+    quota_.reset(new FileSystemQuotaManager(false, false));
   }
 
-  FileSystemQuota* quota() const { return quota_.get(); }
+  FileSystemQuotaManager* quota() const { return quota_.get(); }
 
  protected:
-  scoped_ptr<FileSystemQuota> quota_;
-  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaTest);
+  scoped_ptr<FileSystemQuotaManager> quota_;
+  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaManagerTest);
 };
 
 namespace {
@@ -38,7 +38,7 @@ static const char* const kTestOrigins[] = {
 
 }  // anonymous namespace
 
-TEST_F(FileSystemQuotaTest, CheckOriginQuotaNotAllowed) {
+TEST_F(FileSystemQuotaManagerTest, CheckOriginQuotaNotAllowed) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {
     SCOPED_TRACE(testing::Message() << "CheckOriginQuotaNotAllowed #"
                  << i << " " << kTestOrigins[i]);
@@ -49,7 +49,7 @@ TEST_F(FileSystemQuotaTest, CheckOriginQuotaNotAllowed) {
   }
 }
 
-TEST_F(FileSystemQuotaTest, CheckOriginQuotaUnlimited) {
+TEST_F(FileSystemQuotaManagerTest, CheckOriginQuotaUnlimited) {
   // Tests if SetOriginQuotaUnlimited and ResetOriginQuotaUnlimited
   // are working as expected.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {
@@ -73,7 +73,7 @@ TEST_F(FileSystemQuotaTest, CheckOriginQuotaUnlimited) {
   }
 }
 
-TEST_F(FileSystemQuotaTest, CheckOriginQuotaWithMixedSet) {
+TEST_F(FileSystemQuotaManagerTest, CheckOriginQuotaWithMixedSet) {
   // Tests setting unlimited quota for some urls doesn't affect
   // other urls.
   GURL test_url1("http://foo.bar.com/");
@@ -90,7 +90,7 @@ TEST_F(FileSystemQuotaTest, CheckOriginQuotaWithMixedSet) {
   }
 }
 
-TEST_F(FileSystemQuotaTest, CheckOriginQuotaMixedWithDifferentScheme) {
+TEST_F(FileSystemQuotaManagerTest, CheckOriginQuotaMixedWithDifferentScheme) {
   // Tests setting unlimited quota for urls doesn't affect
   // pages in the same hosts but with different scheme.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {
@@ -119,7 +119,7 @@ TEST_F(FileSystemQuotaTest, CheckOriginQuotaMixedWithDifferentScheme) {
   }
 }
 
-TEST_F(FileSystemQuotaTest, CheckOriginQuotaMixedWithDifferentPort) {
+TEST_F(FileSystemQuotaManagerTest, CheckOriginQuotaMixedWithDifferentPort) {
   // Tests setting unlimited quota for urls doesn't affect
   // pages in the same scheme/hosts but with different port number.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestOrigins); ++i) {

@@ -22,7 +22,7 @@ class Time;
 }
 
 class ChromeURLRequestContext;
-class FileSystemHostContext;
+class BrowserFileSystemContext;
 class GURL;
 class HostContentSettingsMap;
 class Profile;
@@ -119,7 +119,7 @@ class FileSystemDispatcherHost
 
   bool shutdown_;
 
-  scoped_refptr<FileSystemHostContext> context_;
+  scoped_refptr<BrowserFileSystemContext> context_;
 
   // Used to look up permissions.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

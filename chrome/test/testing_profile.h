@@ -197,7 +197,7 @@ class TestingProfile : public Profile {
   }
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
-  virtual FileSystemHostContext* GetFileSystemHostContext() { return NULL; }
+  virtual BrowserFileSystemContext* GetFileSystemContext() { return NULL; }
   virtual BrowserSignin* GetBrowserSignin() { return NULL; }
   virtual bool HasCreatedDownloadManager() const { return false; }
   virtual void InitThemes();

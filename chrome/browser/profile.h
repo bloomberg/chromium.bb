@@ -54,7 +54,7 @@ class ExtensionProcessManager;
 class ExtensionsService;
 class FaviconService;
 class FilePath;
-class FileSystemHostContext;
+class BrowserFileSystemContext;
 class FindBarState;
 class GeolocationContentSettingsMap;
 class GeolocationPermissionContext;
@@ -287,8 +287,10 @@ class Profile {
   // Returns the PersonalDataManager associated with this profile.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
-  // Returns the HTML5 FileSystemHostContext assigned to this profile.
-  virtual FileSystemHostContext* GetFileSystemHostContext() = 0;
+  // Returns the FileSystemContext associated to this profile.  The context
+  // is lazily created the first time this method is called.  This is owned
+  // by the profile.
+  virtual BrowserFileSystemContext* GetFileSystemContext() = 0;
 
   // Returns the BrowserSignin object assigned to this profile.
   virtual BrowserSignin* GetBrowserSignin() = 0;

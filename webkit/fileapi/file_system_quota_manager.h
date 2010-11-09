@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_H_
-#define WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_H_
+#ifndef WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_MANAGER_H_
+#define WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_MANAGER_H_
 
 #include <set>
 
@@ -14,12 +14,17 @@ namespace fileapi {
 
 // A quota manager for FileSystem. For now it has little implementation
 // and just allows unlimited quota for apps.
-class FileSystemQuota {
+class FileSystemQuotaManager {
  public:
   static const int64 kUnknownSize;
 
-  FileSystemQuota();
-  ~FileSystemQuota();
+  // If |allow_file_access_from_files| is true, unlimited access is granted
+  // for file:/// URLs.
+  // If |unlimited_quota| is true, unlimited access is granted for every
+  // origin.  This flag must be used only for testing.
+  FileSystemQuotaManager(bool allow_file_access_from_files,
+                         bool unlimited_quota);
+  ~FileSystemQuotaManager();
 
   // Checks if the origin can grow its usage by |growth| bytes.
   // This only performs in-memory check and returns immediately.
@@ -36,9 +41,12 @@ class FileSystemQuota {
   // For some extensions/apps we allow unlimited quota.
   std::set<GURL> unlimited_quota_origins_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemQuota);
+  const bool allow_file_access_from_files_;
+  const bool unlimited_quota_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaManager);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_H_
+#endif  // WEBKIT_FILEAPI_FILE_SYSTEM_QUOTA_MANAGER_H_

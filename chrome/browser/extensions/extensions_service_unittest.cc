@@ -23,7 +23,7 @@
 #include "base/version.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/file_system/file_system_host_context.h"
+#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -297,17 +297,17 @@ class ExtensionTestingProfile : public TestingProfile {
     return appcache_service_;
   }
 
-  virtual FileSystemHostContext* GetFileSystemHostContext() {
-    if (!file_system_host_context_)
-      file_system_host_context_ = new FileSystemHostContext(
+  virtual BrowserFileSystemContext* GetFileSystemContext() {
+    if (!browser_file_system_context_)
+      browser_file_system_context_ = new BrowserFileSystemContext(
           GetPath(), IsOffTheRecord());
-    return file_system_host_context_;
+    return browser_file_system_context_;
   }
 
  private:
   ExtensionsService* service_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<FileSystemHostContext> file_system_host_context_;
+  scoped_refptr<BrowserFileSystemContext> browser_file_system_context_;
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.

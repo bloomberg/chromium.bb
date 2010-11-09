@@ -192,7 +192,7 @@ bool WorkerProcessHost::Init() {
       // requests them.
       ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
           id(),
-          request_context_->file_system_host_context()->
+          request_context_->browser_file_system_context()->
               path_manager()->base_path(),
           base::PLATFORM_FILE_OPEN |
           base::PLATFORM_FILE_CREATE |
