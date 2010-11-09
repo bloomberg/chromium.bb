@@ -156,6 +156,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_KEYGEN_HIGH_GRADE_KEY;
     case WebLocalizedString::KeygenMenuMediumGradeKeySize:
       return IDS_KEYGEN_MED_GRADE_KEY;
+    // TODO(tkent): Remove default: when we merge the next
+    // WebLocalizedString.h change.
+    default:
+      break;
   }
   return -1;
 }
