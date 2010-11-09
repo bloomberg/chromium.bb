@@ -8,6 +8,7 @@
 // incompatibility with atlwin.h.
 #include "ceee/testing/utils/mock_win32.h"  // NOLINT
 
+#include "ceee/ie/broker/api_module_constants.h"
 #include "ceee/ie/broker/infobar_api_module.h"
 #include "ceee/ie/testing/mock_broker_and_friends.h"
 #include "ceee/testing/utils/mock_window_utils.h"
@@ -40,8 +41,9 @@ const int kGoodFrameWindowId = 88;
 const int kRequestId = 43;
 const char kHtmlPath[] = "/infobar/test.html";
 
-const HWND kGoodTabWindow = (HWND)(kGoodTabWindowId + 1);
-const HWND kGoodFrameWindow = (HWND)(kGoodFrameWindowId + 1);
+const HWND kGoodTabWindow = reinterpret_cast<HWND>(kGoodTabWindowId + 1);
+const HWND kGoodFrameWindow = reinterpret_cast<HWND>(kGoodFrameWindowId + 1);
+const HWND kNoWindow = reinterpret_cast<HWND>(NULL);
 
 TEST(InfobarApi, RegisterInvocations) {
   StrictMock<MockApiDispatcher> disp;
@@ -53,6 +55,7 @@ class MockInfobarApiResult : public InfobarApiResult {
  public:
   explicit MockInfobarApiResult(int request_id)
       : InfobarApiResult(request_id) {}
+  MOCK_METHOD2(CreateWindowValue, bool(HWND, bool));
   MOCK_METHOD0(PostResult, void());
   MOCK_METHOD1(PostError, void(const std::string&));
 
@@ -96,6 +99,14 @@ class InfobarApiTests: public testing::Test {
                        AddRef(mock_infobar_executor_keeper_.p)));
   }
 
+  void SetGoodArgs(ListValue* good_args) {
+    ASSERT_TRUE(good_args != NULL);
+    DictionaryValue dict;
+    dict.Set(ext::kTabId, Value::CreateIntegerValue(kGoodTabWindowId));
+    dict.Set(ext::kHtmlPath, Value::CreateStringValue(std::string(kHtmlPath)));
+    ASSERT_TRUE(good_args->Set(0, dict.DeepCopy()));
+  }
+
   StrictMock<testing::MockUser32> user32_;
   // The executor classes are already strict from their base class impl.
   testing::MockInfobarExecutor* mock_infobar_executor_;
@@ -106,17 +117,12 @@ class InfobarApiTests: public testing::Test {
 };
 
 TEST_F(InfobarApiTests, ShowInfoBarNoErrors) {
-  // TODO(vadimb@google.com): Make the implementation work.
-#if 0
   testing::LogDisabler no_dchecks;
-
-  DictionaryValue dict;
-  dict.Set(ext::kTabId, Value::CreateIntegerValue(kGoodTabWindowId));
-  dict.Set(ext::kHtmlPath, Value::CreateStringValue(std::string(kHtmlPath)));
-  ListValue good_args;
-  ASSERT_TRUE(good_args.Set(0, dict.DeepCopy()));
-
   StrictMock<testing::MockWindowUtils> window_utils;
+
+  ListValue good_args;
+  SetGoodArgs(&good_args);
+
   EXPECT_CALL(window_utils, IsWindowClass(kGoodTabWindow, _)).
       WillRepeatedly(Return(true));
 
@@ -131,14 +137,86 @@ TEST_F(InfobarApiTests, ShowInfoBarNoErrors) {
   MockGetInfobarExecutorOnce(&invocation.mock_api_dispatcher_, kGoodTabWindow);
   CComBSTR html_path(kHtmlPath);
   CeeeWindowHandle window_handle =
-      reinterpret_cast<CeeeWindowHandle>(kGoodFrameWindow);
+      static_cast<CeeeWindowHandle>(kGoodFrameWindowId);
   EXPECT_CALL(*mock_infobar_executor_, ShowInfobar(StrEq(html_path.m_str), _)).
       WillOnce(DoAll(SetArgumentPointee<1>(window_handle), Return(S_OK)));
+  EXPECT_CALL(invocation.mock_api_dispatcher_, RegisterEphemeralEventHandler(
+      _, infobar_api::ShowInfoBar::ContinueExecution, _)).Times(1);
 
   invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(*invocation.invocation_result_,
+      CreateWindowValue(_, false)).
+      WillOnce(Return(true));
+  EXPECT_CALL(*invocation.invocation_result_, PostResult()).Times(1);
 
+  ApiDispatcher::InvocationResult* result = invocation.invocation_result_.get();
   invocation.Execute(good_args, kRequestId);
-#endif
+
+  std::ostringstream args;
+  EXPECT_HRESULT_SUCCEEDED(invocation.ContinueExecution(
+      args.str(), result, invocation.GetDispatcher()));
+}
+
+TEST_F(InfobarApiTests, ShowInfoBarTestErrors) {
+  testing::LogDisabler no_dchecks;
+  StrictMock<testing::MockWindowUtils> window_utils;
+
+  StrictMock<MockApiInvocation<InfobarApiResult, MockInfobarApiResult,
+                               ShowInfoBar> > invocation;
+  invocation.AllocateNewResult(kRequestId);
+
+  // Test no parameters at all.
+  EXPECT_CALL(*invocation.invocation_result_,
+              PostError(api_module_constants::kInvalidArgumentsError)).Times(1);
+  ListValue bad_args;
+  invocation.Execute(bad_args, kRequestId);
+
+  // Test no tabId parameter.
+  DictionaryValue dict;
+  dict.Set(ext::kTabId, Value::CreateIntegerValue(kGoodTabWindowId));
+  ASSERT_TRUE(bad_args.Set(0, dict.DeepCopy()));
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(*invocation.invocation_result_,
+              PostError(api_module_constants::kInvalidArgumentsError)).Times(1);
+  invocation.Execute(bad_args, kRequestId);
+
+  // Good parameters for the next tests.
+  ListValue good_args;
+  SetGoodArgs(&good_args);
+
+  // Test wrong tab id.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kNoWindow));
+  EXPECT_CALL(window_utils, IsWindowClass(kNoWindow, _)).
+      WillOnce(Return(false));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(good_args, kRequestId);
+
+  // Test failed executor access.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
+  EXPECT_CALL(window_utils, IsWindowClass(kGoodTabWindow, _)).
+      WillOnce(Return(true));
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+              GetExecutor(kGoodTabWindow, _, NotNull())).
+      WillOnce(SetArgumentPointee<2>(static_cast<void*>(NULL)));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(good_args, kRequestId);
+
+  // Test failed ShowInfobar.
+  invocation.AllocateNewResult(kRequestId);
+  EXPECT_CALL(invocation.mock_api_dispatcher_,
+      GetTabHandleFromId(kGoodTabWindowId)).WillOnce(Return(kGoodTabWindow));
+  EXPECT_CALL(window_utils, IsWindowClass(kGoodTabWindow, _)).
+      WillOnce(Return(true));
+  MockGetInfobarExecutorOnce(&invocation.mock_api_dispatcher_, kGoodTabWindow);
+  CComBSTR html_path(kHtmlPath);
+  EXPECT_CALL(*mock_infobar_executor_, ShowInfobar(StrEq(html_path.m_str), _)).
+      WillOnce(Return(E_FAIL));
+  EXPECT_CALL(*invocation.invocation_result_, PostError(_)).Times(1);
+  invocation.Execute(good_args, kRequestId);
 }
 
 }  // namespace

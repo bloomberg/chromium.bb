@@ -47,7 +47,7 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
 
   // Implementation of InfobarBrowserWindow::Delegate.
   // Informs about window.close() event.
-  virtual void OnWindowClose();
+  virtual void OnBrowserWindowClose();
 
   // Shows the infobar.
   // NOTE: Navigate should be called before Show.
@@ -104,7 +104,7 @@ class InfobarWindow : public InfobarBrowserWindow::Delegate,
   bool sliding_infobar_;
 
   // The Chrome Frame host handling a Chrome Frame instance for us.
-  CComPtr<InfobarBrowserWindow> chrome_frame_host_;
+  CComPtr<IInfobarBrowserWindow> chrome_frame_host_;
 
   // Constructor.
   InfobarWindow(InfobarType type, Delegate* delegate);

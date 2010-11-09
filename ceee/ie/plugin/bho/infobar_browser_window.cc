@@ -87,10 +87,17 @@ STDMETHODIMP_(void) InfobarBrowserWindow::OnCfExtensionReady(BSTR path,
 
 STDMETHODIMP_(void) InfobarBrowserWindow::OnCfClose() {
   if (delegate_ != NULL)
-    delegate_->OnWindowClose();
+    delegate_->OnBrowserWindowClose();
 }
 
-  HRESULT InfobarBrowserWindow::Initialize(HWND parent) {
+HRESULT InfobarBrowserWindow::Initialize(BSTR url, Delegate* delegate) {
+  set_delegate(delegate);
+  SetUrl(url);
+
+  return S_OK;
+}
+
+HRESULT InfobarBrowserWindow::CreateAndShowWindow(HWND parent) {
   HRESULT hr = InitializeAndShowWindow(parent);
   if (FAILED(hr)) {
     LOG(ERROR) << "Infobar browser failed to initialize its site window: " <<
@@ -112,6 +119,8 @@ HRESULT InfobarBrowserWindow::InitializeAndShowWindow(HWND parent) {
 }
 
 HRESULT InfobarBrowserWindow::Teardown() {
+  set_delegate(NULL);
+
   if (IsWindow()) {
     // Teardown the ActiveX host window.
     CAxWindow host(m_hWnd);
@@ -125,20 +134,27 @@ HRESULT InfobarBrowserWindow::Teardown() {
 
   if (chrome_frame_) {
     ChromeFrameEvents::DispEventUnadvise(chrome_frame_);
+    chrome_frame_.Release();
   }
 
   return S_OK;
 }
 
-void InfobarBrowserWindow::SetUrl(const std::wstring& url) {
+STDMETHODIMP InfobarBrowserWindow::SetUrl(BSTR url) {
   // Navigate to the URL if the browser exists, otherwise just store the URL.
   url_ = url;
   Navigate();
+  return S_OK;
 }
 
+STDMETHODIMP InfobarBrowserWindow::SetWindowSize(int width, int height) {
+  if (IsWindow())
+    SetWindowPos(NULL, 0, 0, width, height, SWP_NOACTIVATE | SWP_NOZORDER);
+  return S_OK;
+}
 
 LRESULT InfobarBrowserWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
-  // Grab a self-reference.
+  // Grab a self-reference. Released in OnFinalMessage.
   GetUnknown()->AddRef();
 
   // Create a host window instance.
@@ -147,7 +163,7 @@ LRESULT InfobarBrowserWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   if (FAILED(hr)) {
     LOG(ERROR) << "Infobar failed to create ActiveX host window. " <<
                   com::LogHr(hr);
-    return 1;
+    return -1;
   }
 
   // We're the site for the host window, this needs to be in place
@@ -161,7 +177,7 @@ LRESULT InfobarBrowserWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create the Chrome Frame instance. " <<
         com::LogHr(hr);
-    return 1;
+    return -1;
   }
 
   // And attach it to our window.
@@ -169,7 +185,7 @@ LRESULT InfobarBrowserWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to attach Chrome Frame to the host. " <<
         com::LogHr(hr);
-    return 1;
+    return -1;
   }
 
   // Hook up the chrome frame event listener.
@@ -178,7 +194,7 @@ LRESULT InfobarBrowserWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
     LOG(ERROR) << "Failed to hook up event sink. " << com::LogHr(hr);
   }
 
-  return S_OK;
+  return 0;
 }
 
 void InfobarBrowserWindow::OnDestroy() {
@@ -186,6 +202,10 @@ void InfobarBrowserWindow::OnDestroy() {
     ChromeFrameEvents::DispEventUnadvise(chrome_frame_);
     chrome_frame_.Release();
   }
+}
+
+void InfobarBrowserWindow::OnFinalMessage(HWND window) {
+  GetUnknown()->Release();
 }
 
 void InfobarBrowserWindow::Navigate() {

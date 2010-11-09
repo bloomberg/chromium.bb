@@ -74,13 +74,18 @@ void ShowInfoBar::Execute(const ListValue& args, int request_id) {
     return;
   }
 
-  // Store the window information returned by ShowInfobar().
-  result->CreateWindowValue(dispatcher->GetWindowHandleFromId(window_handle),
-                            false);
+  // If we created a window then we have to wait until the document is complete
+  // before responding. If window is not created then we can post result now.
+  if (0 == window_handle) {
+    result->PostResult();
+  } else {
+    // Store the window information returned by ShowInfobar().
+    result->CreateWindowValue(dispatcher->GetWindowHandleFromId(window_handle),
+        false);
 
-  // Now wait until the document is complete before responding.
-  dispatcher->RegisterEphemeralEventHandler(kOnDocumentCompleteEventName,
-      ShowInfoBar::ContinueExecution, result.release());
+    dispatcher->RegisterEphemeralEventHandler(kOnDocumentCompleteEventName,
+        ShowInfoBar::ContinueExecution, result.release());
+  }
 }
 
 HRESULT ShowInfoBar::ContinueExecution(

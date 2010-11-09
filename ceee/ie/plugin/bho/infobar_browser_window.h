@@ -30,16 +30,32 @@ class InfobarBrowserWindow;
 typedef IDispEventSimpleImpl<0, InfobarBrowserWindow, &DIID_DIChromeFrameEvents>
     ChromeFrameEvents;
 
+class __declspec(uuid("1AE72DA8-1E4E-4101-8D5D-D7859A366D60"))
+IInfobarBrowserWindow : public IUnknown {
+ public:
+  // Creates and shows window.
+  STDMETHOD(CreateAndShowWindow)(HWND parent) = 0;
+  // Navigates the browser to the given URL if the browser has already been
+  // created, otherwise stores the URL to navigate later on.
+  STDMETHOD(SetUrl)(BSTR url) = 0;
+  // Sets the window size for the browser window.
+  STDMETHOD(SetWindowSize)(int width, int height) = 0;
+  // Tear the window down.
+  STDMETHOD(Teardown)() = 0;
+};
+
 // The window that hosts CF where infobar URL is loaded. It implements a limited
 // site functionality needed for CF as well as handles sink events from CF.
 // TODO(vadimb@google.com): Refactor this class, ChromeFrameHost and ToolBand
 // to have a common functionality supported in a common base class.
 class ATL_NO_VTABLE InfobarBrowserWindow
     : public CComObjectRootEx<CComSingleThreadModel>,
+      public InitializingCoClass<InfobarBrowserWindow>,
       public IObjectWithSiteImpl<InfobarBrowserWindow>,
       public IServiceProviderImpl<InfobarBrowserWindow>,
       public IChromeFramePrivileged,
       public ChromeFrameEvents,
+      public IInfobarBrowserWindow,
       public CWindowImpl<InfobarBrowserWindow> {
  public:
   // Class to connect this an instance of InfobarBrowserWindow with a hosting
@@ -49,7 +65,7 @@ class ATL_NO_VTABLE InfobarBrowserWindow
    public:
     virtual ~Delegate() {}
     // Informs about window.close() event.
-    virtual void OnWindowClose() = 0;
+    virtual void OnBrowserWindowClose() = 0;
   };
 
   InfobarBrowserWindow();
@@ -58,6 +74,7 @@ class ATL_NO_VTABLE InfobarBrowserWindow
   BEGIN_COM_MAP(InfobarBrowserWindow)
     COM_INTERFACE_ENTRY(IServiceProvider)
     COM_INTERFACE_ENTRY(IChromeFramePrivileged)
+    COM_INTERFACE_ENTRY(IInfobarBrowserWindow)
   END_COM_MAP()
 
   BEGIN_SERVICE_MAP(InfobarBrowserWindow)
@@ -97,17 +114,16 @@ class ATL_NO_VTABLE InfobarBrowserWindow
   STDMETHOD_(void, OnCfClose)();
   // @}
 
+  // @name IInfobarBrowserWindow implementation.
+  // @{
+  STDMETHOD(CreateAndShowWindow)(HWND parent);
+  STDMETHOD(SetUrl)(BSTR url);
+  STDMETHOD(SetWindowSize)(int width, int height);
+  STDMETHOD(Teardown)();
+  // @}
+
   // Initializes the browser window to the given site.
-  HRESULT Initialize(HWND parent);
-  // Tears down an initialized browser window.
-  HRESULT Teardown();
-
-  // Navigates the browser to the given URL if the browser has already been
-  // created, otherwise stores the URL to navigate later on.
-  void SetUrl(const std::wstring& url);
-
-  // Set the delegate to be informed about window.close() events.
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  HRESULT Initialize(BSTR url, Delegate* delegate);
 
   // Unit test seam.
   virtual InfobarEventsFunnel& infobar_events_funnel() {
@@ -120,6 +136,8 @@ class ATL_NO_VTABLE InfobarBrowserWindow
   LRESULT OnCreate(LPCREATESTRUCT lpCreateStruct);
   void OnDestroy();
   // @}
+
+  virtual void OnFinalMessage(HWND window);
 
  private:
   // The funnel for sending infobar events to the broker.
@@ -144,6 +162,9 @@ class ATL_NO_VTABLE InfobarBrowserWindow
 
   // Subroutine of general initialization. Extracted to make testable.
   virtual HRESULT InitializeAndShowWindow(HWND parent);
+
+  // Set the delegate to be informed about window.close() events.
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Navigate the browser to url_ if the browser has been created.
   void Navigate();

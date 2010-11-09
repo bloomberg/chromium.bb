@@ -732,6 +732,8 @@ STDMETHODIMP CeeeExecutor::ShowInfobar(BSTR url,
   // how to treat this.
   size_t url_string_length = SysStringLen(url);
   if (0 == url_string_length) {
+    if (window_handle != NULL)
+      *window_handle = 0;
     infobar_manager_->HideAll();
     return S_OK;
   }

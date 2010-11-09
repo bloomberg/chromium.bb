@@ -55,7 +55,7 @@ InfobarWindow::~InfobarWindow() {
   }
 }
 
-void InfobarWindow::OnWindowClose() {
+void InfobarWindow::OnBrowserWindowClose() {
   // Propagate the event to the manager.
   if (delegate_ != NULL)
     delegate_->OnWindowClose(type_);
@@ -70,7 +70,12 @@ HRESULT InfobarWindow::Show(int max_height, bool slide) {
 }
 
 HRESULT InfobarWindow::Hide() {
-  StartUpdatingLayout(false, 0, false);
+  // This could be called on the infobar that was not yet shown if show infobar
+  // function is called with an empty URL (see CeeeExecutor::ShowInfobar
+  // implementation). Therefore we should check if window exists and do not
+  // treat this as an error if not.
+  if (IsWindow())
+    StartUpdatingLayout(false, 0, false);
 
   return S_OK;
 }
@@ -81,7 +86,7 @@ HRESULT InfobarWindow::Navigate(const std::wstring& url) {
   // it will be created.
   url_ = url;
   if (chrome_frame_host_)
-    chrome_frame_host_->SetUrl(url_);
+    chrome_frame_host_->SetUrl(CComBSTR(url_.c_str()));
   return S_OK;
 }
 
@@ -122,7 +127,7 @@ void InfobarWindow::Reset() {
   Hide();
 
   if (chrome_frame_host_)
-    chrome_frame_host_->set_delegate(NULL);
+    chrome_frame_host_->Teardown();
 
   DCHECK(!show_ && !sliding_infobar_);
   if (m_hWnd != NULL) {
@@ -266,17 +271,11 @@ LRESULT InfobarWindow::OnTimer(UINT_PTR nIDEvent) {
 }
 
 LRESULT InfobarWindow::OnCreate(LPCREATESTRUCT lpCreateStruct) {
-  // TODO(vadimb@google.com): Better way to do this is to derive
-  // InfobarBrowserWindow from InitializingCoClass and give it an
-  // InitializeMethod, then create it with
-  // InfobarBrowserWindow::CreateInitialized(...).
-  CComObject<InfobarBrowserWindow>* chrome_frame_host = NULL;
-  CComObject<InfobarBrowserWindow>::CreateInstance(&chrome_frame_host);
-  if (chrome_frame_host) {
-    chrome_frame_host_.Attach(chrome_frame_host);
-    chrome_frame_host_->SetUrl(url_);
-    chrome_frame_host_->Initialize(m_hWnd);
-    chrome_frame_host_->set_delegate(this);
+  InitializingCoClass<InfobarBrowserWindow>::CreateInitialized(
+      CComBSTR(url_.c_str()), this, &chrome_frame_host_);
+
+  if (chrome_frame_host_) {
+    chrome_frame_host_->CreateAndShowWindow(m_hWnd);
     AdjustSize();
   }
   return S_OK;
@@ -306,8 +305,7 @@ void InfobarWindow::AdjustSize() {
   if (NULL != chrome_frame_host_) {
     CRect rect;
     GetClientRect(&rect);
-    chrome_frame_host_->SetWindowPos(NULL, 0, 0, rect.Width(), rect.Height(),
-                                     SWP_NOACTIVATE | SWP_NOZORDER);
+    chrome_frame_host_->SetWindowSize(rect.Width(), rect.Height());
   }
 }
 
