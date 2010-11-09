@@ -115,9 +115,17 @@ TEST_F(DeviceManagementPolicyProviderTest, EmptyProvideWithFailedBackend) {
   EXPECT_TRUE(store.policy_map().empty());
 }
 
+// Flaky on Windows since the file time is not as precise as the
+// system clock time and can end up being later than "now".
+// http://crbug.com/62489.
+#if defined(OS_WIN)
+#define MAYBE_SecondProvide FLAKY_SecondProvide
+#else
+#define MAYBE_SecondProvide SecondProvide
+#endif
 // If a policy has been fetched previously, if should be available even before
 // the login succeeds or the device management backend is available.
-TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
+TEST_F(DeviceManagementPolicyProviderTest, MAYBE_SecondProvide) {
   // Pre-fetch and persist a policy
   SimulateSuccessfulInitialPolicyFetch();
 
