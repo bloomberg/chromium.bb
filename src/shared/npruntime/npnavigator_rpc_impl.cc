@@ -51,140 +51,164 @@ NPP TranslateOrSetLocalNPP(int32_t wire_npp, nacl::NPNavigator* nav) {
 // The following methods are the SRPC dispatchers for npnavigator.
 //
 
-NaClSrpcError NPNavigatorRpcServer::NP_SetUpcallServices(
-    NaClSrpcChannel *channel,
+void NPNavigatorRpcServer::NP_SetUpcallServices(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     char* service_string) {
   const char* sd_string = (const char*) service_string;
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   nacl::DebugPrintf("SetUpcallServices: %s\n", sd_string);
   NaClSrpcService* service = reinterpret_cast<NaClSrpcService*>(
       calloc(1, sizeof(*service)));
   if (NULL == service)
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   if (!NaClSrpcServiceStringCtor(service, sd_string)) {
     free(service);
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  channel->client = service;
-  return NACL_SRPC_RESULT_OK;
+  rpc->channel->client = service;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
-    NaClSrpcChannel* channel,
+void NPNavigatorRpcServer::NP_Initialize(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t pid,
     NaClSrpcImcDescType upcall_channel_desc,
     int32_t* nacl_pid) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // There is only one NPNavigator per call to Initialize, and it is
   // remembered on the SRPC channel that called it.
   // Make sure it is only set once.
-  if (NULL != channel->server_instance_data) {
+  if (NULL != rpc->channel->server_instance_data) {
     // Instance data already set.
     nacl::DebugPrintf("  Error: instance data already set\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   NPNavigator* navigator =
-      new(std::nothrow) NPNavigator(channel, pid);
+      new(std::nothrow) NPNavigator(rpc->channel, pid);
   if (NULL == navigator || !navigator->is_valid()) {
     // Out of memory.
     nacl::DebugPrintf("  Error: couldn't create navigator\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  channel->server_instance_data = static_cast<void*>(navigator);
+  rpc->channel->server_instance_data = static_cast<void*>(navigator);
 
   *nacl_pid = GETPID();
-  return navigator->Initialize(channel, upcall_channel_desc);
+  rpc->result = navigator->Initialize(rpc->channel, upcall_channel_desc);
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_New(NaClSrpcChannel* channel,
-                                            char* mimetype,
-                                            int32_t wire_npp,
-                                            int32_t arg_count,
-                                            nacl_abi_size_t argn_bytes,
-                                            char* argn_in,
-                                            nacl_abi_size_t argv_bytes,
-                                            char* argv_in,
-                                            int32_t* nperr) {
+void NPNavigatorRpcServer::NPP_New(NaClSrpcRpc* rpc,
+                                   NaClSrpcClosure* done,
+                                   char* mimetype,
+                                   int32_t wire_npp,
+                                   int32_t arg_count,
+                                   nacl_abi_size_t argn_bytes,
+                                   char* argn_in,
+                                   nacl_abi_size_t argv_bytes,
+                                   char* argv_in,
+                                   int32_t* nperr) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   NPP npp = TranslateOrSetLocalNPP(wire_npp, nav);
   if (NULL == npp) {
     *nperr = NPERR_OUT_OF_MEMORY_ERROR;
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
 
-  return nav->New(mimetype,
-                  npp,
-                  static_cast<uint32_t>(arg_count),
-                  argn_bytes,
-                  argn_in,
-                  argv_bytes,
-                  argv_in,
-                  nperr);
+  rpc->result = nav->New(mimetype,
+                         npp,
+                         static_cast<uint32_t>(arg_count),
+                         argn_bytes,
+                         argn_in,
+                         argv_bytes,
+                         argv_in,
+                         nperr);
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_SetWindow(NaClSrpcChannel* channel,
-                                                  int32_t wire_npp,
-                                                  int32_t height,
-                                                  int32_t width,
-                                                  int32_t* nperr) {
+void NPNavigatorRpcServer::NPP_SetWindow(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t wire_npp,
+                                         int32_t height,
+                                         int32_t width,
+                                         int32_t* nperr) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   NPP npp = WireFormatToNPP(wire_npp);
   if (NULL == npp) {
     nacl::DebugPrintf("SetWindow called before nacl NPP was set.\n");
     *nperr = NPERR_GENERIC_ERROR;
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
 
   *nperr = nav->SetWindow(npp, height, width);
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_Destroy(NaClSrpcChannel* channel,
+void NPNavigatorRpcServer::NPP_Destroy(NaClSrpcRpc* rpc,
+                                                NaClSrpcClosure* done,
                                                 int32_t wire_npp,
                                                 int32_t* nperr) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   *nperr = nav->Destroy(WireFormatToNPP(wire_npp));
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::GetScriptableInstance(
-    NaClSrpcChannel* channel,
+void NPNavigatorRpcServer::GetScriptableInstance(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     nacl_abi_size_t* capability_length,
     char* capability_bytes) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPP npp = WireFormatToNPP(wire_npp);
   NPNavigator* nav = NPNavigator::GetNavigator();
   NPCapability* capability = nav->GetScriptableInstance(npp);
   if (!NPCapabilityToWireFormat(capability,
                                 capability_bytes,
                                 capability_length)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_HandleEvent(
-    NaClSrpcChannel* channel,
+void NPNavigatorRpcServer::NPP_HandleEvent(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     nacl_abi_size_t npevent_bytes,
     char* npevent,
     int32_t* return_int16) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNavigator* nav = NPNavigator::GetNavigator();
 
-  return nav->HandleEvent(WireFormatToNPP(wire_npp),
-                          npevent_bytes,
-                          npevent,
-                          return_int16);
+  rpc->result = nav->HandleEvent(WireFormatToNPP(wire_npp),
+                                 npevent_bytes,
+                                 npevent,
+                                 return_int16);
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
-                                                     int32_t wire_npp,
-                                                     NaClSrpcImcDescType file,
-                                                     char* url,
-                                                     int32_t size) {
+void NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcRpc* rpc,
+                                            NaClSrpcClosure* done,
+                                            int32_t wire_npp,
+                                            NaClSrpcImcDescType file,
+                                            char* url,
+                                            int32_t size) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   nacl::DebugPrintf("NPP_StreamAsFile\n");
 
   NPNavigator* nav = NPNavigator::GetNavigator();
@@ -192,41 +216,46 @@ NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
                     file,
                     url,
                     static_cast<uint32_t>(size));
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::NPP_URLNotify(NaClSrpcChannel* channel,
-                                                  int32_t wire_npp,
-                                                  char* url,
-                                                  int32_t reason,
-                                                  int32_t notify_data) {
+void NPNavigatorRpcServer::NPP_URLNotify(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t wire_npp,
+                                         char* url,
+                                         int32_t reason,
+                                         int32_t notify_data) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   nacl::DebugPrintf("NPP_URLNotify\n");
 
   NPP npp = WireFormatToNPP(wire_npp);
   NPNavigator* nav = NPNavigator::GetNavigator();
   nav->URLNotify(npp, url, reason, reinterpret_cast<void*>(notify_data));
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::DoAsyncCall(NaClSrpcChannel* channel,
-                                                int32_t number) {
+void NPNavigatorRpcServer::DoAsyncCall(NaClSrpcRpc* rpc,
+                                       NaClSrpcClosure* done,
+                                       int32_t number) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   nav->DoAsyncCall(number);
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPNavigatorRpcServer::AudioCallback(NaClSrpcChannel* channel,
-                                                  int32_t number,
-                                                  int shm_desc,
-                                                  int32_t shm_size,
-                                                  int sync_desc) {
+void NPNavigatorRpcServer::AudioCallback(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t number,
+                                         int shm_desc,
+                                         int32_t shm_size,
+                                         int sync_desc) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNavigator* nav = NPNavigator::GetNavigator();
 
   nav->AudioCallback(number, shm_desc, shm_size, sync_desc);
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }

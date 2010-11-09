@@ -42,137 +42,144 @@ PP_Var LookupCapability(const ObjectCapability* capability) {
 
 }  // namespace
 
-NaClSrpcError ObjectStubRpcServer::HasProperty(NaClSrpcChannel* channel,
-                                               uint32_t capability_length,
-                                               char* capability_bytes,
-                                               uint32_t name_length,
-                                               char* name_bytes,
-                                               uint32_t ex_in_length,
-                                               char* ex_in_bytes,
-                                               int32_t* success,
-                                               uint32_t* exception_length,
-                                               char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::HasProperty(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      uint32_t capability_length,
+                                      char* capability_bytes,
+                                      uint32_t name_length,
+                                      char* name_bytes,
+                                      uint32_t ex_in_length,
+                                      char* ex_in_bytes,
+                                      int32_t* success,
+                                      uint32_t* exception_length,
+                                      char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::HasProperty\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the name PP_Var.
   PP_Var name;
-  if (!DeserializeTo(channel, name_bytes, name_length, 1, &name)) {
+  if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   *success = VarInterface()->HasProperty(var, name, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::HasMethod(NaClSrpcChannel* channel,
-                                             uint32_t capability_length,
-                                             char* capability_bytes,
-                                             uint32_t name_length,
-                                             char* name_bytes,
-                                             uint32_t ex_in_length,
-                                             char* ex_in_bytes,
-                                             int32_t* success,
-                                             uint32_t* exception_length,
-                                             char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::HasMethod(NaClSrpcRpc* rpc,
+                                    NaClSrpcClosure* done,
+                                    uint32_t capability_length,
+                                    char* capability_bytes,
+                                    uint32_t name_length,
+                                    char* name_bytes,
+                                    uint32_t ex_in_length,
+                                    char* ex_in_bytes,
+                                    int32_t* success,
+                                    uint32_t* exception_length,
+                                    char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::HasMethod\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the name PP_Var.
   PP_Var name;
-  if (!DeserializeTo(channel, name_bytes, name_length, 1, &name)) {
+  if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   *success = VarInterface()->HasMethod(var, name, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::GetProperty(NaClSrpcChannel* channel,
-                                               uint32_t capability_length,
-                                               char* capability_bytes,
-                                               uint32_t name_length,
-                                               char* name_bytes,
-                                               uint32_t ex_in_length,
-                                               char* ex_in_bytes,
-                                               uint32_t* value_length,
-                                               char* value_bytes,
-                                               uint32_t* exception_length,
-                                               char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::GetProperty(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      uint32_t capability_length,
+                                      char* capability_bytes,
+                                      uint32_t name_length,
+                                      char* name_bytes,
+                                      uint32_t ex_in_length,
+                                      char* ex_in_bytes,
+                                      uint32_t* value_length,
+                                      char* value_bytes,
+                                      uint32_t* exception_length,
+                                      char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::GetProperty\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the name PP_Var.
   PP_Var name;
-  if (!DeserializeTo(channel, name_bytes, name_length, 1, &name)) {
+  if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   PP_Var value = VarInterface()->GetProperty(var, name, &exception);
   // Return the value PP_Var.
   if (!SerializeTo(&value, value_bytes, value_length)) {
     // Serialization of value failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::GetAllPropertyNames(
-    NaClSrpcChannel* channel,
+void ObjectStubRpcServer::GetAllPropertyNames(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     uint32_t capability_length,
     char* capability_bytes,
     uint32_t ex_in_length,
@@ -182,19 +189,20 @@ NaClSrpcError ObjectStubRpcServer::GetAllPropertyNames(
     char* properties_bytes,
     uint32_t* exception_length,
     char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
   DebugPrintf("ObjectStubRpcServer::GetAllPropertyNames\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   UNREFERENCED_PARAMETER(property_count);
   UNREFERENCED_PARAMETER(properties_length);
@@ -204,139 +212,149 @@ NaClSrpcError ObjectStubRpcServer::GetAllPropertyNames(
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::SetProperty(NaClSrpcChannel* channel,
-                                               uint32_t capability_length,
-                                               char* capability_bytes,
-                                               uint32_t name_length,
-                                               char* name_bytes,
-                                               uint32_t value_length,
-                                               char* value_bytes,
-                                               uint32_t ex_in_length,
-                                               char* ex_in_bytes,
-                                               uint32_t* exception_length,
-                                               char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::SetProperty(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      uint32_t capability_length,
+                                      char* capability_bytes,
+                                      uint32_t name_length,
+                                      char* name_bytes,
+                                      uint32_t value_length,
+                                      char* value_bytes,
+                                      uint32_t ex_in_length,
+                                      char* ex_in_bytes,
+                                      uint32_t* exception_length,
+                                      char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::SetProperty\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the name PP_Var.
   PP_Var name;
-  if (!DeserializeTo(channel, name_bytes, name_length, 1, &name)) {
+  if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the value PP_Var.
   PP_Var value;
-  if (!DeserializeTo(channel, value_bytes, value_length, 1, &value)) {
+  if (!DeserializeTo(rpc->channel, value_bytes, value_length, 1, &value)) {
     // Deserialization of value failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the previous exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   VarInterface()->SetProperty(var, name, value, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::RemoveProperty(NaClSrpcChannel* channel,
-                                                  uint32_t capability_length,
-                                                  char* capability_bytes,
-                                                  uint32_t name_length,
-                                                  char* name_bytes,
-                                                  uint32_t ex_in_length,
-                                                  char* ex_in_bytes,
-                                                  uint32_t* exception_length,
-                                                  char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::RemoveProperty(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         uint32_t capability_length,
+                                         char* capability_bytes,
+                                         uint32_t name_length,
+                                         char* name_bytes,
+                                         uint32_t ex_in_length,
+                                         char* ex_in_bytes,
+                                         uint32_t* exception_length,
+                                         char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::RemoveProperty\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the name PP_Var.
   PP_Var name;
-  if (!DeserializeTo(channel, name_bytes, name_length, 1, &name)) {
+  if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   VarInterface()->RemoveProperty(var, name, &exception);
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::Call(NaClSrpcChannel* channel,
-                                        uint32_t capability_length,
-                                        char* capability_bytes,
-                                        uint32_t name_length,
-                                        char* name_bytes,
-                                        int32_t argc,
-                                        uint32_t argv_length,
-                                        char* argv_bytes,
-                                        uint32_t ex_in_length,
-                                        char* ex_in_bytes,
-                                        uint32_t* ret_length,
-                                        char* ret_bytes,
-                                        uint32_t* exception_length,
-                                        char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::Call(NaClSrpcRpc* rpc,
+                               NaClSrpcClosure* done,
+                               uint32_t capability_length,
+                               char* capability_bytes,
+                               uint32_t name_length,
+                               char* name_bytes,
+                               int32_t argc,
+                               uint32_t argv_length,
+                               char* argv_bytes,
+                               uint32_t ex_in_length,
+                               char* ex_in_bytes,
+                               uint32_t* ret_length,
+                               char* ret_bytes,
+                               uint32_t* exception_length,
+                               char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::Call\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the name PP_Var.
   PP_Var name;
-  if (!DeserializeTo(channel, name_bytes, name_length, 1, &name)) {
+  if (!DeserializeTo(rpc->channel, name_bytes, name_length, 1, &name)) {
     // Deserialization of name failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Get the parameters.
   nacl::scoped_array<PP_Var> argv(new PP_Var[argc]);
-  if (!DeserializeTo(channel, argv_bytes, argv_length, argc, argv.get())) {
+  if (!DeserializeTo(rpc->channel,
+                     argv_bytes,
+                     argv_length,
+                     argc,
+                     argv.get())) {
     // Deserialization of argv failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   PP_Var ret = VarInterface()->Call(var,
@@ -347,46 +365,52 @@ NaClSrpcError ObjectStubRpcServer::Call(NaClSrpcChannel* channel,
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError ObjectStubRpcServer::Construct(NaClSrpcChannel* channel,
-                                             uint32_t capability_length,
-                                             char* capability_bytes,
-                                             int32_t argc,
-                                             uint32_t argv_length,
-                                             char* argv_bytes,
-                                             uint32_t ex_in_length,
-                                             char* ex_in_bytes,
-                                             uint32_t* ret_length,
-                                             char* ret_bytes,
-                                             uint32_t* exception_length,
-                                             char* exception_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::Construct(NaClSrpcRpc* rpc,
+                                    NaClSrpcClosure* done,
+                                    uint32_t capability_length,
+                                    char* capability_bytes,
+                                    int32_t argc,
+                                    uint32_t argv_length,
+                                    char* argv_bytes,
+                                    uint32_t ex_in_length,
+                                    char* ex_in_bytes,
+                                    uint32_t* ret_length,
+                                    char* ret_bytes,
+                                    uint32_t* exception_length,
+                                    char* exception_bytes) {
   DebugPrintf("ObjectStubRpcServer::Construct\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Get the previous value of the exception PP_Var.
   PP_Var exception;
-  if (!DeserializeTo(channel, ex_in_bytes, ex_in_length, 1, &exception)) {
+  if (!DeserializeTo(rpc->channel, ex_in_bytes, ex_in_length, 1, &exception)) {
     // Deserialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   nacl::scoped_array<PP_Var> argv(new PP_Var[argc]);
-  if (!DeserializeTo(channel, argv_bytes, argv_length, argc, argv.get())) {
+  if (!DeserializeTo(rpc->channel,
+                     argv_bytes,
+                     argv_length,
+                     argc,
+                     argv.get())) {
     // Deserialization of argv failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Invoke the method.
   PP_Var ret = VarInterface()->Construct(var,
@@ -396,28 +420,30 @@ NaClSrpcError ObjectStubRpcServer::Construct(NaClSrpcChannel* channel,
   // Return ret.
   if (!SerializeTo(&ret, ret_bytes, ret_length)) {
     // Serialization of ret failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Return the final value of the exception PP_Var.
   if (!SerializeTo(&exception, exception_bytes, exception_length)) {
     // Serialization of exception failed.
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 
-NaClSrpcError ObjectStubRpcServer::Deallocate(NaClSrpcChannel* channel,
-                                              uint32_t capability_length,
-                                              char* capability_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+void ObjectStubRpcServer::Deallocate(NaClSrpcRpc* rpc,
+                                     NaClSrpcClosure* done,
+                                     uint32_t capability_length,
+                                     char* capability_bytes) {
   DebugPrintf("ObjectStubRpcServer::Deallocate\n");
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Get the receiver object.
   if (capability_length != sizeof(ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var var =
       LookupCapability(reinterpret_cast<ObjectCapability*>(capability_bytes));
   // Invoke the method.
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }

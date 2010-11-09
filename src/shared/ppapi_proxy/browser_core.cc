@@ -9,34 +9,37 @@
 // The following methods are the SRPC dispatchers for ppapi/c/ppb_core.h.
 //
 
-NaClSrpcError PpbCoreRpcServer::PPB_Core_AddRefResource(
-    NaClSrpcChannel* channel,
-    int64_t resource) {
+void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
+                                               NaClSrpcClosure* done,
+                                               int64_t resource) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // TODO(sehr): implement AddRefResource.
-  UNREFERENCED_PARAMETER(channel);
   UNREFERENCED_PARAMETER(resource);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PpbCoreRpcServer::PPB_Core_ReleaseResource(
-    NaClSrpcChannel* channel,
-    int64_t resource) {
+void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
+                                                NaClSrpcClosure* done,
+                                                int64_t resource) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // TODO(sehr): implement ReleaseResource.
-  UNREFERENCED_PARAMETER(channel);
   UNREFERENCED_PARAMETER(resource);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 // MemAlloc and MemFree are handled locally to the plugin, and do not need a
 // browser stub.
 
-NaClSrpcError PpbCoreRpcServer::PPB_Core_GetTime(
-    NaClSrpcChannel* channel,
-    double* time) {
-  UNREFERENCED_PARAMETER(channel);
+void PpbCoreRpcServer::PPB_Core_GetTime(NaClSrpcRpc* rpc,
+                                        NaClSrpcClosure* done,
+                                        double* time) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // TODO(sehr): implement time.
   *time = 0.0;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 // CallOnMainThread is handled on the upcall thread, where another RPC service

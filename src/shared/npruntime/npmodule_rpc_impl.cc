@@ -38,19 +38,22 @@ using nacl::WireFormatToNPP;
 using nacl::WireFormatToNPObject;
 using nacl::WireFormatToNPString;
 
-NaClSrpcError NPModuleRpcServer::NPN_GetValueBoolean(NaClSrpcChannel* channel,
-                                                     int32_t wire_npp,
-                                                     int32_t var,
-                                                     int32_t* nperr,
-                                                     int32_t* boolean_result) {
-  UNREFERENCED_PARAMETER(channel);
+void NPModuleRpcServer::NPN_GetValueBoolean(NaClSrpcRpc* rpc,
+                                            NaClSrpcClosure* done,
+                                            int32_t wire_npp,
+                                            int32_t var,
+                                            int32_t* nperr,
+                                            int32_t* boolean_result) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNVariable variable = static_cast<NPNVariable>(var);
   NPP npp = WireFormatToNPP(wire_npp);
 
   // There are two variables that are booleans.
   if (NPNVisOfflineBool != variable && NPNVprivateModeBool != variable) {
     *nperr = NPERR_INVALID_PARAM;
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
   int32_t value;
   *nperr = ::NPN_GetValue(npp,
@@ -58,42 +61,45 @@ NaClSrpcError NPModuleRpcServer::NPN_GetValueBoolean(NaClSrpcChannel* channel,
                           reinterpret_cast<void*>(&value));
   *boolean_result = static_cast<NPBool>(value);
   *nperr = NPERR_NO_ERROR;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_GetValueObject(
-    NaClSrpcChannel* channel,
+void NPModuleRpcServer::NPN_GetValueObject(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     int32_t var,
     int32_t* nperr,
     nacl_abi_size_t* result_length,
     char* result_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPNVariable variable = static_cast<NPNVariable>(var);
   NPP npp = WireFormatToNPP(wire_npp);
 
-  if (NPNVWindowNPObject != variable && NPNVPluginElementNPObject != variable) {
+  if (NPNVWindowNPObject != variable &&
+      NPNVPluginElementNPObject != variable) {
     *nperr = NPERR_INVALID_PARAM;
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
   // There are two variables that are NPObjects.
   NPObject* object;
-  *nperr = ::NPN_GetValue(npp,
-                          variable,
-                          reinterpret_cast<void*>(&object));
+  *nperr = ::NPN_GetValue(npp, variable, reinterpret_cast<void*>(&object));
   if (NULL == object) {
     *result_length = 0;
   } else {
     if (!NPObjectToWireFormat(npp, object, result_bytes, result_length)) {
-      return NACL_SRPC_RESULT_APP_ERROR;
+      return;
     }
   }
   *nperr = NPERR_NO_ERROR;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_Evaluate(
-    NaClSrpcChannel* channel,
+void NPModuleRpcServer::NPN_Evaluate(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     nacl_abi_size_t obj_length,
     char* obj_bytes,
@@ -102,7 +108,8 @@ NaClSrpcError NPModuleRpcServer::NPN_Evaluate(
     int32_t* success,
     nacl_abi_size_t* result_length,
     char* result_bytes) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPP npp = WireFormatToNPP(wire_npp);
 
   // Initialize to report error
@@ -112,38 +119,43 @@ NaClSrpcError NPModuleRpcServer::NPN_Evaluate(
   // Get the string.
   NPString str;
   if (!WireFormatToNPString(str_bytes, str_length, &str)) {
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
   NPVariant result;
   *success = ::NPN_Evaluate(npp, object, &str, &result);
   if (!NPVariantsToWireFormat(npp, &result, 1, result_bytes, result_length)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_SetStatus(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               char* status) {
-  UNREFERENCED_PARAMETER(channel);
+void NPModuleRpcServer::NPN_SetStatus(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      int32_t wire_npp,
+                                      char* status) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   if (NULL != status) {
     ::NPN_Status(WireFormatToNPP(wire_npp), status);
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
-                                            int32_t wire_npp,
-                                            char* url,
-                                            char* target,
-                                            int32_t notify_data,
-                                            int32_t call_url_notify,
-                                            int32_t* nperr) {
-  UNREFERENCED_PARAMETER(channel);
+void NPModuleRpcServer::NPN_GetURL(NaClSrpcRpc* rpc,
+                                   NaClSrpcClosure* done,
+                                   int32_t wire_npp,
+                                   char* url,
+                                   char* target,
+                                   int32_t notify_data,
+                                   int32_t call_url_notify,
+                                   int32_t* nperr) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   if (NULL == url || NULL == target || NULL == nperr) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   if (0 == strlen(url) || 0 != strlen(target)) {
     *nperr = NPERR_GENERIC_ERROR;
@@ -164,25 +176,29 @@ NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
     *nperr = NPERR_NO_ERROR;
   }
 
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_UserAgent(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               char** strval) {
-  UNREFERENCED_PARAMETER(channel);
+void NPModuleRpcServer::NPN_UserAgent(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      int32_t wire_npp,
+                                      char** strval) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   if (NULL == strval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   *strval = const_cast<char*>(::NPN_UserAgent(WireFormatToNPP(wire_npp)));
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_GetIntIdentifier(NaClSrpcChannel* channel,
-                                                      int32_t intval,
-                                                      int32_t* id) {
-  UNREFERENCED_PARAMETER(channel);
+void NPModuleRpcServer::NPN_GetIntIdentifier(NaClSrpcRpc* rpc,
+                                             NaClSrpcClosure* done,
+                                             int32_t intval,
+                                             int32_t* id) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPIdentifier identifier;
 
   if (NPModule::IsWebkit()) {
@@ -194,52 +210,56 @@ NaClSrpcError NPModuleRpcServer::NPN_GetIntIdentifier(NaClSrpcChannel* channel,
     identifier = ::NPN_GetIntIdentifier(intval);
   }
   *id = NPIdentifierToWireFormat(identifier);
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_IntFromIdentifier(NaClSrpcChannel* channel,
-                                                       int32_t id,
-                                                       int32_t* intval) {
-  UNREFERENCED_PARAMETER(channel);
+void NPModuleRpcServer::NPN_IntFromIdentifier(NaClSrpcRpc* rpc,
+                                              NaClSrpcClosure* done,
+                                              int32_t id,
+                                              int32_t* intval) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *intval = ::NPN_IntFromIdentifier(WireFormatToNPIdentifier(id));
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_GetStringIdentifier(
-    NaClSrpcChannel* channel,
+void NPModuleRpcServer::NPN_GetStringIdentifier(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     char* strval,
     int32_t* id) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   NPIdentifier identifier = NULL;
   if (plugin::IsValidIdentifierString(strval, NULL)) {
     identifier = ::NPN_GetStringIdentifier(strval);
   }
   *id = NPIdentifierToWireFormat(identifier);
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_IdentifierIsString(
-    NaClSrpcChannel* channel,
+void NPModuleRpcServer::NPN_IdentifierIsString(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t id,
     int32_t* isstring) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *isstring = ::NPN_IdentifierIsString(WireFormatToNPIdentifier(id));
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_UTF8FromIdentifier(
-    NaClSrpcChannel* channel,
+void NPModuleRpcServer::NPN_UTF8FromIdentifier(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t id,
     int32_t* success,
     char** str) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   char* name = ::NPN_UTF8FromIdentifier(WireFormatToNPIdentifier(id));
   if (NULL == name) {
@@ -251,12 +271,12 @@ NaClSrpcError NPModuleRpcServer::NPN_UTF8FromIdentifier(
     *str = strdup(name);
     NPN_MemFree(name);
   }
-
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError Device2DRpcServer::Device2DInitialize(
-    NaClSrpcChannel* channel,
+void Device2DRpcServer::Device2DInitialize(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     NaClSrpcImcDescType* shm_desc,
     int32_t* stride,
@@ -264,145 +284,167 @@ NaClSrpcError Device2DRpcServer::Device2DInitialize(
     int32_t* top,
     int32_t* right,
     int32_t* bottom) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device2DInitialize(WireFormatToNPP(wire_npp),
-                                    shm_desc,
-                                    stride,
-                                    left,
-                                    top,
-                                    right,
-                                    bottom);
+  rpc->result = module->Device2DInitialize(WireFormatToNPP(wire_npp),
+                                           shm_desc,
+                                           stride,
+                                           left,
+                                           top,
+                                           right,
+                                           bottom);
 }
 
-NaClSrpcError Device2DRpcServer::Device2DFlush(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               int32_t* stride,
-                                               int32_t* left,
-                                               int32_t* top,
-                                               int32_t* right,
-                                               int32_t* bottom) {
-  UNREFERENCED_PARAMETER(channel);
+void Device2DRpcServer::Device2DFlush(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      int32_t wire_npp,
+                                      int32_t* stride,
+                                      int32_t* left,
+                                      int32_t* top,
+                                      int32_t* right,
+                                      int32_t* bottom) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device2DFlush(WireFormatToNPP(wire_npp),
-                               stride,
-                               left,
-                               top,
-                               right,
-                               bottom);
+  rpc->result = module->Device2DFlush(WireFormatToNPP(wire_npp),
+                                      stride,
+                                      left,
+                                      top,
+                                      right,
+                                      bottom);
 }
 
-NaClSrpcError Device2DRpcServer::Device2DDestroy(NaClSrpcChannel* channel,
-                                                 int32_t wire_npp) {
-  UNREFERENCED_PARAMETER(channel);
+void Device2DRpcServer::Device2DDestroy(NaClSrpcRpc* rpc,
+                                        NaClSrpcClosure* done,
+                                        int32_t wire_npp) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device2DDestroy(WireFormatToNPP(wire_npp));
+  rpc->result = module->Device2DDestroy(WireFormatToNPP(wire_npp));
 }
 
-NaClSrpcError Device2DRpcServer::Device2DGetState(NaClSrpcChannel* channel,
-                                                  int32_t wire_npp,
-                                                  int32_t state,
-                                                  int32_t* value) {
-  UNREFERENCED_PARAMETER(channel);
+void Device2DRpcServer::Device2DGetState(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t wire_npp,
+                                         int32_t state,
+                                         int32_t* value) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device2DGetState(WireFormatToNPP(wire_npp),
-                                  state,
-                                  value);
+  rpc->result = module->Device2DGetState(WireFormatToNPP(wire_npp),
+                                         state,
+                                         value);
 }
 
-NaClSrpcError Device2DRpcServer::Device2DSetState(NaClSrpcChannel* channel,
-                                                  int32_t wire_npp,
-                                                  int32_t state,
-                                                  int32_t value) {
-  UNREFERENCED_PARAMETER(channel);
+void Device2DRpcServer::Device2DSetState(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t wire_npp,
+                                         int32_t state,
+                                         int32_t value) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device2DSetState(WireFormatToNPP(wire_npp),
-                                  state,
-                                  value);
+  rpc->result = module->Device2DSetState(WireFormatToNPP(wire_npp),
+                                         state,
+                                         value);
 }
 
-NaClSrpcError Device3DRpcServer::Device3DInitialize(
-    NaClSrpcChannel* channel,
+void Device3DRpcServer::Device3DInitialize(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     int32_t entries_requested,
     NaClSrpcImcDescType* shm_desc,
     int32_t* entries_obtained,
     int32_t* get_offset,
     int32_t* put_offset) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DInitialize(WireFormatToNPP(wire_npp),
-                                    entries_requested,
-                                    shm_desc,
-                                    entries_obtained,
-                                    get_offset,
-                                    put_offset);
+  rpc->result = module->Device3DInitialize(WireFormatToNPP(wire_npp),
+                                           entries_requested,
+                                           shm_desc,
+                                           entries_obtained,
+                                           get_offset,
+                                           put_offset);
 }
 
-NaClSrpcError Device3DRpcServer::Device3DDestroy(NaClSrpcChannel* channel,
-                                                 int32_t wire_npp) {
-  UNREFERENCED_PARAMETER(channel);
+void Device3DRpcServer::Device3DDestroy(NaClSrpcRpc* rpc,
+                                        NaClSrpcClosure* done,
+                                        int32_t wire_npp) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DDestroy(WireFormatToNPP(wire_npp));
+  rpc->result = module->Device3DDestroy(WireFormatToNPP(wire_npp));
 }
 
-NaClSrpcError Device3DRpcServer::Device3DGetState(NaClSrpcChannel* channel,
-                                                  int32_t wire_npp,
-                                                  int32_t state,
-                                                  int32_t* value) {
-  UNREFERENCED_PARAMETER(channel);
+void Device3DRpcServer::Device3DGetState(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t wire_npp,
+                                         int32_t state,
+                                         int32_t* value) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DGetState(WireFormatToNPP(wire_npp),
-                                  state,
-                                  value);
+  rpc->result = module->Device3DGetState(WireFormatToNPP(wire_npp),
+                                         state,
+                                         value);
 }
 
-NaClSrpcError Device3DRpcServer::Device3DSetState(NaClSrpcChannel* channel,
-                                                  int32_t wire_npp,
-                                                  int32_t state,
-                                                  int32_t value) {
-  UNREFERENCED_PARAMETER(channel);
+void Device3DRpcServer::Device3DSetState(NaClSrpcRpc* rpc,
+                                         NaClSrpcClosure* done,
+                                         int32_t wire_npp,
+                                         int32_t state,
+                                         int32_t value) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DSetState(WireFormatToNPP(wire_npp),
-                                  state,
-                                  value);
+  rpc->result = module->Device3DSetState(WireFormatToNPP(wire_npp),
+                                         state,
+                                         value);
 }
 
-NaClSrpcError Device3DRpcServer::Device3DCreateBuffer(
-    NaClSrpcChannel* channel,
+void Device3DRpcServer::Device3DCreateBuffer(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     int32_t size,
     NaClSrpcImcDescType* shm_desc,
     int32_t* id) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DCreateBuffer(WireFormatToNPP(wire_npp),
-                                      size,
-                                      shm_desc,
-                                      id);
+  rpc->result = module->Device3DCreateBuffer(WireFormatToNPP(wire_npp),
+                                             size,
+                                             shm_desc,
+                                             id);
 }
 
-NaClSrpcError Device3DRpcServer::Device3DDestroyBuffer(NaClSrpcChannel* channel,
-                                                       int32_t wire_npp,
-                                                       int32_t id) {
-  UNREFERENCED_PARAMETER(channel);
+void Device3DRpcServer::Device3DDestroyBuffer(NaClSrpcRpc* rpc,
+                                              NaClSrpcClosure* done,
+                                              int32_t wire_npp,
+                                              int32_t id) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DDestroyBuffer(WireFormatToNPP(wire_npp), id);
+  rpc->result = module->Device3DDestroyBuffer(WireFormatToNPP(wire_npp), id);
 }
 
-NaClSrpcError AudioRpcServer::AudioInitialize(
-    NaClSrpcChannel* channel,
+void AudioRpcServer::AudioInitialize(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t wire_npp,
     int32_t closure_number,
     int32_t sample_rate,
@@ -411,43 +453,50 @@ NaClSrpcError AudioRpcServer::AudioInitialize(
     int32_t input_channel_map,
     int32_t sample_frame_count,
     int32_t flags) {
-  UNREFERENCED_PARAMETER(channel);
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->AudioInitialize(WireFormatToNPP(wire_npp),
-                                 closure_number,
-                                 sample_rate,
-                                 sample_type,
-                                 output_channel_map,
-                                 input_channel_map,
-                                 sample_frame_count,
-                                 flags);
+  rpc->result = module->AudioInitialize(WireFormatToNPP(wire_npp),
+                                        closure_number,
+                                        sample_rate,
+                                        sample_type,
+                                        output_channel_map,
+                                        input_channel_map,
+                                        sample_frame_count,
+                                        flags);
 }
 
-NaClSrpcError AudioRpcServer::AudioDestroy(NaClSrpcChannel* channel,
-                                           int32_t wire_npp) {
-  UNREFERENCED_PARAMETER(channel);
+void AudioRpcServer::AudioDestroy(NaClSrpcRpc* rpc,
+                                  NaClSrpcClosure* done,
+                                  int32_t wire_npp) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->AudioDestroy(WireFormatToNPP(wire_npp));
+  rpc->result = module->AudioDestroy(WireFormatToNPP(wire_npp));
 }
 
-NaClSrpcError AudioRpcServer::AudioGetState(NaClSrpcChannel* channel,
-                                            int32_t wire_npp,
-                                            int32_t state,
-                                            int32_t* value) {
-  UNREFERENCED_PARAMETER(channel);
+void AudioRpcServer::AudioGetState(NaClSrpcRpc* rpc,
+                                   NaClSrpcClosure* done,
+                                   int32_t wire_npp,
+                                   int32_t state,
+                                   int32_t* value) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->AudioGetState(WireFormatToNPP(wire_npp), state, value);
+  rpc->result = module->AudioGetState(WireFormatToNPP(wire_npp), state, value);
 }
 
-NaClSrpcError AudioRpcServer::AudioSetState(NaClSrpcChannel* channel,
-                                            int32_t wire_npp,
-                                            int32_t state,
-                                            int32_t value) {
-  UNREFERENCED_PARAMETER(channel);
+void AudioRpcServer::AudioSetState(NaClSrpcRpc* rpc,
+                                   NaClSrpcClosure* done,
+                                   int32_t wire_npp,
+                                   int32_t state,
+                                   int32_t value) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->AudioSetState(WireFormatToNPP(wire_npp), state, value);
+  rpc->result = module->AudioSetState(WireFormatToNPP(wire_npp), state, value);
 }

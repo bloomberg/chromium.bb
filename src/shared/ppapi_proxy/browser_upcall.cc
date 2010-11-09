@@ -123,20 +123,23 @@ DescWrapper* BrowserUpcall::Start(struct NaClThread* nacl_thread,
 
 // Implementation of the upcall RPC service.
 
-NaClSrpcError PppUpcallRpcServer::PPP_Core_CallOnMainThread(
-    NaClSrpcChannel* channel,
+void PppUpcallRpcServer::PPP_Core_CallOnMainThread(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t closure_number,
     int32_t delay_in_milliseconds) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   // Create a PP_CompletionCallback to place on the main thread.
   // Ownership of user_data is transferred via the closure to the main thread.
   UserData* user_data = new UserData(
       static_cast<uint32_t>(closure_number),
-      reinterpret_cast<NaClSrpcChannel*>(channel->server_instance_data));
+      reinterpret_cast<NaClSrpcChannel*>(rpc->channel->server_instance_data));
   PP_CompletionCallback completion_callback =
       PP_MakeCompletionCallback(CallOnMainThreadThunk, user_data);
   // Enqueue the closure.
   ppapi_proxy::CoreInterface()->CallOnMainThread(delay_in_milliseconds,
                                                  completion_callback,
                                                  0);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }

@@ -73,8 +73,9 @@ static const char** GetCharpArray(uint32_t count,
 // The following methods are the SRPC dispatchers for ppapi/c/ppp_instance.h.
 //
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidCreate(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_DidCreate(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance,
     int32_t argc,
     uint32_t argn_bytes,
@@ -82,52 +83,62 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidCreate(
     uint32_t argv_bytes,
     char* argv,
     int32_t* success) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = kMethodFailure;
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface == NULL || instance_interface->DidCreate == NULL) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Deserialize the argv and argn strutures.
   scoped_ptr<const char*> argn_copy(GetCharpArray(argc, argn, argn_bytes));
   if (argn_copy.get() == NULL) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   scoped_ptr<const char*> argv_copy(GetCharpArray(argc, argv, argv_bytes));
   if (argv_copy.get() == NULL) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   bool initialize_result = instance_interface->DidCreate(instance,
                                                          argc,
                                                          argn_copy.get(),
                                                          argv_copy.get());
   *success = initialize_result ? kMethodSuccess : kMethodFailure;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidDestroy(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_DidDestroy(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface == NULL || instance_interface->DidDestroy == NULL) {
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
   instance_interface->DidDestroy(instance);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidChangeView(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_DidChangeView(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance,
     uint32_t position_count,
     int32_t* position,
     uint32_t clip_count,
     int32_t* clip) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
   const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL || instance_interface->DidChangeView == NULL) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+  if (instance_interface == NULL ||
+      instance_interface->DidChangeView == NULL) {
+    return;
   }
   if (position_count != 4 || clip_count != 4) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   const PP_Rect position_rect =
       PP_MakeRectFromXYWH(position[0], position[1], position[2], position[3]);
@@ -135,13 +146,16 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidChangeView(
       PP_MakeRectFromXYWH(clip[0], clip[1], clip[2], clip[3]);
 
   instance_interface->DidChangeView(instance, &position_rect, &clip_rect);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance,
     bool has_focus) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
   // FocusChanged() has a void return, so it always succeeds at this interface
   // level.
   const PPP_Instance* instance_interface = GetInstanceInterface();
@@ -150,64 +164,73 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
     instance_interface->DidChangeFocus(instance,
         static_cast<PP_Bool>(has_focus));
   }
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance,
     uint32_t event_data_bytes,
     char* event_data,
     int32_t* success) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
   *success = kMethodFailure;
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface == NULL ||
       instance_interface->HandleInputEvent == NULL) {
-    return NACL_SRPC_RESULT_OK;
+    rpc->result = NACL_SRPC_RESULT_OK;
+    return;
   }
   const PP_InputEvent* event =
       reinterpret_cast<const PP_InputEvent*>(event_data);
   bool event_result = instance_interface->HandleInputEvent(instance, event);
   *success = event_result ? kMethodSuccess : kMethodFailure;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance,
     int64_t url_loader,
     int32_t* success) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
   *success = kMethodFailure;
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface == NULL ||
       instance_interface->HandleDocumentLoad == NULL) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   bool handle_result = instance_interface->HandleDocumentLoad(instance,
                                                               url_loader);
   *success = handle_result ? kMethodSuccess : kMethodFailure;
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
-    NaClSrpcChannel* channel,
+void PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int64_t instance,
     uint32_t* capability_bytes,
     char* capability) {
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+  NaClSrpcClosureRunner runner(done);
   const PPP_Instance* instance_interface = GetInstanceInterface();
   if (instance_interface == NULL ||
       instance_interface->GetInstanceObject == NULL ||
       *capability_bytes < sizeof(ppapi_proxy::ObjectCapability)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   PP_Var instance_var = instance_interface->GetInstanceObject(instance);
   if (instance_var.type != PP_VARTYPE_OBJECT) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Create the return capability.
   ppapi_proxy::ObjectCapability cap(GETPID(), instance_var.value.as_id);
   *reinterpret_cast<ppapi_proxy::ObjectCapability*>(capability) = cap;
   *capability_bytes = sizeof(ppapi_proxy::ObjectCapability);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
-

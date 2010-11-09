@@ -78,49 +78,58 @@ void StopUpcallSrpcChannel() {
 // The following methods are the SRPC dispatchers for ppapi/c/ppp.h.
 //
 
-NaClSrpcError PppRpcServer::PPP_InitializeModule(
-    NaClSrpcChannel *channel,
+void PppRpcServer::PPP_InitializeModule(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
     int32_t pid,
     int64_t module,
     NaClSrpcImcDescType upcall_channel_desc,
     char* service_description,
     int32_t* nacl_pid,
     int32_t* success) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   DebugPrintf("PPP_InitializeModule: %s\n", service_description);
   // Set up the service for calling back into the browser.
   if (!StartMainSrpcChannel(const_cast<const char*>(service_description),
-                            channel)) {
+                            rpc->channel)) {
     DebugPrintf("  Failed to export service on main channel\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   // Set up the upcall channel for calling back into the browser.
   if (!StartUpcallSrpcChannel(upcall_channel_desc)) {
     DebugPrintf("  Failed to construct upcall channel\n");
     StopMainSrpcChannel();
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
-  ppapi_proxy::SetModuleIdForSrpcChannel(channel, module);
+  ppapi_proxy::SetModuleIdForSrpcChannel(rpc->channel, module);
   *success = ::PPP_InitializeModule(module, ppapi_proxy::GetInterfaceProxy);
   *nacl_pid = GETPID();
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppRpcServer::PPP_ShutdownModule(NaClSrpcChannel* channel) {
+void PppRpcServer::PPP_ShutdownModule(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   DebugPrintf("PPP_ShutdownModule\n");
   ::PPP_ShutdownModule();
-  ppapi_proxy::UnsetModuleIdForSrpcChannel(channel);
+  ppapi_proxy::UnsetModuleIdForSrpcChannel(rpc->channel);
   StopUpcallSrpcChannel();
   StopMainSrpcChannel();
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError PppRpcServer::PPP_GetInterface(NaClSrpcChannel* channel,
-                                             char* interface_name,
-                                             int32_t* exports_interface_name) {
+void PppRpcServer::PPP_GetInterface(NaClSrpcRpc* rpc,
+                                    NaClSrpcClosure* done,
+                                    char* interface_name,
+                                    int32_t* exports_interface_name) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   DebugPrintf("PPP_GetInterface(%s)\n", interface_name);
   // Since the proxy will make calls to proxied interfaces, we need simply
   // to know whether the plugin exports a given interface.
   const void* plugin_interface = ::PPP_GetInterface(interface_name);
   *exports_interface_name = (plugin_interface != NULL);
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }

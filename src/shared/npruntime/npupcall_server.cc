@@ -124,11 +124,12 @@ DescWrapper* NPUpcallServer::Start(NPModule* module,
 
 // Implementation of the upcall RPC service.
 
-NaClSrpcError NPUpcallRpcServer::NPN_PluginThreadAsyncCall(
-    NaClSrpcChannel* channel,
-    int32_t wire_npp,
-    int32_t closure_number) {
-  UNREFERENCED_PARAMETER(channel);
+void NPUpcallRpcServer::NPN_PluginThreadAsyncCall(NaClSrpcRpc* rpc,
+                                                  NaClSrpcClosure* done,
+                                                  int32_t wire_npp,
+                                                  int32_t closure_number) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPP npp = WireFormatToNPP(wire_npp);
   NPModule* module = NPModule::GetModule(wire_npp);
   uint32_t number = static_cast<uint32_t>(closure_number);
@@ -136,26 +137,28 @@ NaClSrpcError NPUpcallRpcServer::NPN_PluginThreadAsyncCall(
   // Place a closure on the browser's NPAPI thread.
   NppClosure* closure = new(std::nothrow) NppClosure(number, module);
   if (NULL == closure) {
-    return NACL_SRPC_RESULT_APP_ERROR;
+    return;
   }
   ::NPN_PluginThreadAsyncCall(npp,
                               BrowserAsyncCallThunk,
                               static_cast<void*>(closure));
-  return NACL_SRPC_RESULT_OK;
+  rpc->result = NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPUpcallRpcServer::Device3DFlush(NaClSrpcChannel* channel,
-                                               int32_t wire_npp,
-                                               int32_t put_offset,
-                                               int32_t* get_offset,
-                                               int32_t* token,
-                                               int32_t* error) {
-  UNREFERENCED_PARAMETER(channel);
+void NPUpcallRpcServer::Device3DFlush(NaClSrpcRpc* rpc,
+                                      NaClSrpcClosure* done,
+                                      int32_t wire_npp,
+                                      int32_t put_offset,
+                                      int32_t* get_offset,
+                                      int32_t* token,
+                                      int32_t* error) {
+  NaClSrpcClosureRunner runner(done);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NPModule* module = NPModule::GetModule(wire_npp);
 
-  return module->Device3DFlush(WireFormatToNPP(wire_npp),
-                               put_offset,
-                               get_offset,
-                               token,
-                               error);
+  rpc->result = module->Device3DFlush(WireFormatToNPP(wire_npp),
+                                      put_offset,
+                                      get_offset,
+                                      token,
+                                      error);
 }

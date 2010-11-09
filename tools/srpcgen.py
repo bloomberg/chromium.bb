@@ -102,7 +102,7 @@ def CountName(name):
   return '%s_bytes' % name
 
 
-def FormatRpcPrototype(class_name, indent, rpc):
+def FormatRpcPrototype(is_server, class_name, indent, rpc):
   """Returns a string for the prototype of an individual RPC."""
 
   def FormatArgs(is_output, args):
@@ -128,8 +128,17 @@ def FormatRpcPrototype(class_name, indent, rpc):
     for arg in args:
       s += ',\n    %s%s' % (indent, FormatArg(is_output, arg))
     return s
-  s = 'NaClSrpcError %s%s(\n' % (class_name, rpc['name'])
-  s += '    %sNaClSrpcChannel* channel' % indent
+  if is_server:
+    ret_type = 'void'
+  else:
+    ret_type = 'NaClSrpcError'
+  s = '%s %s%s(\n' % (ret_type, class_name, rpc['name'])
+  # Until SRPC uses RPC/Closure on the client side, these must be different.
+  if is_server:
+    s += '    %sNaClSrpcRpc* rpc,\n' % indent
+    s += '    %sNaClSrpcClosure* done' % indent
+  else:
+    s += '    %sNaClSrpcChannel* channel' % indent
   s += '%s' % FormatArgs(False, rpc['inputs'])
   s += '%s' % FormatArgs(True, rpc['outputs'])
   s += '\n%s)' % indent
@@ -150,7 +159,7 @@ def PrintHeaderFile(output, is_server, guard_name, interface_name, specs):
     rpcs = spec['rpcs']
     s += 'class %s {\n public:\n' % class_name
     for rpc in rpcs:
-      s += '  static %s;\n' % FormatRpcPrototype('', '  ', rpc)
+      s += '  static %s;\n' % FormatRpcPrototype(is_server, '', '  ', rpc)
     s += '\n private:\n  %s();\n' % class_name
     s += '  %s(const %s&);\n' % (class_name, class_name)
     s += '  void operator=(const %s);\n\n' % class_name
@@ -224,7 +233,8 @@ def PrintServerFile(output, include_name, interface_name, specs):
         s += ',\n%s    %s' % (indent, FormatArg(is_output, num, arg))
         num += 1
       return s
-    s = '%s::%s(\n%s    rpc->channel' % (class_name, rpc['name'], indent)
+    s = '%s::%s(\n%s    rpc,\n' % (class_name, rpc['name'], indent)
+    s += '%s    done' % indent
     s += FormatArgs(False, rpc['inputs'])
     s += FormatArgs(True, rpc['outputs'])
     s += '\n%s)' % indent
@@ -241,8 +251,7 @@ def PrintServerFile(output, include_name, interface_name, specs):
       if rpc['outputs'] == []:
         s += '  UNREFERENCED_PARAMETER(outputs);\n'
       s += '  UNREFERENCED_PARAMETER(done);\n'
-      s += '  rpc->result = %s;\n' % FormatCall(class_name, '  ', rpc)
-      s += '  done->Run(done);\n'
+      s += '  %s;\n' % FormatCall(class_name, '  ', rpc)
       s += '}\n\n'
   s += '}  // namespace\n\n'
   s += 'NACL_SRPC_METHOD_ARRAY(%s' % interface_name
@@ -297,7 +306,7 @@ def PrintClientFile(output, include_name, specs):
     class_name = spec['name'] + 'Client'
     rpcs = spec['rpcs']
     for rpc in rpcs:
-      s += '%s  {\n' % FormatRpcPrototype(class_name + '::', '', rpc)
+      s += '%s  {\n' % FormatRpcPrototype('', class_name + '::', '', rpc)
       s += '  NaClSrpcError retval;\n'
       s += '  retval = NaClSrpcInvokeBySignature%s;\n' % FormatCall(rpc)
       s += '  return retval;\n'

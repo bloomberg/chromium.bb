@@ -249,12 +249,11 @@ struct NaClSrpcArg {
     struct NaClSrpcVariantArray vaval;
   } u;
 };
-#ifndef __cplusplus
+
 /**
  * A typedef for struct NaClSrpcArg for use in C.
  */
 typedef struct NaClSrpcArg NaClSrpcArg;
-#endif
 
 /**
  * Remote procedure call state structure.
@@ -274,12 +273,11 @@ struct NaClSrpcRpc {
   /* TODO(sehr): buffer is actually part of the channel struct. Remove it. */
   struct NaClSrpcImcBuffer* buffer;
 };
-#ifndef __cplusplus
+
 /**
  *  A typedef for struct NaClSrpcRpc for use in C.
  */
 typedef struct NaClSrpcRpc  NaClSrpcRpc;
-#endif  /* __cplusplus */
 
 /* TODO(gregoryd) - duplicate string? */
 /**
@@ -309,12 +307,25 @@ struct NaClSrpcClosure {
   void (*Run)(struct NaClSrpcClosure* self);
 };
 
-#ifndef __cplusplus
+#ifdef __cplusplus
+/**
+ * An RAII helper class for using NaClSrpcClosures in C++.
+ */
+class NaClSrpcClosureRunner {
+ public:
+  explicit NaClSrpcClosureRunner(NaClSrpcClosure* closure) :
+    closure_(closure) { }
+  ~NaClSrpcClosureRunner() { closure_->Run(closure_); }
+
+ private:
+  NaClSrpcClosure* closure_;
+};
+#endif
+
 /**
  * A typedef for struct NaClSrpcClosure for use in C.
  */
 typedef struct NaClSrpcClosure NaClSrpcClosure;
-#endif
 
 /**
  * Methods used to implement SRPC services have this type signature.
@@ -338,12 +349,11 @@ struct NaClSrpcHandlerDesc {
    */
   NaClSrpcMethod handler;
 };
-#ifndef __cplusplus
+
 /**
  * A typedef for struct NaClSrpcHandlerDesc for use in C.
  */
 typedef struct NaClSrpcHandlerDesc NaClSrpcHandlerDesc;
-#endif
 
 /**
  * The structure used to provide a buffering layer over the IMC.
@@ -383,12 +393,11 @@ struct NaClSrpcImcBuffer {
   unsigned char             bytes[NACL_ABI_IMC_USER_BYTES_MAX];
 #endif
 };
-#ifndef __cplusplus
+
 /**
  *  A typedef for struct NaClSrpcImcBuffer for use in C.
  */
 typedef struct NaClSrpcImcBuffer NaClSrpcImcBuffer;
-#endif
 
 /**
  * A private structure type used to describe methods within NaClSrpcService.
@@ -414,12 +423,11 @@ struct NaClSrpcService {
   /** The length of <code>service_string</code> in bytes */
   nacl_abi_size_t             service_string_length;
 };
-#ifndef __cplusplus
+
 /**
  *  A typedef for struct NaClSrpcService for use in C.
  */
 typedef struct NaClSrpcService NaClSrpcService;
-#endif
 
 /**
  *  Constructs an SRPC service object from an array of handlers.
@@ -532,12 +540,11 @@ struct NaClSrpcChannel {
    */
   void                        *server_instance_data;
 };
-#ifndef __cplusplus
+
 /**
  *  A typedef for struct NaClSrpcChannel for use in C.
  */
 typedef struct NaClSrpcChannel NaClSrpcChannel;
-#endif
 
 /**
  *  Constructs an SRPC client object communicating over an IMC descriptor.
