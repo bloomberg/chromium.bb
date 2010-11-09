@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options/options_ui.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -98,6 +99,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // Member variables ---------------------------------------------------------
 
   NotificationRegistrar notification_registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };

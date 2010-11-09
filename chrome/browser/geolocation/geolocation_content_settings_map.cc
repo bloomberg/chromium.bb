@@ -117,11 +117,6 @@ void GeolocationContentSettingsMap::SetDefaultContentSetting(
   profile_->GetPrefs()->SetInteger(prefs::kGeolocationDefaultContentSetting,
                                    setting == CONTENT_SETTING_DEFAULT ?
                                        kDefaultSetting : setting);
-
-  NotificationService::current()->Notify(
-      NotificationType::GEOLOCATION_DEFAULT_CHANGED,
-      Source<GeolocationContentSettingsMap>(this),
-      NotificationService::NoDetails());
 }
 
 void GeolocationContentSettingsMap::SetContentSetting(
@@ -162,11 +157,6 @@ void GeolocationContentSettingsMap::SetContentSetting(
     requesting_origin_settings_dictionary->SetWithoutPathExpansion(
         embedding_origin.spec(), Value::CreateIntegerValue(setting));
   }
-
-  NotificationService::current()->Notify(
-      NotificationType::GEOLOCATION_SETTINGS_CHANGED,
-      Source<GeolocationContentSettingsMap>(this),
-      NotificationService::NoDetails());
 }
 
 void GeolocationContentSettingsMap::ResetToDefault() {

@@ -19,6 +19,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -309,17 +310,16 @@ void ContentSettingsHandler::Initialize() {
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<const HostContentSettingsMap>(settings_map));
   notification_registrar_.Add(
-      this, NotificationType::GEOLOCATION_DEFAULT_CHANGED,
-      NotificationService::AllSources());
-  notification_registrar_.Add(
-      this, NotificationType::GEOLOCATION_SETTINGS_CHANGED,
-      NotificationService::AllSources());
-  notification_registrar_.Add(
       this, NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
       NotificationService::AllSources());
   notification_registrar_.Add(
       this, NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       NotificationService::AllSources());
+
+  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
+  pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
 }
 
 void ContentSettingsHandler::Observe(NotificationType type,
@@ -350,14 +350,12 @@ void ContentSettingsHandler::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::GEOLOCATION_DEFAULT_CHANGED: {
-      UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
-      break;
-    }
-
-    case NotificationType::GEOLOCATION_SETTINGS_CHANGED: {
-      UpdateGeolocationExceptionsView();
-      break;
+    case NotificationType::PREF_CHANGED: {
+      const std::string& pref_name = *Details<std::string>(details).ptr();
+      if (pref_name == prefs::kGeolocationDefaultContentSetting)
+        UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      else if (pref_name == prefs::kGeolocationContentSettings)
+        UpdateGeolocationExceptionsView();
     }
 
     case NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
