@@ -33,6 +33,31 @@ class PluginResourceTracker {
   void AddRefResource(PP_Resource resource);
   void ReleaseResource(PP_Resource resource);
 
+  // Checks if the resource just returned from the renderer is already
+  // tracked by the plugin side and adjusts the refcounts if so.
+  //
+  // When the browser returns a PP_Resource, it could be a new one, in which
+  // case the proxy wants to create a corresponding object and call
+  // AddResource() on it. However, if the resouce is already known, then the
+  // refcount needs to be adjusted in both the plugin and the renderer side
+  // and no such object needs to be created.
+  //
+  // Returns true if the resource was previously known. The refcount will be
+  // fixed up such that it's ready to use by the plugin. A proxy can then
+  // just return the resource without doing any more work.
+  //
+  // Typical usage:
+  //
+  //   PP_Resource result;
+  //   dispatcher->Send(new MyMessage(..., &result));
+  //   if (dispatcher->plugin_resource_tracker()->
+  //           PreparePreviouslyTrackedResource(result))
+  //     return result;
+  //   ... create resource object ...
+  //   dispatcher->plugin_resource_tracker()->AddResource(result, object);
+  //   return result;
+  bool PreparePreviouslyTrackedResource(PP_Resource resource);
+
  private:
   struct ResourceInfo {
     ResourceInfo();

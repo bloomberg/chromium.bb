@@ -13,6 +13,10 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/c/dev/ppb_testing_dev.h"
+#include "ppapi/c/dev/ppb_url_loader_dev.h"
+#include "ppapi/c/dev/ppb_url_request_info_dev.h"
+#include "ppapi/c/dev/ppb_url_response_info_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_core.h"
@@ -24,6 +28,10 @@
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
+#include "ppapi/proxy/ppb_testing_proxy.h"
+#include "ppapi/proxy/ppb_url_loader_proxy.h"
+#include "ppapi/proxy/ppb_url_request_info_proxy.h"
+#include "ppapi/proxy/ppb_url_response_info_proxy.h"
 #include "ppapi/proxy/ppb_var_deprecated_proxy.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
@@ -202,6 +210,14 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
     return new PPB_ImageData_Proxy(this, interface_functions);
   if (interface_name == PPB_INSTANCE_INTERFACE)
     return new PPB_Instance_Proxy(this, interface_functions);
+  if (interface_name == PPB_TESTING_DEV_INTERFACE)
+    return new PPB_Testing_Proxy(this, interface_functions);
+  if (interface_name == PPB_URLLOADER_DEV_INTERFACE)
+    return new PPB_URLLoader_Proxy(this, interface_functions);
+  if (interface_name == PPB_URLREQUESTINFO_DEV_INTERFACE)
+    return new PPB_URLRequestInfo_Proxy(this, interface_functions);
+  if (interface_name == PPB_URLRESPONSEINFO_DEV_INTERFACE)
+    return new PPB_URLResponseInfo_Proxy(this, interface_functions);
   if (interface_name == PPB_VAR_DEPRECATED_INTERFACE)
     return new PPB_Var_Deprecated_Proxy(this, interface_functions);
   if (interface_name == PPP_INSTANCE_INTERFACE)

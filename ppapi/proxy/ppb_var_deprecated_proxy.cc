@@ -11,7 +11,6 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
-#include "ppapi/proxy/ppapi_message_helpers.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -57,14 +56,14 @@ bool HasProperty(PP_Var var,
                  PP_Var* exception) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
   ReceiveSerializedException se(dispatcher, exception);
-  bool result = false;
+  PP_Bool result = PP_FALSE;
   if (!se.IsThrown()) {
     dispatcher->Send(new PpapiHostMsg_PPBVar_HasProperty(
         INTERFACE_ID_PPB_VAR_DEPRECATED,
         SerializedVarSendInput(dispatcher, var),
         SerializedVarSendInput(dispatcher, name), &se, &result));
   }
-  return result;
+  return PPBoolToBool(result);
 }
 
 bool HasMethod(PP_Var var,
@@ -72,14 +71,14 @@ bool HasMethod(PP_Var var,
                PP_Var* exception) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
   ReceiveSerializedException se(dispatcher, exception);
-  bool result = false;
+  PP_Bool result = PP_FALSE;
   if (!se.IsThrown()) {
     dispatcher->Send(new PpapiHostMsg_PPBVar_HasMethodDeprecated(
         INTERFACE_ID_PPB_VAR_DEPRECATED,
         SerializedVarSendInput(dispatcher, var),
         SerializedVarSendInput(dispatcher, name), &se, &result));
   }
-  return result;
+  return PPBoolToBool(result);
 }
 
 PP_Var GetProperty(PP_Var var,
@@ -134,7 +133,7 @@ void RemoveProperty(PP_Var var,
                     PP_Var* exception) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
   ReceiveSerializedException se(dispatcher, exception);
-  bool result = false;
+  PP_Bool result = PP_FALSE;
   if (!se.IsThrown()) {
     dispatcher->Send(new PpapiHostMsg_PPBVar_DeleteProperty(
         INTERFACE_ID_PPB_VAR_DEPRECATED,
@@ -184,9 +183,9 @@ PP_Var Construct(PP_Var object,
 }
 
 bool IsInstanceOf(PP_Var var,
-                  const PPP_Class_Deprecated* ppp_class,
-                  void** ppp_class_data) {
-  bool result = false;
+                     const PPP_Class_Deprecated* ppp_class,
+                     void** ppp_class_data) {
+  PP_Bool result = PP_FALSE;
   Dispatcher* dispatcher = PluginDispatcher::Get();
   int64 class_int = static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class));
   int64 class_data_int = 0;
@@ -195,7 +194,7 @@ bool IsInstanceOf(PP_Var var,
       class_int, &class_data_int, &result));
   *ppp_class_data =
       reinterpret_cast<void*>(static_cast<intptr_t>(class_data_int));
-  return result;
+  return PPBoolToBool(result);
 }
 
 PP_Var CreateObject(PP_Module module_id,
@@ -278,20 +277,22 @@ void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(
     SerializedVarReceiveInput var,
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
-    bool* result) {
-  *result = ppb_var_target()->HasProperty(var.Get(dispatcher()),
-                                          name.Get(dispatcher()),
-                                          exception.OutParam(dispatcher()));
+    PP_Bool* result) {
+  *result = BoolToPPBool(ppb_var_target()->HasProperty(
+      var.Get(dispatcher()),
+      name.Get(dispatcher()),
+      exception.OutParam(dispatcher())));
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgHasMethodDeprecated(
     SerializedVarReceiveInput var,
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
-    bool* result) {
-  *result = ppb_var_target()->HasMethod(var.Get(dispatcher()),
-                                        name.Get(dispatcher()),
-                                        exception.OutParam(dispatcher()));
+    PP_Bool* result) {
+  *result = BoolToPPBool(ppb_var_target()->HasMethod(
+      var.Get(dispatcher()),
+      name.Get(dispatcher()),
+      exception.OutParam(dispatcher())));
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgGetProperty(
@@ -328,13 +329,13 @@ void PPB_Var_Deprecated_Proxy::OnMsgDeleteProperty(
     SerializedVarReceiveInput var,
     SerializedVarReceiveInput name,
     SerializedVarOutParam exception,
-    bool* result) {
+    PP_Bool* result) {
   ppb_var_target()->RemoveProperty(var.Get(dispatcher()),
                                    name.Get(dispatcher()),
                                    exception.OutParam(dispatcher()));
   // This deprecated function doesn't actually return a value, but we re-use
   // the message from the non-deprecated interface with the return value.
-  *result = true;
+  *result = PP_TRUE;
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgCallDeprecated(
@@ -368,7 +369,7 @@ void PPB_Var_Deprecated_Proxy::OnMsgIsInstanceOfDeprecated(
     pp::proxy::SerializedVarReceiveInput var,
     int64 ppp_class,
     int64* ppp_class_data,
-    bool* result) {
+    PP_Bool* result) {
   // TODO(brettw) write this.
 }
 

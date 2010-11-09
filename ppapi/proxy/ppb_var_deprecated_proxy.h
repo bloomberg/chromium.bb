@@ -17,6 +17,7 @@ namespace pp {
 namespace proxy {
 
 class SerializedVar;
+class SerializedVarArray;
 class SerializedVarReceiveInput;
 class SerializedVarVectorOutParam;
 class SerializedVarVectorReceiveInput;
@@ -43,11 +44,11 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
   void OnMsgHasProperty(SerializedVarReceiveInput var,
                         SerializedVarReceiveInput name,
                         SerializedVarOutParam exception,
-                        bool* result);
+                        PP_Bool* result);
   void OnMsgHasMethodDeprecated(SerializedVarReceiveInput var,
                                 SerializedVarReceiveInput name,
                                 SerializedVarOutParam exception,
-                                bool* result);
+                                PP_Bool* result);
   void OnMsgGetProperty(SerializedVarReceiveInput var,
                         SerializedVarReceiveInput name,
                         SerializedVarOutParam exception,
@@ -63,7 +64,7 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
   void OnMsgDeleteProperty(SerializedVarReceiveInput var,
                            SerializedVarReceiveInput name,
                            SerializedVarOutParam exception,
-                           bool* result);
+                           PP_Bool* result);
   void OnMsgCall(SerializedVarReceiveInput object,
                  SerializedVarReceiveInput this_object,
                  SerializedVarReceiveInput method_name,
@@ -82,7 +83,7 @@ class PPB_Var_Deprecated_Proxy : public InterfaceProxy {
   void OnMsgIsInstanceOfDeprecated(pp::proxy::SerializedVarReceiveInput var,
                                    int64 ppp_class,
                                    int64* ppp_class_data,
-                                   bool* result);
+                                   PP_Bool* result);
   void OnMsgCreateObjectDeprecated(PP_Module module_id,
                                    int64 ppp_class,
                                    int64 ppp_class_data,

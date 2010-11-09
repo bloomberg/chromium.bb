@@ -12,15 +12,25 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/serialized_var.h" // TODO(brettw) eraseme.
 
-class PP_ObjectProperty;
+struct PP_ObjectProperty;
 
 namespace pp {
 namespace proxy {
+struct PPBFont_DrawTextAt_Params;
+class SerializedFontDescription;
 class SerializedVar;
 }
 }
 
 namespace IPC {
+
+template<>
+struct ParamTraits<PP_Bool> {
+  typedef PP_Bool param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
 
 template<>
 struct ParamTraits<PP_InputEvent> {
@@ -63,6 +73,22 @@ struct ParamTraits<PP_Size> {
 };
 
 template<>
+struct ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params> {
+  typedef pp::proxy::PPBFont_DrawTextAt_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct ParamTraits<pp::proxy::SerializedFontDescription> {
+  typedef pp::proxy::SerializedFontDescription param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
 struct ParamTraits<pp::proxy::SerializedVar> {
   typedef pp::proxy::SerializedVar param_type;
   static void Write(Message* m, const param_type& p);
@@ -70,9 +96,6 @@ struct ParamTraits<pp::proxy::SerializedVar> {
   static void Log(const param_type& p, std::string* l);
 };
 
-// We need a special implementation of sending a vector of SerializedVars
-// because the behavior of vector doesn't always play nicely with our
-// weird SerializedVar implementation (see "Read" in the .cc file).
 template<>
 struct ParamTraits< std::vector<pp::proxy::SerializedVar> > {
   typedef std::vector<pp::proxy::SerializedVar> param_type;

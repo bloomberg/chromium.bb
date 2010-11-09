@@ -11,9 +11,12 @@
 
 // If you inherit from resource, make sure you add the class name here.
 #define FOR_ALL_RESOURCES(F) \
+  F(Font) \
   F(Graphics2D) \
   F(ImageData) \
-  F(URLLoader)
+  F(URLLoader) \
+  F(URLRequestInfo)\
+  F(URLResponseInfo)
 
 namespace pp {
 namespace proxy {

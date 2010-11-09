@@ -67,6 +67,25 @@ void PluginResourceTracker::ReleaseResource(PP_Resource resource) {
   ReleasePluginResourceRef(resource, true);
 }
 
+bool PluginResourceTracker::PreparePreviouslyTrackedResource(
+    PP_Resource resource) {
+  ResourceMap::iterator found = resource_map_.find(resource);
+  if (found == resource_map_.end())
+    return false;  // We've not seen this resource before.
+
+  // We have already seen this resource and the caller wants the plugin to
+  // have one more ref to the object (this function is called when retuning
+  // a resource).
+  //
+  // This is like the PluginVarTracker::ReceiveObjectPassRef. We do an AddRef
+  // in the plugin for the additional ref, and then a Release in the renderer
+  // because the code in the renderer addrefed on behalf of the caller.
+  found->second.ref_count++;
+  dispatcher_->Send(new PpapiHostMsg_PPBCore_ReleaseResource(
+      INTERFACE_ID_PPB_CORE, resource));
+  return true;
+}
+
 void PluginResourceTracker::ReleasePluginResourceRef(
     const PP_Resource& resource,
     bool notify_browser_on_release) {

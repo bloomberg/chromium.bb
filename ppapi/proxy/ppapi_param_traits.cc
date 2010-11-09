@@ -6,9 +6,37 @@
 
 #include <string.h>  // For memcpy
 
+#include "ppapi/c/pp_resource.h"
+#include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
 
 namespace IPC {
+
+// PP_Bool ---------------------------------------------------------------------
+
+// static
+void ParamTraits<PP_Bool>::Write(Message* m, const param_type& p) {
+  ParamTraits<bool>::Write(m, pp::proxy::PPBoolToBool(p));
+}
+
+// static
+bool ParamTraits<PP_Bool>::Read(const Message* m, void** iter, param_type* r) {
+  // We specifically want to be strict here about what types of input we accept,
+  // which ParamTraits<bool> does for us. We don't want to deserialize "2" into
+  // a PP_Bool, for example.
+  bool result = false;
+  if (!ParamTraits<bool>::Read(m, iter, &result))
+    return false;
+  *r = pp::proxy::BoolToPPBool(result);
+  return true;
+}
+
+// static
+void ParamTraits<PP_Bool>::Log(const param_type& p, std::string* l) {
+}
+
+// PP_InputEvent ---------------------------------------------------------------
 
 // static
 void ParamTraits<PP_InputEvent>::Write(Message* m, const param_type& p) {
@@ -111,6 +139,46 @@ bool ParamTraits<PP_Size>::Read(const Message* m, void** iter, param_type* r) {
 void ParamTraits<PP_Size>::Log(const param_type& p, std::string* l) {
 }
 
+// PPBFont_DrawTextAt_Params ---------------------------------------------------
+
+// static
+void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<PP_Resource>::Write(m, p.font);
+  ParamTraits<PP_Resource>::Write(m, p.image_data);
+  ParamTraits<PP_Bool>::Write(m, p.text_is_rtl);
+  ParamTraits<PP_Bool>::Write(m, p.override_direction);
+  ParamTraits<PP_Point>::Write(m, p.position);
+  ParamTraits<uint32_t>::Write(m, p.color);
+  ParamTraits<PP_Rect>::Write(m, p.clip);
+  ParamTraits<bool>::Write(m, p.clip_is_null);
+  ParamTraits<PP_Bool>::Write(m, p.image_data_is_opaque);
+}
+
+// static
+bool ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Read(
+    const Message* m,
+    void** iter,
+    param_type* r) {
+  return
+      ParamTraits<PP_Resource>::Read(m, iter, &r->font) &&
+      ParamTraits<PP_Resource>::Read(m, iter, &r->image_data) &&
+      ParamTraits<PP_Bool>::Read(m, iter, &r->text_is_rtl) &&
+      ParamTraits<PP_Bool>::Read(m, iter, &r->override_direction) &&
+      ParamTraits<PP_Point>::Read(m, iter, &r->position) &&
+      ParamTraits<uint32_t>::Read(m, iter, &r->color) &&
+      ParamTraits<PP_Rect>::Read(m, iter, &r->clip) &&
+      ParamTraits<bool>::Read(m, iter, &r->clip_is_null) &&
+      ParamTraits<PP_Bool>::Read(m, iter, &r->image_data_is_opaque);
+}
+
+// static
+void ParamTraits<pp::proxy::PPBFont_DrawTextAt_Params>::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 // SerializedVar ---------------------------------------------------------------
 
 // static
@@ -129,6 +197,44 @@ bool ParamTraits<pp::proxy::SerializedVar>::Read(const Message* m,
 // static
 void ParamTraits<pp::proxy::SerializedVar>::Log(const param_type& p,
                                                 std::string* l) {
+}
+
+// pp::proxy::SerializedFontDescription ----------------------------------------
+
+// static
+void ParamTraits<pp::proxy::SerializedFontDescription>::Write(
+    Message* m,
+    const param_type& p) {
+  ParamTraits<pp::proxy::SerializedVar>::Write(m, p.face);
+  ParamTraits<int32_t>::Write(m, p.family);
+  ParamTraits<uint32_t>::Write(m, p.size);
+  ParamTraits<int32_t>::Write(m, p.weight);
+  ParamTraits<PP_Bool>::Write(m, p.italic);
+  ParamTraits<PP_Bool>::Write(m, p.small_caps);
+  ParamTraits<int32_t>::Write(m, p.letter_spacing);
+  ParamTraits<int32_t>::Write(m, p.word_spacing);
+}
+
+// static
+bool ParamTraits<pp::proxy::SerializedFontDescription>::Read(
+    const Message* m,
+    void** iter,
+    param_type* r) {
+  return
+      ParamTraits<pp::proxy::SerializedVar>::Read(m, iter, &r->face) &&
+      ParamTraits<int32_t>::Read(m, iter, &r->family) &&
+      ParamTraits<uint32_t>::Read(m, iter, &r->size) &&
+      ParamTraits<int32_t>::Read(m, iter, &r->weight) &&
+      ParamTraits<PP_Bool>::Read(m, iter, &r->italic) &&
+      ParamTraits<PP_Bool>::Read(m, iter, &r->small_caps) &&
+      ParamTraits<int32_t>::Read(m, iter, &r->letter_spacing) &&
+      ParamTraits<int32_t>::Read(m, iter, &r->word_spacing);
+}
+
+// static
+void ParamTraits<pp::proxy::SerializedFontDescription>::Log(
+    const param_type& p,
+    std::string* l) {
 }
 
 // std::vector<SerializedVar> --------------------------------------------------
@@ -185,6 +291,5 @@ void ParamTraits< std::vector<pp::proxy::SerializedVar> >::Log(
     const param_type& p,
     std::string* l) {
 }
-
 
 }  // namespace IPC

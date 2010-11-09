@@ -121,7 +121,7 @@ void PluginVarTracker::SendAddRefObjectMsg(int64_t id) {
 
 void PluginVarTracker::SendReleaseObjectMsg(int64_t id) {
   dispatcher_->Send(new PpapiHostMsg_PPBVar_ReleaseObject(
-        INTERFACE_ID_PPB_VAR_DEPRECATED, id));
+      INTERFACE_ID_PPB_VAR_DEPRECATED, id));
 }
 
 }  // namesace proxy
