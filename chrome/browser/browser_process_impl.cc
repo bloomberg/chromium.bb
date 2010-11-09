@@ -615,7 +615,7 @@ void BrowserProcessImpl::CreateCacheThread() {
   created_cache_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(BrowserThread::CACHE));
+      new BrowserThread(BrowserThread::CACHE));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))
