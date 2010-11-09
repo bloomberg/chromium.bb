@@ -63,7 +63,15 @@ cr.define('options', function() {
 
       // Set up add button.
       $('language-options-add-button').onclick = function(e) {
-        OptionsPage.showOverlay('addLanguageOverlay');
+        // Add the language without showing the overlay if it's specified in
+        // the URL hash (ex. lang_add=ja).  Used for automated testing.
+        var match = document.location.hash.match(/\blang_add=([\w-]+)/);
+        if (match) {
+          var addLanguageCode = match[1];
+          $('language-options-list').addLanguage(addLanguageCode);
+        } else {
+          OptionsPage.showOverlay('addLanguageOverlay');
+        }
       };
       // Set up remove button.
       $('language-options-remove-button').addEventListener('click',
@@ -375,8 +383,8 @@ cr.define('options', function() {
      * @private
      */
     updateInputMethodList_: function(languageCode) {
-      // Give one of the checkboxes focus, if it's specified in the URL hash
-      // (ex. focus=mozc). Used for automated testing.
+      // Give one of the checkboxes or buttons focus, if it's specified in the
+      // URL hash (ex. focus=mozc). Used for automated testing.
       var focusInputMethodId = -1;
       var match = document.location.hash.match(/\bfocus=([\w:-]+)\b/);
       if (match) {
@@ -398,6 +406,11 @@ cr.define('options', function() {
         } else {
           label.style.display = 'none';
         }
+      }
+      if (focusInputMethodId == 'remove') {
+        $('language-options-remove-button').focus();
+      } else if (focusInputMethodId == 'add') {
+        $('language-options-add-button').focus();
       }
     },
 
