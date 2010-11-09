@@ -3197,3 +3197,36 @@
    fun:_ZN12_GLOBAL__N_141FormStructureTest_EncodeQueryRequest_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
+{
+   bug_61753/Addr2
+   Memcheck:Addr2
+   ...
+   fun:pkix_*
+   ...
+   fun:CERT_PKIXVerifyCert
+}
+{
+   bug_61753/Addr4
+   Memcheck:Addr4
+   ...
+   fun:pkix_*
+   ...
+   fun:CERT_PKIXVerifyCert
+}
+{
+   bug_61753/Leak
+   Memcheck:Leak
+   ...
+   fun:PR_*alloc
+   ...
+   fun:*nss*
+   fun:*Singleton*
+}
+{
+   bug_61753/Param
+   Memcheck:Param
+   ...
+   fun:pkix_*
+   ...
+   fun:CERT_PKIXVerifyCert
+}
