@@ -560,16 +560,17 @@ void NetworkMenu::InitMenuItems() {
     const CellularNetworkVector& cell_networks = cros->cellular_networks();
     const CellularNetwork* active_cellular = cros->cellular_network();
 
-    if (cell_networks.size() > 0) {
-      no_networks = false;
-      // Separator
-      menu_items_.push_back(MenuItem());
-    }
+    bool separator_added = false;
     // List Cellular networks.
     for (size_t i = 0; i < cell_networks.size(); ++i) {
       chromeos::ActivationState activation_state =
           cell_networks[i]->activation_state();
       if (activation_state == ACTIVATION_STATE_NOT_ACTIVATED) {
+        // If we are on the login screen, do not show activating 3G option.
+        // TODO(chocobo): We are currently using ShouldOpenButtonOptions() to
+        //   tell whether or not we are at the login screen. We need to fix it.
+        if (!ShouldOpenButtonOptions())
+          continue;
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_ACTIVATE,
             ASCIIToUTF16(cell_networks[i]->name()));
@@ -587,6 +588,14 @@ void NetworkMenu::InitMenuItems() {
       } else {
         label = ASCIIToUTF16(cell_networks[i]->name());
       }
+
+      // First add a separator if necessary.
+      if (!separator_added) {
+        no_networks = false;
+        menu_items_.push_back(MenuItem());
+        separator_added = true;
+      }
+
       SkBitmap icon = IconForNetworkStrength(cell_networks[i]->strength(),
                                              true);
       SkBitmap badge = BadgeForNetworkTechnology(cell_networks[i]);
