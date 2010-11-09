@@ -53,12 +53,6 @@ enum ConfigurationPolicyType {
   kPolicyBlockThirdPartyCookies,
   kPolicyExtensionInstallForceList,
   kPolicyChromeOsLockOnIdleSuspend,
-  kPolicyAuthSchemes,
-  kPolicyDisableAuthNegotiateCnameLookup,
-  kPolicyEnableAuthNegotiatePort,
-  kPolicyAuthServerWhitelist,
-  kPolicyAuthNegotiateDelegateWhitelist,
-
 };
 
 static const int kPolicyNoProxyServerMode = 0;

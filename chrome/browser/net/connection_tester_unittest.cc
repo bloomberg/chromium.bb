@@ -5,7 +5,6 @@
 #include "chrome/browser/net/connection_tester.h"
 
 #include "chrome/browser/io_thread.h"
-#include "chrome/test/testing_pref_service.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,8 +75,7 @@ class ConnectionTesterTest : public PlatformTest {
   ConnectionTesterTest()
       : test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
-        message_loop_(MessageLoop::TYPE_IO),
-        io_thread_(new TestingPrefService()) {
+        message_loop_(MessageLoop::TYPE_IO) {
     scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver(
         new net::RuleBasedHostResolverProc(NULL));
 

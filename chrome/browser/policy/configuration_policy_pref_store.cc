@@ -155,16 +155,6 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     prefs::kDevToolsDisabled },
   { Value::TYPE_BOOLEAN, kPolicyBlockThirdPartyCookies,
     prefs::kBlockThirdPartyCookies},
-  { Value::TYPE_STRING, kPolicyAuthSchemes,
-    prefs::kAuthSchemes },
-  { Value::TYPE_BOOLEAN, kPolicyDisableAuthNegotiateCnameLookup,
-    prefs::kDisableAuthNegotiateCnameLookup },
-  { Value::TYPE_BOOLEAN, kPolicyEnableAuthNegotiatePort,
-    prefs::kEnableAuthNegotiatePort },
-  { Value::TYPE_STRING, kPolicyAuthServerWhitelist,
-    prefs::kAuthServerWhitelist },
-  { Value::TYPE_STRING, kPolicyAuthNegotiateDelegateWhitelist,
-    prefs::kAuthNegotiateDelegateWhitelist },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,
@@ -260,15 +250,6 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDeveloperToolsDisabled },
     { kPolicyBlockThirdPartyCookies, Value::TYPE_BOOLEAN,
       key::kBlockThirdPartyCookies },
-    { kPolicyAuthSchemes, Value::TYPE_STRING, key::kAuthSchemes },
-    { kPolicyDisableAuthNegotiateCnameLookup, Value::TYPE_BOOLEAN,
-      key::kDisableAuthNegotiateCnameLookup },
-    { kPolicyEnableAuthNegotiatePort, Value::TYPE_BOOLEAN,
-      key::kEnableAuthNegotiatePort },
-    { kPolicyAuthServerWhitelist, Value::TYPE_STRING,
-      key::kAuthServerWhitelist },
-    { kPolicyAuthNegotiateDelegateWhitelist, Value::TYPE_STRING,
-      key::kAuthNegotiateDelegateWhitelist },
 
 #if defined(OS_CHROMEOS)
     { kPolicyChromeOsLockOnIdleSuspend, Value::TYPE_BOOLEAN,

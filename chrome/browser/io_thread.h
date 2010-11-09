@@ -8,7 +8,6 @@
 
 #include <list>
 #include <set>
-#include <string>
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -20,7 +19,6 @@
 class ChromeNetLog;
 class ChromeURLRequestContextGetter;
 class ListValue;
-class PrefService;
 class URLRequestContext;
 
 namespace chrome_browser_net {
@@ -50,7 +48,7 @@ class IOThread : public BrowserProcessSubThread {
     ChromeNetworkDelegate network_delegate;
   };
 
-  explicit IOThread(PrefService* local_state);
+  IOThread();
 
   virtual ~IOThread();
 
@@ -104,8 +102,6 @@ class IOThread : public BrowserProcessSubThread {
   class ManagedProxyScriptFetcher;
   typedef std::set<ManagedProxyScriptFetcher*> ProxyScriptFetchers;
 
-  static void RegisterPrefs(PrefService* local_state);
-
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
       net::HostResolver* resolver);
 
@@ -137,13 +133,6 @@ class IOThread : public BrowserProcessSubThread {
 
   // Observer that logs network changes to the ChromeNetLog.
   scoped_ptr<net::NetworkChangeNotifier::Observer> network_change_observer_;
-
-  // Store HTTP Auth-related policies in this thread.
-  std::string auth_schemes_;
-  bool negotiate_disable_cname_lookup_;
-  bool negotiate_enable_port_;
-  std::string auth_server_whitelist_;
-  std::string auth_delegate_whitelist_;
 
   // These member variables are initialized by a task posted to the IO thread,
   // which gets posted by calling certain member functions of IOThread.

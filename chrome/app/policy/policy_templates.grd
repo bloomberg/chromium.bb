@@ -355,58 +355,6 @@ templates and will be translated for each locale. -->
       <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
     </message>
 
-    <!-- HTTP Authentication Policy messages -->
-    <message name="IDS_POLICY_HTTPAUTHENTICATION_CAPTION" desc="Caption of the 'HTTPAuthentication' policy group">
-      Policies for HTTP Authentication
-    </message>
-    <message name="IDS_POLICY_HTTPAUTHENTICATION_DESC" desc="Description of the 'HTTPAuthentication' policy group">
-      Policies related to integrated HTTP authentication.
-    </message>
-
-    <message name="IDS_POLICY_AUTHSCHEMES_CAPTION" desc="Caption of the 'supported auth schemes' policy.">
-      Supported authentication schemes
-    </message>
-    <message name="IDS_POLICY_AUTHSCHEMES_DESC" desc="Description of the 'supported auth schemes' policy.">
-      Specifies which HTTP Authentication schemes are supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      Possible values are 'basic', 'digest', 'ntlm' and 'negotiate'. Separate multiple values with commas.
-    </message>
-    <message name="IDS_POLICY_DISABLEAUTHNEGOTIATECNAMELOOKUP_CAPTION" desc="Caption of the 'disable auth negotiate CNAME lookup' policy.">
-      Disable CNAME lookup when negotiating Kerberos authentication
-    </message>
-    <message name="IDS_POLICY_DISABLEAUTHNEGOTIATECNAMELOOKUP_DESC" desc="Description of the 'disable auth negotiate CNAME lookup' policy.">
-      Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
-
-      If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
-
-      If you enable this setting, the canonical name of the server will be determined via CNAME lookup.
-    </message>
-    <message name="IDS_POLICY_ENABLEAUTHNEGOTIATEPORT_CAPTION" desc="Caption of the 'enable auth negotiate port' policy.">
-      Include non-standard port in Kerberos SPN
-    </message>
-    <message name="IDS_POLICY_ENABLEAUTHNEGOTIATEPORT_DESC" desc="Description of the 'enable auth negotiate port' policy.">
-      Specifies whether the generated Kerberos SPN should include a non-standard port.
-
-      If you enable this setting, and a non-standard port (i.e., a port other than 80 or 443) is entered, it will be included in the generated Kerberos SPN.
-
-      If you disable this setting, the generated Kerberos SPN will not include a port in any case.
-    </message>
-    <message name="IDS_POLICY_AUTHSERVERWHITELIST_CAPTION" desc="Caption of the 'auth server whitelist' policy.">
-      Authentication server whitelist
-    </message>
-    <message name="IDS_POLICY_AUTHSERVERWHITELIST_DESC" desc="Description of the 'auth server whitelist' policy.">
-      Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
-
-      Separate multiple server names with commas. Wildcards (*) are allowed.
-    </message>
-    <message name="IDS_POLICY_AUTHNEGOTIATEDELEGATEWHITELIST_CAPTION" desc="Caption of the 'auth negotiate delegate whitelist' policy.">
-      Kerberos delegation server whitelist
-    </message>
-    <message name="IDS_POLICY_AUTHNEGOTIATEDELEGATEWHITELIST_DESC" desc="Description of the 'auth negotiate delegate whitelist' policy.">
-      Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
-    </message>
-    <!-- End HTTP Authentication Policy messages -->
-
     <message name="IDS_POLICY_METRICSREPORTINGENABLED_CAPTION" desc="Caption of the 'crash reporting' policy.">
       Enable reporting of usage and crash-related data
     </message>

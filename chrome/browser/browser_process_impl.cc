@@ -555,7 +555,7 @@ void BrowserProcessImpl::CreateIOThread() {
   background_x11_thread_.swap(background_x11_thread);
 #endif
 
-  scoped_ptr<IOThread> thread(new IOThread(local_state()));
+  scoped_ptr<IOThread> thread(new IOThread);
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))

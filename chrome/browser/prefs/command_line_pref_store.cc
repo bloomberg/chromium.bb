@@ -16,20 +16,12 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kProxyServer, prefs::kProxyServer },
       { switches::kProxyPacUrl, prefs::kProxyPacUrl },
       { switches::kProxyBypassList, prefs::kProxyBypassList },
-      { switches::kAuthSchemes, prefs::kAuthSchemes },
-      { switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist },
-      { switches::kAuthNegotiateDelegateWhitelist,
-          prefs::kAuthNegotiateDelegateWhitelist },
 };
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
     CommandLinePrefStore::boolean_switch_map_[] = {
       { switches::kNoProxyServer, prefs::kNoProxyServer, true },
       { switches::kProxyAutoDetect, prefs::kProxyAutoDetect, true },
-      { switches::kDisableAuthNegotiateCnameLookup,
-          prefs::kDisableAuthNegotiateCnameLookup, true },
-      { switches::kEnableAuthNegotiatePort, prefs::kEnableAuthNegotiatePort,
-          true },
 };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
