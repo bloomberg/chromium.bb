@@ -21,7 +21,6 @@ BUG60671 : fast/canvas/webgl/uniform-location.html = TIMEOUT FAIL CRASH
 BUGJEREMY WIN LINUX : fast/block/basic/truncation-rtl.html = IMAGE+TEXT
 BUGJEREMY MAC : fast/block/basic/truncation-rtl.html = IMAGE
 BUGPFELDMAN WIN : inspector/console-log-syntax-error.html = TEXT
-BUGPKASTING WIN : fast/images/gif-loop-count.html = IMAGE
 
 // Was already marked as flaky on Win, seems to fail on Mac too.
 BUG31342 MAC WIN RELEASE : security/block-test-no-port.html = TEXT PASS
@@ -33,3 +32,5 @@ BUG61739 MAC WIN : animations/suspend-resume-animation-events.html = FAIL CRASH
 
 // Probably caused by activation of ICC on Chromium-Mac, likely only requires resume
 BUG48982 MAC : tables/mozilla/bugs/bug82946-2.html = IMAGE
+
+BUGMIHAIP : editing/selection/extend-selection.html = TIMEOUT PASS
