@@ -358,8 +358,6 @@
       'sources': [
         'protocol/buffered_socket_writer.cc',
         'protocol/buffered_socket_writer.h',
-        'protocol/chromotocol_config.cc',
-        'protocol/chromotocol_config.h',
         'protocol/client_control_sender.cc',
         'protocol/client_control_Sender.h',
         'protocol/client_stub.h',

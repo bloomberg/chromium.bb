@@ -260,7 +260,7 @@ void SessionManager::DoGetInitInfo(
   network_loop_->PostTask(
       FROM_HERE,
       NewTracedMethod(this, &SessionManager::DoSendInit, connection,
-                        capturer()->width(), capturer()->height()));
+                      capturer()->width(), capturer()->height()));
 
   // And then add the connection to the list so it can receive update stream.
   // It is important we do so in such order or the connection will receive
