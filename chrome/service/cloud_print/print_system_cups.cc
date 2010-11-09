@@ -117,14 +117,17 @@ class PrintSystemCUPS : public PrintSystem {
 
   void UpdatePrinters();
 
+  // Full name contains print server url:port and printer name. Short name
+  // is the name of the printer in the CUPS server.
+  std::string MakeFullPrinterName(const GURL& url,
+                                  const std::string& short_printer_name);
+  PrintServerInfoCUPS* FindServerByFullName(
+      const std::string& full_printer_name, std::string* short_printer_name);
+
   // PrintServerList contains information about all print servers and backends
   // this proxy is connected to.
   typedef std::list<PrintServerInfoCUPS> PrintServerList;
-  // PrintersMap provides fast check for printer existence and access to
-  // printer information by printer name. (optimization).
-  typedef std::map<std::string, PrintServerInfoCUPS*> PrintersMap;
   PrintServerList print_servers_;
-  PrintersMap printer_map_;
 
   int update_timeout_;
   bool initialized_;
@@ -380,15 +383,15 @@ void PrintSystemCUPS::Init() {
 }
 
 void PrintSystemCUPS::UpdatePrinters() {
-  printer_map_.clear();
   PrintServerList::iterator it;
   for (it = print_servers_.begin(); it != print_servers_.end(); ++it) {
     it->backend->EnumeratePrinters(&it->printers);
     it->caps_cache.clear();
-    printing::PrinterList::const_iterator printer_it;
+    printing::PrinterList::iterator printer_it;
     for (printer_it = it->printers.begin();
         printer_it != it->printers.end(); ++printer_it) {
-      printer_map_[printer_it->printer_name] = &(*it);
+      printer_it->printer_name = MakeFullPrinterName(it->url,
+                                                     printer_it->printer_name);
     }
     VLOG(1) << "CUPS: Updated printer list for url: " << it->url
             << " Number of printers: " << it->printers.size();
@@ -415,31 +418,31 @@ bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
     printing::PrinterCapsAndDefaults* printer_info) {
   DCHECK(initialized_);
-  PrintersMap::iterator it = printer_map_.find(printer_name);
-  if (it == printer_map_.end())
+  std::string short_printer_name;
+  PrintServerInfoCUPS* server_info =
+      FindServerByFullName(printer_name, &short_printer_name);
+  if (!server_info)
     return false;
 
   PrintServerInfoCUPS::CapsMap::iterator caps_it =
-      it->second->caps_cache.find(printer_name);
-  if (caps_it != it->second->caps_cache.end()) {
+      server_info->caps_cache.find(printer_name);
+  if (caps_it != server_info->caps_cache.end()) {
     *printer_info = caps_it->second;
     return true;
   }
 
   // TODO(gene): Retry multiple times in case of error.
-  if (!it->second->backend->GetPrinterCapsAndDefaults(printer_name,
-                                                      printer_info) ) {
+  if (!server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
+                                                       printer_info) ) {
     return false;
   }
 
-  it->second->caps_cache[printer_name] = *printer_info;
+  server_info->caps_cache[printer_name] = *printer_info;
   return true;
 }
 
 bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {
-  DCHECK(initialized_);
-  PrintersMap::iterator it = printer_map_.find(printer_name);
-  return it != printer_map_.end();
+  return GetPrinterInfo(printer_name, NULL);
 }
 
 bool PrintSystemCUPS::ValidatePrintTicket(const std::string& printer_name,
@@ -479,12 +482,15 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
   DCHECK(initialized_);
   DCHECK(job_details);
 
-  PrintersMap::iterator it = printer_map_.find(printer_name);
-  if (it == printer_map_.end())
+  std::string short_printer_name;
+  PrintServerInfoCUPS* server_info =
+      FindServerByFullName(printer_name, &short_printer_name);
+  if (!server_info)
     return false;
 
   cups_job_t* jobs = NULL;
-  int num_jobs = GetJobs(&jobs, it->second->url, printer_name.c_str(), 1, -1);
+  int num_jobs = GetJobs(&jobs, server_info->url,
+                         short_printer_name.c_str(), 1, -1);
 
   bool found = false;
   for (int i = 0; i < num_jobs; i++) {
@@ -528,18 +534,21 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
 bool PrintSystemCUPS::GetPrinterInfo(const std::string& printer_name,
                                      printing::PrinterBasicInfo* info) {
   DCHECK(initialized_);
-  DCHECK(info);
-  VLOG(1) << "CP_CUPS: Getting printer info for: " << printer_name;
+  if (info)
+    VLOG(1) << "CP_CUPS: Getting printer info for: " << printer_name;
 
-  PrintersMap::iterator it = printer_map_.find(printer_name);
-  if (it == printer_map_.end())
+  std::string short_printer_name;
+  PrintServerInfoCUPS* server_info =
+      FindServerByFullName(printer_name, &short_printer_name);
+  if (!server_info)
     return false;
 
-  printing::PrinterList::iterator printer_it;
-  for (printer_it = it->second->printers.begin();
-      printer_it != it->second->printers.end(); ++printer_it) {
-    if (printer_it->printer_name == printer_name) {
-      *info = *printer_it;
+  printing::PrinterList::iterator it;
+  for (it = server_info->printers.begin();
+      it != server_info->printers.end(); ++it) {
+    if (it->printer_name == printer_name) {
+      if (info)
+        *info = *it;
       return true;
     }
   }
@@ -609,9 +618,11 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   DCHECK(initialized_);
   VLOG(1) << "CP_CUPS: Spooling print job for: " << printer_name;
 
-  PrintersMap::iterator print_server = printer_map_.find(printer_name);
-  if (print_server == printer_map_.end())
-    return 0;
+  std::string short_printer_name;
+  PrintServerInfoCUPS* server_info =
+      FindServerByFullName(printer_name, &short_printer_name);
+  if (!server_info)
+    return false;
 
   // We need to store options as char* string for the duration of the
   // cupsPrintFile2 call. We'll use map here to store options, since
@@ -629,8 +640,8 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
     cups_options.push_back(opt);
   }
 
-  int job_id = PrintFile(print_server->second->url,
-                         printer_name.c_str(),
+  int job_id = PrintFile(server_info->url,
+                         short_printer_name.c_str(),
                          print_data_file_path.value().c_str(),
                          job_title.c_str(),
                          cups_options.size(),
@@ -639,6 +650,48 @@ PlatformJobId PrintSystemCUPS::SpoolPrintJob(
   VLOG(1) << "CP_CUPS: Job spooled, id: " << job_id;
 
   return job_id;
+}
+
+std::string PrintSystemCUPS::MakeFullPrinterName(
+    const GURL& url, const std::string& short_printer_name) {
+  std::string full_name;
+  full_name += "\\\\";
+  full_name += url.host();
+  if (!url.port().empty()) {
+    full_name += ":";
+    full_name += url.port();
+  }
+  full_name += "\\";
+  full_name += short_printer_name;
+  return full_name;
+}
+
+PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
+    const std::string& full_printer_name, std::string* short_printer_name) {
+  size_t front = full_printer_name.find("\\\\");
+  size_t separator = full_printer_name.find("\\", 2);
+  if (front == std::string::npos || separator == std::string::npos) {
+    LOG(WARNING) << "Invalid UNC printer name: " << full_printer_name;
+    return NULL;
+  }
+  std::string server = full_printer_name.substr(2, separator - 2);
+
+  PrintServerList::iterator it;
+  for (it = print_servers_.begin(); it != print_servers_.end(); ++it) {
+    std::string cur_server;
+    cur_server += it->url.host();
+    if (!it->url.port().empty()) {
+      cur_server += ":";
+      cur_server += it->url.port();
+    }
+    if (cur_server == server) {
+      *short_printer_name = full_printer_name.substr(separator + 1);
+      return &(*it);
+    }
+  }
+
+  LOG(WARNING) << "Server not found for printer: " << full_printer_name;
+  return NULL;
 }
 
 }  // namespace cloud_print
