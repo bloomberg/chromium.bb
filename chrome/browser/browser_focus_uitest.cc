@@ -53,8 +53,10 @@
 // TODO(suzhe): http://crbug.com/49737
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_WIN)
-#define MAYBE_FocusTraversal FocusTraversal
-#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
+// Disabled, http://crbug.com/62543.
+#define MAYBE_FocusTraversal DISABLED_FocusTraversal
+// Disabled, http://crbug.com/62544.
+#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
 // Flaky, http://crbug.com/62537.
 #define MAYBE_TabsRememberFocusFindInPage FLAKY_TabsRememberFocusFindInPage
 #endif
@@ -209,7 +211,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
 }
 
 // Tabs remember focus.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
+// Disabled, http://crbug.com/62542.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
