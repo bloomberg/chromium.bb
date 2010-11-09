@@ -1053,12 +1053,3 @@
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
-{
-   bug_62505
-   Heapcheck:Leak
-   ...
-   fun:DictionaryValue::DeepCopy
-   fun:policy::DeviceManagementPolicyCache::GetPolicy
-   fun:policy::DeviceManagementPolicyProvider::Provide
-   fun:policy::DeviceManagementPolicyProviderTest::*
-}

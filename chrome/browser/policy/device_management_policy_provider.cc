@@ -78,8 +78,8 @@ DeviceManagementPolicyProvider::~DeviceManagementPolicyProvider() {}
 
 bool DeviceManagementPolicyProvider::Provide(
     ConfigurationPolicyStoreInterface* policy_store) {
-  DictionaryValue* policies = cache_->GetPolicy();
-  DecodePolicyValueTree(policies, policy_store);
+  scoped_ptr<DictionaryValue> policies(cache_->GetPolicy());
+  DecodePolicyValueTree(policies.get(), policy_store);
   return true;
 }
 
