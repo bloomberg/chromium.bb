@@ -243,6 +243,8 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 
 #define NACL_NO_ERROR                 ""
 
+#define NACL_HTTP_STATUS_OK           200
+
 /*****************************************************************************
  * C++ coding convention macros                                              *
  ****************************************************************************/

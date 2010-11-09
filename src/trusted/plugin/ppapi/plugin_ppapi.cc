@@ -34,7 +34,6 @@ const char* const kNaclManifestAttribute = "nacl";
 // The "nexes" attr of the <embed> tag, and the key used to find the dicitonary
 // of nexe URLs in the manifest file.
 const char* const kNexesAttribute = "nexes";
-const int32_t kHttpStatusOk = 200;
 }  // namespace
 
 namespace plugin {
@@ -182,7 +181,7 @@ void PluginPpapi::NexeURLLoadStartNotify(int32_t pp_error) {
   int32_t status_code = url_response.GetStatusCode();
   PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadStartNotify (status_code=%"
                  NACL_PRId32")\n", status_code));
-  if (status_code != kHttpStatusOk) {
+  if (status_code != NACL_HTTP_STATUS_OK) {
     return;
   }
 
@@ -207,7 +206,7 @@ void PluginPpapi::NexeURLLoadFinishNotify(int32_t pp_error) {
   }
 
   pp::URLResponseInfo_Dev url_response(nexe_loader_.GetResponseInfo());
-  CHECK(url_response.GetStatusCode() == kHttpStatusOk);  // Validated on load.
+  CHECK(url_response.GetStatusCode() == NACL_HTTP_STATUS_OK);
 
   // Record the full url from the response.
   pp::Var full_url = url_response.GetURL();
