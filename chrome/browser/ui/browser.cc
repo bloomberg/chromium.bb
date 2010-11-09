@@ -145,6 +145,8 @@ static const int kUIUpdateCoalescingTimeMS = 200;
 #if defined(OS_CHROMEOS)
 static const char* const kHelpContentUrl =
     "chrome-extension://nifaohjgppdbmalmmgkmfdlodaggnbpe/main.html";
+static const char* const kHelpContentOnlineUrl =
+    "http://www.google.com/support/chromeos/";
 #else
 static const char* const kHelpContentUrl =
     "http://www.google.com/support/chrome/";
@@ -1851,8 +1853,14 @@ void Browser::OpenUpdateChromeDialog() {
 }
 
 void Browser::OpenHelpTab() {
-  GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
-  AddSelectedTabWithURL(help_url, PageTransition::AUTO_BOOKMARK);
+  GURL help_url(kHelpContentUrl);
+#if defined(OS_CHROMEOS)
+  // TODO(nkostylev): Always redirect to HelpApp http://crosbug.com/6923
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
+    help_url = GURL(kHelpContentOnlineUrl);
+#endif
+  GURL localized_help_url = google_util::AppendGoogleLocaleParam(help_url);
+  AddSelectedTabWithURL(localized_help_url, PageTransition::AUTO_BOOKMARK);
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
