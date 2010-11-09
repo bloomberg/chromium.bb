@@ -156,20 +156,11 @@ bool TestServer::WaitToStart() {
       NewRunnableFunction(UnblockPipe, child_write_fd_.Get(), &unblocked),
       TestTimeouts::action_max_timeout_ms());
 
-  // Try to read two bytes from the pipe indicating the ephemeral port number.
-  uint16 port;
-  uint8* buffer = reinterpret_cast<uint8*>(&port);
-  DWORD bytes_read = 0;
-  DWORD bytes_max = sizeof(port);
-  while (bytes_read < bytes_max) {
-    DWORD num_bytes;
-    if (!ReadFile(child_read_fd_, buffer + bytes_read, bytes_max - bytes_read,
-                  &num_bytes, NULL))
-      break;
-    if (num_bytes <= 0)
-      break;
-    bytes_read += num_bytes;
-  }
+  char buf[8];
+  DWORD bytes_read;
+  BOOL result = ReadFile(child_read_fd_.Get(), buf, sizeof(buf), &bytes_read,
+                         NULL);
+
   thread.Stop();
   child_read_fd_.Close();
   child_write_fd_.Close();
@@ -178,12 +169,7 @@ bool TestServer::WaitToStart() {
   if (unblocked)
     return false;
 
-  // If not enough bytes were read, fail.
-  if (bytes_read < bytes_max)
-    return false;
-
-  host_port_pair_.set_port(port);
-  return true;
+  return result && bytes_read > 0;
 }
 
 bool TestServer::CheckCATrusted() {

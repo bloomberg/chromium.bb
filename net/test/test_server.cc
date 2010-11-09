@@ -40,6 +40,59 @@ const int kServerConnectionAttempts = 10;
 // Connection timeout in milliseconds for tests.
 const int kServerConnectionTimeoutMs = 1000;
 
+const char kTestServerShardFlag[] = "test-server-shard";
+
+int GetHTTPSPortBase(const TestServer::HTTPSOptions& options) {
+  if (options.request_client_certificate)
+    return 9543;
+
+  switch (options.server_certificate) {
+    case TestServer::HTTPSOptions::CERT_OK:
+      return 9443;
+    case TestServer::HTTPSOptions::CERT_MISMATCHED_NAME:
+      return 9643;
+    case TestServer::HTTPSOptions::CERT_EXPIRED:
+      // TODO(phajdan.jr): Some tests rely on this hardcoded value.
+      // Some uses of this are actually in .html/.js files.
+      return 9666;
+    default:
+      NOTREACHED();
+  }
+  return -1;
+}
+
+int GetPortBase(TestServer::Type type,
+                const TestServer::HTTPSOptions& options) {
+  switch (type) {
+    case TestServer::TYPE_FTP:
+      return 3117;
+    case TestServer::TYPE_HTTP:
+      return 1337;
+    case TestServer::TYPE_HTTPS:
+      return GetHTTPSPortBase(options);
+    default:
+      NOTREACHED();
+  }
+  return -1;
+}
+
+int GetPort(TestServer::Type type,
+            const TestServer::HTTPSOptions& options) {
+  int port = GetPortBase(type, options);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kTestServerShardFlag)) {
+    std::string shard_str(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                              kTestServerShardFlag));
+    int shard = -1;
+    if (base::StringToInt(shard_str, &shard)) {
+      port += shard;
+    } else {
+      LOG(FATAL) << "Got invalid " << kTestServerShardFlag << " flag value. "
+                 << "An integer is expected.";
+    }
+  }
+  return port;
+}
+
 std::string GetHostname(TestServer::Type type,
                         const TestServer::HTTPSOptions& options) {
   if (type == TestServer::TYPE_HTTPS &&
@@ -85,16 +138,13 @@ FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
 }
 
 TestServer::TestServer(Type type, const FilePath& document_root)
-    : type_(type),
-      started_(false) {
+    : type_(type) {
   Init(document_root);
 }
 
 TestServer::TestServer(const HTTPSOptions& https_options,
                        const FilePath& document_root)
-    : https_options_(https_options),
-      type_(TYPE_HTTPS),
-      started_(false) {
+    : https_options_(https_options), type_(TYPE_HTTPS) {
   Init(document_root);
 }
 
@@ -106,11 +156,8 @@ TestServer::~TestServer() {
 }
 
 void TestServer::Init(const FilePath& document_root) {
-  // At this point, the port that the testserver will listen on is unknown.
-  // The testserver will listen on an ephemeral port, and write the port
-  // number out over a pipe that this TestServer object will read from. Once
-  // that is complete, the host_port_pair_ will contain the actual port.
-  host_port_pair_ = HostPortPair(GetHostname(type_, https_options_), 0);
+  host_port_pair_ = HostPortPair(GetHostname(type_, https_options_),
+                                 GetPort(type_, https_options_));
   process_handle_ = base::kNullProcessHandle;
 
   FilePath src_dir;
@@ -155,15 +202,12 @@ bool TestServer::Start() {
     return false;
   }
 
-  started_ = true;
   return true;
 }
 
 bool TestServer::Stop() {
   if (!process_handle_)
     return true;
-
-  started_ = false;
 
   // First check if the process has already terminated.
   bool ret = base::WaitForSingleProcess(process_handle_, 0);
@@ -178,11 +222,6 @@ bool TestServer::Stop() {
   }
 
   return ret;
-}
-
-const HostPortPair& TestServer::host_port_pair() const {
-  DCHECK(started_);
-  return host_port_pair_;
 }
 
 std::string TestServer::GetScheme() const {
