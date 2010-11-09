@@ -106,7 +106,15 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyProxyBypassList,
                     prefs::kProxyBypassList),
         TypeAndName(kPolicyApplicationLocale,
-                    prefs::kApplicationLocale)));
+                    prefs::kApplicationLocale),
+        TypeAndName(kPolicyApplicationLocale,
+                    prefs::kApplicationLocale),
+        TypeAndName(kPolicyAuthSchemes,
+                    prefs::kAuthSchemes),
+        TypeAndName(kPolicyAuthServerWhitelist,
+                    prefs::kAuthServerWhitelist),
+        TypeAndName(kPolicyAuthNegotiateDelegateWhitelist,
+                    prefs::kAuthNegotiateDelegateWhitelist)));
 
 // Test cases for boolean-valued policy settings.
 class ConfigurationPolicyPrefStoreBooleanTest
@@ -161,7 +169,13 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyJavascriptEnabled,
                     prefs::kWebKitJavascriptEnabled),
         TypeAndName(kPolicySavingBrowserHistoryDisabled,
-                    prefs::kSavingBrowserHistoryDisabled)));
+                    prefs::kSavingBrowserHistoryDisabled),
+        TypeAndName(kPolicySavingBrowserHistoryDisabled,
+                    prefs::kSavingBrowserHistoryDisabled),
+        TypeAndName(kPolicyDisableAuthNegotiateCnameLookup,
+                    prefs::kDisableAuthNegotiateCnameLookup),
+        TypeAndName(kPolicyEnableAuthNegotiatePort,
+                    prefs::kEnableAuthNegotiatePort)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(

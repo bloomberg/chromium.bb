@@ -4,6 +4,8 @@
 
 #include "chrome/browser/io_thread.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
@@ -21,9 +23,11 @@
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/raw_host_resolver_proc.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/pref_names.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
@@ -207,11 +211,25 @@ IOThread::Globals::Globals() {}
 
 IOThread::Globals::~Globals() {}
 
-IOThread::IOThread()
+// |local_state| is passed in explicitly in order to (1) reduce implicit
+// dependencies and (2) make IOThread more flexible for testing.
+IOThread::IOThread(PrefService* local_state)
     : BrowserProcessSubThread(BrowserThread::IO),
       globals_(NULL),
       speculative_interceptor_(NULL),
-      predictor_(NULL) {}
+      predictor_(NULL) {
+  // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
+  // sure that everything is initialized in the right order.
+  RegisterPrefs(local_state);
+  auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
+  negotiate_disable_cname_lookup_ = local_state->GetBoolean(
+      prefs::kDisableAuthNegotiateCnameLookup);
+  negotiate_enable_port_ = local_state->GetBoolean(
+      prefs::kEnableAuthNegotiatePort);
+  auth_server_whitelist_ = local_state->GetString(prefs::kAuthServerWhitelist);
+  auth_delegate_whitelist_ = local_state->GetString(
+      prefs::kAuthNegotiateDelegateWhitelist);
+}
 
 IOThread::~IOThread() {
   // We cannot rely on our base class to stop the thread since we want our
@@ -401,41 +419,36 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
   base::debug::LeakTracker<URLRequest>::CheckForLeaks();
 }
 
+// static
+void IOThread::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterStringPref(prefs::kAuthSchemes,
+                                  "basic,digest,ntlm,negotiate");
+  local_state->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup,
+                                   false);
+  local_state->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
+  local_state->RegisterStringPref(prefs::kAuthServerWhitelist, "");
+  local_state->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist, "");
+}
+
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
     net::HostResolver* resolver) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // Get the whitelist information from the command line, create an
-  // HttpAuthFilterWhitelist, and attach it to the HttpAuthHandlerFactory.
-  net::HttpAuthFilterWhitelist* auth_filter_default_credentials = NULL;
-  if (command_line.HasSwitch(switches::kAuthServerWhitelist)) {
-    auth_filter_default_credentials = new net::HttpAuthFilterWhitelist(
-        command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist));
-  }
-  net::HttpAuthFilterWhitelist* auth_filter_delegate = NULL;
-  if (command_line.HasSwitch(switches::kAuthNegotiateDelegateWhitelist)) {
-    auth_filter_delegate = new net::HttpAuthFilterWhitelist(
-        command_line.GetSwitchValueASCII(
-            switches::kAuthNegotiateDelegateWhitelist));
-  }
+  net::HttpAuthFilterWhitelist* auth_filter_default_credentials =
+      new net::HttpAuthFilterWhitelist(auth_server_whitelist_);
+  net::HttpAuthFilterWhitelist* auth_filter_delegate =
+      new net::HttpAuthFilterWhitelist(auth_delegate_whitelist_);
   globals_->url_security_manager.reset(
       net::URLSecurityManager::Create(auth_filter_default_credentials,
                                       auth_filter_delegate));
-
-  // Determine which schemes are supported.
-  std::string csv_auth_schemes = "basic,digest,ntlm,negotiate";
-  if (command_line.HasSwitch(switches::kAuthSchemes))
-    csv_auth_schemes = StringToLowerASCII(
-        command_line.GetSwitchValueASCII(switches::kAuthSchemes));
   std::vector<std::string> supported_schemes;
-  base::SplitString(csv_auth_schemes, ',', &supported_schemes);
+  base::SplitString(auth_schemes_, ',', &supported_schemes);
 
   return net::HttpAuthHandlerRegistryFactory::Create(
       supported_schemes,
       globals_->url_security_manager.get(),
       resolver,
-      command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup),
-      command_line.HasSwitch(switches::kEnableAuthNegotiatePort));
+      negotiate_disable_cname_lookup_,
+      negotiate_enable_port_);
 }
 
 void IOThread::InitNetworkPredictorOnIOThread(

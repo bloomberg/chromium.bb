@@ -54,6 +54,11 @@ extern const char kJavascriptEnabled[];
 extern const char kSavingBrowserHistoryDisabled[];
 extern const char kDeveloperToolsDisabled[];
 extern const char kBlockThirdPartyCookies[];
+extern const char kAuthSchemes[];
+extern const char kDisableAuthNegotiateCnameLookup[];
+extern const char kEnableAuthNegotiatePort[];
+extern const char kAuthServerWhitelist[];
+extern const char kAuthNegotiateDelegateWhitelist[];
 
 // Chrome Frame specific policy constants
 extern const char kChromeFrameRendererSettings[];

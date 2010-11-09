@@ -1025,6 +1025,23 @@ const char kRemotingHasSetupCompleted[] = "remoting.has_setup_completed";
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
+// String that lists supported HTTP authentication schemes.
+const char kAuthSchemes[] = "auth.schemes";
+
+// Boolean that specifies whether to disable CNAME lookups when generating
+// Kerberos SPN.
+const char kDisableAuthNegotiateCnameLookup[] =
+    "auth.disable_negotiate_cname_lookup";
+// Boolean that specifies whether to include the port in a generated Kerberos
+// SPN.
+const char kEnableAuthNegotiatePort[] = "auth.enable_negotiate_port";
+// Whitelist containing servers for which Integrated Authentication is enabled.
+const char kAuthServerWhitelist[] = "auth.server_whitelist";
+// Whitelist containing servers Chrome is allowed to do Kerberos delegation
+// with.
+const char kAuthNegotiateDelegateWhitelist[] =
+    "auth.negotiate_delegate_whitelist";
+
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into signed
 // settings storage before owner has been assigned.
