@@ -156,6 +156,7 @@ enum {
     ID_TEST_EVALUATE,
     ID_TEST_GET_PROPERTY_RETURN_VALUE,
     ID_TEST_CALLBACK_METHOD_RET,
+    ID_TEST_CALLBACK_METHOD_RETURN,
     ID_TEST_CREATE_TEST_OBJECT,
     ID_TEST_PASS_TEST_OBJECT,
     ID_TEST_CLONE_OBJECT,
@@ -190,6 +191,7 @@ static const NPUTF8 *pluginMethodIdentifierNames[NUM_METHOD_IDENTIFIERS] = {
     "testEvaluate",
     "testGetPropertyReturnValue",
     "testCallbackRet",       // Chrome bug 897451
+    "testCallbackReturn",    // Chrome bug 897451
     "testCreateTestObject",  // Chrome bug 1093606
     "testPassTestObject",    // Chrome bug 1093606
     "testCloneObject",
@@ -802,7 +804,8 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
         return testIdentifierToInt(plugin, args, argCount, result);
     else if (name == pluginMethodIdentifiers[ID_TEST_POSTURL_FILE])
         return testPostURLFile(plugin, args, argCount, result);
-    else if (name == pluginMethodIdentifiers[ID_TEST_CALLBACK_METHOD_RET]) {
+    else if (name == pluginMethodIdentifiers[ID_TEST_CALLBACK_METHOD_RET] ||
+             name == pluginMethodIdentifiers[ID_TEST_CALLBACK_METHOD_RETURN]) {
         // call whatever method name we're given, and pass it the 'window' obj.
         // we expect the function to return its argument.
         if (argCount > 0 && NPVARIANT_IS_STRING(args[0])) {
