@@ -30,7 +30,9 @@ body.loading #main {
 
 #main,
 .section,
-.maxiview {
+.maxiview,
+#login-container,
+#notification-container {
   width: 920px;
 }
 
@@ -73,6 +75,10 @@ html[anim=false] *,
 
 /* Notification */
 
+#notification-container {
+  position: fixed;
+}
+
 #notification {
   position: relative;
   background-color: hsl(52, 100%, 80%);
@@ -81,10 +87,7 @@ html[anim=false] *,
   padding: 7px 15px;
   white-space: nowrap;
   display: table;
-  /* Set the height and margin so that the element does not use any vertical
-    space */
-  height: 16px;
-  margin: -44px auto 12px auto;
+  margin: 2px auto;
   font-weight: bold;
   opacity: 0;
   pointer-events: none;
@@ -312,8 +315,8 @@ html[anim=true][enable-section-animations=true] .section {
 
 #login-container {
   display: none;
-  height: 0;  /* This should not take any vertical space and this simpler than
-                 position absolute which changes the width to intrinsic */
+  margin-top: 5px;
+  position: fixed;
   text-align: end;
 }
 
@@ -494,7 +497,9 @@ html[anim=true] .maxiview {
 
   #main,
   .section,
-  .maxiview {
+  .maxiview,
+  #login-container,
+  #notification-container {
     width: 692px;
   }
 
