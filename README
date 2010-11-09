@@ -4,7 +4,7 @@ Wayland is a project to define a protocol for a compositor to talk to
 its clients as well as a library implementation of the protocol.  The
 compositor can be a standalone display server running on Linux kernel
 modesetting and evdev input devices, an X applications, or a wayland
-client itself.  The clients can be traditional appliactions, X servers
+client itself.  The clients can be traditional applications, X servers
 (rootless or fullscreen) or other display servers.
 
 The wayland protocol is essentially only about input handling and
@@ -64,7 +64,7 @@ libxkbcommon
 
 Wayland needs libxkbcommon for translating evdev keycodes to keysyms.
 There's a couple of repos around, and we're trying to consolidate the
-development, but for wayland you'll need the repo from my get
+development, but for wayland you'll need the repo from my git
 repository.  For this you'll need development packages for xproto,
 kbproto and libX11.
 
@@ -76,7 +76,7 @@ kbproto and libX11.
 
 cairo-gl
 
-The Waland clients render using cairo-gl, which is an experimental
+The Wayland clients render using cairo-gl, which is an experimental
 cairo backend.  It has been available since cairo 1.10.  Unless your
 distribution ships cairo with the gl backend enabled, you'll need to
 compile your own version of cairo:
