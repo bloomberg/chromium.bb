@@ -48,7 +48,6 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_METHOD1(FindCellularNetworkByPath, CellularNetwork*(const std::string&));
 
   MOCK_METHOD0(RequestWifiScan, void(void));
-  MOCK_METHOD0(UpdateSystemInfo, void(void));
   MOCK_METHOD1(GetWifiAccessPoints, bool(WifiAccessPointVector*));
   MOCK_METHOD4(ConnectToWifiNetwork, bool(const WifiNetwork*,
                                           const std::string&,

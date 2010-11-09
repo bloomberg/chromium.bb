@@ -468,9 +468,10 @@ void NetworkMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   refreshing_menu_ = true;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->RequestWifiScan();
-  cros->UpdateSystemInfo();
-  InitMenuItems();
-  network_menu_->Rebuild();
+
+  // Menu contents are built in UpdateMenu, which is called
+  // when NetworkChagned is called.
+
   // Restore menu width, if it was set up.
   // NOTE: width isn't checked for correctness here since all width-related
   // logic implemented inside |network_menu_|.

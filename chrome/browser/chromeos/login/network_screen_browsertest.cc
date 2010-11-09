@@ -64,29 +64,43 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // Status bar expectations are defined with RetiresOnSaturation() so
     // these mocks will be active once status bar is initialized.
     EXPECT_CALL(*mock_network_library_, active_network())
-        .Times(2)
+        .Times(1)
         .WillRepeatedly((Return((const Network*)(NULL))))
         .RetiresOnSaturation();
     EXPECT_CALL(*mock_network_library_, ethernet_connected())
-        .Times(1)
+        .Times(2)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, ethernet_connecting())
-        .Times(1)
+        .Times(2)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, wifi_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, wifi_connecting())
-        .Times(3)
+        .Times(2)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, cellular_connected())
         .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, cellular_connecting())
-        .Times(3)
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_network_library_, Connecting())
         .Times(2)
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_network_library_, ethernet_available())
+        .Times(1)
+        .WillRepeatedly((Return(true)))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, wifi_available())
+        .Times(1)
+        .WillRepeatedly((Return(false)))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, cellular_available())
+        .Times(1)
+        .WillRepeatedly((Return(false)))
+        .RetiresOnSaturation();
+
+    // Add a Connecting for prewarming auth url check.
+    EXPECT_CALL(*mock_network_library_, Connecting())
+        .Times(1)
         .WillRepeatedly(Return(false));
     // Add a Connected for prewarming auth url check.
     EXPECT_CALL(*mock_network_library_, Connected())

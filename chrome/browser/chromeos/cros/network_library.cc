@@ -17,6 +17,15 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
+// FlimFlam may send multiple notifications for single network change.
+// We wait small amount of time before retrieving the status to
+// avoid send multiple sync request to flim flam.
+const int kNetworkUpdateDelayMs = 50;
+
+}  // namespace
+
 namespace chromeos {
 
 namespace {
@@ -649,7 +658,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         available_devices_(0),
         enabled_devices_(0),
         connected_devices_(0),
-        offline_mode_(false) {
+        offline_mode_(false),
+        update_task_(NULL) {
     if (EnsureCrosLoaded()) {
       Init();
       network_manager_monitor_ =
@@ -676,6 +686,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual void AddNetworkManagerObserver(NetworkManagerObserver* observer) {
     if (!network_manager_observers_.HasObserver(observer))
       network_manager_observers_.AddObserver(observer);
+  }
+
+  void NetworkStatusChanged() {
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (update_task_) {
+      update_task_->Cancel();
+    }
+    update_task_ =
+        NewRunnableMethod(this,
+                          &NetworkLibraryImpl::UpdateNetworkManagerStatus);
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI, FROM_HERE, update_task_,
+        kNetworkUpdateDelayMs);
   }
 
   virtual void RemoveNetworkManagerObserver(NetworkManagerObserver* observer) {
@@ -1167,7 +1190,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
                                                  const Value* value) {
     NetworkLibraryImpl* networklib = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(networklib);
-    networklib->UpdateNetworkManagerStatus();
+    networklib->NetworkStatusChanged();
   }
 
   static void DataPlanUpdateHandler(void* object,
@@ -1390,18 +1413,14 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void UpdateNetworkManagerStatus() {
     // Make sure we run on UI thread.
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-                            &NetworkLibraryImpl::UpdateNetworkManagerStatus));
-      return;
-    }
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+    update_task_ = NULL;
+    VLOG(1) << "Updating Network Status";
 
     SystemInfo* system = GetSystemInfo();
     if (!system)
       return;
-
 
     std::string prev_cellular_service_path = cellular_ ?
         cellular_->service_path() : std::string();
@@ -1573,6 +1592,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   bool offline_mode_;
 
+  // Delayed task to retrieve the network information.
+  CancelableTask* update_task_;
+
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImpl);
 };
 
@@ -1678,7 +1700,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
     return NetworkIPConfigVector();
   }
   virtual std::string GetHtmlInfo(int refresh) { return std::string(); }
-  virtual void UpdateSystemInfo() {}
 
  private:
   std::string ip_address_;

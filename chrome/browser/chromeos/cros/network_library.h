@@ -495,9 +495,6 @@ class NetworkLibrary {
 
   // TODO(joth): Add GetCellTowers to retrieve a CellTowerVector.
 
-  // Force an update of the system info.
-  virtual void UpdateSystemInfo() = 0;
-
   // Connect to the specified wireless network with password.
   // Returns false if the attempt fails immediately (e.g. passphrase too short).
   virtual bool ConnectToWifiNetwork(const WifiNetwork* network,

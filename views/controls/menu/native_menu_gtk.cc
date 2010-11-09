@@ -75,7 +75,8 @@ NativeMenuGtk::NativeMenuGtk(Menu2* menu)
       activate_factory_(this),
       host_menu_(menu),
       menu_action_(MENU_ACTION_NONE),
-      nested_dispatcher_(NULL) {
+      nested_dispatcher_(NULL),
+      ignore_button_release_(true) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
@@ -98,6 +99,8 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   activated_menu_ = NULL;
   activated_index_ = -1;
   menu_action_ = MENU_ACTION_NONE;
+  // ignore button release event unless mouse is pressed or moved.
+  ignore_button_release_ = true;
 
   UpdateStates();
   Position position = { point, static_cast<Menu2::Alignment>(alignment) };
@@ -239,6 +242,7 @@ bool NativeMenuGtk::Dispatch(GdkEvent* event) {
     case GDK_BUTTON_PRESS:
     case GDK_2BUTTON_PRESS:
     case GDK_3BUTTON_PRESS: {
+      ignore_button_release_ = true;
       gpointer data = NULL;
       gdk_window_get_user_data(((GdkEventAny*)event)->window, &data);
       GtkWidget* widget = reinterpret_cast<GtkWidget*>(data);
@@ -255,6 +259,22 @@ bool NativeMenuGtk::Dispatch(GdkEvent* event) {
           menu_hidden_ = true;
           return false;  // Exits the nested message loop.
         }
+      }
+      break;
+    }
+    case GDK_MOTION_NOTIFY: {
+      ignore_button_release_ = false;
+      break;
+    }
+    case GDK_BUTTON_RELEASE: {
+      if (ignore_button_release_) {
+        // Ignore if a release event happened without press event.
+        // Normally, release event is eaten by gtk when menu is opened
+        // in response to mouse press event. Since the renderer opens
+        // the context menu asyncrhonous after press event is handled,
+        // gtk sometimes does not eat it, which causes the menu to be
+        // closed.
+        return true;
       }
       break;
     }
@@ -287,7 +307,6 @@ void NativeMenuGtk::OnMenuMoveCurrent(GtkWidget* menu_widget,
   if (menu_item) {
     submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(menu_item));
   }
-
   if (focus_direction == GTK_MENU_DIR_CHILD && submenu == NULL) {
     GetAncestor()->menu_action_ = MENU_ACTION_NEXT;
     gtk_menu_popdown(GTK_MENU(menu_widget));

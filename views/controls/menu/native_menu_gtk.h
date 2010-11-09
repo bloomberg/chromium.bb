@@ -146,6 +146,10 @@ class NativeMenuGtk : public MenuWrapper,
   // message loop is handled. see http://crosbug.com/7228 .
   NestedDispatcherGtk* nested_dispatcher_;
 
+  // A flag used to detect a button release event without button press or move.
+  // see http://crosbug.com/8718.
+  bool ignore_button_release_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };
 

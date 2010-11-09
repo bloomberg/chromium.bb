@@ -34,8 +34,9 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
       parent_window_(parent_window) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(Tween::LINEAR);
-  OnNetworkManagerChanged(CrosLibrary::Get()->GetNetworkLibrary());
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
+  // The initial state will be updated on Refresh.
+  // See network_selection_view.cc.
 }
 
 NetworkDropdownButton::~NetworkDropdownButton() {
@@ -117,6 +118,7 @@ void NetworkDropdownButton::OnNetworkManagerChanged(NetworkLibrary* cros) {
   }
 
   SchedulePaint();
+  UpdateMenu();
 }
 
 }  // namespace chromeos

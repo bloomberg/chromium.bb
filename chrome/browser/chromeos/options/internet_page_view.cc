@@ -566,7 +566,6 @@ InternetPageView::InternetPageView(Profile* profile)
       contents_view_(new InternetPageContentView(profile)),
       scroll_view_(new views::ScrollView) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  cros->UpdateSystemInfo();
   cros->AddNetworkManagerObserver(this);
 }
 
