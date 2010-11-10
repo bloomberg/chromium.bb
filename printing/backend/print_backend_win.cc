@@ -5,7 +5,6 @@
 #include "printing/backend/print_backend.h"
 
 #include <objidl.h>
-#include <prntvpt.h>
 #include <winspool.h>
 
 #include "base/scoped_ptr.h"
@@ -16,8 +15,6 @@
 #include "base/win/scoped_hglobal.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/win_helper.h"
-
-#pragma comment(lib, "prntvpt.lib")
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;
@@ -89,7 +86,7 @@ void PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
 bool PrintBackendWin::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
     PrinterCapsAndDefaults* printer_info) {
-  if (!printing::InitXPSModule()) {
+  if (!XPSModule::Init()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
   }
@@ -99,7 +96,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
   DCHECK(printer_info);
   HPTPROVIDER provider = NULL;
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
-  HRESULT hr = PTOpenProvider(printer_name_wide.c_str(), 1, &provider);
+  HRESULT hr = XPSModule::OpenProvider(printer_name_wide, 1, &provider);
   DCHECK(SUCCEEDED(hr));
   if (provider) {
     ScopedComPtr<IStream> print_capabilities_stream;
@@ -108,8 +105,10 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
     DCHECK(SUCCEEDED(hr));
     if (print_capabilities_stream) {
       ScopedBstr error;
-      hr = PTGetPrintCapabilities(provider, NULL, print_capabilities_stream,
-                                  error.Receive());
+      hr = XPSModule::GetPrintCapabilities(provider,
+                                           NULL,
+                                           print_capabilities_stream,
+                                           error.Receive());
       DCHECK(SUCCEEDED(hr));
       if (FAILED(hr)) {
         return false;
@@ -140,9 +139,11 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
                                  printer_defaults_stream.Receive());
       DCHECK(SUCCEEDED(hr));
       if (printer_defaults_stream) {
-        hr = PTConvertDevModeToPrintTicket(provider, devmode_size,
-                                           devmode_out, kPTJobScope,
-                                           printer_defaults_stream);
+        hr = XPSModule::ConvertDevModeToPrintTicket(provider,
+                                                    devmode_size,
+                                                    devmode_out,
+                                                    kPTJobScope,
+                                                    printer_defaults_stream);
         DCHECK(SUCCEEDED(hr));
         if (SUCCEEDED(hr)) {
           hr = StreamOnHGlobalToString(printer_defaults_stream.get(),
@@ -153,7 +154,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       }
       ClosePrinter(printer_handle);
     }
-    PTCloseProvider(provider);
+    XPSModule::CloseProvider(provider);
   }
   return true;
 }

@@ -5,7 +5,6 @@
 #include "chrome/service/cloud_print/print_system.h"
 
 #include <objidl.h>
-#include <prntvpt.h>
 #include <winspool.h>
 
 #include "base/file_path.h"
@@ -23,8 +22,6 @@
 #include "printing/backend/win_helper.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
-
-#pragma comment(lib, "prntvpt.lib")
 
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;
@@ -85,23 +82,25 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
     return hr;
 
   HPTPROVIDER provider = NULL;
-  hr = PTOpenProvider(UTF8ToWide(printer_name).c_str(), 1, &provider);
+  hr = printing::XPSModule::OpenProvider(UTF8ToWide(printer_name),
+                                         1,
+                                         &provider);
   if (SUCCEEDED(hr)) {
     ULONG size = 0;
     DEVMODE* dm = NULL;
-    hr = PTConvertPrintTicketToDevMode(provider,
-                                       pt_stream,
-                                       kUserDefaultDevmode,
-                                       kPTDocumentScope,
-                                       &size,
-                                       &dm,
-                                       NULL);
+    hr = printing::XPSModule::ConvertPrintTicketToDevMode(provider,
+                                                          pt_stream,
+                                                          kUserDefaultDevmode,
+                                                          kPTDocumentScope,
+                                                          &size,
+                                                          &dm,
+                                                          NULL);
     if (SUCCEEDED(hr)) {
       dev_mode->Allocate(size);
       memcpy(dev_mode->dm_, dm, size);
-      PTReleaseMemory(dm);
+      printing::XPSModule::ReleaseMemory(dm);
     }
-    PTCloseProvider(provider);
+    printing::XPSModule::CloseProvider(provider);
   }
   return hr;
 }
@@ -377,7 +376,7 @@ class PrintSystemWin : public PrintSystem {
           return false;
         }
 
-        if (!printing::InitXPSModule()) {
+        if (!printing::XPSModule::Init()) {
           // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
           return false;
         }
@@ -543,13 +542,15 @@ bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
 bool PrintSystemWin::ValidatePrintTicket(
     const std::string& printer_name,
     const std::string& print_ticket_data) {
-  if (!printing::InitXPSModule()) {
+  if (!printing::XPSModule::Init()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
   }
   bool ret = false;
   HPTPROVIDER provider = NULL;
-  PTOpenProvider(UTF8ToWide(printer_name.c_str()).c_str(), 1, &provider);
+  printing::XPSModule::OpenProvider(UTF8ToWide(printer_name.c_str()),
+                                    1,
+                                    &provider);
   if (provider) {
     ScopedComPtr<IStream> print_ticket_stream;
     CreateStreamOnHGlobal(NULL, TRUE, print_ticket_stream.Receive());
@@ -564,13 +565,14 @@ bool PrintSystemWin::ValidatePrintTicket(
     ScopedBstr error;
     ScopedComPtr<IStream> result_ticket_stream;
     CreateStreamOnHGlobal(NULL, TRUE, result_ticket_stream.Receive());
-    ret = SUCCEEDED(PTMergeAndValidatePrintTicket(provider,
-                                                  print_ticket_stream.get(),
-                                                  NULL,
-                                                  kPTJobScope,
-                                                  result_ticket_stream.get(),
-                                                  error.Receive()));
-    PTCloseProvider(provider);
+    ret = SUCCEEDED(printing::XPSModule::MergeAndValidatePrintTicket(
+        provider,
+        print_ticket_stream.get(),
+        NULL,
+        kPTJobScope,
+        result_ticket_stream.get(),
+        error.Receive()));
+    printing::XPSModule::CloseProvider(provider);
   }
   return ret;
 }
