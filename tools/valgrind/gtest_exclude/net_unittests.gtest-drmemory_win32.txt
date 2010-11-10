@@ -2,10 +2,6 @@
 HttpNetworkTransactionTest.*
 HttpNetworkLayerTest.GET
 
-# These take too long in Debug build, see http://crbug/59642
-CookieMonsterTest.GarbageCollectionTriggers
-CookieMonsterTest.TestHostGarbageCollection
-
 # TODO(timurrrr): investigate these
 ClientSocketPoolBaseTest.*
 SSLClientSocketTest.*
