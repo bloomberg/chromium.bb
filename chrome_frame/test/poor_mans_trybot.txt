@@ -1,0 +1,68 @@
+### Copyright (c) 2009 The Chromium Authors. All rights reserved.
+### Use of this source code is governed by a BSD-style license that can be
+### found in the LICENSE file.
+###
+### Purpose of this file: If you have IE9 on your machine, not all of
+### the Chrome Frame tests will currently pass. The instructions
+### below, and the xcopy exclusion filter at the bottom of the file,
+### will help you run the CF tests on a machine different from your
+### build machine, e.g. on a VM.
+###
+### Name of this file: poor_mans_trybot.txt (i.e. it is the file you
+### use as the exclude list for the xcopy commands below).
+###
+### If you find this useful, feel free to automate further, but note
+### that we expect to set up a trybot for the CF tests soon.
+###
+### On a Windows Vista machine (or VM) with IE8 and FF 3.6 installed,
+### do the following (adapt to your own paths - j:\src\ybc is the root
+### of a Chrome checkout where you have just built all the
+### chrome_frame targets plus chrome.dll and chrome.exe).
+###
+### c:
+### mkdir \trybot
+### cd \trybot
+### rmdir /s /q base
+### rmdir /s /q chrome\debug
+### rmdir /s /q chrome_frame
+### mkdir base
+### mkdir chrome\debug
+### mkdir chrome_frame\test\data
+### mkdir chrome_frame\test\html_util_test_data
+### copy j:\src\ybc\src\chrome\base\base_paths_win.cc base\base_paths_win.cc
+### xcopy j:\src\ybc\src\chrome\debug chrome\debug /E \
+###     /EXCLUDE:j:\src\ybc\src\chrome_frame\test\poor_mans_trybot.txt
+### xcopy j:\src\ybc\src\chrome_frame\test\data chrome_frame\test\data /E
+### xcopy j:\src\ybc\src\chrome_frame\test\html_util_test_data \
+###     chrome_frame\test\html_util_test_data /E
+### copy j:\src\ybc\src\chrome_frame\CFInstance.js chrome_frame\CFInstance.js
+### copy j:\src\ybc\src\chrome_frame\CFInstall.js chrome_frame\CFInstall.js
+###
+### (in admin prompt)
+### cd chrome\debug\servers && regsvr32 npchrome_frame.dll
+###
+### (in regular prompt)
+### chrome\debug\chrome_frame_unittests.exe
+### chrome\debug\chrome_frame_tests.exe
+
+\lib\
+\obj\
+\installer_archive\
+.obj
+.lib
+.pdb
+.ilk
+.pyd
+.7z
+.idb
+.res
+.manifest
+_i.c
+_p.c
+.h
+.cc
+.vcproj
+.user
+.sln
+.gyp
+BuildLog.htm
