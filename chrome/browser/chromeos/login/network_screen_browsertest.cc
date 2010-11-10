@@ -89,13 +89,25 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .Times(1)
         .WillRepeatedly((Return(true)))
         .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, ethernet_enabled())
+        .Times(1)
+        .WillRepeatedly((Return(true)))
+        .RetiresOnSaturation();
     EXPECT_CALL(*mock_network_library_, wifi_available())
         .Times(1)
         .WillRepeatedly((Return(false)))
         .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, wifi_enabled())
+        .Times(1)
+        .WillRepeatedly((Return(true)))
+        .RetiresOnSaturation();
     EXPECT_CALL(*mock_network_library_, cellular_available())
         .Times(1)
         .WillRepeatedly((Return(false)))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*mock_network_library_, cellular_enabled())
+        .Times(1)
+        .WillRepeatedly((Return(true)))
         .RetiresOnSaturation();
 
     // Add a Connecting for prewarming auth url check.
