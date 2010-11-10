@@ -8,35 +8,27 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_thread.h"
+#include "webkit/fileapi/sandboxed_file_system_context.h"
 
 class FilePath;
 class GURL;
 
-namespace fileapi {
-class FileSystemPathManager;
-class FileSystemQuotaManager;
-}
-
 // This is owned by profile and shared by all the FileSystemDispatcherHost
-// that shared by the same profile.
+// that shared by the same profile.  This class is just a thin wrapper around
+// fileapi::SandboxedFileSystemContext.
 class BrowserFileSystemContext
     : public base::RefCountedThreadSafe<BrowserFileSystemContext,
-                                        BrowserThread::DeleteOnIOThread> {
+                                        BrowserThread::DeleteOnIOThread>,
+      public fileapi::SandboxedFileSystemContext {
  public:
-  BrowserFileSystemContext(const FilePath& data_path, bool is_incognito);
+  BrowserFileSystemContext(const FilePath& profile_path, bool is_incognito);
   virtual ~BrowserFileSystemContext();
 
   // Quota related methods.
-  bool CheckOriginQuota(const GURL& url, int64 growth);
   void SetOriginQuotaUnlimited(const GURL& url);
   void ResetOriginQuotaUnlimited(const GURL& url);
 
-  fileapi::FileSystemPathManager* path_manager() { return path_manager_.get(); }
-
  private:
-  scoped_ptr<fileapi::FileSystemQuotaManager> quota_manager_;
-  scoped_ptr<fileapi::FileSystemPathManager> path_manager_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(BrowserFileSystemContext);
 };
 

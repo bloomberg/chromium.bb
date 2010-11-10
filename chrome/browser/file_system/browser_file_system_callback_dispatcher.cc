@@ -36,8 +36,11 @@ void BrowserFileSystemCallbackDispatcher::DidReadDirectory(
 }
 
 void BrowserFileSystemCallbackDispatcher::DidOpenFileSystem(
-    const std::string&, const FilePath&) {
-  NOTREACHED();
+    const std::string& name, const FilePath& path) {
+  dispatcher_host_->Send(
+      new ViewMsg_OpenFileSystemRequest_Complete(
+          request_id_, !path.empty(), name, path));
+  dispatcher_host_->RemoveCompletedOperation(request_id_);
 }
 
 void BrowserFileSystemCallbackDispatcher::DidFail(

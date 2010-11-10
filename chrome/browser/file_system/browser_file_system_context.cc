@@ -7,41 +7,28 @@
 #include "base/file_path.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_manager.h"
 
-static inline bool GetAllowFileAccessFromFiles() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAllowFileAccessFromFiles);
-}
-
 BrowserFileSystemContext::BrowserFileSystemContext(
-    const FilePath& data_path, bool is_incognito) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool allow_file_access_from_files =
-      command_line->HasSwitch(switches::kAllowFileAccessFromFiles);
-  bool unlimited_quota =
-      command_line->HasSwitch(switches::kUnlimitedQuotaForFiles);
-  quota_manager_.reset(new fileapi::FileSystemQuotaManager(
-      allow_file_access_from_files, unlimited_quota));
-  path_manager_.reset(new fileapi::FileSystemPathManager(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      data_path, is_incognito, allow_file_access_from_files));
-}
-
-bool BrowserFileSystemContext::CheckOriginQuota(const GURL& url, int64 growth) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return quota_manager_->CheckOriginQuota(url, growth);
+    const FilePath& profile_path, bool is_incognito)
+  : fileapi::SandboxedFileSystemContext(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        profile_path,
+        is_incognito,
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAllowFileAccessFromFiles),
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUnlimitedQuotaForFiles)) {
 }
 
 void BrowserFileSystemContext::SetOriginQuotaUnlimited(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  quota_manager_->SetOriginQuotaUnlimited(url);
+  quota_manager()->SetOriginQuotaUnlimited(url);
 }
 
 void BrowserFileSystemContext::ResetOriginQuotaUnlimited(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  quota_manager_->ResetOriginQuotaUnlimited(url);
+  quota_manager()->ResetOriginQuotaUnlimited(url);
 }
 
 BrowserFileSystemContext::~BrowserFileSystemContext() {}
