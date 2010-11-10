@@ -40,5 +40,5 @@ node = env.CommandValidatorTestNacl(
     image=[env.File('mandel_nav.nexe')],
     )
 env.AddNodeToTestSuite(node,
-                       ['validator_tests', 'simple_tests'],
+                       ['validator_tests', 'small_tests'],
                        'run_mandel_nav')

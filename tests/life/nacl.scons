@@ -27,4 +27,4 @@ node = env.CommandValidatorTestNacl(
     'life_test_val.out',
     image=[env.File('life.nexe')],
     )
-env.AddNodeToTestSuite(node, ['validator_tests', 'simple_tests'], 'run_life')
+env.AddNodeToTestSuite(node, ['validator_tests', 'small_tests'], 'run_life')
