@@ -271,6 +271,9 @@ deps_os = {
 
     "src/third_party/lss":
       (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@3",
+
+    "src/third_party/openssl":
+      "/trunk/deps/third_party/openssl@65717",
   },
 }
 
