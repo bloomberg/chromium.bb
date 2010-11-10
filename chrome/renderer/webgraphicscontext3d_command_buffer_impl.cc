@@ -89,6 +89,12 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     ggl::GGL_NONE,
   };
 
+  if (attributes.canRecoverFromContextLoss == false) {
+    GPUInfo gpu_info = host->gpu_info();
+    if (gpu_info.can_lose_context())
+        return false;
+  }
+
   if (render_directly_to_web_view) {
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
