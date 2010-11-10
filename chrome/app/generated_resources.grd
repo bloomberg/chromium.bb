@@ -3545,99 +3545,67 @@ each locale. -->
         Undo
       </message>
 
-      <!-- Extension disabled info bar -->
+      <!-- Extension/App disabled info bar -->
       <message name="IDS_EXTENSION_DISABLED_INFOBAR_LABEL" desc="Text displayed on an infobar when an extension was disabled due to a new upgrade requiring an explicit permission check from the user.">
         The newest version of the extension "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" requires more permissions, so it has been disabled.
       </message>
-      <message name="IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON" desc="Text displayed on the button to re-enable the disabled extension.">
+      <message name="IDS_APP_DISABLED_INFOBAR_LABEL" desc="Text displayed on an infobar when an app was disabled due to a new upgrade requiring an explicit permission check from the user.">
+        The newest version of the app "<ph name="APP_NAME">$1<ex>Pandora</ex></ph>" requires more permissions, so it has been disabled.
+      </message>
+      <message name="IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON" desc="Text displayed on the button to re-enable the disabled extension or app.">
         Re-enable
       </message>
 
-      <!-- Extension incognito install failure info bar -->
-      <message name="IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when the user attempts to install an extension in incognito mode.">
-        Extension install failed: extensions are not supported in incognito windows.
-      </message>
-
-      <!-- Extension install prompt -->
-      <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window">
+      <!-- Extension/App install prompt -->
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
         Confirm Installation
       </message>
-      <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension uninstallation prompt window">
+      <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app uninstallation prompt window">
         Confirm Uninstallation
       </message>
-      <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension installation prompt. Asks the user if they want to install a particular extension.">
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Install <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>?
       </message>
-      <message name="IDS_EXTENSION_PROMPT_CREATE_SHORTCUT" desc="Label for checkbox that asks the user if they want to create a desktop shortcut for an app install.">
-        Create desktop shortcut
-      </message>
-      <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension uninstallation prompt. Asks the user if they want to uninstall a particular extension.">
+      <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app uninstallation prompt. Asks the user if they want to uninstall a particular extension or app.">
         Uninstall "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
-        This extension will have access to your browsing history.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST" desc="Warning displayed in body of extension dialog when the extension requires access to a single host.">
-        This extension will have access to your private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_SINGLE_HOST_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to a single host and browser APIs.">
-        This extension will have access to your browsing history and private data on <ph name="HOST">$1<ex>maps.google.com</ex></ph>.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host.">
-        This extension will have access to your private data on multiple websites.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_MULTIPLE_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to multiple hosts, but not every host, and browser APIs.">
-        This extension will have access to your browsing history and private data on multiple websites.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts.">
-        This extension will have access to your private data on all websites.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_AND_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to all hosts and browser APIs.">
-        This extension will have access to your browsing history and private data on all websites.
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Warning displayed in body of extension dialog when the extension requires access the local machine.">
-        This extension will have full access to your computer and private data.
-      </message>
 
-      <!-- v2 extension install dialog strings -->
-      <message name="IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension installation prompt. Note that the exact wording is important. This should mean that the extension _can_ access the listed privileges, but not necessarily that it will or needs to.">
-        This extension can access:
+      <!-- Extension/App install dialog strings -->
+      <message name="IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO" desc="Second line in the content area of the extension or app installation prompt. Note that the exact wording is important. This should mean that the extension or app _can_ access the listed privileges, but not necessarily that it will or needs to.">
+        It can access:
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_APP_WILL_HAVE_ACCESS_TO" desc="The same as IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO, but replace 'extension' with 'app'">
-        This app can access:
-      </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS" desc="Permission string for full access to the computer and all websites.">
         All data on your computer and the websites you visit
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS" desc="Permission string for access to data on all websites.">
         Your data on all websites
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_1_HOST" desc="Permission string for access to data on one website.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_1_HOST" desc="Permission string for access to data on one website.">
         Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_2_HOSTS" desc="Permission string for access to data on two websites.">
         Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph> and <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_3_HOSTS" desc="Permission string for access to data on three websites.">
         Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.reddit.com</ex></ph>, and <ph name="WEBSITE_3">$3<ex>news.ycombinator.com</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more websites.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS" desc="Permission string for access to data on four or more websites.">
         Your data on <ph name="WEBSITE_1">$1<ex>www.google.com</ex></ph>, <ph name="WEBSITE_2">$2<ex>www.yahoo.com</ex></ph>, and <ph name="NUMBER_OF_OTHER_WEBSITES">$3<ex>3</ex></ph> other websites
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS" desc="Permission string for access to bookmarks.">
         Your bookmarks
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY" desc="Permission string for access to browsing history.">
         Your browsing history
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION" desc="Permisson string for access to geolocation.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION" desc="Permisson string for access to geolocation.">
         Your physical location
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
         Manage themes, extensions, and apps
       </message>
 
-      <!-- Extension error messages -->
+      <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
         Input directory must exist.
       </message>
@@ -3740,9 +3708,6 @@ each locale. -->
 
       <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons">
         Manage extensions...
-      </message>
-      <message name="IDS_EXTENSION_APP_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble when an extension app is installed, with instructions on how to manage them">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque feugiat, magna quis vestibulum malesuada, lazy euros facilitatus nibbles, you faucibus purus lacus ac dolor!
       </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
         You can manage your installed extensions by clicking Extensions in the Tools menu.

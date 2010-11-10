@@ -230,52 +230,35 @@ void OpenChromeExtension(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download_item.is_extension_install());
 
-  // We don't support extensions in OTR mode.
   ExtensionsService* service = profile->GetExtensionsService();
-  if (service) {
-    NotificationService* nservice = NotificationService::current();
-    GURL nonconst_download_url = download_item.url();
-    nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
-                     Source<DownloadManager>(download_manager),
-                     Details<GURL>(&nonconst_download_url));
+  CHECK(service);
+  NotificationService* nservice = NotificationService::current();
+  GURL nonconst_download_url = download_item.url();
+  nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
+                   Source<DownloadManager>(download_manager),
+                   Details<GURL>(&nonconst_download_url));
 
-    scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service->install_directory(),
-                         service,
-                         new ExtensionInstallUI(profile)));
-    installer->set_delete_source(true);
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(service->install_directory(),
+                       service,
+                       new ExtensionInstallUI(profile)));
+  installer->set_delete_source(true);
 
-    if (UserScript::HasUserScriptFileExtension(download_item.url())) {
-      installer->InstallUserScript(download_item.full_path(),
-                                   download_item.url());
-    } else {
-      bool is_gallery_download = service->IsDownloadFromGallery(
-          download_item.url(), download_item.referrer_url());
-      installer->set_original_mime_type(download_item.original_mime_type());
-      installer->set_apps_require_extension_mime_type(true);
-      installer->set_allow_privilege_increase(true);
-      installer->set_original_url(download_item.url());
-      installer->set_is_gallery_install(is_gallery_download);
-      installer->InstallCrx(download_item.full_path());
-      installer->set_allow_silent_install(is_gallery_download);
-    }
-  } else {
-    TabContents* contents = NULL;
-    // Get last active normal browser of profile.
-    Browser* last_active =
-        BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL, true);
-    if (last_active)
-      contents = last_active->GetSelectedTabContents();
-    if (contents) {
-      contents->AddInfoBar(
-          new SimpleAlertInfoBarDelegate(contents,
-              l10n_util::GetStringUTF16(
-                  IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL),
-              ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                  IDR_INFOBAR_PLUGIN_INSTALL),
-              true));
-    }
+  if (UserScript::HasUserScriptFileExtension(download_item.url())) {
+    installer->InstallUserScript(download_item.full_path(),
+                                 download_item.url());
+    return;
   }
+
+  bool is_gallery_download = service->IsDownloadFromGallery(
+      download_item.url(), download_item.referrer_url());
+  installer->set_original_mime_type(download_item.original_mime_type());
+  installer->set_apps_require_extension_mime_type(true);
+  installer->set_allow_privilege_increase(true);
+  installer->set_original_url(download_item.url());
+  installer->set_is_gallery_install(is_gallery_download);
+  installer->InstallCrx(download_item.full_path());
+  installer->set_allow_silent_install(is_gallery_download);
 }
 
 // Download progress painting --------------------------------------------------
@@ -771,3 +754,4 @@ bool IsDangerous(DownloadCreateInfo* info, Profile* profile) {
 }
 
 }  // namespace download_util
+

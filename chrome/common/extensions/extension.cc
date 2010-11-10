@@ -218,17 +218,17 @@ const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
 // exception.
 const Extension::Permission Extension::kPermissions[] = {
   { kBackgroundPermission, 0 },
-  { kBookmarkPermission, IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS },
+  { kBookmarkPermission, IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS },
   { kContextMenusPermission, 0 },
   { kCookiePermission, 0 },
   { kExperimentalPermission, 0 },
-  { kGeolocationPermission, IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION },
+  { kGeolocationPermission, IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION },
   { kIdlePermission, 0 },
-  { kHistoryPermission, IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY },
-  { kManagementPermission, IDS_EXTENSION_PROMPT2_WARNING_MANAGEMENT },
+  { kHistoryPermission, IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY },
+  { kManagementPermission, IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT },
   { kNotificationPermission, 0 },
   { kProxyPermission, 0 },
-  { kTabPermission, IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY },
+  { kTabPermission, IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY },
   { kUnlimitedStoragePermission, 0 },
   { kWebstorePrivatePermission, 0 },
 };
@@ -273,7 +273,7 @@ std::vector<string16> Extension::GetPermissionMessages() const {
   std::vector<string16> messages;
   if (!plugins().empty()) {
     messages.push_back(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS));
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS));
     return messages;
   }
 
@@ -331,24 +331,24 @@ std::vector<std::string> Extension::GetDistinctHosts(
 
 string16 Extension::GetHostPermissionMessage() const {
   if (HasEffectiveAccessToAllHosts())
-    return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS);
+    return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS);
 
   std::vector<std::string> hosts = GetDistinctHosts();
   if (hosts.size() == 1) {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_1_HOST,
                                       UTF8ToUTF16(hosts[0]));
   } else if (hosts.size() == 2) {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_2_HOSTS,
                                       UTF8ToUTF16(hosts[0]),
                                       UTF8ToUTF16(hosts[1]));
   } else if (hosts.size() == 3) {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_3_HOSTS,
                                       UTF8ToUTF16(hosts[0]),
                                       UTF8ToUTF16(hosts[1]),
                                       UTF8ToUTF16(hosts[2]));
   } else if (hosts.size() >= 4) {
     return l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
+        IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS,
         UTF8ToUTF16(hosts[0]),
         UTF8ToUTF16(hosts[1]),
         base::IntToString16(hosts.size() - 2));

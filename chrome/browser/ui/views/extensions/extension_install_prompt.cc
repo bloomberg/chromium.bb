@@ -102,8 +102,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     int height = kPanelVertMargin * 2;
     height += heading_->GetHeightForWidth(kRightColumnWidth);
 
-    return gfx::Size(width,
-                     std::max(height, kIconSize + kPanelVertMargin * 2));
+    return gfx::Size(width, std::max(height, kIconSize + kPanelVertMargin * 2));
   }
 
   virtual void Layout() {

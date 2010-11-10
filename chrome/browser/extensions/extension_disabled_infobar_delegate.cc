@@ -78,8 +78,9 @@ class ExtensionDisabledInfobarDelegate
   virtual ~ExtensionDisabledInfobarDelegate() {
   }
   virtual string16 GetMessageText() const {
-    return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_INFOBAR_LABEL,
-                                      UTF8ToUTF16(extension_->name()));
+    return l10n_util::GetStringFUTF16(extension_->is_app() ?
+        IDS_APP_DISABLED_INFOBAR_LABEL : IDS_EXTENSION_DISABLED_INFOBAR_LABEL,
+        UTF8ToUTF16(extension_->name()));
   }
   virtual SkBitmap* GetIcon() const {
     return NULL;

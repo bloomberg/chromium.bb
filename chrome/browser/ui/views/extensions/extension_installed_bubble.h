@@ -36,7 +36,6 @@ class ExtensionInstalledBubble
   enum BubbleType {
     BROWSER_ACTION,
     PAGE_ACTION,
-    EXTENSION_APP,
     GENERIC
   };
 

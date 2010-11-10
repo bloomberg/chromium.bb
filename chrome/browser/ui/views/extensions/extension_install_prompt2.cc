@@ -140,10 +140,8 @@ InstallDialogContent2::InstallDialogContent2(
     right_column_width_ = kNoPermissionsRightColumnWidth;
   } else {
     right_column_width_ = kPermissionBoxWidth;
-    int label = extension->is_app() ?
-                IDS_EXTENSION_PROMPT2_APP_WILL_HAVE_ACCESS_TO :
-                IDS_EXTENSION_PROMPT2_WILL_HAVE_ACCESS_TO;
-    will_have_access_to_ = new views::Label(l10n_util::GetString(label));
+    will_have_access_to_ = new views::Label(
+        l10n_util::GetString(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO));
     will_have_access_to_->SetMultiLine(true);
     will_have_access_to_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(will_have_access_to_);
