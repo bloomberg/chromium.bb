@@ -9,6 +9,9 @@ Import('env')
 
 HALT_SLED_SIZE=32
 
+if env.IsRunningUnderValgrind():
+  Return()
+
 
 # ----------------------------------------------------------
 # Tests that require a NaCl module
