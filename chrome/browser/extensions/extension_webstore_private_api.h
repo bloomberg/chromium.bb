@@ -25,14 +25,23 @@ class WebstorePrivateApi {
   static void SetTestingBrowserSignin(BrowserSignin* signin);
 };
 
-class InstallFunction : public SyncExtensionFunction {
+class BeginInstallFunction : public SyncExtensionFunction {
  public:
-  static void SetTestingInstallBaseUrl(const char* testing_install_base_url);
-
+  // For use only in tests - sets a flag that can cause this function to ignore
+  // the normal requirement that it is called during a user gesture.
+  static void SetIgnoreUserGestureForTests(bool ignore);
  protected:
-  ~InstallFunction() {}
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.install");
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstall");
+};
+
+class CompleteInstallFunction : public SyncExtensionFunction {
+ public:
+  // This changes the base of the download url to the crx file to be installed.
+  static void SetTestingInstallBaseUrl(const char* testing_install_base_url);
+ protected:
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.completeInstall");
 };
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {

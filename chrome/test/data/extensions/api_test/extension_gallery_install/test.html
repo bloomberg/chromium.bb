@@ -1,58 +1,25 @@
+<script src="common.js"></script>
 <script>
-// This tests that the management install and uninstall functions work
-// properly when called by the gallery. Additionally, it implicitly tests
-// that the install() function, when called from the gallery, avoids the
-// dangerous download prompt and the extension permissions install prompt.
-// If either were to appear, this test wouldn't complete.
-// Note that for the purposes of this test the gallery url is "www.a.com"
-// which is set in extension_gallery_install_apitest.cc.
+// This tests the webstorePrivate beginInstall and completeInstall functions.
 
-var id = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+// Register a listener for when the install is completed.
+chrome.management.onInstalled.addListener(function(info) {
+  assertEq(info.id, extension_id);
+  succeed();
+});
 
-function checkInstalled(callback) {
-  chrome.management.getAll(function(extensions) {
-    var found = false;
-    extensions.forEach(function(extension) {
-      if (id == extension.id)
-        found = true;
-    });
-    
-    callback(found);
-  });
-}
-
-// Make sure our "gallery" extension isn't yet installed.
+// Make sure our extension isn't yet installed.
 checkInstalled(function(installed) {
-  chrome.test.assertEq(false, installed);
+  assertEq(false, installed);
 
-  // Install "gallery" extensions.
-  chrome.management.onInstalled.addListener(function(info) {  
-    chrome.test.assertEq(id, info.id);
-    console.log("Installed " + info.id);
-    
-    // Double check it is installed.
-    checkInstalled(function(installed) {
-      chrome.test.assertEq(true, installed);
+  // Begin installing.
+  chrome.webstorePrivate.beginInstall(extension_id, function() {
+    assertNoLastError();
 
-      // Now uninstall
-      chrome.management.onUninstalled.addListener(function() {
-        // And check that it's gone.
-        checkInstalled(function(installed) {
-          chrome.test.assertEq(false, installed);
-          
-          chrome.test.succeed();
-        });
-      });
-
-      console.log("Uninstalling...");
-      chrome.management.uninstall(id, function() {
-        chrome.test.assertNoLastError();
-      });
+    // Now complete the installation.
+    chrome.webstorePrivate.completeInstall(extension_id, function() {
+      assertNoLastError();
     });
   });
-  chrome.webstorePrivate.install(id, function() {
-    chrome.test.assertNoLastError();
-  });
-  console.log("Installing...");
 });
 </script>

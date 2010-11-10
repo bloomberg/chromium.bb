@@ -282,9 +282,10 @@ void FactoryRegistry::ResetFunctions() {
   // WebstorePrivate.
   RegisterFunction<GetBrowserLoginFunction>();
   RegisterFunction<GetStoreLoginFunction>();
-  RegisterFunction<InstallFunction>();
   RegisterFunction<SetStoreLoginFunction>();
   RegisterFunction<PromptBrowserLoginFunction>();
+  RegisterFunction<BeginInstallFunction>();
+  RegisterFunction<CompleteInstallFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

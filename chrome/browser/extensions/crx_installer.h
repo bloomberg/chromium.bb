@@ -53,6 +53,9 @@ class CrxInstaller
   // crbug.com/54916
   static void SetWhitelistedInstallId(const std::string& id);
 
+  // Returns whether |id| is whitelisted - only call this on the UI thread.
+  static bool IsIdWhitelisted(const std::string& id);
+
   // Returns whether |id| was found and removed (was whitelisted). This should
   // only be called on the UI thread.
   static bool ClearWhitelistedInstallId(const std::string& id);

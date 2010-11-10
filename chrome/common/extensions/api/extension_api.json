@@ -4239,6 +4239,40 @@
         ]
       },
       {
+        "name": "beginInstall",
+        "description": "Initiates the install process for the given extension id",
+        "parameters": [
+          {
+            "name": "expected_id",
+            "type": "string",
+            "description": "The id of the extension to be installled. Must be called during a user gesture."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "completeInstall",
+        "description": "",
+        "parameters": [
+          {
+            "name": "expected_id",
+            "type": "string",
+            "description": "The id of the extension to be installled. This should match a previous call to beginInstall."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getBrowserLogin",
         "description": "Returns the logged-in sync user login if there is one, or the empty string otherwise.",
         "parameters": [

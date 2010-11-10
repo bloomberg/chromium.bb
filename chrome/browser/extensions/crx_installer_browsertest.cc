@@ -55,6 +55,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
                          mock_install_ui /* ownership transferred */));
 
     installer->set_allow_silent_install(true);
+    installer->set_is_gallery_install(true);
     CrxInstaller::SetWhitelistedInstallId(id);
 
     FilePath crx_path = test_data_dir_.AppendASCII(crx_relpath);
@@ -73,5 +74,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
   // An extension with NPAPI should give a prompt.
   EXPECT_TRUE(DidWhitelistInstallPrompt("uitest/plugins.crx",
                                         "hdgllgikmikobbofgnabhfimcfoopgnd"));
-#endif // !defined(OS_CHROMEOS
+#endif  // !defined(OS_CHROMEOS)
 }

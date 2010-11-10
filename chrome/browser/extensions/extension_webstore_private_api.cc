@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -31,9 +32,15 @@ namespace {
 const char* install_base_url = extension_urls::kGalleryUpdateHttpsUrl;
 const char kLoginKey[] = "login";
 const char kTokenKey[] = "token";
+const char kInvalidIdError[] = "Invalid id";
+const char kNoPreviousBeginInstallError[] =
+    "* does not match a previous call to beginInstall";
+const char kUserGestureRequiredError[] =
+    "This function must be called during a user gesture";
 
 ProfileSyncService* test_sync_service = NULL;
 BrowserSignin* test_signin = NULL;
+bool ignore_user_gesture_for_tests = false;
 
 // Returns either the test sync service, or the real one from |profile|.
 ProfileSyncService* GetSyncService(Profile* profile) {
@@ -97,18 +104,55 @@ void WebstorePrivateApi::SetTestingBrowserSignin(BrowserSignin* signin) {
 }
 
 // static
-void InstallFunction::SetTestingInstallBaseUrl(
-    const char* testing_install_base_url) {
-  install_base_url = testing_install_base_url;
+void BeginInstallFunction::SetIgnoreUserGestureForTests(bool ignore) {
+  ignore_user_gesture_for_tests = ignore;
 }
 
-bool InstallFunction::RunImpl() {
+bool BeginInstallFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
 
   std::string id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id));
-  EXTENSION_FUNCTION_VALIDATE(Extension::IdIsValid(id));
+  if (!Extension::IdIsValid(id)) {
+    error_ = kInvalidIdError;
+    return false;
+  }
+
+  if (!user_gesture() && !ignore_user_gesture_for_tests) {
+    error_ = kUserGestureRequiredError;
+    return false;
+  }
+
+  // This gets cleared in CrxInstaller::ConfirmInstall(). TODO(asargent) - in
+  // the future we may also want to add time-based expiration, where a whitelist
+  // entry is only valid for some number of minutes.
+  CrxInstaller::SetWhitelistedInstallId(id);
+  return true;
+}
+
+// static
+void CompleteInstallFunction::SetTestingInstallBaseUrl(
+    const char* testing_install_base_url) {
+  install_base_url = testing_install_base_url;
+}
+
+bool CompleteInstallFunction::RunImpl() {
+  if (!IsWebStoreURL(profile_, source_url()))
+    return false;
+
+  std::string id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id));
+  if (!Extension::IdIsValid(id)) {
+    error_ = kInvalidIdError;
+    return false;
+  }
+
+  if (!CrxInstaller::IsIdWhitelisted(id)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        kNoPreviousBeginInstallError, id);
+    return false;
+  }
 
   std::vector<std::string> params;
   params.push_back("id=" + id);
@@ -119,9 +163,6 @@ bool InstallFunction::RunImpl() {
   GURL url(url_string + "?response=redirect&x=" +
       EscapeQueryParamValue(JoinString(params, '&'), true));
   DCHECK(url.is_valid());
-
-  // Cleared in ~CrxInstaller().
-  CrxInstaller::SetWhitelistedInstallId(id);
 
   // The download url for the given |id| is now contained in |url|. We
   // navigate the current (calling) tab to this url which will result in a
