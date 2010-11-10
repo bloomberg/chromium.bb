@@ -52,7 +52,8 @@ class MockChromeFrameClientSite
   }
 };
 
-TEST(ChromeFrameActivex, ShouldShowVersionMismatchDialog) {
+// http://code.google.com/p/chromium/issues/detail?id=62636
+TEST(ChromeFrameActivex, DISABLED_ShouldShowVersionMismatchDialog) {
   // If not privileged, we always show the dialog.
   ASSERT_TRUE(
       TestingChromeFrameActivex::TestingShouldShowVersionMismatchDialog(
