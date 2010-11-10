@@ -145,6 +145,10 @@ class MockIterativeCookieApiResult : public IterativeCookieApiResult {
     return S_OK;
   }
 
+  static int MockGetTabIdFromHandle(HWND handle) {
+    return reinterpret_cast<int>(handle);
+  }
+
   HWND CallGetWindowFromStoreId(const std::string& store_id,
                                 bool allow_unregistered_store) {
     return CookieApiResult::GetWindowFromStoreId(
@@ -412,9 +416,11 @@ TEST_F(CookieApiTests, CreateCookieStoreValue) {
   EXPECT_EQ(NULL, result.value());
 
   // Test success.
-  BSTR tab_ids = SysAllocString(L"[27, 1]");
+  BSTR tab_handles = SysAllocString(L"[27, 1]");
   EXPECT_CALL(*mock_window_executor, GetTabs(NotNull())).
-      WillOnce(DoAll(SetArgumentPointee<0>(tab_ids), Return(S_OK)));
+      WillOnce(DoAll(SetArgumentPointee<0>(tab_handles), Return(S_OK)));
+  EXPECT_CALL(result.mock_api_dispatcher_, GetTabIdFromHandle(_)).
+      WillOnce(Invoke(MockIterativeCookieApiResult::MockGetTabIdFromHandle));
   EXPECT_CALL(result, PostResult()).Times(1);
   EXPECT_TRUE(result.CallCreateCookieStoreValue(2, windows));
 
@@ -433,7 +439,7 @@ TEST_F(CookieApiTests, CreateCookieStoreValue) {
   EXPECT_EQ(27, tab);
   // The cookie_store takes ownership of this pointer, so there's no need to
   // free it.
-  tab_ids = NULL;
+  tab_handles = NULL;
 }
 
 TEST_F(CookieApiTests, FindAllProcessesAndWindowsNoWindows) {
@@ -629,6 +635,10 @@ TEST_F(CookieApiTests, GetAllCookieStores) {
   EXPECT_CALL(*invocation.invocation_result_,
               RegisterCookieStore(_)).
       WillRepeatedly(Return(S_OK));
+  EXPECT_CALL(invocation.invocation_result_->mock_api_dispatcher_,
+              GetTabIdFromHandle(_)).
+      WillRepeatedly(Invoke(
+          MockIterativeCookieApiResult::MockGetTabIdFromHandle));
   EXPECT_CALL(*invocation.invocation_result_, CallRealPostResult()).Times(1);
   EXPECT_CALL(*invocation.invocation_result_, CallRealPostError(_)).Times(0);
   invocation.Execute(args, kRequestId);
@@ -658,6 +668,10 @@ TEST_F(CookieApiTests, GetAllCookieStores) {
   EXPECT_CALL(*invocation.invocation_result_,
               RegisterCookieStore(_)).
       WillRepeatedly(Return(S_OK));
+  EXPECT_CALL(invocation.invocation_result_->mock_api_dispatcher_,
+              GetTabIdFromHandle(_)).
+      WillRepeatedly(Invoke(
+          MockIterativeCookieApiResult::MockGetTabIdFromHandle));
   EXPECT_CALL(*invocation.invocation_result_, CallRealPostResult()).Times(1);
   EXPECT_CALL(*invocation.invocation_result_, CallRealPostError(_)).Times(0);
   invocation.Execute(args, kRequestId);

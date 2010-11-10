@@ -156,14 +156,16 @@ HRESULT CookieApiResult::CookieStoreIsRegistered(HWND window) {
 
 bool CookieApiResult::AppendToTabIdList(HWND window, ListValue* tab_ids) {
   CComPtr<ICeeeWindowExecutor> executor;
-  GetDispatcher()->GetExecutor(window, IID_ICeeeWindowExecutor,
-                               reinterpret_cast<void**>(&executor));
+  ApiDispatcher* dispatcher = GetDispatcher();
+  DCHECK(dispatcher != NULL);
+  dispatcher->GetExecutor(window, IID_ICeeeWindowExecutor,
+                          reinterpret_cast<void**>(&executor));
   if (executor == NULL) {
     LOG(WARNING) << "Failed to get an executor to get window tabs.";
     return false;
   }
-  CComBSTR tab_ids_string;
-  HRESULT hr = executor->GetTabs(&tab_ids_string);
+  CComBSTR tab_handles;
+  HRESULT hr = executor->GetTabs(&tab_handles);
   if (FAILED(hr)) {
     // No DCHECK, this may happen if the window/thread dies on the way.
     LOG(ERROR) << "Can't get tabs for window: " << std::hex << window <<
@@ -171,22 +173,24 @@ bool CookieApiResult::AppendToTabIdList(HWND window, ListValue* tab_ids) {
     return false;
   }
   scoped_ptr<ListValue> tabs_list;
-  if (!api_module_util::GetListFromJsonString(CW2A(tab_ids_string).m_psz,
+  if (!api_module_util::GetListFromJsonString(CW2A(tab_handles).m_psz,
                                               &tabs_list)) {
-    NOTREACHED() << "Invalid tabs list BSTR: " << tab_ids_string;
+    NOTREACHED() << "Invalid tabs list BSTR: " << tab_handles;
     return false;
   }
   size_t num_values = tabs_list->GetSize();
   if (num_values % 2 != 0) {
-    // Values should come in pairs, one for the id and another one for the
+    // Values should come in pairs, one for the handle and another one for the
     // index.
-    NOTREACHED() << "Invalid tabs list BSTR: " << tab_ids_string;
+    NOTREACHED() << "Invalid tabs list BSTR: " << tab_handles;
     return false;
   }
   for (size_t i = 0; i < num_values; i += 2) {
-    int tab_id = 0;
-    if (tabs_list->GetInteger(i, &tab_id))
-      tab_ids->Append(Value::CreateIntegerValue(tab_id));
+    int tab_handle = 0;
+    tabs_list->GetInteger(i, &tab_handle);
+    int tab_id = dispatcher->GetTabIdFromHandle(
+        reinterpret_cast<HWND>(tab_handle));
+    tab_ids->Append(Value::CreateIntegerValue(tab_id));
   }
   return true;
 }
