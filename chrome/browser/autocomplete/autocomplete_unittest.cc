@@ -9,9 +9,14 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/autocomplete/search_provider.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // identifiers for known autocomplete providers
@@ -102,14 +107,14 @@ void TestProvider::AddResults(int start_at, int num) {
 class AutocompleteProviderTest : public testing::Test,
                                  public NotificationObserver {
  protected:
-  // testing::Test
-  virtual void SetUp();
-
-  void ResetController(bool same_destinations);
+  void ResetControllerWithTestProviders(bool same_destinations);
 
   // Runs a query on the input "a", and makes sure both providers' input is
   // properly collected.
   void RunTest();
+
+  void ResetControllerWithTestProvidersWithKeywordAndSearchProviders();
+  void RunExactKeymatchTest(bool allow_exact_keyword_match);
 
   // These providers are owned by the controller once it's created.
   ACProviders providers_;
@@ -125,15 +130,11 @@ class AutocompleteProviderTest : public testing::Test,
   MessageLoopForUI message_loop_;
   scoped_ptr<AutocompleteController> controller_;
   NotificationRegistrar registrar_;
+  TestingProfile profile_;
 };
 
-void AutocompleteProviderTest::SetUp() {
-  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
-                 NotificationService::AllSources());
-  ResetController(false);
-}
-
-void AutocompleteProviderTest::ResetController(bool same_destinations) {
+void AutocompleteProviderTest::ResetControllerWithTestProviders(
+    bool same_destinations) {
   // Forget about any existing providers.  The controller owns them and will
   // Release() them below, when we delete it during the call to reset().
   providers_.clear();
@@ -154,15 +155,75 @@ void AutocompleteProviderTest::ResetController(bool same_destinations) {
   controller_.reset(controller);
   providerA->set_listener(controller);
   providerB->set_listener(controller);
+
+  // The providers don't complete synchronously, so listen for "result updated"
+  // notifications.
+  registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
+                 NotificationService::AllSources());
+}
+
+void AutocompleteProviderTest::
+    ResetControllerWithTestProvidersWithKeywordAndSearchProviders() {
+  profile_.CreateTemplateURLModel();
+
+  // Reset the default TemplateURL.
+  TemplateURL* default_t_url = new TemplateURL();
+  default_t_url->SetURL("http://defaultturl/{searchTerms}", 0, 0);
+  TemplateURLModel* turl_model = profile_.GetTemplateURLModel();
+  turl_model->Add(default_t_url);
+  turl_model->SetDefaultSearchProvider(default_t_url);
+  TemplateURLID default_provider_id = default_t_url->id();
+  ASSERT_NE(0, default_provider_id);
+
+  // Create another TemplateURL for KeywordProvider.
+  TemplateURL* keyword_t_url = new TemplateURL();
+  keyword_t_url->set_short_name(L"k");
+  keyword_t_url->set_keyword(L"k");
+  keyword_t_url->SetURL("http://keyword/{searchTerms}", 0, 0);
+  profile_.GetTemplateURLModel()->Add(keyword_t_url);
+  ASSERT_NE(0, keyword_t_url->id());
+
+  // Forget about any existing providers.  The controller owns them and will
+  // Release() them below, when we delete it during the call to reset().
+  providers_.clear();
+
+  // Create both a keyword and search provider, and add them in that order.
+  // (Order is important; see comments in RunExactKeymatchTest().)
+  AutocompleteProvider* keyword_provider = new KeywordProvider(NULL,
+                                                                &profile_);
+  keyword_provider->AddRef();
+  providers_.push_back(keyword_provider);
+  AutocompleteProvider* search_provider = new SearchProvider(NULL, &profile_);
+  search_provider->AddRef();
+  providers_.push_back(search_provider);
+
+  AutocompleteController* controller = new AutocompleteController(providers_);
+  controller_.reset(controller);
 }
 
 void AutocompleteProviderTest::RunTest() {
   result_.Reset();
-  controller_->Start(L"a", std::wstring(), true, false, false);
+  controller_->Start(L"a", std::wstring(), true, false, true, false);
 
   // The message loop will terminate when all autocomplete input has been
   // collected.
   MessageLoop::current()->Run();
+}
+
+void AutocompleteProviderTest::RunExactKeymatchTest(
+    bool allow_exact_keyword_match) {
+  // Send the controller input which exactly matches the keyword provider we
+  // created in ResetControllerWithKeywordAndSearchProviders().  The default
+  // match should thus be a keyword match iff |allow_exact_keyword_match| is
+  // true.
+  controller_->Start(L"k test", std::wstring(), true, false,
+                     allow_exact_keyword_match, true);
+  EXPECT_TRUE(controller_->done());
+  // ResetControllerWithKeywordAndSearchProviders() adds the keyword provider
+  // first, then the search provider.  So if the default match is a keyword
+  // match, it will come from provider 0, otherwise from provider 1.
+  EXPECT_EQ(providers_[allow_exact_keyword_match ? 0 : 1],
+      controller_->result().default_match()->provider);
 }
 
 void AutocompleteProviderTest::Observe(NotificationType type,
@@ -176,6 +237,7 @@ void AutocompleteProviderTest::Observe(NotificationType type,
 
 // Tests that the default selection is set properly when updating results.
 TEST_F(AutocompleteProviderTest, Query) {
+  ResetControllerWithTestProviders(false);
   RunTest();
 
   // Make sure the default match gets set to the highest relevance match.  The
@@ -186,9 +248,7 @@ TEST_F(AutocompleteProviderTest, Query) {
 }
 
 TEST_F(AutocompleteProviderTest, RemoveDuplicates) {
-  // Set up the providers to provide duplicate results.
-  ResetController(true);
-
+  ResetControllerWithTestProviders(true);
   RunTest();
 
   // Make sure all the first provider's results were eliminated by the second
@@ -197,10 +257,12 @@ TEST_F(AutocompleteProviderTest, RemoveDuplicates) {
   for (AutocompleteResult::const_iterator i(result_.begin());
        i != result_.end(); ++i)
     EXPECT_EQ(providers_[1], i->provider);
+}
 
-  // Set things back to the default for the benefit of any tests that run after
-  // us.
-  ResetController(false);
+TEST_F(AutocompleteProviderTest, AllowExactKeywordMatch) {
+  ResetControllerWithTestProvidersWithKeywordAndSearchProviders();
+  RunExactKeymatchTest(true);
+  RunExactKeymatchTest(false);
 }
 
 TEST(AutocompleteTest, InputType) {
@@ -283,7 +345,7 @@ TEST(AutocompleteTest, InputType) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     AutocompleteInput input(input_cases[i].input, std::wstring(), true, false,
-                            false);
+                            true, false);
     EXPECT_EQ(input_cases[i].type, input.type()) << "Input: " <<
         input_cases[i].input;
   }
@@ -299,7 +361,8 @@ TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
-    AutocompleteInput input(input_cases[i].input, L"com", true, false, false);
+    AutocompleteInput input(input_cases[i].input, L"com", true, false, true,
+                            false);
     EXPECT_EQ(input_cases[i].type, input.type()) << "Input: " <<
         input_cases[i].input;
   }
@@ -308,7 +371,8 @@ TEST(AutocompleteTest, InputTypeWithDesiredTLD) {
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteTest, InputCrash) {
-  AutocompleteInput input(L"\uff65@s", std::wstring(), true, false, false);
+  AutocompleteInput input(L"\uff65@s", std::wstring(), true, false, true,
+                          false);
 }
 
 // Test that we can properly compare matches' relevance when at least one is
@@ -372,7 +436,7 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
                                                    &scheme,
                                                    &host);
     AutocompleteInput input(input_cases[i].input, std::wstring(), true, false,
-                            false);
+                            true, false);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin) << "Input: " <<
         input_cases[i].input;
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len) << "Input: " <<

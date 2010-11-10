@@ -189,7 +189,7 @@ void HistoryURLProviderTest::RunTest(const std::wstring text,
                                      const std::string* expected_urls,
                                      size_t num_results) {
   AutocompleteInput input(text, desired_tld, prevent_inline_autocomplete,
-                          false, false);
+                          false, true, false);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     MessageLoop::current()->Run();
@@ -203,7 +203,7 @@ void HistoryURLProviderTest::RunTest(const std::wstring text,
 
 void HistoryURLProviderTest::RunAdjustOffsetTest(const std::wstring text,
                                                  size_t expected_offset) {
-  AutocompleteInput input(text, std::wstring(), false, false, false);
+  AutocompleteInput input(text, std::wstring(), false, false, true, false);
   autocomplete_->Start(input, false);
   if (!autocomplete_->done())
     MessageLoop::current()->Run();

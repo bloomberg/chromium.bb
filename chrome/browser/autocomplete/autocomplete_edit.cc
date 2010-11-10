@@ -296,7 +296,7 @@ bool AutocompleteEditModel::CanPasteAndGo(const std::wstring& text) const {
     return false;
 
   AutocompleteMatch match;
-  profile_->GetAutocompleteClassifier()->Classify(text, std::wstring(),
+  profile_->GetAutocompleteClassifier()->Classify(text, std::wstring(), false,
       &match, &paste_and_go_alternate_nav_url_);
   paste_and_go_url_ = match.destination_url;
   paste_and_go_transition_ = match.transition;
@@ -772,8 +772,8 @@ void AutocompleteEditModel::GetInfoForCurrentText(
     popup_->InfoForCurrentSelection(match, alternate_nav_url);
   } else {
     profile_->GetAutocompleteClassifier()->Classify(
-        UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(), match,
-        alternate_nav_url);
+        UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(), true,
+        match, alternate_nav_url);
   }
 }
 

@@ -17,9 +17,11 @@ AutocompleteClassifier::~AutocompleteClassifier() {
 
 void AutocompleteClassifier::Classify(const std::wstring& text,
                                       const std::wstring& desired_tld,
+                                      bool allow_exact_keyword_match,
                                       AutocompleteMatch* match,
                                       GURL* alternate_nav_url) {
-  controller_->Start(text, desired_tld, true, false, true);
+  controller_->Start(text, desired_tld, true, false, allow_exact_keyword_match,
+                     true);
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
   if (result.empty()) {

@@ -169,7 +169,7 @@ void HistoryQuickProviderTest::RunTest(const std::wstring text,
   std::sort(expected_urls.begin(), expected_urls.end());
 
   MessageLoop::current()->RunAllPending();
-  AutocompleteInput input(text, std::wstring(), false, false, false);
+  AutocompleteInput input(text, std::wstring(), false, false, true, false);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 

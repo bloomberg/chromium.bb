@@ -23,15 +23,19 @@ class AutocompleteClassifier {
 
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.  |desired_tld| is the user's
-  // desired TLD, if any; see AutocompleteInput::desired_tld().  |match| should
-  // be a non-NULL outparam that will be set to the default match for this
-  // input, if any (for invalid input, there will be no default match, and
-  // |match| will be left unchanged).  |alternate_nav_url| is a possibly-NULL
-  // outparam that, if non-NULL, will be set to the navigational URL (if any) in
-  // case of an accidental search; see comments on
+  // desired TLD, if any; see AutocompleteInput::desired_tld().
+  // |allow_exact_keyword_match| should be true when treating the string as a
+  // potential keyword search is valid; see
+  // AutocompleteInput::allow_exact_keyword_match(). |match| should be a
+  // non-NULL outparam that will be set to the default match for this input, if
+  // any (for invalid input, there will be no default match, and |match| will be
+  // left unchanged).  |alternate_nav_url| is a possibly-NULL outparam that, if
+  // non-NULL, will be set to the navigational URL (if any) in case of an
+  // accidental search; see comments on
   // AutocompleteResult::alternate_nav_url_ in autocomplete.h.
   void Classify(const std::wstring& text,
                 const std::wstring& desired_tld,
+                bool allow_exact_keyword_match,
                 AutocompleteMatch* match,
                 GURL* alternate_nav_url);
 

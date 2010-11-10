@@ -102,6 +102,9 @@ const TemplateURL* KeywordProvider::GetSubstitutingTemplateURLForInput(
     Profile* profile,
     const AutocompleteInput& input,
     std::wstring* remaining_input) {
+  if (!input.allow_exact_keyword_match())
+    return NULL;
+
   std::wstring keyword;
   if (!ExtractKeywordFromInput(input, &keyword, remaining_input))
     return NULL;
@@ -344,9 +347,12 @@ void KeywordProvider::FillInURLAndContents(
 // static
 int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
                                         bool complete,
-                                        bool no_query_text_needed) {
+                                        bool no_query_text_needed,
+                                        bool allow_exact_keyword_match) {
   if (!complete)
     return (type == AutocompleteInput::URL) ? 700 : 450;
+  if (!allow_exact_keyword_match)
+    return 1100;
   if (no_query_text_needed)
     return 1500;
   return (type == AutocompleteInput::QUERY) ? 1450 : 1100;
@@ -375,7 +381,8 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
                            // When the user wants keyword matches to take
                            // preference, score them highly regardless of
                            // whether the input provides query text.
-                           input.prefer_keyword() || !supports_replacement);
+                           input.prefer_keyword() || !supports_replacement,
+                           input.allow_exact_keyword_match());
   }
   AutocompleteMatch result(this, relevance, false,
       supports_replacement ? AutocompleteMatch::SEARCH_OTHER_ENGINE :
@@ -451,8 +458,8 @@ void KeywordProvider::Observe(NotificationType type,
     // and subtract 1 for each subsequent suggestion from the extension.
     // We know that |complete| is true, because we wouldn't get results from
     // the extension unless the full keyword had been typed.
-    int first_relevance =
-        CalculateRelevance(input.type(), true, input.prefer_keyword());
+    int first_relevance = CalculateRelevance(input.type(), true,
+        input.prefer_keyword(), input.allow_exact_keyword_match());
     extension_suggest_matches_.push_back(CreateAutocompleteMatch(
         model, keyword, input, keyword.length(),
         UTF16ToWide(suggestion.content), first_relevance - (i + 1)));

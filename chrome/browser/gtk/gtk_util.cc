@@ -22,11 +22,13 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/renderer_preferences.h"
 #include "gfx/gtk_util.h"
 #include "googleurl/src/gurl.h"
@@ -959,22 +961,14 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url) {
 
   // Use autocomplete to clean up the text, going so far as to turn it into
   // a search query if necessary.
-  AutocompleteController controller(profile);
-  controller.Start(UTF8ToWide(selection_text),
-                   std::wstring(),  // desired_tld
-                   true,            // prevent_inline_autocomplete
-                   false,           // prefer_keyword
-                   true);           // synchronous_only
+  AutocompleteMatch match;
+  profile->GetAutocompleteClassifier()->Classify(UTF8ToWide(selection_text),
+      std::wstring(), false, &match, NULL);
   g_free(selection_text);
-  const AutocompleteResult& result = controller.result();
-  AutocompleteResult::const_iterator it = result.default_match();
-  if (it == result.end())
+  if (!match.destination_url.is_valid())
     return false;
 
-  if (!it->destination_url.is_valid())
-    return false;
-
-  *url = it->destination_url;
+  *url = match.destination_url;
   return true;
 }
 

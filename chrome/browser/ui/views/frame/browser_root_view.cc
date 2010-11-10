@@ -145,7 +145,7 @@ bool BrowserRootView::GetPasteAndGoURL(const OSExchangeData& data, GURL* url) {
 
   AutocompleteMatch match;
   browser_view_->browser()->profile()->GetAutocompleteClassifier()->Classify(
-      text, std::wstring(), &match, NULL);
+      text, std::wstring(), false, &match, NULL);
   if (!match.destination_url.is_valid())
     return false;
 

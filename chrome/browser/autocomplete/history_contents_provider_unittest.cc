@@ -105,7 +105,7 @@ class HistoryContentsProviderTest : public testing::Test,
 };
 
 TEST_F(HistoryContentsProviderTest, Body) {
-  AutocompleteInput input(L"FOO", std::wstring(), true, false, false);
+  AutocompleteInput input(L"FOO", std::wstring(), true, false, true, false);
   RunQuery(input, false);
 
   // The results should be the first two pages, in decreasing order.
@@ -118,7 +118,7 @@ TEST_F(HistoryContentsProviderTest, Body) {
 }
 
 TEST_F(HistoryContentsProviderTest, Title) {
-  AutocompleteInput input(L"PAGEONE", std::wstring(), true, false, false);
+  AutocompleteInput input(L"PAGEONE", std::wstring(), true, false, true, false);
   RunQuery(input, false);
 
   // The results should be the first two pages.
@@ -134,13 +134,15 @@ TEST_F(HistoryContentsProviderTest, Title) {
 TEST_F(HistoryContentsProviderTest, MinimalChanges) {
   // A minimal changes request when there have been no real queries should
   // give us no results.
-  AutocompleteInput sync_input(L"PAGEONE", std::wstring(), true, false, true);
+  AutocompleteInput sync_input(L"PAGEONE", std::wstring(), true, false, true,
+                               true);
   RunQuery(sync_input, true);
   const ACMatches& m1 = matches();
   EXPECT_EQ(0U, m1.size());
 
   // Now do a "regular" query to get the results.
-  AutocompleteInput async_input(L"PAGEONE", std::wstring(), true, false, false);
+  AutocompleteInput async_input(L"PAGEONE", std::wstring(), true, false, true,
+                                false);
   RunQuery(async_input, false);
   const ACMatches& m2 = matches();
   EXPECT_EQ(2U, m2.size());
@@ -163,7 +165,7 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
                                                ASCIIToUTF16("bar"), true);
 
   // Ask for synchronous. This should only get the bookmark.
-  AutocompleteInput sync_input(L"bar", std::wstring(), true, false, true);
+  AutocompleteInput sync_input(L"bar", std::wstring(), true, false, true, true);
   RunQuery(sync_input, false);
   const ACMatches& m1 = matches();
   ASSERT_EQ(1U, m1.size());
@@ -172,7 +174,8 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
   EXPECT_TRUE(m1[0].starred);
 
   // Ask for async. We should get the bookmark immediately.
-  AutocompleteInput async_input(L"bar", std::wstring(), true, false, false);
+  AutocompleteInput async_input(L"bar", std::wstring(), true, false, true,
+                                false);
   provider()->Start(async_input, false);
   const ACMatches& m2 = matches();
   ASSERT_EQ(1U, m2.size());

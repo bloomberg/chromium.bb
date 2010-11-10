@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
 
   {
     autocomplete_controller->Start(L"chrome", std::wstring(),
-                                   true, false, true);
+                                   true, false, true, true);
 
     EXPECT_TRUE(autocomplete_controller->done());
     EXPECT_EQ(std::wstring(), location_bar->GetInputString());

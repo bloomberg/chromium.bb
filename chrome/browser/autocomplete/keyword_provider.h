@@ -105,9 +105,12 @@ class KeywordProvider : public AutocompleteProvider,
   // typed the complete keyword, and whether the keyword needs query text (true
   // if the keyword supports replacement and the user isn't in "prefer keyword
   // matches" mode).
+  // If |allow_exact_keyword_match| is false, the relevance for complete
+  // keywords is degraded.
   static int CalculateRelevance(AutocompleteInput::Type type,
                                 bool complete,
-                                bool no_query_text_needed);
+                                bool no_query_text_needed,
+                                bool allow_exact_keyword_match);
 
   // Creates a fully marked-up AutocompleteMatch from the user's input.
   // If |relevance| is negative, calculate a relevance based on heuristics.

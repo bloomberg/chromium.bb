@@ -165,7 +165,7 @@ void SearchProviderTest::RunTillProviderDone() {
 void SearchProviderTest::QueryForInput(const string16& text) {
   // Start a query.
   AutocompleteInput input(UTF16ToWide(text), std::wstring(),
-                          false, false, false);
+                          false, false, true, false);
   provider_->Start(input, false);
 
   // RunAllPending so that the task scheduled by SearchProvider to create the

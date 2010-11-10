@@ -54,7 +54,7 @@ void AutocompletePopupModel::StartAutocomplete(
   manually_selected_match_.Clear();
 
   controller_->Start(text, desired_tld, prevent_inline_autocomplete,
-                     prefer_keyword, false);
+                     prefer_keyword, true, false);
 }
 
 void AutocompletePopupModel::StopAutocomplete() {

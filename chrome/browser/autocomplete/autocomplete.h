@@ -183,6 +183,7 @@ class AutocompleteInput {
                     const std::wstring& desired_tld,
                     bool prevent_inline_autocomplete,
                     bool prefer_keyword,
+                    bool allow_exact_keyword_match,
                     bool synchronous_only);
   ~AutocompleteInput();
 
@@ -252,6 +253,11 @@ class AutocompleteInput {
   // keyword, we should score it like a non-substituting keyword.
   bool prefer_keyword() const { return prefer_keyword_; }
 
+  // Returns whether this input is allowed to be treated as an exact
+  // keyword match.  If not, the default result is guaranteed not to be a
+  // keyword search, even if the input is "<keyword> <search string>".
+  bool allow_exact_keyword_match() const { return allow_exact_keyword_match_; }
+
   // Returns whether providers should avoid scheduling asynchronous work.  If
   // this is true, providers should stop after returning all the
   // synchronously-available matches.  This also means any in-progress
@@ -273,6 +279,7 @@ class AutocompleteInput {
   GURL canonicalized_url_;
   bool prevent_inline_autocomplete_;
   bool prefer_keyword_;
+  bool allow_exact_keyword_match_;
   bool synchronous_only_;
 };
 
@@ -550,6 +557,10 @@ class AutocompleteController : public ACProviderListener {
   // bias the autocomplete result set toward the keyword provider when the input
   // string is a bare keyword.
   //
+  // |allow_exact_keyword_match| should be false when triggering keyword mode on
+  // the input string would be surprising or wrong, e.g. when highlighting text
+  // in a page and telling the browser to search for it or navigate to it.
+
   // If |synchronous_only| is true, the controller asks the providers to only
   // return matches which are synchronously available, which should mean that
   // all providers will be done immediately.
@@ -565,6 +576,7 @@ class AutocompleteController : public ACProviderListener {
              const std::wstring& desired_tld,
              bool prevent_inline_autocomplete,
              bool prefer_keyword,
+             bool allow_exact_keyword_match,
              bool synchronous_only);
 
   // Cancels the current query, ensuring there will be no future notifications

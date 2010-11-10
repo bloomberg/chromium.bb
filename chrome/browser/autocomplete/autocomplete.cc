@@ -46,6 +46,7 @@ AutocompleteInput::AutocompleteInput()
   : type_(INVALID),
     prevent_inline_autocomplete_(false),
     prefer_keyword_(false),
+    allow_exact_keyword_match_(true),
     synchronous_only_(false) {
 }
 
@@ -53,10 +54,12 @@ AutocompleteInput::AutocompleteInput(const std::wstring& text,
                                      const std::wstring& desired_tld,
                                      bool prevent_inline_autocomplete,
                                      bool prefer_keyword,
+                                     bool allow_exact_keyword_match,
                                      bool synchronous_only)
     : desired_tld_(desired_tld),
       prevent_inline_autocomplete_(prevent_inline_autocomplete),
       prefer_keyword_(prefer_keyword),
+      allow_exact_keyword_match_(allow_exact_keyword_match),
       synchronous_only_(synchronous_only) {
   // Trim whitespace from edges of input; don't inline autocomplete if there
   // was trailing whitespace.
@@ -671,11 +674,12 @@ void AutocompleteController::Start(const std::wstring& text,
                                    const std::wstring& desired_tld,
                                    bool prevent_inline_autocomplete,
                                    bool prefer_keyword,
+                                   bool allow_exact_keyword_match,
                                    bool synchronous_only) {
   const std::wstring old_input_text(input_.text());
   const bool old_synchronous_only = input_.synchronous_only();
   input_ = AutocompleteInput(text, desired_tld, prevent_inline_autocomplete,
-                             prefer_keyword, synchronous_only);
+      prefer_keyword, allow_exact_keyword_match, synchronous_only);
 
   // See if we can avoid rerunning autocomplete when the query hasn't changed
   // much.  When the user presses or releases the ctrl key, the desired_tld

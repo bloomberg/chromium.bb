@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   // it.
   {
     autocomplete_controller->Start(L"keywor", std::wstring(),
-                                   true, false, false);
+                                   true, false, true, false);
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   // Test that our extension can send suggestions back to us.
   {
     autocomplete_controller->Start(L"keyword suggestio", std::wstring(),
-                                   true, false, false);
+                                   true, false, true, false);
 
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   {
     ResultCatcher catcher;
     autocomplete_controller->Start(L"keyword command", std::wstring(),
-                                   true, false, false);
+                                   true, false, true, false);
     location_bar->AcceptInput();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
