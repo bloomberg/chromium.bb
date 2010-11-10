@@ -130,7 +130,9 @@ TEST_P(FullTabUITest, CtrlN) {
   // Watch for new window. It appears that the window close message cannot be
   // reliably delivered immediately upon receipt of the window open event.
   EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
-      .WillOnce(DelayDoCloseWindow(500));
+      .Times(testing::AtMost(2))
+      .WillOnce(DelayDoCloseWindow(500))
+      .WillOnce(testing::Return());
 
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
       .WillOnce(CloseBrowserMock(&ie_mock_));
