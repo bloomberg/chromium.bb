@@ -582,10 +582,16 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
   } else {
     amount.assign(received_size);
   }
-  amount_units = GetByteDisplayUnits(download->CurrentSpeed());
-  std::wstring speed_text =
-      UTF16ToWideHack(FormatSpeed(download->CurrentSpeed(), amount_units,
-                                  true));
+  std::wstring speed_text;
+  if (download->is_paused()) {
+    // If the download is paused, set the rate to 0B/s.
+    amount_units = GetByteDisplayUnits(0);
+    speed_text = UTF16ToWideHack(FormatSpeed(0, amount_units, true));
+  } else {
+    amount_units = GetByteDisplayUnits(download->CurrentSpeed());
+    speed_text = UTF16ToWideHack(FormatSpeed(download->CurrentSpeed(),
+                                             amount_units, true));
+  }
   std::wstring speed_text_localized;
   if (base::i18n::AdjustStringForLocaleDirection(speed_text,
                                                  &speed_text_localized))
