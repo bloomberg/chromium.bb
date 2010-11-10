@@ -22,6 +22,7 @@
 #include "app/win/drag_source.h"
 #include "app/win/drop_target.h"
 #include "app/win/iat_patch_function.h"
+#include "app/win/scoped_prop.h"
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -438,6 +439,10 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   SendMessage(m_hWnd, EM_SETWORDBREAKPROC, 0,
               reinterpret_cast<LPARAM>(&WordBreakProc));
 
+  // Makes it EN_SELCHANGE is sent to our parent window and back to us by way of
+  // ProcessWindowMessage.
+  SetEventMask(ENM_SELCHANGE);
+
   // Get the metrics for the font.
   HDC dc = ::GetDC(NULL);
   SelectObject(dc, font_.GetNativeFont());
@@ -467,6 +472,9 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   SetDefaultCharFormat(cf);
 
   SetBackgroundColor(background_color_);
+
+  message_handler_prop_.reset(
+      views::ChildWindowMessageProcessor::Register(m_hWnd, this));
 
   // By default RichEdit has a drop target. Revoke it so that we can install our
   // own. Revoke takes care of deleting the existing one.
@@ -1056,6 +1064,19 @@ void AutocompleteEditViewWin::ExecuteCommand(int command_id) {
   OnAfterPossibleChange();
 }
 
+bool AutocompleteEditViewWin::ProcessMessage(UINT message,
+                                             WPARAM w_param,
+                                             LPARAM l_param,
+                                             LRESULT* result) {
+  if (message == WM_NOTIFY) {
+    NMHDR* header = reinterpret_cast<NMHDR*>(l_param);
+    if (header->code == EN_SELCHANGE) {
+      // TODO(sky): wire this up.
+    }
+  }
+  return false;
+}
+
 // static
 int CALLBACK AutocompleteEditViewWin::WordBreakProc(LPTSTR edit_text,
                                                     int current_pos,
@@ -1244,6 +1265,10 @@ void AutocompleteEditViewWin::OnCut() {
   // This replace selection will have no effect (even on the undo stack) if the
   // current selection is empty.
   ReplaceSel(L"", true);
+}
+
+void AutocompleteEditViewWin::OnDestroy() {
+  message_handler_prop_.reset();
 }
 
 LRESULT AutocompleteEditViewWin::OnGetObject(UINT uMsg,

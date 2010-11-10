@@ -14,9 +14,7 @@
 
 namespace views {
 
-// static
-const wchar_t* NativeControlWin::kNativeControlWinKey =
-    L"__NATIVE_CONTROL_WIN__";
+static const wchar_t* kNativeControlWinKey = L"__NATIVE_CONTROL_WIN__";
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeControlWin, public:
@@ -35,8 +33,10 @@ NativeControlWin::~NativeControlWin() {
   }
 }
 
-bool NativeControlWin::ProcessMessage(UINT message, WPARAM w_param,
-                                      LPARAM l_param, LRESULT* result) {
+bool NativeControlWin::ProcessMessage(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param,
+                                      LRESULT* result) {
   switch (message) {
     case WM_CONTEXTMENU:
       ShowContextMenu(gfx::Point(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param)));
@@ -130,8 +130,9 @@ void NativeControlWin::ShowContextMenu(const gfx::Point& location) {
 void NativeControlWin::NativeControlCreated(HWND native_control) {
   // Associate this object with the control's HWND so that WidgetWin can find
   // this object when it receives messages from it.
-  prop_.reset(
+  props_.push_back(
       new app::win::ScopedProp(native_control, kNativeControlWinKey, this));
+  props_.push_back(ChildWindowMessageProcessor::Register(native_control, this));
 
   // Subclass so we get WM_KEYDOWN and WM_SETFOCUS messages.
   original_wndproc_ =
@@ -211,7 +212,7 @@ LRESULT NativeControlWin::NativeControlWndProc(HWND window,
       NOTREACHED();
     }
   } else if (message == WM_DESTROY) {
-    native_control->prop_.reset();
+    native_control->props_.reset();
     win_util::SetWindowProc(window, native_control->original_wndproc_);
   }
 
