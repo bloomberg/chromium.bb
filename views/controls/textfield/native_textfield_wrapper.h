@@ -71,8 +71,11 @@ class NativeTextfieldWrapper {
   // Returns the insets for the text field.
   virtual gfx::Insets CalculateInsets() = 0;
 
-  // Sets the horizontal margins for the native text field.
-  virtual void SetHorizontalMargins(int left, int right) = 0;
+  // Updates the horizontal margins for the native text field.
+  virtual void UpdateHorizontalMargins() = 0;
+
+  // Updates the vertical margins for the native text field.
+  virtual void UpdateVerticalMargins() = 0;
 
   // Sets the focus to the text field.
   virtual void SetFocus() = 0;

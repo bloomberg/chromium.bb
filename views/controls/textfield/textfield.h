@@ -177,6 +177,10 @@ class Textfield : public View {
   // 32 bit number, so the left and right margins are effectively 16 bits.
   void SetHorizontalMargins(int left, int right);
 
+  // Sets the top and bottom margins (in pixels) within the textfield.
+  // NOTE: in most cases height could be changed instead.
+  void SetVerticalMargins(int top, int bottom);
+
   // Should only be called on a multi-line text field. Sets how many lines of
   // text can be displayed at once by this text field.
   void SetHeightInLines(int num_lines);
@@ -200,6 +204,14 @@ class Textfield : public View {
   const string16& text_to_display_when_empty() {
     return text_to_display_when_empty_;
   }
+
+  // Getter for the horizontal margins that were set. Returns false if
+  // horizontal margins weren't set.
+  bool GetHorizontalMargins(int* left, int* right);
+
+  // Getter for the vertical margins that were set. Returns false if vertical
+  // margins weren't set.
+  bool GetVerticalMargins(int* top, int* bottom);
 
   // Updates all properties on the textfield. This is invoked internally.
   // Users of Textfield never need to invoke this directly.
@@ -289,6 +301,13 @@ class Textfield : public View {
   // TODO(beng): remove this once NativeTextfieldWin subclasses
   //             NativeControlWin.
   bool initialized_;
+
+  // Holds inner textfield margins.
+  gfx::Insets margins_;
+
+  // Holds whether margins were set.
+  bool horizontal_margins_were_set_;
+  bool vertical_margins_were_set_;
 
   // Text to display when empty.
   string16 text_to_display_when_empty_;

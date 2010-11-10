@@ -375,6 +375,7 @@ void FindBarView::Layout() {
 void FindBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && child == this) {
     find_text_->SetHorizontalMargins(3, 3);  // Left and Right margins.
+    find_text_->SetVerticalMargins(0, 0);  // Top and bottom margins.
     find_text_->RemoveBorder();  // We draw our own border (a background image).
   }
 }

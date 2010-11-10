@@ -251,12 +251,29 @@ gfx::Insets NativeTextfieldWin::CalculateInsets() {
   return gfx::Insets(3, 3, 3, 3);
 }
 
-void NativeTextfieldWin::SetHorizontalMargins(int left, int right) {
+void NativeTextfieldWin::UpdateHorizontalMargins() {
+  int left, right;
+  if (!textfield_->GetHorizontalMargins(&left, &right))
+    return;
+
   // SendMessage expects the two values to be packed into one using MAKELONG
   // so we truncate to 16 bits if necessary.
   SendMessage(m_hWnd, EM_SETMARGINS,
               EC_LEFTMARGIN | EC_RIGHTMARGIN,
               MAKELONG(left  & 0xFFFF, right & 0xFFFF));
+}
+
+void NativeTextfieldWin::UpdateVerticalMargins() {
+  int top, bottom;
+  if (!textfield_->GetVerticalMargins(&top, &bottom))
+    return;
+
+  if (top == 0 && bottom == 0) {
+    // Do nothing, default margins are 0 already.
+    return;
+  }
+  // Non-zero margins case.
+  NOTIMPLEMENTED();
 }
 
 void NativeTextfieldWin::SetFocus() {

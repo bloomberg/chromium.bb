@@ -48,7 +48,9 @@ Textfield::Textfield()
       background_color_(SK_ColorWHITE),
       use_default_background_color_(true),
       num_lines_(1),
-      initialized_(false) {
+      initialized_(false),
+      horizontal_margins_were_set_(false),
+      vertical_margins_were_set_(false) {
   SetFocusable(true);
 }
 
@@ -64,7 +66,9 @@ Textfield::Textfield(StyleFlags style)
       background_color_(SK_ColorWHITE),
       use_default_background_color_(true),
       num_lines_(1),
-      initialized_(false) {
+      initialized_(false),
+      horizontal_margins_were_set_(false),
+      vertical_margins_were_set_(false) {
   SetFocusable(true);
 }
 
@@ -167,8 +171,18 @@ void Textfield::SetFont(const gfx::Font& font) {
 }
 
 void Textfield::SetHorizontalMargins(int left, int right) {
+  margins_.Set(margins_.top(), left, margins_.bottom(), right);
+  horizontal_margins_were_set_ = true;
   if (native_wrapper_)
-    native_wrapper_->SetHorizontalMargins(left, right);
+    native_wrapper_->UpdateHorizontalMargins();
+  PreferredSizeChanged();
+}
+
+void Textfield::SetVerticalMargins(int top, int bottom) {
+  margins_.Set(top, margins_.left(), bottom, margins_.right());
+  vertical_margins_were_set_ = true;
+  if (native_wrapper_)
+    native_wrapper_->UpdateVerticalMargins();
   PreferredSizeChanged();
 }
 
@@ -187,6 +201,22 @@ void Textfield::RemoveBorder() {
     native_wrapper_->UpdateBorder();
 }
 
+bool Textfield::GetHorizontalMargins(int* left, int* right) {
+  if (!horizontal_margins_were_set_)
+    return false;
+  *left = margins_.left();
+  *right = margins_.right();
+  return true;
+}
+
+bool Textfield::GetVerticalMargins(int* top, int* bottom) {
+  if (!vertical_margins_were_set_)
+    return false;
+  *top = margins_.top();
+  *bottom = margins_.bottom();
+  return true;
+}
+
 void Textfield::UpdateAllProperties() {
   if (native_wrapper_) {
     native_wrapper_->UpdateText();
@@ -197,6 +227,8 @@ void Textfield::UpdateAllProperties() {
     native_wrapper_->UpdateEnabled();
     native_wrapper_->UpdateBorder();
     native_wrapper_->UpdateIsPassword();
+    native_wrapper_->UpdateHorizontalMargins();
+    native_wrapper_->UpdateVerticalMargins();
   }
 }
 
