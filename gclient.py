@@ -677,17 +677,18 @@ solutions = [
     revision_overrides = {}
     if self._options.head:
       return revision_overrides
-    for s in self.dependencies:
-      if not s.safesync_url:
-        continue
-      handle = urllib.urlopen(s.safesync_url)
-      rev = handle.read().strip()
-      handle.close()
-      if len(rev):
-        self._options.revisions.append('%s@%s' % (s.name, rev))
+    # Do not check safesync_url if one or more --revision flag is specified.
+    if not self._options.revisions:
+      for s in self.dependencies:
+        if not s.safesync_url:
+          continue
+        handle = urllib.urlopen(s.safesync_url)
+        rev = handle.read().strip()
+        handle.close()
+        if len(rev):
+          self._options.revisions.append('%s@%s' % (s.name, rev))
     if not self._options.revisions:
       return revision_overrides
-    # --revision will take over safesync_url.
     solutions_names = [s.name for s in self.dependencies]
     index = 0
     for revision in self._options.revisions:
@@ -1037,7 +1038,8 @@ def CMDsync(parser, args):
                          'format src@rev. The src@ part is optional and can be '
                          'skipped. -r can be used multiple times when .gclient '
                          'has multiple solutions configured and will work even '
-                         'if the src@ part is skipped.')
+                         'if the src@ part is skipped. Note that specifying '
+                         '--revision means your safesync_url gets ignored.')
   parser.add_option('-H', '--head', action='store_true',
                     help='skips any safesync_urls specified in '
                          'configured solutions and sync to head instead')
