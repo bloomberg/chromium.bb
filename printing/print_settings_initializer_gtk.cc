@@ -62,11 +62,15 @@ void PrintSettingsInitializerGtk::InitPrintSettings(
       static_cast<int>(page_height_in_pixel));
     printable_area_device_units.SetRect(
       static_cast<int>(
-          NativeMetafile::kLeftMarginInInch * printing::kPixelsPerInch),
+          NativeMetafile::kLeftMarginInInch * dpi),
       static_cast<int>(
-          NativeMetafile::kTopMarginInInch * printing::kPixelsPerInch),
-      page_width_in_pixel,
-      page_height_in_pixel);
+          NativeMetafile::kTopMarginInInch * dpi),
+      page_width_in_pixel -
+      (NativeMetafile::kLeftMarginInInch +
+       NativeMetafile::kRightMarginInInch) * dpi,
+      page_height_in_pixel -
+      (NativeMetafile::kTopMarginInInch +
+       NativeMetafile::kBottomMarginInInch) * dpi);
   }
 
   print_settings->set_dpi(dpi);
