@@ -4,32 +4,5 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-BUG_AJWONG WIN : fast/dom/Window/window-screen-properties.html = TEXT
 
-// Failure after 63609
-BUG60384 : fast/replaced/border-radius-clip.html = IMAGE TEXT IMAGE+TEXT
-
-BUG60393 MAC DEBUG : fast/selectors/001.html = TIMEOUT
-
-// Failures after Mesa 7.9 upgrade, already in upstream test_expectations.txt.
-// Need to investigate.
-BUG60651 : fast/canvas/webgl/gl-object-get-calls.html = TIMEOUT FAIL
-BUG60651 : fast/canvas/webgl/glsl-conformance.html = TIMEOUT FAIL
-BUG60671 : fast/canvas/webgl/uniform-location.html = TIMEOUT FAIL CRASH
-
-// Failures after WebKit roll 71000:71013
-BUGJEREMY WIN LINUX : fast/block/basic/truncation-rtl.html = IMAGE+TEXT
-BUGJEREMY MAC : fast/block/basic/truncation-rtl.html = IMAGE
-BUGPFELDMAN WIN : inspector/console-log-syntax-error.html = TEXT
-BUGPKASTING WIN : fast/images/gif-loop-count.html = IMAGE
-
-// Was already marked as flaky on Win, seems to fail on Mac too.
-BUG31342 MAC WIN RELEASE : security/block-test-no-port.html = TEXT PASS
-
-BUGDIMICH MAC : fast/canvas/canvas-zoom.html = IMAGE
-BUGDIMICH MAC : fast/repaint/selection-rl.html = IMAGE
-
-BUG61739 MAC WIN : animations/suspend-resume-animation-events.html = FAIL CRASH
-
-// Probably caused by activation of ICC on Chromium-Mac, likely only requires resume
-BUG48982 MAC : tables/mozilla/bugs/bug82946-2.html = IMAGE
+BUG62760 WIN : inspector/styles-source-lines-inline.html = TIMEOUT PASS
