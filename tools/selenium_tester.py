@@ -44,10 +44,17 @@ if 0:
                                        )
 else:
   # TODO: phase out old server
-  _DEFAULT_SELENIUM_JAR = os.path.join(_SELENIUM_PATH,
-                                       'selenium-server-1.0.1',
-                                       'selenium-server.jar'
-                                       )
+  if sys.platform == 'linux2':
+    # Selenium 1.0.3 does not work reliably on the Buildbots on Linux:
+    # it fails to print "Started SocketListener on 0.0.0.0:4444".
+    # TODO(mseaborn): Clean up this sorry mess.
+    _DEFAULT_SELENIUM_JAR = os.path.join(
+        _SELENIUM_PATH, 'selenium-server-1.0.1', 'selenium-server.jar')
+  else:
+    # Selenium 1.0.1 does not work with Firefox on Mac OS X 10.6.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=1150
+    _DEFAULT_SELENIUM_JAR = os.path.join(
+        _SELENIUM_PATH, 'selenium-server-1.0.3', 'selenium-server.jar')
 
 
 def RunningOnWindows():
@@ -287,8 +294,7 @@ class LocalFileHTTPServer(threading.Thread):
   """Minimal HTTP server that serves local files.
 
   Members:
-    _http_alive: event to signal that http server is up and running
-    http_port: the TCP port the server is using
+    _port: the TCP port the server is using
   """
 
   def __init__(self, files, port):
@@ -388,8 +394,7 @@ class SeleniumRemoteControl(threading.Thread):
   control it from a script.
 
   Members:
-    _selenium_alive: event to signal that selenium server is up and running
-    selenium_port: the TCP port the server is using
+    _port: the TCP port the server is using
     _process: the subprocess.Popen instance for the server
   """
 
@@ -399,7 +404,6 @@ class SeleniumRemoteControl(threading.Thread):
     logging.info('# creating selenium remote control server')
     logging.info('#' * 60)
 
-    self._alive = threading.Event()
     self._keep_going = True
     self._port = None
 
@@ -432,8 +436,6 @@ class SeleniumRemoteControl(threading.Thread):
       self._process.wait()
     except Exception, err:
       logging.error('problem shutting down selenium server: %s', str(err))
-
-
     self.join()
 
   def BaseUrl(self):
@@ -442,18 +444,20 @@ class SeleniumRemoteControl(threading.Thread):
     return 'http://%s:%s' % ('localhost', self._port)
 
   def GetPort(self):
-    MAX_SECS = 20
+    MAX_SECS = 40
     for i in range(MAX_SECS):
       if self._port == 0:
-        logging.error("could discern port number of selenium server")
+        logging.error("Failed to receive port number of Selenium server")
         KillProcess(self._process, "selenium server")
         sys.exit(-1)
 
       if self._port:
+        logging.info("Received port number of Selenium server "
+                     "within %d seconds", i)
         return self._port
       time.sleep(1)
-    logging.error("could determine selenium rc server port number within %d",
-                  MAX_SECS)
+    logging.error("Failed to receive port number of Selenium server "
+                  "within %d seconds", MAX_SECS)
     KillProcess(self._process, "selenium server")
     sys.exit(-1)
 
