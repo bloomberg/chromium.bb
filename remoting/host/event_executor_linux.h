@@ -5,12 +5,11 @@
 #ifndef REMOTING_HOST_EVENT_EXECUTOR_LINUX_H_
 #define REMOTING_HOST_EVENT_EXECUTOR_LINUX_H_
 
-#include "base/scoped_ptr.h"
+#include <vector>
+
 #include "remoting/host/event_executor.h"
 
 namespace remoting {
-
-class EventExecutorLinuxPimpl;
 
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
@@ -21,8 +20,6 @@ class EventExecutorLinux : public EventExecutor {
   virtual void HandleInputEvent(ChromotingClientMessage* message);
 
  private:
-  scoped_ptr<EventExecutorLinuxPimpl> pimpl_;
-
   DISALLOW_COPY_AND_ASSIGN(EventExecutorLinux);
 };
 
