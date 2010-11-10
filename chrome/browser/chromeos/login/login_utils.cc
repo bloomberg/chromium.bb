@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_init.h"
@@ -60,6 +61,9 @@ const char kAuthSuffix[] = "\n";
 
 // Increase logging level for Guest mode to avoid LOG(INFO) messages in logs.
 const char kGuestModeLoggingLevel[] = "1";
+
+// Format of command line switch.
+const char kSwitchFormatString[] = "--%s=\"%s\"";
 
 }  // namespace
 
@@ -288,11 +292,23 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
     command_line.AppendSwitchASCII(
         switches::kLoginUser,
         UserManager::Get()->logged_in_user().email());
+
     if (start_url.is_valid())
       command_line.AppendArg(start_url.spec());
-    CrosLibrary::Get()->GetLoginLibrary()->RestartJob(
-        getpid(),
-        command_line.command_line_string());
+
+    std::string cmd_line_str = command_line.command_line_string();
+    // Special workaround for the arguments that should be quoted.
+    // Copying switches won't be needed when Guest mode won't need restart
+    // http://crosbug.com/6924
+    if (browser_command_line.HasSwitch(switches::kRegisterPepperPlugins)) {
+      cmd_line_str += base::StringPrintf(
+          kSwitchFormatString,
+          switches::kRegisterPepperPlugins,
+          browser_command_line.GetSwitchValueNative(
+              switches::kRegisterPepperPlugins).c_str());
+    }
+
+    CrosLibrary::Get()->GetLoginLibrary()->RestartJob(getpid(), cmd_line_str);
   }
 }
 
