@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/app_switches.h"
-#include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/path_service.h"
@@ -32,14 +30,6 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Enable warning level logging so that we can see when bad stuff happens.
   command_line->AppendSwitch(switches::kEnableLogging);
   command_line->AppendSwitchASCII(switches::kLoggingLevel, "1");  // warning
-
-  // Force all tests to use OSMesa if they launch the GPU process.
-  command_line->AppendSwitchASCII(switches::kUseGL,
-                                  gfx::kGLImplementationOSMesaName);
-
-  // Mac does not support accelerated compositing with OSMesa.
-  // http://crbug.com/58343
-  command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 }
 
 bool OverrideUserDataDir(const FilePath& user_data_dir) {

@@ -4,6 +4,8 @@
 
 #include "chrome/test/in_process_browser_test.h"
 
+#include "app/app_switches.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -150,6 +152,14 @@ void InProcessBrowserTest::SetUp() {
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
+
+  // Force tests to use OSMesa if they launch the GPU process.
+  command_line->AppendSwitchASCII(switches::kUseGL,
+                                  gfx::kGLImplementationOSMesaName);
+
+  // Mac does not support accelerated compositing with OSMesa. Disable on all
+  // platforms so it is consistent. http://crbug.com/58343
+  command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
 
   // Single-process mode is not set in BrowserMain so it needs to be processed
   // explicitly.

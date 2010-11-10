@@ -12,6 +12,8 @@
 #include <set>
 #include <vector>
 
+#include "app/app_switches.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "app/sql/connection.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -687,6 +689,14 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
 
   // Tell the browser to use a temporary directory just for this test.
   command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir());
+
+  // Force tests to use OSMesa if they launch the GPU process.
+  command_line.AppendSwitchASCII(switches::kUseGL,
+                                 gfx::kGLImplementationOSMesaName);
+
+  // Mac does not support accelerated compositing with OSMesa. Disable on all
+  // platforms so it is consistent. http://crbug.com/58343
+  command_line.AppendSwitch(switches::kDisableAcceleratedCompositing);
 
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
