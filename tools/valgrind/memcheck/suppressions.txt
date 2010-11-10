@@ -3214,13 +3214,21 @@
    fun:CERT_PKIXVerifyCert
 }
 {
-   bug_61753/Leak
+   bug_61753/Leak (a)
    Memcheck:Leak
    ...
    fun:PR_*alloc
    ...
    fun:*nss*
    fun:*Singleton*
+}
+{
+   bug_61753/Leak (b)
+   Memcheck:Leak
+   ...
+   fun:pkix_*
+   ...
+   fun:CERT_PKIXVerifyCert
 }
 {
    bug_61753/Param

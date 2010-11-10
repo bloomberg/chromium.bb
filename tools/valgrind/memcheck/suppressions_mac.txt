@@ -1210,8 +1210,9 @@
    bug_62461i
    Memcheck:Addr4
    ...
-   fun:_ZN3sql10Connection*
+   fun:_ZN3sql*
    fun:_ZN11WebDatabase*
+   ...
    fun:_ZN14WebDataService*
 }
 {
