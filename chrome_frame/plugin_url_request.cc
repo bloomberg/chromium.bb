@@ -4,7 +4,7 @@
 
 #include "chrome_frame/plugin_url_request.h"
 
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/np_browser_functions.h"
 
 PluginUrlRequest::PluginUrlRequest()

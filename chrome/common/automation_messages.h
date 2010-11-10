@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__
-#define CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__
+#ifndef CHROME_COMMON_AUTOMATION_MESSAGES_H__
+#define CHROME_COMMON_AUTOMATION_MESSAGES_H__
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/common/automation_constants.h"
+#include "chrome/common/common_param_traits.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/security_style.h"
-#include "chrome/common/common_param_traits.h"
-#include "chrome/test/automation/automation_constants.h"
 #include "gfx/rect.h"
 #include "net/base/upload_data.h"
-
 
 struct AutomationMsg_Find_Params {
   // Unused value, which exists only for backwards compat.
@@ -548,7 +547,7 @@ struct MiniContextMenuParams {
   GURL frame_url;
 };
 
-// Traits for ContextMenuParams structure to pack/unpack.
+// Traits for MiniContextMenuParams structure to pack/unpack.
 template <>
 struct ParamTraits<MiniContextMenuParams> {
   typedef MiniContextMenuParams param_type;
@@ -639,7 +638,7 @@ struct ParamTraits<AttachExternalTabParams> {
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE \
-    "chrome/test/automation/automation_messages_internal.h"
+    "chrome/common/automation_messages_internal.h"
 #include "ipc/ipc_message_macros.h"
 
-#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__
+#endif  // CHROME_COMMON_AUTOMATION_MESSAGES_H__

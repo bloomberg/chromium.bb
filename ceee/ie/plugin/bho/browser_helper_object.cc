@@ -28,8 +28,8 @@
 #include "ceee/ie/plugin/scripting/script_host.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/automation/automation_constants.h"
 #include "googleurl/src/gurl.h"
 
 #include "broker_lib.h"  // NOLINT

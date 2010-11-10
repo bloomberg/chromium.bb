@@ -66,7 +66,7 @@
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "views/event.h"

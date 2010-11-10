@@ -13,7 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/lock.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "ipc/ipc_message.h"
 
 // A common interface supported by all the browser specific ChromeFrame

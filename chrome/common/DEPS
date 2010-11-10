@@ -17,6 +17,15 @@ include_rules = [
   "+third_party/sqlite",
   "+third_party/zlib",
 
+  # TODO(erg): A previous version of this patch moved everything needed from
+  # tab_contents/ to chrome/common/ but failed on the buildbot (but not locally
+  # or on the trybots). Temporarily add this suppression as I commit what was a
+  # very large patch piecewise, removing it with the final patch that will move
+  # the files again and remove this override.
+  #
+  # (Also: the only thing used from these headers are enums.)
+  "+chrome/browser/tab_contents",
+
   # FIXME - refactor code and remove these dependencies
   "+chrome/installer",
 ]

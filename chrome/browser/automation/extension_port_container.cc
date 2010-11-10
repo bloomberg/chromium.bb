@@ -15,9 +15,9 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/test/automation/automation_messages.h"
 
 // TODO(siggi): Find a more structured way to read and write JSON messages.
 

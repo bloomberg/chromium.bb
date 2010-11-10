@@ -612,7 +612,7 @@ IPC_BEGIN_MESSAGES(Automation)
   //   - int: handle of the tab
   // Response:
   //  - bool: whether the operation was successful.
-  //  - NavigationEntry::PageType: the type of the page currently displayed.
+  //  - PageType: the type of the page currently displayed.
   IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetPageType, int, bool,
                              NavigationEntry::PageType)
 

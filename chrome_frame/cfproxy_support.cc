@@ -8,8 +8,8 @@
 #include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/process_util.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/automation/automation_messages.h"
 #include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/utils.h"  // for IsHeadlessMode();
 

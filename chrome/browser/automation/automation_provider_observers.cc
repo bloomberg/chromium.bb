@@ -35,9 +35,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/page_translated_details.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/test/automation/automation_constants.h"
 #include "gfx/rect.h"
 
 #if defined(OS_CHROMEOS)

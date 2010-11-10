@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "gfx/point.h"
 #include "views/controls/menu/menu_wrapper.h"
 #include "views/view.h"

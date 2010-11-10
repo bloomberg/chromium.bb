@@ -9,9 +9,8 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome/common/json_value_serializer.h"
-#include "chrome/test/automation/automation_constants.h"
-#include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "googleurl/src/gurl.h"
 

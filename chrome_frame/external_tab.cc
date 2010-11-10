@@ -7,7 +7,7 @@
 #include "base/tracked.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
-#include "chrome/test/automation/automation_messages.h"
+#include "chrome/common/automation_messages.h"
 #include "chrome_frame/utils.h"
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);

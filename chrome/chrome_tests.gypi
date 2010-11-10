@@ -7,9 +7,9 @@
     'pyautolib_sources': [
       'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
+      'common/automation_constants.h',
       'common/pref_names.cc',
       'common/pref_names.h',
-      'test/automation/automation_constants.h',
       'test/automation/browser_proxy.cc',
       'test/automation/browser_proxy.h',
       'test/automation/tab_proxy.cc',

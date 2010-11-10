@@ -20,7 +20,7 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/security_style.h"
-#include "chrome/test/automation/automation_constants.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"

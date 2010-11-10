@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/test/automation/automation_constants.h"
+#include "chrome/common/automation_constants.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"

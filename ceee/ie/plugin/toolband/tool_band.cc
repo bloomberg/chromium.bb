@@ -19,8 +19,8 @@
 #include "ceee/ie/common/extension_manifest.h"
 #include "ceee/ie/common/ceee_module_util.h"
 #include "ceee/ie/plugin/bho/tool_band_visibility.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/automation/automation_constants.h"
 #include "chrome_frame/com_message_event.h"
 
 _ATL_FUNC_INFO ToolBand::handler_type_idispatch_ =

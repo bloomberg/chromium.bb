@@ -13,8 +13,8 @@
 #include "base/lock.h"
 #include "base/time.h"         // for base::TimeDelta
 #include "base/file_path.h"
+#include "chrome/common/automation_constants.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/test/automation/automation_constants.h"
 
 enum FindInPageDirection { BACK = 0, FWD = 1 };
 enum FindInPageCase { IGNORE_CASE = 0, CASE_SENSITIVE = 1 };
