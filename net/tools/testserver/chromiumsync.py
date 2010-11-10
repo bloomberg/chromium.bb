@@ -487,6 +487,18 @@ class SyncDataModel(object):
     # batch, even if that item was filtered out.
     return (batch[-1].version, filtered, len(new_changes) - len(batch))
 
+  def _CopyOverImmutableFields(self, entry):
+    """Preserve immutable fields by copying pre-commit state.
+    
+    Args:
+      entry: A sync entity from the client.
+    """
+    if entry.id_string in self._entries:
+      if self._entries[entry.id_string].HasField(
+          'server_defined_unique_tag'):
+        entry.server_defined_unique_tag = (
+            self._entries[entry.id_string].server_defined_unique_tag)
+
   def _CheckVersionForCommit(self, entry):
     """Perform an optimistic concurrency check on the version number.
 
@@ -598,6 +610,8 @@ class SyncDataModel(object):
     # TODO(nick): Implement cycle detection and resolution.
     if not self._CheckParentIdForCommit(entry):
       return None
+
+    self._CopyOverImmutableFields(entry);  
 
     # At this point, the commit is definitely going to happen.
 

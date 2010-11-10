@@ -976,7 +976,13 @@ class SyncManager::SyncInternal
   // Tell the sync engine to start the syncing process.
   void StartSyncing();
 
-  void SetPassphrase(const std::string& passphrase);
+  // Whether or not the Nigori node is encrypted using an explicit passphrase.
+  bool IsUsingExplicitPassphrase();
+
+  // Try to set the current passphrase to |passphrase|, and record whether
+  // it is an explicit passphrase or implicitly using gaia in the Nigori
+  // node.
+  void SetPassphrase(const std::string& passphrase, bool is_explicit);
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
@@ -1173,6 +1179,12 @@ class SyncManager::SyncInternal
   // decryption.  Otherwise, the cryptographer is made ready (is_ready()).
   void BootstrapEncryption(const std::string& restored_key_for_bootstrapping);
 
+  // Helper for migration to new nigori proto to set
+  // 'using_explicit_passphrase' in the NigoriSpecifics.
+  // TODO(tim): Bug 62103.  Remove this after it has been pushed out to dev
+  // channel users.
+  void SetUsingExplicitPassphrasePrefForMigration();
+
   // Checks for server reachabilty and requests a nudge.
   void OnIPAddressChangedImpl();
 
@@ -1297,8 +1309,13 @@ void SyncManager::StartSyncing() {
   data_->StartSyncing();
 }
 
-void SyncManager::SetPassphrase(const std::string& passphrase) {
-  data_->SetPassphrase(passphrase);
+void SyncManager::SetPassphrase(const std::string& passphrase,
+     bool is_explicit) {
+  data_->SetPassphrase(passphrase, is_explicit);
+}
+
+bool SyncManager::IsUsingExplicitPassphrase() {
+  return data_ && data_->IsUsingExplicitPassphrase();
 }
 
 bool SyncManager::RequestPause() {
@@ -1572,8 +1589,21 @@ void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
   }
 }
 
+void SyncManager::SyncInternal::SetUsingExplicitPassphrasePrefForMigration() {
+  WriteTransaction trans(&share_);
+  WriteNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
+    NOTREACHED();
+    return;
+  }
+  sync_pb::NigoriSpecifics specifics(node.GetNigoriSpecifics());
+  specifics.set_using_explicit_passphrase(true);
+  node.SetNigoriSpecifics(specifics);
+}
+
 void SyncManager::SyncInternal::SetPassphrase(
-    const std::string& passphrase) {
+    const std::string& passphrase, bool is_explicit) {
   Cryptographer* cryptographer = dir_manager()->cryptographer();
   KeyParams params = {"localhost", "dummy", passphrase};
   if (cryptographer->has_pending_keys()) {
@@ -1581,6 +1611,13 @@ void SyncManager::SyncInternal::SetPassphrase(
       observer_->OnPassphraseRequired();
       return;
     }
+
+    // TODO(tim): If this is the first time the user has entered a passphrase
+    // since the protocol changed to store passphrase preferences in the cloud,
+    // make sure we update this preference. See bug 62103.
+    if (is_explicit)
+      SetUsingExplicitPassphrasePrefForMigration();
+
     // Nudge the syncer so that passwords updates that were waiting for this
     // passphrase get applied as soon as possible.
     sync_manager_->RequestNudge();
@@ -1592,6 +1629,12 @@ void SyncManager::SyncInternal::SetPassphrase(
       NOTREACHED();
       return;
     }
+
+    // Prevent an implicit SetPassphrase request from changing an explicitly
+    // set passphrase.
+    if (!is_explicit && node.GetNigoriSpecifics().using_explicit_passphrase())
+      return;
+
     cryptographer->AddKey(params);
 
     // TODO(tim): Bug 58231. It would be nice if SetPassphrase didn't require
@@ -1600,6 +1643,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     // safe to defer this work.
     sync_pb::NigoriSpecifics specifics;
     cryptographer->GetKeys(specifics.mutable_encrypted());
+    specifics.set_using_explicit_passphrase(is_explicit);
     node.SetNigoriSpecifics(specifics);
     ReEncryptEverything(&trans);
   }
@@ -1607,6 +1651,18 @@ void SyncManager::SyncInternal::SetPassphrase(
   std::string bootstrap_token;
   cryptographer->GetBootstrapToken(&bootstrap_token);
   observer_->OnPassphraseAccepted(bootstrap_token);
+}
+
+bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
+  ReadTransaction trans(&share_);
+  ReadNode node(&trans);
+  if (!node.InitByTagLookup(kNigoriTag)) {
+    // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
+    NOTREACHED();
+    return false;
+  }
+
+  return node.GetNigoriSpecifics().using_explicit_passphrase();
 }
 
 void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {

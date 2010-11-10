@@ -75,7 +75,6 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       unrecoverable_error_detected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
       token_migrator_(NULL),
-
       clear_server_data_state_(CLEAR_NOT_STARTED) {
   DCHECK(factory);
   DCHECK(profile);
@@ -97,6 +96,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
     sync_service_url_ = GURL(kSyncServerUrl);
   }
 #endif
+
+  tried_implicit_gaia_remove_when_bug_62103_fixed_ = false;
 }
 
 ProfileSyncService::ProfileSyncService()
@@ -365,8 +366,6 @@ void ProfileSyncService::RegisterPreferences() {
       enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
   pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
-  pref_service->RegisterBooleanPref(prefs::kSyncUsingSecondaryPassphrase,
-      false);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -374,7 +373,6 @@ void ProfileSyncService::ClearPreferences() {
   pref_service->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service->ClearPref(prefs::kSyncHasSetupCompleted);
   pref_service->ClearPref(prefs::kEncryptionBootstrapToken);
-  pref_service->ClearPref(prefs::kSyncUsingSecondaryPassphrase);
 
   // TODO(nick): The current behavior does not clear e.g. prefs::kSyncBookmarks.
   // Is that really what we want?
@@ -923,12 +921,9 @@ void ProfileSyncService::GetRegisteredDataTypes(
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kSyncUsingSecondaryPassphrase);
-}
-
-void ProfileSyncService::SetSecondaryPassphrase(const std::string& passphrase) {
-  SetPassphrase(passphrase);
-  profile_->GetPrefs()->SetBoolean(prefs::kSyncUsingSecondaryPassphrase, true);
+  return backend_.get() && backend_->IsUsingExplicitPassphrase() ||
+      (tried_implicit_gaia_remove_when_bug_62103_fixed_ &&
+       observed_passphrase_required_);
 }
 
 bool ProfileSyncService::IsCryptographerReady() const {
@@ -973,11 +968,13 @@ void ProfileSyncService::DeactivateDataType(
     backend_->DeactivateDataType(data_type_controller, change_processor);
 }
 
-void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
+void ProfileSyncService::SetPassphrase(const std::string& passphrase,
+                                       bool is_explicit) {
   if (ShouldPushChanges() || observed_passphrase_required_) {
-    backend_->SetPassphrase(passphrase);
+    backend_->SetPassphrase(passphrase, is_explicit);
   } else {
-    cached_passphrase_ = passphrase;
+    cached_passphrase_.value = passphrase;
+    cached_passphrase_.is_explicit = is_explicit;
   }
 }
 
@@ -1003,10 +1000,11 @@ void ProfileSyncService::Observe(NotificationType type,
         return;
       }
 
-      if (!cached_passphrase_.empty()) {
+      if (!cached_passphrase_.value.empty()) {
         // Don't hold on to the passphrase in raw form longer than needed.
-        SetPassphrase(cached_passphrase_);
-        cached_passphrase_.clear();
+        SetPassphrase(cached_passphrase_.value,
+                      cached_passphrase_.is_explicit);
+        cached_passphrase_ = CachedPassphrase();
       }
 
       // TODO(sync): Less wizard, more toast.
@@ -1021,9 +1019,10 @@ void ProfileSyncService::Observe(NotificationType type,
       DCHECK(backend_->IsNigoriEnabled());
       observed_passphrase_required_ = true;
 
-      if (!cached_passphrase_.empty()) {
-        SetPassphrase(cached_passphrase_);
-        cached_passphrase_.clear();
+      if (!cached_passphrase_.value.empty()) {
+        SetPassphrase(cached_passphrase_.value,
+                      cached_passphrase_.is_explicit);
+        cached_passphrase_ = CachedPassphrase();
         break;
       }
 
@@ -1068,12 +1067,15 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
-      PrefService* prefs = profile_->GetPrefs();
-      if (!prefs->GetBoolean(prefs::kSyncUsingSecondaryPassphrase)) {
-        const GoogleServiceSigninSuccessDetails* successful =
-            (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
-        SetPassphrase(successful->password);
-      }
+      const GoogleServiceSigninSuccessDetails* successful =
+          (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
+      // We pass 'false' to SetPassphrase to denote that this is an implicit
+      // request and shouldn't override an explicit one.  Thus, we either
+      // update the implicit passphrase (idempotent if the passphrase didn't
+      // actually change), or the user has an explicit passphrase set so this
+      // becomes a no-op.
+      tried_implicit_gaia_remove_when_bug_62103_fixed_ = true;
+      SetPassphrase(successful->password, false);
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {

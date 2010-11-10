@@ -68,13 +68,15 @@ static bool GetAuthData(const std::string& json,
   return true;
 }
 
-static bool GetPassphrase(const std::string& json, std::string* passphrase) {
+bool GetPassphrase(const std::string& json, std::string* passphrase,
+                   std::string* mode) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  return result->GetString("passphrase", passphrase);
+  return result->GetString("passphrase", passphrase) &&
+         result->GetString("mode", mode);
 }
 
 static bool GetConfiguration(const std::string& json,
@@ -194,14 +196,15 @@ void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
     return;
 
   std::string passphrase;
-  if (!GetPassphrase(json, &passphrase)) {
+  std::string mode;
+  if (!GetPassphrase(json, &passphrase, &mode)) {
     // Couldn't understand what the page sent.  Indicates a programming error.
     NOTREACHED();
     return;
   }
 
   DCHECK(flow_);
-  flow_->OnPassphraseEntry(passphrase);
+  flow_->OnPassphraseEntry(passphrase, mode);
 }
 
 // Called by SyncSetupFlow::Advance.
@@ -654,6 +657,10 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
   // we need to prompt them to enter one.
   if (configuration.use_secondary_passphrase &&
       !service_->IsUsingSecondaryPassphrase()) {
+    // TODO(tim): If we could download the Nigori node first before any other
+    // types, we could do that prior to showing the configure page so that we
+    // could pre-populate the 'Use an encryption passphrase' checkbox.
+    // http://crbug.com/60182
     Advance(SyncSetupWizard::CREATE_PASSPHRASE);
     return;
   }
@@ -674,8 +681,9 @@ void SyncSetupFlow::OnConfigurationComplete() {
          configuration_.secondary_passphrase.length() > 0);
 
   if (configuration_.use_secondary_passphrase &&
-      !service_->IsUsingSecondaryPassphrase())
-    service_->SetSecondaryPassphrase(configuration_.secondary_passphrase);
+      !service_->IsUsingSecondaryPassphrase()) {
+    service_->SetPassphrase(configuration_.secondary_passphrase, true);
+  }
 
   service_->OnUserChoseDatatypes(configuration_.sync_everything,
                                  configuration_.data_types);
@@ -683,11 +691,13 @@ void SyncSetupFlow::OnConfigurationComplete() {
   configuration_pending_ = false;
 }
 
-void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
+void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase,
+                                      const std::string& mode) {
   if (current_state_ == SyncSetupWizard::ENTER_PASSPHRASE) {
-    service_->SetSecondaryPassphrase(passphrase);
+    service_->SetPassphrase(passphrase, mode == std::string("enter"));
     Advance(SyncSetupWizard::SETTING_UP);
   } else if (configuration_pending_) {
+    DCHECK_EQ(SyncSetupWizard::CREATE_PASSPHRASE, current_state_);
     configuration_.secondary_passphrase = passphrase;
     OnConfigurationComplete();
   }

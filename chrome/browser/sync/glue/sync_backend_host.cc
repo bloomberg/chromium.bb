@@ -158,6 +158,12 @@ bool SyncBackendHost::IsNigoriEnabled() const {
       registrar_.routing_info.end();
 }
 
+bool SyncBackendHost::IsUsingExplicitPassphrase() {
+  return IsNigoriEnabled() && syncapi_initialized_ &&
+      core_->syncapi()->InitialSyncEndedForAllEnabledTypes() &&
+      core_->syncapi()->IsUsingExplicitPassphrase();
+}
+
 bool SyncBackendHost::IsCryptographerReady() const {
   return syncapi_initialized_ &&
       GetUserShareHandle()->dir_manager->cryptographer()->is_ready();
@@ -186,7 +192,8 @@ void SyncBackendHost::StartSyncingWithServer() {
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoStartSyncing));
 }
 
-void SyncBackendHost::SetPassphrase(const std::string& passphrase) {
+void SyncBackendHost::SetPassphrase(const std::string& passphrase,
+                                    bool is_explicit) {
   if (!IsNigoriEnabled()) {
     LOG(WARNING) << "Silently dropping SetPassphrase request.";
     return;
@@ -195,7 +202,7 @@ void SyncBackendHost::SetPassphrase(const std::string& passphrase) {
   // If encryption is enabled and we've got a SetPassphrase
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoSetPassphrase,
-                        passphrase));
+                        passphrase, is_explicit));
 }
 
 void SyncBackendHost::Shutdown(bool sync_disabled) {
@@ -385,6 +392,8 @@ void SyncBackendHost::Core::NotifyPassphraseRequired() {
 
 void SyncBackendHost::Core::NotifyPassphraseAccepted(
     const std::string& bootstrap_token) {
+  if (!host_)
+    return;
   host_->PersistEncryptionBootstrapToken(bootstrap_token);
   NotificationService::current()->Notify(
       NotificationType::SYNC_PASSPHRASE_ACCEPTED,
@@ -393,6 +402,8 @@ void SyncBackendHost::Core::NotifyPassphraseAccepted(
 }
 
 void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
+  if (!host_)
+    return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
   NotificationService::current()->Notify(
@@ -526,9 +537,10 @@ void SyncBackendHost::Core::DoStartSyncing() {
   syncapi_->StartSyncing();
 }
 
-void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase) {
+void SyncBackendHost::Core::DoSetPassphrase(const std::string& passphrase,
+                                            bool is_explicit) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
-  syncapi_->SetPassphrase(passphrase);
+  syncapi_->SetPassphrase(passphrase, is_explicit);
 }
 
 UIModelWorker* SyncBackendHost::ui_worker() {

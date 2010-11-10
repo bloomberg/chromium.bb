@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 
 // The default value for min_timestamp_needed_ when we're not in the
@@ -95,6 +96,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       min_timestamp_needed_(kMinTimestampNeededNone),
       username_(username),
       password_(password),
+      passphrase_acceptance_counter_(0),
       id_(id) {
   if (IsSyncAlreadySetup()) {
     service_ = profile_->GetProfileSyncService();
@@ -130,6 +132,14 @@ bool ProfileSyncServiceHarness::SetupSync() {
     synced_datatypes.insert(syncable::ModelTypeFromInt(i));
   }
   return SetupSync(synced_datatypes);
+}
+
+void ProfileSyncServiceHarness::StartObservingPassphraseAcceptance() {
+  // Prime the counter to account for the implicit set passphrase due to
+  // gaia login.
+  passphrase_acceptance_counter_--;
+  registrar_.Add(this, NotificationType::SYNC_PASSPHRASE_ACCEPTED,
+      Source<browser_sync::SyncBackendHost>(service_->backend()));
 }
 
 bool ProfileSyncServiceHarness::SetupSync(
@@ -198,6 +208,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       if (service()->sync_initialized()) {
         // The sync backend is initialized. Start waiting for the first sync
         // cycle to complete.
+        StartObservingPassphraseAcceptance();
         SignalStateCompleteWithNextState(WAITING_FOR_INITIAL_SYNC);
       }
       break;
@@ -251,7 +262,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     }
     case WAITING_FOR_PASSPHRASE_ACCEPTED: {
       LogClientInfo("WAITING_FOR_PASSPHRASE_ACCEPTED");
-      if (!service()->observed_passphrase_required())
+      if (passphrase_acceptance_counter_ >= 0)
         SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
@@ -278,11 +289,19 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
     LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
     return false;
   }
-  if (!service()->observed_passphrase_required())
+  passphrase_acceptance_counter_--;
+  if (passphrase_acceptance_counter_ >= 0)
     return true;
   wait_state_ = WAITING_FOR_PASSPHRASE_ACCEPTED;
   return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs,
                                       "Waiting for passphrase accepted.");
+}
+
+void ProfileSyncServiceHarness::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK_EQ(NotificationType::SYNC_PASSPHRASE_ACCEPTED, type.value);
+  passphrase_acceptance_counter_++;
+  RunStateChangeMachine();
 }
 
 bool ProfileSyncServiceHarness::AwaitSyncCycleCompletion(
@@ -412,6 +431,7 @@ bool ProfileSyncServiceHarness::IsSynced() {
   // TODO(rsimha): Remove additional checks of snap->has_more_to_sync and
   // snap->unsynced_count once http://crbug.com/48989 is fixed.
   return (snap &&
+          snap->num_conflicting_updates == 0 &&  // We can decrypt everything.
           ServiceIsPushingChanges() &&
           GetStatus().notifications_enabled &&
           !service()->backend()->HasUnsyncedItems() &&

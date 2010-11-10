@@ -198,7 +198,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
                 NotificationType(NotificationType::SYNC_CONFIGURE_DONE),
                     _,_)).
             WillOnce(QuitUIMessageLoop());
-        service_->SetPassphrase("foo");
+        service_->SetPassphrase("foo", false);
         MessageLoop::current()->Run();
       }
     }

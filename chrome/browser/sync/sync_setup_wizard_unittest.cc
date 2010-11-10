@@ -59,7 +59,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     user_cancelled_dialog_ = true;
   }
 
-  virtual void SetSecondaryPassphrase(const std::string& passphrase) {
+  virtual void SetPassphrase(const std::string& passphrase,
+                             bool is_explicit) {
     passphrase_ = passphrase;
   }
 
@@ -352,7 +353,8 @@ TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
   EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
             test_window_->flow()->current_state_);
   ListValue value;
-  value.Append(new StringValue("{\"passphrase\":\"myPassphrase\"}"));
+  value.Append(new StringValue("{\"passphrase\":\"myPassphrase\","
+                                "\"mode\":\"gaia\"}"));
   test_window_->flow()->flow_handler_->HandlePassphraseEntry(&value);
   EXPECT_EQ("myPassphrase", service_->passphrase_);
 }

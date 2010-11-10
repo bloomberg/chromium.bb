@@ -115,7 +115,8 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   void OnUserConfigured(const SyncConfiguration& configuration);
 
-  void OnPassphraseEntry(const std::string& passphrase);
+  void OnPassphraseEntry(const std::string& passphrase,
+                         const std::string& mode);
 
   void OnConfigurationComplete();
 

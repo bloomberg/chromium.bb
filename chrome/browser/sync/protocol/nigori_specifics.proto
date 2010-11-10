@@ -28,6 +28,9 @@ message NigoriKeyBag {
 // Properties of nigori sync object.
 message NigoriSpecifics {
   optional EncryptedData encrypted = 1;
+  // True if |encrypted| is encrypted using a passphrase
+  // explicitly set by the user.
+  optional bool using_explicit_passphrase = 2;
 }
 
 extend EntitySpecifics {

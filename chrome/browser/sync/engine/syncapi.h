@@ -815,7 +815,11 @@ class SyncManager {
   // If the passphrase in invalid, OnPassphraseRequired will be fired.
   // Calling this metdod again is the appropriate course of action to "retry"
   // with a new passphrase.
-  void SetPassphrase(const std::string& passphrase);
+  // |is_explicit| is true if the call is in response to the user explicitly
+  // setting a passphrase as opposed to implicitly (from the users' perspective)
+  // using their Google Account password.  An implicit SetPassphrase will *not*
+  // *not* override an explicit passphrase set previously.
+  void SetPassphrase(const std::string& passphrase, bool is_explicit);
 
   // Requests the syncer thread to pause.  The observer's OnPause
   // method will be called when the syncer thread is paused.  Returns
@@ -851,6 +855,9 @@ class SyncManager {
   // the internals of the sync engine.
   Status::Summary GetStatusSummary() const;
   Status GetDetailedStatus() const;
+
+  // Whether or not the Nigori node is encrypted using an explicit passphrase.
+  bool IsUsingExplicitPassphrase();
 
   // Get the internal implementation for use by BaseTransaction, etc.
   SyncInternal* GetImpl() const;

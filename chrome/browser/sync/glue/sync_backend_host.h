@@ -124,7 +124,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual void StartSyncingWithServer();
 
   // Called on |frontend_loop_| to asynchronously set the passphrase.
-  void SetPassphrase(const std::string& passphrase);
+  // |is_explicit| is true if the call is in response to the user explicitly
+  // setting a passphrase as opposed to implicitly (from the users' perspective)
+  // using their Google Account password.  An implicit SetPassphrase will *not*
+  // *not* override an explicit passphrase set previously.
+  void SetPassphrase(const std::string& passphrase, bool is_explicit);
 
   // Called on |frontend_loop_| to kick off shutdown.
   // |sync_disabled| indicates if syncing is being disabled or not.
@@ -193,6 +197,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Whether or not we are syncing encryption keys.
   bool IsNigoriEnabled() const;
+
+  // Whether or not the Nigori node is encrypted using an explicit passphrase.
+  bool IsUsingExplicitPassphrase();
 
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
@@ -282,7 +289,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     // Called on our SyncBackendHost's |core_thread_| to set the passphrase
     // on behalf of SyncBackendHost::SupplyPassphrase.
-    void DoSetPassphrase(const std::string& passphrase);
+    void DoSetPassphrase(const std::string& passphrase, bool is_explicit);
 
     // The shutdown order is a bit complicated:
     // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final

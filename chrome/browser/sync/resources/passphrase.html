@@ -53,7 +53,7 @@ html[os='mac'] input[type='submit'] {
 </style>
 <script src="chrome://resources/js/cr.js"></script>
 <script>
-  var currentTab;
+  var currentMode;
 
   // Called once, when this html/js is loaded.
   function setupPassphraseDialog(args) {
@@ -88,7 +88,8 @@ html[os='mac'] input[type='submit'] {
 
   function sendPassphraseAndClose() {
     var f = document.getElementById("passphraseForm");
-    var result = JSON.stringify({"passphrase": f.passphrase.value});
+    var result = JSON.stringify({"passphrase": f.passphrase.value,
+                                 "mode": currentMode});
     chrome.send("Passphrase", [result]);
   }
 </script>
