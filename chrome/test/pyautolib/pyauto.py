@@ -1638,7 +1638,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         converted_arg = str(arg)
       converted_args += [converted_arg]
     js = '%s(%s)' % (function, ', '.join(converted_args))
-    logging.debug('Executing javascript: ', js)
+    logging.debug('Executing javascript: %s', js)
     return self.ExecuteJavascript(js, windex, tab_index)
 
   def SignInToSync(self, username, password):
