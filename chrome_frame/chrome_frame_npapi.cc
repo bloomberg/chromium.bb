@@ -882,8 +882,12 @@ void ChromeFrameNPAPI::OnAutomationServerLaunchFailed(
     AutomationLaunchResult reason, const std::string& server_version) {
   SetReadyState(READYSTATE_UNINITIALIZED);
 
-  // Do not display warnings for privileged instances of Chrome Frame.
-  if (reason == AUTOMATION_VERSION_MISMATCH && !is_privileged_) {
+  // In IE, we don't display warnings for privileged CF instances because
+  // there are 2 CFs created for each tab (so we decide on the CEEE side
+  // whether to show a warning). In FF however, there is only one privileged
+  // CF instance per Firefox window, so OK to show the warning there without
+  // any further logic.
+  if (reason == AUTOMATION_VERSION_MISMATCH) {
     THREAD_SAFE_UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }

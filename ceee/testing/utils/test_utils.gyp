@@ -54,7 +54,6 @@
         'mshtml_mocks.h',
         'mshtml_mocks.py',
         'com_mock.py',
-        '<(SHARED_INTERMEDIATE_DIR)/mshtml_mocks.gen',
       ],
       'actions': [
         {

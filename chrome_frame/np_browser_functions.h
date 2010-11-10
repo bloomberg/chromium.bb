@@ -233,6 +233,38 @@ class ScopedNpObject {
     return npo_;
   }
 
+  bool Invoke0(NPP npp, NPIdentifier id, NPVariant* result) {
+    return npapi::Invoke(npp, npo_, id, NULL, 0, result);
+  }
+  bool Invoke0(NPP npp, const NPUTF8* name, NPVariant* result) {
+    return Invoke0(npp, npapi::GetStringIdentifier(name), result);
+  }
+
+  bool Invoke1(NPP npp, NPIdentifier id, const NPVariant &arg1,
+               NPVariant* result) {
+    return npapi::Invoke(npp, npo_, id, &arg1, 1, result);
+  }
+  bool Invoke1(NPP npp, const NPUTF8* name, const NPVariant &arg1,
+               NPVariant* result) {
+    return Invoke1(npp, npapi::GetStringIdentifier(name), arg1, result);
+  }
+  bool InvokeN(NPP npp, NPIdentifier id, const NPVariant* args, unsigned argc,
+               NPVariant* result) {
+    return npapi::Invoke(npp, npo_, id, args, argc, result);
+  }
+  bool InvokeN(NPP npp, const NPUTF8* name, const NPVariant* args,
+               unsigned argc, NPVariant* result) {
+    return Invoke1(npp, npapi::GetStringIdentifier(name), args, argc, result);
+  }
+
+  bool GetProperty(NPP npp, NPIdentifier id, NPVariant* result) {
+    return npapi::GetProperty(npp, npo_, id, result);
+  }
+
+  bool GetProperty(NPP npp, const NPUTF8* name, NPVariant* result) {
+    return GetProperty(npp, npapi::GetStringIdentifier(name), result);
+  }
+
  private:
   NpoType* npo_;
   DISALLOW_COPY_AND_ASSIGN(ScopedNpObject);

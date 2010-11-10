@@ -140,6 +140,7 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   STDMETHOD(GetChromeExtraArguments)(BSTR *args);
   STDMETHOD(GetChromeProfileName)(BSTR *args);
   STDMETHOD(GetExtensionApisToAutomate)(BSTR *args);
+  STDMETHOD(ShouldShowVersionMismatchDialog)();
   // @}
 
 

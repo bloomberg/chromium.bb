@@ -22,6 +22,13 @@
 
 namespace testing {
 
+class IOleClientSiteMockImpl : public IOleClientSite {
+  // The methods in this class are code generated using this command line:
+  // [ ceee\testing\utils\com_mock.py IOleClientSite \
+  //   "%WindowsSdkDir%\Include\OleIdl.h" ]
+#include "ceee/testing/utils/mock_ioleclientsite.gen"
+};
+
 class IOleObjecMockImpl: public IOleObject {
  public:
   // The methods in this class are code generated using this command line:
@@ -139,7 +146,7 @@ class ITravelLogStgMockImpl : public ITravelLogStg {
 class MockIServiceProvider
     : public CComObjectRootEx<CComSingleThreadModel>,
       public testing::StrictMock<IServiceProviderMockImpl> {
-  DECLARE_NOT_AGGREGATABLE(MockIServiceProvider )
+  DECLARE_NOT_AGGREGATABLE(MockIServiceProvider)
   BEGIN_COM_MAP(MockIServiceProvider)
     COM_INTERFACE_ENTRY(IServiceProvider)
   END_COM_MAP()

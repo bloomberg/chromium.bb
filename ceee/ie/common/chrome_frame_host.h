@@ -143,6 +143,7 @@ class ATL_NO_VTABLE ChromeFrameHost
   STDMETHOD(GetChromeExtraArguments)(BSTR* args);
   STDMETHOD(GetChromeProfileName)(BSTR* args);
   STDMETHOD(GetExtensionApisToAutomate)(BSTR* functions_enabled);
+  STDMETHOD(ShouldShowVersionMismatchDialog)();
   // @}
 
   // @name ChromeFrame event handlers

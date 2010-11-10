@@ -105,6 +105,10 @@ END_MSG_MAP()
       const std::vector<FilePath>& extension_directories);
   virtual void OnChannelError();
 
+  // Separated to static function for unit testing this logic more easily.
+  static bool ShouldShowVersionMismatchDialog(bool is_privileged,
+                                              IOleClientSite* client_site);
+
  private:
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                    BOOL& handled);  // NO_LINT

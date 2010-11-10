@@ -27,7 +27,7 @@
       '<(xul_sdk_dir)/include/string',
       '<(xul_sdk_dir)/include/xpcom',
       '<(xul_sdk_dir)/include/xpconnect',
-    ],  
+    ],
     'conditions': [
       ['OS=="win"', {
         'python': [
@@ -88,18 +88,73 @@
       ],
     },
     {
+      # Builds our IDL file to the shared intermediate directory.
+      'target_name': 'chrome_tab_idl',
+      'type': 'none',
+      'msvs_settings': {
+        'VCMIDLTool': {
+          'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)',
+        },
+      },
+      'sources': [
+        'chrome_tab.idl',
+      ],
+      # Add the output dir for those who depend on us.
+      'direct_dependent_settings': {
+        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      },
+    },
+    {
+      'target_name': 'chrome_frame_privileged_mock',
+      'type': 'none',
+      'dependencies': [
+        'chrome_tab_idl',
+      ],
+      'sources': [
+        '../ceee/testing/utils/com_mock.py',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
+      ],
+      'actions': [
+        {
+          'action_name': 'make_chrome_frame_privileged_mock',
+          'msvs_cygwin_shell': 0,
+          'msvs_quote_cmd': 0,
+          'inputs': [
+            '../ceee/testing/utils/com_mock.py',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/mock_ichromeframeprivileged.gen',
+          ],
+          'action': [
+            '<@(python)',
+            '../ceee/testing/utils/com_mock.py',
+            'IChromeFramePrivileged',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_tab.h',
+            '> "<(SHARED_INTERMEDIATE_DIR)/mock_ichromeframeprivileged.gen"',
+          ],
+        },
+      ],
+      # All who use this need to be able to find the .gen file we generate.
+      'all_dependent_settings': {
+        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      },
+    },
+    {
       'target_name': 'chrome_frame_unittests',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
+        '../ceee/ie/common/common.gyp:ie_common',
+        '../ceee/testing/utils/test_utils.gyp:test_utils',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'chrome_frame_ie',
+        'chrome_frame_privileged_mock',
         'chrome_frame_strings',
+        'chrome_tab_idl',
       ],
       'sources': [
         'chrome_tab.h',
-        'chrome_tab.idl',
         'chrome_frame_histograms.h',
         'chrome_frame_histograms.cc',
         'chrome_frame_unittest_main.cc',
@@ -108,6 +163,8 @@
         'chrome_launcher_unittest.cc',
         'function_stub_unittest.cc',
         'renderer_glue.cc',
+        'test/chrome_frame_activex_unittest.cc',
+        'test/chrome_tab_mocks.h',
         'test/chrome_frame_test_utils.h',
         'test/chrome_frame_test_utils.cc',
         'test/com_message_event_unittest.cc',
@@ -128,10 +185,6 @@
         'urlmon_upload_data_stream.cc',
         'urlmon_upload_data_stream_unittest.cc',
         'vtable_patch_manager_unittest.cc',
-      ],
-      'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -162,7 +215,7 @@
                 '../chrome/chrome.gyp:automation',
               ],
             }],
-          ],        
+          ],
         }],
         ['OS=="win"', {
           'link_settings': {
@@ -214,6 +267,7 @@
         'chrome_frame_npapi',
         'chrome_frame_strings',
         'chrome_frame_utils',
+        'chrome_tab_idl',
         'npchrome_frame',
         'xulrunner_sdk',
       ],
@@ -258,15 +312,12 @@
         'test/win_event_receiver.h',
         'chrome_launcher_version.rc',
         'chrome_tab.h',
-        'chrome_tab.idl',
         'test_utils.cc',
         'test_utils.h',
       ],
       'include_dirs': [
         '<@(xul_include_directories)',
         '<(DEPTH)/third_party/wtl/include',
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -330,6 +381,7 @@
         'chrome_frame_npapi',
         'chrome_frame_strings',
         'chrome_frame_utils',
+        'chrome_tab_idl',
         'npchrome_frame',
         'xulrunner_sdk',
       ],
@@ -341,7 +393,6 @@
         '../chrome/test/chrome_process_util.h',
         '../chrome/test/ui/ui_test.cc',
         'chrome_tab.h',
-        'chrome_tab.idl',
         'test/chrome_frame_test_utils.cc',
         'test/chrome_frame_test_utils.h',
         'test/perf/chrome_frame_perftest.cc',
@@ -358,8 +409,6 @@
       'include_dirs': [
         '<@(xul_include_directories)',
         '<(DEPTH)/third_party/wtl/include',
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -409,6 +458,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         'chrome_frame_npapi',
         'chrome_frame_ie',
+        'chrome_tab_idl',
         'npchrome_frame',
       ],
       'sources': [
@@ -431,11 +481,6 @@
         'test/net/test_automation_resource_message_filter.cc',
         'test/net/test_automation_resource_message_filter.h',
         'chrome_tab.h',
-        'chrome_tab.idl',
-      ],
-      'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -486,6 +531,7 @@
         'chrome_frame_ie',
         'chrome_frame_npapi',
         'chrome_frame_strings',
+        'chrome_tab_idl',
       ],
       'sources': [
         'test/reliability/run_all_unittests.cc',
@@ -503,17 +549,12 @@
         'test/win_event_receiver.cc',
         'test/win_event_receiver.h',
         'chrome_tab.h',
-        'chrome_tab.idl',
         '../base/test/test_file_util_win.cc',
         '../chrome/test/ui/ui_test.cc',
         '../chrome/test/ui/ui_test_suite.cc',
         '../chrome/test/ui/ui_test_suite.h',
         '../chrome/test/chrome_process_util.cc',
         '../chrome/test/chrome_process_util.h',
-      ],
-      'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
       ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -543,12 +584,23 @@
         }],
       ],
     },
-
+    {
+      'target_name': 'chrome_frame_npapi_core',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'np_browser_functions.cc',
+        'np_browser_functions.h',
+      ],
+    },
     {
       'target_name': 'chrome_frame_npapi',
       'type': 'static_library',
       'dependencies': [
         'chrome_frame_common',
+        'chrome_frame_npapi_core',
         'chrome_frame_strings',
         'chrome_frame_utils',
         '../chrome/chrome.gyp:common',
@@ -559,8 +611,6 @@
         'chrome_frame_npapi.h',
         'ff_30_privilege_check.cc',
         'ff_privilege_check.h',
-        'np_browser_functions.cc',
-        'np_browser_functions.h',
         'np_event_listener.cc',
         'np_event_listener.h',
         'np_proxy_service.cc',
@@ -591,7 +641,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/grit/<(RULE_INPUT_ROOT).h',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/<(RULE_INPUT_ROOT).pak',
           ],
-          'action': ['python', '<@(_inputs)', '-i', 
+          'action': ['python', '<@(_inputs)', '-i',
             '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)'
           ],
@@ -624,7 +674,7 @@
         '../chrome/chrome.gyp:chrome_version_header',
       ],
       'include_dirs': [
-        # To allow including "chrome_tab.h"
+        # To allow including "version.h"
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'sources': [
@@ -641,6 +691,7 @@
         'chrome_frame_common',
         'chrome_frame_strings',
         'chrome_frame_utils',
+        'chrome_tab_idl',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -671,7 +722,6 @@
         'chrome_protocol.h',
         'chrome_protocol.rgs',
         'chrome_tab.h',
-        'chrome_tab.idl',
         'com_message_event.cc',
         'com_message_event.h',
         'com_type_info_holder.cc',
@@ -719,8 +769,6 @@
         'vtable_patch_manager.h',
       ],
       'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/../chrome_frame',
         '<(DEPTH)/third_party/wtl/include',
       ],
@@ -808,6 +856,7 @@
         'chrome_frame_npapi',
         'chrome_frame_strings',
         'chrome_frame_utils',
+        'chrome_tab_idl',
         'xulrunner_sdk',
         'chrome_frame_launcher.gyp:chrome_launcher',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -828,7 +877,6 @@
         'chrome_tab.cc',
         'chrome_tab.def',
         'chrome_tab.h',
-        'chrome_tab.idl',
         # FIXME(slightlyoff): For chrome_tab.tlb. Giant hack until we can
         #   figure out something more gyp-ish.
         'resources/tlb_resource.rc',
@@ -838,8 +886,6 @@
         'resource.h',
       ],
       'include_dirs': [
-        # To allow including "chrome_tab.h"
-        '<(INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/../npchrome_frame',
       ],
       'conditions': [
@@ -936,7 +982,7 @@
             # TODO(mad): FIX THIS!
             #'chrome_frame_net_tests',
             #'chrome_frame_reliability_tests',
-            
+
             # Other tests depend on Chrome bins being available when they run.
             # Those should be re-enabled as soon as we setup the build slave to
             # also build (or download an archive of) Chrome, even it it isn't

@@ -95,7 +95,7 @@ interface IChromeFrameInternal : IUnknown {
 
 [
   object,
-  uuid(655A11E0-EF63-4fbe-9DF6-C182D2FCD6DC),
+  uuid(8AD52429-3CE0-4883-BC69-2DFA055D20D4),
   oleautomation,
   nonextensible,
   hidden,
@@ -113,6 +113,10 @@ interface IChromeFramePrivileged : IUnknown {
   // Return S_FALSE to leave the default, which is to not automate any 
   // functions.
   HRESULT GetExtensionApisToAutomate([out] BSTR *extension_apis);
+  // Called when an automation version mismatch occurs. Returns S_OK if
+  // a dialog should be showed to the user by this CF instance, S_FALSE if
+  // not.
+  HRESULT ShouldShowVersionMismatchDialog();
 };
 
 // Expose this service to the ChromeFrame control to trigger privileged

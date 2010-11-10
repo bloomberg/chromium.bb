@@ -64,6 +64,11 @@ STDMETHODIMP InfobarBrowserWindow::GetExtensionApisToAutomate(
   return S_FALSE;
 }
 
+STDMETHODIMP InfobarBrowserWindow::ShouldShowVersionMismatchDialog() {
+  // Only our toolband allows the notification dialog to be shown.
+  return S_FALSE;
+}
+
 STDMETHODIMP_(void) InfobarBrowserWindow::OnCfReadyStateChanged(LONG state) {
   if (state == READYSTATE_COMPLETE) {
     // We already loaded the extension, enable them in this CF.

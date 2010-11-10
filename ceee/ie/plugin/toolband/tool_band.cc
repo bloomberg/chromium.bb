@@ -234,6 +234,12 @@ STDMETHODIMP ToolBand::GetExtensionApisToAutomate(BSTR* functions_enabled) {
   return S_FALSE;
 }
 
+STDMETHODIMP ToolBand::ShouldShowVersionMismatchDialog() {
+  // Only the toolband shows the warning dialog, meaning it gets shown once
+  // per tab.
+  return S_OK;
+}
+
 HRESULT ToolBand::Initialize(IUnknown* site) {
   TRACE_EVENT_INSTANT("ceee.toolband.initialize", this, "");
 

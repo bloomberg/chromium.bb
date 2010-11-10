@@ -246,13 +246,35 @@ void ChromeFrameActivex::OnMessageFromChromeFrame(int tab_handle,
   }
 }
 
+bool ChromeFrameActivex::ShouldShowVersionMismatchDialog(
+    bool is_privileged,
+    IOleClientSite* client_site) {
+  if (!is_privileged) {
+    return true;
+  }
+
+  if (client_site) {
+    ScopedComPtr<IChromeFramePrivileged> service;
+    HRESULT hr = DoQueryService(SID_ChromeFramePrivileged,
+                                client_site,
+                                service.Receive());
+    if (SUCCEEDED(hr) && service) {
+      return (S_FALSE != service->ShouldShowVersionMismatchDialog());
+    }
+  }
+
+  NOTREACHED();
+  return true;
+}
+
 void ChromeFrameActivex::OnAutomationServerLaunchFailed(
     AutomationLaunchResult reason, const std::string& server_version) {
   Base::OnAutomationServerLaunchFailed(reason, server_version);
 
-  // Do not display warnings for privileged instances of Chrome Frame.
-  if (reason == AUTOMATION_VERSION_MISMATCH && !is_privileged_) {
-    THREAD_SAFE_UMA_HISTOGRAM_COUNTS("ChromeFrame.VersionMismatchDisplayed", 1);
+  if (reason == AUTOMATION_VERSION_MISMATCH &&
+      ShouldShowVersionMismatchDialog(is_privileged_, m_spClientSite)) {
+    THREAD_SAFE_UMA_HISTOGRAM_COUNTS(
+        "ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
   }
 }

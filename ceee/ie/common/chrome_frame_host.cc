@@ -107,6 +107,11 @@ STDMETHODIMP ChromeFrameHost::GetExtensionApisToAutomate(
   return hr;
 }
 
+STDMETHODIMP ChromeFrameHost::ShouldShowVersionMismatchDialog() {
+  // Only our toolband allows the notification dialog to be shown.
+  return S_FALSE;
+}
+
 HRESULT ChromeFrameHost::Initialize() {
   return S_OK;
 }

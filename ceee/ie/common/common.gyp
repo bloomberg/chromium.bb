@@ -33,7 +33,7 @@
       'dependencies': [
         'ie_common_settings',
         '../plugin/toolband/toolband.gyp:toolband_idl',
-        '../plugin/toolband/toolband.gyp:chrome_tab_idl',
+        '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
       ],
       'sources': [
         'ie_guids.cc',
@@ -54,7 +54,7 @@
         '../../../ceee/common/common.gyp:initializing_coclass',
         '../../../ceee/common/common.gyp:ceee_common',
         '../../../ceee/testing/utils/test_utils.gyp:test_utils',
-        '../plugin/toolband/toolband.gyp:chrome_tab_idl',
+        '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         '../plugin/toolband/toolband.gyp:toolband_idl',
       ],
       'sources': [

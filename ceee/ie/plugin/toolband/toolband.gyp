@@ -11,28 +11,10 @@
   ],
   'targets': [
     {
-      # This target builds Chrome Frame's IDL file to our
-      # shared intermediate directory
-      'target_name': 'chrome_tab_idl',
-      'type': 'none',
-      'msvs_settings': {
-        'VCMIDLTool': {
-          'OutputDirectory': '<(SHARED_INTERMEDIATE_DIR)',
-        },
-      },
-      'sources': [
-        '../../../../chrome_frame/chrome_tab.idl',
-      ],
-      # Add the output dir for those who depend on us.
-      'direct_dependent_settings': {
-        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
-      },
-    },
-    {
       'target_name': 'ceee_ie_lib',
       'type': 'static_library',
       'dependencies': [
-        'chrome_tab_idl',
+        '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
         '../../common/common.gyp:ie_common_settings',
         '../../../../base/base.gyp:base',
         '../../../../ceee/common/common.gyp:ceee_common',

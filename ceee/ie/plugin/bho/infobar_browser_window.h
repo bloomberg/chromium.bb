@@ -105,6 +105,7 @@ class ATL_NO_VTABLE InfobarBrowserWindow
   STDMETHOD(GetChromeExtraArguments)(BSTR *args);
   STDMETHOD(GetChromeProfileName)(BSTR *args);
   STDMETHOD(GetExtensionApisToAutomate)(BSTR *args);
+  STDMETHOD(ShouldShowVersionMismatchDialog)();
   // @}
 
   // @name ChromeFrame event handlers.

@@ -62,8 +62,6 @@
         'initializing_coclass.h',
         'install_utils.cc',
         'install_utils.h',
-        'np_browser_functions.cc',
-        'np_browser_functions.h',
         'npobject_impl.cc',
         'npobject_impl.h',
         'npplugin_impl.cc',
