@@ -921,9 +921,9 @@ void ProfileSyncService::GetRegisteredDataTypes(
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
-  return backend_.get() && backend_->IsUsingExplicitPassphrase() ||
+  return backend_.get() && (backend_->IsUsingExplicitPassphrase() ||
       (tried_implicit_gaia_remove_when_bug_62103_fixed_ &&
-       observed_passphrase_required_);
+       observed_passphrase_required_));
 }
 
 bool ProfileSyncService::IsCryptographerReady() const {
