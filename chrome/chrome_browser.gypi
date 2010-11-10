@@ -3028,6 +3028,7 @@
         'browser/ui/views/collected_cookies_win.h',
         'browser/ui/views/confirm_message_box_dialog.cc',
         'browser/ui/views/confirm_message_box_dialog.h',
+        'browser/ui/views/constrained_html_delegate_gtk.cc',
         'browser/ui/views/constrained_html_delegate_win.cc',
         'browser/ui/views/constrained_window_win.cc',
         'browser/ui/views/constrained_window_win.h',
@@ -3798,6 +3799,7 @@
                 ['include', '^browser/ui/views/chrome_views_delegate.cc'],
                 ['include', '^browser/ui/views/clear_browsing_data.cc'],
                 ['include', '^browser/ui/views/clear_browsing_data.h'],
+                ['include', '^browser/ui/views/constrained_html_delegate_gtk.cc'],
                 ['include', '^browser/ui/views/content_setting_bubble_contents.cc'],
                 ['include', '^browser/ui/views/content_setting_bubble_contents.h'],
                 ['include', '^browser/ui/views/create_application_shortcut_view.cc'],
@@ -4240,7 +4242,7 @@
     {
       # Protobuf compiler / generate rule for google apps policy
       # TODO(danno): This rule shares a lot with the user feedback proto rule
-      # and probably should be generalized to handle both 
+      # and probably should be generalized to handle both
       'target_name': 'device_management_backend_proto',
       'type': 'none',
       'sources': [

@@ -45,7 +45,11 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
     gtk_widget_modify_bg(ebox, GTK_STATE_NORMAL, &background);
   }
 
-  gtk_container_add(GTK_CONTAINER(alignment), dialog);
+  if (gtk_widget_get_parent(dialog))
+    gtk_widget_reparent(dialog, alignment);
+  else
+    gtk_container_add(GTK_CONTAINER(alignment), dialog);
+
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(ebox), frame);
   border_.Own(ebox);
