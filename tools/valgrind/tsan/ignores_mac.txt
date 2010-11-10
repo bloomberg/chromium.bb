@@ -19,6 +19,16 @@ fun_r:*SensitiveAllocator*free*
 # TODO(glider): replace all the CoreFoundation suppressions with ignores.
 fun_r:CFBag*
 fun_r:CFDictionary*
+fun_r:CFBasicDictionary*
+#fun_r:CFBasicHash*
 
 # see crbug.com/46138
 fun_r:__CFRunLoopDeallocate
+
+fun_r:__CFRunLoopRemoveAllSources
+fun_r:__CFFinalizeRunLoop
+
+# _cthread_fork_child() is called in the child process after the fork syscall.
+# This function cleans up the cthread data structures created in the parent,
+# so ThreadSanitizer might consider it racey.
+fun_r:_cthread_fork_child
