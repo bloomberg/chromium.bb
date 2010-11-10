@@ -673,14 +673,10 @@ def GetEmulator(env):
   return emulator
 
 
-# TODO(robertm): the validators for x86/arm should be named better
 def GetValidator(env, validator):
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:
     return None
-
-  # TODO(robertm): fix this soon
-  if env['BUILD_SUBARCH'] == '64': return None
 
   if validator is None:
     if env['BUILD_ARCHITECTURE'] == 'arm':
