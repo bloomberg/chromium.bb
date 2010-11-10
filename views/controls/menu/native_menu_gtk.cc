@@ -242,7 +242,7 @@ bool NativeMenuGtk::Dispatch(GdkEvent* event) {
     case GDK_BUTTON_PRESS:
     case GDK_2BUTTON_PRESS:
     case GDK_3BUTTON_PRESS: {
-      ignore_button_release_ = true;
+      ignore_button_release_ = false;
       gpointer data = NULL;
       gdk_window_get_user_data(((GdkEventAny*)event)->window, &data);
       GtkWidget* widget = reinterpret_cast<GtkWidget*>(data);
