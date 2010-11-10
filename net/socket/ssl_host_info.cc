@@ -24,8 +24,9 @@ SSLHostInfo::State::~State() {}
 SSLHostInfo::SSLHostInfo(
     const std::string& hostname,
     const SSLConfig& ssl_config)
-    : hostname_(hostname),
-      cert_verification_complete_(false),
+    : cert_verification_complete_(false),
+      cert_verification_error_(ERR_CERT_INVALID),
+      hostname_(hostname),
       cert_parsing_failed_(false),
       cert_verification_callback_(NULL),
       rev_checking_enabled_(ssl_config.rev_checking_enabled),
@@ -149,7 +150,7 @@ const CertVerifyResult& SSLHostInfo::cert_verify_result() const {
 
 int SSLHostInfo::WaitForCertVerification(CompletionCallback* callback) {
   if (cert_verification_complete_)
-    return cert_verification_result_;
+    return cert_verification_error_;
   DCHECK(!cert_parsing_failed_);
   DCHECK(!cert_verification_callback_);
   DCHECK(!state_.certs.empty());
@@ -164,7 +165,7 @@ void SSLHostInfo::VerifyCallback(int rv) {
   UMA_HISTOGRAM_TIMES("Net.SSLHostInfoVerificationTimeMs", duration);
   VLOG(1) << "Verification took " << duration.InMilliseconds() << "ms";
   cert_verification_complete_ = true;
-  cert_verification_result_ = rv;
+  cert_verification_error_ = rv;
   if (cert_verification_callback_) {
     CompletionCallback* callback = cert_verification_callback_;
     cert_verification_callback_ = NULL;

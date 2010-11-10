@@ -101,6 +101,8 @@ class SSLHostInfo {
   bool Parse(const std::string& data);
   std::string Serialize() const;
   State state_;
+  bool cert_verification_complete_;
+  int cert_verification_error_;
 
  private:
   // This is the callback function which the CertVerifier calls via |callback_|.
@@ -108,9 +110,7 @@ class SSLHostInfo {
 
   // This is the hostname that we'll validate the certificates against.
   const std::string hostname_;
-  bool cert_verification_complete_;
   bool cert_parsing_failed_;
-  int cert_verification_result_;
   CompletionCallback* cert_verification_callback_;
   // These two members are taken from the SSLConfig.
   bool rev_checking_enabled_;
