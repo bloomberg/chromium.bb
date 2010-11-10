@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// A complete set of unit tests for GaiaAuthenticator2.
+// A complete set of unit tests for GaiaAuthFetcher.
 // Originally ported from GoogleAuthenticator tests.
 
 #include <string>
@@ -10,8 +10,8 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
-#include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
@@ -25,11 +25,11 @@
 
 using ::testing::_;
 
-class GaiaAuthenticator2Test : public testing::Test {
+class GaiaAuthFetcherTest : public testing::Test {
  public:
-  GaiaAuthenticator2Test()
-    : client_login_source_(GaiaAuthenticator2::kClientLoginUrl),
-      issue_auth_token_source_(GaiaAuthenticator2::kIssueAuthTokenUrl) {}
+  GaiaAuthFetcherTest()
+      : client_login_source_(GaiaAuthFetcher::kClientLoginUrl),
+        issue_auth_token_source_(GaiaAuthFetcher::kIssueAuthTokenUrl) {}
 
   void RunParsingTest(const std::string& data,
                       const std::string& sid,
@@ -39,7 +39,7 @@ class GaiaAuthenticator2Test : public testing::Test {
     std::string out_lsid;
     std::string out_token;
 
-    GaiaAuthenticator2::ParseClientLoginResponse(data,
+    GaiaAuthFetcher::ParseClientLoginResponse(data,
                                                  &out_sid,
                                                  &out_lsid,
                                                  &out_token);
@@ -58,7 +58,7 @@ class GaiaAuthenticator2Test : public testing::Test {
     std::string out_captcha_url;
     std::string out_captcha_token;
 
-    GaiaAuthenticator2::ParseClientLoginFailure(data,
+    GaiaAuthFetcher::ParseClientLoginFailure(data,
                                                 &out_error,
                                                 &out_error_url,
                                                 &out_captcha_url,
@@ -89,7 +89,7 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
       const GoogleServiceAuthError& error));
 };
 
-TEST_F(GaiaAuthenticator2Test, ErrorComparator) {
+TEST_F(GaiaAuthFetcherTest, ErrorComparator) {
   GoogleServiceAuthError expected_error =
       GoogleServiceAuthError::FromConnectionError(-101);
 
@@ -111,7 +111,7 @@ TEST_F(GaiaAuthenticator2Test, ErrorComparator) {
   EXPECT_TRUE(expected_error == matching_error);
 }
 
-TEST_F(GaiaAuthenticator2Test, LoginNetFailure) {
+TEST_F(GaiaAuthFetcherTest, LoginNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
 
@@ -122,7 +122,7 @@ TEST_F(GaiaAuthenticator2Test, LoginNetFailure) {
   EXPECT_CALL(consumer, OnClientLoginFailure(expected_error))
       .Times(1);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
 
   auth.OnURLFetchComplete(NULL,
@@ -133,7 +133,7 @@ TEST_F(GaiaAuthenticator2Test, LoginNetFailure) {
                           std::string());
 }
 
-TEST_F(GaiaAuthenticator2Test, TokenNetFailure) {
+TEST_F(GaiaAuthFetcherTest, TokenNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
 
@@ -144,7 +144,7 @@ TEST_F(GaiaAuthenticator2Test, TokenNetFailure) {
   EXPECT_CALL(consumer, OnIssueAuthTokenFailure(_, expected_error))
       .Times(1);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
 
   auth.OnURLFetchComplete(NULL,
@@ -156,7 +156,7 @@ TEST_F(GaiaAuthenticator2Test, TokenNetFailure) {
 }
 
 
-TEST_F(GaiaAuthenticator2Test, LoginDenied) {
+TEST_F(GaiaAuthFetcherTest, LoginDenied) {
   std::string data("Error: NO!");
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
 
@@ -167,7 +167,7 @@ TEST_F(GaiaAuthenticator2Test, LoginDenied) {
   EXPECT_CALL(consumer, OnClientLoginFailure(expected_error))
       .Times(1);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   auth.OnURLFetchComplete(NULL,
                           client_login_source_,
@@ -177,7 +177,7 @@ TEST_F(GaiaAuthenticator2Test, LoginDenied) {
                           data);
 }
 
-TEST_F(GaiaAuthenticator2Test, ParseRequest) {
+TEST_F(GaiaAuthFetcherTest, ParseRequest) {
   RunParsingTest("SID=sid\nLSID=lsid\nAuth=auth\n", "sid", "lsid", "auth");
   RunParsingTest("LSID=lsid\nSID=sid\nAuth=auth\n", "sid", "lsid", "auth");
   RunParsingTest("SID=sid\nLSID=lsid\nAuth=auth", "sid", "lsid", "auth");
@@ -187,7 +187,7 @@ TEST_F(GaiaAuthenticator2Test, ParseRequest) {
   RunParsingTest("SID=sid", "sid", "", "");
 }
 
-TEST_F(GaiaAuthenticator2Test, ParseErrorRequest) {
+TEST_F(GaiaAuthFetcherTest, ParseErrorRequest) {
   RunErrorParsingTest("Url=U\n"
                       "Error=E\n"
                       "CaptchaToken=T\n"
@@ -203,7 +203,7 @@ TEST_F(GaiaAuthenticator2Test, ParseErrorRequest) {
 }
 
 
-TEST_F(GaiaAuthenticator2Test, OnlineLogin) {
+TEST_F(GaiaAuthFetcherTest, OnlineLogin) {
   std::string data("SID=sid\nLSID=lsid\nAuth=auth\n");
 
   GaiaAuthConsumer::ClientLoginResult result;
@@ -216,7 +216,7 @@ TEST_F(GaiaAuthenticator2Test, OnlineLogin) {
   EXPECT_CALL(consumer, OnClientLoginSuccess(result))
       .Times(1);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
@@ -227,12 +227,12 @@ TEST_F(GaiaAuthenticator2Test, OnlineLogin) {
                           data);
 }
 
-TEST_F(GaiaAuthenticator2Test, WorkingIssueAuthToken) {
+TEST_F(GaiaAuthFetcherTest, WorkingIssueAuthToken) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnIssueAuthTokenSuccess(_, "token"))
       .Times(1);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
@@ -243,21 +243,21 @@ TEST_F(GaiaAuthenticator2Test, WorkingIssueAuthToken) {
                           "token");
 }
 
-TEST_F(GaiaAuthenticator2Test, CheckTwoFactorResponse) {
+TEST_F(GaiaAuthFetcherTest, CheckTwoFactorResponse) {
   std::string response =
       base::StringPrintf("Error=BadAuthentication\n%s\n",
-                         GaiaAuthenticator2::kSecondFactor);
-  EXPECT_TRUE(GaiaAuthenticator2::IsSecondFactorSuccess(response));
+                         GaiaAuthFetcher::kSecondFactor);
+  EXPECT_TRUE(GaiaAuthFetcher::IsSecondFactorSuccess(response));
 }
 
-TEST_F(GaiaAuthenticator2Test, CheckNormalErrorCode) {
+TEST_F(GaiaAuthFetcherTest, CheckNormalErrorCode) {
   std::string response = "Error=BadAuthentication\n";
-  EXPECT_FALSE(GaiaAuthenticator2::IsSecondFactorSuccess(response));
+  EXPECT_FALSE(GaiaAuthFetcher::IsSecondFactorSuccess(response));
 }
 
-TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
+TEST_F(GaiaAuthFetcherTest, TwoFactorLogin) {
   std::string response = base::StringPrintf("Error=BadAuthentication\n%s\n",
-      GaiaAuthenticator2::kSecondFactor);
+      GaiaAuthFetcher::kSecondFactor);
 
   GoogleServiceAuthError error =
       GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
@@ -266,7 +266,7 @@ TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
   EXPECT_CALL(consumer, OnClientLoginFailure(error))
       .Times(1);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
@@ -277,14 +277,14 @@ TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
                           response);
 }
 
-TEST_F(GaiaAuthenticator2Test, CaptchaParse) {
+TEST_F(GaiaAuthFetcherTest, CaptchaParse) {
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   std::string data = "Url=http://www.google.com/login/captcha\n"
                      "Error=CaptchaRequired\n"
                      "CaptchaToken=CCTOKEN\n"
                      "CaptchaUrl=Captcha?ctoken=CCTOKEN\n";
   GoogleServiceAuthError error =
-      GaiaAuthenticator2::GenerateAuthError(data, status);
+      GaiaAuthFetcher::GenerateAuthError(data, status);
 
   std::string token = "CCTOKEN";
   GURL image_url("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN");
@@ -296,31 +296,31 @@ TEST_F(GaiaAuthenticator2Test, CaptchaParse) {
   EXPECT_EQ(error.captcha().unlock_url, unlock_url);
 }
 
-TEST_F(GaiaAuthenticator2Test, AccountDeletedError) {
+TEST_F(GaiaAuthFetcherTest, AccountDeletedError) {
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=AccountDeleted\n";
   GoogleServiceAuthError error =
-      GaiaAuthenticator2::GenerateAuthError(data, status);
+      GaiaAuthFetcher::GenerateAuthError(data, status);
   EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DELETED);
 }
 
-TEST_F(GaiaAuthenticator2Test, AccountDisabledError) {
+TEST_F(GaiaAuthFetcherTest, AccountDisabledError) {
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=AccountDisabled\n";
   GoogleServiceAuthError error =
-      GaiaAuthenticator2::GenerateAuthError(data, status);
+      GaiaAuthFetcher::GenerateAuthError(data, status);
   EXPECT_EQ(error.state(), GoogleServiceAuthError::ACCOUNT_DISABLED);
 }
 
-TEST_F(GaiaAuthenticator2Test,ServiceUnavailableError) {
+TEST_F(GaiaAuthFetcherTest,ServiceUnavailableError) {
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=ServiceUnavailable\n";
   GoogleServiceAuthError error =
-      GaiaAuthenticator2::GenerateAuthError(data, status);
+      GaiaAuthFetcher::GenerateAuthError(data, status);
   EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
-TEST_F(GaiaAuthenticator2Test, FullLogin) {
+TEST_F(GaiaAuthFetcherTest, FullLogin) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginSuccess(_))
       .Times(1);
@@ -330,19 +330,19 @@ TEST_F(GaiaAuthenticator2Test, FullLogin) {
   MockFactory<MockFetcher> factory;
   URLFetcher::set_factory(&factory);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   auth.StartClientLogin("username",
                         "password",
                         "service",
                         std::string(),
                         std::string(),
-                        GaiaAuthenticator2::HostedAccountsAllowed);
+                        GaiaAuthFetcher::HostedAccountsAllowed);
 
   URLFetcher::set_factory(NULL);
 }
 
-TEST_F(GaiaAuthenticator2Test, FullLoginFailure) {
+TEST_F(GaiaAuthFetcherTest, FullLoginFailure) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginFailure(_))
       .Times(1);
@@ -353,19 +353,19 @@ TEST_F(GaiaAuthenticator2Test, FullLoginFailure) {
   URLFetcher::set_factory(&factory);
   factory.set_success(false);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   auth.StartClientLogin("username",
                         "password",
                         "service",
                         std::string(),
                         std::string(),
-                        GaiaAuthenticator2::HostedAccountsAllowed);
+                        GaiaAuthFetcher::HostedAccountsAllowed);
 
   URLFetcher::set_factory(NULL);
 }
 
-TEST_F(GaiaAuthenticator2Test, ClientFetchPending) {
+TEST_F(GaiaAuthFetcherTest, ClientFetchPending) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginSuccess(_))
       .Times(1);
@@ -374,14 +374,14 @@ TEST_F(GaiaAuthenticator2Test, ClientFetchPending) {
   TestURLFetcherFactory factory;
   URLFetcher::set_factory(&factory);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   auth.StartClientLogin("username",
                         "password",
                         "service",
                         std::string(),
                         std::string(),
-                        GaiaAuthenticator2::HostedAccountsAllowed);
+                        GaiaAuthFetcher::HostedAccountsAllowed);
 
   URLFetcher::set_factory(NULL);
   EXPECT_TRUE(auth.HasPendingFetch());
@@ -394,7 +394,7 @@ TEST_F(GaiaAuthenticator2Test, ClientFetchPending) {
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
-TEST_F(GaiaAuthenticator2Test, FullTokenSuccess) {
+TEST_F(GaiaAuthFetcherTest, FullTokenSuccess) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnIssueAuthTokenSuccess("service", "token"))
       .Times(1);
@@ -403,7 +403,7 @@ TEST_F(GaiaAuthenticator2Test, FullTokenSuccess) {
   TestURLFetcherFactory factory;
   URLFetcher::set_factory(&factory);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   auth.StartIssueAuthToken("sid", "lsid", "service");
 
@@ -418,7 +418,7 @@ TEST_F(GaiaAuthenticator2Test, FullTokenSuccess) {
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
-TEST_F(GaiaAuthenticator2Test, FullTokenFailure) {
+TEST_F(GaiaAuthFetcherTest, FullTokenFailure) {
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnIssueAuthTokenFailure("service", _))
       .Times(1);
@@ -427,7 +427,7 @@ TEST_F(GaiaAuthenticator2Test, FullTokenFailure) {
   TestURLFetcherFactory factory;
   URLFetcher::set_factory(&factory);
 
-  GaiaAuthenticator2 auth(&consumer, std::string(),
+  GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
   auth.StartIssueAuthToken("sid", "lsid", "service");
 

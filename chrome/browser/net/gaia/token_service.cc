@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
@@ -95,7 +95,7 @@ void TokenService::UpdateCredentials(
 
   // Cancels any currently running requests.
   for (int i = 0; i < kNumServices; i++) {
-    fetchers_[i].reset(new GaiaAuthenticator2(this, source_, getter_));
+    fetchers_[i].reset(new GaiaAuthFetcher(this, source_, getter_));
   }
 }
 

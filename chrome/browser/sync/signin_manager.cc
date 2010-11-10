@@ -55,15 +55,15 @@ void SigninManager::StartSignIn(const std::string& username,
   username_.assign(username);
   password_.assign(password);
 
-  client_login_.reset(new GaiaAuthenticator2(this,
-                                             GaiaConstants::kChromeSource,
-                                             profile_->GetRequestContext()));
+  client_login_.reset(new GaiaAuthFetcher(this,
+                                          GaiaConstants::kChromeSource,
+                                          profile_->GetRequestContext()));
   client_login_->StartClientLogin(username,
                                   password,
                                   "",
                                   login_token,
                                   login_captcha,
-                                  GaiaAuthenticator2::HostedAccountsNotAllowed);
+                                  GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
 void SigninManager::ProvideSecondFactorAccessCode(
@@ -71,15 +71,15 @@ void SigninManager::ProvideSecondFactorAccessCode(
   DCHECK(!username_.empty() && !password_.empty() &&
       last_result_.data.empty());
 
-  client_login_.reset(new GaiaAuthenticator2(this,
-                                             GaiaConstants::kChromeSource,
-                                             profile_->GetRequestContext()));
+  client_login_.reset(new GaiaAuthFetcher(this,
+                                          GaiaConstants::kChromeSource,
+                                          profile_->GetRequestContext()));
   client_login_->StartClientLogin(username_,
                                   access_code,
                                   "",
                                   std::string(),
                                   std::string(),
-                                  GaiaAuthenticator2::HostedAccountsNotAllowed);
+                                  GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
 void SigninManager::SignOut() {

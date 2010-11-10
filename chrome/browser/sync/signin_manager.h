@@ -17,7 +17,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
-class GaiaAuthenticator2;
+class GaiaAuthFetcher;
 class Profile;
 class PrefService;
 
@@ -86,7 +86,7 @@ class SigninManager : public GaiaAuthConsumer {
   ClientLoginResult last_result_;
 
   // Actual client login handler.
-  scoped_ptr<GaiaAuthenticator2> client_login_;
+  scoped_ptr<GaiaAuthFetcher> client_login_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_SIGNIN_MANAGER_H_

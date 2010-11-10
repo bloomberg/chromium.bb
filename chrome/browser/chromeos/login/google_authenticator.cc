@@ -28,7 +28,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 #include "net/base/load_flags.h"
@@ -58,7 +58,7 @@ const int kPassHashLen = 32;
 GoogleAuthenticator::GoogleAuthenticator(LoginStatusConsumer* consumer)
     : Authenticator(consumer),
       user_manager_(UserManager::Get()),
-      hosted_policy_(GaiaAuthenticator2::HostedAccountsAllowed),
+      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
       unlock_(false),
       try_again_(true),
       checked_for_localaccount_(false) {
@@ -134,9 +134,9 @@ bool GoogleAuthenticator::AuthenticateToLogin(
   ascii_hash_.assign(HashPassword(password));
 
   gaia_authenticator_.reset(
-      new GaiaAuthenticator2(this,
-                             GaiaConstants::kChromeOSSource,
-                             profile->GetRequestContext()));
+      new GaiaAuthFetcher(this,
+                          GaiaConstants::kChromeOSSource,
+                          profile->GetRequestContext()));
   // Will be used for retries.
   PrepareClientLoginAttempt(password, login_token, login_captcha);
   TryClientLogin();
@@ -184,7 +184,7 @@ void GoogleAuthenticator::OnClientLoginSuccess(
   VLOG(1) << "Online login successful!";
   ClearClientLoginAttempt();
 
-  if (hosted_policy_ == GaiaAuthenticator2::HostedAccountsAllowed &&
+  if (hosted_policy_ == GaiaAuthFetcher::HostedAccountsAllowed &&
       !user_manager_->IsKnownUser(username_)) {
     // First time user, and we don't know if the account is HOSTED or not.
     // Since we don't allow HOSTED accounts to log in, we need to try
@@ -193,7 +193,7 @@ void GoogleAuthenticator::OnClientLoginSuccess(
     // NOTE: we used to do this in the opposite order, so that we'd only
     // try the HOSTED pathway if GOOGLE-only failed.  This breaks CAPTCHA
     // handling, though.
-    hosted_policy_ = GaiaAuthenticator2::HostedAccountsNotAllowed;
+    hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
     TryClientLogin();
     return;
   }
@@ -219,7 +219,7 @@ void GoogleAuthenticator::OnClientLoginFailure(
 
   if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS &&
       !user_manager_->IsKnownUser(username_) &&
-      hosted_policy_ != GaiaAuthenticator2::HostedAccountsAllowed) {
+      hosted_policy_ != GaiaAuthFetcher::HostedAccountsAllowed) {
     // This was a first-time login, we already tried allowing HOSTED accounts
     // and succeeded.  That we've failed with INVALID_GAIA_CREDENTIALS now
     // indicates that the account is HOSTED.
@@ -233,7 +233,7 @@ void GoogleAuthenticator::OnClientLoginFailure(
                           &GoogleAuthenticator::OnLoginFailure,
                           failure_details));
     LOG(WARNING) << "Rejecting valid HOSTED account.";
-    hosted_policy_ = GaiaAuthenticator2::HostedAccountsNotAllowed;
+    hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
     return;
   }
 

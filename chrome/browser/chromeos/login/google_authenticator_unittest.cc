@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
@@ -136,7 +136,7 @@ class GoogleAuthenticatorTest : public ::testing::Test {
 
   void PrepForFailedLogin(GoogleAuthenticator* auth) {
     PrepForLogin(auth);
-    auth->set_hosted_policy(GaiaAuthenticator2::HostedAccountsAllowed);
+    auth->set_hosted_policy(GaiaAuthFetcher::HostedAccountsAllowed);
   }
 
   void CancelLogin(GoogleAuthenticator* auth) {

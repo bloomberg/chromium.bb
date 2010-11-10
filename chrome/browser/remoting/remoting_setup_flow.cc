@@ -23,7 +23,7 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
@@ -248,12 +248,12 @@ void RemotingSetupFlow::OnUserSubmittedAuth(const std::string& user,
 
   // Start the authenticator.
   authenticator_.reset(
-      new GaiaAuthenticator2(this, GaiaConstants::kChromeSource,
-                             profile_->GetRequestContext()));
+      new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
+                          profile_->GetRequestContext()));
   authenticator_->StartClientLogin(user, password,
                                    GaiaConstants::kRemotingService,
                                    "", captcha,
-                                   GaiaAuthenticator2::HostedAccountsAllowed);
+                                   GaiaAuthFetcher::HostedAccountsAllowed);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

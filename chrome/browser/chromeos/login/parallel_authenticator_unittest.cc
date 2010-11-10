@@ -22,7 +22,7 @@
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/thread_test_helper.h"

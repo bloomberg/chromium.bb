@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "net/base/load_flags.h"
@@ -45,9 +45,9 @@ OnlineAttempt::~OnlineAttempt() {
 void OnlineAttempt::Initiate(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   gaia_authenticator_.reset(
-      new GaiaAuthenticator2(this,
-                             GaiaConstants::kChromeOSSource,
-                             profile->GetRequestContext()));
+      new GaiaAuthFetcher(this,
+                          GaiaConstants::kChromeOSSource,
+                          profile->GetRequestContext()));
   TryClientLogin();
 }
 
@@ -104,7 +104,7 @@ void OnlineAttempt::TryClientLogin() {
       GaiaConstants::kContactsService,
       attempt_->login_token,
       attempt_->login_captcha,
-      GaiaAuthenticator2::HostedAccountsAllowed);
+      GaiaAuthFetcher::HostedAccountsAllowed);
 }
 
 void OnlineAttempt::CancelClientLogin() {

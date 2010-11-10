@@ -23,7 +23,7 @@
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
-class GaiaAuthenticator2;
+class GaiaAuthFetcher;
 class Lock;
 class LoginFailure;
 class Profile;
@@ -230,7 +230,7 @@ class ParallelAuthenticator : public Authenticator,
   static const int kLocalaccountRetryIntervalMs;
 
   // Handles all net communications with Gaia.
-  scoped_ptr<GaiaAuthenticator2> gaia_authenticator_;
+  scoped_ptr<GaiaAuthFetcher> gaia_authenticator_;
 
   // Used when we need to try online authentication again, after successful
   // mount, but failed online login.

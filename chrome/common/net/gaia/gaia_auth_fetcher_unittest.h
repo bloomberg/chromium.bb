@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 //
 // A collection of classes that are useful when testing things that use a
-// GaiaAuthenticator2.
+// GaiaAuthFetcher.
 
-#ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_UNITTEST_H_
-#define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_UNITTEST_H_
+#ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_UNITTEST_H_
+#define CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_UNITTEST_H_
 #pragma once
 
 #include <string>
 
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/net/http_return.h"
 #include "net/url_request/url_request_status.h"
@@ -81,4 +81,4 @@ class MockFactory : public URLFetcher::Factory {
   DISALLOW_COPY_AND_ASSIGN(MockFactory);
 };
 
-#endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_UNITTEST_H_
+#endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_UNITTEST_H_

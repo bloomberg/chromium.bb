@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 
@@ -100,7 +100,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
                  const std::string& login_token,
                  const std::string& login_captcha);
 
-  // Callbacks from GaiaAuthenticator2
+  // Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(
       const GoogleServiceAuthError& error);
   virtual void OnClientLoginSuccess(
@@ -153,7 +153,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
                           char* hex_string,
                           const unsigned int len);
 
-  void set_hosted_policy(GaiaAuthenticator2::HostedAccountsSetting policy) {
+  void set_hosted_policy(GaiaAuthFetcher::HostedAccountsSetting policy) {
     hosted_policy_ = policy;
   }
 
@@ -168,7 +168,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   static const char kLocalaccountFile[];
 
   // Handles all net communications with Gaia.
-  scoped_ptr<GaiaAuthenticator2> gaia_authenticator_;
+  scoped_ptr<GaiaAuthFetcher> gaia_authenticator_;
 
   // Allows us to look up users of the device.
   UserManager* user_manager_;
@@ -180,7 +180,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   static const int kLocalaccountRetryIntervalMs;
 
   // Whether or not we're accepting HOSTED accounts on this auth attempt.
-  GaiaAuthenticator2::HostedAccountsSetting hosted_policy_;
+  GaiaAuthFetcher::HostedAccountsSetting hosted_policy_;
 
   std::string username_;
   // These fields are saved so we can retry client login.

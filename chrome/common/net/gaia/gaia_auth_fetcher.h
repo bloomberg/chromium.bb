@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_H_
-#define CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_H_
+#ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_H_
+#define CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_H_
 #pragma once
 
 #include <string>
@@ -22,12 +22,11 @@
 // that you like.
 //
 // This class can handle one request at a time. To parallelize requests,
-// create multiple GaiaAuthenticator2's.
+// create multiple GaiaAuthFetcher's.
 
-class GaiaAuthenticator2Test;
+class GaiaAuthFetcherTest;
 
-// TODO(chron): Rename this to GaiaAuthFetcher or something.
-class GaiaAuthenticator2 : public URLFetcher::Delegate {
+class GaiaAuthFetcher : public URLFetcher::Delegate {
  public:
   enum HostedAccountsSetting {
     HostedAccountsAllowed,
@@ -45,10 +44,10 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
 
   // This will later be hidden behind an auth service which caches
   // tokens.
-  GaiaAuthenticator2(GaiaAuthConsumer* consumer,
-                     const std::string& source,
-                     URLRequestContextGetter* getter);
-  virtual ~GaiaAuthenticator2();
+  GaiaAuthFetcher(GaiaAuthConsumer* consumer,
+                  const std::string& source,
+                  URLRequestContextGetter* getter);
+  virtual ~GaiaAuthFetcher();
 
   // GaiaAuthConsumer will be called on the original thread
   // after results come back. This class is thread agnostic.
@@ -174,7 +173,7 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
                                        URLFetcher::Delegate* delegate);
 
 
-  // These fields are common to GaiaAuthenticator2, same every request
+  // These fields are common to GaiaAuthFetcher, same every request
   GaiaAuthConsumer* const consumer_;
   URLRequestContextGetter* const getter_;
   std::string source_;
@@ -189,16 +188,16 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   std::string requested_info_key_;  // Currently tracked for GetUserInfo only
   bool fetch_pending_;
 
-  friend class GaiaAuthenticator2Test;
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CaptchaParse);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, AccountDeletedError);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, AccountDisabledError);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, ServiceUnavailableError);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CheckNormalErrorCode);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CheckTwoFactorResponse);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, LoginNetFailure);
+  friend class GaiaAuthFetcherTest;
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CaptchaParse);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, AccountDeletedError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, AccountDisabledError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ServiceUnavailableError);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CheckNormalErrorCode);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CheckTwoFactorResponse);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, LoginNetFailure);
 
-  DISALLOW_COPY_AND_ASSIGN(GaiaAuthenticator2);
+  DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcher);
 };
 
-#endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTHENTICATOR2_H_
+#endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_H_

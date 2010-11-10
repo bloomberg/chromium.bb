@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 #include <string>
 #include <utility>
@@ -21,7 +21,7 @@
 
 // TODO(chron): Add sourceless version of this formatter.
 // static
-const char GaiaAuthenticator2::kClientLoginFormat[] =
+const char GaiaAuthFetcher::kClientLoginFormat[] =
     "Email=%s&"
     "Passwd=%s&"
     "PersistentCookie=%s&"
@@ -29,7 +29,7 @@ const char GaiaAuthenticator2::kClientLoginFormat[] =
     "source=%s&"
     "service=%s";
 // static
-const char GaiaAuthenticator2::kClientLoginCaptchaFormat[] =
+const char GaiaAuthFetcher::kClientLoginCaptchaFormat[] =
     "Email=%s&"
     "Passwd=%s&"
     "PersistentCookie=%s&"
@@ -39,59 +39,59 @@ const char GaiaAuthenticator2::kClientLoginCaptchaFormat[] =
     "logintoken=%s&"
     "logincaptcha=%s";
 // static
-const char GaiaAuthenticator2::kIssueAuthTokenFormat[] =
+const char GaiaAuthFetcher::kIssueAuthTokenFormat[] =
     "SID=%s&"
     "LSID=%s&"
     "service=%s&"
     "Session=%s";
 // static
-const char GaiaAuthenticator2::kGetUserInfoFormat[] =
+const char GaiaAuthFetcher::kGetUserInfoFormat[] =
     "LSID=%s";
 
 // static
-const char GaiaAuthenticator2::kAccountDeletedError[] = "AccountDeleted";
+const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
 // static
-const char GaiaAuthenticator2::kAccountDisabledError[] = "AccountDisabled";
+const char GaiaAuthFetcher::kAccountDisabledError[] = "AccountDisabled";
 // static
-const char GaiaAuthenticator2::kCaptchaError[] = "CaptchaRequired";
+const char GaiaAuthFetcher::kCaptchaError[] = "CaptchaRequired";
 // static
-const char GaiaAuthenticator2::kServiceUnavailableError[] =
+const char GaiaAuthFetcher::kServiceUnavailableError[] =
     "ServiceUnavailable";
 // static
-const char GaiaAuthenticator2::kErrorParam[] = "Error";
+const char GaiaAuthFetcher::kErrorParam[] = "Error";
 // static
-const char GaiaAuthenticator2::kErrorUrlParam[] = "Url";
+const char GaiaAuthFetcher::kErrorUrlParam[] = "Url";
 // static
-const char GaiaAuthenticator2::kCaptchaUrlParam[] = "CaptchaUrl";
+const char GaiaAuthFetcher::kCaptchaUrlParam[] = "CaptchaUrl";
 // static
-const char GaiaAuthenticator2::kCaptchaTokenParam[] = "CaptchaToken";
+const char GaiaAuthFetcher::kCaptchaTokenParam[] = "CaptchaToken";
 // static
-const char GaiaAuthenticator2::kCaptchaUrlPrefix[] =
+const char GaiaAuthFetcher::kCaptchaUrlPrefix[] =
     "http://www.google.com/accounts/";
 
 // static
-const char GaiaAuthenticator2::kCookiePersistence[] = "true";
+const char GaiaAuthFetcher::kCookiePersistence[] = "true";
 // static
 // TODO(johnnyg): When hosted accounts are supported by sync,
 // we can always use "HOSTED_OR_GOOGLE"
-const char GaiaAuthenticator2::kAccountTypeHostedOrGoogle[] =
+const char GaiaAuthFetcher::kAccountTypeHostedOrGoogle[] =
     "HOSTED_OR_GOOGLE";
-const char GaiaAuthenticator2::kAccountTypeGoogle[] =
+const char GaiaAuthFetcher::kAccountTypeGoogle[] =
     "GOOGLE";
 
 // static
-const char GaiaAuthenticator2::kSecondFactor[] = "Info=InvalidSecondFactor";
+const char GaiaAuthFetcher::kSecondFactor[] = "Info=InvalidSecondFactor";
 
 // TODO(chron): These urls are also in auth_response_handler.h.
 // The URLs for different calls in the Google Accounts programmatic login API.
-const char GaiaAuthenticator2::kClientLoginUrl[] =
+const char GaiaAuthFetcher::kClientLoginUrl[] =
     "https://www.google.com/accounts/ClientLogin";
-const char GaiaAuthenticator2::kIssueAuthTokenUrl[] =
+const char GaiaAuthFetcher::kIssueAuthTokenUrl[] =
     "https://www.google.com/accounts/IssueAuthToken";
-const char GaiaAuthenticator2::kGetUserInfoUrl[] =
+const char GaiaAuthFetcher::kGetUserInfoUrl[] =
     "https://www.google.com/accounts/GetUserInfo";
 
-GaiaAuthenticator2::GaiaAuthenticator2(GaiaAuthConsumer* consumer,
+GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
                                        const std::string& source,
                                        URLRequestContextGetter* getter)
     : consumer_(consumer),
@@ -102,19 +102,19 @@ GaiaAuthenticator2::GaiaAuthenticator2(GaiaAuthConsumer* consumer,
       get_user_info_gurl_(kGetUserInfoUrl),
       fetch_pending_(false) {}
 
-GaiaAuthenticator2::~GaiaAuthenticator2() {}
+GaiaAuthFetcher::~GaiaAuthFetcher() {}
 
-bool GaiaAuthenticator2::HasPendingFetch() {
+bool GaiaAuthFetcher::HasPendingFetch() {
   return fetch_pending_;
 }
 
-void GaiaAuthenticator2::CancelRequest() {
+void GaiaAuthFetcher::CancelRequest() {
   fetcher_.reset();
   fetch_pending_ = false;
 }
 
 // static
-URLFetcher* GaiaAuthenticator2::CreateGaiaFetcher(
+URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     URLRequestContextGetter* getter,
     const std::string& body,
     const GURL& gaia_gurl,
@@ -132,7 +132,7 @@ URLFetcher* GaiaAuthenticator2::CreateGaiaFetcher(
 }
 
 // static
-std::string GaiaAuthenticator2::MakeClientLoginBody(
+std::string GaiaAuthFetcher::MakeClientLoginBody(
     const std::string& username,
     const std::string& password,
     const std::string& source,
@@ -172,7 +172,7 @@ std::string GaiaAuthenticator2::MakeClientLoginBody(
 }
 
 // static
-std::string GaiaAuthenticator2::MakeIssueAuthTokenBody(
+std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
     const std::string& sid,
     const std::string& lsid,
     const char* const service) {
@@ -192,14 +192,14 @@ std::string GaiaAuthenticator2::MakeIssueAuthTokenBody(
 }
 
 // static
-std::string GaiaAuthenticator2::MakeGetUserInfoBody(const std::string& lsid) {
+std::string GaiaAuthFetcher::MakeGetUserInfoBody(const std::string& lsid) {
   std::string encoded_lsid = UrlEncodeString(lsid);
   return base::StringPrintf(kGetUserInfoFormat, encoded_lsid.c_str());
 }
 
 // Helper method that extracts tokens from a successful reply.
 // static
-void GaiaAuthenticator2::ParseClientLoginResponse(const std::string& data,
+void GaiaAuthFetcher::ParseClientLoginResponse(const std::string& data,
                                                   std::string* sid,
                                                   std::string* lsid,
                                                   std::string* token) {
@@ -222,11 +222,11 @@ void GaiaAuthenticator2::ParseClientLoginResponse(const std::string& data,
 }
 
 // static
-void GaiaAuthenticator2::ParseClientLoginFailure(const std::string& data,
-                                                 std::string* error,
-                                                 std::string* error_url,
-                                                 std::string* captcha_url,
-                                                 std::string* captcha_token) {
+void GaiaAuthFetcher::ParseClientLoginFailure(const std::string& data,
+                                              std::string* error,
+                                              std::string* error_url,
+                                              std::string* captcha_url,
+                                              std::string* captcha_token) {
   using std::vector;
   using std::pair;
   using std::string;
@@ -234,7 +234,7 @@ void GaiaAuthenticator2::ParseClientLoginFailure(const std::string& data,
   vector<pair<string, string> > tokens;
   base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
   for (vector<pair<string, string> >::iterator i = tokens.begin();
-      i != tokens.end(); ++i) {
+       i != tokens.end(); ++i) {
     if (i->first == kErrorParam) {
       error->assign(i->second);
     } else if (i->first == kErrorUrlParam) {
@@ -247,7 +247,7 @@ void GaiaAuthenticator2::ParseClientLoginFailure(const std::string& data,
   }
 }
 
-void GaiaAuthenticator2::StartClientLogin(
+void GaiaAuthFetcher::StartClientLogin(
     const std::string& username,
     const std::string& password,
     const char* const service,
@@ -277,9 +277,9 @@ void GaiaAuthenticator2::StartClientLogin(
   fetcher_->Start();
 }
 
-void GaiaAuthenticator2::StartIssueAuthToken(const std::string& sid,
-                                             const std::string& lsid,
-                                             const char* const service) {
+void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
+                                          const std::string& lsid,
+                                          const char* const service) {
 
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -294,8 +294,8 @@ void GaiaAuthenticator2::StartIssueAuthToken(const std::string& sid,
   fetcher_->Start();
 }
 
-void GaiaAuthenticator2::StartGetUserInfo(const std::string& lsid,
-                                          const std::string& info_key) {
+void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
+                                       const std::string& info_key) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
   VLOG(1) << "Starting GetUserInfo for lsid=" << lsid;
@@ -310,7 +310,7 @@ void GaiaAuthenticator2::StartGetUserInfo(const std::string& lsid,
 }
 
 // static
-GoogleServiceAuthError GaiaAuthenticator2::GenerateAuthError(
+GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
     const URLRequestStatus& status) {
 
@@ -356,9 +356,9 @@ GoogleServiceAuthError GaiaAuthenticator2::GenerateAuthError(
   NOTREACHED();
 }
 
-void GaiaAuthenticator2::OnClientLoginFetched(const std::string& data,
-                                              const URLRequestStatus& status,
-                                              int response_code) {
+void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
+                                           const URLRequestStatus& status,
+                                           int response_code) {
 
   if (status.is_success() && response_code == RC_REQUEST_OK) {
     VLOG(1) << "ClientLogin successful!";
@@ -373,7 +373,7 @@ void GaiaAuthenticator2::OnClientLoginFetched(const std::string& data,
   }
 }
 
-void GaiaAuthenticator2::OnIssueAuthTokenFetched(
+void GaiaAuthFetcher::OnIssueAuthTokenFetched(
     const std::string& data,
     const URLRequestStatus& status,
     int response_code) {
@@ -387,7 +387,7 @@ void GaiaAuthenticator2::OnIssueAuthTokenFetched(
   }
 }
 
-void GaiaAuthenticator2::OnGetUserInfoFetched(
+void GaiaAuthFetcher::OnGetUserInfoFetched(
     const std::string& data,
     const URLRequestStatus& status,
     int response_code) {
@@ -411,12 +411,12 @@ void GaiaAuthenticator2::OnGetUserInfoFetched(
   }
 }
 
-void GaiaAuthenticator2::OnURLFetchComplete(const URLFetcher* source,
-                                            const GURL& url,
-                                            const URLRequestStatus& status,
-                                            int response_code,
-                                            const ResponseCookies& cookies,
-                                            const std::string& data) {
+void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
+                                         const GURL& url,
+                                         const URLRequestStatus& status,
+                                         int response_code,
+                                         const ResponseCookies& cookies,
+                                         const std::string& data) {
   fetch_pending_ = false;
   if (url == client_login_gurl_) {
     OnClientLoginFetched(data, status, response_code);
@@ -430,7 +430,7 @@ void GaiaAuthenticator2::OnURLFetchComplete(const URLFetcher* source,
 }
 
 // static
-bool GaiaAuthenticator2::IsSecondFactorSuccess(
+bool GaiaAuthFetcher::IsSecondFactorSuccess(
     const std::string& alleged_error) {
   return alleged_error.find(kSecondFactor) !=
       std::string::npos;

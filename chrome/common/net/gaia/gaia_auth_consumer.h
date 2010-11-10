@@ -11,7 +11,7 @@
 class GoogleServiceAuthError;
 
 // An interface that defines the callbacks for objects that
-// GaiaAuthenticator2 can return data to.
+// GaiaAuthFetcher can return data to.
 class GaiaAuthConsumer {
  public:
   struct ClientLoginResult {

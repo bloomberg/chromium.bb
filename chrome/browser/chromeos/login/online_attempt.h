@@ -16,7 +16,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
-class GaiaAuthenticator2;
+class GaiaAuthFetcher;
 class Profile;
 
 namespace chromeos {
@@ -36,7 +36,7 @@ class OnlineAttempt
   // IO thread when useful state is available.
   void Initiate(Profile* profile);
 
-  // Callbacks from GaiaAuthenticator2
+  // Callbacks from GaiaAuthFetcher
   virtual void OnClientLoginFailure(
       const GoogleServiceAuthError& error);
   virtual void OnClientLoginSuccess(
@@ -56,7 +56,7 @@ class OnlineAttempt
   AuthAttemptStateResolver* const resolver_;
 
   // Handles all net communications with Gaia.
-  scoped_ptr<GaiaAuthenticator2> gaia_authenticator_;
+  scoped_ptr<GaiaAuthFetcher> gaia_authenticator_;
   CancelableTask* fetch_canceler_;
 
   // Whether we're willing to re-try the ClientLogin attempt.

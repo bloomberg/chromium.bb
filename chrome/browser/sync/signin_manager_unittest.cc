@@ -35,7 +35,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaAuthenticator2::kClientLoginUrl), URLRequestStatus(),
+        fetcher, GURL(GaiaAuthFetcher::kClientLoginUrl), URLRequestStatus(),
         200, ResponseCookies(), "SID=sid\nLSID=lsid\nAuth=auth");
 
     // Then simulate the correct GetUserInfo response for the canonical email.
@@ -44,7 +44,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaAuthenticator2::kGetUserInfoUrl), URLRequestStatus(),
+        fetcher, GURL(GaiaAuthFetcher::kGetUserInfoUrl), URLRequestStatus(),
         200, ResponseCookies(), "email=user@gmail.com");
   }
 
