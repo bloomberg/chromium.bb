@@ -6864,9 +6864,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link on the Autofill dialog.">
         About Autofill
       </message>
-      <message name="IDS_AUTOFILL_HELP_URL" desc="The url of the Help link on the Autofill dialog.">
-        http://www.google.com/support/chrome/bin/answer.py?answer=142893&amp;hl=[GRITLANGCODE]
-      </message>
 
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
         Themes:

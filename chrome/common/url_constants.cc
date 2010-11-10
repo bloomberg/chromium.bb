@@ -174,6 +174,27 @@ const char kLanguageOptionsSubPage[] = "language";
 const char kSystemOptionsSubPage[] = "system";
 #endif
 
+const char kPageInfoHelpCenterURL[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=95617";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95617";
+#endif
+
+const char kCrashReasonURL[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95669";
+#endif
+
+const char kPrivacyLearnMoreURL[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=1047334";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=114836";
+#endif
+
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.

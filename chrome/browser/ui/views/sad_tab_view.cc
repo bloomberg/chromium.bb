@@ -6,8 +6,10 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/size.h"
@@ -110,7 +112,8 @@ void SadTabView::Layout() {
 
 void SadTabView::LinkActivated(views::Link* source, int event_flags) {
   if (tab_contents_ != NULL && source == learn_more_link_) {
-    string16 url = l10n_util::GetStringUTF16(IDS_CRASH_REASON_URL);
+    GURL help_url =
+        google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
     WindowOpenDisposition disposition(CURRENT_TAB);
 #if defined(OS_CHROMEOS)
     if (tab_contents_->delegate() &&
@@ -120,8 +123,7 @@ void SadTabView::LinkActivated(views::Link* source, int event_flags) {
       disposition = NEW_FOREGROUND_TAB;
     }
 #endif
-    tab_contents_->OpenURL(GURL(url), GURL(), disposition,
-        PageTransition::LINK);
+    tab_contents_->OpenURL(help_url, GURL(), disposition, PageTransition::LINK);
   }
 }
 

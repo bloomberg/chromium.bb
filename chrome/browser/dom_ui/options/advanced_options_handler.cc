@@ -14,6 +14,7 @@
 #include "chrome/browser/dom_ui/options/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/options_window.h"
@@ -24,10 +25,11 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -57,7 +59,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   localized_strings->SetString("privacyLearnMoreURL",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL));
+      google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kPrivacyLearnMoreURL)).spec());
   localized_strings->SetString("downloadLocationGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME));
   localized_strings->SetString("downloadLocationBrowseButton",

@@ -34,6 +34,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -1497,11 +1498,11 @@ const int kDisabledIndex = 1;
 }
 
 - (IBAction)privacyLearnMore:(id)sender {
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kPrivacyLearnMoreURL));
   // We open a new browser window so the Options dialog doesn't get lost
   // behind other windows.
-  browser::ShowOptionsURL(
-      profile_,
-      GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL)));
+  browser::ShowOptionsURL(profile_, url);
 }
 
 - (IBAction)backgroundModeLearnMore:(id)sender {

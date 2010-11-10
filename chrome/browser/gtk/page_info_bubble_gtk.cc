@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -270,7 +272,8 @@ void PageInfoBubbleGtk::OnViewCertLinkClicked(GtkWidget* widget) {
 }
 
 void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
-  GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   bubble_->Close();

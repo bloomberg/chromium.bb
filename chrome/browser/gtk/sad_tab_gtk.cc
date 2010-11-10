@@ -8,9 +8,11 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -112,7 +114,8 @@ SadTabGtk::~SadTabGtk() {
 
 void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
   if (tab_contents_ != NULL) {
-    tab_contents_->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_CRASH_REASON_URL)),
-        GURL(), CURRENT_TAB, PageTransition::LINK);
+    GURL help_url =
+        google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
+    tab_contents_->OpenURL(help_url, GURL(), CURRENT_TAB, PageTransition::LINK);
   }
 }

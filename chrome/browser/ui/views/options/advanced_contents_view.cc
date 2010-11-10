@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gears_integration.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "grit/app_resources.h"
@@ -540,9 +542,9 @@ void PrivacySection::ButtonPressed(
 
 void PrivacySection::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(source == learn_more_link_);
-  browser::ShowOptionsURL(
-      profile(),
-      GURL(l10n_util::GetString(IDS_LEARN_MORE_PRIVACY_URL)));
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kPrivacyLearnMoreURL));
+  browser::ShowOptionsURL(profile(), url);
 }
 
 void PrivacySection::InitControlLayout() {

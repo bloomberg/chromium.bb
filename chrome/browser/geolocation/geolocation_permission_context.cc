@@ -13,6 +13,7 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host_old.h"
 #include "chrome/browser/geolocation/geolocation_provider.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -28,6 +29,17 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+
+namespace {
+
+const char kGeolocationLearnMoreUrl[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=142065";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=142065";
+#endif
+
+}  // namespace
 
 // This class controls the geolocation infobar queue per profile, and it's an
 // internal class to GeolocationPermissionContext.
@@ -138,10 +150,11 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
     return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
   virtual bool LinkClicked(WindowOpenDisposition disposition) {
-    // Ignore the click dispostion and always open in a new top level tab.
+    GURL learn_more_url =
+        google_util::AppendGoogleLocaleParam(GURL(kGeolocationLearnMoreUrl));
+    // Ignore the click disposition and always open in a new top level tab.
     tab_contents_->OpenURL(
-        GURL(l10n_util::GetStringUTF8(IDS_LEARN_MORE_GEOLOCATION_URL)), GURL(),
-        NEW_FOREGROUND_TAB, PageTransition::LINK);
+        learn_more_url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
     return false;  // Do not dismiss the info bar.
   }
 

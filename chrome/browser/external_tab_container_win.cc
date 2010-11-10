@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/page_info_window.h"
@@ -27,9 +28,9 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
-#include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/page_info_bubble_view.h"
+#include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
@@ -38,6 +39,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -66,7 +68,8 @@ class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
   }
   // LinkController methods:
   virtual void LinkActivated(views::Link* source, int event_flags) {
-    GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+    GURL url = google_util::AppendGoogleLocaleParam(
+        GURL(chrome::kPageInfoHelpCenterURL));
     container_->OpenURLFromTab(container_->tab_contents(), url, GURL(),
                                NEW_FOREGROUND_TAB, PageTransition::LINK);
   }

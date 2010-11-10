@@ -9,9 +9,11 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/image_view.h"
@@ -205,7 +207,8 @@ void PageInfoBubbleView::ModelChanged() {
 }
 
 void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
-  GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }

@@ -25,6 +25,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -43,6 +44,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -882,9 +884,9 @@ void PrivacySection::OnClearBrowsingDataButtonClicked(GtkButton* widget,
 // static
 void PrivacySection::OnLearnMoreLinkClicked(GtkButton *button,
                                             PrivacySection* privacy_section) {
-  browser::ShowOptionsURL(
-      privacy_section->profile(),
-      GURL(l10n_util::GetStringUTF8(IDS_LEARN_MORE_PRIVACY_URL)));
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kPrivacyLearnMoreURL));
+  browser::ShowOptionsURL(privacy_section->profile(), url);
 }
 
 // static

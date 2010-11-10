@@ -46,6 +46,7 @@
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/encoding_menu_controller.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
@@ -1615,9 +1617,9 @@
     SadTabController* sad_tab = static_cast<SadTabController*>(sender);
     TabContents* tab_contents = [sad_tab tabContents];
     if (tab_contents) {
-      std::string linkUrl = l10n_util::GetStringUTF8(IDS_CRASH_REASON_URL);
-      tab_contents->OpenURL(GURL(linkUrl), GURL(), CURRENT_TAB,
-          PageTransition::LINK);
+      GURL helpUrl =
+          google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
+      tab_contents->OpenURL(helpUrl, GURL(), CURRENT_TAB, PageTransition::LINK);
     }
   }
 }

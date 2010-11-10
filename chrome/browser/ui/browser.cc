@@ -138,33 +138,41 @@
 
 using base::TimeDelta;
 
-// How long we wait before updating the browser chrome while loading a page.
-static const int kUIUpdateCoalescingTimeMS = 200;
-
-// The URL to be loaded to display Help.
-#if defined(OS_CHROMEOS)
-static const char* const kHelpContentUrl =
-    "chrome-extension://nifaohjgppdbmalmmgkmfdlodaggnbpe/main.html";
-static const char* const kHelpContentOnlineUrl =
-    "http://www.google.com/support/chromeos/";
-#else
-static const char* const kHelpContentUrl =
-    "http://www.google.com/support/chrome/";
-#endif
-
-// The URL to be loaded to display the "Report a broken page" form.
-static const std::string kBrokenPageUrl =
-    "http://www.google.com/support/chrome/bin/request.py?contact_type="
-    "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
-
-static const std::string kHashMark = "#";
-
-// The URL for the privacy dashboard.
-static const char kPrivacyDashboardUrl[] = "https://www.google.com/dashboard";
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
+
+// The URL to be loaded to display Help.
+#if defined(OS_CHROMEOS)
+const char kHelpContentUrl[] =
+    "chrome-extension://nifaohjgppdbmalmmgkmfdlodaggnbpe/main.html";
+const char kHelpContentOnlineUrl[] =
+    "http://www.google.com/support/chromeos/";
+#else
+const char kHelpContentUrl[] =
+    "http://www.google.com/support/chrome/";
+#endif
+
+// The URL to be opened when the Help link on the Autofill dialog is clicked.
+const char kAutofillHelpUrl[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=142893";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=142893";
+#endif
+
+// The URL to be loaded to display the "Report a broken page" form.
+const char kBrokenPageUrl[] =
+    "http://www.google.com/support/chrome/bin/request.py?contact_type="
+    "broken_website&format=inproduct&p.page_title=$1&p.page_url=$2";
+
+// The URL for the privacy dashboard.
+const char kPrivacyDashboardUrl[] = "https://www.google.com/dashboard";
+
+// How long we wait before updating the browser chrome while loading a page.
+const int kUIUpdateCoalescingTimeMS = 200;
+
+const char kHashMark[] = "#";
 
 #if defined(OS_CHROMEOS)
 // If a popup window is bigger than this fraction of the screen on chrome os,
@@ -1784,7 +1792,7 @@ void Browser::OpenClearBrowsingDataDialog() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
     ShowOptionsTab(
-        chrome::kAdvancedOptionsSubPage + kHashMark +
+        chrome::kAdvancedOptionsSubPage + std::string(kHashMark) +
         chrome::kClearBrowserDataSubPage);
   } else {
     window_->ShowClearBrowsingDataDialog();
@@ -1820,7 +1828,7 @@ void Browser::OpenImportSettingsDialog() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
     ShowOptionsTab(
-        chrome::kPersonalOptionsSubPage + kHashMark +
+        chrome::kPersonalOptionsSubPage + std::string(kHashMark) +
         chrome::kImportDataSubPage);
   } else {
     window_->ShowImportDialog();
@@ -1875,8 +1883,8 @@ void Browser::OpenPrivacyDashboardTabAndActivate() {
 }
 
 void Browser::OpenAutoFillHelpTabAndActivate() {
-  AddSelectedTabWithURL(GURL(l10n_util::GetStringUTF8(IDS_AUTOFILL_HELP_URL)),
-                        PageTransition::LINK);
+  GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kAutofillHelpUrl));
+  AddSelectedTabWithURL(help_url, PageTransition::LINK);
 }
 
 void Browser::OpenSearchEngineOptionsDialog() {
@@ -3090,7 +3098,7 @@ void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
     ShowOptionsTab(
-        chrome::kContentSettingsSubPage + kHashMark +
+        chrome::kContentSettingsSubPage + std::string(kHashMark) +
         ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));
   } else {
     window()->ShowContentSettingsWindow(content_type,

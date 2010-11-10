@@ -54,7 +54,11 @@ namespace {
 
 // The URL for the the Learn More page shown on incognito new tab.
 const char kLearnMoreIncognitoUrl[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=95464";
+#else
     "http://www.google.com/support/chrome/bin/answer.py?answer=95464";
+#endif
 
 // The URL for bookmark sync service help.
 const char kSyncServiceHelpUrl[] =

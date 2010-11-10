@@ -170,6 +170,15 @@ extern const char kLanguageOptionsSubPage[];
 extern const char kSystemOptionsSubPage[];
 #endif
 
+// "What do these mean?" URL for the Page Info bubble.
+extern const char kPageInfoHelpCenterURL[];
+
+// "Learn more" URL for "Aw snap" page.
+extern const char kCrashReasonURL[];
+
+// "Learn more" URL for the Privacy section under Options.
+extern const char kPrivacyLearnMoreURL[];
+
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
 void RegisterChromeSchemes();

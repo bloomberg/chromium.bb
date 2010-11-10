@@ -17,7 +17,9 @@
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
 #import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cert_status_flags.h"
@@ -195,7 +197,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 }
 
 - (IBAction)showHelpPage:(id)sender {
-  GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }

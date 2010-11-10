@@ -8,11 +8,23 @@
 #include "base/metrics/histogram.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+
+namespace {
+
+const char kAboutGoogleTranslateUrl[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=173424";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=173424";
+#endif
+
+}  // namespace
 
 OptionsMenuModel::OptionsMenuModel(
     TranslateInfoBarDelegate* translate_delegate)
@@ -111,10 +123,10 @@ void OptionsMenuModel::ExecuteCommand(int command_id) {
     case IDC_TRANSLATE_OPTIONS_ABOUT: {
       TabContents* tab_contents = translate_infobar_delegate_->tab_contents();
       if (tab_contents) {
-        string16 url = l10n_util::GetStringUTF16(
-            IDS_ABOUT_GOOGLE_TRANSLATE_URL);
-        tab_contents->OpenURL(GURL(url), GURL(), NEW_FOREGROUND_TAB,
-            PageTransition::LINK);
+        GURL about_url = google_util::AppendGoogleLocaleParam(
+            GURL(kAboutGoogleTranslateUrl));
+        tab_contents->OpenURL(
+            about_url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
       }
       break;
     }
