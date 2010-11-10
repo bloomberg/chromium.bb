@@ -3238,3 +3238,19 @@
    ...
    fun:CERT_PKIXVerifyCert
 }
+{
+   bug_62674
+   Memcheck:Addr4
+   fun:_ZN3net25SingleRequestHostResolver6CancelEv
+   fun:_ZN3net25SingleRequestHostResolverD1Ev
+   fun:_ZN3net13TCPConnectJobD0Ev
+   fun:_Z26STLDeleteContainerPointersISt23_Rb_tree_const_iteratorIPN3net10ConnectJobEEEvT_S5_
+   fun:_Z17STLDeleteElementsISt3setIPN3net10ConnectJobESt4lessIS3_ESaIS3_EEEvPT_
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper5Group13RemoveAllJobsEv
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper20CancelAllConnectJobsEv
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper5FlushEv
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelperD1Ev
+   fun:_ZN3net20ClientSocketPoolBaseINS_15TCPSocketParamsEED1Ev
+   fun:_ZN3net19TCPClientSocketPoolD0Ev
+   fun:_ZN10scoped_ptrIN3net19TCPClientSocketPoolEED1Ev
+}
