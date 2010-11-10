@@ -167,7 +167,7 @@ bool BrowserFrameWin::GetAccelerator(int cmd_id,
 }
 
 void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
-  BrowserList::WindowsSessionEnding();
+  BrowserList::SessionEnding();
 }
 
 void BrowserFrameWin::OnEnterSizeMove() {

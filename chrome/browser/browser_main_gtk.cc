@@ -34,7 +34,7 @@ int BrowserX11IOErrorHandler(Display* d) {
   if (!g_in_x11_io_error_handler) {
     g_in_x11_io_error_handler = true;
     LOG(ERROR) << "X IO Error detected";
-    BrowserList::WindowsSessionEnding();
+    BrowserList::SessionEnding();
   }
 
   return 0;

@@ -107,8 +107,8 @@ class BrowserList {
   // message.
   static void CloseAllBrowsers();
 
-  // Begins shutdown of the application when the Windows session is ending.
-  static void WindowsSessionEnding();
+  // Begins shutdown of the application when the session is ending.
+  static void SessionEnding();
 
   // Returns true if there is at least one Browser with the specified profile.
   static bool HasBrowserWithProfile(Profile* profile);
@@ -204,11 +204,11 @@ class TabContentsIterator {
   }
 
   // Incrementing operators, valid as long as !Done()
-  TabContents* operator++() { // ++preincrement
+  TabContents* operator++() {  // ++preincrement
     Advance();
     return cur_;
   }
-  TabContents* operator++(int) { // postincrement++
+  TabContents* operator++(int) {  // postincrement++
     TabContents* tmp = cur_;
     Advance();
     return tmp;

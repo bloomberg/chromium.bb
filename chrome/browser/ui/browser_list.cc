@@ -294,7 +294,7 @@ void BrowserList::CloseAllBrowsersAndExit() {
 }
 
 // static
-void BrowserList::WindowsSessionEnding() {
+void BrowserList::SessionEnding() {
   // EndSession is invoked once per frame. Only do something the first time.
   static bool already_ended = false;
   if (already_ended)
@@ -357,7 +357,7 @@ void BrowserList::StartKeepAlive() {
 
 // static
 void BrowserList::EndKeepAlive() {
-  DCHECK(keep_alive_count_ > 0);
+  DCHECK_GT(keep_alive_count_, 0);
   keep_alive_count_--;
   // Allow the app to shutdown again.
   if (!WillKeepAlive()) {
