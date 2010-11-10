@@ -259,6 +259,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     else:
       os.kill(pid, signal.SIGTERM)
 
+  def GetPrivateInfo(self):
+    """Fetch info from private_tests_info.txt in private dir.
+
+    Returns:
+      a dictionary of items from private_tests_info.txt
+    """
+    private_file = os.path.join(
+        self.DataDir(), 'private', 'private_tests_info.txt')
+    assert os.path.exists(private_file), '%s missing' % private_file
+    return self.EvalDataFrom(private_file)
+
   def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[],
                 expect_retval=None):
     """Poll on a condition until timeout.

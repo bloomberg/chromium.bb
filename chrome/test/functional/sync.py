@@ -12,9 +12,9 @@ class SyncTest(pyauto.PyUITest):
 
   def testSignInToSync(self):
     """Sign in to sync."""
-    # Need to initialize username and password. See crbug.com/60970.
-    username = '<username>@gmail.com'
-    password = '<password>'
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
     self.assertTrue(self.GetSyncInfo()['summary'] == 'OFFLINE_UNUSABLE')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Never')
     self.assertTrue(self.SignInToSync(username, password))
@@ -23,9 +23,9 @@ class SyncTest(pyauto.PyUITest):
 
   def testDisableAndEnableDatatype(self):
     """Sign in, disable and then enable sync for a datatype."""
-    # Need to initialize username and password. See crbug.com/60970.
-    username = '<username>@gmail.com'
-    password = '<password>'
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
     self.assertTrue(self.SignInToSync(username, password))
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
@@ -36,9 +36,9 @@ class SyncTest(pyauto.PyUITest):
 
   def testRestartBrowser(self):
     """Sign in to sync and restart the browser."""
-    # Need to initialize username and password. See crbug.com/60970.
-    username = '<username>@gmail.com'
-    password = '<password>'
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
     self.assertTrue(self.SignInToSync(username, password))
     self.assertTrue(self.GetSyncInfo()['summary'] == 'READY')
     self.assertTrue(self.GetSyncInfo()['last synced'] == 'Just now')
