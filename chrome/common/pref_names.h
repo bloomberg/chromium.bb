@@ -400,6 +400,12 @@ extern const char kSignedSettingsTempStorage[];
 
 extern const char kRegisteredBackgroundContents[];
 
+extern const char kAuthSchemes[];
+extern const char kDisableAuthNegotiateCnameLookup[];
+extern const char kEnableAuthNegotiatePort[];
+extern const char kAuthServerWhitelist[];
+extern const char kAuthNegotiateDelegateWhitelist[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

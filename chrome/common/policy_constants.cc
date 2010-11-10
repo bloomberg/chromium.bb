@@ -57,6 +57,12 @@ const char kJavascriptEnabled[] = "JavascriptEnabled";
 const char kSavingBrowserHistoryDisabled[] = "SavingBrowserHistoryDisabled";
 const char kDeveloperToolsDisabled[] = "DeveloperToolsDisabled";
 const char kBlockThirdPartyCookies[] = "BlockThirdPartyCookies";
+const char kAuthSchemes[] = "AuthSchemes";
+const char kDisableAuthNegotiateCnameLookup[] =
+    "DisableAuthNegotiateCnameLookup";
+const char kEnableAuthNegotiatePort[] = "EnableAuthNegotiatePort";
+const char kAuthServerWhitelist[] = "AuthServerWhitelist";
+const char kAuthNegotiateDelegateWhitelist[] = "AuthNegotiateDelegateWhitelist";
 
 // Chrome Frame specific policy constants
 const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";
