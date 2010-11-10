@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ppapi/c/dev/ppb_url_response_info_dev.h"
+#include "ppapi/c/ppb_url_response_info.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace WebKit {
@@ -23,13 +23,13 @@ class URLResponseInfo : public Resource {
 
   // Returns a pointer to the interface implementing PPB_URLResponseInfo that
   // is exposed to the plugin.
-  static const PPB_URLResponseInfo_Dev* GetInterface();
+  static const PPB_URLResponseInfo* GetInterface();
 
   // Resource overrides.
   URLResponseInfo* AsURLResponseInfo() { return this; }
 
   // PPB_URLResponseInfo implementation.
-  PP_Var GetProperty(PP_URLResponseProperty_Dev property);
+  PP_Var GetProperty(PP_URLResponseProperty property);
 
   bool Initialize(const WebKit::WebURLResponse& response);
 

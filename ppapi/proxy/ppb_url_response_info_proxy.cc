@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppb_url_response_info_proxy.h"
 
-#include "ppapi/c/dev/ppb_url_response_info_dev.h"
+#include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -32,7 +32,7 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
   return BoolToPPBool(!!object);
 }
 
-PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty_Dev property) {
+PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetProperty(
@@ -40,11 +40,11 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty_Dev property) {
   return result.Return(dispatcher);
 }
 
-PP_Resource GetBody(PP_Resource response) {
+PP_Resource GetBodyAsFileRef(PP_Resource response) {
   PP_Resource result = 0;
   /*
   Dispatcher* dispatcher = PluginDispatcher::Get();
-  dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBody(
+  dispatcher->Send(new PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef(
       INTERFACE_ID_PPB_URL_RESPONSE_INFO, response, &result));
   // TODO(brettw) when we have FileRef proxied, make an object from that
   // ref so we can track it properly and then uncomment this.
@@ -52,10 +52,10 @@ PP_Resource GetBody(PP_Resource response) {
   return result;
 }
 
-const PPB_URLResponseInfo_Dev ppb_urlresponseinfo = {
+const PPB_URLResponseInfo ppb_urlresponseinfo = {
   &IsURLResponseInfo,
   &GetProperty,
-  &GetBody
+  &GetBodyAsFileRef
 };
 
 }  // namespace
@@ -89,8 +89,8 @@ void PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PPB_URLResponseInfo_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                         OnMsgGetProperty)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetBody,
-                        OnMsgGetBody)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
+                        OnMsgGetBodyAsFileRef)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages.
 }
@@ -100,12 +100,13 @@ void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(
     int32_t property,
     SerializedVarReturnValue result) {
   result.Return(dispatcher(), ppb_url_response_info_target()->GetProperty(
-      response, static_cast<PP_URLResponseProperty_Dev>(property)));
+      response, static_cast<PP_URLResponseProperty>(property)));
 }
 
-void PPB_URLResponseInfo_Proxy::OnMsgGetBody(PP_Resource response,
-                                             PP_Resource* file_ref_result) {
-  *file_ref_result = ppb_url_response_info_target()->GetBody(response);
+void PPB_URLResponseInfo_Proxy::OnMsgGetBodyAsFileRef(
+    PP_Resource response,
+    PP_Resource* file_ref_result) {
+  *file_ref_result = ppb_url_response_info_target()->GetBodyAsFileRef(response);
 }
 
 }  // namespace proxy

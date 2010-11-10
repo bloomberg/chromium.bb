@@ -11,8 +11,8 @@
 
 namespace pp {
 class FileIO_Dev;
-class URLLoader_Dev;
-class URLRequestInfo_Dev;
+class URLLoader;
+class URLRequestInfo;
 }
 
 class TestURLLoader : public TestCase {
@@ -25,9 +25,9 @@ class TestURLLoader : public TestCase {
 
  private:
   std::string ReadEntireFile(pp::FileIO_Dev* file_io, std::string* data);
-  std::string ReadEntireResponseBody(pp::URLLoader_Dev* loader,
+  std::string ReadEntireResponseBody(pp::URLLoader* loader,
                                      std::string* body);
-  std::string LoadAndCompareBody(const pp::URLRequestInfo_Dev& request,
+  std::string LoadAndCompareBody(const pp::URLRequestInfo& request,
                                  const std::string& expected_body);
 
   std::string TestBasicGET();

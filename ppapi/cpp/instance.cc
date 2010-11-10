@@ -8,8 +8,6 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/cpp/common.h"
 #include "ppapi/cpp/dev/graphics_3d_dev.h"
-#include "ppapi/cpp/dev/scrollbar_dev.h"
-#include "ppapi/cpp/dev/widget_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/logging.h"
@@ -53,7 +51,7 @@ void Instance::DidChangeFocus(bool /*has_focus*/) {
 }
 
 
-bool Instance::HandleDocumentLoad(const URLLoader_Dev& /*url_loader*/) {
+bool Instance::HandleDocumentLoad(const URLLoader& /*url_loader*/) {
   return false;
 }
 

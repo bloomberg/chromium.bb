@@ -9,16 +9,16 @@
 
 #include "ppapi/c/dev/ppb_file_io_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
-#include "ppapi/c/dev/ppb_url_loader_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/cpp/dev/file_io_dev.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/dev/file_system_dev.h"
-#include "ppapi/cpp/dev/url_loader_dev.h"
-#include "ppapi/cpp/dev/url_request_info_dev.h"
-#include "ppapi/cpp/dev/url_response_info_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -62,7 +62,7 @@ std::string TestURLLoader::ReadEntireFile(pp::FileIO_Dev* file_io,
   return "";
 }
 
-std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader_Dev* loader,
+std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader* loader,
                                                   std::string* body) {
   TestCompletionCallback callback;
   char buf[256];
@@ -82,18 +82,18 @@ std::string TestURLLoader::ReadEntireResponseBody(pp::URLLoader_Dev* loader,
 }
 
 std::string TestURLLoader::LoadAndCompareBody(
-    const pp::URLRequestInfo_Dev& request,
+    const pp::URLRequestInfo& request,
     const std::string& expected_body) {
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("URLLoader::Open", rv);
 
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();
@@ -114,13 +114,13 @@ std::string TestURLLoader::LoadAndCompareBody(
 }
 
 std::string TestURLLoader::TestBasicGET() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
   return LoadAndCompareBody(request, "hello\n");
 }
 
 std::string TestURLLoader::TestBasicPOST() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("/echo");
   request.SetMethod("POST");
   std::string postdata("postdata");
@@ -129,7 +129,7 @@ std::string TestURLLoader::TestBasicPOST() {
 }
 
 std::string TestURLLoader::TestCompoundBodyPOST() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("/echo");
   request.SetMethod("POST");
   std::string postdata1("post");
@@ -140,7 +140,7 @@ std::string TestURLLoader::TestCompoundBodyPOST() {
 }
 
 std::string TestURLLoader::TestEmptyDataPOST() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("/echo");
   request.SetMethod("POST");
   request.AppendDataToBody("", 0);
@@ -148,7 +148,7 @@ std::string TestURLLoader::TestEmptyDataPOST() {
 }
 
 std::string TestURLLoader::TestBinaryDataPOST() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("/echo");
   request.SetMethod("POST");
   const char postdata_chars[] =
@@ -160,14 +160,14 @@ std::string TestURLLoader::TestBinaryDataPOST() {
 }
 
 std::string TestURLLoader::TestCustomRequestHeader() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("/echoheader?Foo");
   request.SetHeaders("Foo: 1");
   return LoadAndCompareBody(request, "1");
 }
 
 std::string TestURLLoader::TestIgnoresBogusContentLength() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("/echo");
   request.SetMethod("POST");
   request.SetHeaders("Content-Length: 400");
@@ -177,27 +177,27 @@ std::string TestURLLoader::TestIgnoresBogusContentLength() {
 }
 
 std::string TestURLLoader::TestStreamToFile() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return ReportError("URLLoader::Open", rv);
 
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();
   if (status_code != 200)
     return "Unexpected HTTP status code";
 
-  pp::FileRef_Dev body(response_info.GetBody());
+  pp::FileRef_Dev body(response_info.GetBodyAsFileRef());
   if (body.is_null())
     return "URLResponseInfo::GetBody returned null";
 
@@ -234,12 +234,12 @@ std::string TestURLLoader::TestStreamToFile() {
 }
 
 std::string TestURLLoader::TestSameOriginRestriction() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("http://www.google.com/");
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -259,14 +259,14 @@ std::string TestURLLoader::TestSameOriginRestriction() {
 // This test should cause a redirect and ensure that the loader runs
 // the callback, rather than following the redirect.
 std::string TestURLLoader::TestAuditURLRedirect() {
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   // This path will cause the server to return a 301 redirect.
   request.SetURL("/server-redirect?www.google.com");
   request.SetFollowRedirects(false);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
@@ -275,7 +275,7 @@ std::string TestURLLoader::TestAuditURLRedirect() {
 
   // Checks that the response indicates a redirect, and that the URL
   // is correct.
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();

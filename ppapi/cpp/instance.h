@@ -16,7 +16,6 @@
 #include <map>
 #include <string>
 
-#include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -33,8 +32,7 @@ class Point;
 class Rect;
 class Rect;
 class Resource;
-class Scrollbar_Dev;
-class URLLoader_Dev;
+class URLLoader;
 class Var;
 class Widget_Dev;
 
@@ -69,7 +67,7 @@ class Instance {
   virtual bool HandleInputEvent(const PP_InputEvent& event);
 
   /** See PPP_Instance.HandleDocumentLoad. */
-  virtual bool HandleDocumentLoad(const URLLoader_Dev& url_loader);
+  virtual bool HandleDocumentLoad(const URLLoader& url_loader);
 
   /** See PPP_Instance.GetInstanceObject. */
   virtual Var GetInstanceObject();

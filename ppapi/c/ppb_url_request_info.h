@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_C_DEV_PPB_URL_REQUEST_INFO_DEV_H_
-#define PPAPI_C_DEV_PPB_URL_REQUEST_INFO_DEV_H_
+#ifndef PPAPI_C_PPB_URL_REQUEST_INFO_H_
+#define PPAPI_C_PPB_URL_REQUEST_INFO_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_module.h"
@@ -31,13 +31,11 @@ typedef enum {
   //
   // Boolean (default = PP_FALSE).
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS
+} PP_URLRequestProperty;
 
-  // TODO(darin): Add security/privacy options?
-} PP_URLRequestProperty_Dev;
+#define PPB_URLREQUESTINFO_INTERFACE "PPB_URLRequestInfo;1"
 
-#define PPB_URLREQUESTINFO_DEV_INTERFACE "PPB_URLRequestInfo(Dev);0.2"
-
-struct PPB_URLRequestInfo_Dev {
+struct PPB_URLRequestInfo {
   // Create a new URLRequestInfo object.  Returns 0 if the module is invalid.
   PP_Resource (*Create)(PP_Module module);
 
@@ -50,7 +48,7 @@ struct PPB_URLRequestInfo_Dev {
   // invalid, PP_TRUE on success.  The value property must be the correct type
   // according to the property being set.
   PP_Bool (*SetProperty)(PP_Resource request,
-                         PP_URLRequestProperty_Dev property,
+                         PP_URLRequestProperty property,
                          struct PP_Var value);
 
   // Append data to the request body.
@@ -84,4 +82,4 @@ struct PPB_URLRequestInfo_Dev {
                               PP_Time expected_last_modified_time);
 };
 
-#endif  // PPAPI_C_DEV_PPB_URL_REQUEST_INFO_DEV_H_
+#endif  // PPAPI_C_PPB_URL_REQUEST_INFO_H_

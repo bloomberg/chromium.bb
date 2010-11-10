@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_C_DEV_PPB_URL_LOADER_DEV_H_
-#define PPAPI_C_DEV_PPB_URL_LOADER_DEV_H_
+#ifndef PPAPI_C_PPB_URL_LOADER_H_
+#define PPAPI_C_PPB_URL_LOADER_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
@@ -12,7 +12,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_URLLOADER_DEV_INTERFACE "PPB_URLLoader(Dev);0.2"
+#define PPB_URLLOADER_INTERFACE "PPB_URLLoader;1"
 
 // The interface for loading URLs.
 //
@@ -28,7 +28,7 @@ struct PP_CompletionCallback;
 // downloaded file to be complete.  The downloaded file may be accessed via the
 // GetBody method of the URLResponseInfo returned in step #4.
 //
-struct PPB_URLLoader_Dev {
+struct PPB_URLLoader {
   // Create a new URLLoader object.  Returns 0 if the instance is invalid.  The
   // URLLoader is associated with a particular instance, so that any UI dialogs
   // that need to be shown to the user can be positioned relative to the window
@@ -106,4 +106,4 @@ struct PPB_URLLoader_Dev {
   void (*Close)(PP_Resource loader);
 };
 
-#endif  // PPAPI_C_DEV_PPB_URL_LOADER_DEV_H_
+#endif  // PPAPI_C_PPB_URL_LOADER_H_

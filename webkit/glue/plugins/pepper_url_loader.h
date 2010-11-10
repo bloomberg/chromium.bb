@@ -9,13 +9,13 @@
 
 #include "base/scoped_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/dev/ppb_url_loader_trusted_dev.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
-struct PPB_URLLoader_Dev;
-struct PPB_URLLoaderTrusted_Dev;
+struct PPB_URLLoader;
+struct PPB_URLLoaderTrusted;
 
 namespace WebKit {
 class WebFrame;
@@ -37,11 +37,11 @@ class URLLoader : public Resource,
 
   // Returns a pointer to the interface implementing PPB_URLLoader that is
   // exposed to the plugin.
-  static const PPB_URLLoader_Dev* GetInterface();
+  static const PPB_URLLoader* GetInterface();
 
   // Returns a pointer to the interface implementing PPB_URLLoaderTrusted that
   // is exposed to the plugin.
-  static const PPB_URLLoaderTrusted_Dev* GetTrustedInterface();
+  static const PPB_URLLoaderTrusted* GetTrustedInterface();
 
   // Resource overrides.
   URLLoader* AsURLLoader() { return this; }

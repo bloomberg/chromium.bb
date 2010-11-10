@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_C_DEV_PPB_URL_RESPONSE_INFO_DEV_H_
-#define PPAPI_C_DEV_PPB_URL_RESPONSE_INFO_DEV_H_
+#ifndef PPAPI_C_PPB_URL_RESPONSE_INFO_H_
+#define PPAPI_C_PPB_URL_RESPONSE_INFO_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_resource.h"
@@ -16,11 +16,11 @@ typedef enum {
   PP_URLRESPONSEPROPERTY_STATUSCODE,      // int32
   PP_URLRESPONSEPROPERTY_STATUSLINE,      // string
   PP_URLRESPONSEPROPERTY_HEADERS          // string, \n-delim
-} PP_URLResponseProperty_Dev;
+} PP_URLResponseProperty;
 
-#define PPB_URLRESPONSEINFO_DEV_INTERFACE "PPB_URLResponseInfo(Dev);0.2"
+#define PPB_URLRESPONSEINFO_INTERFACE "PPB_URLResponseInfo;1"
 
-struct PPB_URLResponseInfo_Dev {
+struct PPB_URLResponseInfo {
   // Returns PP_TRUE if the given resource is an URLResponseInfo. Returns
   // PP_FALSE if the resource is invalid or some type other than an
   // URLResponseInfo.
@@ -29,7 +29,7 @@ struct PPB_URLResponseInfo_Dev {
   // Gets a response property.  Return PP_VarType_Void if an input parameter is
   // invalid.
   struct PP_Var (*GetProperty)(PP_Resource response,
-                               PP_URLResponseProperty_Dev property);
+                               PP_URLResponseProperty property);
 
   // Returns a FileRef pointing to the file containing the response body.  This
   // is only valid if PP_URLREQUESTPROPERTY_STREAMTOFILE was set on the
@@ -37,7 +37,7 @@ struct PPB_URLResponseInfo_Dev {
   // until the URLLoader associated with this URLResponseInfo is closed or
   // destroyed.  Returns 0 if PP_URLREQUESTPROPERTY_STREAMTOFILE was not
   // requested or if the URLLoader has not been opened yet.
-  PP_Resource (*GetBody)(PP_Resource response);
+  PP_Resource (*GetBodyAsFileRef)(PP_Resource response);
 };
 
-#endif  // PPAPI_C_DEV_PPB_URL_RESPONSE_INFO_DEV_H_
+#endif  // PPAPI_C_PPB_URL_RESPONSE_INFO_H_

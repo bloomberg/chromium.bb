@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/dev/ppb_url_loader_dev.h"
-#include "ppapi/c/dev/ppb_url_loader_trusted_dev.h"
+#include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -142,7 +142,7 @@ void Close(PP_Resource loader_id) {
   loader->Close();
 }
 
-const PPB_URLLoader_Dev ppb_urlloader = {
+const PPB_URLLoader ppb_urlloader = {
   &Create,
   &IsURLLoader,
   &Open,
@@ -171,7 +171,7 @@ void SetStatusCallback(PP_Resource loader_id,
   loader->SetStatusCallback(cb);
 }
 
-const PPB_URLLoaderTrusted_Dev ppb_urlloadertrusted = {
+const PPB_URLLoaderTrusted ppb_urlloadertrusted = {
   &GrantUniversalAccess,
   &SetStatusCallback
 };
@@ -207,12 +207,12 @@ URLLoader::~URLLoader() {
 }
 
 // static
-const PPB_URLLoader_Dev* URLLoader::GetInterface() {
+const PPB_URLLoader* URLLoader::GetInterface() {
   return &ppb_urlloader;
 }
 
 // static
-const PPB_URLLoaderTrusted_Dev* URLLoader::GetTrustedInterface() {
+const PPB_URLLoaderTrusted* URLLoader::GetTrustedInterface() {
   return &ppb_urlloadertrusted;
 }
 

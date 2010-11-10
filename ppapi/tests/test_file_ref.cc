@@ -12,11 +12,11 @@
 #include "ppapi/cpp/dev/file_io_dev.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/dev/file_system_dev.h"
-#include "ppapi/cpp/dev/url_loader_dev.h"
-#include "ppapi/cpp/dev/url_request_info_dev.h"
-#include "ppapi/cpp/dev/url_response_info_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
+#include "ppapi/cpp/url_response_info.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -68,27 +68,27 @@ std::string TestFileRef::TestGetFileSystemType() {
   if (file_ref_temp.GetFileSystemType() != PP_FILESYSTEMTYPE_LOCALTEMPORARY)
     return "file_ref_temp expected to be temporary.";
 
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return "URLLoader::Open() failed.";
 
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();
   if (status_code != 200)
     return "Unexpected HTTP status code";
 
-  pp::FileRef_Dev file_ref_ext(response_info.GetBody());
+  pp::FileRef_Dev file_ref_ext(response_info.GetBodyAsFileRef());
   if (file_ref_ext.GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL)
     return "file_ref_ext expected to be external.";
 
@@ -117,27 +117,27 @@ std::string TestFileRef::TestGetName() {
   if (name != "/")
     return ReportMismatch("FileRef::GetName", name, "/");
 
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return "URLLoader::Open() failed.";
 
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();
   if (status_code != 200)
     return "Unexpected HTTP status code";
 
-  pp::FileRef_Dev file_ref_ext(response_info.GetBody());
+  pp::FileRef_Dev file_ref_ext(response_info.GetBodyAsFileRef());
   name = file_ref_ext.GetName().AsString();
   if (name != "")
     return ReportMismatch("FileRef::GetName", name, "<empty string>");
@@ -161,27 +161,27 @@ std::string TestFileRef::TestGetPath() {
   if (path != kTempFilePath)
     return ReportMismatch("FileRef::GetPath", path, kTempFilePath);
 
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return "URLLoader::Open() failed.";
 
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();
   if (status_code != 200)
     return "Unexpected HTTP status code";
 
-  pp::FileRef_Dev file_ref_ext(response_info.GetBody());
+  pp::FileRef_Dev file_ref_ext(response_info.GetBodyAsFileRef());
   if (!file_ref_ext.GetPath().is_undefined())
     return "The path of an external FileRef should be void.";
 
@@ -216,27 +216,27 @@ std::string TestFileRef::TestGetParent() {
   if (parent_path != "/")
     return ReportMismatch("FileRef::GetParent", parent_path, "/");
 
-  pp::URLRequestInfo_Dev request;
+  pp::URLRequestInfo request;
   request.SetURL("test_url_loader_data/hello.txt");
   request.SetStreamToFile(true);
 
   TestCompletionCallback callback;
 
-  pp::URLLoader_Dev loader(*instance_);
+  pp::URLLoader loader(*instance_);
   int32_t rv = loader.Open(request, callback);
   if (rv == PP_ERROR_WOULDBLOCK)
     rv = callback.WaitForResult();
   if (rv != PP_OK)
     return "URLLoader::Open() failed.";
 
-  pp::URLResponseInfo_Dev response_info(loader.GetResponseInfo());
+  pp::URLResponseInfo response_info(loader.GetResponseInfo());
   if (response_info.is_null())
     return "URLLoader::GetResponseInfo returned null";
   int32_t status_code = response_info.GetStatusCode();
   if (status_code != 200)
     return "Unexpected HTTP status code";
 
-  pp::FileRef_Dev file_ref_ext(response_info.GetBody());
+  pp::FileRef_Dev file_ref_ext(response_info.GetBodyAsFileRef());
   if (!file_ref_ext.GetParent().is_null())
     return "The parent of an external FileRef should be null.";
 

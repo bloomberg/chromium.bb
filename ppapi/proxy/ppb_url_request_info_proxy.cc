@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppb_url_request_info_proxy.h"
 
-#include "ppapi/c/dev/ppb_url_request_info_dev.h"
+#include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -44,7 +44,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 }
 
 PP_Bool SetProperty(PP_Resource request_id,
-                    PP_URLRequestProperty_Dev property,
+                    PP_URLRequestProperty property,
                     PP_Var var) {
   Dispatcher* dispatcher = PluginDispatcher::Get();
   dispatcher->Send(new PpapiHostMsg_PPBURLRequestInfo_SetProperty(
@@ -84,7 +84,7 @@ PP_Bool AppendFileToBody(PP_Resource request_id,
   return PP_TRUE;
 }
 
-const PPB_URLRequestInfo_Dev ppb_urlrequestinfo = {
+const PPB_URLRequestInfo ppb_urlrequestinfo = {
   &Create,
   &IsURLRequestInfo,
   &SetProperty,
@@ -135,7 +135,7 @@ void PPB_URLRequestInfo_Proxy::OnMsgSetProperty(
     int32_t property,
     SerializedVarReceiveInput value) {
   ppb_url_request_info_target()->SetProperty(request,
-      static_cast<PP_URLRequestProperty_Dev>(property),
+      static_cast<PP_URLRequestProperty>(property),
       value.Get(dispatcher()));
 }
 

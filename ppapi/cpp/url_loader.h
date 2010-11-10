@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_URL_LOADER_DEV_H_
-#define PPAPI_CPP_DEV_URL_LOADER_DEV_H_
+#ifndef PPAPI_CPP_URL_LOADER_H_
+#define PPAPI_CPP_URL_LOADER_H_
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/cpp/resource.h"
@@ -12,8 +12,8 @@ namespace pp {
 
 class CompletionCallback;
 class Instance;
-class URLRequestInfo_Dev;
-class URLResponseInfo_Dev;
+class URLRequestInfo;
+class URLResponseInfo;
 
 // URLLoader provides an API to download URLs.
 //
@@ -75,27 +75,24 @@ class URLResponseInfo_Dev;
 //     bool did_open_;
 //   };
 //
-class URLLoader_Dev : public Resource {
+class URLLoader : public Resource {
  public:
   // Creates an is_null() URLLoader object.
-  URLLoader_Dev() {}
+  URLLoader() {}
 
-  explicit URLLoader_Dev(PP_Resource resource);
-  explicit URLLoader_Dev(const Instance& instance);
-  URLLoader_Dev(const URLLoader_Dev& other);
-
-  URLLoader_Dev& operator=(const URLLoader_Dev& other);
-  void swap(URLLoader_Dev& other);
+  explicit URLLoader(PP_Resource resource);
+  explicit URLLoader(const Instance& instance);
+  URLLoader(const URLLoader& other);
 
   // PPB_URLLoader methods:
-  int32_t Open(const URLRequestInfo_Dev& request_info,
+  int32_t Open(const URLRequestInfo& request_info,
                const CompletionCallback& cc);
   int32_t FollowRedirect(const CompletionCallback& cc);
   bool GetUploadProgress(int64_t* bytes_sent,
                          int64_t* total_bytes_to_be_sent) const;
   bool GetDownloadProgress(int64_t* bytes_received,
                            int64_t* total_bytes_to_be_received) const;
-  URLResponseInfo_Dev GetResponseInfo() const;
+  URLResponseInfo GetResponseInfo() const;
   int32_t ReadResponseBody(char* buffer,
                            int32_t bytes_to_read,
                            const CompletionCallback& cc);
@@ -105,4 +102,4 @@ class URLLoader_Dev : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_URL_LOADER_DEV_H_
+#endif  // PPAPI_CPP_URL_LOADER_H_

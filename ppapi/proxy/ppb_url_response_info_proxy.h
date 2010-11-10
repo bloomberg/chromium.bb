@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PPB_URLResponseInfo_Dev;
+struct PPB_URLResponseInfo;
 
 namespace pp {
 namespace proxy {
@@ -28,8 +28,8 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   // a response info object in the plugin.
   static void TrackPluginResource(PP_Resource response_resource);
 
-  const PPB_URLResponseInfo_Dev* ppb_url_response_info_target() const {
-    return static_cast<const PPB_URLResponseInfo_Dev*>(target_interface());
+  const PPB_URLResponseInfo* ppb_url_response_info_target() const {
+    return static_cast<const PPB_URLResponseInfo*>(target_interface());
   }
 
   // InterfaceProxy implementation.
@@ -42,7 +42,8 @@ class PPB_URLResponseInfo_Proxy : public InterfaceProxy {
   void OnMsgGetProperty(PP_Resource response,
                         int32_t property,
                         SerializedVarReturnValue result);
-  void OnMsgGetBody(PP_Resource response, PP_Resource* file_ref_result);
+  void OnMsgGetBodyAsFileRef(PP_Resource response,
+                             PP_Resource* file_ref_result);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_URLResponseInfo_Proxy);
 };

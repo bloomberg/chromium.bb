@@ -17,13 +17,13 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
-#include "ppapi/cpp/dev/url_loader_dev.h"
-#include "ppapi/cpp/dev/url_request_info_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/url_loader.h"
+#include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/var.h"
 
 static const int kStepsPerCircle = 800;
@@ -88,11 +88,11 @@ class MyFetcher {
   void Start(const pp::Instance& instance,
              const pp::Var& url,
              MyFetcherClient* client) {
-    pp::URLRequestInfo_Dev request;
+    pp::URLRequestInfo request;
     request.SetURL(url);
     request.SetMethod("GET");
 
-    loader_ = pp::URLLoader_Dev(instance);
+    loader_ = pp::URLLoader(instance);
     client_ = client;
 
     pp::CompletionCallback callback =
@@ -102,7 +102,7 @@ class MyFetcher {
       callback.Run(rv);
   }
 
-  void StartWithOpenedLoader(const pp::URLLoader_Dev& loader,
+  void StartWithOpenedLoader(const pp::URLLoader& loader,
                              MyFetcherClient* client) {
     loader_ = loader;
     client_ = client;
@@ -142,7 +142,7 @@ class MyFetcher {
   }
 
   pp::CompletionCallbackFactory<MyFetcher> callback_factory_;
-  pp::URLLoader_Dev loader_;
+  pp::URLLoader loader_;
   MyFetcherClient* client_;
   char buf_[4096];
   std::string data_;
@@ -170,7 +170,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     return true;
   }
 
-  virtual bool HandleDocumentLoad(const pp::URLLoader_Dev& loader) {
+  virtual bool HandleDocumentLoad(const pp::URLLoader& loader) {
     fetcher_ = new MyFetcher();
     fetcher_->StartWithOpenedLoader(loader, this);
     return true;

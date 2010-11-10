@@ -29,7 +29,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/cpp/common.h"
-#include "ppapi/cpp/dev/url_loader_dev.h"
+#include "ppapi/cpp/url_loader.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
@@ -111,7 +111,7 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance pp_instance,
   if (!instance)
     return PP_FALSE;
   return BoolToPPBool(
-      instance->HandleDocumentLoad(URLLoader_Dev(pp_url_loader)));
+      instance->HandleDocumentLoad(URLLoader(pp_url_loader)));
 }
 
 PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {

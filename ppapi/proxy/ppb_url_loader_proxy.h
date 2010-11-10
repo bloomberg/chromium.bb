@@ -14,7 +14,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PPB_URLLoader_Dev;
+struct PPB_URLLoader;
 
 namespace pp {
 namespace proxy {
@@ -31,8 +31,8 @@ class PPB_URLLoader_Proxy : public InterfaceProxy,
   // proxied info for the given browser-supplied URLLoader resource ID.
   static void TrackPluginResource(PP_Resource url_loader_resource);
 
-  const PPB_URLLoader_Dev* ppb_url_loader_target() const {
-    return reinterpret_cast<const PPB_URLLoader_Dev*>(target_interface());
+  const PPB_URLLoader* ppb_url_loader_target() const {
+    return reinterpret_cast<const PPB_URLLoader*>(target_interface());
   }
 
   // InterfaceProxy implementation.

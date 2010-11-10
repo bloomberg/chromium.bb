@@ -27,16 +27,11 @@
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
-#include "ppapi/c/dev/ppb_url_loader_dev.h"
-#include "ppapi/c/dev/ppb_url_loader_trusted_dev.h"
-#include "ppapi/c/dev/ppb_url_request_info_dev.h"
-#include "ppapi/c/dev/ppb_url_response_info_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
-#include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
@@ -45,9 +40,14 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_url_loader.h"
+#include "ppapi/c/ppb_url_request_info.h"
+#include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/trusted/ppb_image_data_trusted.h"
+#include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/glue/plugins/pepper_audio.h"
@@ -233,13 +233,13 @@ const void* GetInterface(const char* name) {
 #endif  // ENABLE_GPU
   if (strcmp(name, PPB_TRANSPORT_DEV_INTERFACE) == 0)
     return Transport::GetInterface();
-  if (strcmp(name, PPB_URLLOADER_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
     return URLLoader::GetInterface();
-  if (strcmp(name, PPB_URLLOADERTRUSTED_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_URLLOADERTRUSTED_INTERFACE) == 0)
     return URLLoader::GetTrustedInterface();
-  if (strcmp(name, PPB_URLREQUESTINFO_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE) == 0)
     return URLRequestInfo::GetInterface();
-  if (strcmp(name, PPB_URLRESPONSEINFO_DEV_INTERFACE) == 0)
+  if (strcmp(name, PPB_URLRESPONSEINFO_INTERFACE) == 0)
     return URLResponseInfo::GetInterface();
   if (strcmp(name, PPB_BUFFER_DEV_INTERFACE) == 0)
     return Buffer::GetInterface();

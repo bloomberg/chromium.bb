@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_C_DEV_PPB_URL_LOADER_TRUSTED_DEV_H_
-#define PPAPI_C_DEV_PPB_URL_LOADER_TRUSTED_DEV_H_
+#ifndef PPAPI_C_PPB_URL_LOADER_TRUSTED_H_
+#define PPAPI_C_PPB_URL_LOADER_TRUSTED_H_
 
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_URLLOADERTRUSTED_DEV_INTERFACE "PPB_URLLoaderTrusted(Dev);0.2"
+#define PPB_URLLOADERTRUSTED_INTERFACE "PPB_URLLoaderTrusted;0.2"
 
 // Callback that indicates the status of the download and upload for the
 // given URLLoader resource.
@@ -22,7 +22,7 @@ typedef void (*PP_URLLoaderTrusted_StatusCallback)(
       int64_t total_bytes_to_be_received);
 
 // Available only to trusted implementations.
-struct PPB_URLLoaderTrusted_Dev {
+struct PPB_URLLoaderTrusted {
   // Grant this URLLoader the capability to make unrestricted cross-origin
   // requests.
   void (*GrantUniversalAccess)(PP_Resource loader);
@@ -42,4 +42,4 @@ struct PPB_URLLoaderTrusted_Dev {
                                  PP_URLLoaderTrusted_StatusCallback cb);
 };
 
-#endif  // PPAPI_C_DEV_PPB_URL_LOADER_DEV_H_
+#endif  // PPAPI_C_PPB_URL_LOADER_H_

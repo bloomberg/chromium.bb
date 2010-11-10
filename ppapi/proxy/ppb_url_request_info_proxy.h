@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/interface_proxy.h"
 
-struct PPB_URLRequestInfo_Dev;
+struct PPB_URLRequestInfo;
 
 namespace pp {
 namespace proxy {
@@ -23,8 +23,8 @@ class PPB_URLRequestInfo_Proxy : public InterfaceProxy {
                            const void* target_interface);
   virtual ~PPB_URLRequestInfo_Proxy();
 
-  const PPB_URLRequestInfo_Dev* ppb_url_request_info_target() const {
-    return static_cast<const PPB_URLRequestInfo_Dev*>(target_interface());
+  const PPB_URLRequestInfo* ppb_url_request_info_target() const {
+    return static_cast<const PPB_URLRequestInfo*>(target_interface());
   }
 
   // InterfaceProxy implementation.

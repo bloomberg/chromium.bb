@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_resource.h"
-#include "ppapi/c/dev/ppb_url_loader_dev.h"
+#include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -188,7 +188,7 @@ void Close(PP_Resource loader_id) {
       INTERFACE_ID_PPB_URL_LOADER, loader_id));
 }
 
-const PPB_URLLoader_Dev ppb_urlloader = {
+const PPB_URLLoader ppb_urlloader = {
   &Create,
   &IsURLLoader,
   &Open,

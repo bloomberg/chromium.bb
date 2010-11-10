@@ -313,7 +313,7 @@ IPC_BEGIN_MESSAGES(PpapiHost)
                              PP_Resource /* response */,
                              int32_t /* property */,
                              pp::proxy::SerializedVar /* result */)
-  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBody,
+  IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                              PP_Resource /* response */,
                              PP_Resource /* file_ref_result */)
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_CPP_DEV_URL_REQUEST_INFO_DEV_H_
-#define PPAPI_CPP_DEV_URL_REQUEST_INFO_DEV_H_
+#ifndef PPAPI_CPP_URL_REQUEST_INFO_H_
+#define PPAPI_CPP_URL_REQUEST_INFO_H_
 
-#include "ppapi/c/dev/ppb_url_request_info_dev.h"
+#include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"
 
@@ -13,16 +13,13 @@ namespace pp {
 
 class FileRef_Dev;
 
-class URLRequestInfo_Dev : public Resource {
+class URLRequestInfo : public Resource {
  public:
-  URLRequestInfo_Dev();
-  URLRequestInfo_Dev(const URLRequestInfo_Dev& other);
+  URLRequestInfo();
+  URLRequestInfo(const URLRequestInfo& other);
 
-  URLRequestInfo_Dev& operator=(const URLRequestInfo_Dev& other);
-  void swap(URLRequestInfo_Dev& other);
-
-  // PPB_URLRequestInfo_Dev methods:
-  bool SetProperty(PP_URLRequestProperty_Dev property, const Var& value);
+  // PPB_URLRequestInfo methods:
+  bool SetProperty(PP_URLRequestProperty property, const Var& value);
   bool AppendDataToBody(const char* data, uint32_t len);
   bool AppendFileToBody(const FileRef_Dev& file_ref,
                         PP_Time expected_last_modified_time = 0);
@@ -54,4 +51,4 @@ class URLRequestInfo_Dev : public Resource {
 
 }  // namespace pp
 
-#endif  // PPAPI_CPP_DEV_URL_REQUEST_INFO_DEV_H_
+#endif  // PPAPI_CPP_URL_REQUEST_INFO_H_

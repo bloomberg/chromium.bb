@@ -62,7 +62,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 }
 
 PP_Bool SetProperty(PP_Resource request_id,
-                    PP_URLRequestProperty_Dev property,
+                    PP_URLRequestProperty property,
                     PP_Var var) {
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
@@ -117,7 +117,7 @@ PP_Bool AppendFileToBody(PP_Resource request_id,
                                                 expected_last_modified_time));
 }
 
-const PPB_URLRequestInfo_Dev ppb_urlrequestinfo = {
+const PPB_URLRequestInfo ppb_urlrequestinfo = {
   &Create,
   &IsURLRequestInfo,
   &SetProperty,
@@ -164,11 +164,11 @@ URLRequestInfo::~URLRequestInfo() {
 }
 
 // static
-const PPB_URLRequestInfo_Dev* URLRequestInfo::GetInterface() {
+const PPB_URLRequestInfo* URLRequestInfo::GetInterface() {
   return &ppb_urlrequestinfo;
 }
 
-bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty_Dev property,
+bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty property,
                                         bool value) {
   switch (property) {
     case PP_URLREQUESTPROPERTY_STREAMTOFILE:
@@ -189,7 +189,7 @@ bool URLRequestInfo::SetBooleanProperty(PP_URLRequestProperty_Dev property,
   }
 }
 
-bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty_Dev property,
+bool URLRequestInfo::SetStringProperty(PP_URLRequestProperty property,
                                        const std::string& value) {
   // TODO(darin): Validate input.  Perhaps at a different layer?
   switch (property) {
