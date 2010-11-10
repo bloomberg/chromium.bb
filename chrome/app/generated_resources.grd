@@ -8988,7 +8988,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Your computer will restart when the update is complete.
       </message>
       <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
-        Welcome to <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>
+        Let's get started
       </message>
       <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
         Select a network:

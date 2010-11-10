@@ -337,8 +337,7 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       delegate_->language_switch_menu()->GetCurrentLocaleName());
   keyboards_menubutton_->SetText(
       delegate_->keyboard_switch_menu()->GetCurrentKeyboardName());
-  welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
-                          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
+  welcome_label_->SetText(l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE));
   select_language_label_->SetText(
       l10n_util::GetString(IDS_LANGUAGE_SELECTION_SELECT));
   select_keyboard_label_->SetText(
