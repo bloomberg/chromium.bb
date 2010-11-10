@@ -620,7 +620,7 @@ ExtensionsService* ProfileImpl::GetExtensionsService() {
   return extensions_service_.get();
 }
 
-BackgroundContentsService* ProfileImpl::GetBackgroundContentsService() {
+BackgroundContentsService* ProfileImpl::GetBackgroundContentsService() const {
   return background_contents_service_.get();
 }
 

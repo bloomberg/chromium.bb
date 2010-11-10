@@ -67,18 +67,8 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     return NULL;
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents = new BackgroundContents(
-      site,
-      route_id,
-      profile->GetBackgroundContentsService());
-  string16 appid = ASCIIToUTF16(extension->id());
-  BackgroundContentsOpenedDetails details = { contents, frame_name, appid };
-  NotificationService::current()->Notify(
-      NotificationType::BACKGROUND_CONTENTS_OPENED,
-      Source<Profile>(profile),
-      Details<BackgroundContentsOpenedDetails>(&details));
-
-  return contents;
+  return profile->GetBackgroundContentsService()->CreateBackgroundContents(
+      site, route_id, profile, frame_name, ASCIIToUTF16(extension->id()));
 }
 
 TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(

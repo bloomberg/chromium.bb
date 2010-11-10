@@ -274,7 +274,7 @@ class TestingProfile : public Profile {
   virtual NTPResourceCache* GetNTPResourceCache();
 
   virtual DesktopNotificationService* GetDesktopNotificationService();
-  virtual BackgroundContentsService* GetBackgroundContentsService() {
+  virtual BackgroundContentsService* GetBackgroundContentsService() const {
     return NULL;
   }
   virtual StatusTray* GetStatusTray() {

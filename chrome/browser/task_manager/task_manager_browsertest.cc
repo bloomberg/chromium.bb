@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_navigator.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -115,6 +117,34 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   TabContents* first_tab = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(first_tab);
   browser()->CloseTabContents(first_tab);
+  WaitForResourceChange(2);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeBGContentsChanges) {
+  EXPECT_EQ(0, model()->ResourceCount());
+
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  // Browser and the New Tab Page.
+  EXPECT_EQ(2, model()->ResourceCount());
+
+  // Open a new background contents and make sure we notice that.
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kTitle1File)));
+
+  BackgroundContentsService* service =
+      browser()->profile()->GetBackgroundContentsService();
+  string16 application_id(ASCIIToUTF16("test_app_id"));
+  service->LoadBackgroundContents(browser()->profile(),
+                                  url,
+                                  ASCIIToUTF16("background_page"),
+                                  application_id);
+  WaitForResourceChange(3);
+
+  // Close the background contents and verify that we notice.
+  service->ShutdownAssociatedBackgroundContents(application_id);
   WaitForResourceChange(2);
 }
 

@@ -58,6 +58,16 @@ BackgroundContentsService::~BackgroundContentsService() {
   DCHECK(contents_map_.empty());
 }
 
+std::vector<BackgroundContents*>
+BackgroundContentsService::GetBackgroundContents() const
+{
+  std::vector<BackgroundContents*> contents;
+  for (BackgroundContentsMap::const_iterator it = contents_map_.begin();
+       it != contents_map_.end(); ++it)
+    contents.push_back(it->second.contents);
+  return contents;
+}
+
 void BackgroundContentsService::StartObserving(Profile* profile) {
   // On startup, load our background pages after extension-apps have loaded.
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
@@ -65,9 +75,8 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 
   // Track the lifecycle of all BackgroundContents in the system to allow us
   // to store an up-to-date list of the urls. Start tracking contents when they
-  // have been opened, and stop tracking them when they are closed by script.
-  registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_OPENED,
-                 Source<Profile>(profile));
+  // have been opened via CreateBackgroundContents(), and stop tracking them
+  // when they are closed by script.
   registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_CLOSED,
                  Source<Profile>(profile));
 
@@ -87,18 +96,14 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
 }
 
 void BackgroundContentsService::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY:
       LoadBackgroundContentsFromPrefs(Source<Profile>(source).ptr());
       break;
     case NotificationType::BACKGROUND_CONTENTS_DELETED:
       BackgroundContentsShutdown(Details<BackgroundContents>(details).ptr());
-      break;
-    case NotificationType::BACKGROUND_CONTENTS_OPENED:
-      BackgroundContentsOpened(
-          Details<BackgroundContentsOpenedDetails>(details).ptr());
       break;
     case NotificationType::BACKGROUND_CONTENTS_CLOSED:
       DCHECK(IsTracked(Details<BackgroundContents>(details).ptr()));
@@ -127,6 +132,8 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  DCHECK(extensions_service);
   for (DictionaryValue::key_iterator it = contents->begin_keys();
        it != contents->end_keys(); ++it) {
     DictionaryValue* dict;
@@ -135,14 +142,28 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
     std::string url;
     dict->GetString(kUrlKey, &url);
     dict->GetString(kFrameNameKey, &frame_name);
-    CreateBackgroundContents(profile,
-                             GURL(url),
-                             frame_name,
-                             UTF8ToUTF16(*it));
+
+    // Check to make sure that the parent extension is still enabled.
+    const Extension* extension = extensions_service->GetExtensionById(
+        *it, false);
+
+    if (!extension) {
+      // We should never reach here - it should not be possible for an app
+      // to become uninstalled without the associated BackgroundContents being
+      // unregistered via the EXTENSIONS_UNLOADED notification, unless there's a
+      // crash before we could save our prefs.
+      NOTREACHED() << "No extension found for BackgroundContents - id = "
+                   << *it;
+      return;
+    }
+    LoadBackgroundContents(profile,
+                           GURL(url),
+                           frame_name,
+                           UTF8ToUTF16(*it));
   }
 }
 
-void BackgroundContentsService::CreateBackgroundContents(
+void BackgroundContentsService::LoadBackgroundContents(
     Profile* profile,
     const GURL& url,
     const string16& frame_name,
@@ -155,38 +176,39 @@ void BackgroundContentsService::CreateBackgroundContents(
   DCHECK(url.is_valid());
   DVLOG(1) << "Loading background content url: " << url;
 
-  // Check to make sure that the parent extension is still enabled.
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
-  const Extension* extension = extensions_service->GetExtensionById(
-      UTF16ToASCII(application_id), false);
-
-  if (!extension) {
-    // We should never reach here - it should not be possible for an application
-    // to become uninstalled without the associated BackgroundContents being
-    // unregistered via the EXTENSIONS_UNLOADED notification, unless there's a
-    // crash before we could save our prefs.
-    NOTREACHED() << "No extension found for BackgroundContents - id = "
-                 << application_id;
-    return;
-  }
-
-  BackgroundContents* contents = new BackgroundContents(
+  BackgroundContents* contents = CreateBackgroundContents(
       SiteInstance::CreateSiteInstanceForURL(profile, url),
       MSG_ROUTING_NONE,
-      this);
-
-  // TODO(atwilson): Change this to send a BACKGROUND_CONTENTS_CREATED
-  // notification when we have a listener outside of BackgroundContentsService.
-  BackgroundContentsOpenedDetails details = {contents,
-                                             frame_name,
-                                             application_id};
-  BackgroundContentsOpened(&details);
+      profile,
+      frame_name,
+      application_id);
 
   RenderViewHost* render_view_host = contents->render_view_host();
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
   // startup latency (http://crbug.com/47236).
   render_view_host->CreateRenderView(frame_name);
   render_view_host->NavigateToURL(url);
+}
+
+BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
+    SiteInstance* site,
+    int routing_id,
+    Profile* profile,
+    const string16& frame_name,
+    const string16& application_id) {
+  BackgroundContents* contents = new BackgroundContents(site, routing_id, this);
+
+  // Register the BackgroundContents internally, then send out a notification
+  // to external listeners.
+  BackgroundContentsOpenedDetails details = {contents,
+                                             frame_name,
+                                             application_id};
+  BackgroundContentsOpened(&details);
+  NotificationService::current()->Notify(
+      NotificationType::BACKGROUND_CONTENTS_OPENED,
+      Source<Profile>(profile),
+      Details<BackgroundContentsOpenedDetails>(&details));
+  return contents;
 }
 
 void BackgroundContentsService::RegisterBackgroundContents(

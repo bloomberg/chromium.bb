@@ -204,7 +204,7 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetExtensionsService();
   }
 
-  virtual BackgroundContentsService* GetBackgroundContentsService() {
+  virtual BackgroundContentsService* GetBackgroundContentsService() const {
     return background_contents_service_.get();
   }
 

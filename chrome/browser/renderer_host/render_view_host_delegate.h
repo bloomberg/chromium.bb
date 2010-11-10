@@ -24,6 +24,7 @@
 
 
 class AutomationResourceRoutingDelegate;
+class BackgroundContents;
 struct BookmarkDragData;
 class BookmarkNode;
 struct ContextMenuParams;
@@ -678,6 +679,10 @@ class RenderViewHostDelegate {
   // Return this object cast to a TabContents, if it is one. If the object is
   // not a TabContents, returns NULL.
   virtual TabContents* GetAsTabContents();
+
+  // Return this object cast to a BackgroundContents, if it is one. If the
+  // object is not a BackgroundContents, returns NULL.
+  virtual BackgroundContents* GetAsBackgroundContents();
 
   // Return id number of browser window which this object is attached to. If no
   // browser window is attached to, just return -1.

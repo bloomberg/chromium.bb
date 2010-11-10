@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/tab_contents/background_contents.h"
@@ -45,6 +46,9 @@ class BackgroundContentsService : private NotificationObserver,
   // or NULL if none.
   BackgroundContents* GetAppBackgroundContents(const string16& appid);
 
+  // Returns all currently opened BackgroundContents (used by the task manager).
+  std::vector<BackgroundContents*> GetBackgroundContents() const;
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // BackgroundContents::Delegate implementation.
@@ -53,12 +57,33 @@ class BackgroundContentsService : private NotificationObserver,
                               const gfx::Rect& initial_pos,
                               bool user_gesture);
 
+  // Gets the parent application id for the passed BackgroundContents. Returns
+  // an empty string if no parent application found (e.g. passed
+  // BackgroundContents has already shut down).
+  const string16& GetParentApplicationId(BackgroundContents* contents) const;
+
+  // Creates a new BackgroundContents using the passed |site| and
+  // the |route_id| and begins tracking the object internally so it can be
+  // shutdown if the parent application is uninstalled.
+  // A BACKGROUND_CONTENTS_OPENED notification will be generated with the passed
+  // |frame_name| and |application_id| values, using the passed |profile| as the
+  // Source..
+  BackgroundContents* CreateBackgroundContents(SiteInstance* site,
+                                               int route_id,
+                                               Profile* profile,
+                                               const string16& frame_name,
+                                               const string16& application_id);
+
  private:
   friend class BackgroundContentsServiceTest;
+  friend class MockBackgroundContents;
+  friend class TaskManagerBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            BackgroundContentsCreateDestroy);
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            TestApplicationIDLinkage);
+  FRIEND_TEST_ALL_PREFIXES(TaskManagerBrowserTest,
+                           NoticeBGContentsChanges);
 
   // Registers for various notifications.
   void StartObserving(Profile* profile);
@@ -71,13 +96,13 @@ class BackgroundContentsService : private NotificationObserver,
   // Loads all registered BackgroundContents at startup.
   void LoadBackgroundContentsFromPrefs(Profile* profile);
 
-  // Creates a single BackgroundContents associated with the specified |appid|.
-  // The BackgroundContents frame will be given the name specified by
-  // |frame_name| and navigated to the passed URL.
-  void CreateBackgroundContents(Profile* profile,
-                                const GURL& url,
-                                const string16& frame_name,
-                                const string16& appid);
+  // Creates a single BackgroundContents associated with the specified |appid|,
+  // creates an associated RenderView with the name specified by |frame_name|,
+  // and navigates to the passed |url|.
+  void LoadBackgroundContents(Profile* profile,
+                              const GURL& url,
+                              const string16& frame_name,
+                              const string16& appid);
 
   // Invoked when a new BackgroundContents is opened.
   void BackgroundContentsOpened(BackgroundContentsOpenedDetails* details);
@@ -100,11 +125,6 @@ class BackgroundContentsService : private NotificationObserver,
 
   // Returns true if this BackgroundContents is in the contents_list_.
   bool IsTracked(BackgroundContents* contents) const;
-
-  // Gets the parent application id for the passed BackgroundContents. Returns
-  // an empty string if no parent application found (e.g. passed
-  // BackgroundContents has already shut down).
-  const string16& GetParentApplicationId(BackgroundContents* contents) const;
 
   // PrefService used to store list of background pages (or NULL if this is
   // running under an off-the-record profile).

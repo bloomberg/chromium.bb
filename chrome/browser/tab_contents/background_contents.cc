@@ -218,3 +218,15 @@ void BackgroundContents::ShowCreatedWidget(int route_id,
 void BackgroundContents::ShowCreatedFullscreenWidget(int route_id) {
   NOTIMPLEMENTED();
 }
+
+// static
+BackgroundContents*
+BackgroundContents::GetBackgroundContentsByID(int render_process_id,
+                                              int render_view_id) {
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!render_view_host)
+    return NULL;
+
+  return render_view_host->delegate()->GetAsBackgroundContents();
+}

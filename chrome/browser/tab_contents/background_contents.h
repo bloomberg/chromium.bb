@@ -58,6 +58,7 @@ class BackgroundContents : public RenderViewHostDelegate,
   RenderViewHost* render_view_host() { return render_view_host_; }
 
   // RenderViewHostDelegate implementation.
+  virtual BackgroundContents* GetAsBackgroundContents() { return this; }
   virtual RenderViewHostDelegate::View* GetViewDelegate() { return this; }
   virtual const GURL& GetURL() const { return url_; }
   virtual ViewType::Type GetRenderViewType() const;
@@ -134,6 +135,13 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);
   virtual void ClearInspectorSettings();
+
+  // Helper to find the BackgroundContents that originated the given request.
+  // Can be NULL if the page has been closed or some other error occurs.
+  // Should only be called from the UI thread, since it accesses
+  // BackgroundContents.
+  static BackgroundContents* GetBackgroundContentsByID(int render_process_id,
+                                                       int render_view_id);
 
  protected:
   // Exposed for testing.

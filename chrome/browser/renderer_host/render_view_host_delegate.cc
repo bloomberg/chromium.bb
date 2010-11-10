@@ -97,6 +97,10 @@ TabContents* RenderViewHostDelegate::GetAsTabContents() {
   return NULL;
 }
 
+BackgroundContents* RenderViewHostDelegate::GetAsBackgroundContents() {
+  return NULL;
+}
+
 GURL RenderViewHostDelegate::GetAlternateErrorPageURL() const {
   return GURL();
 }

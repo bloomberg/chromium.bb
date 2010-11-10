@@ -15,13 +15,16 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -29,8 +32,9 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
-#include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
@@ -46,26 +50,82 @@
 #include "gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 
-////////////////////////////////////////////////////////////////////////////////
-// TaskManagerTabContentsResource class
-////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerTabContentsResource::TaskManagerTabContentsResource(
-    TabContents* tab_contents)
-    : tab_contents_(tab_contents),
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerRendererResource class
+////////////////////////////////////////////////////////////////////////////////
+TaskManagerRendererResource::TaskManagerRendererResource(
+    base::ProcessHandle process, RenderViewHost* render_view_host)
+    : process_(process),
+      render_view_host_(render_view_host),
       pending_stats_update_(false),
       v8_memory_allocated_(0),
       v8_memory_used_(0),
       pending_v8_memory_allocated_update_(false) {
-  // We cache the process as when the TabContents is closed the process
-  // becomes NULL and the TaskManager still needs it.
-  process_ = tab_contents_->GetRenderProcessHost()->GetHandle();
+  // We cache the process and pid as when a Tab/BackgroundContents is closed the
+  // process reference becomes NULL and the TaskManager still needs it.
   pid_ = base::GetProcId(process_);
   stats_.images.size = 0;
   stats_.cssStyleSheets.size = 0;
   stats_.scripts.size = 0;
   stats_.xslStyleSheets.size = 0;
   stats_.fonts.size = 0;
+}
+
+TaskManagerRendererResource::~TaskManagerRendererResource() {
+}
+
+void TaskManagerRendererResource::Refresh() {
+  if (!pending_stats_update_) {
+    render_view_host_->Send(new ViewMsg_GetCacheResourceStats);
+    pending_stats_update_ = true;
+  }
+  if (!pending_v8_memory_allocated_update_) {
+    render_view_host_->Send(new ViewMsg_GetV8HeapStats);
+    pending_v8_memory_allocated_update_ = true;
+  }
+}
+
+WebKit::WebCache::ResourceTypeStats
+TaskManagerRendererResource::GetWebCoreCacheStats() const {
+  return stats_;
+}
+
+size_t TaskManagerRendererResource::GetV8MemoryAllocated() const {
+  return v8_memory_allocated_;
+}
+
+size_t TaskManagerRendererResource::GetV8MemoryUsed() const {
+  return v8_memory_used_;
+}
+
+void TaskManagerRendererResource::NotifyResourceTypeStats(
+    const WebKit::WebCache::ResourceTypeStats& stats) {
+  stats_ = stats;
+  pending_stats_update_ = false;
+}
+
+void TaskManagerRendererResource::NotifyV8HeapStats(
+    size_t v8_memory_allocated, size_t v8_memory_used) {
+  v8_memory_allocated_ = v8_memory_allocated;
+  v8_memory_used_ = v8_memory_used;
+  pending_v8_memory_allocated_update_ = false;
+}
+
+base::ProcessHandle TaskManagerRendererResource::GetProcess() const {
+  return process_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerTabContentsResource class
+////////////////////////////////////////////////////////////////////////////////
+
+TaskManagerTabContentsResource::TaskManagerTabContentsResource(
+    TabContents* tab_contents)
+    : TaskManagerRendererResource(
+          tab_contents->GetRenderProcessHost()->GetHandle(),
+          tab_contents->render_view_host()),
+      tab_contents_(tab_contents) {
 }
 
 TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
@@ -95,49 +155,9 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
   return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
 }
 
-void TaskManagerTabContentsResource::Refresh() {
-  if (!pending_stats_update_) {
-    tab_contents_->render_view_host()->Send(new ViewMsg_GetCacheResourceStats);
-    pending_stats_update_ = true;
-  }
-  if (!pending_v8_memory_allocated_update_) {
-    tab_contents_->render_view_host()->Send(new ViewMsg_GetV8HeapStats);
-    pending_v8_memory_allocated_update_ = true;
-  }
-}
-
-WebKit::WebCache::ResourceTypeStats
-    TaskManagerTabContentsResource::GetWebCoreCacheStats() const {
-  return stats_;
-}
-
-size_t TaskManagerTabContentsResource::GetV8MemoryAllocated() const {
-  return v8_memory_allocated_;
-}
-
-size_t TaskManagerTabContentsResource::GetV8MemoryUsed() const {
-  return v8_memory_used_;
-}
-
-void TaskManagerTabContentsResource::NotifyResourceTypeStats(
-    const WebKit::WebCache::ResourceTypeStats& stats) {
-  stats_ = stats;
-  pending_stats_update_ = false;
-}
-
-void TaskManagerTabContentsResource::NotifyV8HeapStats(
-    size_t v8_memory_allocated, size_t v8_memory_used) {
-  v8_memory_allocated_ = v8_memory_allocated;
-  v8_memory_used_ = v8_memory_used;
-  pending_v8_memory_allocated_update_ = false;
-}
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
   return tab_contents_->GetFavIcon();
-}
-
-base::ProcessHandle TaskManagerTabContentsResource::GetProcess() const {
-  return process_;
 }
 
 TabContents* TaskManagerTabContentsResource::GetTabContents() const {
@@ -183,11 +203,11 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
 
   std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
       res_iter = resources_.find(tab_contents);
-  if (res_iter == resources_.end())
+  if (res_iter == resources_.end()) {
     // Can happen if the tab was closed while a network request was being
     // performed.
     return NULL;
-
+  }
   return res_iter->second;
 }
 
@@ -308,6 +328,243 @@ void TaskManagerTabContentsResourceProvider::Observe(NotificationType type,
       // Fall through.
     case NotificationType::TAB_CONTENTS_DISCONNECTED:
       Remove(Source<TabContents>(source).ptr());
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification.";
+      return;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerBackgroundContentsResource class
+////////////////////////////////////////////////////////////////////////////////
+
+SkBitmap* TaskManagerBackgroundContentsResource::default_icon_ = NULL;
+
+TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
+    BackgroundContents* background_contents,
+    const std::wstring& application_name)
+    : TaskManagerRendererResource(
+          background_contents->render_view_host()->process()->GetHandle(),
+          background_contents->render_view_host()),
+      background_contents_(background_contents),
+      application_name_(application_name) {
+  // Just use the same icon that other extension resources do.
+  // TODO(atwilson): Use the favicon when that's available.
+  if (!default_icon_) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
+  }
+  // Ensure that the string has the appropriate direction markers (see comment
+  // in TaskManagerTabContentsResource::GetTitle()).
+  base::i18n::AdjustStringForLocaleDirection(application_name_,
+                                             &application_name_);
+}
+
+TaskManagerBackgroundContentsResource::~TaskManagerBackgroundContentsResource(
+    ) {
+}
+
+std::wstring TaskManagerBackgroundContentsResource::GetTitle() const {
+  std::wstring title = application_name_;
+
+  if (title.empty()) {
+    // No title (can't locate the parent app for some reason) so just display
+    // the URL (properly forced to be LTR).
+    title = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
+        UTF8ToUTF16(background_contents_->GetURL().spec())));
+  }
+  return l10n_util::GetStringF(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title);
+}
+
+
+SkBitmap TaskManagerBackgroundContentsResource::GetIcon() const {
+  return *default_icon_;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerBackgroundContentsResourceProvider class
+////////////////////////////////////////////////////////////////////////////////
+
+TaskManagerBackgroundContentsResourceProvider::
+    TaskManagerBackgroundContentsResourceProvider(TaskManager* task_manager)
+    : updating_(false),
+      task_manager_(task_manager) {
+}
+
+TaskManagerBackgroundContentsResourceProvider::
+    ~TaskManagerBackgroundContentsResourceProvider() {
+}
+
+TaskManager::Resource*
+TaskManagerBackgroundContentsResourceProvider::GetResource(
+    int origin_pid,
+    int render_process_host_id,
+    int routing_id) {
+
+  BackgroundContents* contents = BackgroundContents::GetBackgroundContentsByID(
+      render_process_host_id, routing_id);
+  if (!contents)  // This resource no longer exists.
+    return NULL;
+
+  base::ProcessHandle process_handle =
+      contents->render_view_host()->process()->GetHandle();
+  if (!process_handle) // Process crashed.
+    return NULL;
+
+  int pid = base::GetProcId(process_handle);
+  if (pid != origin_pid)
+    return NULL;
+
+  std::map<BackgroundContents*,
+      TaskManagerBackgroundContentsResource*>::iterator res_iter =
+      resources_.find(contents);
+  if (res_iter == resources_.end())
+    // Can happen if the page went away while a network request was being
+    // performed.
+    return NULL;
+
+  return res_iter->second;
+}
+
+void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
+  DCHECK(!updating_);
+  updating_ = true;
+
+  // Add all the existing BackgroundContents from every profile.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  for (ProfileManager::const_iterator it = profile_manager->begin();
+       it != profile_manager->end(); ++it) {
+    BackgroundContentsService* background_contents_service =
+        (*it)->GetBackgroundContentsService();
+    ExtensionsService* extensions_service = (*it)->GetExtensionsService();
+    std::vector<BackgroundContents*> contents =
+        background_contents_service->GetBackgroundContents();
+    for (std::vector<BackgroundContents*>::iterator iterator = contents.begin();
+         iterator != contents.end(); ++iterator) {
+      std::wstring application_name;
+      // Lookup the name from the parent extension.
+      if (extensions_service) {
+        const string16& application_id =
+            background_contents_service->GetParentApplicationId(*iterator);
+        const Extension* extension = extensions_service->GetExtensionById(
+            UTF16ToUTF8(application_id), false);
+        if (extension)
+          application_name = UTF8ToWide(extension->name());
+      }
+      Add(*iterator, application_name);
+    }
+  }
+
+  // Then we register for notifications to get new BackgroundContents.
+  registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_OPENED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::BACKGROUND_CONTENTS_DELETED,
+                 NotificationService::AllSources());
+}
+
+void TaskManagerBackgroundContentsResourceProvider::StopUpdating() {
+  DCHECK(updating_);
+  updating_ = false;
+
+  // Unregister for notifications
+  registrar_.Remove(this, NotificationType::BACKGROUND_CONTENTS_OPENED,
+                    NotificationService::AllSources());
+  registrar_.Remove(this, NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
+                    NotificationService::AllSources());
+  registrar_.Remove(this, NotificationType::BACKGROUND_CONTENTS_DELETED,
+                    NotificationService::AllSources());
+
+  // Delete all the resources.
+  STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
+
+  resources_.clear();
+}
+
+void TaskManagerBackgroundContentsResourceProvider::AddToTaskManager(
+    BackgroundContents* background_contents,
+    const std::wstring& application_name) {
+  TaskManagerBackgroundContentsResource* resource =
+      new TaskManagerBackgroundContentsResource(background_contents,
+                                                application_name);
+  resources_[background_contents] = resource;
+  task_manager_->AddResource(resource);
+}
+
+void TaskManagerBackgroundContentsResourceProvider::Add(
+    BackgroundContents* contents, const std::wstring& application_name) {
+  if (!updating_)
+    return;
+
+  // Don't add contents whose process is dead.
+  if (!contents->render_view_host()->process()->GetHandle())
+    return;
+
+  // Should never add the same BackgroundContents twice.
+  DCHECK(resources_.find(contents) == resources_.end());
+  AddToTaskManager(contents, application_name);
+}
+
+void TaskManagerBackgroundContentsResourceProvider::Remove(
+    BackgroundContents* contents) {
+  if (!updating_)
+    return;
+  std::map<BackgroundContents*,
+      TaskManagerBackgroundContentsResource*>::iterator iter =
+      resources_.find(contents);
+  DCHECK(iter != resources_.end());
+
+  // Remove the resource from the Task Manager.
+  TaskManagerBackgroundContentsResource* resource = iter->second;
+  task_manager_->RemoveResource(resource);
+  // And from the provider.
+  resources_.erase(iter);
+  // Finally, delete the resource.
+  delete resource;
+}
+
+void TaskManagerBackgroundContentsResourceProvider::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::BACKGROUND_CONTENTS_OPENED: {
+      // Get the name from the parent application. If no parent application is
+      // found, just pass an empty string - BackgroundContentsResource::GetTitle
+      // will display the URL instead in this case. This should never happen
+      // except in rare cases when an extension is being unloaded or chrome is
+      // exiting while the task manager is displayed.
+      std::wstring application_name;
+      ExtensionsService* service =
+          Source<Profile>(source)->GetExtensionsService();
+      if (service) {
+        std::string application_id = UTF16ToUTF8(
+            Details<BackgroundContentsOpenedDetails>(details)->application_id);
+        const Extension* extension =
+            service->GetExtensionById(application_id, false);
+        // Extension can be NULL when running unit tests.
+        if (extension)
+          application_name = UTF8ToWide(extension->name());
+      }
+      Add(Details<BackgroundContentsOpenedDetails>(details)->contents,
+          application_name);
+      break;
+    }
+    case NotificationType::BACKGROUND_CONTENTS_NAVIGATED: {
+      BackgroundContents* contents = Details<BackgroundContents>(details).ptr();
+      // Should never get a NAVIGATED before OPENED.
+      DCHECK(resources_.find(contents) != resources_.end());
+      // Preserve the application name.
+      std::wstring application_name(
+          resources_.find(contents)->second->application_name());
+      Remove(contents);
+      Add(contents, application_name);
+      break;
+    }
+    case NotificationType::BACKGROUND_CONTENTS_DELETED:
+      Remove(Details<BackgroundContents>(details).ptr());
       break;
     default:
       NOTREACHED() << "Unexpected notification.";

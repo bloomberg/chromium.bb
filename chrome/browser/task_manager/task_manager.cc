@@ -82,6 +82,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       new TaskManagerTabContentsResourceProvider(task_manager);
   wc_provider->AddRef();
   providers_.push_back(wc_provider);
+  TaskManagerBackgroundContentsResourceProvider* bc_provider =
+      new TaskManagerBackgroundContentsResourceProvider(task_manager);
+  bc_provider->AddRef();
+  providers_.push_back(bc_provider);
   TaskManagerChildProcessResourceProvider* child_process_provider =
       new TaskManagerChildProcessResourceProvider(task_manager);
   child_process_provider->AddRef();

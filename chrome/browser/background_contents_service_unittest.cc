@@ -57,14 +57,11 @@ class MockBackgroundContents : public BackgroundContents {
         profile_(profile) {
   }
 
-  void SendOpenedNotification() {
+  void SendOpenedNotification(BackgroundContentsService* service) {
     string16 frame_name = ASCIIToUTF16("background");
     BackgroundContentsOpenedDetails details = {
         this, frame_name, appid_ };
-    NotificationService::current()->Notify(
-        NotificationType::BACKGROUND_CONTENTS_OPENED,
-        Source<Profile>(profile_),
-        Details<BackgroundContentsOpenedDetails>(&details));
+    service->BackgroundContentsOpened(&details);
   }
 
   virtual void Navigate(GURL url) {
@@ -114,7 +111,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsCreateDestroy) {
   BackgroundContentsService service(&profile, command_line_.get());
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
   EXPECT_FALSE(service.IsTracked(contents));
-  contents->SendOpenedNotification();
+  contents->SendOpenedNotification(&service);
   EXPECT_TRUE(service.IsTracked(contents));
   delete contents;
   EXPECT_FALSE(service.IsTracked(contents));
@@ -131,7 +128,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
     scoped_ptr<MockBackgroundContents> contents(
         new MockBackgroundContents(&profile));
     EXPECT_EQ(0U, GetPrefs(&profile)->size());
-    contents->SendOpenedNotification();
+    contents->SendOpenedNotification(&service);
 
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
@@ -154,7 +151,7 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAddedAndClosed) {
   GURL url("http://a/");
   MockBackgroundContents* contents = new MockBackgroundContents(&profile);
   EXPECT_EQ(0U, GetPrefs(&profile)->size());
-  contents->SendOpenedNotification();
+  contents->SendOpenedNotification(&service);
   contents->Navigate(url);
   EXPECT_EQ(1U, GetPrefs(&profile)->size());
   EXPECT_EQ(url.spec(), GetPrefURLForApp(&profile, contents->appid()));
@@ -174,7 +171,7 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
   {
     scoped_ptr<MockBackgroundContents> contents(new MockBackgroundContents(
         &profile, "appid"));
-    contents->SendOpenedNotification();
+    contents->SendOpenedNotification(&service);
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
     EXPECT_EQ(url.spec(), GetPrefURLForApp(&profile, contents->appid()));
@@ -187,7 +184,7 @@ TEST_F(BackgroundContentsServiceTest, RestartBackgroundContents) {
     // URL again.
     scoped_ptr<MockBackgroundContents> contents(new MockBackgroundContents(
         &profile, "appid"));
-    contents->SendOpenedNotification();
+    contents->SendOpenedNotification(&service);
     contents->Navigate(url);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
   }
@@ -206,9 +203,9 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
                                                                 "appid");
   scoped_ptr<MockBackgroundContents> contents2(
       new MockBackgroundContents(&profile, "appid2"));
-  contents->SendOpenedNotification();
+  contents->SendOpenedNotification(&service);
   EXPECT_EQ(contents, service.GetAppBackgroundContents(contents->appid()));
-  contents2->SendOpenedNotification();
+  contents2->SendOpenedNotification(&service);
   EXPECT_EQ(contents2.get(), service.GetAppBackgroundContents(
       contents2->appid()));
   EXPECT_EQ(0U, GetPrefs(&profile)->size());

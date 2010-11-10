@@ -436,7 +436,7 @@ class Profile {
   virtual DesktopNotificationService* GetDesktopNotificationService() = 0;
 
   // Returns the service that manages BackgroundContents for this profile.
-  virtual BackgroundContentsService* GetBackgroundContentsService() = 0;
+  virtual BackgroundContentsService* GetBackgroundContentsService() const = 0;
 
   // Returns the StatusTray, which provides an API for displaying status icons
   // in the system status tray. Returns NULL if status icons are not supported
