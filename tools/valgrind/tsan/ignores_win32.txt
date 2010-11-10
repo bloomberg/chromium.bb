@@ -11,6 +11,12 @@ fun_r:*BCryptGenerateSymmetricKey*
 obj:*WINHTTP.dll*
 obj:*imagehlp.dll*
 
+# Use less detailed instrumentation of STL
+fun_hist:*std::*<*
+# Don't instrument some stl internals - they shouldn't be useful
+fun_r:*std::_Debug*
+fun_r:*std::_Lockit*
+
 # Benign race on mutex unlock
 fun:_Mtxunlock
 
