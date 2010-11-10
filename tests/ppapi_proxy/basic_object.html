@@ -12,27 +12,51 @@
     td.pass { background-color: lime }
     td.fail { background-color: red }
   </style>
+  <script type="text/javascript" src="nacl_js_lib.js"></script>
 </head>
-<body onload="nacllib.waitForModulesAndRunTests();"
-      onunload="nacllib.cleanUp();" >
+<body onunload="nacllib.cleanUp();" >
 
 <script type="text/javascript">
 //<![CDATA[
-var SetTestResult = function(element_id, result) {
-  var element = document.getElementById(element_id);
-  element.className = result;
-}
-
-// The NaCl module.
-var plugin;
+// Provide the NaCl module namespace.
+var naclModule = {
+    failingCount: 0,  // The number of failing tests.
+    module: null,  // The NaCl module instance.
+    testTimeoutHandler: 0,
+    testTimedOut: false  // Indicates a test timed out.
+};
 
 var kSampleInt = 1;
 var kSampleString = 'hello, world';
 var kSampleObject = new Array(10);
 
-var failingCount;
-var testTimeoutHandler = 0;
-var testTimedOut = false;
+// Called when the NaCl module loads.  Prior to this call, |naclModule.
+// module| is undefined.  This is important because you don't want to make
+// calls on the NaCl module before it's loaded.
+var moduleDidLoad = function(moduleId) {
+  naclModule.module = document.getElementById(moduleId);
+  naclModule.testRunner = new NaclLib('naclModule', 'status', 500);
+
+  naclModule.testRunner.test = function() {
+    naclModule.testTimeoutHandler = setTimeout('HandleTestTimeout()', 10000);
+    EnqueueAndRunTests();
+    if (0 == naclModule.failingCount) {
+      return '';
+    } else if (naclModule.testTimedOut) {
+      return 'Test timed out.';
+    } else {
+      return 'Test failed.';
+    }
+  }
+
+  // Schedule all the test and run them.
+  naclModule.testRunner.waitForModulesAndRunTests();
+}
+
+var SetTestResult = function(element_id, result) {
+  var element = document.getElementById(element_id);
+  element.className = result;
+}
 
 // The queue of small tests.
 var testQueue = [ ];
@@ -54,25 +78,25 @@ var EnqueueTests = function() {
   expectPass('browser_nacl_read_notset',
              true,
              function() {
-               return plugin.propertyUnset == undefined;
+               return naclModule.module.propertyUnset == undefined;
              });
   // Read a property that is set.
   expectPass('browser_nacl_read_set',
              true,
              function() {
-               return plugin.propNull == null;
+               return naclModule.module.propNull == null;
              });
   // Write an integer property.
   expectPass('browser_nacl_int_write',
              false,
              function() {
-               plugin.propInt32 = kSampleInt;
+               naclModule.module.propInt32 = kSampleInt;
              });
   // Read back the property.
   expectPass('browser_nacl_int_readback',
              true,
              function() {
-               return plugin.propInt32 == kSampleInt;
+               return naclModule.module.propInt32 == kSampleInt;
              });
   // Remove the property.
   // TODO(dspringer,sehr,polina): Add this test back in once RemoveProperty()
@@ -82,21 +106,21 @@ var EnqueueTests = function() {
   expectPass('browser_nacl_int_remove',
              false,
              function() {
-               delete plugin.propInt32;
-               return plugin.propInt32;
+               delete naclModule.module.propInt32;
+               return naclModule.module.propInt32;
              });
   */
   // Write a string property.
   expectPass('browser_nacl_string_write',
              false,
              function() {
-               plugin.propString = kSampleString;
+               naclModule.module.propString = kSampleString;
              });
   // Read back the property.
   expectPass('browser_nacl_string_readback',
              true,
              function() {
-               return plugin.propString == kSampleString;
+               return naclModule.module.propString == kSampleString;
              });
   // Remove the property.
   // TODO(dspringer,sehr,polina): Add this test back in once RemoveProperty()
@@ -106,21 +130,21 @@ var EnqueueTests = function() {
   expectPass('browser_nacl_string_remove',
              false,
              function() {
-               delete plugin.propString;
-               return plugin.propString;
+               delete naclModule.module.propString;
+               return naclModule.module.propString;
              });
   */
   // Write an object property.
   expectPass('browser_nacl_object_write',
              false,
              function() {
-               plugin.propObject = kSampleObject;
+               naclModule.module.propObject = kSampleObject;
              });
   // Read back the property.
   expectPass('browser_nacl_object_readback',
              true,
              function() {
-               return plugin.propObject === kSampleObject;
+               return naclModule.module.propObject === kSampleObject;
              });
   // Remove the property.
   // TODO(dspringer,sehr,polina): Add this test back in once RemoveProperty()
@@ -130,43 +154,45 @@ var EnqueueTests = function() {
   expectPass('browser_nacl_object_remove',
              false,
              function() {
-               delete plugin.propObject;
-               return plugin.propObject;
+               delete naclModule.module.propObject;
+               return naclModule.module.propObject;
              });
   */
   // Argument passing and return.
   expectPass('browser_nacl_int_argret',
              true,
              function() {
-               return plugin.methodInt32(kSampleInt) == kSampleInt;
+               return naclModule.module.methodInt32(kSampleInt) == kSampleInt;
              });
   expectPass('browser_nacl_string_argret',
              true,
              function() {
-               return plugin.methodString(kSampleString) == kSampleString;
+               return naclModule.module.methodString(kSampleString) ==
+                  kSampleString;
              });
   expectPass('browser_nacl_object_argret',
              true,
              function() {
-               return plugin.methodObject(kSampleObject) === kSampleObject;
+               return naclModule.module.methodObject(kSampleObject) ===
+                  kSampleObject;
              });
   // Multi-argument passing and return.
   expectPass('browser_nacl_int_2_argret',
              true,
              function() {
-               return plugin.methodInt32With2Args(
+               return naclModule.module.methodInt32With2Args(
                   kSampleInt, kSampleInt) == kSampleInt;
              });
   expectPass('browser_nacl_string_2_argret',
              true,
              function() {
-               return plugin.methodStringWith2Args(
+               return naclModule.module.methodStringWith2Args(
                   kSampleString, kSampleString) == kSampleString;
              });
   expectPass('browser_nacl_object_2_argret',
              true,
              function() {
-               return plugin.methodObjectWith2Args(
+               return naclModule.module.methodObjectWith2Args(
                   kSampleObject, kSampleObject) === kSampleObject;
              });
   // Call a method with 0 args (tests issue:
@@ -174,12 +200,12 @@ var EnqueueTests = function() {
   expectPass('browser_nacl_0_argret',
              true,
              function() {
-               return plugin.helloWorld() == kSampleString;
+               return naclModule.module.helloWorld() == kSampleString;
              });
   expectPass('nacl_browser_window_location_prop',
              true,
              function() {
-               return plugin.windowLocation(window) == true;
+               return naclModule.module.windowLocation(window) == true;
              });
 }
 
@@ -192,7 +218,7 @@ var testExpectedPass = function(element, has_return, fp) {
       SetTestResult(element, 'fail');
     } else {
       SetTestResult(element, 'pass');
-      --failingCount;
+      --naclModule.failingCount;
     }
   } catch (string) {
     SetTestResult(element, 'fail');
@@ -207,7 +233,7 @@ var testExpectedFail = function(element, fp) {
   } catch (string) {
     if (undefined == result) {
       SetTestResult(element, 'pass');
-      --failingCount;
+      --naclModule.failingCount;
     } else {
       SetTestResult(element, 'fail');
     }
@@ -219,7 +245,7 @@ var RunAllTests = function() {
   var len = testQueue.length;
   // All tests are considered failure until they have run successfully.
   // This catches runs that end prematurely.
-  failingCount = len;
+  naclModule.failingCount = len;
   for (i = 0; i < len; ++i) {
     var test_descr = testQueue[i];
     if ('pass' == test_descr[0]) {
@@ -228,20 +254,19 @@ var RunAllTests = function() {
       testExpectedFail(test_descr[1], test_descr[2]);
     }
   }
-  if (0 != testTimeoutHandler) {
-    clearTimeout(testTimeoutHandler);
-    testTimeoutHandler = 0;
+  if (0 != naclModule.testTimeoutHandler) {
+    clearTimeout(naclModule.testTimeoutHandler);
+    naclModule.testTimeoutHandler = 0;
   }
 }
 
 function HandleTestTimeout() {
-  clearTimeout(testTimeoutHandler);
-  testTimeoutHandler = 0;
-  testTimedOut = true;
+  clearTimeout(naclModule.testTimeoutHandler);
+  naclModule.testTimeoutHandler = 0;
+  naclModule.testTimedOut = true;
 }
 
 var EnqueueAndRunTests = function() {
-  plugin = document.getElementById('nacl_module');
   // Enqueue the tests.
   EnqueueTests();
   // Run them all.
@@ -406,30 +431,11 @@ var EnqueueAndRunTests = function() {
 
 <div id="status">NO-STATUS</div>
 
-<embed id="nacl_module"
-       name="nacl_module"
+<embed id="naclModule"
+       name="naclModule"
        width=0 height=0
        src="ppapi_basic_object.nexe"
-       type="application/x-ppapi-nacl-srpc" />;
-
-<script type="text/javascript" src="nacl_js_lib.js"></script>
-<script type="text/javascript">
-  //<![CDATA[
-  var nacllib = new NaclLib('nacl_module', 'status', 500);
-
-  nacllib.test = function() {
-    testTimeoutHandler = setTimeout('HandleTestTimeout()', 10000);
-    EnqueueAndRunTests();
-    if (0 == failingCount) {
-      return '';
-    } else if (testTimedOut) {
-      return 'Test timed out.';
-    } else {
-      return 'Test failed.';
-    }
-  }
-
-  //]]>
-</script>
+       type="application/x-ppapi-nacl-srpc"
+       onload="moduleDidLoad('naclModule');" />
 </body>
 </html>
