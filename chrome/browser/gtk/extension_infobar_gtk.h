@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_GTK_EXTENSION_INFOBAR_GTK_H_
 #pragma once
 
-#include <gtk/gtk.h>
-
 #include "chrome/browser/gtk/extension_view_gtk.h"
 #include "chrome/browser/gtk/infobar_gtk.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"

@@ -62,7 +62,13 @@ void ExtensionInfoBarGtk::BuildWidgets() {
 
   ExtensionHost* extension_host = delegate_->extension_host();
   view_ = extension_host->view();
-  gtk_box_pack_start(GTK_BOX(hbox_), view_->native_view(), TRUE, TRUE, 0);
+  if (gtk_widget_get_parent(view_->native_view())) {
+    gtk_widget_reparent(view_->native_view(), hbox_);
+    gtk_box_set_child_packing(GTK_BOX(hbox_), view_->native_view(),
+                              TRUE, TRUE, 0, GTK_PACK_START);
+  } else {
+    gtk_box_pack_start(GTK_BOX(hbox_), view_->native_view(), TRUE, TRUE, 0);
+  }
 
   g_signal_connect(view_->native_view(), "size_allocate",
                    G_CALLBACK(&OnSizeAllocateThunk), this);
