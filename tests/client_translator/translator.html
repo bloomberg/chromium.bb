@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2008 Google Inc.  All rights reserved. -->
+  <head>
+    <title>Client Translator Test</title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
+    <META HTTP-EQUIV="Expires" CONTENT="-1" />
+    <script type="application/x-javascript">
+      //<![CDATA[
+
+var server = 0;
+var llc_server = 0;
+var as_server = 0;
+var ld_server = 0;
+
+var logElement = 0;
+var testTimeoutHandler = 0;
+var testPassed = false;
+var testErrorMsg = '';
+
+// testState normally assumes these state values in this order:
+// 'initializing'=>'translating'=>'loading'=>'complete'
+var testState = '';
+
+// Puts text from 'str' into the logElement on the page.
+function generalLog(str) {
+  logElement.textContent += str + '\n';
+}
+
+// Clears the test watchdog timer.
+function clearTestTimeoutHandler() {
+  if (0 != testTimeoutHandler) {
+    clearTimeout(testTimeoutHandler);
+    testTimeoutHandler = 0;
+  }
+}
+
+// Sets all test status information and cleans up after testing.
+// 'msg' is the error message or '' for success.
+function allTestsComplete(msg) {
+  clearTestTimeoutHandler();
+  testState = 'complete';
+  testErrorMsg = msg;
+  if (testPassed) {
+    logElement.className = 'pass';
+  } else {
+    logElement.className = 'fail';
+  }
+}
+
+function Translate() {
+  this.onload = function(bc_fd) {
+    generalLog('Translating');
+    var nexe_fd = server.translate(bc_fd);
+
+    // generalLog('Translating from bitcode ' + url);
+    // var as_fd = llc_server.translate(bc_fd);
+
+    // generalLog('Assembling');
+    // var obj_fd = as_server.assemble(as_fd);
+
+    // generalLog('Linking');
+    // var nexe_fd = ld_server.link(obj_fd);
+
+    generalLog('Translation completed');
+
+    testState = 'loading';
+    // load the nexe
+    var file_length = server.run(nexe_fd);
+    generalLog('File size: ' + file_length);
+
+    testPassed = true;
+    allTestsComplete('');
+  }
+  this.onfail = function(object) {
+    generalLog('ERROR: Translate onfail invoked: ' + object);
+    allTestsComplete('Translation failed: ' + object);
+  }
+}
+
+// bc to nexe translation
+function startTranslation() {
+  testState = 'translating';
+  var url = 'hello_world.bc';
+  generalLog('Loading URL ' + url);
+  server.__urlAsNaClDesc(url, new Translate());
+}
+
+// translator tester
+function startTT() {
+  testState = 'translating';
+  var url = 'hello_world.bc';
+//  var url = 'NOTICE';
+  generalLog('Loading URL ' + url);
+  server.__urlAsNaClDesc(url, new Translate());
+}
+
+// Test watchdog timer. Makes sure the test does not run too long if
+// something hangs.
+function handleTestTimeout() {
+  generalLog('The test did not finish in the allotted time.');
+  allTestsComplete('Test timed out, testState=' + testState);
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+
+    <h1>PNACL Translation</h1>
+
+    <h2> Output logs</h2>
+    <table border=5 cellpadding=5% summary="Test status table">
+      <tr>
+        <td><b>General test output</b></td>
+      </tr>
+      <tr>
+        <td valign=top><pre id="GeneralOutput"></pre></td>
+      </tr>
+    </table>
+    <div id="status">NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="translator" name="nacl_module"
+           width="0" height="0" src="translator.nexe" />
+
+<!--
+    <embed type="application/x-nacl-srpc" id="llc"
+           width="0" height="0" src="llc.nexe" />
+
+    <embed type="application/x-nacl-srpc" id="as"
+           width="0" height="0" src="as.nexe" />
+
+    <embed type="application/x-nacl-srpc" id="ld"
+           width="0" height="0" src="ld.nexe" />
+-->
+
+    <script type="text/javascript" src="../nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib("nacl_module", "status", 500);
+
+      // Returns true ("wait") to the NaclLib test driver until the
+      // translation is complete.  I.e., either all translators have
+      // completed successfully or an error has occurred.
+      nacllib.wait = function() {
+        if ('' == testState) {
+          // The module has successfully loaded and this code is being
+          // called for the first time. Get set up and start translation.
+          testState = 'initializing';
+
+          logElement = document.getElementById('GeneralOutput');
+          generalLog('Modules are loading.');
+
+          server = document.getElementById('translator');
+          generalLog('Translation server ready.');
+
+//          llc_server = document.getElementById('llc');
+//          as_server = document.getElementById('as');
+//          ld_server = document.getElementById('ld');
+
+          testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
+
+//          startTranslation();
+
+          startTT();
+          return true;
+        } else if ('complete' != testState) {
+          // Continue to return true until translation is complete. This tells
+          // the test driver to wait before calling the test() method.
+          return true;
+        } else {
+          // Translation is complete.  Allow the test driver to call test().
+          return false;
+        }
+      }
+
+      // Returns the test status to the NaclLib test driver.  This is called
+      // by the NaclLib test driver after the wait() method has returned false.
+      // I.e., this is called only after all tests are complete.
+      nacllib.test = function() {
+        // The actual testing is all finished by the time this method is
+        // called, so just return the test results.
+        if ('' == testState) {
+          return 'The module did not load.';
+        } else if (!testPassed && '' != testErrorMsg) {
+          return testErrorMsg;
+        } else if (!testPassed) {
+          return 'Generic failure.';
+        } else {
+          return '';
+        }
+      }
+      //]]>
+    </script>
+  </body>
+</html>
+
