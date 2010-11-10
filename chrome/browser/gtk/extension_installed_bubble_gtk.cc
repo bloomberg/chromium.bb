@@ -153,33 +153,35 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   GtkWidget* bubble_content = gtk_hbox_new(FALSE, kHorizontalColumnSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
 
-  // Scale icon down to 43x43, but allow smaller icons (don't scale up).
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon_);
-  gfx::Size size(icon_.width(), icon_.height());
-  if (size.width() > kIconSize || size.height() > kIconSize) {
-    if (size.width() > size.height()) {
-      size.set_height(size.height() * kIconSize / size.width());
-      size.set_width(kIconSize);
-    } else {
-      size.set_width(size.width() * kIconSize / size.height());
-      size.set_height(kIconSize);
+  if (!icon_.isNull()) {
+    // Scale icon down to 43x43, but allow smaller icons (don't scale up).
+    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon_);
+    gfx::Size size(icon_.width(), icon_.height());
+    if (size.width() > kIconSize || size.height() > kIconSize) {
+      if (size.width() > size.height()) {
+        size.set_height(size.height() * kIconSize / size.width());
+        size.set_width(kIconSize);
+      } else {
+        size.set_width(size.width() * kIconSize / size.height());
+        size.set_height(kIconSize);
+      }
+
+      GdkPixbuf* old = pixbuf;
+      pixbuf = gdk_pixbuf_scale_simple(pixbuf, size.width(), size.height(),
+                                       GDK_INTERP_BILINEAR);
+      g_object_unref(old);
     }
 
-    GdkPixbuf* old = pixbuf;
-    pixbuf = gdk_pixbuf_scale_simple(pixbuf, size.width(), size.height(),
-        GDK_INTERP_BILINEAR);
-    g_object_unref(old);
+    // Put Icon in top of the left column.
+    GtkWidget* icon_column = gtk_vbox_new(FALSE, 0);
+    // Use 3 pixel padding to get visual balance with InfoBubble border on the
+    // left.
+    gtk_box_pack_start(GTK_BOX(bubble_content), icon_column, FALSE, FALSE,
+                       kIconPadding);
+    GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
+    g_object_unref(pixbuf);
+    gtk_box_pack_start(GTK_BOX(icon_column), image, FALSE, FALSE, 0);
   }
-
-  // Put Icon in top of the left column.
-  GtkWidget* icon_column = gtk_vbox_new(FALSE, 0);
-  // Use 3 pixel padding to get visual balance with InfoBubble border on the
-  // left.
-  gtk_box_pack_start(GTK_BOX(bubble_content), icon_column, FALSE, FALSE,
-      kIconPadding);
-  GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-  g_object_unref(pixbuf);
-  gtk_box_pack_start(GTK_BOX(icon_column), image, FALSE, FALSE, 0);
 
   // Center text column.
   GtkWidget* text_column = gtk_vbox_new(FALSE, kTextColumnVerticalSpacing);
