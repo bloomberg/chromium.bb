@@ -77,7 +77,8 @@ class ConnectionTesterTest : public PlatformTest {
       : test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
         message_loop_(MessageLoop::TYPE_IO),
-        io_thread_(new TestingPrefService()) {
+        pref_service(new TestingPrefService()),
+        io_thread_(pref_service.get()) {
     scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver(
         new net::RuleBasedHostResolverProc(NULL));
 
@@ -91,6 +92,7 @@ class ConnectionTesterTest : public PlatformTest {
   net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
   MessageLoop message_loop_;
+  scoped_ptr<PrefService> pref_service;
   IOThread io_thread_;  // Needed for creating ProxyScriptFetchers.
 };
 
