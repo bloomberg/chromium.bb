@@ -68,6 +68,9 @@ class BackgroundView : public views::View,
   // Toggles status area visibility.
   void SetStatusAreaVisible(bool visible);
 
+  // Toggles whether status area is enabled.
+  void SetStatusAreaEnabled(bool enable);
+
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   void SetOobeProgressBarVisible(bool visible);
 

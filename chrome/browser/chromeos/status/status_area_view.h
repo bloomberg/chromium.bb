@@ -27,6 +27,7 @@ class StatusAreaView : public AccessiblePaneView {
   virtual ~StatusAreaView() {}
 
   virtual void Init();
+  void EnableButtons(bool enable);
 
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();

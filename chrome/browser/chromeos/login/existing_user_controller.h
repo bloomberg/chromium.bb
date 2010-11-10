@@ -85,6 +85,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void RemoveUser(UserController* source);
   virtual void AddStartUrl(const GURL& start_url) { start_url_ = start_url; }
   virtual void SelectUser(int index);
+  virtual void SetStatusAreaEnabled(bool enable);
 
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error);

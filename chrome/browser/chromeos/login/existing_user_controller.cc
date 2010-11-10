@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/views/window.h"
@@ -213,6 +214,12 @@ void ExistingUserController::LoginNewUser(const std::string& username,
 
 void ExistingUserController::SelectNewUser() {
   SelectUser(controllers_.size() - 1);
+}
+
+void ExistingUserController::SetStatusAreaEnabled(bool enable) {
+  if (background_view_) {
+    background_view_->SetStatusAreaEnabled(enable);
+  }
 }
 
 ExistingUserController::~ExistingUserController() {

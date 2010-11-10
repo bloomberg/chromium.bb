@@ -94,4 +94,12 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
   PreferredSizeChanged();
 }
 
+void StatusAreaView::EnableButtons(bool enable) {
+  clock_view()->Enable(enable);
+  feedback_view()->Enable(enable);
+  input_method_view()->Enable(enable);
+  network_view()->Enable(enable);
+  power_view()->Enable(enable);
+}
+
 }  // namespace chromeos

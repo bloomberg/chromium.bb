@@ -177,7 +177,13 @@ void UserController::Init(int index,
 void UserController::SetPasswordEnabled(bool enable) {
   DCHECK(!is_new_user_);
   existing_user_view_->password_field()->SetEnabled(enable);
-  enable ? user_view_->StopThrobber() : user_view_->StartThrobber();
+  if (enable) {
+    user_view_->StopThrobber();
+    delegate_->SetStatusAreaEnabled(enable);
+  } else {
+    delegate_->SetStatusAreaEnabled(enable);
+    user_view_->StartThrobber();
+  }
 }
 
 std::wstring UserController::GetNameTooltip() const {

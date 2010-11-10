@@ -17,7 +17,7 @@ namespace chromeos {
 
 StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
     : MenuButton(NULL, std::wstring(), menu_delegate, false),
-      use_menu_button_paint_(false) {
+      use_menu_button_paint_(false), enabled_(true) {
   set_border(NULL);
 
   // Use an offset that is top aligned with toolbar.
@@ -79,6 +79,14 @@ void StatusAreaButton::SetText(const std::wstring& text) {
 
 void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(icon(), horizontal_padding(), 0);
+}
+
+bool StatusAreaButton::Activate() {
+  if (enabled_) {
+    return views::MenuButton::Activate();
+  } else {
+    return true;
+  }
 }
 
 }  // namespace chromeos

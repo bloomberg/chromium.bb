@@ -158,6 +158,10 @@ void BackgroundView::SetStatusAreaVisible(bool visible) {
   status_area_->SetVisible(visible);
 }
 
+void BackgroundView::SetStatusAreaEnabled(bool enable) {
+  status_area_->EnableButtons(enable);
+}
+
 void BackgroundView::SetOobeProgressBarVisible(bool visible) {
   if (!progress_bar_ && visible)
     InitProgressBar();
