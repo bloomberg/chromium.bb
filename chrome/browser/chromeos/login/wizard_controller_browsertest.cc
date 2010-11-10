@@ -68,7 +68,9 @@ class WizardControllerTest : public chromeos::WizardInProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
+// TODO(zelidrag): Need to revisit this once translation for fr and ar is
+// complete.  See http://crosbug.com/8974
+IN_PROC_BROWSER_TEST_F(WizardControllerTest, FAILS_SwitchLanguage) {
   WizardController* const wizard = controller();
   ASSERT_TRUE(wizard != NULL);
   wizard->ShowFirstScreen(WizardController::kNetworkScreenName);
