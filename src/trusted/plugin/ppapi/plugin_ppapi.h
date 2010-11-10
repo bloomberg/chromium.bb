@@ -26,6 +26,11 @@ namespace ppapi_proxy {
 class BrowserPpp;
 }
 
+namespace pp {
+class Rect;
+class URLLoader_Dev;
+}
+
 namespace plugin {
 
 // Encapsulates a PPAPI NaCl plugin.
@@ -40,6 +45,18 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // names |argn| and values |argn|. Returns false on failure.
   // Gets called by the browser right after New().
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
+
+  // Handles view changes from the browser.
+  virtual void DidChangeView(const pp::Rect& position, const pp::Rect& clip);
+
+  // Handles gaining or losing focus.
+  virtual void DidChangeFocus(bool has_focus);
+
+  // Handles input events delivered from the browser to this plugin element.
+  virtual bool HandleInputEvent(const PP_InputEvent& event);
+
+  // Handles gaining or losing focus.
+  virtual bool HandleDocumentLoad(const pp::URLLoader_Dev& url_loader);
 
   // Returns a scriptable reference to this plugin element.
   // Called by JavaScript document.getElementById(plugin_id).

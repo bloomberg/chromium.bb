@@ -20,10 +20,12 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/cpp/common.h"
 #include "ppapi/cpp/dev/file_ref_dev.h"
 #include "ppapi/cpp/dev/url_request_info_dev.h"
 #include "ppapi/cpp/dev/url_response_info_dev.h"
 #include "ppapi/cpp/module.h"
+#include "ppapi/cpp/rect.h"
 
 namespace {
 const char* const kSrcAttribute = "src";  // The "src" attr of the <embed> tag.
@@ -131,6 +133,89 @@ PluginPpapi::~PluginPpapi() {
   delete ppapi_proxy_;
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   UnrefScriptableHandle(&scriptable_handle_);
+}
+
+
+void PluginPpapi::DidChangeView(const pp::Rect& position,
+                                const pp::Rect& clip) {
+  PLUGIN_PRINTF(("PluginPpapi::DidChangeView (this=%p)\n",
+                 static_cast<void*>(this)));
+  if (ppapi_proxy_ == NULL) {
+    return;
+  } else {
+    // TODO(polina): cache the instance_interface on the plugin.
+    const PPP_Instance* instance_interface =
+        reinterpret_cast<const PPP_Instance*>(
+            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
+    if (instance_interface == NULL) {
+      // TODO(polina): report an error here.
+      return;
+    }
+    instance_interface->DidChangeView(pp_instance(),
+                                      &(position.pp_rect()),
+                                      &(clip.pp_rect()));
+  }
+}
+
+
+void PluginPpapi::DidChangeFocus(bool has_focus) {
+  PLUGIN_PRINTF(("PluginPpapi::DidChangeFocus (this=%p)\n",
+                 static_cast<void*>(this)));
+  if (ppapi_proxy_ == NULL) {
+    return;
+  } else {
+    // TODO(polina): cache the instance_interface on the plugin.
+    const PPP_Instance* instance_interface =
+        reinterpret_cast<const PPP_Instance*>(
+            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
+    if (instance_interface == NULL) {
+      // TODO(polina): report an error here.
+      return;
+    }
+    instance_interface->DidChangeFocus(pp_instance(),
+                                       pp::BoolToPPBool(has_focus));
+  }
+}
+
+
+bool PluginPpapi::HandleInputEvent(const PP_InputEvent& event) {
+  PLUGIN_PRINTF(("PluginPpapi::HandleInputEvent (this=%p)\n",
+                 static_cast<void*>(this)));
+  if (ppapi_proxy_ == NULL) {
+    return false;  // event is not handled here.
+  } else {
+    // TODO(polina): cache the instance_interface on the plugin.
+    const PPP_Instance* instance_interface =
+        reinterpret_cast<const PPP_Instance*>(
+            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
+    if (instance_interface == NULL) {
+      // TODO(polina): report an error here.
+      return false;  // event is not handled here.
+    }
+    return pp::PPBoolToBool(
+        instance_interface->HandleInputEvent(pp_instance(), &event));
+  }
+}
+
+
+bool PluginPpapi::HandleDocumentLoad(const pp::URLLoader_Dev& url_loader) {
+  PLUGIN_PRINTF(("PluginPpapi::HandleDocumentLoad (this=%p)\n",
+                 static_cast<void*>(this)));
+  if (ppapi_proxy_ == NULL) {
+    return false;
+  } else {
+    // TODO(polina): cache the instance_interface on the plugin.
+    const PPP_Instance* instance_interface =
+        reinterpret_cast<const PPP_Instance*>(
+            ppapi_proxy_->GetInterface(PPP_INSTANCE_INTERFACE));
+    if (instance_interface == NULL) {
+      // TODO(polina): report an error here.
+      return false;
+    }
+    return pp::PPBoolToBool(
+        instance_interface->HandleDocumentLoad(pp_instance(),
+                                               url_loader.pp_resource()));
+  }
 }
 
 
