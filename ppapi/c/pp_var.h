@@ -27,6 +27,8 @@ typedef enum {
   PP_VARTYPE_OBJECT
 } PP_VarType;
 
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
+
 /**
  * Do not rely on having a predictable and reproducible
  * int/double differentiation.

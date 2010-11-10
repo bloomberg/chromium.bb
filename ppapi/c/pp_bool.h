@@ -5,6 +5,8 @@
 #ifndef PPAPI_C_PP_BOOL_H_
 #define PPAPI_C_PP_BOOL_H_
 
+#include "ppapi/c/pp_macros.h"
+
 /**
  * @file
  * Defines the API ...
@@ -23,6 +25,9 @@ typedef enum {
   PP_FALSE = 0,
   PP_TRUE = 1
 } PP_Bool;
+
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Bool, 4);
+
 /**
  * @}
  * End addtogroup PP

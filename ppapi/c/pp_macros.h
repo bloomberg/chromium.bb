@@ -37,6 +37,18 @@
 # endif
 #endif
 
+/* This is a compile-time assertion useful for ensuring that a given type is
+   a given number of bytes wide.  The size of the array is designed to be 1
+   (which should always be valid) if the enum's size is SIZE, and otherwise the
+   size of the array will be -1 (which all/most compilers should flag as an
+   error).  This is wrapped inside a struct, because if it is a simple global
+   we get multiple definition errors at link time. */
+#define PP_COMPILE_ASSERT_SIZE_IN_BYTES(NAME, SIZE) \
+struct _dummy_struct_for_##NAME { \
+char _COMPILE_ASSERT_FAILED_The_type_named_ \
+## NAME ## _is_not_ ## SIZE ## \
+_bytes_wide[(sizeof(NAME) == SIZE) ? 1 : -1]; }
+
 /**
  * @}
  * End of addtogroup PP
