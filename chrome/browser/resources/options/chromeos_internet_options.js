@@ -29,7 +29,6 @@ cr.define('options', function() {
      * Calls base class implementation to starts preference initialization.
      */
     initializePage: function() {
-      // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
       options.internet.NetworkElement.decorate($('wiredList'));
@@ -91,6 +90,11 @@ cr.define('options', function() {
     }
   };
 
+  // Network status update will be blocked while typing in WEP password etc.
+  InternetOptions.updateLocked = false;
+  InternetOptions.updatePending = false;
+  InternetOptions.updataData = null;
+
   InternetOptions.loginFromDetails = function () {
     var data = $('inetAddress').data;
     var servicePath = data.servicePath;
@@ -150,18 +154,37 @@ cr.define('options', function() {
     }
   };
 
+  // Prevent clobbering of password input field.
+  InternetOptions.lockUpdates = function () {
+    InternetOptions.updateLocked = true;
+  };
+
+  InternetOptions.unlockUpdates = function () {
+    InternetOptions.updateLocked = false;
+    if (InternetOptions.updatePending) {
+      InternetOptions.refreshNetworkData(InternetOptions.updateData);
+    }
+  };
+
   //
   //Chrome callbacks
   //
   InternetOptions.refreshNetworkData = function (data) {
-    $('wiredList').load(data.wiredList);
-    $('wirelessList').load(data.wirelessList);
-    $('rememberedList').load(data.rememberedList);
+    if (InternetOptions.updateLocked) {
+      InternetOptions.updateData = data;
+      InternetOptions.updatePending = true;
+    } else {
+      $('wiredList').load(data.wiredList);
+      $('wirelessList').load(data.wirelessList);
+      $('rememberedList').load(data.rememberedList);
 
-    $('wiredSection').hidden = (data.wiredList.length == 0);
-    $('wirelessSection').hidden = (data.wirelessList.length == 0);
-    InternetOptions.setupAttributes(data);
-    $('rememberedSection').hidden = (data.rememberedList.length == 0);
+      $('wiredSection').hidden = (data.wiredList.length == 0);
+      $('wirelessSection').hidden = (data.wirelessList.length == 0);
+      InternetOptions.setupAttributes(data);
+      $('rememberedSection').hidden = (data.rememberedList.length == 0);
+      InternetOptions.updateData = null;
+      InternetOptions.updatePending = false;
+    }
   };
 
   InternetOptions.updateCellularPlans = function (data) {

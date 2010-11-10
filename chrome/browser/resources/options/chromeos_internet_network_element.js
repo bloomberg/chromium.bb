@@ -70,6 +70,7 @@ cr.define('options.internet', function() {
               if (this.childNodes[i] != item)
                 this.childNodes[i].hidePassword();
             }
+            InternetOptions.unlockUpdates();
             // If clicked on other networks item.
             if (data && data.servicePath == '?') {
               item.showOtherLogin();
@@ -254,6 +255,9 @@ cr.define('options.internet', function() {
     showPassword: function() {
       if (this.connecting)
         return;
+
+      InternetOptions.lockUpdates();
+
       var passwordDiv = this.ownerDocument.createElement('div');
       passwordDiv.className = 'network-password';
       var passInput = this.ownerDocument.createElement('input');
@@ -316,6 +320,8 @@ cr.define('options.internet', function() {
     showOtherLogin: function() {
       if (this.connecting)
         return;
+
+      InternetOptions.lockUpdates();
 
       var ssidDiv = this.ownerDocument.createElement('div');
       ssidDiv.className = 'network-password';
