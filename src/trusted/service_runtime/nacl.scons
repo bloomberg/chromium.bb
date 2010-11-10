@@ -62,7 +62,8 @@ def NewAsmEnv(env, *alist, **kwarg):
   return asm_env
 
 
-if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']):
+if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']
+   and not env.Bit('nacl_glibc') and not ARGUMENTS.get('bitcode')):
   ALLOCATION_SIZE   = 0x10000
   START_OF_TEXT     = 0x20000
   TEXT_SIZE_BOUND   = 0x10000  # estimate of test code size
