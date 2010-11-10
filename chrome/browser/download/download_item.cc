@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -357,6 +358,34 @@ void DownloadItem::OnNameFinalized() {
   // file, delay the notification.
   if (state() == DownloadItem::COMPLETE)
     NotifyObserversDownloadFileCompleted();
+}
+
+void DownloadItem::OnSafeDownloadFinished(DownloadFileManager* file_manager) {
+  DCHECK_EQ(SAFE, safety_state());
+  DCHECK(file_manager);
+  if (NeedsRename()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        NewRunnableMethod(
+            file_manager, &DownloadFileManager::OnFinalDownloadName,
+            id(), GetTargetFilePath(), false, download_manager_));
+    return;
+  }
+
+  download_manager_->DownloadFinished(this);
+}
+
+void DownloadItem::OnDownloadRenamedToFinalName(const FilePath& full_path) {
+  bool needed_rename = NeedsRename();
+
+  Rename(full_path);
+  OnNameFinalized();
+
+  if (needed_rename && safety_state() == SAFE) {
+    // This was called from OnSafeDownloadFinished; continue to call
+    // DownloadFinished.
+    download_manager_->DownloadFinished(this);
+  }
 }
 
 bool DownloadItem::MatchesQuery(const string16& query) const {

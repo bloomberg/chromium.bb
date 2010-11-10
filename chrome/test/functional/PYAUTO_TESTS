@@ -31,8 +31,6 @@
     'cookies',
     'crash_reporter',
     'downloads',
-    # crbug.com/62398. Also look in the chromeos section while removing this.
-    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
     'find_in_page',
     # Turkish I problem. crbug.com/60638
     '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
@@ -108,9 +106,7 @@
     '-prefs.PrefsTest.testSessionRestoreURLs',
     '-prefs.PrefsTest.testSessionRestore',
     '-translate.TranslateTest.testSessionRestore',
-    # Uncomment the next line when the suppression for bug 62398 (above)
-    # is removed.
-    # '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
+    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
     '-downloads.DownloadsTest.testZip',
     '-downloads.DownloadsTest.testZipInIncognito',
     '-downloads.DownloadsTest.testCrazyFilenames',
