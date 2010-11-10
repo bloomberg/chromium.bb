@@ -30,7 +30,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/background.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/widget/widget_gtk.h"
@@ -242,8 +241,7 @@ void NewUserView::RecreatePeculiarControls() {
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
   delete sign_in_button_;
-  sign_in_button_ = new views::NativeButton(this, std::wstring());
-  CorrectNativeButtonFontSize(sign_in_button_);
+  sign_in_button_ = new login::WideButton(this, std::wstring());
   UpdateSignInButtonState();
 
   if (!CrosLibrary::Get()->EnsureLoaded())
@@ -438,9 +436,7 @@ void NewUserView::Layout() {
   y += setViewBounds(password_field_, x, y, width, true) + kRowPad;
 
   int throbber_y = y;
-  int sign_in_button_width =
-      std::max(login::kButtonMinWidth,
-               sign_in_button_->GetPreferredSize().width());
+  int sign_in_button_width = sign_in_button_->GetPreferredSize().width();
   setViewBounds(sign_in_button_, x, y, sign_in_button_width,true);
   setViewBounds(throbber_,
                 x + width - throbber_->GetPreferredSize().width(),

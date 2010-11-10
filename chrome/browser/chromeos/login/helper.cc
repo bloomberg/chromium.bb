@@ -11,6 +11,7 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/button/native_button.h"
+#include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/painter.h"
@@ -96,6 +97,11 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   return bounds;
 }
 
+void CorrectLabelFontSize(views::Label* label) {
+  if (label)
+    label->SetFont(label->font().DeriveFont(kFontSizeCorrectionDelta));
+}
+
 void CorrectNativeButtonFontSize(views::NativeButton* button) {
   if (button)
     button->set_font(button->font().DeriveFont(kFontSizeCorrectionDelta));
@@ -109,6 +115,20 @@ void CorrectTextfieldFontSize(views::Textfield* textfield) {
 GURL GetAccountRecoveryHelpUrl() {
   return google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl));
 }
+
+namespace login {
+
+// Minimal width for the button.
+const int kButtonMinWidth = 90;
+
+gfx::Size WideButton::GetPreferredSize() {
+  gfx::Size preferred_size = NativeButton::GetPreferredSize();
+  if (preferred_size.width() < kButtonMinWidth)
+    preferred_size.set_width(kButtonMinWidth);
+  return preferred_size;
+}
+
+}  // namespace login
 
 }  // namespace chromeos
 

@@ -68,6 +68,7 @@ class CameraImageView : public views::ImageView {
     message_->SetMultiLine(true);
     message_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     message_->SetVisible(false);
+    CorrectLabelFontSize(message_);
     AddChildView(message_);
   }
 
@@ -171,6 +172,7 @@ void UserImageView::Init() {
       new views::Label(l10n_util::GetString(IDS_USER_IMAGE_SCREEN_TITLE));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
+  CorrectLabelFontSize(title_label_);
 
   user_image_ = new CameraImageView();
   user_image_->SetImageSize(
@@ -186,10 +188,10 @@ void UserImageView::Init() {
                              ResourceBundle::GetSharedInstance().GetBitmapNamed(
                                  IDR_USER_IMAGE_CAPTURE_DISABLED));
 
-  ok_button_ = new views::NativeButton(this, l10n_util::GetString(IDS_OK));
+  ok_button_ = new login::WideButton(this, l10n_util::GetString(IDS_OK));
   ok_button_->SetEnabled(!is_capturing_);
 
-  skip_button_ = new views::NativeButton(this, l10n_util::GetString(IDS_SKIP));
+  skip_button_ = new login::WideButton(this, l10n_util::GetString(IDS_SKIP));
   skip_button_->SetEnabled(true);
 
   InitLayout();

@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 #pragma once
 
+#include "views/controls/button/native_button.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
@@ -18,7 +19,7 @@ class Size;
 }  // namespace gfx
 
 namespace views {
-class NativeButton;
+class Label;
 class Painter;
 class Textfield;
 class Throbber;
@@ -41,6 +42,9 @@ views::Painter* CreateBackgroundPainter();
 gfx::Rect CalculateScreenBounds(const gfx::Size& size);
 
 // Corrects font size for NativeButton control.
+void CorrectLabelFontSize(views::Label* label);
+
+// Corrects font size for NativeButton control.
 void CorrectNativeButtonFontSize(views::NativeButton* button);
 
 // Corrects font size for Textfield control.
@@ -57,9 +61,6 @@ namespace login {
 enum Command {
   SIGN_OUT,
 };
-
-// Minimal width for the button.
-const int kButtonMinWidth = 90;
 
 // Gap between edge and image view, and image view and controls.
 const int kBorderSize = 6;
@@ -83,6 +84,21 @@ const int kWizardScreenHeight = 450;
 
 const int kScreenCornerRadius = 10;
 const int kUserCornerRadius = 5;
+
+class WideButton : public views::NativeButton {
+ public:
+  WideButton(views::ButtonListener* listener, const std::wstring& text)
+      : NativeButton(listener, text) {
+    CorrectNativeButtonFontSize(this);
+  }
+
+  ~WideButton() {}
+
+ private:
+  virtual gfx::Size GetPreferredSize();
+
+  DISALLOW_COPY_AND_ASSIGN(WideButton);
+};
 
 }  // namespace login
 

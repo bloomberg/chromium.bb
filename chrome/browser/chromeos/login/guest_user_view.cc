@@ -13,11 +13,11 @@
 namespace chromeos {
 
 // Button with custom processing for Tab/Shift+Tab to select entries.
-class UserEntryButton : public views::NativeButton {
+class UserEntryButton : public login::WideButton {
  public:
   UserEntryButton(UserController* controller,
                   const std::wstring& label)
-      : NativeButton(controller, label),
+      : WideButton(controller, label),
         controller_(controller) {}
 
   // Overridden from views::View:
@@ -27,13 +27,13 @@ class UserEntryButton : public views::NativeButton {
       controller_->SelectUser(index);
       return true;
     }
-    return views::NativeButton::OnKeyPressed(e);
+    return WideButton::OnKeyPressed(e);
   }
 
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
     if (e.GetKeyCode() == app::VKEY_TAB)
       return true;
-    return views::NativeButton::SkipDefaultKeyEventProcessing(e);
+    return WideButton::SkipDefaultKeyEventProcessing(e);
   }
 
  private:
@@ -65,7 +65,6 @@ void GuestUserView::RecreateFields() {
   submit_button_ = new UserEntryButton(
       user_controller_,
       l10n_util::GetString(IDS_ENTER_GUEST_SESSION_BUTTON));
-  CorrectNativeButtonFontSize(submit_button_);
   AddChildView(submit_button_);
   Layout();
   SchedulePaint();
@@ -104,13 +103,11 @@ void GuestUserView::OnLocaleChanged() {
 
 void GuestUserView::Layout() {
   gfx::Size submit_button_size = submit_button_->GetPreferredSize();
-  int submit_button_width = std::max(login::kButtonMinWidth,
-                                     submit_button_size.width());
-  int submit_button_x = (width() - submit_button_width) / 2;
+  int submit_button_x = (width() - submit_button_size.width()) / 2;
   int submit_button_y = (height() - submit_button_size.height()) / 2;
   submit_button_->SetBounds(submit_button_x,
                             submit_button_y,
-                            submit_button_width,
+                            submit_button_size.width(),
                             submit_button_size.height());
 }
 
