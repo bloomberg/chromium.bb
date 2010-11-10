@@ -93,6 +93,8 @@ ResourceDispatcherTest.CrossSiteFailedRequest
 
 # Valgrind dies on assertion, see http://crbug.com/58145
 AutomationProxyTest.GetTabCount
+SunSpiderTest.Perf
+DromaeoTest.DOMCorePerf
 
 # Can't load a nib under Valgrind, see http://crbug.com/58124
 ImagesTest.AnimatedGIFs
@@ -107,3 +109,5 @@ SearchProviderTest.TestIsSearchProviderInstalled
 OptionsUITest.FLAKY_TwoCommandsOneTab
 OptionsUITest.FLAKY_CommandAgainGoesBackToOptionsTab
 
+# Times out, see http://crbug.com/50297
+DOMStorageTest.RootLayoutTests
