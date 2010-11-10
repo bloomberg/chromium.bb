@@ -54,7 +54,13 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
       request_to_info_.clear();
     }
     scoped_refptr<ResourceInfo> new_record(new ResourceInfo());
-    request_to_info_.insert(std::make_pair(source.id, new_record));
+    // We may encounter multiple PHASE_BEGIN for same resource in case of
+    // redirect -- if so, replace the old record to avoid keeping headers
+    // from different requests.
+    std::pair<RequestToInfoMap::iterator, bool> inserted =
+        request_to_info_.insert(std::make_pair(source.id, new_record));
+    if (!inserted.second)
+      inserted.first->second = new_record;
     return;
   }
   if (type == net::NetLog::TYPE_REQUEST_ALIVE &&
