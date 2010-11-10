@@ -275,6 +275,13 @@ int RunTest(const std::string& test_name) {
 
   base::ProcessHandle process_handle;
 #if defined(OS_POSIX)
+  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
+  if (browser_wrapper) {
+    new_cmd_line.PrependWrapper(browser_wrapper);
+    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
+            << browser_wrapper;
+  }
+
   // On POSIX, we launch the test in a new process group with pgid equal to
   // its pid. Any child processes that the test may create will inherit the
   // same pgid. This way, if the test is abruptly terminated, we can clean up
