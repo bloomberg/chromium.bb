@@ -356,6 +356,7 @@ void ContentSettingsHandler::Observe(NotificationType type,
         UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
       else if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
+      break;
     }
 
     case NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
