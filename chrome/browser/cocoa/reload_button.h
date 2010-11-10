@@ -27,6 +27,11 @@
 // Returns YES if the mouse is currently inside the bounds.
 - (BOOL)isMouseInside;
 
+// Update the tag, and the image and tooltip to match.  If |anInt|
+// matches the current tag, no action is taken.  |anInt| must be
+// either |IDC_STOP| or |IDC_RELOAD|.
+- (void)updateTag:(NSInteger)anInt;
+
 // Update the button to be a reload button or stop button depending on
 // |isLoading|.  If |force|, always sets the indicated mode.  If
 // |!force|, and the mouse is over the button, defer the transition

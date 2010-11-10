@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/test_event_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -72,74 +72,95 @@ TEST_F(ReloadButtonTest, IgnoredMultiClick) {
   [button_ setTarget:nil];
 }
 
+TEST_F(ReloadButtonTest, UpdateTag) {
+  [button_ setTag:IDC_STOP];
+
+  [button_ updateTag:IDC_RELOAD];
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
+  NSImage* reloadImage = [button_ image];
+  NSString* const reloadToolTip = [button_ toolTip];
+
+  [button_ updateTag:IDC_STOP];
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
+  NSImage* stopImage = [button_ image];
+  NSString* const stopToolTip = [button_ toolTip];
+  EXPECT_NSNE(reloadImage, stopImage);
+  EXPECT_NSNE(reloadToolTip, stopToolTip);
+
+  [button_ updateTag:IDC_RELOAD];
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
+  EXPECT_NSEQ(reloadImage, [button_ image]);
+  EXPECT_NSEQ(reloadToolTip, [button_ toolTip]);
+}
+
 // Test that when forcing the mode, it takes effect immediately,
 // regardless of whether the mouse is hovering.
 TEST_F(ReloadButtonTest, SetIsLoadingForce) {
   EXPECT_FALSE([button_ isMouseInside]);
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 
   // Changes to stop immediately.
   [button_ setIsLoading:YES force:YES];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
 
   // Changes to reload immediately.
   [button_ setIsLoading:NO force:YES];
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 
   // Changes to stop immediately when the mouse is hovered, and
   // doesn't change when the mouse exits.
   [button_ mouseEntered:nil];
   EXPECT_TRUE([button_ isMouseInside]);
   [button_ setIsLoading:YES force:YES];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
   [button_ mouseExited:nil];
   EXPECT_FALSE([button_ isMouseInside]);
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
 
   // Changes to reload immediately when the mouse is hovered, and
   // doesn't change when the mouse exits.
   [button_ mouseEntered:nil];
   EXPECT_TRUE([button_ isMouseInside]);
   [button_ setIsLoading:NO force:YES];
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
   [button_ mouseExited:nil];
   EXPECT_FALSE([button_ isMouseInside]);
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 }
 
 // Test that without force, stop mode is set immediately, but reload
 // is affected by the hover status.
 TEST_F(ReloadButtonTest, SetIsLoadingNoForceUnHover) {
   EXPECT_FALSE([button_ isMouseInside]);
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 
   // Changes to stop immediately when the mouse is not hovering.
   [button_ setIsLoading:YES force:NO];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
 
   // Changes to reload immediately when the mouse is not hovering.
   [button_ setIsLoading:NO force:NO];
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 
   // Changes to stop immediately when the mouse is hovered, and
   // doesn't change when the mouse exits.
   [button_ mouseEntered:nil];
   EXPECT_TRUE([button_ isMouseInside]);
   [button_ setIsLoading:YES force:NO];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
   [button_ mouseExited:nil];
   EXPECT_FALSE([button_ isMouseInside]);
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
 
   // Does not change to reload immediately when the mouse is hovered,
   // changes when the mouse exits.
   [button_ mouseEntered:nil];
   EXPECT_TRUE([button_ isMouseInside]);
   [button_ setIsLoading:NO force:NO];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
   [button_ mouseExited:nil];
   EXPECT_FALSE([button_ isMouseInside]);
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 }
 
 // Test that without force, stop mode is set immediately, and reload
@@ -201,7 +222,7 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
 
   // Get to stop mode.
   [button_ setIsLoading:YES force:YES];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
   EXPECT_TRUE([button_ isEnabled]);
 
   // Expect the action once.
@@ -213,12 +234,12 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
       test_event_utils::MouseClickInView(button_, 1);
   [NSApp postEvent:click.second atStart:YES];
   [button_ mouseDown:click.first];
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ(IDC_RELOAD, [button_ tag]);
   EXPECT_TRUE([button_ isEnabled]);
 
   // Get back to stop mode.
   [button_ setIsLoading:YES force:YES];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
   EXPECT_TRUE([button_ isEnabled]);
 
   // If hover prevented reload mode immediately taking effect, clicks should do
@@ -226,11 +247,11 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
   [button_ mouseEntered:nil];
   EXPECT_TRUE([button_ isMouseInside]);
   [button_ setIsLoading:NO force:NO];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
   EXPECT_FALSE([button_ isEnabled]);
   [NSApp postEvent:click.second atStart:YES];
   [button_ mouseDown:click.first];
-  EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_EQ(IDC_STOP, [button_ tag]);
 
   [button_ setTarget:nil];
 }
