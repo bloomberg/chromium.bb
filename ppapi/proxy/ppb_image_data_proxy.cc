@@ -70,7 +70,8 @@ void* ImageData::Map() {
   mapped_data_ = address;
   return address;
 #else
-  #error write this
+  NOTIMPLEMENTED();
+  return NULL;
 #endif
 }
 
@@ -79,7 +80,7 @@ void ImageData::Unmap() {
   if (mapped_data_)
     shmdt(mapped_data_);
 #else
-  #error write this
+  NOTIMPLEMENTED();
 #endif
   mapped_data_ = NULL;
 }
@@ -225,8 +226,9 @@ void PPB_ImageData_Proxy::OnMsgCreate(PP_Module module,
     const PPB_ImageDataTrusted* trusted =
         reinterpret_cast<const PPB_ImageDataTrusted*>(
             dispatcher()->GetLocalInterface(PPB_IMAGEDATA_TRUSTED_INTERFACE));
+    uint32_t byte_count = 0;
     if (trusted)
-      *result_shm_handle = trusted->GetNativeMemoryHandle(*result);
+      *result_shm_handle = trusted->GetNativeMemoryHandle(*result, &byte_count);
   }
 }
 

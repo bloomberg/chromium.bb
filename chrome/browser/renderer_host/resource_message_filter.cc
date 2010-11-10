@@ -37,10 +37,11 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/plugin_service.h"
 #include "chrome/browser/plugin_process_host.h"
-#include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/plugin_service.h"
+#include "chrome/browser/ppapi_plugin_process_host.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
@@ -449,6 +450,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                   OnReceiveContextMenuMsg(msg))
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
+                                      OnOpenChannelToPepperPlugin)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
@@ -874,6 +877,14 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
       url,
       mime_type,
       new OpenChannelToPluginCallback(this, reply_msg));
+}
+
+void ResourceMessageFilter::OnOpenChannelToPepperPlugin(
+    const FilePath& path,
+    IPC::Message* reply_msg) {
+  PpapiPluginProcessHost* host = new PpapiPluginProcessHost(this);
+  host->Init(path, reply_msg);
+  ppapi_plugin_hosts_.push_back(linked_ptr<PpapiPluginProcessHost>(host));
 }
 
 void ResourceMessageFilter::OnLaunchNaCl(

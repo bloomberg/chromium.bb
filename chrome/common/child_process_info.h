@@ -28,7 +28,8 @@ class ChildProcessInfo {
     ZYGOTE_PROCESS,
     SANDBOX_HELPER_PROCESS,
     NACL_BROKER_PROCESS,
-    GPU_PROCESS
+    GPU_PROCESS,
+    PPAPI_PLUGIN_PROCESS
   };
 
   ChildProcessInfo(const ChildProcessInfo& original);

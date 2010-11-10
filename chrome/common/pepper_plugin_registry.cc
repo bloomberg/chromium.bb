@@ -21,7 +21,9 @@ const char* PepperPluginRegistry::kPDFPluginExtension = "pdf";
 const char* PepperPluginRegistry::kPDFPluginDescription =
     "Portable Document Format";
 
-PepperPluginInfo::PepperPluginInfo() : is_internal(false) {
+PepperPluginInfo::PepperPluginInfo()
+    : is_internal(false),
+      is_out_of_process(false) {
 }
 
 PepperPluginInfo::~PepperPluginInfo() {}
@@ -52,7 +54,7 @@ void PepperPluginRegistry::PreloadModules() {
   std::vector<PepperPluginInfo> plugins;
   GetList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (!plugins[i].is_internal) {
+    if (!plugins[i].is_internal && !plugins[i].is_out_of_process) {
       base::NativeLibrary library = base::LoadNativeLibrary(plugins[i].path);
       LOG_IF(WARNING, !library) << "Unable to load plugin "
                                 << plugins[i].path.value();
@@ -68,6 +70,9 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
           switches::kRegisterPepperPlugins);
   if (value.empty())
     return;
+
+  bool out_of_process =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiOutOfProcess);
 
   // FORMAT:
   // command-line = <plugin-entry> + *( LWS + "," + LWS + <plugin-entry> )
@@ -88,6 +93,7 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
     base::SplitString(parts[0], '#', &name_parts);
 
     PepperPluginInfo plugin;
+    plugin.is_out_of_process = out_of_process;
 #if defined(OS_WIN)
     // This means we can't provide plugins from non-ASCII paths, but
     // since this switch is only for development I don't think that's
@@ -168,6 +174,19 @@ void PepperPluginRegistry::GetInternalPluginInfo(
 #endif
 }
 
+bool PepperPluginRegistry::RunOutOfProcessForPlugin(
+    const FilePath& path) const {
+  // TODO(brettw) don't recompute this every time. But since this Pepper
+  // switch is only for development, it's OK for now.
+  std::vector<PepperPluginInfo> plugins;
+  GetList(&plugins);
+  for (size_t i = 0; i < plugins.size(); ++i) {
+    if (path == plugins[i].path)
+      return plugins[i].is_out_of_process;
+  }
+  return false;
+}
+
 pepper::PluginModule* PepperPluginRegistry::GetModule(
     const FilePath& path) const {
   ModuleMap::const_iterator it = modules_.find(path);
@@ -181,6 +200,7 @@ PepperPluginRegistry::~PepperPluginRegistry() {}
 PepperPluginRegistry::PepperPluginRegistry() {
   InternalPluginInfoList internal_plugin_info;
   GetInternalPluginInfo(&internal_plugin_info);
+
   // Register modules for these suckers.
   for (InternalPluginInfoList::const_iterator it =
          internal_plugin_info.begin();
@@ -203,6 +223,9 @@ PepperPluginRegistry::PepperPluginRegistry() {
   GetPluginInfoFromSwitch(&plugins);
   GetExtraPlugins(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
+    if (plugins[i].is_out_of_process)
+      continue;  // Only preload in-process plugins.
+
     const FilePath& path = plugins[i].path;
     ModuleHandle module = pepper::PluginModule::CreateModule(path);
     if (!module) {

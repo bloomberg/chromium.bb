@@ -14,10 +14,16 @@
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
 struct PepperPluginInfo {
-  PepperPluginInfo();  // Needed to initialize |is_internal|.
+  PepperPluginInfo();
   ~PepperPluginInfo();
 
-  bool is_internal;  // Defaults to false (see constructor).
+  // Indicates internal plugins for which there's not actually a library.
+  // Defaults to false.
+  bool is_internal;
+
+  // True when this plugin should be run out of process. Defaults to false.
+  bool is_out_of_process;
+
   FilePath path;  // Internal plugins have "internal-[name]" as path.
   std::vector<std::string> mime_types;
   std::string name;
@@ -46,6 +52,13 @@ class PepperPluginRegistry {
   // access to the plugins before entering the sandbox.
   static void PreloadModules();
 
+  // Returns true if the given plugin is a pepper plugin that should be run
+  // out of process.
+  bool RunOutOfProcessForPlugin(const FilePath& path) const;
+
+  // Returns a preloaded module for the given path. This only works for
+  // non-out-of-process plugins since we preload them so they will run in the
+  // sandbox. Returns NULL if the plugin hasn't been preloaded.
   pepper::PluginModule* GetModule(const FilePath& path) const;
 
   ~PepperPluginRegistry();

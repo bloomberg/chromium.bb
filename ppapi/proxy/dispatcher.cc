@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
@@ -45,7 +46,7 @@ Dispatcher::Dispatcher(GetInterfaceFunc local_get_interface)
       disallow_trusted_interfaces_(true),
       local_get_interface_(local_get_interface),
       declared_supported_remote_interfaces_(false),
-      callback_tracker_(this) {
+      callback_tracker_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   memset(id_to_proxy_, 0,
          static_cast<int>(INTERFACE_ID_COUNT) * sizeof(InterfaceProxy*));
 }

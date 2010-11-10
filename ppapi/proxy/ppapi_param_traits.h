@@ -17,7 +17,7 @@ struct PP_ObjectProperty;
 namespace pp {
 namespace proxy {
 struct PPBFont_DrawTextAt_Params;
-class SerializedFontDescription;
+struct SerializedFontDescription;
 class SerializedVar;
 }
 }

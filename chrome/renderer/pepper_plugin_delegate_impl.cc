@@ -30,6 +30,7 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "gfx/size.h"
 #include "grit/locale_settings.h"
+#include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
@@ -38,6 +39,7 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/plugins/pepper_file_io.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
+#include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/webplugin.h"
 
 #if defined(OS_MACOSX)
@@ -404,7 +406,22 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
       id_generator_(0) {
 }
 
-PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {}
+PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
+}
+
+scoped_refptr<pepper::PluginModule>
+PepperPluginDelegateImpl::CreateOutOfProcessPepperPlugin(
+    const FilePath& path) {
+  IPC::ChannelHandle channel_handle;
+  render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
+      path, &channel_handle));
+  if (channel_handle.name.empty())
+    return scoped_refptr<pepper::PluginModule>();  // Couldn't be initialized.
+  return pepper::PluginModule::CreateOutOfProcessModule(
+      ChildProcess::current()->io_message_loop(),
+      channel_handle,
+      ChildProcess::current()->GetShutDownEvent());
+}
 
 void PepperPluginDelegateImpl::ViewInitiatedPaint() {
   // Notify all of our instances that we started painting. This is used for

@@ -39,7 +39,7 @@ class PPB_URLRequestInfo_Proxy : public InterfaceProxy {
                         int32_t property,
                         SerializedVarReceiveInput value);
   void OnMsgAppendDataToBody(PP_Resource request,
-                             const std::string& request);
+                             const std::string& data);
   void OnMsgAppendFileToBody(PP_Resource request,
                              PP_Resource file_ref,
                              int64_t start_offset,

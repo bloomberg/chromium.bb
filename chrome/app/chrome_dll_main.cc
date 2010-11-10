@@ -110,6 +110,7 @@ extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int GpuMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
+extern int PpapiPluginMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
 extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
@@ -277,7 +278,8 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   const int kPluginScore = 10;
   int score = -1;
 
-  if (process_type == switches::kPluginProcess) {
+  if (process_type == switches::kPluginProcess ||
+      process_type == switches::kPpapiPluginProcess) {
     score = kPluginScore;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kWorkerProcess ||
@@ -843,6 +845,8 @@ int ChromeMain(int argc, char** argv) {
     rv = RendererMain(main_params);
   } else if (process_type == switches::kPluginProcess) {
     rv = PluginMain(main_params);
+  } else if (process_type == switches::kPpapiPluginProcess) {
+    rv = PpapiPluginMain(main_params);
   } else if (process_type == switches::kUtilityProcess) {
     rv = UtilityMain(main_params);
   } else if (process_type == switches::kGpuProcess) {

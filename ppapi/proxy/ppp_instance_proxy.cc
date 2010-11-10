@@ -77,7 +77,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
   Dispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   ReceiveSerializedVarReturnValue result;
   dispatcher->Send(new PpapiMsg_PPPInstance_GetInstanceObject(
-      instance, INTERFACE_ID_PPP_INSTANCE, &result));
+      INTERFACE_ID_PPP_INSTANCE, instance, &result));
   return result.Return(dispatcher);
 }
 

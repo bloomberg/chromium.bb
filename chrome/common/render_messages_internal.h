@@ -1578,6 +1578,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               WebPluginInfo /* info */)
 
   // A renderer sends this to the browser process when it wants to
+  // create a pepper plugin.  The browser will create the plugin process if
+  // necessary, and will return a handle to the channel on success.
+  // On error an empty string is returned.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_OpenChannelToPepperPlugin,
+                              FilePath /* path */,
+                              IPC::ChannelHandle /* handle to channel */)
+
+  // A renderer sends this to the browser process when it wants to
   // create connect to the GPU.  The browser will create the GPU process if
   // necessary, and will return a handle to the channel via
   // a GpuChannelEstablished message.

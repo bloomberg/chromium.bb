@@ -76,6 +76,8 @@ enum IPCMessageStart {
   GpuVideoDecoderMsgStart,
   ServiceMsgStart,
   ServiceHostMsgStart,
+  PpapiMsgStart,
+  PpapiHostMsgStart,
   // NOTE: When you add a new message class, also update
   // IPCStatusView::IPCStatusView to ensure logging works.
   LastMsgIndex

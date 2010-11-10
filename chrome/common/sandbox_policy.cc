@@ -475,6 +475,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     type = ChildProcessInfo::NACL_BROKER_PROCESS;
   } else if (type_str == switches::kGpuProcess) {
     type = ChildProcessInfo::GPU_PROCESS;
+  } else if (type_str == switches::kPpapiPluginProcess) {
+    type = ChildProcessInfo::PPAPI_PLUGIN_PROCESS;
   } else {
     NOTREACHED();
     return 0;

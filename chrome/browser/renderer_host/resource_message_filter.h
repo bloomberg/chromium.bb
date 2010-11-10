@@ -17,6 +17,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/linked_ptr.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
@@ -43,6 +44,7 @@ class GeolocationDispatcherHostOld;
 class HostZoomMap;
 class IndexedDBDispatcherHost;
 class NotificationsPrefsCache;
+class PpapiPluginProcessHost;
 class Profile;
 class RenderWidgetHelper;
 class SearchProviderInstallStateDispatcherHost;
@@ -195,6 +197,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnOpenChannelToPlugin(const GURL& url,
                              const std::string& mime_type,
                              IPC::Message* reply_msg);
+  void OnOpenChannelToPepperPlugin(const FilePath& path,
+                                   IPC::Message* reply_msg);
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
                     IPC::Message* reply_msg);
@@ -473,6 +477,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   bool cloud_print_enabled_;
 
   base::TimeTicks last_plugin_refresh_time_;  // Initialized to 0.
+
+  // A list of all Ppapi plugin processes for this renderer.
+  std::vector<linked_ptr<PpapiPluginProcessHost> > ppapi_plugin_hosts_;
 
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;

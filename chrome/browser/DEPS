@@ -9,6 +9,7 @@ include_rules = [
   "+chrome/views",
   "+cros",
   "+grit",  # For generated headers
+  "+ppapi/proxy",
   "+rlz",
   "+sandbox/linux",
   "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.

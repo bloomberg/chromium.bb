@@ -24,6 +24,7 @@
       'common',
       'browser',
       'chrome_gpu',
+      'ppapi_plugin',
       'profile_import',
       'renderer',
       'syncapi',
@@ -804,6 +805,24 @@
             '../gpu/gpu.gyp:command_buffer_service',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'ppapi_plugin',
+      'type': '<(library)',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ppapi/ppapi.gyp:ppapi_proxy',
+      ],
+      'sources': [
+        'ppapi_plugin/ppapi_plugin_main.cc',
+        'ppapi_plugin/ppapi_process.cc',
+        'ppapi_plugin/ppapi_process.h',
+        'ppapi_plugin/ppapi_thread.cc',
+        'ppapi_plugin/ppapi_thread.h',
+      ],
+      'include_dirs': [
+        '..',
       ],
     },
     {

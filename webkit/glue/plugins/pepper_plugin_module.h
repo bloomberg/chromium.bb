@@ -16,9 +16,24 @@
 #include "ppapi/c/ppb.h"
 
 class FilePath;
+class MessageLoop;
 typedef struct NPObject NPObject;
 struct PPB_Core;
 typedef void* NPIdentifier;
+
+namespace base {
+class WaitableEvent;
+}
+
+namespace pp {
+namespace proxy {
+class HostDispatcher;
+}  // proxy
+}  // pp
+
+namespace IPC {
+struct ChannelHandle;
+}
 
 namespace pepper {
 
@@ -56,6 +71,10 @@ class PluginModule : public base::RefCounted<PluginModule>,
   static scoped_refptr<PluginModule> CreateModule(const FilePath& path);
   static scoped_refptr<PluginModule> CreateInternalModule(
       EntryPoints entry_points);
+  static scoped_refptr<PluginModule> CreateOutOfProcessModule(
+      MessageLoop* ipc_message_loop,
+      const IPC::ChannelHandle& handle,
+      base::WaitableEvent* shutdown_event);
 
   static const PPB_Core* GetCore();
 
@@ -101,8 +120,15 @@ class PluginModule : public base::RefCounted<PluginModule>,
 
   bool InitFromEntryPoints(const EntryPoints& entry_points);
   bool InitFromFile(const FilePath& path);
+  bool InitForOutOfProcess(MessageLoop* ipc_message_loop,
+                           const IPC::ChannelHandle& handle,
+                           base::WaitableEvent* shutdown_event);
   static bool LoadEntryPoints(const base::NativeLibrary& library,
                               EntryPoints* entry_points);
+
+  // Dispatcher for out-of-process plugins. This will be null when the plugin
+  // is being run in-process.
+  scoped_ptr<pp::proxy::HostDispatcher> dispatcher_;
 
   PP_Module pp_module_;
 
@@ -115,7 +141,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
   base::NativeLibrary library_;
 
   // Contains pointers to the entry points of the actual plugin
-  // implementation.
+  // implementation. These will be NULL for out-of-process plugins.
   EntryPoints entry_points_;
 
   // The name of the module.

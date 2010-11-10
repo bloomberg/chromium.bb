@@ -2423,6 +2423,8 @@
         'browser/power_save_blocker_common.cc',
         'browser/power_save_blocker_stub.cc',
         'browser/power_save_blocker_win.cc',
+        'browser/ppapi_plugin_process_host.cc',
+        'browser/ppapi_plugin_process_host.h',
         'browser/preferences_mac.cc',
         'browser/preferences_mac.h',
         'browser/prefs/browser_prefs.cc',

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
@@ -35,8 +36,10 @@ PluginDispatcher::PluginDispatcher(GetInterfaceFunc get_interface,
     : Dispatcher(get_interface),
       init_module_(init_module),
       shutdown_module_(shutdown_module),
-      plugin_resource_tracker_(new PluginResourceTracker(this)),
-      plugin_var_tracker_(new PluginVarTracker(this)) {
+      plugin_resource_tracker_(new PluginResourceTracker(
+          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      plugin_var_tracker_(new PluginVarTracker(
+          ALLOW_THIS_IN_INITIALIZER_LIST(this))) {
   SetSerializationRules(
       new PluginVarSerializationRules(plugin_var_tracker_.get()));
 

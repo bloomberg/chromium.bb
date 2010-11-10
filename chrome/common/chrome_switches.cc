@@ -846,6 +846,18 @@ const char kPluginProcess[]                 = "plugin";
 // Causes the plugin process to display a dialog on launch.
 const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 
+// Runs PPAPI (Pepper) plugins out-of-process.
+const char kPpapiOutOfProcess[]             = "ppapi-out-of-process";
+
+// Like kPluginLauncher for PPAPI plugins.
+const char kPpapiPluginLauncher[]           = "ppapi-plugin-launcher";
+
+// Argument to the process type that indicates a PPAPI plugin process type.
+const char kPpapiPluginProcess[]            = "ppapi";
+
+// Causes the PPAPI sub process to display a dialog on launch.
+const char kPpapiStartupDialog[]            = "ppapi-startup-dialog";
+
 // Establishes a channel to the GPU process asynchronously and (re)launches it
 // if necessary when a renderer process starts.
 const char kPrelaunchGpuProcess[]           = "prelaunch-gpu-process";

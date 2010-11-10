@@ -19,6 +19,10 @@ int PluginMain(const MainFunctionParams& parameters) {
   return ResultCodes::BAD_PROCESS_TYPE;
 }
 
+int PpapiPluginMain(const MainFunctionParams& parameters) {
+  return ResultCodes::BAD_PROCESS_TYPE;
+}
+
 int WorkerMain(const MainFunctionParams& parameters) {
   return ResultCodes::BAD_PROCESS_TYPE;
 }

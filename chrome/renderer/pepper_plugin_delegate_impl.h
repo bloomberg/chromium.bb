@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
+#include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "ppapi/c/pp_errors.h"
 #include "webkit/glue/plugins/pepper_plugin_delegate.h"
@@ -26,6 +27,7 @@ class Rect;
 namespace pepper {
 class FileIO;
 class PluginInstance;
+class PluginModule;
 }
 
 namespace WebKit {
@@ -41,6 +43,9 @@ class PepperPluginDelegateImpl
  public:
   explicit PepperPluginDelegateImpl(RenderView* render_view);
   virtual ~PepperPluginDelegateImpl();
+
+  scoped_refptr<pepper::PluginModule> CreateOutOfProcessPepperPlugin(
+      const FilePath& path);
 
   // Called by RenderView to tell us about painting events, these two functions
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..

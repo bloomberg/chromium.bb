@@ -64,6 +64,8 @@ std::string ChildProcessInfo::GetTypeNameInEnglish(
       return "Native Client broker";
     case GPU_PROCESS:
       return "GPU";
+    case PPAPI_PLUGIN_PROCESS:
+      return "Pepper Plugin";
     case UNKNOWN_PROCESS:
     default:
       DCHECK(false) << "Unknown child process type!";
@@ -96,6 +98,7 @@ string16 ChildProcessInfo::GetLocalizedTitle() const {
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
 
     case ChildProcessInfo::PLUGIN_PROCESS:
+    case ChildProcessInfo::PPAPI_PLUGIN_PROCESS:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_PREFIX,
                                         title,
                                         WideToUTF16Hack(version_));

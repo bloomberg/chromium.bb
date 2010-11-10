@@ -48,6 +48,8 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/glue/plugins/pepper_audio.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_common.h"
@@ -82,6 +84,10 @@
 #ifdef ENABLE_GPU
 #include "webkit/glue/plugins/pepper_graphics_3d.h"
 #endif  // ENABLE_GPU
+
+#if defined(OS_POSIX)
+#include "ipc/ipc_channel_posix.h"
+#endif
 
 namespace pepper {
 
@@ -335,12 +341,24 @@ scoped_refptr<PluginModule> PluginModule::CreateModule(
   return lib;
 }
 
+// static
 scoped_refptr<PluginModule> PluginModule::CreateInternalModule(
     EntryPoints entry_points) {
   scoped_refptr<PluginModule> lib(new PluginModule());
   if (!lib->InitFromEntryPoints(entry_points))
     return NULL;
 
+  return lib;
+}
+
+// static
+scoped_refptr<PluginModule> PluginModule::CreateOutOfProcessModule(
+    MessageLoop* ipc_message_loop,
+    const IPC::ChannelHandle& handle,
+    base::WaitableEvent* shutdown_event) {
+  scoped_refptr<PluginModule> lib(new PluginModule);
+  if (!lib->InitForOutOfProcess(ipc_message_loop, handle, shutdown_event))
+    return NULL;
   return lib;
 }
 
@@ -386,10 +404,41 @@ bool PluginModule::InitFromFile(const FilePath& path) {
   return true;
 }
 
+bool PluginModule::InitForOutOfProcess(MessageLoop* ipc_message_loop,
+                                       const IPC::ChannelHandle& handle,
+                                       base::WaitableEvent* shutdown_event) {
+  const PPB_Var_Deprecated* var_interface =
+      reinterpret_cast<const PPB_Var_Deprecated*>(
+          GetInterface(PPB_VAR_DEPRECATED_INTERFACE));
+  dispatcher_.reset(new pp::proxy::HostDispatcher(var_interface,
+                                                  pp_module(), &GetInterface));
+
+#if defined(OS_POSIX)
+  // If we received a ChannelHandle, register it now.
+  if (handle.socket.fd >= 0)
+    IPC::AddChannelSocket(handle.name, handle.socket.fd);
+#endif
+
+  if (!dispatcher_->InitWithChannel(ipc_message_loop, handle.name, true,
+                                    shutdown_event)) {
+    dispatcher_.reset();
+    return false;
+  }
+
+  bool init_result = false;
+  dispatcher_->Send(new PpapiMsg_InitializeModule(pp_module(), &init_result));
+
+  if (!init_result) {
+    // TODO(brettw) does the module get unloaded in this case?
+    dispatcher_.reset();
+    return false;
+  }
+  return true;
+}
+
 // static
 bool PluginModule::LoadEntryPoints(const base::NativeLibrary& library,
                                    EntryPoints* entry_points) {
-
   entry_points->get_interface =
       reinterpret_cast<PPP_GetInterfaceFunc>(
           base::GetFunctionPointerFromNativeLibrary(library,
@@ -426,7 +475,13 @@ PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;
   }
-  return new PluginInstance(delegate, this, plugin_instance_interface);
+  PluginInstance* instance = new PluginInstance(delegate, this,
+                                                plugin_instance_interface);
+  if (dispatcher_.get()) {
+    pp::proxy::HostDispatcher::SetForInstance(instance->pp_instance(),
+                                              dispatcher_.get());
+  }
+  return instance;
 }
 
 PluginInstance* PluginModule::GetSomeInstance() const {
@@ -437,6 +492,10 @@ PluginInstance* PluginModule::GetSomeInstance() const {
 }
 
 const void* PluginModule::GetPluginInterface(const char* name) const {
+  if (dispatcher_.get())
+    return dispatcher_->GetProxiedInterface(name);
+
+  // In-process plugins.
   if (!entry_points_.get_interface)
     return NULL;
   return entry_points_.get_interface(name);
@@ -447,6 +506,7 @@ void PluginModule::InstanceCreated(PluginInstance* instance) {
 }
 
 void PluginModule::InstanceDeleted(PluginInstance* instance) {
+  pp::proxy::HostDispatcher::RemoveForInstance(instance->pp_instance());
   instances_.erase(instance);
 }
 
