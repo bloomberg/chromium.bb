@@ -16,7 +16,6 @@
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/perftimer.h"
-#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
@@ -413,8 +412,7 @@ void MetricsLogBase::RecordHistogramDelta(
 MetricsServiceBase::MetricsServiceBase()
     : pending_log_(NULL),
       compressed_log_(),
-      current_log_(NULL),
-      logged_samples_() {
+      current_log_(NULL) {
 }
 
 MetricsServiceBase::~MetricsServiceBase() {
@@ -467,20 +465,56 @@ bool MetricsServiceBase::Bzip2Compress(const std::string& input,
   return true;
 }
 
+void MetricsServiceBase::DiscardPendingLog() {
+  if (pending_log_) {  // Shutdown might have deleted it!
+    delete pending_log_;
+    pending_log_ = NULL;
+  }
+  compressed_log_.clear();
+}
+
 void MetricsServiceBase::RecordCurrentHistograms() {
   DCHECK(current_log_);
+  TransmitAllHistograms(base::Histogram::kNoFlags, true);
+}
 
+void MetricsServiceBase::TransmitHistogramDelta(
+      const base::Histogram& histogram,
+      const base::Histogram::SampleSet& snapshot) {
+  current_log_->RecordHistogramDelta(histogram, snapshot);
+}
+
+void MetricsServiceBase::InconsistencyDetected(int problem) {
+  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser",
+                            problem, Histogram::NEVER_EXCEEDED_VALUE);
+}
+
+void MetricsServiceBase::UniqueInconsistencyDetected(int problem) {
+  UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique",
+                            problem, Histogram::NEVER_EXCEEDED_VALUE);
+}
+
+void MetricsServiceBase::SnapshotProblemResolved(int amount) {
+  UMA_HISTOGRAM_COUNTS("Histogram.InconsistentSnapshotBrowser",
+                       std::abs(amount));
+}
+
+void HistogramSender::TransmitAllHistograms(Histogram::Flags flag_to_set,
+                                            bool send_only_uma) {
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetHistograms(&histograms);
   for (StatisticsRecorder::Histograms::const_iterator it = histograms.begin();
        histograms.end() != it;
        ++it) {
-    if ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag)
-      RecordHistogram(**it);
+    (*it)->SetFlags(flag_to_set);
+    if (send_only_uma &&
+        0 == ((*it)->flags() & Histogram::kUmaTargetedHistogramFlag))
+      continue;
+    TransmitHistogram(**it);
   }
 }
 
-void MetricsServiceBase::RecordHistogram(const Histogram& histogram) {
+void HistogramSender::TransmitHistogram(const Histogram& histogram) {
   // Get up-to-date snapshot of sample stats.
   Histogram::SampleSet snapshot;
   histogram.SnapshotSample(&snapshot);
@@ -489,21 +523,20 @@ void MetricsServiceBase::RecordHistogram(const Histogram& histogram) {
   int corruption = histogram.FindCorruption(snapshot);
   if (corruption) {
     NOTREACHED();
+    InconsistencyDetected(corruption);
     // Don't send corrupt data to metrics survices.
-    UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowser",
-                              corruption, Histogram::NEVER_EXCEEDED_VALUE);
-    typedef std::map<std::string, int> ProblemMap;
-    static ProblemMap* inconsistencies = new ProblemMap;
-    int old_corruption = (*inconsistencies)[histogram_name];
+    if (NULL == inconsistencies_.get())
+      inconsistencies_.reset(new ProblemMap);
+    int old_corruption = (*inconsistencies_)[histogram_name];
     if (old_corruption == (corruption | old_corruption))
       return;  // We've already seen this corruption for this histogram.
-    (*inconsistencies)[histogram_name] |= corruption;
-    UMA_HISTOGRAM_ENUMERATION("Histogram.InconsistenciesBrowserUnique",
-                              corruption, Histogram::NEVER_EXCEEDED_VALUE);
+    (*inconsistencies_)[histogram_name] |= corruption;
+    UniqueInconsistencyDetected(corruption);
     return;
   }
 
-  // Find the already sent stats, or create an empty set.
+  // Find the already sent stats, or create an empty set.  Remove from our
+  // snapshot anything that we've already sent.
   LoggedSampleMap::iterator it = logged_samples_.find(histogram_name);
   Histogram::SampleSet* already_logged;
   if (logged_samples_.end() == it) {
@@ -512,23 +545,28 @@ void MetricsServiceBase::RecordHistogram(const Histogram& histogram) {
     already_logged->Resize(histogram);  // Complete initialization.
   } else {
     already_logged = &(it->second);
+    int64 discrepancy(already_logged->TotalCount() -
+                    already_logged->redundant_count());
+    if (discrepancy) {
+      NOTREACHED();  // Already_logged has become corrupt.
+      int problem = static_cast<int>(discrepancy);
+      if (problem != discrepancy)
+        problem = INT_MAX;
+      SnapshotProblemResolved(problem);
+      // With no valid baseline, we'll act like we've sent everything in our
+      // snapshot.
+      already_logged->Subtract(*already_logged);
+      already_logged->Add(snapshot);
+    }
     // Deduct any stats we've already logged from our snapshot.
     snapshot.Subtract(*already_logged);
   }
 
   // Snapshot now contains only a delta to what we've already_logged.
-
-  if (snapshot.TotalCount() > 0) {
-    current_log_->RecordHistogramDelta(histogram, snapshot);
+  DCHECK_EQ(snapshot.TotalCount(), snapshot.redundant_count());
+  if (snapshot.redundant_count() > 0) {
+    TransmitHistogramDelta(histogram, snapshot);
     // Add new data into our running total.
     already_logged->Add(snapshot);
   }
-}
-
-void MetricsServiceBase::DiscardPendingLog() {
-  if (pending_log_) {  // Shutdown might have deleted it!
-    delete pending_log_;
-    pending_log_ = NULL;
-  }
-  compressed_log_.clear();
 }

@@ -14,8 +14,9 @@
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/task.h"
+#include "chrome/common/metrics_helpers.h"
 
-class RendererHistogramSnapshots {
+class RendererHistogramSnapshots : public HistogramSender {
  public:
   RendererHistogramSnapshots();
   ~RendererHistogramSnapshots();
@@ -23,26 +24,28 @@ class RendererHistogramSnapshots {
   // Send the histogram data.
   void SendHistograms(int sequence_number);
 
+ private:
   // Maintain a map of histogram names to the sample stats we've sent.
   typedef std::map<std::string, base::Histogram::SampleSet> LoggedSampleMap;
   typedef std::vector<std::string> HistogramPickledList;
 
- private:
   // Extract snapshot data and then send it off the the Browser process.
   // Send only a delta to what we have already sent.
   void UploadAllHistrograms(int sequence_number);
-  void UploadHistrogram(const base::Histogram& histogram,
-                        HistogramPickledList* histograms);
-  void UploadHistogramDelta(const base::Histogram& histogram,
-                            const base::Histogram::SampleSet& snapshot,
-                            HistogramPickledList* histograms);
 
   ScopedRunnableMethodFactory<RendererHistogramSnapshots>
       renderer_histogram_snapshots_factory_;
 
-  // For histograms, record what we've already logged (as a sample for each
-  // histogram) so that we can send only the delta with the next log.
-  LoggedSampleMap logged_samples_;
+  // HistogramSender interface (override) methods.
+  void TransmitHistogramDelta(
+      const base::Histogram& histogram,
+      const base::Histogram::SampleSet& snapshot);
+  void InconsistencyDetected(int problem);
+  void UniqueInconsistencyDetected(int problem);
+  void SnapshotProblemResolved(int amount);
+
+  // Collection of histograms to send to the browser.
+  HistogramPickledList pickled_histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererHistogramSnapshots);
 };
