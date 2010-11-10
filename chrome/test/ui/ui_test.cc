@@ -690,14 +690,6 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // Tell the browser to use a temporary directory just for this test.
   command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir());
 
-  // Force tests to use OSMesa if they launch the GPU process.
-  command_line.AppendSwitchASCII(switches::kUseGL,
-                                 gfx::kGLImplementationOSMesaName);
-
-  // Mac does not support accelerated compositing with OSMesa. Disable on all
-  // platforms so it is consistent. http://crbug.com/58343
-  command_line.AppendSwitch(switches::kDisableAcceleratedCompositing);
-
   // We need cookies on file:// for things like the page cycler.
   if (enable_file_cookies_)
     command_line.AppendSwitch(switches::kEnableFileCookies);
@@ -846,6 +838,17 @@ void UITest::SetUp() {
     set_ui_test_name(test_info->test_case_name() + std::string(".") +
                      test_info->name());
   }
+
+  // Force tests to use OSMesa if they launch the GPU process. This is in
+  // UITest::SetUp so that it does not affect pyautolib, which runs tests that
+  // do not work with OSMesa.
+  launch_arguments_.AppendSwitchASCII(switches::kUseGL,
+                                      gfx::kGLImplementationOSMesaName);
+
+  // Mac does not support accelerated compositing with OSMesa. Disable on all
+  // platforms so it is consistent. http://crbug.com/58343
+  launch_arguments_.AppendSwitch(switches::kDisableAcceleratedCompositing);
+
   UITestBase::SetUp();
   PlatformTest::SetUp();
 }
