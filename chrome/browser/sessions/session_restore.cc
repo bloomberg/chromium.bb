@@ -199,13 +199,11 @@ void TabLoader::Observe(NotificationType type,
             loading_ = true;
             LoadNextTab();
           }
-          // start loading
+          // Start loading
           break;
         case chromeos::NetworkStateDetails::CONNECTING:
-          // keep it going
-          break;
         case chromeos::NetworkStateDetails::DISCONNECTED:
-          // disconnected while loading. set loaing_ false so
+          // Disconnected while loading. Set loading_ false so
           // that it stops trying to load next tab.
           loading_ = false;
           break;
