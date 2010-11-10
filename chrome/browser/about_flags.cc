@@ -178,6 +178,13 @@ const Experiment kExperiments[] = {
     kOsMac,
     switches::kEnableConfirmToQuit
   },
+  {
+    "snap-start",   // Do not change; see above.
+    IDS_FLAGS_SNAP_START_NAME,
+    IDS_FLAGS_SNAP_START_DESCRIPTION,
+    kOsAll,
+    switches::kEnableSnapStart
+  },
 };
 
 const Experiment* experiments = kExperiments;

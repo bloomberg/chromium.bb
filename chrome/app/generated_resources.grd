@@ -4095,6 +4095,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Description of the 'Confirm to Quit' lab.">
         Receive a prompt before quitting to confirm the action.
       </message>
+      <message name="IDS_FLAGS_SNAP_START_NAME" desc="Name of the 'Snap Start' lab.">
+        Snap Start
+      </message>
+      <message name="IDS_FLAGS_SNAP_START_DESCRIPTION" desc="Description of the 'Snap Start' lab.">
+        Enables an experimental TLS extension which removes a round trip from HTTPS handshakes.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">
