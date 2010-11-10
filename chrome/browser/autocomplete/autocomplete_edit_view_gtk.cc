@@ -1702,8 +1702,10 @@ void AutocompleteEditViewGtk::SavePrimarySelection(
 
 void AutocompleteEditViewGtk::SetTextAndSelectedRange(const std::wstring& text,
                                                       const CharRange& range) {
-  std::string utf8 = WideToUTF8(text);
-  gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
+  if (text != GetText()) {
+    std::string utf8 = WideToUTF8(text);
+    gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
+  }
   SetSelectedRange(range);
   AdjustTextJustification();
 }

@@ -118,6 +118,29 @@ enum {
   LAST_SIGNAL
 };
 
+#if !defined(NDEBUG)
+static void
+print_state(GtkSourceUndoManager* um)
+{
+  fprintf(stderr, "\n***\n");
+  GList* actions = um->priv->actions;
+
+  for (; actions; actions = g_list_next(actions)) {
+    GtkSourceUndoAction* act = actions->data;
+    fprintf(stderr, "* type = %s\n", act->action_type == GTK_SOURCE_UNDO_ACTION_DELETE ?
+        "delete" : "insert");
+
+    fprintf(stderr, "\ttext = %s\n", act->action_type == GTK_SOURCE_UNDO_ACTION_DELETE
+        ? act->action.delete.text : act->action.insert.text);
+    fprintf(stderr, "\torder = %d\n", act->order_in_group);
+  }
+
+  fprintf(stderr, "* next redo: %d\n", um->priv->next_redo);
+  fprintf(stderr, "* num of groups: %d\n", um->priv->num_of_groups);
+  fprintf(stderr, "* actions in group: %d\n", um->priv->actions_in_current_group);
+}
+#endif
+
 static void gtk_source_undo_manager_class_init(GtkSourceUndoManagerClass *klass);
 static void gtk_source_undo_manager_init(GtkSourceUndoManager *um);
 static void gtk_source_undo_manager_finalize(GObject *object);
@@ -624,6 +647,7 @@ gtk_source_undo_manager_free_action_list(GtkSourceUndoManager *um) {
 
     if(action->order_in_group == 1)
       --um->priv->num_of_groups;
+    um->priv->actions_in_current_group = action->order_in_group - 1;
 
     if(action->modified)
       um->priv->modified_action = INVALID;
@@ -787,6 +811,7 @@ gtk_source_undo_manager_free_first_n_actions(GtkSourceUndoManager *um,
 
     if(action->order_in_group == 1)
       --um->priv->num_of_groups;
+    um->priv->actions_in_current_group = action->order_in_group - 1;
 
     if(action->modified)
       um->priv->modified_action = INVALID;
@@ -827,6 +852,7 @@ gtk_source_undo_manager_check_list_size(GtkSourceUndoManager *um) {
 
       if(undo_action->order_in_group == 1)
         --um->priv->num_of_groups;
+      um->priv->actions_in_current_group = undo_action->order_in_group - 1;
 
       if(undo_action->modified)
         um->priv->modified_action = INVALID;
