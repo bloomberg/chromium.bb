@@ -49,8 +49,11 @@ void BloomFilter::RecordFailure(FailureType failure_type) {
 BloomFilter::BloomFilter(int bit_size) {
   for (int i = 0; i < kNumHashKeys; ++i)
     hash_keys_.push_back(base::RandUint64());
-  byte_size_ = bit_size / 8 + 1;
+
+  // Round up to the next boundary which fits bit_size.
+  byte_size_ = (bit_size + 7) / 8;
   bit_size_ = byte_size_ * 8;
+  DCHECK_LE(bit_size, bit_size_);  // strictly more bits.
   data_.reset(new char[byte_size_]);
   memset(data_.get(), 0, byte_size_);
 }
