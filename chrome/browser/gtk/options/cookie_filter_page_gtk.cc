@@ -92,11 +92,9 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   GtkWidget* radio_button = NULL;
   if (default_setting == CONTENT_SETTING_ALLOW) {
     radio_button = allow_radio_;
-  } else if (default_setting == CONTENT_SETTING_BLOCK) {
-    radio_button = block_radio_;
   } else {
-    DCHECK(default_setting == CONTENT_SETTING_ASK);
-    radio_button = ask_every_time_radio_;
+    DCHECK(default_setting == CONTENT_SETTING_BLOCK);
+    radio_button = block_radio_;
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radio_button), TRUE);
 
@@ -153,8 +151,6 @@ void CookieFilterPageGtk::OnCookiesAllowToggled(GtkWidget* toggle_button) {
   ContentSetting setting = CONTENT_SETTING_ALLOW;
   if (toggle_button == allow_radio_)
     setting = CONTENT_SETTING_ALLOW;
-  else if (toggle_button == ask_every_time_radio_)
-    setting = CONTENT_SETTING_ASK;
   else if (toggle_button == block_radio_)
     setting = CONTENT_SETTING_BLOCK;
 
