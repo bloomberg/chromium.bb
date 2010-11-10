@@ -55,8 +55,8 @@ class Dispatcher : public IPC::Channel::Listener,
                    public IPC::Message::Sender {
  public:
   typedef const void* (*GetInterfaceFunc)(const char*);
-  typedef const int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);
-  typedef const void (*ShutdownModuleFunc)();
+  typedef int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);
+  typedef void (*ShutdownModuleFunc)();
 
   ~Dispatcher();
 
