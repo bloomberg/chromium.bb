@@ -203,22 +203,6 @@ const PPB_URLLoader_Dev ppb_urlloader = {
 
 // Renderer status updates -----------------------------------------------------
 
-// Called in the renderer when the byte counts have changed. We send a message
-// to the plugin to synchronize its counts so it can respond to status polls
-// from the plugin.
-void UpdateResourceLoadStatus(PP_Instance pp_instance,
-                              PP_Resource pp_resource,
-                              int64 bytes_sent,
-                              int64 total_bytes_to_be_sent,
-                              int64 bytes_received,
-                              int64 total_bytes_to_be_received) {
-  Dispatcher* dispatcher = HostDispatcher::GetForInstance(pp_instance);
-  dispatcher->Send(new PpapiMsg_PPBURLLoader_UpdateProgress(
-      INTERFACE_ID_PPB_URL_LOADER, pp_resource,
-      bytes_sent, total_bytes_to_be_sent,
-      bytes_received, total_bytes_to_be_received));
-}
-
 // Data associated with callbacks for ReadResponseBody.
 struct ReadCallbackInfo {
   base::WeakPtr<PPB_URLLoader_Proxy> loader;
