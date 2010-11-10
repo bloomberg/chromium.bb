@@ -84,7 +84,10 @@ interface IChromeFrame : IDispatch {
 };
 
 [
-  uuid(851bedec-4b2c-4959-abc0-a53403117257)
+  object,
+  uuid(851bedec-4b2c-4959-abc0-a53403117257),
+  local,  // This interface should never be marshaled.
+  hidden,
 ]
 // Internal implementation interface. Not intended as an API. May change
 // frequently, don't treat this as frozen.
