@@ -134,13 +134,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   enable_watchdog = false;
 #endif
 
-// TODO(apatrick): Disable for this commit. I want to enable this feature with
-// a simple single file change that can easily be reverted if need be without
-// losing all the other features of the patch.
-#if 1
-  enable_watchdog = false;
-#endif
-
   scoped_refptr<GpuWatchdogThread> watchdog_thread;
   if (enable_watchdog) {
     watchdog_thread = new GpuWatchdogThread(MessageLoop::current(),
