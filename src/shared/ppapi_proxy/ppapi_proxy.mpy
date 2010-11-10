@@ -1,0 +1,3 @@
+%(SRPCGEN)s -c PppRpcs GEN_PPAPI_PROXY_PPP_RPC_H_ %(GENDIR)s/ppp_rpc.h %(GENDIR)s/ppp_rpc_client.cc objectstub.srpc ppp.srpc ppp_instance.srpc
+%(SRPCGEN)s -s PpbRpcs GEN_PPAPI_PROXY_PPB_RPC_H_ %(GENDIR)s/ppb_rpc.h %(GENDIR)s/ppb_rpc_server.cc objectstub.srpc ppb_core.srpc
+%(SRPCGEN)s -s PpbUpcalls GEN_PPAPI_PROXY_UPCALL_H_ %(GENDIR)s/upcall.h %(GENDIR)s/upcall_server.cc upcall.srpc
