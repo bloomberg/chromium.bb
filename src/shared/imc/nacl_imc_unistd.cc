@@ -32,10 +32,6 @@
 
 #include "native_client/src/shared/imc/nacl_imc.h"
 
-#if NACL_LINUX && !defined(NACL_STANDALONE)
-#include "chrome/renderer/renderer_sandbox_support_linux.h"
-#endif
-
 namespace nacl {
 
 namespace {
@@ -145,21 +141,7 @@ Handle CreateMemoryObject(size_t length) {
 #endif
 
   // Try shm_open().
-  fd = TryShmOrTempOpen(length, false);
-  if (fd >= 0)
-    return fd;
-
-#if NACL_LINUX && !defined(NACL_STANDALONE)
-  // As a temporary measure, we try shm_open() as well as calling
-  // the unsandboxed browser process.  This code runs in the
-  // context of both the renderer and (Chromium's compiled-in)
-  // sel_ldr.
-  // TODO(mseaborn): Remove this once g_create_memory_object_func
-  // is set when in Chromium's sandbox.
-  return renderer_sandbox_support::MakeSharedMemorySegmentViaIPC(length);
-#endif
-
-  return -1;
+  return TryShmOrTempOpen(length, false);
 }
 
 void* Map(void* start, size_t length, int prot, int flags,
