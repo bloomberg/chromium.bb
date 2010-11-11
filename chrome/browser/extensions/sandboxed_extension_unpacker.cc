@@ -228,6 +228,10 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     ReportFailure("Key length is zero");
     return false;
   }
+  if (header.signature_size == 0) {
+    ReportFailure("Signature length is zero");
+    return false;
+  }
 
   std::vector<uint8> key;
   key.resize(header.key_size);
