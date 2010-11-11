@@ -14,6 +14,7 @@
 #include "net/base/x509_certificate.h"
 #endif
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/file_util.h"
@@ -252,13 +253,13 @@ bool TestServer::GetAddressList(AddressList* address_list) const {
   return true;
 }
 
-GURL TestServer::GetURL(const std::string& path) {
+GURL TestServer::GetURL(const std::string& path) const {
   return GURL(GetScheme() + "://" + host_port_pair_.ToString() +
               "/" + path);
 }
 
 GURL TestServer::GetURLWithUser(const std::string& path,
-                                const std::string& user) {
+                                const std::string& user) const {
   return GURL(GetScheme() + "://" + user + "@" +
               host_port_pair_.ToString() +
               "/" + path);
@@ -266,10 +267,45 @@ GURL TestServer::GetURLWithUser(const std::string& path,
 
 GURL TestServer::GetURLWithUserAndPassword(const std::string& path,
                                            const std::string& user,
-                                           const std::string& password) {
+                                           const std::string& password) const {
   return GURL(GetScheme() + "://" + user + ":" + password +
               "@" + host_port_pair_.ToString() +
               "/" + path);
+}
+
+// static
+bool TestServer::GetFilePathWithReplacements(
+    const std::string& original_file_path,
+    const std::vector<StringPair>& text_to_replace,
+    std::string* replacement_path) {
+  std::string new_file_path = original_file_path;
+  bool first_query_parameter = true;
+  const std::vector<StringPair>::const_iterator end = text_to_replace.end();
+  for (std::vector<StringPair>::const_iterator it = text_to_replace.begin();
+       it != end;
+       ++it) {
+    const std::string& old_text = it->first;
+    const std::string& new_text = it->second;
+    std::string base64_old;
+    std::string base64_new;
+    if (!base::Base64Encode(old_text, &base64_old))
+      return false;
+    if (!base::Base64Encode(new_text, &base64_new))
+      return false;
+    if (first_query_parameter) {
+      new_file_path += "?";
+      first_query_parameter = false;
+    } else {
+      new_file_path += "&";
+    }
+    new_file_path += "replace_text=";
+    new_file_path += base64_old;
+    new_file_path += ":";
+    new_file_path += base64_new;
+  }
+
+  *replacement_path = new_file_path;
+  return true;
 }
 
 bool TestServer::SetPythonPath() {

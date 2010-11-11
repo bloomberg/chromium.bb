@@ -5,7 +5,6 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
-#include "base/stringprintf.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -30,22 +29,17 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
     EnableDOMAutomation();
   }
 
-  std::string GetFileWithHostAndPortReplacement(
-      const std::string& original_path,
-      const net::HostPortPair& host_port_pair) const {
-    return StringPrintf("%s?replace_orig=%s&replace_new=%s",
-                        original_path.c_str(),
-                        kReplaceText_,
-                        host_port_pair.ToString().c_str());
+  static bool GetFilePathWithHostAndPortReplacement(
+      const std::string& original_file_path,
+      const net::HostPortPair& host_port_pair,
+      std::string* replacement_path) {
+    std::vector<net::TestServer::StringPair> replacement_text;
+    replacement_text.push_back(
+        make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
+    return net::TestServer::GetFilePathWithReplacements(
+        original_file_path, replacement_text, replacement_path);
   }
-
- private:
-  static const char* const kReplaceText_;
 };
-
-// static
-const char* const RenderViewHostManagerTest::kReplaceText_ =
-    "REPLACE_WITH_HOST_AND_PORT";
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
 // and target=_blank should create a new SiteInstance.
@@ -59,9 +53,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ASSERT_TRUE(https_server_.Start());
 
   // Load a page with links that open in a new window.
-  std::string replacement_path = GetFileWithHostAndPortReplacement(
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/click-noreferrer-links.html",
-      https_server_.host_port_pair());
+      https_server_.host_port_pair(),
+      &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(replacement_path));
 
@@ -105,9 +101,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ASSERT_TRUE(https_server_.Start());
 
   // Load a page with links that open in a new window.
-  std::string replacement_path = GetFileWithHostAndPortReplacement(
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/click-noreferrer-links.html",
-      https_server_.host_port_pair());
+      https_server_.host_port_pair(),
+      &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(replacement_path));
 
@@ -151,9 +149,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ASSERT_TRUE(https_server_.Start());
 
   // Load a page with links that open in a new window.
-  std::string replacement_path = GetFileWithHostAndPortReplacement(
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/click-noreferrer-links.html",
-      https_server_.host_port_pair());
+      https_server_.host_port_pair(),
+      &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(replacement_path));
 
