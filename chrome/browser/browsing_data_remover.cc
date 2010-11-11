@@ -228,7 +228,10 @@ void BrowsingDataRemover::Remove(int remove_mask) {
           delete_end_);
       web_data_service->RemoveAutoFillProfilesAndCreditCardsModifiedBetween(
           delete_begin_, delete_end_);
-      profile_->GetPersonalDataManager()->Refresh();
+      PersonalDataManager* data_manager = profile_->GetPersonalDataManager();
+      if (data_manager) {
+        data_manager->Refresh();
+      }
     }
   }
 
