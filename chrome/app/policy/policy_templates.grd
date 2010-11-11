@@ -217,18 +217,14 @@ templates and will be translated for each locale. -->
       Enable AutoFill
     </message>
     <message name="IDS_POLICY_AUTOFILLENABLED_DESC" desc="Description of the 'autofill' policy.">
-    Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill
-    feature and allows users to auto complete web forms using previously stored
-    information such as address or credit card information.
+    Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete web forms using previously stored information such as address or credit card information.
 
-    If you enable this setting, AutoFill is always active.
+    If you disable this setting, AutoFill will be inaccessible to users.
 
-    If you disable this setting, AutoFill is never active.
-
-    If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+    If you enable this setting or do not configure a value, AutoFill will remain under the control of the user. This will allow them to configure AutoFill profiles and to switch AutoFill on or off at their own discretion.
     </message>
 
-   <message name="IDS_POLICY_SHOWHOMEBUTTON_CAPTION" desc="Caption of the 'show Home button' policy.">
+    <message name="IDS_POLICY_SHOWHOMEBUTTON_CAPTION" desc="Caption of the 'show Home button' policy.">
     Show Home button on toolbar
     </message>
     <message name="IDS_POLICY_SHOWHOMEBUTTON_DESC" desc="Description of the 'show Home button' policy.">
