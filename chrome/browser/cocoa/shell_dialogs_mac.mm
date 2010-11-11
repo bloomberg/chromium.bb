@@ -19,6 +19,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+#include "base/thread_restrictions.h"
 #include "grit/generated_resources.h"
 
 static const int kFileTypePopupTag = 1234;
@@ -166,6 +167,9 @@ void SelectFileDialogImpl::SelectFile(
   NSString* default_dir = nil;
   NSString* default_filename = nil;
   if (!default_path.empty()) {
+    // The file dialog is going to do a ton of stats anyway. Not much
+    // point in eliminating this one.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     if (file_util::DirectoryExists(default_path)) {
       default_dir = base::SysUTF8ToNSString(default_path.value());
     } else {
