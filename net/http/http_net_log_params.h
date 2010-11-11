@@ -30,6 +30,10 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
     return headers_;
   }
 
+  const std::string& GetLine() const {
+    return line_;
+  }
+
  private:
   virtual ~NetLogHttpRequestParameter();
 
