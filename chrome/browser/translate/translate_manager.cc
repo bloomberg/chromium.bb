@@ -146,7 +146,7 @@ TranslateManager::~TranslateManager() {
 
 // static
 bool TranslateManager::IsTranslatableURL(const GURL& url) {
-  return !url.SchemeIs("chrome");
+  return !url.SchemeIs("chrome") && !url.SchemeIs("ftp");
 }
 
 // static
