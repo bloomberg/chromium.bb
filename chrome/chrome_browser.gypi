@@ -15,11 +15,11 @@
         'chrome_resources',
         'chrome_strings',
         'debugger',
-        'device_management_backend_proto',
         'installer_util',
         'platform_locale_settings',
         'profile_import',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
+        'browser/policy/proto/device_management_proto.gyp:device_management_proto_cpp',
         'syncapi',
         'theme_resources',
         'userfeedback_proto',
@@ -4210,54 +4210,6 @@
             # directory containing the .proto file.
             # There's no generator variable that corresponds to this, so fake it.
             'rule_input_relpath': 'browser/userfeedback/proto',
-          },
-          'outputs': [
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',
-            '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.cc',
-          ],
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-            '--proto_path=./<(rule_input_relpath)',
-            './<(rule_input_relpath)/<(RULE_INPUT_ROOT)<(RULE_INPUT_EXT)',
-            '--cpp_out=<(protoc_out_dir)/chrome/<(rule_input_relpath)',
-          ],
-          'message': 'Generating C++ code from <(RULE_INPUT_PATH)',
-        },
-      ],
-      'dependencies': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        '../third_party/protobuf/protobuf.gyp:protoc#host',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(protoc_out_dir)',
-        ]
-      },
-      'export_dependent_settings': [
-        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-      ],
-    },
-    {
-      # Protobuf compiler / generate rule for google apps policy
-      # TODO(danno): This rule shares a lot with the user feedback proto rule
-      # and probably should be generalized to handle both
-      'target_name': 'device_management_backend_proto',
-      'type': 'none',
-      'sources': [
-        'browser/policy/proto/device_management_backend.proto',
-      ],
-      'rules': [
-        {
-          'rule_name': 'genproto',
-          'extension': 'proto',
-          'inputs': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-          ],
-          'variables': {
-            # The protoc compiler requires a proto_path argument with the
-            # directory containing the .proto file.
-            # There's no generator variable that corresponds to this, so fake it.
-            'rule_input_relpath': 'browser/policy/proto',
           },
           'outputs': [
             '<(protoc_out_dir)/chrome/<(rule_input_relpath)/<(RULE_INPUT_ROOT).pb.h',

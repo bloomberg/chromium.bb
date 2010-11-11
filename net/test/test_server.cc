@@ -292,6 +292,8 @@ bool TestServer::SetPythonPath() {
 
   AppendToPythonPath(pyproto_code_dir);
   AppendToPythonPath(pyproto_code_dir.Append(FILE_PATH_LITERAL("sync_pb")));
+  AppendToPythonPath(pyproto_code_dir.Append(
+      FILE_PATH_LITERAL("device_management_pb")));
 
   return true;
 }

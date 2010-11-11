@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend_mock.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "net/test/test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,10 +82,6 @@ class DeviceManagementBackendImplIntegrationTest : public InProcessBrowserTest {
   }
 
  protected:
-  DeviceManagementBackendImplIntegrationTest() {
-    URLFetcher::enable_interception_for_tests(true);
-  }
-
   std::string token_;
 };
 
@@ -93,7 +90,8 @@ static void QuitMessageLoop() {
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
-                       RegisterAndFetchPolicy) {
+                       CannedResponses) {
+  URLFetcher::enable_interception_for_tests(true);
   DeviceManagementBackendImpl service(kServiceUrl);
 
   {
@@ -128,6 +126,53 @@ IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
   {
     CannedResponseInterceptor interceptor(
         GURL(kServiceUrl), PROTO_STRING(kServiceResponseUnregister));
+    DeviceUnregisterResponseDelegateMock delegate;
+    EXPECT_CALL(delegate, HandleUnregisterResponse(_))
+        .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+    em::DeviceUnregisterRequest request;
+    service.ProcessUnregisterRequest(token_, request, &delegate);
+
+    MessageLoop::current()->Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceManagementBackendImplIntegrationTest,
+                       WithTestServer) {
+  net::TestServer test_server(
+      net::TestServer::TYPE_HTTP,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data/policy")));
+  ASSERT_TRUE(test_server.Start());
+  DeviceManagementBackendImpl service(
+      test_server.GetURL("device_management").spec());
+
+  {
+    DeviceRegisterResponseDelegateMock delegate;
+    EXPECT_CALL(delegate, HandleRegisterResponse(_))
+        .WillOnce(DoAll(Invoke(this, &DeviceManagementBackendImplIntegrationTest
+                                          ::CaptureToken),
+                        InvokeWithoutArgs(QuitMessageLoop)));
+    em::DeviceRegisterRequest request;
+    service.ProcessRegisterRequest("token", "device id", request, &delegate);
+    MessageLoop::current()->Run();
+  }
+
+  {
+    em::DevicePolicyResponse expected_response;
+
+    DevicePolicyResponseDelegateMock delegate;
+    EXPECT_CALL(delegate, HandlePolicyResponse(_))
+        .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
+    em::DevicePolicyRequest request;
+    request.set_policy_scope("chrome");
+    em::DevicePolicySettingRequest* setting_request =
+        request.add_setting_request();
+    setting_request->set_key("policy");
+    service.ProcessPolicyRequest(token_, request, &delegate);
+
+    MessageLoop::current()->Run();
+  }
+
+  {
     DeviceUnregisterResponseDelegateMock delegate;
     EXPECT_CALL(delegate, HandleUnregisterResponse(_))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
