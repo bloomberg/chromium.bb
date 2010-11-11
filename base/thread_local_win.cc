@@ -10,6 +10,8 @@
 
 namespace base {
 
+namespace internal {
+
 // static
 void ThreadLocalPlatform::AllocateSlot(SlotType& slot) {
   slot = TlsAlloc();
@@ -34,5 +36,7 @@ void ThreadLocalPlatform::SetValueInSlot(SlotType& slot, void* value) {
     LOG(FATAL) << "Failed to TlsSetValue().";
   }
 }
+
+}  // namespace internal
 
 }  // namespace base

@@ -10,6 +10,8 @@
 
 namespace base {
 
+namespace internal {
+
 // static
 void ThreadLocalPlatform::AllocateSlot(SlotType& slot) {
   int error = pthread_key_create(&slot, NULL);
@@ -32,5 +34,7 @@ void ThreadLocalPlatform::SetValueInSlot(SlotType& slot, void* value) {
   int error = pthread_setspecific(slot, value);
   CHECK_EQ(error, 0);
 }
+
+}  // namespace internal
 
 }  // namespace base

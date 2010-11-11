@@ -57,6 +57,8 @@
 
 namespace base {
 
+namespace internal {
+
 // Helper functions that abstract the cross-platform APIs.  Do not use directly.
 struct ThreadLocalPlatform {
 #if defined(OS_WIN)
@@ -71,27 +73,30 @@ struct ThreadLocalPlatform {
   static void SetValueInSlot(SlotType& slot, void* value);
 };
 
+}  // namespace internal
+
 template <typename Type>
 class ThreadLocalPointer {
  public:
   ThreadLocalPointer() : slot_() {
-    ThreadLocalPlatform::AllocateSlot(slot_);
+    internal::ThreadLocalPlatform::AllocateSlot(slot_);
   }
 
   ~ThreadLocalPointer() {
-    ThreadLocalPlatform::FreeSlot(slot_);
+    internal::ThreadLocalPlatform::FreeSlot(slot_);
   }
 
   Type* Get() {
-    return static_cast<Type*>(ThreadLocalPlatform::GetValueFromSlot(slot_));
+    return static_cast<Type*>(
+        internal::ThreadLocalPlatform::GetValueFromSlot(slot_));
   }
 
   void Set(Type* ptr) {
-    ThreadLocalPlatform::SetValueInSlot(slot_, ptr);
+    internal::ThreadLocalPlatform::SetValueInSlot(slot_, ptr);
   }
 
  private:
-  typedef ThreadLocalPlatform::SlotType SlotType;
+  typedef internal::ThreadLocalPlatform::SlotType SlotType;
 
   SlotType slot_;
 
