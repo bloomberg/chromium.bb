@@ -15,7 +15,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,33 +25,20 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
+namespace {
+
+InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
+                               GoogleURLTracker* google_url_tracker,
+                               const GURL& new_google_url) {
+  InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(tab_contents,
+      google_url_tracker, new_google_url);
+  tab_contents->AddInfoBar(infobar);
+  return infobar;
+}
+
+}  // namespace
+
 // GoogleURLTrackerInfoBarDelegate --------------------------------------------
-
-class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  GoogleURLTrackerInfoBarDelegate(TabContents* tab_contents,
-                                  GoogleURLTracker* google_url_tracker,
-                                  const GURL& new_google_url);
-
-  // ConfirmInfoBarDelegate
-  virtual bool Accept();
-  virtual bool Cancel();
-  virtual void InfoBarClosed();
-
- protected:
-  virtual ~GoogleURLTrackerInfoBarDelegate();
-
-  GoogleURLTracker* google_url_tracker_;
-  const GURL new_google_url_;
-
- private:
-  // ConfirmInfoBarDelegate
-  virtual string16 GetMessageText() const;
-  virtual int GetButtons() const;
-  virtual string16 GetButtonLabel(InfoBarButton button) const;
-
-  DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
-};
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
     TabContents* tab_contents,
@@ -99,15 +85,6 @@ string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
                                    IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
 }
 
-InfoBarDelegate* CreateInfobar(TabContents* tab_contents,
-                               GoogleURLTracker* google_url_tracker,
-                               const GURL& new_google_url) {
-  InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(tab_contents,
-      google_url_tracker, new_google_url);
-  tab_contents->AddInfoBar(infobar);
-  return infobar;
-}
-
 
 // GoogleURLTracker -----------------------------------------------------------
 
@@ -122,6 +99,7 @@ GoogleURLTracker::GoogleURLTracker()
           prefs::kLastKnownGoogleURL)),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
       fetcher_id_(0),
+      queue_wakeup_task_(true),
       in_startup_sleep_(true),
       already_fetched_(false),
       need_to_fetch_(false),
@@ -141,17 +119,9 @@ GoogleURLTracker::GoogleURLTracker()
   static const int kMaxRetries = 5;
   protect->SetMaxRetries(kMaxRetries);
 
-  // Because this function can be called during startup, when kicking off a URL
-  // fetch can eat up 20 ms of time, we delay five seconds, which is hopefully
-  // long enough to be after startup, but still get results back quickly.
-  // Ideally, instead of this timer, we'd do something like "check if the
-  // browser is starting up, and if so, come back later", but there is currently
-  // no function to do this.
-  static const int kStartFetchDelayMS = 5000;
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      runnable_method_factory_.NewRunnableMethod(
-          &GoogleURLTracker::FinishSleep),
-      kStartFetchDelayMS);
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   runnable_method_factory_.NewRunnableMethod(
+                                   &GoogleURLTracker::QueueWakeupTask));
 }
 
 GoogleURLTracker::~GoogleURLTracker() {
@@ -190,6 +160,25 @@ void GoogleURLTracker::GoogleURLSearchCommitted() {
 void GoogleURLTracker::SetNeedToFetch() {
   need_to_fetch_ = true;
   StartFetchIfDesirable();
+}
+
+void GoogleURLTracker::QueueWakeupTask() {
+  // When testing, we want to wake from sleep at controlled times, not on a
+  // timer.
+  if (!queue_wakeup_task_)
+    return;
+
+  // Because this function can be called during startup, when kicking off a URL
+  // fetch can eat up 20 ms of time, we delay five seconds, which is hopefully
+  // long enough to be after startup, but still get results back quickly.
+  // Ideally, instead of this timer, we'd do something like "check if the
+  // browser is starting up, and if so, come back later", but there is currently
+  // no function to do this.
+  static const int kStartFetchDelayMS = 5000;
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      runnable_method_factory_.NewRunnableMethod(
+          &GoogleURLTracker::FinishSleep),
+      kStartFetchDelayMS);
 }
 
 void GoogleURLTracker::FinishSleep() {
@@ -253,23 +242,23 @@ void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source,
       g_browser_process->local_state()->GetString(
           prefs::kLastPromptedGoogleURL));
   need_to_prompt_ = false;
-  // On the very first run of Chrome, when we've never looked up the URL at all,
-  // we should just silently switch over to whatever we get immediately.
+
   if (last_prompted_url.is_empty()) {
+    // On the very first run of Chrome, when we've never looked up the URL at
+    // all, we should just silently switch over to whatever we get immediately.
     AcceptGoogleURL(fetched_google_url_);
-    // Set fetched_google_url_ as an initial value of last prompted URL.
-    g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                                fetched_google_url_.spec());
     return;
   }
 
+  // If the URL hasn't changed, then whether |need_to_prompt_| is true or false,
+  // nothing has changed, so just bail.
   if (fetched_google_url_ == last_prompted_url)
     return;
+
   if (fetched_google_url_ == google_url_) {
     // The user came back to their original location after having temporarily
     // moved.  Reset the prompted URL so we'll prompt again if they move again.
-    g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                                fetched_google_url_.spec());
+    CancelGoogleURL(fetched_google_url_);
     return;
   }
 
@@ -281,7 +270,7 @@ void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
   g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
                                               google_url_.spec());
   g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
-                                              new_google_url.spec());
+                                              google_url_.spec());
   NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
@@ -301,14 +290,14 @@ void GoogleURLTracker::InfoBarClosed() {
 }
 
 void GoogleURLTracker::RedoSearch() {
-  //  re-do the user's search on the new domain.
+  //  Re-do the user's search on the new domain.
   DCHECK(controller_);
   url_canon::Replacements<char> replacements;
   replacements.SetHost(google_url_.host().data(),
                        url_parse::Component(0, google_url_.host().length()));
-  search_url_ = search_url_.ReplaceComponents(replacements);
-  if (search_url_.is_valid())
-    controller_->tab_contents()->OpenURL(search_url_, GURL(), CURRENT_TAB,
+  GURL new_search_url(search_url_.ReplaceComponents(replacements));
+  if (new_search_url.is_valid())
+    controller_->tab_contents()->OpenURL(new_search_url, GURL(), CURRENT_TAB,
                                          PageTransition::GENERATED);
 }
 
@@ -325,31 +314,14 @@ void GoogleURLTracker::Observe(NotificationType type,
       break;
 
     case NotificationType::NAV_ENTRY_PENDING:
-      controller_ = Source<NavigationController>(source).ptr();
-      search_url_ = controller_->pending_entry()->url();
-      // We don't need to listen NAV_ENTRY_PENDING any more, until another
-      // search is committed.
-      registrar_.Remove(this, NotificationType::NAV_ENTRY_PENDING,
-                        NotificationService::AllSources());
-      // Start listening for the commit notification. We also need to listen
-      // for the tab close command since that means the load will never
-      // commit!
-      registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                     Source<NavigationController>(controller_));
-      registrar_.Add(this, NotificationType::TAB_CLOSED,
-                     Source<NavigationController>(controller_));
+      OnNavigationPending(source, controller_->pending_entry()->url());
       break;
 
     case NotificationType::NAV_ENTRY_COMMITTED:
-      registrar_.RemoveAll();
-      DCHECK(controller_);
-      ShowGoogleURLInfoBarIfNecessary(controller_->tab_contents());
-      break;
-
     case NotificationType::TAB_CLOSED:
-      registrar_.RemoveAll();
-      controller_ = NULL;
-      infobar_ = NULL;
+      OnNavigationCommittedOrTabClosed(
+          Source<NavigationController>(source).ptr()->tab_contents(),
+          type.value);
       break;
 
     default:
@@ -363,10 +335,39 @@ void GoogleURLTracker::OnIPAddressChanged() {
 }
 
 void GoogleURLTracker::SearchCommitted() {
-  if (!registrar_.IsEmpty() || (!need_to_prompt_ && !fetcher_.get()))
-    return;
-  registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
-                 NotificationService::AllSources());
+  if (registrar_.IsEmpty() && (need_to_prompt_ || fetcher_.get())) {
+    // This notification will fire a bit later in the same call chain we're
+    // currently in.
+    registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
+                   NotificationService::AllSources());
+  }
+}
+
+void GoogleURLTracker::OnNavigationPending(const NotificationSource& source,
+                                           const GURL& pending_url) {
+  controller_ = Source<NavigationController>(source).ptr();
+  search_url_ = pending_url;
+  registrar_.Remove(this, NotificationType::NAV_ENTRY_PENDING,
+                    NotificationService::AllSources());
+  // Start listening for the commit notification. We also need to listen for the
+  // tab close command since that means the load will never commit.
+  registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                 Source<NavigationController>(controller_));
+  registrar_.Add(this, NotificationType::TAB_CLOSED,
+                 Source<NavigationController>(controller_));
+}
+
+void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
+    TabContents* tab_contents,
+    NotificationType::Type type) {
+  registrar_.RemoveAll();
+
+  if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+    ShowGoogleURLInfoBarIfNecessary(tab_contents);
+  } else {
+    controller_ = NULL;
+    infobar_ = NULL;
+  }
 }
 
 void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
