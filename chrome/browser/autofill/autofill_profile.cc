@@ -432,6 +432,11 @@ bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {
   return !operator==(profile);
 }
 
+const string16 AutoFillProfile::PrimaryValue() const {
+  return GetFieldText(AutoFillType(NAME_FULL)) +
+         GetFieldText(AutoFillType(ADDRESS_HOME_LINE1));
+}
+
 Address* AutoFillProfile::GetHomeAddress() {
   return static_cast<Address*>(personal_info_[AutoFillType::ADDRESS_HOME]);
 }

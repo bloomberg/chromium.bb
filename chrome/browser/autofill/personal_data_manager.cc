@@ -177,7 +177,6 @@ bool PersonalDataManager::ImportFormData(
   // TODO(jhawkins): Use a hash of the CC# instead of a list of unique IDs?
   imported_credit_card_.reset(new CreditCard);
 
-  bool billing_address_info = false;
   std::vector<FormStructure*>::const_iterator iter;
   for (iter = form_structures.begin(); iter != form_structures.end(); ++iter) {
     const FormStructure* form = *iter;
@@ -232,12 +231,6 @@ bool PersonalDataManager::ImportFormData(
 
         imported_profile_->SetInfo(AutoFillType(field_type.field_type()),
                                    value);
-
-        // If we found any billing address information, then set the profile to
-        // use a separate billing address.
-        if (group == AutoFillType::ADDRESS_BILLING)
-          billing_address_info = true;
-
         ++importable_fields;
       }
     }
@@ -390,9 +383,6 @@ void PersonalDataManager::SetCreditCards(
 
 // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
 void PersonalDataManager::AddProfile(const AutoFillProfile& profile) {
-  // Set to true if |profile| is merged into the profile list.
-  bool merged = false;
-
   // Don't save a web profile if the data in the profile is a subset of an
   // auxiliary profile.
   for (std::vector<AutoFillProfile*>::const_iterator iter =
@@ -402,24 +392,50 @@ void PersonalDataManager::AddProfile(const AutoFillProfile& profile) {
       return;
   }
 
+  // Set to true if |profile| is merged into the profile list.
+  bool merged = false;
+
+  // First preference is to add missing values to an existing profile.
+  // Only merge with the first match.
   std::vector<AutoFillProfile> profiles;
   for (std::vector<AutoFillProfile*>::const_iterator iter =
            web_profiles_.begin();
        iter != web_profiles_.end(); ++iter) {
-    if (profile.IsSubsetOf(**iter)) {
-      // In this case, the existing profile already contains all of the data
-      // in |profile|, so consider the profiles already merged.
-      merged = true;
-    } else if ((*iter)->IntersectionOfTypesHasEqualValues(profile)) {
-      // |profile| contains all of the data in this profile, plus
-      // more.
-      merged = true;
-      (*iter)->MergeWith(profile);
+    if (!merged) {
+      if (profile.IsSubsetOf(**iter)) {
+        // In this case, the existing profile already contains all of the data
+        // in |profile|, so consider the profiles already merged.
+        merged = true;
+      } else if ((*iter)->IntersectionOfTypesHasEqualValues(profile)) {
+        // |profile| contains all of the data in this profile, plus more.
+        merged = true;
+        (*iter)->MergeWith(profile);
+      }
     }
-
     profiles.push_back(**iter);
   }
 
+  // The second preference, if not merged above, is to alter non-primary values
+  // where the primary values match.
+  // Again, only merge with the first match.
+  if (!merged) {
+    profiles.clear();
+    for (std::vector<AutoFillProfile*>::const_iterator iter =
+             web_profiles_.begin();
+         iter != web_profiles_.end(); ++iter) {
+      if (!merged) {
+        if (!profile.PrimaryValue().empty() &&
+            (*iter)->PrimaryValue() == profile.PrimaryValue()) {
+          merged = true;
+          (*iter)->OverwriteWith(profile);
+        }
+      }
+      profiles.push_back(**iter);
+    }
+  }
+
+  // Finally, if the new profile was not merged with an existing profile then
+  // add the new profile to the list.
   if (!merged)
     profiles.push_back(profile);
 

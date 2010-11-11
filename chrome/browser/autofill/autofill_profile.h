@@ -101,6 +101,11 @@ class AutoFillProfile : public FormGroup {
   virtual bool operator!=(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
 
+  // Returns concatenation of full name and address line 1.  This acts as the
+  // basis of comparison for new values that are submitted through forms to
+  // aid with correct aggregation of new data.
+  const string16 PrimaryValue() const;
+
  private:
   Address* GetHomeAddress();
 
