@@ -1871,7 +1871,7 @@ void BrowserView::Init() {
   AddChildView(infobar_container_);
 
   contents_container_ = new TabContentsContainer;
-  contents_ = new ContentsContainer(contents_container_);
+  contents_ = new ContentsContainer(this, contents_container_);
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
