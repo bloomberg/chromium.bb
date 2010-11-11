@@ -86,6 +86,7 @@ WHITELIST_FILENAMES = set((
 
 # File paths that contain these regexps will be whitelisted as well.
 WHITELIST_REGEX = [
+    re.compile('/third_party/openssl/'),
     re.compile('/third_party/sqlite/'),
     re.compile('/third_party/xdg-utils/'),
     re.compile('/third_party/yasm/source/patched-yasm/config'),
