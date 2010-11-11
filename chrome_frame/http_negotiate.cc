@@ -135,6 +135,7 @@ std::string ReplaceOrAddUserAgent(LPCWSTR headers,
   DCHECK(headers);
   using net::HttpUtil;
 
+  std::string new_headers;
   if (headers) {
     std::string ascii_headers(WideToASCII(headers));
 
@@ -144,7 +145,6 @@ std::string ReplaceOrAddUserAgent(LPCWSTR headers,
 
     // Build new headers, skip the existing user agent value from
     // existing headers.
-    std::string new_headers;
     while (headers_iterator.GetNext()) {
       std::string name(headers_iterator.name());
       if (!LowerCaseEqualsASCII(name, kLowerCaseUserAgent)) {
