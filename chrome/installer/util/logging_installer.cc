@@ -11,6 +11,9 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 
 namespace installer {
@@ -19,24 +22,25 @@ namespace installer {
 // InitInstallerLogging() and the beginning of EndInstallerLogging().
 bool installer_logging_ = false;
 
-void InitInstallerLogging(const CommandLine& command_line) {
+void InitInstallerLogging(const installer_util::MasterPreferences& prefs) {
   if (installer_logging_)
     return;
 
-  if (command_line.HasSwitch(
-          WideToASCII(installer_util::switches::kDisableLogging))) {
+  bool value = false;
+  if (prefs.GetBool(installer_util::master_preferences::kDisableLogging,
+                    &value) && value) {
     installer_logging_ = true;
     return;
   }
 
-  logging::InitLogging(GetLogFilePath(command_line).value().c_str(),
+  logging::InitLogging(GetLogFilePath(prefs).value().c_str(),
                        logging::LOG_ONLY_TO_FILE,
                        logging::LOCK_LOG_FILE,
                        logging::DELETE_OLD_LOG_FILE);
 
-  if (command_line.HasSwitch(
-          WideToASCII(installer_util::switches::kVerboseLogging))) {
-    logging::SetMinLogLevel(logging::LOG_INFO);
+  if (prefs.GetBool(installer_util::master_preferences::kVerboseLogging,
+                    &value) && value) {
+    logging::SetMinLogLevel(logging::LOG_VERBOSE);
   } else {
     logging::SetMinLogLevel(logging::LOG_ERROR);
   }
@@ -50,19 +54,15 @@ void EndInstallerLogging() {
   installer_logging_ = false;
 }
 
-FilePath GetLogFilePath(const CommandLine& command_line) {
-  if (command_line.HasSwitch(
-          WideToASCII(installer_util::switches::kLogFile))) {
-    return command_line.GetSwitchValuePath(
-        WideToASCII(installer_util::switches::kLogFile));
+FilePath GetLogFilePath(const installer_util::MasterPreferences& prefs) {
+  std::string path;
+  prefs.GetString(installer_util::master_preferences::kLogFile, &path);
+  if (!path.empty()) {
+    return FilePath(UTF8ToWide(path));
   }
 
-  std::wstring log_filename;
-  if (command_line.HasSwitch(installer_util::switches::kChromeFrame)) {
-    log_filename = L"chrome_frame_installer.log";
-  } else {
-    log_filename = L"chrome_installer.log";
-  }
+  std::wstring log_filename = prefs.install_chrome_frame() ?
+      L"chrome_frame_installer.log" : L"chrome_installer.log";
 
   FilePath log_path;
   if (PathService::Get(base::DIR_TEMP, &log_path)) {

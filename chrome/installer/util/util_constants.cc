@@ -8,6 +8,13 @@ namespace installer_util {
 
 namespace switches {
 
+// Install CEEE.
+const wchar_t kCeee[] = L"ceee";
+
+// Install Chrome.
+// Currently this is only required when used in combination with kMultiInstall.
+const wchar_t kChrome[] = L"chrome";
+
 // Run the installer in Chrome Frame mode.
 const wchar_t kChromeFrame[] = L"chrome-frame";
 
@@ -64,6 +71,10 @@ const wchar_t kMakeChromeDefault[] = L"make-chrome-default";
 
 // Tells installer to expect to be run as a subsidiary to an MSI.
 const wchar_t kMsi[] = L"msi";
+
+// Tells installer to install multiple products specified on the command line.
+// (e.g. Chrome Frame, CEEE, Chrome)
+const wchar_t kMultiInstall[] = L"multi-install";
 
 // Useful only when used with --update-setup-exe, otherwise ignored. It
 // specifies the full path where updated setup.exe will be stored.

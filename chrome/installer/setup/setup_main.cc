@@ -327,9 +327,13 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         }
 
         bool value = false;
-        prefs.GetBool(
-            installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
-            &value);
+        if (prefs.install_chrome()) {
+          prefs.GetBool(
+              installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
+              &value);
+        } else {
+          value = true;  // Never register.
+        }
         bool write_chrome_launch_string = (!value) &&
             (install_status != installer_util::IN_USE_UPDATED);
 
@@ -338,12 +342,15 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
 
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           VLOG(1) << "First install successful.";
-          // We never want to launch Chrome in system level install mode.
-          bool do_not_launch_chrome = false;
-          prefs.GetBool(installer_util::master_preferences::kDoNotLaunchChrome,
-                        &do_not_launch_chrome);
-          if (!system_level && !do_not_launch_chrome)
-            installer::LaunchChrome(system_level);
+          if (prefs.install_chrome()) {
+            // We never want to launch Chrome in system level install mode.
+            bool do_not_launch_chrome = false;
+            prefs.GetBool(
+                installer_util::master_preferences::kDoNotLaunchChrome,
+                &do_not_launch_chrome);
+            if (!system_level && !do_not_launch_chrome)
+              installer::LaunchChrome(system_level);
+          }
         } else if ((install_status == installer_util::NEW_VERSION_UPDATED) ||
                    (install_status == installer_util::IN_USE_UPDATED)) {
           installer_setup::RemoveLegacyRegistryKeys();
@@ -618,28 +625,12 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
   CommandLine::Init(0, NULL);
-  CommandLine* mutable_command_line = CommandLine::ForCurrentProcess();
 
-  if (mutable_command_line->HasSwitch(installer_util::switches::kChromeFrame)) {
-    mutable_command_line->AppendSwitch(
-        WideToASCII(installer_util::switches::kDoNotCreateShortcuts));
-    mutable_command_line->AppendSwitch(
-        WideToASCII(installer_util::switches::kDoNotLaunchChrome));
-    mutable_command_line->AppendSwitch(
-        WideToASCII(installer_util::switches::kDoNotRegisterForUpdateLaunch));
-  }
-
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-
-  installer::InitInstallerLogging(parsed_command_line);
   const installer_util::MasterPreferences& prefs =
       InstallUtil::GetMasterPreferencesForCurrentProcess();
-  bool value = false;
-  if (prefs.GetBool(installer_util::master_preferences::kVerboseLogging,
-                    &value) && value) {
-    logging::SetMinLogLevel(logging::LOG_INFO);
-  }
+  installer::InitInstallerLogging(prefs);
 
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   VLOG(1) << "Command Line: " << parsed_command_line.command_line_string();
 
   bool system_install = false;

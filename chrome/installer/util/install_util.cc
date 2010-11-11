@@ -138,17 +138,8 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
 }
 
 bool InstallUtil::IsChromeFrameProcess() {
-  FilePath module_path;
-  PathService::Get(base::FILE_MODULE, &module_path);
-  std::wstring module_name(module_path.BaseName().value());
-
   const MasterPreferences& prefs = GetMasterPreferencesForCurrentProcess();
-  bool is_cf = false;
-  prefs.GetBool(installer_util::master_preferences::kChromeFrame, &is_cf);
-
-  // Also assume this to be a ChromeFrame process if we are running inside
-  // the Chrome Frame DLL.
-  return is_cf || module_name == installer_util::kChromeFrameDll;
+  return prefs.install_chrome_frame();
 }
 
 bool InstallUtil::IsChromeSxSProcess() {

@@ -6,19 +6,22 @@
 #define CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
 #pragma once
 
-class CommandLine;
+namespace installer_util {
+  class MasterPreferences;
+}
+
 class FilePath;
 
 namespace installer {
 
 // Call to initialize logging for Chrome installer.
-void InitInstallerLogging(const CommandLine& command_line);
+void InitInstallerLogging(const installer_util::MasterPreferences& prefs);
 
 // Call when done using logging for Chrome installer.
 void EndInstallerLogging();
 
 // Returns the full path of the log file.
-FilePath GetLogFilePath(const CommandLine& command_line);
+FilePath GetLogFilePath(const installer_util::MasterPreferences& prefs);
 
 }  // namespace installer
 

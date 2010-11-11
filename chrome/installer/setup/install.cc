@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -81,39 +82,43 @@ void AddInstallerCopyTasks(const std::wstring& exe_path,
   }
 }
 
-void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
-                                     bool is_system) {
-  DCHECK(uninstall_cmd_line);
-  uninstall_cmd_line->append(L" --");
-  uninstall_cmd_line->append(installer_util::switches::kUninstall);
+// A little helper function to save on tons of WideToASCII call sites.
+void AppendWideSwitch(CommandLine* cmd, const wchar_t* switch_name) {
+  cmd->AppendSwitch(WideToASCII(switch_name));
+}
 
-  if (InstallUtil::IsChromeFrameProcess()) {
-    uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kDeleteProfile);
-    uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kChromeFrame);
+void AppendUninstallCommandLineFlags(CommandLine* uninstall_cmd,
+                                     bool is_system) {
+  DCHECK(uninstall_cmd);
+  AppendWideSwitch(uninstall_cmd, installer_util::switches::kUninstall);
+
+  // TODO(tommi): In case of multiple installations, we need to create multiple
+  // uninstall entries, and not one magic one for all.
+  const installer_util::MasterPreferences& prefs =
+      InstallUtil::GetMasterPreferencesForCurrentProcess();
+  DCHECK(!prefs.is_multi_install());
+
+  if (prefs.install_chrome_frame()) {
+    AppendWideSwitch(uninstall_cmd, installer_util::switches::kDeleteProfile);
+    AppendWideSwitch(uninstall_cmd, installer_util::switches::kChromeFrame);
   }
 
   if (InstallUtil::IsChromeSxSProcess()) {
-    uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kChromeSxS);
+    AppendWideSwitch(uninstall_cmd, installer_util::switches::kChromeSxS);
   }
 
   if (InstallUtil::IsMSIProcess(is_system)) {
-    uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kMsi);
+    AppendWideSwitch(uninstall_cmd, installer_util::switches::kMsi);
   }
 
   // Propagate the verbose logging switch to uninstalls too.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(installer_util::switches::kVerboseLogging)) {
-    uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kVerboseLogging);
+    AppendWideSwitch(uninstall_cmd, installer_util::switches::kVerboseLogging);
   }
 
   if (is_system) {
-    uninstall_cmd_line->append(L" --");
-    uninstall_cmd_line->append(installer_util::switches::kSystemLevel);
+    AppendWideSwitch(uninstall_cmd, installer_util::switches::kSystemLevel);
   }
 }
 
@@ -129,45 +134,49 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
+  // TODO(tommi): Support this for multi-install.  We need to add work items
+  // for each product being installed.
+  const installer_util::MasterPreferences& prefs =
+      InstallUtil::GetMasterPreferencesForCurrentProcess();
+  DCHECK(!prefs.is_multi_install()) << "TODO";
+
   // When we are installed via an MSI, we need to store our uninstall strings
   // in the Google Update client state key. We do this even for non-MSI
   // managed installs to avoid breaking the edge case whereby an MSI-managed
   // install is updated by a non-msi installer (which would confuse the MSI
   // machinery if these strings were not also updated).
   // Do not quote the command line for the MSI invocation.
-  std::wstring uninstall_cmd(
-    installer::GetInstallerPathUnderChrome(install_path, new_version));
-  file_util::AppendToPath(&uninstall_cmd,
-    file_util::GetFilenameFromPath(exe_path));
-  std::wstring uninstall_arguments;
+  FilePath installer_path(installer::GetInstallerPathUnderChrome(install_path,
+                                                                 new_version));
+  installer_path = installer_path.Append(
+      file_util::GetFilenameFromPath(exe_path));
+
+  CommandLine uninstall_arguments(CommandLine::NO_PROGRAM);
   AppendUninstallCommandLineFlags(&uninstall_arguments,
                                   reg_root == HKEY_LOCAL_MACHINE);
 
   std::wstring update_state_key = dist->GetStateKey();
   install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key);
   install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
-      installer_util::kUninstallStringField, uninstall_cmd, true);
+      installer_util::kUninstallStringField, installer_path.value(), true);
   install_list->AddSetRegValueWorkItem(reg_root, update_state_key,
-      installer_util::kUninstallArgumentsField, uninstall_arguments, true);
+      installer_util::kUninstallArgumentsField,
+      uninstall_arguments.command_line_string(), true);
 
   // MSI installations will manage their own uninstall shortcuts.
   if (!InstallUtil::IsMSIProcess(reg_root == HKEY_LOCAL_MACHINE)) {
     // We need to quote the command line for the Add/Remove Programs dialog.
-    std::wstring quoted_uninstall_cmd(L"\"");
-    quoted_uninstall_cmd += uninstall_cmd;
-    quoted_uninstall_cmd += L"\"";
+    CommandLine quoted_uninstall_cmd(installer_path);
+    DCHECK_EQ(quoted_uninstall_cmd.command_line_string()[0], '"');
+    quoted_uninstall_cmd.AppendArguments(uninstall_arguments, false);
 
-    AppendUninstallCommandLineFlags(&quoted_uninstall_cmd,
-                                    reg_root == HKEY_LOCAL_MACHINE);
     std::wstring uninstall_reg = dist->GetUninstallRegPath();
     install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
         installer_util::kUninstallDisplayNameField, product_name, true);
     install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         installer_util::kUninstallStringField,
-                                         quoted_uninstall_cmd,
-                                         true);
+        uninstall_reg, installer_util::kUninstallStringField,
+        quoted_uninstall_cmd.command_line_string(), true);
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          L"InstallLocation",
@@ -340,14 +349,14 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
         file_util::AppendToPath(&setup_exe,
                                 file_util::GetFilenameFromPath(exe_path));
 
-        std::wstring arguments;
+        CommandLine arguments(CommandLine::NO_PROGRAM);
         AppendUninstallCommandLineFlags(&arguments, system_install);
         VLOG(1) << "Creating/updating uninstall link at "
                 << uninstall_link.value();
         ret = ret && file_util::CreateShortcutLink(setup_exe.c_str(),
             uninstall_link.value().c_str(),
             NULL,
-            arguments.c_str(),
+            arguments.command_line_string().c_str(),
             NULL,
             setup_exe.c_str(),
             0,
@@ -394,6 +403,8 @@ bool DoPostInstallTasks(HKEY reg_root,
   std::wstring version_key = dist->GetVersionKey();
 
   bool is_system_install = (reg_root == HKEY_LOCAL_MACHINE);
+  const installer_util::MasterPreferences& prefs =
+      InstallUtil::GetMasterPreferencesForCurrentProcess();
 
   if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe))) {
     // Looks like this was in use update. So make sure we update the 'opv' key
@@ -419,7 +430,7 @@ bool DoPostInstallTasks(HKEY reg_root,
     if (is_system_install)
       rename_cmd = rename_cmd + L" --" + installer_util::switches::kSystemLevel;
 
-    if (InstallUtil::IsChromeFrameProcess()) {
+    if (prefs.install_chrome_frame()) {
       rename_cmd += L" --";
       rename_cmd += installer_util::switches::kChromeFrame;
     }
@@ -455,15 +466,16 @@ bool DoPostInstallTasks(HKEY reg_root,
     }
   }
 
-  if (InstallUtil::IsChromeFrameProcess()) {
-    // Chrome Frame instances of setup.exe should always have at least
-    // one DLL to register. Enforce that this is so.
+  if (prefs.install_chrome_frame()) {
+    // TODO(tommi): setup.exe should always have at least one DLL to
+    // register.  Currently we rely on scan_server_dlls.py to populate
+    // the array for us, but we might as well use an explicit static
+    // array of required components.
     if (kNumDllsToRegister <= 0) {
-      NOTREACHED();
+      NOTREACHED() << "no dlls to register";
       return false;
     }
 
-    // Now we need to register any self registering components and unregister
     // any that were left from the old version that is being upgraded:
     if (!current_version.empty()) {
       std::wstring old_dll_path(install_path);
@@ -606,8 +618,10 @@ installer_util::InstallStatus InstallNewVersion(
                                KEY_READ);
   if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe)))
     chrome_key.ReadValue(google_update::kRegOldVersionField, current_version);
+
   if (current_version->empty())
     chrome_key.ReadValue(google_update::kRegVersionField, current_version);
+
   chrome_key.Close();
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, std::wstring());
@@ -757,9 +771,12 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       CopyPreferenceFileForFirstRun(system_install, prefs_path);
 
     bool value = false;
-    if (!prefs.GetBool(
+    // TODO(tommi): Currently this only creates shortcuts for Chrome, but
+    // for other products we might want to create shortcuts.
+    if (prefs.install_chrome() &&
+        (!prefs.GetBool(
             installer_util::master_preferences::kDoNotCreateShortcuts,
-            &value) || !value) {
+            &value) || !value)) {
       bool create_all_shortcut = false;
       prefs.GetBool(installer_util::master_preferences::kCreateAllShortcuts,
                     &create_all_shortcut);

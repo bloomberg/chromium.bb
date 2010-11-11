@@ -149,10 +149,33 @@ class MasterPreferences {
     return preferences_read_from_file_;
   }
 
+  bool install_ceee() const {
+    return ceee_;
+  }
+
+  bool install_chrome() const {
+    return chrome_;
+  }
+
+  bool install_chrome_frame() const {
+    return chrome_frame_;
+  }
+
+  bool is_multi_install() const {
+    return multi_install_;
+  }
+
+ protected:
+  void InitializeProductFlags();
+
  protected:
   scoped_ptr<DictionaryValue> master_dictionary_;
   DictionaryValue* distribution_;
   bool preferences_read_from_file_;
+  bool ceee_;
+  bool chrome_;
+  bool chrome_frame_;
+  bool multi_install_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MasterPreferences);

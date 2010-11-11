@@ -7,10 +7,12 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -299,3 +301,96 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   EXPECT_FALSE(prefs2.GetBool(
       installer_util::master_preferences::kVerboseLogging, &value));
 }
+
+TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
+  const std::wstring kChromeInstall(L"setup.exe");
+  const std::wstring kCfInstall(StringPrintf(L"setup.exe --%ls",
+      installer_util::switches::kChromeFrame));
+  const std::wstring kCeeeInstall(StringPrintf(L"setup.exe --%ls",
+      installer_util::switches::kCeee));
+
+  CommandLine chrome_install(CommandLine::FromString(kChromeInstall));
+  CommandLine cf_install(CommandLine::FromString(kCfInstall));
+  CommandLine ceee_install(CommandLine::FromString(kCeeeInstall));
+
+  installer_util::MasterPreferences pref_chrome(chrome_install);
+  installer_util::MasterPreferences pref_cf(cf_install);
+  installer_util::MasterPreferences pref_ceee(ceee_install);
+
+  EXPECT_FALSE(pref_chrome.is_multi_install());
+  EXPECT_TRUE(pref_chrome.install_chrome());
+  EXPECT_FALSE(pref_chrome.install_ceee());
+  EXPECT_FALSE(pref_chrome.install_chrome_frame());
+
+  EXPECT_FALSE(pref_cf.is_multi_install());
+  EXPECT_FALSE(pref_cf.install_chrome());
+  EXPECT_FALSE(pref_cf.install_ceee());
+  EXPECT_TRUE(pref_cf.install_chrome_frame());
+
+  EXPECT_FALSE(pref_ceee.is_multi_install());
+  EXPECT_FALSE(pref_ceee.install_chrome());
+  EXPECT_TRUE(pref_ceee.install_ceee());
+  EXPECT_TRUE(pref_ceee.install_chrome_frame());
+}
+
+TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
+  const std::wstring kChromeInstall(StringPrintf(L"setup.exe --%ls --%ls",
+      installer_util::switches::kMultiInstall,
+      installer_util::switches::kChrome));
+  const std::wstring kCfInstall(StringPrintf(L"setup.exe --%ls --%ls",
+      installer_util::switches::kMultiInstall,
+      installer_util::switches::kChromeFrame));
+  const std::wstring kCeeeInstall(StringPrintf(L"setup.exe --%ls --%ls",
+      installer_util::switches::kMultiInstall,
+      installer_util::switches::kCeee));
+  const std::wstring kChromeCfInstall(
+      StringPrintf(L"setup.exe --%ls --%ls --%ls",
+          installer_util::switches::kMultiInstall,
+          installer_util::switches::kChrome,
+          installer_util::switches::kChromeFrame));
+  const std::wstring kChromeCeeeCfInstall(
+      StringPrintf(L"setup.exe --%ls --%ls --%ls --%ls",
+          installer_util::switches::kMultiInstall,
+          installer_util::switches::kChrome,
+          installer_util::switches::kChromeFrame,
+          installer_util::switches::kCeee));
+
+  CommandLine chrome_install(CommandLine::FromString(kChromeInstall));
+  CommandLine cf_install(CommandLine::FromString(kCfInstall));
+  CommandLine ceee_install(CommandLine::FromString(kCeeeInstall));
+  CommandLine chrome_cf_install(CommandLine::FromString(kChromeCfInstall));
+  CommandLine chrome_cf_ceee_install(
+      CommandLine::FromString(kChromeCeeeCfInstall));
+
+  installer_util::MasterPreferences pref_chrome(chrome_install);
+  installer_util::MasterPreferences pref_cf(cf_install);
+  installer_util::MasterPreferences pref_ceee(ceee_install);
+  installer_util::MasterPreferences pref_chrome_cf(chrome_cf_install);
+  installer_util::MasterPreferences pref_all(chrome_cf_ceee_install);
+
+  EXPECT_TRUE(pref_chrome.is_multi_install());
+  EXPECT_TRUE(pref_chrome.install_chrome());
+  EXPECT_FALSE(pref_chrome.install_ceee());
+  EXPECT_FALSE(pref_chrome.install_chrome_frame());
+
+  EXPECT_TRUE(pref_cf.is_multi_install());
+  EXPECT_FALSE(pref_cf.install_chrome());
+  EXPECT_FALSE(pref_cf.install_ceee());
+  EXPECT_TRUE(pref_cf.install_chrome_frame());
+
+  EXPECT_TRUE(pref_ceee.is_multi_install());
+  EXPECT_FALSE(pref_ceee.install_chrome());
+  EXPECT_TRUE(pref_ceee.install_ceee());
+  EXPECT_TRUE(pref_ceee.install_chrome_frame());
+
+  EXPECT_TRUE(pref_chrome_cf.is_multi_install());
+  EXPECT_TRUE(pref_chrome_cf.install_chrome());
+  EXPECT_FALSE(pref_chrome_cf.install_ceee());
+  EXPECT_TRUE(pref_chrome_cf.install_chrome_frame());
+
+  EXPECT_TRUE(pref_all.is_multi_install());
+  EXPECT_TRUE(pref_all.install_chrome());
+  EXPECT_TRUE(pref_all.install_ceee());
+  EXPECT_TRUE(pref_all.install_chrome_frame());
+}
+

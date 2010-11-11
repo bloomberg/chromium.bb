@@ -8,9 +8,12 @@ namespace installer_util {
 namespace master_preferences {
   const char kAltFirstRunBubble[] = "oem_bubble";
   const char kAltShortcutText[] = "alternate_shortcut_text";
+  const char kCeee[] = "ceee";
+  const char kChrome[] = "chrome";
   const char kChromeFrame[] = "chrome_frame";
   const char kChromeShortcutIconIndex[] = "chrome_shortcut_icon_index";
   const char kCreateAllShortcuts[] = "create_all_shortcuts";
+  const char kDisableLogging[] = "disable_logging";
   const char kDistroImportBookmarksPref[] = "import_bookmarks";
   const char kDistroImportBookmarksFromFilePref[] =
       "import_bookmarks_from_file";
@@ -25,9 +28,11 @@ namespace master_preferences {
   const char kDoNotLaunchChrome[] = "do_not_launch_chrome";
   const char kDoNotRegisterForUpdateLaunch[] =
       "do_not_register_for_update_launch";
+  const char kLogFile[] = "log_file";
   const char kMakeChromeDefault[] = "make_chrome_default";
   const char kMakeChromeDefaultForUser[] = "make_chrome_default_for_user";
   const char kMsi[] = "msi";
+  const char kMultiInstall[] = "multi_install";
   const char kRequireEula[] = "require_eula";
   const char kSearchEngineExperimentPref[] = "search_engine_experiment";
   const char kSearchEngineExperimentRandomizePref[] =

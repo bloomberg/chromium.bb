@@ -20,12 +20,19 @@ namespace master_preferences {
 extern const char kAltShortcutText[];
 // Boolean. Use alternate smaller first run info bubble.
 extern const char kAltFirstRunBubble[];
+// Boolean. CEEE features of Chrome Frame should be enabled as part of
+// the install.  Requires kChromeFrame to be specified as well.
+extern const char kCeee[];
+// Boolean. This is to be a Chrome install. (When using MultiInstall)
+extern const char kChrome[];
 // Boolean. This is to be a Chrome Frame install.
 extern const char kChromeFrame[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const char kChromeShortcutIconIndex[];
 // Boolean. Create Desktop and QuickLaunch shortcuts. Cmd line override present.
 extern const char kCreateAllShortcuts[];
+// Boolean pref that disables all logging.
+extern const char kDisableLogging[];
 // Boolean pref that triggers silent import of the default browser bookmarks.
 extern const char kDistroImportBookmarksPref[];
 // String pref that triggers silent import of bookmarks from the html file at
@@ -52,12 +59,16 @@ extern const char kDoNotLaunchChrome[];
 // Boolean. Do not register with Google Update to have Chrome launched after
 // install. Cmd line override present.
 extern const char kDoNotRegisterForUpdateLaunch[];
+// String.  Specifies the file path to write logging info to.
+extern const char kLogFile[];
 // Boolean. Register Chrome as default browser. Cmd line override present.
 extern const char kMakeChromeDefault[];
 // Boolean. Register Chrome as default browser for the current user.
 extern const char kMakeChromeDefaultForUser[];
 // Boolean. Expect to be run by an MSI installer. Cmd line override present.
 extern const char kMsi[];
+// Boolean. Support installing multiple products at once.
+extern const char kMultiInstall[];
 // Boolean. Show EULA dialog before install.
 extern const char kRequireEula[];
 // Boolean. Use experimental search engine selection dialog.

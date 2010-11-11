@@ -10,6 +10,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
 #include "base/lock.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,8 +24,20 @@
 
 #include "installer_util_strings.h"
 
+namespace {
+// Returns true if currently running in npchrome_frame.dll
+bool IsChromeFrameModule() {
+  FilePath module_path;
+  PathService::Get(base::FILE_MODULE, &module_path);
+  return FilePath::CompareEqualIgnoreCase(module_path.BaseName().value(),
+                                          installer_util::kChromeFrameDll);
+}
+
+}  // end namespace
+
 BrowserDistribution* BrowserDistribution::GetDistribution() {
-  return GetDistribution(InstallUtil::IsChromeFrameProcess());
+  return GetDistribution(InstallUtil::IsChromeFrameProcess() ||
+                         IsChromeFrameModule());
 }
 
 BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
