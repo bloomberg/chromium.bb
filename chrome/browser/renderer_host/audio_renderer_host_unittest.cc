@@ -218,7 +218,7 @@ class AudioRendererHostTest : public testing::Test {
     params.params.channels = 2;
     params.params.sample_rate = AudioParameters::kAudioCDSampleRate;
     params.params.bits_per_sample = 16;
-    params.packet_size = 0;
+    params.params.samples_per_packet = 0;
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.
@@ -244,7 +244,7 @@ class AudioRendererHostTest : public testing::Test {
     params.params.channels = 2;
     params.params.sample_rate = AudioParameters::kAudioCDSampleRate;
     params.params.bits_per_sample = 16;
-    params.packet_size = 0;
+    params.params.samples_per_packet = 0;
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.

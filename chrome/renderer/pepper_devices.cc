@@ -213,8 +213,7 @@ NPError AudioDeviceContext::Initialize(AudioMessageFilter* filter,
   }
 
   context->config = *config;
-  params.packet_size = config->sampleFrameCount * config->outputChannelMap *
-      (params.params.bits_per_sample >> 3);
+  params.params.samples_per_packet = config->sampleFrameCount;
 
   stream_id_ = filter_->AddDelegate(this);
   filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params, true));

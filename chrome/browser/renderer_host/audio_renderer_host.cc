@@ -55,7 +55,7 @@ static size_t GetMaxAudioStreamsAllowed() {
   return kMaxStreams;
 }
 
-static uint32 SelectHardwarePacketSize(AudioParameters params) {
+static uint32 SelectSamplesPerPacket(AudioParameters params) {
   // Select the number of samples that can provide at least
   // |kMillisecondsPerHardwarePacket| worth of audio data.
   int samples = kMinSamplesPerHardwarePacket;
@@ -64,7 +64,7 @@ static uint32 SelectHardwarePacketSize(AudioParameters params) {
          params.sample_rate * kMillisecondsPerHardwarePacket) {
     samples *= 2;
   }
-  return params.channels * samples * params.bits_per_sample / 8;
+  return samples;
 }
 
 AudioRendererHost::AudioEntry::AudioEntry()
@@ -347,15 +347,17 @@ void AudioRendererHost::OnCreateStream(
     return;
   }
 
-  // Select the hardwaer packet size if not specified.
-  uint32 hardware_packet_size = params.packet_size;
-  if (!hardware_packet_size) {
-    hardware_packet_size = SelectHardwarePacketSize(params.params);
+  AudioParameters audio_params(params.params);
+
+  // Select the hardware packet size if not specified.
+  if (!audio_params.samples_per_packet) {
+    audio_params.samples_per_packet = SelectSamplesPerPacket(audio_params);
   }
+  uint32 packet_size = audio_params.GetPacketSize();
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
   // Create the shared memory and share with the renderer process.
-  if (!entry->shared_memory.CreateAndMapAnonymous(hardware_packet_size)) {
+  if (!entry->shared_memory.CreateAndMapAnonymous(packet_size)) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(msg.routing_id(), stream_id);
     return;
@@ -376,16 +378,13 @@ void AudioRendererHost::OnCreateStream(
     // entry and construct an AudioOutputController.
     entry->reader.reset(reader.release());
     entry->controller =
-        media::AudioOutputController::CreateLowLatency(
-            this, params.params,
-            hardware_packet_size,
-            entry->reader.get());
+        media::AudioOutputController::CreateLowLatency(this, audio_params,
+                                                       entry->reader.get());
   } else {
     // The choice of buffer capacity is based on experiment.
     entry->controller =
-        media::AudioOutputController::Create(this, params.params,
-                                             hardware_packet_size,
-                                             3 * hardware_packet_size);
+        media::AudioOutputController::Create(this, audio_params,
+                                             3 * packet_size);
   }
 
   if (!entry->controller) {

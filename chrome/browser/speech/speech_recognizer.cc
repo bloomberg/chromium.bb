@@ -149,9 +149,9 @@ bool SpeechRecognizer::StartRecording() {
   int samples_per_packet = (kAudioSampleRate * kAudioPacketIntervalMs) / 1000;
   DCHECK((samples_per_packet % encoder_->samples_per_frame()) == 0);
   AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kNumAudioChannels,
-                         kAudioSampleRate, kNumBitsPerAudioSample);
-  audio_controller_ =
-      AudioInputController::Create(this, params, samples_per_packet);
+                         kAudioSampleRate, kNumBitsPerAudioSample,
+                         samples_per_packet);
+  audio_controller_ = AudioInputController::Create(this, params);
   DCHECK(audio_controller_.get());
   VLOG(1) << "SpeechRecognizer starting record.";
   num_samples_recorded_ = 0;

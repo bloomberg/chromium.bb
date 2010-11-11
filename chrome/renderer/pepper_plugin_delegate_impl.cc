@@ -278,9 +278,7 @@ bool PlatformAudioImpl::Initialize(
   params.params.channels = 2;
   params.params.sample_rate = sample_rate;
   params.params.bits_per_sample = 16;
-
-  params.packet_size = sample_count * params.params.channels *
-      (params.params.bits_per_sample >> 3);
+  params.params.samples_per_packet = sample_count;
 
   stream_id_ = filter_->AddDelegate(this);
   return filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,

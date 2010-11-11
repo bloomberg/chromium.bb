@@ -577,14 +577,10 @@ struct ViewHostMsg_Audio_CreateStream_Params {
   ViewHostMsg_Audio_CreateStream_Params();
   ~ViewHostMsg_Audio_CreateStream_Params();
 
-  // Format request for the stream.
+  // Parameters for the new audio stream.
+  // If |samples_per_packet| is set 0, the audio packet size is selected
+  // automatically by the browser process.
   AudioParameters params;
-
-  // Number of bytes per packet. Determines the maximum number of bytes
-  // transported for each audio packet request.
-  // A value of 0 means that the audio packet size is selected automatically
-  // by the browser process.
-  uint32 packet_size;
 };
 
 // This message is used for supporting popup menus on Mac OS X using native

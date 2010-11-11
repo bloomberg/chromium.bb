@@ -255,7 +255,9 @@ void AudioRendererImpl::CreateStreamTask(AudioParameters audio_params) {
 
   ViewHostMsg_Audio_CreateStream_Params params;
   params.params = audio_params;
-  params.packet_size = 0;
+
+  // Let the browser choose packet size.
+  params.params.samples_per_packet = 0;
 
   filter_->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params,
                                                   false));
