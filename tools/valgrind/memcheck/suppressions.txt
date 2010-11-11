@@ -2886,8 +2886,8 @@
    fun:_ZN4base9BaseTimerIN8chromeos15ClockMenuButtonELb0EE9TimerTask3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
 }
+
 {
    bug_58074
    Memcheck:Value4
@@ -3254,3 +3254,20 @@
    fun:_ZN3net19TCPClientSocketPoolD0Ev
    fun:_ZN10scoped_ptrIN3net19TCPClientSocketPoolEED1Ev
 }
+
+{
+   bug_62801
+   Memcheck:Addr4
+   fun:pthread_mutex_lock
+   fun:PR_Lock
+   fun:_pt_thread_death_internal
+   fun:PR_DetachThread
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+   fun:*12WorkerThread10ThreadMainEv
+   fun:_Z10ThreadFuncPv
+   fun:start_thread
+   fun:clone
+}
+
