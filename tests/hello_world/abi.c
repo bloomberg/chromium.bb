@@ -109,7 +109,8 @@ int CheckAlignment() {
   CHECK_ALIGNMENT(FunctionPointer, 4);
   CHECK_ALIGNMENT(long_long, 8);
 #ifdef PNACL_ABI_TEST
-  CHECK_ALIGNMENT(va_list, 8);
+  /* NOTE: http://code.google.com/p/nativeclient/issues/detail?id=817 */
+  /* CHECK_ALIGNMENT(va_list, 8); */
 #endif
   return nerror;
 }
