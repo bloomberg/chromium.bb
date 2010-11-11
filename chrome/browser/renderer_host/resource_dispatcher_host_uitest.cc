@@ -99,7 +99,8 @@ TEST_F(ResourceDispatcherTest, FLAKY_SyncXMLHttpRequest) {
   EXPECT_TRUE(success);
 }
 
-TEST_F(ResourceDispatcherTest, SyncXMLHttpRequest_Disallowed) {
+// http://code.google.com/p/chromium/issues/detail?id=62776
+TEST_F(ResourceDispatcherTest, FLAKY_SyncXMLHttpRequest_Disallowed) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
                               FilePath(FILE_PATH_LITERAL("chrome/test/data")));
   ASSERT_TRUE(test_server.Start());
