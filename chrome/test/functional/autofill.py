@@ -58,9 +58,10 @@ class AutoFillTest(pyauto.PyUITest):
     # Adding credit cards.
     file_path = os.path.join(self.DataDir(), 'autofill',
                              'crazy_creditcards.txt')
-    credit_cards = self.EvalDataFrom(file_path)
-    self.FillAutoFillProfile(credit_cards=credit_cards)
-    self.assertEqual(credit_cards,
+    test_data = self.EvalDataFrom(file_path)
+    credit_cards_input = test_data['input']
+    self.FillAutoFillProfile(credit_cards=credit_cards_input)
+    self.assertEqual(test_data['expected'],
                      self.GetAutoFillProfile()['credit_cards'])
 
   def testGetProfilesEmpty(self):
@@ -85,11 +86,12 @@ class AutoFillTest(pyauto.PyUITest):
     self.assertEqual([without_invalid],
                      self.GetAutoFillProfile()['profiles'])
 
-    # Then try credit cards with invalid input.
-    credit_card = {'CREDIT_CARD_NUMBER': 'Not_Checked'}
+    # Then try credit cards with invalid input.  Should strip off all non-digits
+    credit_card = {'CREDIT_CARD_NUMBER': 'Not_0123-5Checked'}
+    expected_credit_card = {'CREDIT_CARD_NUMBER': '01235'}
     self.FillAutoFillProfile(credit_cards=[credit_card])
-    self.assertEqual([credit_card],
-                              self.GetAutoFillProfile()['credit_cards'])
+    self.assertEqual([expected_credit_card],
+                     self.GetAutoFillProfile()['credit_cards'])
 
 
 if __name__ == '__main__':
