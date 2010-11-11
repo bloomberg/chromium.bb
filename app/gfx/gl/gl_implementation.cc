@@ -115,12 +115,6 @@ void SetGLGetProcAddressProc(GLGetProcAddressProc proc) {
 void* GetGLProcAddress(const char* name) {
   DCHECK(g_gl_implementation != kGLImplementationNone);
 
-  if (g_get_proc_address) {
-    void* proc = g_get_proc_address(name);
-    if (proc)
-      return proc;
-  }
-
   if (g_libraries) {
     for (size_t i = 0; i < g_libraries->size(); ++i) {
       void* proc = base::GetFunctionPointerFromNativeLibrary((*g_libraries)[i],
@@ -128,6 +122,12 @@ void* GetGLProcAddress(const char* name) {
       if (proc)
         return proc;
     }
+  }
+
+  if (g_get_proc_address) {
+    void* proc = g_get_proc_address(name);
+    if (proc)
+      return proc;
   }
 
   return NULL;
