@@ -501,8 +501,9 @@ RendererWebKitClientImpl::sharedWorkerRepository() {
 
 WebKit::WebGraphicsContext3D*
 RendererWebKitClientImpl::createGraphicsContext3D() {
-  // TODO(kbr): remove the WebGraphicsContext3D::createDefault code path
-  // completely.
+  // The WebGraphicsContext3D::createDefault code path is used for
+  // layout tests (though not through this code) as well as for
+  // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
     return WebKit::WebGraphicsContext3D::createDefault();
   } else {
