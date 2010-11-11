@@ -168,7 +168,7 @@ class DownloadManager
   void OnQueryDownloadEntriesComplete(
       std::vector<DownloadCreateInfo>* entries);
   void OnCreateDownloadEntryComplete(
-      const DownloadCreateInfo& info, int64 db_handle);
+      DownloadCreateInfo info, int64 db_handle);
 
   // Display a new download in the appropriate browser UI.
   void ShowDownloadInBrowser(const DownloadCreateInfo& info,

@@ -899,7 +899,7 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
 // service, we associate the DownloadItem with the db handle, update our
 // 'downloads_' map and inform observers.
 void DownloadManager::OnCreateDownloadEntryComplete(
-    const DownloadCreateInfo& info,
+    DownloadCreateInfo info,
     int64 db_handle) {
   DownloadMap::iterator it = in_progress_.find(info.download_id);
   DCHECK(it != in_progress_.end());

@@ -408,7 +408,7 @@ class HistoryService : public CancelableRequestProvider,
 
   // Implemented by the caller of 'CreateDownload' below, and is called when the
   // history service has created a new entry for a download in the history db.
-  typedef Callback2<const DownloadCreateInfo&, int64>::Type
+  typedef Callback2<DownloadCreateInfo, int64>::Type
       DownloadCreateCallback;
 
   // Begins a history request to create a new persistent entry for a download.
