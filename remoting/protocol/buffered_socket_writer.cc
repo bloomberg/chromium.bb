@@ -77,10 +77,10 @@ void BufferedSocketWriterBase::DoWrite() {
       if (result == net::ERR_IO_PENDING) {
         write_pending_ = true;
       } else {
+        HandleError(result);
         if (write_failed_callback_.get())
           write_failed_callback_->Run(result);
       }
-
       return;
     }
   }
@@ -91,6 +91,7 @@ void BufferedSocketWriterBase::OnWritten(int result) {
   write_pending_ = false;
 
   if (result < 0) {
+    HandleError(result);
     if (write_failed_callback_.get())
       write_failed_callback_->Run(result);
     return;
@@ -104,6 +105,17 @@ void BufferedSocketWriterBase::OnWritten(int result) {
   // Schedule next write.
   message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &BufferedSocketWriterBase::DoWrite));
+}
+
+void BufferedSocketWriterBase::HandleError(int result) {
+  AutoLock auto_lock(lock_);
+  closed_ = true;
+  while (!queue_.empty()) {
+    queue_.pop();
+  }
+
+  // Notify subclass that an error is received.
+  OnError_Locked(result);
 }
 
 int BufferedSocketWriterBase::GetBufferSize() {
@@ -145,6 +157,10 @@ void BufferedSocketWriter::AdvanceBufferPosition_Locked(int written) {
   current_buf_->DidConsume(written);
 }
 
+void BufferedSocketWriter::OnError_Locked(int result) {
+  current_buf_ = NULL;
+}
+
 BufferedDatagramWriter::BufferedDatagramWriter() { }
 BufferedDatagramWriter::~BufferedDatagramWriter() { }
 
@@ -164,6 +180,9 @@ void BufferedDatagramWriter::AdvanceBufferPosition_Locked(int written) {
   queue_.pop();
 }
 
+void BufferedDatagramWriter::OnError_Locked(int result) {
+  // Nothing to do here.
+}
 
 }  // namespace protocol
 }  // namespace remoting

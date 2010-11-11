@@ -63,15 +63,21 @@ class BufferedSocketWriterBase
   DataQueue queue_;
   int buffer_size_;
 
-  // Following two methods must be implemented in child classes.
+  // Following three methods must be implemented in child classes.
   // GetNextPacket() returns next packet that needs to be written to the
   // socket. |buffer| must be set to NULL if there is nothing left in the queue.
   virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size) = 0;
   virtual void AdvanceBufferPosition_Locked(int written) = 0;
 
+  // This method is called whenever there is an error writing to the socket.
+  virtual void OnError_Locked(int result) = 0;
+
  private:
   void DoWrite();
   void OnWritten(int result);
+
+  // This method is called when an error is encountered.
+  void HandleError(int result);
 
   // Must be locked when accessing |socket_|, |queue_| and |buffer_size_|;
   Lock lock_;
@@ -95,6 +101,7 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
  protected:
   virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size);
   virtual void AdvanceBufferPosition_Locked(int written);
+  virtual void OnError_Locked(int result);
 
  private:
   scoped_refptr<net::DrainableIOBuffer> current_buf_;
@@ -108,6 +115,7 @@ class BufferedDatagramWriter : public BufferedSocketWriterBase {
  protected:
   virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size);
   virtual void AdvanceBufferPosition_Locked(int written);
+  virtual void OnError_Locked(int result);
 };
 
 }  // namespace protocol
