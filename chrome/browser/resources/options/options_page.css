@@ -9,7 +9,7 @@ body {
   padding-top: 16px;
   padding-bottom: 34px;
   text-align: end;
-  font-size: 125%;
+  font-size: 200%;
   font-weight: normal;
   color: #53627d;
   margin: 0;
@@ -152,6 +152,7 @@ html[hide-menu=false] #navbar-container {
   display: block;
   color: #426dc9;
   outline:none;
+  font-size:105%;
 }
 
 .navbar-item-selected {
@@ -232,11 +233,11 @@ html[hide-menu=true] #mainview {
 
 .page > h1 {
   -webkit-padding-end: 24px;
-  padding-top: 1em;
-  padding-bottom: 1em;
+  padding-top: 16px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #eeeeee;
   -webkit-padding-start: 0;
-  font-size: 125%;
+  font-size: 200%;
   color: #54637f;
   margin: 0;
 }
@@ -245,19 +246,22 @@ section {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   border-bottom: 1px solid #eeeeee;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  padding-bottom: 0.5em;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+}
+
+section:last-child {
+  border-bottom: none;
 }
 
 section > h3 {
-  width: 150px;
+  width: 140px;
   font-weight: normal;
   -webkit-padding-start: 0;
   vertical-align: middle;
   margin: 0;
   font-size: 100%;
-  padding-top: 2px;
   font-weight: bold;
 }
 
