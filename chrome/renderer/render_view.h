@@ -653,6 +653,7 @@ class RenderView : public RenderWidget,
 
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
+  FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnNavStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, OnImeStateChanged);
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, ImeComposition);

@@ -27,12 +27,21 @@ class ExternalPopupMenuTest : public RenderViewTest {
     // We need to set this explictly as RenderMain is not run.
     WebKit::WebView::setUseExternalPopupMenus(true);
 
+    std::string html = "<select id='mySelect' onchange='selectChanged(this)'>"
+                       "  <option>zero</option>"
+                       "  <option selected='1'>one</option>"
+                       "  <option>two</option>"
+                       "</select>";
+    if (ShouldRemoveSelectOnChange()) {
+      html += "<script>"
+              "  function selectChanged(select) {"
+              "    select.parentNode.removeChild(select);"
+              "  }"
+              "</script>";
+    }
+
     // Load the test page.
-    LoadHTML("<select id='mySelect'>"
-             "  <option>zero</option>"
-             "  <option selected='1'>one</option>"
-             "  <option>two</option>"
-             "</select>");
+    LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
     view_->webwidget()->resize(WebKit::WebSize(500, 500));
@@ -46,6 +55,9 @@ class ExternalPopupMenuTest : public RenderViewTest {
     ExecuteJavaScriptAndReturnIntValue(script, &selected_index);
     return selected_index;
   }
+
+ protected:
+  virtual bool ShouldRemoveSelectOnChange() const { return false; }
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPopupMenuTest);
 };
@@ -95,4 +107,26 @@ TEST_F(ExternalPopupMenuTest, ShowPopupThenNavigate) {
 
   // Now the user selects something, we should not crash.
   view_->OnSelectPopupMenuItem(-1);
+}
+
+class ExternalPopupMenuRemoveTest : public ExternalPopupMenuTest {
+ public:
+  ExternalPopupMenuRemoveTest() {}
+
+ protected:
+  virtual bool ShouldRemoveSelectOnChange() const { return true; }
+};
+
+// Tests that nothing bad happen when the page removes the select when it
+// changes. (http://crbug.com/61997)
+TEST_F(ExternalPopupMenuRemoveTest, RemoveOnChange) {
+  // Click the text field once to show the popup.
+  EXPECT_TRUE(SimulateElementClick(kSelectID));
+
+  // Select something, it causes the select to be removed from the page.
+  view_->OnSelectPopupMenuItem(0);
+
+  // Just to check the soundness of the test, call SimulateElementClick again.
+  // It should return false as the select has been removed.
+  EXPECT_FALSE(SimulateElementClick(kSelectID));
 }
