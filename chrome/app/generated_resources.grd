@@ -8089,7 +8089,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Encryption tab of the configure sync dialog -->
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
-	<ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> always encrypts your data when it's tramsmitted to Google.  Additionally, passwords are stored encrypted on Google servers.
+	<ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> always encrypts your data when it's transmitted to Google.  Additionally, passwords are stored encrypted on Google servers.
       </message>
       <message name="IDS_SYNC_ENCRYPT_ALL_LABEL" desc="Label for the checkbox that enables encryption of everything.">
 	Encrypt all my data
