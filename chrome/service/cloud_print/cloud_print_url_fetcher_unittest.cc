@@ -301,7 +301,8 @@ TEST_F(CloudPrintURLFetcherBasicTest, HandleRawResponse) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(CloudPrintURLFetcherBasicTest, HandleRawData) {
+// http://code.google.com/p/chromium/issues/detail?id=62758
+TEST_F(CloudPrintURLFetcherBasicTest, FLAKY_HandleRawData) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
@@ -329,7 +330,8 @@ TEST_F(CloudPrintURLFetcherOverloadTest, Protect) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(CloudPrintURLFetcherRetryBackoffTest, GiveUp) {
+// http://code.google.com/p/chromium/issues/detail?id=62758
+TEST_F(CloudPrintURLFetcherRetryBackoffTest, FLAKY_GiveUp) {
   net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
