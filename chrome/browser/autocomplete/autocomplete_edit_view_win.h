@@ -23,19 +23,12 @@
 #include "chrome/common/page_transition_types.h"
 #include "gfx/font.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/widget/child_window_message_processor.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class Profile;
 class TabContents;
 namespace views {
 class View;
-}
-
-namespace app {
-namespace win {
-class ScopedProp;
-}
 }
 
 class AutocompleteEditController;
@@ -53,7 +46,6 @@ class AutocompleteEditViewWin
                                     ES_NOHIDESEL> >,
       public CRichEditCommands<AutocompleteEditViewWin>,
       public menus::SimpleMenuModel::Delegate,
-      public views::ChildWindowMessageProcessor,
       public AutocompleteEditView {
  public:
   struct State {
@@ -122,6 +114,8 @@ class AutocompleteEditViewWin
   virtual void SetWindowTextAndCaretPos(const std::wstring& text,
                                         size_t caret_pos);
 
+  virtual void ReplaceSelection(const string16& text);
+
   virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();
@@ -182,7 +176,6 @@ class AutocompleteEditViewWin
     MSG_WM_CONTEXTMENU(OnContextMenu)
     MSG_WM_COPY(OnCopy)
     MSG_WM_CUT(OnCut)
-    MSG_WM_DESTROY(OnDestroy)
     MESSAGE_HANDLER_EX(WM_GETOBJECT, OnGetObject)
     MESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
     MESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
@@ -221,11 +214,6 @@ class AutocompleteEditViewWin
   virtual std::wstring GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
 
-  // views::ChildWindowMessageProcessor
-  virtual bool ProcessMessage(UINT message,
-                              WPARAM w_param,
-                              LPARAM l_param,
-                              LRESULT* result);
  private:
   enum MouseButton {
     kLeft  = 0,
@@ -281,7 +269,6 @@ class AutocompleteEditViewWin
   void OnContextMenu(HWND window, const CPoint& point);
   void OnCopy();
   void OnCut();
-  void OnDestroy();
   LRESULT OnGetObject(UINT uMsg, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeComposition(UINT message, WPARAM wparam, LPARAM lparam);
   LRESULT OnImeNotify(UINT message, WPARAM wparam, LPARAM lparam);
@@ -533,9 +520,6 @@ class AutocompleteEditViewWin
 
   // Instance of accessibility information and handling.
   mutable ScopedComPtr<IAccessible> autocomplete_accessibility_;
-
-  // ScopedProp returned from registering as a ChildWindowMessageProcessor.
-  scoped_ptr<app::win::ScopedProp> message_handler_prop_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewWin);
 };

@@ -21,7 +21,8 @@ MultiAnimation::MultiAnimation(const Parts& parts)
       parts_(parts),
       cycle_time_ms_(TotalTime(parts)),
       current_value_(0),
-      current_part_index_(0) {
+      current_part_index_(0),
+      continuous_(true) {
   DCHECK(!parts_.empty());
 }
 
@@ -31,8 +32,14 @@ void MultiAnimation::Step(base::TimeTicks time_now) {
   double last_value = current_value_;
   size_t last_index = current_part_index_;
 
-  int delta = static_cast<int>((time_now - start_time()).InMilliseconds() %
-                               cycle_time_ms_);
+  int delta = static_cast<int>((time_now - start_time()).InMilliseconds());
+  if (delta >= cycle_time_ms_ && !continuous_) {
+    current_part_index_ = parts_.size() - 1;
+    current_value_ = Tween::CalculateValue(parts_[current_part_index_].type, 1);
+    Stop();
+    return;
+  }
+  delta %= cycle_time_ms_;
   const Part& part = GetPart(&delta, &current_part_index_);
   double percent = static_cast<double>(delta + part.start_time_ms) /
         static_cast<double>(part.end_time_ms);

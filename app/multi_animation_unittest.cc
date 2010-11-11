@@ -56,3 +56,33 @@ TEST_F(MultiAnimationTest, DifferingStartAndEnd) {
   as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(100));
   EXPECT_EQ(.5, animation.GetCurrentValue());
 }
+
+// Makes sure multi-animation stops if cycles is false.
+TEST_F(MultiAnimationTest, DontCycle) {
+  MultiAnimation::Parts parts;
+  parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
+  MultiAnimation animation(parts);
+  AnimationContainer::Element* as_element =
+      static_cast<AnimationContainer::Element*>(&animation);
+  as_element->SetStartTime(base::TimeTicks());
+  animation.set_continuous(false);
+
+  // Step to 300, which is greater than the cycle time.
+  as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(300));
+  EXPECT_EQ(1.0, animation.GetCurrentValue());
+  EXPECT_FALSE(animation.is_animating());
+}
+
+// Makes sure multi-animation cycles correctly.
+TEST_F(MultiAnimationTest, Cycle) {
+  MultiAnimation::Parts parts;
+  parts.push_back(MultiAnimation::Part(200, Tween::LINEAR));
+  MultiAnimation animation(parts);
+  AnimationContainer::Element* as_element =
+      static_cast<AnimationContainer::Element*>(&animation);
+  as_element->SetStartTime(base::TimeTicks());
+
+  // Step to 300, which is greater than the cycle time.
+  as_element->Step(base::TimeTicks() + base::TimeDelta::FromMilliseconds(300));
+  EXPECT_EQ(.5, animation.GetCurrentValue());
+}

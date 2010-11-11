@@ -53,8 +53,9 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
     CharRange() : cp_min(0), cp_max(0) { }
     CharRange(int n, int x) : cp_min(n), cp_max(x) { }
 
-    // Returns the start of the selection.
+    // Returns the start/end of the selection.
     int selection_min() const { return std::min(cp_min, cp_max); }
+    int selection_max() const { return std::max(cp_min, cp_max); }
 
     // Work in integers to match the gint GTK APIs.
     int cp_min;  // For a selection: Represents the start.
@@ -115,6 +116,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   virtual void SetWindowTextAndCaretPos(const std::wstring& text,
                                         size_t caret_pos);
+
+  virtual void ReplaceSelection(const string16& text);
 
   virtual void SetForcedQuery();
 

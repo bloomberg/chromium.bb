@@ -73,6 +73,9 @@ class AutocompleteEditController {
   // status of any keyword- or hint-related state.
   virtual void OnChanged() = 0;
 
+  // Called when the selection of the AutocompleteEditView changes.
+  virtual void OnSelectionBoundsChanged() = 0;
+
   // Called whenever the user starts or stops an input session (typing,
   // interacting with the edit, etc.).  When user input is not in progress,
   // the edit is guaranteed to be showing the permanent text.
@@ -153,6 +156,10 @@ class AutocompleteEditModel : public NotificationObserver {
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.
   void GetDataForURLExport(GURL* url, std::wstring* title, SkBitmap* favicon);
+
+  // Returns true if inline autocomplete was prevented the last time
+  // autocomplete was run.
+  bool PreventInlineAutocomplete();
 
   // If the user presses ctrl-enter, it means "add .com to the the end".  The
   // desired TLD is the TLD the user desires to add to the end of the current

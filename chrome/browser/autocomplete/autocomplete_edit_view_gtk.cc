@@ -545,6 +545,24 @@ void AutocompleteEditViewGtk::SetWindowTextAndCaretPos(const std::wstring& text,
   SetTextAndSelectedRange(text, range);
 }
 
+void AutocompleteEditViewGtk::ReplaceSelection(const string16& text) {
+  CharRange selection = GetSelection();
+  if (selection.selection_min() == selection.selection_max() &&
+      text.empty()) {
+    return;
+  }
+  std::wstring current_text(GetText());
+  std::wstring result = current_text.substr(0, selection.selection_min()) +
+      UTF16ToWide(text) + current_text.substr(selection.selection_max());
+  selection.cp_min = selection.selection_min();
+  selection.cp_max = UTF16ToWide(text).size() + selection.cp_min;
+  StartUpdatingHighlightedText();
+  OnBeforePossibleChange();
+  SetTextAndSelectedRange(result, selection);
+  OnAfterPossibleChange();
+  FinishUpdatingHighlightedText();
+}
+
 void AutocompleteEditViewGtk::SetForcedQuery() {
   const std::wstring current_text(GetText());
   const size_t start = current_text.find_first_not_of(kWhitespaceWide);
@@ -1312,7 +1330,7 @@ void AutocompleteEditViewGtk::HandleInsertText(
     enter_was_inserted_ = true;
 
   const gchar* p = text;
-  while(*p) {
+  while (*p) {
     gunichar c = g_utf8_get_char(p);
     const gchar* next = g_utf8_next_char(p);
 

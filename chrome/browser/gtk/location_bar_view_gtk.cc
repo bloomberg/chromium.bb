@@ -548,6 +548,10 @@ void LocationBarViewGtk::OnChanged() {
   SetSuggestedText(suggested_text);
 }
 
+void LocationBarViewGtk::OnSelectionBoundsChanged() {
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewGtk::CreateStarButton() {
   star_image_ = gtk_image_new();
 

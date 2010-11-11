@@ -325,6 +325,10 @@ void LocationBarViewMac::OnChanged() {
   }
 }
 
+void LocationBarViewMac::OnSelectionBoundsChanged() {
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
   toolbar_model_->set_input_in_progress(in_progress);
   Update(NULL, false);

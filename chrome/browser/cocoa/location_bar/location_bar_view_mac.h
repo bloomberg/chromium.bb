@@ -140,6 +140,7 @@ class LocationBarViewMac : public AutocompleteEditController,
       PageTransition::Type transition,
       const GURL& alternate_nav_url);
   virtual void OnChanged();
+  virtual void OnSelectionBoundsChanged();
   virtual void OnInputInProgress(bool in_progress);
   virtual void OnKillFocus();
   virtual void OnSetFocus();

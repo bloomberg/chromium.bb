@@ -14,6 +14,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -78,6 +79,9 @@ class AutocompleteEditView {
   // Sets the window text and the caret position.
   virtual void SetWindowTextAndCaretPos(const std::wstring& text,
                                         size_t caret_pos) = 0;
+
+  // Replaces the selection with the specified text and selects it.
+  virtual void ReplaceSelection(const string16& text) = 0;
 
   // Sets the edit to forced query mode.  Practically speaking, this means that
   // if the edit is not in forced query mode, its text is set to "?" with the

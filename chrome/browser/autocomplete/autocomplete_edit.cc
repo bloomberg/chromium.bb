@@ -171,6 +171,11 @@ void AutocompleteEditModel::GetDataForURLExport(GURL* url,
   }
 }
 
+bool AutocompleteEditModel::PreventInlineAutocomplete() {
+  return
+      popup_->autocomplete_controller()->input().prevent_inline_autocomplete();
+}
+
 std::wstring AutocompleteEditModel::GetDesiredTLD() const {
   // Tricky corner case: The user has typed "foo" and currently sees an inline
   // autocomplete suggestion of "foo.net".  He now presses ctrl-a (e.g. to

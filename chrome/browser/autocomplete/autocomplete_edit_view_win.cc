@@ -22,7 +22,6 @@
 #include "app/win/drag_source.h"
 #include "app/win/drop_target.h"
 #include "app/win/iat_patch_function.h"
-#include "app/win/scoped_prop.h"
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -439,10 +438,6 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   SendMessage(m_hWnd, EM_SETWORDBREAKPROC, 0,
               reinterpret_cast<LPARAM>(&WordBreakProc));
 
-  // Makes it EN_SELCHANGE is sent to our parent window and back to us by way of
-  // ProcessWindowMessage.
-  SetEventMask(ENM_SELCHANGE);
-
   // Get the metrics for the font.
   HDC dc = ::GetDC(NULL);
   SelectObject(dc, font_.GetNativeFont());
@@ -472,9 +467,6 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
   SetDefaultCharFormat(cf);
 
   SetBackgroundColor(background_color_);
-
-  message_handler_prop_.reset(
-      views::ChildWindowMessageProcessor::Register(m_hWnd, this));
 
   // By default RichEdit has a drop target. Revoke it so that we can install our
   // own. Revoke takes care of deleting the existing one.
@@ -658,6 +650,20 @@ void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const std::wstring& text,
                                                        size_t caret_pos) {
   SetWindowText(text.c_str());
   PlaceCaretAt(caret_pos);
+}
+
+void AutocompleteEditViewWin::ReplaceSelection(const string16& text) {
+  CHARRANGE selection;
+  GetSel(selection);
+  if (selection.cpMin == selection.cpMax && text.empty())
+    return;
+
+  const std::wstring w_text(UTF16ToWide(text));
+  ScopedFreeze freeze(this, GetTextObjectModel());
+  OnBeforePossibleChange();
+  ReplaceSel(w_text.c_str(), TRUE);
+  SetSelection(selection.cpMin, selection.cpMin + w_text.size());
+  OnAfterPossibleChange();
 }
 
 void AutocompleteEditViewWin::SetForcedQuery() {
@@ -894,6 +900,9 @@ bool AutocompleteEditViewWin::OnAfterPossibleChange() {
   const bool something_changed = model_->OnAfterPossibleChange(new_text,
       selection_differs, text_differs, just_deleted_text, at_end_of_edit);
 
+  if (selection_differs)
+    controller_->OnSelectionBoundsChanged();
+
   if (something_changed && text_differs)
     TextChanged();
 
@@ -1062,19 +1071,6 @@ void AutocompleteEditViewWin::ExecuteCommand(int command_id) {
       break;
   }
   OnAfterPossibleChange();
-}
-
-bool AutocompleteEditViewWin::ProcessMessage(UINT message,
-                                             WPARAM w_param,
-                                             LPARAM l_param,
-                                             LRESULT* result) {
-  if (message == WM_NOTIFY) {
-    NMHDR* header = reinterpret_cast<NMHDR*>(l_param);
-    if (header->code == EN_SELCHANGE) {
-      // TODO(sky): wire this up.
-    }
-  }
-  return false;
 }
 
 // static
@@ -1265,10 +1261,6 @@ void AutocompleteEditViewWin::OnCut() {
   // This replace selection will have no effect (even on the undo stack) if the
   // current selection is empty.
   ReplaceSel(L"", true);
-}
-
-void AutocompleteEditViewWin::OnDestroy() {
-  message_handler_prop_.reset();
 }
 
 LRESULT AutocompleteEditViewWin::OnGetObject(UINT uMsg,

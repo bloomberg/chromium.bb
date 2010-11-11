@@ -43,6 +43,7 @@ class PageActionWithBadgeView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
+class SuggestedTextView;
 class TemplateURLModel;
 
 namespace views {
@@ -148,6 +149,9 @@ class LocationBarView : public LocationBar,
   // Shows the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
 
+  // Invoked from SuggestedTextView when the suggested text should be committed.
+  void OnCommitSuggestedText();
+
   // Sizing functions
   virtual gfx::Size GetPreferredSize();
 
@@ -190,6 +194,7 @@ class LocationBarView : public LocationBar,
                                     PageTransition::Type transition,
                                     const GURL& alternate_nav_url);
   virtual void OnChanged();
+  virtual void OnSelectionBoundsChanged();
   virtual void OnInputInProgress(bool in_progress);
   virtual void OnKillFocus();
   virtual void OnSetFocus();
@@ -212,7 +217,7 @@ class LocationBarView : public LocationBar,
 
   // Overridden from LocationBar:
   virtual void ShowFirstRunBubble(FirstRun::BubbleType bubble_type);
-  virtual void SetSuggestedText(const string16& text);
+  virtual void SetSuggestedText(const string16& input);
   virtual std::wstring GetInputString() const;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const;
   virtual PageTransition::Type GetPageTransition() const;
@@ -359,7 +364,7 @@ class LocationBarView : public LocationBar,
 
   // View responsible for showing suggested text. This is NULL when there is no
   // suggested text.
-  views::Label* suggested_text_view_;
+  SuggestedTextView* suggested_text_view_;
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;

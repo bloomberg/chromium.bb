@@ -25,6 +25,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/location_bar/content_setting_image_view.h"
@@ -387,6 +388,16 @@ void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
                                   profile_, url, newly_bookmarked);
 }
 
+void LocationBarView::OnCommitSuggestedText() {
+  InstantController* instant = delegate_->GetInstant();
+  DCHECK(instant);
+  DCHECK(suggested_text_view_);
+  location_entry_->ReplaceSelection(
+      WideToUTF16(suggested_text_view_->GetText()));
+  // TODO(sky): We need to route the suggestion through InstantController so it
+  // doesn't fetch suggestions.
+}
+
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
       IDR_LOCATIONBG_POPUPMODE_CENTER : IDR_LOCATIONBG_C)->height());
@@ -607,7 +618,8 @@ void LocationBarView::Layout() {
       int location_needed_width = location_entry_->TextWidth();
       location_bounds.set_width(std::min(location_needed_width,
                                          entry_width - suggested_text_width));
-      suggested_text_view_->SetBounds(location_bounds.right(),
+      // TODO(sky): figure out why this needs the -1.
+      suggested_text_view_->SetBounds(location_bounds.right() - 1,
                                       location_bounds.y(),
                                       suggested_text_width,
                                       location_bounds.height());
@@ -829,6 +841,11 @@ void LocationBarView::OnChanged() {
   }
 
   SetSuggestedText(suggested_text);
+}
+
+void LocationBarView::OnSelectionBoundsChanged() {
+  if (suggested_text_view_)
+    suggested_text_view_->StopAnimation();
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {
@@ -1077,10 +1094,13 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
   ShowFirstRunBubbleInternal(bubble_type);
 }
 
-void LocationBarView::SetSuggestedText(const string16& text) {
+void LocationBarView::SetSuggestedText(const string16& input) {
+  // Don't show the suggested text if inline autocomplete is prevented.
+  string16 text = location_entry_->model()->PreventInlineAutocomplete() ?
+      string16() : input;
   if (!text.empty()) {
     if (!suggested_text_view_) {
-      suggested_text_view_ = new views::Label();
+      suggested_text_view_ = new SuggestedTextView(this);
       suggested_text_view_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
       suggested_text_view_->SetColor(
           GetColor(ToolbarModel::NONE,
@@ -1093,6 +1113,12 @@ void LocationBarView::SetSuggestedText(const string16& text) {
     } else {
       suggested_text_view_->SetText(UTF16ToWide(text));
     }
+    // Only start the animation to commit the suggested text if the selection is
+    // at the end.
+    std::wstring::size_type start, end;
+    location_entry_->GetSelectionBounds(&start, &end);
+    if (start == end && start == location_entry_->GetText().size())
+      suggested_text_view_->StartAnimation();
   } else if (suggested_text_view_) {
     delete suggested_text_view_;
     suggested_text_view_ = NULL;
