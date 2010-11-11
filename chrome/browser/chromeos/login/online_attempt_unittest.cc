@@ -33,7 +33,7 @@ class OnlineAttemptTest : public ::testing::Test {
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO),
-        state_("", "", "", "", ""),
+        state_("", "", "", "", "", false),
         resolver_(new MockAuthAttemptStateResolver) {
   }
 
@@ -91,7 +91,7 @@ class OnlineAttemptTest : public ::testing::Test {
         BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
   }
 
-  static void RunCancelTest(OnlineAttempt* attempt, Profile* profile) {
+  static void RunThreadTest(OnlineAttempt* attempt, Profile* profile) {
     attempt->Initiate(profile);
     MessageLoop::current()->RunAllPending();
   }
@@ -136,7 +136,7 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunCancelTest,
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
                           attempt_.get(), &profile));
 
   MessageLoop::current()->Run();
@@ -163,7 +163,7 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&OnlineAttemptTest::RunCancelTest,
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
                           attempt_.get(), &profile));
 
   // Post a task to cancel the login attempt.
@@ -172,6 +172,60 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   MessageLoop::current()->Run();
 
   EXPECT_EQ(LoginFailure::LOGIN_TIMED_OUT, state_.online_outcome().reason());
+  URLFetcher::set_factory(NULL);
+}
+
+TEST_F(OnlineAttemptTest, HostedLoginRejected) {
+  LoginFailure error(
+      LoginFailure::FromNetworkAuthFailure(
+          GoogleServiceAuthError(
+              GoogleServiceAuthError::HOSTED_NOT_ALLOWED)));
+  TestingProfile profile;
+
+  EXPECT_CALL(*(resolver_.get()), Resolve())
+      .WillOnce(Invoke(OnlineAttemptTest::Quit))
+      .RetiresOnSaturation();
+
+  // This is how we inject fake URLFetcher objects, with a factory.
+  MockFactory<HostedFetcher> factory;
+  URLFetcher::set_factory(&factory);
+
+  TestAttemptState local_state("", "", "", "", "", true);
+  attempt_ = new OnlineAttempt(&local_state, resolver_.get());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
+                          attempt_.get(), &profile));
+
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(error, local_state.online_outcome());
+  EXPECT_EQ(LoginFailure::NETWORK_AUTH_FAILED,
+            local_state.online_outcome().reason());
+  URLFetcher::set_factory(NULL);
+}
+
+TEST_F(OnlineAttemptTest, FullLogin) {
+  TestingProfile profile;
+
+  EXPECT_CALL(*(resolver_.get()), Resolve())
+      .WillOnce(Invoke(OnlineAttemptTest::Quit))
+      .RetiresOnSaturation();
+
+  // This is how we inject fake URLFetcher objects, with a factory.
+  MockFactory<SuccessFetcher> factory;
+  URLFetcher::set_factory(&factory);
+
+  TestAttemptState local_state("", "", "", "", "", true);
+  attempt_ = new OnlineAttempt(&local_state, resolver_.get());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
+                          attempt_.get(), &profile));
+
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(LoginFailure::None(), local_state.online_outcome());
   URLFetcher::set_factory(NULL);
 }
 

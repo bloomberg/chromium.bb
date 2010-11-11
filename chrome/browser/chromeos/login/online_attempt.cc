@@ -14,9 +14,9 @@
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -60,6 +60,19 @@ void OnlineAttempt::OnClientLoginSuccess(
     fetch_canceler_ = NULL;
   }
 
+  if (attempt_->hosted_policy() == GaiaAuthFetcher::HostedAccountsAllowed &&
+      attempt_->is_first_time_user()) {
+    // First time user, and we don't know if the account is HOSTED or not.
+    // Since we don't allow HOSTED accounts to log in, we need to try
+    // again, without allowing HOSTED accounts.
+    //
+    // NOTE: we used to do this in the opposite order, so that we'd only
+    // try the HOSTED pathway if GOOGLE-only failed.  This breaks CAPTCHA
+    // handling, though.
+    attempt_->DisableHosted();
+    TryClientLogin();
+    return;
+  }
   TriggerResolve(credentials, LoginFailure::None());
 }
 
@@ -73,11 +86,26 @@ void OnlineAttempt::OnClientLoginFailure(
   if (error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
     if (try_again_) {
       try_again_ = false;
+      // TODO(cmasone): add UMA tracking for this to see if we can remove it.
       LOG(ERROR) << "Login attempt canceled!?!?  Trying again.";
       TryClientLogin();
       return;
     }
     LOG(ERROR) << "Login attempt canceled again?  Already retried...";
+  }
+
+  if (error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS &&
+      attempt_->is_first_time_user() &&
+      attempt_->hosted_policy() != GaiaAuthFetcher::HostedAccountsAllowed) {
+    // This was a first-time login, we already tried allowing HOSTED accounts
+    // and succeeded.  That we've failed with INVALID_GAIA_CREDENTIALS now
+    // indicates that the account is HOSTED.
+    LOG(WARNING) << "Rejecting valid HOSTED account.";
+    TriggerResolve(GaiaAuthConsumer::ClientLoginResult(),
+                   LoginFailure::FromNetworkAuthFailure(
+                       GoogleServiceAuthError(
+                           GoogleServiceAuthError::HOSTED_NOT_ALLOWED)));
+    return;
   }
 
   if (error.state() == GoogleServiceAuthError::TWO_FACTOR) {
@@ -104,7 +132,7 @@ void OnlineAttempt::TryClientLogin() {
       GaiaConstants::kContactsService,
       attempt_->login_token,
       attempt_->login_captcha,
-      GaiaAuthFetcher::HostedAccountsAllowed);
+      attempt_->hosted_policy());
 }
 
 void OnlineAttempt::CancelClientLogin() {

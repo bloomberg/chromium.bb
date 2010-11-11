@@ -10,6 +10,7 @@
 
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 
 namespace chromeos {
 
@@ -23,7 +24,8 @@ class AuthAttemptState {
                    const std::string& password,
                    const std::string& ascii_hash,
                    const std::string& login_token,
-                   const std::string& login_captcha);
+                   const std::string& login_captcha,
+                   const bool user_is_new);
 
   // Used to initalize for a screen unlock attempt.
   AuthAttemptState(const std::string& username, const std::string& ascii_hash);
@@ -37,6 +39,9 @@ class AuthAttemptState {
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       const LoginFailure& outcome);
 
+  // The next attempt will not allow HOSTED accounts to log in.
+  void DisableHosted();
+
   // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
   // so we can have a copy we're sure to own, and can make available
   // on the IO thread.  Must be called from the IO thread.
@@ -49,6 +54,8 @@ class AuthAttemptState {
   virtual bool online_complete();
   virtual const LoginFailure& online_outcome();
   virtual const GaiaAuthConsumer::ClientLoginResult& credentials();
+  virtual bool is_first_time_user();
+  virtual GaiaAuthFetcher::HostedAccountsSetting hosted_policy();
 
   virtual bool cryptohome_complete();
   virtual bool cryptohome_outcome();
@@ -73,6 +80,11 @@ class AuthAttemptState {
   bool online_complete_;
   LoginFailure online_outcome_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
+
+  // Whether or not we're accepting HOSTED accounts during the current
+  // online auth attempt.
+  GaiaAuthFetcher::HostedAccountsSetting hosted_policy_;
+  bool is_first_time_user_;
 
   // Status of our cryptohome op attempt. Can only have one in flight at a time.
   bool cryptohome_complete_;

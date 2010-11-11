@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -71,12 +72,14 @@ bool ParallelAuthenticator::AuthenticateToLogin(
     const std::string& password,
     const std::string& login_token,
     const std::string& login_captcha) {
+  std::string canonicalized = Authenticator::Canonicalize(username);
   current_state_.reset(
-      new AuthAttemptState(Authenticator::Canonicalize(username),
+      new AuthAttemptState(canonicalized,
                            password,
                            HashPassword(password),
                            login_token,
-                           login_captcha));
+                           login_captcha,
+                           !UserManager::Get()->IsKnownUser(canonicalized)));
   mounter_ = CryptohomeOp::CreateMountAttempt(current_state_.get(),
                                               this,
                                               false /* don't create */);
@@ -118,7 +121,7 @@ bool ParallelAuthenticator::AuthenticateToUnlock(const std::string& username,
 }
 
 void ParallelAuthenticator::LoginOffTheRecord() {
-  current_state_.reset(new AuthAttemptState("", "", "", "", ""));
+  current_state_.reset(new AuthAttemptState("", "", "", "", "", false));
   guest_mounter_ =
       CryptohomeOp::CreateMountGuestAttempt(current_state_.get(), this);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -256,7 +259,8 @@ void ParallelAuthenticator::RetryAuth(Profile* profile,
                            password,
                            HashPassword(password),
                            login_token,
-                           login_captcha));
+                           login_captcha,
+                           false /* not a new user */));
   current_online_ = new OnlineAttempt(reauth_state_.get(), this);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

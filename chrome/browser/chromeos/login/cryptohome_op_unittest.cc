@@ -32,7 +32,7 @@ class CryptohomeOpTest : public ::testing::Test {
         io_thread_(BrowserThread::IO),
         username_("me@nowhere.org"),
         hash_ascii_("0a010000000000a0"),
-        state_(username_, "", hash_ascii_, "", ""),
+        state_(username_, "", hash_ascii_, "", "", false),
         resolver_(new MockAuthAttemptStateResolver),
         mock_library_(new MockCryptohomeLibrary) {
   }

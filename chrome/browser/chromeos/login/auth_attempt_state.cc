@@ -8,6 +8,7 @@
 
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "cros/chromeos_cryptohome.h"
 
 namespace chromeos {
@@ -16,7 +17,8 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
                                    const std::string& password,
                                    const std::string& ascii_hash,
                                    const std::string& login_token,
-                                   const std::string& login_captcha)
+                                   const std::string& login_captcha,
+                                   const bool user_is_new)
     : username(username),
       password(password),
       ascii_hash(ascii_hash),
@@ -25,6 +27,8 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       unlock(false),
       online_complete_(false),
       online_outcome_(LoginFailure::NONE),
+      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
+      is_first_time_user_(user_is_new),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
       cryptohome_code_(kCryptohomeMountErrorNone) {
@@ -38,6 +42,8 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       online_complete_(true),
       online_outcome_(LoginFailure::UNLOCK_FAILED),
       credentials_(GaiaAuthConsumer::ClientLoginResult()),
+      hosted_policy_(GaiaAuthFetcher::HostedAccountsAllowed),
+      is_first_time_user_(false),
       cryptohome_complete_(false),
       cryptohome_outcome_(false),
       cryptohome_code_(kCryptohomeMountErrorNone) {
@@ -52,6 +58,14 @@ void AuthAttemptState::RecordOnlineLoginStatus(
   online_complete_ = true;
   online_outcome_ = outcome;
   credentials_ = credentials;
+  // We're either going to not try again, or try again with HOSTED
+  // accounts not allowed, so just set this here.
+  DisableHosted();
+}
+
+void AuthAttemptState::DisableHosted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
 }
 
 void AuthAttemptState::RecordCryptohomeStatus(bool cryptohome_outcome,
@@ -82,6 +96,16 @@ const LoginFailure& AuthAttemptState::online_outcome() {
 const GaiaAuthConsumer::ClientLoginResult& AuthAttemptState::credentials() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return credentials_;
+}
+
+bool AuthAttemptState::is_first_time_user() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return is_first_time_user_;
+}
+
+GaiaAuthFetcher::HostedAccountsSetting AuthAttemptState::hosted_policy() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return hosted_policy_;
 }
 
 bool AuthAttemptState::cryptohome_complete() {

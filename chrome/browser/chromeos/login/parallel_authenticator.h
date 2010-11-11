@@ -97,6 +97,10 @@ class ParallelAuthenticator : public Authenticator,
   // Optionally could pass CAPTCHA challenge token - |login_token| and
   // |login_captcha| string that user has entered.
   //
+  // NOTE: We do not allow HOSTED accounts to log in.  In the event that
+  // we are asked to authenticate valid HOSTED account creds, we will
+  // call OnLoginFailure() with HOSTED_NOT_ALLOWED.
+  //
   // Returns true if the attempt gets sent successfully and false if not.
   bool AuthenticateToLogin(Profile* profile,
                            const std::string& username,

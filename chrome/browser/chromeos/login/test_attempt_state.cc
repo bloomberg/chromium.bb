@@ -15,12 +15,14 @@ TestAttemptState::TestAttemptState(const std::string& username,
                                    const std::string& password,
                                    const std::string& ascii_hash,
                                    const std::string& login_token,
-                                   const std::string& login_captcha)
+                                   const std::string& login_captcha,
+                                   const bool user_is_new)
     : AuthAttemptState(username,
                        password,
                        ascii_hash,
                        login_token,
-                       login_captcha) {
+                       login_captcha,
+                       user_is_new) {
 }
 
 TestAttemptState::TestAttemptState(const std::string& username,
@@ -36,6 +38,10 @@ void TestAttemptState::PresetOnlineLoginStatus(
   online_complete_ = true;
   online_outcome_ = outcome;
   credentials_ = credentials;
+}
+
+void TestAttemptState::DisableHosted() {
+  hosted_policy_ = GaiaAuthFetcher::HostedAccountsNotAllowed;
 }
 
 void TestAttemptState::PresetCryptohomeStatus(bool cryptohome_outcome,
