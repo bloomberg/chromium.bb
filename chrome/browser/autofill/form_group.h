@@ -69,6 +69,9 @@ class FormGroup {
 
   // Merges the field data in |form_group| with this FormGroup.
   void MergeWith(const FormGroup& form_group);
+
+  // Overwrites the field data in |form_group| with this FormGroup.
+  void OverwriteWith(const FormGroup& form_group);
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_FORM_GROUP_H_

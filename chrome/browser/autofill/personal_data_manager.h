@@ -67,8 +67,7 @@ class PersonalDataManager
   // field types that contain information in the FormStructures a profile will
   // be created with all of the information from recognized fields. Returns
   // whether a profile was created.
-  bool ImportFormData(const std::vector<FormStructure*>& form_structures,
-                      AutoFillManager* autofill_manager);
+  bool ImportFormData(const std::vector<FormStructure*>& form_structures);
 
   // Gets |imported_profile_| and |imported_credit_card_| and returns their
   // values in |profile| and |credit_card| parameters respectively.  One or

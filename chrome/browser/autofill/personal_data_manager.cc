@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
@@ -169,8 +168,7 @@ void PersonalDataManager::RemoveObserver(
 }
 
 bool PersonalDataManager::ImportFormData(
-    const std::vector<FormStructure*>& form_structures,
-    AutoFillManager* autofill_manager) {
+    const std::vector<FormStructure*>& form_structures) {
   // Parse the form and construct a profile based on the information that is
   // possible to import.
   int importable_fields = 0;
@@ -255,6 +253,13 @@ bool PersonalDataManager::ImportFormData(
 
   if (importable_credit_card_fields == 0)
     imported_credit_card_.reset();
+
+  if (imported_credit_card_.get()) {
+    if (!CreditCard::IsCreditCardNumber(imported_credit_card_->GetFieldText(
+          AutoFillType(CREDIT_CARD_NUMBER)))) {
+      imported_credit_card_.reset();
+    }
+  }
 
   // We always save imported profiles.
   SaveImportedProfile();
@@ -756,10 +761,13 @@ void PersonalDataManager::SaveImportedCreditCard() {
       merged = true;
     } else if ((*iter)->IntersectionOfTypesHasEqualValues(
         *imported_credit_card_)) {
-      // |imported_profile| contains all of the data in this profile, plus
-      // more.
+      // |imported_profile| contains all of the data in this profile, plus more.
       merged = true;
       (*iter)->MergeWith(*imported_credit_card_);
+    } else if (!imported_credit_card_->number().empty() &&
+               (*iter)->number() == imported_credit_card_->number()) {
+      merged = true;
+      (*iter)->OverwriteWith(*imported_credit_card_);
     }
 
     creditcards.push_back(**iter);

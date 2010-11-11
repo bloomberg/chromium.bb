@@ -19,7 +19,6 @@
 
 namespace {
 
-const string16::value_type kCreditCardSeparators[] = {' ','-',0};
 const char* kCreditCardObfuscationString = "************";
 
 const AutoFillFieldType kAutoFillCreditCardTypes[] = {
@@ -122,6 +121,16 @@ std::string GetCreditCardType(const string16& number) {
   }
 
   return kGenericCard;
+}
+
+// Return a version of |number| that has had any non-digit values removed.
+const string16 RemoveNonAsciiDigits(const string16& number) {
+  string16 stripped;
+  for (size_t i = 0; i < number.size(); ++i) {
+    if (IsAsciiDigit(number[i]))
+      stripped.append(1, number[i]);
+  }
+  return stripped;
 }
 
 }  // namespace
@@ -291,6 +300,10 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
       SetExpirationMonthFromString(value);
       break;
 
+    case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+      // This is a read-only attribute.
+      break;
+
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
       SetExpirationYearFromString(value);
       break;
@@ -404,8 +417,10 @@ bool CreditCard::operator!=(const CreditCard& credit_card) const {
 // Use the Luhn formula to validate the number.
 // static
 bool CreditCard::IsCreditCardNumber(const string16& text) {
-  string16 number;
-  RemoveChars(text, kCreditCardSeparators, &number);
+  string16 number = RemoveNonAsciiDigits(text);
+
+  if (number.empty())
+    return false;
 
   int sum = 0;
   bool odd = false;
@@ -474,6 +489,10 @@ void CreditCard::SetExpirationYearFromString(const string16& text) {
     return;
 
   set_expiration_year(year);
+}
+
+void CreditCard::set_number(const string16& number) {
+  number_ = RemoveNonAsciiDigits(number);
 }
 
 void CreditCard::set_expiration_month(int expiration_month) {

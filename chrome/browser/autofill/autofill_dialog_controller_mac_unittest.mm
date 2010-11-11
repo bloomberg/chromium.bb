@@ -271,7 +271,7 @@ TEST_F(AutoFillDialogControllerTest, CreditCardDataMutation) {
   ASSERT_TRUE(sheet != nil);
   AutoFillCreditCardModel* cm = [sheet creditCardModel];
   EXPECT_TRUE([[cm nameOnCard] isEqualToString:@"DCH"]);
-  EXPECT_TRUE([[cm creditCardNumber] isEqualToString:@"1234 5678 9101 1121"]);
+  EXPECT_TRUE([[cm creditCardNumber] isEqualToString:@"1234567891011121"]);
   EXPECT_TRUE([[cm expirationMonth] isEqualToString:@"01"]);
   EXPECT_TRUE([[cm expirationYear] isEqualToString:@"2012"]);
 

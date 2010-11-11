@@ -500,7 +500,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   update.push_back(profile2);
   personal_data_->SetProfiles(&update);
 
-  // And wait for the refresh.
+  // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
       OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
 
@@ -526,9 +526,9 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  personal_data_->ImportFormData(forms, NULL);
+  personal_data_->ImportFormData(forms);
 
-  // And wait for the refresh.
+  // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
       OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
 
@@ -622,9 +622,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   scoped_ptr<std::vector<FormStructure*> > forms(
       new std::vector<FormStructure*>);
   forms->push_back(form_structure.get());
-  personal_data_->ImportFormData(*forms, NULL);
+  personal_data_->ImportFormData(*forms);
 
-  // And wait for the refresh.
+  // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
       OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
 
@@ -654,9 +654,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   form_structure.reset(new FormStructure(*form));
   forms.reset(new std::vector<FormStructure*>);
   forms->push_back(form_structure.get());
-  personal_data_->ImportFormData(*forms, NULL);
+  personal_data_->ImportFormData(*forms);
 
-  // And wait for the refresh.
+  // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
       OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
 
@@ -701,9 +701,9 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   form_structure.reset(new FormStructure(*form));
   forms.reset(new std::vector<FormStructure*>);
   forms->push_back(form_structure.get());
-  personal_data_->ImportFormData(*forms, NULL);
+  personal_data_->ImportFormData(*forms);
 
-  // And wait for the refresh.
+  // Wait for the refresh.
   EXPECT_CALL(personal_data_observer_,
       OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
 
@@ -724,3 +724,428 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
       NULL, NULL);
   EXPECT_EQ(0, expected->Compare(*results3[1]));
 }
+
+TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
+  FormData form1;
+
+  // Start with a single valid credit card form.
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure1);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected;
+  autofill_test::SetCreditCardInfo(&expected,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+
+  // Add a second different valid credit card.
+  FormData form2;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Jim Johansen", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "5500 0000 0000 0004", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "02", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2012", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  forms.clear();
+  forms.push_back(&form_structure2);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected2;
+  autofill_test::SetCreditCardInfo(&expected2,
+      "L2", "Jim Johansen", "5500000000000004", "02", "2012");
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(2U, results2.size());
+  EXPECT_EQ(0, expected.Compare(*results2[0]));
+  EXPECT_EQ(0, expected2.Compare(*results2[1]));
+}
+
+TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
+  FormData form1;
+
+  // Start with a single valid credit card form.
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure1);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected;
+  autofill_test::SetCreditCardInfo(&expected,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+
+  // Add a second different invalid credit card.
+  FormData form2;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Jim Johansen", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "1000000000000000", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "02", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2012", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  forms.clear();
+  forms.push_back(&form_structure2);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Note: no refresh here.
+
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, expected.Compare(*results2[0]));
+}
+
+TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
+  FormData form1;
+
+  // Start with a single valid credit card form.
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure1);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected;
+  autofill_test::SetCreditCardInfo(&expected,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+
+  // Add a second different valid credit card where the year is different but
+  // the credit card number matches.
+  FormData form2;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111 1111 1111 1111", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2012", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  forms.clear();
+  forms.push_back(&form_structure2);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  // Expect that the newer information is saved.  In this case the year is
+  // updated to "2012".
+  CreditCard expected2;
+  autofill_test::SetCreditCardInfo(&expected2,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2012");
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, expected2.Compare(*results2[0]));
+}
+
+TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
+  FormData form1;
+
+  // Start with a single valid credit card form.
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure1);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected;
+  autofill_test::SetCreditCardInfo(&expected,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+
+  // Add a second credit card with no number.
+  FormData form2;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2012", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  forms.clear();
+  forms.push_back(&form_structure2);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Note: no refresh here.
+
+  // No change is expected.
+  CreditCard expected2;
+  autofill_test::SetCreditCardInfo(&expected2,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, expected2.Compare(*results2[0]));
+}
+
+TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
+  FormData form1;
+
+  // Start with a single valid credit card form.
+  webkit_glue::FormField field;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure1);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected;
+  autofill_test::SetCreditCardInfo(&expected,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+
+  // Add a second different valid credit card where the name is missing but
+  // the credit card number matches.
+  FormData form2;
+  // Note missing name.
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111111111111111", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  forms.clear();
+  forms.push_back(&form_structure2);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  // No change is expected.
+  CreditCard expected2;
+  autofill_test::SetCreditCardInfo(&expected2,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, expected2.Compare(*results2[0]));
+}
+
+TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
+  FormData form1;
+
+  // Start with a single valid credit card form.
+  webkit_glue::FormField field;
+  // Note missing name.
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form1.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form1.fields.push_back(field);
+
+  FormStructure form_structure1(form1);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure1);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  CreditCard expected;
+  autofill_test::SetCreditCardInfo(&expected,
+      "L1", NULL, "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, expected.Compare(*results[0]));
+
+  // Add a second different valid credit card where the year is different but
+  // the credit card number matches.
+  FormData form2;
+  autofill_test::CreateTestFormField(
+      "Name on card:", "name_on_card", "Biggie Smalls", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Card Number:", "card_number", "4111-1111-1111-1111", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Month:", "exp_month", "01", "text", &field);
+  form2.fields.push_back(field);
+  autofill_test::CreateTestFormField(
+      "Exp Year:", "exp_year", "2011", "text", &field);
+  form2.fields.push_back(field);
+
+  FormStructure form_structure2(form2);
+  forms.clear();
+  forms.push_back(&form_structure2);
+  personal_data_->ImportFormData(forms);
+  personal_data_->SaveImportedCreditCard();
+
+  // Wait for the refresh.
+  EXPECT_CALL(personal_data_observer_,
+      OnPersonalDataLoaded()).WillOnce(QuitUIMessageLoop());
+
+  MessageLoop::current()->Run();
+
+  // Expect that the newer information is saved.  In this case the year is
+  // added to the existing credit card.
+  CreditCard expected2;
+  autofill_test::SetCreditCardInfo(&expected2,
+      "L1", "Biggie Smalls", "4111111111111111", "01", "2011");
+  const std::vector<CreditCard*>& results2 = personal_data_->credit_cards();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, expected2.Compare(*results2[0]));
+}
+

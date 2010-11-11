@@ -133,6 +133,9 @@ bool ImportSingleProfile(FormGroup* profile,
     string16 field_value = ReadAndDecryptValue(key, value_name.c_str());
     if (!field_value.empty()) {
       has_non_empty_fields = true;
+      if (it->second == CREDIT_CARD_NUMBER) {
+        field_value = DecryptCCNumber(field_value);
+      }
       profile->SetInfo(AutoFillType(it->second), field_value);
     }
   }
@@ -237,12 +240,6 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
       if (ImportSingleProfile(&credit_card, &key, reg_to_field)) {
         string16 cc_number = credit_card.GetFieldText(
             AutoFillType(CREDIT_CARD_NUMBER));
-
-        if (!cc_number.empty()) {
-          // No additional password, and CC# is not empty, decrypt CC#.
-          cc_number = DecryptCCNumber(cc_number);
-        }
-        credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER), cc_number);
         if (!cc_number.empty())
           credit_cards->push_back(credit_card);
       }

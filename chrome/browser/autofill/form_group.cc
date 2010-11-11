@@ -76,3 +76,13 @@ void FormGroup::MergeWith(const FormGroup& form_group) {
     SetInfo(type, form_group.GetFieldText(type));
   }
 }
+
+void FormGroup::OverwriteWith(const FormGroup& form_group) {
+  FieldTypeSet a;;
+  form_group.GetAvailableFieldTypes(&a);
+
+  for (FieldTypeSet::const_iterator iter = a.begin(); iter != a.end(); ++iter) {
+    AutoFillType type(*iter);
+    SetInfo(type, form_group.GetFieldText(type));
+  }
+}

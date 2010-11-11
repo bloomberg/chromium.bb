@@ -70,6 +70,9 @@ class CreditCard : public FormGroup {
   // Returns true if there are no values (field types) set.
   bool IsEmpty() const;
 
+  // Returns the credit card number.
+  const string16& number() const { return number_; }
+
  private:
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
@@ -84,13 +87,12 @@ class CreditCard : public FormGroup {
   // Sets |expiration_year_| to the integer conversion of |text|.
   void SetExpirationYearFromString(const string16& text);
 
-  const string16& number() const { return number_; }
   const string16& name_on_card() const { return name_on_card_; }
   const string16& last_four_digits() const { return last_four_digits_; }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
 
-  void set_number(const string16& number) { number_ = number; }
+  void set_number(const string16& number);
   void set_name_on_card(const string16& name_on_card) {
     name_on_card_ = name_on_card;
   }

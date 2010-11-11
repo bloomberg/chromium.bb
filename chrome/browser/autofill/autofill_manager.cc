@@ -409,7 +409,7 @@ void AutoFillManager::HandleSubmit() {
   // require querying the FormManager for updated field values.
   std::vector<FormStructure*> import;
   import.push_back(upload_form_structure_.get());
-  if (!personal_data_->ImportFormData(import, this))
+  if (!personal_data_->ImportFormData(import))
     return;
 
   // Did we get credit card info?
