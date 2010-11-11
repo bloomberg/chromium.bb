@@ -353,6 +353,12 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
                                       gtk_image_new_from_pixbuf(pixbuf));
         g_object_unref(pixbuf);
+
+#if GTK_CHECK_VERSION(2,16,0)
+        // Show the image even if the "gtk-menu-images" setting is turned off.
+        gtk_image_menu_item_set_always_show_image(
+            GTK_IMAGE_MENU_ITEM(menu_item), TRUE);
+#endif
       } else {
         menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
       }
