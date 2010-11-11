@@ -13,10 +13,8 @@
 
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/plugin.h"
+#include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
-#include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/file_io_dev.h"
-#include "ppapi/cpp/dev/url_loader_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 
@@ -70,6 +68,7 @@ class PluginPpapi : public pp::Instance, public Plugin {
 
   // Support for proxied execution.
   virtual void StartProxiedExecution(NaClSrpcChannel* srpc_channel);
+
   // Getter for PPAPI proxy interface.
   ppapi_proxy::BrowserPpp* ppapi_proxy() const { return ppapi_proxy_; }
 
@@ -82,23 +81,32 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // pointer to this object, not from base's Delete().
   virtual ~PluginPpapi();
 
-  // Nexe url loading support.
-  // Our goal is to have the browser download the file and give us an open
-  // file descriptor that we can pass to sel_ldr with the sandbox on.
-  // This is accomplished with a 3-step process:
-  // 1) Ask the browser to start streaming nexe as a file.
-  // 2) Ask the browser to finish streaming if headers indicate success.
-  // 3) Ask the browser to open the file, so we can get the file descriptor.
-  // Each step is done asynchronously using callbacks.
-  // We create callbacks through a factory to take advantage of ref-counting.
-  // TODO(polina): Add a file-download wrapper for all this to ppapi repo. This
-  // will remove the intermediate functions and member variables from our code.
-  void NexeURLLoadStartNotify(int32_t pp_error);
-  void NexeURLLoadFinishNotify(int32_t pp_error);
-  void NexeFileOpenNotify(int32_t pp_error);
-  pp::FileIO_Dev nexe_reader_;
-  pp::URLLoader_Dev nexe_loader_;
+  // File download support.  |url_downloader_| can be opened with a specific
+  // callback to run when the file has been downloaded and is opened for
+  // reading.  We use one RemoteFile downloader for all URL downloads to
+  // prevent issuing multiple GETs that might arrive out of order.  For example,
+  // this will prevent a GET of a NaCl manifest while a .nexe GET is pending.
+  // Note that this will also prevent simultaneous handling of multiple
+  // .nexes on a page.
+  FileDownloader url_downloader_;
   pp::CompletionCallbackFactory<PluginPpapi> callback_factory_;
+
+  // Callback used when getting the URL for the .nexe file.  If the URL loading
+  // is successful, the file descriptor is opened and can be passed to sel_ldr
+  // with the sandbox on.
+  void NexeFileDidOpen(int32_t pp_error);
+
+  // NaCl ISA selection manifest file support.  The manifest file is specified
+  // using the "nacl" attribute in the <embed> tag.  First, the manifest URL (or
+  // data: URI) is fetched, then the JSON is parsed.  Once a valid .nexe is
+  // chosen for the sandbox ISA, any current service runtime is shut down, the
+  // .nexe is loaded and run.
+
+  // Requests a NaCl manifest download from a |url| relative to the page origin.
+  // Returns false on failure.
+  bool RequestNaClManifest(const nacl::string& url);
+  // Callback used when getting the URL for the NaCl manifest file.
+  void NaClManifestFileDidOpen(int32_t pp_error);
 
   // Parses the JSON pointed at by |nexe_manifest_json| and determines the URL
   // of the nexe module appropriate for the NaCl sandbox implemented by the

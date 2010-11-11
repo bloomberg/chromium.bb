@@ -73,6 +73,7 @@
       'ppapi/array_ppapi.cc',
       'ppapi/browser_interface_ppapi.cc',
       'ppapi/plugin_ppapi.cc',
+      'ppapi/file_downloader.cc',
       'ppapi/scriptable_handle_ppapi.cc',
       'ppapi/var_utils.cc',
     ],

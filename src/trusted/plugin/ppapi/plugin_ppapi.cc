@@ -19,11 +19,6 @@
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/dev/ppb_file_io_dev.h"
-#include "ppapi/cpp/common.h"
-#include "ppapi/cpp/dev/file_ref_dev.h"
-#include "ppapi/cpp/dev/url_request_info_dev.h"
-#include "ppapi/cpp/dev/url_response_info_dev.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 
@@ -81,18 +76,25 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
       const_cast<char**>(argn),
       const_cast<char**>(argv));
   if (status) {
-    const char* src_attr = LookupArgument(kSrcAttribute);
-    PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
-    if (src_attr != NULL) {
-      status = SetSrcPropertyImpl(src_attr);
+    // Note: The order of attribute lookup is important.  This pattern looks
+    // for a "nacl" attribute first, then a "src" attribute, and finally a
+    // "nexes" attribute.
+    const char* nacl_attr = LookupArgument(kNaclManifestAttribute);
+    PLUGIN_PRINTF(("PluginPpapi::Init (nacl_attr=%s)\n", nacl_attr));
+    if (nacl_attr != NULL) {
+      // Issue a GET for the "nacl" attribute.  The value of the attribute
+      // can be a data: URI, or a URL that must be fetched.  In either case,
+      // the GET is started here, and once a valid .nexe file has been
+      // determined, SetSrcPropertyImpl() is called to shut down the current
+      // service runtime (sel_ldr) process and start the download of the new
+      // .nexe.  If the download is successful, a new service runtime starts
+      // and runs the new .nexe.
+      status = RequestNaClManifest(nacl_attr);
     } else {
-      // If there was no "src" attribute, then look for a "nacl" attribute
-      // and try to load the ISA defined for this particular sandbox.
-      const char* nacl_attr = LookupArgument(kNaclManifestAttribute);
-      PLUGIN_PRINTF(("PluginPpapi::Init (nacl_attr=%s)\n", nacl_attr));
-      if (nacl_attr != NULL) {
-        // TODO(dspringer): if this is a data URI, then grab the JSON from it,
-        // otherwise, issue a GET for the URL.
+      const char* src_attr = LookupArgument(kSrcAttribute);
+      PLUGIN_PRINTF(("PluginPpapi::Init (src_attr=%s)\n", src_attr));
+      if (src_attr != NULL) {
+        status = SetSrcPropertyImpl(src_attr);
       } else {
         // If there was no "src" or "nacl" attributes, then look for a "nexes"
         // attribute and try to load the ISA defined for this particular
@@ -117,6 +119,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
       ppapi_proxy_(NULL) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId64")\n", static_cast<void*>(this), pp_instance));
+  url_downloader_.Initialize(this);
   callback_factory_.Initialize(this);
 }
 
@@ -249,121 +252,29 @@ pp::Var PluginPpapi::GetInstanceObject() {
 }
 
 
-void PluginPpapi::NexeURLLoadStartNotify(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadStartNotify (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {  // Url loading failed.
-    return;
-  }
-
-  // Process the response, validating the headers to confirm successful loading.
-  pp::URLResponseInfo_Dev url_response(nexe_loader_.GetResponseInfo());
-  if (url_response.is_null()) {
-    PLUGIN_PRINTF((
-        "PluginPpapi::NexeURLLoadStartNotify (url_response=NULL)\n"));
-    return;
-  }
-  int32_t status_code = url_response.GetStatusCode();
-  PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadStartNotify (status_code=%"
-                 NACL_PRId32")\n", status_code));
-  if (status_code != NACL_HTTP_STATUS_OK) {
-    return;
-  }
-
-  // Finish streaming the body asynchronously providing a callback.
-  pp::CompletionCallback onload_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NexeURLLoadFinishNotify);
-  pp_error = nexe_loader_.FinishStreamingToFile(onload_callback);
-  bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
-  PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadStartNotify (async_notify_ok=%d)\n",
-                 async_notify_ok));
-  if (!async_notify_ok) {
-    onload_callback.Run(pp_error);  // Call manually to free allocated memory.
-  }
-}
-
-
-void PluginPpapi::NexeURLLoadFinishNotify(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadFinishNotify (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {  // Streaming failed.
-    return;
-  }
-
-  pp::URLResponseInfo_Dev url_response(nexe_loader_.GetResponseInfo());
-  CHECK(url_response.GetStatusCode() == NACL_HTTP_STATUS_OK);
-
-  // Record the full url from the response.
-  pp::Var full_url = url_response.GetURL();
-  PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadFinishNotify (full_url=%s)\n",
-                 full_url.DebugString().c_str()));
-  if (!full_url.is_string()) {
-    return;
-  }
-  set_nacl_module_url(full_url.AsString());
-
-  // The file is now fully downloaded.
-  pp::FileRef_Dev file(url_response.GetBody());
-  if (file.is_null()) {
-    PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadFinishNotify (file=NULL)\n"));
-    return;
-  }
-
-  // Open the file asynchronously providing a callback.
-  pp::CompletionCallback onopen_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NexeFileOpenNotify);
-  pp_error = nexe_reader_.Open(file, PP_FILEOPENFLAG_READ, onopen_callback);
-  bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
-  PLUGIN_PRINTF(("PluginPpapi::NexeURLLoadFinishNotify (async_notify_ok=%d)\n",
-                 async_notify_ok));
-  if (!async_notify_ok) {
-    onopen_callback.Run(pp_error);  // Call manually to free allocated memory.
-  }
-}
-
-
-void PluginPpapi::NexeFileOpenNotify(int32_t pp_error) {
-  PLUGIN_PRINTF(("PluginPpapi::NexeFileOpenNotify (pp_error=%"NACL_PRId32")\n",
+void PluginPpapi::NexeFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("PluginPpapi::RemoteFileDidOpen (pp_error=%"NACL_PRId32")\n",
                  pp_error));
-  if (pp_error != PP_OK) {  // File opening failed.
+  if (pp_error != PP_OK) {
     return;
   }
-
-  int32_t file_desc = nexe_reader_.GetOSFileDescriptor();
-  PLUGIN_PRINTF(("PluginPpapi::NexeFileOpenNotify (file_desc=%"NACL_PRId32")\n",
+  int32_t file_desc = url_downloader_.GetOSFileDescriptor();
+  PLUGIN_PRINTF(("PluginPpapi::RemoteFileDidOpen (file_desc=%"NACL_PRId32")\n",
                  file_desc));
   if (file_desc > NACL_NO_FILE_DESC) {
-    LoadNaClModule(nacl_module_url(), file_desc);
+    LoadNaClModule(url_downloader_.url(), file_desc);
   }
 }
 
 
 bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (url='%s')\n", url.c_str()));
-
-  // Reset the url loader and file reader.
-  // Note that we have the only refernce to the underlying objects, so
-  // this will implicitly close any pending IO and destroy them.
-  nexe_loader_ = pp::URLLoader_Dev(*this);
-  nexe_reader_ = pp::FileIO_Dev();
-
-  // Prepare the url request using a relative url.
-  pp::URLRequestInfo_Dev url_request;
-  url_request.SetURL(url);
-  url_request.SetStreamToFile(true);
-
-  // Request asynchronous download of the url providing an on-load callback.
-  pp::CompletionCallback onload_callback =
-      callback_factory_.NewCallback(&PluginPpapi::NexeURLLoadStartNotify);
-  int32_t pp_error = nexe_loader_.Open(url_request, onload_callback);
-  bool async_notify_ok = (pp_error == PP_ERROR_WOULDBLOCK);
-  PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (async_notify_ok=%d)\n",
-                 async_notify_ok));
-  if (!async_notify_ok) {
-    onload_callback.Run(pp_error);  // Call manually to free allocated memory.
-    return false;
-  }
-  return true;
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&PluginPpapi::NexeFileDidOpen);
+  // If an error occurs during Open(), |open_callback| will be called with the
+  // appropriate error value.  If the URL loading started up OK, then
+  // |open_callback| will be called later on as the URL loading progresses.
+  return url_downloader_.Open(url, open_callback);
 }
 
 
@@ -418,6 +329,35 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
     return;
   }
 }
+
+
+void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(
+      ("PluginPpapi::NaClManifestFileDidOpen (pp_error=%"NACL_PRId32")\n",
+       pp_error));
+  if (pp_error != PP_OK) {
+    return;
+  }
+  int32_t file_desc = url_downloader_.GetOSFileDescriptor();
+  PLUGIN_PRINTF(
+      ("PluginPpapi::NaClManifestFileDidOpen (file_desc=%"NACL_PRId32")\n",
+       file_desc));
+  // TODO(dspringer): Grab the JSON from file_desc and call
+  // SelectNexeURLFromManifest().  On success, call SetSrcPropertyImpl().
+  NACL_UNIMPLEMENTED();
+}
+
+
+bool PluginPpapi::RequestNaClManifest(const nacl::string& url) {
+  PLUGIN_PRINTF(("PluginPpapi::RequestNaClManifest (url='%s')\n", url.c_str()));
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&PluginPpapi::NaClManifestFileDidOpen);
+  // If an error occurs during Open(), |open_callback| will be called with the
+  // appropriate error value.  If the URL loading started up OK, then
+  // |open_callback| will be called later on as the URL loading progresses.
+  return url_downloader_.Open(url, open_callback);
+}
+
 
 bool PluginPpapi::SelectNexeURLFromManifest(
     const nacl::string& nexe_manifest_json, nacl::string* result) {
