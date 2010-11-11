@@ -18,6 +18,7 @@ ppapi_basic_object_inputs = [
 basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
                                           ppapi_basic_object_inputs,
                                           EXTRA_LIBS=['google_nacl_imc',
+                                                      'google_nacl_platform',
                                                       'ppruntime',
                                                       'pthread',
                                                       'srpc'])
