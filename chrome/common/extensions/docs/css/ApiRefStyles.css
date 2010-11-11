@@ -1370,3 +1370,10 @@ table.noborders td {
   float:none
 }
 
+#gc-toc div.line {
+  border-top: thin dotted #bbb;
+  height: 1px;
+  margin: 1.3em 1em 0 0;
+  padding: 0;
+}
+
