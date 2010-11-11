@@ -32,6 +32,12 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kCookieBehavior,
     prefs::kDefaultCharset,
     prefs::kDefaultZoomLevel,
+    prefs::kDeleteBrowsingHistory,
+    prefs::kDeleteCache,
+    prefs::kDeleteCookies,
+    prefs::kDeleteDownloadHistory,
+    prefs::kDeleteFormData,
+    prefs::kDeletePasswords,
     prefs::kDnsPrefetchingEnabled,
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
     prefs::kCertRevocationCheckingEnabled,
