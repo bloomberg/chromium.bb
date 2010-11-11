@@ -8,19 +8,14 @@
 
 #include "views/view.h"
 
-class BrowserView;
 class TabContents;
-
-namespace views {
-class Widget;
-}
 
 // ContentsContainer is responsible for managing the TabContents views.
 // ContentsContainer has up to two children: one for the currently active
 // TabContents and one for instant's TabContents.
 class ContentsContainer : public views::View {
  public:
-  ContentsContainer(BrowserView* browser_view, views::View* active);
+  explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
 
   // Makes the preview view the active view and nulls out the old active view.
@@ -44,37 +39,11 @@ class ContentsContainer : public views::View {
   virtual void Layout();
 
  private:
-#if defined(OS_WIN)
-  class TearWindow;
-#else
-  typedef views::Widget TearWindow;
-#endif
-
-  // Creates and configures the tear window.
-  void CreateTearWindow();
-
-  // Creates and returns a new TearWindow.
-  TearWindow* CreateTearWindowImpl();
-
-  // Resets the bounds of the tear window.
-  void PositionTearWindow();
-
-  // Closes and deletes the tear window.
-  void DeleteTearWindow();
-
-  // Invoked when the tear window is destroyed.
-  void TearWindowDestroyed();
-
-  BrowserView* browser_view_;
-
   views::View* active_;
 
   views::View* preview_;
 
   TabContents* preview_tab_contents_;
-
-  // Window used to show the page tear.
-  TearWindow* tear_window_;
 
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.
