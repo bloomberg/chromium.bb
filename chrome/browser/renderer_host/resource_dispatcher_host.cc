@@ -1141,8 +1141,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status &&
-           (request->ssl_info().security_bits == -1 ||
-            request->ssl_info().security_bits == 0) &&
+           request->ssl_info().security_bits == -1 &&
            !request->ssl_info().connection_status);
   }
 

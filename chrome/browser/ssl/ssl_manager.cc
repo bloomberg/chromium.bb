@@ -79,8 +79,9 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
   if (state.empty()) {
     // No SSL used.
     *cert_id = 0;
+    // The following are not applicable and are set to the default values.
     *cert_status = 0;
-    *security_bits = 0;  // Not encrypted.
+    *security_bits = -1;
     *ssl_connection_status = 0;
     return false;
   }

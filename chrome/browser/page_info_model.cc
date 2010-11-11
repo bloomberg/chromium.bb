@@ -161,12 +161,20 @@ PageInfoModel::PageInfoModel(Profile* profile,
   icon_id = ICON_STATE_OK;
   headline.clear();
   description.clear();
-  if (ssl.security_bits() < 0) {
+  if (!ssl.cert_id()) {
+    // Not HTTPS.
+    DCHECK_EQ(ssl.security_style(), SECURITY_STYLE_UNAUTHENTICATED);
+    icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+        ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
+    description.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
+        subject_name));
+  } else if (ssl.security_bits() < 0) {
     // Security strength is unknown.  Say nothing.
     icon_id = ICON_STATE_ERROR;
   } else if (ssl.security_bits() == 0) {
-    icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
-        ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
+    DCHECK_NE(ssl.security_style(), SECURITY_STYLE_UNAUTHENTICATED);
+    icon_id = ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
