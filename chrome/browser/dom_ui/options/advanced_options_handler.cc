@@ -266,10 +266,10 @@ void AdvancedOptionsHandler::RegisterMessages() {
     dom_ui_->RegisterMessageCallback("showCloudPrintManagePage",
         NewCallback(this,
                     &AdvancedOptionsHandler::ShowCloudPrintManagePage));
-    dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
-        NewCallback(this,
-                    &AdvancedOptionsHandler::ShowNetworkProxySettings));
   }
+  dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::ShowNetworkProxySettings));
 #endif
 
 #if defined(OS_WIN)
