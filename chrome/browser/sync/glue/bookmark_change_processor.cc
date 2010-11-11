@@ -59,8 +59,8 @@ void BookmarkChangeProcessor::UpdateSyncNodeProperties(
 
 // static
 void BookmarkChangeProcessor::EncodeFavicon(const BookmarkNode* src,
-                                              BookmarkModel* model,
-                                              std::vector<unsigned char>* dst) {
+                                            BookmarkModel* model,
+                                            std::vector<unsigned char>* dst) {
   const SkBitmap& favicon = model->GetFavIcon(src);
 
   dst->clear();
@@ -508,6 +508,17 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
   if (icon_bytes_vector.empty())
     return false;
 
+  ApplyBookmarkFavicon(bookmark_node, profile, icon_bytes_vector);
+
+  return true;
+}
+
+// static
+// Applies the given favicon bytes vector to the given bookmark node.
+void BookmarkChangeProcessor::ApplyBookmarkFavicon(
+    const BookmarkNode* bookmark_node,
+    Profile* profile,
+    const std::vector<unsigned char>& icon_bytes_vector) {
   // Registering a favicon requires that we provide a source URL, but we
   // don't know where these came from.  Currently we just use the
   // destination URL, which is not correct, but since the favicon URL
@@ -524,8 +535,6 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
   favicon_service->SetFavicon(bookmark_node->GetURL(),
                               fake_icon_url,
                               icon_bytes_vector);
-
-  return true;
 }
 
 // static

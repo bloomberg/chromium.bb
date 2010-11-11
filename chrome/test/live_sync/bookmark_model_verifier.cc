@@ -11,8 +11,60 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+// Helper class used to wait for the favicon of a particular bookmark node in
+// a particular bookmark model to load.
+class FaviconLoadObserver : public BookmarkModelObserver {
+ public:
+  FaviconLoadObserver(BookmarkModel* model, const BookmarkNode* node)
+      : model_(model),
+        node_(node) {
+    model->AddObserver(this);
+  }
+  virtual ~FaviconLoadObserver() {
+    model_->RemoveObserver(this);
+  }
+  void WaitForFaviconLoad() { ui_test_utils::RunMessageLoop(); }
+  virtual void Loaded(BookmarkModel* model) {}
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) {}
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) {}
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) {}
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) {
+    if (model == model_ && node == node_)
+      model->GetFavIcon(node);
+  }
+  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                             const BookmarkNode* node) {}
+  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+                                         const BookmarkNode* node) {
+    if (model == model_ && node == node_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  BookmarkModel* model_;
+  const BookmarkNode* node_;
+  DISALLOW_COPY_AND_ASSIGN(FaviconLoadObserver);
+};
+
+}
 
 // static
 bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
@@ -30,8 +82,7 @@ bool BookmarkModelVerifier::NodesMatch(const BookmarkNode* node_a,
 
 // static
 bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
-                                        BookmarkModel* model_b,
-                                        bool compare_favicons) {
+                                        BookmarkModel* model_b) {
   bool ret_val = true;
   TreeNodeIterator<const BookmarkNode> iterator_a(model_a->root_node());
   TreeNodeIterator<const BookmarkNode> iterator_b(model_b->root_node());
@@ -40,11 +91,9 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
     EXPECT_TRUE(iterator_b.has_next());
     const BookmarkNode* node_b = iterator_b.Next();
     ret_val = ret_val && NodesMatch(node_a, node_b);
-    if (compare_favicons) {
-      const SkBitmap& bitmap_a = model_a->GetFavIcon(node_a);
-      const SkBitmap& bitmap_b = model_b->GetFavIcon(node_b);
-      ret_val = ret_val && FaviconsMatch(bitmap_a, bitmap_b);
-    }
+    const SkBitmap& bitmap_a = model_a->GetFavIcon(node_a);
+    const SkBitmap& bitmap_b = model_b->GetFavIcon(node_b);
+    ret_val = ret_val && FaviconsMatch(bitmap_a, bitmap_b);
   }
   ret_val = ret_val && (!iterator_b.has_next());
   return ret_val;
@@ -52,8 +101,9 @@ bool BookmarkModelVerifier::ModelsMatch(BookmarkModel* model_a,
 
 bool BookmarkModelVerifier::FaviconsMatch(const SkBitmap& bitmap_a,
                                           const SkBitmap& bitmap_b) {
-  if ((bitmap_a.getSize() == (size_t) 0) ||
-      (bitmap_a.getSize() != bitmap_b.getSize()) ||
+  if (bitmap_a.getSize() == 0U && bitmap_a.getSize() == 0U)
+    return true;
+  if ((bitmap_a.getSize() != bitmap_b.getSize()) ||
       (bitmap_a.width() != bitmap_b.width()) ||
       (bitmap_a.height() != bitmap_b.height()))
     return false;
@@ -133,7 +183,9 @@ void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
 }
 
 const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
-    const BookmarkNode* parent, int index, const string16& title) {
+                                                    const BookmarkNode* parent,
+                                                    int index,
+                                                    const string16& title) {
   const BookmarkNode* result = model->AddGroup(parent, index, title);
   EXPECT_TRUE(result);
   if (!result)
@@ -182,6 +234,24 @@ void BookmarkModelVerifier::SetTitle(BookmarkModel* model,
     verifier_model_->SetTitle(v_node, title);
   }
   model->SetTitle(node, title);
+}
+
+void BookmarkModelVerifier::SetFavicon(
+    BookmarkModel* model,
+    const BookmarkNode* node,
+    const std::vector<unsigned char>& icon_bytes_vector) {
+  if (use_verifier_model_) {
+    const BookmarkNode* v_node = NULL;
+    FindNodeInVerifier(model, node, &v_node);
+    FaviconLoadObserver v_observer(verifier_model_, v_node);
+    browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
+        v_node, verifier_model_->profile(), icon_bytes_vector);
+    v_observer.WaitForFaviconLoad();
+  }
+  FaviconLoadObserver observer(model, node);
+  browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
+      node, model->profile(), icon_bytes_vector);
+  observer.WaitForFaviconLoad();
 }
 
 void BookmarkModelVerifier::Move(BookmarkModel* model,

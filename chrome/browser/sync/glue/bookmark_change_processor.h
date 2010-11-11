@@ -77,6 +77,14 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                                  const BookmarkNode* bookmark_node,
                                  Profile* profile);
 
+  // Applies the favicon data in |icon_bytes_vector| to |bookmark_node|.
+  // |profile| is the profile that contains the HistoryService and BookmarkModel
+  // for the bookmark in question.
+  static void ApplyBookmarkFavicon(
+      const BookmarkNode* bookmark_node,
+      Profile* profile,
+      const std::vector<unsigned char>& icon_bytes_vector);
+
   // Sets the favicon of the given sync node from the given bookmark node.
   static void SetSyncNodeFavicon(const BookmarkNode* bookmark_node,
                                  BookmarkModel* model,

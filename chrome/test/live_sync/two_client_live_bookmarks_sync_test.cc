@@ -32,6 +32,14 @@ static std::wstring IndexedSubsubfolderName(int i) {
   return StringPrintf(L"Subsubfolder Name %d", i);
 }
 
+const std::vector<unsigned char> GenericFavicon() {
+  return LiveBookmarksSyncTest::CreateFavicon(254);
+}
+
+const std::vector<unsigned char> IndexedFavicon(int i) {
+  return LiveBookmarksSyncTest::CreateFavicon(i);
+}
+
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
@@ -108,6 +116,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_TRUE(AddURL(0, kGenericURLTitle, GURL(kGenericURL)) != NULL);
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(AllModelsMatchVerifier());
+}
+
+// Test Scribe ID - 370489.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+                       SC_AddFirstBMWithFavicon) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, GURL(kGenericURL));
+  ASSERT_TRUE(bookmark != NULL);
+  SetFavicon(0, bookmark, GenericFavicon());
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(AllModelsMatchVerifier());
 }
