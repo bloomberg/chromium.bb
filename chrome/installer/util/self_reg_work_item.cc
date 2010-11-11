@@ -26,6 +26,9 @@ SelfRegWorkItem::~SelfRegWorkItem() {
 }
 
 bool SelfRegWorkItem::RegisterDll(bool do_register) {
+  VLOG(1) << "COM " << (do_register ? "registration of " : "unregistration of ")
+      << dll_path_;
+
   HMODULE dll_module = ::LoadLibraryEx(dll_path_.c_str(), NULL,
                                        LOAD_WITH_ALTERED_SEARCH_PATH);
   bool success = false;
@@ -49,6 +52,8 @@ bool SelfRegWorkItem::RegisterDll(bool do_register) {
       }
     }
     ::FreeLibrary(dll_module);
+  } else {
+    LOG(WARNING) << "Failed to load: " << dll_path_;
   }
   return success;
 }
