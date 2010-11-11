@@ -776,6 +776,7 @@ void DrawTextEntryBackground(GtkWidget* offscreen_entry,
                      rec->width - 2 * xborder,
                      rec->height - 2 * yborder);
 
+  gtk_style_detach(our_style);
   g_object_unref(our_style);
 }
 
