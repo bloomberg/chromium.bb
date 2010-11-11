@@ -81,6 +81,9 @@ extern const bool kShowCancelButtonInTaskManager;
 // Are bookmark enabled? True by default.
 extern bool bookmarks_enabled;
 
+// Should we skip the user's preference for restore. False by default.
+extern bool skip_restore;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

@@ -107,6 +107,11 @@ class UserManager : public UserImageLoader::Delegate,
     current_user_is_owner_ = current_user_is_owner;
   }
 
+  // Accessor for current_user_is_new_.
+  bool current_user_is_new() const {
+    return current_user_is_new_;
+  }
+
  protected:
   UserManager();
   virtual ~UserManager();
@@ -130,6 +135,10 @@ class UserManager : public UserImageLoader::Delegate,
 
   // Cached flag of whether currently logged-in user is owner or not.
   bool current_user_is_owner_;
+
+  // Cached flag of whether the currently logged-in user existed before this
+  // login.
+  bool current_user_is_new_;
 
   NotificationRegistrar registrar_;
 

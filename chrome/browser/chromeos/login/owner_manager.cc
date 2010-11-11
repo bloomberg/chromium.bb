@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -26,6 +27,7 @@ OwnerManager::OwnerManager()
 OwnerManager::~OwnerManager() {}
 
 void OwnerManager::LoadOwnerKey() {
+  BootTimesLoader::Get()->AddLoginTimeMarker("LoadOwnerKeyStart", false);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   VLOG(1) << "Loading owner key";
   NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
@@ -81,6 +83,7 @@ void OwnerManager::ExportKey() {
                           NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
                           NotificationService::NoDetails()));
   }
+  BootTimesLoader::Get()->AddLoginTimeMarker("ExportKeyEnd", false);
 }
 
 void OwnerManager::OnComplete(bool value) {
@@ -126,6 +129,7 @@ bool OwnerManager::EnsurePrivateKey() {
 void OwnerManager::Sign(const BrowserThread::ID thread_id,
                         const std::string& data,
                         Delegate* d) {
+  BootTimesLoader::Get()->AddLoginTimeMarker("SignStart", false);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // If it's not the case that we can get both keys...
@@ -135,6 +139,7 @@ void OwnerManager::Sign(const BrowserThread::ID thread_id,
         NewRunnableMethod(this,
                           &OwnerManager::CallDelegate,
                           d, KEY_UNAVAILABLE, std::vector<uint8>()));
+    BootTimesLoader::Get()->AddLoginTimeMarker("SignEnd", false);
     return;
   }
 
@@ -150,12 +155,14 @@ void OwnerManager::Sign(const BrowserThread::ID thread_id,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,
                         d, return_code, signature));
+  BootTimesLoader::Get()->AddLoginTimeMarker("SignEnd", false);
 }
 
 void OwnerManager::Verify(const BrowserThread::ID thread_id,
                           const std::string& data,
                           const std::vector<uint8>& signature,
                           Delegate* d) {
+  BootTimesLoader::Get()->AddLoginTimeMarker("VerifyStart", false);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!EnsurePublicKey()) {
@@ -164,6 +171,7 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
         NewRunnableMethod(this,
                           &OwnerManager::CallDelegate,
                           d, KEY_UNAVAILABLE, std::vector<uint8>()));
+    BootTimesLoader::Get()->AddLoginTimeMarker("VerifyEnd", false);
     return;
   }
 
@@ -177,6 +185,7 @@ void OwnerManager::Verify(const BrowserThread::ID thread_id,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,
                         d, return_code, std::vector<uint8>()));
+  BootTimesLoader::Get()->AddLoginTimeMarker("VerifyEnd", false);
 }
 
 void OwnerManager::SendNotification(NotificationType type,

@@ -84,4 +84,6 @@ const bool kBrowserAliveWithNoWindows = false;
 
 bool bookmarks_enabled = true;
 
+bool skip_restore = false;
+
 }  // namespace browser_defaults

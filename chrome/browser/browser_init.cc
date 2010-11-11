@@ -684,7 +684,8 @@ bool BrowserInit::LaunchWithProfile::ProcessStartupURLs(
     return false;
   }
 
-  if (pref.type == SessionStartupPref::LAST) {
+  if (!browser_defaults::skip_restore &&
+      pref.type == SessionStartupPref::LAST) {
     if (!profile_->DidLastSessionExitCleanly() &&
         !command_line_.HasSwitch(switches::kRestoreLastSession)) {
       // The last session crashed. It's possible automatically loading the
