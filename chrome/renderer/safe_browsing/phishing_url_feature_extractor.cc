@@ -35,10 +35,11 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
 
     // TODO(bryner): Ensure that the url encoding is consistent with
     // the features in the model.
+
+    // Disallow unknown registries so that we don't classify
+    // partial hostnames (e.g. "www.subdomain").
     size_t registry_length =
-        net::RegistryControlledDomainService::GetRegistryLength(
-            host,
-            true /* allow_unknown_registries */);
+        net::RegistryControlledDomainService::GetRegistryLength(host, false);
 
     if (registry_length == 0 || registry_length == std::string::npos) {
       DVLOG(1) << "Could not find TLD for host: " << host;

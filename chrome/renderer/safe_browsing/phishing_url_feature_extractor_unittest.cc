@@ -86,6 +86,9 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 
+  url = "http://unrecognized.tld/";
+  EXPECT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
+
   url = "http://com/123";
   EXPECT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
 
