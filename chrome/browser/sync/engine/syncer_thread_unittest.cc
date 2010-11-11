@@ -697,7 +697,10 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
-TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypes) {
+
+
+// Flaky, see http://crbug.com/62880.
+TEST_F(SyncerThreadWithSyncerTest, FLAKY_NudgeWithDataTypes) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
   // We don't want a poll to happen during this test (except the first one).
