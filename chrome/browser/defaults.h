@@ -71,6 +71,9 @@ extern const bool kShowOtherBrowsersInAboutMemory;
 // Should always open incognito windows when started with --incognito switch?
 extern const bool kAlwaysOpenIncognitoWindow;
 
+// Should the close button be shown in the Task Manager dialog?
+extern const bool kShowCancelButtonInTaskManager;
+
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
 // never be modified after that.

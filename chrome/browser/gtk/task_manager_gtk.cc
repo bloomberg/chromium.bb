@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_tree.h"
@@ -424,6 +425,12 @@ void TaskManagerGtk::Init() {
     gtk_dialog_add_button(GTK_DIALOG(dialog_),
         l10n_util::GetStringUTF8(IDS_TASK_MANAGER_PURGE_MEMORY).c_str(),
         kTaskManagerPurgeMemory);
+  }
+
+  if (browser_defaults::kShowCancelButtonInTaskManager) {
+    gtk_dialog_add_button(GTK_DIALOG(dialog_),
+        l10n_util::GetStringUTF8(IDS_CLOSE).c_str(),
+        GTK_RESPONSE_DELETE_EVENT);
   }
 
   gtk_dialog_add_button(GTK_DIALOG(dialog_),
