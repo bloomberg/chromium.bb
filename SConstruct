@@ -285,8 +285,6 @@ nacl_glibc_skiplist = [
     'run_srpc_bad_service_test',
     'run_srpc_basic_test',
     'run_srpc_sysv_shm_test',
-    # This test calls stat which returns ENOSYS now.
-    'run_stat_test',
     # This tests the absence of "-s" but that is no good because
     # we currently force that option on.
     'run_stubout_mode_test',
