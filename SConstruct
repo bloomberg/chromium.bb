@@ -52,90 +52,82 @@ def VerboseConfigInfo(env):
 # SANITY CHECKS
 # ----------------------------------------------------------
 
-ACCEPTABLE_ARGUMENTS = {
+ACCEPTABLE_ARGUMENTS = set([
     # TODO: add comments what these mean
     # TODO: check which ones are obsolete
     ####  ASCII SORTED ####
-    'COVERAGE': None,
     # Use a destination directory other than the default "scons-out".
-    'DESTINATION_ROOT': None,
-    'DOXYGEN': None,
-    'LOAD': None,
-    'MODE': None,
-    'PROFILE': None,
-    'PROGRESS': None,
-    'SILENT': None,
-    'SYMBOLS': None,
+    'DESTINATION_ROOT',
+    'DOXYGEN',
+    'MODE',
+    'SILENT',
     # Inherit environment variables instead of scrubbing environment.
-    'USE_ENVIRON': None,
+    'USE_ENVIRON',
     # assume we are building via bitcode
-    'bitcode': None,
+    'bitcode',
     # enable building of apps that use multi media function
-    'build_av_apps': None,
+    'build_av_apps',
     # set build platform
-    'buildplatform': None,
-    'build_vim': None,
-    'built_elsewhere': None,
+    'buildplatform',
+    'build_vim',
+    'built_elsewhere',
     # used for browser_tests
-    'chrome_browser_path': None,
+    'chrome_browser_path',
     # make sel_ldr less strict
-    'dangerous_debug_disable_inner_sandbox': None,
+    'dangerous_debug_disable_inner_sandbox',
     # disable warning mechanism in src/untrusted/nosys/warning.h
-    'disable_nosys_linker_warnings': None,
+    'disable_nosys_linker_warnings',
     # where should we store extrasdk libraries
-    'extra_sdk_lib_destination': None,
+    'extra_sdk_lib_destination',
     # where should we store extrasdk headers
-    'extra_sdk_include_destination': None,
+    'extra_sdk_include_destination',
     # force emulator use by tests
-    'force_emulator': None,
+    'force_emulator',
     # force sel_ldr use by tests
-    'force_sel_ldr': None,
-    # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
-    'loader': None,
+    'force_sel_ldr',
     # colon-separated list of compiler flags, e.g. "-g:-Wall".
-    'nacl_ccflags': None,
+    'nacl_ccflags',
     # colon-separated list of linker flags, e.g. "-lfoo:-Wl,-u,bar".
-    'nacl_linkflags': None,
+    'nacl_linkflags',
     # colon-separated list of pnacl bcld flags, e.g. "-lfoo:-Wl,-u,bar".
     # Not using nacl_linkflags since that gets clobbered in some tests.
-    'pnacl_bcldflags': None,
-    'naclsdk_mode': None,
-    'naclsdk_validate': None,
+    'pnacl_bcldflags',
+    'naclsdk_mode',
+    'naclsdk_validate',
     # build only C libraries, skip C++, used during SDK build
-    'nocpp': None,
+    'nocpp',
     # set both targetplatform and buildplatform
-    'platform': None,
+    'platform',
     # enable pretty printing
-    'pp': None,
-    'prebuilt': None,
+    'pp',
     # Run tests under this tool (e.g. valgrind, tsan, strace, etc).
     # If the tool has options, pass them after comma: 'tool,--opt1,--opt2'.
     # NB: no way to use tools the names or the args of
     # which contains a comma.
-    'run_under': None,
+    'run_under',
     # More args for the tool.
-    'run_under_extra_args': None,
+    'run_under_extra_args',
     # Multiply timeout values by this number.
-    'scale_timeout': None,
+    'scale_timeout',
     # enable use of SDL
-    'sdl': None,
+    'sdl',
     # disable printing of sys info with sysinfo=
-    'sysinfo': None,
+    'sysinfo',
     # set target platform
-    'targetplatform': None,
+    'targetplatform',
     # changes tests behaviour in a way suitable for valgrind
-    'running_on_valgrind': False,
+    'running_on_valgrind',
     # activates buildbot-specific presets
-    'buildbot': None,
+    'buildbot',
     # werror=0 allows "-Werror" (warnings as errors) to be omitted.
-    'werror': None,
+    'werror',
     # link with valgrind untrusted bits
-    'with_valgrind': False,
+    'with_valgrind',
     # use_libcrypto=0 allows use of -lcrypt to be disabled, which
     # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
     # where there is no -dev package for the 32-bit libcrypto.
-    'use_libcrypto': None,
-  }
+    'use_libcrypto',
+  ])
 
 def CheckArguments():
   for key in ARGUMENTS:
