@@ -748,7 +748,8 @@ solutions = [
           scm = gclient_scm.CreateSCM(prev_url, self.root_dir(), entry_fixed)
           scm.status(self._options, [], file_list)
           modified_files = file_list != []
-          if not self._options.delete_unversioned_trees or modified_files:
+          if (not self._options.delete_unversioned_trees or
+              (modified_files and not self._options.force)):
             # There are modified files in this entry. Keep warning until
             # removed.
             print(('\nWARNING: \'%s\' is no longer part of this client.  '
@@ -1044,8 +1045,10 @@ def CMDsync(parser, args):
                     help='skips any safesync_urls specified in '
                          'configured solutions and sync to head instead')
   parser.add_option('-D', '--delete_unversioned_trees', action='store_true',
-                    help='delete any unexpected unversioned trees '
-                         'that are in the checkout')
+                    help='delete any dependency that have been removed from '
+                         'last sync as long as there is no local modification. '
+                         'Coupled with --force, it will remove them even with '
+                         'local modifications')
   parser.add_option('-R', '--reset', action='store_true',
                     help='resets any local changes before updating (git only)')
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
@@ -1094,7 +1097,10 @@ def CMDdiff(parser, args):
 
 
 def CMDrevert(parser, args):
-  """Revert all modifications in every dependencies."""
+  """Revert all modifications in every dependencies.
+
+  That's the nuclear option to get back to a 'clean' state. It removes anything
+  that shows up in svn status."""
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
