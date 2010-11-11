@@ -57,7 +57,7 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   // Check if the file exists, return false if not.
   WIN32_FILE_ATTRIBUTE_DATA attrs = {0};
   if (!::GetFileAttributesEx(path, ::GetFileExInfoStandard, &attrs)) {
-    LOG(ERROR) << path << " for deletion does not exist." << GetLastError();
+    PLOG(WARNING) << path << " does not exist.";
     return false;
   }
 
@@ -68,9 +68,24 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   }
 
   if (!::MoveFileEx(path, NULL, flags)) {
-    LOG(ERROR) << "Could not schedule " << path << " for deletion.";
+    PLOG(ERROR) << "Could not schedule " << path << " for deletion.";
     return false;
   }
+
+#ifndef NDEBUG
+  // Useful debugging code to track down what files are in use.
+  if (flags & MOVEFILE_REPLACE_EXISTING) {
+    // Attempt to open the file exclusively.
+    HANDLE file = ::CreateFileW(path, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+        OPEN_EXISTING, 0, NULL);
+    if (file != INVALID_HANDLE_VALUE) {
+      PLOG(INFO) << " file not in use: " << path;
+      ::CloseHandle(file);
+    } else {
+      PLOG(INFO) << " file in use (or not found?): " << path;
+    }
+  }
+#endif
 
   VLOG(1) << "Scheduled for deletion: " << path;
   return true;

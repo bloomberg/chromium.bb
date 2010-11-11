@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_handle.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -69,10 +70,35 @@ void CloseAllChromeProcesses() {
 
 // Attempts to close the Chrome Frame helper process by sending WM_CLOSE
 // messages to its window, or just killing it if that doesn't work.
-void CloseAllChromeFrameHelperProcesses() {
+void CloseChromeFrameHelperProcess() {
   HWND window = FindWindow(installer_util::kChromeFrameHelperWndClass, NULL);
-  if (window &&
-      !SendMessageTimeout(window, WM_CLOSE, 0, 0, SMTO_BLOCK, 3000, NULL)) {
+  if (!::IsWindow(window))
+    return;
+
+  const DWORD kWaitMs = 3000;
+
+  DWORD pid = 0;
+  ::GetWindowThreadProcessId(window, &pid);
+  DCHECK_NE(pid, 0U);
+  ScopedHandle process(::OpenProcess(SYNCHRONIZE, FALSE, pid));
+  PLOG_IF(INFO, !process) << "Failed to open process: " << pid;
+
+  bool kill = true;
+  if (SendMessageTimeout(window, WM_CLOSE, 0, 0, SMTO_BLOCK, kWaitMs, NULL) &&
+      process) {
+    VLOG(1) << "Waiting for " << installer_util::kChromeFrameHelperExe;
+    DWORD wait = ::WaitForSingleObject(process, kWaitMs);
+    if (wait != WAIT_OBJECT_0) {
+      LOG(WARNING) << "Wait for " << installer_util::kChromeFrameHelperExe
+          << " to exit failed or timed out.";
+    } else {
+      kill = false;
+      VLOG(1) << installer_util::kChromeFrameHelperExe << " exited normally.";
+    }
+  }
+
+  if (kill) {
+    VLOG(1) << installer_util::kChromeFrameHelperExe << " hung.  Killing.";
     base::CleanupProcesses(installer_util::kChromeFrameHelperExe, 0,
                            ResultCodes::HUNG, NULL);
   }
@@ -563,7 +589,8 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
 
   // Close any Chrome Frame helper processes that may be running.
   if (InstallUtil::IsChromeFrameProcess()) {
-    CloseAllChromeFrameHelperProcesses();
+    VLOG(1) << "Closing the Chrome Frame helper process";
+    CloseChromeFrameHelperProcess();
   }
 
   if (!installed_version.get())
