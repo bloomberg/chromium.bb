@@ -7246,10 +7246,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Leading sentence above a custom logo that the theme artist has provided">
         Theme created by
       </message>
-      <message name="IDS_NEW_TAB_TIPS"
-               desc="Menu item text for showing and hiding the tips section.">
-        Tips
-      </message>
       <message name="IDS_NEW_TAB_SHOW_RECENT"
                desc="Menu item text used to show recent activities.">
         Show recent activities
