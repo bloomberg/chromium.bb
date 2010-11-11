@@ -42,6 +42,11 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   // MessageLoop::DestructionObserver impl:
   virtual void WillDestroyCurrentMessageLoop();
 
+#if defined(USE_LINUX_BREAKPAD)
+  // Whether we are shutting down or not.
+  bool IsShuttingDown() const;
+#endif
+
  protected:
   CrashHandlerHostLinux();
   virtual ~CrashHandlerHostLinux();
@@ -67,6 +72,7 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
 #if defined(USE_LINUX_BREAKPAD)
   MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
   scoped_ptr<base::Thread> uploader_thread_;
+  bool shutting_down_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);

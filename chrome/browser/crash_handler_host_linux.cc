@@ -35,7 +35,10 @@ using google_breakpad::ExceptionHandler;
 namespace {
 
 // Handles the crash dump and frees the allocated BreakpadInfo struct.
-void CrashDumpTask(BreakpadInfo* info) {
+void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
+  if (handler->IsShuttingDown())
+    return;
+
   HandleCrashDump(*info);
   delete[] info->filename;
   delete[] info->process_type;
@@ -52,7 +55,8 @@ void CrashDumpTask(BreakpadInfo* info) {
 // the lifetime of the IO message loop.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(CrashHandlerHostLinux);
 
-CrashHandlerHostLinux::CrashHandlerHostLinux() {
+CrashHandlerHostLinux::CrashHandlerHostLinux()
+    : shutting_down_(false) {
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
   // sending datagrams to other sockets on the system. The sandbox may prevent
@@ -77,9 +81,6 @@ CrashHandlerHostLinux::CrashHandlerHostLinux() {
 CrashHandlerHostLinux::~CrashHandlerHostLinux() {
   HANDLE_EINTR(close(process_socket_));
   HANDLE_EINTR(close(browser_socket_));
-
-  // If we are quitting and there are crash dumps in the queue, discard them.
-  uploader_thread_->message_loop()->QuitNow();
 }
 
 void CrashHandlerHostLinux::Init() {
@@ -330,11 +331,20 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   uploader_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&CrashDumpTask, info));
+      NewRunnableFunction(&CrashDumpTask, this, info));
 }
 
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
   file_descriptor_watcher_.StopWatchingFileDescriptor();
+
+  // If we are quitting and there are crash dumps in the queue, turn them into
+  // no-ops.
+  shutting_down_ = true;
+  uploader_thread_->Stop();
+}
+
+bool CrashHandlerHostLinux::IsShuttingDown() const {
+  return shutting_down_;
 }
 
 PluginCrashHandlerHostLinux::PluginCrashHandlerHostLinux() {
