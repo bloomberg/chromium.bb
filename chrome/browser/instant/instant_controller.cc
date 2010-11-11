@@ -82,7 +82,7 @@ void InstantController::Update(TabContents* tab_contents,
   if (loader_manager_.get() && loader_manager_->active_loader()->url() == url)
     return;
 
-  if (url.is_empty() || !url.is_valid() || !ShouldShowPreviewFor(url)) {
+  if (url.is_empty() || !url.is_valid() || !ShouldShowPreviewFor(match)) {
     DestroyPreviewContents();
     return;
   }
@@ -366,8 +366,15 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
     delegate_->ShowInstant(new_loader->preview_contents());
 }
 
-bool InstantController::ShouldShowPreviewFor(const GURL& url) {
-  return !url.SchemeIs(chrome::kJavaScriptScheme);
+bool InstantController::ShouldShowPreviewFor(const AutocompleteMatch& match) {
+  if (match.destination_url.SchemeIs(chrome::kJavaScriptScheme))
+    return false;
+
+  // Extension keywords don't have a real destionation URL.
+  if (match.template_url && match.template_url->IsExtensionKeyword())
+    return false;
+
+  return true;
 }
 
 void InstantController::BlacklistFromInstant(TemplateURLID id) {

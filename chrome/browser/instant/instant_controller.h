@@ -160,8 +160,8 @@ class InstantController : public InstantLoaderDelegate {
                     const string16& user_text,
                     string16* suggested_text);
 
-  // Returns true if we should show preview for |url|.
-  bool ShouldShowPreviewFor(const GURL& url);
+  // Returns true if we should show preview for |match|.
+  bool ShouldShowPreviewFor(const AutocompleteMatch& match);
 
   // Marks the specified search engine id as not supporting instant.
   void BlacklistFromInstant(TemplateURLID id);
