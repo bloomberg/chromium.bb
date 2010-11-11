@@ -60,11 +60,11 @@ ValueDescription profile2[] = {
 
 ValueDescription credit_card[] = {
   { L"credit_card_name", L"Tommy Gun" },
-  // "12345790087665675" encrypted:
-  { L"credit_card_number", L"\x18B7\xE586\x459B\x7457\xA066\x3842\x71DA"
-                           L"\x4854\xB906\x9C7C\x50A6\x4376\xFD9D\x1E02"
-                           L"\x790A\x7330\xB77B\xAF32\x93EB\xB84F\xEC8F"
-                           L"\x265B\xD0E1\x4E27\xB758\x7985\xB92F" },
+  // "4111111111111111" encrypted:
+  { L"credit_card_number", L"\xE53F\x19AB\xC1BF\xC9EB\xECCC\x9BDA\x8515"
+                           L"\xE14D\x6852\x80A8\x50A3\x4375\xFD9F\x1E07"
+                           L"\x790E\x7336\xB773\xAF33\x93EA\xB846\xEC89"
+                           L"\x265C\xD0E6\x4E23\xB75F\x7983" },
   { L"credit_card_exp_month", L"11" },
   { L"credit_card_exp_4_digit_year", L"2011" },
 };
@@ -203,7 +203,7 @@ TEST_F(AutofillIeToolbarImportTest, TestAutoFillImport) {
   EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_NAME)),
             credit_card[0].value);
   EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)),
-            L"12345790087665675");
+            L"4111111111111111");
   EXPECT_EQ(credit_cards[0].GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)),
             credit_card[2].value);
   EXPECT_EQ(credit_cards[0].GetFieldText(
