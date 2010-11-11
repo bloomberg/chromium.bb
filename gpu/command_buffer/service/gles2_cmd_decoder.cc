@@ -1800,7 +1800,9 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
         (context_->HasExtension("GL_EXT_framebuffer_multisample") ||
          context_->HasExtension("GL_ANGLE_framebuffer_multisample"))) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
-      GLint max_sample_count;
+      // max_sample_count must be initialized to a sane value.  If
+      // glGetIntegerv() throws a GL error, it leaves its argument unchanged.
+      GLint max_sample_count = 1;
       glGetIntegerv(GL_MAX_SAMPLES_EXT, &max_sample_count);
       offscreen_target_samples_ = std::min(attrib_parser.samples_,
                                            max_sample_count);
