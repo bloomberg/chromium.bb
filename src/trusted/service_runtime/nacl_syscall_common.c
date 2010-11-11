@@ -1987,7 +1987,7 @@ int32_t NaClCommonSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  if (!NaClDescImcShmAllocCtor(shmp, size_as_off)) {
+  if (!NaClDescImcShmAllocCtor(shmp, size_as_off, /* executable= */ 0)) {
     retval = -NACL_ABI_ENOMEM;  /* is this reasonable? */
     goto cleanup;
   }

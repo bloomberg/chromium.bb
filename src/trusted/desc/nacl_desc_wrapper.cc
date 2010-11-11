@@ -207,7 +207,7 @@ DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
       (size + NACL_MAP_PAGESIZE - 1) &
       ~static_cast<size_t>(NACL_MAP_PAGESIZE - 1);
   // TODO(sehr): fix the inlining issue.
-  NaClHandle handle = CreateMemoryObject(rounded_size);
+  NaClHandle handle = CreateMemoryObject(rounded_size, /* executable= */ false);
   if (kInvalidHandle == handle) {
     return NULL;
   }

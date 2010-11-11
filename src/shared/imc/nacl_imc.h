@@ -281,7 +281,7 @@ void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func);
  *  @return A handle of the newly created memory object on success, and
  *          kInvalidHandle on failure.
  */
-Handle CreateMemoryObject(size_t length);
+Handle CreateMemoryObject(size_t length, bool executable);
 
 /**
  *  @nacl

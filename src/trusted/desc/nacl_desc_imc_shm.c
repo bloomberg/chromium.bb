@@ -70,7 +70,8 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
 }
 
 int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
-                            nacl_off64_t           size) {
+                            nacl_off64_t           size,
+                            int                    executable) {
   NaClHandle h;
   int        rv;
 
@@ -81,7 +82,7 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
             size, size);
     return 0;
   }
-  h = NaClCreateMemoryObject((size_t) size);
+  h = NaClCreateMemoryObject((size_t) size, executable);
   if (NACL_INVALID_HANDLE == h) {
     return 0;
   }

@@ -107,16 +107,14 @@ void SetCreateMemoryObjectFunc(CreateMemoryObjectFunc func) {
   g_create_memory_object_func = func;
 }
 
-Handle CreateMemoryObject(size_t length) {
+Handle CreateMemoryObject(size_t length, bool executable) {
   if (0 == length) {
     return -1;
   }
   int fd;
 
   if (g_create_memory_object_func != NULL) {
-    // TODO(mseaborn): Plumb in the second argument, which will be
-    // true for nacl_text.c.
-    fd = g_create_memory_object_func(length, false);
+    fd = g_create_memory_object_func(length, executable);
     if (fd >= 0)
       return fd;
   }

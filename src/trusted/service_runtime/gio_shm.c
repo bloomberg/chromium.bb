@@ -469,7 +469,7 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
     (*self->eff.base.vtbl->Dtor)(&self->eff.base);
     return 0;
   }
-  if (!NaClDescImcShmAllocCtor(shmp, shm_size)) {
+  if (!NaClDescImcShmAllocCtor(shmp, shm_size, /* executable= */ 0)) {
     (*self->eff.base.vtbl->Dtor)(&self->eff.base);
     free(shmp);
     return 0;

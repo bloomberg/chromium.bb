@@ -128,7 +128,8 @@ int main() {
   }
 
   // Test shared memory.
-  nacl::Handle shared_memory = nacl::CreateMemoryObject(1024 * 1024);
+  nacl::Handle shared_memory =
+    nacl::CreateMemoryObject(1024 * 1024, /* executable= */ false);
   if (shared_memory != nacl::kInvalidHandle) {
     void* shared_region = nacl::Map(0, 1024 * 1024,
                                     nacl::kProtRead | nacl::kProtWrite,

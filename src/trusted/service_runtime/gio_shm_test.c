@@ -365,7 +365,7 @@ int main(int ac,
   }
 
   nbytes = map_chunks * NACL_MAP_PAGESIZE;
-  if (!NaClDescImcShmAllocCtor(shmp, nbytes)) {
+  if (!NaClDescImcShmAllocCtor(shmp, nbytes, /* executable= */ 0)) {
     printf("NaClDescImcShmAllocCtor failed\n");
     printf("FAILED\n");
     return EXIT_FAILURE;

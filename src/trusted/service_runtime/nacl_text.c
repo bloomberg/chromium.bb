@@ -149,7 +149,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   if (NULL == shm) {
     goto cleanup;
   }
-  if (!NaClDescImcShmAllocCtor(shm, dynamic_text_size)) {
+  if (!NaClDescImcShmAllocCtor(shm, dynamic_text_size, /* executable= */ 1)) {
     /* cleanup invariant is if ptr is non-NULL, it's fully ctor'd */
     free(shm);
     shm = NULL;

@@ -59,7 +59,8 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
  * size is allocated first.
  */
 int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
-                            nacl_off64_t           size)
+                            nacl_off64_t           size,
+                            int                    executable)
     NACL_WUR;
 
 struct NaClDescImcShm *NaClDescImcShmMake(struct NaClHostDesc *nhdp)

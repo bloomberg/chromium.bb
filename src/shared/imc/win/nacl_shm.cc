@@ -13,7 +13,7 @@
 
 namespace nacl {
 
-Handle CreateMemoryObject(size_t length) {
+Handle CreateMemoryObject(size_t length, bool executable) {
   if (length % kMapPageSize) {
     SetLastError(ERROR_INVALID_PARAMETER);
     return kInvalidHandle;
@@ -21,7 +21,7 @@ Handle CreateMemoryObject(size_t length) {
   Handle memory = CreateFileMapping(
       INVALID_HANDLE_VALUE,
       NULL,
-      PAGE_EXECUTE_READWRITE,
+      executable ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE,
       static_cast<DWORD>(static_cast<unsigned __int64>(length) >> 32),
       static_cast<DWORD>(length & 0xFFFFFFFF), NULL);
   return (memory == NULL) ? kInvalidHandle : memory;

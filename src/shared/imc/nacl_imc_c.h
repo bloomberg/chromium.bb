@@ -182,9 +182,12 @@ int NaClReceive(NaClHandle socket, void* buffer, size_t length, int flags);
  * memory object on success, and NACL_INVALID_HANDLE on failure.
  * length must be a multiple of allocation granularity given by
  * NACL_MAP_PAGESIZE in nacl_config.h.
+ *
+ * executable: Whether the memory object needs to be mappable as
+ * executable.  (This is significant only on Mac OS X.)
  */
 
-NaClHandle NaClCreateMemoryObject(size_t length);
+NaClHandle NaClCreateMemoryObject(size_t length, int executable);
 
 /* NaClMap() prot bits */
 #define NACL_PROT_READ    0x1   /* Mapped area can be read */

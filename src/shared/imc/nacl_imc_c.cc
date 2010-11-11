@@ -62,8 +62,8 @@ int NaClReceive(NaClHandle socket, void* buffer, size_t length, int flags) {
   return nacl::Receive(socket, buffer, length, flags);
 }
 
-NaClHandle NaClCreateMemoryObject(size_t length) {
-  return nacl::CreateMemoryObject(length);
+NaClHandle NaClCreateMemoryObject(size_t length, int executable) {
+  return nacl::CreateMemoryObject(length, executable ? true : false);
 }
 
 void* NaClMap(void* start, size_t length, int prot, int flags,
