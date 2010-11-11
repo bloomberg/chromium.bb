@@ -724,10 +724,10 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_NudgeWithDataTypes) {
   interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
   EXPECT_EQ(static_cast<unsigned int>(2),
       interceptor.times_sync_occured().size());
-  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.none());
 
   // SyncerThread should be waiting again.  Signal it to stop.
   EXPECT_TRUE(syncer_thread()->Stop(2000));
+  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.none());
 }
 
 TEST_F(SyncerThreadWithSyncerTest, Throttling) {
