@@ -269,6 +269,16 @@ HANDLE GetSectionFromProcess(HANDLE section, HANDLE process, bool read_only) {
   return valid_section;
 }
 
+HANDLE GetSectionForProcess(HANDLE section, HANDLE process, bool read_only) {
+  HANDLE valid_section = NULL;
+  DWORD access = STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ;
+  if (!read_only)
+    access |= FILE_MAP_WRITE;
+  DuplicateHandle(GetCurrentProcess(), section, process, &valid_section, access,
+                  FALSE, 0);
+  return valid_section;
+}
+
 bool DoesWindowBelongToActiveWindow(HWND window) {
   DCHECK(window);
   HWND top_window = ::GetAncestor(window, GA_ROOT);

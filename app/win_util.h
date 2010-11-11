@@ -148,6 +148,10 @@ bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor);
 // Returns the new valid handle if the function succeed. NULL otherwise.
 HANDLE GetSectionFromProcess(HANDLE section, HANDLE process, bool read_only);
 
+// Duplicates a section handle from the current process for use in another
+// process. Returns the new valid handle or NULL on failure.
+HANDLE GetSectionForProcess(HANDLE section, HANDLE process, bool read_only);
+
 // Returns true if the specified window is the current active top window or one
 // of its children.
 bool DoesWindowBelongToActiveWindow(HWND window);

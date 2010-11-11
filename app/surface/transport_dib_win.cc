@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <limits>
+#include "app/surface/transport_dib.h"
+
 #include <windows.h>
 
-#include "app/surface/transport_dib.h"
+#include <limits>
+
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_info.h"
@@ -41,34 +43,53 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
 }
 
 // static
-TransportDIB* TransportDIB::Map(TransportDIB::Handle handle) {
-  TransportDIB* dib = new TransportDIB(handle);
-  if (!dib->shared_memory_.Map(0 /* map whole shared memory segment */)) {
-    LOG(ERROR) << "Failed to map transport DIB"
-               << " handle:" << handle
-               << " error:" << GetLastError();
-    delete dib;
+TransportDIB* TransportDIB::Map(Handle handle) {
+  scoped_ptr<TransportDIB> dib(CreateWithHandle(handle));
+  if (!dib->Map())
     return NULL;
+  return dib.release();
+}
+
+// static
+TransportDIB* TransportDIB::CreateWithHandle(Handle handle) {
+  return new TransportDIB(handle);
+}
+
+// static
+bool TransportDIB::is_valid(Handle dib) {
+  return dib != NULL;
+}
+
+skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
+  // This DIB already mapped the file into this process, but PlatformCanvas
+  // will map it again.
+  DCHECK(!memory()) << "Mapped file twice in the same process.";
+
+  scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
+  if (!canvas->initialize(w, h, true, handle()))
+    return NULL;
+  return canvas.release();
+}
+
+bool TransportDIB::Map() {
+  if (!is_valid(handle()))
+    return false;
+  if (memory())
+    return true;
+
+  if (!shared_memory_.Map(0 /* map whole shared memory segment */)) {
+    LOG(ERROR) << "Failed to map transport DIB"
+               << " handle:" << shared_memory_.handle()
+               << " error:" << ::GetLastError();
+    return false;
   }
 
   // There doesn't seem to be any way to find the size of the shared memory
   // region! GetFileSize indicates that the handle is invalid. Thus, we
   // conservatively set the size to the maximum and hope that the renderer
   // isn't about to ask us to read off the end of the array.
-  dib->size_ = std::numeric_limits<size_t>::max();
-
-  return dib;
-}
-
-bool TransportDIB::is_valid(Handle dib) {
-  return dib != NULL;
-}
-
-skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
-  scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
-  if (!canvas->initialize(w, h, true, handle()))
-    return NULL;
-  return canvas.release();
+  size_ = std::numeric_limits<size_t>::max();
+  return true;
 }
 
 void* TransportDIB::memory() const {
@@ -80,5 +101,5 @@ TransportDIB::Handle TransportDIB::handle() const {
 }
 
 TransportDIB::Id TransportDIB::id() const {
-  return Id(shared_memory_.handle(), sequence_num_);
+  return Id(handle(), sequence_num_);
 }

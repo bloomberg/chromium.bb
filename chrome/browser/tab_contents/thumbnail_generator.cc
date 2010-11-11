@@ -8,9 +8,11 @@
 #include <map>
 
 #include "base/metrics/histogram.h"
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
@@ -19,6 +21,10 @@
 #include "gfx/skbitmap_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#endif
 
 // Overview
 // --------
@@ -192,12 +198,29 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   // this callback for later lookup when the rendering is done.
   static int sequence_num = 0;
   sequence_num++;
-  TransportDIB* thumbnail_dib = TransportDIB::Create(
-      desired_size.width() * desired_size.height() * 4, sequence_num);
+  scoped_ptr<TransportDIB> thumbnail_dib(TransportDIB::Create(
+      desired_size.width() * desired_size.height() * 4, sequence_num));
+
+#if defined(OS_WIN)
+  // Duplicate the handle to the DIB here because the renderer process does not
+  // have permission. The duplicated handle is owned by the renderer process,
+  // which is responsible for closing it.
+  TransportDIB::Handle renderer_dib_handle = win_util::GetSectionForProcess(
+      thumbnail_dib->handle(),
+      renderer->process()->GetHandle(),
+      false);
+  if (!renderer_dib_handle) {
+    LOG(WARNING) << "Could not duplicate dib handle for renderer";
+    delete callback;
+    return;
+  }
+#else
+  TransportDIB::Handle renderer_dib_handle = thumbnail_dib->handle();
+#endif
 
   linked_ptr<AsyncRequestInfo> request_info(new AsyncRequestInfo);
   request_info->callback.reset(callback);
-  request_info->thumbnail_dib.reset(thumbnail_dib);
+  request_info->thumbnail_dib.reset(thumbnail_dib.release());
   request_info->renderer = renderer;
   ThumbnailCallbackMap::value_type new_value(sequence_num, request_info);
   std::pair<ThumbnailCallbackMap::iterator, bool> result =
@@ -208,7 +231,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   }
 
   renderer->PaintAtSize(
-      thumbnail_dib->handle(), sequence_num, page_size, desired_size);
+      renderer_dib_handle, sequence_num, page_size, desired_size);
 }
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
@@ -299,7 +322,7 @@ void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
   if (item != callback_map_.end()) {
     TransportDIB* dib = item->second->thumbnail_dib.get();
     DCHECK(dib);
-    if (!dib) {
+    if (!dib || !dib->Map()) {
       return;
     }
 

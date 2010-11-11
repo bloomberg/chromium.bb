@@ -124,6 +124,10 @@ class TransportDIB {
   // Returns NULL on failure.
   static TransportDIB* Map(Handle transport_dib);
 
+  // Create a new |TransportDIB| with a handle to the shared memory. This
+  // always returns a valid pointer. The DIB is not mapped.
+  static TransportDIB* CreateWithHandle(Handle handle);
+
   // Returns true if the handle is valid.
   static bool is_valid(Handle dib);
 
@@ -131,11 +135,19 @@ class TransportDIB {
   // pointer will be owned by the caller. The bitmap will be of the given size,
   // which should fit inside this memory.
   //
+  // On POSIX, this |TransportDIB| will be mapped if not already. On Windows,
+  // this |TransportDIB| will NOT be mapped and should not be mapped prior,
+  // because PlatformCanvas will map the file internally.
+  //
   // Will return NULL on allocation failure. This could be because the image
   // is too large to map into the current process' address space.
   skia::PlatformCanvas* GetPlatformCanvas(int w, int h);
 
-  // Return a pointer to the shared memory
+  // Map the DIB into the current process if it is not already. This is used to
+  // map a DIB that has already been created. Returns true if the DIB is mapped.
+  bool Map();
+
+  // Return a pointer to the shared memory.
   void* memory() const;
 
   // Return the maximum size of the shared memory. This is not the amount of

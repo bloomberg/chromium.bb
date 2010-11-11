@@ -809,8 +809,17 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
                                     int tag,
                                     const gfx::Size& page_size,
                                     const gfx::Size& desired_size) {
-  if (!webwidget_ || dib_handle == TransportDIB::DefaultHandleValue())
+  if (!webwidget_ || !TransportDIB::is_valid(dib_handle)) {
+    if (TransportDIB::is_valid(dib_handle)) {
+      // Close our unused handle.
+#if defined(OS_WIN)
+      ::CloseHandle(dib_handle);
+#elif defined(OS_MACOSX)
+      base::SharedMemory::CloseHandle(dib_handle);
+#endif
+    }
     return;
+  }
 
   if (page_size.IsEmpty() || desired_size.IsEmpty()) {
     // If one of these is empty, then we just return the dib we were
@@ -821,11 +830,8 @@ void RenderWidget::OnMsgPaintAtSize(const TransportDIB::Handle& dib_handle,
 
   // Map the given DIB ID into this process, and unmap it at the end
   // of this function.
-  scoped_ptr<TransportDIB> paint_at_size_buffer(TransportDIB::Map(dib_handle));
-
-  DCHECK(paint_at_size_buffer.get());
-  if (!paint_at_size_buffer.get())
-    return;
+  scoped_ptr<TransportDIB> paint_at_size_buffer(
+      TransportDIB::CreateWithHandle(dib_handle));
 
   gfx::Size canvas_size = page_size;
   float x_scale = static_cast<float>(desired_size.width()) /
