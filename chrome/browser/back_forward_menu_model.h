@@ -59,11 +59,7 @@ class BackForwardMenuModel : public menus::MenuModel {
   virtual MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
-
-  // Navigates to the corresponding history item, opening it in a new tab
-  // if necessary.
-  void ActivatedAtWithDisposition(int index,
-                                  WindowOpenDisposition disposition);
+  virtual void ActivatedAtWithDisposition(int index, int disposition);
   virtual void MenuWillShow();
 
   // Is the item at |index| a separator?

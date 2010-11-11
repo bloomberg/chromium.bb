@@ -137,8 +137,7 @@ void BackForwardMenuModel::ActivatedAt(int index) {
 }
 
 void BackForwardMenuModel::ActivatedAtWithDisposition(
-      int index,
-      WindowOpenDisposition disposition) {
+      int index, int disposition) {
   Profile* profile = browser_->profile();
 
   DCHECK(!IsSeparator(index));
@@ -162,8 +161,8 @@ void BackForwardMenuModel::ActivatedAtWithDisposition(
   }
 
   int controller_index = MenuIndexToNavEntryIndex(index);
-  if (!browser_->NavigateToIndexWithDisposition(controller_index,
-                                                disposition)) {
+  if (!browser_->NavigateToIndexWithDisposition(
+          controller_index, static_cast<WindowOpenDisposition>(disposition))) {
     NOTREACHED();
   }
 }

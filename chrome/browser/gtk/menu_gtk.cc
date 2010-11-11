@@ -20,6 +20,7 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/glue/window_open_disposition.h"
 
 bool MenuGtk::block_activation_ = false;
 
@@ -693,7 +694,16 @@ void MenuGtk::ExecuteCommand(menus::MenuModel* model, int id) {
   if (delegate_)
     delegate_->CommandWillBeExecuted();
 
-  model->ActivatedAt(id);
+  GdkEvent* event = gtk_get_current_event();
+  if (event && event->type == GDK_BUTTON_RELEASE) {
+    model->ActivatedAtWithDisposition(
+        id, event_utils::DispositionFromEventFlags(event->button.state));
+  } else {
+    model->ActivatedAt(id);
+  }
+
+  if (event)
+    gdk_event_free(event);
 }
 
 void MenuGtk::OnMenuShow(GtkWidget* widget) {

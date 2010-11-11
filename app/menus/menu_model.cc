@@ -29,4 +29,9 @@ bool MenuModel::GetModelAndIndexForCommandId(int command_id,
   return false;
 }
 
+// Default implementation ignores the disposition.
+void MenuModel::ActivatedAtWithDisposition(int index, int disposition) {
+  ActivatedAt(index);
+}
+
 }  // namespace
