@@ -57,11 +57,12 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/thread.h"
 #include "base/waitable_event.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "media/base/filters.h"
-#include "media/base/pipeline_impl.h"
+#include "media/base/pipeline.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerClient.h"
@@ -283,7 +284,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   scoped_ptr<media::MediaFilterCollection> filter_collection_;
 
   // The actual pipeline and the thread it runs on.
-  scoped_refptr<media::PipelineImpl> pipeline_;
+  scoped_refptr<media::Pipeline> pipeline_;
   base::Thread pipeline_thread_;
 
   // Playback state.

@@ -11,6 +11,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_format.h"
 #include "media/base/media_switches.h"
+#include "media/base/pipeline_impl.h"
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
@@ -259,12 +260,13 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   proxy_->SetVideoRenderer(web_video_renderer);
 
   // Set our pipeline callbacks.
-  pipeline_->SetPipelineEndedCallback(NewCallback(proxy_.get(),
-      &WebMediaPlayerImpl::Proxy::PipelineEndedCallback));
-  pipeline_->SetPipelineErrorCallback(NewCallback(proxy_.get(),
-      &WebMediaPlayerImpl::Proxy::PipelineErrorCallback));
-  pipeline_->SetNetworkEventCallback(NewCallback(proxy_.get(),
-      &WebMediaPlayerImpl::Proxy::NetworkEventCallback));
+  pipeline_->Init(
+      NewCallback(proxy_.get(),
+                  &WebMediaPlayerImpl::Proxy::PipelineEndedCallback),
+      NewCallback(proxy_.get(),
+                  &WebMediaPlayerImpl::Proxy::PipelineErrorCallback),
+      NewCallback(proxy_.get(),
+                  &WebMediaPlayerImpl::Proxy::NetworkEventCallback));
 
   // A simple data source that keeps all data in memory.
   scoped_refptr<SimpleDataSource> simple_data_source(
