@@ -112,6 +112,9 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
   ret = ret && m->ReadUInt32(iter, &vertex_shader_version);
   ret = ret && m->ReadUInt32(iter, &gl_version);
   ret = ret && m->ReadBool(iter, &can_lose_context);
+  if (!ret)
+    return false;
+
   p->SetInitializationTime(initialization_time);
   p->SetGraphicsInfo(vendor_id,
                      device_id,
