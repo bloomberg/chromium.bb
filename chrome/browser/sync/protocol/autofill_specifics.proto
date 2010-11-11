@@ -19,6 +19,8 @@ import "sync.proto";
 message AutofillProfileSpecifics {
   // User-defined label.
   optional string label = 1;
+  
+  optional string guid = 15;
 
   // Contact info.
   optional string name_first = 2;
@@ -94,4 +96,5 @@ message AutofillSpecifics {
 
 extend EntitySpecifics {
   optional AutofillSpecifics autofill = 31729;
+  optional AutofillProfileSpecifics autofill_profile = 63951;
 }
