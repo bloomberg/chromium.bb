@@ -72,6 +72,13 @@ class ClickNotifyingWidget : public views::WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
 };
 
+void CloseWindow(views::WidgetGtk* window) {
+  if (!window)
+    return;
+  window->SetWidgetDelegate(NULL);
+  window->Close();
+}
+
 }  // namespace
 
 using login::kBackgroundColor;
@@ -146,17 +153,11 @@ UserController::~UserController() {
   // Reset the widget delegate of every window to NULL, so the user
   // controller will not get notified about the active window change.
   // See also crosbug.com/7400.
-  controls_window_->SetWidgetDelegate(NULL);
-  image_window_->SetWidgetDelegate(NULL);
-  border_window_->SetWidgetDelegate(NULL);
-  label_window_->SetWidgetDelegate(NULL);
-  unselected_label_window_->SetWidgetDelegate(NULL);
-
-  controls_window_->Close();
-  image_window_->Close();
-  border_window_->Close();
-  label_window_->Close();
-  unselected_label_window_->Close();
+  CloseWindow(controls_window_);
+  CloseWindow(image_window_);
+  CloseWindow(border_window_);
+  CloseWindow(label_window_);
+  CloseWindow(unselected_label_window_);
 }
 
 void UserController::Init(int index,
@@ -194,18 +195,18 @@ std::wstring UserController::GetNameTooltip() const {
 
   // Tooltip contains user's display name and his email domain to distinguish
   // this user from the other one with the same display name.
-  const std::wstring& email = UTF8ToWide(user_.email());
+  const std::string& email = user_.email();
   size_t at_pos = email.rfind('@');
-  if (at_pos == std::wstring::npos) {
+  if (at_pos == std::string::npos) {
     NOTREACHED();
     return std::wstring();
   }
   size_t domain_start = at_pos + 1;
-  std::wstring domain = email.substr(domain_start,
-                                     email.length() - domain_start);
-  return base::StringPrintf(L"%s (%s)",
-                            user_.GetDisplayName().c_str(),
-                            domain.c_str());
+  std::string domain = email.substr(domain_start,
+                                    email.length() - domain_start);
+  return UTF8ToWide(base::StringPrintf("%s (%s)",
+                                       user_.GetDisplayName().c_str(),
+                                       domain.c_str()));
 }
 
 void UserController::ClearAndEnablePassword() {

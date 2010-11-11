@@ -132,6 +132,8 @@ const ListValue* UserCrosSettingsProvider::cached_whitelist() {
 
 // static
 std::string UserCrosSettingsProvider::cached_owner() {
+  if (!g_browser_process || !g_browser_process->local_state())
+    return std::string();
   return g_browser_process->local_state()->GetString(kDeviceOwner);
 }
 
