@@ -30,13 +30,15 @@ namespace {
 const int kPasswordFieldWidthChars = 20;
 }  // namespace
 
-PasswordChangedView::PasswordChangedView(Delegate* delegate)
+PasswordChangedView::PasswordChangedView(Delegate* delegate,
+                                         bool full_sync_disabled)
     : title_label_(NULL),
       description_label_(NULL),
       full_sync_radio_(NULL),
       delta_sync_radio_(NULL),
       old_password_field_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      full_sync_disabled_(full_sync_disabled) {
 }
 
 bool PasswordChangedView::Accept() {
@@ -45,6 +47,15 @@ bool PasswordChangedView::Accept() {
 
 int PasswordChangedView::GetDialogButtons() const {
  return MessageBoxFlags::DIALOGBUTTON_OK;
+}
+
+views::View* PasswordChangedView::GetInitiallyFocusedView() {
+  if (!full_sync_disabled_) {
+    return views::DialogDelegate::GetInitiallyFocusedView();
+  } else {
+    DCHECK(old_password_field_);
+    return old_password_field_;
+  }
 }
 
 std::wstring PasswordChangedView::GetWindowTitle() const {
@@ -87,7 +98,6 @@ void PasswordChangedView::Init() {
   full_sync_radio_ = new RadioButton(
       l10n_util::GetString(IDS_LOGIN_PASSWORD_CHANGED_RESET), 0);
   full_sync_radio_->set_listener(this);
-  full_sync_radio_->SetChecked(true);
   full_sync_radio_->SetMultiLine(true);
 
   delta_sync_radio_ = new RadioButton(
@@ -136,7 +146,17 @@ void PasswordChangedView::Init() {
 
   layout->StartRow(0, 0);
   layout->AddView(old_password_field_);
-  old_password_field_->SetEnabled(false);
+
+  // Disable options if needed.
+  if (!full_sync_disabled_) {
+    full_sync_radio_->SetChecked(true);
+    old_password_field_->SetEnabled(false);
+  } else {
+    full_sync_radio_->SetEnabled(false);
+    delta_sync_radio_->SetChecked(true);
+    old_password_field_->SetEnabled(true);
+  }
+
 }
 
 bool PasswordChangedView::ExitDialog() {
@@ -171,11 +191,6 @@ bool PasswordChangedView::HandleKeystroke(views::Textfield* s,
   }
 
   return false;
-}
-
-void PasswordChangedView::SelectDeltaSyncOption() {
-  if (!delta_sync_radio_->checked())
-    delta_sync_radio_->SetChecked(true);
 }
 
 }  // namespace chromeos

@@ -524,7 +524,13 @@ void ExistingUserController::OnPasswordChangeDetected(
     return;
   }
 
-  PasswordChangedView* view = new PasswordChangedView(this);
+  // TODO(altimofeev): remove this constrain when full sync for the owner will
+  // be correctly handled.
+  // TODO(xiyuan): Wait for the cached settings update before using them.
+  bool full_sync_disabled = (UserCrosSettingsProvider::cached_owner() ==
+      controllers_[selected_view_index_]->user().email());
+
+  PasswordChangedView* view = new PasswordChangedView(this, full_sync_disabled);
   views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
                                                      gfx::Rect(),
                                                      view);

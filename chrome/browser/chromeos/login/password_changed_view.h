@@ -42,7 +42,7 @@ class PasswordChangedView : public views::View,
     virtual void ResyncEncryptedData() = 0;
   };
 
-  explicit PasswordChangedView(Delegate* delegate);
+  PasswordChangedView(Delegate* delegate, bool full_sync_disabled);
   virtual ~PasswordChangedView() {}
 
   // views::DialogDelegate overrides:
@@ -50,6 +50,7 @@ class PasswordChangedView : public views::View,
   virtual int GetDialogButtons() const;
 
   // views::WindowDelegate overrides:
+  virtual View* GetInitiallyFocusedView();
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
 
@@ -65,9 +66,6 @@ class PasswordChangedView : public views::View,
                                const views::Textfield::Keystroke& keystroke);
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
-
-  // Selects delta sync radio button.
-  void SelectDeltaSyncOption();
 
  protected:
   // views::View overrides:
@@ -92,6 +90,9 @@ class PasswordChangedView : public views::View,
 
   // Notifications receiver.
   Delegate* delegate_;
+
+  // Whether full sync option is disabled.
+  bool full_sync_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordChangedView);
 };

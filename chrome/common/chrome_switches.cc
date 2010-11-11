@@ -1181,6 +1181,9 @@ const char kLoginUser[]                     = "login-user";
 // Specifies a password to be used to login (along with login-user).
 const char kLoginPassword[]                 = "login-password";
 
+// Allows to emulate situation when user logins with new password.
+const char kLoginUserWithNewPassword[]      = "login-user-with-new-password";
+
 // Attempts to perform Chrome OS offline and online login in parallel.
 const char kParallelAuth[]                  = "parallel-auth";
 

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 
+#include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
 
@@ -213,6 +215,14 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   bool Mount(const std::string& user_email,
              const std::string& passhash,
              int* error_code) {
+    // For testing password change.
+    if (user_email ==
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kLoginUserWithNewPassword)) {
+      *error_code = kCryptohomeMountErrorKeyFailure;
+      return false;
+    }
+
     return true;
   }
 
