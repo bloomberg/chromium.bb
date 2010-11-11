@@ -898,15 +898,6 @@
    fun:_ZN5media22InitializeMediaLibraryERK8FilePath
 }
 {
-   bug_58244
-   Memcheck:Addr4
-   fun:_ZN17GpuWatchdogThread6OnExitEv
-   fun:_Z16DispatchToMethodI17GpuWatchdogThreadMS0_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN27ScopedRunnableMethodFactoryI17GpuWatchdogThreadE14RunnableMethodIMS0_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-
-{
    bug_58245
    Memcheck:Leak
    fun:_Znw*
