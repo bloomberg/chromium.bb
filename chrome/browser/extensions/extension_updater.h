@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
@@ -144,7 +145,7 @@ class ExtensionUpdater
                    PrefService* prefs,
                    int frequency_seconds);
 
-  // Starts the updater running.
+  // Starts the updater running.  Should be called at most once.
   void Start();
 
   // Stops the updater running, cancelling any outstanding update manifest and
@@ -251,6 +252,9 @@ class ExtensionUpdater
   std::vector<int> DetermineUpdates(const ManifestFetchData& fetch_data,
       const UpdateManifest::Results& possible_updates);
 
+  // Whether Start() has been called but not Stop().
+  bool alive_;
+
   // Outstanding url fetch requests for manifests and updates.
   scoped_ptr<URLFetcher> manifest_fetcher_;
   scoped_ptr<URLFetcher> extension_fetcher_;
@@ -276,6 +280,9 @@ class ExtensionUpdater
 
   scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
   bool blacklist_checks_enabled_;
+
+  FRIEND_TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory);
+  FRIEND_TEST(ExtensionUpdaterTest, TestAfterStopBehavior);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };

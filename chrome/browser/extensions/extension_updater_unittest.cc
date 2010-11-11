@@ -413,6 +413,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
+    updater->Start();
 
     // Check passing an empty list of parse results to DetermineUpdates
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
@@ -450,6 +451,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
+    updater->Start();
 
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     UpdateManifest::Results updates;
@@ -484,6 +486,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
+    updater->Start();
 
     GURL url1("http://localhost/manifest1");
     GURL url2("http://localhost/manifest2");
@@ -548,6 +551,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
+    updater->Start();
 
     GURL test_url("http://localhost/extension.crx");
 
@@ -611,8 +615,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
-    service.pref_service()->
-      RegisterStringPref(prefs::kExtensionBlacklistUpdateVersion, "0");
+    updater->Start();
     GURL test_url("http://localhost/extension.crx");
 
     std::string id = "com.google.crx.blacklist";
@@ -658,6 +661,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
+    updater->Start();
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");
@@ -745,6 +749,7 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_refptr<ExtensionUpdater> updater(
       new ExtensionUpdater(&service, service.pref_service(),
                            kUpdateFrequencySecs));
+    updater->Start();
     updater->set_blacklist_checks_enabled(false);
 
     // Make the updater do manifest fetching, and note the urls it tries to
@@ -794,9 +799,11 @@ class ExtensionUpdaterTest : public testing::Test {
   // >= 1 day for the extension.
   static void TestHandleManifestResults() {
     ServiceForManifestTests service;
+    MessageLoop message_loop;
     scoped_refptr<ExtensionUpdater> updater(
         new ExtensionUpdater(&service, service.pref_service(),
                              kUpdateFrequencySecs));
+    updater->Start();
 
     GURL update_url("http://www.google.com/manifest");
     ExtensionList tmp;
@@ -921,6 +928,41 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   fetches.clear();
   EXPECT_FALSE(fetch->base_url().is_empty());
   EXPECT_FALSE(fetch->full_url().is_empty());
+}
+
+TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
+    MessageLoop message_loop;
+    ServiceForManifestTests service;
+    TestURLFetcherFactory factory;
+    URLFetcher::set_factory(&factory);
+    scoped_refptr<ExtensionUpdater> updater(
+        new ExtensionUpdater(&service, service.pref_service(),
+                             kUpdateFrequencySecs));
+    updater->Start();
+    updater->StartUpdateCheck(new ManifestFetchData(GURL()));
+    // This should delete the newly-created ManifestFetchData.
+    updater->StartUpdateCheck(new ManifestFetchData(GURL()));
+    // This should add into |manifests_pending_|.
+    updater->StartUpdateCheck(new ManifestFetchData(
+        GURL("http://www.google.com")));
+    // This should clear out |manifests_pending_|.
+    updater->Stop();
+}
+
+TEST(ExtensionUpdaterTest, TestAfterStopBehavior) {
+    MessageLoop message_loop;
+    ServiceForManifestTests service;
+    scoped_refptr<ExtensionUpdater> updater(
+        new ExtensionUpdater(&service, service.pref_service(),
+                             kUpdateFrequencySecs));
+    updater->Start();
+    updater->Stop();
+    // All the below functions should do nothing.
+    updater->OnCRXFileWritten("", FilePath(), GURL());
+    GURL dummy_gurl;
+    ManifestFetchData dummy_manifest_fetch_data(dummy_gurl);
+    updater->HandleManifestResults(dummy_manifest_fetch_data,
+                                   UpdateManifest::Results());
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:
