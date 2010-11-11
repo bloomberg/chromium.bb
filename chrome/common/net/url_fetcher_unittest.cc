@@ -15,7 +15,7 @@
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
@@ -79,13 +79,13 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
 
     // Ensure that any plugin operations done by other tests are cleaned up.
     ChromePluginLib::UnloadAllPlugins();
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
     net::EnsureOCSPInit();
 #endif
   }
 
   virtual void TearDown() {
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
     net::ShutdownOCSP();
 #endif
   }
