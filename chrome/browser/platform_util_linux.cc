@@ -14,10 +14,10 @@
 
 namespace {
 
-void XDGOpen(const std::string& path) {
+void XDGUtil(const std::string& util, const std::string& arg) {
   std::vector<std::string> argv;
-  argv.push_back("xdg-open");
-  argv.push_back(path);
+  argv.push_back(util);
+  argv.push_back(arg);
 
   base::environment_vector env;
   // xdg-open can fall back on mailcap which eventually might plumb through
@@ -41,6 +41,14 @@ void XDGOpen(const std::string& path) {
     ProcessWatcher::EnsureProcessGetsReaped(handle);
 }
 
+void XDGOpen(const std::string& path) {
+  XDGUtil("xdg-open", path);
+}
+
+void XDGEmail(const std::string& email) {
+  XDGUtil("xdg-email", email);
+}
+
 }  // namespace
 
 namespace platform_util {
@@ -61,7 +69,10 @@ void OpenItem(const FilePath& full_path) {
 }
 
 void OpenExternal(const GURL& url) {
-  XDGOpen(url.spec());
+  if (url.SchemeIs("mailto"))
+    XDGEmail(url.spec());
+  else
+    XDGOpen(url.spec());
 }
 
 }  // namespace platform_util
