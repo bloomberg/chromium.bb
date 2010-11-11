@@ -196,18 +196,19 @@ void TpmInfoView::PullPassword() {
   chromeos::CryptohomeLibrary* cryptohome =
       chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
 
-  bool password_was_cleared = false;
+  bool password_acquired = false;
   if (password_->empty() && cryptohome->TpmIsReady()) {
-    bool password_acquired = cryptohome->TpmGetPassword(password_);
-    if (password_acquired) {
-      cryptohome->TpmClearStoredPassword();
-      if (password_->empty())
-        password_was_cleared = true;
-    } else {
+    password_acquired = cryptohome->TpmGetPassword(password_);
+    if (!password_acquired) {
       password_->clear();
+    } else if (password_->empty()) {
+      // For a fresh OOBE flow TPM is uninitialized,
+      // ownership process is started at the EULA screen,
+      // password is cleared after EULA is accepted.
+      LOG(ERROR) << "TPM returned an empty password.";
     }
   }
-  if (password_->empty() && !password_was_cleared) {
+  if (password_->empty() && !password_acquired) {
     // Password hasn't been acquired, reschedule pulling.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,

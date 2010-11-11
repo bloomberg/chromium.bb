@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
@@ -578,6 +579,11 @@ void WizardController::OnUpdateCompleted() {
 
 void WizardController::OnEulaAccepted() {
   MarkEulaAccepted();
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    // TPM password could be seen on EULA screen, now it's safe to clear it.
+    chromeos::CrosLibrary::Get()->
+        GetCryptohomeLibrary()->TpmClearStoredPassword();
+  }
   InitiateOOBEUpdate();
 }
 
