@@ -154,6 +154,12 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     first_paint_after_load_time_ = value;
   }
 
+  // True iff the histograms for the associated frame have been dumped.
+  bool load_histograms_recorded() const { return load_histograms_recorded_; }
+  void set_load_histograms_recorded(bool value) {
+    load_histograms_recorded_ = value;
+  }
+
   // True if we have already processed the "DidCommitLoad" event for this
   // request.  Used by session history.
   bool request_committed() const { return request_committed_; }
@@ -274,6 +280,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   base::Time finish_load_time_;
   base::Time first_paint_time_;
   base::Time first_paint_after_load_time_;
+  bool load_histograms_recorded_;
   bool request_committed_;
   bool is_content_initiated_;
   int32 pending_page_id_;

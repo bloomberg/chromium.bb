@@ -46,8 +46,6 @@ class PageLoadHistograms {
   void LogPageLoadTime(const NavigationState* state,
                        const WebKit::WebDataSource* ds) const;
 
-  bool has_dumped_;
-
   // Site isolation metric counts.
   // These are per-page-load counts, reset to 0 after they are dumped.
   int cross_origin_access_count_;

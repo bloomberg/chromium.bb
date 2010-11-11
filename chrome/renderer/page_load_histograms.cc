@@ -13,11 +13,13 @@
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPerformance.h"
 
 using base::Time;
 using base::TimeDelta;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
+using WebKit::WebPerformance;
 
 static const TimeDelta kPLTMin(TimeDelta::FromMilliseconds(10));
 static const TimeDelta kPLTMax(TimeDelta::FromMinutes(10));
@@ -36,9 +38,23 @@ static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
   return static_cast<URLPattern::SchemeMasks>(0);
 }
 
+enum MissingStartType {
+  START_MISSING = 0x1,
+  COMMIT_MISSING = 0x2,
+  NAV_START_MISSING = 0x4,
+  MISSING_START_TYPE_MAX = 0x8
+};
+
+enum AbandonType {
+  FINISH_DOC_MISSING = 0x1,
+  FINISH_ALL_LOADS_MISSING = 0x2,
+  LOAD_EVENT_START_MISSING = 0x4,
+  LOAD_EVENT_END_MISSING = 0x8,
+  ABANDON_TYPE_MAX = 0x10
+};
+
 PageLoadHistograms::PageLoadHistograms()
-    : has_dumped_(false),
-      cross_origin_access_count_(0),
+    : cross_origin_access_count_(0),
       same_origin_access_count_(0) {
 }
 
@@ -48,27 +64,52 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   if (!frame || frame->parent())
     return;
 
-  // If we've already dumped, do nothing.
-  // This simple bool works because we only dump for the main frame.
-  if (has_dumped_)
-    return;
-
   // Only dump for supported schemes.
   URLPattern::SchemeMasks scheme_type = GetSupportedSchemeType(frame->url());
   if (scheme_type == 0)
     return;
 
-  // Configuration for PLT related histograms.
+  // If we've already dumped, do nothing.
+  // This simple bool works because we only dump for the main frame.
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
+  if (navigation_state->load_histograms_recorded())
+    return;
+
+  // Times based on the Web Timing metrics.
+  // https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/NavigationTiming/Overview.html
+  // TODO(tonyg, jar): We are in the process of vetting these metrics against
+  // the existing ones. Once we understand any differences, we will standardize
+  // on a single set of metrics.
+  const WebPerformance& performance = frame->performance();
+  Time navigation_start = Time::FromDoubleT(performance.navigationStart());
+  Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
+  Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
 
   // Collect measurement times.
   Time start = navigation_state->start_load_time();
-  if (start.is_null())
-    return;  // Probably very premature abandonment of page.
   Time commit = navigation_state->commit_load_time();
-  if (commit.is_null())
-    return;  // Probably very premature abandonment of page.
+
+  // TODO(tonyg, jar): We aren't certain why the start is missing sometimes, but
+  // we presume it is a very premature abandonment of the page.
+  // The PLT.MissingStart histogram should help us troubleshoot and then we can
+  // remove this.
+  int missing_start_type = 0;
+  missing_start_type |= start.is_null() ? START_MISSING : 0;
+  missing_start_type |= commit.is_null() ? COMMIT_MISSING : 0;
+  missing_start_type |= navigation_start.is_null() ? NAV_START_MISSING : 0;
+  UMA_HISTOGRAM_ENUMERATION("PLT.MissingStart", missing_start_type,
+                            MISSING_START_TYPE_MAX);
+  if (missing_start_type)
+    return;
+
+  // Record the new PLT times prior to the faulty abandon check below.
+  // TODO(tonyg): There are many new details we can record, add them after the
+  // basic metrics are evaluated.
+  TimeDelta nav_start_to_load_start = load_event_start - navigation_start;
+  TimeDelta nav_start_to_load_end = load_event_end - navigation_start;
+  PLT_HISTOGRAM("PLT.NavStartToLoadStart", nav_start_to_load_start);
+  PLT_HISTOGRAM("PLT.NavStartToLoadEnd", nav_start_to_load_end);
 
   // We properly handle null values for the next 3 variables.
   Time request = navigation_state->request_time();
@@ -76,6 +117,15 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   Time first_paint_after_load = navigation_state->first_paint_after_load_time();
   Time finish_doc = navigation_state->finish_document_load_time();
   Time finish_all_loads = navigation_state->finish_load_time();
+
+  // TODO(tonyg, jar): We suspect a bug in abandonment counting, this temporary
+  // historgram should help us to troubleshoot.
+  int abandon_type = 0;
+  abandon_type |= finish_doc.is_null() ? FINISH_DOC_MISSING : 0;
+  abandon_type |= finish_all_loads.is_null() ? FINISH_ALL_LOADS_MISSING : 0;
+  abandon_type |= load_event_start.is_null() ? LOAD_EVENT_START_MISSING : 0;
+  abandon_type |= load_event_end.is_null() ? LOAD_EVENT_END_MISSING : 0;
+  UMA_HISTOGRAM_ENUMERATION("PLT.AbandonType", abandon_type, ABANDON_TYPE_MAX);
 
   // Handle case where user hits "stop" or "back" before loading completely.
   bool abandoned_page = finish_doc.is_null();
@@ -98,7 +148,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       return;  // Don't try to record a stat which is broken.
   }
 
-  has_dumped_ = true;
+  navigation_state->set_load_histograms_recorded(true);
 
   // Note: Client side redirects will have no request time.
   Time begin = request.is_null() ? start : request;
