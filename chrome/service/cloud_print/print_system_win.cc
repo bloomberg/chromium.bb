@@ -113,7 +113,10 @@ class PrintSystemWatcherWin
     : public base::ObjectWatcher::Delegate {
  public:
   PrintSystemWatcherWin()
-      : printer_(NULL), printer_change_(NULL), delegate_(NULL) {
+      : printer_(NULL),
+        printer_change_(NULL),
+        delegate_(NULL),
+        did_signal_(false) {
   }
   ~PrintSystemWatcherWin() {
     Stop();
@@ -259,7 +262,7 @@ class PrintSystemWin : public PrintSystem {
     : public PrintSystem::PrintServerWatcher,
       public PrintSystemWatcherWinDelegate {
    public:
-    PrintServerWatcherWin() {}
+    PrintServerWatcherWin() : delegate_(NULL) {}
 
     // PrintSystem::PrintServerWatcher interface
     virtual bool StartWatching(
@@ -295,7 +298,9 @@ class PrintSystemWin : public PrintSystem {
         public PrintSystemWatcherWinDelegate {
    public:
      explicit PrinterWatcherWin(const std::string& printer_name)
-         : printer_name_(printer_name) {}
+         : printer_name_(printer_name),
+           delegate_(NULL) {
+     }
 
     // PrintSystem::PrinterWatcher interface
     virtual bool StartWatching(

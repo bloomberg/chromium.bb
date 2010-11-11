@@ -315,7 +315,9 @@ InfoBubble::InfoBubble()
 #endif
       delegate_(NULL),
       show_status_(kOpen),
-      fade_away_on_close_(false) {
+      fade_away_on_close_(false),
+      arrow_location_(BubbleBorder::NONE),
+      contents_(NULL) {
 }
 
 #if defined(OS_CHROMEOS)
@@ -324,7 +326,9 @@ InfoBubble::InfoBubble(views::WidgetGtk::Type type)
       border_contents_(NULL),
       delegate_(NULL),
       show_status_(kOpen),
-      fade_away_on_close_(false) {
+      fade_away_on_close_(false),
+      arrow_location_(BubbleBorder::NONE),
+      contents_(NULL) {
 }
 #endif
 

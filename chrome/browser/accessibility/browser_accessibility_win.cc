@@ -25,7 +25,11 @@ BrowserAccessibilityWin* BrowserAccessibility::toBrowserAccessibilityWin() {
 }
 
 BrowserAccessibilityWin::BrowserAccessibilityWin()
-    : instance_active_(false) {
+    : instance_active_(false),
+      ia_role_(0),
+      ia_state_(0),
+      ia2_role_(0),
+      ia2_state_(0) {
 }
 
 BrowserAccessibilityWin::~BrowserAccessibilityWin() {

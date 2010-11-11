@@ -486,8 +486,8 @@ class BrowserAccessibilityWin
   bool instance_active_;
 
   // IAccessible role and state.
-  int32 ia_state_;
   int32 ia_role_;
+  int32 ia_state_;
 
   // IAccessible2 role and state.
   int32 ia2_role_;

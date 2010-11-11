@@ -982,7 +982,10 @@ HICON AeroPeekWindow::OnGetIcon(UINT index) {
 }
 
 AeroPeekManager::AeroPeekManager(HWND application_window)
-    : application_window_(application_window) {
+    : application_window_(application_window),
+      border_left_(0),
+      border_top_(0),
+      toolbar_top_(0) {
 }
 
 AeroPeekManager::~AeroPeekManager() {
