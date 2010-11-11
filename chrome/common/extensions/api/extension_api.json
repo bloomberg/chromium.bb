@@ -3919,12 +3919,13 @@
           "descriptionStyles": {
             "type": "array",
             "optional": true,
+            "description": "An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, the last-specified style will be applied to the overlapping region.",
             "items": {
               "type": "object",
-              "description": "A style object, created using styleNone, styleUrl, styleMatch, or styleDim. A style applies to the region of text starting at the style's offset, until either the next style or the end of the description.",
               "properties": {
-                "type": {"type": "string", "enum": ["none", "url", "match", "dim"]},
-                "offset": {"type": "integer"}
+                "type": {"type": "string", "enum": ["url", "match", "dim"]},
+                "offset": {"type": "integer"},
+                "length": {"type": "integer"}
               }
             }
           }
@@ -3949,28 +3950,31 @@
         ]
       },
       {
-        "name": "styleNone",
-        "type": "function",
-        "description": "Constructor for the descriptionStyles parameter of the suggest callback.",
-        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
-      },
-      {
         "name": "styleUrl",
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching a URL or filename.",
-        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
+        "parameters": [
+           {"type": "integer", "name": "offset", "minimum": 0},
+           {"type": "integer", "name": "length", "minimum": 1}
+        ]
       },
       {
         "name": "styleMatch",
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of text matching what the user typed.",
-        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
+        "parameters": [
+           {"type": "integer", "name": "offset", "minimum": 0},
+           {"type": "integer", "name": "length", "minimum": 1}
+        ]
       },
       {
         "name": "styleDim",
         "type": "function",
         "description": "Constructor for the descriptionStyles parameter of the suggest callback. This style designates a region of dim helper text.",
-        "parameters": [ {"type": "integer", "name": "offset", "minimum": 0} ]
+        "parameters": [
+           {"type": "integer", "name": "offset", "minimum": 0},
+           {"type": "integer", "name": "length", "minimum": 1}
+        ]
       }
     ],
     "events": [
@@ -3994,7 +3998,6 @@
             "type": "function",
             "description": "A callback passed to the onInputChanged event used for sending suggestions back to the browser.",
             "parameters": [
-              {"type": "integer", "name": "requestId"},
               {
                 "type": "array",
                 "description": "Array of suggest results",

@@ -1271,6 +1271,7 @@
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_pref_store_unittest.cc',
         'browser/extensions/extension_process_manager_unittest.cc',
+        'browser/extensions/extension_omnibox_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',
         'browser/extensions/extension_webnavigation_unittest.cc',

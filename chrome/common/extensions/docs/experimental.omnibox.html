@@ -282,8 +282,6 @@
                       </li><li>
                         <a href="#method-styleMatch">styleMatch</a>
                       </li><li>
-                        <a href="#method-styleNone">styleNone</a>
-                      </li><li>
                         <a href="#method-styleUrl">styleUrl</a>
                       </li>
                     </ol>
@@ -497,7 +495,8 @@ You can find samples of this API on the
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.omnibox.styleDim</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span>)</div>
+                      <var><span>offset</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>length</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
@@ -510,6 +509,66 @@ You can find samples of this API on the
                     <div>
           <dt>
             <var>offset</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>length</var>
               <em>
 
                 <!-- TYPE -->
@@ -618,7 +677,8 @@ You can find samples of this API on the
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.omnibox.styleMatch</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span>)</div>
+                      <var><span>offset</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>length</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
@@ -687,71 +747,10 @@ You can find samples of this API on the
           </dd>
 
         </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div style="display: none; ">
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p style="display: none; ">
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
-              <a name="method-styleNone"></a> <!-- method-anchor -->
-              <h4>styleNone</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.omnibox.styleNone</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Constructor for the descriptionStyles parameter of the suggest callback.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
+                  </div><div>
                     <div>
           <dt>
-            <var>offset</var>
+            <var>length</var>
               <em>
 
                 <!-- TYPE -->
@@ -860,7 +859,8 @@ You can find samples of this API on the
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.omnibox.styleUrl</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>offset</span></var></span>)</div>
+                      <var><span>offset</span></var></span><span class="null"><span>, </span><span>integer</span>
+                      <var><span>length</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
@@ -873,6 +873,66 @@ You can find samples of this API on the
                     <div>
           <dt>
             <var>offset</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="enum" style="display: none; ">enumerated</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                        <span style="display: none; "></span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+          <dd style="display: none; ">
+            This parameter was added in version
+            <b><span></span></b>.
+            You must omit this parameter in earlier versions,
+            and you may omit it in any version.  If you require this
+            parameter, the manifest key
+            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+            can ensure that your extension won't be run in an earlier browser version.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+
+          <!-- FUNCTION PARAMETERS -->
+          <dd style="display: none; ">
+            <div></div>
+          </dd>
+
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>length</var>
               <em>
 
                 <!-- TYPE -->
@@ -1142,66 +1202,6 @@ You can find samples of this API on the
           <h5>Parameters</h5>
           <dl>
             <div>
-              <div>
-          <dt>
-            <var>requestId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span class="enum" style="display: none; ">enumerated</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                        <span style="display: none; "></span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-          <dd style="display: none; ">
-            This parameter was added in version
-            <b><span></span></b>.
-            You must omit this parameter in earlier versions,
-            and you may omit it in any version.  If you require this
-            parameter, the manifest key
-            <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-            can ensure that your extension won't be run in an earlier browser version.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-
-          <!-- FUNCTION PARAMETERS -->
-          <dd style="display: none; ">
-            <div></div>
-          </dd>
-
-        </div>
-            </div><div>
               <div>
           <dt>
             <var style="display: none; ">paramName</var>
@@ -1599,12 +1599,10 @@ You can find samples of this API on the
 
               </em>
           </dt>
-          <dd class="todo">
+          <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
+          <dd>An array of style objects, created using styleUrl, styleMatch, or styleDim. A style applies to the region of text specified by the style's starting offset and length. If there are any overlapping regions of text covered by multiple styles, the last-specified style will be applied to the overlapping region.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

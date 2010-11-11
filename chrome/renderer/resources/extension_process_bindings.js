@@ -690,21 +690,17 @@ var chrome = chrome || {};
       return newArgs;
     };
 
-    apiFunctions["experimental.omnibox.styleNone"].handleRequest =
-        function(offset) {
-      return {type: "none", offset: offset};
-    };
     apiFunctions["experimental.omnibox.styleUrl"].handleRequest =
-        function(offset) {
-      return {type: "url", offset: offset};
+        function(offset, length) {
+      return {type: "url", offset: offset, length: length};
     };
     apiFunctions["experimental.omnibox.styleMatch"].handleRequest =
-        function(offset) {
-      return {type: "match", offset: offset};
+        function(offset, length) {
+      return {type: "match", offset: offset, length: length};
     };
     apiFunctions["experimental.omnibox.styleDim"].handleRequest =
-        function(offset) {
-      return {type: "dim", offset: offset};
+        function(offset, length) {
+      return {type: "dim", offset: offset, length: length};
     };
 
     if (chrome.test) {

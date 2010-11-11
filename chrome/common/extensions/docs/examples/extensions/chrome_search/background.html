@@ -28,8 +28,7 @@ chrome.experimental.omnibox.onInputChanged.addListener(
         description = description.replace(/<\/?.+?>/g, '');
         description = file + ': ' + description; 
         descriptionStyles = [
-            chrome.experimental.omnibox.styleUrl(0),
-            chrome.experimental.omnibox.styleNone(file.length),
+            chrome.experimental.omnibox.styleUrl(0, file.length),
         ]
 
         // Highlight all occurrences of the match text.
@@ -39,8 +38,7 @@ chrome.experimental.omnibox.onInputChanged.addListener(
           if (index < 0) break;
           if (index > file.length) {
             descriptionStyles.push(
-                chrome.experimental.omnibox.styleMatch(index),
-                chrome.experimental.omnibox.styleNone(index + text.length)
+                chrome.experimental.omnibox.styleMatch(index, text.length)
             );
           }
         }

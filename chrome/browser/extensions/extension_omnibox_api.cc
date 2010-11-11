@@ -30,6 +30,7 @@ const char kSuggestionDescription[] = "description";
 const char kSuggestionDescriptionStyles[] = "descriptionStyles";
 const char kDescriptionStylesType[] = "type";
 const char kDescriptionStylesOffset[] = "offset";
+const char kDescriptionStylesLength[] = "length";
 };  // namespace
 
 // static
@@ -103,47 +104,10 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
       ListValue* styles;
       EXTENSION_FUNCTION_VALIDATE(
           suggestion_value->GetList(kSuggestionDescriptionStyles, &styles));
-
+      EXTENSION_FUNCTION_VALIDATE(suggestion.ReadStylesFromValue(*styles));
+    } else {
       suggestion.description_styles.clear();
-
-      int last_offset = -1;
-      for (size_t j = 0; j < styles->GetSize(); ++j) {
-        DictionaryValue* style;
-        std::string type;
-        int offset;
-        EXTENSION_FUNCTION_VALIDATE(styles->GetDictionary(j, &style));
-        EXTENSION_FUNCTION_VALIDATE(
-            style->GetString(kDescriptionStylesType, &type));
-        EXTENSION_FUNCTION_VALIDATE(
-            style->GetInteger(kDescriptionStylesOffset, &offset));
-
-        int type_class =
-            (type == "none") ? ACMatchClassification::NONE :
-            (type == "url") ? ACMatchClassification::URL :
-            (type == "match") ? ACMatchClassification::MATCH :
-            (type == "dim") ? ACMatchClassification::DIM : -1;
-        EXTENSION_FUNCTION_VALIDATE(type_class != -1);
-
-        if (offset <= last_offset) {
-          error_ = kDescriptionStylesOrderError;
-          return false;
-        }
-        if (static_cast<size_t>(offset) >= suggestion.description.length()) {
-          error_ = kDescriptionStylesLengthError;
-          return false;
-        }
-
-        suggestion.description_styles.push_back(
-            ACMatchClassification(offset, type_class));
-        last_offset = offset;
-      }
-    }
-
-    // Ensure the styles cover the whole range of text.
-    if (suggestion.description_styles.empty() ||
-        suggestion.description_styles[0].offset != 0) {
-      suggestion.description_styles.insert(
-          suggestion.description_styles.begin(),
+      suggestion.description_styles.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
     }
   }
@@ -160,7 +124,83 @@ ExtensionOmniboxSuggestion::ExtensionOmniboxSuggestion() {}
 
 ExtensionOmniboxSuggestion::~ExtensionOmniboxSuggestion() {}
 
+bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
+    const ListValue& styles_value) {
+  // Start with a NONE style covering the entire range. As we iterate over the
+  // styles, bisect or overwrite the running style list with each new style.
+  description_styles.clear();
+  description_styles.push_back(
+      ACMatchClassification(0, ACMatchClassification::NONE));
+
+  for (size_t i = 0; i < styles_value.GetSize(); ++i) {
+    DictionaryValue* style;
+    std::string type;
+    int offset;
+    int length;
+    if (!styles_value.GetDictionary(i, &style))
+      return false;
+    if (!style->GetString(kDescriptionStylesType, &type))
+      return false;
+    if (!style->GetInteger(kDescriptionStylesOffset, &offset))
+      return false;
+    if (!style->GetInteger(kDescriptionStylesLength, &length))
+      return false;
+
+    int type_class =
+        (type == "url") ? ACMatchClassification::URL :
+        (type == "match") ? ACMatchClassification::MATCH :
+        (type == "dim") ? ACMatchClassification::DIM : -1;
+    if (type_class == -1)
+      return false;
+
+    InsertNewStyle(type_class, offset, length);
+  }
+
+  return true;
+}
+
+void ExtensionOmniboxSuggestion::InsertNewStyle(int type,
+                                                size_t offset,
+                                                size_t length) {
+  // Find the first and last existing styles that this new style overlaps. Those
+  // will have to be removed (if they completely overlap), or bisected.
+  size_t start = 0, end = 0;
+  while (end < description_styles.size()) {
+    if (start < description_styles.size() &&
+        description_styles[start].offset < offset)
+      ++start;
+    if (description_styles[end].offset <= offset + length) {
+      ++end;
+    } else {
+      break;
+    }
+  }
+
+  DCHECK_GT(end, 0u);
+  DCHECK(start == description_styles.size() ||
+         description_styles[start].offset >= offset);
+  DCHECK(end == description_styles.size() ||
+         description_styles[end].offset > offset + length);
+
+  // The last style in the overlapping range will come after our new style.
+  int last_style = description_styles[end - 1].style;
+
+  // Remove all overlapping styles.
+  if (start < end) {
+    description_styles.erase(description_styles.begin() + start,
+                             description_styles.begin() + end);
+  }
+
+  // Insert our new style.
+  description_styles.insert(description_styles.begin() + start,
+                            ACMatchClassification(offset, type));
+  if (offset + length < description.length()) {
+     description_styles.insert(description_styles.begin() + start + 1,
+                               ACMatchClassification(offset + length,
+                                                     last_style));
+  }
+}
+
 ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() : request_id(0) {}
 
 ExtensionOmniboxSuggestions::~ExtensionOmniboxSuggestions() {}
-

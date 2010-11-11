@@ -15,10 +15,8 @@ chrome.omnibox.onInputChanged.addListener(
         content: text + "n1",
         description: desc,
         descriptionStyles: [
-          chrome.omnibox.styleMatch(desc.indexOf('<')),
-          chrome.omnibox.styleNone(desc.indexOf('>')),
-          chrome.omnibox.styleDim(desc.indexOf('[')),
-          chrome.omnibox.styleNone(desc.indexOf(']')),
+          chrome.omnibox.styleMatch(desc.indexOf('<'), 6),
+          chrome.omnibox.styleDim(desc.indexOf('['), 4),
         ]
       },
       {content: text + "n2", description: "description2"},
