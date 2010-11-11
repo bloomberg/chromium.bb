@@ -1,0 +1,34 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Client side phishing and malware detection request and response
+// protocol buffers.  Those protocol messages should be kept in sync
+// with the server implementation.
+//
+// If you want to change this protocol definition or you have questions
+// regarding its format please contact chrome-anti-phishing@googlegroups.com.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package safe_browsing;
+
+message ClientPhishingRequest {
+  // URL that the client visited.  The CGI parameters are stripped by the
+  // client.
+  required string url = 1;
+
+  // Score that was computed on the client.  Value is between 0.0 and 1.0.
+  // The larger the value the more likely the url is phishing.
+  required float client_score = 2;
+
+  // Thumbnail from the client.  Supports all typical image formats (png, jpg
+  // etc.).
+  required bytes snapshot = 3;
+}
+
+message ClientPhishingResponse {
+  required bool phishy = 1;
+}

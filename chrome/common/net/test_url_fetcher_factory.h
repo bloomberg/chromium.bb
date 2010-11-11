@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -35,7 +36,10 @@
 //   ...
 //   // Reset factory.
 //   URLFetcher::set_factory(NULL);
-
+//
+// Note: if you don't know when your request objects will be created you
+// might want to use the FakeUrlFetcher and FakeUrlFetcherFactory classes
+// below.
 
 class TestURLFetcher : public URLFetcher {
  public:
@@ -87,6 +91,68 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
   Fetchers fetchers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcherFactory);
+};
+
+// The FakeUrlFetcher and FakeUrlFetcherFactory classes are similar to the
+// ones above but don't require you to know when exactly the URLFetcher objects
+// will be created.
+//
+// These classes let you set pre-baked HTTP responses for particular URLs.
+// E.g., if the user requests http://a.com/ then respond with an HTTP/500.
+//
+// We assume that the thread that is calling Start() on the URLFetcher object
+// has a message loop running.
+//
+// This class is not thread-safe.  You should not call SetFakeResponse or
+// ClearFakeResponse at the same time you call CreateURLFetcher.  However, it is
+// OK to start URLFetcher objects while setting or clearning fake responses
+// since already created URLFetcher objects will not be affected by any changes
+// made to the fake responses (once a URLFetcher object is created you cannot
+// change its fake response).
+//
+// Example usage:
+//  FakeURLFetcherFactory factory;
+//  URLFetcher::set_factory(&factory);
+//
+//  // You know that class SomeService will request url http://a.com/ and you
+//  // want to test the service class by returning an error.
+//  factory.SetFakeResponse("http://a.com/", "", false);
+//  // But if the service requests http://b.com/asdf you want to respond with
+//  // a simple html page and an HTTP/200 code.
+//  factory.SetFakeResponse("http://b.com/asdf",
+//                          "<html><body>hello world</body></html>",
+//                          true);
+//
+//  SomeService service;
+//  service.Run();  // Will eventually request these two URLs.
+
+class FakeURLFetcherFactory : public URLFetcher::Factory {
+ public:
+  FakeURLFetcherFactory() {}
+
+  // If no fake response is set for the given URL this method will return NULL.
+  // Otherwise, it will return a URLFetcher object which will respond with the
+  // pre-baked response that the client has set by calling SetFakeResponse().
+  virtual URLFetcher* CreateURLFetcher(int id,
+                                       const GURL& url,
+                                       URLFetcher::RequestType request_type,
+                                       URLFetcher::Delegate* d);
+
+  // Sets the fake response for a given URL.  If success is true we will serve
+  // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
+  void SetFakeResponse(const std::string& url,
+                       const std::string& response_data,
+                       bool success);
+
+  // Clear all the fake responses that were previously set via
+  // SetFakeResponse().
+  void ClearFakeReponses();
+
+ private:
+  typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
+  FakeResponseMap fake_responses_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
 
 #endif  // CHROME_COMMON_NET_TEST_URL_FETCHER_FACTORY_H_
