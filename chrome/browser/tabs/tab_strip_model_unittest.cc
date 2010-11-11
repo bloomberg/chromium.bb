@@ -36,6 +36,38 @@
 
 using testing::_;
 
+namespace {
+
+// Class used to delete a TabContents when another TabContents is destroyed.
+class DeleteTabContentsOnDestroyedObserver : public NotificationObserver {
+ public:
+  DeleteTabContentsOnDestroyedObserver(TabContents* source,
+                                       TabContents* tab_to_delete)
+      : source_(source),
+        tab_to_delete_(tab_to_delete) {
+    registrar_.Add(this,
+                   NotificationType::TAB_CONTENTS_DESTROYED,
+                   Source<TabContents>(source));
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    TabContents* tab_to_delete = tab_to_delete_;
+    tab_to_delete_ = NULL;
+    delete tab_to_delete;
+  }
+
+ private:
+  TabContents* source_;
+  TabContents* tab_to_delete_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteTabContentsOnDestroyedObserver);
+};
+
+}  // namespace
+
 class TabStripDummyDelegate : public TabStripModelDelegate {
  public:
   explicit TabStripDummyDelegate(TabContents* dummy)
@@ -1833,5 +1865,20 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   state.src_contents = third_contents;
   EXPECT_TRUE(tabstrip_observer.StateEquals(0, state));
 
+  strip.CloseAllTabs();
+}
+
+// Makes sure TabStripModel handles the case of deleting a tab while removing
+// another tab.
+TEST_F(TabStripModelTest, DeleteFromDestroy) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel strip(&delegate, profile());
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  strip.AppendTabContents(contents1, true);
+  strip.AppendTabContents(contents2, true);
+  // DeleteTabContentsOnDestroyedObserver deletes contents1 when contents2 sends
+  // out notification that it is being destroyed.
+  DeleteTabContentsOnDestroyedObserver observer(contents2, contents1);
   strip.CloseAllTabs();
 }

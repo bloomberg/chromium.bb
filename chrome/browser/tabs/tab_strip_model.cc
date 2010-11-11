@@ -789,7 +789,17 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(TabContents* contents) const {
 
 bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
                                       uint32 close_types) {
+  if (indices.empty())
+    return true;
+
   bool retval = true;
+
+  // Map the indices to TabContents, that way if deleting a tab deletes other
+  // tabs we're ok. Crashes seem to indicate during tab deletion other tabs are
+  // getting removed.
+  std::vector<TabContents*> tabs;
+  for (size_t i = 0; i < indices.size(); ++i)
+    tabs.push_back(GetContentsAt(indices[i]));
 
   // We only try the fast shutdown path if the whole browser process is *not*
   // shutting down. Fast shutdown during browser termination is handled in
@@ -824,11 +834,16 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
   }
 
   // We now return to our regularly scheduled shutdown procedure.
-  for (size_t i = 0; i < indices.size(); ++i) {
-    TabContents* detached_contents = GetContentsAt(indices[i]);
+  for (size_t i = 0; i < tabs.size(); ++i) {
+    TabContents* detached_contents = tabs[i];
+    int index = GetIndexOfTabContents(detached_contents);
+    // Make sure we still contain the tab.
+    if (index == kNoTab)
+      continue;
+
     detached_contents->OnCloseStarted();
 
-    if (!delegate_->CanCloseContentsAt(indices[i])) {
+    if (!delegate_->CanCloseContentsAt(index)) {
       retval = false;
       continue;
     }
@@ -847,7 +862,7 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
       continue;
     }
 
-    InternalCloseTab(detached_contents, indices[i],
+    InternalCloseTab(detached_contents, index,
                      (close_types & CLOSE_CREATE_HISTORICAL_TAB) != 0);
   }
 
