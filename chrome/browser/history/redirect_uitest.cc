@@ -89,7 +89,8 @@ TEST_F(RedirectTest, Client) {
   EXPECT_TRUE(final_url == tab_url);
 }
 
-TEST_F(RedirectTest, ClientEmptyReferer) {
+// http://code.google.com/p/chromium/issues/detail?id=62772
+TEST_F(RedirectTest, FLAKY_ClientEmptyReferer) {
   ASSERT_TRUE(test_server_.Start());
 
   // Create the file contents, which will do a redirect to the
