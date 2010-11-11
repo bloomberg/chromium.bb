@@ -45,6 +45,10 @@ const int kCheckForPrinterUpdatesMs = 6*60*60*1000;
 // Job update timeput
 const int kJobUpdateTimeoutMs = 5000;
 
+}  // namespace
+
+namespace cloud_print {
+
 struct PrintServerInfoCUPS {
   GURL url;
   scoped_refptr<printing::PrintBackend> backend;
@@ -55,10 +59,6 @@ struct PrintServerInfoCUPS {
   typedef std::map<std::string, printing::PrinterCapsAndDefaults> CapsMap;
   CapsMap caps_cache;
 };
-
-}  // namespace
-
-namespace cloud_print {
 
 class PrintSystemCUPS : public PrintSystem {
  public:
