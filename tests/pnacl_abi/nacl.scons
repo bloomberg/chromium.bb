@@ -15,7 +15,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
 
 TESTS = ['small_structs_by_value.c',
          'data_type.c',
-#         'vaarg.c',
+         'vaarg.c',
          ]
 
 for src in TESTS:
