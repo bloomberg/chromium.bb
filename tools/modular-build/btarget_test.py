@@ -388,6 +388,58 @@ digraph {
         dirtree.ReadFile(os.path.join(install.dest_path, "built_file")),
         "Make was run\n")
 
+  @Quieten
+  def test_git_tree(self):
+    tempdir = self.MakeTempDir()
+    repo_dir = os.path.join(tempdir, "git-repo")
+    os.mkdir(repo_dir)
+    dirtree.WriteFile(os.path.join(repo_dir, "myfile"), "File contents")
+    subprocess.check_call(["git", "init", "-q"], cwd=repo_dir)
+    subprocess.check_call(["git", "add", "."], cwd=repo_dir)
+    subprocess.check_call(["git", "commit", "-q", "-a", "-m", "initial"],
+                          cwd=repo_dir)
+
+    def GetHeadId():
+      proc = subprocess.Popen(["git", "rev-parse", "HEAD"],
+                              stdout=subprocess.PIPE, cwd=repo_dir)
+      stdout = proc.communicate()[0]
+      self.assertEquals(proc.wait(), 0)
+      return stdout.strip()
+
+    commit1 = GetHeadId()
+    clone_dir = os.path.join(self.MakeTempDir(), "src")
+    src = btarget.SourceTargetGit("src", clone_dir, repo_dir, commit1)
+    src.DoBuild(btarget.BuildOptions())
+    self.assertEquals(dirtree.ReadFile(os.path.join(clone_dir, "myfile")),
+                      "File contents")
+    self.assertFalse(src.NeedsBuild(btarget.BuildOptions()))
+
+    # Test that we can incrementally update to a new revision.
+    dirtree.WriteFile(os.path.join(repo_dir, "myfile"), "Version 2")
+    subprocess.check_call(["git", "commit", "-q", "-a", "-m", "second"],
+                          cwd=repo_dir)
+    commit2 = GetHeadId()
+    # Also test that we can handle the Git repository URL changing.
+    repo_dir2 = os.path.join(tempdir, "git-repo2")
+    os.rename(repo_dir, repo_dir2)
+    src = btarget.SourceTargetGit("src", clone_dir, repo_dir2, commit2)
+    self.assertTrue(src.NeedsBuild(btarget.BuildOptions()))
+    src.DoBuild(btarget.BuildOptions())
+    self.assertEquals(dirtree.ReadFile(os.path.join(clone_dir, "myfile")),
+                      "Version 2")
+
+    # Suppose the Git commit changes, but to one we have already
+    # downloaded.  Test that we do not run "git fetch": we should
+    # handle the case where the repository is down or the network is
+    # down.
+    src = btarget.SourceTargetGit(
+        "src", clone_dir, os.path.join(tempdir, "this-repo-is-inaccessible"),
+        commit1)
+    self.assertTrue(src.NeedsBuild(btarget.BuildOptions()))
+    src.DoBuild(btarget.BuildOptions())
+    self.assertEquals(dirtree.ReadFile(os.path.join(clone_dir, "myfile")),
+                      "File contents")
+
 
 if __name__ == "__main__":
   unittest.main()

@@ -144,18 +144,6 @@ class DirTreeTests(TempDirTestCase):
         lambda: self._RealizeTree(
             dirtree.PatchedTree(dirtree.EmptyTree(), [diff_file])))
 
-  @Quieten
-  def test_git_tree(self):
-    repo_dir = self._RealizeTree(Dir([("myfile", File("My file"))]))
-    subprocess.check_call(["git", "init", "-q"], cwd=repo_dir)
-    subprocess.check_call(["git", "add", "."], cwd=repo_dir)
-    subprocess.check_call(["git", "commit", "-q", "-a", "-m", "initial"],
-                          cwd=repo_dir)
-    tree = dirtree.GitTree(repo_dir)
-    clone_dir = self._RealizeTree(tree)
-    self.assertEquals(dirtree.ReadFile(os.path.join(clone_dir, "myfile")),
-                      "My file")
-
 
 if __name__ == "__main__":
   unittest.main()

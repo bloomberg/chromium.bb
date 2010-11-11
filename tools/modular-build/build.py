@@ -66,41 +66,49 @@ def ParseKeyValueFile(filename):
   return data
 
 
-def GetSources():
+def GetSources(dest_dir):
+  src = {}
+
+  def AddSource(name, tree):
+    src[name] = btarget.SourceTarget(
+        "%s-src" % name, os.path.join(dest_dir, name), tree)
+
+  def AddGitSource(name, url, commit_id):
+    src[name] = btarget.SourceTargetGit(
+        "%s-src" % name, os.path.join(dest_dir, name), url, commit_id)
+
   revisions = ParseKeyValueFile(os.path.join(nacl_dir, "tools/REVISIONS"))
-  return {
-    "gmp": dirtree.TarballTree(FindFile("gmp-4.3.1.tar.bz2")),
-    "mpfr": dirtree.TarballTree(FindFile("mpfr-2.4.1.tar.bz2")),
-    "binutils": dirtree.PatchedTree(
-        dirtree.TarballTree(FindFile("binutils-2.20.1.tar.bz2")),
-        PatchGlob("binutils-2.20.1"), strip=2),
-    "gcc": dirtree.PatchedTree(
-        dirtree.MultiTarballTree(
-            [FindFile("gcc-core-4.4.3.tar.bz2"),
-             FindFile("gcc-g++-4.4.3.tar.bz2"),
-             FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
-        PatchGlob("gcc-4.4.3"), strip=2),
-    "newlib": dirtree.PatchedTree(
-        dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
-        PatchGlob("newlib-1.18.0"), strip=2),
-    # For a discussion of why nacl-glibc uses these, see
-    # http://code.google.com/p/nativeclient/issues/detail?id=671
-    "linux_headers": dirtree.GitTree(
-        "http://git.chromium.org/git/linux-headers-for-nacl.git",
-        commit_id=revisions["LINUX_HEADERS_FOR_NACL_COMMIT"]),
-    "glibc": dirtree.GitTree(
-        "http://git.chromium.org/git/nacl-glibc.git",
-        commit_id=revisions["NACL_GLIBC_COMMIT"]),
-    }
+  AddSource("gmp", dirtree.TarballTree(FindFile("gmp-4.3.1.tar.bz2")))
+  AddSource("mpfr", dirtree.TarballTree(FindFile("mpfr-2.4.1.tar.bz2")))
+  AddSource("binutils",
+            dirtree.PatchedTree(
+                dirtree.TarballTree(FindFile("binutils-2.20.1.tar.bz2")),
+                PatchGlob("binutils-2.20.1"), strip=2))
+  AddSource("gcc",
+            dirtree.PatchedTree(
+                dirtree.MultiTarballTree(
+                    [FindFile("gcc-core-4.4.3.tar.bz2"),
+                     FindFile("gcc-g++-4.4.3.tar.bz2"),
+                     FindFile("gcc-testsuite-4.4.3.tar.bz2")]),
+                PatchGlob("gcc-4.4.3"), strip=2))
+  AddSource("newlib",
+            dirtree.PatchedTree(
+                dirtree.TarballTree(FindFile("newlib-1.18.0.tar.gz")),
+                PatchGlob("newlib-1.18.0"), strip=2))
+  # For a discussion of why nacl-glibc uses these headers, see
+  # http://code.google.com/p/nativeclient/issues/detail?id=671
+  AddGitSource("linux_headers",
+               "http://git.chromium.org/git/linux-headers-for-nacl.git",
+               commit_id=revisions["LINUX_HEADERS_FOR_NACL_COMMIT"])
+  AddGitSource("glibc",
+               "http://git.chromium.org/git/nacl-glibc.git",
+               commit_id=revisions["NACL_GLIBC_COMMIT"])
+  return src
 
 
-def GetTargets(src):
+def GetTargets():
   top_dir = os.path.abspath("out")
-  src = dict((src_name,
-              btarget.SourceTarget("%s-src" % src_name,
-                                  os.path.join(top_dir, "source", src_name),
-                                  src_tree))
-             for src_name, src_tree in src.iteritems())
+  src = GetSources(os.path.join(top_dir, "source"))
   modules = {}
   module_list = []
 
@@ -405,7 +413,7 @@ int main() {
 
 
 def Main(args):
-  root_targets = GetTargets(GetSources())
+  root_targets = GetTargets()
   # Use an unbuffered version of stdout.  Python/libc adds buffering
   # to stdout when it is not a tty, but this causes output to be
   # ordered wrongly.  See the PYTHONUNBUFFERED environment variable.

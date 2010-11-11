@@ -7,6 +7,7 @@ import hashlib
 import itertools
 import optparse
 import os
+import re
 import subprocess
 
 import dirtree
@@ -250,6 +251,31 @@ def SourceTarget(name, dest_dir, src_tree):
     ResetDir(dest_dir)
     src_tree.WriteTree(dest_dir)
   return BuildTarget(name, dest_dir, DoBuild, args=["source"], deps=[])
+
+
+def SourceTargetGit(name, dest_dir, url, commit_id):
+  if re.match("[0-9a-f]{40}$", commit_id) is None:
+    raise Exception("Not a canonical Git commit ID: %r" % commit_id)
+  def DoBuild(opts):
+    # We do "git init+fetch+checkout" as a more incremental,
+    # idempotent way of doing "git clone".
+    if not os.path.exists(dest_dir):
+      os.makedirs(dest_dir)
+      subprocess.check_call(["git", "init"], cwd=dest_dir)
+      subprocess.check_call(["git", "remote", "add", "origin", url],
+                            cwd=dest_dir)
+    else:
+      # Set the URL again in case it has changed.
+      subprocess.check_call(["git", "remote", "set-url", "origin", url],
+                            cwd=dest_dir)
+    # We only need to run "git fetch" if our repository does not
+    # already contain the commit object we need.
+    rc = subprocess.call(["git", "cat-file", "-e", commit_id], cwd=dest_dir)
+    if rc != 0:
+      subprocess.check_call(["git", "fetch", "origin"], cwd=dest_dir)
+    subprocess.check_call(["git", "checkout", commit_id], cwd=dest_dir)
+  return BuildTarget(name, dest_dir, DoBuild,
+                     args=["source_git", commit_id], deps=[])
 
 
 def ExistingSource(name, dir_path):
