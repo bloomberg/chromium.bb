@@ -66,7 +66,7 @@ PP_Var ConsoleLog(Object* object,
   for (uint32_t i = 0; i < argc; ++i) {
     // NB: currently we are not doing the printf-style formatting.
     // TODO(sehr): implement the formatting.
-    printf("'%s'", PluginVar::VarToString(argv[i]).c_str());
+    printf("'%s'", PluginVar::DebugString(argv[i]).c_str());
     if (i < argc - 1) {
       printf(", ");
     }
@@ -98,7 +98,7 @@ PP_Var Alert(Object* object,
   UNREFERENCED_PARAMETER(exception);
   printf("window.alert(");
   if (argc == 1) {
-    printf("'%s'", PluginVar::VarToString(argv[0]).c_str());
+    printf("'%s'", PluginVar::DebugString(argv[0]).c_str());
   } else {
     printf("<BAD PARAMETER COUNT: %d>", argc);
   }

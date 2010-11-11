@@ -34,7 +34,7 @@ bool Object::HasProperty(PP_Var name,
   DebugPrintf("\n");
   Object* browser_obj = reinterpret_cast<Object*>(this);
   Object::PropertyMap::iterator i =
-      browser_obj->properties()->find(PluginVar::VarToString(name));
+      browser_obj->properties()->find(PluginVar::DebugString(name));
   return (i != browser_obj->properties()->end());
 }
 
@@ -47,7 +47,7 @@ bool Object::HasMethod(PP_Var name,
   DebugPrintf("\n");
   Object* browser_obj = reinterpret_cast<Object*>(this);
   Object::MethodMap::iterator i =
-      browser_obj->methods()->find(PluginVar::VarToString(name));
+      browser_obj->methods()->find(PluginVar::DebugString(name));
   return (i != browser_obj->methods()->end());
 }
 
@@ -60,7 +60,7 @@ PP_Var Object::GetProperty(PP_Var name,
   DebugPrintf("\n");
   Object* browser_obj = reinterpret_cast<Object*>(this);
   Object::PropertyMap::iterator i =
-      browser_obj->properties()->find(PluginVar::VarToString(name));
+      browser_obj->properties()->find(PluginVar::DebugString(name));
   if (i != browser_obj->properties()->end()) {
     ppb_var->AddRef(*(i->second));
     return *(i->second);
@@ -121,14 +121,14 @@ void Object::SetProperty(PP_Var name,
   Object* browser_obj = reinterpret_cast<Object*>(this);
   // Release the previous value in the map.
   Object::PropertyMap::iterator i =
-      browser_obj->properties()->find(PluginVar::VarToString(name));
+      browser_obj->properties()->find(PluginVar::DebugString(name));
   if (i != browser_obj->properties()->end()) {
     ppb_var->Release(*(i->second));
   }
   PP_Var* newval = reinterpret_cast<PP_Var*>(malloc(sizeof(*newval)));
   *newval = value;
   ppb_var->AddRef(*newval);
-  (*browser_obj->properties())[PluginVar::VarToString(name)] = newval;
+  (*browser_obj->properties())[PluginVar::DebugString(name)] = newval;
 }
 
 void Object::RemoveProperty(PP_Var name,
@@ -141,7 +141,7 @@ void Object::RemoveProperty(PP_Var name,
   Object* browser_obj = reinterpret_cast<Object*>(this);
   // Release the value.
   Object::PropertyMap::iterator i =
-      browser_obj->properties()->find(PluginVar::VarToString(name));
+      browser_obj->properties()->find(PluginVar::DebugString(name));
   if (i != browser_obj->properties()->end()) {
     ppb_var->Release(*(i->second));
     browser_obj->properties()->erase(i);
@@ -166,7 +166,7 @@ PP_Var Object::Call(PP_Var method_name,
   }
   DebugPrintf(" }\n");
   Object::MethodMap::iterator i =
-      browser_obj->methods()->find(PluginVar::VarToString(method_name));
+      browser_obj->methods()->find(PluginVar::DebugString(method_name));
   if (i != browser_obj->methods()->end()) {
     return (i->second)(browser_obj, argc, argv, exception);
   }

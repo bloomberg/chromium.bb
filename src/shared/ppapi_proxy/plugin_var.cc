@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
@@ -334,7 +335,7 @@ const PPB_Var_Deprecated* PluginVar::GetInterface() {
   return &intf;
 }
 
-std::string PluginVar::VarToString(PP_Var var) {
+std::string PluginVar::DebugString(PP_Var var) {
   switch (var.type) {
     case PP_VARTYPE_UNDEFINED:
       return "##UNDEFINED##";
@@ -374,6 +375,33 @@ std::string PluginVar::VarToString(PP_Var var) {
   return "##ERROR##";
 }
 
+PP_Var PluginVar::StringToPPVar(PP_Module module_id, std::string str) {
+  static const PPB_Var_Deprecated* ppb_var = NULL;
+  if (ppb_var == NULL) {
+    ppb_var = reinterpret_cast<const PPB_Var_Deprecated*>(
+        ppapi_proxy::PluginVar::GetInterface());
+  }
+  if (ppb_var == NULL) {
+    return PP_MakeUndefined();
+  }
+  return ppb_var->VarFromUtf8(module_id,
+                              str.c_str(),
+                              nacl::assert_cast<uint32_t>(str.size()));
+}
+
+std::string PluginVar::PPVarToString(PP_Var var) {
+  static const PPB_Var_Deprecated* ppb_var = NULL;
+  if (ppb_var == NULL) {
+    ppb_var = reinterpret_cast<const PPB_Var_Deprecated*>(
+        ppapi_proxy::PluginVar::GetInterface());
+  }
+  if (ppb_var == NULL || var.type != PP_VARTYPE_STRING) {
+    return "";
+  }
+  uint32_t len;
+  return ppb_var->VarToUtf8(var, &len);
+}
+
 void PluginVar::Print(PP_Var var) {
   switch (var.type) {
     case PP_VARTYPE_UNDEFINED:
@@ -393,7 +421,7 @@ void PluginVar::Print(PP_Var var) {
       break;
     case PP_VARTYPE_STRING:
       {
-        std::string str = VarToString(var);
+        std::string str = DebugString(var);
         DebugPrintf("PP_Var(string: '%*s')",
                     static_cast<uint32_t>(str.size()),
                     str.c_str());

@@ -24,9 +24,13 @@ class PluginVar {
   // Returns an interface pointer suitable to the PPAPI client.
   static const PPB_Var_Deprecated* GetInterface();
 
-  // Print, etc.
+  // String helpers.
+  static PP_Var StringToPPVar(PP_Module module_id, std::string str);
+  static std::string PPVarToString(PP_Var var);
+
+  // Printing and debugging.
   static void Print(PP_Var var);
-  static std::string VarToString(PP_Var var);
+  static std::string DebugString(PP_Var var);
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginVar);
