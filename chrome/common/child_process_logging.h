@@ -14,7 +14,7 @@
 
 class GPUInfo;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // The maximum number of active extensions we will report.
 // Also used in chrome/app, but we define it here to avoid a common->app
 // dependency.

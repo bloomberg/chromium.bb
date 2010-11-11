@@ -26,6 +26,8 @@ const char *kGPUPixelShaderVersionParamName = "gpu-psver";
 const char *kGPUVertexShaderVersionParamName = "gpu-vsver";
 const char *kGPUGLVersionParamName = "gpu-glver";
 const char *kNumberOfViews = "num-views";
+NSString* const kNumExtensionsName = @"num-extensions";
+NSString* const kExtensionNameFormat = @"extension-%d";
 
 static SetCrashKeyValueFuncPtr g_set_key_func;
 static ClearCrashKeyValueFuncPtr g_clear_key_func;
@@ -112,7 +114,25 @@ std::string GetClientId() {
 }
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
-  // TODO(port)
+  if (!g_set_key_func)
+    return;
+
+  // Log the count separately to track heavy users.
+  const int count = static_cast<int>(extension_ids.size());
+  g_set_key_func(kNumExtensionsName, [NSString stringWithFormat:@"%i", count]);
+
+  // Record up to |kMaxReportedActiveExtensions| extensions, clearing
+  // keys if there aren't that many.
+  std::set<std::string>::const_iterator iter = extension_ids.begin();
+  for (int i = 0; i < kMaxReportedActiveExtensions; ++i) {
+    NSString* key = [NSString stringWithFormat:kExtensionNameFormat, i];
+    if (iter != extension_ids.end()) {
+      g_set_key_func(key, [NSString stringWithUTF8String:iter->c_str()]);
+      ++iter;
+    } else {
+      g_clear_key_func(key);
+    }
+  }
 }
 
 void SetGpuKeyValue(const char* param_name, const std::string& value_str,
