@@ -153,11 +153,6 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
 }
 
 BookmarkBarGtk::~BookmarkBarGtk() {
-  // A popup menu may be currently showing and holding a pointer back to one
-  // of our buttons.  Be sure it's destroyed first.
-  current_menu_.reset();
-  current_context_menu_.reset();
-
   RemoveAllBookmarkButtons();
   bookmark_toolbar_.Destroy();
   event_box_.Destroy();

@@ -10,6 +10,7 @@
 
 #include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
+#include "app/gtk_signal_registrar.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
@@ -135,6 +136,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   // The controller and view for the right click context menu.
   scoped_ptr<BookmarkContextMenuController> context_menu_controller_;
   scoped_ptr<MenuGtk> context_menu_;
+
+  GtkSignalRegistrar signals_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);
 };
