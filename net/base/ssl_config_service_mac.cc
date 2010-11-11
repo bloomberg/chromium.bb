@@ -97,6 +97,8 @@ bool SSLConfigServiceMac::GetSSLConfigNow(SSLConfig* config) {
                                              kTLS1EnabledDefaultValue);
   SSLConfigService::SetSSLConfigFlags(config);
 
+  // TODO(rsleevi): http://crbug.com/58831 - Implement preferences for
+  // disabling cipher suites.
   return true;
 }
 
