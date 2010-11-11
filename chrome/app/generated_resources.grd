@@ -6430,6 +6430,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
       	Development
       </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_CANARY" desc="The canary option in the channel select.">
+      	Canary
+      </message>
       <message name="IDS_ABOUT_PAGE_CHECK_NOW" desc="Button title for checking for updates now.">
       	Check For Update
       </message>

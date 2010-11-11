@@ -80,6 +80,7 @@ const LocalizeEntry localize_table[] = {
     { "release", IDS_ABOUT_PAGE_CHANNEL_RELEASE },
     { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
     { "development", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
+    { "canary", IDS_ABOUT_PAGE_CHANNEL_CANARY },
     { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
     { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
     { "aboutPage", IDS_ABOUT_PAGE_TITLE }
