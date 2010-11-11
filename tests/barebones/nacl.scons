@@ -33,6 +33,11 @@ env.Replace(LIBS=[],
 
 env.Append(CFLAGS='-Wno-long-long')
 
+# This setting will affect the barebones_regs.c test
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  env.Append(CPPDEFINES='SMALL_REGS_TEST')
+
+
 
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
@@ -42,17 +47,15 @@ for basename in ['addr_modes',
                  'fib',
                  'hello_world',
                  'long_long',
-                 # TODO jasonwkim [2010/08/13 16:04:23 PDT (Friday)]
-                 # remove flaky test for now
-                 # http://code.google.com/p/nativeclient/issues/detail?id=822
-                 #'regs',
+                 'regs',
                  'switch',
                  'vtable',
                  'vaarg',
                  'negindex',
                  ]:
-  # TODO(robertm): fix this ASAP
+  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=783
   if env['BUILD_ARCHITECTURE'] == 'arm' and basename == 'vaarg': continue
+
 
   # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
   if env.IsRunningUnderValgrind(): continue

@@ -8,8 +8,10 @@
  * NaCl test for super simple program not using newlib
  * Try to use as many regs as possible
  * use gcc -E <src.c> to see what all this macro magic does
+ *
+ * For slower architectures (e.g. ARM) we provide a faster version
+ * which can be selectedted via -DSMALL_REGS_TEST
  */
-/* TODO(robertm): fix this. SMALL_REGS_TEST works around a compiler bug */
 #if defined(SMALL_REGS_TEST)
 #define REPEAT    \
   REPEAT_BODY(00) \
