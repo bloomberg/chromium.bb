@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import codecs
 import os
 import unittest
 
@@ -12,6 +13,9 @@ import test_utils
 
 
 class FindMatchTests(pyauto.PyUITest):
+
+  # Data dir where all find test data files are kept
+  find_test_data_dir = 'find_in_page'
 
   def testCanFindMatchCount(self):
     """Verify Find match count for valid search"""
@@ -97,6 +101,147 @@ class FindMatchTests(pyauto.PyUITest):
     self.assertEqual(2,
         self.FindInPage(zip_file, tab_index=2)['match_count'])
     test_utils.RemoveDownloadedTestFile(self, zip_file)
+
+  def testFindNextAndPrevious(self):
+    """Verify search selection coordinates.
+
+    The data file used is set-up such that the text occurs on the same line,
+    and we verify their positions by verifying their relative positions.
+    """
+    search_string = u'\u5728\u897f\u660c\u536b\u661f\u53d1'
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'specialchar.html'))
+    self.NavigateToURL(url)
+    first_find = self.FindInPage(search_string)
+    second_find = self.FindInPage(search_string, find_next=True)
+    # We have search occurrence in the same row, so top-bottom
+    # coordinates should be the same even for second search.
+    self.assertEqual(first_find['match_top'], second_find['match_top'],
+                     'Words\' top coordinates should be same')
+    self.assertEqual(first_find['match_bottom'], second_find['match_bottom'],
+                     'Words\' bottom coordinates should be same')
+    # And left-right coordinates should be in order.
+    self.assertTrue(first_find['match_left'] < second_find['match_left'],
+                    'Second find left coordinate should be greater than '
+                    'the first find left coordinate')
+    self.assertTrue(first_find['match_right'] < second_find['match_right'],
+                    'Second find right coordinate should be greater than '
+                    'the first find right coordinate')
+    first_find_reverse = self.FindInPage(
+        search_string, find_next=True, forward=False)
+    # We find next and we go back so find coordinates should be the same
+    # as previous ones.
+    self.assertEqual(first_find, first_find_reverse,
+                     'First occurrence must be selected, since we went back')
+
+  def testSpecialChars(self):
+    """Test find in page with unicode and special characters.
+
+    Finds from page content, comments and meta data and verifies that comments
+    and meta data are not searchable.
+    """
+    search_string = u'\u5728\u897f\u660c\u536b\u661f\u53d1'
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'specialchar.html'))
+    self.NavigateToURL(url)
+    self.assertEqual(4, self.FindInPage(search_string)['match_count'])
+    search_string = u'240^*&%!#~!*&\u518d\u5c31\u8077\u624b\u5f53'
+    self.assertEqual(2, self.FindInPage(search_string)['match_count'])
+    # Find for the special chars in the comment and in the meta tag
+    search_string = u'\u4e2d\u65b0\u793e\u8bb0\u8005\u5b8b\u5409'\
+                  u'\u6cb3\u6444\u4e2d\u65b0\u7f51'
+    self.assertEqual(0, self.FindInPage(search_string)['match_count'],
+                     'Chrome should not find chars from comment or meta tags')
+
+  def testFindInLargePage(self):
+    """Find in a very large page"""
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'largepage.html'))
+    self.NavigateToURL(url)
+    self.assertEqual(373, self.FindInPage('daughter of Prince')['match_count'])
+
+  def testFindLongString(self):
+    """Find a very long string in a large page"""
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'largepage.html'))
+    self.NavigateToURL(url)
+    file = codecs.open(os.path.join(self.DataDir(), self.find_test_data_dir,
+                                    'LongFind.txt'), 'r', 'utf-8')
+    search = file.read()
+    self.assertEqual(1, self.FindInPage(search)['match_count'])
+
+  def testFindBigString(self):
+    """Find a big font string in a page"""
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'BigText.html'))
+    self.NavigateToURL(url)
+    self.assertEqual(1, self.FindInPage('SomeLargeString')['match_count'])
+
+  def testVariousFindTests(self):
+    """Test find in page for <span> style text, lists, html comments, etc."""
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'FindRandomTests.html'))
+    self.NavigateToURL(url)
+    search = 'has light blue eyes and my father has dark'
+    self.assertEqual(1, self.FindInPage(search)['match_count'],
+                     'Failed to find text with <span> tag')
+    # Find for list items
+    search = 'Google\nApple\nandroid'
+    self.assertEqual(1, self.FindInPage(search)['match_count'],
+                     'Failed to find the list items')
+    # Find HTML comments
+    self.assertEqual(0, self.FindInPage('example comment')['match_count'],
+                     'We should not find HTML comments')
+
+  def testFindWholeFileContent(self):
+    """Find the whole text file page and find count should be 1"""
+    find_test_file = os.path.join(self.DataDir(), self.find_test_data_dir,
+                                  'find_test.txt')
+    url = self.GetFileURLForPath(find_test_file)
+    self.NavigateToURL(url)
+    file = open(find_test_file)
+    search = file.read()
+    self.assertEqual(1, self.FindInPage(search)['match_count'],
+                     'Failed to find the whole page')
+
+  def testSingleOccurrence(self):
+    """Search Back and Forward on a single occurrence"""
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), self.find_test_data_dir, 'FindRandomTests.html'))
+    self.NavigateToURL(url)
+    self.assertEqual(1, self.FindInPage('2010 Pro Bowl')['match_count'])
+    # First occurrence find
+    first_occurence_dict = self.FindInPage('2010 Pro Bowl')
+    # Finding next occurrence
+    next_occurence_dict = self.FindInPage('2010 Pro Bowl', find_next = True)
+    self.assertEqual(first_occurence_dict, next_occurence_dict,
+                     'We have only one occurrence in this page so'
+                     'first and next coordinates must be same')
+    # Doing a fake find so we have no previous search
+    self.FindInPage('ghgfjgfh201232rere')
+
+    first_occurence_dict = self.FindInPage('2010 Pro Bowl')
+    # Finding previous occurrence
+    back_occurence_dict = self.FindInPage('2010 Pro Bowl',
+                                          find_next = True, forward = False)
+    self.assertEqual(first_occurence_dict, back_occurence_dict,
+                     'We have only one occurrence in this page so '
+                     'first and back search coordinates must be same')
+
+  def testSearchInPDF(self):
+    """Verify that we can find in a pdf file.
+
+    Only for Google Chrome builds (Chromium builds do not have internal pdf).
+    """
+    # bail out if not a branded build
+    properties = self.GetBrowserInfo()['properties']
+    if properties['branding'] != 'Google Chrome':
+      return
+    url = self.GetFileURLForPath(os.path.join(
+        self.DataDir(), 'pdf_browsertest.pdf'))
+    self.NavigateToURL(url)
+    search_count = self.FindInPage('venenatis')['match_count']
+    self.assertEqual(4, search_count, 'Failed to find in the pdf file')
 
 
 if __name__ == '__main__':
