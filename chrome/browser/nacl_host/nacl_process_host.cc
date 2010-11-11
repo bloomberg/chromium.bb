@@ -248,10 +248,34 @@ void NaClProcessHost::SendStartMessage() {
 #else
     nacl::FileDescriptor channel;
     channel.fd = dup(sockets_for_sel_ldr_[i]);
+    if (channel.fd < 0) {
+      LOG(ERROR) << "Failed to dup() a file descriptor";
+      return;
+    }
     channel.auto_close = true;
     handles_for_sel_ldr.push_back(channel);
 #endif
   }
+
+#if defined(OS_MACOSX)
+  // For dynamic loading support, NaCl requires a file descriptor that
+  // was created in /tmp, since those created with shm_open() are not
+  // mappable with PROT_EXEC.  Rather than requiring an extra IPC
+  // round trip out of the sandbox, we create an FD here.
+  base::SharedMemory memory_buffer;
+  if (!memory_buffer.CreateAnonymous(/* size= */ 1)) {
+    LOG(ERROR) << "Failed to allocate memory buffer";
+    return;
+  }
+  nacl::FileDescriptor memory_fd;
+  memory_fd.fd = dup(memory_buffer.handle().fd);
+  if (memory_fd.fd < 0) {
+    LOG(ERROR) << "Failed to dup() a file descriptor";
+    return;
+  }
+  memory_fd.auto_close = true;
+  handles_for_sel_ldr.push_back(memory_fd);
+#endif
 
   Send(new NaClProcessMsg_Start(handles_for_sel_ldr));
   sockets_for_sel_ldr_.clear();

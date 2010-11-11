@@ -4,6 +4,7 @@
 
 #include "chrome/nacl/nacl_thread.h"
 
+#include "base/atomicops.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/nacl_messages.h"
@@ -11,6 +12,42 @@
 
 #if defined(OS_LINUX)
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
+#endif
+
+#if defined(OS_MACOSX)
+namespace {
+
+// On Mac OS X, shm_open() works in the sandbox but does not give us
+// an FD that we can map as PROT_EXEC.  Rather than doing an IPC to
+// get an executable SHM region when CreateMemoryObject() is called,
+// we preallocate one on startup, since NaCl's sel_ldr only needs one
+// of them.  This saves a round trip.
+
+base::subtle::Atomic32 g_shm_fd = -1;
+
+int CreateMemoryObject(size_t size, bool executable) {
+  if (executable && size > 0) {
+    int result_fd = base::subtle::NoBarrier_AtomicExchange(&g_shm_fd, -1);
+    if (result_fd != -1) {
+      // ftruncate() is disallowed by the Mac OS X sandbox and
+      // returns EPERM.  Luckily, we can get the same effect with
+      // lseek() + write().
+      if (lseek(result_fd, size - 1, SEEK_SET) == -1) {
+        LOG(ERROR) << "lseek() failed: " << errno;
+        return -1;
+      }
+      if (write(result_fd, "", 1) != 1) {
+        LOG(ERROR) << "write() failed: " << errno;
+        return -1;
+      }
+      return result_fd;
+    }
+  }
+  // Fall back to NaCl's default implementation.
+  return -1;
+}
+
+}
 #endif
 
 // This is ugly.  We need an interface header file for the exported
@@ -48,6 +85,11 @@ void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
 #if defined(OS_LINUX)
   nacl::SetCreateMemoryObjectFunc(
       renderer_sandbox_support::MakeSharedMemorySegmentViaIPCExecutable);
+#elif defined(OS_MACOSX)
+  nacl::SetCreateMemoryObjectFunc(CreateMemoryObject);
+  CHECK(handles.size() >= 1);
+  g_shm_fd = nacl::ToNativeHandle(handles[handles.size() - 1]);
+  handles.pop_back();
 #endif
   scoped_array<NaClHandle> array(new NaClHandle[handles.size()]);
   for (size_t i = 0; i < handles.size(); i++) {
