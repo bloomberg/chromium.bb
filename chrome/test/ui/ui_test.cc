@@ -751,6 +751,9 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // Disable TabCloseableStateWatcher for tests.
   command_line.AppendSwitch(switches::kDisableTabCloseableStateWatcher);
 
+  // Allow file:// access on ChromeOS.
+  command_line.AppendSwitch(switches::kAllowFileAccess);
+
   test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
   DebugFlags::ProcessDebugFlags(

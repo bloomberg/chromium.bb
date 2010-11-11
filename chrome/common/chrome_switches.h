@@ -22,6 +22,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kActivateOnLaunch[];
 extern const char kAllowFileAccessFromFiles[];
+extern const char kAllowFileAccess[];
 extern const char kAllowSSLMITMProxies[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAllowScriptingGallery[];

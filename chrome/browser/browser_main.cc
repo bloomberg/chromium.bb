@@ -97,6 +97,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/url_request/url_request.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -1214,6 +1215,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager()->GetDefaultProfile();
+
+  // Allow access to file:// on ChromeOS for tests.
+  if (parsed_command_line.HasSwitch(switches::kAllowFileAccess)) {
+    URLRequest::AllowFileAccess();
+  }
 
   // There are two use cases for kLoginUser:
   //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"

@@ -273,6 +273,9 @@ int RunTest(const std::string& test_name) {
   }
   new_cmd_line.AppendSwitchPath(switches::kUserDataDir, temp_dir.path());
 
+  // file:// access for ChromeOS.
+  new_cmd_line.AppendSwitch(switches::kAllowFileAccess);
+
   base::ProcessHandle process_handle;
 #if defined(OS_POSIX)
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
