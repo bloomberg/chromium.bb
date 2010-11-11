@@ -795,9 +795,12 @@ DELEGATE_TO_GL_3(getVertexAttribiv, GetVertexAttribiv,
 
 long WebGraphicsContext3DCommandBufferImpl::getVertexAttribOffset(
     unsigned long index, unsigned long pname) {
-  // TODO(kbr): implement.
-  NOTIMPLEMENTED();
-  return 0;
+  makeContextCurrent();
+  GLvoid* value = NULL;
+  // NOTE: If pname is ever a value that returns more then 1 element
+  // this will corrupt memory.
+  glGetVertexAttribPointerv(index, pname, &value);
+  return reinterpret_cast<intptr_t>(value);
 }
 
 DELEGATE_TO_GL_2(hint, Hint, unsigned long, unsigned long)
