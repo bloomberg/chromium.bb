@@ -120,7 +120,8 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
   EXPECT_STREQ("1\n", value.c_str());
 }
 
-TEST_F(SearchProviderTest, TestIsSearchProviderInstalled) {
+// http://code.google.com/p/chromium/issues/detail?id=62777
+TEST_F(SearchProviderTest, FLAKY_TestIsSearchProviderInstalled) {
   ASSERT_TRUE(test_server_started_);
 
   // Use the default search provider, other installed search provider, and
