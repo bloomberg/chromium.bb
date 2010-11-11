@@ -52,10 +52,9 @@ std::vector<GURL> GetNamedList(const char* name,
 DictionaryValue* ParseDistributionPreferences(
     const FilePath& master_prefs_path) {
   std::string json_data;
-  if (!file_util::ReadFileToString(master_prefs_path, &json_data)) {
-    LOG(WARNING) << "Failed to read master prefs file. ";
+  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
     return NULL;
-  }
+
   JSONStringValueSerializer json(json_data);
   std::string error;
   scoped_ptr<Value> root(json.Deserialize(NULL, &error));
@@ -134,8 +133,7 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
 MasterPreferences::MasterPreferences(const FilePath& prefs_path)
     : distribution_(NULL), preferences_read_from_file_(false) {
   master_dictionary_.reset(ParseDistributionPreferences(prefs_path));
-  LOG_IF(ERROR, !master_dictionary_.get()) << "Failed to parse "
-      << prefs_path.value();
+
   if (!master_dictionary_.get()) {
     master_dictionary_.reset(new DictionaryValue());
   } else {
