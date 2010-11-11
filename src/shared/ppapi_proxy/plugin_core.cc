@@ -15,6 +15,7 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/cpp/common.h"
 
 using ppapi_proxy::DebugPrintf;
 
@@ -22,6 +23,10 @@ using ppapi_proxy::DebugPrintf;
 // so no locking is done.
 
 namespace {
+#ifdef __native_client__
+__thread bool is_main_thread = false;
+bool main_thread_marked = false;
+#endif  // __native_client__
 
 std::map<PP_Resource, uint32_t>* local_ref_count;
 
@@ -125,7 +130,13 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
 
 static PP_Bool IsMainThread() {
   DebugPrintf("PluginCore::IsMainThread\n");
+#ifdef __native_client__
+  return pp::BoolToPPBool(is_main_thread);
+#else
+  // TODO(polina): implement this for trusted clients if needed.
   NACL_UNIMPLEMENTED();
+  return PP_TRUE;
+#endif  // __native_client__
 }
 
 }  // namespace
@@ -145,5 +156,21 @@ const void* PluginCore::GetInterface() {
   };
   return reinterpret_cast<const void*>(&intf);
 }
+
+void PluginCore::MarkMainThread() {
+#ifdef __native_client__
+  if (main_thread_marked) {
+    // A main thread was already designated.  Fail.
+    NACL_NOTREACHED();
+  } else {
+    is_main_thread = true;
+    // Setting this once works because the main thread will call this function
+    // before calling any pthread_creates.  Hence the result is already
+    // published before other threads might attempt to call it.
+    main_thread_marked = true;
+  }
+#endif  // __native_client__
+}
+
 
 }  // namespace ppapi_proxy

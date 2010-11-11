@@ -18,6 +18,8 @@ class PluginCore {
  public:
   // Return an interface pointer usable by PPAPI plugins.
   static const void* GetInterface();
+  // Mark the calling thread as the main thread for IsMainThread.
+  static void MarkMainThread();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginCore);
