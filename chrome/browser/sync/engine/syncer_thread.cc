@@ -16,6 +16,7 @@
 #include <queue>
 
 #include "base/rand_util.h"
+#include "base/stringprintf.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -53,13 +54,28 @@ static const int kBackoffRandomizationFactor = 2;
 
 const int SyncerThread::kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
 
-void SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
+void SyncerThread::NudgeSyncerWithDataTypes(
+    int milliseconds_from_now,
+    NudgeSource source,
+    const syncable::ModelTypeBitSet& model_types) {
   AutoLock lock(lock_);
   if (vault_.syncer_ == NULL) {
     return;
   }
 
-  NudgeSyncImpl(milliseconds_from_now, source);
+  NudgeSyncImpl(milliseconds_from_now, source, model_types);
+}
+
+void SyncerThread::NudgeSyncer(
+    int milliseconds_from_now,
+    NudgeSource source) {
+  AutoLock lock(lock_);
+  if (vault_.syncer_ == NULL) {
+    return;
+  }
+
+  syncable::ModelTypeBitSet model_types;  // All false by default.
+  NudgeSyncImpl(milliseconds_from_now, source, model_types);
 }
 
 SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
@@ -77,7 +93,6 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
 
   if (context->connection_manager())
     WatchConnectionManager(context->connection_manager());
-
 }
 
 SyncerThread::~SyncerThread() {
@@ -321,7 +336,24 @@ void SyncerThread::ThreadMainLoop() {
 
     VLOG(1) << "Calling Sync Main at time " << Time::Now().ToInternalValue();
     SyncMain(vault_.syncer_);
-    last_sync_time = TimeTicks::Now();
+
+    // Update timing information for how often these datatypes are triggering
+    // nudges.
+    base::TimeTicks now = TimeTicks::Now();
+    for (size_t i = syncable::FIRST_REAL_MODEL_TYPE;
+         i < vault_.pending_nudge_types_.size();
+         ++i) {
+      if (vault_.pending_nudge_types_[i]) {
+        syncable::PostTimeToTypeHistogram(syncable::ModelType(i),
+                                          now - last_sync_time);
+      }
+    }
+
+    // Now that the nudge has been handled, we can reset our tracking of the
+    // datatypes triggering a nudge.
+    vault_.pending_nudge_types_.reset();
+
+    last_sync_time = now;
 
     VLOG(1) << "Updating the next polling time after SyncMain";
     vault_.current_wait_interval_ = CalculatePollingWaitTime(
@@ -555,7 +587,8 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
         break;
     }
   }
-  vault_.syncer_->set_updates_source(updates_source);
+  vault_.syncer_->set_updates_source(
+      updates_source, vault_.pending_nudge_types_);
 }
 
 void SyncerThread::CreateSyncer(const std::string& dirname) {
@@ -658,7 +691,8 @@ int SyncerThread::CalculateSyncWaitTime(int last_interval, int user_idle_ms) {
 
 // Called with mutex_ already locked.
 void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
-                                 NudgeSource source) {
+                                 NudgeSource source,
+                                 const syncable::ModelTypeBitSet& model_types) {
   // TODO(sync): Add the option to reset the backoff state machine.
   // This is needed so nudges that are a result of the user's desire
   // to download updates for a new data type can be satisfied quickly.
@@ -676,6 +710,10 @@ void SyncerThread::NudgeSyncImpl(int milliseconds_from_now,
             << " dropped due to existing later pending nudge";
     return;
   }
+
+  // Union the current bitset with any from nudges that may have already
+  // posted (coalesce the nudge datatype information).
+  vault_.pending_nudge_types_ |= model_types;
 
   VLOG(1) << "Replacing pending nudge for source " << source
           << " at " << nudge_time.ToInternalValue();

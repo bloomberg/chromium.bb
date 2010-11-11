@@ -15,6 +15,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_H_
 #pragma once
 
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -34,6 +35,8 @@ namespace browser_sync {
 class ModelSafeWorker;
 
 namespace sessions {
+typedef std::pair<sync_pb::GetUpdatesCallerInfo::GetUpdatesSource,
+    syncable::ModelTypeBitSet> SyncSourceInfo;
 
 class SyncSession {
  public:
@@ -101,9 +104,13 @@ class SyncSession {
   // Volatile reader for the source member of the sync session object.  The
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource TestAndSetSource();
-  void set_source(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
+  SyncSourceInfo TestAndSetSource();
+  void set_source(SyncSourceInfo source) {
     source_ = source;
+  }
+  void set_source(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+      syncable::ModelTypeBitSet model_types) {
+    source_ = SyncSourceInfo(source, model_types);
   }
 
   const std::vector<ModelSafeWorker*>& workers() const { return workers_; }
@@ -119,7 +126,7 @@ class SyncSession {
   SyncSessionContext* const context_;
 
   // The source for initiating this sync session.
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source_;
+  SyncSourceInfo source_;
 
   // Information about extensions activity since the last successful commit.
   ExtensionsActivityMonitor::Records extensions_activity_;

@@ -186,8 +186,8 @@ std::string BaseNode::GenerateSyncableHash(
 
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
- if (!specifics.HasExtension(sync_pb::password))
-   return NULL;
+  if (!specifics.HasExtension(sync_pb::password))
+    return NULL;
   const sync_pb::EncryptedData& encrypted =
       specifics.GetExtension(sync_pb::password).encrypted();
   scoped_ptr<sync_pb::PasswordSpecificsData> data(
@@ -1884,6 +1884,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 
   bool exists_unsynced_items = false;
   bool only_preference_changes = true;
+  syncable::ModelTypeBitSet model_types;
   for (syncable::OriginalEntries::const_iterator i = event.originals->begin();
        i != event.originals->end() && !exists_unsynced_items;
        ++i) {
@@ -1902,6 +1903,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
       // Unsynced items will cause us to nudge the the syncer.
       exists_unsynced_items = true;
 
+      model_types[model_type] = true;
       if (model_type != syncable::PREFERENCES)
         only_preference_changes = false;
     }
@@ -1909,7 +1911,10 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
   if (exists_unsynced_items && syncer_thread()) {
     int nudge_delay = only_preference_changes ?
         kPreferencesNudgeDelayMilliseconds : kDefaultNudgeDelayMilliseconds;
-    syncer_thread()->NudgeSyncer(nudge_delay, SyncerThread::kLocal);
+    syncer_thread()->NudgeSyncerWithDataTypes(
+        nudge_delay,
+        SyncerThread::kLocal,
+        model_types);
   }
 }
 
@@ -2146,25 +2151,47 @@ void SyncManager::SyncInternal::TalkMediatorLogin(
 
 void SyncManager::SyncInternal::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
+  syncable::ModelTypeBitSet model_types;
+
   // Check if the service url is a sync URL.  An empty service URL is
   // treated as a legacy sync notification.  If we're listening to
   // server-issued notifications, no need to check the service_url.
-  if ((notifier_options_.notification_method ==
-       notifier::NOTIFICATION_SERVER) ||
-      notification_data.service_url.empty() ||
-      (notification_data.service_url ==
-       browser_sync::kSyncLegacyServiceUrl) ||
-      (notification_data.service_url ==
-       browser_sync::kSyncServiceUrl)) {
-    VLOG(1) << "P2P: Updates on server, pushing syncer";
-    if (syncer_thread()) {
-      // Introduce a delay to help coalesce initial notifications.
-      syncer_thread()->NudgeSyncer(250, SyncerThread::kNotification);
+  if (notifier_options_.notification_method ==
+      notifier::NOTIFICATION_SERVER) {
+    VLOG(1) << "Sync received server notification: " <<
+        notification_data.service_specific_data;
+
+    if (!syncable::ModelTypeBitSetFromString(
+            notification_data.service_specific_data,
+            &model_types)) {
+      LOG(DFATAL) << "Could not extract model types from server data.";
+      model_types.set();
     }
-    allstatus_.IncrementNotificationsReceived();
+  } else if (notification_data.service_url.empty() ||
+             (notification_data.service_url ==
+              browser_sync::kSyncLegacyServiceUrl) ||
+             (notification_data.service_url ==
+              browser_sync::kSyncServiceUrl)) {
+    VLOG(1) << "Sync received P2P notification.";
+
+    // Catch for sync integration tests (uses p2p). Just set all datatypes.
+    model_types.set();
   } else {
     LOG(WARNING) << "Notification fron unexpected source: "
                  << notification_data.service_url;
+  }
+
+  if (model_types.any()) {
+    if (syncer_thread()) {
+     // Introduce a delay to help coalesce initial notifications.
+     syncer_thread()->NudgeSyncerWithDataTypes(
+         250,
+         SyncerThread::kNotification,
+         model_types);
+    }
+    allstatus_.IncrementNotificationsReceived();
+  } else {
+    LOG(WARNING) << "Sync received notification without any type information.";
   }
 }
 

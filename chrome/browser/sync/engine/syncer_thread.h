@@ -10,6 +10,7 @@
 #pragma once
 
 #include <list>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -25,6 +26,7 @@
 #endif
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 
 class EventListenerHookup;
@@ -43,6 +45,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculatePollingWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Polling);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Nudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, NudgeWithDataTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Throttling);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, AuthInvalid);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Pause);
@@ -127,6 +130,13 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // from the SyncerThread's controller and will cause a mutex lock.
   virtual void NudgeSyncer(int milliseconds_from_now, NudgeSource source);
 
+  // Same as |NudgeSyncer|, but supports tracking the datatypes that caused
+  // the nudge to occur.
+  virtual void NudgeSyncerWithDataTypes(
+      int milliseconds_from_now,
+      NudgeSource source,
+      const syncable::ModelTypeBitSet& model_type);
+
   void SetNotificationsEnabled(bool notifications_enabled);
 
   // Call this when a directory is opened
@@ -185,6 +195,11 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
     // could be a pending nudge of type kUnknown, so it's better to
     // check pending_nudge_time_.)
     NudgeSource pending_nudge_source_;
+
+    // BitSet of the datatypes that have triggered the current nudge
+    // (can be union of various bitsets when multiple nudges are coalesced)
+    syncable::ModelTypeBitSet pending_nudge_types_;
+
     // null iff there is no pending nudge.
     base::TimeTicks pending_nudge_time_;
 
@@ -300,7 +315,10 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // This causes syncer to start syncing ASAP. If the rate of requests is too
   // high the request will be silently dropped.  mutex_ should be held when
   // this is called.
-  void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
+  void NudgeSyncImpl(
+      int milliseconds_from_now,
+      NudgeSource source,
+      const syncable::ModelTypeBitSet& model_types);
 
 #if defined(OS_LINUX)
   // On Linux, we need this information in order to query idle time.

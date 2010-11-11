@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
@@ -106,16 +107,17 @@ class Syncer {
   // Volatile reader for the source member of the syncer session object.  The
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource TestAndSetUpdatesSource() {
-    sync_pb::GetUpdatesCallerInfo::GetUpdatesSource old_source =
-        updates_source_;
-    set_updates_source(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION);
+  sessions::SyncSourceInfo TestAndSetUpdatesSource() {
+    sessions::SyncSourceInfo old_source = updates_source_;
+    set_updates_source(sync_pb::GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION,
+        updates_source_.second);
     return old_source;
   }
 
   void set_updates_source(
-      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
-    updates_source_ = source;
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
+      const syncable::ModelTypeBitSet& datatypes) {
+    updates_source_ = sessions::SyncSourceInfo(source, datatypes);
   }
 
  private:
@@ -143,7 +145,7 @@ class Syncer {
   sessions::SyncSessionContext* context_;
 
   // The source of the last nudge.
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source_;
+  sessions::SyncSourceInfo updates_source_;
 
   // A callback hook used in unittests to simulate changes between conflict set
   // building and conflict resolution.

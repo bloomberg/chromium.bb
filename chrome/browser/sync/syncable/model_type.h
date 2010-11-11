@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/time.h"
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -94,6 +95,16 @@ std::string ModelTypeToString(ModelType model_type);
 
 // Returns the ModelType corresponding to the name |model_type_string|.
 ModelType ModelTypeFromString(const std::string& model_type_string);
+
+// Converts a string into a model type bitset. If successful, returns true. If
+// failed to parse string, returns false and model_types is unspecified.
+bool ModelTypeBitSetFromString(
+    const std::string& model_type_bitset_string,
+    ModelTypeBitSet* model_types);
+
+// Posts timedeltas to histogram of datatypes. Allows tracking of the frequency
+// at which datatypes cause syncs.
+void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time);
 
 // Convert a real model type to a notification type (used for
 // subscribing to server-issued notifications).  Returns true iff

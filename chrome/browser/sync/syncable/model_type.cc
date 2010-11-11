@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sync/syncable/model_type.h"
 
+#include <sstream>
+
+#include "base/metrics/histogram.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -176,6 +179,73 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
                  << model_type_string << ".";
   return UNSPECIFIED;
 }
+
+bool ModelTypeBitSetFromString(
+    const std::string& model_type_bitset_string,
+    ModelTypeBitSet* model_types) {
+  if (model_type_bitset_string.length() != MODEL_TYPE_COUNT) {
+    return false;
+  }
+
+  std::istringstream iss(model_type_bitset_string);
+  iss >> *model_types;
+  return iss.eof();
+}
+
+// For now, this just implements UMA_HISTOGRAM_LONG_TIMES. This can be adjusted
+// if we feel the min, max, or bucket count amount are not appropriate.
+#define SYNC_FREQ_HISTOGRAM(name, time) UMA_HISTOGRAM_CUSTOM_TIMES( \
+    name, time, base::TimeDelta::FromMilliseconds(1), \
+    base::TimeDelta::FromHours(1), 50)
+
+void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time) {
+  switch (model_type) {
+    case BOOKMARKS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqBookmarks", time);
+        return;
+    }
+    case PREFERENCES: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqPreferences", time);
+        return;
+    }
+    case PASSWORDS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqPasswords", time);
+        return;
+    }
+    case AUTOFILL: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqAutofill", time);
+        return;
+    }
+    case THEMES: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqThemes", time);
+        return;
+    }
+    case TYPED_URLS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqTypedUrls", time);
+        return;
+    }
+    case EXTENSIONS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqExtensions", time);
+        return;
+    }
+    case NIGORI: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqNigori", time);
+        return;
+    }
+    case SESSIONS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqSessions", time);
+        return;
+    }
+    case APPS: {
+        SYNC_FREQ_HISTOGRAM("Sync.FreqApps", time);
+        return;
+    }
+    default:
+      LOG(ERROR) << "No known extension for model type.";
+  }
+}
+
+#undef SYNC_FREQ_HISTOGRAM
 
 // TODO(akalin): Figure out a better way to do these mappings.
 

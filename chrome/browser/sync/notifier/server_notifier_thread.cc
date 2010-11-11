@@ -72,17 +72,22 @@ void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
   // needed anymore.
   VLOG(1) << "OnInvalidate: " << ((model_type == syncable::UNSPECIFIED) ?
       "UNKNOWN" : syncable::ModelTypeToString(model_type));
-  // TODO(akalin): Signal notification only for the invalidated types.
-  // TODO(akalin): Fill this in with something meaningful.
+
+  syncable::ModelTypeBitSet model_types;
+  model_types[model_type] = true;
   IncomingNotificationData notification_data;
+  notification_data.service_specific_data = model_types.to_string();
   observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 
 void ServerNotifierThread::OnInvalidateAll() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   VLOG(1) << "OnInvalidateAll";
-  // TODO(akalin): Fill this in with something meaningful.
+
+  syncable::ModelTypeBitSet model_types;
+  model_types.set();  // InvalidateAll, so set all datatypes to true.
   IncomingNotificationData notification_data;
+  notification_data.service_specific_data = model_types.to_string();
   observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 

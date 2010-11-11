@@ -697,6 +697,36 @@ TEST_F(SyncerThreadWithSyncerTest, Nudge) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }
 
+TEST_F(SyncerThreadWithSyncerTest, NudgeWithDataTypes) {
+  SyncShareIntercept interceptor;
+  connection()->SetMidCommitObserver(&interceptor);
+  // We don't want a poll to happen during this test (except the first one).
+  PreventThreadFromPolling();
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+  syncer_thread()->CreateSyncer(metadb()->name());
+  const TimeDelta poll_interval = TimeDelta::FromMinutes(5);
+  interceptor.WaitForSyncShare(1, poll_interval + poll_interval);
+
+  EXPECT_EQ(static_cast<unsigned int>(1),
+            interceptor.times_sync_occured().size());
+  // The SyncerThread should be waiting for the poll now.  Nudge it to sync
+  // immediately (5ms).
+  syncable::ModelTypeBitSet model_types;
+  model_types[syncable::BOOKMARKS] = true;
+  syncer_thread()->NudgeSyncerWithDataTypes(5,
+      SyncerThread::kUnknown,
+      model_types);
+  EXPECT_EQ(model_types, syncer_thread()->vault_.pending_nudge_types_);
+  interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
+  EXPECT_EQ(static_cast<unsigned int>(2),
+      interceptor.times_sync_occured().size());
+  EXPECT_TRUE(syncer_thread()->vault_.pending_nudge_types_.none());
+
+  // SyncerThread should be waiting again.  Signal it to stop.
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
 TEST_F(SyncerThreadWithSyncerTest, Throttling) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);

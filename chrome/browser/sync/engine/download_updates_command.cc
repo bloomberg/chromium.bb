@@ -67,7 +67,8 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   get_updates->set_fetch_folders(true);
 
   // Set GetUpdatesMessage.GetUpdatesCallerInfo information.
-  get_updates->mutable_caller_info()->set_source(session->TestAndSetSource());
+  get_updates->mutable_caller_info()->set_source(
+      session->TestAndSetSource().first);
   get_updates->mutable_caller_info()->set_notifications_enabled(
       session->context()->notifications_enabled());
 

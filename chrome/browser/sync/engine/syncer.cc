@@ -58,9 +58,9 @@ Syncer::Syncer(sessions::SyncSessionContext* context)
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
       resolver_scoper_(context, &resolver_),
       context_(context),
-      updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
+      updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN,
+                      syncable::ModelTypeBitSet()),
       pre_conflict_resolution_closure_(NULL) {
-
   ScopedDirLookup dir(context->directory_manager(), context->account_name());
   // The directory must be good here.
   CHECK(dir.good());
@@ -84,10 +84,9 @@ bool Syncer::SyncShare(sessions::SyncSession::Delegate* delegate) {
 }
 
 bool Syncer::SyncShare(sessions::SyncSession* session) {
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source =
-      TestAndSetUpdatesSource();
+  sessions::SyncSourceInfo source = TestAndSetUpdatesSource();
   session->set_source(source);
-  if (sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA == source) {
+  if (sync_pb::GetUpdatesCallerInfo::CLEAR_PRIVATE_DATA == source.first) {
     SyncShare(session, CLEAR_PRIVATE_DATA, SYNCER_END);
     return false;
   } else {
@@ -154,7 +153,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case PROCESS_UPDATES: {
-       VLOG(1) << "Processing Updates";
+        VLOG(1) << "Processing Updates";
         ProcessUpdatesCommand process_updates;
         process_updates.Execute(session);
         next_step = STORE_TIMESTAMPS;
