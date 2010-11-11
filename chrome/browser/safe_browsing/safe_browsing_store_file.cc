@@ -176,6 +176,32 @@ void SafeBrowsingStoreFile::RecordFormatEvent(FormatEventType event_type) {
   UMA_HISTOGRAM_ENUMERATION("SB2.FormatEvent", event_type, FORMAT_EVENT_MAX);
 }
 
+// static
+void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
+    const FilePath& current_filename) {
+  const FilePath original_filename(
+      current_filename.DirName().AppendASCII("Safe Browsing"));
+  if (file_util::PathExists(original_filename)) {
+    int64 size = 0;
+    if (file_util::GetFileSize(original_filename, &size)) {
+      UMA_HISTOGRAM_COUNTS("SB2.OldDatabaseKilobytes",
+                           static_cast<int>(size / 1024));
+    }
+
+    if (file_util::Delete(original_filename, false)) {
+      RecordFormatEvent(FORMAT_EVENT_DELETED_ORIGINAL);
+    } else {
+      RecordFormatEvent(FORMAT_EVENT_DELETED_ORIGINAL_FAILED);
+    }
+
+    // Just best-effort on the journal file, don't want to get lost in
+    // the weeds.
+    const FilePath journal_filename(
+        current_filename.DirName().AppendASCII("Safe Browsing-journal"));
+    file_util::Delete(journal_filename, false);
+  }
+}
+
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
     : chunks_written_(0),
       file_(NULL),
@@ -301,6 +327,11 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   DCHECK(add_hashes_.empty());
   DCHECK(sub_hashes_.empty());
   DCHECK_EQ(chunks_written_, 0);
+
+  // Since the following code will already hit the profile looking for
+  // database files, this is a reasonable to time delete any old
+  // files.
+  CheckForOriginalAndDelete(filename_);
 
   corruption_seen_ = false;
 

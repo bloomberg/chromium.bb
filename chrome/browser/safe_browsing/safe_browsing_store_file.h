@@ -180,6 +180,11 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     FORMAT_EVENT_SQLITE_DELETED,
     FORMAT_EVENT_SQLITE_DELETE_FAILED,
 
+    // Found and deleted (or failed to delete) the ancient "Safe
+    // Browsing" file.
+    FORMAT_EVENT_DELETED_ORIGINAL,
+    FORMAT_EVENT_DELETED_ORIGINAL_FAILED,
+
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
     FORMAT_EVENT_MAX
@@ -188,6 +193,13 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Helper to record an event related to format conversion from
   // SQLite to file.
   static void RecordFormatEvent(FormatEventType event_type);
+
+  // Some very lucky users have an original-format file still in their
+  // profile.  Check for it and delete, recording a histogram for the
+  // result (no histogram for not-found).  Logically this
+  // would make more sense at the SafeBrowsingDatabase level, but
+  // practically speaking that code doesn't touch files directly.
+  static void CheckForOriginalAndDelete(const FilePath& filename);
 
   // Close all files and clear all buffers.
   bool Close();
