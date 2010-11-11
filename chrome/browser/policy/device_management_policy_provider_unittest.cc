@@ -139,4 +139,17 @@ TEST_F(DeviceManagementPolicyProviderTest, MAYBE_SecondProvide) {
   provider_->Provide(&store);
 }
 
+// When policy is successfully fetched from the device management server, it
+// should force a policy refresh.
+TEST_F(DeviceManagementPolicyProviderTest, FetchTriggersRefresh) {
+  MockNotificationObserver observer;
+  NotificationRegistrar registrar;
+  registrar.Add(&observer,
+                NotificationType::POLICY_CHANGED,
+                NotificationService::AllSources());
+  EXPECT_CALL(observer,
+              Observe(_, _, _)).Times(1);
+  SimulateSuccessfulInitialPolicyFetch();
+}
+
 }

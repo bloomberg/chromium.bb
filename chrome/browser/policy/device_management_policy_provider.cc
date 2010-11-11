@@ -101,6 +101,7 @@ void DeviceManagementPolicyProvider::Observe(
 void DeviceManagementPolicyProvider::HandlePolicyResponse(
     const em::DevicePolicyResponse& response) {
   cache_->SetPolicy(response);
+  NotifyStoreOfPolicyChange();
   policy_request_pending_ = false;
 }
 
