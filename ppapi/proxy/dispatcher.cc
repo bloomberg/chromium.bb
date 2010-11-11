@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ppapi/proxy/interface_proxy.h"
-#include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_errors.h"
@@ -21,11 +21,14 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
+#include "ppapi/c/ppp_instance.h"
+#include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_char_set_proxy.h"
 #include "ppapi/proxy/ppb_core_proxy.h"
+#include "ppapi/proxy/ppb_font_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
 #include "ppapi/proxy/ppb_instance_proxy.h"
@@ -203,8 +206,12 @@ void Dispatcher::OnMsgDeclareInterfaces(
 InterfaceProxy* Dispatcher::CreateProxyForInterface(
     const std::string& interface_name,
     const void* interface_functions) {
+  if (interface_name == PPB_CHAR_SET_DEV_INTERFACE)
+    return new PPB_CharSet_Proxy(this, interface_functions);
   if (interface_name == PPB_CORE_INTERFACE)
     return new PPB_Core_Proxy(this, interface_functions);
+  if (interface_name == PPB_FONT_DEV_INTERFACE)
+    return new PPB_Font_Proxy(this, interface_functions);
   if (interface_name == PPB_GRAPHICS_2D_INTERFACE)
     return new PPB_Graphics2D_Proxy(this, interface_functions);
   if (interface_name == PPB_IMAGEDATA_INTERFACE)

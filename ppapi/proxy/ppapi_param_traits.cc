@@ -89,7 +89,7 @@ void ParamTraits<PP_Point>::Write(Message* m, const param_type& p) {
 
 // static
 bool ParamTraits<PP_Point>::Read(const Message* m, void** iter, param_type* r) {
-  return m->ReadInt(iter, &r->x) && !m->ReadInt(iter, &r->y);
+  return m->ReadInt(iter, &r->x) && m->ReadInt(iter, &r->y);
 }
 
 // static
