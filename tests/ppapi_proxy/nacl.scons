@@ -15,15 +15,18 @@ ppapi_basic_object_inputs = [
   'basic_object.cc',
 ]
 
-basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
-                                          ppapi_basic_object_inputs,
-                                          EXTRA_LIBS=['google_nacl_imc',
-                                                      'google_nacl_platform',
-                                                      'ppruntime',
-                                                      'pthread',
-                                                      'srpc'])
+# ARM gets error: undefined reference to 'NaClLog', so disable it for now.
+# (NaClLog is pulled by nacl::assert_cast in src/shared/ppapi_proxy.)
+if env['TARGET_ARCHITECTURE'] != 'arm':
+  basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
+                                           ppapi_basic_object_inputs,
+                                           EXTRA_LIBS=['google_nacl_imc',
+                                                       'google_nacl_platform',
+                                                       'ppruntime',
+                                                       'pthread',
+                                                       'srpc'])
 
-# Note that the html is required to run this program.
-env.Publish('ppapi_basic_object.nexe', 'run',
-            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-             'basic_object.html'])
+  # Note that the html is required to run this program.
+  env.Publish('ppapi_basic_object.nexe', 'run',
+              [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+               'basic_object.html'])
