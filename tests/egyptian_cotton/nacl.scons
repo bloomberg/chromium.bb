@@ -104,6 +104,9 @@ if env.IsRunningUnderValgrind():
 
 high_thread_count_args = ['-n', str(high_thread_count_nthreads)]
 
+if env.Bit('nacl_glibc'):
+  high_thread_count_args.append('-m')
+
 tests = [ ('egyptian_cotton_test', high_thread_count_args),
           ('thread_stack_alloc_test', large_stack_args) ]
 

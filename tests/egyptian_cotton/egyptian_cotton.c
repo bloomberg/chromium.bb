@@ -23,6 +23,7 @@ static char const *flags_usage =
      "           thread creation parameters\n"
      "       -h  longer help\n"
      "       -v  increase verbosity\n"
+     "       -m  use manual allocation of stacks\n"
      "       -n  number of additional threads to create\n"
      "       -s  stack size for each new thread\n");
 static char const *long_winded_explanation[] = {
@@ -41,8 +42,8 @@ static char const *long_winded_explanation[] = {
   NULL,
 };
 
-#define DEFAULT_NUM_THREADS   ((size_t) 4095)
-#define DEFAULT_STACK_SIZE    ((size_t) 1024)
+#define DEFAULT_NUM_THREADS   ((size_t) 0x1000)
+#define DEFAULT_STACK_SIZE    ((size_t) 0x4000)
 
 #if defined(__native_client__)
 # define PRIdS  "d"
@@ -54,6 +55,7 @@ static char const *long_winded_explanation[] = {
 
 int             gVerbosity = 0;
 int             gExpectThreadCreationFailure = 0;
+int             gAllocateStacksUsingMalloc = 0;
 
 size_t          kNewlineMask = 0x3f;
 size_t          kCountMask = 0xff;
@@ -64,15 +66,28 @@ int             gThreadWait = 1;
 
 void *thread_start(void *state) {
   int tid = (int) (uintptr_t) state;
+  int rv = 0;
 
-  pthread_mutex_lock(&gBarrierMu);
+  if (0 != (rv = pthread_mutex_lock(&gBarrierMu))) {
+    printf("Mutex lock failed at thread %d, error %d (%s)\n",
+           tid, rv, strerror(rv));
+    exit(1);
+  }
   while (gThreadWait) {
     if (gVerbosity > 1) {
       printf("Thread %d: waiting\n", tid);
     }
-    pthread_cond_wait(&gBarrierCv, &gBarrierMu);
+    if (0 != (rv = pthread_cond_wait(&gBarrierCv, &gBarrierMu))) {
+      printf("Cond wait failed at thread %d, error %d (%s)\n",
+             tid, rv, strerror(rv));
+      exit(1);
+    }
   }
-  pthread_mutex_unlock(&gBarrierMu);
+  if (0 != (rv = pthread_mutex_unlock(&gBarrierMu))) {
+    printf("Mutex unlock failed at thread %d, error %d (%s)\n",
+           tid, rv, strerror(rv));
+    exit(1);
+  }
   return NULL;
 }
 
@@ -86,9 +101,20 @@ int main(int ac,
   pthread_t       thr_state;
   pthread_attr_t  attr;
   size_t          tid;
+  char            *stacks = 0;
 
-  while (EOF != (opt = getopt(ac, av, "fhn:s:v"))) {
+  while (EOF != (opt = getopt(ac, av, "mfhn:s:v"))) {
     switch (opt) {
+#ifdef __GLIBC__
+      case 'm':
+        gAllocateStacksUsingMalloc = 1;
+        break;
+#else
+      case 'm':
+        printf("Option -m can only be used with GLibC\n");
+        rv = 1;
+        goto cleanup_exit;
+#endif
       case 'f':
         gExpectThreadCreationFailure = 1;
         break;
@@ -122,9 +148,32 @@ int main(int ac,
            gExpectThreadCreationFailure ? " not" : "");
   }
 
-  pthread_attr_init(&attr);
-  pthread_attr_setstacksize(&attr, stack_size);
-  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+  if (0 != (rv = pthread_attr_init(&attr))) {
+    printf("Pthread attr initializetion failed, error %d (%s)\n",
+           rv, strerror(rv));
+    goto cleanup_exit;
+  }
+  if (!gAllocateStacksUsingMalloc) {
+    if (0 != (rv = pthread_attr_setstacksize(&attr, stack_size))) {
+      printf("Pthread stack size selection failed, error %d (%s)\n",
+             rv, strerror(rv));
+      goto cleanup_exit;
+    }
+  }
+  if (0 != (rv = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED))) {
+    printf("Pthread detach state selection failed, error %d (%s)\n",
+           rv, strerror(rv));
+    goto cleanup_exit;
+  }
+
+  if (gAllocateStacksUsingMalloc) {
+    stacks = malloc(stack_size * num_threads);
+    if (NULL == stacks) {
+      printf("Can not allocate memory for stacks");
+      rv = ENOMEM;
+      goto cleanup_exit;
+    }
+  }
 
   for (tid = 0; tid < num_threads; ++tid) {
     if (gVerbosity > 0) {
@@ -133,6 +182,16 @@ int main(int ac,
     /*
      * thr_state is overwritten each time.
      */
+#ifdef __GLIBC__
+    if (gAllocateStacksUsingMalloc) {
+      if (0 != (rv = pthread_attr_setstack(&attr, stacks + stack_size * tid,
+                                           stack_size))) {
+        printf("Pthread stack size selection failed, error %d (%s)\n",
+               rv, strerror(rv));
+        goto cleanup_exit;
+      }
+    }
+#endif
     if (0 != (rv = pthread_create(&thr_state,
                                   &attr,
                                   thread_start,
@@ -164,10 +223,22 @@ int main(int ac,
     rv = 1;
   }
 cleanup_exit:
-  pthread_mutex_lock(&gBarrierMu);
+  if (0 != (rv = pthread_mutex_lock(&gBarrierMu))) {
+    printf("Mutex lock failed at main thread, error %d (%s)\n",
+           rv, strerror(rv));
+    exit(1);
+  }
   gThreadWait = 0;
-  pthread_cond_broadcast(&gBarrierCv);
-  pthread_mutex_unlock(&gBarrierMu);
+  if (0 != (rv = pthread_cond_broadcast(&gBarrierCv))) {
+    printf("Cond wait failed at main thread, error %d (%s)\n",
+           rv, strerror(rv));
+    exit(1);
+  }
+  if (0 != (rv = pthread_mutex_unlock(&gBarrierMu))) {
+    printf("Mutex unlock failed at main thread, error %d (%s)\n",
+           rv, strerror(rv));
+    exit(1);
+  }
 
   if (0 == rv) {
     printf("PASSED\n");
@@ -175,5 +246,5 @@ cleanup_exit:
     printf("FAILED\n");
   }
 
-  return rv;
+  return rv != 0;
 }
