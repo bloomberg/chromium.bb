@@ -59,19 +59,25 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_.feature_flags().npot_ok);
   EXPECT_FALSE(info_.feature_flags().enable_texture_float_linear);
   EXPECT_FALSE(info_.feature_flags().enable_texture_half_float_linear);
-  EXPECT_FALSE(info_.feature_flags().chromium_strict_attribs);
   EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
   SetupInitExpectations("");
   info_.Initialize(NULL);
+  // Check default extensions are there
+  EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_map_sub"));
+  EXPECT_THAT(info_.extensions(),
+              HasSubstr("GL_CHROMIUM_copy_texture_to_parent_texture"));
+  EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_resource_safe"));
+  EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_strict_attribs"));
+
   // Check a couple of random extensions that should not be there.
+  EXPECT_THAT(info_.extensions(), Not(HasSubstr("GL_CHROMIUM_webglsl")));
   EXPECT_THAT(info_.extensions(), Not(HasSubstr("GL_OES_texture_npot")));
   EXPECT_THAT(info_.extensions(),
               Not(HasSubstr("GL_EXT_texture_compression_dxt1")));
   EXPECT_FALSE(info_.feature_flags().npot_ok);
-  EXPECT_FALSE(info_.feature_flags().chromium_strict_attribs);
   EXPECT_FALSE(info_.feature_flags().chromium_webglsl);
   EXPECT_FALSE(info_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
@@ -376,13 +382,6 @@ TEST_F(FeatureInfoTest, InitializeOES_standard_derivatives) {
   info_.Initialize(NULL);
   EXPECT_THAT(info_.extensions(), HasSubstr("GL_OES_standard_derivatives"));
   EXPECT_TRUE(info_.feature_flags().oes_standard_derivatives);
-}
-
-TEST_F(FeatureInfoTest, InitializeCHROMIUM_strict_attribs) {
-  SetupInitExpectations("");
-  info_.Initialize("GL_CHROMIUM_strict_attribs");
-  EXPECT_THAT(info_.extensions(), HasSubstr("GL_CHROMIUM_strict_attribs"));
-  EXPECT_TRUE(info_.feature_flags().chromium_strict_attribs);
 }
 
 TEST_F(FeatureInfoTest, InitializeCHROMIUM_webglsl) {

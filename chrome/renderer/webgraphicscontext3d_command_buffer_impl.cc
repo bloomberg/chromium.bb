@@ -57,9 +57,6 @@ WebGraphicsContext3DCommandBufferImpl::
 static const char* kWebGraphicsContext3DPerferredGLExtensions =
     "GL_OES_packed_depth_stencil "
     "GL_OES_depth24 "
-    "GL_CHROMIUM_copy_texture_to_parent_texture "
-    "GL_CHROMIUM_map_sub "
-    "GL_CHROMIUM_strict_attribs "
     "GL_CHROMIUM_webglsl";
 
 bool WebGraphicsContext3DCommandBufferImpl::initialize(

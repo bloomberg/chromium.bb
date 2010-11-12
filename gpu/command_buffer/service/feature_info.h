@@ -21,7 +21,6 @@ class FeatureInfo {
           npot_ok(false),
           enable_texture_float_linear(false),
           enable_texture_half_float_linear(false),
-          chromium_strict_attribs(false),
           chromium_webglsl(false) {
     }
 
@@ -30,7 +29,6 @@ class FeatureInfo {
     bool npot_ok;
     bool enable_texture_float_linear;
     bool enable_texture_half_float_linear;
-    bool chromium_strict_attribs;
     bool chromium_webglsl;
   };
 
