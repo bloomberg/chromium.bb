@@ -172,13 +172,9 @@ NPObject* NPObjectEventListener::GetObjectElement(NPP instance) {
         // We've got the <embed> element but we really want
         // the <object> element.
         if (npapi::GetProperty(instance, object, ids[PARENT_ELEMENT], &var)) {
+          DCHECK(NPVARIANT_IS_OBJECT(var));
           npapi::ReleaseObject(object);
-          object = NULL;
-          if (NPVARIANT_IS_OBJECT(var)) {
-            object = NPVARIANT_TO_OBJECT(var);
-          } else {
-            DVLOG(1) << __FUNCTION__ << " Could not find our parent";
-          }
+          object = NPVARIANT_TO_OBJECT(var);
         }
       } else {
         DVLOG(1) << __FUNCTION__ << " got " << tag;
