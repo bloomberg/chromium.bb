@@ -1,0 +1,7 @@
+Name: qcms
+URL: http://mxr.mozilla.org/mozilla-central/source/gfx/qcms/
+License File: Varies by file, see comment blocks at the top of each file.
+
+Contain support for apply an ICC color profile to an image.  The code is
+originally based on tinycms, by re-written by Mozilla for better security and
+performance.  This copy is a source-drop from Mozilla on November 11, 2010.

@@ -1652,6 +1652,7 @@
             '../third_party/lzma_sdk/lzma_sdk.gyp:*',
             '../third_party/modp_b64/modp_b64.gyp:*',
             '../third_party/npapi/npapi.gyp:*',
+            '../third_party/qcms/qcms.gyp:*',
             '../third_party/sqlite/sqlite.gyp:*',
             '../third_party/zlib/zlib.gyp:*',
             '../webkit/support/webkit_support.gyp:*',
