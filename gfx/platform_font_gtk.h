@@ -46,6 +46,9 @@ class PlatformFontGtk : public PlatformFont {
   virtual int GetFontSize() const;
   virtual NativeFont GetNativeFont() const;
 
+  // Return the scale factor for fonts that account for DPI.
+  static float GetPangoScaleFactor();
+
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.
@@ -71,9 +74,6 @@ class PlatformFontGtk : public PlatformFont {
 
   // Make |this| a copy of |other|.
   void CopyFont(const Font& other);
-
-  // Return the scale factor for fonts that account for DPI.
-  static float GetPangoScaleFactor();
 
   // The average width of a character, initialized and cached if needed.
   double GetAverageWidth() const;
