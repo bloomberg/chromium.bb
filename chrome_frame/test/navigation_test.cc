@@ -84,7 +84,7 @@ TEST_P(FullTabNavigationTest, TypeAnchorUrl) {
           AccWatchForOneValueChange(&acc_observer, address_matcher)));
   // Click the go button once the address has changed.
   EXPECT_CALL(acc_observer, OnAccValueChange(_, _, GetAnchorPageUrl(1)))
-      .WillOnce(AccDoDefaultActionInBrowser(&ie_mock_, go_matcher));
+      .WillOnce(AccLeftClickInBrowser(&ie_mock_, go_matcher));
 
   bool in_cf = GetParam().invokes_cf();
   ie_mock_.ExpectNavigation(in_cf, GetAnchorPageUrl(1));
