@@ -48,6 +48,7 @@ class Profile;
  @private
   IBOutlet NSTabView* tabView_;
   IBOutlet TabViewPickerTable* tabViewPicker_;
+  IBOutlet NSMatrix* pluginDefaultSettingMatrix_;
   Profile* profile_;  // weak
   IntegerPrefMember lastSelectedTab_;
   BooleanPrefMember clearSiteDataOnExit_;

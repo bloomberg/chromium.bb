@@ -83,10 +83,17 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
   };
   COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  kAskIDs_IncorrectSize);
-  if (kAskIDs[content_type_]) {
+  int askID = kAskIDs[content_type_];
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay)) {
+    askID = 0;
+  }
+
+  if (askID) {
     ask_radio_ = gtk_radio_button_new_with_label_from_widget(
         GTK_RADIO_BUTTON(allow_radio_),
-        l10n_util::GetStringUTF8(kAskIDs[content_type_]).c_str());
+        l10n_util::GetStringUTF8(askID).c_str());
     gtk_box_pack_start(GTK_BOX(vbox), ask_radio_, FALSE, FALSE, 0);
   }
 

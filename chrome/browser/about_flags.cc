@@ -192,6 +192,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     switches::kEnableExperimentalExtensionApis
   },
+  {
+    "click-to-play",   // Do not change; see above.
+    IDS_FLAGS_CLICK_TO_PLAY_NAME,
+    IDS_FLAGS_CLICK_TO_PLAY_DESCRIPTION,
+    kOsAll,
+    switches::kEnableClickToPlay
+  },
 };
 
 const Experiment* experiments = kExperiments;

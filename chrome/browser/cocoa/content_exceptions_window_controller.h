@@ -10,6 +10,7 @@
 #include "chrome/common/content_settings_types.h"
 
 class ContentExceptionsTableModel;
+class ContentSettingComboModel;
 class UpdatingContentSettingsObserver;
 
 // Controller for the content exception dialogs.
@@ -28,9 +29,7 @@ class UpdatingContentSettingsObserver;
   HostContentSettingsMap* settingsMap_;  // weak
   HostContentSettingsMap* otrSettingsMap_;  // weak
   scoped_ptr<ContentExceptionsTableModel> model_;
-
-  // Is set if "Session" should be a valid option in the "action" popup.
-  BOOL showSession_;
+  scoped_ptr<ContentSettingComboModel> popup_model_;
 
   // Is set if adding and editing exceptions for the current OTR session should
   // be allowed.

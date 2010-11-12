@@ -4,6 +4,7 @@
 
 #include "chrome/browser/host_content_settings_map.h"
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -90,11 +91,18 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW, host_content_settings_map->GetContentSetting(
                 GURL(chrome::kChromeUINewTabURL),
                 CONTENT_SETTINGS_TYPE_IMAGES, ""));
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_PLUGINS));
+  {
+    // Click-to-play needs to be enabled to set the content setting to ASK.
+    CommandLine* cmd = CommandLine::ForCurrentProcess();
+    AutoReset<CommandLine> auto_reset(cmd, *cmd);
+    cmd->AppendSwitch(switches::kEnableClickToPlay);
+
+    host_content_settings_map->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              host_content_settings_map->GetDefaultContentSetting(
+                  CONTENT_SETTINGS_TYPE_PLUGINS));
+  }
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -566,9 +574,9 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
 
 TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
   // This feature is currently behind a flag.
-  CommandLine cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableResourceContentSettings);
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
   PrefService* prefs = profile.GetPrefs();
@@ -592,7 +600,6 @@ TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
-  *CommandLine::ForCurrentProcess() = cl;
 }
 
 // For a single Unicode encoded pattern, check if it gets converted to punycode
@@ -624,9 +631,9 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 // settings for the punycode, and that Unicode pattern gets deleted.
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   // This feature is currently behind a flag.
-  CommandLine cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableResourceContentSettings);
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
 
@@ -648,8 +655,6 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]xn--ira-ppa.com\":{\"per_plugin\":{\"pluginy\":2}}}",
                prefs_as_json.c_str());
-
-  *CommandLine::ForCurrentProcess() = cl;
 }
 
 TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
@@ -676,9 +681,9 @@ TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
 
 TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   // This feature is currently behind a flag.
-  CommandLine cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableResourceContentSettings);
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
@@ -700,14 +705,13 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_PLUGINS, resource2));
-  *CommandLine::ForCurrentProcess() = cl;
 }
 
 TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   // This feature is currently behind a flag.
-  CommandLine cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableResourceContentSettings);
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
   scoped_ptr<Value> value(base::JSONReader::Read(
@@ -742,7 +746,6 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
   EXPECT_STREQ("{\"[*.]example.com\":{\"per_plugin\":{\"otherplugin\":2}}}",
                prefs_as_json.c_str());
-  *CommandLine::ForCurrentProcess() = cl;
 }
 
 }  // namespace

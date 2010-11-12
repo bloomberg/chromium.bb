@@ -36,7 +36,8 @@ ContentSettingComboModel::~ContentSettingComboModel() {
 }
 
 int ContentSettingComboModel::GetItemCount() {
-  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS)
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableClickToPlay))
     return arraysize(kAskSettings);
   if (content_type_ == CONTENT_SETTINGS_TYPE_COOKIES)
     return arraysize(kSessionSettings);
@@ -60,7 +61,8 @@ string16 ContentSettingComboModel::GetItemAt(int index) {
 }
 
 ContentSetting ContentSettingComboModel::SettingForIndex(int index) {
-  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS)
+  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableClickToPlay))
     return kAskSettings[index];
   if (content_type_ == CONTENT_SETTINGS_TYPE_COOKIES)
     return kSessionSettings[index];

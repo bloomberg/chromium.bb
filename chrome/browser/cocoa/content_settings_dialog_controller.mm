@@ -187,6 +187,24 @@ class PrefObserverDisabler {
   label = [label stringByReplacingOccurrencesOfString:@":" withString:@""];
   [tabViewPicker_ setHeading:label];
 
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay)) {
+    // The |pluginsEnabledIndex| property is bound to the selected *tag*,
+    // so we don't have to worry about index shifts when removing a row
+    // from the matrix.
+    [pluginDefaultSettingMatrix_ removeRow:kPluginsAskIndex];
+    NSArray* siblingViews = [[pluginDefaultSettingMatrix_ superview] subviews];
+    for (NSView* view in siblingViews) {
+      NSRect frame = [view frame];
+      if (frame.origin.y < [pluginDefaultSettingMatrix_ frame].origin.y) {
+        frame.origin.y +=
+            ([pluginDefaultSettingMatrix_ cellSize].height +
+             [pluginDefaultSettingMatrix_ intercellSpacing].height);
+        [view setFrame:frame];
+      }
+    }
+  }
+
   NSRect frame = [[self window] frame];
   frame.origin.y -= windowDelta;
   frame.size.height += windowDelta;
@@ -430,9 +448,15 @@ class PrefObserverDisabler {
   ContentSetting setting =
       map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   switch (setting) {
-    case CONTENT_SETTING_ALLOW: return kPluginsAllowIndex;
-    case CONTENT_SETTING_ASK:   return kPluginsAskIndex;
-    case CONTENT_SETTING_BLOCK: return kPluginsBlockIndex;
+    case CONTENT_SETTING_ALLOW:
+      return kPluginsAllowIndex;
+    case CONTENT_SETTING_ASK:
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay))
+        return kPluginsAskIndex;
+      // Fall through to the next case.
+    case CONTENT_SETTING_BLOCK:
+      return kPluginsBlockIndex;
     default:
       NOTREACHED();
       return kPluginsAllowIndex;

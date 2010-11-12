@@ -100,6 +100,20 @@ static bool ShouldAllowAllContent(const GURL& url) {
          url.SchemeIs(chrome::kGearsScheme) ||
          url.SchemeIs(chrome::kUserScriptScheme);
 }
+
+// Map ASK for the plugins content type to BLOCK if click-to-play is
+// not enabled.
+ContentSetting ClickToPlayFixup(ContentSettingsType content_type,
+                                ContentSetting setting) {
+  if (setting == CONTENT_SETTING_ASK &&
+      content_type == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay)) {
+    return CONTENT_SETTING_BLOCK;
+  }
+  return setting;
+}
+
 }  // namespace
 
 
@@ -432,6 +446,10 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PLUGINS ||
+         setting != CONTENT_SETTING_ASK ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableClickToPlay));
   PrefService* prefs = profile_->GetPrefs();
 
   // The default settings may not be directly modified for OTR sessions.
@@ -474,6 +492,10 @@ void HostContentSettingsMap::SetContentSetting(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(RequiresResourceIdentifier(content_type),
             resource_identifier.empty());
+  DCHECK(content_type != CONTENT_SETTINGS_TYPE_PLUGINS ||
+         setting != CONTENT_SETTING_ASK ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableClickToPlay));
 
   const Pattern pattern(original_pattern.CanonicalizePattern());
 
@@ -796,6 +818,10 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
   if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
       CONTENT_SETTING_ASK)
     settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] = CONTENT_SETTING_BLOCK;
+
+  settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
+      ClickToPlayFixup(CONTENT_SETTINGS_TYPE_PLUGINS,
+                       settings->settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
 }
 
 void HostContentSettingsMap::GetResourceSettingsFromDictionary(
@@ -820,7 +846,8 @@ void HostContentSettingsMap::GetResourceSettingsFromDictionary(
           DCHECK(found);
           (*settings)[ContentSettingsTypeResourceIdentifierPair(
               ContentSettingsType(type), resource_identifier)] =
-                  ContentSetting(setting);
+                  ClickToPlayFixup(ContentSettingsType(type),
+                                   ContentSetting(setting));
         }
 
         break;

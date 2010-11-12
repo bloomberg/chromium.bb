@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 
+#include "base/auto_reset.h"
+#include "base/command_line.h"
 #import "base/scoped_nsobject.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -13,6 +15,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -164,9 +167,16 @@ TEST_F(ContentSettingsDialogControllerTest, PluginsSetting) {
                                          CONTENT_SETTING_BLOCK);
   EXPECT_EQ(kPluginsBlockIndex, [controller_ pluginsEnabledIndex]);
 
-  settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                         CONTENT_SETTING_ASK);
-  EXPECT_EQ(kPluginsAskIndex, [controller_ pluginsEnabledIndex]);
+  {
+    // Click-to-play needs to be enabled to set the content setting to ASK.
+    CommandLine* cmd = CommandLine::ForCurrentProcess();
+    AutoReset<CommandLine> auto_reset(cmd, *cmd);
+    cmd->AppendSwitch(switches::kEnableClickToPlay);
+
+    settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                           CONTENT_SETTING_ASK);
+    EXPECT_EQ(kPluginsAskIndex, [controller_ pluginsEnabledIndex]);
+  }
 
   // Change dialog property, check setting.
   NSInteger setting;
@@ -180,10 +190,16 @@ TEST_F(ContentSettingsDialogControllerTest, PluginsSetting) {
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, setting);
 
-  [controller_ setPluginsEnabledIndex:kPluginsAskIndex];
-  setting =
-      settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-  EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  {
+    CommandLine* cmd = CommandLine::ForCurrentProcess();
+    AutoReset<CommandLine> auto_reset(cmd, *cmd);
+    cmd->AppendSwitch(switches::kEnableClickToPlay);
+
+    [controller_ setPluginsEnabledIndex:kPluginsAskIndex];
+    setting =
+        settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
+    EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  }
 }
 
 TEST_F(ContentSettingsDialogControllerTest, PopupsSetting) {

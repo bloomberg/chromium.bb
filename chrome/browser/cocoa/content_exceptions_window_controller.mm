@@ -12,6 +12,7 @@
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
+#include "chrome/browser/content_setting_combo_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
@@ -27,10 +28,7 @@
            forOtr:(BOOL)isOtr;
 - (void)adjustEditingButtons;
 - (void)modelDidChange;
-- (size_t)menuItemCount;
 - (NSString*)titleForIndex:(size_t)index;
-- (ContentSetting)settingForIndex:(size_t)index;
-- (size_t)indexForSetting:(ContentSetting)setting;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,20 +124,6 @@ NSString* GetWindowTitle(ContentSettingsType settingsType) {
 
 const CGFloat kButtonBarHeight = 35.0;
 
-// The settings shown in the combobox for plug-ins;
-const ContentSetting kPluginSettings[] = { CONTENT_SETTING_ALLOW,
-                                           CONTENT_SETTING_ASK,
-                                           CONTENT_SETTING_BLOCK };
-
-// The settings shown in the combobox if showSession_ is false;
-const ContentSetting kNoSessionSettings[] = { CONTENT_SETTING_ALLOW,
-                                              CONTENT_SETTING_BLOCK };
-
-// The settings shown in the combobox if showSession_ is true;
-const ContentSetting kSessionSettings[] = { CONTENT_SETTING_ALLOW,
-                                            CONTENT_SETTING_SESSION_ONLY,
-                                            CONTENT_SETTING_BLOCK };
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +159,7 @@ static ContentExceptionsWindowController*
     otrSettingsMap_ = otrSettingsMap;
     model_.reset(new ContentExceptionsTableModel(
         settingsMap_, otrSettingsMap_, settingsType_));
-    showSession_ = settingsType_ == CONTENT_SETTINGS_TYPE_COOKIES;
+    popup_model_.reset(new ContentSettingComboModel(settingsType_));
     otrAllowed_ = otrSettingsMap != NULL;
     tableObserver_.reset(new UpdatingContentSettingsObserver(self));
     updatesEnabled_ = YES;
@@ -203,10 +187,12 @@ static ContentExceptionsWindowController*
 
   // Initialize menu for the data cell in the "action" column.
   scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"exceptionMenu"]);
-  for (size_t i = 0; i < [self menuItemCount]; ++i) {
-    scoped_nsobject<NSMenuItem> allowItem([[NSMenuItem alloc]
-        initWithTitle:[self titleForIndex:i] action:NULL keyEquivalent:@""]);
-    [allowItem.get() setTag:[self settingForIndex:i]];
+  for (int i = 0; i < popup_model_->GetItemCount(); ++i) {
+    NSString* title =
+        l10n_util::FixUpWindowsStyleLabel(popup_model_->GetItemAt(i));
+    scoped_nsobject<NSMenuItem> allowItem(
+        [[NSMenuItem alloc] initWithTitle:title action:NULL keyEquivalent:@""]);
+    [allowItem.get() setTag:popup_model_->SettingForIndex(i)];
     [menu.get() addItem:allowItem.get()];
   }
   NSCell* menuCell =
@@ -375,7 +361,8 @@ static ContentExceptionsWindowController*
   if ([identifier isEqualToString:@"pattern"]) {
     result = base::SysUTF8ToNSString(entry->first.AsString());
   } else if ([identifier isEqualToString:@"action"]) {
-    result = [NSNumber numberWithInt:[self indexForSetting:entry->second]];
+    result =
+        [NSNumber numberWithInt:popup_model_->IndexForSetting(entry->second)];
   } else if ([identifier isEqualToString:@"otr"]) {
     result = [NSNumber numberWithInt:isOtr];
   } else {
@@ -436,7 +423,7 @@ static ContentExceptionsWindowController*
   }
   if ([identifier isEqualToString:@"action"]) {
     int index = [object intValue];
-    entry.second = [self settingForIndex:index];
+    entry.second = popup_model_->SettingForIndex(index);
   }
   if ([identifier isEqualToString:@"otr"]) {
     isOtr = [object intValue] != 0;
@@ -498,45 +485,6 @@ static ContentExceptionsWindowController*
 
   [tableView_ reloadData];
   [self adjustEditingButtons];
-}
-
-- (size_t)menuItemCount {
-  if (settingsType_ == CONTENT_SETTINGS_TYPE_PLUGINS)
-    return arraysize(kPluginSettings);
-  return showSession_ ? arraysize(kSessionSettings)
-                      : arraysize(kNoSessionSettings);
-}
-
-- (NSString*)titleForIndex:(size_t)index {
-  switch ([self settingForIndex:index]) {
-    case CONTENT_SETTING_ALLOW:
-      return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ALLOW_BUTTON);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ASK_BUTTON);
-    case CONTENT_SETTING_BLOCK:
-      return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_BLOCK_BUTTON);
-    case CONTENT_SETTING_SESSION_ONLY:
-      return l10n_util::GetNSStringWithFixup(
-          IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
-    default:
-      NOTREACHED();
-  }
-  return @"";
-}
-
-- (ContentSetting)settingForIndex:(size_t)index {
-  if (settingsType_ == CONTENT_SETTINGS_TYPE_PLUGINS)
-    return kPluginSettings[index];
-  return showSession_ ? kSessionSettings[index] : kNoSessionSettings[index];
-}
-
-- (size_t)indexForSetting:(ContentSetting)setting {
-  for (size_t i = 0; i < [self menuItemCount]; ++i) {
-    if ([self settingForIndex:i] == setting)
-      return i;
-  }
-  NOTREACHED();
-  return 0;
 }
 
 @end

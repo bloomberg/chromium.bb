@@ -391,32 +391,17 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)sizeToFitLoadPluginsButton {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableClickToPlay)) {
-    const ContentSettingBubbleModel::BubbleContent& content =
-        contentSettingBubbleModel_->bubble_content();
-    [loadAllPluginsButton_ setEnabled:content.load_plugins_link_enabled];
+  const ContentSettingBubbleModel::BubbleContent& content =
+      contentSettingBubbleModel_->bubble_content();
+  [loadAllPluginsButton_ setEnabled:content.load_plugins_link_enabled];
 
-    // Resize horizontally to fit button if necessary.
-    NSRect windowFrame = [[self window] frame];
-    int widthNeeded = NSWidth([loadAllPluginsButton_ frame]) +
-        2 * NSMinX([loadAllPluginsButton_ frame]);
-    if (NSWidth(windowFrame) < widthNeeded) {
-      windowFrame.size.width = widthNeeded;
-      [[self window] setFrame:windowFrame display:NO];
-    }
-  } else {
-    // Remove button and resize vertically.
-    int deltaY = kLoadAllPluginsButtonVerticalPadding +
-        NSHeight([loadAllPluginsButton_ frame]);
-    [loadAllPluginsButton_ removeFromSuperview];
-    NSRect frame = [[self window] frame];
-    frame.size.height -= deltaY;
-    [[self window] setFrame:frame display:NO];
-    NSPoint radioOrigin = [allowBlockRadioGroup_ frame].origin;
-    radioOrigin.y -= deltaY;
-    [allowBlockRadioGroup_ setFrameOrigin:radioOrigin];
-    [allowBlockRadioGroup_ setNeedsDisplay];
+  // Resize horizontally to fit button if necessary.
+  NSRect windowFrame = [[self window] frame];
+  int widthNeeded = NSWidth([loadAllPluginsButton_ frame]) +
+      2 * NSMinX([loadAllPluginsButton_ frame]);
+  if (NSWidth(windowFrame) < widthNeeded) {
+    windowFrame.size.width = widthNeeded;
+    [[self window] setFrame:windowFrame display:NO];
   }
 }
 

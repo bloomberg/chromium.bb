@@ -162,9 +162,6 @@ const char kDisableBackgroundNetworking[] = "disable-background-networking";
 // users with many windows/tabs and lots of memory.
 const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 
-// Disable click-to-play for blocked plug-ins.
-const char kDisableClickToPlay[]            = "disable-click-to-play";
-
 // Disables establishing a backup TCP connection if a specified timeout is
 // exceeded.
 const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
@@ -395,6 +392,9 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";
+
+// Enable click-to-play for blocked plug-ins.
+const char kEnableClickToPlay[]            = "enable-click-to-play";
 
 // This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.

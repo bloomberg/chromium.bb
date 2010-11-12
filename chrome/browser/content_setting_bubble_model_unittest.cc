@@ -109,6 +109,7 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   AutoReset<CommandLine> auto_reset(cmd, *cmd);
   cmd->AppendSwitch(switches::kEnableResourceContentSettings);
+  cmd->AppendSwitch(switches::kEnableClickToPlay);
 
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
   std::string fooPlugin = "foo";

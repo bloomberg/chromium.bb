@@ -101,12 +101,16 @@ void ContentFilterPageView::InitControlLayout() {
   };
   COMPILE_ASSERT(arraysize(kAskIDs) == CONTENT_SETTINGS_NUM_TYPES,
                  Need_a_setting_for_every_content_settings_type);
-  DCHECK_EQ(arraysize(kAskIDs),
-            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES) {
-    if (kAskIDs[content_type_] != 0) {
+    int askID = kAskIDs[content_type_];
+    if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableClickToPlay)) {
+      askID = 0;
+    }
+    if (askID != 0) {
       ask_radio_ = new views::RadioButton(
-          l10n_util::GetString(kAskIDs[content_type_]), radio_button_group);
+          l10n_util::GetString(askID), radio_button_group);
       ask_radio_->set_listener(this);
       ask_radio_->SetMultiLine(true);
       layout->StartRow(0, single_column_set_id);
