@@ -151,6 +151,18 @@ def AddWebKitEditorActions(actions):
     if match:  # Plain call to RecordAction
       actions.add(match.group(1))
 
+def AddClosedSourceActions(actions):
+  """Add actions that are in code which is not checked out by default
+
+  Arguments
+    actions: set of actions to add to.
+  """
+  actions.add('PDF.PrintPage')
+  actions.add('PDF.FitToHeightButton')
+  actions.add('PDF.FitToWidthButton')
+  actions.add('PDF.ZoomOutButton')
+  actions.add('PDF.ZoomInButton')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 
@@ -218,6 +230,8 @@ def main(argv):
 
   # print "Scanned {0} number of files".format(number_of_files_total)
   # print "Found {0} entries".format(len(actions))
+
+  AddClosedSourceActions(actions)
 
   if hash_output:
     f = open("chromeactions.txt", "w")

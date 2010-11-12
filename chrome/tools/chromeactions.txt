@@ -1,4 +1,5 @@
 0x5d4affbdc9e636fe	AboutChrome
+0x6c3fb8ca36f60394	AboutConflicts
 0x649461e26c8e5796	AcceptedGeneratedKeyword
 0x2b6ed5e3f78e1295	AcceptedKeyword
 0xaa16d48a61361aa6	AcceptedKeywordHint
@@ -442,6 +443,7 @@
 0xf6b8e8d4de66cf77	LanguageOptions_EnableInputMethod_xkb:us:dvorak:eng
 0xfa78305d269c1ec1	LanguageOptions_Open
 0xda947fb4440a66e7	LanguageOptions_Restart
+0xb5f8e1034ebaab43	LanguageOptions_SignOut
 0x3bdcb57ed74b6f2c	LanguageOptions_SpellCheckLanguageChange_af
 0x0268501c247fa3e1	LanguageOptions_SpellCheckLanguageChange_am
 0x9d68c5a82572b3a5	LanguageOptions_SpellCheckLanguageChange_ar
@@ -784,6 +786,7 @@
 0xc481e10b3ba27f8c	Options_BackgroundMode_Enable
 0xc65558de1b0b2371	Options_BlockAllPopups_Disable
 0x6886cd43bb132ac1	Options_BlockAllPopups_Enable
+0xa64d82b58336f482	Options_ChangeDefaultZoomLevel
 0xac4f01f24c2cad48	Options_ChangeProxies
 0x98ccc71c44973ca0	Options_CheckCertRevocation_Disable
 0xc6599b9ffadec866	Options_CheckCertRevocation_Enable
@@ -857,6 +860,12 @@
 0x8d45d4c781319d53	Options_VertEdgeScrollCheckbox_Enable
 0x016839db155e0468	Outdent
 0x69fae31849862d21	OverrideEncoding
+0xdcb4676e49e95259	PDF.FitToHeightButton
+0x5f58a2db6428c1a0	PDF.FitToWidthButton
+0x95be082d470e41c9	PDF.PrintPage
+0xf7d4dd6244747179	PDF.SavePage
+0x1d57434947820665	PDF.ZoomInButton
+0x40ca10ced9d81d17	PDF.ZoomOutButton
 0xee3677bcca83ece9	PageDown
 0x9b869c510c75c582	PageUp
 0x9ba3ff80fde405cd	PasswordManager_Disabled
@@ -888,6 +897,10 @@
 0xf8af4ff865669301	SBInterstitialPhishingShow
 0xc9cc8cce247e49ba	Save
 0xfc7723f7c10f79d5	SavePage
+0xc849f604a9954989	ScreenLocker_OnLoginFailure
+0x0b8efe82e35086c2	ScreenLocker_Show
+0xe643aadfeec1d6fc	ScreenLocker_Signout
+0x61ce545b97b3f1cd	ScreenLocker_StartScreenSaver
 0x702bbdc91c8e399d	SelectAll
 0xd016dafd5f0eca55	SelectLastTab
 0x64658593002b74ad	SelectLine
