@@ -189,6 +189,7 @@ bool ModelTypeBitSetFromString(
 
   std::istringstream iss(model_type_bitset_string);
   iss >> *model_types;
+  iss.peek();   // Need to peek before checking EOF.
   return iss.eof();
 }
 
