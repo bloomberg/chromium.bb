@@ -8,6 +8,33 @@
 namespace gpu {
 namespace gles2 {
 
+void ShaderManager::ShaderInfo::SetStatus(
+    bool valid, const std::string& log, ShaderTranslatorInterface* translator) {
+  valid_ = valid;
+  log_info_ = log;
+  if (translator && valid) {
+    attrib_map_ = translator->attrib_map();
+    uniform_map_ = translator->uniform_map();
+  } else {
+    attrib_map_.clear();
+    uniform_map_.clear();
+  }
+}
+
+const ShaderManager::ShaderInfo::VariableInfo*
+    ShaderManager::ShaderInfo::GetAttribInfo(
+        const std::string& name) const {
+  VariableMap::const_iterator it = attrib_map_.find(name);
+  return it != attrib_map_.end() ? &it->second : NULL;
+}
+
+const ShaderManager::ShaderInfo::VariableInfo*
+    ShaderManager::ShaderInfo::GetUniformInfo(
+        const std::string& name) const {
+  VariableMap::const_iterator it = uniform_map_.find(name);
+  return it != uniform_map_.end() ? &it->second : NULL;
+}
+
 ShaderManager::ShaderManager() {}
 
 ShaderManager::~ShaderManager() {

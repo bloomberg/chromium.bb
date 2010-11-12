@@ -4,9 +4,8 @@
 
 // This file contains definitions for mock objects, used for testing.
 
-// TODO: This file "manually" defines some mock objects. Using gMock
-// would be definitely preferable, unfortunately it doesn't work on Windows
-// yet.
+// TODO(apatrick): This file "manually" defines some mock objects. Using gMock
+// would be definitely preferable, unfortunately it doesn't work on Windows yet.
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_
@@ -16,6 +15,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gpu {
@@ -77,6 +77,24 @@ class AsyncAPIMock : public AsyncAPIInterface {
   CommandBufferEngine *engine_;
 };
 
+namespace gles2 {
+
+class MockShaderTranslator : public ShaderTranslatorInterface {
+ public:
+  virtual ~MockShaderTranslator() { }
+
+  MOCK_METHOD3(Init, bool(
+      ShShaderType shader_type,
+      ShShaderSpec shader_spec,
+      const ShBuiltInResources* resources));
+  MOCK_METHOD1(Translate, bool(const char* shader));
+  MOCK_CONST_METHOD0(translated_shader, const char*());
+  MOCK_CONST_METHOD0(info_log, const char*());
+  MOCK_CONST_METHOD0(attrib_map, const VariableMap&());
+  MOCK_CONST_METHOD0(uniform_map, const VariableMap&());
+};
+
+}  // namespace gles2
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_MOCKS_H_

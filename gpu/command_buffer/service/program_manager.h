@@ -156,6 +156,10 @@ class ProgramManager {
     const UniformInfo* AddUniformInfo(
         GLsizei size, GLenum type, GLint location, const std::string& name);
 
+    void GetCorrectedVariableInfo(
+        bool use_uniforms, const std::string& name, std::string* corrected_name,
+        GLsizei* size, GLenum* type) const;
+
     GLsizei max_attrib_name_length_;
 
     // Attrib by index.

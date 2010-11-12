@@ -53,9 +53,7 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
       default: NOTREACHED();
     }
 
-    ShaderTranslator::VariableInfo info = {0};
-    info.type = type;
-    info.size = size;
+    ShaderTranslator::VariableInfo info(type, size);
     (*var_map)[name.get()] = info;
   }
 }

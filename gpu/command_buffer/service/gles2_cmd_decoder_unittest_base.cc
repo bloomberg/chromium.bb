@@ -566,8 +566,8 @@ void GLES2DecoderTestBase::SetupShader(
       GL_FRAGMENT_SHADER, fragment_shader_client_id,
       fragment_shader_service_id);
 
-  GetShaderInfo(vertex_shader_client_id)->SetStatus(true, "");
-  GetShaderInfo(fragment_shader_client_id)->SetStatus(true, "");
+  GetShaderInfo(vertex_shader_client_id)->SetStatus(true, "", NULL);
+  GetShaderInfo(fragment_shader_client_id)->SetStatus(true, "", NULL);
 
   AttachShader attach_cmd;
   attach_cmd.Init(program_client_id, vertex_shader_client_id);

@@ -4084,12 +4084,13 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   // Translate GL ES 2.0 shader to Desktop GL shader and pass that to
   // glShaderSource and then glCompileShader.
   const char* shader_src = info->source().c_str();
+  ShaderTranslator* translator = NULL;
   if (use_shader_translator_) {
-    ShaderTranslator* translator = info->shader_type() == GL_VERTEX_SHADER ?
+    translator = info->shader_type() == GL_VERTEX_SHADER ?
         vertex_translator_.get() : fragment_translator_.get();
 
     if (!translator->Translate(shader_src)) {
-      info->SetStatus(false, translator->info_log());
+      info->SetStatus(false, translator->info_log(), NULL);
       return;
     }
     shader_src = translator->translated_shader();
@@ -4100,7 +4101,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   GLint status = GL_FALSE;
   glGetShaderiv(info->service_id(),  GL_COMPILE_STATUS, &status);
   if (status) {
-    info->SetStatus(true, "");
+    info->SetStatus(true, "", translator);
   } else {
     // We cannot reach here if we are using the shader translator.
     // All invalid shaders must be rejected by the translator.
@@ -4114,7 +4115,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
     glGetShaderInfoLog(info->service_id(), max_len, &len, temp.get());
     DCHECK(max_len == 0 || len < max_len);
     DCHECK(len ==0 || temp[len] == '\0');
-    info->SetStatus(false, std::string(temp.get(), len));
+    info->SetStatus(false, std::string(temp.get(), len), NULL);
   }
 };
 

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 
 namespace gpu {
 namespace gles2 {
@@ -27,6 +28,7 @@ class ShaderManager {
   class ShaderInfo : public base::RefCounted<ShaderInfo> {
    public:
     typedef scoped_refptr<ShaderInfo> Ref;
+    typedef ShaderTranslator::VariableInfo VariableInfo;
 
     explicit ShaderInfo(GLuint service_id, GLenum shader_type)
         : service_id_(service_id),
@@ -50,10 +52,12 @@ class ShaderManager {
       return source_;
     }
 
-    void SetStatus(bool valid, const std::string& log) {
-      valid_ = valid;
-      log_info_ = log;
-    }
+    void SetStatus(
+        bool valid, const std::string& log,
+        ShaderTranslatorInterface* translator);
+
+    const VariableInfo* GetAttribInfo(const std::string& name) const;
+    const VariableInfo* GetUniformInfo(const std::string& name) const;
 
     const std::string& log_info() const {
       return log_info_;
@@ -68,6 +72,8 @@ class ShaderManager {
     }
 
    private:
+    typedef ShaderTranslator::VariableMap VariableMap;
+
     friend class base::RefCounted<ShaderInfo>;
     friend class ShaderManager;
     ~ShaderInfo() { }
@@ -89,6 +95,10 @@ class ShaderManager {
 
     // The shader translation log.
     std::string log_info_;
+
+    // The type info when the shader was last compiled.
+    VariableMap attrib_map_;
+    VariableMap uniform_map_;
   };
 
   ShaderManager();

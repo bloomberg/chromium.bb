@@ -6,7 +6,11 @@
 
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/common/gl_mock.h"
+#include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Return;
+using ::testing::ReturnRef;
 
 namespace gpu {
 namespace gles2 {
@@ -53,7 +57,7 @@ TEST_F(ShaderManagerTest, Basic) {
   EXPECT_FALSE(info1->IsValid());
   EXPECT_STREQ("", info1->log_info().c_str());
   const char* kLog = "foo";
-  info1->SetStatus(true, kLog);
+  info1->SetStatus(true, kLog, NULL);
   EXPECT_TRUE(info1->IsValid());
   EXPECT_STREQ(kLog, info1->log_info().c_str());
   // Check we can set its source.
@@ -84,6 +88,76 @@ TEST_F(ShaderManagerTest, Destroy) {
   // Check that resources got freed.
   info1 = manager_.GetShaderInfo(kClient1Id);
   ASSERT_TRUE(info1 == NULL);
+}
+
+TEST_F(ShaderManagerTest, GetInfo) {
+  const GLuint kClient1Id = 1;
+  const GLuint kService1Id = 11;
+  const GLenum kShader1Type = GL_VERTEX_SHADER;
+  const GLenum kAttrib1Type = GL_FLOAT_VEC2;
+  const GLsizei kAttrib1Size = 2;
+  const char* kAttrib1Name = "attr1";
+  const GLenum kAttrib2Type = GL_FLOAT_VEC3;
+  const GLsizei kAttrib2Size = 4;
+  const char* kAttrib2Name = "attr2";
+  const GLenum kUniform1Type = GL_FLOAT_MAT2;
+  const GLsizei kUniform1Size = 3;
+  const char* kUniform1Name = "uni1";
+  const GLenum kUniform2Type = GL_FLOAT_MAT3;
+  const GLsizei kUniform2Size = 5;
+  const char* kUniform2Name = "uni2";
+  MockShaderTranslator shader_translator;
+  ShaderTranslator::VariableMap attrib_map;
+  attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
+      kAttrib1Type, kAttrib1Size);
+  attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
+      kAttrib2Type, kAttrib2Size);
+  ShaderTranslator::VariableMap uniform_map;
+  uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
+      kUniform1Type, kUniform1Size);
+  uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
+      kUniform2Type, kUniform2Size);
+  EXPECT_CALL(shader_translator, attrib_map())
+      .WillRepeatedly(ReturnRef(attrib_map));
+  EXPECT_CALL(shader_translator, uniform_map())
+      .WillRepeatedly(ReturnRef(uniform_map));
+  // Check we can create shader.
+  manager_.CreateShaderInfo(kClient1Id, kService1Id, kShader1Type);
+  // Check shader got created.
+  ShaderManager::ShaderInfo* info1 = manager_.GetShaderInfo(kClient1Id);
+  // Set Status
+  info1->SetStatus(true, "", &shader_translator);
+  // Check attrib and uniform infos got copied.
+  for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
+       it != attrib_map.end(); ++it) {
+    const ShaderManager::ShaderInfo::VariableInfo* variable_info =
+        info1->GetAttribInfo(it->first);
+    ASSERT_TRUE(variable_info != NULL);
+    EXPECT_EQ(it->second.type, variable_info->type);
+    EXPECT_EQ(it->second.size, variable_info->size);
+  }
+  for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
+       it != uniform_map.end(); ++it) {
+    const ShaderManager::ShaderInfo::VariableInfo* variable_info =
+        info1->GetUniformInfo(it->first);
+    ASSERT_TRUE(variable_info != NULL);
+    EXPECT_EQ(it->second.type, variable_info->type);
+    EXPECT_EQ(it->second.size, variable_info->size);
+  }
+  // Check attrib and uniform get cleared.
+  info1->SetStatus(true, "", NULL);
+  for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
+       it != attrib_map.end(); ++it) {
+    const ShaderManager::ShaderInfo::VariableInfo* variable_info =
+        info1->GetAttribInfo(it->first);
+    EXPECT_TRUE(variable_info == NULL);
+  }
+  for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
+       it != uniform_map.end(); ++it) {
+    const ShaderManager::ShaderInfo::VariableInfo* variable_info =
+        info1->GetUniformInfo(it->first);
+    ASSERT_TRUE(variable_info == NULL);
+  }
 }
 
 }  // namespace gles2

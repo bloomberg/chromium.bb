@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "gpu/command_buffer/common/gl_mock.h"
+#include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::gfx::MockGLInterface;
@@ -19,6 +20,7 @@ using ::testing::InSequence;
 using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
@@ -124,7 +126,8 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   static const char* kUniform1Name;
   static const char* kUniform2Name;
-  static const char* kUniform3Name;
+  static const char* kUniform3BadName;
+  static const char* kUniform3GoodName;
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
@@ -322,7 +325,7 @@ ProgramManagerWithShaderTest::UniformInfo
     ProgramManagerWithShaderTest::kUniforms[] = {
   { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
   { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
-  { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
+  { kUniform3BadName, kUniform3Size, kUniform3Type, kUniform3Location, },
 };
 
 const size_t ProgramManagerWithShaderTest::kNumUniforms =
@@ -335,7 +338,8 @@ const char* ProgramManagerWithShaderTest::kUniform1Name = "uniform1";
 // Correctly has array spec.
 const char* ProgramManagerWithShaderTest::kUniform2Name = "uniform2[0]";
 // Incorrectly missing array spec.
-const char* ProgramManagerWithShaderTest::kUniform3Name = "uniform3";
+const char* ProgramManagerWithShaderTest::kUniform3BadName = "uniform3";
+const char* ProgramManagerWithShaderTest::kUniform3GoodName = "uniform3[0]";
 
 TEST_F(ProgramManagerWithShaderTest, GetAttribInfos) {
   const ProgramManager::ProgramInfo* program_info =
@@ -399,12 +403,11 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformInfo) {
   info = program_info->GetUniformInfo(2);
   // We emulate certain OpenGL drivers by supplying the name without
   // the array spec. Our implementation should correctly add the required spec.
-  const std::string expected_name(std::string(kUniform3Name) + "[0]");
   ASSERT_TRUE(info != NULL);
   EXPECT_EQ(kUniform3Size, info->size);
   EXPECT_EQ(kUniform3Type, info->type);
   EXPECT_EQ(kUniform3Location, info->element_locations[0]);
-  EXPECT_STREQ(expected_name.c_str(), info->name.c_str());
+  EXPECT_STREQ(kUniform3GoodName, info->name.c_str());
   EXPECT_TRUE(program_info->GetUniformInfo(kInvalidIndex) == NULL);
 }
 
@@ -422,12 +425,12 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
       kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
   ShaderManager::ShaderInfo* vshader = shader_manager.GetShaderInfo(
       kVShaderClientId);
-  vshader->SetStatus(true, "");
+  vshader->SetStatus(true, "", NULL);
   shader_manager.CreateShaderInfo(
       kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
   ShaderManager::ShaderInfo* fshader = shader_manager.GetShaderInfo(
       kFShaderClientId);
-  fshader->SetStatus(true, "");
+  fshader->SetStatus(true, "", NULL);
   EXPECT_TRUE(program_info->AttachShader(vshader));
   EXPECT_FALSE(program_info->CanLink());
   EXPECT_TRUE(program_info->AttachShader(fshader));
@@ -442,13 +445,13 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
   EXPECT_FALSE(program_info->CanLink());
   EXPECT_TRUE(program_info->AttachShader(fshader));
   EXPECT_TRUE(program_info->CanLink());
-  vshader->SetStatus(false, "");
+  vshader->SetStatus(false, "", NULL);
   EXPECT_FALSE(program_info->CanLink());
-  vshader->SetStatus(true, "");
+  vshader->SetStatus(true, "", NULL);
   EXPECT_TRUE(program_info->CanLink());
-  fshader->SetStatus(false, "");
+  fshader->SetStatus(false, "", NULL);
   EXPECT_FALSE(program_info->CanLink());
-  fshader->SetStatus(true, "");
+  fshader->SetStatus(true, "", NULL);
   EXPECT_TRUE(program_info->CanLink());
   shader_manager.Destroy(false);
 }
@@ -459,13 +462,15 @@ TEST_F(ProgramManagerWithShaderTest, GetUniformLocation) {
   ASSERT_TRUE(program_info != NULL);
   EXPECT_EQ(kUniform1Location, program_info->GetUniformLocation(kUniform1Name));
   EXPECT_EQ(kUniform2Location, program_info->GetUniformLocation(kUniform2Name));
-  EXPECT_EQ(kUniform3Location, program_info->GetUniformLocation(kUniform3Name));
+  EXPECT_EQ(kUniform3Location, program_info->GetUniformLocation(
+      kUniform3BadName));
   // Check we can get uniform2 as "uniform2" even though the name is
   // "uniform2[0]"
   EXPECT_EQ(kUniform2Location, program_info->GetUniformLocation("uniform2"));
   // Check we can get uniform3 as "uniform3[0]" even though we simulated GL
   // returning "uniform3"
-  EXPECT_EQ(kUniform3Location, program_info->GetUniformLocation("uniform3[0]"));
+  EXPECT_EQ(kUniform3Location, program_info->GetUniformLocation(
+      kUniform3GoodName));
   // Check that we can get the locations of the array elements > 1
   EXPECT_EQ(kUniform2Location + 2,
             program_info->GetUniformLocation("uniform2[1]"));
@@ -501,7 +506,7 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
     { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
     { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
-    { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
+    { kUniform3BadName, kUniform3Size, kUniform3Type, kUniform3Location, },
   };
   const size_t kNumUniforms = arraysize(kUniforms);
   static const GLuint kClientProgramId = 1234;
@@ -523,7 +528,91 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsGLUnderscoreUniform) {
   // as the "gl_" uniform we skipped.
   // +4u is to account for "gl_" and NULL terminator.
   program_info->GetProgramiv(GL_ACTIVE_UNIFORM_MAX_LENGTH, &value);
-  EXPECT_EQ(strlen(kUniform3Name) + 4u, static_cast<size_t>(value));
+  EXPECT_EQ(strlen(kUniform3BadName) + 4u, static_cast<size_t>(value));
+}
+
+// Some GL drivers incorrectly return the wrong type. For example they return
+// GL_FLOAT_VEC2 when they should return GL_FLOAT_MAT2. Check we handle this.
+TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
+  const GLuint kShaderClientId = 999;
+  const GLuint kShaderServiceId = 998;
+  static GLenum kAttrib2BadType = GL_FLOAT_VEC2;
+  static GLenum kAttrib2GoodType = GL_FLOAT_MAT2;
+  static GLenum kUniform2BadType = GL_FLOAT_VEC3;
+  static GLenum kUniform2GoodType = GL_FLOAT_MAT3;
+  MockShaderTranslator shader_translator;
+  ShaderTranslator::VariableMap attrib_map;
+  ShaderTranslator::VariableMap uniform_map;
+  attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
+      kAttrib1Type, kAttrib1Size);
+  attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
+      kAttrib2GoodType, kAttrib2Size);
+  attrib_map[kAttrib3Name] = ShaderTranslatorInterface::VariableInfo(
+      kAttrib3Type, kAttrib3Size);
+  uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
+      kUniform1Type, kUniform1Size);
+  uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
+      kUniform2GoodType, kUniform2Size);
+  uniform_map[kUniform3GoodName] = ShaderTranslatorInterface::VariableInfo(
+      kUniform3Type, kUniform3Size);
+  EXPECT_CALL(shader_translator, attrib_map())
+      .WillRepeatedly(ReturnRef(attrib_map));
+  EXPECT_CALL(shader_translator, uniform_map())
+      .WillRepeatedly(ReturnRef(uniform_map));
+  ShaderManager shader_manager;
+  shader_manager.CreateShaderInfo(
+      kShaderClientId, kShaderServiceId, GL_FRAGMENT_SHADER);
+  ShaderManager::ShaderInfo* shader_info =
+      shader_manager.GetShaderInfo(kShaderClientId);
+  shader_info->SetStatus(true, "", &shader_translator);
+  static ProgramManagerWithShaderTest::AttribInfo kAttribs[] = {
+    { kAttrib1Name, kAttrib1Size, kAttrib1Type, kAttrib1Location, },
+    { kAttrib2Name, kAttrib2Size, kAttrib2BadType, kAttrib2Location, },
+    { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
+  };
+  static ProgramManagerWithShaderTest::UniformInfo kUniforms[] = {
+    { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
+    { kUniform2Name, kUniform2Size, kUniform2BadType, kUniform2Location, },
+    { kUniform3BadName, kUniform3Size, kUniform3Type, kUniform3Location, },
+  };
+  const size_t kNumAttribs= arraysize(kAttribs);
+  const size_t kNumUniforms = arraysize(kUniforms);
+  static const GLuint kClientProgramId = 1234;
+  static const GLuint kServiceProgramId = 5679;
+  SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
+              kServiceProgramId);
+  manager_.CreateProgramInfo(kClientProgramId, kServiceProgramId);
+  ProgramManager::ProgramInfo* program_info =
+      manager_.GetProgramInfo(kClientProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  EXPECT_TRUE(program_info->AttachShader(shader_info));
+  program_info->Update();
+  // Check that we got the good type, not the bad.
+  // Check Attribs
+  for (unsigned index = 0; index < kNumAttribs; ++index) {
+    const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
+        program_info->GetAttribInfo(index);
+    ASSERT_TRUE(attrib_info != NULL);
+    ShaderTranslator::VariableMap::const_iterator it = attrib_map.find(
+        attrib_info->name);
+    ASSERT_TRUE(it != attrib_map.end());
+    EXPECT_EQ(it->first, attrib_info->name);
+    EXPECT_EQ(static_cast<GLenum>(it->second.type), attrib_info->type);
+    EXPECT_EQ(it->second.size, attrib_info->size);
+  }
+  // Check Uniforms
+  for (unsigned index = 0; index < kNumUniforms; ++index) {
+    const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
+        program_info->GetUniformInfo(index);
+    ASSERT_TRUE(uniform_info != NULL);
+    ShaderTranslator::VariableMap::const_iterator it = uniform_map.find(
+        uniform_info->name);
+    ASSERT_TRUE(it != uniform_map.end());
+    EXPECT_EQ(it->first, uniform_info->name);
+    EXPECT_EQ(static_cast<GLenum>(it->second.type), uniform_info->type);
+    EXPECT_EQ(it->second.size, uniform_info->size);
+  }
+  shader_manager.Destroy(false);
 }
 
 }  // namespace gles2
