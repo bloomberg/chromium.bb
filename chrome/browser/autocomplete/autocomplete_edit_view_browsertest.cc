@@ -660,7 +660,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EscapeToDefaultMatch) {
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BasicTextOperations) {
+// Disabled, http://crbug.com/62935.
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_BasicTextOperations) {
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   browser()->FocusLocationBar();
