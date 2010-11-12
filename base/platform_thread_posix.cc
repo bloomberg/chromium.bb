@@ -7,6 +7,11 @@
 #include <errno.h>
 #include <sched.h>
 
+#include "base/logging.h"
+#include "base/safe_strerror_posix.h"
+#include "base/scoped_ptr.h"
+#include "base/thread_restrictions.h"
+
 #if defined(OS_MACOSX)
 #include <mach/mach.h>
 #include <sys/resource.h>
@@ -24,18 +29,27 @@
 #include <sys/nacl_syscalls.h>
 #endif
 
-#include "base/logging.h"
-#include "base/safe_strerror_posix.h"
-
 #if defined(OS_MACOSX)
 namespace base {
 void InitThreading();
 }  // namespace base
 #endif
 
-static void* ThreadFunc(void* closure) {
-  PlatformThread::Delegate* delegate =
-      static_cast<PlatformThread::Delegate*>(closure);
+namespace {
+
+struct ThreadParams {
+  PlatformThread::Delegate* delegate;
+  bool joinable;
+};
+
+}  // namespace
+
+static void* ThreadFunc(void* params) {
+  ThreadParams* thread_params = static_cast<ThreadParams*>(params);
+  PlatformThread::Delegate* delegate = thread_params->delegate;
+  if (!thread_params->joinable)
+    base::ThreadRestrictions::SetSingletonAllowed(false);
+  delete thread_params;
   delegate->ThreadMain();
   return NULL;
 }
@@ -174,9 +188,14 @@ bool CreateThread(size_t stack_size, bool joinable,
   if (stack_size > 0)
     pthread_attr_setstacksize(&attributes, stack_size);
 
-  success = !pthread_create(thread_handle, &attributes, ThreadFunc, delegate);
+  ThreadParams* params = new ThreadParams;
+  params->delegate = delegate;
+  params->joinable = joinable;
+  success = !pthread_create(thread_handle, &attributes, ThreadFunc, params);
 
   pthread_attr_destroy(&attributes);
+  if (!success)
+    delete params;
   return success;
 }
 
