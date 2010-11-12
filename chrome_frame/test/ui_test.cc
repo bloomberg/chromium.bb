@@ -67,9 +67,12 @@ TEST_P(FullTabUITest, KeyboardInput) {
 }
 
 // Tests keyboard shortcuts for back and forward.
-// Marking this test FLAKY as it fails at times on the buildbot.
-// http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
+TEST_P(FullTabUITest, KeyboardBackForward) {
+  if (IsWorkstationLocked()) {
+    LOG(ERROR) << "This test cannot be run in a locked workstation.";
+    return;
+  }
+
   std::wstring page1 = GetSimplePageUrl();
   std::wstring page2 = GetLinkPageUrl();
   bool in_cf = GetParam().invokes_cf();
@@ -89,7 +92,7 @@ TEST_P(FullTabUITest, FLAKY_KeyboardBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page2)))
       .WillOnce(testing::DoAll(
           SetFocusToRenderer(&ie_mock_),
-          DelaySendScanCode(&loop_, 500, bkspace, simulate_input::NONE)));
+          DelaySendScanCode(&loop_, 1000, bkspace, simulate_input::NONE)));
 
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page1)))
       .WillOnce(testing::DoAll(
@@ -135,7 +138,9 @@ TEST_P(FullTabUITest, CtrlN) {
       .WillOnce(testing::Return());
 
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
-      .WillOnce(CloseBrowserMock(&ie_mock_));
+      .Times(testing::AtMost(2))
+      .WillOnce(CloseBrowserMock(&ie_mock_))
+      .WillOnce(testing::Return());
 
   LaunchIEAndNavigate(GetSimplePageUrl());
 }

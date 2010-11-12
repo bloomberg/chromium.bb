@@ -76,6 +76,7 @@ TEST_P(FullTabNavigationTest, TypeAnchorUrl) {
 
   ie_mock_.ExpectNavigation(IN_IE, GetSimplePageUrl());
   server_mock_.ExpectAndServeRequest(CFInvocation::None(), GetSimplePageUrl());
+
   // Enter the new url into the address bar.
   EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
@@ -83,7 +84,7 @@ TEST_P(FullTabNavigationTest, TypeAnchorUrl) {
           AccWatchForOneValueChange(&acc_observer, address_matcher)));
   // Click the go button once the address has changed.
   EXPECT_CALL(acc_observer, OnAccValueChange(_, _, GetAnchorPageUrl(1)))
-      .WillOnce(AccLeftClickInBrowser(&ie_mock_, go_matcher));
+      .WillOnce(AccDoDefaultActionInBrowser(&ie_mock_, go_matcher));
 
   bool in_cf = GetParam().invokes_cf();
   ie_mock_.ExpectNavigation(in_cf, GetAnchorPageUrl(1));
@@ -273,50 +274,47 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
 
 // Test that a user cannot navigate to a restricted site and that the security
 // dialog appears.
-TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
-  if (!GetParam().invokes_cf() || GetInstalledIEVersion() == IE_8) {
-    // Test has been disabled on IE8 bot because it hangs at times.
-    // http://crbug.com/47596
-    LOG(ERROR) << "Test disabled for this configuration.";
-    return;
-  }
-  MockWindowObserver win_observer_mock;
-
+TEST_P(FullTabNavigationTest, RestrictedSite) {
+  // Add the server to restricted sites zone.
   ScopedComPtr<IInternetSecurityManager> security_manager;
   HRESULT hr = security_manager.CreateInstance(CLSID_InternetSecurityManager);
   ASSERT_HRESULT_SUCCEEDED(hr);
-  // Add the server to restricted sites zone.
   hr = security_manager->SetZoneMapping(URLZONE_UNTRUSTED,
       GetTestUrl(L"").c_str(), SZM_CREATE);
 
   EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
   server_mock_.ExpectAndServeAnyRequests(GetParam());
 
-  const char* kAlertDlgCaption = "Security Alert";
+  MockWindowObserver win_observer_mock;
 
-  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
-      _,
-      testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(GetSimplePageUrl())),
-      _, _, _, _, _))
-    .Times(1)
-    .WillOnce(WatchWindow(&win_observer_mock, kAlertDlgCaption, ""));
+  // If the page is loaded in mshtml, then IE allows the page to be loaded
+  // and just shows 'Restricted sites' in the status bar.
+  if (!GetParam().invokes_cf()) {
+    ie_mock_.ExpectNavigation(IN_IE, GetSimplePageUrl());
+    EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(GetSimplePageUrl())))
+        .Times(1)
+        .WillOnce(CloseBrowserMock(&ie_mock_));
+  } else {
+    // If the page is being loaded in chrome frame then we will see
+    // a security dialog.
+    const char* kAlertDlgCaption = "Security Alert";
+    win_observer_mock.WatchWindow(kAlertDlgCaption, "");
 
-  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
-      _,
-      testing::Field(&VARIANT::bstrVal, testing::HasSubstr(L"res://")),
-      _, _, _, _, _))
-      .Times(testing::AtMost(1));
+    EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+          testing::StrCaseEq(GetSimplePageUrl())), _, _, _, _, _))
+      .Times(1);
 
-  EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
-      testing::Field(&VARIANT::bstrVal, StrEq(GetSimplePageUrl()))))
-      .Times(testing::AtMost(1));
+    EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
+            testing::Field(&VARIANT::bstrVal, StrEq(GetSimplePageUrl()))))
+        .Times(testing::AtMost(1));
 
-  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
-      .Times(1)
-      .WillOnce(DoCloseWindow());
-  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
-      .Times(1)
-      .WillOnce(CloseBrowserMock(&ie_mock_));
+    EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+        .Times(1)
+        .WillOnce(DoCloseWindow());
+    EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+        .Times(1)
+        .WillOnce(CloseBrowserMock(&ie_mock_));
+  }
 
   LaunchIEAndNavigate(GetSimplePageUrl());
 
