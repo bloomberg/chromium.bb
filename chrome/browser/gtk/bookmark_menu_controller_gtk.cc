@@ -80,6 +80,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       ignore_button_release_(false),
       triggering_widget_(NULL) {
   menu_ = gtk_menu_new();
+  g_object_ref_sink(menu_);
   BuildMenu(node, start_child_index, menu_);
   signals_.Connect(menu_, "hide",
                    G_CALLBACK(OnMenuHiddenThunk), this);
@@ -88,7 +89,8 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
 
 BookmarkMenuController::~BookmarkMenuController() {
   profile_->GetBookmarkModel()->RemoveObserver(this);
-  gtk_menu_popdown(GTK_MENU(menu_));
+  gtk_widget_destroy(menu_);
+  g_object_unref(menu_);
 }
 
 void BookmarkMenuController::Popup(GtkWidget* widget, gint button_type,
