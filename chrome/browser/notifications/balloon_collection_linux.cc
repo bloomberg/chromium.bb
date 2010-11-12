@@ -46,11 +46,10 @@ void BalloonCollectionImpl::DidProcessEvent(GdkEvent* event) {
 }
 
 bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
-  const Balloons& balloons = base_.balloons();
-  if (balloons.empty())
+  if (balloons_.empty())
     return false;
 
-  gfx::Point upper_left = balloons[balloons.size() - 1]->GetPosition();
+  gfx::Point upper_left = balloons_[balloons_.size() - 1]->GetPosition();
   gfx::Point lower_right = layout_.GetLayoutOrigin();
 
   gfx::Rect bounds = gfx::Rect(upper_left.x(),

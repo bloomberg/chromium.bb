@@ -7,7 +7,6 @@
 #pragma once
 
 #include <deque>
-#include <string>
 
 #include "base/id_map.h"
 #include "base/scoped_ptr.h"
@@ -44,14 +43,8 @@ class NotificationUIManager
   virtual void Add(const Notification& notification,
                    Profile* profile);
 
-  // Removes any notifications matching the supplied ID, either currently
-  // displayed or in the queue.  Returns true if anything was removed.
-  virtual bool CancelById(const std::string& notification_id);
-
-  // Removes any notifications matching the supplied source origin
-  // (which could be an extension ID), either currently displayed or in the
-  // queue.  Returns true if anything was removed.
-  virtual bool CancelAllBySourceOrigin(const GURL& source_origin);
+  // Removes a notification.
+  virtual bool Cancel(const Notification& notification);
 
   // Returns balloon collection.
   BalloonCollection* balloon_collection() {

@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
@@ -27,7 +28,7 @@
 namespace chromeos {
 
 class DesktopNotificationsTest;
-typedef LoggingNotificationDelegate<DesktopNotificationsTest>
+typedef LoggingNotificationProxyBase<DesktopNotificationsTest>
     LoggingNotificationProxy;
 
 // Test version of the balloon collection which counts the number
@@ -39,6 +40,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,
                    Profile* profile);
+  virtual bool Remove(const Notification& notification);
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
   virtual void OnBalloonClosed(Balloon* source);
@@ -52,6 +54,7 @@ class MockBalloonCollection : public BalloonCollectionImpl {
 
  private:
   std::set<Balloon*> balloons_;
+  scoped_refptr<LoggingNotificationProxy> log_proxy_;
 };
 
 class DesktopNotificationsTest : public testing::Test {

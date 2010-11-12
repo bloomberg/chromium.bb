@@ -16,16 +16,24 @@ std::string DesktopNotificationsTest::log_output_;
 
 void MockBalloonCollection::Add(const Notification& notification,
                                 Profile* profile) {
-  // Swap in a logging proxy for the purpose of logging calls that
+  // Swap in the logging proxy for the purpose of logging calls that
   // would be made into javascript, then pass this down to the
   // balloon collection.
-  Notification test_notification(
-      notification.origin_url(),
-      notification.content_url(),
-      notification.display_source(),
-      notification.replace_id(),
-      new LoggingNotificationProxy(notification.notification_id()));
+  Notification test_notification(notification.origin_url(),
+                                 notification.content_url(),
+                                 notification.display_source(),
+                                 string16(), /* replace_id */
+                                 log_proxy_.get());
   BalloonCollectionImpl::Add(test_notification, profile);
+}
+
+bool MockBalloonCollection::Remove(const Notification& notification) {
+  Notification test_notification(notification.origin_url(),
+                                 notification.content_url(),
+                                 notification.display_source(),
+                                 string16(), /* replace_id */
+                                 log_proxy_.get());
+  return BalloonCollectionImpl::Remove(test_notification);
 }
 
 Balloon* MockBalloonCollection::MakeBalloon(const Notification& notification,
