@@ -6,19 +6,28 @@ var MAX_APPS_PER_ROW = [];
 MAX_APPS_PER_ROW[LayoutMode.SMALL] = 4;
 MAX_APPS_PER_ROW[LayoutMode.NORMAL] = 6;
 
+// The URL prefix used in the app link 'ping' attributes.
+var PING_APP_LAUNCH_PREFIX = 'record-app-launch';
+
+// The URL prefix used in the webstore link 'ping' attributes.
+var PING_WEBSTORE_LAUNCH_PREFIX = 'record-webstore-launch';
+
 function getAppsCallback(data) {
   logEvent('received apps');
   var appsSection = $('apps');
   var appsSectionContent = $('apps-content');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   var appsPromo = $('apps-promo');
+  var appsPromoPing = PING_WEBSTORE_LAUNCH_PREFIX + '+' + data.showPromo;
   var webStoreEntry;
 
   appsMiniview.textContent = '';
   appsSectionContent.textContent = '';
 
+  apps.showPromo = data.showPromo;
+
   data.apps.sort(function(a,b) {
-    return a.app_launch_index - b.app_launch_index
+    return a.app_launch_index - b.app_launch_index;
   });
 
   clearClosedMenu(apps.menu);
@@ -31,6 +40,7 @@ function getAppsCallback(data) {
     });
 
     webStoreEntry = apps.createWebStoreElement();
+    webStoreEntry.querySelector('a').setAttribute('ping', appsPromoPing);
     appsSectionContent.appendChild(webStoreEntry);
 
     data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
@@ -49,6 +59,7 @@ function getAppsCallback(data) {
     document.documentElement.classList.add('apps-promo-visible');
   else
     document.documentElement.classList.remove('apps-promo-visible');
+  $('apps-promo-link').setAttribute('ping', appsPromoPing);
   maybeDoneLoading();
 
   if (data.apps.length > 0 && isDoneLoading()) {
@@ -227,11 +238,14 @@ var apps = (function() {
 
     menu: $('apps-menu'),
 
+    showPromo: false,
+
     createElement: function(app) {
       var div = createElement(app);
       var a = div.firstChild;
 
       a.onclick = handleClick;
+      a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
       a.style.backgroundImage = url(app['icon_big']);
       if (hashParams['app-id'] == app['id']) {
         div.setAttribute('new', 'new');
@@ -271,6 +285,7 @@ var apps = (function() {
       a.textContent = app['name'];
       a.href = app['launch_url'];
       a.onclick = handleClick;
+      a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
       span.appendChild(a);
@@ -286,6 +301,7 @@ var apps = (function() {
       a.textContent = app['name'];
       a.href = app['launch_url'];
       a.onclick = handleClick;
+      a.setAttribute('ping', PING_APP_LAUNCH_PREFIX + '+' + this.showPromo);
       a.style.backgroundImage = url(app['icon_small']);
       a.className = 'item';
       return a;

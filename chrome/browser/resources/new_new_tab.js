@@ -1206,7 +1206,10 @@ function isDoneLoading() {
 document.addEventListener('DOMContentLoaded', function() {
   var promoText1 = $('apps-promo-text1');
   promoText1.innerHTML = promoText1.textContent;
-  promoText1.querySelector('a').href = localStrings.getString('web_store_url');
+
+  var promoLink = promoText1.querySelector('a');
+  promoLink.id = 'apps-promo-link';
+  promoLink.href = localStrings.getString('web_store_url');
 
   $('apps-promo-hide').addEventListener('click', function() {
     chrome.send('hideAppsPromo', []);

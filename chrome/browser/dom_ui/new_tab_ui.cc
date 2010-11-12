@@ -620,7 +620,9 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
                                                   int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!path.empty() && path[0] != '#') {
+  if (AppLauncherHandler::HandlePing(path)) {
+    return;
+  } else if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
     NOTREACHED();

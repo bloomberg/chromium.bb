@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/default_apps.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -88,10 +89,15 @@ void DefaultApps::DidShowPromo() {
     return;
   }
 
-  if (promo_counter < kAppsPromoCounterMax)
+  if (promo_counter < kAppsPromoCounterMax) {
+    if (promo_counter + 1 == kAppsPromoCounterMax)
+      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
+                                extension_misc::PROMO_EXPIRE,
+                                extension_misc::PROMO_BUCKET_BOUNDARY);
     SetPromoCounter(++promo_counter);
-  else
+  } else {
     SetPromoHidden();
+  }
 }
 
 void DefaultApps::SetPromoHidden() {

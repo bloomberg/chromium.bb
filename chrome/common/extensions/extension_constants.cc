@@ -304,4 +304,5 @@ const char* kDecodedMessageCatalogsFilename = "DECODED_MESSAGE_CATALOGS";
 namespace extension_misc {
 const char* kBookmarkManagerId = "eemcgdkfndhakfknompkggombfjjjeno";
 const char* kWebStoreAppId = "ahfgeienlihckogmohjhadlkjgocpleb";
+const char* kAppsPromoHistogram = "Extensions.AppsPromo";
 }

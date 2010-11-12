@@ -32,6 +32,14 @@ class AppLauncherHandler
   explicit AppLauncherHandler(ExtensionsService* extension_service);
   virtual ~AppLauncherHandler();
 
+  // Populate a dictionary with the information from an extension.
+  static void CreateAppInfo(const Extension* extension,
+                            ExtensionPrefs* extension_prefs,
+                            DictionaryValue* value);
+
+  // Callback for pings related to launching apps on the NTP.
+  static bool HandlePing(const std::string& path);
+
   // DOMMessageHandler implementation.
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
@@ -40,11 +48,6 @@ class AppLauncherHandler
   virtual void Observe(NotificationType type,
                       const NotificationSource& source,
                       const NotificationDetails& details);
-
-  // Populate a dictionary with the information from an extension.
-  static void CreateAppInfo(const Extension* extension,
-                            ExtensionPrefs* extension_prefs,
-                            DictionaryValue* value);
 
   // Populate the given dictionary with all installed app info.
   void FillAppDictionary(DictionaryValue* value);
@@ -65,6 +68,14 @@ class AppLauncherHandler
   void HandleHideAppsPromo(const ListValue* args);
 
  private:
+  // Records a web store launch in the appropriate histograms. |promo_active|
+  // specifies if the web store promotion was active.
+  static void RecordWebStoreLaunch(bool promo_active);
+
+  // Records an app launch in the appropriate histograms. |promo_active|
+  // specifies if the web store promotion was active.
+  static void RecordAppLaunch(bool promo_active);
+
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.
   virtual void InstallUIProceed();
@@ -93,6 +104,9 @@ class AppLauncherHandler
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;
+
+  // Whether the promo is currently being shown.
+  bool promo_active_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };
