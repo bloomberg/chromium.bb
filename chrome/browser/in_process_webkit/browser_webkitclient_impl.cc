@@ -20,6 +20,9 @@ BrowserWebKitClientImpl::BrowserWebKitClientImpl() {
   file_utilities_.set_sandbox_enabled(false);
 }
 
+BrowserWebKitClientImpl::~BrowserWebKitClientImpl() {
+}
+
 WebKit::WebClipboard* BrowserWebKitClientImpl::clipboard() {
   NOTREACHED();
   return NULL;
@@ -144,15 +147,19 @@ int BrowserWebKitClientImpl::databaseDeleteFile(
   return file_util::Delete(path, false) ? 0 : 1;
 }
 
+void BrowserWebKitClientImpl::idbShutdown() {
+  if (indexed_db_key_utility_client_.get())
+    indexed_db_key_utility_client_->EndUtilityProcess();
+}
+
 void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
     const WebKit::WebString& keyPath,
     WebKit::WebVector<WebKit::WebIDBKey>& keys) {
-  // TODO(bulach): we need to figure out a way to keep the utility process
-  // running for longer, and shut it down when no longer used.
-  scoped_refptr<IndexedDBKeyUtilityClient> indexed_db_key_utility_client(
-      new IndexedDBKeyUtilityClient());
-  indexed_db_key_utility_client->StartUtilityProcess();
+  if (!indexed_db_key_utility_client_.get()) {
+    indexed_db_key_utility_client_ = new IndexedDBKeyUtilityClient();
+    indexed_db_key_utility_client_->StartUtilityProcess();
+  }
 
   std::vector<SerializedScriptValue> std_values;
   size_t size = values.size();
@@ -161,10 +168,8 @@ void BrowserWebKitClientImpl::createIDBKeysFromSerializedValuesAndKeyPath(
     std_values.push_back(SerializedScriptValue(values[i]));
 
   std::vector<IndexedDBKey> std_keys;
-  indexed_db_key_utility_client->CreateIDBKeysFromSerializedValuesAndKeyPath(
+  indexed_db_key_utility_client_->CreateIDBKeysFromSerializedValuesAndKeyPath(
       std_values, keyPath, &std_keys);
-
-  indexed_db_key_utility_client->EndUtilityProcess();
 
   keys = std_keys;
 }

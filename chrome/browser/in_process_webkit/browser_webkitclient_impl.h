@@ -6,12 +6,16 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
+#include "base/ref_counted.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
+
+class IndexedDBKeyUtilityClient;
 
 class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
  public:
   BrowserWebKitClientImpl();
+  virtual ~BrowserWebKitClientImpl();
 
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
@@ -45,6 +49,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir);
+  virtual void idbShutdown();
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
       const WebKit::WebString& keyPath,
@@ -52,6 +57,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
 
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
+  scoped_refptr<IndexedDBKeyUtilityClient> indexed_db_key_utility_client_;
 };
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
