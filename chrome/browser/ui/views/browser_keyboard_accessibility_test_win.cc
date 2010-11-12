@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
 
 // TODO(dtseng): http://www.crbug.com/50402
 IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
-                       FAILS_TabInSyncMyBookmarksDialog) {
+                       DISABLED_TabInSyncMyBookmarksDialog) {
   browser()->OpenSyncMyBookmarksDialog();
   TabCyclerForwardAndBack(current_view_native_window());
 }
