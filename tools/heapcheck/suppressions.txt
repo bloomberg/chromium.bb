@@ -1054,11 +1054,34 @@
    fun:testing::Test::Run
 }
 {
-   bug_62943
+   bug_62943a
    Heapcheck:Leak
    ...
    fun:FakeURLFetcherFactory::CreateURLFetcher
    fun:URLFetcher::Create
    fun:safe_browsing::ClientSideDetectionService::StartClientReportPhishingRequest
    fun:*DispatchToMethod
+}
+{
+   bug_62943b
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_S_construct
+   fun:std::string::_S_construct_aux
+   fun:std::string::_S_construct
+   fun:basic_string
+   fun:safe_browsing::ClientSideDetectionServiceTest_SendClientReportPhishingRequest_Test::TestBody
+}
+{
+   bug_62943c
+   Heapcheck:Leak
+   fun:__gnu_cxx::new_allocator::allocate
+   fun:std::string::_Rep::_S_create
+   fun:std::string::_Rep::_M_clone
+   fun:std::string::_Rep::_M_grab
+   fun:std::string::assign
+   fun:std::string::operator=
+   fun:URLFetcher::set_upload_data
+   fun:safe_browsing::ClientSideDetectionService::StartClientReportPhishingRequest
 }
