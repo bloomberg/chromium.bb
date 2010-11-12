@@ -194,8 +194,6 @@ URLLoader::URLLoader(PluginInstance* instance, bool main_document_loader)
       user_buffer_(NULL),
       user_buffer_size_(0),
       done_status_(PP_ERROR_WOULDBLOCK),
-      record_download_progress_(false),
-      record_upload_progress_(false),
       has_universal_access_(false),
       status_callback_(NULL) {
   instance->AddObserver(this);
@@ -250,8 +248,6 @@ int32_t URLLoader::Open(URLRequestInfo* request,
 
   request_info_ = scoped_refptr<URLRequestInfo>(request);
   pending_callback_ = callback;
-  record_download_progress_ = request->record_download_progress();
-  record_upload_progress_  = request->record_upload_progress();
 
   // Notify completion when we receive a redirect or response headers.
   return PP_ERROR_WOULDBLOCK;
@@ -278,7 +274,7 @@ int32_t URLLoader::FollowRedirect(PP_CompletionCallback callback) {
 
 bool URLLoader::GetUploadProgress(int64_t* bytes_sent,
                                   int64_t* total_bytes_to_be_sent) {
-  if (!record_upload_progress_) {
+  if (!RecordUploadProgress()) {
     *bytes_sent = 0;
     *total_bytes_to_be_sent = 0;
     return false;
@@ -290,7 +286,7 @@ bool URLLoader::GetUploadProgress(int64_t* bytes_sent,
 
 bool URLLoader::GetDownloadProgress(int64_t* bytes_received,
                                     int64_t* total_bytes_to_be_received) {
-  if (!record_download_progress_) {
+  if (!RecordDownloadProgress()) {
     *bytes_received = 0;
     *total_bytes_to_be_received = 0;
     return false;
@@ -503,7 +499,7 @@ int32_t URLLoader::CanRequest(const WebKit::WebFrame* frame,
 
 void URLLoader::UpdateStatus() {
   if (status_callback_ &&
-      (record_download_progress_ || record_upload_progress_)) {
+      (RecordDownloadProgress() || RecordUploadProgress())) {
     PP_Resource pp_resource = GetReferenceNoAddRef();
     if (pp_resource) {
       // The PP_Resource on the plugin will be NULL if the plugin has no
@@ -517,12 +513,20 @@ void URLLoader::UpdateStatus() {
       // flag.
       status_callback_(
           instance_->pp_instance(), pp_resource,
-          record_upload_progress_ ? bytes_sent_ : -1,
-          record_upload_progress_ ? total_bytes_to_be_sent_ : -1,
-          record_download_progress_ ? bytes_received_ : -1,
-          record_download_progress_ ? total_bytes_to_be_received_ : -1);
+          RecordUploadProgress() ? bytes_sent_ : -1,
+          RecordUploadProgress() ?  total_bytes_to_be_sent_ : -1,
+          RecordDownloadProgress() ? bytes_received_ : -1,
+          RecordDownloadProgress() ? total_bytes_to_be_received_ : -1);
     }
   }
+}
+
+bool URLLoader::RecordDownloadProgress() const {
+  return request_info_ && request_info_->record_download_progress();
+}
+
+bool URLLoader::RecordUploadProgress() const {
+  return request_info_ && request_info_->record_upload_progress();
 }
 
 }  // namespace pepper

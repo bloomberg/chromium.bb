@@ -100,6 +100,14 @@ class URLLoader : public Resource,
   // synchronize an out-of-process plugin's state.
   void UpdateStatus();
 
+  // Returns true if the plugin has requested we record download or upload
+  // progress. When false, we don't need to update the counters. We go out of
+  // our way not to allow access to this information unless it's requested,
+  // even when it would be easier just to return it and not check, so that
+  // plugins don't depend on access without setting the flag.
+  bool RecordDownloadProgress() const;
+  bool RecordUploadProgress() const;
+
   // This will be NULL if the instance has been deleted but this URLLoader was
   // somehow leaked. In general, you should not need to check this for NULL.
   // However, if you see a NULL pointer crash, that means somebody is holding
@@ -121,9 +129,6 @@ class URLLoader : public Resource,
   char* user_buffer_;
   size_t user_buffer_size_;
   int32_t done_status_;
-
-  bool record_download_progress_;
-  bool record_upload_progress_;
 
   bool has_universal_access_;
 
