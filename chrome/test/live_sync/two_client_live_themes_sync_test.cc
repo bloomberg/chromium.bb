@@ -44,8 +44,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, CustomTheme) {
   ASSERT_EQ(theme, GetCustomTheme(verifier()));
 }
 
-// TODO(akalin): Re-enable this after http://crbug.com/62779 is fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, NativeTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   scoped_refptr<Extension> theme = GetTheme(0);
@@ -68,8 +67,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_NativeTheme) {
   ASSERT_TRUE(UsingNativeTheme(verifier()));
 }
 
-// TODO(akalin): Re-enable this after http://crbug.com/62779 is fixed.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, FAILS_DefaultTheme) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveThemesSyncTest, DefaultTheme) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   scoped_refptr<Extension> theme = GetTheme(0);

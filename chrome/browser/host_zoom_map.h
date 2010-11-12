@@ -16,6 +16,7 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -24,8 +25,12 @@ class GURL;
 class PrefService;
 class Profile;
 
-class HostZoomMap : public NotificationObserver,
-                    public base::RefCountedThreadSafe<HostZoomMap> {
+// HostZoomMap needs to be deleted on the UI thread because it listens
+// to notifications on there (and holds a NotificationRegistrar).
+class HostZoomMap :
+    public NotificationObserver,
+    public base::RefCountedThreadSafe<HostZoomMap,
+                                      BrowserThread::DeleteOnUIThread> {
  public:
   explicit HostZoomMap(Profile* profile);
 
@@ -74,7 +79,8 @@ class HostZoomMap : public NotificationObserver,
                        const NotificationDetails& details);
 
  private:
-  friend class base::RefCountedThreadSafe<HostZoomMap>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
+  friend class DeleteTask<HostZoomMap>;
 
   typedef std::map<std::string, double> HostZoomLevels;
 
