@@ -9,20 +9,19 @@
 
 #include <string.h>
 
+#include <map>
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_host.h"
-#include "ppapi/c/dev/ppb_var_deprecated.h"
-#include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_instance.h"
+#include "native_client/tests/fake_browser_ppapi/fake_resource.h"
+
+struct PPB_Var_Deprecated;
 
 namespace fake_browser_ppapi {
 
 class Host : public ppapi_proxy::BrowserHost {
  public:
-  Host(const char* plugin_file,
-       const PPB_Core* core_interface,
-       const PPB_Instance* instance_interface,
-       const PPB_Var_Deprecated* var_interface);
+  explicit Host(const char* plugin_file);
   virtual ~Host();
 
   // Implementations of the methods invoked by the browser.
@@ -30,10 +29,21 @@ class Host : public ppapi_proxy::BrowserHost {
                            PPB_GetInterface get_intf);
   void ShutdownModule();
   virtual const void* GetInterface(const char* interface_name);
-  // Getters for the browser interfaces.
-  const PPB_Core* core_interface() const { return core_interface_; }
-  const PPB_Instance* instance_interface() const { return instance_interface_; }
-  const PPB_Var_Deprecated* var_interface() const { return var_interface_; }
+
+  void set_var_interface(const PPB_Var_Deprecated* var_interface) {
+    var_interface_ = var_interface;
+  }
+  const PPB_Var_Deprecated* var_interface() const {
+    return var_interface_;
+  }
+
+  // Resource tracking.
+  // The host keeps track of all Resources assigning them a unique resource_id.
+  // TrackResource() is to be called right after instantiation of a Resource.
+  // GetResource() can be called to map an id to a tracked Resource. If
+  // there is no such resource, Resource::Invalid() is returned.
+  PP_Resource TrackResource(Resource* resource);
+  Resource* GetResource(PP_Resource resource_id);
 
  private:
   typedef int32_t (*InitializeModuleFunc)(PP_Module module,
@@ -46,10 +56,12 @@ class Host : public ppapi_proxy::BrowserHost {
   ShutdownModuleFunc shutdown_module_;
   GetInterfaceFunc get_interface_;
 
-  // Store interface pointers.
-  const PPB_Core* core_interface_;
-  const PPB_Instance* instance_interface_;
   const PPB_Var_Deprecated* var_interface_;
+
+  // Resource tracking.
+  PP_Resource last_resource_id_;  // Used and incremented for each new resource.
+  typedef std::map<PP_Resource, Resource*> ResourceMap;
+  ResourceMap resource_map_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(Host);
 };

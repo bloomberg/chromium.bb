@@ -55,9 +55,16 @@ trusted_env.Append(LIBS=['ppapi_browser', 'ppapi_plugin', 'platform', 'gio'])
 
 fake_browser = trusted_env.ComponentProgram('fake_browser_ppapi',
                                             ['fake_core.cc',
+                                             'fake_file_io.cc',
+                                             'fake_file_io_trusted.cc',
+                                             'fake_file_ref.cc',
                                              'fake_host.cc',
                                              'fake_instance.cc',
                                              'fake_object.cc',
+                                             'fake_resource.cc',
+                                             'fake_url_loader.cc',
+                                             'fake_url_request_info.cc',
+                                             'fake_url_response_info.cc',
                                              'fake_window.cc',
                                              'main.cc',
                                              'test_scriptable.cc'])
@@ -76,6 +83,8 @@ node = env.CommandTest('fake_browser_ppapi.out',
                        [fake_browser,
                         plugin,
                         'http://localhost:5103/basic_object.html',
+                        # Must use relative nexe url for the test to work.
+                        # See TODO in URLLoader::FinishStreamingToFile().
                         '"id=nacl_module;src=ppapi_basic_object.nexe"',
                         '${STAGING_DIR}'
                        ],
@@ -84,5 +93,4 @@ node = env.CommandTest('fake_browser_ppapi.out',
                               % (sel_ldr, log_file)),
                        extra_deps=[sel_ldr, ppapi_basic_object_nexe])
 
-# TODO(polina): reenable the test when it starts faking URLLoading
-#env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')
+env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_ppapi_test')

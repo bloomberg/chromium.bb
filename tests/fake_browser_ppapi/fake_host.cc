@@ -9,6 +9,7 @@
 #if !NACL_WINDOWS
 # include <dlfcn.h>
 #endif  // !NACL_WINDOWS
+
 #include <string.h>
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -39,13 +40,8 @@ int dlclose(void* handle) {
 
 namespace fake_browser_ppapi {
 
-Host::Host(const char* plugin_file,
-           const PPB_Core* core_interface,
-           const PPB_Instance* instance_interface,
-           const PPB_Var_Deprecated* var_interface) :
-  core_interface_(core_interface),
-  instance_interface_(instance_interface),
-  var_interface_(var_interface) {
+Host::Host(const char* plugin_file)
+    : var_interface_(NULL), last_resource_id_(0) {
   dl_handle_ = dlopen(plugin_file, RTLD_NOW | RTLD_LOCAL);
   CHECK(dl_handle_ != NULL);
   initialize_module_ =
@@ -65,6 +61,12 @@ Host::Host(const char* plugin_file,
 Host::~Host() {
   int rc = dlclose(dl_handle_);
   CHECK(rc == 0);
+
+  ResourceMap::iterator it;
+  while ((it = resource_map_.begin()) != resource_map_.end()) {
+    delete(it->second);
+    resource_map_.erase(it);
+  }
 }
 
 int32_t Host::InitializeModule(PP_Module module,
@@ -78,6 +80,19 @@ void Host::ShutdownModule() {
 
 const void* Host::GetInterface(const char* interface_name) {
   return (*get_interface_)(interface_name);
+}
+
+PP_Resource Host::TrackResource(Resource* resource) {
+  PP_Resource resource_id = ++last_resource_id_;
+  resource_map_[resource_id] = resource;
+  return resource_id;
+}
+
+Resource* Host::GetResource(PP_Resource resource_id) {
+  ResourceMap::iterator iter = resource_map_.find(resource_id);
+  if (iter == resource_map_.end())
+    return Resource::Invalid();
+  return iter->second;
 }
 
 }  // namespace fake_browser_ppapi

@@ -17,14 +17,17 @@ using ppapi_proxy::DebugPrintf;
 
 namespace {
 
-static void AddResource(PP_Resource resource) {
-  DebugPrintf("Core::AddResource: resource=%"NACL_PRIu64"\n", resource);
-  NACL_UNIMPLEMENTED();
+// The plugin does reference counting indirectly by using PPAPI C++ layer.
+// The assumption is that PPAPI tests cover reference counting, so we don't
+// need to test it here. Instead every resource will be registered with the
+// host on creation and deallocated in its destructor.
+
+static void AddRefResource(PP_Resource resource) {
+  DebugPrintf("Core::AddRefResource: resource=%"NACL_PRIu64"\n", resource);
 }
 
 static void ReleaseResource(PP_Resource resource) {
   DebugPrintf("Core::ReleaseResource: resource=%"NACL_PRIu64"\n", resource);
-  NACL_UNIMPLEMENTED();
 }
 
 static void* MemAlloc(size_t num_bytes) {
@@ -65,8 +68,7 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
 }
 
 static PP_Bool IsMainThread() {
-  DebugPrintf("Core::IsMainThread\n");
-  NACL_UNIMPLEMENTED();
+  DebugPrintf("Core::IsMainThread: always true\n");
   return PP_TRUE;
 }
 
@@ -75,8 +77,8 @@ static PP_Bool IsMainThread() {
 namespace fake_browser_ppapi {
 
 const PPB_Core* Core::GetInterface() {
-  static const PPB_Core intf = {
-    AddResource,
+  static const PPB_Core core_interface = {
+    AddRefResource,
     ReleaseResource,
     MemAlloc,
     MemFree,
@@ -85,7 +87,7 @@ const PPB_Core* Core::GetInterface() {
     CallOnMainThread,
     IsMainThread
   };
-  return &intf;
+  return &core_interface;
 }
 
 }  // namespace fake_browser_ppapi

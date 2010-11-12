@@ -8,15 +8,23 @@
 #include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
 #include "native_client/tests/fake_browser_ppapi/fake_core.h"
+#include "native_client/tests/fake_browser_ppapi/fake_file_io.h"
+#include "native_client/tests/fake_browser_ppapi/fake_file_io_trusted.h"
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_instance.h"
+#include "native_client/tests/fake_browser_ppapi/fake_resource.h"
+#include "native_client/tests/fake_browser_ppapi/fake_url_loader.h"
+#include "native_client/tests/fake_browser_ppapi/fake_url_request_info.h"
+#include "native_client/tests/fake_browser_ppapi/fake_url_response_info.h"
 #include "native_client/tests/fake_browser_ppapi/fake_window.h"
 #include "native_client/tests/fake_browser_ppapi/test_scriptable.h"
+
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
@@ -34,11 +42,26 @@ Host* host = NULL;
 const void* FakeGetInterface(const char* interface_name) {
   DebugPrintf("Getting interface for name '%s'\n", interface_name);
   if (std::strcmp(interface_name, PPB_CORE_INTERFACE) == 0) {
-    return host->core_interface();
+    return fake_browser_ppapi::Core::GetInterface();
   } else if (std::strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
-    return host->instance_interface();
+    return ppapi_proxy::PluginInstance::GetInterface();
   } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
     return host->var_interface();
+  } else if (std::strcmp(interface_name, PPB_URLLOADER_DEV_INTERFACE) == 0) {
+    return fake_browser_ppapi::URLLoader::GetInterface();
+  } else if (std::strcmp(interface_name,
+                         PPB_URLREQUESTINFO_DEV_INTERFACE) == 0) {
+    return fake_browser_ppapi::URLRequestInfo::GetInterface();
+  } else if (std::strcmp(interface_name,
+                         PPB_URLRESPONSEINFO_DEV_INTERFACE) == 0) {
+    return fake_browser_ppapi::URLResponseInfo::GetInterface();
+  } else if (std::strcmp(interface_name, PPB_FILEIO_DEV_INTERFACE) == 0) {
+    return fake_browser_ppapi::FileIO::GetInterface();
+  } else if (std::strcmp(interface_name,
+                         PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0) {
+    return fake_browser_ppapi::FileIOTrusted::GetInterface();
+  } else {
+    NACL_UNIMPLEMENTED();
   }
   return NULL;
 }
@@ -119,6 +142,21 @@ void TestInstance(PP_Module browser_module_id,
 
 }  // namespace
 
+namespace fake_browser_ppapi {
+
+PP_Resource TrackResource(Resource* resource) {
+  PP_Resource resource_id = host->TrackResource(resource);
+  DebugPrintf("TrackResource: resource_id=%"NACL_PRId64"\n", resource_id);
+  resource->set_resource_id(resource_id);
+  return resource_id;
+}
+
+Resource* GetResource(PP_Resource resource_id) {
+  return host->GetResource(resource_id);
+}
+
+}  // namespace fake_browser_ppapi
+
 int main(int argc, char** argv) {
   // Turn off stdout buffering to aid debugging in case of a crash.
   setvbuf(stdout, NULL, _IONBF, 0);
@@ -133,12 +171,10 @@ int main(int argc, char** argv) {
   }
 
   const char* plugin_name = argv[1];
-  host =
-      new fake_browser_ppapi::Host(plugin_name,
-                                   fake_browser_ppapi::Core::GetInterface(),
-                                   ppapi_proxy::PluginInstance::GetInterface(),
-                                   ppapi_proxy::PluginVar::GetInterface());
-  CHECK(host != NULL);
+  host = new fake_browser_ppapi::Host(plugin_name);
+  // TODO(polina): Change FakeWindow functions to not rely on host for
+  // the var interface.
+  host->set_var_interface(ppapi_proxy::PluginVar::GetInterface());
 
   // Test startup.
   CHECK(host->InitializeModule(PluginModuleId(), FakeGetInterface) == PP_OK);
@@ -157,11 +193,13 @@ int main(int argc, char** argv) {
   const char** embed_argv = NULL;
   CHECK(ParseArgs(embed_args, &embed_argc, &embed_argn, &embed_argv));
 
-  // Temporary support for reading files from disk rather than HTML.
-  const char* root_path = argv[4];
-  std::string local_origin_env("NACL_PPAPI_LOCAL_ORIGIN=");
-  local_origin_env += root_path;
-  putenv(const_cast<char*>(local_origin_env.c_str()));
+  // Set url path and local path for nexe - required by fake url loader.
+  std::string url_path = page_url;
+  size_t last_slash = url_path.rfind("/");
+  CHECK(last_slash != std::string::npos);
+  url_path.erase(last_slash, url_path.size());
+  fake_browser_ppapi::g_nacl_ppapi_url_path = url_path;
+  fake_browser_ppapi::g_nacl_ppapi_local_path = argv[4];
 
   // Test an instance.
   TestInstance(BrowserModuleId(),
@@ -177,5 +215,6 @@ int main(int argc, char** argv) {
   // Close the plugin .so.
   delete host;
 
+  printf("PASS\n");
   return 0;
 }

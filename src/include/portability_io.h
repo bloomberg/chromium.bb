@@ -47,6 +47,7 @@
 #define DUP  _dup
 #define DUP2 _dup2
 #define OPEN _open
+#define CLOSE _close
 #define FDOPEN _fdopen
 #define PORTABLE_DEV_NULL "nul"
 #define SNPRINTF _snprintf
@@ -65,8 +66,10 @@
 
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define OPEN open
+#define CLOSE close
 #define DUP  dup
 #define DUP2 dup2
 #define FDOPEN fdopen
