@@ -112,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   UpdateScreen* update_screen = controller()->GetUpdateScreen();
   ASSERT_TRUE(update_screen != NULL);
   ASSERT_EQ(controller()->current_screen(), update_screen);
+  update_screen->SetAllUpdatesCritical(true);
 
   UpdateLibrary::Status status;
 

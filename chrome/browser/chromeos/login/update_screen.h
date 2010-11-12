@@ -46,6 +46,14 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   int reboot_check_delay() const { return reboot_check_delay_; }
   void SetRebootCheckDelay(int seconds);
 
+  // Returns true if there is critical system update that requires installation
+  // and immediate reboot.
+  bool HasCriticalUpdate();
+
+  // Set flag to treat all updates as critical (for test purpose mainly).
+  // Default value is false.
+  void SetAllUpdatesCritical(bool is_critical);
+
  private:
   // Timer notification handlers.
   void OnMaximalCurtainTimeElapsed();
@@ -69,6 +77,12 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   // automatically. If reboot didn't happen during this interval, ask user to
   // reboot device manually.
   int reboot_check_delay_;
+
+  // Flag that is used to detect when update download has just started.
+  bool is_downloading_update_;
+
+  // Is all updates critical? If true, update deadlines are ignored.
+  bool is_all_updates_critical_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };
