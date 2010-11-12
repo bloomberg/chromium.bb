@@ -75,6 +75,9 @@ const char kPrefLaunchType[] = "launchType";
 // A preference determining the order of which the apps appear on the NTP.
 const char kPrefAppLaunchIndex[] = "app_launcher_index";
 
+// "A preference for storing extra data sent in update checks for an extension.
+const char kUpdateUrlData[] = "update_url_data";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -893,6 +896,28 @@ int ExtensionPrefs::GetNextAppLaunchIndex() {
       max_value = value;
   }
   return max_value + 1;
+}
+
+void ExtensionPrefs::SetUpdateUrlData(const std::string& extension_id,
+                                      const std::string& data) {
+  DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  if (!dictionary) {
+    NOTREACHED();
+    return;
+  }
+
+  dictionary->SetString(kUpdateUrlData, data);
+  SavePrefsAndNotify();
+}
+
+std::string ExtensionPrefs::GetUpdateUrlData(const std::string& extension_id) {
+  DictionaryValue* dictionary = GetExtensionPref(extension_id);
+  if (!dictionary)
+    return std::string();
+
+  std::string data;
+  dictionary->GetString(kUpdateUrlData, &data);
+  return data;
 }
 
 // static

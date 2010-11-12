@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
+#include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_popup_api.h"
@@ -278,6 +279,9 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<LaunchAppFunction>();
   RegisterFunction<SetEnabledFunction>();
   RegisterFunction<UninstallFunction>();
+
+  // Extension module.
+  RegisterFunction<SetUpdateUrlDataFunction>();
 
   // WebstorePrivate.
   RegisterFunction<GetBrowserLoginFunction>();

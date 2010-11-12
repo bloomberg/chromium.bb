@@ -188,6 +188,14 @@
           "description": "Array of global window objects",
           "items": { "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" } }
         }
+      },
+      {
+        "name": "setUpdateUrlData",
+        "type": "function",
+        "description": "Sets the value of the ap CGI parameter used in the extension's update URL.  This value is ignored for extensions that are hosted in the Chrome Extension Gallery.",
+        "parameters": [
+          {"type": "string", "name": "data", "maxLength": 1024}
+        ]
       }
     ],
     "events": [

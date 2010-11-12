@@ -356,6 +356,10 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // on the whitelist of extensions that can script all pages.
   bool CanExecuteScriptEverywhere() const;
 
+  // Returns true if this extension updates itself using the extension
+  // gallery.
+  bool UpdatesFromGallery() const;
+
   // Accessors:
 
   const FilePath& path() const { return path_; }

@@ -187,6 +187,13 @@ class ExtensionPrefs {
   // highest current application launch index found.
   int GetNextAppLaunchIndex();
 
+  // The extension's update URL data.  If not empty, the ExtensionUpdater
+  // will append a ap= parameter to the URL when checking if a new version
+  // of the extension is available.
+  void SetUpdateUrlData(const std::string& extension_id,
+                        const std::string& data);
+  std::string GetUpdateUrlData(const std::string& extension_id);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.

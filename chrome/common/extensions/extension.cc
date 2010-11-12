@@ -1854,8 +1854,7 @@ GURL Extension::GetHomepageURL() const {
   if (homepage_url_.is_valid())
     return homepage_url_;
 
-  if (update_url()!= GURL(extension_urls::kGalleryUpdateHttpsUrl) &&
-      update_url()!= GURL(extension_urls::kGalleryUpdateHttpUrl))
+  if (!UpdatesFromGallery())
     return GURL();
 
   // TODO(erikkay): This may not be entirely correct with the webstore.
@@ -2191,6 +2190,11 @@ bool Extension::CanExecuteScriptEverywhere() const {
   }
 
   return false;
+}
+
+bool Extension::UpdatesFromGallery() const {
+  return update_url() == GURL(extension_urls::kGalleryUpdateHttpsUrl) ||
+      update_url() == GURL(extension_urls::kGalleryUpdateHttpUrl);
 }
 
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,

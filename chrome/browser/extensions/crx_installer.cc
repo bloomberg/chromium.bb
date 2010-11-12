@@ -204,10 +204,7 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       // For apps with a gallery update URL, require that they be installed
       // from the gallery.
       // TODO(erikkay) Apply this rule for paid extensions and themes as well.
-      if ((extension->update_url() ==
-           GURL(extension_urls::kGalleryUpdateHttpsUrl)) ||
-          (extension->update_url() ==
-           GURL(extension_urls::kGalleryUpdateHttpUrl))) {
+      if (extension->UpdatesFromGallery()) {
         *error = l10n_util::GetStringFUTF8(
             IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
             l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));

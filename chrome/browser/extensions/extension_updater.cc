@@ -97,7 +97,8 @@ ManifestFetchData::~ManifestFetchData() {}
 //
 // (Note that '=' is %3D and '&' is %26 when urlencoded.)
 bool ManifestFetchData::AddExtension(std::string id, std::string version,
-                                     int days) {
+                                     int days,
+                                     const std::string& update_url_data) {
   if (extension_ids_.find(id) != extension_ids_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
     return false;
@@ -108,6 +109,13 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
   parts.push_back("id=" + id);
   parts.push_back("v=" + version);
   parts.push_back("uc");
+
+  if (!update_url_data.empty()) {
+    // Make sure the update_url_data string is escaped before using it so that
+    // there is no chance of overriding the id or v other parameter value
+    // we place into the x= value.
+    parts.push_back("ap=" + EscapeQueryParamValue(update_url_data, true));
+  }
 
   if (ShouldPing(days)) {
     parts.push_back("ping=" +
@@ -177,12 +185,20 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
     return;
   }
 
+  // If the extension updates itself from the gallery, ignore any update URL
+  // data.  At the moment there is no extra data that an extension can
+  // communicate to the the gallery update servers.
+  std::string update_url_data;
+  if (!extension.UpdatesFromGallery())
+    update_url_data = service_->extension_prefs()->
+        GetUpdateUrlData(extension.id());
+
   AddExtensionData(extension.location(),
                    extension.id(),
                    *extension.version(),
                    (extension.is_theme() ? PendingExtensionInfo::THEME
                                          : PendingExtensionInfo::EXTENSION),
-                   extension.update_url());
+                   extension.update_url(), update_url_data);
 }
 
 void ManifestFetchesBuilder::AddPendingExtension(
@@ -195,7 +211,7 @@ void ManifestFetchesBuilder::AddPendingExtension(
       Version::GetVersionFromString("0.0.0.0"));
 
   AddExtensionData(info.install_source, id, *version,
-                   info.expected_crx_type, info.update_url);
+                   info.expected_crx_type, info.update_url, "");
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
@@ -230,7 +246,8 @@ void ManifestFetchesBuilder::AddExtensionData(
     const std::string& id,
     const Version& version,
     PendingExtensionInfo::ExpectedCrxType crx_type,
-    GURL update_url) {
+    GURL update_url,
+    const std::string& update_url_data) {
 
   if (!Extension::IsAutoUpdateableLocation(location)) {
     return;
@@ -277,7 +294,7 @@ void ManifestFetchesBuilder::AddExtensionData(
       CalculatePingDays(service_->extension_prefs()->LastPingDay(id));
   while (existing_iter != fetches_.end()) {
     if (existing_iter->second->AddExtension(id, version.GetString(),
-                                            ping_days)) {
+                                            ping_days, update_url_data)) {
       fetch = existing_iter->second;
       break;
     }
@@ -286,7 +303,8 @@ void ManifestFetchesBuilder::AddExtensionData(
   if (!fetch) {
     fetch = new ManifestFetchData(update_url);
     fetches_.insert(std::pair<GURL, ManifestFetchData*>(update_url, fetch));
-    bool added = fetch->AddExtension(id, version.GetString(), ping_days);
+    bool added = fetch->AddExtension(id, version.GetString(), ping_days,
+                                     update_url_data);
     DCHECK(added);
   }
 }
@@ -736,7 +754,7 @@ void ExtensionUpdater::CheckNow() {
     std::string version = prefs_->GetString(kExtensionBlacklistUpdateVersion);
     int ping_days =
         CalculatePingDays(service_->extension_prefs()->BlacklistLastPingDay());
-    blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_days);
+    blacklist_fetch->AddExtension(kBlacklistAppID, version, ping_days, "");
     StartUpdateCheck(blacklist_fetch);
   }
 

@@ -32,10 +32,16 @@
 using base::Time;
 using base::TimeDelta;
 
-static int expected_load_flags =
+namespace {
+
+const char kEmptyUpdateUrlData[] = "";
+
+int expected_load_flags =
     net::LOAD_DO_NOT_SEND_COOKIES |
     net::LOAD_DO_NOT_SAVE_COOKIES |
     net::LOAD_DISABLE_CACHE;
+
+}  // namespace
 
 // Base class for further specialized test classes.
 class MockService : public ExtensionUpdateService {
@@ -402,6 +408,70 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(ContainsKey(params, "ping"));
   }
 
+  static void TestUpdateUrlDataEmpty() {
+    const std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const std::string version = "1.0";
+
+    // Make sure that an empty update URL data string does not cause a ap=
+    // option to appear in the x= parameter.
+    ManifestFetchData fetch_data(GURL("http://localhost/foo"));
+    fetch_data.AddExtension(id, version,
+                            ManifestFetchData::kNeverPinged, "");
+    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              "%26v%3D1.0%26uc",
+              fetch_data.full_url().spec());
+  }
+
+  static void TestUpdateUrlDataSimple() {
+    const std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const std::string version = "1.0";
+
+    // Make sure that an update URL data string causes an appropriate ap=
+    // option to appear in the x= parameter.
+    ManifestFetchData fetch_data(GURL("http://localhost/foo"));
+    fetch_data.AddExtension(id, version,
+                            ManifestFetchData::kNeverPinged, "bar");
+    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              "%26v%3D1.0%26uc%26ap%3Dbar",
+              fetch_data.full_url().spec());
+  }
+
+  static void TestUpdateUrlDataCompound() {
+    const std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const std::string version = "1.0";
+
+    // Make sure that an update URL data string causes an appropriate ap=
+    // option to appear in the x= parameter.
+    ManifestFetchData fetch_data(GURL("http://localhost/foo"));
+    fetch_data.AddExtension(id, version,
+                            ManifestFetchData::kNeverPinged, "a=1&b=2&c");
+    EXPECT_EQ("http://localhost/foo\?x=id%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              "%26v%3D1.0%26uc%26ap%3Da%253D1%2526b%253D2%2526c",
+              fetch_data.full_url().spec());
+  }
+
+  static void TestUpdateUrlDataFromGallery(const char* gallery_url) {
+    MockService service;
+    ManifestFetchesBuilder builder(&service);
+    ExtensionList extensions;
+    std::string url(gallery_url);
+
+    service.CreateTestExtensions(1, &extensions, &url, Extension::INTERNAL);
+    builder.AddExtension(*extensions[0]);
+    std::vector<ManifestFetchData*> fetches = builder.GetFetches();
+    EXPECT_EQ(1u, fetches.size());
+    scoped_ptr<ManifestFetchData> fetch(fetches[0]);
+    fetches.clear();
+
+    // Make sure that extensions that update from the gallery ignore any
+    // update URL data.
+    const std::string& update_url = fetch->full_url().spec();
+    std::string::size_type x = update_url.find("x=");
+    EXPECT_NE(std::string::npos, x);
+    std::string::size_type ap = update_url.find("ap%3D", x);
+    EXPECT_EQ(std::string::npos, ap);
+  }
+
   static void TestDetermineUpdates() {
     // Create a set of test extensions
     ServiceForManifestTests service;
@@ -428,11 +498,13 @@ class ExtensionUpdaterTest : public testing::Test {
     scoped_ptr<Version> one(Version::GetVersionFromString("1.0"));
     EXPECT_TRUE(tmp[0]->version()->Equals(*one));
     fetch_data.AddExtension(tmp[0]->id(), tmp[0]->VersionString(),
-                            ManifestFetchData::kNeverPinged);
+                            ManifestFetchData::kNeverPinged,
+                            kEmptyUpdateUrlData);
     AddParseResult(tmp[0]->id(),
         "1.1", "http://localhost/e1_1.1.crx", &updates);
     fetch_data.AddExtension(tmp[1]->id(), tmp[1]->VersionString(),
-                            ManifestFetchData::kNeverPinged);
+                            ManifestFetchData::kNeverPinged,
+                            kEmptyUpdateUrlData);
     AddParseResult(tmp[1]->id(),
         tmp[1]->VersionString(), "http://localhost/e2_2.0.crx", &updates);
     updateable = updater->DetermineUpdates(fetch_data, updates);
@@ -458,7 +530,8 @@ class ExtensionUpdaterTest : public testing::Test {
     for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
          it != pending_extensions.end(); ++it) {
       fetch_data.AddExtension(it->first, "1.0.0.0",
-                              ManifestFetchData::kNeverPinged);
+                              ManifestFetchData::kNeverPinged,
+                              kEmptyUpdateUrlData);
       AddParseResult(it->first,
                      "1.1", "http://localhost/e1_1.1.crx", &updates);
     }
@@ -495,8 +568,9 @@ class ExtensionUpdaterTest : public testing::Test {
     // second one should be queued up.
     ManifestFetchData* fetch1 = new ManifestFetchData(url1);
     ManifestFetchData* fetch2 = new ManifestFetchData(url2);
-    fetch1->AddExtension("1111", "1.0", 0);
-    fetch2->AddExtension("12345", "2.0", ManifestFetchData::kNeverPinged);
+    fetch1->AddExtension("1111", "1.0", 0, kEmptyUpdateUrlData);
+    fetch2->AddExtension("12345", "2.0", ManifestFetchData::kNeverPinged,
+                         kEmptyUpdateUrlData);
     updater->StartUpdateCheck(fetch1);
     updater->StartUpdateCheck(fetch2);
 
@@ -814,7 +888,8 @@ class ExtensionUpdaterTest : public testing::Test {
     ManifestFetchData fetch_data(update_url);
     const Extension* extension = tmp[0];
     fetch_data.AddExtension(extension->id(), extension->VersionString(),
-                            ManifestFetchData::kNeverPinged);
+                            ManifestFetchData::kNeverPinged,
+                            kEmptyUpdateUrlData);
     UpdateManifest::Results results;
     results.daystart_elapsed_seconds = 750;
 
@@ -842,6 +917,16 @@ TEST(ExtensionUpdaterTest, TestExtensionUpdateCheckRequestsPending) {
 // This test is disabled on Mac, see http://crbug.com/26035.
 TEST(ExtensionUpdaterTest, TestBlacklistUpdateCheckRequests) {
   ExtensionUpdaterTest::TestBlacklistUpdateCheckRequests();
+}
+
+TEST(ExtensionUpdaterTest, TestUpdateUrlData) {
+  ExtensionUpdaterTest::TestUpdateUrlDataEmpty();
+  ExtensionUpdaterTest::TestUpdateUrlDataSimple();
+  ExtensionUpdaterTest::TestUpdateUrlDataCompound();
+  ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
+      extension_urls::kGalleryUpdateHttpUrl);
+  ExtensionUpdaterTest::TestUpdateUrlDataFromGallery(
+      extension_urls::kGalleryUpdateHttpsUrl);
 }
 
 TEST(ExtensionUpdaterTest, TestDetermineUpdates) {

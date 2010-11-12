@@ -113,7 +113,7 @@ var chrome = chrome || {};
       // Update the renderer's port bookkeeping, without notifying the browser.
       CloseChannel(portId, false);
       if (connectionInvalid) {
-        var errorMsg = 
+        var errorMsg =
           "Could not establish connection. Receiving end does not exist.";
         chrome.extension.lastError = {"message": errorMsg};
         console.error("Port error: " + errorMsg);
@@ -302,6 +302,7 @@ var chrome = chrome || {};
       "extension.lastError",
       "extension.onConnectExternal",
       "extension.onRequestExternal",
+      "extension.setUpdateUrlData",
       "i18n.getAcceptLanguages"
     ];
     for (var i = 0; i < privileged.length; i++) {

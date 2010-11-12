@@ -43,7 +43,8 @@ class ManifestFetchData {
   // Returns true if this extension information was successfully added. If the
   // return value is false it means the full_url would have become too long, and
   // this ManifestFetchData object remains unchanged.
-  bool AddExtension(std::string id, std::string version, int ping_days);
+  bool AddExtension(std::string id, std::string version, int ping_days,
+                    const std::string& update_url_data);
 
   const GURL& base_url() const { return base_url_; }
   const GURL& full_url() const { return full_url_; }
@@ -112,7 +113,8 @@ class ManifestFetchesBuilder {
                         const std::string& id,
                         const Version& version,
                         PendingExtensionInfo::ExpectedCrxType crx_type,
-                        GURL update_url);
+                        GURL update_url,
+                        const std::string& update_url_data);
   ExtensionUpdateService* service_;
 
   // List of data on fetches we're going to do. We limit the number of
