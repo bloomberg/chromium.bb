@@ -18,6 +18,7 @@ GENERATED = '${TARGET_ROOT}/gen/native_client/src/shared/ppapi_proxy'
 
 # Plugin server interfaces exported via RPCs to the browser.
 ppp_specinputs = ['objectstub.srpc',
+                  'completion_callback.srpc',
                   'ppp.srpc',
                   'ppp_instance.srpc',
                   ]
@@ -77,7 +78,8 @@ env.Command(target=upcall_files,
            )
 
 env.ComponentLibrary('ppruntime',
-                     ['object.cc',
+                     ['completion_callback_table.cc',
+                      'object.cc',
                       'object_proxy.cc',
                       'object_serialize.cc',
                       'objectstub_rpc_impl.cc',

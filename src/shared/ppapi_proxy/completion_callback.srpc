@@ -1,0 +1,19 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods that support calls from the browser to
+# the module.
+{
+ 'name': 'CompletionCallbackRpc',
+ 'rpcs': [
+          # The ppapi_proxy plugin has already created a closure, and requests
+          # a callback from the browser on the PPAPI main thread.
+          {'name': 'InvokeCompletionCallback',
+           'inputs': [['callback_id', 'int32_t'],
+                      ['result', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+         ]
+}

@@ -36,6 +36,7 @@ GENERATED = '${TARGET_ROOT}/gen/native_client/src/shared/ppapi_proxy'
 
 # Client interfaces for RPCs to the plugin.
 ppp_specinputs = ['objectstub.srpc',
+                  'completion_callback.srpc',
                   'ppp.srpc',
                   'ppp_instance.srpc',
                   ]
@@ -99,6 +100,7 @@ common_obj = env.DualObject(['utility.cc'])
 
 env.DualLibrary('ppapi_browser',
                 ['browser_core.cc',
+                 'browser_completion_callback_invoker.cc',
                  'browser_globals.cc',
                  'browser_instance.cc',
                  'browser_ppp.cc',
