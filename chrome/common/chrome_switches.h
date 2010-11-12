@@ -29,6 +29,7 @@ extern const char kAllowScriptingGallery[];
 extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];
 extern const char kAppId[];
+extern const char kAppsGalleryReturnTokens[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsNoThrob[];
 extern const char kAuthNegotiateDelegateWhitelist[];

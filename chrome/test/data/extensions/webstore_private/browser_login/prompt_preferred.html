@@ -1,9 +1,8 @@
 <script>
-chrome.webstorePrivate.promptBrowserLogin("foo@bar.com", 
+chrome.webstorePrivate.promptBrowserLogin("foo@bar.com",
                                           function(result) {
-  if (result.login == "foo@bar.com" && result.token == "new_token") {
+  if (result.login == "foo@bar.com" && typeof(result.token) == "undefined") {
     chrome.test.sendMessage("success");
   }
 });
 </script>
-

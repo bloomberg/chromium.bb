@@ -18,6 +18,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -74,8 +75,10 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
   std::string username = GetBrowserSignin(profile)->GetSignedInUsername();
   dictionary->SetString(kLoginKey, username);
   if (!username.empty()) {
+    CommandLine* cmdline = CommandLine::ForCurrentProcess();
     TokenService* token_service = profile->GetTokenService();
-    if (token_service->HasTokenForService(GaiaConstants::kGaiaService)) {
+    if (cmdline->HasSwitch(switches::kAppsGalleryReturnTokens) &&
+        token_service->HasTokenForService(GaiaConstants::kGaiaService)) {
       dictionary->SetString(kTokenKey,
                             token_service->GetTokenForService(
                                 GaiaConstants::kGaiaService));

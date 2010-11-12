@@ -51,6 +51,11 @@ const char kApp[]                           = "app";
 // according to its configuration.
 const char kAppId[]                         = "app-id";
 
+// Specifying this flag allows the webstorePrivate APIs to return browser (aka
+// sync) login tokens to be used for auto-login in the Web Store (normally they
+// do not).
+const char kAppsGalleryReturnTokens[]       = "apps-gallery-return-tokens";
+
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 

@@ -1,6 +1,6 @@
 <script>
 chrome.webstorePrivate.getBrowserLogin(function(info) {
-  if (info.login == "foo@bar.com" && info.token == "existing_token") {
+  if (info.login == "foo@bar.com" && typeof(info.token) == "undefined") {
     chrome.test.sendMessage("success");
   }
 });
