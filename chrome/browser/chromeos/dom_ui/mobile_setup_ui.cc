@@ -238,6 +238,7 @@ class MobileSetupHandler
   bool reenable_ethernet_;
   bool reenable_cert_check_;
   bool transaction_complete_signalled_;
+  bool activation_status_test_;
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
 
@@ -350,7 +351,8 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       reenable_wifi_(false),
       reenable_ethernet_(false),
       reenable_cert_check_(false),
-      transaction_complete_signalled_(false) {
+      transaction_complete_signalled_(false),
+      activation_status_test_(false) {
 }
 
 MobileSetupHandler::~MobileSetupHandler() {
@@ -457,6 +459,7 @@ void MobileSetupHandler::SetTransactionStatus(const std::string& status) {
       return;
     }
     transaction_complete_signalled_ = true;
+    activation_status_test_ = false;
     state_ = PLAN_ACTIVATION_START;
     chromeos::CellularNetwork* network = GetCellularNetwork();
     if (network &&
@@ -475,35 +478,36 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     return;
 
   PlanActivationState new_state = state_;
-  if (network) {
-    LOG(INFO) << "Cellular:\n  service=" << network->GetStateString().c_str()
-            << "\n  ui=" << GetStateDescription(state_)
-            << "\n  activation=" << network->GetActivationStateString().c_str()
-            << "\n  restricted=" << (network->restricted_pool() ? "yes" : "no")
-            << "\n  error=" << network->GetErrorString().c_str()
-            << "\n  setvice_path=" << network->service_path().c_str();
-  } else {
+  if (!network) {
     LOG(WARNING) << "Cellular service lost";
+    return;
   }
+
+  LOG(INFO) << "Cellular:\n  service=" << network->GetStateString().c_str()
+          << "\n  ui=" << GetStateDescription(state_)
+          << "\n  activation=" << network->GetActivationStateString().c_str()
+          << "\n  restricted=" << (network->restricted_pool() ? "yes" : "no")
+          << "\n  error=" << network->GetErrorString().c_str()
+          << "\n  setvice_path=" << network->service_path().c_str();
   switch (state_) {
-    case PLAN_ACTIVATION_START:
-      if (network) {
-        switch (network->activation_state()) {
-          case chromeos::ACTIVATION_STATE_ACTIVATED:
-            if (network->failed_or_disconnected()) {
-              new_state = PLAN_ACTIVATION_RECONNECTING;
-            } else if (network->connection_state() == chromeos::STATE_READY) {
-              if (network->restricted_pool()) {
-                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-              } else {
-                new_state = PLAN_ACTIVATION_DONE;
-              }
+    case PLAN_ACTIVATION_START: {
+      switch (network->activation_state()) {
+        case chromeos::ACTIVATION_STATE_ACTIVATED: {
+          if (network->failed_or_disconnected()) {
+            new_state = PLAN_ACTIVATION_RECONNECTING;
+          } else if (network->connection_state() == chromeos::STATE_READY) {
+            if (network->restricted_pool()) {
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            } else {
+              new_state = PLAN_ACTIVATION_DONE;
             }
-            break;
-          case chromeos::ACTIVATION_STATE_UNKNOWN:
-          case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
-          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          }
+          break;
+        }
+        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED: {
+          if (!activation_status_test_) {
             if (network->failed_or_disconnected()) {
+              activation_status_test_ = true;
               new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
             } else if (network->connected()) {
               LOG(INFO) << "Disconnecting from " <<
@@ -514,67 +518,89 @@ void MobileSetupHandler::EvaluateCellularNetwork(
               // we don't want to continue processing on this path anymore.
               return;
             }
-            break;
-          default:
-            new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
-            break;
-        }
-      }
-      break;
-    case PLAN_ACTIVATION_INITIATING_ACTIVATION:
-      if (network) {
-        switch (network->activation_state()) {
-          case chromeos::ACTIVATION_STATE_ACTIVATED:
-            if (network->failed_or_disconnected()) {
-              new_state = PLAN_ACTIVATION_RECONNECTING;
-            } else if (network->connection_state() == chromeos::STATE_READY) {
-              if (network->restricted_pool()) {
-                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-              } else {
-                new_state = PLAN_ACTIVATION_DONE;
-              }
-            }
-            break;
-          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          } else {
             if (network->connected())
               new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
             else
               new_state = PLAN_ACTIVATION_RECONNECTING;
             break;
-          case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
-            // Wait in this state until activation state changes.
-            break;
-          case chromeos::ACTIVATION_STATE_ACTIVATING:
-            break;
-          default:
-            break;
+          }
+          break;
+        }
+        case chromeos::ACTIVATION_STATE_UNKNOWN:
+        case chromeos::ACTIVATION_STATE_NOT_ACTIVATED: {
+          if (network->failed_or_disconnected()) {
+            new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+          } else if (network->connected()) {
+            LOG(INFO) << "Disconnecting from " <<
+                network->service_path().c_str();
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
+                DisconnectFromWirelessNetwork(network);
+            // Disconnect will force networks to be reevaluated, so
+            // we don't want to continue processing on this path anymore.
+            return;
+          }
+          break;
+        }
+        default: {
+          new_state = PLAN_ACTIVATION_INITIATING_ACTIVATION;
+          break;
         }
       }
       break;
-    case PLAN_ACTIVATION_RECONNECTING:
+    }
+    case PLAN_ACTIVATION_INITIATING_ACTIVATION: {
+      switch (network->activation_state()) {
+        case chromeos::ACTIVATION_STATE_ACTIVATED:
+          if (network->failed_or_disconnected()) {
+            new_state = PLAN_ACTIVATION_RECONNECTING;
+          } else if (network->connection_state() == chromeos::STATE_READY) {
+            if (network->restricted_pool()) {
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            } else {
+              new_state = PLAN_ACTIVATION_DONE;
+            }
+          }
+          break;
+        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          if (network->connected())
+            new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+          else
+            new_state = PLAN_ACTIVATION_RECONNECTING;
+          break;
+        case chromeos::ACTIVATION_STATE_NOT_ACTIVATED:
+          // Wait in this state until activation state changes.
+          break;
+        case chromeos::ACTIVATION_STATE_ACTIVATING:
+          break;
+        default:
+          break;
+      }
+      break;
+    }
+    case PLAN_ACTIVATION_RECONNECTING: {
       // Wait until the service shows up and gets activated.
-      if (network) {
-        switch (network->activation_state()) {
-          case chromeos::ACTIVATION_STATE_ACTIVATED:
-            if (network->connection_state() == chromeos::STATE_READY) {
-              if (network->restricted_pool()) {
-                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-              } else {
-                new_state = PLAN_ACTIVATION_DONE;
-              }
+      switch (network->activation_state()) {
+        case chromeos::ACTIVATION_STATE_ACTIVATED:
+          if (network->connection_state() == chromeos::STATE_READY) {
+            if (network->restricted_pool()) {
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+            } else {
+              new_state = PLAN_ACTIVATION_DONE;
             }
-            break;
-          case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
-            if (network->connected()) {
-              if (network->restricted_pool())
-                new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
-            }
-            break;
-          default:
-            break;
-        }
+          }
+          break;
+        case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+          if (network->connected()) {
+            if (network->restricted_pool())
+              new_state = PLAN_ACTIVATION_SHOWING_PAYMENT;
+          }
+          break;
+        default:
+          break;
       }
       break;
+    }
     case PLAN_ACTIVATION_PAGE_LOADING:
       break;
     // Just ignore all signals until the site confirms payment.
@@ -587,7 +613,21 @@ void MobileSetupHandler::EvaluateCellularNetwork(
 
   std::string error_description;
   if (GotActivationError(network, &error_description)) {
-    new_state = PLAN_ACTIVATION_ERROR;
+    // Check for this special case when we try to do activate partially
+    // activated device. If that attempt failed, try to disconnect to clear the
+    // state and reconnect again.
+    if ((network->activation_state() ==
+            chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED ||
+        network->activation_state() == chromeos::ACTIVATION_STATE_ACTIVATING) &&
+        network->error() == chromeos::ERROR_UNKNOWN &&
+        (state_ == PLAN_ACTIVATION_INITIATING_ACTIVATION ||
+            state_ == PLAN_ACTIVATION_RECONNECTING) &&
+        activation_status_test_ &&
+        network->connection_state() == chromeos::STATE_ACTIVATION_FAILURE) {
+      new_state = PLAN_ACTIVATION_RECONNECTING;
+    } else {
+      new_state = PLAN_ACTIVATION_ERROR;
+    }
   }
   ChangeState(network, new_state, error_description);
 }
@@ -748,8 +788,7 @@ void MobileSetupHandler::SetupActivationProcess(
 
 bool MobileSetupHandler::GotActivationError(
     const chromeos::CellularNetwork* network, std::string* error) {
-  if (!network)
-    return false;
+  DCHECK(network);
   bool got_error = false;
   const char* error_code = kErrorDefault;
 
