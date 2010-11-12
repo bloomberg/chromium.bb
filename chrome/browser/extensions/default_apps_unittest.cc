@@ -7,7 +7,8 @@
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(dpolukhin): On Chrome OS all apps are installed via external extensions
+// TODO(dpolukhin): On Chrome OS all apps are installed via external extensions,
+// and the web store promo is never shown.
 #if !defined(OS_CHROMEOS)
 TEST(DefaultApps, Basics) {
   TestingPrefService pref_service;
@@ -61,7 +62,6 @@ TEST(DefaultApps, Basics) {
   EXPECT_FALSE(default_apps.ShouldShowPromo(default_app_ids));
   EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
 }
-#endif  // OS_CHROMEOS
 
 TEST(DefaultApps, HidePromo) {
   TestingPrefService pref_service;
@@ -100,8 +100,6 @@ TEST(DefaultApps, InstallingAnAppHidesPromo) {
   EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
 }
 
-// TODO(dpolukhin): On Chrome OS all apps are installed via external extensions
-#if !defined(OS_CHROMEOS)
 TEST(DefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
   // It is possible to have apps manually installed while the default apps are
   // being installed. The network or server might be down, causing the default
