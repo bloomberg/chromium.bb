@@ -60,17 +60,9 @@ static void NotifyPluginsOfActivation() {
 // static
 bool PluginService::enable_chrome_plugins_ = true;
 
-void LoadPluginsFromDiskHook() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI) &&
-         !BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
-         "Can't load plugins on the IO/UI threads since it's very slow.";
-}
-
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  NPAPI::PluginList::Singleton()->SetPluginLoadHook(LoadPluginsFromDiskHook);
 
   // We first group the plugins and then figure out which groups to disable.
   PluginUpdater::GetPluginUpdater()->DisablePluginGroupsFromPrefs(profile);

@@ -8,12 +8,16 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 
 namespace base {
 
 // static
 NativeLibrary LoadNativeLibrary(const FilePath& library_path) {
+  // dlopen() opens the file off disk.
+  base::ThreadRestrictions::AssertIOAllowed();
+
   // We deliberately do not use RTLD_DEEPBIND.  For the history why, please
   // refer to the bug tracker.  Some useful bug reports to read include:
   // http://crbug.com/17943, http://crbug.com/17557, http://crbug.com/36892,

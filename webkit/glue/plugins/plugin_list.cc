@@ -24,16 +24,9 @@ namespace NPAPI {
 
 base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
 
-static LoadPluginsFromDiskHookFunc g_load_plugins_hook;
-
 // static
 PluginList* PluginList::Singleton() {
   return g_singleton.Pointer();
-}
-
-// static
-void PluginList::SetPluginLoadHook(LoadPluginsFromDiskHookFunc hook) {
-  g_load_plugins_hook = hook;
 }
 
 // static
@@ -195,9 +188,6 @@ void PluginList::LoadPlugins(bool refresh) {
     extra_plugin_dirs = extra_plugin_dirs_;
     internal_plugins = internal_plugins_;
   }
-
-  if (g_load_plugins_hook)
-    g_load_plugins_hook();
 
   std::vector<WebPluginInfo> new_plugins;
   std::set<FilePath> visited_plugins;
