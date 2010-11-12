@@ -2340,7 +2340,7 @@ void CuePoint::TrackPosition::Parse(
 
     assert(m_pos >= 0);
     assert(m_track > 0);
-    assert(m_block > 0);
+    //assert(m_block > 0);
 }
 
 
