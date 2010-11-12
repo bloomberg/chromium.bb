@@ -72,6 +72,12 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
 
   file_utilities_.set_sandbox_enabled(false);
 
+  // Restrict the supported media types when running in layout test mode.
+  if (layout_test_mode)
+    mime_registry_.reset(new TestShellWebMimeRegistryImpl());
+  else
+    mime_registry_.reset(new webkit_glue::SimpleWebMimeRegistryImpl());
+
 #if defined(OS_WIN)
   // Ensure we pick up the default theme engine.
   SetThemeEngine(NULL);
