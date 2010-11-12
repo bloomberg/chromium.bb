@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_backend_impl.h"
@@ -159,13 +160,13 @@ void DeviceManagementPolicyProvider::SendPolicyRequest() {
 }
 
 bool DeviceManagementPolicyProvider::IsPolicyStale() const {
-  base::Time now(base::Time::Now());
+  base::Time now(base::Time::NowFromSystemTime());
   base::Time last_policy_refresh_time =
       cache_->last_policy_refresh_time();
   base::Time policy_expiration_time =
       last_policy_refresh_time + base::TimeDelta::FromMinutes(
           kPolicyRefreshRateInMinutes);
-  return (last_policy_refresh_time > now || now > policy_expiration_time);
+  return (now > policy_expiration_time);
 }
 
 // static

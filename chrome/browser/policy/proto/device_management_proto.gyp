@@ -14,6 +14,7 @@
       'type': 'none',
       'sources': [
         'device_management_backend.proto',
+        'device_management_local.proto',
       ],
       'rules': [
         {

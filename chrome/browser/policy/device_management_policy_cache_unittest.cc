@@ -5,12 +5,14 @@
 #include "chrome/browser/policy/device_management_policy_cache.h"
 
 #include <limits>
+#include <string>
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/proto/device_management_local.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -50,11 +52,15 @@ class DeviceManagementPolicyCacheTest
     loop_.RunAllPending();
   }
 
-  void WritePolicy(const em::DevicePolicyResponse& policy) {
+  void WritePolicy(const em::DevicePolicyResponse& policy,
+                   const base::Time& timestamp) {
     std::string data;
-    EXPECT_TRUE(policy.SerializeToString(&data));
-    EXPECT_EQ(static_cast<int>(data.size()),
-              file_util::WriteFile(test_file(), data.c_str(), data.size()));
+    em::CachedDevicePolicyResponse cached_policy;
+    cached_policy.mutable_policy()->CopyFrom(policy);
+    cached_policy.set_timestamp(timestamp.ToInternalValue());
+    EXPECT_TRUE(cached_policy.SerializeToString(&data));
+    int size = static_cast<int>(data.size());
+    EXPECT_EQ(size, file_util::WriteFile(test_file(), data.c_str(), size));
   }
 
   FilePath test_file() {
@@ -75,6 +81,7 @@ TEST_F(DeviceManagementPolicyCacheTest, Empty) {
   DictionaryValue empty;
   scoped_ptr<Value> policy(cache.GetPolicy());
   EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
 TEST_F(DeviceManagementPolicyCacheTest, LoadNoFile) {
@@ -83,18 +90,24 @@ TEST_F(DeviceManagementPolicyCacheTest, LoadNoFile) {
   DictionaryValue empty;
   scoped_ptr<Value> policy(cache.GetPolicy());
   EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
 }
 
-// Flaky on Windows since the file time is not as precise as the
-// system clock time and can end up being later than "now".
-// http://crbug.com/62489.
-#if defined(OS_WIN)
-#define MAYBE_LoadWithFile FLAKY_LoadWithFile
-#else
-#define MAYBE_LoadWithFile LoadWithFile
-#endif
-TEST_F(DeviceManagementPolicyCacheTest, MAYBE_LoadWithFile) {
-  WritePolicy(em::DevicePolicyResponse());
+TEST_F(DeviceManagementPolicyCacheTest, RejectFuture) {
+  em::DevicePolicyResponse policy_response;
+  WritePolicy(policy_response, base::Time::NowFromSystemTime() +
+                               base::TimeDelta::FromMinutes(5));
+  DeviceManagementPolicyCache cache(test_file());
+  cache.LoadPolicyFromFile();
+  DictionaryValue empty;
+  scoped_ptr<Value> policy(cache.GetPolicy());
+  EXPECT_TRUE(empty.Equals(policy.get()));
+  EXPECT_EQ(base::Time(), cache.last_policy_refresh_time());
+}
+
+TEST_F(DeviceManagementPolicyCacheTest, LoadWithFile) {
+  em::DevicePolicyResponse policy_response;
+  WritePolicy(policy_response, base::Time::NowFromSystemTime());
   DeviceManagementPolicyCache cache(test_file());
   cache.LoadPolicyFromFile();
   DictionaryValue empty;
@@ -107,7 +120,7 @@ TEST_F(DeviceManagementPolicyCacheTest, MAYBE_LoadWithFile) {
 TEST_F(DeviceManagementPolicyCacheTest, LoadWithData) {
   em::DevicePolicyResponse policy;
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
-  WritePolicy(policy);
+  WritePolicy(policy, base::Time::NowFromSystemTime());
   DeviceManagementPolicyCache cache(test_file());
   cache.LoadPolicyFromFile();
   DictionaryValue expected;
@@ -170,7 +183,7 @@ TEST_F(DeviceManagementPolicyCacheTest, PersistPolicy) {
 TEST_F(DeviceManagementPolicyCacheTest, FreshPolicyOverride) {
   em::DevicePolicyResponse policy;
   AddStringPolicy(&policy, "HomepageLocation", "http://www.example.com");
-  WritePolicy(policy);
+  WritePolicy(policy, base::Time::NowFromSystemTime());
 
   DeviceManagementPolicyCache cache(test_file());
   em::DevicePolicyResponse updated_policy;

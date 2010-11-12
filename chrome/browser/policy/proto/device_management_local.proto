@@ -1,0 +1,20 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_management;
+
+import "device_management_backend.proto";
+
+// Wrapper around DevicePolicyResponse for caching on disk.
+message CachedDevicePolicyResponse {
+  // The DevicePolicyResponse wrapped by this message.
+  required DevicePolicyResponse policy = 1;
+  // Timestamp noting when this policy was cached.
+  optional uint64 timestamp = 2;
+}
+

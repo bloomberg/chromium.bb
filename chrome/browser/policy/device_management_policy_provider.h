@@ -10,7 +10,6 @@
 
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/device_management_backend.h"

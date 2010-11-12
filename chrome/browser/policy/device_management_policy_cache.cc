@@ -9,19 +9,22 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/proto/device_management_local.pb.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
 
 namespace policy {
 
-// A task implementation that saves policy information to a file.
+// Saves policy information to a file.
 class PersistPolicyTask : public Task {
  public:
   PersistPolicyTask(const FilePath& path,
-                    const em::DevicePolicyResponse* policy);
+                    const em::DevicePolicyResponse* policy,
+                    const base::Time& timestamp);
 
  private:
   // Task override.
@@ -29,17 +32,23 @@ class PersistPolicyTask : public Task {
 
   const FilePath path_;
   scoped_ptr<const em::DevicePolicyResponse> policy_;
+  const base::Time timestamp_;
 };
 
 PersistPolicyTask::PersistPolicyTask(const FilePath& path,
-                                     const em::DevicePolicyResponse* policy)
+                                     const em::DevicePolicyResponse* policy,
+                                     const base::Time& timestamp)
     : path_(path),
-      policy_(policy) {
+      policy_(policy),
+      timestamp_(timestamp) {
 }
 
 void PersistPolicyTask::Run() {
   std::string data;
-  if (!policy_->SerializeToString(&data)) {
+  em::CachedDevicePolicyResponse cached_policy;
+  cached_policy.mutable_policy()->CopyFrom(*policy_);
+  cached_policy.set_timestamp(timestamp_.ToInternalValue());
+  if (!cached_policy.SerializeToString(&data)) {
     LOG(WARNING) << "Failed to serialize policy data";
     return;
   }
@@ -62,15 +71,6 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
   if (!file_util::PathExists(backing_file_path_) || fresh_policy_)
     return;
 
-  base::PlatformFileInfo info;
-  // TODO(danno): The last refresh should actually get stored in the
-  // persisted cache file.
-  if (!file_util::GetFileInfo(backing_file_path_, &info)) {
-    LOG(WARNING) << "Failed to get policy file information from "
-                 << backing_file_path_.value();
-    return;
-  }
-
   // Read the protobuf from the file.
   std::string data;
   if (!file_util::ReadFileToString(backing_file_path_, &data)) {
@@ -79,20 +79,29 @@ void DeviceManagementPolicyCache::LoadPolicyFromFile() {
     return;
   }
 
-  em::DevicePolicyResponse policy;
-  if (!policy.ParseFromArray(data.c_str(), data.size())) {
+  em::CachedDevicePolicyResponse cached_policy;
+  if (!cached_policy.ParseFromArray(data.c_str(), data.size())) {
     LOG(WARNING) << "Failed to parse policy data read from "
                  << backing_file_path_.value();
     return;
   }
 
+  // Reject files that claim to be from the future.
+  base::Time timestamp = base::Time::FromInternalValue(
+      cached_policy.timestamp());
+  if (timestamp > base::Time::NowFromSystemTime()) {
+    LOG(WARNING) << "Rejected policy data from " << backing_file_path_.value()
+                 << ", file is from the future.";
+    return;
+  }
+
   // Decode and swap in the new policy information.
-  scoped_ptr<DictionaryValue> value(DecodePolicy(policy));
+  scoped_ptr<DictionaryValue> value(DecodePolicy(cached_policy.policy()));
   {
     AutoLock lock(lock_);
     if (!fresh_policy_)
       policy_.reset(value.release());
-    last_policy_refresh_time_ = info.last_modified;
+    last_policy_refresh_time_ = timestamp;
   }
 }
 
@@ -112,7 +121,8 @@ void DeviceManagementPolicyCache::SetPolicy(
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      new PersistPolicyTask(backing_file_path_, policy_copy));
+      new PersistPolicyTask(backing_file_path_, policy_copy,
+                            base::Time::NowFromSystemTime()));
 }
 
 DictionaryValue* DeviceManagementPolicyCache::GetPolicy() {
