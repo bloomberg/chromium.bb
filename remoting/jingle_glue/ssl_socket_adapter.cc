@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/sys_addrinfo.h"
@@ -67,7 +68,7 @@ int SSLSocketAdapter::BeginSSL() {
   transport_socket_->set_addr(talk_base::SocketAddress(hostname_, 0));
   ssl_socket_.reset(
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-          transport_socket_, hostname_.c_str(), ssl_config,
+          transport_socket_, net::HostPortPair(hostname_, 443), ssl_config,
           NULL /* ssl_host_info */));
 
   int result = ssl_socket_->Connect(&connected_callback_);

@@ -192,8 +192,9 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
 
     transport->AdoptSocket(client_);
     scoped_ptr<SSLClientSocket> sock(
-        socket_factory_->CreateSSLClientSocket(transport,
-            "example.com", ssl_config_, new TestSSLHostInfo()));
+        socket_factory_->CreateSSLClientSocket(
+            transport, HostPortPair("example.com", 443), ssl_config_,
+            new TestSSLHostInfo()));
 
     TestCompletionCallback callback;
     int rv = sock->Connect(&callback);

@@ -16,12 +16,12 @@ namespace net {
 
 SSLClientSocket* SSLClientSocketNSSFactory(
     ClientSocketHandle* transport_socket,
-    const std::string& hostname,
+    const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLHostInfo* ssl_host_info,
     DnsRRResolver* dnsrr_resolver) {
   scoped_ptr<SSLHostInfo> shi(ssl_host_info);
-  return new SSLClientSocketNSS(transport_socket, hostname, ssl_config,
+  return new SSLClientSocketNSS(transport_socket, host_and_port, ssl_config,
                                 shi.release(), dnsrr_resolver);
 }
 

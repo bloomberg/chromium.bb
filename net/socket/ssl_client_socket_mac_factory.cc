@@ -11,12 +11,12 @@ namespace net {
 
 SSLClientSocket* SSLClientSocketMacFactory(
     ClientSocketHandle* transport_socket,
-    const std::string& hostname,
+    const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLHostInfo* ssl_host_info,
     DnsRRResolver* dnsrr_resolver) {
   delete ssl_host_info;
-  return new SSLClientSocketMac(transport_socket, hostname, ssl_config);
+  return new SSLClientSocketMac(transport_socket, host_and_port, ssl_config);
 }
 
 }  // namespace net

@@ -18,6 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "net/base/address_list.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_util.h"
 #include "net/base/ssl_config_service.h"
@@ -435,8 +436,8 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   DCHECK(transport_socket_.get());
   transport_socket_.reset(
       client_socket_factory_->CreateSSLClientSocket(
-          transport_socket_.release(), domain_name, ssl_config_,
-          NULL /* ssl_host_info */));
+          transport_socket_.release(), net::HostPortPair(domain_name, 443),
+          ssl_config_, NULL /* ssl_host_info */));
   int status = transport_socket_->Connect(&ssl_connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();

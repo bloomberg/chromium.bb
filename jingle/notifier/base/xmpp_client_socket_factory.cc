@@ -32,12 +32,13 @@ net::ClientSocket* XmppClientSocketFactory::CreateTCPClientSocket(
 
 net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
     net::ClientSocketHandle* transport_socket,
-    const std::string& hostname,
+    const net::HostPortPair& host_and_port,
     const net::SSLConfig& ssl_config,
     net::SSLHostInfo* ssl_host_info,
     net::DnsRRResolver* dnsrr_resolver) {
   return client_socket_factory_->CreateSSLClientSocket(
-      transport_socket, hostname, ssl_config, ssl_host_info, dnsrr_resolver);
+      transport_socket, host_and_port, ssl_config, ssl_host_info,
+      dnsrr_resolver);
 }
 
 }  // namespace
