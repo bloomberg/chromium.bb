@@ -67,4 +67,4 @@ static void ATTR_USED frame_dummy (void) {
  * before main() is called.
  */
 ADD_FUN_PTR_TO_SEC(__FRAME_DUMMY__[1], ".init_array", frame_dummy);
-#endif HAVE_EH
+#endif
